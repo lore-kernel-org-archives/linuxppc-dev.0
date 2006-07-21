@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DB24067BC6
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 03:38:03 +1000 (EST)
-Subject: Re: mpic discovery on JS20
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Amos Waterland <apw@us.ibm.com>
-In-Reply-To: <20060720231601.GA24736@kvasir.watson.ibm.com>
-References: <20060720231601.GA24736@kvasir.watson.ibm.com>
-Content-Type: text/plain
-Date: Fri, 21 Jul 2006 13:37:56 -0400
-Message-Id: <1153503476.16159.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 9FDA0679FB
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 04:08:33 +1000 (EST)
+From: "Matt Sealey" <matt@genesi-usa.com>
+To: "'Linas Vepstas'" <linas@austin.ibm.com>
+Subject: RE: AltiVec in the kernel
+Date: Fri, 21 Jul 2006 13:08:17 -0500
+Message-ID: <002b01c6acf0$a7417050$99dfdfdf@bakuhatsu.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20060721165130.GS5905@austin.ibm.com>
+Cc: 'Olof Johansson' <olof@lixom.net>,
+	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
+	'Paul Mackerras' <paulus@samba.org>
+Reply-To: matt@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,61 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-07-20 at 19:16 -0400, Amos Waterland wrote:
-> Current Linus and Paulus trees do this on JS20 blades with SLOF:
 
-I need a tarball of /proc/device-tree on these. 
 
->  Failed to locate the MPIC interrupt controller
->  PID hash table entries: 4096 (order: 12, 32768 bytes)
->  Maple: Found RTC at IO 0x1070
->  cpu 0x0: Vector: 700 (Program Check) at [c00000007ef83ab0]
->      pc: c00000000002e0c8: .mpic_request_ipis+0x34/0xc8
->      lr: c00000000036b484: .smp_mpic_probe+0x3c/0x58
->      sp: c00000007ef83d30
->     msr: 9000000000029032
->    current = 0xc00000000194d610
->    paca    = 0xc00000000038f180
->      pid   = 1, comm = swapper
->  kernel BUG in mpic_request_ipis at arch/powerpc/sysdev/mpic.c:1132!
-> 
-> Doing a git-bisect produces this:
-> 
->  0ebfff1491ef85d41ddf9c633834838be144f69f is first bad commit
->  Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->  Date:   Mon Jul 3 21:36:01 2006 +1000
-> 
->     [POWERPC] Add new interrupt mapping core and change platforms to use it
->     
->     This adds the new irq remapper core and removes the old one.  Because
->     there are some fundamental conflicts with the old code, like the value
->     of NO_IRQ which I'm now setting to 0 (as per discussions with Linus),
->     etc..., this commit also changes the relevant platform and driver code
->     over to use the new remapper (so as not to cause difficulties later
->     in bisecting).
->     
->     This patch removes the old pre-parsing of the open firmware interrupt
->     tree along with all the bogus assumptions it made to try to renumber
->     interrupts according to the platform. This is all to be handled by the
->     new code now.
->     
->     For the pSeries XICS interrupt controller, a single remapper host is
->     created for the whole machine regardless of how many interrupt
->     presentation and source controllers are found, and it's set to match
->     any device node that isn't a 8259.  That works fine on pSeries and
->     avoids having to deal with some of the complexities of split source
->     controllers vs. presentation controllers in the pSeries device trees.
->     
->     The powerpc i8259 PIC driver now always requests the legacy interrupt
->     range. It also has the feature of being able to match any device node
->     (including NULL) if passed no device node as an input. That will help
->     porting over platforms with broken device-trees like Pegasos who don't
->     have a proper interrupt tree.
->     
->     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->     Signed-off-by: Paul Mackerras <paulus@samba.org>
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> Sounds like a problem of advertising and communications.  
+> This is kind of "under the radar" for most users and 
+> developers. It needs to work out-of-the-box, most people, 
+> even those with interest in performance, will not even be 
+> aware of the possibility to tne this.
+
+It's listed on every site we have, and on PenguinPPC.org too if I
+recall (hi Hollis) it even got a sticky news item like a lot of the
+stuff we do (thanks Hollis :).
+
+Everyone who cares knows about it, I would think. Probably not
+enough people care, is the problem.
+
+> It should be folded into glibc. It is up to the altivec 
+> product vendor to nag the glibc folks into folding it in. 
+
+You mean Freescale? Or Genesi?
+
+Freevec was being developed as a "perfect opportunity". glibc-ports
+came to life and was something that code could be contributed to.
+Since it was such a hassle dealing with the glibc guys, it ended up
+being a seperate library for now.
+
+> This task could be as hard as writing the code in the first place.
+
+I think we could handle it if there were less stubborn mules maintaining
+the most important software. I can think of one guy in particular.. but
+I won't name him.
+
+> Many maintainers of core libraries have similar behaviour patterns.
+> Besides glibc, gcc and gsl come to mind. This is becase they 
+> get tired out by naive eager-beavers who walk in with the 
+> greatest idea in the world
+
+I think this kind of behaviour stalls Open Source software,
+because it unfairly treats those *with* clues.
+
+<-us-> do you want the AltiVec code or not?
+<them> Oh no because I am bored of dealing with people who only had ideas!!
+
+It doesn't make much sense politically or technically.
+
+So like I said we could have had this code in glibc when glibc-ports
+first was conceptualised and then released, but there was just too
+many mules in the way.
+
+Check the freevec.org whitepapers section), Konstantinos is not just
+"ideas", he proved out optimizations and then implemented them.
+
+Is it his fault that they're not in glibc, because he's "stupid" or
+"clueless"? :D
+
+> If you've got good code, you'll just need to be persistent.
+
+Personally I am pretty tired (in return) with angry-faced Open
+Source developers deciding that "Open Source" is equivalent to
+"My Source, Back Off, Your Patch Sucks". It is always the choice
+of the lead developer (and/or copyright holder) to refuse
+patches, but.. seriously.. a lot of Open Source development is
+the wrong kind of dictatorship.
+
+Cynicism aside.. :D
+
+</rant>
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Manager, Genesi, Developer Relations
