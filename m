@@ -1,20 +1,16 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id D428367B63
+Return-Path: <BenoitL@adept.com>
+Received: from srv-mail-1.adept.com (unknown [12.195.90.243])
+	by ozlabs.org (Postfix) with ESMTP id 1932B679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Jul 2006 04:24:24 +1000 (EST)
-Subject: Re: problems with mounting JFFS2 using CFI for AM29LV160MT on
-	ppc8245 k2.4.x
-From: Ben Warren <bwarren@qstreams.com>
-To: Arun Kumar <arunkat@gmail.com>
-In-Reply-To: <edd12c050607210756h71bab7f8ve323edf3bf6077c6@mail.gmail.com>
-References: <edd12c050607210756h71bab7f8ve323edf3bf6077c6@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 21 Jul 2006 12:20:17 -0400
-Message-Id: <1153498817.19682.149.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+	Sat, 22 Jul 2006 05:05:08 +1000 (EST)
+Message-ID: <D3A60B685BD79544ACA481B73FA81EA02F4F27@COBALT>
+From: Benoit Lajoie-Dorval <BenoitL@adept.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Boot problem on Sandpoint 
+Date: Fri, 21 Jul 2006 11:49:14 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,90 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Arun,
+Hi all, 
+I have to port Linux on a Sandpoint Board wtih a MPC8241 processor on. I
+built a kernel using linux 2.6.15 and create an zImage.initrd.elf with a
+ramdisk. All of this (linux and ramdisk) was packaged with ELDK 4.0. I also
+minimized everything in the .config file to only have what is really
+necessary (serial port, 6xx processor, etc). The communication is made with
+the board by its internal serial port and Dink32 is used to do everything
+else. 
 
-On Fri, 2006-07-21 at 20:26 +0530, Arun Kumar wrote:
-> Hi ,
-> Can anyone help me in this naive problem ?
-> 
-Then a naive answer is most fitting...  Turns out that's my specialty.
+The problem is that when I execute the loaded zImage.initrd.elf, the boot
+sequence just hangs there and I just don't see anything happening. There is
+nothing that is displayed. I know that the elf file as an offset header of
+0X10000, so the problem is not there. I also put some breakpoints and trace
+using Dink32 to see where it stops and it may have something to do with the
+disable_6xx_mmu in the utils.S file.  
 
-> #
-> # Memory Technology Devices (MTD)
-> #
-> CONFIG_MTD=y
-> CONFIG_MTD_DEBUG=y
-> CONFIG_MTD_DEBUG_VERBOSE=2
-> CONFIG_MTD_PARTITIONS=y
-> CONFIG_MTD_CONCAT=y 
-> CONFIG_MTD_REDBOOT_PARTS=y
-> CONFIG_MTD_CMDLINE_PARTS=y
-Probably get rid of REDBOOT if you're not using that bootloader
-> 
-> #
-> # User Modules And Translation Layers
-> #
-> # CONFIG_MTD_CHAR is not set
-> # CONFIG_MTD_BLOCK is not set
-> # CONFIG_MTD_BLOCK_RO is not set
-> # CONFIG_FTL is not set 
-> # CONFIG_NFTL is not set
-> # CONFIG_INFTL is not set
-> 
-You need to enable MTD_CHAR to read/write and MTD_BLOCK to mount
+I just really don't know what's wrong in my config and I hope someone could
+help me on this.  
 
-> Can any happy soul let me know  :-- 
-> 
-> 1)How to mount jffs2 on this flash and also to test mtd->read/write
-> routines ?
-Start with the char drivers (/dev/mtd0 etc.).  You'll need one for each
-partition you want to experiment with.
-How about creating the nodes manually?
+Thank you
 
-mknod /dev/mtd0 c 90 0
-mknod /dev/mtd1 c 90 2 etc. (minor # increments in 2s)
-
-Add a block device for each partition:
-
-mknod /dev/mtdblock0 b 31 0
-mknod /dev/mtdblock1 b 31 1 etc.
-
-Once you clean up #3 below, you should be able to read/write the char
-devices using commands like 'cat', or write a simple user-space app
-using "open, read, write", etc if you'd rather look at the actual binary
-data.
-
-You can then experiment with mounting the JFFS2.  I recommend booting to
-an NFS file system then mounting the JFFS2 with something like:
-
-mount -t jffs2 /dev/mtdblock5 /mnt/temp    (Use the correct partition)
-
-> 
-> 2) Is it ok not to see mtd0.. partions in /dev directory .
-Pretty sure you'll need these
-> 
-> 3 ) Where do I register the mtd partitions to get them noticed
-> here ?? 
-Looks like your partitions are already being found, but are probably not
-set up right.  I don't know if this is a static definition in your board
-init code or passed by command line from the bootloader, but it looks
-like the values don't line up with your device:
-
-*********
-Using physmap partition definition
-Creating 3 MTD partitions on "phys_mapped_flash": 
-0x00000000-0x00040000 : "foo-ets0"
-mtd: Giving out device 0 to foo-ets0
-0x00040000-0x001e0000 : "foo-ets1"
-mtd: partition "agere-ets1" doesn't end on an erase block -- force
-read-only 
-mtd: Giving out device 1 to foo-ets1
-0x001e0000-0x00200000 : "foo-ets2"
-mtd: partition "foo-ets2" doesn't start on an erase block boundary --
-force read-only
-*********
---------------------------------------------------------------------------
-Hopefully this helps you proceed a little bit.
-
-regards,
-Ben
+Benoit Lajoie-Dorval
