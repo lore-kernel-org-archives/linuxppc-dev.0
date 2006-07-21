@@ -1,22 +1,41 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
-	[66.111.4.28]) by ozlabs.org (Postfix) with ESMTP id 61AB867BDE
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 07:30:55 +1000 (EST)
-Message-Id: <1153517448.21392.266596853@webmail.messagingengine.com>
-From: "Hollis Blanchard" <hollis@penguinppc.org>
-To: "Linas Vepstas" <linas@austin.ibm.com>, "Matt Sealey" <matt@genesi-usa.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-References: <lezmf4j5ym.wl%bdc@carlstrom.com>
-	<000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
-	<20060721165130.GS5905@austin.ibm.com>
+Return-Path: <bergner@vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C9FB679F0
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 08:21:57 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6LMLoVP025563
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 18:21:50 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6LMLo4Y278710
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 16:21:50 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6LMLocg006373
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 16:21:50 -0600
 Subject: Re: AltiVec in the kernel
-In-Reply-To: <20060721165130.GS5905@austin.ibm.com>
-Date: Fri, 21 Jul 2006 16:30:48 -0500
-Cc: 'Olof Johansson' <olof@lixom.net>,
+From: Peter Bergner <bergner@vnet.ibm.com>
+To: "Brian D. Carlstrom" <bdc@carlstrom.com>
+In-Reply-To: <lezmf4j5ym.wl%bdc@carlstrom.com>
+References: <20060719181047.GL5905@austin.ibm.com>
+	<001301c6abf8$73d780e0$99dfdfdf@bakuhatsu.net>
+	<20060720174255.GP5905@austin.ibm.com>
+	<le8xmoktav.wl%bdc@carlstrom.com>
+	<20060720190523.GA27775@pb15.lixom.net>
+	<lezmf4j5ym.wl%bdc@carlstrom.com>
+Content-Type: text/plain
+Date: Fri, 21 Jul 2006 17:21:48 -0500
+Message-Id: <1153520508.17144.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>,
 	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
-	'Paul Mackerras' <paulus@samba.org>,
-	Konstantinos Margaritis <markos@debian.org>
+	'Paul Mackerras' <paulus@samba.org>, Steve Munroe <sjmunroe@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +45,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Fri, 21 Jul 2006 11:51:30 -0500, "Linas Vepstas"
-<linas@austin.ibm.com> said:
-> On Fri, Jul 21, 2006 at 09:42:32AM -0500, Matt Sealey wrote:
-> > http://www.freevec.org/ 
-> > 
-> > Been there for months, before the glibc thing. Most of the functions
-> > are ready. Anyone can bugfix this. The beauty of GPL. The ugly part
-> > is.. we've had this there for months. Nobody has contributed a single
-> > update or bugfix or even a performance test as far as I know.
+On Thu, 2006-07-20 at 14:56 -0700, Brian D. Carlstrom wrote:
+> At Thu, 20 Jul 2006 14:05:23 -0500, Olof Johansson wrote:
+> > http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
 > 
-> Sounds like a problem of advertising and communications.  This is
-> kind of "under the radar" for most users and developers. It needs to
-> work out-of-the-box, most people, even those with interest in
-> performance, will not even be aware of the possibility to tne this.
+> Very interesting. According to that page, the memcpy optimizations seem
+> to be using 64-bit operations and that 128-bit AltiVec operations are
+> still being solicited. 
+> 
+> I was encouraged to see the following: 
+> 
+>     If you need to build generic distributions (supporting several
+>     <cpu_types>) you can leverage the dl_procinfo support built into
+>     glibc. This mechanism allows for multiple versions of the core
+>     libraries (libc, libm, librt, libpthread, libpthread_db) to be
+>     stored in hardware/platform specific subdirectories under /lib[64].
 
-It is difficult to make sure every OSS developer is notified of all work
-they may be interested in...
+Actually, this support is not limited to the core glibc routines or
+the system lib directors /lib/ and /usr/lib/.  This works just as well
+for third party shipped libraries in their own library trees as the
+following example (on a power5 box) shows:
 
-However, I have noticed a trend where Genesi people seem to think
-everybody pays attention to their websites (and the same could be said
-for Debian and other subcultures). In this case there actually have been
-other people aware of this project, but not very many. Considering all
-the traffic about it on ppczone.org, people looking for exposure for
-their project may want to look beyond PPCZone.
+bergner@vervainp1:~/cpu-tuned-libs> pwd
+/home/bergner/cpu-tuned-libs
 
-> It should be folded into glibc. It is up to the altivec product vendor
-> to nag the glibc folks into folding it in. This task could be as hard
-> as writing the code in the first place.
+bergner@vervainp1:~/cpu-tuned-libs> ls lib/ lib/power5/
+lib/:
+libfoo.so  power5/
 
-Konstantinos is aware of Steve's glibc project and has indicated he'll
-try to contribute to it.
+lib/power5/:
+libfoo.so
 
-To be fair, probably not many people have heard of Steve's project
-either. I doubt Konstantinos would have heard of it if I hadn't
-mentioned it.
+bergner@vervainp1:~/cpu-tuned-libs> gcc
+-L/home/bergner/cpu-tuned-libs/lib -R/home/bergner/cpu-tuned-libs/lib
+main.c -lfoo
 
--Hollis
+bergner@vervainp1:~/cpu-tuned-libs> ldd a.out
+        linux-vdso32.so.1 =>  (0x00100000)
+        libfoo.so => /home/bergner/cpu-tuned-libs/lib/power5/libfoo.so
+(0x0ffde000)
+        libc.so.6 => /lib/power5/libc.so.6 (0x0fe69000)
+        /lib/ld.so.1 (0xf7fe1000)
+
+bergner@vervainp1:~/cpu-tuned-libs> ./a.out
+Loaded the optimzed lib
+
+bergner@vervainp1:~/cpu-tuned-libs> rm lib/power5/libfoo.so
+
+bergner@vervainp1:~/cpu-tuned-libs> ldd a.out
+        linux-vdso32.so.1 =>  (0x00100000)
+        libfoo.so => /home/bergner/cpu-tuned-libs/lib/libfoo.so
+(0x0ffde000)
+        libc.so.6 => /lib/power5/libc.so.6 (0x0fe69000)
+        /lib/ld.so.1 (0xf7fe1000)
+
+bergner@vervainp1:~/cpu-tuned-libs> ./a.out
+Loaded the unoptimzed lib
+
+
+The runtime loader magic uses the AT_PLATFORM string value as
+the subdirectory to search in under the .../lib/ or .../lib64/
+library directory.  To find out what your AT_PLATFORM value is
+on your current box, you can do:
+
+bergner@vervainp1:~/cpu-tuned-libs> LD_SHOW_AUXV=1 /bin/true
+AT_DCACHEBSIZE:  0x80
+AT_ICACHEBSIZE:  0x80
+AT_UCACHEBSIZE:  0x0
+AT_SYSINFO_EHDR: 0x100000
+AT_HWCAP:        power5 mmu fpu ppc64 ppc32
+AT_PAGESZ:       4096
+AT_CLKTCK:       100
+AT_PHDR:         0x10000034
+AT_PHENT:        32
+AT_PHNUM:        9
+AT_BASE:         0xf7fe1000
+AT_FLAGS:        0x0
+AT_ENTRY:        0x10000980
+AT_UID:          1001
+AT_EUID:         1001
+AT_GID:          100
+AT_EGID:         100
+AT_SECURE:       0
+AT_PLATFORM:     power5
+
+
+> However, I'm guessing this addon is not something found in common
+> distributions for PowerPC like Debian, Fedora, Gentoo, Ubuntu, ...
+
+At last years GCC Developers Summit, one of the Ubuntu guys mentioned
+he was interested in adding it to Ubuntu.  I haven't heard whether that
+has shown up yet though.  It will be available in upcoming SUSE and
+Red Hat enterprise distros.  I don't know about the others.  As Olof
+mentioned, it can take some lead time for this to get picked up.
+There's also the question of how many and which processors a distro
+will ship cpu optimized libraries for.  Given all of the PowerPC
+variants, they obviously can ship optimized libs for everything.
+
+Peter
