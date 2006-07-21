@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AC34167BA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 22:15:29 +1000 (EST)
-Date: Fri, 21 Jul 2006 22:14:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: Re: [PATCH 1/3] powerpc: Instrument Hypervisor Calls: merge headers
-Message-Id: <20060721221455.17bb9190.sfr@canb.auug.org.au>
-In-Reply-To: <20060721063951.GB8639@monkey.ibm.com>
-References: <20060721063824.GA8639@monkey.ibm.com>
-	<20060721063951.GB8639@monkey.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3300D67B96
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 00:42:48 +1000 (EST)
+From: "Matt Sealey" <matt@genesi-usa.com>
+To: "'Brian D. Carlstrom'" <bdc@carlstrom.com>,
+	"'Olof Johansson'" <olof@lixom.net>
+Subject: RE: AltiVec in the kernel
+Date: Fri, 21 Jul 2006 09:42:32 -0500
+Message-ID: <000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <lezmf4j5ym.wl%bdc@carlstrom.com>
+Cc: 'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
+	'Paul Mackerras' <paulus@samba.org>
+Reply-To: matt@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ 
 
-Hi Paulus,
+> -----Original Message-----
+> From: linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org] 
+> On Behalf Of Brian D. Carlstrom
+> Sent: Thursday, July 20, 2006 4:57 PM
+> To: Olof Johansson
+> Cc: 'Paul Mackerras'; 'linuxppc-dev list'
+> Subject: Re: AltiVec in the kernel
+> 
+> At Thu, 20 Jul 2006 14:05:23 -0500, Olof Johansson wrote:
+> > On Thu, Jul 20, 2006 at 11:47:04AM -0700, Brian D. Carlstrom wrote:
+> > > A quick grep memcpy in the recent glibc sources on my 
+> linux/ppc box 
+> > > seems to show no where near that level of optimization, 
+> but I admit 
+> > > that I could have missed something.
+> > 
+> > http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
+> 
+> Very interesting. According to that page, the memcpy 
+> optimizations seem to be using 64-bit operations and that 
+> 128-bit AltiVec operations are still being solicited. 
 
-On Thu, 20 Jul 2006 23:39:51 -0700 Mike Kravetz <kravetz@us.ibm.com> wrote:
->
-> Move all the Hypervisor call definitions to to a single header file.
-> --
-> Signed-off-by: Mike Kravetz <kravetz@us.ibm.com>
+"Still"?
 
-Can you put this one in immediately just to save Mike having to repost it :=
--)
+http://www.freevec.org/ 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Been there for months, before the glibc thing. Most of the functions
+are ready. Anyone can bugfix this. The beauty of GPL. The ugly part
+is.. we've had this there for months. Nobody has contributed a single
+update or bugfix or even a performance test as far as I know.
 
---Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq
-Content-Type: application/pgp-signature
+> However, I'm guessing this addon is not something found in 
+> common distributions for PowerPC like Debian, Fedora, Gentoo, 
+> Ubuntu, ...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
+Indeed it's a cute feature but we were scared away by the glibc guys
+when it came to glibc-ports (perhaps they just considered it not
+ready, but we wanted it in there for the first release, which was
+the next one). Hence freevec. Konstantinos will get back in a couple
+weeks and post some updates.
 
-iD8DBQFEwMVFFdBgD/zoJvwRAj7PAJ9CfgmjC4W8roXc4NkZcD1k52oeCwCfakca
-g0WmBa8QjHsC2ihWmY3wamU=
-=txtR
------END PGP SIGNATURE-----
+The more interesting code is the MySQL stuff. All of this has been
+developed by finding good examples of apps, profiling them and then
+optimizing the top few functions that are most used.
 
---Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq--
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Manager, Genesi, Developer Relations
