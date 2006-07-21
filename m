@@ -1,37 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3847467BC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 02:51:42 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6LGpV2X023263
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 12:51:31 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6LGpVtx288584
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 10:51:31 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6LGpUfC021468
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 10:51:31 -0600
-Date: Fri, 21 Jul 2006 11:51:30 -0500
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: AltiVec in the kernel
-Message-ID: <20060721165130.GS5905@austin.ibm.com>
-References: <lezmf4j5ym.wl%bdc@carlstrom.com>
-	<000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: 'Olof Johansson' <olof@lixom.net>,
-	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
-	'Paul Mackerras' <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DB24067BC6
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 03:38:03 +1000 (EST)
+Subject: Re: mpic discovery on JS20
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Amos Waterland <apw@us.ibm.com>
+In-Reply-To: <20060720231601.GA24736@kvasir.watson.ibm.com>
+References: <20060720231601.GA24736@kvasir.watson.ibm.com>
+Content-Type: text/plain
+Date: Fri, 21 Jul 2006 13:37:56 -0400
+Message-Id: <1153503476.16159.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,42 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 21, 2006 at 09:42:32AM -0500, Matt Sealey wrote:
->  
-> > > http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
-> > 
-> > 128-bit AltiVec operations are still being solicited. 
+On Thu, 2006-07-20 at 19:16 -0400, Amos Waterland wrote:
+> Current Linus and Paulus trees do this on JS20 blades with SLOF:
+
+I need a tarball of /proc/device-tree on these. 
+
+>  Failed to locate the MPIC interrupt controller
+>  PID hash table entries: 4096 (order: 12, 32768 bytes)
+>  Maple: Found RTC at IO 0x1070
+>  cpu 0x0: Vector: 700 (Program Check) at [c00000007ef83ab0]
+>      pc: c00000000002e0c8: .mpic_request_ipis+0x34/0xc8
+>      lr: c00000000036b484: .smp_mpic_probe+0x3c/0x58
+>      sp: c00000007ef83d30
+>     msr: 9000000000029032
+>    current = 0xc00000000194d610
+>    paca    = 0xc00000000038f180
+>      pid   = 1, comm = swapper
+>  kernel BUG in mpic_request_ipis at arch/powerpc/sysdev/mpic.c:1132!
 > 
-> "Still"?
+> Doing a git-bisect produces this:
 > 
-> http://www.freevec.org/ 
+>  0ebfff1491ef85d41ddf9c633834838be144f69f is first bad commit
+>  Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>  Date:   Mon Jul 3 21:36:01 2006 +1000
 > 
-> Been there for months, before the glibc thing. Most of the functions
-> are ready. Anyone can bugfix this. The beauty of GPL. The ugly part
-> is.. we've had this there for months. Nobody has contributed a single
-> update or bugfix or even a performance test as far as I know.
-
-Sounds like a problem of advertising and communications.  This is
-kind of "under the radar" for most users and developers. It needs to
-work out-of-the-box, most people, even those with interest in
-performance, will not even be aware of the possibility to tne this.
-
-It should be folded into glibc. It is up to the altivec product vendor
-to nag the glibc folks into folding it in. This task could be as hard
-as writing the code in the first place.
-
-> Indeed it's a cute feature but we were scared away by the glibc guys
-
-Many maintainers of core libraries have similar behaviour patterns.
-Besides glibc, gcc and gsl come to mind. This is becase they get tired out
-by naive eager-beavers who walk in with the greatest idea in the world,
-make a big fuss about it, and the proceed to demonstrate that they have 
-absolutely no clue of what they're talking about.  For every ten of 
-those, there's maybe one legit idea. Worse, many of these "clueless 
-newbies" come in the surprising shape of PhD's working outside thier 
-specialty, and can convingingly sling jargon and authority for a while 
-before its realized they're just... clueless.
-
-If you've got good code, you'll just need to be persistent.
-
---linas
+>     [POWERPC] Add new interrupt mapping core and change platforms to use it
+>     
+>     This adds the new irq remapper core and removes the old one.  Because
+>     there are some fundamental conflicts with the old code, like the value
+>     of NO_IRQ which I'm now setting to 0 (as per discussions with Linus),
+>     etc..., this commit also changes the relevant platform and driver code
+>     over to use the new remapper (so as not to cause difficulties later
+>     in bisecting).
+>     
+>     This patch removes the old pre-parsing of the open firmware interrupt
+>     tree along with all the bogus assumptions it made to try to renumber
+>     interrupts according to the platform. This is all to be handled by the
+>     new code now.
+>     
+>     For the pSeries XICS interrupt controller, a single remapper host is
+>     created for the whole machine regardless of how many interrupt
+>     presentation and source controllers are found, and it's set to match
+>     any device node that isn't a 8259.  That works fine on pSeries and
+>     avoids having to deal with some of the complexities of split source
+>     controllers vs. presentation controllers in the pSeries device trees.
+>     
+>     The powerpc i8259 PIC driver now always requests the legacy interrupt
+>     range. It also has the feature of being able to match any device node
+>     (including NULL) if passed no device node as an input. That will help
+>     porting over platforms with broken device-trees like Pegasos who don't
+>     have a proper interrupt tree.
+>     
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>     Signed-off-by: Paul Mackerras <paulus@samba.org>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
