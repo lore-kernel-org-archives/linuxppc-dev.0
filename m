@@ -1,37 +1,17 @@
-Return-Path: <apw@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D750C67B7B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 09:16:05 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6KNG183011341
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 19:16:01 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6KNG1Yv246104
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 19:16:01 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6KNG1PZ018051
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 19:16:01 -0400
-Received: from kvasir.watson.ibm.com (kvasir.watson.ibm.com [9.2.218.19])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6KNG1fS018017
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 19:16:01 -0400
-Received: from apw by kvasir.watson.ibm.com with local (Exim 4.52)
-	id 1G3hkQ-0000xh-1O
-	for linuxppc-dev@ozlabs.org; Thu, 20 Jul 2006 19:16:02 -0400
-Date: Thu, 20 Jul 2006 19:16:01 -0400
-To: linuxppc-dev@ozlabs.org
-Subject: mpic discovery on JS20
-Message-ID: <20060720231601.GA24736@kvasir.watson.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Amos Waterland <apw@us.ibm.com>
+Return-Path: <Tony.Li@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [Linux-ATM-General] mpc8360sar
+Date: Fri, 21 Jul 2006 10:36:47 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D26350587BD@zch01exm21.fsl.freescale.net>
+In-Reply-To: <44BFABFD.1070904@cambridgebroadband.com>
+From: "Li Tony-r64360" <Tony.Li@freescale.com>
+To: "Alex Zeffertt" <ajz@cambridgebroadband.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>,
+	"Chu hanjin-r52514" <Hanjin.Chu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-atm-general@lists.sourceforge.net,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,53 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Current Linus and Paulus trees do this on JS20 blades with SLOF:
+ Alex, we are working on the 8360 upstream. As the similarity between
+832x and 8360, if the 8360 has benn accepted, it would be easy for 832x
+upstream.
+We have submit the 8360 patch to the opensource. But we are waiting it
+to be accepted.
 
- Failed to locate the MPIC interrupt controller
- PID hash table entries: 4096 (order: 12, 32768 bytes)
- Maple: Found RTC at IO 0x1070
- cpu 0x0: Vector: 700 (Program Check) at [c00000007ef83ab0]
-     pc: c00000000002e0c8: .mpic_request_ipis+0x34/0xc8
-     lr: c00000000036b484: .smp_mpic_probe+0x3c/0x58
-     sp: c00000007ef83d30
-    msr: 9000000000029032
-   current = 0xc00000000194d610
-   paca    = 0xc00000000038f180
-     pid   = 1, comm = swapper
- kernel BUG in mpic_request_ipis at arch/powerpc/sysdev/mpic.c:1132!
+BTW,  the new version QOC3-ATM card will adopt. The QOC3-ATM card code
+need some modification.=20
+I send the new code to you if it done. Ok ?
+Tony
 
-Doing a git-bisect produces this:
-
- 0ebfff1491ef85d41ddf9c633834838be144f69f is first bad commit
- Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
- Date:   Mon Jul 3 21:36:01 2006 +1000
-
-    [POWERPC] Add new interrupt mapping core and change platforms to use it
-    
-    This adds the new irq remapper core and removes the old one.  Because
-    there are some fundamental conflicts with the old code, like the value
-    of NO_IRQ which I'm now setting to 0 (as per discussions with Linus),
-    etc..., this commit also changes the relevant platform and driver code
-    over to use the new remapper (so as not to cause difficulties later
-    in bisecting).
-    
-    This patch removes the old pre-parsing of the open firmware interrupt
-    tree along with all the bogus assumptions it made to try to renumber
-    interrupts according to the platform. This is all to be handled by the
-    new code now.
-    
-    For the pSeries XICS interrupt controller, a single remapper host is
-    created for the whole machine regardless of how many interrupt
-    presentation and source controllers are found, and it's set to match
-    any device node that isn't a 8259.  That works fine on pSeries and
-    avoids having to deal with some of the complexities of split source
-    controllers vs. presentation controllers in the pSeries device trees.
-    
-    The powerpc i8259 PIC driver now always requests the legacy interrupt
-    range. It also has the feature of being able to match any device node
-    (including NULL) if passed no device node as an input. That will help
-    porting over platforms with broken device-trees like Pegasos who don't
-    have a proper interrupt tree.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+> -----Original Message-----
+> From: Alex Zeffertt [mailto:ajz@cambridgebroadband.com]=20
+> Sent: Friday, July 21, 2006 12:15 AM
+> To: Kumar Gala
+> Cc: Li Tony-r64360; linux-atm-general@lists.sourceforge.net;=20
+> linuxppc-embedded@ozlabs.org
+> Subject: Re: [Linux-ATM-General] mpc8360sar
+>=20
+> Kumar Gala wrote:
+> >=20
+> > On Jul 20, 2006, at 8:33 AM, Alex Zeffertt wrote:
+> >=20
+> >>
+> >>> Any reason we dont try to get your work up stream into=20
+> the mainline=20
+> >>> kernel?
+> >>> - kumar
+> >>
+> >> I'd like to see it upstreamed - the more people who use it=20
+> the more=20
+> >> help I get!
+> >>
+> >> However, mpc8360sar is built on Freescale's BSP which adds basic=20
+> >> support for the board, the MPC832xE-MDS, to the stock=20
+> linux kernel. =20
+> >> This support consists of the following patches:
+> >>
+> >> Patch0          : patch-2.6.11.bz2
+> >> Patch1          : linux-2.6.11-mpc8349e-general-20060414.patch
+> >> Patch2          : linux-2.6.11-mpc8349e-pci-3.patch
+> >> Patch3          : linux-2.6.11-mpc8349e-pci-agent.patch
+> >> Patch4          : linux-2.6.11-mpc8349e-watchdog.patch
+> >> Patch5          : linux-2.6.11-mpc83xx-sec2.patch
+> >> Patch6          : mpc832x-sec2v15-config-1.patch
+> >> Patch7          : linux-2.6.11-mpc8349e-usb-gadget.patch
+> >> Patch8          : linux-2.6.11-mpc8349e-usb-host.patch
+> >> Patch9          : linux-2.6.11-mpc8360-general-1.patch
+> >> Patch10         : linux-2.6.11-mpc8360-pci-agent.patch
+> >> Patch11         : linux-2.6.11-mpc832x-basic-4.patch
+> >> Patch12         : linux-2.6.11-mpc832x-pci-agent.patch
+> >> Patch13         : linux-2.6.11-mpc832x-spi-1.patch
+> >> Patch14         : linux-2.6.11-mpc832x-BIT.patch
+> >> Patch15         : linux-2.6.11-mpc83xx-ct-1.patch
+> >> Patch16         : linux-2.6.11-mpc832x-usb-gadget.patch
+> >> Patch17         : linux-2.6.11-mpc832x-atm-1.patch
+> >>
+> >> I guess there's no point upstreaming mpc8360sar until=20
+> freescale have=20
+> >> upstreamed these patches (and ported them to the current kernel).
+> >=20
+> > True, a large number of these patches are upstream, and if I had=20
+> > access to MPC836x or MPC832x HW I'd work on getting the others that=20
+> > are reasonable.
+> >=20
+> >> Alex
+> >>
+> >> PS It's probable that mpc8360sar actually only requires a=20
+> handful of=20
+> >> the above patches to be applied.
+> >=20
+> > Agreed.
+> >=20
+> > - kumar
+>=20
+>=20
+> Tony, can you let me know when CONFIG_MPC832XE_MDS support is=20
+> upstreamed to a kernel.org kernel.  I'll then try to get the=20
+> mpc8360sar working with this kernel and then upstream it.
+>=20
+> Alex
+>=20
+> PS I'm not entirely sure how "upstreaming" is done.
+>=20
