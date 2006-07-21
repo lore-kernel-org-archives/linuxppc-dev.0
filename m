@@ -1,35 +1,19 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7FD2D67BAA
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 18:36:23 +1000 (EST)
-Received: from e3.ny.us.ibm.com (e3.pok.ibm.com [9.56.232.143])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6L6cTA1030364
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 02:38:30 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6L6cP7f006729
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 02:38:25 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6L6cPdh272104
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 02:38:25 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6L6cPJJ003107
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 02:38:25 -0400
-Date: Thu, 20 Jul 2006 23:38:24 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060721063824.GA8639@monkey.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AC34167BA3
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 22:15:29 +1000 (EST)
+Date: Fri, 21 Jul 2006 22:14:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: Re: [PATCH 1/3] powerpc: Instrument Hypervisor Calls: merge headers
+Message-Id: <20060721221455.17bb9190.sfr@canb.auug.org.au>
+In-Reply-To: <20060721063951.GB8639@monkey.ibm.com>
+References: <20060721063824.GA8639@monkey.ibm.com>
+	<20060721063951.GB8639@monkey.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -40,13 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is a version of the instrumentation patches built on top of
-Anton's hcall cleanup patch.  In addition, I have gathered the
-timebase and PURR snapshots in assembly code.  However, it still
-performs a call out to C code that updates the data structures.
+--Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'd appreciate some comments on the assembly code as it has been
-a looooong time since I've written any.
+Hi Paulus,
 
--- 
-Mike
+On Thu, 20 Jul 2006 23:39:51 -0700 Mike Kravetz <kravetz@us.ibm.com> wrote:
+>
+> Move all the Hypervisor call definitions to to a single header file.
+> --
+> Signed-off-by: Mike Kravetz <kravetz@us.ibm.com>
+
+Can you put this one in immediately just to save Mike having to repost it :=
+-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQFEwMVFFdBgD/zoJvwRAj7PAJ9CfgmjC4W8roXc4NkZcD1k52oeCwCfakca
+g0WmBa8QjHsC2ihWmY3wamU=
+=txtR
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__21_Jul_2006_22_14_55_+1000_vLs8.N+ekExzAZaq--
