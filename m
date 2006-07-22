@@ -1,22 +1,20 @@
-Return-Path: <wmaxfield@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 6A68467BA4
+Return-Path: <jagannathanjay@aim.com>
+Received: from imo-d06.mx.aol.com (imo-d06.mx.aol.com [205.188.157.38])
+	by ozlabs.org (Postfix) with ESMTP id 3793B67BE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Jul 2006 07:17:05 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so1466532ugf
+	Sat, 22 Jul 2006 15:55:47 +1000 (EST)
+Received: from jagannathanjay@aim.com
+	by imo-d06.mx.aol.com (mail_out_v38_r7.5.) id 5.53d.5b61d180 (57871)
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Jul 2006 14:17:04 -0700 (PDT)
-Message-ID: <45a1b53e0607211410y196d76b4j1f9dc5c32014bc7a@mail.gmail.com>
-Date: Fri, 21 Jul 2006 16:10:46 -0500
-From: "Wade Maxfield" <wmaxfield@gmail.com>
-To: "Steve Iribarne (GMail)" <netstv@gmail.com>
-Subject: Re: stupid linker question....
-In-Reply-To: <b4b98b690607211306rea34437gb05e84d24e8c66a@mail.gmail.com>
+	Sat, 22 Jul 2006 01:55:41 -0400 (EDT)
+Date: Sat, 22 Jul 2006 01:55:41 -0400
+From: jagannathanjay@aim.com
+Message-Id: <8C87B6A995C6521-1C74-11273@FWM-M25.sysops.aol.com>
+Subject: Reg. virtual address space in embedded linux
+Content-Type: multipart/mixed;
+	boundary="--------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com"
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_124835_8864232.1153516246227"
-References: <b4b98b690607211306rea34437gb05e84d24e8c66a@mail.gmail.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +25,123 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_124835_8864232.1153516246227
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+
+----------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com
+Content-Type: multipart/alternative;
+ boundary="--------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com"
+
+
+
+----------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-gcc -Wa,-alhs -g main.c >main.cs
+ Hi all
+ 
+ We are porting third party driver code from vxworks to Embedded linux in MPC 8260 under a evaluation platform from Embedded Planet in linux kernel space.
+ 
+  The first step we carried out was reading the chip id and we were able to read the chip id correctly.   For reading the chip id we used the routine ChipReadMemory in the attached text and we were able to retrive the chip id successfully.   Subsequently when we write and read from Chip Specific Control Status registers ,it didn't work.   I checked the manual and the Chip Specific Control Status registers have RW access.   Any inputs on how to check if the write we made to virtual address succeeds?   Is there a way to dump the linux virtual address and examine the write we made ?
+ 
+ Regards
+ Jay
+  
+   
+________________________________________________________________________
+Check Out the new free AIM(R) Mail -- 2 GB of storage and industry-leading spam and email virus protection.
 
-  will put interleaved code/assembly into main.cs file.
-
-wade
-
-
-
-On 7/21/06, Steve Iribarne (GMail) <netstv@gmail.com> wrote:
->
-> I forgot the flag that generates a list file that has both assembly
-> and c mixed in.
->
-> Anyone?
->
-> Thanks...
->
-> -stv
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-------=_Part_124835_8864232.1153516246227
-Content-Type: text/html; charset=ISO-8859-1
+----------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com
+Content-Type: text/html; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-<br>gcc -Wa,-alhs -g main.c &gt;main.cs<br><br>&nbsp; will put interleaved code/assembly into main.cs file.<br><br>wade<br><br>&nbsp; <br><br><div><span class="gmail_quote">On 7/21/06, <b class="gmail_sendername">Steve Iribarne (GMail)
-</b> &lt;<a href="mailto:netstv@gmail.com">netstv@gmail.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">I forgot the flag that generates a list file that has both assembly
-<br>and c mixed in.<br><br>Anyone?<br><br>Thanks...<br><br>-stv<br>_______________________________________________<br>Linuxppc-embedded mailing list<br><a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org
-</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div><br>
+<HTML><BODY>
+<div>Hi all<br>
 
-------=_Part_124835_8864232.1153516246227--
+
+<div><span class="406521009-18072006"><font face="Tahoma" size="2"><br>
+We are porting 
+third party driver code from vxworks to Embedded 
+linux in MPC 8260 under a evaluation platform from Embedded Planet in linux kernel space.<br>
+<br>
+</font></span>
+<div><span class="406521009-18072006"><font face="Tahoma" size="2">The first step we 
+carried out was reading the chip id and we were able to read the chip id 
+correctly.</font></span></div>
+
+
+<div><span class="406521009-18072006"></span>&nbsp;</div>
+
+
+<div><span class="406521009-18072006"><font face="Tahoma" size="2">For reading the 
+chip id we used the routine ChipReadMemory in the attached text&nbsp;and we were able 
+to retrive the chip id successfully.</font></span></div>
+
+
+<div><span class="406521009-18072006"></span>&nbsp;</div>
+
+
+<div><span class="406521009-18072006"><font face="Tahoma" size="2">Subsequently when 
+we write and read from&nbsp;Chip Specific Control Status registers ,it didn't 
+work.</font></span></div>
+
+
+<div><span class="406521009-18072006"></span>&nbsp;</div>
+
+
+<div><span class="406521009-18072006"><font face="Tahoma" size="2">I checked the 
+manual and the Chip Specific Control Status registers have RW 
+access.</font></span></div>
+
+
+<div><span class="406521009-18072006"></span>&nbsp;</div>
+
+
+<div><span class="406521009-18072006"><font face="Tahoma" size="2">Any inputs on how 
+to check if the write we made to virtual address succeeds?</font></span></div>
+
+
+<div><span class="406521009-18072006"></span>&nbsp;</div>
+
+
+<div><span class="406521009-18072006"><font face="Tahoma" size="2">Is there a way to 
+dump the linux virtual address and examine&nbsp;the write we 
+made&nbsp;?<br>
+<br>
+Regards<br>
+Jay<br>
+</font></span></div>
+<br>
+</div>
+&nbsp;</div>
+
+<div class="AOLPromoFooter">
+<hr style="margin-top:10px;" />
+<a href="http://pr.atwola.com/promoclk/100122638x1081283466x1074645346/aol?redir=http%3A%2F%2Fwww%2Eaim%2Ecom%2Ffun%2Fmail%2F" target="_blank"><b>Check Out the new free AIM(R) Mail</b></a> -- 2 GB of storage and industry-leading spam and email virus protection.<br />
+</div>
+
+</BODY></HTML>
+
+----------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com--
+
+----------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com
+Content-Type: text/plain; name="RWroutines.txt"
+Content-Disposition: attachment; filename="RWroutines.txt"
+Content-Transfer-Encoding: base64
+
+aW50IENoaXBSZWFkTWVtb3J5KHVuc2lnbmVkIGludCBhcmdfcGh5c19hZGRyLHVuc2lnbmVk
+IGludCAqbWVtVmFsdWUpDQp7DQogIHZvaWQgICp2aXJ0X2FkZHIgPSBOVUxMOw0KICB1bnNp
+Z25lZCBpbnQgcGh5c19hZGRyID0gMDsNCg0KICBwaHlzX2FkZHIgPSAgREVWSUNFX0JBU0Vf
+QUREUkVTUyArIGFyZ19waHlzX2FkZHI7DQogIHZpcnRfYWRkciA9IGlvcmVtYXAocGh5c19h
+ZGRyLCA0KTsNCiAgaWYodmlydF9hZGRyID09IE5VTEwpDQogIHsNCiAgICAgcHJpbnRrKCJD
+aGlwUmVhZE1lbW9yeTogdW5hYmxlIHRvIHBlcmZvcm0gaW9yZW1hcCBcbiIpOw0KICAgICBy
+ZXR1cm4gLTE7DQogIH0NCiAgKm1lbVZhbHVlICA9IHJlYWRsKHZpcnRfYWRkcik7DQogICAg
+aW91bm1hcCh2aXJ0X2FkZHIpOw0KICAgIHJldHVybiAwOw0KfQ0KDQoNCmludCBDaGlwV3Jp
+dGVNZW1vcnkodW5zaWduZWQgaW50IGFyZ19waHlzX2FkZHIsIHVuc2lnbmVkIGludCBhcmdf
+dmFsKQ0Kew0KICB2b2lkICAqdmlydF9hZGRyID0gTlVMTDsNCiAgdW5zaWduZWQgaW50IHBo
+eXNfYWRkciA9IDA7DQogIHBoeXNfYWRkciA9ICBERVZJQ0VfQkFTRV9BRERSRVNTICsgYXJn
+X3BoeXNfYWRkcjsNCiAgdmlydF9hZGRyID0gaW9yZW1hcChwaHlzX2FkZHIsIDQpOw0KICBp
+Zih2aXJ0X2FkZHIgPT0gTlVMTCkNCiAgew0KICAgICBwcmludGsoIkNoaXBXcml0ZU1lbW9y
+eSA6IHVuYWJsZSB0byBwZXJmb3JtIGlvcmVtYXAgXG4iKTsNCiAgICAgcmV0dXJuIC0xOw0K
+ICB9DQogIHdyaXRlbChhcmdfdmFsLHZpcnRfYWRkcik7DQogIGlvdW5tYXAodmlydF9hZGRy
+KTsNCiAgIHJldHVybiAwOw0KfQ0K
+
+----------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com--
