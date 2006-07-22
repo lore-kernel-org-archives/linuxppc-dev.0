@@ -1,21 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <markos@debian.gr>
+Received: from flurry4.flurrymail.com (unknown [69.59.176.12])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5B8567BD1
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 13:10:17 +1000 (EST)
-In-Reply-To: <002b01c6acf0$a7417050$99dfdfdf@bakuhatsu.net>
-References: <002b01c6acf0$a7417050$99dfdfdf@bakuhatsu.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bb0f53dbee5c7240daf6855454eca028@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: AltiVec in the kernel
-Date: Fri, 21 Jul 2006 23:09:57 -0400
-To: matt@genesi-usa.com
+	by ozlabs.org (Postfix) with ESMTP id 3D62F67BD4
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 20:07:27 +1000 (EST)
+Message-ID: <16081441.1153561129049.JavaMail.flurry@flurry4.flurrymail.com>
+Date: Sat, 22 Jul 2006 02:38:13 -0700 (PDT)
+From: Konstantinos Margaritis <markos@debian.gr>
+To: Hollis Blanchard <hollis@penguinppc.org>,
+	Linas Vepstas <linas@austin.ibm.com>, Matt Sealey <matt@genesi-usa.com>
+Subject: Re:Re: AltiVec in the kernel
+In-Reply-To: 11187
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Cc: 'Olof Johansson' <olof@lixom.net>,
 	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
-	'Paul Mackerras' <paulus@samba.org>
+	'Paul Mackerras' <paulus@samba.org>,
+	Konstantinos Margaritis <markos@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Freevec was being developed as a "perfect opportunity". glibc-ports
-> came to life and was something that code could be contributed to.
-> Since it was such a hassle dealing with the glibc guys, it ended up
-> being a seperate library for now.
+(Writing this on a wap mobile phone)
 
-Do you have a pointer to an archive of that email thread?  I can't
-remember it.
+actually, i knew about steve's effort as i am subscribed to glibc-ports. the problem is i am doing my military service this whole period (right now i am a sentry guard at an oupost somewhere in rhodes :-). the good news is that in about a month or less i'll return close to my home and i intend to get back to work asap. but till then i'm stuck here.
+ 
+konstantinos
 
-You could give Freevec a whole lot more exposure, to people who
-might be more interested in it than the average glibc user, by
-putting it into uClibc first.  Additional advantage is that you
-don't have to care about forward/backward compatibility issues,
-or even whether the platform a binary ends up running on actually
-has AltiVec or not (uClibc gets tailored to the exact system it
-runs on at compile time).  So you can focus on the routines you
-want to speed up instead of on all the infrastructure stuff
-required for glibc.
+_____________________________
+I sent this message from my cell phone using flurry.
+Click here to get your email and news on your cell phone for free: 
+http://www.flurry.com
 
-You'll have to update uClibc's PowerPC port first though (mostly
-just copying stuff from recent glibc) -- it seems the libc AltiVec
-support (for handling setjmp() etc.) isn't in there yet.
-
->> This task could be as hard as writing the code in the first place.
-
-Not as hard.  Way, way harder instead.  Part of that is that the
-code probably really isn't good enough yet, sorry.  And then there's
-all the compatibility stuff, and symbol versioning, etc.  And the
-communication issue, of course.
+--- Original Message ---
+Date: Fri Jul 21 14:30:56 PDT 2006
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Linas Vepstas <linas@austin.ibm.com>, Matt Sealey <matt@genesi-usa.com>
+Subject: Re: AltiVec in the kernel
+---
 
 
-Segher
+On Fri, 21 Jul 2006 11:51:30 -0500, "Linas Vepstas"
+<linas@austin.ibm.com> said:
+> On Fri, Jul 21, 2006 at 09:42:32AM -0500, Matt Sealey wrote:
+> > http://www.freevec.org/ 
+> > 
+> > Been there for months, before the glibc thing. Most of the functions
+> > are ready. Anyone can bugfix this. The beauty of GPL. The ugly part
+> > is.. we've had this there for months. Nobody has contributed a single
+> > update or bugfix or even a performance test as far as I know.
+> 
+> Sounds like a problem of advertising and communications.  This is
+> kind of "under the radar" for most users and developers. It needs to
+> work out-of-the-box, most people, even those with interest in
+> performance, will not even be aware of the possibility to tne this.
+
+It is difficult to make sure every OSS developer is notified of all work
+they may be interested in...
+
+However, I have noticed a trend where Genesi people seem to think
+everybody pays attention to their websites (and the same could be said
+for Debian and other subcultures). In this case there actually have been
+other people aware of this project, but not very many. Considering all
+the traffic about it on ppczone.org, people looking for exposure for
+their project may want to look beyond PPCZone.
+
+> It should be folded into glibc. It is up to the altivec product vendor
+> to nag the glibc folks into folding it in. This task could be as hard
+> as writing the code in the first place.
+
+Konstantinos is aware of Steve's glibc project and has indicated he'll
+try to contribute to it.
+
+To be fair, probably not many people have heard of Steve's project
+either. I doubt Konstantinos would have heard of it if I hadn't
+mentioned it.
+
+-Hollis
