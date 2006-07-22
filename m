@@ -1,20 +1,15 @@
-Return-Path: <jagannathanjay@aim.com>
-Received: from imo-d06.mx.aol.com (imo-d06.mx.aol.com [205.188.157.38])
-	by ozlabs.org (Postfix) with ESMTP id 3793B67BE2
+Return-Path: <jrocnuck@hotmail.com>
+Received: from bay0-omc3-s27.bay0.hotmail.com (bay0-omc3-s27.bay0.hotmail.com
+	[65.54.246.227]) by ozlabs.org (Postfix) with ESMTP id 5AA2767BE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Jul 2006 15:55:47 +1000 (EST)
-Received: from jagannathanjay@aim.com
-	by imo-d06.mx.aol.com (mail_out_v38_r7.5.) id 5.53d.5b61d180 (57871)
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Jul 2006 01:55:41 -0400 (EDT)
-Date: Sat, 22 Jul 2006 01:55:41 -0400
-From: jagannathanjay@aim.com
-Message-Id: <8C87B6A995C6521-1C74-11273@FWM-M25.sysops.aol.com>
-Subject: Reg. virtual address space in embedded linux
-Content-Type: multipart/mixed;
-	boundary="--------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com"
-MIME-Version: 1.0
+	Sat, 22 Jul 2006 16:22:54 +1000 (EST)
+Message-ID: <BAY117-F38602DE22BC1EB7A1E1660C8670@phx.gbl>
+From: "Eric Nuckols" <jrocnuck@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
+Subject: linux kernel hang in execve("/sbin/init")
+Date: Sat, 22 Jul 2006 02:10:46 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,123 +20,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I googled...and googled...etc. etc.. when trying to solve the problem of my 
+linux kernel seemingly locking or hanging when it gets to the last part of 
+the linux init in main.c
 
-----------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com
-Content-Type: multipart/alternative;
- boundary="--------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com"
+I saw lots of information and suggestions related to try /bin/sh or make 
+sure your initrd is ok or make sure you have more than one session..etc. 
+etc... .. and all of these topics were mostly from 2001-2003...well.. 
+2006...it's here and apparently some of us haven't gotten smarter..
 
+I had this problem recently where my kernel would boot and freeze or hang in 
+execve of /sbin/init and also of /bin/sh or /bin/bash...
 
+I debugged and debugged.. and finally thougt... why not try the default 
+Kernel config for my target, the PrPmc800 from Motorola... and see what that 
+does..   Originally, I started with the MontaVista 3.1 Pro setup for the 
+board and it works...so I used it's Kernel .config file to configure my 
+latest and greatest (at the time) 2.6.16.18 kernel thinking... well.. this 
+has to work..
 
-----------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+so.. I ended up with a kernel that semingly hang/froze/locked on the execve 
+call in the linux init routines...
 
- Hi all
- 
- We are porting third party driver code from vxworks to Embedded linux in MPC 8260 under a evaluation platform from Embedded Planet in linux kernel space.
- 
-  The first step we carried out was reading the chip id and we were able to read the chip id correctly.   For reading the chip id we used the routine ChipReadMemory in the attached text and we were able to retrive the chip id successfully.   Subsequently when we write and read from Chip Specific Control Status registers ,it didn't work.   I checked the manual and the Chip Specific Control Status registers have RW access.   Any inputs on how to check if the write we made to virtual address succeeds?   Is there a way to dump the linux virtual address and examine the write we made ?
- 
- Regards
- Jay
-  
-   
-________________________________________________________________________
-Check Out the new free AIM(R) Mail -- 2 GB of storage and industry-leading spam and email virus protection.
+guess what folks... the google searches left me just on the verge of giving 
+up.
 
-----------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+I am here to post this info as somewhat of another answer/alternative to 
+people in the same predicament...
 
-<HTML><BODY>
-<div>Hi all<br>
+if you are having problems with your cross-compiled / embedded ppc kernel 
+freezing or hanging on execve, try using the default configuration for your 
+target when you build the kernel...
 
+in my case, I did this sort of thing and all of a sudden, my kernel was 
+working:
 
-<div><span class="406521009-18072006"><font face="Tahoma" size="2"><br>
-We are porting 
-third party driver code from vxworks to Embedded 
-linux in MPC 8260 under a evaluation platform from Embedded Planet in linux kernel space.<br>
-<br>
-</font></span>
-<div><span class="406521009-18072006"><font face="Tahoma" size="2">The first step we 
-carried out was reading the chip id and we were able to read the chip id 
-correctly.</font></span></div>
+cd to kernel dir
+make distclean
+make CROSS_COMPILE=powerpc-7400-linux-gnu- prpmc800_defconfig
+make zImage.initrd
 
+etc..etc..
 
-<div><span class="406521009-18072006"></span>&nbsp;</div>
+it turns out that since I was basing my initial config off of the 2.4.x 
+.config from MontaVista, my kernel didn't boot as desired...
 
+so I figured.. after all the googling and working on it that the default 
+PrPmc800 config had to boot... why else call it the default config..
 
-<div><span class="406521009-18072006"><font face="Tahoma" size="2">For reading the 
-chip id we used the routine ChipReadMemory in the attached text&nbsp;and we were able 
-to retrive the chip id successfully.</font></span></div>
+so that's my story..   since then, I have copied the kernel 
+dir/arch/ppc/configs/prpmc800_defconfig to a temporary file, and modified it 
+as necessary...
 
-
-<div><span class="406521009-18072006"></span>&nbsp;</div>
-
-
-<div><span class="406521009-18072006"><font face="Tahoma" size="2">Subsequently when 
-we write and read from&nbsp;Chip Specific Control Status registers ,it didn't 
-work.</font></span></div>
-
-
-<div><span class="406521009-18072006"></span>&nbsp;</div>
-
-
-<div><span class="406521009-18072006"><font face="Tahoma" size="2">I checked the 
-manual and the Chip Specific Control Status registers have RW 
-access.</font></span></div>
-
-
-<div><span class="406521009-18072006"></span>&nbsp;</div>
-
-
-<div><span class="406521009-18072006"><font face="Tahoma" size="2">Any inputs on how 
-to check if the write we made to virtual address succeeds?</font></span></div>
-
-
-<div><span class="406521009-18072006"></span>&nbsp;</div>
-
-
-<div><span class="406521009-18072006"><font face="Tahoma" size="2">Is there a way to 
-dump the linux virtual address and examine&nbsp;the write we 
-made&nbsp;?<br>
-<br>
-Regards<br>
-Jay<br>
-</font></span></div>
-<br>
-</div>
-&nbsp;</div>
-
-<div class="AOLPromoFooter">
-<hr style="margin-top:10px;" />
-<a href="http://pr.atwola.com/promoclk/100122638x1081283466x1074645346/aol?redir=http%3A%2F%2Fwww%2Eaim%2Ecom%2Ffun%2Fmail%2F" target="_blank"><b>Check Out the new free AIM(R) Mail</b></a> -- 2 GB of storage and industry-leading spam and email virus protection.<br />
-</div>
-
-</BODY></HTML>
-
-----------MailBlocks_8C87B6A995C6521_1C74_121D3_FWM-M25.sysops.aol.com--
-
-----------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com
-Content-Type: text/plain; name="RWroutines.txt"
-Content-Disposition: attachment; filename="RWroutines.txt"
-Content-Transfer-Encoding: base64
-
-aW50IENoaXBSZWFkTWVtb3J5KHVuc2lnbmVkIGludCBhcmdfcGh5c19hZGRyLHVuc2lnbmVk
-IGludCAqbWVtVmFsdWUpDQp7DQogIHZvaWQgICp2aXJ0X2FkZHIgPSBOVUxMOw0KICB1bnNp
-Z25lZCBpbnQgcGh5c19hZGRyID0gMDsNCg0KICBwaHlzX2FkZHIgPSAgREVWSUNFX0JBU0Vf
-QUREUkVTUyArIGFyZ19waHlzX2FkZHI7DQogIHZpcnRfYWRkciA9IGlvcmVtYXAocGh5c19h
-ZGRyLCA0KTsNCiAgaWYodmlydF9hZGRyID09IE5VTEwpDQogIHsNCiAgICAgcHJpbnRrKCJD
-aGlwUmVhZE1lbW9yeTogdW5hYmxlIHRvIHBlcmZvcm0gaW9yZW1hcCBcbiIpOw0KICAgICBy
-ZXR1cm4gLTE7DQogIH0NCiAgKm1lbVZhbHVlICA9IHJlYWRsKHZpcnRfYWRkcik7DQogICAg
-aW91bm1hcCh2aXJ0X2FkZHIpOw0KICAgIHJldHVybiAwOw0KfQ0KDQoNCmludCBDaGlwV3Jp
-dGVNZW1vcnkodW5zaWduZWQgaW50IGFyZ19waHlzX2FkZHIsIHVuc2lnbmVkIGludCBhcmdf
-dmFsKQ0Kew0KICB2b2lkICAqdmlydF9hZGRyID0gTlVMTDsNCiAgdW5zaWduZWQgaW50IHBo
-eXNfYWRkciA9IDA7DQogIHBoeXNfYWRkciA9ICBERVZJQ0VfQkFTRV9BRERSRVNTICsgYXJn
-X3BoeXNfYWRkcjsNCiAgdmlydF9hZGRyID0gaW9yZW1hcChwaHlzX2FkZHIsIDQpOw0KICBp
-Zih2aXJ0X2FkZHIgPT0gTlVMTCkNCiAgew0KICAgICBwcmludGsoIkNoaXBXcml0ZU1lbW9y
-eSA6IHVuYWJsZSB0byBwZXJmb3JtIGlvcmVtYXAgXG4iKTsNCiAgICAgcmV0dXJuIC0xOw0K
-ICB9DQogIHdyaXRlbChhcmdfdmFsLHZpcnRfYWRkcik7DQogIGlvdW5tYXAodmlydF9hZGRy
-KTsNCiAgIHJldHVybiAwOw0KfQ0K
-
-----------MailBlocks_8C87B6A995C6521_1C74_121D2_FWM-M25.sysops.aol.com--
+moral of the story... if you are cross-compiling and having problems where 
+you hang on execve("/sbin/init") or execve("/bin/sh") or 
+execve("/bin/bash")..etc...   try what I did before you go crazy analyzing 
+the initrd or the various /etc/ file configurations or any of the other 
+typical bs...
