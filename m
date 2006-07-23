@@ -1,22 +1,21 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F39067B77
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jul 2006 23:28:15 +1000 (EST)
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "'Segher Boessenkool'" <segher@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 2E434679A6
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jul 2006 07:37:49 +1000 (EST)
 Subject: RE: AltiVec in the kernel
-Date: Sun, 23 Jul 2006 15:28:02 +0200
-Message-ID: <006701c6ae5b$d5e83620$7302a8c0@bakuhatsu.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <bb0f53dbee5c7240daf6855454eca028@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: matt@genesi-usa.com
+In-Reply-To: <006701c6ae5b$d5e83620$7302a8c0@bakuhatsu.net>
+References: <006701c6ae5b$d5e83620$7302a8c0@bakuhatsu.net>
+Content-Type: text/plain
+Date: Sun, 23 Jul 2006 17:37:29 -0400
+Message-Id: <1153690649.10431.26.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: 'Olof Johansson' <olof@lixom.net>,
 	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
 	'Paul Mackerras' <paulus@samba.org>
-Reply-To: matt@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> You could give Freevec a whole lot more exposure, to people 
-> who might be more interested in it than the average glibc 
-> user, by putting it into uClibc first.
+> I remember a discussion from one of the Gentoo guys wanting to do this
+> with libfreevec.
+> 
+> Getting into Gentoo, though, is not difficult. The problem with this
+> is Gentoo is one Linux distribution. I would be more impressed if code
+> was in Debian or Ubuntu considering their exhausting lead times on
+> producing new package trees and accepting new code :D
 
-[snip]
+It seems to me that the "problem" just doesn't exist at the moment...
+libfreevec is nice, but it's unfinished, and the author is away for now
+and thus not able to complete nor work on a port to glibc or others.
 
-> You'll have to update uClibc's PowerPC port first though 
-> (mostly just copying stuff from recent glibc) -- it seems the 
-> libc AltiVec support (for handling setjmp() etc.) isn't in there yet.
+Once he's back, of course, it would be nice to have him complete the
+work (and maybe get some outside help).
 
-I remember a discussion from one of the Gentoo guys wanting to do this
-with libfreevec.
+I'd like to also verify his methodology for measuring the performance
+improvements, I'm not saying it's wrong, I want to make sure some of the
+overhead of enabling altivec has been properly measured for various
+usage patterns and thus possibly restrict the optimisations to patterns
+where that matter, as an example, only use altivec for large memcpy's.
 
-Getting into Gentoo, though, is not difficult. The problem with this
-is Gentoo is one Linux distribution. I would be more impressed if code
-was in Debian or Ubuntu considering their exhausting lead times on
-producing new package trees and accepting new code :D
+Once that's done, I don't see any good reason why it would be so hard to
+include that work into glibc, or rather into the powerpc add-ons in a
+first step and maybe then the whole into glibc. Maintainers rarely
+rejects things just for the sake of doing so. If they do so, they
+usually provide reasons, often boiling to implementation details, than
+can then be fixed. Note also that in the case of submitting code to
+glibc, there is a copyright assignment issue to be sorted out I think (I
+don't know the details here).
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+I have the feeling that there is very little point to this thread. Let's
+wait for Konstantinos to be back and submit his work, possibly to this
+list at first for review, tests, etc... and then to the appropriate
+maintainers. If there is a problem at that point, then we'll see how we
+can address it.
+
+Regards,
+Ben.
