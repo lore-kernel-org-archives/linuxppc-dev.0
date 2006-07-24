@@ -1,21 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E434679A6
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jul 2006 07:37:49 +1000 (EST)
-Subject: RE: AltiVec in the kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: matt@genesi-usa.com
-In-Reply-To: <006701c6ae5b$d5e83620$7302a8c0@bakuhatsu.net>
-References: <006701c6ae5b$d5e83620$7302a8c0@bakuhatsu.net>
-Content-Type: text/plain
-Date: Sun, 23 Jul 2006 17:37:29 -0400
-Message-Id: <1153690649.10431.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: 'Olof Johansson' <olof@lixom.net>,
-	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
-	'Paul Mackerras' <paulus@samba.org>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id CCDB867B59
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jul 2006 13:20:43 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k6O3WC96013369
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jul 2006 20:32:12 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k6O3Grh7003536
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jul 2006 22:16:55 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] powerpc: Add tsi108/9 and new hardware interface to mpic
+Date: Mon, 24 Jul 2006 11:16:51 +0800
+Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E071613@zch01exm23.fsl.freescale.net>
+In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E0456D0@zch01exm23.fsl.freescale.net>
+From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
+To: "Zang Roy-r61911" <tie-fei.zang@freescale.com>,
+	"Paul Mackerras" <paulus@samba.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Alexandre.Bounine@tundra.com,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>=20
+> The patch add new hardware information table for mpic. This=20
+> enables mpic
+> code=20
+> to deal with OpenPIC controller with hardware behavior difference.
+> Add TSI108/109 PIC hardware information table.  The=20
+> Tsi108/109 PIC looks
+> like=20
+> standard OpenPIC but, in fact, is different in registers mapping and
+> behavior.
+>   =20
+> Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
+> Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>=20
+>=20
+> ---
 
-> I remember a discussion from one of the Gentoo guys wanting to do this
-> with libfreevec.
-> 
-> Getting into Gentoo, though, is not difficult. The problem with this
-> is Gentoo is one Linux distribution. I would be more impressed if code
-> was in Debian or Ubuntu considering their exhausting lead times on
-> producing new package trees and accepting new code :D
-
-It seems to me that the "problem" just doesn't exist at the moment...
-libfreevec is nice, but it's unfinished, and the author is away for now
-and thus not able to complete nor work on a port to glibc or others.
-
-Once he's back, of course, it would be nice to have him complete the
-work (and maybe get some outside help).
-
-I'd like to also verify his methodology for measuring the performance
-improvements, I'm not saying it's wrong, I want to make sure some of the
-overhead of enabling altivec has been properly measured for various
-usage patterns and thus possibly restrict the optimisations to patterns
-where that matter, as an example, only use altivec for large memcpy's.
-
-Once that's done, I don't see any good reason why it would be so hard to
-include that work into glibc, or rather into the powerpc add-ons in a
-first step and maybe then the whole into glibc. Maintainers rarely
-rejects things just for the sake of doing so. If they do so, they
-usually provide reasons, often boiling to implementation details, than
-can then be fixed. Note also that in the case of submitting code to
-glibc, there is a copyright assignment issue to be sorted out I think (I
-don't know the details here).
-
-I have the feeling that there is very little point to this thread. Let's
-wait for Konstantinos to be back and submit his work, possibly to this
-list at first for review, tests, etc... and then to the appropriate
-maintainers. If there is a problem at that point, then we'll see how we
-can address it.
-
-Regards,
-Ben.
+Ben,
+	How do you think the new hardware information entry for mpic?
+	Thanks.
+Roy
