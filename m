@@ -1,18 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id BEF4A67B5B
+Return-Path: <paravpandit@yahoo.com>
+Received: from web36606.mail.mud.yahoo.com (web36606.mail.mud.yahoo.com
+	[209.191.85.23]) by ozlabs.org (Postfix) with SMTP id 1E2CF67B65
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 24 Jul 2006 21:44:57 +1000 (EST)
-Date: Mon, 24 Jul 2006 15:45:16 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
-Subject: Re: Endless "Trying 100/HALF" messages using FCC ethernet on MPC8248
-Message-ID: <20060724154516.43d16e50@vitb.ru.mvista.com>
-In-Reply-To: <200607241139.02128.laurent.pinchart@tbox.biz>
-References: <200607241139.02128.laurent.pinchart@tbox.biz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 24 Jul 2006 22:07:14 +1000 (EST)
+Message-ID: <20060724120712.15709.qmail@web36606.mail.mud.yahoo.com>
+Date: Mon, 24 Jul 2006 05:07:12 -0700 (PDT)
+From: Parav Pandit <paravpandit@yahoo.com>
+Subject: Re: stupid linker question.... to remove unused functions in the
+	object file.
+To: Wade Maxfield <wmaxfield@gmail.com>,
+	"Steve Iribarne \(GMail\)" <netstv@gmail.com>
+In-Reply-To: <45a1b53e0607211410y196d76b4j1f9dc5c32014bc7a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,40 +24,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 24 Jul 2006 11:39:01 +0200
-Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
+Hi,
 
-> Hi everybody,
-> 
-> I'm not sure if this issue is ppc-specific, so forgive me if it should have 
-> been reported to the drivers/net/phy maintainer.
-> 
-> When using the MPC8248 FCC ethernet ports, the following messages are printed 
-> by the kernel on the console when a link is down (ethernet cable unplugged):
-> 
-> Trying 100/FULL
-> Trying 100/HALF
-> Trying 100/HALF
-> Trying 100/HALF
-> ...
-> 
-> This goes on forever, with a new message every 5 or 10 seconds. The message is 
-> printed by drivers/net/phy/phy.c at line 463.
-> 
-> Those messages are pretty annoying. Commenting the pr_info() call gave me some 
-> rest, but a proper fix is probably needed.
-> 
-> For the record, I'm using FCC1 and FCC2 with an LXT973 phy in bit-banging 
-> mode.
-> 
+I have few functions in a C file but those are not
+called at present. Even though those function
+definitions are part of the object file.
+Those will be called later on.
 
-The thing you'll need is to make driver to trust autonegotiation...
+What CFLAGS should I pass to remove unused functions?
+I cannot enable -Ox at present to have any
+unpredictable behaviour.
 
-IIRC that was addressed in my patches for fs-enet. what's happening: The PAL subsystem tries hard to be 
-wise, an dif there are no link located, it starts to try forced mode, setting various stuff as link params and looking if link appeared or not. To keep consistency, I used the special flag passed via platform info, to just trust what ANEG had find out.
+Regards,
+Parav Pandit
 
-Prolly we need to limit the forced aneg as well somehow - say give up after it failed to get link going at 10/HALF or smth like that.
 
--- 
-Sincerely, 
-Vitaly
+--- Wade Maxfield <wmaxfield@gmail.com> wrote:
+
+> gcc -Wa,-alhs -g main.c >main.cs
+> 
+>   will put interleaved code/assembly into main.cs
+> file.
+> 
+> wade
+> 
+> 
+> 
+> On 7/21/06, Steve Iribarne (GMail)
+> <netstv@gmail.com> wrote:
+> >
+> > I forgot the flag that generates a list file that
+> has both assembly
+> > and c mixed in.
+> >
+> > Anyone?
+> >
+> > Thanks...
+> >
+> > -stv
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> >
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >
+> > _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
