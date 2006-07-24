@@ -1,17 +1,17 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2CCDC67B5F
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jul 2006 17:22:33 +1000 (EST)
-Date: Mon, 24 Jul 2006 09:22:27 +0200
-From: Olaf Hering <olh@suse.de>
-To: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] hide onboard graphics drivers on G5
-Message-ID: <20060724072227.GA32456@suse.de>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: mpic discovery on JS20
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Amos Waterland <apw@us.ibm.com>
+In-Reply-To: <20060720231601.GA24736@kvasir.watson.ibm.com>
+References: <20060720231601.GA24736@kvasir.watson.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-IDUrTaFTeLe3cw+oNnXl"
+Date: Mon, 24 Jul 2006 17:41:36 +1000
+Message-Id: <1153726896.12748.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +22,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Hide the video drivers for onboard graphics found in early PCI PowerMacs
-in Apple G5 config files.
-
-drivers/built-in.o: In function `.platinumfb_probe':
-platinumfb.c:(.text+0x377a0): undefined reference to `.nvram_read_byte'
-platinumfb.c:(.text+0x37830): undefined reference to `.nvram_read_byte'
-drivers/built-in.o: In function `.control_init':
-controlfb.c:(.init.text+0x1938): undefined reference to `.nvram_read_byte'
-controlfb.c:(.init.text+0x1968): undefined reference to `.nvram_read_byte'
-drivers/built-in.o: In function `.valkyriefb_init':
-(.init.text+0x2300): undefined reference to `.nvram_read_byte'
-drivers/built-in.o:(.init.text+0x239c): more undefined references to `.nvram_read_byte' follow
+--=-IDUrTaFTeLe3cw+oNnXl
+Content-Type: multipart/mixed; boundary="=-89aMF3nY3Pp8HYI9UcGY"
 
 
-Signed-off-by: Olaf Hering <olh@suse.de>
----
- drivers/video/Kconfig |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+--=-89aMF3nY3Pp8HYI9UcGY
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Index: linux-2.6.18-rc2/drivers/video/Kconfig
-===================================================================
---- linux-2.6.18-rc2.orig/drivers/video/Kconfig
-+++ linux-2.6.18-rc2/drivers/video/Kconfig
-@@ -420,7 +420,7 @@ config FB_OF
- 
- config FB_CONTROL
- 	bool "Apple \"control\" display support"
--	depends on (FB = y) && PPC_PMAC
-+	depends on (FB = y) && PPC_PMAC && PPC32
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -431,7 +431,7 @@ config FB_CONTROL
- 
- config FB_PLATINUM
- 	bool "Apple \"platinum\" display support"
--	depends on (FB = y) && PPC_PMAC
-+	depends on (FB = y) && PPC_PMAC && PPC32
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -442,7 +442,7 @@ config FB_PLATINUM
- 
- config FB_VALKYRIE
- 	bool "Apple \"valkyrie\" display support"
--	depends on (FB = y) && (MAC || PPC_PMAC)
-+	depends on (FB = y) && (MAC || (PPC_PMAC && PPC32))
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -453,7 +453,7 @@ config FB_VALKYRIE
- 
- config FB_CT65550
- 	bool "Chips 65550 display support"
--	depends on (FB = y) && PPC
-+	depends on (FB = y) && PPC32
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+On Thu, 2006-07-20 at 19:16 -0400, Amos Waterland wrote:
+> Current Linus and Paulus trees do this on JS20 blades with SLOF:
+>=20
+>  Failed to locate the MPIC interrupt controller
+>  PID hash table entries: 4096 (order: 12, 32768 bytes)
+>  Maple: Found RTC at IO 0x1070
+>  cpu 0x0: Vector: 700 (Program Check) at [c00000007ef83ab0]
+>      pc: c00000000002e0c8: .mpic_request_ipis+0x34/0xc8
+>      lr: c00000000036b484: .smp_mpic_probe+0x3c/0x58
+>      sp: c00000007ef83d30
+>     msr: 9000000000029032
+>    current =3D 0xc00000000194d610
+>    paca    =3D 0xc00000000038f180
+>      pid   =3D 1, comm =3D swapper
+>  kernel BUG in mpic_request_ipis at arch/powerpc/sysdev/mpic.c:1132!
+
+Does this help?
+
+cheers
+
+
+--=-89aMF3nY3Pp8HYI9UcGY
+Content-Disposition: inline; filename=mpic-fixup.patch
+Content-Transfer-Encoding: base64
+Content-Type: text/x-patch; name=mpic-fixup.patch; charset=UTF-8
+
+SW5kZXg6IHRvLW1lcmdlL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvbWFwbGUvc2V0dXAuYw0KPT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PQ0KLS0tIHRvLW1lcmdlLm9yaWcvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9tYXBsZS9z
+ZXR1cC5jDQorKysgdG8tbWVyZ2UvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9tYXBsZS9zZXR1cC5j
+DQpAQCAtMjE2LDYgKzIxNiw3IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBtYXBsZV9pbml0X0lSUSh2
+b2lkKQ0KIAlpbnQgbmFkZHIsIG4sIGksIG9wcGxlbiwgaGFzX2lzdXMgPSAwOw0KIAlzdHJ1Y3Qg
+bXBpYyAqbXBpYzsNCiAJdW5zaWduZWQgaW50IGZsYWdzID0gTVBJQ19QUklNQVJZOw0KKwljaGFy
+ICp0eXBlcDsNCiANCiAJLyogTG9jYXRlIE1QSUMgaW4gdGhlIGRldmljZS10cmVlLiBOb3RlIHRo
+YXQgdGhlcmUgaXMgYSBidWcNCiAJICogaW4gTWFwbGUgZGV2aWNlLXRyZWUgd2hlcmUgdGhlIHR5
+cGUgb2YgdGhlIGNvbnRyb2xsZXIgaXMNCkBAIC0yMjYsOSArMjI3LDE5IEBAIHN0YXRpYyB2b2lk
+IF9faW5pdCBtYXBsZV9pbml0X0lSUSh2b2lkKQ0KIAkJYnJlYWs7DQogCX0NCiAJaWYgKG1waWNf
+bm9kZSA9PSBOVUxMKSB7DQotCQlwcmludGsoS0VSTl9FUlINCi0JCSAgICAgICAiRmFpbGVkIHRv
+IGxvY2F0ZSB0aGUgTVBJQyBpbnRlcnJ1cHQgY29udHJvbGxlclxuIik7DQotCQlyZXR1cm47DQor
+CQlmb3JfZWFjaF9ub2RlX2J5X3R5cGUobnAsICJpbnRlcnJ1cHQtY29udHJvbGxlciIpIHsNCisJ
+CQl0eXBlcCA9IChjaGFyICopZ2V0X3Byb3BlcnR5KG5wLCAiY29tcGF0aWJsZSIsIE5VTEwpOw0K
+KwkJCWlmIChzdHJzdHIodHlwZXAsICJvcGVuLXBpYyIpKSB7DQorCQkJCW1waWNfbm9kZSA9IG5w
+Ow0KKwkJCQlicmVhazsNCisJCQl9DQorCQl9DQorDQorCQlpZiAobXBpY19ub2RlID09IE5VTEwp
+IHsNCisJCQlwcmludGsoS0VSTl9FUlIgIkZhaWxlZCB0byBsb2NhdGUgdGhlIE1QSUMgaW50ZXJy
+dXB0ICINCisJCQkJImNvbnRyb2xsZXJcbiIpOw0KKwkJCXJldHVybjsNCisJCX0NCiAJfQ0KIA0K
+IAkvKiBGaW5kIGFkZHJlc3MgbGlzdCBpbiAvcGxhdGZvcm0tb3Blbi1waWMgKi8NCg==
+
+
+--=-89aMF3nY3Pp8HYI9UcGY--
+
+--=-IDUrTaFTeLe3cw+oNnXl
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBExHmudSjSd0sB4dIRAsWUAKCOA4nYU/VZEKXJJO2n7NM4PTHsxACfQGfv
+2hx7jpFMj7KPKLTL79S952A=
+=wuUt
+-----END PGP SIGNATURE-----
+
+--=-IDUrTaFTeLe3cw+oNnXl--
