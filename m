@@ -1,20 +1,11 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E464B67B85
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 24 Jul 2006 22:38:39 +1000 (EST)
-Message-ID: <44C4BE5B.3000002@gmail.com>
-Date: Mon, 24 Jul 2006 13:34:35 +0100
-From: Ameet Patil <ammubhai@gmail.com>
+Return-Path: <namaskar_alok@yahoo.co.in>
+Message-ID: <20060724134454.90046.qmail@web8903.mail.in.yahoo.com>
+Date: Mon, 24 Jul 2006 06:44:54 -0700 (PDT)
+From: Alok Barsode <namaskar_alok@yahoo.co.in>
+Subject: Query regarding Gianfar Ethernet Driver for MPC8555E
+To: Linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Raja Chidambaram <raja_chidambaram82@yahoo.com>
-Subject: Re: SystemAce Driver.
-References: <20060724121452.55760.qmail@web53608.mail.yahoo.com>
-In-Reply-To: <20060724121452.55760.qmail@web53608.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,56 +16,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Raja,
-    I have ported the Xilinx System ACE driver to 2.6 kernel. Find the 
-latest one here:
-http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch
+Hello,
+I am a newbie, working on the MPC8555E(Freescale). 
 
-NOTE: this patch wouldn't work if you are using the TEMAC driver. In 
-which case use the -after-TEMAC patch found in the patches folder above.
+The Gianfar Ethernet Driver configures the TSECs on
+the board.I see that out of the 4 Ethernet Interfaces
+only 2 are configured when the gianfar driver is
+loaded(I have complied it as a modules).I checked this
+via "ifconfig" command. Out of the 4 ports, 2 are
+located on the basic carrier board and the other two
+on the IOCard expansion.
 
-Check the following discussions (threads) for more details:
-1. "Xilinx SystemACE driver for 2.6"
-2. "Xilinx BSP for linux 2.6"
-3. "Kernel hangs after "Now booting the kernel"."
+I wonder why all four of them are not configured?
 
-cheers,
--Ameet
+Thanks in advance,
+Alok.
 
-Raja Chidambaram wrote:
-> 
-> 
->  Hi all,
->  We are working on customized board with amcc 440SPe
-> processor & xilinx System Ace controller. The System
-> Ace controller is connected to compact flash driver.
-> 
-> We use u-boot 1.2 as bootloader & linux kernel
-> 2.6.16-2.
-> 
-> On the process the u-boot is able to detect compact
-> flash through Xilinx SystemAce controller & able to
-> load the kernel image into compact flash.But when the
-> linux boot's up it not able to detect the System Ace
-> controller or compact flash.
-> 
-> Note:we need to have the root file system in compact
-> flash.
-> 
-> Is their any drivers available for SystemAce
-> controller on linux 2.6,if their how to get it.please
-> help me in this
->                                     with regards
->                                      raja
-> 
-> 
-> 
-> __________________________________________________
-> Do You Yahoo!?
-> Tired of spam?  Yahoo! Mail has the best spam protection around 
-> http://mail.yahoo.com 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
