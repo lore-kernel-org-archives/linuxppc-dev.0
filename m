@@ -1,28 +1,17 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id CCDB867B59
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jul 2006 13:20:43 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k6O3WC96013369
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jul 2006 20:32:12 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k6O3Grh7003536
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jul 2006 22:16:55 -0500 (CDT)
+Return-Path: <johnnyb@eskimo.com>
+Received: from ultra7.eskimo.com (ultra7.eskimo.com [204.122.16.70])
+	by ozlabs.org (Postfix) with ESMTP id BFFB367B56
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jul 2006 14:12:36 +1000 (EST)
+Received: from eskimo.com (johnnyb@eskimo.com [204.122.16.13])
+	by ultra7.eskimo.com (8.13.6/8.13.4) with ESMTP id k6O41WUO027593
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jul 2006 21:01:32 -0700
+Date: Sun, 23 Jul 2006 21:01:38 -0700 (PDT)
+From: Jonathan Bartlett <johnnyb@eskimo.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Why the "opd" section?
+Message-ID: <Pine.SUN.4.58.0607232059070.699@eskimo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] powerpc: Add tsi108/9 and new hardware interface to mpic
-Date: Mon, 24 Jul 2006 11:16:51 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E071613@zch01exm23.fsl.freescale.net>
-In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E0456D0@zch01exm23.fsl.freescale.net>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Zang Roy-r61911" <tie-fei.zang@freescale.com>,
-	"Paul Mackerras" <paulus@samba.org>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Alexandre.Bounine@tundra.com,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,23 +21,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->=20
-> The patch add new hardware information table for mpic. This=20
-> enables mpic
-> code=20
-> to deal with OpenPIC controller with hardware behavior difference.
-> Add TSI108/109 PIC hardware information table.  The=20
-> Tsi108/109 PIC looks
-> like=20
-> standard OpenPIC but, in fact, is different in registers mapping and
-> behavior.
->   =20
-> Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
-> Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>=20
->=20
-> ---
+I'm learning PPC64 assembly language, and I found the existence of the
+"opd" sections containing function descriptors quite odd.  What is the use
+of these?  Are they used by the linker?  Why are they needed in the 64-bit
+ELF platforms and not the 32-bit ones?
 
-Ben,
-	How do you think the new hardware information entry for mpic?
-	Thanks.
-Roy
+Thanks,
+
+Jon
