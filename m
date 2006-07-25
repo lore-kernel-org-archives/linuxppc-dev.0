@@ -1,18 +1,20 @@
 Return-Path: <dhlii@dlasys.net>
-Received: from sccrmhc12.comcast.net (sccrmhc12.comcast.net [204.127.200.82])
-	by ozlabs.org (Postfix) with ESMTP id F420867B66
+Received: from rwcrmhc14.comcast.net (rwcrmhc14.comcast.net [216.148.227.154])
+	by ozlabs.org (Postfix) with ESMTP id C7CD967B6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Jul 2006 14:03:43 +1000 (EST)
-Message-ID: <44C59818.5020207@dlasys.net>
-Date: Tue, 25 Jul 2006 00:03:36 -0400
+	Tue, 25 Jul 2006 14:10:18 +1000 (EST)
+Message-ID: <44C59875.4000309@dlasys.net>
+Date: Tue, 25 Jul 2006 00:05:09 -0400
 From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: jagannathanjay@aim.com, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Reg. virtual address space in embedded linux
-References: <8C87B6A995C6521-1C74-11273@FWM-M25.sysops.aol.com>
-In-Reply-To: <8C87B6A995C6521-1C74-11273@FWM-M25.sysops.aol.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: PHY Howto ?
+References: <44BFC2EF.5020305@dlasys.net>
+	<20060720220136.29326857@vitb.ru.mvista.com>
+In-Reply-To: <20060720220136.29326857@vitb.ru.mvista.com>
 Content-Type: multipart/alternative;
-	boundary="------------060101050409020401020809"
+	boundary="------------070103010502070109020002"
+Cc: linuxppc-embedded@ozlabs.org
 Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,97 +27,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------060101050409020401020809
+--------------070103010502070109020002
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-
-    Is there a reason you need to map and unmap physical/virtual memory
-every time you do a read or write ?
-
-    I think the norm is to map the physical region in your device driver
-in its initialization code and unmap it if the driver exits.
-
-    After that you should be able to read and write your chip as you
-wish. If the registers are RW then you should be able to "dump" them by
-    reading them at whatever later time you choose.
-
-
-jagannathanjay@aim.com wrote:
-> Hi all
+Vitaly Bordug wrote:
+> On Thu, 20 Jul 2006 13:52:47 -0400
+> "David H. Lynch Jr." <dhlii@dlasys.net> wrote:
 >
-> We are porting third party driver code from vxworks to Embedded linux
-> in MPC 8260 under a evaluation platform from Embedded Planet in linux
-> kernel space.
->
-> The first step we carried out was reading the chip id and we were able
-> to read the chip id correctly.
->  
-> For reading the chip id we used the routine ChipReadMemory in the
-> attached text and we were able to retrive the chip id successfully.
->  
-> Subsequently when we write and read from Chip Specific Control Status
-> registers ,it didn't work.
->  
-> I checked the manual and the Chip Specific Control Status registers
-> have RW access.
->  
-> Any inputs on how to check if the write we made to virtual address
-> succeeds?
->  
-> Is there a way to dump the linux virtual address and examine the write
-> we made ?
->
-> Regards
-> Jay
->
->  
-> ------------------------------------------------------------------------
-> *Check Out the new free AIM(R) Mail*
-> <http://pr.atwola.com/promoclk/100122638x1081283466x1074645346/aol?redir=http%3A%2F%2Fwww%2Eaim%2Ecom%2Ffun%2Fmail%2F>
-> -- 2 GB of storage and industry-leading spam and email virus protection.
-> ------------------------------------------------------------------------
->
-> int ChipReadMemory(unsigned int arg_phys_addr,unsigned int *memValue)
-> {
->   void  *virt_addr = NULL;
->   unsigned int phys_addr = 0;
->
->   phys_addr =  DEVICE_BASE_ADDRESS + arg_phys_addr;
->   virt_addr = ioremap(phys_addr, 4);
->   if(virt_addr == NULL)
->   {
->      printk("ChipReadMemory: unable to perform ioremap \n");
->      return -1;
->   }
->   *memValue  = readl(virt_addr);
->     iounmap(virt_addr);
->     return 0;
-> }
->
->
-> int ChipWriteMemory(unsigned int arg_phys_addr, unsigned int arg_val)
-> {
->   void  *virt_addr = NULL;
->   unsigned int phys_addr = 0;
->   phys_addr =  DEVICE_BASE_ADDRESS + arg_phys_addr;
->   virt_addr = ioremap(phys_addr, 4);
->   if(virt_addr == NULL)
->   {
->      printk("ChipWriteMemory : unable to perform ioremap \n");
->      return -1;
->   }
->   writel(arg_val,virt_addr);
->   iounmap(virt_addr);
->    return 0;
-> }
 >   
-> ------------------------------------------------------------------------
+>>  If I am writing a network MAC driver, for hardware that has a phy
+>> that is already supported, if I provide the appropriate mdio_read() and
+>> mdio_write() calls to access the phy registers, and setup my config to
+>> include phylib and drivers for my specific phy,  what else do I have to
+>> take care of with respect to the phy within my driver ?
+>> 	
+>> 	Are there some resources, howto's, examples, ... demonstrating 
+>> how to use phylib ?
+>>     
+> There is pretty good writeup in Documentation about your concern, find it at 
+> Documentation/networking/phy.txt . Live example is obviously drivers/net/gianfar*
 >
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
+    Thanks that proved useful. I am already using gianfar as a reference
+- but it is not a NIC I am familiar with.
+    And I still have some questions:
+
+          What is the distinction/interaction between phylib and MII
+support ?
+   
+          Are they independent ways of doing something similar ? Or do
+they work together.
+
+          To get MII working I need to provide/populate  an mii_if_info
+structure and supply register read/write routines.
+   
+          Since communicating with the PHY is MAC dependent shouldn't I
+need to do the same for PHYLIB ?
+
+  
+         
+   
+          
+
+
+          As I understand it although PHY's are similar, and the same
+PHY may be used on different NIC's
+          Communications to the PHY typically go through the NIC.
+          So my Network driver has to provide routines to read/write the
+registers of the PHY, which phylib and the phy driver then use.
+
+      
+
+   
 
 
 -- 
@@ -129,7 +94,7 @@ Over 25 years' experience in platforms, languages, and technologies too numerous
 Albert Einstein
 
 
---------------060101050409020401020809
+--------------070103010502070109020002
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -139,110 +104,64 @@ Content-Transfer-Encoding: 7bit
   <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
 </head>
 <body bgcolor="#ffffff" text="#000000">
-<br>
-&nbsp;&nbsp;&nbsp; Is there a reason you need to map and unmap physical/virtual memory
-every time you do a read or write ?<br>
-<br>
-&nbsp;&nbsp;&nbsp; I think the norm is to map the physical region in your device
-driver in its initialization code and unmap it if the driver exits.<br>
-<br>
-&nbsp;&nbsp;&nbsp; After that you should be able to read and write your chip as you
-wish. If the registers are RW then you should be able to "dump" them by
-<br>
-&nbsp;&nbsp;&nbsp; reading them at whatever later time you choose.<br>
-<br>
-<br>
-<a class="moz-txt-link-abbreviated" href="mailto:jagannathanjay@aim.com">jagannathanjay@aim.com</a>
-wrote:
-<blockquote cite="mid8C87B6A995C6521-1C74-11273@FWM-M25.sysops.aol.com"
+Vitaly Bordug wrote:
+<blockquote cite="mid20060720220136.29326857@vitb.ru.mvista.com"
  type="cite">
-  <div>Hi all<br>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2"><br>
-We are porting third party driver code from vxworks to Embedded linux
-in MPC 8260 under a evaluation platform from Embedded Planet in linux
-kernel space.<br>
-  <br>
-  </font></span>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2">The
-first step we carried out was reading the chip id and we were able to
-read the chip id correctly.</font></span></div>
-  <div><span class="406521009-18072006"></span>&nbsp;</div>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2">For
-reading the chip id we used the routine ChipReadMemory in the attached
-text&nbsp;and we were able to retrive the chip id successfully.</font></span></div>
-  <div><span class="406521009-18072006"></span>&nbsp;</div>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2">Subsequently
-when we write and read from&nbsp;Chip Specific Control Status registers ,it
-didn't work.</font></span></div>
-  <div><span class="406521009-18072006"></span>&nbsp;</div>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2">I
-checked the manual and the Chip Specific Control Status registers have
-RW access.</font></span></div>
-  <div><span class="406521009-18072006"></span>&nbsp;</div>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2">Any
-inputs on how to check if the write we made to virtual address succeeds?</font></span></div>
-  <div><span class="406521009-18072006"></span>&nbsp;</div>
-  <div><span class="406521009-18072006"><font face="Tahoma" size="2">Is
-there a way to dump the linux virtual address and examine&nbsp;the write we
-made&nbsp;?<br>
-  <br>
-Regards<br>
-Jay<br>
-  </font></span></div>
-  <br>
-  </div>
-&nbsp;</div>
-  <div class="AOLPromoFooter">
-  <hr style="margin-top: 10px;"><a
- href="http://pr.atwola.com/promoclk/100122638x1081283466x1074645346/aol?redir=http%3A%2F%2Fwww%2Eaim%2Ecom%2Ffun%2Fmail%2F"
- target="_blank"><b>Check Out the new free AIM(R) Mail</b></a> -- 2 GB
-of storage and industry-leading spam and email virus protection.<br>
-  </div>
-  <pre wrap=""><hr size="4" width="90%">
-int ChipReadMemory(unsigned int arg_phys_addr,unsigned int *memValue)
-{
-  void  *virt_addr = NULL;
-  unsigned int phys_addr = 0;
+  <pre wrap="">On Thu, 20 Jul 2006 13:52:47 -0400
+"David H. Lynch Jr." <a class="moz-txt-link-rfc2396E"
+ href="mailto:dhlii@dlasys.net">&lt;dhlii@dlasys.net&gt;</a> wrote:
 
-  phys_addr =  DEVICE_BASE_ADDRESS + arg_phys_addr;
-  virt_addr = ioremap(phys_addr, 4);
-  if(virt_addr == NULL)
-  {
-     printk("ChipReadMemory: unable to perform ioremap \n");
-     return -1;
-  }
-  *memValue  = readl(virt_addr);
-    iounmap(virt_addr);
-    return 0;
-}
-
-
-int ChipWriteMemory(unsigned int arg_phys_addr, unsigned int arg_val)
-{
-  void  *virt_addr = NULL;
-  unsigned int phys_addr = 0;
-  phys_addr =  DEVICE_BASE_ADDRESS + arg_phys_addr;
-  virt_addr = ioremap(phys_addr, 4);
-  if(virt_addr == NULL)
-  {
-     printk("ChipWriteMemory : unable to perform ioremap \n");
-     return -1;
-  }
-  writel(arg_val,virt_addr);
-  iounmap(virt_addr);
-   return 0;
-}
   </pre>
-  <pre wrap=""><hr size="4" width="90%">
-_______________________________________________
-Linuxppc-embedded mailing list
-<a class="moz-txt-link-abbreviated"
- href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
-<a class="moz-txt-link-freetext"
- href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
+  <blockquote type="cite">
+    <pre wrap=""> If I am writing a network MAC driver, for hardware that has a phy
+that is already supported, if I provide the appropriate mdio_read() and
+mdio_write() calls to access the phy registers, and setup my config to
+include phylib and drivers for my specific phy,  what else do I have to
+take care of with respect to the phy within my driver ?
+	
+	Are there some resources, howto's, examples, ... demonstrating 
+how to use phylib ?
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->There is pretty good writeup in Documentation about your concern, find it at 
+Documentation/networking/phy.txt . Live example is obviously drivers/net/gianfar*
+
+
+  </pre>
 </blockquote>
+<font face="Arial">&nbsp;&nbsp;&nbsp; Thanks that proved useful. I am already using
+gianfar as a reference - but it is not a NIC I am familiar with.<br>
+&nbsp;&nbsp;&nbsp; And I still have some questions:<br>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; What is the distinction/interaction between phylib and MII
+support ?<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; Are they independent ways of doing something similar ? Or do
+they work together.<br>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; To get MII working I need to provide/populate&nbsp; an mii_if_info
+structure and supply register read/write routines.<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; Since communicating with the PHY is MAC dependent shouldn't I
+need to do the same for PHYLIB ?<br>
+<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <br>
 <br>
 <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; As I understand it although PHY's are similar, and the same
+PHY may be used on different NIC's<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; Communications to the PHY typically go through the NIC.<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; So my Network driver has to provide routines to read/write
+the registers of the PHY, which phylib and the phy driver then use.<br>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; <br>
+<br>
+&nbsp;&nbsp;&nbsp; <br>
+<br>
+</font><br>
 <pre class="moz-signature" cols="72">-- 
 Dave Lynch 					  	    DLA Systems
 Software Development:  				         Embedded Linux
@@ -258,4 +177,4 @@ Albert Einstein
 </body>
 </html>
 
---------------060101050409020401020809--
+--------------070103010502070109020002--
