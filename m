@@ -1,24 +1,32 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6C6BE67B7F
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jul 2006 06:06:58 +1000 (EST)
-Date: Tue, 25 Jul 2006 22:06:50 +0200
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: powermac: More powermac backlight fixes
-Message-ID: <20060725200650.GA13687@hansmi.ch>
-References: <20060715130900.GA29287@hansmi.ch>
-	<20060724200315.d3c80ed0.akpm@osdl.org>
-	<20060725184406.GA12226@hansmi.ch>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5BD8B67B6E
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jul 2006 06:15:17 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6PKFETb025626
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 16:15:15 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6PKFDvX178684
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 14:15:14 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6PKFDLv032061
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 14:15:13 -0600
+Subject: [PATCH] CEDE on non-SMT
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 25 Jul 2006 15:11:47 -0500
+Message-Id: <1153858308.29826.148.camel@goblue>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060725184406.GA12226@hansmi.ch>
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net, aris@valeta.org,
-	linux-kernel@killerfox.forkbomb.ch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,51 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 25, 2006 at 08:44:06PM +0200, Michael Hanselmann wrote:
-> On Mon, Jul 24, 2006 at 08:03:15PM -0700, Andrew Morton wrote:
-> > I see schedule_work()s in there, but no flush_scheduled_work()s or anything
-> > like that.  Generally, this means there are races against rmmod, close(),
-> > etc.
+On the JS21 systems, they have the SPLPAR hypertas set, but are not SMT
+capable.  So, they are not making the h_cede call.  This is causing the
+hypervisor to have to queue up work for the hdecr, taking an excessive
+amount of time in maintenance code, and causing jitter on the box.
 
-After discussing it with Aristeu, we came to the conclusion that it's
-not dangerous. The generic backlight code can not be compiled as a
-module. If a framebuffer driver unloads, it'll set pmac_backlight to
-NULL. The workers check for it and don't do anything if true. So, if the
-worker is called after unloading the module, it won't do anything.
+Making the h_cede call helps alleviate that problem.
 
-Here's the other patch which fixes a little error in the patch you just
-added to your tree. Without the patch, pbbuttonsd and other applications
-changing the backlight will fail.
+Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com> 
 
----
-diff -Nrup --exclude-from linux-exclude-from linux-2.6.18-rc2-git4.orig/arch/powerpc/platforms/powermac/backlight.c linux-2.6.18-rc2-git4/arch/powerpc/platforms/powermac/backlight.c
---- linux-2.6.18-rc2-git4.orig/arch/powerpc/platforms/powermac/backlight.c	2006-07-25 20:51:05.000000000 +0200
-+++ linux-2.6.18-rc2-git4/arch/powerpc/platforms/powermac/backlight.c	2006-07-25 20:52:02.000000000 +0200
-@@ -140,9 +140,6 @@ static int __pmac_backlight_set_legacy_b
- {
- 	int error = -ENXIO;
+Index: 2.6-msi/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- 2.6-msi.orig/arch/powerpc/platforms/pseries/setup.c	2006-07-25
+14:49:26.000000000 -0500
++++ 2.6-msi/arch/powerpc/platforms/pseries/setup.c	2006-07-25
+14:52:49.000000000 -0500
+@@ -501,7 +501,8 @@
+ 	}
  
--	if (atomic_read(&kernel_backlight_disabled))
--		return -EBUSY;
--
- 	mutex_lock(&pmac_backlight_mutex);
- 	if (pmac_backlight) {
- 		struct backlight_properties *props;
-@@ -170,11 +167,17 @@ static int __pmac_backlight_set_legacy_b
+ 	/*
+-	 * Cede if the other thread is not idle, so that it can
++	 * If not SMT, cede processor.  If CPU is running SMT
++	 * cede if the other thread is not idle, so that it can
+ 	 * go single-threaded.  If the other thread is idle,
+ 	 * we ask the hypervisor if it has pending work it
+ 	 * wants to do and cede if it does.  Otherwise we keep
+@@ -514,7 +515,8 @@
+ 	 * very low priority.  The cede enables interrupts, which
+ 	 * doesn't matter here.
+ 	 */
+-	if (!lppaca[cpu ^ 1].idle || poll_pending() == H_PENDING)
++	if (!cpu_has_feature(CPU_FTR_SMT) || !lppaca[cpu ^ 1].idle
++	    || poll_pending() == H_PENDING)
+ 		cede_processor();
  
- static void pmac_backlight_set_legacy_worker(void *data)
- {
-+	if (atomic_read(&kernel_backlight_disabled))
-+		return;
-+
- 	__pmac_backlight_set_legacy_brightness(pmac_backlight_set_legacy_queued);
- }
- 
- /* This function is called in interrupt context */
- void pmac_backlight_set_legacy_brightness_pmu(int brightness) {
-+	if (atomic_read(&kernel_backlight_disabled))
-+		return;
-+
- 	pmac_backlight_set_legacy_queued = brightness;
- 	schedule_work(&pmac_backlight_set_legacy_work);
- }
+ out:
