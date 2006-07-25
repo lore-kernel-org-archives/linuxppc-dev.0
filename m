@@ -1,20 +1,24 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0D31F67A3F
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 13:03:38 +1000 (EST)
-Date: Mon, 24 Jul 2006 20:03:15 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-Subject: Re: powermac: More powermac backlight fixes
-Message-Id: <20060724200315.d3c80ed0.akpm@osdl.org>
-In-Reply-To: <20060715130900.GA29287@hansmi.ch>
-References: <20060715130900.GA29287@hansmi.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net, aris@valeta.org,
-	linux-kernel@killerfox.forkbomb.ch
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1AA7467B63
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 13:42:26 +1000 (EST)
+In-Reply-To: <1153792498.7557.1.camel@localhost.localdomain>
+References: <20060720231601.GA24736@kvasir.watson.ibm.com>
+	<1153726896.12748.0.camel@localhost.localdomain>
+	<F6DE334F-39D9-4302-B21C-3701BB78C8F0@kernel.crashing.org>
+	<1153792498.7557.1.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9DB4286F-B090-48FD-95FA-5407FA530AAF@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: mpic discovery on JS20
+Date: Tue, 25 Jul 2006 05:41:56 +0200
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 15 Jul 2006 15:09:00 +0200
-Michael Hanselmann <linux-kernel@hansmi.ch> wrote:
-
-> This patch fixes several problems:
-> - The legacy backlight value might be set at interrupt time. Introduced
->   a worker to prevent it from directly calling the backlight code.
-> - via-pmu allows the backlight to be grabbed, in which case we need to
->   prevent other kernel code from changing the brightness.
-> - Don't send PMU requests in via-pmu-backlight when the machine is about
->   to sleep or waking up.
-> - More Kconfig fixes.
-> 
-> ...
+>>> Does this help?
+>>
+>> Yes it does.  I thought that went upstream already though?
 >
->  static void pmac_backlight_key_worker(void *data);
-> +static void pmac_backlight_set_legacy_worker(void *data);
-> +
->  static DECLARE_WORK(pmac_backlight_key_work, pmac_backlight_key_worker, NULL);
-> +static DECLARE_WORK(pmac_backlight_set_legacy_work, pmac_backlight_set_legacy_worker, NULL);
+> Doh, pays to read the mailing list huh :)
+>
+> It's probably sitting in Paul's inbox, waiting for him to merge it.
 
-I see schedule_work()s in there, but no flush_scheduled_work()s or anything
-like that.  Generally, this means there are races against rmmod, close(),
-etc.
+I could have sworn it went in, I don't see it anymore though.
+More patches are needed anyway, I'll take care of it ASAP.
 
->  
-> +void pmac_backlight_disable()
-> +{
-> +	atomic_inc(&kernel_backlight_disabled);
-> +}
-> +
-> +void pmac_backlight_enable()
-> +{
-> +	atomic_dec(&kernel_backlight_disabled);
-> +}
-> +
 
-So if userspace calls ioctl(PMU_IOC_GRAB_BACKLIGHT) eleven times, eleven
-enables are needed?  (Actually, eleven open()/close() sequences, I think).
-
-Methinks you wanted just
-
-	kernel_backlight_disabled = 1;
-?
+Segher
