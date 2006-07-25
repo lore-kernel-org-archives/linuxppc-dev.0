@@ -1,17 +1,20 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from qsrv03ps.mx.bigpond.com (qsrv03ps.mx.bigpond.com
-	[144.140.82.183]) by ozlabs.org (Postfix) with ESMTP id E157467B62
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 12:59:11 +1000 (EST)
-Date: Tue, 25 Jul 2006 11:45:58 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: Jonathan Bartlett <johnnyb@eskimo.com>
-Subject: Re: Why the "opd" section?
-Message-ID: <20060725021558.GG6872@bubble.grove.modra.org>
-References: <Pine.SUN.4.58.0607232059070.699@eskimo.com>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0D31F67A3F
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 13:03:38 +1000 (EST)
+Date: Mon, 24 Jul 2006 20:03:15 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+Subject: Re: powermac: More powermac backlight fixes
+Message-Id: <20060724200315.d3c80ed0.akpm@osdl.org>
+In-Reply-To: <20060715130900.GA29287@hansmi.ch>
+References: <20060715130900.GA29287@hansmi.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.SUN.4.58.0607232059070.699@eskimo.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net, aris@valeta.org,
+	linux-kernel@killerfox.forkbomb.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 23, 2006 at 09:01:38PM -0700, Jonathan Bartlett wrote:
-> I'm learning PPC64 assembly language, and I found the existence of the
-> "opd" sections containing function descriptors quite odd.  What is the use
-> of these?  Are they used by the linker?  Why are they needed in the 64-bit
-> ELF platforms and not the 32-bit ones?
+On Sat, 15 Jul 2006 15:09:00 +0200
+Michael Hanselmann <linux-kernel@hansmi.ch> wrote:
 
-OPD is an array of function pointers.  Function pointers on powerpc64
-are not just simple pointers to some code;  They specify the code entry
-point, the TOC pointer, and the static chain pointer (unused by C).
-To call a function, you need to know all these values because functions
-do not initialise their own TOC pointer.  This allows for more efficient
-code.  The compiler/linker can omit the TOC pointer load when both
-caller and callee are known to share the same TOC.  (In many ways, the
-TOC is like the powerpc32 GOT.  powerpc32 -fpic/PIC code initialises the
-GOT pointer on entry to every function, even when caller and callee are
-known to have the same GOT pointer.)
+> This patch fixes several problems:
+> - The legacy backlight value might be set at interrupt time. Introduced
+>   a worker to prevent it from directly calling the backlight code.
+> - via-pmu allows the backlight to be grabbed, in which case we need to
+>   prevent other kernel code from changing the brightness.
+> - Don't send PMU requests in via-pmu-backlight when the machine is about
+>   to sleep or waking up.
+> - More Kconfig fixes.
+> 
+> ...
+>
+>  static void pmac_backlight_key_worker(void *data);
+> +static void pmac_backlight_set_legacy_worker(void *data);
+> +
+>  static DECLARE_WORK(pmac_backlight_key_work, pmac_backlight_key_worker, NULL);
+> +static DECLARE_WORK(pmac_backlight_set_legacy_work, pmac_backlight_set_legacy_worker, NULL);
 
--- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
+I see schedule_work()s in there, but no flush_scheduled_work()s or anything
+like that.  Generally, this means there are races against rmmod, close(),
+etc.
+
+>  
+> +void pmac_backlight_disable()
+> +{
+> +	atomic_inc(&kernel_backlight_disabled);
+> +}
+> +
+> +void pmac_backlight_enable()
+> +{
+> +	atomic_dec(&kernel_backlight_disabled);
+> +}
+> +
+
+So if userspace calls ioctl(PMU_IOC_GRAB_BACKLIGHT) eleven times, eleven
+enables are needed?  (Actually, eleven open()/close() sequences, I think).
+
+Methinks you wanted just
+
+	kernel_backlight_disabled = 1;
+?
