@@ -1,14 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 26 Jul 2006 00:41:24 +1000
-From: Anton Blanchard <anton@samba.org>
-To: "Levand, Geoffrey" <Geoffrey.Levand@am.sony.com>
-Subject: Re: [PATCH] clean up pseries hcall interfaces
-Message-ID: <20060725144124.GA3769@krispykreme>
-References: <591B6A09961C354991CD653B274DC8C2023662CB@ussdixms03.am.sony.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4C9F167B6F
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jul 2006 01:13:56 +1000 (EST)
+Message-ID: <7015.131.234.232.48.1153840399.squirrel@secure.sipsolutions.net>
+In-Reply-To: <s5hy7uhsra7.wl%tiwai@suse.de>
+References: <20060718172841.046446000@sipsolutions.net>
+	<s5hy7uhsra7.wl%tiwai@suse.de>
+Date: Tue, 25 Jul 2006 17:13:19 +0200 (CEST)
+Subject: Re: [Alsa-devel] [PATCH 0/5] powerpc sound, some more patches
+From: "Johannes Berg" <johannes@sipsolutions.net>
+To: "Takashi Iwai" <tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <591B6A09961C354991CD653B274DC8C2023662CB@ussdixms03.am.sony.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain;charset=iso-8859-15
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,45 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Takashi Iwai wrote:
 
-Hi Geoff,
+> Thanks, now all patches are on ALSA tree.
 
-> Seems like this in needed too...  Untested.
+Thanks.
+These should still go into 2.6.18, will that be possible?
 
-Looks good but the patch appears to be line wrapped in a few places.
-
-Anton
-
-> Change the scope of some pSeries routines now called through
-> ppc_md to static.
-> 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
-> --
-> Index: a/arch/powerpc/platforms/pseries/lpar.c
-> ===================================================================
-> --- a.orig/arch/powerpc/platforms/pseries/lpar.c	2006-07-18
-> 12:37:47.000000000 -0700
-> +++ a/arch/powerpc/platforms/pseries/lpar.c	2006-07-20
-> 05:18:59.000000000 -0700
-> @@ -268,7 +268,7 @@
->  				cpu, hwcpu, vpa, ret);
->  }
->  
-> -long pSeries_lpar_hpte_insert(unsigned long hpte_group,
-> +static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
->   			      unsigned long va, unsigned long pa,
->   			      unsigned long rflags, unsigned long
-> vflags,
->   			      int psize)
-> @@ -494,7 +494,7 @@
->   * Take a spinlock around flushes to avoid bouncing the hypervisor
-> tlbie
->   * lock.
->   */
-> -void pSeries_lpar_flush_hash_range(unsigned long number, int local)
-> +static void pSeries_lpar_flush_hash_range(unsigned long number, int
-> local)
->  {
->  	int i;
->  	unsigned long flags = 0;
+johannes
