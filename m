@@ -1,34 +1,21 @@
-Return-Path: <haren@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <michel@tungstengraphics.com>
+Received: from admin.zirkelwireless.com (admin.zirkelwireless.com
+	[209.216.203.65])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6337567B64
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jul 2006 14:52:58 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6Q4qrFS015971
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jul 2006 00:52:53 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6Q4qril309858
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 22:52:53 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6Q4qqlr009018
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Jul 2006 22:52:53 -0600
-Message-ID: <44C6F521.8040609@us.ibm.com>
-Date: Tue, 25 Jul 2006 21:52:49 -0700
-From: Haren Myneni <haren@us.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Add rtas_set_indicator_fast() for RTAS call without extended
-	delay
-Content-Type: multipart/mixed; boundary="------------000803070908000706010907"
-Cc: Milton Miller II <miltonm@us.ibm.com>, Nathan Lynch <ntl@pobox.com>,
-	External List <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BD2BF679E0
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jul 2006 18:38:57 +1000 (EST)
+Subject: Re: DRM git vs. Linux 2.6.17
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: Dave Airlie <airlied@linux.ie>
+In-Reply-To: <Pine.LNX.4.64.0607251030220.30301@skynet.skynet.ie>
+References: <1153818665.20778.82.camel@thor.lorrainebruecke.local>
+	<Pine.LNX.4.64.0607251030220.30301@skynet.skynet.ie>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 26 Jul 2006 09:43:07 +0200
+Message-Id: <1153899787.20778.99.camel@thor.lorrainebruecke.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,124 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000803070908000706010907
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 2006-07-25 at 10:31 +0100, Dave Airlie wrote:
+> Did you build you kernel with CONFIG_DRM=y? if so don't.
+> 
+> to use DRM CVS you need to make sure in-kernel DRM isn't built-in.
 
-Created this patch based on Nathan's posting 
-(http://ozlabs.org/pipermail/linuxppc-dev/2006-July/024451.html). If OK, 
-please send it to upstream.
+Thanks, but I'm quite aware of that. :)
 
-Thanks
-Haren
-
-Noticing the following might_sleep warning (dump_stack()) during kdump 
-testing when CONFIG_DEBUG_SPINLOCK_SLEEP is enabled. All secondary CPUs 
-will be calling rtas_set_indicator with interrupts disabled to remove 
-them from global interrupt queue.
-BUG: sleeping function called from invalid context at 
-arch/powerpc/kernel/rtas.c:463
-in_atomic():1, irqs_disabled():1
-Call Trace:
-[C00000000FFFB970] [C000000000010234] .show_stack+0x68/0x1b0 (unreliable)
-[C00000000FFFBA10] [C000000000059354] .__might_sleep+0xd8/0xf4
-[C00000000FFFBA90] [C00000000001D1BC] .rtas_busy_delay+0x20/0x5c
-[C00000000FFFBB20] [C00000000001D8A8] .rtas_set_indicator+0x6c/0xcc
-[C00000000FFFBBC0] [C000000000048BF4] .xics_teardown_cpu+0x118/0x134
-[C00000000FFFBC40] [C00000000004539C] .pseries_kexec_cpu_down_xics+0x74/0x8c
-[C00000000FFFBCC0] [C00000000002DF08] .crash_ipi_callback+0x15c/0x188
-[C00000000FFFBD50] [C0000000000296EC] .smp_message_recv+0x84/0xdc
-[C00000000FFFBDC0] [C000000000048E08] .xics_ipi_dispatch+0xf0/0x130
-[C00000000FFFBE50] [C00000000009EF10] .handle_IRQ_event+0x7c/0xf8
-[C00000000FFFBF00] [C0000000000A0A14] .handle_percpu_irq+0x90/0x10c
-[C00000000FFFBF90] [C00000000002659C] .call_handle_irq+0x1c/0x2c
-[C00000000058B9C0] [C00000000000CA10] .do_IRQ+0xf4/0x1a4
-[C00000000058BA50] [C0000000000044EC] hardware_interrupt_entry+0xc/0x10
---- Exception: 501 at .plpar_hcall_norets+0x14/0x1c
-    LR = .pseries_dedicated_idle_sleep+0x190/0x1d4
-[C00000000058BD40] [C00000000058BDE0] 0xc00000000058bde0 (unreliable)
-[C00000000058BDF0] [C00000000001270C] .cpu_idle+0x10c/0x1e0
-[C00000000058BE70] [C000000000009274] .rest_init+0x44/0x5c
-
-To fix this issue, rtas_set_indicator_fast() is added so that will not 
-wait for RTAS 'busy' delay and this new function is used for kdump (in 
-xics_teardown_cpu()) and for CPU hotplug ( xics_migrate_irqs_away()).
-
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+I suspect this might be a PPC specific kernel build system issue related
+to Modules.symvers, so I'm CC'ing linuxppc-dev and including the
+original post below for reference. Any hints appreciated.
 
 
+> On Tue, 25 Jul 2006, Michel Dnzer wrote:
+> 
+> Building DRM git against 2.6.17, I get:
+> 
+>    Building modules, stage 2.
+>    MODPOST
+> *** Warning: "drm_addbufs_agp" [/home/michdaen/src/mesa-git/drm/linux-core/drm] duplicated symbol!
+> 
+> and the same for a lot of DRM core symbols (possibly all of them). The
+> resulting DRM core module loads, but the driver doesn't:
+> 
+> Jul 24 13:47:27 thor kernel: radeon: disagrees about version of symbol drm_open
+> Jul 24 13:47:27 thor kernel: radeon: Unknown symbol drm_open
+> 
+> Removing Module.symvers from the DRM and kernel trees before building
+> the DRM avoids these problems. Any ideas where the root of this lies?
 
 
---------------000803070908000706010907
-Content-Type: text/x-patch;
- name="ppc64-add-rtas-set-indicator-fast.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ppc64-add-rtas-set-indicator-fast.patch"
-
-diff -Naurp 2618-rc2.orig/arch/powerpc/kernel/rtas.c 2618-rc2/arch/powerpc/kernel/rtas.c
---- 2618-rc2.orig/arch/powerpc/kernel/rtas.c	2006-07-25 19:34:11.000000000 -0700
-+++ 2618-rc2/arch/powerpc/kernel/rtas.c	2006-07-25 19:33:16.000000000 -0700
-@@ -569,6 +569,27 @@ int rtas_set_indicator(int indicator, in
- }
- EXPORT_SYMBOL(rtas_set_indicator);
- 
-+/*
-+ * Ignoring RTAS extended delay
-+ */
-+int rtas_set_indicator_fast(int indicator, int index, int new_value)
-+{
-+	int rc;
-+	int token = rtas_token("set-indicator");
-+
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -ENOENT;
-+
-+	rc = rtas_call(token, 3, 1, NULL, indicator, index, new_value);
-+
-+	WARN_ON(rc == -2 || (rc >= 9900 && rc <= 9905));
-+
-+	if (rc < 0)
-+		return rtas_error_rc(rc);
-+
-+	return rc;
-+}
-+
- void rtas_restart(char *cmd)
- {
- 	if (rtas_flash_term_hook)
-diff -Naurp 2618-rc2.orig/arch/powerpc/platforms/pseries/xics.c 2618-rc2/arch/powerpc/platforms/pseries/xics.c
---- 2618-rc2.orig/arch/powerpc/platforms/pseries/xics.c	2006-07-25 19:34:41.000000000 -0700
-+++ 2618-rc2/arch/powerpc/platforms/pseries/xics.c	2006-07-25 19:33:36.000000000 -0700
-@@ -796,7 +796,7 @@ void xics_teardown_cpu(int secondary)
- 	 * so leave the master cpu in the group.
- 	 */
- 	if (secondary)
--		rtas_set_indicator(GLOBAL_INTERRUPT_QUEUE,
-+		rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
- 				   (1UL << interrupt_server_size) - 1 -
- 				   default_distrib_server, 0);
- }
-@@ -813,7 +813,7 @@ void xics_migrate_irqs_away(void)
- 	xics_set_cpu_priority(cpu, 0);
- 
- 	/* remove ourselves from the global interrupt queue */
--	status = rtas_set_indicator(GLOBAL_INTERRUPT_QUEUE,
-+	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
- 		(1UL << interrupt_server_size) - 1 - default_distrib_server, 0);
- 	WARN_ON(status < 0);
- 
-diff -Naurp 2618-rc2.orig/include/asm-powerpc/rtas.h 2618-rc2/include/asm-powerpc/rtas.h
---- 2618-rc2.orig/include/asm-powerpc/rtas.h	2006-07-25 19:34:27.000000000 -0700
-+++ 2618-rc2/include/asm-powerpc/rtas.h	2006-07-25 19:33:57.000000000 -0700
-@@ -170,6 +170,7 @@ extern int rtas_get_sensor(int sensor, i
- extern int rtas_get_power_level(int powerdomain, int *level);
- extern int rtas_set_power_level(int powerdomain, int level, int *setlevel);
- extern int rtas_set_indicator(int indicator, int index, int new_value);
-+extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
- extern void rtas_progress(char *s, unsigned short hex);
- extern void rtas_initialize(void);
- 
-
---------------000803070908000706010907--
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
