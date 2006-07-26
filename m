@@ -1,17 +1,15 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 79940679FD
+Return-Path: <rlrevell@joe-job.com>
+Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
+	by ozlabs.org (Postfix) with SMTP id CD3B967A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Jul 2006 07:30:59 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: caches on Virtex 4
-Date: Wed, 26 Jul 2006 14:18:53 -0700
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE487105D3A443@VCAEXCH01.hq.corp.viasat.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: "heiguga" <heiguga@gmx.net>,
-	<linuxppc-embedded@ozlabs.org>
+	Thu, 27 Jul 2006 07:45:31 +1000 (EST)
+Subject: Serial issue
+From: Lee Revell <rlrevell@joe-job.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 26 Jul 2006 17:45:23 -0400
+Message-Id: <1153950324.2927.6.camel@mindpipe>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,50 +20,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Robert,
+I'm trying to connect to a Yosemite 440 PPC board using the serial
+console.  I've tried everything in every Linux Serial FAQ and HOWTO but
+no matter what, I can receive but I cannot transmit.
 
-There are several registers/etc that affect the caches on the Virtex4
-PPC core.
+I know the cable is good, and the PPC board seems OK as I can see all
+the boot messages.  Could it be a bug in my host's serial port?  I'm
+using a Via EPIA M6000.
 
-Step 1 - Make sure your FPGA is configured to have caches in the memory
-regions you're interested in caching.  Your FPGA designer should have
-done this in the EDK (check options in the MHS file).
+$ sudo cat /proc/tty/driver/serial
+serinfo:1.0 driver revision:
+0: uart:16550A port:000003F8 irq:0 tx:0 rx:5379 oe:7 RTS|DTR|DSR|CD
 
-Step 2 - Make sure the individual cache regions are enabled.  Look at
-the Xilinx standalone BSP to see how this works, or read the processor
-manual.  E.g. xcache_l.c (a Xilinx standalone BSP file) in
-XCache_EnableDCache modifies SGR, DCWR, and DCCR SPRs.
-Xcache_EnableICache modifies SGR and ICCR SPRs.
+No matter what I do, tx bytes is stuck at 0.  I've tried irq 0 (polling)
+and irq 4.  No difference at all.
 
-Step 3- Make sure the cache configuration register (CCR0) is configured
-correctly.
+Help...
 
-By default, I'm pretty sure you only need to worry about Step 1, as I
-thought Step2 and 3 were handled by the kernel early in the boot process
-and/or u-boot.
-
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.org=20
-> [mailto:linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.or
-> g] On Behalf Of heiguga
-> Sent: Wednesday, July 26, 2006 10:59 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: caches on Virtex 4
->=20
-> Hi!
->=20
-> I am working on an ml403 board (virtex4 with ppc core). I am=20
-> sucessfully using Linux 2.4 and 2.6.
-> I have done a few performance tests with networking, applications...
->=20
-> How can i ensure, that the caches are turned on? (is there a special
-> Register?)
-> Where are the caches turned on?
->=20
-> nice greetings
-> Robert
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
+Lee
