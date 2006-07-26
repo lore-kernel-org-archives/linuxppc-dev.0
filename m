@@ -1,25 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B446967A2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 03:21:10 +1000 (EST)
-Subject: Re: [Alsa-devel] [PATCH 0/5] powerpc sound, some more patches
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1153864334.18353.8.camel@localhost.localdomain>
-References: <20060718172841.046446000@sipsolutions.net>
-	<s5hy7uhsra7.wl%tiwai@suse.de>
-	<7015.131.234.232.48.1153840399.squirrel@secure.sipsolutions.net>
-	<1153864334.18353.8.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-p0J74OVGq/r2PC6Ko0Bz"
-Date: Wed, 26 Jul 2006 19:19:51 +0200
-Message-Id: <1153934392.10251.0.camel@johannes.berg>
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 8CD5867B55
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 08:05:23 +1000 (EST)
+Date: Wed, 26 Jul 2006 17:04:41 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Haren Myneni <haren@us.ibm.com>
+Subject: Re: [PATCH] Add rtas_set_indicator_fast() for RTAS call without
+	extended delay
+Message-ID: <20060726220441.GZ19076@localdomain>
+References: <44C6F521.8040609@us.ibm.com>
 Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <44C6F521.8040609@us.ibm.com>
+Cc: Milton Miller II <miltonm@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	External List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,42 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Haren Myneni wrote:
+> diff -Naurp 2618-rc2.orig/arch/powerpc/kernel/rtas.c 2618-rc2/arch/powerpc/kernel/rtas.c
+> --- 2618-rc2.orig/arch/powerpc/kernel/rtas.c	2006-07-25 19:34:11.000000000 -0700
+> +++ 2618-rc2/arch/powerpc/kernel/rtas.c	2006-07-25 19:33:16.000000000 -0700
+> @@ -569,6 +569,27 @@ int rtas_set_indicator(int indicator, in
+>  }
+>  EXPORT_SYMBOL(rtas_set_indicator);
+>  
+> +/*
+> + * Ignoring RTAS extended delay
+> + */
+> +int rtas_set_indicator_fast(int indicator, int index, int new_value)
+> +{
+> +	int rc;
+> +	int token = rtas_token("set-indicator");
+> +
+> +	if (token == RTAS_UNKNOWN_SERVICE)
+> +		return -ENOENT;
+> +
+> +	rc = rtas_call(token, 3, 1, NULL, indicator, index, new_value);
+> +
+> +	WARN_ON(rc == -2 || (rc >= 9900 && rc <= 9905));
+> +
+> +	if (rc < 0)
+> +		return rtas_error_rc(rc);
+> +
+> +	return rc;
+> +}
+> +
+>  void rtas_restart(char *cmd)
+>  {
+>  	if (rtas_flash_term_hook)
+> diff -Naurp 2618-rc2.orig/arch/powerpc/platforms/pseries/xics.c 2618-rc2/arch/powerpc/platforms/pseries/xics.c
+> --- 2618-rc2.orig/arch/powerpc/platforms/pseries/xics.c	2006-07-25 19:34:41.000000000 -0700
+> +++ 2618-rc2/arch/powerpc/platforms/pseries/xics.c	2006-07-25 19:33:36.000000000 -0700
+> @@ -796,7 +796,7 @@ void xics_teardown_cpu(int secondary)
+>  	 * so leave the master cpu in the group.
+>  	 */
+>  	if (secondary)
+> -		rtas_set_indicator(GLOBAL_INTERRUPT_QUEUE,
+> +		rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
+>  				   (1UL << interrupt_server_size) - 1 -
+>  				   default_distrib_server, 0);
+>  }
+> @@ -813,7 +813,7 @@ void xics_migrate_irqs_away(void)
+>  	xics_set_cpu_priority(cpu, 0);
+>  
+>  	/* remove ourselves from the global interrupt queue */
+> -	status = rtas_set_indicator(GLOBAL_INTERRUPT_QUEUE,
+> +	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
+>  		(1UL << interrupt_server_size) - 1 - default_distrib_server, 0);
+>  	WARN_ON(status < 0);
+>  
 
---=-p0J74OVGq/r2PC6Ko0Bz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2006-07-25 at 16:52 -0500, Benjamin Herrenschmidt wrote:
-
-> They should still, for sure. Johannes, please sync with Paulus since I
-> think you posted previous version of at least some of these that he's
-> about to push to Linus via the powerpc tree.
-
-Hm, I don't think I ever posted 'final' versions of these that I signed
-off, but I'll take a look.
-
-johannes
-
---=-p0J74OVGq/r2PC6Ko0Bz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARMekNqVg1VMiehFYAQKrOA//S8OgCtjKEMKtG3m0DjCGbJs5qk9aTaE6
-u6/pRUH8QQHjs3n99aTh7/XWgkt+hmXvgUrNKMN2UGe05lDeGxJOfLSwKW71kaUP
-sGoXoBJ9rYyqkDjkL0kSv0SsUV3MIlR3fAstdg7dz4YbtEfRrcTVpOZlHnuF4BKN
-9NYL5NSIT8o3LOx3EE7zvcTiG6JLXFJTd2ZollGGbH39CQrSs9oapazQOyn5+jDm
-sxHsg+CC9a5DSX9A+JGWGLxGDxeSwu/ZA7j3WQopVywfrfqf1C4NInspfOAotPwy
-uaUZ7teHlFdK02U8bv1TtDcEzIBMdEHVxkslGZF2PshBf2MMttFqvzOeQdpHtAZM
-ubcxIDW6q9KtxdJ+irhELUYchQ4ysQkaUkBZ3euDz4l0wJxQ7LvxaKi7jffjEuZ9
-QPCHy7xdDhOMNUKxmTUNYeTpN0gh/9hz72eX4vdQP/xhW8PW2BEkQKuthZIyefyZ
-uYctvUPwTBC+E4/NgOXpWCYeqGEKs07c92sWHSpHvhMbLl7Nkt37anGQC37aaaRC
-USTWK1QGENceW24FQ9qG4s5rcYqe2HdQegBS3/OzmJW1jaE3DHro0N6m2s3UonEA
-gLKVsiroZR7R7IrHQ1Tm3t8EhyfUwse6fomVTdtBasSR4DWZ9Y3sxHDwF+FotjzM
-P1mMRqY9TQ8=
-=M/20
------END PGP SIGNATURE-----
-
---=-p0J74OVGq/r2PC6Ko0Bz--
+Looks fine to me from a quick look, but we need to use
+rtas_set_indicator_fast in xics_setup_cpu as well (I think I neglected
+to mention I saw the warning in the cpu up path, sorry).
