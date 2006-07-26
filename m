@@ -1,22 +1,25 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from admin.zirkelwireless.com (admin.zirkelwireless.com
-	[209.216.203.65])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48C8267B32
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 00:38:59 +1000 (EST)
-Subject: Re: DRM git vs. Linux 2.6.17
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: Dave Airlie <airlied@linux.ie>
-In-Reply-To: <1153899787.20778.99.camel@thor.lorrainebruecke.local>
-References: <1153818665.20778.82.camel@thor.lorrainebruecke.local>
-	<Pine.LNX.4.64.0607251030220.30301@skynet.skynet.ie>
-	<1153899787.20778.99.camel@thor.lorrainebruecke.local>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 26 Jul 2006 16:38:46 +0200
-Message-Id: <1153924726.20778.116.camel@thor.lorrainebruecke.local>
+	by ozlabs.org (Postfix) with ESMTP id B446967A2E
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 03:21:10 +1000 (EST)
+Subject: Re: [Alsa-devel] [PATCH 0/5] powerpc sound, some more patches
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1153864334.18353.8.camel@localhost.localdomain>
+References: <20060718172841.046446000@sipsolutions.net>
+	<s5hy7uhsra7.wl%tiwai@suse.de>
+	<7015.131.234.232.48.1153840399.squirrel@secure.sipsolutions.net>
+	<1153864334.18353.8.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-p0J74OVGq/r2PC6Ko0Bz"
+Date: Wed, 26 Jul 2006 19:19:51 +0200
+Message-Id: <1153934392.10251.0.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-07-26 at 09:43 +0200, Michel Dänzer wrote:
-> 
-> I suspect this might be a PPC specific kernel build system issue related
-> to Modules.symvers, 
 
-Actually, now that my x86_64 box is back up, it happens there as well,
-so maybe it's related to the Debian toolchain or kernel packaging.
-Apologies to linuxppc-dev for the false alarm.
+--=-p0J74OVGq/r2PC6Ko0Bz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2006-07-25 at 16:52 -0500, Benjamin Herrenschmidt wrote:
 
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+> They should still, for sure. Johannes, please sync with Paulus since I
+> think you posted previous version of at least some of these that he's
+> about to push to Linus via the powerpc tree.
+
+Hm, I don't think I ever posted 'final' versions of these that I signed
+off, but I'll take a look.
+
+johannes
+
+--=-p0J74OVGq/r2PC6Ko0Bz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARMekNqVg1VMiehFYAQKrOA//S8OgCtjKEMKtG3m0DjCGbJs5qk9aTaE6
+u6/pRUH8QQHjs3n99aTh7/XWgkt+hmXvgUrNKMN2UGe05lDeGxJOfLSwKW71kaUP
+sGoXoBJ9rYyqkDjkL0kSv0SsUV3MIlR3fAstdg7dz4YbtEfRrcTVpOZlHnuF4BKN
+9NYL5NSIT8o3LOx3EE7zvcTiG6JLXFJTd2ZollGGbH39CQrSs9oapazQOyn5+jDm
+sxHsg+CC9a5DSX9A+JGWGLxGDxeSwu/ZA7j3WQopVywfrfqf1C4NInspfOAotPwy
+uaUZ7teHlFdK02U8bv1TtDcEzIBMdEHVxkslGZF2PshBf2MMttFqvzOeQdpHtAZM
+ubcxIDW6q9KtxdJ+irhELUYchQ4ysQkaUkBZ3euDz4l0wJxQ7LvxaKi7jffjEuZ9
+QPCHy7xdDhOMNUKxmTUNYeTpN0gh/9hz72eX4vdQP/xhW8PW2BEkQKuthZIyefyZ
+uYctvUPwTBC+E4/NgOXpWCYeqGEKs07c92sWHSpHvhMbLl7Nkt37anGQC37aaaRC
+USTWK1QGENceW24FQ9qG4s5rcYqe2HdQegBS3/OzmJW1jaE3DHro0N6m2s3UonEA
+gLKVsiroZR7R7IrHQ1Tm3t8EhyfUwse6fomVTdtBasSR4DWZ9Y3sxHDwF+FotjzM
+P1mMRqY9TQ8=
+=M/20
+-----END PGP SIGNATURE-----
+
+--=-p0J74OVGq/r2PC6Ko0Bz--
