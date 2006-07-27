@@ -1,20 +1,16 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8583D67A3F
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 21:27:50 +1000 (EST)
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "'Patrick J. Kelsey'" <KelseyPJ@fairmountautomation.com>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <KelseyPJ@fairmountautomation.com>
+Received: from cvn68.fairmountautomation.com (unknown [70.89.92.105])
+	by ozlabs.org (Postfix) with ESMTP id 0DD5C679FD
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 22:18:16 +1000 (EST)
 Subject: RE: Can 750 user-mode binaries run on a 603e core?
-Date: Thu, 27 Jul 2006 13:27:40 +0200
-Message-ID: <002701c6b16f$af134640$99dfdfdf@bakuhatsu.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <A958F7B12F59EC408E904A912CDE3DAE3D6A0A@cvn68.fairmountautomation.com>
-Reply-To: matt@genesi-usa.com
+	charset="utf-8"
+Date: Thu, 27 Jul 2006 08:18:20 -0400
+Message-ID: <A958F7B12F59EC408E904A912CDE3DAE3D6A0E@cvn68.fairmountautomation.com>
+References: <002701c6b16f$af134640$99dfdfdf@bakuhatsu.net>
+From: "Patrick J. Kelsey" <KelseyPJ@fairmountautomation.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,99 +20,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-The 603/603e has 1 integer unit. The 604/604e and 7xx lines had
-2.
-
-Basically if you optimize for the 750 it may queue up integer
-ops assuming there is room to execute them simultaneously, when
-in fact there isn't.
-
-But as kumar said, userspace is absolutely positively identical,
-the chips from 603e to the latest G4 are entirely binary
-compatible for integer and FPU code. Most people just optimize
-for the 603e and let the CPU handle the rest.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
- 
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org] 
-> On Behalf Of Patrick J. Kelsey
-> Sent: Thursday, July 27, 2006 5:54 AM
-> To: linuxppc-dev@ozlabs.org
-> Subject: RE: Can 750 user-mode binaries run on a 603e core?
-> 
-> (sorry about that last one. had a bit of trouble with a 
-> certain web based mail client...) 
->  
-> Thanks for the reply, Kumar.
->  
-> That sounds encouraging.  One of the things I was worried 
-> about with scheduling differences would be a differing number 
-> of branch delay slots between the two core versions.  I'm 
-> still a bit new to the details of the PowerPC architecture, 
-> and at this point I'm not even sure if there are branch delay 
-> slots, although it does seem from my reading that the 603e 
-> and 750 pipelines are the same, in which case there would 
-> ceratinly be no worries here.
->  
-> At this point, I'm not concerned so much about an inefficient 
-> schedule resulting from running -mcpu=750 code on a 603e as 
-> long as the execution is correct.
->  
-> Pat
->  
-> 
-> 	-----Original Message----- 
-> 	From: 
-> linuxppc-dev-bounces+kelseypj=fairmountautomation.com@ozlabs.o
-> rg on behalf of Kumar Gala 
-> 	Sent: Wed 7/26/2006 8:04 PM 
-> 	To: Patrick J. Kelsey 
-> 	Cc: linuxppc-dev@ozlabs.org 
-> 	Subject: Re: Can 750 user-mode binaries run on a 603e core?
-> 	
-> 	
-> 
-> 
-> 	On Jul 26, 2006, at 5:27 PM, Patrick J. Kelsey wrote:
-> 	
-> 	> Hi,
-> 	>
-> 	> If have user-mode binaries built for a 750 core, say 
-> with gcc -
-> 	> mcpu=750, should I expect them to run on a 603e core? 
->  Would I have 
-> 	> to worry about unsupported instructions or 
-> instruction scheduling 
-> 	> issues?
-> 	>
-> 	> If there's a better list for this question, please advise.
-> 	
-> 	Sure, there isn't different in the user space instruction sets 
-> 	between the 750 and 603e core.  The -mcpu is only tweaking 
-> 	instruction scheduling and making it specific for the 750.  The 
-> 	instruction scheduling differences aren't that huge if 
-> memory serves 
-> 	me correctly.  The 750 probably takes fewer cycles on 
-> multiple and 
-> 	divides.  I forget if the 750 has any additional 
-> execution units that 
-> 	the 603e didn't have (additional integer units, etc.).
-> 	
-> 	- kumar
-> 	_______________________________________________
-> 	Linuxppc-dev mailing list
-> 	Linuxppc-dev@ozlabs.org
-> 	https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 	
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+VGhhbmtzLCBNYXR0Lg0KIA0KRXZlcnl0aGluZyBJIHdhcyByZWFkaW5nIGFib3V0IGJpbmFyeSBj
+b21wYXRpYmlsaXR5IHdhcyBvcmllbnRlZCBpbiB0aGUgJ3JlZ3VsYXInIGRpcmVjdGlvbiwgYXNz
+dXJpbmcgbWUgdGhhdCA2MDNlIGJpbmFyaWVzIHdvdWxkIHJ1biBvbiB0aGUgNzUwIGp1c3QgZmlu
+ZS4gIEknbSBnbGFkIHRvIGhlYXIgdGhhdCBpdCBydW5zIGluIHRoZSBvdGhlciBkaXJlY3Rpb24g
+YWxzbyAoYXQgbGVhc3QgZm9yIGludGVnZXIgYW5kIEZQVSBjb2RlLCB3aGljaCBpcyBnb29kIGVu
+b3VnaCBmb3IgbWUpLg0KIA0KUGF0DQoNCgktLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLSANCglG
+cm9tOiBNYXR0IFNlYWxleSBbbWFpbHRvOm1hdHRAZ2VuZXNpLXVzYS5jb21dIA0KCVNlbnQ6IFRo
+dSA3LzI3LzIwMDYgNzoyNyBBTSANCglUbzogUGF0cmljayBKLiBLZWxzZXk7IGxpbnV4cHBjLWRl
+dkBvemxhYnMub3JnIA0KCUNjOiANCglTdWJqZWN0OiBSRTogQ2FuIDc1MCB1c2VyLW1vZGUgYmlu
+YXJpZXMgcnVuIG9uIGEgNjAzZSBjb3JlPw0KCQ0KCQ0KDQoNCglUaGUgNjAzLzYwM2UgaGFzIDEg
+aW50ZWdlciB1bml0LiBUaGUgNjA0LzYwNGUgYW5kIDd4eCBsaW5lcyBoYWQNCgkyLg0KCQ0KCUJh
+c2ljYWxseSBpZiB5b3Ugb3B0aW1pemUgZm9yIHRoZSA3NTAgaXQgbWF5IHF1ZXVlIHVwIGludGVn
+ZXINCglvcHMgYXNzdW1pbmcgdGhlcmUgaXMgcm9vbSB0byBleGVjdXRlIHRoZW0gc2ltdWx0YW5l
+b3VzbHksIHdoZW4NCglpbiBmYWN0IHRoZXJlIGlzbid0Lg0KCQ0KCUJ1dCBhcyBrdW1hciBzYWlk
+LCB1c2Vyc3BhY2UgaXMgYWJzb2x1dGVseSBwb3NpdGl2ZWx5IGlkZW50aWNhbCwNCgl0aGUgY2hp
+cHMgZnJvbSA2MDNlIHRvIHRoZSBsYXRlc3QgRzQgYXJlIGVudGlyZWx5IGJpbmFyeQ0KCWNvbXBh
+dGlibGUgZm9yIGludGVnZXIgYW5kIEZQVSBjb2RlLiBNb3N0IHBlb3BsZSBqdXN0IG9wdGltaXpl
+DQoJZm9yIHRoZSA2MDNlIGFuZCBsZXQgdGhlIENQVSBoYW5kbGUgdGhlIHJlc3QuDQoJDQoJLS0N
+CglNYXR0IFNlYWxleSA8bWF0dEBnZW5lc2ktdXNhLmNvbT4NCglNYW5hZ2VyLCBHZW5lc2ksIERl
+dmVsb3BlciBSZWxhdGlvbnMNCgkNCgkNCgk+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQoJ
+PiBGcm9tOiBsaW51eHBwYy1kZXYtYm91bmNlcyttYXR0PWdlbmVzaS11c2EuY29tQG96bGFicy5v
+cmcNCgk+IFttYWlsdG86bGludXhwcGMtZGV2LWJvdW5jZXMrbWF0dD1nZW5lc2ktdXNhLmNvbUBv
+emxhYnMub3JnXQ0KCT4gT24gQmVoYWxmIE9mIFBhdHJpY2sgSi4gS2Vsc2V5DQoJPiBTZW50OiBU
+aHVyc2RheSwgSnVseSAyNywgMjAwNiA1OjU0IEFNDQoJPiBUbzogbGludXhwcGMtZGV2QG96bGFi
+cy5vcmcNCgk+IFN1YmplY3Q6IFJFOiBDYW4gNzUwIHVzZXItbW9kZSBiaW5hcmllcyBydW4gb24g
+YSA2MDNlIGNvcmU/DQoJPg0KCT4gKHNvcnJ5IGFib3V0IHRoYXQgbGFzdCBvbmUuIGhhZCBhIGJp
+dCBvZiB0cm91YmxlIHdpdGggYQ0KCT4gY2VydGFpbiB3ZWIgYmFzZWQgbWFpbCBjbGllbnQuLi4p
+DQoJPiANCgk+IFRoYW5rcyBmb3IgdGhlIHJlcGx5LCBLdW1hci4NCgk+IA0KCT4gVGhhdCBzb3Vu
+ZHMgZW5jb3VyYWdpbmcuICBPbmUgb2YgdGhlIHRoaW5ncyBJIHdhcyB3b3JyaWVkDQoJPiBhYm91
+dCB3aXRoIHNjaGVkdWxpbmcgZGlmZmVyZW5jZXMgd291bGQgYmUgYSBkaWZmZXJpbmcgbnVtYmVy
+DQoJPiBvZiBicmFuY2ggZGVsYXkgc2xvdHMgYmV0d2VlbiB0aGUgdHdvIGNvcmUgdmVyc2lvbnMu
+ICBJJ20NCgk+IHN0aWxsIGEgYml0IG5ldyB0byB0aGUgZGV0YWlscyBvZiB0aGUgUG93ZXJQQyBh
+cmNoaXRlY3R1cmUsDQoJPiBhbmQgYXQgdGhpcyBwb2ludCBJJ20gbm90IGV2ZW4gc3VyZSBpZiB0
+aGVyZSBhcmUgYnJhbmNoIGRlbGF5DQoJPiBzbG90cywgYWx0aG91Z2ggaXQgZG9lcyBzZWVtIGZy
+b20gbXkgcmVhZGluZyB0aGF0IHRoZSA2MDNlDQoJPiBhbmQgNzUwIHBpcGVsaW5lcyBhcmUgdGhl
+IHNhbWUsIGluIHdoaWNoIGNhc2UgdGhlcmUgd291bGQNCgk+IGNlcmF0aW5seSBiZSBubyB3b3Jy
+aWVzIGhlcmUuDQoJPiANCgk+IEF0IHRoaXMgcG9pbnQsIEknbSBub3QgY29uY2VybmVkIHNvIG11
+Y2ggYWJvdXQgYW4gaW5lZmZpY2llbnQNCgk+IHNjaGVkdWxlIHJlc3VsdGluZyBmcm9tIHJ1bm5p
+bmcgLW1jcHU9NzUwIGNvZGUgb24gYSA2MDNlIGFzDQoJPiBsb25nIGFzIHRoZSBleGVjdXRpb24g
+aXMgY29ycmVjdC4NCgk+IA0KCT4gUGF0DQoJPiANCgk+DQoJPiAgICAgICAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KCT4gICAgICAgRnJvbToNCgk+IGxpbnV4cHBjLWRldi1ib3VuY2VzK2tl
+bHNleXBqPWZhaXJtb3VudGF1dG9tYXRpb24uY29tQG96bGFicy5vDQoJPiByZyBvbiBiZWhhbGYg
+b2YgS3VtYXIgR2FsYQ0KCT4gICAgICAgU2VudDogV2VkIDcvMjYvMjAwNiA4OjA0IFBNDQoJPiAg
+ICAgICBUbzogUGF0cmljayBKLiBLZWxzZXkNCgk+ICAgICAgIENjOiBsaW51eHBwYy1kZXZAb3ps
+YWJzLm9yZw0KCT4gICAgICAgU3ViamVjdDogUmU6IENhbiA3NTAgdXNlci1tb2RlIGJpbmFyaWVz
+IHJ1biBvbiBhIDYwM2UgY29yZT8NCgk+ICAgICAgDQoJPiAgICAgIA0KCT4NCgk+DQoJPiAgICAg
+ICBPbiBKdWwgMjYsIDIwMDYsIGF0IDU6MjcgUE0sIFBhdHJpY2sgSi4gS2Vsc2V5IHdyb3RlOg0K
+CT4gICAgICANCgk+ICAgICAgID4gSGksDQoJPiAgICAgICA+DQoJPiAgICAgICA+IElmIGhhdmUg
+dXNlci1tb2RlIGJpbmFyaWVzIGJ1aWx0IGZvciBhIDc1MCBjb3JlLCBzYXkNCgk+IHdpdGggZ2Nj
+IC0NCgk+ICAgICAgID4gbWNwdT03NTAsIHNob3VsZCBJIGV4cGVjdCB0aGVtIHRvIHJ1biBvbiBh
+IDYwM2UgY29yZT8NCgk+ICBXb3VsZCBJIGhhdmUNCgk+ICAgICAgID4gdG8gd29ycnkgYWJvdXQg
+dW5zdXBwb3J0ZWQgaW5zdHJ1Y3Rpb25zIG9yDQoJPiBpbnN0cnVjdGlvbiBzY2hlZHVsaW5nDQoJ
+PiAgICAgICA+IGlzc3Vlcz8NCgk+ICAgICAgID4NCgk+ICAgICAgID4gSWYgdGhlcmUncyBhIGJl
+dHRlciBsaXN0IGZvciB0aGlzIHF1ZXN0aW9uLCBwbGVhc2UgYWR2aXNlLg0KCT4gICAgICANCgk+
+ICAgICAgIFN1cmUsIHRoZXJlIGlzbid0IGRpZmZlcmVudCBpbiB0aGUgdXNlciBzcGFjZSBpbnN0
+cnVjdGlvbiBzZXRzDQoJPiAgICAgICBiZXR3ZWVuIHRoZSA3NTAgYW5kIDYwM2UgY29yZS4gIFRo
+ZSAtbWNwdSBpcyBvbmx5IHR3ZWFraW5nDQoJPiAgICAgICBpbnN0cnVjdGlvbiBzY2hlZHVsaW5n
+IGFuZCBtYWtpbmcgaXQgc3BlY2lmaWMgZm9yIHRoZSA3NTAuICBUaGUNCgk+ICAgICAgIGluc3Ry
+dWN0aW9uIHNjaGVkdWxpbmcgZGlmZmVyZW5jZXMgYXJlbid0IHRoYXQgaHVnZSBpZg0KCT4gbWVt
+b3J5IHNlcnZlcw0KCT4gICAgICAgbWUgY29ycmVjdGx5LiAgVGhlIDc1MCBwcm9iYWJseSB0YWtl
+cyBmZXdlciBjeWNsZXMgb24NCgk+IG11bHRpcGxlIGFuZA0KCT4gICAgICAgZGl2aWRlcy4gIEkg
+Zm9yZ2V0IGlmIHRoZSA3NTAgaGFzIGFueSBhZGRpdGlvbmFsDQoJPiBleGVjdXRpb24gdW5pdHMg
+dGhhdA0KCT4gICAgICAgdGhlIDYwM2UgZGlkbid0IGhhdmUgKGFkZGl0aW9uYWwgaW50ZWdlciB1
+bml0cywgZXRjLikuDQoJPiAgICAgIA0KCT4gICAgICAgLSBrdW1hcg0KCT4gICAgICAgX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCgk+ICAgICAgIExpbnV4
+cHBjLWRldiBtYWlsaW5nIGxpc3QNCgk+ICAgICAgIExpbnV4cHBjLWRldkBvemxhYnMub3JnDQoJ
+PiAgICAgICBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1kZXYN
+Cgk+ICAgICAgDQoJPg0KCT4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18NCgk+IExpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QNCgk+IExpbnV4cHBjLWRldkBv
+emxhYnMub3JnDQoJPiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBw
+Yy1kZXYNCgk+DQoJDQoJDQoNCg==
