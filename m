@@ -1,17 +1,20 @@
-Return-Path: <KelseyPJ@fairmountautomation.com>
-Received: from cvn68.fairmountautomation.com (unknown [70.89.92.105])
-	by ozlabs.org (Postfix) with ESMTP id 8A983679F0
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 13:53:33 +1000 (EST)
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8583D67A3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 21:27:50 +1000 (EST)
+From: "Matt Sealey" <matt@genesi-usa.com>
+To: "'Patrick J. Kelsey'" <KelseyPJ@fairmountautomation.com>,
+	<linuxppc-dev@ozlabs.org>
 Subject: RE: Can 750 user-mode binaries run on a 603e core?
+Date: Thu, 27 Jul 2006 13:27:40 +0200
+Message-ID: <002701c6b16f$af134640$99dfdfdf@bakuhatsu.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="utf-8"
-Date: Wed, 26 Jul 2006 23:53:36 -0400
-Message-ID: <A958F7B12F59EC408E904A912CDE3DAE3D6A0A@cvn68.fairmountautomation.com>
-References: <A958F7B12F59EC408E904A912CDE3DAE3D6A07@cvn68.fairmountautomation.com>
-	<E7ECF775-1E54-4EE8-98DA-89FAD5C7C03A@kernel.crashing.org>
-From: "Patrick J. Kelsey" <KelseyPJ@fairmountautomation.com>
-To: <linuxppc-dev@ozlabs.org>
+	charset="US-ASCII"
+In-Reply-To: <A958F7B12F59EC408E904A912CDE3DAE3D6A0A@cvn68.fairmountautomation.com>
+Reply-To: matt@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-KHNvcnJ5IGFib3V0IHRoYXQgbGFzdCBvbmUuIGhhZCBhIGJpdCBvZiB0cm91YmxlIHdpdGggYSBj
-ZXJ0YWluIHdlYiBiYXNlZCBtYWlsIGNsaWVudC4uLikgDQogDQpUaGFua3MgZm9yIHRoZSByZXBs
-eSwgS3VtYXIuDQogDQpUaGF0IHNvdW5kcyBlbmNvdXJhZ2luZy4gIE9uZSBvZiB0aGUgdGhpbmdz
-IEkgd2FzIHdvcnJpZWQgYWJvdXQgd2l0aCBzY2hlZHVsaW5nIGRpZmZlcmVuY2VzIHdvdWxkIGJl
-IGEgZGlmZmVyaW5nIG51bWJlciBvZiBicmFuY2ggZGVsYXkgc2xvdHMgYmV0d2VlbiB0aGUgdHdv
-IGNvcmUgdmVyc2lvbnMuICBJJ20gc3RpbGwgYSBiaXQgbmV3IHRvIHRoZSBkZXRhaWxzIG9mIHRo
-ZSBQb3dlclBDIGFyY2hpdGVjdHVyZSwgYW5kIGF0IHRoaXMgcG9pbnQgSSdtIG5vdCBldmVuIHN1
-cmUgaWYgdGhlcmUgYXJlIGJyYW5jaCBkZWxheSBzbG90cywgYWx0aG91Z2ggaXQgZG9lcyBzZWVt
-IGZyb20gbXkgcmVhZGluZyB0aGF0IHRoZSA2MDNlIGFuZCA3NTAgcGlwZWxpbmVzIGFyZSB0aGUg
-c2FtZSwgaW4gd2hpY2ggY2FzZSB0aGVyZSB3b3VsZCBjZXJhdGlubHkgYmUgbm8gd29ycmllcyBo
-ZXJlLg0KIA0KQXQgdGhpcyBwb2ludCwgSSdtIG5vdCBjb25jZXJuZWQgc28gbXVjaCBhYm91dCBh
-biBpbmVmZmljaWVudCBzY2hlZHVsZSByZXN1bHRpbmcgZnJvbSBydW5uaW5nIC1tY3B1PTc1MCBj
-b2RlIG9uIGEgNjAzZSBhcyBsb25nIGFzIHRoZSBleGVjdXRpb24gaXMgY29ycmVjdC4NCiANClBh
-dA0KIA0KDQoJLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0gDQoJRnJvbTogbGludXhwcGMtZGV2
-LWJvdW5jZXMra2Vsc2V5cGo9ZmFpcm1vdW50YXV0b21hdGlvbi5jb21Ab3psYWJzLm9yZyBvbiBi
-ZWhhbGYgb2YgS3VtYXIgR2FsYSANCglTZW50OiBXZWQgNy8yNi8yMDA2IDg6MDQgUE0gDQoJVG86
-IFBhdHJpY2sgSi4gS2Vsc2V5IA0KCUNjOiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZyANCglTdWJq
-ZWN0OiBSZTogQ2FuIDc1MCB1c2VyLW1vZGUgYmluYXJpZXMgcnVuIG9uIGEgNjAzZSBjb3JlPw0K
-CQ0KCQ0KDQoNCglPbiBKdWwgMjYsIDIwMDYsIGF0IDU6MjcgUE0sIFBhdHJpY2sgSi4gS2Vsc2V5
-IHdyb3RlOg0KCQ0KCT4gSGksDQoJPg0KCT4gSWYgaGF2ZSB1c2VyLW1vZGUgYmluYXJpZXMgYnVp
-bHQgZm9yIGEgNzUwIGNvcmUsIHNheSB3aXRoIGdjYyAtDQoJPiBtY3B1PTc1MCwgc2hvdWxkIEkg
-ZXhwZWN0IHRoZW0gdG8gcnVuIG9uIGEgNjAzZSBjb3JlPyAgV291bGQgSSBoYXZlIA0KCT4gdG8g
-d29ycnkgYWJvdXQgdW5zdXBwb3J0ZWQgaW5zdHJ1Y3Rpb25zIG9yIGluc3RydWN0aW9uIHNjaGVk
-dWxpbmcgDQoJPiBpc3N1ZXM/DQoJPg0KCT4gSWYgdGhlcmUncyBhIGJldHRlciBsaXN0IGZvciB0
-aGlzIHF1ZXN0aW9uLCBwbGVhc2UgYWR2aXNlLg0KCQ0KCVN1cmUsIHRoZXJlIGlzbid0IGRpZmZl
-cmVudCBpbiB0aGUgdXNlciBzcGFjZSBpbnN0cnVjdGlvbiBzZXRzIA0KCWJldHdlZW4gdGhlIDc1
-MCBhbmQgNjAzZSBjb3JlLiAgVGhlIC1tY3B1IGlzIG9ubHkgdHdlYWtpbmcgDQoJaW5zdHJ1Y3Rp
-b24gc2NoZWR1bGluZyBhbmQgbWFraW5nIGl0IHNwZWNpZmljIGZvciB0aGUgNzUwLiAgVGhlIA0K
-CWluc3RydWN0aW9uIHNjaGVkdWxpbmcgZGlmZmVyZW5jZXMgYXJlbid0IHRoYXQgaHVnZSBpZiBt
-ZW1vcnkgc2VydmVzIA0KCW1lIGNvcnJlY3RseS4gIFRoZSA3NTAgcHJvYmFibHkgdGFrZXMgZmV3
-ZXIgY3ljbGVzIG9uIG11bHRpcGxlIGFuZCANCglkaXZpZGVzLiAgSSBmb3JnZXQgaWYgdGhlIDc1
-MCBoYXMgYW55IGFkZGl0aW9uYWwgZXhlY3V0aW9uIHVuaXRzIHRoYXQgDQoJdGhlIDYwM2UgZGlk
-bid0IGhhdmUgKGFkZGl0aW9uYWwgaW50ZWdlciB1bml0cywgZXRjLikuDQoJDQoJLSBrdW1hcg0K
-CV9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQoJTGludXhw
-cGMtZGV2IG1haWxpbmcgbGlzdA0KCUxpbnV4cHBjLWRldkBvemxhYnMub3JnDQoJaHR0cHM6Ly9v
-emxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZGV2DQoJDQoNCg==
+
+The 603/603e has 1 integer unit. The 604/604e and 7xx lines had
+2.
+
+Basically if you optimize for the 750 it may queue up integer
+ops assuming there is room to execute them simultaneously, when
+in fact there isn't.
+
+But as kumar said, userspace is absolutely positively identical,
+the chips from 603e to the latest G4 are entirely binary
+compatible for integer and FPU code. Most people just optimize
+for the 603e and let the CPU handle the rest.
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Manager, Genesi, Developer Relations
+ 
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org] 
+> On Behalf Of Patrick J. Kelsey
+> Sent: Thursday, July 27, 2006 5:54 AM
+> To: linuxppc-dev@ozlabs.org
+> Subject: RE: Can 750 user-mode binaries run on a 603e core?
+> 
+> (sorry about that last one. had a bit of trouble with a 
+> certain web based mail client...) 
+>  
+> Thanks for the reply, Kumar.
+>  
+> That sounds encouraging.  One of the things I was worried 
+> about with scheduling differences would be a differing number 
+> of branch delay slots between the two core versions.  I'm 
+> still a bit new to the details of the PowerPC architecture, 
+> and at this point I'm not even sure if there are branch delay 
+> slots, although it does seem from my reading that the 603e 
+> and 750 pipelines are the same, in which case there would 
+> ceratinly be no worries here.
+>  
+> At this point, I'm not concerned so much about an inefficient 
+> schedule resulting from running -mcpu=750 code on a 603e as 
+> long as the execution is correct.
+>  
+> Pat
+>  
+> 
+> 	-----Original Message----- 
+> 	From: 
+> linuxppc-dev-bounces+kelseypj=fairmountautomation.com@ozlabs.o
+> rg on behalf of Kumar Gala 
+> 	Sent: Wed 7/26/2006 8:04 PM 
+> 	To: Patrick J. Kelsey 
+> 	Cc: linuxppc-dev@ozlabs.org 
+> 	Subject: Re: Can 750 user-mode binaries run on a 603e core?
+> 	
+> 	
+> 
+> 
+> 	On Jul 26, 2006, at 5:27 PM, Patrick J. Kelsey wrote:
+> 	
+> 	> Hi,
+> 	>
+> 	> If have user-mode binaries built for a 750 core, say 
+> with gcc -
+> 	> mcpu=750, should I expect them to run on a 603e core? 
+>  Would I have 
+> 	> to worry about unsupported instructions or 
+> instruction scheduling 
+> 	> issues?
+> 	>
+> 	> If there's a better list for this question, please advise.
+> 	
+> 	Sure, there isn't different in the user space instruction sets 
+> 	between the 750 and 603e core.  The -mcpu is only tweaking 
+> 	instruction scheduling and making it specific for the 750.  The 
+> 	instruction scheduling differences aren't that huge if 
+> memory serves 
+> 	me correctly.  The 750 probably takes fewer cycles on 
+> multiple and 
+> 	divides.  I forget if the 750 has any additional 
+> execution units that 
+> 	the 603e didn't have (additional integer units, etc.).
+> 	
+> 	- kumar
+> 	_______________________________________________
+> 	Linuxppc-dev mailing list
+> 	Linuxppc-dev@ozlabs.org
+> 	https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 	
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
