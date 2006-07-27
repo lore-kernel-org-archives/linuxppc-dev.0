@@ -1,22 +1,23 @@
-Return-Path: <tony.p.lee@gmail.com>
-Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.202])
-	by ozlabs.org (Postfix) with ESMTP id 7F5F7679F0
+Return-Path: <jcrigby@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id DF63F67A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Jul 2006 02:58:46 +1000 (EST)
-Received: by wx-out-0102.google.com with SMTP id t12so1572199wxc
+	Fri, 28 Jul 2006 03:36:58 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id e2so368779ugf
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Jul 2006 09:58:45 -0700 (PDT)
-Message-ID: <470b63970607270952q50311d1cs85297de2c5b6f504@mail.gmail.com>
-Date: Thu, 27 Jul 2006 09:52:23 -0700
-From: "Tony Lee" <tony.p.lee@gmail.com>
-To: "Frank D Lombardo" <lombardo@mdivac.com>
-Subject: Re: Where to store the Linux kernel.
-In-Reply-To: <44C8DC19.9030600@mdivac.com>
+	Thu, 27 Jul 2006 10:36:56 -0700 (PDT)
+Message-ID: <4b73d43f0607271030o7170e8dcn28bd3f62ec243426@mail.gmail.com>
+Date: Thu, 27 Jul 2006 11:30:42 -0600
+From: "John Rigby" <jcrigby@gmail.com>
+To: "Sylvain Munaut" <tnt@246tnt.com>
+Subject: Re: Using bestcomm in an external module (MPC5200B to be exact)
+In-Reply-To: <44BC0B9A.5010103@246tNt.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_88977_24764633.1154019143460"
-References: <BAY110-F64D7B98642F2626AA4E90B2580@phx.gbl>
-	<44C8DC19.9030600@mdivac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <4496b9a7.1d040e45.6737.ffff8473@mx.gmail.com>
+	<20060620210335.q9mgydr5ppkogsoo@webmail.bluenox.com>
+	<1151710395.27137.7.camel@localhost.localdomain>
+	<44BC0B9A.5010103@246tNt.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,90 +29,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_88977_24764633.1154019143460
-Content-Type: text/plain; charset=GB2312; format=flowed
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Sylvain,
 
-SSB1c2VkIHRoZSBWUDIwIGJlZm9yZS4gICBZb3UgY2FuIHVzZSB0aGUgWGlsaW54J3MgdG9vbCB0
-byBnZW5lcmF0ZSB0aGUgLmFjZQpmaWxlIGZyb20gdGhlIC5lbGYsIGJpdCBzdHJlYW0sIGV0YyBh
-bmQgcHV0IGl0IGluIHRoZSBDRi4KCkl0IGlzIHZlcnkgc2ltcGxlIHBvbmNlIHlvdSBkbyBpdCBv
-bmNlIGFuZCBYaWxpbnggaGFzIHZlcnkgZ29vZCBhcHAgbm90ZSB0bwp0ZWxsIHlvdSBleGFjdGx5
-IHdoYXQgbmVlZCB0byBkby4KCi1Ub255CgpPbiA3LzI3LzA2LCBGcmFuayBEIExvbWJhcmRvIDxs
-b21iYXJkb0BtZGl2YWMuY29tPiB3cm90ZToKPgo+IE1pbmcsCj4KPiBJIGFtIHVzaW5nIGFuIE1M
-NDAzIGluIGEgc2ltaWxhciB3YXkuIEkgaGF2ZSB0aGUgZG93bmxvYWQuYml0IGZpbGUKPiBzdG9y
-ZWQgaW4gcGxhdGZvcm0gZmxhc2guIFUtQm9vdCwgdGhlIExpbnV4IEtlcm5lbCBhbmQgaW5pdHJk
-IGFyZSBzdG9yZWQKPiBpbiB0aGUgbGluZWFyIGZsYXNoLgo+Cj4gRnJhbmsKPgo+Cj4gTWluZyBM
-aXUgd3JvdGU6Cj4gPiBIZWxsbyBldmVyeW9uZSwKPiA+IE5vdyBJIGFtIGRvaW5nIGEgZW1iZWRk
-ZWQgbGludXggcHJvamVjdCBvbiB0aGUgYm9hcmQgb2YgTUw0MDModmlydGV4NCwKPiA+IHBwYzQw
-NSkuIEluIG15IHByb2R1Y3QsIEkgY2Fubm90IHVzZSBDRiBjYXJkLiBTbyBJIGhhdmUgdG8gdXNl
-IGZsYXNoCj4gbWVtb3J5Cj4gPiB0byBzdG9yZSB0aGUgTGludXgga2VybmVsLiBFeGNlcHQgZm9y
-IHRoZSBMaW51eCBrZXJuZWwsIGFsc28gSSBoYXZlIHRvCj4gPiBzdG9yZSB0aGUgaGFyZHdhcmUg
-aW5mb3JtYXRpb24gb2YgdGhlIHN5c3RlbS5iaXQgZmlsZS4gSSBrbm93IGluIG1sNDAzCj4gPiBi
-b2FyZCwgdGhlcmUgYXJlIHR3byB0eXBlcyBvZiBmbGFzaC4gT25lIGlzIFBsYXRmb3JtIEZsYXNo
-IGFuZCB0aGUgb3RoZXIKPiBpcwo+ID4gTGluZWFyIEZsYXNoLiBDYW4gYW55b25lIHRlbGwgbWUg
-aG93IGNhbiBJIGFycmFuZ2UgbXkgaGFyZHdhcmUgLmJpdCBmaWxlCj4gPiBhbmQgTGludXgga2Vy
-bmVsIHpJbWFnZS5lbGYgZmlsZSBhbmQgc3RvcmUgdGhlbSBpbiB0aGUgZmxhc2ggcHJvdmlkZWQg
-aW4KPiA+IHRoZSBib2FyZD8gQ2FuIEkgcHV0IGJvdGggb2YgdGhlbSBpbiB0aGUgUGxhdGZvcm0g
-Rmxhc2ggY2hpcD8gVGhhbmtzIGZvcgo+ID4gdGhlIHRlbGxpbmcuCj4gPgo+ID4gUmVnYXJkcwo+
-ID4gTWluZwo+ID4KPiA+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCj4gPiDT68Gqu/q1xMXz09G9+NDQvbvB96Osx+vKudPD
-IE1TTiBNZXNzZW5nZXI6ICBodHRwOi8vbWVzc2VuZ2VyLm1zbi5jb20vY24KPiA+Cj4gPiBfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+ID4gTGludXhwcGMt
-ZW1iZWRkZWQgbWFpbGluZyBsaXN0Cj4gPiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnCj4g
-PiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZAo+
-Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiBMaW51
-eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxpc3QKPiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3Jn
-Cj4gaHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQK
-CgoKCi0tIAotVG9ueQpIYXZpbmcgZnVuIHdpdGggRlBHQSwgZ2lnZSwgbXBlZywgc25tcCwgcHBj
-LCBMaW51eAo=
-------=_Part_88977_24764633.1154019143460
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+How can I help getting the mpc5200 migrated to the powerpc tree?
+I should have some time to help with this.
 
-SSB1c2VkIHRoZSBWUDIwIGJlZm9yZS4mbmJzcDsmbmJzcDsgWW91IGNhbiB1c2UgdGhlIFhpbGlu
-eCdzIHRvb2wgdG8gZ2VuZXJhdGUgdGhlIC5hY2UgZmlsZSBmcm9tIHRoZSAuZWxmLCBiaXQgc3Ry
-ZWFtLCBldGMgYW5kIHB1dCBpdCBpbiB0aGUgQ0YuPGJyPjxicj5JdCBpcyB2ZXJ5IHNpbXBsZSBw
-b25jZSB5b3UgZG8gaXQgb25jZSBhbmQgWGlsaW54IGhhcyB2ZXJ5IGdvb2QgYXBwIG5vdGUgdG8g
-dGVsbCB5b3UgZXhhY3RseSB3aGF0IG5lZWQgdG8gZG8uCjxicj48YnI+LVRvbnk8YnI+PGJyPjxk
-aXY+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiA3LzI3LzA2LCA8YiBjbGFzcz0iZ21haWxf
-c2VuZGVybmFtZSI+RnJhbmsgRCBMb21iYXJkbzwvYj4gJmx0OzxhIGhyZWY9Im1haWx0bzpsb21i
-YXJkb0BtZGl2YWMuY29tIj5sb21iYXJkb0BtZGl2YWMuY29tPC9hPiZndDsgd3JvdGU6PC9zcGFu
-PjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAxcHgg
-c29saWQgcmdiKDIwNCwgMjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBwYWRk
-aW5nLWxlZnQ6IDFleDsiPgpNaW5nLDxicj48YnI+SSBhbSB1c2luZyBhbiBNTDQwMyBpbiBhIHNp
-bWlsYXIgd2F5LiBJIGhhdmUgdGhlIGRvd25sb2FkLmJpdCBmaWxlPGJyPnN0b3JlZCBpbiBwbGF0
-Zm9ybSBmbGFzaC4gVS1Cb290LCB0aGUgTGludXggS2VybmVsIGFuZCBpbml0cmQgYXJlIHN0b3Jl
-ZDxicj5pbiB0aGUgbGluZWFyIGZsYXNoLjxicj48YnI+RnJhbms8YnI+PGJyPjxicj5NaW5nIExp
-dSB3cm90ZTo8YnI+CiZndDsgSGVsbG8gZXZlcnlvbmUsPGJyPiZndDsgTm93IEkgYW0gZG9pbmcg
-YSBlbWJlZGRlZCBsaW51eCBwcm9qZWN0IG9uIHRoZSBib2FyZCBvZiBNTDQwMyh2aXJ0ZXg0LDxi
-cj4mZ3Q7IHBwYzQwNSkuIEluIG15IHByb2R1Y3QsIEkgY2Fubm90IHVzZSBDRiBjYXJkLiBTbyBJ
-IGhhdmUgdG8gdXNlIGZsYXNoIG1lbW9yeTxicj4mZ3Q7IHRvIHN0b3JlIHRoZSBMaW51eCBrZXJu
-ZWwuIEV4Y2VwdCBmb3IgdGhlIExpbnV4IGtlcm5lbCwgYWxzbyBJIGhhdmUgdG8KPGJyPiZndDsg
-c3RvcmUgdGhlIGhhcmR3YXJlIGluZm9ybWF0aW9uIG9mIHRoZSBzeXN0ZW0uYml0IGZpbGUuIEkg
-a25vdyBpbiBtbDQwMzxicj4mZ3Q7IGJvYXJkLCB0aGVyZSBhcmUgdHdvIHR5cGVzIG9mIGZsYXNo
-LiBPbmUgaXMgUGxhdGZvcm0gRmxhc2ggYW5kIHRoZSBvdGhlciBpczxicj4mZ3Q7IExpbmVhciBG
-bGFzaC4gQ2FuIGFueW9uZSB0ZWxsIG1lIGhvdyBjYW4gSSBhcnJhbmdlIG15IGhhcmR3YXJlIC5i
-aXQgZmlsZQo8YnI+Jmd0OyBhbmQgTGludXgga2VybmVsIHpJbWFnZS5lbGYgZmlsZSBhbmQgc3Rv
-cmUgdGhlbSBpbiB0aGUgZmxhc2ggcHJvdmlkZWQgaW48YnI+Jmd0OyB0aGUgYm9hcmQ/IENhbiBJ
-IHB1dCBib3RoIG9mIHRoZW0gaW4gdGhlIFBsYXRmb3JtIEZsYXNoIGNoaXA/IFRoYW5rcyBmb3I8
-YnI+Jmd0OyB0aGUgdGVsbGluZy48YnI+Jmd0Ozxicj4mZ3Q7IFJlZ2FyZHM8YnI+Jmd0OyBNaW5n
-PGJyPgomZ3Q7PGJyPiZndDsgX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX188YnI+Jmd0OyDT68Gqu/q1xMXz09G9+NDQvbvB96Os
-x+vKudPDIE1TTiBNZXNzZW5nZXI6Jm5ic3A7Jm5ic3A7PGEgaHJlZj0iaHR0cDovL21lc3Nlbmdl
-ci5tc24uY29tL2NuIj5odHRwOi8vbWVzc2VuZ2VyLm1zbi5jb20vY248L2E+PGJyPiZndDs8YnI+
-Jmd0OyBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo8YnI+
-Jmd0OyBMaW51eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxpc3Q8YnI+Jmd0OyA8YSBocmVmPSJtYWls
-dG86TGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZyI+TGludXhwcGMtZW1iZWRkZWRAb3psYWJz
-Lm9yZzwvYT48YnI+Jmd0OyA8YSBocmVmPSJodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eHBwYy1lbWJlZGRlZCI+aHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXhwcGMtZW1iZWRkZWQKPC9hPjxicj48YnI+X19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX188YnI+TGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0
-PGJyPjxhIGhyZWY9Im1haWx0bzpMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnIj5MaW51eHBw
-Yy1lbWJlZGRlZEBvemxhYnMub3JnPC9hPjxicj48YSBocmVmPSJodHRwczovL296bGFicy5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZCI+Cmh0dHBzOi8vb3psYWJzLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWVtYmVkZGVkPC9hPjwvYmxvY2txdW90ZT48L2Rpdj48
-YnI+PGJyIGNsZWFyPSJhbGwiPjxicj4tLSA8YnI+LVRvbnk8YnI+SGF2aW5nIGZ1biB3aXRoIEZQ
-R0EsIGdpZ2UsIG1wZWcsIHNubXAsIHBwYywgTGludXg8YnI+Cg==
-------=_Part_88977_24764633.1154019143460--
+After we get it migrated we can get the bestcomm code in and
+the various drivers that use it.
+
+Also, did you ever get a liteb board?  If not send me your address
+and I will try again to get you one.
+
+Thanks
+John
+
+On 7/17/06, Sylvain Munaut <tnt@246tnt.com> wrote:
+> Benjamin Herrenschmidt wrote:
+> >> But anyway, it's mainly internal cleanup and adapting drivers
+> >> from the public version on my git tree to this newest/cleaner
+> >> version is a 15 min work ;)
+> >>
+> >
+> > Any reason why you aren't regulary submitting those patches for upstream
+> > inclusion ?
+> >
+> Yes. What's in there and not in main streams adds quite a lot to
+> arch/ppc ... So
+> MPC5200 should be adapted to arch/powerpc first and then those changes.
+> And since
+> no-one did that yet and I haven't done it yet either ... (I must admit I
+> had a quick look
+> and I didn't understand much on how to do the change ...)
+>
+>
+>     Sylvain
+>
+>
+> PS: Sorry for the lag (like 15 days...) you know email
+> problem/appartement change/vacation/... the usual ;)
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
