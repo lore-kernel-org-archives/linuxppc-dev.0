@@ -1,17 +1,15 @@
-Return-Path: <rlrevell@joe-job.com>
-Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
-	by ozlabs.org (Postfix) with SMTP id 4FC1067B5E
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s14.bay0.hotmail.com (bay0-omc2-s14.bay0.hotmail.com
+	[65.54.246.150]) by ozlabs.org (Postfix) with ESMTP id 87DC2679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Jul 2006 08:00:23 +1000 (EST)
-Subject: Re: Serial issue
-From: Lee Revell <rlrevell@joe-job.com>
+	Thu, 27 Jul 2006 22:49:55 +1000 (EST)
+Message-ID: <BAY110-F64D7B98642F2626AA4E90B2580@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <1153950324.2927.6.camel@mindpipe>
-References: <1153950324.2927.6.camel@mindpipe>
-Content-Type: text/plain
-Date: Wed, 26 Jul 2006 18:00:21 -0400
-Message-Id: <1153951221.2927.10.camel@mindpipe>
+Subject: Where to store the Linux kernel.
+Date: Thu, 27 Jul 2006 12:49:50 +0000
 Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,14 +20,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-07-26 at 17:45 -0400, Lee Revell wrote:
-> I'm trying to connect to a Yosemite 440 PPC board using the serial
-> console.  I've tried everything in every Linux Serial FAQ and HOWTO but
-> no matter what, I can receive but I cannot transmit.
+Hello everyone,
+Now I am doing a embedded linux project on the board of ML403(virtex4, 
+ppc405). In my product, I cannot use CF card. So I have to use flash memory 
+to store the Linux kernel. Except for the Linux kernel, also I have to 
+store the hardware information of the system.bit file. I know in ml403 
+board, there are two types of flash. One is Platform Flash and the other is 
+Linear Flash. Can anyone tell me how can I arrange my hardware .bit file 
+and Linux kernel zImage.elf file and store them in the flash provided in 
+the board? Can I put both of them in the Platform Flash chip? Thanks for 
+the telling. 
 
-I've resolved the problem - unlike my reference system, with this host,
-hardware flow control must be disabled for it to work.
+Regards
+Ming
 
-Sorry for the noise.
-
-Lee
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
