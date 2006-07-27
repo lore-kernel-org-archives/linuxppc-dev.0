@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9114B679E7
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 10:04:51 +1000 (EST)
-In-Reply-To: <A958F7B12F59EC408E904A912CDE3DAE3D6A07@cvn68.fairmountautomation.com>
+Return-Path: <KelseyPJ@fairmountautomation.com>
+Received: from cvn68.fairmountautomation.com (unknown [70.89.92.105])
+	by ozlabs.org (Postfix) with ESMTP id DD19B679E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 12:53:03 +1000 (EST)
+Subject: RE: Can 750 user-mode binaries run on a 603e core?
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Date: Wed, 26 Jul 2006 22:53:07 -0400
+Message-ID: <A958F7B12F59EC408E904A912CDE3DAE3D6A09@cvn68.fairmountautomation.com>
 References: <A958F7B12F59EC408E904A912CDE3DAE3D6A07@cvn68.fairmountautomation.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E7ECF775-1E54-4EE8-98DA-89FAD5C7C03A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Can 750 user-mode binaries run on a 603e core?
-Date: Wed, 26 Jul 2006 19:04:59 -0500
-To: Patrick J. Kelsey <KelseyPJ@fairmountautomation.com>
-Cc: linuxppc-dev@ozlabs.org
+	<E7ECF775-1E54-4EE8-98DA-89FAD5C7C03A@kernel.crashing.org>
+From: "Patrick J. Kelsey" <KelseyPJ@fairmountautomation.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jul 26, 2006, at 5:27 PM, Patrick J. Kelsey wrote:
-
-> Hi,
->
-> If have user-mode binaries built for a 750 core, say with gcc - 
-> mcpu=750, should I expect them to run on a 603e core?  Would I have  
-> to worry about unsupported instructions or instruction scheduling  
-> issues?
->
-> If there's a better list for this question, please advise.
-
-Sure, there isn't different in the user space instruction sets  
-between the 750 and 603e core.  The -mcpu is only tweaking  
-instruction scheduling and making it specific for the 750.  The  
-instruction scheduling differences aren't that huge if memory serves  
-me correctly.  The 750 probably takes fewer cycles on multiple and  
-divides.  I forget if the 750 has any additional execution units that  
-the 603e didn't have (additional integer units, etc.).
-
-- kumar
+IA0KDQoJLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0gDQoJRnJvbTogbGludXhwcGMtZGV2LWJv
+dW5jZXMra2Vsc2V5cGo9ZmFpcm1vdW50YXV0b21hdGlvbi5jb21Ab3psYWJzLm9yZyBvbiBiZWhh
+bGYgb2YgS3VtYXIgR2FsYSANCglTZW50OiBXZWQgNy8yNi8yMDA2IDg6MDQgUE0gDQoJVG86IFBh
+dHJpY2sgSi4gS2Vsc2V5IA0KCUNjOiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZyANCglTdWJqZWN0
+OiBSZTogQ2FuIDc1MCB1c2VyLW1vZGUgYmluYXJpZXMgcnVuIG9uIGEgNjAzZSBjb3JlPw0KCQ0K
+CQ0KDQoNCglPbiBKdWwgMjYsIDIwMDYsIGF0IDU6MjcgUE0sIFBhdHJpY2sgSi4gS2Vsc2V5IHdy
+b3RlOg0KCQ0KCT4gSGksDQoJPg0KCT4gSWYgaGF2ZSB1c2VyLW1vZGUgYmluYXJpZXMgYnVpbHQg
+Zm9yIGEgNzUwIGNvcmUsIHNheSB3aXRoIGdjYyAtDQoJPiBtY3B1PTc1MCwgc2hvdWxkIEkgZXhw
+ZWN0IHRoZW0gdG8gcnVuIG9uIGEgNjAzZSBjb3JlPyAgV291bGQgSSBoYXZlIA0KCT4gdG8gd29y
+cnkgYWJvdXQgdW5zdXBwb3J0ZWQgaW5zdHJ1Y3Rpb25zIG9yIGluc3RydWN0aW9uIHNjaGVkdWxp
+bmcgDQoJPiBpc3N1ZXM/DQoJPg0KCT4gSWYgdGhlcmUncyBhIGJldHRlciBsaXN0IGZvciB0aGlz
+IHF1ZXN0aW9uLCBwbGVhc2UgYWR2aXNlLg0KCQ0KCVN1cmUsIHRoZXJlIGlzbid0IGRpZmZlcmVu
+dCBpbiB0aGUgdXNlciBzcGFjZSBpbnN0cnVjdGlvbiBzZXRzIA0KCWJldHdlZW4gdGhlIDc1MCBh
+bmQgNjAzZSBjb3JlLiAgVGhlIC1tY3B1IGlzIG9ubHkgdHdlYWtpbmcgDQoJaW5zdHJ1Y3Rpb24g
+c2NoZWR1bGluZyBhbmQgbWFraW5nIGl0IHNwZWNpZmljIGZvciB0aGUgNzUwLiAgVGhlIA0KCWlu
+c3RydWN0aW9uIHNjaGVkdWxpbmcgZGlmZmVyZW5jZXMgYXJlbid0IHRoYXQgaHVnZSBpZiBtZW1v
+cnkgc2VydmVzIA0KCW1lIGNvcnJlY3RseS4gIFRoZSA3NTAgcHJvYmFibHkgdGFrZXMgZmV3ZXIg
+Y3ljbGVzIG9uIG11bHRpcGxlIGFuZCANCglkaXZpZGVzLiAgSSBmb3JnZXQgaWYgdGhlIDc1MCBo
+YXMgYW55IGFkZGl0aW9uYWwgZXhlY3V0aW9uIHVuaXRzIHRoYXQgDQoJdGhlIDYwM2UgZGlkbid0
+IGhhdmUgKGFkZGl0aW9uYWwgaW50ZWdlciB1bml0cywgZXRjLikuDQoJDQoJLSBrdW1hcg0KCV9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQoJTGludXhwcGMt
+ZGV2IG1haWxpbmcgbGlzdA0KCUxpbnV4cHBjLWRldkBvemxhYnMub3JnDQoJaHR0cHM6Ly9vemxh
+YnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZGV2DQoJDQoNCg==
