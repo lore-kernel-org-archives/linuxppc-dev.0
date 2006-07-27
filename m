@@ -1,21 +1,30 @@
-Return-Path: <gianfranco.morandi@euro-studio.it>
-Received: from mail1a.webmessenger.it (mail2.webmessenger.it [193.70.193.55])
-	by ozlabs.org (Postfix) with ESMTP id E098367A2E
+Return-Path: <tnt@246tNt.com>
+Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
+	[195.238.5.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B20CA67B32
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Jul 2006 03:58:02 +1000 (EST)
-Received: from pc005 (151.38.158.250) by mail1a.webmessenger.it (7.2.068.1)
-	(authenticated as g.morandi@actacom.it)
-	id 443596E9011C1FE7 for linuxppc-embedded@ozlabs.org;
-	Thu, 27 Jul 2006 19:49:51 +0200
-Message-ID: <007601c6b1a5$0d5d8230$0500a8c0@pc005>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "Linux PPC Embedded" <linuxppc-embedded@ozlabs.org>
-Subject: Fw: AvNet FX12 Mini Modules
-Date: Thu, 27 Jul 2006 19:49:47 +0200
+	Fri, 28 Jul 2006 05:16:00 +1000 (EST)
+Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx012.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k6RJFskl027238
+	for <linuxppc-embedded@ozlabs.org>; Thu, 27 Jul 2006 21:15:54 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <44C910C5.3090409@246tNt.com>
+Date: Thu, 27 Jul 2006 21:15:17 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=response
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: John Rigby <jcrigby@gmail.com>
+Subject: Re: Using bestcomm in an external module (MPC5200B to be exact)
+References: <4496b9a7.1d040e45.6737.ffff8473@mx.gmail.com>	
+	<20060620210335.q9mgydr5ppkogsoo@webmail.bluenox.com>	
+	<1151710395.27137.7.camel@localhost.localdomain>	
+	<44BC0B9A.5010103@246tNt.com>
+	<4b73d43f0607271030o7170e8dcn28bd3f62ec243426@mail.gmail.com>
+In-Reply-To: <4b73d43f0607271030o7170e8dcn28bd3f62ec243426@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,15 +35,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- Hello everyone,
+Hi John,
 
- I would like to start using the AvNet FX12 Mini module in our embedded 
-project and unfotunately I do not have a great knowledge on how to use linux 
-on FPGA.
-Can anyone give me any suggestions or reference project where I can start?
+Frankly ... I don't know, I don't get how this new thing works ...
+if you figure it out, be my guest do it and explain it to me ;)
 
- any suggestions would be apreciated.
+It would be great because I get this cleaned API sitting on my
+tree along with the IDE DMA and the FEC code that I'd really
+like to send ...
 
- regards
+     Sylvain
 
- Gianfranco
+
+
+John Rigby wrote:
+> Sylvain,
+>
+> How can I help getting the mpc5200 migrated to the powerpc tree?
+> I should have some time to help with this.
+>
+> After we get it migrated we can get the bestcomm code in and
+> the various drivers that use it.
+>
+> Also, did you ever get a liteb board?  If not send me your address
+> and I will try again to get you one.
+>
+> Thanks
+> John
+>
+> On 7/17/06, Sylvain Munaut <tnt@246tnt.com> wrote:
+>> Benjamin Herrenschmidt wrote:
+>> >> But anyway, it's mainly internal cleanup and adapting drivers
+>> >> from the public version on my git tree to this newest/cleaner
+>> >> version is a 15 min work ;)
+>> >>
+>> >
+>> > Any reason why you aren't regulary submitting those patches for
+>> upstream
+>> > inclusion ?
+>> >
+>> Yes. What's in there and not in main streams adds quite a lot to
+>> arch/ppc ... So
+>> MPC5200 should be adapted to arch/powerpc first and then those changes.
+>> And since
+>> no-one did that yet and I haven't done it yet either ... (I must admit I
+>> had a quick look
+>> and I didn't understand much on how to do the change ...)
+>>
+>>
+>>     Sylvain
+>>
+>>
+>> PS: Sorry for the lag (like 15 days...) you know email
+>> problem/appartement change/vacation/... the usual ;)
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>
