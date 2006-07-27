@@ -1,24 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7363E679E0
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 01:37:18 +1000 (EST)
-In-Reply-To: <5744F4FC-32DC-4F24-9FD4-E6CAC4AFA6A4@freescale.com>
-References: <A958F7B12F59EC408E904A912CDE3DAE3D6A07@cvn68.fairmountautomation.com>	<E7ECF775-1E54-4EE8-98DA-89FAD5C7C03A@kernel.crashing.org>
-	<A958F7B12F59EC408E904A912CDE3DAE3D6A0A@cvn68.fairmountautomation.com>
-	<44C8B330.7030600@smiths-aerospace.com>
-	<5744F4FC-32DC-4F24-9FD4-E6CAC4AFA6A4@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FA237244-A926-44B4-B669-1C5BC1E8E35B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Can 750 user-mode binaries run on a 603e core?
-Date: Thu, 27 Jul 2006 10:37:24 -0500
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org,
-	"Patrick J. Kelsey" <KelseyPJ@fairmountautomation.com>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9AF0467A3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 04:19:42 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6RIJZKo010091
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 14:19:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6RIJMtd091404
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 12:19:23 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6RIJM95002753
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jul 2006 12:19:22 -0600
+Subject: [PATCH][0/2] RTAS MSI
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Thu, 27 Jul 2006 13:15:53 -0500
+Message-Id: <1154024154.29826.229.camel@goblue>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,62 +36,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Here is a rebased RTAS MSI which uses the IRQ layer rewrite.  Please try
+getting it into 2.6.18.  
 
-On Jul 27, 2006, at 10:30 AM, Andy Fleming wrote:
+I mistakenly forgot to export the MSI symbols.  So modules weren't too
+happy...
 
-> Branch delay slots are evil, and PowerPC did not use them.
->
-> 'nuff said.
->
-> Pretty much any powerpc binary should work on any PowerPC system.
-> Actually, we use a 603-compiled root file system for our e500
-> processors (in our lab), and don't run into any problems.  This is
-
-Let's be clear, that is done by emulating the floating point  
-instructions in the kernel.  (And there are a few user space integer/ 
-control instructions that e500 doesn't implement, but your rarely run  
-into them).
-
-- k
-
-> On Jul 27, 2006, at 07:36, Jerry Van Baren wrote:
->
->> Patrick J. Kelsey wrote:
->>> (sorry about that last one. had a bit of trouble with a certain
->>> web based mail client...)
->>>
->>> Thanks for the reply, Kumar.
->>>
->>> That sounds encouraging.  One of the things I was worried about with
->>> scheduling differences would be a differing number of branch delay
->>> slots between the two core versions.  I'm still a bit new to the
->>> details of the PowerPC architecture, and at this point I'm not even
->>> sure if there are branch delay slots, although it does seem from my
->>> reading that the 603e and 750 pipelines are the same, in which case
->>> there would ceratinly be no worries here.
->>
->> FWIIW, the PowerPC architecture has hardware instruction interlocking
->> and scheduling and doesn't require the compiler to implement the
->> branch
->> delay slots like, for instance, the MIPS architecture.  This is much
->> more compiler and portability friendly, but at the expense of more
->> logic
->> in the processor (the PowerPC is not nearly as minimalistic as the
->> MIPS).
->>
->>> At this point, I'm not concerned so much about an inefficient
->>> schedule resulting from running -mcpu=750 code on a 603e as long as
->>> the execution is correct.
->>>
->>> Pat
->>
->> gvb
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+The RTAS patch skips the intel-centric MSI layer and uses
+pci_enable/disable_msi() calls directly.  It does not correctly handle
+multi-vector MSI either.  
