@@ -1,24 +1,18 @@
-Return-Path: <bennett78@digis.net>
-Received: from mercury.testsyseng.com (unknown [209.120.144.205])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0C9CD67A2E
+Return-Path: <lombardo@mdivac.com>
+Received: from mail.mdivac.com (adsl-68-253-104-89.dsl.bcvloh.ameritech.net
+	[68.253.104.89]) by ozlabs.org (Postfix) with ESMTP id 8425167B62
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Jul 2006 00:03:15 +1000 (EST)
-Message-ID: <44CA1909.5080001@digis.net>
-Date: Fri, 28 Jul 2006 08:02:49 -0600
-From: bennett78 <bennett78@digis.net>
+	Sat, 29 Jul 2006 00:48:02 +1000 (EST)
+Message-ID: <44CA23A0.5030901@mdivac.com>
+Date: Fri, 28 Jul 2006 10:48:00 -0400
+From: Frank D Lombardo <lombardo@mdivac.com>
 MIME-Version: 1.0
-To: dhlii@comcast.net
-Subject: Re: Booting Linux Kernel without bootloader
-References: <3C02138692C13C4BB675FE7EA240952915DF66@bluefin.Soneticom.local>
-	<44C9C4E4.2060206@dlasys.net>
-In-Reply-To: <44C9C4E4.2060206@dlasys.net>
-Content-Type: multipart/alternative;
-	boundary="------------070108020504090709010501"
-Cc: Clint Thomas <cthomas@Soneticom.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Reply-To: bennett78@digis.net
+To: Ming Liu <eemingliu@hotmail.com>
+Subject: Re: Where to store the Linux kernel.
+References: <BAY110-F35E07B168493E31407D7C2B2580@phx.gbl>
+In-Reply-To: <BAY110-F35E07B168493E31407D7C2B2580@phx.gbl>
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,222 +23,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070108020504090709010501
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Ming,
 
-David H. Lynch Jr. wrote:
+I have the XPS generated bootloader in bram. The bram is located at the
+reset vector. The XPS bootloader loads U-Boot s-records from linear
+flash into ram and then executes it. U-Boot can then handle booting the
+Linux Kernel image (uImage, not zImage.elf) from linear flash.
 
-> Clint Thomas wrote:
+XPS can program the linear flash for you. In XPS 8.1 the menu option is
+"Device Configuration | Program Flash Memory". I use this to program the
+U-Boot s-records and the Kernel uImage to linear flash.
+
+I have not tried to put both the download.bit and Kernel uImage into
+platform flash, so I can't comment on that.
+
+Frank
+
+Ming Liu wrote:
+> Dear Frank,
 >
->> Hey guys,
->>
->> I have gone through the Linuxppc embedded and dev lists for 
->> information related to what I am trying to do, but was unable to find 
->> exactly what i'm looking for.
->>
->> Basically, the system I want linux running on does not require the 
->> initialization of hardware that U-boot provides, or at least it does 
->> not need it to boot the linux kernel. I want to load an uncompressed 
->> linux kernel into memory and start the execution of the kernel, 
->> without using any kind of bootloader. Is this possible? Or does linux 
->> need some kind of firmware or other software to tell it to start 
->> executing? Thanks for any info you might have.
+>> I am using an ML403 in a similar way. I have the download.bit file
+>> stored in platform flash. U-Boot, the Linux Kernel and initrd are stored
+>> in the linear flash.
+> That's just what I want! Can you say something in detail on how to put
+> the bootloader and the kernel image in the linear flash in XPS? I know
+> that XPS can generate a bootloader automatically. So can we use that
+> one instead of U-boot?
+> By the way, can we put both the download.bit and the Linux image
+> zImage.elf in the platform flash and boot the system from here? If
+> yes, then in the real product, I need only one platform flash to store
+> my design then.
+> Thanks for your telling.
 >
+> Regards
+> Ming
 >
->     You system powers on. It starts executing whatever is at the reset 
-> vector, Something has to get you from the ppc powering up and going to 
-> never never land, to starting to execute Linux.
->     The steps to get from Power on to booting Linux may not be that 
-> complicated, Much of what needs to be done can likely be included as 
-> part of the code for your board in arch/ppc/boot/simple.
->     But something still has to be done.
+> _________________________________________________________________
+> 享用世界上最大的电子邮件系统— MSN Hotmail。 http://www.hotmail.com
 >
->     In my instance I am dealing with a Xilinx V4 (not an ML403). A 
-> small "monitor" program is automatically loaded as part of the FPGA 
-> .bit image. On power on it starts executing.
-
-Curious, how long does the V4 take to load up it's brain? (using a 
-serial EEprom?)
-
->     It sets up the CPU, cache, and very minimal hardware 
-> configuration, and then loads Linux out of flash and executes it.
->    
->     Linux does not have to have alot setup to boot. But something has 
-> to to some minimal initial setup, get Linux into the memory of your 
-> system, and jump to it.
->
->>  
->> Clinton Thomas
->> cthomas@soneticom.com
->>  
->>
->>------------------------------------------------------------------------
->>
->>_______________________________________________
->>Linuxppc-embedded mailing list
->>Linuxppc-embedded@ozlabs.org
->>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->
->
->-- 
->Dave Lynch 					  	    DLA Systems
->Software Development:  				         Embedded Linux
->717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
->fax: 1.253.369.9244 			           Cell: 1.717.587.7774
->Over 25 years' experience in platforms, languages, and technologies too numerous to list.
->
->"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
->Albert Einstein
->  
->
->------------------------------------------------------------------------
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-Frank Bennett
-
-*/Technical Contractor/*
-
-/Triad Systems Engineering
-200 West Mountain Avenue, Suite 103C
-Ft. Collins, CO 80521
-/http://www.traidsyseng.com <http://www.triadsyseng.com>
-frank.bennett@triadsyseng.com <mailto:frank.bennett@triadsyseng.com>/
-/office: 970-493-7586
-cell:   970-402-9269
-
-"I think there's a world market for about five computers."
-        -- attr. Thomas J. Watson (Chairman of the Board, IBM), 1943
-
-
-
-
---------------070108020504090709010501
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-  <title></title>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-David H. Lynch Jr. wrote:
-<blockquote cite="mid44C9C4E4.2060206@dlasys.net" type="cite">
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-Clint Thomas wrote:
-  <blockquote
- cite="mid3C02138692C13C4BB675FE7EA240952915DF66@bluefin.Soneticom.local"
- type="cite">
-    <meta http-equiv="Content-Type" content="text/html; ">
-    <meta content="MSHTML 6.00.2900.2912" name="GENERATOR">
-    <div><font face="Arial" size="2"><span class="675052722-25072006">Hey
-guys,<br>
-    <br>
-I have gone through the Linuxppc embedded and dev lists for information
-related to what I am trying to do, but was unable to find exactly what
-i'm looking for.<br>
-    <br>
-Basically, the system I want linux running on does not require the
-initialization of hardware that U-boot provides, or at least it does
-not need it to boot the linux kernel. I want to load an uncompressed
-linux kernel into memory and start the execution of the kernel, without
-using any kind of bootloader. Is this possible? Or does linux need some
-kind of firmware or other software to tell it to start executing?
-Thanks for any info you might have.</span></font></div>
-  </blockquote>
-  <br>
-&nbsp;&nbsp;&nbsp; You system powers on. It starts executing whatever is at the reset
-vector, Something has to get you from the ppc powering up and going to
-never never land, to starting to execute Linux.<br>
-&nbsp;&nbsp;&nbsp; The steps to get from Power on to booting Linux may not be that
-complicated, Much of what needs to be done can likely be included as
-part of the code for your board in arch/ppc/boot/simple.<br>
-&nbsp;&nbsp;&nbsp; But something still has to be done.<br>
-  <br>
-&nbsp;&nbsp;&nbsp; In my instance I am dealing with a Xilinx V4 (not an ML403). A
-small "monitor" program is automatically loaded as part of the FPGA
-.bit image. On power on it starts executing.<br>
-</blockquote>
-Curious, how long does the V4 take to load up it's brain? (using a
-serial EEprom?)<br>
-<blockquote cite="mid44C9C4E4.2060206@dlasys.net" type="cite">&nbsp;&nbsp;&nbsp; It
-sets up the CPU, cache, and very minimal hardware configuration,
-and then loads Linux out of flash and executes it.<br>
-&nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; Linux does not have to have alot setup to boot. But something has
-to to some minimal initial setup, get Linux into the memory of your
-system, and jump to it.<br>
-  <br>
-  <blockquote
- cite="mid3C02138692C13C4BB675FE7EA240952915DF66@bluefin.Soneticom.local"
- type="cite">
-    <div>&nbsp;</div>
-    <div align="left"><font face="Arial" size="2">Clinton Thomas<br>
-    <a class="moz-txt-link-abbreviated"
- href="mailto:cthomas@soneticom.com">cthomas@soneticom.com</a></font></div>
-    <div>&nbsp;</div>
-    <pre wrap=""><hr size="4" width="90%">
-_______________________________________________
-Linuxppc-embedded mailing list
-<a class="moz-txt-link-abbreviated"
- href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
-<a class="moz-txt-link-freetext"
- href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
-  </blockquote>
-  <br>
-  <br>
-  <pre class="moz-signature" cols="72">-- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       <a class="moz-txt-link-abbreviated"
- href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a
- class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-  </pre>
-  <pre wrap="">
-<hr size="4" width="90%">
-_______________________________________________
-Linuxppc-embedded mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
-</blockquote>
-<br>
-<span style="font-style: italic; font-weight: bold;">Frank Bennett</span><br>
-<div class="moz-signature">
-<pre wrap=""><b><big><font face="Times New Roman, Times, serif"><em>Technical Contractor</em></font></big></b><span
- style="text-decoration: underline;">
-</span>
-<i><font face="Helvetica, Arial, sans-serif">Triad Systems Engineering
-200 West Mountain Avenue, Suite 103C
-Ft. Collins, CO 80521
-</font></i><a href="http://www.triadsyseng.com">http://www.traidsyseng.com</a>
-<span style="text-decoration: underline;"><a
- href="mailto:frank.bennett@triadsyseng.com">frank.bennett@triadsyseng.com</a></span><i><font
- face="Helvetica, Arial, sans-serif">
-</font></i>office: 970-493-7586
-cell:&nbsp;&nbsp; 970-402-9269
-
-"I think there's a world market for about five computers."
-        -- attr. Thomas J. Watson (Chairman of the Board, IBM), 1943
-
-<span style="text-decoration: underline;">
-</span>
-</pre>
-</div>
-</body>
-</html>
-
---------------070108020504090709010501--
