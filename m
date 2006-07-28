@@ -1,12 +1,12 @@
 Return-Path: <paravpandit@yahoo.com>
-Received: from web36610.mail.mud.yahoo.com (web36610.mail.mud.yahoo.com
-	[209.191.85.27]) by ozlabs.org (Postfix) with SMTP id 41A7A67B55
+Received: from web36603.mail.mud.yahoo.com (web36603.mail.mud.yahoo.com
+	[209.191.85.20]) by ozlabs.org (Postfix) with SMTP id 88A8367BBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Jul 2006 21:28:04 +1000 (EST)
-Message-ID: <20060728112803.34466.qmail@web36610.mail.mud.yahoo.com>
-Date: Fri, 28 Jul 2006 04:28:02 -0700 (PDT)
+	Fri, 28 Jul 2006 21:28:17 +1000 (EST)
+Message-ID: <20060728112815.7059.qmail@web36603.mail.mud.yahoo.com>
+Date: Fri, 28 Jul 2006 04:28:15 -0700 (PDT)
 From: Parav Pandit <paravpandit@yahoo.com>
-Subject: writing CCSR_BAR register for relocation?
+Subject: writing CCSR_BAR register for relocation in MPC8555?
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
