@@ -1,20 +1,24 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
-	by ozlabs.org (Postfix) with ESMTP id 8C7D867B52
+Return-Path: <borovsak@razvoj-verbic.si>
+Received: from mta1.siol.net (mta1.siol.net [193.189.160.88])
+	by ozlabs.org (Postfix) with ESMTP id 8283567B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 16:01:17 +1000 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: USB flashdrive on Motorola MPC5200 (IceCube) board,
-	linux ker nel 2.4.25 (DENX drop)
-References: <162B449665D6D643AD9E1D50FC6F4B14042F1C9A@mdcexc05.na.ops.local>
-In-Reply-To: <162B449665D6D643AD9E1D50FC6F4B14042F1C9A@mdcexc05.na.ops.local>
+	Fri, 28 Jul 2006 21:23:09 +1000 (EST)
+Received: from edge2.siol.net ([10.10.10.211]) by mta1.siol.net with ESMTP
+	id <20060728112307.DCCD4387.mta1.siol.net@edge2.siol.net>
+	for <linuxppc-embedded@ozlabs.org>; Fri, 28 Jul 2006 13:23:07 +0200
+Received: from [192.168.2.101] (really [86.61.75.118]) by edge2.siol.net
+	with ESMTP
+	id <20060728112307.NKDM4459.edge2.siol.net@[192.168.2.101]>
+	for <linuxppc-embedded@ozlabs.org>; Fri, 28 Jul 2006 13:23:07 +0200
+Message-ID: <44C9F398.4060109@razvoj-verbic.si>
+Date: Fri, 28 Jul 2006 13:23:04 +0200
+From: Uros Borovsak <borovsak@razvoj-verbic.si>
 MIME-Version: 1.0
-Message-ID: <200607310753.54277.roman.fietze@telemotive.de>
-Date: Mon, 31 Jul 2006 07:53:50 +0200
-Content-Type: multipart/signed; boundary="nextPart4389181.hxUKgS3HGk";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Cc: "Furxhi, Orges" <Orges.Furxhi@thyssenkrupp.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Host USB on MPC8247
+References: <44BF88A2.6080003@razvoj-verbic.si>
+In-Reply-To: <44BF88A2.6080003@razvoj-verbic.si>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,52 +29,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart4389181.hxUKgS3HGk
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
 Hello,
 
-On Saturday 29 July 2006 00:07, Furxhi, Orges wrote:
+Can you at least give me some idea how difficult would it be to patch 
+USB part of kernel from 2.6.13 to 2.6.10?
 
-> usb.c: USB device not accepting new address=3D2 (error=3D-110)
+Are changes only in usb part of kernel, or are there also some changes 
+in other parts of kernel, that I would have to port?
 
-We had that problem on a few of our boards as well.
+Thanks,
 
-=46or the old Icecube exists the possibility to mount two different USB
-transceivers, one of them the ISP1107DH, the other one the
-P11PAPW. Which one of the two is mounted on your board?
+Best regards
 
-On our own boards we had problems with low speed devices and the
-ISP1107, the other transceiver that Freescale used worked
-fine. Connecting those low speed devices via a hub worked. Sometimes
-it helped to add an additional capacitor to the power lines, but
-that's not really a viable solution.
+Uros
 
-We ended up using a Fairchild USB1T11A, the ISP1107 seemed to have a
-problem, we just didn't have luck with them. The Fairchild's are pin
-compatible, maybe you just give it a try.
-
-
-Roman
-
-=2D-=20
-Roman Fietze              Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                            73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45      http://www.telemotive.de
-
-
---nextPart4389181.hxUKgS3HGk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQBEzZryp5XY/BK//MIRAn0xAJ9VvXd4qfAaJz0tPsBDMHotXK00uwCghpuB
-rLHWCPG0yO6pns+jTKBWcko=
-=98BB
------END PGP SIGNATURE-----
-
---nextPart4389181.hxUKgS3HGk--
+Uros Borovsak wrote:
+> Hello,
+>
+> I'm looking for host USB driver for MPC8247. We are using MV kernel 
+> 2.6.10 and I'm wondering, if there is a driver for this specific kernel.
+>
+> I'm aware of cpm2usb project on sourceforge, but it is for kernel 
+> 2.6.13. How difficult would it be to patch only usb part of kernel from 
+> 2.6.10 to 2.6.13 so I could use that drivers. I only need suport for USB 
+> storage devices, so that driver is enough for me.
+>
+> Thanks,
+>
+> Best regards,
+>
+> Uros
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
