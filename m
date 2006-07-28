@@ -1,26 +1,37 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp2.orange.fr (smtp2.orange.fr [193.252.22.29])
-	by ozlabs.org (Postfix) with ESMTP id 6480667B54
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Jul 2006 02:32:27 +1000 (EST)
-Received: from smtp-msa-out02.orange.fr (mwinf0207 [172.22.133.37])
-	by mwinf0205.orange.fr (SMTP Server) with ESMTP id 5EB391401372
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 18:13:34 +0200 (CEST)
-Received: from pegasos (LAubervilliers-151-12-84-108.w193-252.abo.wanadoo.fr
-	[193.252.63.108])
-	by mwinf0207.orange.fr (SMTP Server) with ESMTP id EBD021C0011E
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 18:13:30 +0200 (CEST)
-Received: from sven by pegasos with local (Exim 4.50) id 1G6Uvg-0003FX-N1
-	for linuxppc-dev@ozlabs.org; Fri, 28 Jul 2006 18:11:12 +0200
-Date: Fri, 28 Jul 2006 18:11:07 +0200
-To: linuxppc-dev@ozlabs.org
-Subject: scheduler death with 2.6.17 on JS21 blades when running stress -c
-	32750 ...
-Message-ID: <20060728161107.GA12457@powerlinux.fr>
-References: <20060728160943.GA12080@powerlinux.fr>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6FA5067B60
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Jul 2006 04:19:14 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6SIJBsN004079
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 14:19:11 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6SIJAXe185842
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 12:19:11 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6SIJAlH016326
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jul 2006 12:19:10 -0600
+Date: Fri, 28 Jul 2006 13:19:09 -0500
+To: Alan Modra <amodra@bigpond.net.au>
+Subject: Re: Why the "opd" section?
+Message-ID: <20060728181909.GS7448@austin.ibm.com>
+References: <Pine.SUN.4.58.0607232059070.699@eskimo.com>
+	<20060725021558.GG6872@bubble.grove.modra.org>
+	<Pine.SUN.4.58.0607250612510.14690@eskimo.com>
+	<20060725140634.GH6872@bubble.grove.modra.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060728160943.GA12080@powerlinux.fr>
-From: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20060725140634.GH6872@bubble.grove.modra.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,47 +41,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, ...
+On Tue, Jul 25, 2006 at 11:36:34PM +0930, Alan Modra wrote:
+> > 
+> > So, why is it only in the 64-bit ELF?  Is it just because it's a newer
+> > idea?
+> 
+> The idea isn't exactly new.  It's more the case that the powerpc32 ABI
+> is so old.
 
-It was reported to me that, when using the debian 2.6.17 kernel on a JS21
-blade (with 1 or 2 970MP cpus), and running stress -c 32750 on it, the blade
-dies with some fork ressource problems (don't have the exact message, but it
-loops all over the screen), and the blade is completely hosed, and even not
-resetable (you have to off/on it).
+The basic idea/structure of the TOC was fixed in 1988, when the 
+linkage conventions for the pre-powerpc POWER were being speced.
 
-The kern.log after reboot shows :
+I have no idea why the ppc32 ABI wouldn't have used this.
 
-Jul 25 11:50:24 debian3 kernel: BUG: soft lockup detected on CPU#0!
-Jul 25 11:50:24 debian3 kernel: NIP: C0000000002AE334 LR: C0000000002AE2E0 CTR: C00000000000D7AC
-Jul 25 11:50:24 debian3 kernel: REGS: c0000000003479b0 TRAP: 0901   Not tainted  (2.6.15-1-powerpc64)
-Jul 25 11:50:24 debian3 kernel: MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000082  XER: 00000010
-Jul 25 11:50:24 debian3 kernel: TASK = c00000000037cea0[0] 'swapper' THREAD: c000000000344000 CPU: 0
-Jul 25 11:50:24 debian3 kernel: GPR00: 8000000000009032 C000000000347C30 C00000000042BCB8 C00000009EC10980 
-Jul 25 11:50:24 debian3 kernel: GPR04: C00000000037D1A0 0000000000000002 0000000024000082 C000000000022034 
-Jul 25 11:50:24 debian3 kernel: GPR08: C00000000033F860 C000000004E93760 0000000000000000 0000000004B53F00 
-Jul 25 11:50:24 debian3 kernel: GPR12: FFFFFFFFFFFFFFFF C000000000366C00 
-Jul 25 11:50:24 debian3 kernel: NIP [C0000000002AE334] .schedule+0xcac/0xdac
-Jul 25 11:50:24 debian3 kernel: LR [C0000000002AE2E0] .schedule+0xc58/0xdac
-Jul 25 11:50:24 debian3 kernel: Call Trace:
-Jul 25 11:50:24 debian3 kernel: [C000000000347C30] [C0000000002AE2E0] .schedule+0xc58/0xdac (unreliable)
-Jul 25 11:50:24 debian3 kernel: [C000000000347D40] [C00000000003CD4C] .pseries_dedicated_idle+0x1d8/0x1e0
-Jul 25 11:50:24 debian3 kernel: [C000000000347DF0] [C00000000001C5C4] .cpu_idle+0x40/0x54
-Jul 25 11:50:24 debian3 kernel: [C000000000347E60] [C0000000000091F4] .rest_init+0x44/0x5c
-Jul 25 11:50:24 debian3 kernel: [C000000000347EE0] [C00000000030D868] .start_kernel+0x2e0/0x308
-Jul 25 11:50:24 debian3 kernel: [C000000000347F90] [C0000000000084F4] .hmt_init+0x0/0xc
-Jul 25 11:50:24 debian3 kernel: Instruction dump:
-Jul 25 11:50:24 debian3 kernel: 7d285a14 e8690060 f9490060 60000000 60000000 60000000 ebbf0018 7c2004ac 
-Jul 25 11:50:24 debian3 kernel: 7d48592e 7c0000a6 60008000 7c010164 <2fa30000> 419e0030 3803004c 7c0006ac 
+> >         mflr 0
+> >         std 0,16(1)
+> >         stdu 1,-112(1)
+> >         bl addone
+> >         nop
+> >         bl addone
+> >         nop
+> >         addi 1,1,112
+> >         ld 0,16(1)
+> >         mtlr 0
+> >         blr
+> > 
+> Yes, you're right.  It does look to be branching directly to the opd
+> entry at the assembly level.  It of course won't do that because
+> powerpc64-ld is clever enough to realise that doing so would never make
+> any sense.  Instead, ld does the OPD lookup and modifies the "bl" insns
+> to go directly to the function's code entry if the TOC vallue of caller
+> and callee is identical, or to go via a linker generated stub if they
+> are different.
 
-(Mmm, the log is from a 2.6.15 kernel, which was in debian testing, but a
-similar problem happens with the 2.6.17 debian kernel, which as far as 64bit
-powerpc is concerned is mostly mainline).
+I beleive the no-op provides the space for the needed extra insns when 
+the linker goes to fix this up. If you disassemble the exectuable for 
+the case where addone is in some shared library, you'd see the bl replaced 
+by bl .glink (I think its called .glink, I don't remember), with the 
+.glink code fiddling with loading the right r2 TOC pointer as needed.
+I've forgotten the details.
 
-Did anyone alredy encounter this problem and has any hint on how to fix it ? I
-cannot reproduce it on my powerbook, nor on a single G5 powermac, nor on
-power5 machines (p505 and a quad cpu openpower), and i don't have hand-on
-access to JS21 blades myself.
+I vaguely remember yet another interesting trick, where the linker inserts
+some dynamic-link stubs -- and so, when the subroutine is called for the
+very first time ever, some additional linkage is done by the stub. I
+have no idea if the current gcc/glibc do this.
 
-Friendly,
 
-Sven Luther
+--linas
