@@ -1,19 +1,36 @@
-Return-Path: <torvalds@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B2B6767B54
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Aug 2006 06:41:40 +1000 (EST)
-Date: Mon, 31 Jul 2006 13:41:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: please pull powerpc.git 'merge' branch
-In-Reply-To: <17613.38710.609255.581840@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0607311338420.4168@g5.osdl.org>
-References: <17613.38710.609255.581840@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F238767B60
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Aug 2006 06:50:39 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6VKoaxC013983
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Jul 2006 16:50:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6VKoYDp095742
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Jul 2006 14:50:34 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6VKoXJN023223
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Jul 2006 14:50:33 -0600
+Subject: Re: [PATCH][2/2] RTAS MSI
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1154320382.19883.26.camel@localhost.localdomain>
+References: <1154024154.29826.229.camel@goblue>
+	<1154024834.29826.240.camel@goblue>
+	<1154320382.19883.26.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 31 Jul 2006 15:47:00 -0500
+Message-Id: <1154378820.29826.392.camel@goblue>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +41,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-
-On Mon, 31 Jul 2006, Paul Mackerras wrote:
+> > +int rtas_enable_msi(struct pci_dev* pdev)
+> > +{
+> > +	static int seq_num = 1;
 > 
-> Please do a pull from the "merge" branch of
+> Do we really want seq_num to be static? By my reading of PAPR we only
+> need to maintain the seq number across calls that return -2/990x, and we
+> handle that all inside this function. If it does need to be unique for
+> _all_ calls, then I don't see how seq_num being static is going to work,
+> a different cpu could stomp on the seq_num value between calls, which
+> presumably would make firmware mad.
+
+Bah...I thought I fixed this a long time ago....must have gotten dropped
+somewhere in the mix.
+
+> > +	int reglen;
+> > +	int ret[3];
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+> You only need ret[2] I think, the first return value (status) is handled
+> inside rtas_call for you.
 
-Please change your "please pull" script so that the branch-name is 
-mentioned at the end of the same line as the repo name.
+Yup...
 
-Not only does that make cut-and-paste work, it avoids the easy mistake of 
-not noticing the branch-name and instead merging the "master" branch by 
-mistake (which I did at first, and ended up fixing up a merge conflict 
-until I noticed that it wasn't even what you asked me to pull..).
+> > +	int dummy;
+> > +	int n_intr;
+> > +	int last_virq = NO_IRQ;
+> > +	int virq;
+> > +	unsigned int addr;
+> > +	unsigned long buid = -1;
+> 
+> No need to set buid to -1 as you unconditionally assign to it later.
 
-Ok?
+Agreed
 
-		Linus
+> > +	struct device_node * dn;
+> > +
+> > +	dn = pci_device_to_OF_node(pdev);
+> > +
+> > +	if (!of_find_property(dn, "ibm,req#msi", &dummy))
+> > +		return -ENOENT;
+> 
+> You don't need dummy, just pass NULL.
+
+Yup.
+
+> > +
+> > +	reg = (u32 *) get_property(dn, "reg", &reglen);
+> > +	if (reg == NULL || reglen < 20)
+> > +		return -ENXIO;
+> > +
+> > +	devfn = (reg[0] >> 8) & 0xff;
+> > +	busno = (reg[0] >> 16) & 0xff;
+> > +
+> > +	buid = get_phb_buid(dn->parent);
+> > +	addr = (busno << 16) | (devfn << 8);
+> 
+> Why do we need to read the reg here, can't we just use the existing
+> fields? ie:
+> 
+>         addr = (pdev->bus->number << 16) | (pdev->devfn << 8);
+
+Patch coming w/ all these fixes.
