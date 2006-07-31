@@ -1,16 +1,20 @@
-Return-Path: <hpchen163@tom.com>
-Received: from tom.com (smtpr6.tom.com [202.108.252.136])
-	by ozlabs.org (Postfix) with SMTP id BE938679E9
+Return-Path: <roman.fietze@telemotive.de>
+Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
+	by ozlabs.org (Postfix) with ESMTP id 8C7D867B52
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 15:18:42 +1000 (EST)
-MIME-Version: 1.0
-Message-ID: <44CD7D3F.0000CB.23305@bjapp33>
-Date: Mon, 31 Jul 2006 11:47:11 +0800 (CST)
-From: "=?gb2312?B?aHBjaGVu?=" <hpchen163@tom.com>
+	Mon, 31 Jul 2006 16:01:17 +1000 (EST)
+From: Roman Fietze <roman.fietze@telemotive.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: =?gb2312?B?aG93IHRvIGRvd25sb2FkIHRoZSBwcGNsaW51eA==?=
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_zmIbxRxpWYlHNWUxQnRBulelgFXx"
+Subject: Re: USB flashdrive on Motorola MPC5200 (IceCube) board,
+	linux ker nel 2.4.25 (DENX drop)
+References: <162B449665D6D643AD9E1D50FC6F4B14042F1C9A@mdcexc05.na.ops.local>
+In-Reply-To: <162B449665D6D643AD9E1D50FC6F4B14042F1C9A@mdcexc05.na.ops.local>
+MIME-Version: 1.0
+Message-ID: <200607310753.54277.roman.fietze@telemotive.de>
+Date: Mon, 31 Jul 2006 07:53:50 +0200
+Content-Type: multipart/signed; boundary="nextPart4389181.hxUKgS3HGk";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Cc: "Furxhi, Orges" <Orges.Furxhi@thyssenkrupp.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,81 +25,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--nextPart4389181.hxUKgS3HGk
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---Boundary-=_zmIbxRxpWYlHNWUxQnRBulelgFXx
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Hello,
 
-aGksYWxsDQogICBJJ3ZlIGp1c3QgYmVndW4gdG8gcnVuIGxpbnV4IG9uIE1QQzgyNDUuDQpJ
-J2xsIHVzZSBhIGdyYXBoaWMgY2FyZCB3aGljaCBpbnRlcmZhY2Ugd2l0aCBtcGM4MjQ1Lg0K
-Q2FuIGFueW9uZSB0ZWxsIG1lIHdoZXJlIGkgY2FuIGRvd25sb2FkIHRoZSBwcGNsaW51eCAN
-CndoaWNoIGFsc28gY29udGFpbnMgdGhlIGRyaXZlciBmb3IgZ3JhcGhpY3MgY2FyZA0KM1gh
-DQogDQoNCg==
---Boundary-=_zmIbxRxpWYlHNWUxQnRBulelgFXx
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
+On Saturday 29 July 2006 00:07, Furxhi, Orges wrote:
 
-aGksYWxsPGJyPiAgIEkndmUganVzdCBiZWd1biB0byBydW4gbGludXggb24gTVBDODI0NS48
-YnI+SSdsbCB1c2UgYSBncmFwaGljIGNhcmQgd2hpY2ggaW50ZXJmYWNlIHdpdGggbXBjODI0
-NS48YnI+Q2FuIGFueW9uZSB0ZWxsIG1lIHdoZXJlIGkgY2FuIGRvd25sb2FkIHRoZSBwcGNs
-aW51eCA8YnI+d2hpY2ggYWxzbyBjb250YWlucyB0aGUgZHJpdmVyIGZvciBncmFwaGljcyBj
-YXJkPGJyPjNYITxicj4gPGJyPjwhLS0gdXJsZmlsZXMgLS0+PGJyPjxicj48IS0tIGZvb3Rl
-ciAtLT48YnI+PGJyPgo8dGFibGUgY2VsbHBhZGRpbmc9IjEiIGNlbGxzcGFjaW5nPSIxIiBi
-b3JkZXI9IjAiIHN0eWxlPSJtYXJnaW4tdG9wOjEwcHg7Ij4KICA8dHI+IAogIDx0ZD4KPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPGJyPgogPEEg
-dGl0bGU9Ir/swLS6zc7S0rvG8M/tytxUT03D4rfR08rP5LDJo6Egv7S/tLP9wcsxLjVHo6y7
-udPQyrLDtKO/IiAgaHJlZj0iaHR0cDovL2JqY2dpLjE2My5uZXQvY2dpLWJpbi9uZXdyZWcu
-Y2dpPwpyZj0wNTA2MDIiICB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9IkU3MEQ4OCIg
-dGFyZ2V0PSJfYmxhbmsiPr/swLS6zc7S0rvG8M/tytxUT03D4rfR08rP5LDJo6Egv7S/tLP9
-wcsxLjVHo6y7udPQyrLDtKO/PC9mb250PjxpbWcgCnNyYz0iaHR0cDovL21haWwudG9tLmNv
-bS9pbWFnZXMvbWFpbC8wNTAzMjgvcGFnZV8wMi5naWYiICBib3JkZXI9IjAiIHdpZHRoPSIz
-NyIgCmhlaWdodD0iMzMiPjwvQT4KPGJyPgo8YnI+CjxhIGhyZWY9Imh0dHA6Ly92aXAudG9t
-LmNvbS9pbmZvL2dnZF8wNTA0MDkvaW5kZXguaHRtbCIgdGFyZ2V0PSJfYmxhbmsiPjxpbWcg
-c3JjPSJodHRwOi8vbWFpbC50b20uY29tL2ltYWdlcy92aXAvdmlwX2FkL21haWxfc2NlMS5n
-aWYiIGJvcmRlcj0iMCIgYWxpZ249ImFic2JvdHRvbSI+PC9hPiZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwO8fDv6q+q7LKJm5ic3A7PGEgaHJlZj0iaHR0cDovL2NoYXQudG9tLmNvbS8iIHRh
-cmdldD0iX2JsYW5rIj7BxMzsysC95zwvYT6jujxhIGhyZWY9Imh0dHA6Ly9jaGF0LnRvbS5j
-b20vIiB0YXJnZXQ9Il9ibGFuayI+zfjNqNPDu6c8L2E+ICA8YSBocmVmPSJodHRwOi8vc2No
-YXQudG9tLmNvbS8iIHRhcmdldD0iX2JsYW5rIj6159DF08O7pzwvYT4KIDwhLS1BIHRpdGxl
-PSK5ss2szOXR6bOstPPI3cG/o6GzrMe/t8DT+aOh16jStcmxtr6jodeo0rW3wMCsu/ijoSIg
-aHJlZj0iaHR0cDovL2JqY2dpLjE2My5uZXQvY2dpLWJpbi9uZXdyZWcuY2dpPwpyZj0wNTA2
-MDIiIHRhcmdldD0iX2JsYW5rIj48Zm9udCBjb2xvcj0iRTcwRDg4Ij7U2s/fybG2vqOhsLLI
-q87ItqijobOsx7+3wNP5o6E8L2ZvbnQ+PC9BLS0+Cjxicj4KPGJyPgrD99DHvfDH+sPit9HL
-zSg8YSBocmVmPSJodHRwOi8vbW0udG9tLmNvbS9pdnIvIiB0YXJnZXQ9Il9ibGFuayI+aHR0
-cDovL21tLnRvbS5jb20vaXZyLzwvYT4po7o8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9p
-dnIvc2VhcmNoX2l2cnJpbmcucGhwP1Npbmdlck5hbWU91ty93MLXJnVzZXJfaWQ9MyZjb2Rl
-X2lkPTAwMDAwMCIgdGFyZ2V0PSJfYmxhbmsiPtbcvdzC1zwvYT4gPGEgaHJlZj0iaHR0cDov
-L2ZzLnRvbS5jb20vaXZyL3NlYXJjaF9pdnJyaW5nLnBocD9TaW5nZXJOYW1lPcHWv6G93CZ1
-c2VyX2lkPTMmY29kZV9pZD0wMDAwMDAiIHRhcmdldD0iX2JsYW5rIj7B1r+hvdw8L2E+IDxh
-IGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9zZWFyY2hfaXZycmluZy5waHA/U2luZ2Vy
-TmFtZT3F08H6JnVzZXJfaWQ9MyZjb2RlX2lkPTAwMDAwMCIgdGFyZ2V0PSJfYmxhbmsiPsXT
-wfo8L2E+IDxhIGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9zZWFyY2hfaXZycmluZy5w
-aHA/U2luZ2VyTmFtZT3Vxbvdw8MmdXNlcl9pZD0zJmNvZGVfaWQ9MDAwMDAwIiB0YXJnZXQ9
-Il9ibGFuayI+1cW73cPDPC9hPjxicj4KPGJyPgq+orGsuOjH+r6hx+m14yg8YSBocmVmPSJo
-dHRwOi8vbW0udG9tLmNvbS9pdnIvIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL21tLnRvbS5j
-b20vaXZyLzwvYT4po7o8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2VuZF9zdGVw
-MS5waHA/SWQ9MzkyNDQmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJfYmxhbmsi
-Prv01Kq81zwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlbmRfc3RlcDEu
-cGhwP0lkPTM4Mzk3JnVzZXJfaWQ9MyZjb2RlX2lkPXc1NTUiIHRhcmdldD0iX2JsYW5rIj68
-qs/pyP2xpjwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlbmRfc3RlcDEu
-cGhwP0lkPTM5MzM1JnVzZXJfaWQ9MyZjb2RlX2lkPXc1NTUiIHRhcmdldD0iX2JsYW5rIj7I
-y9bKPC9hPiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2VuZF9zdGVwMS5waHA/
-SWQ9MzkzMjUmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJfYmxhbmsiPrLcstk8
-L2E+PGJyPgo8YnI+CuzFv+GyysHlw+K30cvNKDxhIGhyZWY9Imh0dHA6Ly9tbS50b20uY29t
-L2NhaWxpbmcvIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL21tLnRvbS5jb20vY2FpbGluZy88
-L2E+KaO6PGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vY2FpbGluZy9zZWFyY2gucGhwP0N1
-clBhZ2U9MSZ1c2VyX2lkPTMmQ2F0YWxvZz0mcGhvbmVfbnVtPSZTZWFyY2hCeT1yaW5nJktl
-eXdvcmQ9JUQ2JURDJUJEJURDJUMyJUQ3JUIwJUVGJUM0JUUzJUJEJUQzJUI1JUU3JUJCJUIw
-IiB0YXJnZXQ9Il9ibGFuayI+1ty93MLXsO/E473Ttee7sDwvYT4gPGEgaHJlZj0iaHR0cDov
-L2ZzLnRvbS5jb20vY2FpbGluZy9zZWFyY2gucGhwP0N1clBhZ2U9MSZ1c2VyX2lkPTMmQ2F0
-YWxvZz0mcGhvbmVfbnVtPSZTZWFyY2hCeT1yaW5nJktleXdvcmQ9JUMyJUU5JUI3JUIzJUM1
-JUFFJUM1JUYzJUQzJUQxIiB0YXJnZXQ9Il9ibGFuayI+wum3s8WuxfPT0TwvYT4gPGEgaHJl
-Zj0iaHR0cDovL2ZzLnRvbS5jb20vY2FpbGluZy9zZWFyY2gucGhwP0N1clBhZ2U9MSZ1c2Vy
-X2lkPTMmQ2F0YWxvZz0mcGhvbmVfbnVtPSZTZWFyY2hCeT1yaW5nJktleXdvcmQ9JUM2JURG
-JUMwJUVGJUNGJUUzIiB0YXJnZXQ9Il9ibGFuayI+xt/A78/jPC9hPiA8YSBocmVmPSJodHRw
-Oi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJjaC5waHA/Q3VyUGFnZT0xJnVzZXJfaWQ9MyZD
-YXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5PXJpbmcmS2V5d29yZD0lRDAlQTElQjMlQzcl
-QjklQ0ElQ0ElQzIiIHRhcmdldD0iX2JsYW5rIj7QobPHucrKwjwvYT4KCjxicj4KCgo9PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogIDwvdGQ+CiAg
-PC90cj4KPC90YWJsZT4=
---Boundary-=_zmIbxRxpWYlHNWUxQnRBulelgFXx--
+> usb.c: USB device not accepting new address=3D2 (error=3D-110)
+
+We had that problem on a few of our boards as well.
+
+=46or the old Icecube exists the possibility to mount two different USB
+transceivers, one of them the ISP1107DH, the other one the
+P11PAPW. Which one of the two is mounted on your board?
+
+On our own boards we had problems with low speed devices and the
+ISP1107, the other transceiver that Freescale used worked
+fine. Connecting those low speed devices via a hub worked. Sometimes
+it helped to add an additional capacitor to the power lines, but
+that's not really a viable solution.
+
+We ended up using a Fairchild USB1T11A, the ISP1107 seemed to have a
+problem, we just didn't have luck with them. The Fairchild's are pin
+compatible, maybe you just give it a try.
+
+
+Roman
+
+=2D-=20
+Roman Fietze              Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                            73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45      http://www.telemotive.de
+
+
+--nextPart4389181.hxUKgS3HGk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBEzZryp5XY/BK//MIRAn0xAJ9VvXd4qfAaJz0tPsBDMHotXK00uwCghpuB
+rLHWCPG0yO6pns+jTKBWcko=
+=98BB
+-----END PGP SIGNATURE-----
+
+--nextPart4389181.hxUKgS3HGk--
