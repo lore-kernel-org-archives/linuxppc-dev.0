@@ -1,19 +1,21 @@
-Return-Path: <linuxppc@lizardlogic.co.uk>
-Received: from murano.lizardlogic.co.uk (unknown [195.10.246.108])
-	by ozlabs.org (Postfix) with ESMTP id BA3AE67B53
+Return-Path: <Orges.Furxhi@thyssenkrupp.com>
+Received: from mail002.triaton.com (mail002.triaton.com [149.250.222.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail002.triaton.com",
+	Issuer "TC TrustCenter for Security in Data Networks GmbH" (not
+	verified)) by ozlabs.org (Postfix) with ESMTP id 8D3A767A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Aug 2006 00:07:46 +1000 (EST)
-Received: from [10.105.8.10] (lizardlogic.plus.com [84.92.176.208])
-	by murano.lizardlogic.co.uk (Postfix) with ESMTP id DE3701000CA
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 14:50:41 +0100 (BST)
-Mime-Version: 1.0 (Apple Message framework v624)
-To: linuxppc-embedded@ozlabs.org
-Message-Id: <76f51967dc88fd0821a524d69fdc3e1c@lizardlogic.co.uk>
-Content-Type: multipart/mixed; boundary=Apple-Mail-8--47018222
-From: Stig Telfer <linuxppc@lizardlogic.co.uk>
-Subject: Xilinx PIC and kernel interrupt handler 
-Date: Mon, 31 Jul 2006 14:50:40 +0100
+	Tue,  1 Aug 2006 02:35:24 +1000 (EST)
+Message-ID: <162B449665D6D643AD9E1D50FC6F4B14042F1C9D@mdcexc05.na.ops.local>
+From: "Furxhi, Orges" <Orges.Furxhi@thyssenkrupp.com>
+To: "'Roman Fietze'" <roman.fietze@telemotive.de>, "Furxhi, Orges"
+	<Orges.Furxhi@thyssenkrupp.com>
+Subject: RE: USB flashdrive on Motorola MPC5200 (IceCube) board, linux ker
+	nel 2.4.25 (DENX drop)
+Date: Mon, 31 Jul 2006 11:35:23 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,54 +26,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello, 
 
---Apple-Mail-8--47018222
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
+Thanks for responding,
 
-Hi -
+> > usb.c: USB device not accepting new address=2 (error=-110)
+> 
+> We had that problem on a few of our boards as well.
+> 
+> For the old Icecube exists the possibility to mount two different USB
+> transceivers, one of them the ISP1107DH, the other one the
+> P11PAPW. Which one of the two is mounted on your board?
 
-There appears to be a kernel bug in the 2.4 and 2.6.17.7 kernel trees 
-relating to reading the interrupt vector from the Xilinx PIC 
-(xilinx_pic_get_irq() in xilinx_pic.c).  As I see it, here's the 
-problem: If no interrupt is pending, the register should read all ones. 
-  However, the IVR is only as wide as the number of interrupt sources.  
-The routine mistakenly assumes sign extension and checks for a 32-bit 
-read of -1 instead of a read of w bits where w is the number of 
-connected interrupt sources.
+The Icecube board has the USBP11A transceiver and our custom board has 	the
+ISP1105 (this has a problem with low speed devices according to PHILIPS).  
 
-The 2.6 version also has a search-and-replace glitch relating to 
-removal of the reversal of bit numbering.  I have attached a two line 
-patch (for 2.6.17.7) that makes the IVR comparison against the right 
-bit pattern and removes the remnants of the former bit-reversal code.
-
-Share and enjoy,
-Stig Telfer
-
-
---Apple-Mail-8--47018222
-Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream;
-	x-unix-mode=0644;
-	name="xilinx_pic.patch"
-Content-Disposition: attachment;
-	filename=xilinx_pic.patch
-
-diff -Naurb linux-2.6.17.7/arch/ppc/syslib/xilinx_pic.c linux-2.6.17.7-stig/arch/ppc/syslib/xilinx_pic.c
---- linux-2.6.17.7/arch/ppc/syslib/xilinx_pic.c	2006-07-25 04:36:01.000000000 +0100
-+++ linux-2.6.17.7-stig/arch/ppc/syslib/xilinx_pic.c	2006-07-31 14:20:04.000000000 +0100
-@@ -97,8 +97,8 @@
- 	 */
  
- 	irq = intc_in_be32(intc + IVR);
--	if (irq != -1)
--		irq = irq;
-+	if (irq == (1 << XPAR_INTC_MAX_NUM_INTR_INPUTS) - 1)
-+		irq = -1;
- 
- 	pr_debug("get_irq: %d\n", irq);
- 
+> On our own boards we had problems with low speed devices and the
+> ISP1107, the other transceiver that Freescale used worked
+> fine. Connecting those low speed devices via a hub worked. 
 
---Apple-Mail-8--47018222--
+We get the same message when we connect the hub itself to the USB port
+Does anything need to be configured in the kernel to accept the USB hub, if
+so which switch is it?
+  
+
+> We ended up using a Fairchild USB1T11A, the ISP1107 seemed to have a
+> problem, we just didn't have luck with them. The Fairchild's are pin
+> compatible, maybe you just give it a try.
+
+I'll relay this to our hardware guys.
+
+
+Thanks,
+
+Orges
