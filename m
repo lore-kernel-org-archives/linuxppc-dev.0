@@ -1,24 +1,26 @@
-Return-Path: <torsten.demke@motorola.com>
-Received: from motgate2.mot.com (motgate2.mot.com [144.189.100.101])
-	by ozlabs.org (Postfix) with ESMTP id DEA1D67B56
+Return-Path: <boro@razvoj-verbic.si>
+Received: from mta1.siol.net (mta1.siol.net [193.189.160.88])
+	by ozlabs.org (Postfix) with ESMTP id 5AE5F67B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 17:38:08 +1000 (EST)
-Received: from az33exr01.mot.com (az33exr01.mot.com [10.64.251.231])
-	by motgate2.mot.com (8.12.11/Motorola) with ESMTP id k6V7bxDX023232
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 00:38:04 -0700 (MST)
-Received: from zuk35exm60.ds.mot.com (zuk35exm60.ea.mot.com [10.178.1.39])
-	by az33exr01.mot.com (8.13.1/8.13.0) with ESMTP id k6V7bwhV012718
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 02:37:59 -0500 (CDT)
+	Mon, 31 Jul 2006 18:14:29 +1000 (EST)
+Received: from edge2.siol.net ([10.10.10.211]) by mta1.siol.net with ESMTP
+	id <20060731081423.EWOQ4387.mta1.siol.net@edge2.siol.net>
+	for <linuxppc-embedded@ozlabs.org>; Mon, 31 Jul 2006 10:14:23 +0200
+Received: from [192.168.2.101] (really [86.61.75.118]) by edge2.siol.net
+	with ESMTP
+	id <20060731081423.WCNU4459.edge2.siol.net@[192.168.2.101]>
+	for <linuxppc-embedded@ozlabs.org>; Mon, 31 Jul 2006 10:14:23 +0200
+Message-ID: <44CDBBDD.6000401@razvoj-verbic.si>
+Date: Mon, 31 Jul 2006 10:14:21 +0200
+From: Uros Borovsak <boro@razvoj-verbic.si>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Compilation error in fsl_soc.c
-Date: Mon, 31 Jul 2006 08:37:56 +0100
-Message-ID: <67194FEE6056B947B4EF756C9E497A2EA198F8@zuk35exm60.ds.mot.com>
-From: "Demke Torsten-atd012" <torsten.demke@motorola.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Host USB on MPC8247
+References: <44BF88A2.6080003@razvoj-verbic.si>
+	<44C9F398.4060109@razvoj-verbic.si>
+	<44CDBA3C.2040402@compulab.co.il>
+In-Reply-To: <44CDBA3C.2040402@compulab.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,54 +31,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Thanks for reply,
 
-with a recent versions from Paulus merge-tree the compilation
-of MPC85xx CDS failed with following output:
-...
-  LD      arch/powerpc/lib/built-in.o
-  CC      arch/powerpc/sysdev/mpic.o
-  CC      arch/powerpc/sysdev/indirect_pci.o
-  AS      arch/powerpc/sysdev/dcr.o
-  CC      arch/powerpc/sysdev/fsl_soc.o
-arch/powerpc/sysdev/fsl_soc.c: In function 'gfar_mdio_of_init':
-arch/powerpc/sysdev/fsl_soc.c:88: error: 'struct device_node' has no
-member name d 'n_intrs'
-arch/powerpc/sysdev/fsl_soc.c:91: error: 'struct device_node' has no
-member name d 'intrs'
-arch/powerpc/sysdev/fsl_soc.c: In function 'gfar_of_init':
-arch/powerpc/sysdev/fsl_soc.c:142: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:143: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:153: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:154: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:158: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:159: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:165: error: 'struct device_node' has no
-member nam ed 'n_intrs'
-arch/powerpc/sysdev/fsl_soc.c: In function 'fsl_i2c_of_init':
-arch/powerpc/sysdev/fsl_soc.c:254: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:255: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c: In function 'fsl_usb_of_init':
-arch/powerpc/sysdev/fsl_soc.c:391: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:392: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:440: error: 'struct device_node' has no
-member nam ed 'intrs'
-arch/powerpc/sysdev/fsl_soc.c:441: error: 'struct device_node' has no
-member nam ed 'intrs'
-make[1]: *** [arch/powerpc/sysdev/fsl_soc.o] Error 1
-make: *** [arch/powerpc/sysdev] Error 2
+I made a mistake while typing the message.
 
-Did I missed a patch?
+In reality I was asking how difficult would it be to port USB part  of 
+kernel from 2.6.10 to 2.6.13, but I mixed kernel version's when typing.
 
-Regards,
-Torsten
+Mike Rapoport wrote:
+> Uros Borovsak wrote:
+>
+>  
+>> Hello,
+>>
+>> Can you at least give me some idea how difficult would it be to patch 
+>> USB part of kernel from 2.6.13 to 2.6.10?
+>>  
+>>
+>>     
+> As far as I know USB core undergone signifcant changes between 2.6.10 
+> and 2.6.13. Still it's hard to tell how difficult would it be to 
+> backport USB from 2.6.13 to 2.6.10.
+> Besides, it maybe worth upgrading your kernel instead of backporing 
+> USB to 2.6.10.
+>
+>   
+Upgrading the whole kernel is not a way to go for me here, becouse 
+company is using montavista kernel, and if I upgrade the whole kernel, I 
+would have to port all their patches also.
+
+I believe that MontaVista will use higher kernel version some time, so I 
+wouldn't go backporting driver to 2.6.10, but I would prefer to port USB 
+part of kernel from 2.6.10 to 2.6.13.
+
+Do you think that is possible and how hard would it be?
+
+Best regards
+
+Uros
+>> Are changes only in usb part of kernel, or are there also some 
+>> changes in other parts of kernel, that I would have to port?
+>>
+>> Thanks,
+>>
+>> Best regards
+>>
+>> Uros
+>>
+>>
+>>  
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>>
+>>
+>>  
+>>
+>
+>
