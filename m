@@ -1,24 +1,21 @@
-Return-Path: <borovsak@razvoj-verbic.si>
-Received: from mta1.siol.net (mta1.siol.net [193.189.160.88])
-	by ozlabs.org (Postfix) with ESMTP id 8283567B55
+Return-Path: <mike@compulab.co.il>
+Received: from mail.linux-boards.com (mail.linux-boards.com [62.90.235.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A09D67A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Jul 2006 21:23:09 +1000 (EST)
-Received: from edge2.siol.net ([10.10.10.211]) by mta1.siol.net with ESMTP
-	id <20060728112307.DCCD4387.mta1.siol.net@edge2.siol.net>
-	for <linuxppc-embedded@ozlabs.org>; Fri, 28 Jul 2006 13:23:07 +0200
-Received: from [192.168.2.101] (really [86.61.75.118]) by edge2.siol.net
-	with ESMTP
-	id <20060728112307.NKDM4459.edge2.siol.net@[192.168.2.101]>
-	for <linuxppc-embedded@ozlabs.org>; Fri, 28 Jul 2006 13:23:07 +0200
-Message-ID: <44C9F398.4060109@razvoj-verbic.si>
-Date: Fri, 28 Jul 2006 13:23:04 +0200
-From: Uros Borovsak <borovsak@razvoj-verbic.si>
+	Mon, 31 Jul 2006 17:14:07 +1000 (EST)
+Message-ID: <44CDBA3C.2040402@compulab.co.il>
+Date: Mon, 31 Jul 2006 10:07:24 +0200
+From: Mike Rapoport <mike@compulab.co.il>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
+To: Uros Borovsak <borovsak@razvoj-verbic.si>
 Subject: Re: Host USB on MPC8247
 References: <44BF88A2.6080003@razvoj-verbic.si>
-In-Reply-To: <44BF88A2.6080003@razvoj-verbic.si>
+	<44C9F398.4060109@razvoj-verbic.si>
+In-Reply-To: <44C9F398.4060109@razvoj-verbic.si>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,39 +26,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-
-Can you at least give me some idea how difficult would it be to patch 
-USB part of kernel from 2.6.13 to 2.6.10?
-
-Are changes only in usb part of kernel, or are there also some changes 
-in other parts of kernel, that I would have to port?
-
-Thanks,
-
-Best regards
-
-Uros
-
 Uros Borovsak wrote:
-> Hello,
+
+>Hello,
 >
-> I'm looking for host USB driver for MPC8247. We are using MV kernel 
-> 2.6.10 and I'm wondering, if there is a driver for this specific kernel.
+>Can you at least give me some idea how difficult would it be to patch 
+>USB part of kernel from 2.6.13 to 2.6.10?
+>  
 >
-> I'm aware of cpm2usb project on sourceforge, but it is for kernel 
-> 2.6.13. How difficult would it be to patch only usb part of kernel from 
-> 2.6.10 to 2.6.13 so I could use that drivers. I only need suport for USB 
-> storage devices, so that driver is enough for me.
+As far as I know USB core undergone signifcant changes between 2.6.10 
+and 2.6.13. Still it's hard to tell how difficult would it be to 
+backport USB from 2.6.13 to 2.6.10.
+Besides, it maybe worth upgrading your kernel instead of backporing USB 
+to 2.6.10.
+
+>Are changes only in usb part of kernel, or are there also some changes 
+>in other parts of kernel, that I would have to port?
 >
-> Thanks,
+>Thanks,
 >
-> Best regards,
+>Best regards
 >
-> Uros
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>Uros
 >
->   
+>
+>  
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>
+>  
+>
+
+
+-- 
+Sincerely yours,
+Mike Rapoport
