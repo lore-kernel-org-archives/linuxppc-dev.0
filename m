@@ -1,21 +1,16 @@
-Return-Path: <Orges.Furxhi@thyssenkrupp.com>
-Received: from mail002.triaton.com (mail002.triaton.com [149.250.222.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail002.triaton.com",
-	Issuer "TC TrustCenter for Security in Data Networks GmbH" (not
-	verified)) by ozlabs.org (Postfix) with ESMTP id 8D3A767A3A
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 6326767A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Aug 2006 02:35:24 +1000 (EST)
-Message-ID: <162B449665D6D643AD9E1D50FC6F4B14042F1C9D@mdcexc05.na.ops.local>
-From: "Furxhi, Orges" <Orges.Furxhi@thyssenkrupp.com>
-To: "'Roman Fietze'" <roman.fietze@telemotive.de>, "Furxhi, Orges"
-	<Orges.Furxhi@thyssenkrupp.com>
-Subject: RE: USB flashdrive on Motorola MPC5200 (IceCube) board, linux ker
-	nel 2.4.25 (DENX drop)
-Date: Mon, 31 Jul 2006 11:35:23 -0500
+	Tue,  1 Aug 2006 04:06:21 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Xilinx PIC and kernel interrupt handler 
+Date: Mon, 31 Jul 2006 11:06:18 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE487105E01B5B@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Stig Telfer" <linuxppc@lizardlogic.co.uk>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,38 +21,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, 
+Regarding the IVR patch:  Have you seen this bug in practice, or just
+from examining the code?
 
-Thanks for responding,
+The reason I ask is I've recently looked at this myself, and was under
+the impression that "w" is the width of the data bus (DB) (per page 9 of
+dcr_intc.pdf).  So regardless of how many interrupt sources are
+connected, assuming the data bus width is 32 bits, w=3D32.
 
-> > usb.c: USB device not accepting new address=2 (error=-110)
-> 
-> We had that problem on a few of our boards as well.
-> 
-> For the old Icecube exists the possibility to mount two different USB
-> transceivers, one of them the ISP1107DH, the other one the
-> P11PAPW. Which one of the two is mounted on your board?
+I've specifically confirmed this is true if you have less than 32
+interrupt sources connected, the one named INT0 shows up in bit position
+31 (w-1 for w=3D32 is 31) of the ISR and IPR.  Bit position 31 in PPC
+notation is the LSB.
 
-The Icecube board has the USBP11A transceiver and our custom board has 	the
-ISP1105 (this has a problem with low speed devices according to PHILIPS).  
+Tim=20
 
- 
-> On our own boards we had problems with low speed devices and the
-> ISP1107, the other transceiver that Freescale used worked
-> fine. Connecting those low speed devices via a hub worked. 
-
-We get the same message when we connect the hub itself to the USB port
-Does anything need to be configured in the kernel to accept the USB hub, if
-so which switch is it?
-  
-
-> We ended up using a Fairchild USB1T11A, the ISP1107 seemed to have a
-> problem, we just didn't have luck with them. The Fairchild's are pin
-> compatible, maybe you just give it a try.
-
-I'll relay this to our hardware guys.
-
-
-Thanks,
-
-Orges
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.org=20
+> [mailto:linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.or
+> g] On Behalf Of Stig Telfer
+> Sent: Monday, July 31, 2006 6:51 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Xilinx PIC and kernel interrupt handler=20
+>=20
+> Hi -
+>=20
+> There appears to be a kernel bug in the 2.4 and 2.6.17.7=20
+> kernel trees relating to reading the interrupt vector from=20
+> the Xilinx PIC
+> (xilinx_pic_get_irq() in xilinx_pic.c).  As I see it, here's the
+> problem: If no interrupt is pending, the register should read=20
+> all ones.=20
+>   However, the IVR is only as wide as the number of interrupt=20
+> sources. =20
+> The routine mistakenly assumes sign extension and checks for=20
+> a 32-bit read of -1 instead of a read of w bits where w is=20
+> the number of connected interrupt sources.
+>=20
+> The 2.6 version also has a search-and-replace glitch relating=20
+> to removal of the reversal of bit numbering.  I have attached=20
+> a two line patch (for 2.6.17.7) that makes the IVR comparison=20
+> against the right bit pattern and removes the remnants of the=20
+> former bit-reversal code.
+>=20
+> Share and enjoy,
+> Stig Telfer
+>=20
+>=20
