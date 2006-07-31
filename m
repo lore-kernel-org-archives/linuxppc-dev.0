@@ -1,46 +1,77 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 60EA667B5E
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 22:03:29 +1000 (EST)
-Subject: Re: PCIe enhanced configuration mechanism support on ppc arch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <11BC5236-0411-402A-A3F1-0FB5E8059FA0@kernel.crashing.org>
-References: <7cc604637892c0a00a5e3e38192494d7@bga.com>
-	<1156978993.12526.97.camel@localhost.localdomain>
-	<11BC5236-0411-402A-A3F1-0FB5E8059FA0@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 31 Aug 2006 22:02:51 +1000
-Message-Id: <1157025771.12526.133.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <linuxppc@lizardlogic.co.uk>
+Received: from murano.lizardlogic.co.uk (unknown [195.10.246.108])
+	by ozlabs.org (Postfix) with ESMTP id BA3AE67B53
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 Aug 2006 00:07:46 +1000 (EST)
+Received: from [10.105.8.10] (lizardlogic.plus.com [84.92.176.208])
+	by murano.lizardlogic.co.uk (Postfix) with ESMTP id DE3701000CA
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 31 Jul 2006 14:50:41 +0100 (BST)
+Mime-Version: 1.0 (Apple Message framework v624)
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <76f51967dc88fd0821a524d69fdc3e1c@lizardlogic.co.uk>
+Content-Type: multipart/mixed; boundary=Apple-Mail-8--47018222
+From: Stig Telfer <linuxppc@lizardlogic.co.uk>
+Subject: Xilinx PIC and kernel interrupt handler 
+Date: Mon, 31 Jul 2006 14:50:40 +0100
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-31 at 12:11 +0200, Segher Boessenkool wrote:
-> > An example of platform not using RTAS and that does support extended
-> > config space is the PCI Express link out of the U4 northbridge on
-> > PowerMac (though not the other PCIe slots connected to the HT<->PCIe
-> > tunnel, at least not for now).
-> >
-> > It's basically just a matter of having your low level config access
-> > routines supporting those >=256 offsets. The generic code tests  
-> > that by
-> > doing a dummy access and checks for an error return.
-> 
-> The U3/U4 HT config access code never returns the error though; it
-> happily accesses the config space of the next device instead.  Got
-> a patch, will send it later -- it's not a regression, there's no big
-> hurry for 2.6.18.
 
-Better to have it in if possible though. Thanks
+--Apple-Mail-8--47018222
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
 
-Ben.
+Hi -
+
+There appears to be a kernel bug in the 2.4 and 2.6.17.7 kernel trees 
+relating to reading the interrupt vector from the Xilinx PIC 
+(xilinx_pic_get_irq() in xilinx_pic.c).  As I see it, here's the 
+problem: If no interrupt is pending, the register should read all ones. 
+  However, the IVR is only as wide as the number of interrupt sources.  
+The routine mistakenly assumes sign extension and checks for a 32-bit 
+read of -1 instead of a read of w bits where w is the number of 
+connected interrupt sources.
+
+The 2.6 version also has a search-and-replace glitch relating to 
+removal of the reversal of bit numbering.  I have attached a two line 
+patch (for 2.6.17.7) that makes the IVR comparison against the right 
+bit pattern and removes the remnants of the former bit-reversal code.
+
+Share and enjoy,
+Stig Telfer
+
+
+--Apple-Mail-8--47018222
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream;
+	x-unix-mode=0644;
+	name="xilinx_pic.patch"
+Content-Disposition: attachment;
+	filename=xilinx_pic.patch
+
+diff -Naurb linux-2.6.17.7/arch/ppc/syslib/xilinx_pic.c linux-2.6.17.7-stig/arch/ppc/syslib/xilinx_pic.c
+--- linux-2.6.17.7/arch/ppc/syslib/xilinx_pic.c	2006-07-25 04:36:01.000000000 +0100
++++ linux-2.6.17.7-stig/arch/ppc/syslib/xilinx_pic.c	2006-07-31 14:20:04.000000000 +0100
+@@ -97,8 +97,8 @@
+ 	 */
+ 
+ 	irq = intc_in_be32(intc + IVR);
+-	if (irq != -1)
+-		irq = irq;
++	if (irq == (1 << XPAR_INTC_MAX_NUM_INTR_INPUTS) - 1)
++		irq = -1;
+ 
+ 	pr_debug("get_irq: %d\n", irq);
+ 
+
+--Apple-Mail-8--47018222--
