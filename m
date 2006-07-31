@@ -1,29 +1,18 @@
-Return-Path: <Phil.Nitschke@avalon.com.au>
-Received: from ash25e.internode.on.net (ash25e.internode.on.net
-	[203.16.214.182]) by ozlabs.org (Postfix) with ESMTP id 2E950679E9
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 1636867B56
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 23:10:29 +1000 (EST)
-Received: from toby.int.avalon.com.au (ppp208-249.lns1.adl2.internode.on.net
-	[203.122.208.249])
-	by ash25e.internode.on.net (8.13.6/8.13.5) with ESMTP id k6VDASoS002508
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jul 2006 22:40:28 +0930 (CST)
-	(envelope-from Phil.Nitschke@avalon.com.au)
-Received: from toby.int.avalon.com.au (toby.int.avalon.com.au [127.0.0.1])
-	by toby.int.avalon.com.au (8.13.6/8.13.6/Debian-1) with ESMTP id
-	k6VDARw8014596
-	for <linuxppc-embedded@ozlabs.org>; Mon, 31 Jul 2006 22:40:27 +0930
-Received: (from phil@localhost)
-	by toby.int.avalon.com.au (8.13.6/8.13.6/Submit) id k6VDARaw014593
-	for linuxppc-embedded@ozlabs.org; Mon, 31 Jul 2006 22:40:27 +0930
-Subject: DMA buffer synchronisation with ioremap()
-From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Mon, 31 Jul 2006 22:40:27 +0930
-Message-Id: <1154351427.3203.59.camel@toby.int.avalon.com.au>
+	Mon, 31 Jul 2006 23:39:39 +1000 (EST)
+Date: Mon, 31 Jul 2006 17:39:59 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "Demke Torsten-atd012" <torsten.demke@motorola.com>
+Subject: Re: Compilation error in fsl_soc.c
+Message-ID: <20060731173959.03f57dd4@vitb.ru.mvista.com>
+In-Reply-To: <67194FEE6056B947B4EF756C9E497A2EA198F8@zuk35exm60.ds.mot.com>
+References: <67194FEE6056B947B4EF756C9E497A2EA198F8@zuk35exm60.ds.mot.com>
 Mime-Version: 1.0
-Reply-To: Phil.Nitschke@avalon.com.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,17 +23,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-(I go no replies last week, so I'll try again, with less explanation...)
+On Mon, 31 Jul 2006 08:37:56 +0100
+"Demke Torsten-atd012" <torsten.demke@motorola.com> wrote:
 
-If I master a DMA from a PCI device into a main memory buffer allocated
-with dma_alloc_noncoherent(), I need to synchronise the destination
-buffer using dma_sync_single_range_for_xxx() before and after the DMA.
+> Hi all,
+> 
+> with a recent versions from Paulus merge-tree the compilation
+> of MPC85xx CDS failed with following output:
+> ...
+>   LD      arch/powerpc/lib/built-in.o
+>   CC      arch/powerpc/sysdev/mpic.o
+>   CC      arch/powerpc/sysdev/indirect_pci.o
+>   AS      arch/powerpc/sysdev/dcr.o
+>   CC      arch/powerpc/sysdev/fsl_soc.o
+> arch/powerpc/sysdev/fsl_soc.c: In function 'gfar_mdio_of_init':
+> arch/powerpc/sysdev/fsl_soc.c:88: error: 'struct device_node' has no
+> member name d 'n_intrs'
+> arch/powerpc/sysdev/fsl_soc.c:91: error: 'struct device_node' has no
+> member name d 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c: In function 'gfar_of_init':
+> arch/powerpc/sysdev/fsl_soc.c:142: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:143: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:153: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:154: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:158: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:159: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:165: error: 'struct device_node' has no
+> member nam ed 'n_intrs'
+> arch/powerpc/sysdev/fsl_soc.c: In function 'fsl_i2c_of_init':
+> arch/powerpc/sysdev/fsl_soc.c:254: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:255: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c: In function 'fsl_usb_of_init':
+> arch/powerpc/sysdev/fsl_soc.c:391: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:392: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:440: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> arch/powerpc/sysdev/fsl_soc.c:441: error: 'struct device_node' has no
+> member nam ed 'intrs'
+> make[1]: *** [arch/powerpc/sysdev/fsl_soc.o] Error 1
+> make: *** [arch/powerpc/sysdev] Error 2
 
-But if the buffer is a very large chunk of memory (reserved at boot
-time) which has been ioremap()-ed into the virtual address space, do I
-need to still synchronise that memory?
+No, since it is just going to be out.
 
-Thanks,
+I'll submit some patches addressing that this week...
 
 -- 
-Phil
+Sincerely, 
+Vitaly
