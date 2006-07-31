@@ -1,12 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17613.38710.609255.581840@cargo.ozlabs.ibm.com>
-Date: Mon, 31 Jul 2006 15:37:58 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: Re: please pull powerpc.git 'merge' branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-231-monday.dmz.nerim.net
+	[195.5.254.231]) by ozlabs.org (Postfix) with ESMTP id 9AB4C67B55
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Jul 2006 16:57:27 +1000 (EST)
+Received: from kraid.nerim.net (smtp-101-monday.nerim.net [62.4.16.101])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 5C4C13B76F
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Jul 2006 08:57:22 +0200 (CEST)
+Date: Mon, 31 Jul 2006 08:57:24 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC] I2C-MPC: Fix up error handling
+Message-Id: <20060731085724.00447d21.khali@linux-fr.org>
+In-Reply-To: <A18434C2-2C6F-4052-B3F3-AE9D2CE38BE3@kernel.crashing.org>
+References: <20060609095421.7157dc53.khali@linux-fr.org>
+	<20060730131440.1d4fcbe6.khali@linux-fr.org>
+	<A18434C2-2C6F-4052-B3F3-AE9D2CE38BE3@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Munaut <tnt@246tNt.com>, Sylvain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,70 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+> > Quoting myself:
+> > > Could anyone please comment on this i2c-mpc patch, and give it some
+> > > testing on different systems? I'm fine with the error propagation
+> > > fixes, but less fine with the random resets being added, and rather
+> > > unhappy with the "retry once more just in case" thing, which I think,
+> > > if really needed, should instead be implemented using the standard
+> > > i2c_adapter.retries mechanism.
+> >
+> > Can anyone please comment on this patch? Andrew Morton keeps  
+> > forwarding it to me, but I don't think I can accept it as is (see
+> > my complaints above.)
+> 
+> If I find some time, let me split out the error propagation so we can  
+> get that fix up stream.  The other code was to handle a buggy device  
+> that was connected in one system I was working on.
 
-Please do a pull from the "merge" branch of
+Sounds like a good plan, thanks.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-
-to get the commits listed below.
-
-There is also a set of 5 patches for sound/aoa that need to go in
-2.6.18.  I'm trying to coordinate with Takashi Iwai about whether he
-or I will send you those.
-
-Paul.
-
- arch/powerpc/Kconfig                         |    2 
- arch/powerpc/configs/pmac32_defconfig        |  112 ++++++++-
- arch/powerpc/kernel/head_64.S                |   35 +++
- arch/powerpc/kernel/legacy_serial.c          |   13 +
- arch/powerpc/kernel/misc_64.S                |    2 
- arch/powerpc/kernel/prom_init.c              |   36 +++
- arch/powerpc/kernel/smp.c                    |   24 +-
- arch/powerpc/kernel/udbg_16550.c             |    6 -
- arch/powerpc/mm/lmb.c                        |    3 
- arch/powerpc/platforms/chrp/setup.c          |   12 +
- arch/powerpc/platforms/maple/setup.c         |   17 +
- arch/powerpc/platforms/powermac/bootx_init.c |   35 ++-
- arch/powerpc/platforms/powermac/cpufreq_64.c |   78 ++++---
- arch/powerpc/platforms/pseries/setup.c       |    6 -
- drivers/ide/Kconfig                          |   14 -
- drivers/macintosh/Kconfig                    |   11 +
- drivers/macintosh/therm_pm72.c               |  218 +++++++++++++++++-
- drivers/macintosh/therm_pm72.h               |   33 +++
- drivers/macintosh/via-pmu-led.c              |    2 
- drivers/video/offb.c                         |  307 ++++++++++++++------------
- 20 files changed, 703 insertions(+), 263 deletions(-)
-
-Benjamin Herrenschmidt:
-      [POWERPC] Workaround Pegasos incorrect ISA "ranges"
-      [POWERPC] Fix 32 bits warning in prom_init.c
-      [POWERPC] Fix non-MPIC CHRPs with CONFIG_SMP set
-      [POWERPC] Fix default clock for udbg_16550
-      [POWERPC] Fix legacy_serial.c error handling on 32 bits
-      [POWERPC] More offb/bootx fixes
-      [POWERPC] Xserve G5 thermal control fixes
-      [POWERPC] Add cpufreq support for Xserve G5
-
-Danny van Dyk:
-      [POWERPC] PMAC_APM_EMU should depend on ADB_PMU
-
-Geoff Levand:
-      [POWERPC] Minor comment fix for misc_64.S
-
-Jake Moilanen:
-      [POWERPC] Use H_CEDE on non-SMT
-
-Johannes Berg:
-      [POWERPC] fix up front-LED Kconfig
-
-Michael Ellerman:
-      [POWERPC] Fix mem= handling when the memory limit is > RMO size
-
-Olaf Hering:
-      [POWERPC] force 64bit mode in fwnmi handlers to workaround firmware bugs
-
-Segher Boessenkool:
-      [POWERPC] Fix new interrupt code (MPIC endianness)
-      [POWERPC] Fix new interrupt code (MPIC detection)
+-- 
+Jean Delvare
