@@ -1,11 +1,19 @@
-Return-Path: <benjamin.heyne@uni-dortmund.de>
-Date: Tue, 1 Aug 2006 10:02:20 +0200
-From: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
-To: Linuxppc-embedded@ozlabs.org
-Subject: XUPV2P, Kernel 2.6.17 boot problem
-Message-ID: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
+Return-Path: <liyaoshi@21cn.com>
+Received: from 21cn.com (unknown [202.105.45.52])
+	by ozlabs.org (Postfix) with SMTP id 2765667B61
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 Aug 2006 18:54:38 +1000 (EST)
+Received: from HuangXiongWei (unknown [202.105.45.9])
+	by 21cn.com (HERMES) with ESMTP for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 Aug 2006 16:47:44 +0800 (HKT)
+Date: Tue, 1 Aug 2006 16:47:26 +0800
+From: "liyaoshi" <liyaoshi@21cn.com>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: 8247 usb host driver of  kernel 2.6.12 with cpm2usb patched
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="gb2312"
+Message-ID: <yA939198834879.07252@send6.inner-21cn.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,35 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
-I am currently trying to get the 2.6.17.1 Linux kernel
-running on the Xilinx Virtex. I have the 2.4 kernel up
-and running - No problems there...
+Hello guys
+		I have a board of 8247 ,I have get it run with kernel patched with cpm2usb 
+		It seems the irq of usb in 8247 dont work
+		the proc looks like the follow 
 
-But when using the 2.6 kernel (have copied xparameters file,
-patched for using TEMAC driver) with the same hardware configuration
-the following happens:
+			bash-3.00# cat /proc/interrupts 
+			           CPU0       
+			 11:          0   CPM2 SIU  Level     m82xxhci
+			 32:          0   CPM2 SIU  Level     fenet
+			 33:      72876   CPM2 SIU  Level     fenet
+			 40:        389   CPM2 SIU  Level     cpm_uart
+			BAD:       5611                                               
 
+		And I have seen the same question in the mail list , somebody just say set the correct USBCLK,
+		i modify the board_configure and setup_usb_clock function   , and i make sure the usbclock is correct set
 
-loaded at:     00400000 0061813C
-board data at: 00616124 0061613C
-relocated to:  00405148 00405160
-zimage at:     0040585D 00615F42
-avail ram:     00619000 20000000
+        The chipset looks like of Version A.0 
 
-Linux/PPC load: console=ttyS0,9600.....
+			bash-3.00# cat /proc/cpuinfo 
+			processor       : 0
+			cpu             : G2_LE
+			revision        : 1.4 (pvr 8082 2014)
+			bogomips        : 177.15 
 
-Uncompressing Linux...inflate returned FFFFFFFB
-exit
-
-
-Now, I am not really sure where to start searching for the bug
-(I just want to implement some drivers - not the kernel itself ;-).
-The zImage.elf file is about 2MB large. Did anyone encounter
-a similar error? Does anyone have some hints where to
-look at for debugging, or what might be wrong?
-
-Thanks in advance
-Best regards
--- 
-Benjamin Heyne
+		Any other Thing should I modify to generate the usb interrupt ? 
