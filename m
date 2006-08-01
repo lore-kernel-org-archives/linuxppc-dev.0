@@ -1,19 +1,11 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 8652B67B59
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Aug 2006 17:10:33 +1000 (EST)
-To: "Dmitry Chichkov" <chichkov@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: U-Boot and kernel 2.6 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 31 Jul 2006 22:12:45 PDT."
-	<eamnsh$v4b$1@sea.gmane.org>
-Date: Tue, 01 Aug 2006 09:10:31 +0200
-Sender: wd@denx.de
-Message-Id: <20060801071031.3FEAD352625@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <benjamin.heyne@uni-dortmund.de>
+Date: Tue, 1 Aug 2006 10:02:20 +0200
+From: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
+To: Linuxppc-embedded@ozlabs.org
+Subject: XUPV2P, Kernel 2.6.17 boot problem
+Message-ID: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +16,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <eamnsh$v4b$1@sea.gmane.org> you wrote:
-> 
-> I would recommend not to try old versions of U-Boot ("from 2.4") with new 
-> linux kernels ("2.6").
-> We had some troubles with invalid memory mappings in this configuration.
+Dear all,
+I am currently trying to get the 2.6.17.1 Linux kernel
+running on the Xilinx Virtex. I have the 2.4 kernel up
+and running - No problems there...
 
-It is of course always a good idea to use  the  latest  and  greatest
-versions  of  the software, but U-Boot is a boot loader, and it has a
-clearly defined interface to the kernel  -  and  great  attempts  are
-being  made  to  keep  this  interface  unchanged  or, if changes are
-necessary, to perform them in a way that stays compatible.
-
-I see no reason why even old versions of U-Boot could cause  problems
-with  recent Linux kernels. Actually I have seen very old versions of
-U-Boot (like U-Boot-0.3.x) seen in production use with recent  kernel
-versions.
+But when using the 2.6 kernel (have copied xparameters file,
+patched for using TEMAC driver) with the same hardware configuration
+the following happens:
 
 
+loaded at:     00400000 0061813C
+board data at: 00616124 0061613C
+relocated to:  00405148 00405160
+zimage at:     0040585D 00615F42
+avail ram:     00619000 20000000
 
-In your case it was probably a bug that had been fixed,  but  not  an
-incompatibility with current kernels.
+Linux/PPC load: console=ttyS0,9600.....
 
-Best regards,
+Uncompressing Linux...inflate returned FFFFFFFB
+exit
 
-Wolfgang Denk
 
+Now, I am not really sure where to start searching for the bug
+(I just want to implement some drivers - not the kernel itself ;-).
+The zImage.elf file is about 2MB large. Did anyone encounter
+a similar error? Does anyone have some hints where to
+look at for debugging, or what might be wrong?
+
+Thanks in advance
+Best regards
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-panic: can't find /
+Benjamin Heyne
