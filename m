@@ -1,19 +1,19 @@
-Return-Path: <jagannathanjay@aim.com>
-Received: from imo-d06.mx.aol.com (imo-d06.mx.aol.com [205.188.157.38])
-	by ozlabs.org (Postfix) with ESMTP id 173B167B5C
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 8652B67B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Aug 2006 16:17:02 +1000 (EST)
-Received: from jagannathanjay@aim.com
-	by imo-d06.mx.aol.com (mail_out_v38_r7.6.) id 5.3be.81cfef4 (57872)
-	for <linuxppc-embedded@ozlabs.org>; Tue, 1 Aug 2006 02:16:54 -0400 (EDT)
-Date: Tue, 01 Aug 2006 02:16:54 -0400
-From: jagannathanjay@aim.com
-Message-Id: <8C8834937F3DEB1-E5C-A5D2@FWM-M17.sysops.aol.com>
-Subject: Ksymoops 
-Content-Type: multipart/alternative;
-	boundary="--------MailBlocks_8C8834937F3DEB1_E5C_AF34_FWM-M17.sysops.aol.com"
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
+	Tue,  1 Aug 2006 17:10:33 +1000 (EST)
+To: "Dmitry Chichkov" <chichkov@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: U-Boot and kernel 2.6 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 31 Jul 2006 22:12:45 PDT."
+	<eamnsh$v4b$1@sea.gmane.org>
+Date: Tue, 01 Aug 2006 09:10:31 +0200
+Sender: wd@denx.de
+Message-Id: <20060801071031.3FEAD352625@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <eamnsh$v4b$1@sea.gmane.org> you wrote:
+> 
+> I would recommend not to try old versions of U-Boot ("from 2.4") with new 
+> linux kernels ("2.6").
+> We had some troubles with invalid memory mappings in this configuration.
 
-----------MailBlocks_8C8834937F3DEB1_E5C_AF34_FWM-M17.sysops.aol.com
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+It is of course always a good idea to use  the  latest  and  greatest
+versions  of  the software, but U-Boot is a boot loader, and it has a
+clearly defined interface to the kernel  -  and  great  attempts  are
+being  made  to  keep  this  interface  unchanged  or, if changes are
+necessary, to perform them in a way that stays compatible.
 
- Hi all
- 
- We are using a Embedded Planet 8260 board with Embedded linux loaded in it. The target processor is MPC 8260. We need a kysmoops (rpm) for debugging oops messages in kernel.
- Can anyone suggest the link or how can i install kysmoops for Embedded Planet 8260 board with Embedded linux? 
- 
- Regards
- Jay
- 
- 
-  
-________________________________________________________________________
-Check Out the new free AIM(R) Mail -- 2 GB of storage and industry-leading spam and email virus protection.
+I see no reason why even old versions of U-Boot could cause  problems
+with  recent Linux kernels. Actually I have seen very old versions of
+U-Boot (like U-Boot-0.3.x) seen in production use with recent  kernel
+versions.
 
-----------MailBlocks_8C8834937F3DEB1_E5C_AF34_FWM-M17.sysops.aol.com
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 
-<HTML><BODY>
-<div>Hi all<br>
-<br>
-We are using a Embedded Planet 8260 board with Embedded linux loaded in it. The target processor is MPC 8260.&nbsp; We need a kysmoops (rpm) for debugging oops messages in kernel.<br>
-Can anyone suggest the link or how can i install kysmoops for Embedded Planet 8260 board with Embedded linux? <br>
-<br>
-Regards<br>
-Jay<br>
-<br>
-<br>
-</div>
 
-<div class="AOLPromoFooter">
-<hr style="margin-top:10px;" />
-<a href="http://pr.atwola.com/promoclk/100122638x1081283466x1074645346/aol?redir=http%3A%2F%2Fwww%2Eaim%2Ecom%2Ffun%2Fmail%2F" target="_blank"><b>Check Out the new free AIM(R) Mail</b></a> -- 2 GB of storage and industry-leading spam and email virus protection.<br />
-</div>
+In your case it was probably a bug that had been fixed,  but  not  an
+incompatibility with current kernels.
 
-</BODY></HTML>
+Best regards,
 
-----------MailBlocks_8C8834937F3DEB1_E5C_AF34_FWM-M17.sysops.aol.com--
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+panic: can't find /
