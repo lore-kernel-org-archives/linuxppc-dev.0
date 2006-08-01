@@ -2,17 +2,22 @@ Return-Path: <kl@jasmine.eu.org>
 Received: from riddly.domek.prywatny (arz222.internetdsl.tpnet.pl
 	[83.17.211.222]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE22167B61
+	by ozlabs.org (Postfix) with ESMTP id 26B23679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Aug 2006 07:09:09 +1000 (EST)
-Date: Tue, 1 Aug 2006 22:40:11 +0200
+	Wed,  2 Aug 2006 09:35:21 +1000 (EST)
+Received: from karol by riddly.domek.prywatny with local (Exim 4.50)
+	id 1G83lc-0000aS-D7
+	for linuxppc-embedded@ozlabs.org; Wed, 02 Aug 2006 01:35:16 +0200
+Date: Wed, 2 Aug 2006 01:35:16 +0200
 From: Karol Lewandowski <kl@jasmine.eu.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-Subject: [BUG] ibm_emac: kernel panic with CONFIG_SLOB=y
-Message-ID: <20060801204011.GB1754@riddly.domek.prywatny>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [BUG] ibm_emac: kernel panic with CONFIG_SLOB=y
+Message-ID: <20060801233516.GC1754@riddly.domek.prywatny>
+References: <20060801204011.GB1754@riddly.domek.prywatny>
+	<20060801221342.GA13171@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <20060801221342.GA13171@gate.ebshome.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,45 +28,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Aug 01, 2006 at 03:13:42PM -0700, Eugene Surovegin wrote:
+> On Tue, Aug 01, 2006 at 10:40:11PM +0200, Karol Lewandowski wrote:
+> > Hi,
+> > 
+> > I'm getting reproductible kernel panic when I use smaller SLOB
+> > allocator (instead of SLAB).  This is reproductible but very randomly
+> > -- sometimes it happens during bootup, sometimes few minutes later.
+> > 
+> > Hardware is custom board with IBM405EP (very close to Bubingna, just
+> > no RTC):
+> > 
+> > # cat /proc/cpuinfo
+> > processor	: 0
+> > cpu		: 405EP
+> > clock		: 200MHz
+> > revision	: 9.80 (pvr 5121 0950)
+> > bogomips	: 199.47
+> > machine		: MagicBox
+> > plb bus clock	: 100MHz
+> > pci bus clock	: 25MHz
+> > 
+> > Enabling SLAB instead of SLOB fixes this, so I assume this is driver
+> > issue.
+> 
+> This is probably the same issue  I had with SLAB debugging.
 
-I'm getting reproductible kernel panic when I use smaller SLOB
-allocator (instead of SLAB).  This is reproductible but very randomly
--- sometimes it happens during bootup, sometimes few minutes later.
+With SLAB debugging I get oops even faster:
 
-Hardware is custom board with IBM405EP (very close to Bubingna, just
-no RTC):
-
-# cat /proc/cpuinfo
-processor	: 0
-cpu		: 405EP
-clock		: 200MHz
-revision	: 9.80 (pvr 5121 0950)
-bogomips	: 199.47
-machine		: MagicBox
-plb bus clock	: 100MHz
-pci bus clock	: 25MHz
-
-Enabling SLAB instead of SLOB fixes this, so I assume this is driver
-issue.
-
-Full dmesg attached:
-
-Linux version 2.6.17-magicbox2 (builder@riddly) (gcc version 3.4.5) #2 Tue Aug 1 20:58:00 CEST 2006
+Linux version 2.6.17-magicbox2 (builder@riddly) (gcc version 3.4.5) #3 Wed Aug 2 01:14:21 CEST 2006
 MagicBox port (C) 2005 Karol Lewandowski <kl@jasmine.eu.org>
 Built 1 zonelists
 Kernel command line: console=ttyS0,115200 root=/dev/ram rw
 PID hash table entries: 256 (order: 8, 1024 bytes)
 Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
 Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-Memory: 28272k available (1544k kernel code, 508k data, 100k init, 0k highmem)
+Memory: 28252k available (1560k kernel code, 508k data, 104k init, 0k highmem)
 Mount-cache hash table entries: 512
 checking if image is initramfs...it isn't (bad gzip magic numbers); looks like an initrd
 Freeing initrd memory: 2020k freed
 NET: Registered protocol family 16
 PCI: Probing PCI hardware
 TC classifier action (bugs to netdev@vger.kernel.org cc hadi@cyberus.ca)
-NET: Registered protocol family 
+NET: Registered protocol family 2
 IP route cache hash table entries: 256 (order: -2, 1024 bytes)
 TCP established hash table entries: 1024 (order: 0, 4096 bytes)
 TCP bind hash table entries: 512 (order: -1, 2048 bytes)
@@ -81,62 +90,87 @@ eth0: emac0, MAC 00:50:c2:1e:af:fe
 eth0: found Generic MII PHY (0x00)
 emac1: reset timeout
 emac1: can't find PHY!
-tun: Universal TUN/TAP device driver, 1.6
-tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-Magically mapped flash: Found 1 x16 devices at 0x0 in 16-bit bank
- Amd/Fujitsu Extended Query Table at 0x0040
-Magically mapped flash: Swapping erase regions for broken CFI table.
-number of CFI chips: 1
-cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-Creating 4 MTD partitions on "Magically mapped flash":
-0x00000000-0x000e0000 : "kernel"
-0x000e0000-0x003a0000 : "ramdisk"
-0x003a0000-0x003c0000 : "persistent"
-0x003c0000-0x00400000 : "bootloader"
-i2c /dev entries driver
-IBM IIC driver v2.1
-ibm-iic0: using standard (100 kHz) mode
-u32 classifier
-    Actions configured 
-GRE over IPv4 tunneling driver
-ip_conntrack version 2.4 (256 buckets, 2048 max) - 236 bytes per conntrack
-ip_tables: (C) 2000-2006 Netfilter Core Team
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Bridge firewalling registered
-802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
-All bugs added by David S. Miller <davem@redhat.com>
-RAMDISK: squashfs filesystem found at block 0
-RAMDISK: Loading 2017KiB [1 disk] into ram disk...
-VFS: Mounted root (squashfs filesystem) readonly.
-Freeing unused kernel memory: 100k init
-Oops: kernel access of bad area, sig: 11 [#1]
-NIP: C000BEF8 LR: C00D247C CTR: 00000006
-REGS: c1993d80 TRAP: 0300   Not tainted  (2.6.17-magicbox2)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 44000024  XER: 20000000
-DAR: FFFFFFFE, DSISR: 00000000
-TASK = c01ef000[331] 'echo' THREAD: c1992000
-GPR00: 00000006 C1993E30 C01EF000 C19D1828 FFFFFFFA 00000026 C19D1824 C19D1866 
-GPR08: 00000000 C19D182A 00000001 00000000 42000028 70000000 00000001 10080000 
-GPR16: 00000000 30014C34 00000000 30000000 00000000 00000000 00000020 00000000 
-GPR24: C1C7D8A4 00000001 0000003C 0000003E 00000008 C19D1770 C1951680 C1C7D800 
-NIP [C000BEF8] cacheable_memcpy+0x64/0x108
-LR [C00D247C] emac_poll_rx+0x150/0x6e8
+slab error in cache_free_debugcheck(): cache `size-2048': double free, or memory outside object was overwritten
 Call Trace:
-[C1993E30] [C00D244C] emac_poll_rx+0x120/0x6e8 (unreliable)
-[C1993E80] [C00D0508] mal_poll+0x90/0x284
-[C1993EB0] [C00F9CB0] net_rx_action+0xb4/0x1b0
-[C1993EE0] [C001D0C4] __do_softirq+0x64/0xe0
-[C1993F00] [C0007AC0] do_softirq+0x50/0x74
-[C1993F10] [C001D1E0] irq_exit+0x38/0x48
-[C1993F20] [C0007A5C] do_IRQ+0x64/0x78
-[C1993F40] [C0003478] ret_from_except+0x0/0x18
+[C1D95DC0] [C0009988] show_stack+0x58/0x180 (unreliable)
+[C1D95DF0] [C004E92C] __slab_error+0x2c/0x3c
+[C1D95E00] [C004F0BC] cache_free_debugcheck+0x150/0x2a8
+[C1D95E30] [C004FDC0] kfree+0x74/0xf0
+[C1D95E50] [C01FAB40] emac_probe+0x6a0/0x6b8
+[C1D95E90] [C000C884] ocp_device_probe+0x38/0x60
+[C1D95EA0] [C00CEAD8] driver_probe_device+0x64/0x108
+[C1D95EC0] [C00CECA8] __driver_attach+0x80/0xe4
+[C1D95EE0] [C00CDE30] bus_for_each_dev+0x54/0x94
+[C1D95F10] [C00CED30] driver_attach+0x24/0x34
+[C1D95F20] [C00CE424] bus_add_driver+0x74/0x148
+[C1D95F40] [C00CF2C0] driver_register+0xa4/0xb8
+[C1D95F70] [C000C9D8] ocp_register_driver+0x28/0x38
+[C1D95F80] [C01FAB90] emac_init+0x38/0x6c
+[C1D95F90] [C0002440] init+0xa4/0x27c
+[C1D95FF0] [C0005054] kernel_thread+0x44/0x60
+c1dc60bc: redzone 1:0x0, redzone 2:0x0.
+kernel BUG in cache_free_debugcheck at mm/slab.c:2640!
+Oops: Exception in kernel mode, sig: 5 [#1]
+NIP: C004F16C LR: C004F130 CTR: 00000000
+REGS: c1d95d50 TRAP: 0700   Not tainted  (2.6.17-magicbox2)
+MSR: 00021030 <ME,IR,DR>  CR: 44004022  XER: 20000000
+TASK = c1d93ae0[1] 'swapper' THREAD: c1d94000
+GPR00: 00000001 C1D95E00 C1D93AE0 C1DC68C4 C1DC68C8 FFFFFFFF C00CC0C4 C01C0000 
+GPR08: C01C0DBF 0000001B C021536C 0000001C 00000000 00000000 01FFC700 00000000 
+GPR16: 00000001 00000001 FFFFFFFF 007FFF00 01FF609C 00000000 00000003 C1DC63A8 
+GPR24: C0223A80 C01FAB40 C0200000 C1DC6080 00000000 5A2CF071 C1DC60BC C0222A80 
+NIP [C004F16C] cache_free_debugcheck+0x200/0x2a8
+LR [C004F130] cache_free_debugcheck+0x1c4/0x2a8
+Call Trace:
+[C1D95E00] [C004F100] cache_free_debugcheck+0x194/0x2a8 (unreliable)
+[C1D95E30] [C004FDC0] kfree+0x74/0xf0
+[C1D95E50] [C01FAB40] emac_probe+0x6a0/0x6b8
+[C1D95E90] [C000C884] ocp_device_probe+0x38/0x60
+[C1D95EA0] [C00CEAD8] driver_probe_device+0x64/0x108
+[C1D95EC0] [C00CECA8] __driver_attach+0x80/0xe4
+[C1D95EE0] [C00CDE30] bus_for_each_dev+0x54/0x94
+[C1D95F10] [C00CED30] driver_attach+0x24/0x34
+[C1D95F20] [C00CE424] bus_add_driver+0x74/0x148
+[C1D95F40] [C00CF2C0] driver_register+0xa4/0xb8
+[C1D95F70] [C000C9D8] ocp_register_driver+0x28/0x38
+[C1D95F80] [C01FAB90] emac_init+0x38/0x6c
+[C1D95F90] [C0002440] init+0xa4/0x27c
+[C1D95FF0] [C0005054] kernel_thread+0x44/0x60
 Instruction dump:
-70080003 7ca02850 7d0903a6 41a20018 89240004 99260004 38840001 38c60001 
-4200fff0 5400f0bf 7c0903a6 41820010 <85240004> 95260004 4200fff8 54a0d97f 
-Kernel panic - not syncing: Aiee, killing interrupt handler!
+7c0bf050 7f804b96 801f001c 7c00e010 38000000 7c000114 0f000000 7d29e1d6 
+7d6b4a14 7fcb5a78 312bffff 7c095910 <0f000000> 801f0018 700b0200 41a20024 
+Kernel panic - not syncing: Attempted to kill init!
  <0>Rebooting in 180 seconds..
+
+ 
+> In short, those allocators aren't compatible with non-coherent cache 
+> archs (like 4xx), because driver assumes at least L1 cache line 
+> alignment for all allocated memory.
+> 
+> For more info, you can read this post:
+> 
+> http://ozlabs.org/pipermail/linuxppc-embedded/2006-February/022087.html
+
+This is all black magic for me, all I can do is to suggest blacklisting
+these features on certain archs, i.e. adjusting Kconfigs:
+
+--- kernel-2.6-2.6.17-magicbox2/init/Kconfig.orig	2006-08-02 01:24:04.000000000 +0200
++++ kernel-2.6-2.6.17-magicbox2/init/Kconfig	2006-08-02 01:25:49.000000000 +0200
+@@ -367,7 +367,7 @@
+ 
+ config SLAB
+ 	default y
+-	bool "Use full SLAB allocator" if EMBEDDED
++	bool "Use full SLAB allocator" if (EMBEDDED && !4xx)
+ 	help
+ 	  Disabling this replaces the advanced SLAB allocator and
+ 	  kmalloc support with the drastically simpler SLOB allocator.
+
+
+... and doing something like that for every architecture without
+coherent cache (and SLAB debugging).
+
+I'm not that sure that it's good way to go, though.
 
 thanks
 -- 
