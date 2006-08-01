@@ -1,24 +1,38 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <apw@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49D5F67B5E
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 02:39:35 +1000 (EST)
-In-Reply-To: <200608010838.08139.david-b@pacbell.net>
-References: <4879B0C6C249214CBE7AB04453F84E4D07064D@zch01exm20.fsl.freescale.net>
-	<93F26879-ECEB-4513-AA77-EE7285DF7961@kernel.crashing.org>
-	<200608010838.08139.david-b@pacbell.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4A5CCE58-CF92-4655-A224-8D79B43F49F4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [linux-usb-devel] [PATCH] Fix Freescale high-speed USB
-	hostdependency
-Date: Tue, 1 Aug 2006 11:39:27 -0500
-To: David Brownell <david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net,
-	gregkh@suse.de
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 18584679E0
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 05:44:15 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k71JiC1c019946
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Aug 2006 15:44:12 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k71JiCgb262014
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Aug 2006 13:44:12 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k71JiCGZ005019
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Aug 2006 13:44:12 -0600
+Received: from kvasir.watson.ibm.com (kvasir.watson.ibm.com [9.2.218.19])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k71JiB9F004989
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Aug 2006 13:44:12 -0600
+Received: from apw by kvasir.watson.ibm.com with local (Exim 4.52)
+	id 1G809z-0006JA-Eh
+	for linuxppc-dev@ozlabs.org; Tue, 01 Aug 2006 15:44:11 -0400
+Date: Tue, 1 Aug 2006 15:44:11 -0400
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] turn on tigon3 support in maple_defconfig
+Message-ID: <20060801194411.GA22933@kvasir.watson.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Amos Waterland <apw@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I think that most people who use maple_defconfig are doing so for a JS21,
+so it might make sense to turn Tigon3 support on by default.  
 
-On Aug 1, 2006, at 10:38 AM, David Brownell wrote:
+Built and booted on a JS21.
 
-> On Thursday 20 July 2006 5:59 am, Kumar Gala wrote:
->
->>>
->>> -#ifdef CONFIG_PPC_83xx
->>> +#ifdef CONFIG_MPC834x
->
-> So at the end of all that discussion, was there a USB patch to merge?
-> If so, I don't see one in my mail folder.
+Signed-off-by: Amos Waterland <apw@us.ibm.com>
 
-Not on this side of things.  If we clean up the CONFIG_PPC stuff I'll  
-push that through the PPC maintainer.  There was a patch for gadget  
-support for the controller, but not sure if you handle that or not.
+---
 
-- k
+ maple_defconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/configs/maple_defconfig b/arch/powerpc/configs/maple_defconfig
+index 80a0db4..27b18ca 100644
+--- a/arch/powerpc/configs/maple_defconfig
++++ b/arch/powerpc/configs/maple_defconfig
+@@ -474,7 +474,7 @@ CONFIG_E1000=y
+ # CONFIG_SKY2 is not set
+ # CONFIG_SK98LIN is not set
+ # CONFIG_VIA_VELOCITY is not set
+-# CONFIG_TIGON3 is not set
++CONFIG_TIGON3=y
+ # CONFIG_BNX2 is not set
+ # CONFIG_MV643XX_ETH is not set
+ 
