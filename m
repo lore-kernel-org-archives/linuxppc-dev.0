@@ -1,19 +1,16 @@
-Return-Path: <yulq@jiaxun.com>
-Received: from mail.jiaxun.com (unknown [203.86.85.181])
-	by ozlabs.org (Postfix) with ESMTP id A704367B52
+Return-Path: <hpchen163@tom.com>
+Received: from tom.com (smtpr7.tom.com [202.108.252.137])
+	by ozlabs.org (Postfix) with SMTP id A45D867A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Aug 2006 11:33:59 +1000 (EST)
-Received: from OAserver.jiaxun.com ([192.168.1.15])
-	by jiaxun.com (mail.jiaxun.com) (MDaemon PRO v9.0.1)
-	with ESMTP id md50000015613.msg
-	for <linuxppc-embedded@ozlabs.org>; Tue, 01 Aug 2006 09:10:02 +0800
-Subject: Portting Linux to MPC8247
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF445DE9B2.5898E3C7-ON482571BD.0006EE5B-482571BD.00075E7F@jiaxun.com>
-From: yulq@jiaxun.com
-Date: Tue, 1 Aug 2006 09:23:47 +0800
+	Tue,  1 Aug 2006 12:55:27 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Message-ID: <44CEC296.000032.22899@bjapp33>
+Date: Tue, 1 Aug 2006 10:55:18 +0800 (CST)
+From: "=?gb2312?B?aHBjaGVu?=" <hpchen163@tom.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: =?gb2312?B?d2hvIGhhcyBzaWxpY29uJ3MgNzIyIGRyaXZlciBzb3VyY2U=?=
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,62 +21,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am portting Linux(ver. 2.4.24) to MPC8247. I use U-boot and ELDK Kit.
-The boot and kernel works well, but when the init process to execute
-/sbin/init the board restarts. The message is shown following:
 
-... ...
+--Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-Memory BAT mapping: BAT2=32Mb, BAT3=0Mb, residual: 0Mb
-Linux version 2.4.24-pre2 (yulq@MDS-Server) (gcc version 3.2.2 20030217
-(Yellow
-Dog Linux 3.0 3.2.2-2a_1)) #99 Mon Jul 31 17:51:08 CST 2006
-On node 0 totalpages: 8192
-zone(0): 8192 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: console=ttyS0,9600n8 root=/dev/ram
-ip=192.168.2.130:192.168
-.2.147:192.168.2.147:255.255.255.0:yulq::off
-Warning: real time clock seems stuck!
-Calibrating delay loop... 131.89 BogoMIPS
-Memory: 27088k available (988k kernel code, 324k data, 52k init, 0k
-highmem)
-Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
-Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
-Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
-CPM UART driver version 0.01
-ttyS0 on SMC1 at 0x0000, BRG7
-ttyS1 on SCC1 at 0x8000, BRG1
-ttyS2 on SCC2 at 0x8100, BRG2
-pty: 256 Unix98 ptys configured
-eth0: FCC1 ENET Version 0.4, 08:00:3E:2D:9D:5B
-eth0: Phy @ 0x1, type LXT971 (0x001378e2)
-RAMDISK driver initialized: 16 RAM disks of 16384K size 1024 blocksize
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 2048 bind 4096)
-eth0: config: auto-negotiation on, 100FDX, 100HDX, 10FDX, 10HDX.
-IP-Config: Complete:
-      device=eth0, addr=192.168.2.130, mask=255.255.255.0,
-gw=192.168.2.147,
-     host=yulq, domain=, nis-domain=(none),
-     bootserver=192.168.2.147, rootserver=192.168.2.147, rootpath=
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 3919k freed
-VFS: Mounted root (ext2 filesystem) readonly.
-Freeing unused kernel memory: 52k init
-Open an initial console successful
+SGksIEFsbDoNCkknbSBpbnRlcmZhY2luZyBtcGM4MjQ1IHRvIHNtNzIyLCBJIGZvdW5kIGlu
+IHRoZSBwcmV2aW91cw0KbWFpbHMgdGhhdCBzb21lb25lIGhhcyBzdWNjZXNzZnVsbHkgd3Jp
+dHRlbiBkcml2ZXIgZm9yIGl0DQp1c2luZyBQb3dlciBQQy4gQ2FuIGFueWJvZHkgdGVsbCBt
+ZSB0aGUgYWRkcmVzc2VzIHRvIGRvd25sb2FkIHRoZSBkcml2ZXIgYW5kIGl0cyBzb3VyY2Ug
+Y29kZT8NClRoYW5rcyEgDQoNCg==
+--Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-Board restarts !
-
-What is the problem ?
+SGksIEFsbDo8YnI+SSdtIGludGVyZmFjaW5nIG1wYzgyNDUgdG8gc203MjIsIEkgZm91bmQg
+aW4gdGhlIHByZXZpb3VzPGJyPm1haWxzIHRoYXQgc29tZW9uZSBoYXMgc3VjY2Vzc2Z1bGx5
+IHdyaXR0ZW4gZHJpdmVyIGZvciBpdDxicj51c2luZyBQb3dlciBQQy4gQ2FuIGFueWJvZHkg
+dGVsbCBtZSB0aGUgYWRkcmVzc2VzIHRvIGRvd25sb2FkIHRoZSBkcml2ZXIgYW5kIGl0cyBz
+b3VyY2UgY29kZT88YnI+VGhhbmtzISA8YnI+PCEtLSB1cmxmaWxlcyAtLT48YnI+PGJyPjwh
+LS0gZm9vdGVyIC0tPjxicj48YnI+Cjx0YWJsZSBjZWxscGFkZGluZz0iMSIgY2VsbHNwYWNp
+bmc9IjEiIGJvcmRlcj0iMCIgc3R5bGU9Im1hcmdpbi10b3A6MTBweDsiPgogIDx0cj4gCiAg
+PHRkPgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo8
+YnI+CiA8QSB0aXRsZT0iv+zAtLrNztLSu8bwz+3K3FRPTcPit9HTys/ksMmjoSC/tL+0s/3B
+yzEuNUejrLu509DKssO0o78iICBocmVmPSJodHRwOi8vYmpjZ2kuMTYzLm5ldC9jZ2ktYmlu
+L25ld3JlZy5jZ2k/CnJmPTA1MDYwMiIgIHRhcmdldD0iX2JsYW5rIj48Zm9udCBjb2xvcj0i
+RTcwRDg4IiB0YXJnZXQ9Il9ibGFuayI+v+zAtLrNztLSu8bwz+3K3FRPTcPit9HTys/ksMmj
+oSC/tL+0s/3ByzEuNUejrLu509DKssO0o788L2ZvbnQ+PGltZyAKc3JjPSJodHRwOi8vbWFp
+bC50b20uY29tL2ltYWdlcy9tYWlsLzA1MDMyOC9wYWdlXzAyLmdpZiIgIGJvcmRlcj0iMCIg
+d2lkdGg9IjM3IiAKaGVpZ2h0PSIzMyI+PC9BPgo8YnI+Cjxicj4KPGEgaHJlZj0iaHR0cDov
+L3ZpcC50b20uY29tL2luZm8vZ2dkXzA1MDQwOS9pbmRleC5odG1sIiB0YXJnZXQ9Il9ibGFu
+ayI+PGltZyBzcmM9Imh0dHA6Ly9tYWlsLnRvbS5jb20vaW1hZ2VzL3ZpcC92aXBfYWQvbWFp
+bF9zY2UxLmdpZiIgYm9yZGVyPSIwIiBhbGlnbj0iYWJzYm90dG9tIj48L2E+Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7x8O/qr6rssombmJzcDs8YSBocmVmPSJodHRwOi8vY2hhdC50b20u
+Y29tLyIgdGFyZ2V0PSJfYmxhbmsiPsHEzOzKwL3nPC9hPqO6PGEgaHJlZj0iaHR0cDovL2No
+YXQudG9tLmNvbS8iIHRhcmdldD0iX2JsYW5rIj7N+M2o08O7pzwvYT4gIDxhIGhyZWY9Imh0
+dHA6Ly9zY2hhdC50b20uY29tLyIgdGFyZ2V0PSJfYmxhbmsiPrXn0MXTw7unPC9hPgogPCEt
+LUEgdGl0bGU9IrmyzazM5dHps6y088jdwb+jobOsx7+3wNP5o6HXqNK1ybG2vqOh16jStbfA
+wKy7+KOhIiBocmVmPSJodHRwOi8vYmpjZ2kuMTYzLm5ldC9jZ2ktYmluL25ld3JlZy5jZ2k/
+CnJmPTA1MDYwMiIgdGFyZ2V0PSJfYmxhbmsiPjxmb250IGNvbG9yPSJFNzBEODgiPtTaz9/J
+sba+o6Gwssirzsi2qKOhs6zHv7fA0/mjoTwvZm9udD48L0EtLT4KPGJyPgo8YnI+CsP30Me9
+8Mf6w+K30cvNKDxhIGhyZWY9Imh0dHA6Ly9tbS50b20uY29tL2l2ci8iIHRhcmdldD0iX2Js
+YW5rIj5odHRwOi8vbW0udG9tLmNvbS9pdnIvPC9hPimjujxhIGhyZWY9Imh0dHA6Ly9mcy50
+b20uY29tL2l2ci9zZWFyY2hfaXZycmluZy5waHA/U2luZ2VyTmFtZT3W3L3cwtcmdXNlcl9p
+ZD0zJmNvZGVfaWQ9MDAwMDAwIiB0YXJnZXQ9Il9ibGFuayI+1ty93MLXPC9hPiA8YSBocmVm
+PSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2VhcmNoX2l2cnJpbmcucGhwP1Npbmdlck5hbWU9
+wda/ob3cJnVzZXJfaWQ9MyZjb2RlX2lkPTAwMDAwMCIgdGFyZ2V0PSJfYmxhbmsiPsHWv6G9
+3DwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlYXJjaF9pdnJyaW5nLnBo
+cD9TaW5nZXJOYW1lPcXTwfomdXNlcl9pZD0zJmNvZGVfaWQ9MDAwMDAwIiB0YXJnZXQ9Il9i
+bGFuayI+xdPB+jwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlYXJjaF9p
+dnJyaW5nLnBocD9TaW5nZXJOYW1lPdXFu93DwyZ1c2VyX2lkPTMmY29kZV9pZD0wMDAwMDAi
+IHRhcmdldD0iX2JsYW5rIj7Vxbvdw8M8L2E+PGJyPgo8YnI+Cr6isay46Mf6vqHH6bXjKDxh
+IGhyZWY9Imh0dHA6Ly9tbS50b20uY29tL2l2ci8iIHRhcmdldD0iX2JsYW5rIj5odHRwOi8v
+bW0udG9tLmNvbS9pdnIvPC9hPimjujxhIGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9z
+ZW5kX3N0ZXAxLnBocD9JZD0zOTI0NCZ1c2VyX2lkPTMmY29kZV9pZD13NTU1IiB0YXJnZXQ9
+Il9ibGFuayI+u/TUqrzXPC9hPiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2Vu
+ZF9zdGVwMS5waHA/SWQ9MzgzOTcmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJf
+YmxhbmsiPryqz+nI/bGmPC9hPiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2Vu
+ZF9zdGVwMS5waHA/SWQ9MzkzMzUmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJf
+YmxhbmsiPsjL1so8L2E+IDxhIGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9zZW5kX3N0
+ZXAxLnBocD9JZD0zOTMyNSZ1c2VyX2lkPTMmY29kZV9pZD13NTU1IiB0YXJnZXQ9Il9ibGFu
+ayI+styy2TwvYT48YnI+Cjxicj4K7MW/4bLKweXD4rfRy80oPGEgaHJlZj0iaHR0cDovL21t
+LnRvbS5jb20vY2FpbGluZy8iIHRhcmdldD0iX2JsYW5rIj5odHRwOi8vbW0udG9tLmNvbS9j
+YWlsaW5nLzwvYT4po7o8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJj
+aC5waHA/Q3VyUGFnZT0xJnVzZXJfaWQ9MyZDYXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5
+PXJpbmcmS2V5d29yZD0lRDYlREMlQkQlREMlQzIlRDclQjAlRUYlQzQlRTMlQkQlRDMlQjUl
+RTclQkIlQjAiIHRhcmdldD0iX2JsYW5rIj7W3L3cwtew78TjvdO157uwPC9hPiA8YSBocmVm
+PSJodHRwOi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJjaC5waHA/Q3VyUGFnZT0xJnVzZXJf
+aWQ9MyZDYXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5PXJpbmcmS2V5d29yZD0lQzIlRTkl
+QjclQjMlQzUlQUUlQzUlRjMlRDMlRDEiIHRhcmdldD0iX2JsYW5rIj7C6bezxa7F89PRPC9h
+PiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJjaC5waHA/Q3VyUGFn
+ZT0xJnVzZXJfaWQ9MyZDYXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5PXJpbmcmS2V5d29y
+ZD0lQzYlREYlQzAlRUYlQ0YlRTMiIHRhcmdldD0iX2JsYW5rIj7G38Dvz+M8L2E+IDxhIGhy
+ZWY9Imh0dHA6Ly9mcy50b20uY29tL2NhaWxpbmcvc2VhcmNoLnBocD9DdXJQYWdlPTEmdXNl
+cl9pZD0zJkNhdGFsb2c9JnBob25lX251bT0mU2VhcmNoQnk9cmluZyZLZXl3b3JkPSVEMCVB
+MSVCMyVDNyVCOSVDQSVDQSVDMiIgdGFyZ2V0PSJfYmxhbmsiPtChs8e5ysrCPC9hPgoKPGJy
+PgoKCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAg
+PC90ZD4KICA8L3RyPgo8L3RhYmxlPg==
+--Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK--
