@@ -1,16 +1,27 @@
-Return-Path: <hpchen163@tom.com>
-Received: from tom.com (smtpr7.tom.com [202.108.252.137])
-	by ozlabs.org (Postfix) with SMTP id A45D867A3A
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5D52F67B60
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Aug 2006 12:55:27 +1000 (EST)
+	Tue,  1 Aug 2006 13:20:27 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k713KQW6010177 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 31 Jul 2006 20:20:26 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k713KNbf008194
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 31 Jul 2006 22:20:25 -0500 (CDT)
 MIME-Version: 1.0
-Message-ID: <44CEC296.000032.22899@bjapp33>
-Date: Tue, 1 Aug 2006 10:55:18 +0800 (CST)
-From: "=?gb2312?B?aHBjaGVu?=" <hpchen163@tom.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: =?gb2312?B?d2hvIGhhcyBzaWxpY29uJ3MgNzIyIGRyaXZlciBzb3VyY2U=?=
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: RE: RE: cpm_dpalloc
+Date: Tue, 1 Aug 2006 11:20:48 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D071265@zch01exm20.fsl.freescale.net>
+In-Reply-To: <20060731133919.31980@gmx.net>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Keinen Namen" <GSM909@gmx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,81 +32,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I'm not very familiar with SPI.  See if someone on the list can help.
 
---Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-
-SGksIEFsbDoNCkknbSBpbnRlcmZhY2luZyBtcGM4MjQ1IHRvIHNtNzIyLCBJIGZvdW5kIGlu
-IHRoZSBwcmV2aW91cw0KbWFpbHMgdGhhdCBzb21lb25lIGhhcyBzdWNjZXNzZnVsbHkgd3Jp
-dHRlbiBkcml2ZXIgZm9yIGl0DQp1c2luZyBQb3dlciBQQy4gQ2FuIGFueWJvZHkgdGVsbCBt
-ZSB0aGUgYWRkcmVzc2VzIHRvIGRvd25sb2FkIHRoZSBkcml2ZXIgYW5kIGl0cyBzb3VyY2Ug
-Y29kZT8NClRoYW5rcyEgDQoNCg==
---Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
-
-SGksIEFsbDo8YnI+SSdtIGludGVyZmFjaW5nIG1wYzgyNDUgdG8gc203MjIsIEkgZm91bmQg
-aW4gdGhlIHByZXZpb3VzPGJyPm1haWxzIHRoYXQgc29tZW9uZSBoYXMgc3VjY2Vzc2Z1bGx5
-IHdyaXR0ZW4gZHJpdmVyIGZvciBpdDxicj51c2luZyBQb3dlciBQQy4gQ2FuIGFueWJvZHkg
-dGVsbCBtZSB0aGUgYWRkcmVzc2VzIHRvIGRvd25sb2FkIHRoZSBkcml2ZXIgYW5kIGl0cyBz
-b3VyY2UgY29kZT88YnI+VGhhbmtzISA8YnI+PCEtLSB1cmxmaWxlcyAtLT48YnI+PGJyPjwh
-LS0gZm9vdGVyIC0tPjxicj48YnI+Cjx0YWJsZSBjZWxscGFkZGluZz0iMSIgY2VsbHNwYWNp
-bmc9IjEiIGJvcmRlcj0iMCIgc3R5bGU9Im1hcmdpbi10b3A6MTBweDsiPgogIDx0cj4gCiAg
-PHRkPgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo8
-YnI+CiA8QSB0aXRsZT0iv+zAtLrNztLSu8bwz+3K3FRPTcPit9HTys/ksMmjoSC/tL+0s/3B
-yzEuNUejrLu509DKssO0o78iICBocmVmPSJodHRwOi8vYmpjZ2kuMTYzLm5ldC9jZ2ktYmlu
-L25ld3JlZy5jZ2k/CnJmPTA1MDYwMiIgIHRhcmdldD0iX2JsYW5rIj48Zm9udCBjb2xvcj0i
-RTcwRDg4IiB0YXJnZXQ9Il9ibGFuayI+v+zAtLrNztLSu8bwz+3K3FRPTcPit9HTys/ksMmj
-oSC/tL+0s/3ByzEuNUejrLu509DKssO0o788L2ZvbnQ+PGltZyAKc3JjPSJodHRwOi8vbWFp
-bC50b20uY29tL2ltYWdlcy9tYWlsLzA1MDMyOC9wYWdlXzAyLmdpZiIgIGJvcmRlcj0iMCIg
-d2lkdGg9IjM3IiAKaGVpZ2h0PSIzMyI+PC9BPgo8YnI+Cjxicj4KPGEgaHJlZj0iaHR0cDov
-L3ZpcC50b20uY29tL2luZm8vZ2dkXzA1MDQwOS9pbmRleC5odG1sIiB0YXJnZXQ9Il9ibGFu
-ayI+PGltZyBzcmM9Imh0dHA6Ly9tYWlsLnRvbS5jb20vaW1hZ2VzL3ZpcC92aXBfYWQvbWFp
-bF9zY2UxLmdpZiIgYm9yZGVyPSIwIiBhbGlnbj0iYWJzYm90dG9tIj48L2E+Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7x8O/qr6rssombmJzcDs8YSBocmVmPSJodHRwOi8vY2hhdC50b20u
-Y29tLyIgdGFyZ2V0PSJfYmxhbmsiPsHEzOzKwL3nPC9hPqO6PGEgaHJlZj0iaHR0cDovL2No
-YXQudG9tLmNvbS8iIHRhcmdldD0iX2JsYW5rIj7N+M2o08O7pzwvYT4gIDxhIGhyZWY9Imh0
-dHA6Ly9zY2hhdC50b20uY29tLyIgdGFyZ2V0PSJfYmxhbmsiPrXn0MXTw7unPC9hPgogPCEt
-LUEgdGl0bGU9IrmyzazM5dHps6y088jdwb+jobOsx7+3wNP5o6HXqNK1ybG2vqOh16jStbfA
-wKy7+KOhIiBocmVmPSJodHRwOi8vYmpjZ2kuMTYzLm5ldC9jZ2ktYmluL25ld3JlZy5jZ2k/
-CnJmPTA1MDYwMiIgdGFyZ2V0PSJfYmxhbmsiPjxmb250IGNvbG9yPSJFNzBEODgiPtTaz9/J
-sba+o6Gwssirzsi2qKOhs6zHv7fA0/mjoTwvZm9udD48L0EtLT4KPGJyPgo8YnI+CsP30Me9
-8Mf6w+K30cvNKDxhIGhyZWY9Imh0dHA6Ly9tbS50b20uY29tL2l2ci8iIHRhcmdldD0iX2Js
-YW5rIj5odHRwOi8vbW0udG9tLmNvbS9pdnIvPC9hPimjujxhIGhyZWY9Imh0dHA6Ly9mcy50
-b20uY29tL2l2ci9zZWFyY2hfaXZycmluZy5waHA/U2luZ2VyTmFtZT3W3L3cwtcmdXNlcl9p
-ZD0zJmNvZGVfaWQ9MDAwMDAwIiB0YXJnZXQ9Il9ibGFuayI+1ty93MLXPC9hPiA8YSBocmVm
-PSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2VhcmNoX2l2cnJpbmcucGhwP1Npbmdlck5hbWU9
-wda/ob3cJnVzZXJfaWQ9MyZjb2RlX2lkPTAwMDAwMCIgdGFyZ2V0PSJfYmxhbmsiPsHWv6G9
-3DwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlYXJjaF9pdnJyaW5nLnBo
-cD9TaW5nZXJOYW1lPcXTwfomdXNlcl9pZD0zJmNvZGVfaWQ9MDAwMDAwIiB0YXJnZXQ9Il9i
-bGFuayI+xdPB+jwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlYXJjaF9p
-dnJyaW5nLnBocD9TaW5nZXJOYW1lPdXFu93DwyZ1c2VyX2lkPTMmY29kZV9pZD0wMDAwMDAi
-IHRhcmdldD0iX2JsYW5rIj7Vxbvdw8M8L2E+PGJyPgo8YnI+Cr6isay46Mf6vqHH6bXjKDxh
-IGhyZWY9Imh0dHA6Ly9tbS50b20uY29tL2l2ci8iIHRhcmdldD0iX2JsYW5rIj5odHRwOi8v
-bW0udG9tLmNvbS9pdnIvPC9hPimjujxhIGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9z
-ZW5kX3N0ZXAxLnBocD9JZD0zOTI0NCZ1c2VyX2lkPTMmY29kZV9pZD13NTU1IiB0YXJnZXQ9
-Il9ibGFuayI+u/TUqrzXPC9hPiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2Vu
-ZF9zdGVwMS5waHA/SWQ9MzgzOTcmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJf
-YmxhbmsiPryqz+nI/bGmPC9hPiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2Vu
-ZF9zdGVwMS5waHA/SWQ9MzkzMzUmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJf
-YmxhbmsiPsjL1so8L2E+IDxhIGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9zZW5kX3N0
-ZXAxLnBocD9JZD0zOTMyNSZ1c2VyX2lkPTMmY29kZV9pZD13NTU1IiB0YXJnZXQ9Il9ibGFu
-ayI+styy2TwvYT48YnI+Cjxicj4K7MW/4bLKweXD4rfRy80oPGEgaHJlZj0iaHR0cDovL21t
-LnRvbS5jb20vY2FpbGluZy8iIHRhcmdldD0iX2JsYW5rIj5odHRwOi8vbW0udG9tLmNvbS9j
-YWlsaW5nLzwvYT4po7o8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJj
-aC5waHA/Q3VyUGFnZT0xJnVzZXJfaWQ9MyZDYXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5
-PXJpbmcmS2V5d29yZD0lRDYlREMlQkQlREMlQzIlRDclQjAlRUYlQzQlRTMlQkQlRDMlQjUl
-RTclQkIlQjAiIHRhcmdldD0iX2JsYW5rIj7W3L3cwtew78TjvdO157uwPC9hPiA8YSBocmVm
-PSJodHRwOi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJjaC5waHA/Q3VyUGFnZT0xJnVzZXJf
-aWQ9MyZDYXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5PXJpbmcmS2V5d29yZD0lQzIlRTkl
-QjclQjMlQzUlQUUlQzUlRjMlRDMlRDEiIHRhcmdldD0iX2JsYW5rIj7C6bezxa7F89PRPC9h
-PiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJjaC5waHA/Q3VyUGFn
-ZT0xJnVzZXJfaWQ9MyZDYXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5PXJpbmcmS2V5d29y
-ZD0lQzYlREYlQzAlRUYlQ0YlRTMiIHRhcmdldD0iX2JsYW5rIj7G38Dvz+M8L2E+IDxhIGhy
-ZWY9Imh0dHA6Ly9mcy50b20uY29tL2NhaWxpbmcvc2VhcmNoLnBocD9DdXJQYWdlPTEmdXNl
-cl9pZD0zJkNhdGFsb2c9JnBob25lX251bT0mU2VhcmNoQnk9cmluZyZLZXl3b3JkPSVEMCVB
-MSVCMyVDNyVCOSVDQSVDQSVDMiIgdGFyZ2V0PSJfYmxhbmsiPtChs8e5ysrCPC9hPgoKPGJy
-PgoKCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAg
-PC90ZD4KICA8L3RyPgo8L3RhYmxlPg==
---Boundary-=_UNLFHdAcsnKumsWvHbrQOfXVDqoK--
+Best Regards,
+Leo
+> -----Original Message-----
+> From: Keinen Namen [mailto:GSM909@gmx.de]
+> Sent: Monday, July 31, 2006 9:39 PM
+> To: Li Yang-r58472
+> Subject: Re: RE: RE: cpm_dpalloc
+>=20
+> Thx, now it=B4s working fine.
+>=20
+> But my Problem didn=B4t solved :(
+> But I have an other Question about SPI.
+>=20
+> How can I see that the init of RX and TX Parameter are succsesful ?
+> I just looking till the CPM_CR_FLG till is cleard but I did not see if =
+the init
+> is ok?
+>=20
+> I try to look at the RX internal byte count in the Parameter ram, but =
+there is nothing
+> chance.
+>=20
+> Regards
+> Fred
+>=20
+> -------- Original-Nachricht --------
+> Datum: Mon, 31 Jul 2006 17:24:30 +0800
+> Von: "Li Yang-r58472" <LeoLi@freescale.com>
+> An: "Keinen Namen" <GSM909@gmx.de>
+> Betreff: RE: RE: cpm_dpalloc
+>=20
+> > Yes, but that patch is for powerpc arch.  You can use this patch for =
+ppc.
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=3D4317
+> >
+> > Best Regards,
+> > Leo
+> > > -----Original Message-----
+> > > From: Keinen Namen [mailto:GSM909@gmx.de]
+> > > Sent: Monday, July 31, 2006 5:21 PM
+> > > To: Li Yang-r58472
+> > > Subject: Re: RE: cpm_dpalloc
+> > >
+> > > Thanks for your fast Help.
+> > >
+> > > I=B4m not firm in patches. Is this the patch ?
+> > > http://lkml.org/lkml/2006/6/30/108
+> > >
+> > > Regards
+> > > Fred
+> > > -------- Original-Nachricht --------
+> > > Datum: Mon, 31 Jul 2006 16:56:54 +0800
+> > > Von: "Li Yang-r58472" <LeoLi@freescale.com>
+> > > An: GSM909@gmx.de, linuxppc-embedded@ozlabs.org
+> > > Betreff: RE: cpm_dpalloc
+> > >
+> > > > There is a bug in rheap for alignment.  The patch is still =
+hanging
+> > around.
+> > > >
+> > > > Search rheap and alignment on the linuxppc-dev list for patch
+> > previously
+> > > > posted.
+> > > >
+> > > > Best Regards,
+> > > > Leo
+> > > > > -----Original Message-----
+> > > > > From: =
+linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org
+> > > > > =
+[mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org] On
+> > > > Behalf Of
+> > > > > GSM909@gmx.de
+> > > > > Sent: Monday, July 31, 2006 4:50 PM
+> > > > > To: linuxppc-embedded@ozlabs.org
+> > > > > Subject: cpm_dpalloc
+> > > > >
+> > > > > Hi All
+> > > > >
+> > > > > I have a MPC82xx Processor from Freescale with Linux 2.6.14 ( =
+Can=B4t
+> > > > chance to an
+> > > > > new version).
+> > > > >
+> > > > > My Problem is that I want to allocate a 64byte of memory in =
+the dual
+> > > > ported ram
+> > > > > with an alignment of 64bytes. (Needed for SPI Parameter Ram)
+> > > > >
+> > > > > the funktion cpm_dpalloc(64,64) returned 0x220 but that are =
+not in a
+> > 64
+> > > > byte
+> > > > > alignment.
+> > > > >
+> > > > > Regards
+> > > > > Fred
+> > > > > --
+> > > > >
+> > > > >
+> > > > > Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu =
+sparen!
+> > > > > Ideal f=FCr Modem und ISDN: =
+http://www.gmx.net/de/go/smartsurfer
+> > > > > _______________________________________________
+> > > > > Linuxppc-embedded mailing list
+> > > > > Linuxppc-embedded@ozlabs.org
+> > > > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > > > _______________________________________________
+> > > > Linuxppc-embedded mailing list
+> > > > Linuxppc-embedded@ozlabs.org
+> > > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > >
+> > > --
+> > >
+> > >
+> > > Echte DSL-Flatrate dauerhaft f=FCr 0,- Euro*. Nur noch kurze Zeit!
+> > > "Feel free" mit GMX DSL: http://www.gmx.net/de/go/dsl
+>=20
+> --
+>=20
+>=20
+> Echte DSL-Flatrate dauerhaft f=FCr 0,- Euro*. Nur noch kurze Zeit!
+> "Feel free" mit GMX DSL: http://www.gmx.net/de/go/dsl
