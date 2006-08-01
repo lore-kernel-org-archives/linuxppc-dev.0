@@ -1,17 +1,19 @@
-Return-Path: <rlrevell@joe-job.com>
-Received: from mustang.oldcity.dca.net (mustang.oldcity.dca.net [216.158.38.3])
-	by ozlabs.org (Postfix) with SMTP id EEE5367B60
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B1BB367B5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Aug 2006 05:50:42 +1000 (EST)
-Subject: Re: DMA buffer synchronisation with ioremap()
-From: Lee Revell <rlrevell@joe-job.com>
-To: Phil.Nitschke@avalon.com.au
-In-Reply-To: <1154351427.3203.59.camel@toby.int.avalon.com.au>
-References: <1154351427.3203.59.camel@toby.int.avalon.com.au>
-Content-Type: text/plain
-Date: Tue, 01 Aug 2006 15:51:15 -0400
-Message-Id: <1154461876.14540.70.camel@mindpipe>
+	Wed,  2 Aug 2006 08:13:45 +1000 (EST)
+Date: Tue, 1 Aug 2006 15:13:42 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Karol Lewandowski <kl@jasmine.eu.org>
+Subject: Re: [BUG] ibm_emac: kernel panic with CONFIG_SLOB=y
+Message-ID: <20060801221342.GA13171@gate.ebshome.net>
+References: <20060801204011.GB1754@riddly.domek.prywatny>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060801204011.GB1754@riddly.domek.prywatny>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,17 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-07-31 at 22:40 +0930, Phil Nitschke wrote:
-> (I go no replies last week, so I'll try again, with less explanation...)
+On Tue, Aug 01, 2006 at 10:40:11PM +0200, Karol Lewandowski wrote:
+> Hi,
 > 
-> If I master a DMA from a PCI device into a main memory buffer allocated
-> with dma_alloc_noncoherent(), I need to synchronise the destination
-> buffer using dma_sync_single_range_for_xxx() before and after the DMA.
+> I'm getting reproductible kernel panic when I use smaller SLOB
+> allocator (instead of SLAB).  This is reproductible but very randomly
+> -- sometimes it happens during bootup, sometimes few minutes later.
 > 
-> But if the buffer is a very large chunk of memory (reserved at boot
-> time) which has been ioremap()-ed into the virtual address space, do I
-> need to still synchronise that memory?
+> Hardware is custom board with IBM405EP (very close to Bubingna, just
+> no RTC):
+> 
+> # cat /proc/cpuinfo
+> processor	: 0
+> cpu		: 405EP
+> clock		: 200MHz
+> revision	: 9.80 (pvr 5121 0950)
+> bogomips	: 199.47
+> machine		: MagicBox
+> plb bus clock	: 100MHz
+> pci bus clock	: 25MHz
+> 
+> Enabling SLAB instead of SLOB fixes this, so I assume this is driver
+> issue.
 
-Maybe it's a better question for the linux-kernel list?
+This is probably the same issue  I had with SLAB debugging.
 
-Lee
+In short, those allocators aren't compatible with non-coherent cache 
+archs (like 4xx), because driver assumes at least L1 cache line 
+alignment for all allocated memory.
+
+For more info, you can read this post:
+
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-February/022087.html
+
+-- 
+Eugene
