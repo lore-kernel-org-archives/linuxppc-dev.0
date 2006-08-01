@@ -1,14 +1,18 @@
-Return-Path: <ammubhai@gmail.com>
-Message-ID: <44CF3929.2050906@gmail.com>
-Date: Tue, 01 Aug 2006 12:21:13 +0100
-From: Ameet Patil <ammubhai@gmail.com>
-MIME-Version: 1.0
-To: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
-Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
-References: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
-In-Reply-To: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <rlrevell@joe-job.com>
+Received: from mustang.oldcity.dca.net (mustang.oldcity.dca.net [216.158.38.3])
+	by ozlabs.org (Postfix) with SMTP id EEE5367B60
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  2 Aug 2006 05:50:42 +1000 (EST)
+Subject: Re: DMA buffer synchronisation with ioremap()
+From: Lee Revell <rlrevell@joe-job.com>
+To: Phil.Nitschke@avalon.com.au
+In-Reply-To: <1154351427.3203.59.camel@toby.int.avalon.com.au>
+References: <1154351427.3203.59.camel@toby.int.avalon.com.au>
+Content-Type: text/plain
+Date: Tue, 01 Aug 2006 15:51:15 -0400
+Message-Id: <1154461876.14540.70.camel@mindpipe>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,40 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Try this if it helps!
+On Mon, 2006-07-31 at 22:40 +0930, Phil Nitschke wrote:
+> (I go no replies last week, so I'll try again, with less explanation...)
+> 
+> If I master a DMA from a PCI device into a main memory buffer allocated
+> with dma_alloc_noncoherent(), I need to synchronise the destination
+> buffer using dma_sync_single_range_for_xxx() before and after the DMA.
+> 
+> But if the buffer is a very large chunk of memory (reserved at boot
+> time) which has been ioremap()-ed into the virtual address space, do I
+> need to still synchronise that memory?
 
-http://www.linux.get2knowmore.com/
+Maybe it's a better question for the linux-kernel list?
 
--Ameet
-
-Benjamin Heyne wrote:
-> Dear all,
-> I am currently trying to get the 2.6.17.1 Linux kernel
-> running on the Xilinx Virtex. I have the 2.4 kernel up
-> and running - No problems there...
-> 
-> But when using the 2.6 kernel (have copied xparameters file,
-> patched for using TEMAC driver) with the same hardware configuration
-> the following happens:
-> 
-> 
-> loaded at:     00400000 0061813C
-> board data at: 00616124 0061613C
-> relocated to:  00405148 00405160
-> zimage at:     0040585D 00615F42
-> avail ram:     00619000 20000000
-> 
-> Linux/PPC load: console=ttyS0,9600.....
-> 
-> Uncompressing Linux...inflate returned FFFFFFFB
-> exit
-> 
-> 
-> Now, I am not really sure where to start searching for the bug
-> (I just want to implement some drivers - not the kernel itself ;-).
-> The zImage.elf file is about 2MB large. Did anyone encounter
-> a similar error? Does anyone have some hints where to
-> look at for debugging, or what might be wrong?
-> 
-> Thanks in advance
-> Best regards
+Lee
