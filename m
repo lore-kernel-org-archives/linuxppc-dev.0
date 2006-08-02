@@ -1,29 +1,20 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-40-242-100.roch.qwest.net
-	[67.40.242.100])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5DA9367C0A
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 05:03:44 +1000 (EST)
-Subject: Re: RFC: Location for Device Tree Sources?
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20060802184930.GN17652@mag.az.mvista.com>
-References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
-	<Pine.LNX.4.60.0608012258040.4041@poirot.grange>
-	<1154466094.11069.6.camel@localhost>
-	<20060802003504.GA20439@mag.az.mvista.com>
-	<1154481150.2676.3.camel@vader.jdub.homelinux.org>
-	<528646bc0608012020l11690cf7wbb7d93e6ba6eae90@mail.gmail.com>
-	<20060802182319.GI17652@mag.az.mvista.com>
-	<528646bc0608021121l124cd3e8i14dfdfbf40272193@mail.gmail.com>
-	<20060802184930.GN17652@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Wed, 02 Aug 2006 14:03:02 -0500
-Message-Id: <1154545382.12757.1.camel@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+	by ozlabs.org (Postfix) with ESMTP id 5B96C67BE7
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 05:24:40 +1000 (EST)
+In-Reply-To: <1154544503.19994.42.camel@cashmere.sps.mot.com>
+References: <1154544503.19994.42.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
+Date: Wed, 2 Aug 2006 14:24:36 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,35 +24,379 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-08-02 at 11:49 -0700, Mark A. Greer wrote:
-> On Wed, Aug 02, 2006 at 12:21:37PM -0600, Grant Likely wrote:
-> > On 8/2/06, Mark A. Greer <mgreer@mvista.com> wrote:
-> > >On Tue, Aug 01, 2006 at 09:20:52PM -0600, Grant Likely wrote:
-> > >> I have to second that opinion.  The device tree is absolutely integral
-> > >> with the rest of the code/drivers needed to support a board.  I say
-> > >> there are stronger arguments for keeping the dts files in the kernel
-> > >> source than there are for the boot wrapper.
-> > >
-> > >Well, the dts is no good to you without dtc so do we put dtc in the
-> > >kernel source tree too?
-> > 
-> > I don't know; should we include gcc also?
-> > 
-> > :p
-> 
-> Yep, my point.
-> 
-> I don't really have a problem with keeping known working dts files in
-> arch/powerpc/boot/dts.  Perhaps a 1-1 match with files in
-> arch/powerpc/configs?
 
-I like that idea very much.  Actually that's what I thought were were
-talking about in the first place.
+On Aug 2, 2006, at 1:48 PM, Jon Loeliger wrote:
 
-> 
-> It would still be nice to have the dtc source, attach tool source, and,
-> if useful, a more exhaustive collection of dts files in one place.
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+>
+> As per list discussion, let's add device tree source files
+> under powerpc/boot/dts.  If nothing else, it is a starting point.
+>
+>  arch/powerpc/boot/dts/mpc8641_hpcn.dts |  338 +++++++++++++++++++++ 
+> +++++++++++
+>  1 files changed, 338 insertions(+), 0 deletions(-)
 
-I also think that would be useful.
+Do we want to go ahead and fix the mac address field having the wrong  
+name?
 
-josh
+- kumar
+
+>
+> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/ 
+> boot/dts/mpc8641_hpcn.dts
+> new file mode 100644
+> index 0000000..55a8167
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> @@ -0,0 +1,338 @@
+> +/*
+> + * MPC8641 HPCN Device Tree Source
+> + *
+> + * Copyright 2006 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +
+> +/ {
+> +	model = "MPC8641HPCN";
+> +	compatible = "mpc86xx";
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +
+> +	cpus {
+> +		#cpus = <2>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,8641@0 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			d-cache-line-size = <20>;	// 32 bytes
+> +			i-cache-line-size = <20>;	// 32 bytes
+> +			d-cache-size = <8000>;		// L1, 32K
+> +			i-cache-size = <8000>;		// L1, 32K
+> +			timebase-frequency = <0>;	// 33 MHz, from uboot
+> +			bus-frequency = <0>;		// From uboot
+> +			clock-frequency = <0>;		// From uboot
+> +			32-bit;
+> +			linux,boot-cpu;
+> +		};
+> +		PowerPC,8641@1 {
+> +			device_type = "cpu";
+> +			reg = <1>;
+> +			d-cache-line-size = <20>;	// 32 bytes
+> +			i-cache-line-size = <20>;	// 32 bytes
+> +			d-cache-size = <8000>;		// L1, 32K
+> +			i-cache-size = <8000>;		// L1, 32K
+> +			timebase-frequency = <0>;	// 33 MHz, from uboot
+> +			bus-frequency = <0>;		// From uboot
+> +			clock-frequency = <0>;		// From uboot
+> +			32-bit;
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <00000000 40000000>;	// 1G at 0x0
+> +	};
+> +
+> +	soc8641@f8000000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		#interrupt-cells = <2>;
+> +		device_type = "soc";
+> +		ranges = <0 f8000000 00100000>;
+> +		reg = <f8000000 00100000>;	// CCSRBAR 1M
+> +		bus-frequency = <0>;
+> +
+> +		i2c@3000 {
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+> +			reg = <3000 100>;
+> +			interrupts = <2b 2>;
+> +			interrupt-parent = <40000>;
+> +			dfsrr;
+> +		};
+> +
+> +		i2c@3100 {
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+> +			reg = <3100 100>;
+> +			interrupts = <2b 2>;
+> +			interrupt-parent = <40000>;
+> +			dfsrr;
+> +		};
+> +
+> +		mdio@24520 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "mdio";
+> +			compatible = "gianfar";
+> +			reg = <24520 20>;
+> +			linux,phandle = <24520>;
+> +			ethernet-phy@0 {
+> +				linux,phandle = <2452000>;
+> +				interrupt-parent = <40000>;
+> +				interrupts = <4a 1>;
+> +				reg = <0>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +			ethernet-phy@1 {
+> +				linux,phandle = <2452001>;
+> +				interrupt-parent = <40000>;
+> +				interrupts = <4a 1>;
+> +				reg = <1>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +			ethernet-phy@2 {
+> +				linux,phandle = <2452002>;
+> +				interrupt-parent = <40000>;
+> +				interrupts = <4a 1>;
+> +				reg = <2>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +			ethernet-phy@3 {
+> +				linux,phandle = <2452003>;
+> +				interrupt-parent = <40000>;
+> +				interrupts = <4a 1>;
+> +				reg = <3>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +		};
+> +
+> +		ethernet@24000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <24000 1000>;
+> +			address = [ 00 E0 0C 00 73 00 ];
+> +			interrupts = <1d 2 1e 2 22 2>;
+> +			interrupt-parent = <40000>;
+> +			phy-handle = <2452000>;
+> +		};
+> +
+> +		ethernet@25000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <25000 1000>;
+> +			address = [ 00 E0 0C 00 73 01 ];
+> +			interrupts = <23 2 24 2 28 2>;
+> +			interrupt-parent = <40000>;
+> +			phy-handle = <2452001>;
+> +		};
+> +		
+> +		ethernet@26000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <26000 1000>;
+> +			address = [ 00 E0 0C 00 02 FD ];
+> +			interrupts = <1F 2 20 2 21 2>;
+> +			interrupt-parent = <40000>;
+> +			phy-handle = <2452002>;
+> +		};
+> +
+> +		ethernet@27000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <27000 1000>;
+> +			address = [ 00 E0 0C 00 03 FD ];
+> +			interrupts = <25 2 26 2 27 2>;
+> +			interrupt-parent = <40000>;
+> +			phy-handle = <2452003>;
+> +		};
+> +		serial@4500 {
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <4500 100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <2a 2>;
+> +			interrupt-parent = <40000>;
+> +		};
+> +
+> +		serial@4600 {
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <4600 100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <1c 2>;
+> +			interrupt-parent = <40000>;
+> +		};
+> +
+> +		pci@8000 {
+> +			compatible = "86xx";
+> +			device_type = "pci";
+> +			#interrupt-cells = <1>;
+> +			#size-cells = <2>;
+> +			#address-cells = <3>;
+> +			reg = <8000 1000>;
+> +			bus-range = <0 fe>;
+> +			ranges = <02000000 0 80000000 80000000 0 20000000
+> +				  01000000 0 00000000 e2000000 0 00100000>;
+> +			clock-frequency = <1fca055>;
+> +			interrupt-parent = <40000>;
+> +			interrupts = <18 2>;
+> +			interrupt-map-mask = <f800 0 0 7>;
+> +			interrupt-map = <
+> +				/* IDSEL 0x11 */
+> +				8800 0 0 1 4d0 3 2
+> +				8800 0 0 2 4d0 4 2
+> +				8800 0 0 3 4d0 5 2
+> +				8800 0 0 4 4d0 6 2
+> +
+> +				/* IDSEL 0x12 */
+> +				9000 0 0 1 4d0 4 2
+> +				9000 0 0 2 4d0 5 2
+> +				9000 0 0 3 4d0 6 2
+> +				9000 0 0 4 4d0 3 2
+> +
+> +				/* IDSEL 0x13 */
+> +				9800 0 0 1 4d0 0 0
+> +				9800 0 0 2 4d0 0 0
+> +				9800 0 0 3 4d0 0 0
+> +				9800 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x14 */
+> +				a000 0 0 1 4d0 0 0
+> +				a000 0 0 2 4d0 0 0
+> +				a000 0 0 3 4d0 0 0
+> +				a000 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x15 */
+> +				a800 0 0 1 4d0 0 0
+> +				a800 0 0 2 4d0 0 0
+> +				a800 0 0 3 4d0 0 0
+> +				a800 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x16 */
+> +				b000 0 0 1 4d0 0 0
+> +				b000 0 0 2 4d0 0 0
+> +				b000 0 0 3 4d0 0 0
+> +				b000 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x17 */
+> +				b800 0 0 1 4d0 0 0
+> +				b800 0 0 2 4d0 0 0
+> +				b800 0 0 3 4d0 0 0
+> +				b800 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x18 */
+> +				c000 0 0 1 4d0 0 0
+> +				c000 0 0 2 4d0 0 0
+> +				c000 0 0 3 4d0 0 0
+> +				c000 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x19 */
+> +				c800 0 0 1 4d0 0 0
+> +				c800 0 0 2 4d0 0 0
+> +				c800 0 0 3 4d0 0 0
+> +				c800 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x1a */
+> +				d000 0 0 1 4d0 6 2
+> +				d000 0 0 2 4d0 3 2
+> +				d000 0 0 3 4d0 4 2
+> +				d000 0 0 4 4d0 5 2
+> +
+> +
+> +				/* IDSEL 0x1b */
+> +				d800 0 0 1 4d0 5 2
+> +				d800 0 0 2 4d0 0 0
+> +				d800 0 0 3 4d0 0 0
+> +				d800 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x1c */
+> +				e000 0 0 1 4d0 9 2
+> +				e000 0 0 2 4d0 a 2
+> +				e000 0 0 3 4d0 c 2
+> +				e000 0 0 4 4d0 7 2
+> +
+> +				/* IDSEL 0x1d */
+> +				e800 0 0 1 4d0 9 2
+> +				e800 0 0 2 4d0 a 2
+> +				e800 0 0 3 4d0 b 2
+> +				e800 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x1e */
+> +				f000 0 0 1 4d0 c 2
+> +				f000 0 0 2 4d0 0 0
+> +				f000 0 0 3 4d0 0 0
+> +				f000 0 0 4 4d0 0 0
+> +
+> +				/* IDSEL 0x1f */
+> +				f800 0 0 1 4d0 6 2
+> +				f800 0 0 2 4d0 0 0
+> +				f800 0 0 3 4d0 0 0
+> +				f800 0 0 4 4d0 0 0
+> +				>;
+> +			i8259@4d0 {
+> +				clock-frequency = <0>;
+> +				interrupt-controller;
+> +				device_type = "interrupt-controller";
+> +				#address-cells = <0>;
+> +				#interrupt-cells = <2>;
+> +				built-in;
+> +				compatible = "chrp,iic";
+> +                	        big-endian;
+> +				interrupts = <49 2>;
+> +				interrupt-parent = <40000>;
+> +			};
+> +
+> +		};
+> +		pic@40000 {
+> +			linux,phandle = <40000>;
+> +			clock-frequency = <0>;
+> +			interrupt-controller;
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <2>;
+> +			reg = <40000 40000>;
+> +			built-in;
+> +			compatible = "chrp,open-pic";
+> +			device_type = "open-pic";
+> +                        big-endian;
+> +			interrupts = <
+> +				10 2 11 2 12 2 13 2
+> +				14 2 15 2 16 2 17 2
+> +				18 2 19 2 1a 2 1b 2
+> +				1c 2 1d 2 1e 2 1f 2
+> +				20 2 21 2 22 2 23 2
+> +				24 2 25 2 26 2 27 2
+> +				28 2 29 2 2a 2 2b 2
+> +				2c 2 2d 2 2e 2 2f 2
+> +				30 2 31 2 32 2 33 2
+> +				34 2 35 2 36 2 37 2
+> +				38 2 39 2 2a 2 3b 2
+> +				3c 2 3d 2 3e 2 3f 2
+> +				48 1 49 2 4a 1
+> +				>;
+> +			interrupt-parent = <40000>;
+> +		};
+> +	};
+> +};
+> -- 
+> 2006_06_07.01.gittree_pull-dirty
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
