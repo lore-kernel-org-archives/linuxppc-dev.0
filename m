@@ -1,20 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH][2/2] RTAS MSI
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jake Moilanen <moilanen@austin.ibm.com>
-In-Reply-To: <1154379714.29826.396.camel@goblue>
-References: <1154024154.29826.229.camel@goblue>
-	<1154024834.29826.240.camel@goblue>
-	<1154320382.19883.26.camel@localhost.localdomain>
-	<1154379714.29826.396.camel@goblue>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-wdYzBWT6fM+OBS34PVDs"
-Date: Wed, 02 Aug 2006 09:26:31 +1000
-Message-Id: <1154474791.3987.7.camel@localhost.localdomain>
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id AA081679A6
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 10:31:23 +1000 (EST)
+Date: Tue, 1 Aug 2006 17:35:04 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: RFC: Location for Device Tree Sources?
+Message-ID: <20060802003504.GA20439@mag.az.mvista.com>
+References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
+	<Pine.LNX.4.60.0608012258040.4041@poirot.grange>
+	<1154466094.11069.6.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, PaulMackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1154466094.11069.6.camel@localhost>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Aug 01, 2006 at 04:01:33PM -0500, Matthew McClintock wrote:
+> On Tue, 2006-08-01 at 23:00 +0200, Guennadi Liakhovetski wrote:
+> > 
+> > Mark A. Greer in his patch to port sandpoint to arch/powerpc put 
+> > sandpoint.dts under arch/powerpc/boot/dts/sandpoint.dts 
+> 
+> I believe in his latest patches he removed this part. The device trees
+> were not included at all and he left this point open for discussion.
 
---=-wdYzBWT6fM+OBS34PVDs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That's correct.
 
-On Mon, 2006-07-31 at 16:01 -0500, Jake Moilanen wrote:
-> Here's version 3 which addresses all of Michael's comments.
+TBH, I think its wrong to keep them in the kernel source at all--yes,
+the same argument could be made for arch/powerpc/boot but that's been
+settled.
 
-Looks good, nice one.
+We already have dtc kept externally to the kernel source.  Why not
+keep a single site where all things necessary to powerpc linux are kept?
+It could house dtc, the dt attach tool, and all the dt source files.
 
-I was thinking about disable, can you give us any more details on the
-firmware bug that is blocking that?
+I doesn't matter to me where as long as its highly available and has
+reasonable bandwidth.  jdl.com?  source.mvista.com?  penguinppc.org?
+other?
 
-I'm not sure what disable really needs to do, but I think drivers might
-expect it to set dev->irq back to the LSI value, even if we don't free
-anything internally. Not sure.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-wdYzBWT6fM+OBS34PVDs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBEz+MndSjSd0sB4dIRAhSZAKCgnU1rIjxnhekleba8AW8rJI7JVgCeIr/o
-w9FVN7D0uXELXFvakB58GgA=
-=Vv60
------END PGP SIGNATURE-----
-
---=-wdYzBWT6fM+OBS34PVDs--
+Mark
