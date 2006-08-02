@@ -1,24 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84F3367C15
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 06:53:27 +1000 (EST)
-In-Reply-To: <1154550970.19994.57.camel@cashmere.sps.mot.com>
-References: <1154544503.19994.42.camel@cashmere.sps.mot.com>
-	<9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>
-	<1154549483.19994.46.camel@cashmere.sps.mot.com>
-	<BFD18279-7617-4F50-BB22-21A46C65FD50@kernel.crashing.org>
-	<1154550970.19994.57.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F4FA8DDC-0490-4792-8B9B-89D3F0AECF26@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
-Date: Wed, 2 Aug 2006 15:53:28 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <msm@freescale.com>
+Subject: [RFC] New target 'cuImage' - compatibility uImage
+From: Matthew McClintock <msm@freescale.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 02 Aug 2006 15:59:06 -0500
+Message-Id: <1154552346.5550.51.camel@localhost>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +15,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Aug 2, 2006, at 3:36 PM, Jon Loeliger wrote:
+The following is a patch which creates a new target called 'cuImage'. It
+is designed to correctly package the kernel along with the
+'arch/powerpc/boot' wrapper code into a uImage to be loaded and started
+by U-Boot.
 
-> On Wed, 2006-08-02 at 15:30, Kumar Gala wrote:
->
->>> Yeah, we have lined up Matt to make a comprehensive
->>> update for this.  Can we take my patch as-is?  Matt will
->>> follow up with a clean sweep, including fsl_socl.c, to
->>> fix it all in one swell foop.
->>
->> I think this is one that is clearly something that should be fixed
->> before acceptance.  Since we are talking about a dozen lines of
->> modifications.  Especially since at this point having the .dts in the
->> tree doesn't really effect anything inside the kernel tree.
->>
->> - kumar
->
-> On the other hand, this matches what the kernel implements
-> today, and is already in use by several people around the
-> world.  It _does_ have an affect and is based on things
-> inside the kernel tree today as it is.
+The purpose of this target is to allow boards with older versions of
+U-Boot to utilize the 'bootm' command within U-Boot to run new powerpc
+kernels. The bootwrapper will begin execution and can correctly setup a
+flat device tree based on values passed in the bd_t structure, something
+old versions of U-Boot are not capable of.
 
-True, but the people that are running this dont really care if the  
-dts is in the kernel or not. I think having an error in the kernel  
-tree that we know about is more of an issue.  Its something we all  
-agree needs to be fixed.
+One might ask why not just use the 'bootelf' command in u-boot. Well,
+not all boards have that option compiled in, and some other boards might
+not even have access to the console. Also, the bd_t structure is not
+passed from U-Boot when using the bootelf command so we would have no
+method to correctly fill in values in the device tree. This would
+theoretically allow an old board to start a new kernel without access to
+the console if required.
 
-Here is the code modification to fsl_soc.c, I'm sure we can get this  
-fixed push into 2.6.18 if desired.
+Currently the zImage looks like this:
 
-if(mac_addr = get_property(np, "address", NULL))
-   memcpy(gfar_data.mac_addr, mac_addr, 6);
+---------------------------------
+- 	_start			-
+-	boot wrapper code	-
+- ----------------------------- -
+- -	device tree	      - -
+- ----------------------------- -
+- ----------------------------- -
+- - 			      - -
+- - 	compressed	      - -
+- - 	kernel image	      - -
+- -			      - -
+- ----------------------------- -
+---------------------------------
 
-if(mac_addr = get_property(np, "local-mac-address", NULL);
-   memcpy(gfar_data.mac_addr, mac_addr, 6);
+And the new cuImage will look like this:
 
-- kumar
+-------------------------------------
+-	compressed uImage	  - -
+- ------------------------------- - -
+- - 	_start			- - -
+- -	boot wrapper code	- - -
+- - ----------------------------- - -
+- - -	device tree	      	- - -
+- - ----------------------------- - -
+- - ----------------------------- - -
+- - - 			      	- - -
+- - - 	UNcompressed	      	- - -
+- - - 	kernel image	      	- - -
+- - -			      	- - -
+- - ----------------------------- - -
+- --------------------------------- -
+-------------------------------------
+
+-Matthew
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 13e583f..2d2c39a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -96,11 +96,21 @@ config GENERIC_TBSYNC
+ 	default n
+ 
+ config DEFAULT_UIMAGE
+-	bool
++	bool "Set uImage to be the default build target"
+ 	help
+ 	  Used to allow a board to specify it wants a uImage built by default
+ 	default n
+ 
++config UIMAGELOADADDR
++	hex "Set the uImage load address"
++	default 400000
++	depends on DEFAULT_UIMAGE 
++
++config UIMAGEENTRY
++	hex "Set the uImage entry address"
++	default 400010
++	depends on DEFAULT_UIMAGE 
++
+ menu "Processor support"compatibility 
+ choice
+ 	prompt "Processor Type"
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 01667d1..eefbe16 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -141,12 +141,13 @@ # Default to zImage, override when neede
+ defaultimage-y			:= zImage
+ defaultimage-$(CONFIG_PPC_ISERIES) := vmlinux
+ defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
++defaultimage-$(CONFIG_DEFAULT_UIMAGE) := cuImage
+ KBUILD_IMAGE := $(defaultimage-y)
+ all: $(KBUILD_IMAGE)
+ 
+ CPPFLAGS_vmlinux.lds	:= -Upowerpc
+ 
+-BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm
+uImage vmlinux.bin
++BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm
+uImage vmlinux.bin cuImage
+ 
+ PHONY += $(BOOT_TARGETS)
+ 
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index daad857..72e8ad8 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -23,7 +23,8 @@ #	in the toplevel makefile.
+ 
+ HOSTCC		:= gcc
+ BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
+-		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
++		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC \
++		   -fno-schedule-insns -fno-schedule-insns2 -fno-inline
+ BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+ OBJCOPYFLAGS    := contents,alloc,load,readonly,data
+ OBJCOPY_COFF_ARGS := -O aixcoff-rs6000 --set-start 0x500000
+@@ -198,10 +199,18 @@ cmd_mygzip = gzip -f -9 < $< > $@.$$$$ &
+ quiet_cmd_objbin = OBJCOPY $@
+       cmd_objbin = $(OBJCOPY) -O binary $< $@
+ 
++ifndef CONFIG_UIMAGELOADADDR
++CONFIG_UIMAGELOADADDR = 00000000
++endif
++
++ifndef CONFIG_UIMAGEENTRY
++CONFIG_UIMAGEENTRY = 00000000
++endif
++
+ quiet_cmd_uimage = UIMAGE $@
+       cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A ppc -O linux -T kernel
+\
+-               -C gzip -a 00000000 -e 00000000 -n
+'Linux-$(KERNELRELEASE)' \
+-               -d $< $@
++	-C gzip -a $(CONFIG_UIMAGELOADADDR) -e $(CONFIG_UIMAGEENTRY)  \
++	-n 'Linux-$(KERNELRELEASE)' -d $< $@
+ 
+ MKIMAGE		:= $(srctree)/scripts/mkuboot.sh
+ targets		+= uImage
+@@ -223,3 +232,40 @@ install: $(CONFIGURE) $(BOOTIMAGE)
+ 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux
+System.map "$(INSTALL_PATH)" "$(BOOTIMAGE)"
+ 
+ clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.strip)
++
++#-----------------------------------------------------------
++# build compatiblity u-boot images
++#-----------------------------------------------------------
++
++targets += cuImage
++
++quiet_cmd_addsection_cuimage = ADDSEC  $@
++      cmd_addsection_cuimage = $(CROSS32OBJCOPY) $@ \
++		--add-section=.kernel:vmlinux.elf=vmlinux \
++		--set-section-flags=.kernel:vmlinux.elf=$(OBJCOPYFLAGS)
++
++$(obj)/kernel-compat.c:
++	@touch $@
++
++$(obj)/kernel-compat.o: $(obj)/kernel-compat.c vmlinux 
++	$(call if_changed_dep,bootcc)
++	$(call cmd,addsection_cuimage)
++
++$(obj)/vmlinux-compat.elf: $(obj-boot) $(obj)/kernel-compat.o
++	$(call cmd,bootld,$(obj-boot) $(obj)/kernel-compat.o,cuImage.lds)
++
++$(obj)/vmlinux-compat.bin: $(obj)/vmlinux-compat.elf
++	$(call if_changed,objbin)
++
++$(obj)/vmlinux-compat.gz: $(obj)/vmlinux-compat.bin
++	$(call if_changed,mygzip)
++
++$(obj)/cuImage: $(obj)/vmlinux-compat.gz $(obj-boot)
++	$(Q)rm -f $@
++	$(call cmd,uimage)
++	@echo -n '  Image: $@ '
++	@if [ -f $@ ]; then echo 'is ready' ; else echo 'not made'; fi
++
++clean-files += vmlinux-compat.elf vmlinux-compat.bin vmlinux-compat.gz
+cuImage
++
++
