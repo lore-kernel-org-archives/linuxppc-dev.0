@@ -1,21 +1,10 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 22CAF67B64
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 10:38:41 +1000 (EST)
-Date: Tue, 1 Aug 2006 17:42:25 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Matthew McClintock <msm@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: RFC: Location for Device Tree Sources?
-Message-ID: <20060802004225.GA21968@mag.az.mvista.com>
-References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
-	<Pine.LNX.4.60.0608012258040.4041@poirot.grange>
-	<1154466094.11069.6.camel@localhost>
-	<20060802003504.GA20439@mag.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060802003504.GA20439@mag.az.mvista.com>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Wed, 02 Aug 2006 10:48:50 +1000
+Subject: [PATCH] Fix loop logic in irq_alloc_virt()
+Message-Id: <20060802004852.C66FB67B7F@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,11 +14,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 01, 2006 at 05:35:04PM -0700, Mark A. Greer wrote:
-> I doesn't matter to me where as long as its highly available and has
-> reasonable bandwidth.  jdl.com?  source.mvista.com?  penguinppc.org?
-> other?
+There's a bug in irq_alloc_virt() if it's asked for more than 1 interrupt,
+if it can't find a slot it might look past the end of the irq_map.
 
-Er, forgot the obvious: ozlabs.org?
+I think this is a fix. No one in the kernel actually calls this with
+count > 1, so it's not critical.
 
-Mark
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+
+ arch/powerpc/kernel/irq.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+Index: to-merge/arch/powerpc/kernel/irq.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/irq.c
++++ to-merge/arch/powerpc/kernel/irq.c
+@@ -728,7 +728,6 @@ unsigned int irq_alloc_virt(struct irq_h
+ {
+ 	unsigned long flags;
+ 	unsigned int i, j, found = NO_IRQ;
+-	unsigned int limit = irq_virq_count - count;
+ 
+ 	if (count == 0 || count > (irq_virq_count - NUM_ISA_INTERRUPTS))
+ 		return NO_IRQ;
+@@ -745,14 +744,16 @@ unsigned int irq_alloc_virt(struct irq_h
+ 	/* Look for count consecutive numbers in the allocatable
+ 	 * (non-legacy) space
+ 	 */
+-	for (i = NUM_ISA_INTERRUPTS; i <= limit; ) {
+-		for (j = i; j < (i + count); j++)
+-			if (irq_map[j].host != NULL) {
+-				i = j + 1;
+-				continue;
+-			}
+-		found = i;
+-		break;
++	for (i = NUM_ISA_INTERRUPTS, j = 0; i < irq_virq_count; i++) {
++		if (irq_map[i].host != NULL)
++			j = 0;
++		else
++			j++;
++
++		if (j == count) {
++			found = i - count + 1;
++			break;
++		}
+ 	}
+ 	if (found == NO_IRQ) {
+ 		spin_unlock_irqrestore(&irq_big_lock, flags);
