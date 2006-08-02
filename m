@@ -1,16 +1,24 @@
-Return-Path: <marvin24@gmx.de>
-From: marvin <marvin24@gmx.de>
-To: michael@ellerman.id.au
-Subject: Re: lockup during powersave on G3
-Date: Wed, 2 Aug 2006 20:31:01 +0200
-References: <200608020747.50765.marvin24@gmx.de>
-	<1154510480.26242.18.camel@localhost.localdomain>
-In-Reply-To: <1154510480.26242.18.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200608022031.01570.marvin24@gmx.de>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 12A1A67C6A
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 04:31:30 +1000 (EST)
+Date: Wed, 2 Aug 2006 11:34:47 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: RFC: Location for Device Tree Sources?
+Message-ID: <20060802183447.GL17652@mag.az.mvista.com>
+References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
+	<Pine.LNX.4.60.0608012258040.4041@poirot.grange>
+	<1154466094.11069.6.camel@localhost>
+	<20060802003504.GA20439@mag.az.mvista.com>
+	<1154481150.2676.3.camel@vader.jdub.homelinux.org>
+	<20060802182226.GH17652@mag.az.mvista.com>
+	<1154543116.19994.39.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1154543116.19994.39.camel@cashmere.sps.mot.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Aug 02, 2006 at 01:25:16PM -0500, Jon Loeliger wrote:
+> On Wed, 2006-08-02 at 13:22, Mark A. Greer wrote:
+> 
+> > 
+> > Well, if you're going to keep prebuilt dtb files there, why wouldn't you
+> > want the dts that makes that dtb to be in the same place?
+> 
+> I don't think we should keep pre-compiled DTB files
+> around anywhere.  We don't keep a bunch of derived .o
+> files around, do we?
 
-arrrr,
+I agree.
 
-the lastest pull seems to have fixed the problem.
-
-Le Wednesday 2 August 2006 11:21, Michael Ellerman a =C3=A9crit :
-> On Wed, 2006-08-02 at 07:47 +0200, marvin wrote:
-> > hi,
-> >
-> > since kernel 2.6.18-rc1 my b/w G3 mac locks up every time it goes into
-> > powersave mode. Before trying to bisect, is there a candidate I can try
-> > to revert?
->
-> By "since" do you mean 2.6.18-rc1 worked and it's broken since then, or
-> that something earlier worked and it's broken starting from 2.6.18-rc1?
->
-> Ben's new irq stuff might be a candidate, that was a pretty big change.
-
-commit 49b1e3ea19b1c95c2f012b8331ffb3b169e4c042
-	...
-      [POWERPC] Fix new interrupt code (MPIC detection)
-      [POWERPC] Fix new interrupt code (MPIC endianness)
-	...
-
-could be the reason.
-
-thanks!
-
-marc
+Mark
