@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17616.17129.964122.125259@cargo.ozlabs.ibm.com>
-Date: Wed, 2 Aug 2006 16:15:05 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Mark A. Greer" <mgreer@mvista.com>, linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-In-Reply-To: <17616.12251.339657.215571@cargo.ozlabs.ibm.com>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-	<17616.12251.339657.215571@cargo.ozlabs.ibm.com>
+Return-Path: <adrian@humboldt.co.uk>
+Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6A35367B5E
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 18:58:05 +1000 (EST)
+Received: from box.varisys.co.uk ([81.187.198.46] helo=[192.168.3.251])
+	by mail.humboldt.co.uk with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
+	(Exim 4.50) id 1G8C2u-0003nI-PT
+	for linuxppc-dev@ozlabs.org; Wed, 02 Aug 2006 09:25:41 +0100
+Subject: SMP in 32-bit arch/powerpc
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 02 Aug 2006 09:25:45 +0100
+Message-Id: <1154507145.24203.0.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,19 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I wrote:
+Is anybody else having problems with 32-bit SMP support in arch/powerpc?
+I'm using 2.6.17 as my current base, because I've not yet merged the
+latest mpic changes.
 
-> The ops structure seems like a reasonable concept, but I question
-> whether we need to have platform_ops separate from fw_ops, since the
-> firmware is essentially part of the implementation of the platform.
-> Also I don't see why we need to do a double indirection to get to each
-> ops function.
+I'm currently bringing up a dual-7448 board, and when I build the kernel
+with CONFIG_SMP, the bootmem allocator corrupts the device tree. The
+strange thing is, this still happens when I don't start the second CPU.
+Kernels built without CONFIG_SMP run flawlessly on the same hardware.
 
-Thinking about this a bit more, why do we need the indirect function
-calls at all?  Do we ever want to be able to choose (e.g.) one of
-several possible console implementations at runtime?  Don't we know at
-compile time which one we will be using, and thus can't we use the
-linker to make the necessary linkages?
-
-Regards,
-Paul.
+-- 
+Adrian Cox <adrian@humboldt.co.uk>
