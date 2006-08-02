@@ -1,16 +1,15 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32202.mail.mud.yahoo.com (web32202.mail.mud.yahoo.com
-	[68.142.207.133]) by ozlabs.org (Postfix) with SMTP id D5E9267BFD
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 08:12:39 +1000 (EST)
-Message-ID: <20060802221238.21817.qmail@web32202.mail.mud.yahoo.com>
-Date: Wed, 2 Aug 2006 15:12:38 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-Subject: RE: Sloooooowwww CFI Flash programming
-To: "Franca, Jose Filipe \(ext\)" <jose.franca.ext@siemens.com>,
-	linuxppc-dev@ozlabs.org
-In-Reply-To: <4051B1A83682514BA8529BCADDA45F086EE65A@PTLISI050MSX.PT001.SIEMENS.NET>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Return-Path: <wd@denx.de>
+To: Matthew McClintock <msm@freescale.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [RFC] New target 'cuImage' - compatibility uImage 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 02 Aug 2006 15:59:06 CDT."
+	<1154552346.5550.51.camel@localhost>
+Date: Thu, 03 Aug 2006 00:33:02 +0200
+Sender: wd@denx.de
+Message-Id: <20060802223302.9667135360F@atlas.denx.de>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
---- "Franca, Jose Filipe (ext)" <jose.franca.ext@siemens.com>
-wrote:
-
-> That is implemented in the 2.6 kernels. Are you sugesting a
-> merge with
-> 2.6 code? Or there is a patch that implements that in 2.4
-> kernels?
+In message <1154552346.5550.51.camel@localhost> you wrote:
 > 
-> -----Original Message-----
-> From: Frank [mailto:frannk_m1@yahoo.com] 
-> Sent: quarta-feira, 2 de Agosto de 2006 17:41
-> To: Franca, Jose Filipe (ext); linuxppc-dev@ozlabs.org
-> Subject: Re: Sloooooowwww CFI Flash programming
+> And the new cuImage will look like this:
+> 
+> -------------------------------------
+> -	compressed uImage	  - -
+> - ------------------------------- - -
+> - - 	_start			- - -
+> - -	boot wrapper code	- - -
+> - - ----------------------------- - -
+> - - -	device tree	      	- - -
+> - - ----------------------------- - -
+> - - ----------------------------- - -
+> - - - 			      	- - -
+> - - - 	UNcompressed	      	- - -
+> - - - 	kernel image	      	- - -
+> - - -			      	- - -
+> - - ----------------------------- - -
+> - --------------------------------- -
+> -------------------------------------
 
-Look around, I've used buffered writes on a 2.4.25 kernel...
+Please explain.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+In my understanding, an "uImage" file is a  image  consisting  of  an
+U-Boot  header (64 bytes) followed by an (compressed or uncompressed)
+Linux kernel image.
+
+So what do you mean by "compressed uImage"? If you take  an  "uImage"
+file  according  to  above definition and compress it, it will not be
+recognized by U-Boot.
+
+And why do you need a second, "UNcompressed  kernel  image"  in  your
+setup?  I  must  be missing something, because including *two* kernel
+images makes no sense to me, and I don't  understand  why  you  would
+want to insist of an "UNcompressed" image...
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+1st Old Man:  Gee, its windy today.
+2nd Old Man:  No it's not... it's Thursday.
+3rd Old Man:  Yeh, me too.  Let's go for a beer.
