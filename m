@@ -1,22 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 7BB3C67B72
+Return-Path: <kallepokki@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id B936867B87
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Aug 2006 14:17:44 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so1658383ugf
+	Wed,  2 Aug 2006 17:10:48 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c2so526395nfe
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 01 Aug 2006 21:17:42 -0700 (PDT)
-Message-ID: <528646bc0608012117i6a5afb37l7e9ee327309aca9b@mail.gmail.com>
-Date: Tue, 1 Aug 2006 22:17:41 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Clint Thomas" <cthomas@soneticom.com>
-Subject: Re: Booting Linux Kernel without bootloader
-In-Reply-To: <3C02138692C13C4BB675FE7EA240952915DF66@bluefin.Soneticom.local>
+	Wed, 02 Aug 2006 00:10:46 -0700 (PDT)
+Message-ID: <a425f86c0608020010q5b1c07d3s537a284455801d0b@mail.gmail.com>
+Date: Wed, 2 Aug 2006 10:10:46 +0300
+From: "Kalle Pokki" <kalle.pokki@iki.fi>
+Sender: kallepokki@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: 82xx PCI setup ioremapping twice
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <3C02138692C13C4BB675FE7EA240952915DF66@bluefin.Soneticom.local>
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,40 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/25/06, Clint Thomas <cthomas@soneticom.com> wrote:
->
->
-> Hey guys,
->
-> I have gone through the Linuxppc embedded and dev lists for information
-> related to what I am trying to do, but was unable to find exactly what i'm
-> looking for.
->
-> Basically, the system I want linux running on does not require the
-> initialization of hardware that U-boot provides, or at least it does not
-> need it to boot the linux kernel. I want to load an uncompressed linux
-> kernel into memory and start the execution of the kernel, without using any
-> kind of bootloader. Is this possible? Or does linux need some kind of
-> firmware or other software to tell it to start executing? Thanks for any
-> info you might have.
+Hi,
 
-Loading a kernel into memory and starting execution *is* a boot loader.  :)
+In pq2_find_bridges(), there is a call to setup_m8260_indirect_pci(),
+which ioremaps the configuration address and data registers. The call
+uses the cpm2_immr pointer, which however is already ioremapped by
+cpm2_reset(). ioremapping these addresses twice seems to always crash
+my board, and I need to e.g.
 
-You could use the bootwrapper that is in the kernel source tree
-(zImage).  If a zImage's entry point is at the execution entry point,
-then it will start the Linux kernel correctly.  However, it is still a
-compressed image.
+Index: linux-2.6.15.4/arch/ppc/syslib/m82xx_pci.c
+===================================================================
+--- linux-2.6.15.4.orig/arch/ppc/syslib/m82xx_pci.c     2006-08-02
+09:45:54.000000000 +0300
++++ linux-2.6.15.4/arch/ppc/syslib/m82xx_pci.c  2006-08-02
+09:46:32.000000000 +0300
+@@ -324,7 +324,7 @@
+        hose->set_cfg_type = 1;
+ #endif
 
-If you *really* need an uncompressed image, I would start with the
-bootwrapper and hack it to work with an non-gzipped kernel image.
-However, why do you want to do it this way?  You probably won't gain
-much in boot time and it will be more difficult to maintain.
+-       setup_m8260_indirect_pci(hose,
++       setup_indirect_pci_nomap(hose,
+                                 (unsigned long)&cpm2_immr->im_pci.pci_cfg_addr,
+                                 (unsigned
+long)&cpm2_immr->im_pci.pci_cfg_data);
 
-Cheers,
-g.
+or use the physical addresses in the original function call.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Should ioremap() code check for these double mappings? There seems to
+be some attempts to do that. I remember the PCI initialisation wasn't
+a problem some time before with an earlier kernel version, a different
+8248 board, and internal memory at 0xf0000000.
+
+My internal memory is at physical address 0xff000000.
+Linux kernel version is 2.6.15.4.
+The board is a custom 8247.
