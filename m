@@ -1,14 +1,11 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <robinpv@aiware.co.jp>
+Message-ID: <44D0382A.1090404@aiware.co.jp>
+Date: Wed, 02 Aug 2006 14:29:14 +0900
+From: robinpv <robinpv@aiware.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17616.12251.339657.215571@cargo.ozlabs.ibm.com>
-Date: Wed, 2 Aug 2006 14:53:47 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-In-Reply-To: <20060719230014.GB3887@mag.az.mvista.com>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: linux USB host problem
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,31 +15,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer writes:
+Hi,
+  I am using linux 2.6.16.1 for MPC5200 based platorm. It has PCI based USB Host (SM501 chip)
+  I am facing problem in the USB host interrupts. When i plug in the USB i get the
+below message.
 
-> Abstract the operations used in the bootwrapper.  The operations
-> have been divided up into platform ops (platform_ops), firware ops
-> (fw_ops), device tree ops (dt_ops), and console ops (console_ops).
+new full speed USB device using vgxfb and address 2.
+vgxfb 0000:00:10.0: Unlink after no-IRQ?  Controller is probably using the
+wrong IRQ.
 
-Overall the approach looks good.
+the capture of /pci/interrupts is
+           CPU0
+  1:          0   MPC52xx   Level     ohci_hcd:usb1
+  7:        751   MPC52xx   Level     eth0
+ 40:       7899   MPC52xx   Level     mpc52xx_psc_uart
+BAD:          0
 
-The ops structure seems like a reasonable concept, but I question
-whether we need to have platform_ops separate from fw_ops, since the
-firmware is essentially part of the implementation of the platform.
-Also I don't see why we need to do a double indirection to get to each
-ops function.
+The device address is assigned but after that interrupt is not coming.
+After that if i unplug and plugin there is no notification.
+the sm501 chip in which USB host is there, is connected on PCI bus.
+The PCI mapping is as follows
 
-Also, we will probably want to create some directory structure under
-arch/powerpc/boot in the longer term.
+        static char pci_irq_table[][4] =
+            /*
+             *      PCI IDSEL/INTPIN->INTLINE
+             *        A      B      C      D
+             */
+        {
+                {PIRQA, PIRQA, PIRQA, PIRQA},   /* SM501 */
+                {PIRQD, PIRQD, PIRQD, PIRQD},   /* IDE */
+                {PIRQC, PIRQC, PIRQC, PIRQC},   /* Ethernet */
+                {PIRQB, PIRQB, PIRQB, PIRQB},   /* Bridge */
+        };
+        const long min_idsel = 16, max_idsel = 18, irqs_per_slot = 4;
+        return PCI_IRQ_TABLE_LOOKUP;
 
-> +#ifdef __powerpc64__
-> +typedef unsigned long		u64;
-> +#else
-> +typedef unsigned long long	u64;
-> +#endif
+I tried with acpi=off, but in vain.
+Can some give inputs on this how to proceed.
 
-This is potentially confusing, because the __powerpc64__ relates to
-the boot wrapper not the kernel, and we don't build a 64-bit boot
-wrapper on any platform (not yet anyway).  Maybe this needs a comment.
-
-Paul.
+Thanks & Regards,
+Robin
