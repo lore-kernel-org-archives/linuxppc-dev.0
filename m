@@ -1,11 +1,21 @@
-Return-Path: <robinpv@aiware.co.jp>
-Message-ID: <44D0382A.1090404@aiware.co.jp>
-Date: Wed, 02 Aug 2006 14:29:14 +0900
-From: robinpv <robinpv@aiware.co.jp>
-MIME-Version: 1.0
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: linux USB host problem
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5EE1767B90
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 15:30:47 +1000 (EST)
+In-Reply-To: <20060801194411.GA22933@kvasir.watson.ibm.com>
+References: <20060801194411.GA22933@kvasir.watson.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <55183EF7-73CF-427E-A720-9CA67AB00DD4@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] turn on tigon3 support in maple_defconfig
+Date: Wed, 2 Aug 2006 07:30:29 +0200
+To: Amos Waterland <apw@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,43 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-  I am using linux 2.6.16.1 for MPC5200 based platorm. It has PCI based USB Host (SM501 chip)
-  I am facing problem in the USB host interrupts. When i plug in the USB i get the
-below message.
+> I think that most people who use maple_defconfig are doing so for a  
+> JS21,
+> so it might make sense to turn Tigon3 support on by default.
 
-new full speed USB device using vgxfb and address 2.
-vgxfb 0000:00:10.0: Unlink after no-IRQ?  Controller is probably using the
-wrong IRQ.
+Also needed on JS20.
 
-the capture of /pci/interrupts is
-           CPU0
-  1:          0   MPC52xx   Level     ohci_hcd:usb1
-  7:        751   MPC52xx   Level     eth0
- 40:       7899   MPC52xx   Level     mpc52xx_psc_uart
-BAD:          0
+> Built and booted on a JS21.
+>
+> Signed-off-by: Amos Waterland <apw@us.ibm.com>
 
-The device address is assigned but after that interrupt is not coming.
-After that if i unplug and plugin there is no notification.
-the sm501 chip in which USB host is there, is connected on PCI bus.
-The PCI mapping is as follows
+ACK.
 
-        static char pci_irq_table[][4] =
-            /*
-             *      PCI IDSEL/INTPIN->INTLINE
-             *        A      B      C      D
-             */
-        {
-                {PIRQA, PIRQA, PIRQA, PIRQA},   /* SM501 */
-                {PIRQD, PIRQD, PIRQD, PIRQD},   /* IDE */
-                {PIRQC, PIRQC, PIRQC, PIRQC},   /* Ethernet */
-                {PIRQB, PIRQB, PIRQB, PIRQB},   /* Bridge */
-        };
-        const long min_idsel = 16, max_idsel = 18, irqs_per_slot = 4;
-        return PCI_IRQ_TABLE_LOOKUP;
 
-I tried with acpi=off, but in vain.
-Can some give inputs on this how to proceed.
-
-Thanks & Regards,
-Robin
+Segher
