@@ -1,19 +1,16 @@
 Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 44FBE67B9D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 02:56:48 +1000 (EST)
-Date: Wed, 2 Aug 2006 10:00:32 -0700
+Date: Wed, 2 Aug 2006 10:05:14 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-Message-ID: <20060802170032.GD17652@mag.az.mvista.com>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-	<17616.12251.339657.215571@cargo.ozlabs.ibm.com>
-	<200608021441.23429.arnd.bergmann@de.ibm.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [PATCH 3/6] bootwrapper: Add device tree ops for flattened device
+	tree
+Message-ID: <20060802170514.GE17652@mag.az.mvista.com>
+References: <20060719230544.GD3887@mag.az.mvista.com>
+	<20060802161054.GG3075@smtp.west.cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200608021441.23429.arnd.bergmann@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060802161054.GG3075@smtp.west.cox.net>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 02, 2006 at 02:41:23PM +0200, Arnd Bergmann wrote:
-> On Wednesday 02 August 2006 06:53, Paul Mackerras wrote:
-> > > +#ifdef __powerpc64__
-> > > +typedef unsigned long                u64;
-> > > +#else
-> > > +typedef unsigned long long   u64;
-> > > +#endif
-> > 
-> > This is potentially confusing, because the __powerpc64__ relates to
-> > the boot wrapper not the kernel, and we don't build a 64-bit boot
-> > wrapper on any platform (not yet anyway).  Maybe this needs a comment.
-> > 
-> Moreover, even if we ever build this on __powerpc64__, the 
-> typedef unsigned long long u64 would still do the right thing.
-> It only ever becomes a problem when mixing with u64 the c99 uint64_t,
-> which is defined the other way.
+On Wed, Aug 02, 2006 at 09:10:54AM -0700, Tom Rini wrote:
+> On Wed, Jul 19, 2006 at 04:05:44PM -0700, Mark A. Greer wrote:
+> 
+> > This patch adds the device tree operations (dt_ops) for a flattened
+> > device tree (fdt).
+> [snip]
+> > +/* Definitions used by the flattened device tree */
+> [snip]
+> ...
+> > +struct fdt_bus {
+> > +	u64	(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
+> > +	int	(*translate)(u32 *addr, u64 offset, int na);
+> > +};
+> 
+> All of that should live in an fdt.h.
 
-I copied that code from somewhere but I forget where & can't seem to
-find it now.  I'll get rid of it for now.
+Why?  Its never used outside of fdt.c and therefore should not be in
+fdt.h.
+
+> > +
+> > +static inline struct boot_param_header *
+> > +fdt_get_bph(void *dt_blob)
+> > +{
+> > +	return (struct boot_param_header *)dt_blob;
+> > +}
+> 
+> Er, can't we just do this in the few places directly?
+
+Sure.
+
+> > +		if (!(new_dtb_start = malloc(new_total_size))) {
+> > +			printf("Can't alloc space for new fdt\n\r");
+> > +			exit();
+> > +		}
+> 
+> Wasn't there a panic("Message") or so, for bootwrapper stuff?  If not,
+> maybe there should be..
+
+There isn't now.  Easy enough to add unless someone else objects.
 
 Mark
