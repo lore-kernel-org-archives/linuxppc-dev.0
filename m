@@ -1,17 +1,23 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 5369C67C09
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 06:45:29 +1000 (EST)
-Date: Wed, 2 Aug 2006 13:49:08 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
-Message-ID: <20060802204908.GA28403@mag.az.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84F3367C15
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 06:53:27 +1000 (EST)
+In-Reply-To: <1154550970.19994.57.camel@cashmere.sps.mot.com>
 References: <1154544503.19994.42.camel@cashmere.sps.mot.com>
-	<1154548217.32357.27.camel@basalt.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1154548217.32357.27.camel@basalt.austin.ibm.com>
+	<9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>
+	<1154549483.19994.46.camel@cashmere.sps.mot.com>
+	<BFD18279-7617-4F50-BB22-21A46C65FD50@kernel.crashing.org>
+	<1154550970.19994.57.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F4FA8DDC-0490-4792-8B9B-89D3F0AECF26@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
+Date: Wed, 2 Aug 2006 15:53:28 -0500
+To: Jon Loeliger <jdl@freescale.com>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,42 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 02, 2006 at 02:50:17PM -0500, Hollis Blanchard wrote:
-> On Wed, 2006-08-02 at 13:48 -0500, Jon Loeliger wrote:
-> > 
-> > +               PowerPC,8641@0 {
-> > +                       device_type = "cpu";
-> > +                       reg = <0>;
-> > +                       d-cache-line-size = <20>;       // 32 bytes
-> > +                       i-cache-line-size = <20>;       // 32 bytes
-> > +                       d-cache-size = <8000>;          // L1, 32K
-> > +                       i-cache-size = <8000>;          // L1, 32K
-> > +                       timebase-frequency = <0>;       // 33 MHz,
-> > from uboot
-> > +                       bus-frequency = <0>;            // From uboot
-> > +                       clock-frequency = <0>;          // From uboot
-> > +                       32-bit;
-> > +                       linux,boot-cpu;
-> > +               }; 
-> 
-> I need to do something similar for Xen, so I was curious: I guess the
-> preferred way for runtime software to fill in values is by *overwriting*
-> bogus values inserted at compile time?
-> 
-> The other alternative would be for the runtime code to insert new
-> properties (presumably via memmove()), but overwriting definitely seems
-> simpler.
 
-Two reasons you may want to overwrite instead of insert a new one (at
-least for now):
+On Aug 2, 2006, at 3:36 PM, Jon Loeliger wrote:
 
-1) Strictly opinion: Its nice to be able to see the completely
-functional tree and not one that's missing a critical property
-that is magically inserted behind the scenes.
+> On Wed, 2006-08-02 at 15:30, Kumar Gala wrote:
+>
+>>> Yeah, we have lined up Matt to make a comprehensive
+>>> update for this.  Can we take my patch as-is?  Matt will
+>>> follow up with a clean sweep, including fsl_socl.c, to
+>>> fix it all in one swell foop.
+>>
+>> I think this is one that is clearly something that should be fixed
+>> before acceptance.  Since we are talking about a dozen lines of
+>> modifications.  Especially since at this point having the .dts in the
+>> tree doesn't really effect anything inside the kernel tree.
+>>
+>> - kumar
+>
+> On the other hand, this matches what the kernel implements
+> today, and is already in use by several people around the
+> world.  It _does_ have an affect and is based on things
+> inside the kernel tree today as it is.
 
-2) Strictly practical for now: If you plan on using a zImage with
-the fdt patches that are being discussed right now, the fdt code
-doesn't currently support inserting a new property, only modifying an
-existing one.  Patches always welcome though! :)
+True, but the people that are running this dont really care if the  
+dts is in the kernel or not. I think having an error in the kernel  
+tree that we know about is more of an issue.  Its something we all  
+agree needs to be fixed.
 
-Mark
+Here is the code modification to fsl_soc.c, I'm sure we can get this  
+fixed push into 2.6.18 if desired.
+
+if(mac_addr = get_property(np, "address", NULL))
+   memcpy(gfar_data.mac_addr, mac_addr, 6);
+
+if(mac_addr = get_property(np, "local-mac-address", NULL);
+   memcpy(gfar_data.mac_addr, mac_addr, 6);
+
+- kumar
