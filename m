@@ -1,19 +1,17 @@
-Return-Path: <adrian@humboldt.co.uk>
-Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D505067B9B
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 05:36:44 +1000 (EST)
-Subject: Re: SMP in 32-bit arch/powerpc
-From: Adrian Cox <adrian@humboldt.co.uk>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 0E89967C0D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 05:48:53 +1000 (EST)
+Message-ID: <44D0FDF3.4020401@ru.mvista.com>
+Date: Wed, 02 Aug 2006 23:33:07 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <027C3DD1-67E1-4CF2-B8B6-36CD1F09D1D2@kernel.crashing.org>
-References: <1154507145.24203.0.camel@localhost.localdomain>
-	<027C3DD1-67E1-4CF2-B8B6-36CD1F09D1D2@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 02 Aug 2006 20:36:34 +0100
-Message-Id: <1154547394.5413.1.camel@localhost.localdomain>
-Mime-Version: 1.0
+Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
+References: <1154544503.19994.42.camel@cashmere.sps.mot.com>
+	<9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>
+In-Reply-To: <9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,20 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-08-02 at 08:32 -0500, Kumar Gala wrote:
-> On Aug 2, 2006, at 3:25 AM, Adrian Cox wrote:
-> > Is anybody else having problems with 32-bit SMP support in arch/ 
-> > powerpc?
-> > I'm using 2.6.17 as my current base, because I've not yet merged the
-> > latest mpic changes.
+Hello.
 
-> There are a few patches to prom.c that may help.  I know I've run  
-> into this on other 32-bit systems booting from u-boot.  These patches  
-> resolved my issue.
-> * [PATCH] powerpc: Auto reserve of device tree blob
-> * [POWERPC] Prevent duplicate lmb reservations for Device...
+Kumar Gala wrote:
+> Do we want to go ahead and fix the mac address field having the wrong  
+> name?
 
-That was the problem. It now boots correctly, thanks.
+    If you mean "address" instead of "local-mac-address" then I guess 
+Documentation/powerpc/booting-without-of.txt should also be changed since it 
+has "address". And arch/powerpc/sysdev/fsl_soc.c as well..
 
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+>>+		ethernet@24000 {
+>>+			#address-cells = <1>;
+>>+			#size-cells = <0>;
+>>+			device_type = "network";
+>>+			model = "TSEC";
+>>+			compatible = "gianfar";
+>>+			reg = <24000 1000>;
+>>+			address = [ 00 E0 0C 00 73 00 ];
+>>+			interrupts = <1d 2 1e 2 22 2>;
+>>+			interrupt-parent = <40000>;
+>>+			phy-handle = <2452000>;
+>>+		};
+>>+
+>>+		ethernet@25000 {
+>>+			#address-cells = <1>;
+>>+			#size-cells = <0>;
+>>+			device_type = "network";
+>>+			model = "TSEC";
+>>+			compatible = "gianfar";
+>>+			reg = <25000 1000>;
+>>+			address = [ 00 E0 0C 00 73 01 ];
+>>+			interrupts = <23 2 24 2 28 2>;
+>>+			interrupt-parent = <40000>;
+>>+			phy-handle = <2452001>;
+>>+		};
+>>+		
+>>+		ethernet@26000 {
+>>+			#address-cells = <1>;
+>>+			#size-cells = <0>;
+>>+			device_type = "network";
+>>+			model = "TSEC";
+>>+			compatible = "gianfar";
+>>+			reg = <26000 1000>;
+>>+			address = [ 00 E0 0C 00 02 FD ];
+>>+			interrupts = <1F 2 20 2 21 2>;
+>>+			interrupt-parent = <40000>;
+>>+			phy-handle = <2452002>;
+>>+		};
+>>+
+>>+		ethernet@27000 {
+>>+			#address-cells = <1>;
+>>+			#size-cells = <0>;
+>>+			device_type = "network";
+>>+			model = "TSEC";
+>>+			compatible = "gianfar";
+>>+			reg = <27000 1000>;
+>>+			address = [ 00 E0 0C 00 03 FD ];
+>>+			interrupts = <25 2 26 2 27 2>;
+>>+			interrupt-parent = <40000>;
+>>+			phy-handle = <2452003>;
+>>+		};
+
+WBR, Sergei
