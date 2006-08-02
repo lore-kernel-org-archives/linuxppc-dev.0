@@ -1,15 +1,14 @@
 Return-Path: <trini@kernel.crashing.org>
-Date: Wed, 2 Aug 2006 09:03:18 -0700
+Date: Wed, 2 Aug 2006 09:10:54 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-Message-ID: <20060802160318.GF3075@smtp.west.cox.net>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-	<17616.12251.339657.215571@cargo.ozlabs.ibm.com>
-	<17616.17129.964122.125259@cargo.ozlabs.ibm.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 3/6] bootwrapper: Add device tree ops for flattened device
+	tree
+Message-ID: <20060802161054.GG3075@smtp.west.cox.net>
+References: <20060719230544.GD3887@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17616.17129.964122.125259@cargo.ozlabs.ibm.com>
+In-Reply-To: <20060719230544.GD3887@mag.az.mvista.com>
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,30 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 02, 2006 at 04:15:05PM +1000, Paul Mackerras wrote:
-> I wrote:
-> 
-> > The ops structure seems like a reasonable concept, but I question
-> > whether we need to have platform_ops separate from fw_ops, since the
-> > firmware is essentially part of the implementation of the platform.
-> > Also I don't see why we need to do a double indirection to get to each
-> > ops function.
-> 
-> Thinking about this a bit more, why do we need the indirect function
-> calls at all?  Do we ever want to be able to choose (e.g.) one of
-> several possible console implementations at runtime?  Don't we know at
-> compile time which one we will be using, and thus can't we use the
-> linker to make the necessary linkages?
+On Wed, Jul 19, 2006 at 04:05:44PM -0700, Mark A. Greer wrote:
 
-Right.  I was thinking perhaps Mark did it this way so certain things
-could be omitted (if ops->foo  then ops->foo(bar, baz)) but that'd
-better taken care of with weak functions and getting the right one at
-compile time.
+> This patch adds the device tree operations (dt_ops) for a flattened
+> device tree (fdt).
+[snip]
+> +/* Definitions used by the flattened device tree */
+[snip]
+...
+> +struct fdt_bus {
+> +	u64	(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
+> +	int	(*translate)(u32 *addr, u64 offset, int na);
+> +};
 
-The only potential case, but I'm not even sure then that it is an issue,
-is on platforms where it's either U-Boot or PIBS/DINK/whatever.  But
-even then, the only thing that should matter is 'Do we have a tree
-passed in?'.
+All of that should live in an fdt.h.
+
+> +
+> +static inline struct boot_param_header *
+> +fdt_get_bph(void *dt_blob)
+> +{
+> +	return (struct boot_param_header *)dt_blob;
+> +}
+
+Er, can't we just do this in the few places directly?
+
+> +		if (!(new_dtb_start = malloc(new_total_size))) {
+> +			printf("Can't alloc space for new fdt\n\r");
+> +			exit();
+> +		}
+
+Wasn't there a panic("Message") or so, for bootwrapper stuff?  If not,
+maybe there should be..
 
 -- 
 Tom Rini
