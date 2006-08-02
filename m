@@ -1,16 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: SMP in 32-bit arch/powerpc
+Subject: Re: lockup during powersave on G3
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Adrian Cox <adrian@humboldt.co.uk>
-In-Reply-To: <1154507145.24203.0.camel@localhost.localdomain>
-References: <1154507145.24203.0.camel@localhost.localdomain>
+To: marvin <marvin24@gmx.de>
+In-Reply-To: <200608020747.50765.marvin24@gmx.de>
+References: <200608020747.50765.marvin24@gmx.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-JeotpiqhWMJ87/wbgIx+"
-Date: Wed, 02 Aug 2006 19:08:20 +1000
-Message-Id: <1154509700.26242.11.camel@localhost.localdomain>
+	boundary="=-/ehbDQ62fcdw7TPLpWcN"
+Date: Wed, 02 Aug 2006 19:21:20 +1000
+Message-Id: <1154510480.26242.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,53 +22,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-JeotpiqhWMJ87/wbgIx+
+--=-/ehbDQ62fcdw7TPLpWcN
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2006-08-02 at 09:25 +0100, Adrian Cox wrote:
-> Is anybody else having problems with 32-bit SMP support in arch/powerpc?
-> I'm using 2.6.17 as my current base, because I've not yet merged the
-> latest mpic changes.
+On Wed, 2006-08-02 at 07:47 +0200, marvin wrote:
+> hi,
 >=20
-> I'm currently bringing up a dual-7448 board, and when I build the kernel
-> with CONFIG_SMP, the bootmem allocator corrupts the device tree. The
-> strange thing is, this still happens when I don't start the second CPU.
-> Kernels built without CONFIG_SMP run flawlessly on the same hardware.
+> since kernel 2.6.18-rc1 my b/w G3 mac locks up every time it goes into=20
+> powersave mode. Before trying to bisect, is there a candidate I can try t=
+o=20
+> revert?
 
-Seems to be working OK here:
+By "since" do you mean 2.6.18-rc1 worked and it's broken since then, or
+that something earlier worked and it's broken starting from 2.6.18-rc1?
 
-fuego:~# uname -a
-Linux fuego 2.6.17 #1 SMP Mon Jul 3 12:10:43 EST 2006 ppc GNU/Linux
-fuego:~# cat /proc/cpuinfo
-processor       : 0
-cpu             : 604r
-clock           : 332.000000MHz
-revision        : 49.2 (pvr 0009 3102)
-bogomips        : 82.68
-
-processor       : 1
-cpu             : 604r
-clock           : 332.000000MHz
-revision        : 49.2 (pvr 0009 3102)
-bogomips        : 82.68
-
-processor       : 2
-cpu             : 604r
-clock           : 332.000000MHz
-revision        : 49.2 (pvr 0009 3102)
-bogomips        : 82.68
-
-processor       : 3
-cpu             : 604r
-clock           : 332.000000MHz
-revision        : 49.2 (pvr 0009 3102)
-bogomips        : 82.68
-
-total bogomips  : 330.75
-timebase        : 41500582
-platform        : CHRP
-machine         : CHRP IBM,7025-F50
+Ben's new irq stuff might be a candidate, that was a pretty big change.=20
 
 cheers
 
@@ -82,16 +51,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-JeotpiqhWMJ87/wbgIx+
+--=-/ehbDQ62fcdw7TPLpWcN
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQBE0GuEdSjSd0sB4dIRAoxrAKCJGjw0rWn9z8+9F2zyMwJKkSw+SwCeOlOm
-Jz2BB5gM7dmgXDT7T79VF24=
-=ZsO+
+iD8DBQBE0G6QdSjSd0sB4dIRAudbAKCc1OHWLk6MTYVkFkVlJK1OyYC0wACeNCjI
+9pvduUdkk5pKnc6kmUzAKy4=
+=ju/F
 -----END PGP SIGNATURE-----
 
---=-JeotpiqhWMJ87/wbgIx+--
+--=-/ehbDQ62fcdw7TPLpWcN--
