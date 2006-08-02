@@ -1,10 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 02 Aug 2006 11:13:50 +1000
-Subject: [PATCH] Make doc comments extractable
-Message-Id: <20060802011352.3B9D867B70@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-40-242-100.roch.qwest.net
+	[67.40.242.100])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0B00C67B88
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Aug 2006 11:36:10 +1000 (EST)
+Subject: Re: RFC: Location for Device Tree Sources?
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20060802003504.GA20439@mag.az.mvista.com>
+References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
+	<Pine.LNX.4.60.0608012258040.4041@poirot.grange>
+	<1154466094.11069.6.camel@localhost>
+	<20060802003504.GA20439@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Tue, 01 Aug 2006 20:12:29 -0500
+Message-Id: <1154481150.2676.3.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,191 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We don't have much in the way of doc comments, but some of those we do have
-don't work because they start with "/***" or "/*", not "/**" which is what
-kernel-doc requires.
+On Tue, 2006-08-01 at 17:35 -0700, Mark A. Greer wrote:
+> On Tue, Aug 01, 2006 at 04:01:33PM -0500, Matthew McClintock wrote:
+> > On Tue, 2006-08-01 at 23:00 +0200, Guennadi Liakhovetski wrote:
+> > > 
+> > > Mark A. Greer in his patch to port sandpoint to arch/powerpc put 
+> > > sandpoint.dts under arch/powerpc/boot/dts/sandpoint.dts 
+> > 
+> > I believe in his latest patches he removed this part. The device trees
+> > were not included at all and he left this point open for discussion.
+> 
+> That's correct.
+> 
+> TBH, I think its wrong to keep them in the kernel source at all--yes,
+> the same argument could be made for arch/powerpc/boot but that's been
+> settled.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+Sorry, I have to disagree.  We're talking about device tree _source_
+files here.  I believe they should be included in the kernel source.
+Where that is, I don't have a particularly strong argument but they
+should be included.
 
- arch/powerpc/kernel/crash_dump.c |    2 +-
- arch/powerpc/sysdev/i8259.c      |    2 +-
- include/asm-powerpc/irq.h        |   24 ++++++++++++------------
- include/asm-powerpc/prom.h       |    8 ++++----
- 4 files changed, 18 insertions(+), 18 deletions(-)
+> 
+> We already have dtc kept externally to the kernel source.  Why not
+> keep a single site where all things necessary to powerpc linux are kept?
+> It could house dtc, the dt attach tool, and all the dt source files.
 
-Index: to-merge/arch/powerpc/kernel/crash_dump.c
-===================================================================
---- to-merge.orig/arch/powerpc/kernel/crash_dump.c
-+++ to-merge/arch/powerpc/kernel/crash_dump.c
-@@ -80,7 +80,7 @@ static int __init parse_savemaxmem(char 
- }
- __setup("savemaxmem=", parse_savemaxmem);
- 
--/*
-+/**
-  * copy_oldmem_page - copy one page from "oldmem"
-  * @pfn: page frame number to be copied
-  * @buf: target memory address for the copy; this can be in kernel address
-Index: to-merge/arch/powerpc/sysdev/i8259.c
-===================================================================
---- to-merge.orig/arch/powerpc/sysdev/i8259.c
-+++ to-merge/arch/powerpc/sysdev/i8259.c
-@@ -224,7 +224,7 @@ static struct irq_host_ops i8259_host_op
- 	.xlate = i8259_host_xlate,
- };
- 
--/****
-+/**
-  * i8259_init - Initialize the legacy controller
-  * @node: device node of the legacy PIC (can be NULL, but then, it will match
-  *        all interrupts, so beware)
-Index: to-merge/include/asm-powerpc/irq.h
-===================================================================
---- to-merge.orig/include/asm-powerpc/irq.h
-+++ to-merge/include/asm-powerpc/irq.h
-@@ -137,7 +137,7 @@ struct irq_map_entry {
- extern struct irq_map_entry irq_map[NR_IRQS];
- 
- 
--/***
-+/**
-  * irq_alloc_host - Allocate a new irq_host data structure
-  * @node: device-tree node of the interrupt controller
-  * @revmap_type: type of reverse mapping to use
-@@ -159,14 +159,14 @@ extern struct irq_host *irq_alloc_host(u
- 				       irq_hw_number_t inval_irq);
- 
- 
--/***
-+/**
-  * irq_find_host - Locates a host for a given device node
-  * @node: device-tree node of the interrupt controller
-  */
- extern struct irq_host *irq_find_host(struct device_node *node);
- 
- 
--/***
-+/**
-  * irq_set_default_host - Set a "default" host
-  * @host: default host pointer
-  *
-@@ -178,7 +178,7 @@ extern struct irq_host *irq_find_host(st
- extern void irq_set_default_host(struct irq_host *host);
- 
- 
--/***
-+/**
-  * irq_set_virq_count - Set the maximum number of virt irqs
-  * @count: number of linux virtual irqs, capped with NR_IRQS
-  *
-@@ -188,7 +188,7 @@ extern void irq_set_default_host(struct 
- extern void irq_set_virq_count(unsigned int count);
- 
- 
--/***
-+/**
-  * irq_create_mapping - Map a hardware interrupt into linux virq space
-  * @host: host owning this hardware interrupt or NULL for default host
-  * @hwirq: hardware irq number in that host space
-@@ -202,13 +202,13 @@ extern unsigned int irq_create_mapping(s
- 				       irq_hw_number_t hwirq);
- 
- 
--/***
-+/**
-  * irq_dispose_mapping - Unmap an interrupt
-  * @virq: linux virq number of the interrupt to unmap
-  */
- extern void irq_dispose_mapping(unsigned int virq);
- 
--/***
-+/**
-  * irq_find_mapping - Find a linux virq from an hw irq number.
-  * @host: host owning this hardware interrupt
-  * @hwirq: hardware irq number in that host space
-@@ -221,7 +221,7 @@ extern unsigned int irq_find_mapping(str
- 				     irq_hw_number_t hwirq);
- 
- 
--/***
-+/**
-  * irq_radix_revmap - Find a linux virq from a hw irq number.
-  * @host: host owning this hardware interrupt
-  * @hwirq: hardware irq number in that host space
-@@ -232,7 +232,7 @@ extern unsigned int irq_find_mapping(str
- extern unsigned int irq_radix_revmap(struct irq_host *host,
- 				     irq_hw_number_t hwirq);
- 
--/***
-+/**
-  * irq_linear_revmap - Find a linux virq from a hw irq number.
-  * @host: host owning this hardware interrupt
-  * @hwirq: hardware irq number in that host space
-@@ -247,7 +247,7 @@ extern unsigned int irq_linear_revmap(st
- 
- 
- 
--/***
-+/**
-  * irq_alloc_virt - Allocate virtual irq numbers
-  * @host: host owning these new virtual irqs
-  * @count: number of consecutive numbers to allocate
-@@ -261,7 +261,7 @@ extern unsigned int irq_alloc_virt(struc
- 				   unsigned int count,
- 				   unsigned int hint);
- 
--/***
-+/**
-  * irq_free_virt - Free virtual irq numbers
-  * @virq: virtual irq number of the first interrupt to free
-  * @count: number of interrupts to free
-@@ -300,7 +300,7 @@ extern unsigned int irq_of_parse_and_map
- 
- /* -- End OF helpers -- */
- 
--/***
-+/**
-  * irq_early_init - Init irq remapping subsystem
-  */
- extern void irq_early_init(void);
-Index: to-merge/include/asm-powerpc/prom.h
-===================================================================
---- to-merge.orig/include/asm-powerpc/prom.h
-+++ to-merge/include/asm-powerpc/prom.h
-@@ -259,7 +259,7 @@ struct of_irq {
- 	u32 specifier[OF_MAX_IRQ_SPEC];	/* Specifier copy */
- };
- 
--/***
-+/**
-  * of_irq_map_init - Initialize the irq remapper
-  * @flags:	flags defining workarounds to enable
-  *
-@@ -272,7 +272,7 @@ struct of_irq {
- 
- extern void of_irq_map_init(unsigned int flags);
- 
--/***
-+/**
-  * of_irq_map_raw - Low level interrupt tree parsing
-  * @parent:	the device interrupt parent
-  * @intspec:	interrupt specifier ("interrupts" property of the device)
-@@ -292,7 +292,7 @@ extern int of_irq_map_raw(struct device_
- 			  const u32 *addr, struct of_irq *out_irq);
- 
- 
--/***
-+/**
-  * of_irq_map_one - Resolve an interrupt for a device
-  * @device:	the device whose interrupt is to be resolved
-  * @index:     	index of the interrupt to resolve
-@@ -305,7 +305,7 @@ extern int of_irq_map_raw(struct device_
- extern int of_irq_map_one(struct device_node *device, int index,
- 			  struct of_irq *out_irq);
- 
--/***
-+/**
-  * of_irq_map_pci - Resolve the interrupt for a PCI device
-  * @pdev:	the device whose interrupt is to be resolved
-  * @out_irq:	structure of_irq filled by this function
+I think hosting the dtc, the dt attach tool, and pre-built dtb files for
+each platform in one spot would be a good idea.
+
+josh
