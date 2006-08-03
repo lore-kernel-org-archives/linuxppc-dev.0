@@ -1,14 +1,13 @@
-Return-Path: <wd@denx.de>
-To: "Li Yang" <LeoLi@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [RFC] New target 'cuImage' - compatibility uImage 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 04 Aug 2006 00:17:53 +0800."
-	<a0bc9bf80608030917y7fde2b75n6719dc675cad8cfe@mail.gmail.com>
-Date: Thu, 03 Aug 2006 22:07:53 +0200
-Sender: wd@denx.de
-Message-Id: <20060803200753.08F49353C18@atlas.denx.de>
+Return-Path: <msm@freescale.com>
+Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
+From: Matthew McClintock <msm@freescale.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20060803200043.0EF78352660@atlas.denx.de>
+References: <20060803200043.0EF78352660@atlas.denx.de>
+Content-Type: text/plain
+Date: Thu, 03 Aug 2006 15:12:18 -0500
+Message-Id: <1154635939.5094.37.camel@localhost>
+Mime-Version: 1.0
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,29 +18,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <a0bc9bf80608030917y7fde2b75n6719dc675cad8cfe@mail.gmail.com> you wrote:
->
-> Though it will need more space, the increase won't be too much as
-> wrapper and FDT should be very small.  The benefit is that kernel can
-> be extract directly to it's destination(address 0), rather than
-> extract to another place and then move it there.  A classical
-> time/space tradeoff.
+On Thu, 2006-08-03 at 22:00 +0200, Wolfgang Denk wrote:
+> > So to clarify. The current method has a zImage with a compressed
+> kernel
+> 
+> No, it does not. We do  not  use  zImage  (which  includes  bootstrap
+> wrapper  code).  U-Boot  uses  a plain stripped and compressed kernel
+> image, i. e. something like this:
+> 
+>         objcopy  -O binary vmlinux vmlinux.bin
+>         gzip -f -9 <vmlinux.bin >vmlinux.gz
+>         mkimage ... -C gzip -d vmlinux.gz uImage 
 
-You probably cannot expect a perfect solution when  retrofitting  new
-features  into  an  old  system  (this  we should keep in mind: we're
-talking about old U-Boot versions only, not  about  current  versions
-which will support DT).
+I'm referring to the zImage target as what the current method does. My
+changes would in no way effect the current method of booting, with the
+current method being a plain uImage target.
 
+The zImage can have a compressed kernel section or an uncompressed
+kernel section. The new 'cuImage' always has an uncompressed kernel
+section and which is packaged in the U-Boot image format.
 
-BTW: Another option is using U-Boot's multifile image format...
+You might refer to the code in my original email for clarification. This
+in no way effects the current method of booting, it simply adds a method
+to package the bootwrapper + kernel + fdt to pass to old version of
+U-Boot so they can use the new 'powerpc' kernels
 
-Best regards,
+As a side note, the final cuImage (which is a U-Boot image) can be
+either compressed or uncompressed. That is irrelevant. The major point
+is the kernel section within the cuImage is not compressed, and the
+final cuImage is in fact a U-Boot image which can be started with the
+'bootm' command from within U-Boot.
 
-Wolfgang Denk
+Phew!
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-That said, there may be good reasons for what you did beyond obsequi-
-ous sycophantic parody. Perhaps you might be so kind as to elucidate.
-         -- Tom Christiansen in <5ldjbm$jtk$1@csnews.cs.colorado.edu>
+-Matthew
