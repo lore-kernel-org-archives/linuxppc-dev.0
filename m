@@ -1,18 +1,18 @@
-Return-Path: <msm@freescale.com>
-Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
-From: Matthew McClintock <msm@freescale.com>
-To: Li Yang <LeoLi@freescale.com>
-In-Reply-To: <a0bc9bf80608030917y7fde2b75n6719dc675cad8cfe@mail.gmail.com>
-References: <20060802223302.9667135360F@atlas.denx.de>
-	<1154618945.5094.6.camel@localhost>
-	<a0bc9bf80608030856p45870487of2646c4f9393869b@mail.gmail.com>
-	<1154620934.5094.12.camel@localhost>
-	<a0bc9bf80608030917y7fde2b75n6719dc675cad8cfe@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 03 Aug 2006 11:24:06 -0500
-Message-Id: <1154622246.5094.18.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id AEEED67B52
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 02:30:45 +1000 (EST)
+In-Reply-To: <20060803135440.GB3075@smtp.west.cox.net>
+References: <3115459755319495cff4.1649760492.miltonm@bga.com>
+	<20060803135440.GB3075@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <438c15c2cff5b1bfd7f2585f97b4011d@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: RFC: Location for Device Tree Sources?
+Date: Thu, 3 Aug 2006 11:30:41 -0500
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, g.liakhovetski@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-08-04 at 00:17 +0800, Li Yang wrote:
-> 
-> Though it will need more space, the increase won't be too much as
-> wrapper and FDT should be very small.  The benefit is that kernel can
-> be extract directly to it's destination(address 0), rather than
-> extract to another place and then move it there.  A classical
-> time/space tradeoff.
-> 
+On Aug 3, 2006, at 8:54 AM, Tom Rini wrote:
+> On Thu, Aug 03, 2006 at 04:32:33AM -0500, Milton Miller wrote:
+>> I don't think we need to bump the dt version every time we make a tree
+>> content requirements change.  We need to bump when we add or
+>> change fields in the struct header, change internal layout, or change 
+>> how
+>> we pass  information through the tree.  Certianly not because someone
+>> left things out of their tree.
+>
+> But "content requirements change" isn't the same as "left things out of
+> their tree".  It sounds, and I haven't seen the changes, so I'm not
+> certain that the meaning behind a field changed.  Something like that
+> should change the dt version.  New fields aren't a problem.  Changing
+> existing fields meaning in incompatible ways is a problem.
+>
 
-I'm not sure that is correct. Let me walk through the steps to verify.
-
-1) Load cuImage at a load address 
-2) Extract zImage at an address and begin execution
-3) Copy kernel to load address and fixup DTB, etc.
-4) Start kernel execution
-
-versus...
-
-1) Load cuImage at a load address
-2) Copy zImage to an address and begin execution
-3) Extract kernel to load address and fixup DTB, etc.
-4) Start kernel execution
-
-There will always be that extra copy in there vs. just running the
-zImage itself. This is to maintain compatibility with older u-boots,
-which is the main point of this target.
-
-Am I missing something here?
-
--Matthew
+Agreed.   I too haven't looked at the change, but thought it was the
+former.
