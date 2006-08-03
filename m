@@ -1,20 +1,20 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BDF6467C36
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 06:47:32 +1000 (EST)
-Subject: Re: [PATCH] pSeries  hvsi char driver janitorial cleanup.
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20060803193643.GA10638@austin.ibm.com>
-References: <20060803193643.GA10638@austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 03 Aug 2006 22:06:53 +0100
-Message-Id: <1154639213.23655.124.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: akpm@osdl.org, hollisbl@us.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from mail54-fra-R.bigfish.com (mail-fra.bigfish.com [62.209.45.166])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C84AD67B63
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 07:17:38 +1000 (EST)
+Message-ID: <44D267EA.8050103@am.sony.com>
+Date: Thu, 03 Aug 2006 14:17:30 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] clean up pseries hcall interfaces
+References: <591B6A09961C354991CD653B274DC8C2023662CB@ussdixms03.am.sony.com>	<20060725144124.GA3769@krispykreme>	<44C68544.9000609@am.sony.com>
+	<17617.30304.366738.986854@cargo.ozlabs.ibm.com>
+In-Reply-To: <17617.30304.366738.986854@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ar Iau, 2006-08-03 am 14:36 -0500, ysgrifennodd Linas Vepstas:
-> Andrew, 
-> Please apply.
+Paul Mackerras wrote:
+> Geoff Levand writes:
 > 
-> A set of tty line discipline cleanup patches were introduced 
-> before the dawn of time, in kernel version 2.4.21. This patch
-> performs that cleanup for the hvsi driver.
+>> Change the scope of some pSeries routines now called through
+>> ppc_md to static.
+> 
+> With this I get:
+> 
+>   CC      arch/powerpc/platforms/pseries/lpar.o
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/pseries/lpar.c:273: error: static declaration of ‘pSeries_lpar_hpte_insert’ follows non-static declaration
+> include2/asm/mmu.h:254: error: previous declaration of ‘pSeries_lpar_hpte_insert’ was here
+> make[3]: *** [arch/powerpc/platforms/pseries/lpar.o] Error 1
 
-Actually its also a bug fix, tty->ldisc should be locked by refcounting
-and the helpers do this for you.
+OK, thanks for checking it.  As I mentioned in my original
+mail, it just looked like there could be some cleanup done,
+but I didn't test it.  I'll take a look at it some more and
+see if I can make a proper re-work.
 
-Acked-by: Alan Cox <alan@redhat.com>
+-Geoff
