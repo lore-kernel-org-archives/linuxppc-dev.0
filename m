@@ -1,18 +1,22 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id AEEED67B52
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 02:30:45 +1000 (EST)
-In-Reply-To: <20060803135440.GB3075@smtp.west.cox.net>
-References: <3115459755319495cff4.1649760492.miltonm@bga.com>
-	<20060803135440.GB3075@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <438c15c2cff5b1bfd7f2585f97b4011d@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: RFC: Location for Device Tree Sources?
-Date: Thu, 3 Aug 2006 11:30:41 -0500
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, g.liakhovetski@gmx.de
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1ED2C67B59
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 02:46:33 +1000 (EST)
+In-Reply-To: <44D21AFA.2010900@ru.mvista.com>
+References: <1154544503.19994.42.camel@cashmere.sps.mot.com>	<9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>	<1154549483.19994.46.camel@cashmere.sps.mot.com>	<BFD18279-7617-4F50-BB22-21A46C65FD50@kernel.crashing.org>	<1154550970.19994.57.camel@cashmere.sps.mot.com>
+	<F4FA8DDC-0490-4792-8B9B-89D3F0AECF26@kernel.crashing.org>
+	<44D21AFA.2010900@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4644A4A2-0A49-45A8-AAFD-67647AB44EB8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
+Date: Thu, 3 Aug 2006 11:46:33 -0500
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Aug 3, 2006, at 8:54 AM, Tom Rini wrote:
-> On Thu, Aug 03, 2006 at 04:32:33AM -0500, Milton Miller wrote:
->> I don't think we need to bump the dt version every time we make a tree
->> content requirements change.  We need to bump when we add or
->> change fields in the struct header, change internal layout, or change 
->> how
->> we pass  information through the tree.  Certianly not because someone
->> left things out of their tree.
->
-> But "content requirements change" isn't the same as "left things out of
-> their tree".  It sounds, and I haven't seen the changes, so I'm not
-> certain that the meaning behind a field changed.  Something like that
-> should change the dt version.  New fields aren't a problem.  Changing
-> existing fields meaning in incompatible ways is a problem.
->
 
-Agreed.   I too haven't looked at the change, but thought it was the
-former.
+On Aug 3, 2006, at 10:49 AM, Sergei Shtylyov wrote:
+
+> Hello.
+>
+> Kumar Gala wrote:
+>> Here is the code modification to fsl_soc.c, I'm sure we can get  
+>> this  fixed push into 2.6.18 if desired.
+>
+>> if(mac_addr = get_property(np, "address", NULL))
+>>    memcpy(gfar_data.mac_addr, mac_addr, 6);
+>> if(mac_addr = get_property(np, "local-mac-address", NULL);
+>>    memcpy(gfar_data.mac_addr, mac_addr, 6);
+>
+>    BTW, doesn't it also have sense to convert gianfar.c to using  
+> of_device instead of platform_device?
+
+We can't do that until all consumers from arch/ppc are gone.
+
+- k
