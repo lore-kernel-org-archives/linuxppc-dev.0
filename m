@@ -1,16 +1,19 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 94F6967C1A
+Return-Path: <jean-baptiste.maneyrol@teamlog.com>
+Received: from me-ml2.teamlog.fr (smtp-grenoble1.teamlog.com [194.2.68.40])
+	by ozlabs.org (Postfix) with ESMTP id 42653679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Aug 2006 19:46:12 +1000 (EST)
-Date: Thu, 3 Aug 2006 02:48:21 -0500
-From: Milton Miller <miltonm@bga.com>
-To: grant.likely@secretlab.ca, cthomas@soneticom.com,
-Subject: Re: Booting Linux Kernel without bootloader
-Message-Id: <311545913012eb141f24.1102520059.miltonm@bga.com>
+	Thu,  3 Aug 2006 22:08:25 +1000 (EST)
+Received: from teamlog.com
+	by grenoble.teamlog.com (x.x.x/x.x.x) with ESMTP        
+	id k73BG2dI019529
+	for <linuxppc-embedded@ozlabs.org>; Thu, 3 Aug 2006 13:16:05 +0200
+Subject: IBM OCP GPIO driver for linux 2.6
+From: Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@teamlog.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 03 Aug 2006 13:15:51 +0200
+Message-Id: <1154603751.17247.10.camel@jb-portable>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,43 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue Aug  1 2006 11:17:41 PM CDT,  Grant Likely  wrote:
-> On 7/25/06, Clint Thomas <cthomas@soneticom.com> wrote:
-> >
-> > Basically, the system I want linux running on does not require the
-> > initialization of hardware that U-boot provides, or at least it does not
-> > need it to boot the linux kernel. I want to load an uncompressed linux
-> > kernel into memory and start the execution of the kernel, without using any
-> > kind of bootloader. Is this possible? Or does linux need some kind of
-> > firmware or other software to tell it to start executing? Thanks for any
-> > info you might have.
-> 
-> Loading a kernel into memory and starting execution *is* a boot loader.  :)
+Hello everyone, I'm a newbie here!
 
-If it's running on the cpu, then I agreee.   But he didn't say how he was loading
-the image into memory, and if it is via an external agent then I would not
-necessarly call that a boot loader, altough it is performing those tasks. 
-Actually, that may be too broad.  Is kexec a boot loader?
+I'm porting a custom PPC 405GP card based on a Walnut from Montavista
+Linux 3.0 (kernel 2.4.18) to linux 2.6, and I was wondering if there is
+a port of the IBM OCP GPIO driver (a char driver providing
+device /dev/gpio, major 10 minor 185). The driver was written by Armin
+Kuster, and it doesn't exist in the stock kernel 2.6.17.7.
 
-> 
-> You could use the bootwrapper that is in the kernel source tree
-> (zImage).  If a zImage's entry point is at the execution entry point,
-> then it will start the Linux kernel correctly.  However, it is still a
-> compressed image.
-> 
+Let me known if a port exists, or if there is a new way of accessing the
+PPC 405GP GPIO under linux 2.6. Otherwise, I will port this driver using
+the IBM IIC driver as an example (for the things about OCP). In this
+case, do anybody know where I can have the last version of this driver
+(I have v 1.7 (07/25/02)) ? 
 
-The boot wrapper is a reference implementation, not a required piece of the
-boot sequence.  As I stated in my previous post, the kernel entry conditions
-are documted and loading the vmlinux raw is reasonable, asssuming that
-the other conditions can be met (registers and device  treee, and maybe
-initrd).
+Thanks for all!
 
-> If you *really* need an uncompressed image, I would start with the
-> bootwrapper and hack it to work with an non-gzipped kernel image.
-> However, why do you want to do it this way?  You probably won't gain
-> much in boot time and it will be more difficult to maintain.
 
-Actually, the code is aready there to just copy anything inthe kernel
-section that is without the gzip header.
-
-milton
+Jean-Baptiste Maneyrol
+Teamlog - France
