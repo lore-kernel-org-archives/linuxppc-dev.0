@@ -1,15 +1,16 @@
 Return-Path: <mgreer@mvista.com>
-Date: Thu, 3 Aug 2006 12:26:29 -0700
+Date: Thu, 3 Aug 2006 12:37:49 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-Message-ID: <20060803192629.GD25251@mag.az.mvista.com>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-	<17616.12251.339657.215571@cargo.ozlabs.ibm.com>
-	<17616.17129.964122.125259@cargo.ozlabs.ibm.com>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
+Message-ID: <20060803193749.GE25251@mag.az.mvista.com>
+References: <20060802223302.9667135360F@atlas.denx.de>
+	<1154618945.5094.6.camel@localhost>
+	<a0bc9bf80608030856p45870487of2646c4f9393869b@mail.gmail.com>
+	<1154620934.5094.12.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17616.17129.964122.125259@cargo.ozlabs.ibm.com>
+In-Reply-To: <1154620934.5094.12.camel@localhost>
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,35 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 02, 2006 at 04:15:05PM +1000, Paul Mackerras wrote:
-> I wrote:
+On Thu, Aug 03, 2006 at 11:02:14AM -0500, Matthew McClintock wrote:
+> On Thu, 2006-08-03 at 23:56 +0800, Li Yang wrote:
+> > 
+> > If U-boot supports uncompressed kernel image in uImage, I think it
+> > will be better to use this scheme:
+> > 
+> > u-boot header + wrapper + FDT + compressed kernel image
+> > 
+> > As kernel image will be uncompressed to its loading address directly.
+> > While in your proposal, it needs to be moved one more time.
+> > 
 > 
-> > The ops structure seems like a reasonable concept, but I question
-> > whether we need to have platform_ops separate from fw_ops, since the
-> > firmware is essentially part of the implementation of the platform.
-> > Also I don't see why we need to do a double indirection to get to each
-> > ops function.
-> 
-> Thinking about this a bit more, why do we need the indirect function
-> calls at all?  Do we ever want to be able to choose (e.g.) one of
-> several possible console implementations at runtime?  Don't we know at
-> compile time which one we will be using, and thus can't we use the
-> linker to make the necessary linkages?
+> This is an option. But, I do not see a reason why you would not still
+> opt to compress everything. Especially since it is already working.
+> Comments anyone?
 
-Hi Paul,
+Yes...sort of.  I believe that one of the goals is to be able to tack
+an fdt onto a zImage/uImage/whatever long after that image has been
+built.  That would be simpler if the fdt wasn't compressed. 
 
-I realize that I didn't really answer your question.  Its at least
-possible that the console driver could not be known at link time.
+A proper tool can handle this, of course, but it would be simpler and
+not a huge waste of space to keep the fdt uncompressed.
 
-An example I used in another email is a platform that has 4 serial
-ports, 2-16550 and 2-mpsc, say.  The /chosen/linux,stdout-path could
-pick any of the four so you would need to compile in a low-level
-serial driver for both and hook the correct one up at runtime.
-
-Same could be said for a serial vs. video console.
-
-At least for now, I'd like to keep the flexibility.  Once things
-settle down we can take another look to see what was is really
-necessary and what's overkill.
+But, as long as we have tools to view and modify the fdt that in the
+clump of bits, I don't really care that much.
 
 Mark
