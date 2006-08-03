@@ -1,16 +1,22 @@
-Return-Path: <mjoshi_blr@yahoo.com>
-Received: from web34704.mail.mud.yahoo.com (web34704.mail.mud.yahoo.com
-	[209.191.68.153]) by ozlabs.org (Postfix) with SMTP id 4E84F67B95
+Return-Path: <edb@datadesigncorp.net>
+Received: from pyramid-04.kattare.com (pyramid-04.kattare.com [65.212.180.79])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.kattare.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2E07967B52
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Aug 2006 09:09:32 +1000 (EST)
-Message-ID: <20060803230931.28100.qmail@web34704.mail.mud.yahoo.com>
-Date: Thu, 3 Aug 2006 16:09:31 -0700 (PDT)
-From: Manish Joshi <mjoshi_blr@yahoo.com>
-Subject: Re: DMA Driver on MPC8260
-To: jimmy liu <jimmyzhmliu@yahoo.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <20060803213507.93830.qmail@web53109.mail.yahoo.com>
+	Fri,  4 Aug 2006 01:40:15 +1000 (EST)
+Message-ID: <44D20980.3030702@datadesigncorp.net>
+Date: Thu, 03 Aug 2006 10:34:40 -0400
+From: Edward Bockhoefer <edb@datadesigncorp.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-960873631-1154646571=:27321"
+To: dhlii@comcast.net, ammubhai@gmail.com, linuxppc-embedded@ozlabs.org
+Subject: Re: Xilinx TEMAC
+References: <44CE4C1D.6050103@datadesigncorp.net>
+	<44CE5EA5.3030306@gmail.com>	<44CF89B5.7080906@datadesigncorp.net>
+	<44D07B38.5060700@gmail.com> <44D1991A.2070208@dlasys.net>
+In-Reply-To: <44D1991A.2070208@dlasys.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: edb@datadesigncorp.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,81 +27,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-960873631-1154646571=:27321
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Thank you for the reply David,
+I have started the montavista 10/100 enet port from the xilinx edk 
+generated 2.4 driver to the 2.6 driver. Unfortunately, I can't post the 
+driver port publicly because it's not GLP'd, as far as I know. We only 
+needed a 10/100 mac, so we didn't bother with a TEMAC. I got the obp and 
+enet directories to compile but I crash on link with an undefined reference:
 
-No idea about sample code.
-  But I think programming DMA itself is straightforward as mentioned below.
-  Just ensure to use uncached physical memory for src/dest addresses. 
-  Then you can program your interrupt to receive the DMA completion notification.
-   
-  There are couple of registers like ESR, DMASR etc which you can check in case you see any issues after programming your DMA config registers which are little endian.
+**********************************************
+[root@bockhoefer linux-2.6.17.6]# make
+  CHK     include/linux/version.h
+  CHK     include/linux/compile.h
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+drivers/built-in.o(.init.text+0x246c): In function `fbcon_bmove':
+drivers/video/console/fbcon.c:1887: undefined reference to `init_etherdev'
+make: *** [.tmp_vmlinux1] Error 1
+[root@bockhoefer linux-2.6.17.6]#     
 
-jimmy liu <jimmyzhmliu@yahoo.com> wrote:
-  You are 100% right. MPC8260 has 4 DMA channels which
-can be programmed independently. Could I find some
-sample code from some place?
+*********************************************
+I will work on this more today. If you want to send me your TEMAC code, 
+please do so. I can always use the reference.
 
---- Manish Joshi wrote:
+-- 
+Best Regards,
 
-> What kind of information you are looking for?
-> Specific questions always help.
-> General details you can find in the user manual
-> itself. 
-> 
-> Not sure, but I think MPC8260 has 4 DMA channels
-> which can be programmed independently. You need to
-> set the mode registers and then the src/dest addr
-> registers and byte count and finally turn on the
-> start bit. 
-> 
-> 
-> jimmy liu wrote:
-> I am working on PCI transactions between MPC8260
-> and
-> FPGA. Could somebody give me some information about
-> the PCI DMA Driver on MPC8260?
-> 
-> Thanks.
-> 
-> 
-> __________________________________________________
-> Do You Yahoo!?
-> Tired of spam? Yahoo! Mail has the best spam
-> protection around 
-> http://mail.yahoo.com 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
+Edward Bockhoefer
+Data Design Corporation
+7851-A Beechcraft Ave.
+Gaithersburg, MD 20879
+Ph: 301-670-1157 ext 36
+Fax: 301-926-6441 
+
+
+
+David H. Lynch Jr. wrote:
+
+>Ameet Patil wrote:
+>  
 >
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-> 
-> ---------------------------------
-> Want to be your own boss? Learn how on Yahoo! Small
-> Business. 
-
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam? Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
-
-
- 				
----------------------------------
-Want to be your own boss? Learn how on  Yahoo! Small Business. 
---0-960873631-1154646571=:27321
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div>No idea about sample code.</div>  <div>But I think programming DMA itself is straightforward as mentioned below.</div>  <div>Just ensure to use uncached physical memory for src/dest addresses. </div>  <div>Then you can program your interrupt to receive the DMA completion notification.</div>  <div>&nbsp;</div>  <div>There are couple of registers like ESR, DMASR etc which you can check in case you see any issues after programming your DMA config registers which are little endian.<BR><BR><B><I>jimmy liu &lt;jimmyzhmliu@yahoo.com&gt;</I></B> wrote:</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">You are 100% right. MPC8260 has 4 DMA channels which<BR>can be programmed independently. Could I find some<BR>sample code from some place?<BR><BR>--- Manish Joshi <MJOSHI_BLR@YAHOO.COM>wrote:<BR><BR>&gt; What kind of information you are looking for?<BR>&gt; Specific questions always help.<BR>&gt; General details you can
- find in the user manual<BR>&gt; itself. <BR>&gt; <BR>&gt; Not sure, but I think MPC8260 has 4 DMA channels<BR>&gt; which can be programmed independently. You need to<BR>&gt; set the mode registers and then the src/dest addr<BR>&gt; registers and byte count and finally turn on the<BR>&gt; start bit. <BR>&gt; <BR>&gt; <BR>&gt; jimmy liu <JIMMYZHMLIU@YAHOO.COM>wrote:<BR>&gt; I am working on PCI transactions between MPC8260<BR>&gt; and<BR>&gt; FPGA. Could somebody give me some information about<BR>&gt; the PCI DMA Driver on MPC8260?<BR>&gt; <BR>&gt; Thanks.<BR>&gt; <BR>&gt; <BR>&gt; __________________________________________________<BR>&gt; Do You Yahoo!?<BR>&gt; Tired of spam? Yahoo! Mail has the best spam<BR>&gt; protection around <BR>&gt; http://mail.yahoo.com <BR>&gt; _______________________________________________<BR>&gt; Linuxppc-embedded mailing list<BR>&gt; Linuxppc-embedded@ozlabs.org<BR>&gt;<BR>https://ozlabs.org/mailman/listinfo/linuxppc-embedded<BR>&gt; <BR>&gt;
- <BR>&gt; <BR>&gt; ---------------------------------<BR>&gt; Want to be your own boss? Learn how on Yahoo! Small<BR>&gt; Business. <BR><BR><BR>__________________________________________________<BR>Do You Yahoo!?<BR>Tired of spam? Yahoo! Mail has the best spam protection around <BR>http://mail.yahoo.com <BR></BLOCKQUOTE><BR><p>&#32;
-	
-	
-		<hr size=1>Want to be your own boss? Learn how on <a href="http://us.rd.yahoo.com/evt=41244/*http://smallbusiness.yahoo.com/r-index"> Yahoo! Small Business.</a> 
-
---0-960873631-1154646571=:27321--
+>> > Did you happen to get an Ethernet mac going on the virtex2 or
+>> > virtex4 with the 2.6 kernel?
+>>
+>>Nope! :-(
+>>Rumour has it that Montavista is soon going to release the source for 
+>>2.6 kernel to run on Xilinx platforms.
+>>
+>>  
+>>    
+>>
+>    I have 2 different TEMAC's working under 2.6 with a V4.
+>
+>    The MontaVista driver that has been posted on the list that I think
+>is from MontaVista for the PLB TEMAC with very minor modifications to
+>get it to work at speeds other than GigaBit.
+>
+>    A driver I wrote for the LocalLink TEMAC that works limpingly. I
+>have been unable to figure out how to get a receive interrupt from the
+>LocalLink TEMAC so receives are polled and performance is poor.
+>    I have pretty much abandoned work on it  - my client wants the
+>smallest possible FPGA footprint BUTanother OS I am porting requires
+>interrupt driven  IO and we are looking for a single minimal hardware
+>implimentation for all platforms.
+>
+>    Anyway, if anyone wants the LL TEMAC in its current state I can post it.
+>    Currently it sends fine. It drops about 50% of all received packets
+>- but that is probably debugging overhead and poll rate tuning.
+>   
+>
+>
+>
+>
+>  
+>
