@@ -1,21 +1,21 @@
 Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 73A7F67B7A
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 07:30:07 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k73LU69j001280
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 14:30:06 -0700 (MST)
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5B04467B86
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 07:32:27 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k73LWQI6003718
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 14:32:26 -0700 (MST)
 Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k73LU5gV002243
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 16:30:05 -0500 (CDT)
-Subject: [PATCH] Convert to mac-address for ethernet MAC address data.
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k73LWOBx019175
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 16:32:24 -0500 (CDT)
+Subject: [PATCH Ver 2] Add MPC8641 HPCN Device Tree Source file.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1154640338.26770.34.camel@cashmere.sps.mot.com>
+Message-Id: <1154640477.26770.38.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Thu, 03 Aug 2006 16:25:38 -0500
+Date: Thu, 03 Aug 2006 16:27:57 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,90 +25,363 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-onvert to mac-address for ethernet MAC address data.
 
-Also accept "local-mac-address".  However the old "address"
-is now obsolete, but accepted for backwards compatibility.
-It should be removed after all device trees have been
-converted to use "mac-address".
+Subject: [PATCH] Add MPC8641 HPCN Device Tree Source file.
 
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   10 +++++-----
- arch/powerpc/sysdev/fsl_soc.c                |   12 ++++++++++--
- 2 files changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 3c62e66..8c48b8a 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1196,7 +1196,7 @@ platforms are moved over to use the flat
-     - model : Model of the device.  Can be "TSEC", "eTSEC", or "FEC"
-     - compatible : Should be "gianfar"
-     - reg : Offset and length of the register set for the device
--    - address : List of bytes representing the ethernet address of
-+    - mac-address : List of bytes representing the ethernet address of
-       this controller
-     - interrupts : <a b> where a is the interrupt number and b is a
-       field that represents an encoding of the sense and level
-@@ -1216,7 +1216,7 @@ platforms are moved over to use the flat
- 		model = "TSEC";
- 		compatible = "gianfar";
- 		reg = <24000 1000>;
--		address = [ 00 E0 0C 00 73 00 ];
-+		mac-address = [ 00 E0 0C 00 73 00 ];
- 		interrupts = <d 3 e 3 12 3>;
- 		interrupt-parent = <40000>;
- 		phy-handle = <2452000>
-@@ -1498,7 +1498,7 @@ not necessary as they are usually the sa
- 			model = "TSEC";
- 			compatible = "gianfar";
- 			reg = <24000 1000>;
--			address = [ 00 E0 0C 00 73 00 ];
-+			mac-address = [ 00 E0 0C 00 73 00 ];
- 			interrupts = <d 3 e 3 12 3>;
- 			interrupt-parent = <40000>;
- 			phy-handle = <2452000>;
-@@ -1511,7 +1511,7 @@ not necessary as they are usually the sa
- 			model = "TSEC";
- 			compatible = "gianfar";
- 			reg = <25000 1000>;
--			address = [ 00 E0 0C 00 73 01 ];
-+			mac-address = [ 00 E0 0C 00 73 01 ];
- 			interrupts = <13 3 14 3 18 3>;
- 			interrupt-parent = <40000>;
- 			phy-handle = <2452001>;
-@@ -1524,7 +1524,7 @@ not necessary as they are usually the sa
- 			model = "FEC";
- 			compatible = "gianfar";
- 			reg = <26000 1000>;
--			address = [ 00 E0 0C 00 73 02 ];
-+			mac-address = [ 00 E0 0C 00 73 02 ];
- 			interrupts = <19 3>;
- 			interrupt-parent = <40000>;
- 			phy-handle = <2452002>;
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 4a6aa64..92ba378 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -166,8 +166,16 @@ static int __init gfar_of_init(void)
- 			goto err;
- 		}
- 
--		mac_addr = get_property(np, "address", NULL);
--		memcpy(gfar_data.mac_addr, mac_addr, 6);
-+		mac_addr = get_property(np, "local-mac-address", NULL);
-+		if (mac_addr == NULL)
-+			mac_addr = get_property(np, "mac-address", NULL);
-+		if (mac_addr == NULL) {
-+			/* Obsolete */
-+			mac_addr = get_property(np, "address", NULL);
-+		}
+Uses "mac-address" instead of "address" in ethernet nodes.
+
+Ignore my previous version of this patch.
+
+
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts |  338 ++++++++++++++++++++++++++++++++
+ 1 files changed, 338 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+new file mode 100644
+index 0000000..e832a88
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -0,0 +1,338 @@
++/*
++ * MPC8641 HPCN Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+		if (mac_addr)
-+			memcpy(gfar_data.mac_addr, mac_addr, 6);
- 
- 		if (model && !strcasecmp(model, "TSEC"))
- 			gfar_data.device_flags =
++
++/ {
++	model = "MPC8641HPCN";
++	compatible = "mpc86xx";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#cpus = <2>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8641@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	// 33 MHz, from uboot
++			bus-frequency = <0>;		// From uboot
++			clock-frequency = <0>;		// From uboot
++			32-bit;
++			linux,boot-cpu;
++		};
++		PowerPC,8641@1 {
++			device_type = "cpu";
++			reg = <1>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	// 33 MHz, from uboot
++			bus-frequency = <0>;		// From uboot
++			clock-frequency = <0>;		// From uboot
++			32-bit;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 40000000>;	// 1G at 0x0
++	};
++
++	soc8641@f8000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 f8000000 00100000>;
++		reg = <f8000000 00100000>;	// CCSRBAR 1M
++		bus-frequency = <0>;
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <2b 2>;
++			interrupt-parent = <40000>;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3100 100>;
++			interrupts = <2b 2>;
++			interrupt-parent = <40000>;
++			dfsrr;
++		};
++
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			linux,phandle = <24520>;
++			ethernet-phy@0 {
++				linux,phandle = <2452000>;
++				interrupt-parent = <40000>;
++				interrupts = <4a 1>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@1 {
++				linux,phandle = <2452001>;
++				interrupt-parent = <40000>;
++				interrupts = <4a 1>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@2 {
++				linux,phandle = <2452002>;
++				interrupt-parent = <40000>;
++				interrupts = <4a 1>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@3 {
++				linux,phandle = <2452003>;
++				interrupt-parent = <40000>;
++				interrupts = <4a 1>;
++				reg = <3>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			mac-address = [ 00 E0 0C 00 73 00 ];
++			interrupts = <1d 2 1e 2 22 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452000>;
++		};
++
++		ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			mac-address = [ 00 E0 0C 00 73 01 ];
++			interrupts = <23 2 24 2 28 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++		
++		ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <26000 1000>;
++			mac-address = [ 00 E0 0C 00 02 FD ];
++			interrupts = <1F 2 20 2 21 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452002>;
++		};
++
++		ethernet@27000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <27000 1000>;
++			mac-address = [ 00 E0 0C 00 03 FD ];
++			interrupts = <25 2 26 2 27 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452003>;
++		};
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;
++			clock-frequency = <0>;
++			interrupts = <2a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;
++			clock-frequency = <0>;
++			interrupts = <1c 2>;
++			interrupt-parent = <40000>;
++		};
++
++		pci@8000 {
++			compatible = "86xx";
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8000 1000>;
++			bus-range = <0 fe>;
++			ranges = <02000000 0 80000000 80000000 0 20000000
++				  01000000 0 00000000 e2000000 0 00100000>;
++			clock-frequency = <1fca055>;
++			interrupt-parent = <40000>;
++			interrupts = <18 2>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++				/* IDSEL 0x11 */
++				8800 0 0 1 4d0 3 2
++				8800 0 0 2 4d0 4 2
++				8800 0 0 3 4d0 5 2
++				8800 0 0 4 4d0 6 2
++
++				/* IDSEL 0x12 */
++				9000 0 0 1 4d0 4 2
++				9000 0 0 2 4d0 5 2
++				9000 0 0 3 4d0 6 2
++				9000 0 0 4 4d0 3 2
++
++				/* IDSEL 0x13 */
++				9800 0 0 1 4d0 0 0
++				9800 0 0 2 4d0 0 0
++				9800 0 0 3 4d0 0 0
++				9800 0 0 4 4d0 0 0
++
++				/* IDSEL 0x14 */
++				a000 0 0 1 4d0 0 0
++				a000 0 0 2 4d0 0 0
++				a000 0 0 3 4d0 0 0
++				a000 0 0 4 4d0 0 0
++
++				/* IDSEL 0x15 */
++				a800 0 0 1 4d0 0 0
++				a800 0 0 2 4d0 0 0
++				a800 0 0 3 4d0 0 0
++				a800 0 0 4 4d0 0 0
++
++				/* IDSEL 0x16 */
++				b000 0 0 1 4d0 0 0
++				b000 0 0 2 4d0 0 0
++				b000 0 0 3 4d0 0 0
++				b000 0 0 4 4d0 0 0
++
++				/* IDSEL 0x17 */
++				b800 0 0 1 4d0 0 0
++				b800 0 0 2 4d0 0 0
++				b800 0 0 3 4d0 0 0
++				b800 0 0 4 4d0 0 0
++
++				/* IDSEL 0x18 */
++				c000 0 0 1 4d0 0 0
++				c000 0 0 2 4d0 0 0
++				c000 0 0 3 4d0 0 0
++				c000 0 0 4 4d0 0 0
++
++				/* IDSEL 0x19 */
++				c800 0 0 1 4d0 0 0
++				c800 0 0 2 4d0 0 0
++				c800 0 0 3 4d0 0 0
++				c800 0 0 4 4d0 0 0
++
++				/* IDSEL 0x1a */
++				d000 0 0 1 4d0 6 2
++				d000 0 0 2 4d0 3 2
++				d000 0 0 3 4d0 4 2
++				d000 0 0 4 4d0 5 2
++
++
++				/* IDSEL 0x1b */
++				d800 0 0 1 4d0 5 2
++				d800 0 0 2 4d0 0 0
++				d800 0 0 3 4d0 0 0
++				d800 0 0 4 4d0 0 0
++
++				/* IDSEL 0x1c */
++				e000 0 0 1 4d0 9 2
++				e000 0 0 2 4d0 a 2
++				e000 0 0 3 4d0 c 2
++				e000 0 0 4 4d0 7 2
++
++				/* IDSEL 0x1d */
++				e800 0 0 1 4d0 9 2
++				e800 0 0 2 4d0 a 2
++				e800 0 0 3 4d0 b 2
++				e800 0 0 4 4d0 0 0
++
++				/* IDSEL 0x1e */
++				f000 0 0 1 4d0 c 2
++				f000 0 0 2 4d0 0 0
++				f000 0 0 3 4d0 0 0
++				f000 0 0 4 4d0 0 0
++
++				/* IDSEL 0x1f */
++				f800 0 0 1 4d0 6 2
++				f800 0 0 2 4d0 0 0
++				f800 0 0 3 4d0 0 0
++				f800 0 0 4 4d0 0 0
++				>;
++			i8259@4d0 {
++				clock-frequency = <0>;
++				interrupt-controller;
++				device_type = "interrupt-controller";
++				#address-cells = <0>;
++				#interrupt-cells = <2>;
++				built-in;
++				compatible = "chrp,iic";
++                	        big-endian;
++				interrupts = <49 2>;
++				interrupt-parent = <40000>;
++			};
++
++		};
++		pic@40000 {
++			linux,phandle = <40000>;
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			built-in;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                        big-endian;
++			interrupts = <
++				10 2 11 2 12 2 13 2
++				14 2 15 2 16 2 17 2
++				18 2 19 2 1a 2 1b 2
++				1c 2 1d 2 1e 2 1f 2
++				20 2 21 2 22 2 23 2
++				24 2 25 2 26 2 27 2
++				28 2 29 2 2a 2 2b 2
++				2c 2 2d 2 2e 2 2f 2
++				30 2 31 2 32 2 33 2
++				34 2 35 2 36 2 37 2
++				38 2 39 2 2a 2 3b 2
++				3c 2 3d 2 3e 2 3f 2
++				48 1 49 2 4a 1
++				>;
++			interrupt-parent = <40000>;
++		};
++	};
++};
 -- 
 2006_06_07.01.gittree_pull-dirty
