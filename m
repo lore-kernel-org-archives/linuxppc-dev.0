@@ -1,18 +1,16 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D255167A2E
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 01:48:01 +1000 (EST)
-Message-ID: <44D21AFA.2010900@ru.mvista.com>
-Date: Thu, 03 Aug 2006 19:49:14 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <linuxppcleo@gmail.com>
+Message-ID: <a0bc9bf80608030856p45870487of2646c4f9393869b@mail.gmail.com>
+Date: Thu, 3 Aug 2006 23:56:52 +0800
+From: "Li Yang" <LeoLi@freescale.com>
+Sender: linuxppcleo@gmail.com
+To: "Matthew McClintock" <msm@freescale.com>
+Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
+In-Reply-To: <1154618945.5094.6.camel@localhost>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
-References: <1154544503.19994.42.camel@cashmere.sps.mot.com>	<9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>	<1154549483.19994.46.camel@cashmere.sps.mot.com>	<BFD18279-7617-4F50-BB22-21A46C65FD50@kernel.crashing.org>	<1154550970.19994.57.camel@cashmere.sps.mot.com>
-	<F4FA8DDC-0490-4792-8B9B-89D3F0AECF26@kernel.crashing.org>
-In-Reply-To: <F4FA8DDC-0490-4792-8B9B-89D3F0AECF26@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20060802223302.9667135360F@atlas.denx.de>
+	<1154618945.5094.6.camel@localhost>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On 8/3/06, Matthew McClintock <msm@freescale.com> wrote:
+> On Thu, 2006-08-03 at 00:33 +0200, Wolfgang Denk wrote:
+> >
+> > In my understanding, an "uImage" file is a  image  consisting  of  an
+> > U-Boot  header (64 bytes) followed by an (compressed or uncompressed)
+> > Linux kernel image.
+>
+> Yes
 
-Kumar Gala wrote:
-> Here is the code modification to fsl_soc.c, I'm sure we can get this  
-> fixed push into 2.6.18 if desired.
+If U-boot supports uncompressed kernel image in uImage, I think it
+will be better to use this scheme:
 
-> if(mac_addr = get_property(np, "address", NULL))
->    memcpy(gfar_data.mac_addr, mac_addr, 6);
-> 
-> if(mac_addr = get_property(np, "local-mac-address", NULL);
->    memcpy(gfar_data.mac_addr, mac_addr, 6);
+u-boot header + wrapper + FDT + compressed kernel image
 
-    BTW, doesn't it also have sense to convert gianfar.c to using of_device 
-instead of platform_device?
+As kernel image will be uncompressed to its loading address directly.
+While in your proposal, it needs to be moved one more time.
 
-WBR, Sergei
+>
+> >
+> > So what do you mean by "compressed uImage"? If you take  an  "uImage"
+> > file  according  to  above definition and compress it, it will not be
+> > recognized by U-Boot.
+>
+> I mean that the data contained within the uImage is compressed. In this
+> case where the uImage data is compressed I choose to skip compressing
+> the kernel section in the zImage (because have it compressed twice was
+> wasteful)
+>
+> >
+> > And why do you need a second, "UNcompressed  kernel  image"  in  your
+> > setup?  I  must  be missing something, because including *two* kernel
+> > images makes no sense to me, and I don't  understand  why  you  would
+> > want to insist of an "UNcompressed" image...
+>
+> So to clarify. The current method has a zImage with a compressed kernel
+> section where the actual kernel lives. The zImage uncompressed this code
+> to the kernel load address. The 'cuImage' would be packaged in a uImage
+> with the entire zImage compressed, except in this case the kernel
+> section would not be compressed (to avoid have a compressed image within
+> a compressed image)
+>
+> -Matthew
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
