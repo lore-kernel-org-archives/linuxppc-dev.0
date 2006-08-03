@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1ED2C67B59
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 02:46:33 +1000 (EST)
-In-Reply-To: <44D21AFA.2010900@ru.mvista.com>
-References: <1154544503.19994.42.camel@cashmere.sps.mot.com>	<9C1B15CC-6984-433D-8A1E-F856567B1AD2@kernel.crashing.org>	<1154549483.19994.46.camel@cashmere.sps.mot.com>	<BFD18279-7617-4F50-BB22-21A46C65FD50@kernel.crashing.org>	<1154550970.19994.57.camel@cashmere.sps.mot.com>
-	<F4FA8DDC-0490-4792-8B9B-89D3F0AECF26@kernel.crashing.org>
-	<44D21AFA.2010900@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4644A4A2-0A49-45A8-AAFD-67647AB44EB8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add MPC8641 HPCN Device Tree Source file.
-Date: Thu, 3 Aug 2006 11:46:33 -0500
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <linuxppcleo@gmail.com>
+Message-ID: <a0bc9bf80608030947n3a73590epf299db09b7227b47@mail.gmail.com>
+Date: Fri, 4 Aug 2006 00:47:00 +0800
+From: "Li Yang" <LeoLi@freescale.com>
+Sender: linuxppcleo@gmail.com
+To: "Matthew McClintock" <msm@freescale.com>
+Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
+In-Reply-To: <1154622246.5094.18.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20060802223302.9667135360F@atlas.denx.de>
+	<1154618945.5094.6.camel@localhost>
+	<a0bc9bf80608030856p45870487of2646c4f9393869b@mail.gmail.com>
+	<1154620934.5094.12.camel@localhost>
+	<a0bc9bf80608030917y7fde2b75n6719dc675cad8cfe@mail.gmail.com>
+	<1154622246.5094.18.camel@localhost>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 3, 2006, at 10:49 AM, Sergei Shtylyov wrote:
-
-> Hello.
+On 8/4/06, Matthew McClintock <msm@freescale.com> wrote:
+> On Fri, 2006-08-04 at 00:17 +0800, Li Yang wrote:
+> >
+> > Though it will need more space, the increase won't be too much as
+> > wrapper and FDT should be very small.  The benefit is that kernel can
+> > be extract directly to it's destination(address 0), rather than
+> > extract to another place and then move it there.  A classical
+> > time/space tradeoff.
+> >
 >
-> Kumar Gala wrote:
->> Here is the code modification to fsl_soc.c, I'm sure we can get  
->> this  fixed push into 2.6.18 if desired.
+> I'm not sure that is correct. Let me walk through the steps to verify.
 >
->> if(mac_addr = get_property(np, "address", NULL))
->>    memcpy(gfar_data.mac_addr, mac_addr, 6);
->> if(mac_addr = get_property(np, "local-mac-address", NULL);
->>    memcpy(gfar_data.mac_addr, mac_addr, 6);
+> 1) Load cuImage at a load address
+> 2) Extract zImage at an address and begin execution
+> 3) Copy kernel to load address and fixup DTB, etc.
+> 4) Start kernel execution
 >
->    BTW, doesn't it also have sense to convert gianfar.c to using  
-> of_device instead of platform_device?
+> versus...
+>
+> 1) Load cuImage at a load address
+> 2) Copy zImage to an address and begin execution
 
-We can't do that until all consumers from arch/ppc are gone.
+Don't know if it's possible to by-pass this by setting in u-boot
+header.  If not, please ignore my suggestion.
 
-- k
+- Leo
+> 3) Extract kernel to load address and fixup DTB, etc.
+> 4) Start kernel execution
+>
+> There will always be that extra copy in there vs. just running the
+> zImage itself. This is to maintain compatibility with older u-boots,
+> which is the main point of this target.
+>
+> Am I missing something here?
+>
+> -Matthew
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
