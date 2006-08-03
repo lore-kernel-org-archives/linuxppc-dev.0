@@ -1,14 +1,20 @@
-Return-Path: <msm@freescale.com>
-Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
-From: Matthew McClintock <msm@freescale.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060803202557.28DED35360F@atlas.denx.de>
-References: <20060803202557.28DED35360F@atlas.denx.de>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BDF6467C36
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 06:47:32 +1000 (EST)
+Subject: Re: [PATCH] pSeries  hvsi char driver janitorial cleanup.
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20060803193643.GA10638@austin.ibm.com>
+References: <20060803193643.GA10638@austin.ibm.com>
 Content-Type: text/plain
-Date: Thu, 03 Aug 2006 15:40:21 -0500
-Message-Id: <1154637621.5094.60.camel@localhost>
+Date: Thu, 03 Aug 2006 22:06:53 +0100
+Message-Id: <1154639213.23655.124.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: akpm@osdl.org, hollisbl@us.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,36 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-03 at 22:25 +0200, Wolfgang Denk wrote:
-> In message <1154636438.5094.45.camel@localhost> you wrote:
-> > 
-> > However, currently the zImage has an elfheader which will come before
+Ar Iau, 2006-08-03 am 14:36 -0500, ysgrifennodd Linas Vepstas:
+> Andrew, 
+> Please apply.
 > 
-> May it have whatever it wants. It's irrelevant.
-> 
-> WE DO NOT USE zImage FILES FOR U-BOOT.
+> A set of tty line discipline cleanup patches were introduced 
+> before the dawn of time, in kernel version 2.4.21. This patch
+> performs that cleanup for the hvsi driver.
 
-I've explained this well enough at this point, if you don't want to ask
-more questions to figure it out then I can not really help anymore.
+Actually its also a bug fix, tty->ldisc should be locked by refcounting
+and the helpers do this for you.
 
-> 
-> > > This way U-Boot will load (and if necessary  uncompress)  the  kernel
-> > > image plus your attached bootstrap code to it's normal start address.
-> > > Then  it starts your bootstrap code which can fixup DTB and then just
-> > > start the kernel.
-> > > 
-> > 
-> > We do not need to worry about this with cuImage because the kernel
-> > section will not be compressed. If compression is desired it will be
-> > done at the U-Boot level (were U-Boot would do the uncompressing).
-> 
-> Yes,  we  do  need  to  care  about  this.  A  useless  copy  of  the
-> uncompressed  kernel  image  is  just  a  waste  of boot time. Not to
-> mention that you have to copy your bootstrapo loader out of  the  way
-> before it gets overwritten.
-
-I agree. Your previous advice is something I am going to try to reduce
-memory copying. Keeping the bootloader after the kernel image should
-prevent any overwritting problems, as you said.
-
--Matthew
+Acked-by: Alan Cox <alan@redhat.com>
