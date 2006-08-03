@@ -1,11 +1,15 @@
-Return-Path: <miltonm@bga.com>
-Date: Thu, 3 Aug 2006 00:57:36 -0500
-From: Milton Miller <miltonm@bga.com>
-To: paulus@samba.org, mgreer@mvista.com, Linuxppc-dev@ozlabs.org,
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-Message-Id: <31154584656643c98694.1714636915.miltonm@bga.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <LeoLi@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [RFC] New target 'cuImage' - compatibility uImage 
+Date: Thu, 3 Aug 2006 19:38:58 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0B2F60@zch01exm20.fsl.freescale.net>
+In-Reply-To: <20060802223302.9667135360F@atlas.denx.de>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Wolfgang Denk" <wd@denx.de>,
+	"McClintock Matthew-R56630" <msm@freescale.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,27 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed Aug  2 2006 01:15:05 AM CDT, Paul Mackerras wrote:
-> I wrote:
-> 
-> > The ops structure seems like a reasonable concept, but I question
-> > whether we need to have platform_ops separate from fw_ops, since the
-> > firmware is essentially part of the implementation of the platform.
-> > Also I don't see why we need to do a double indirection to get to each
-> > ops function.
-> 
-> Thinking about this a bit more, why do we need the indirect function
-> calls at all?  Do we ever want to be able to choose (e.g.) one of
-> several possible console implementations at runtime?  Don't we know at
-> compile time which one we will be using, and thus can't we use the
-> linker to make the necessary linkages?
-> 
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
+> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org] On =
+Behalf
+Of
+> Wolfgang Denk
+> Sent: Thursday, August 03, 2006 6:33 AM
+> To: McClintock Matthew-R56630
+> Cc: linuxppc-dev
+> Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
+>=20
+> In message <1154552346.5550.51.camel@localhost> you wrote:
+> >
+> > And the new cuImage will look like this:
+> >
+> > -------------------------------------
+> > -	compressed uImage	  - -
+> > - ------------------------------- - -
+> > - - 	_start			- - -
+> > - -	boot wrapper code	- - -
+> > - - ----------------------------- - -
+> > - - -	device tree	      	- - -
+> > - - ----------------------------- - -
+> > - - ----------------------------- - -
+> > - - - 			      	- - -
+> > - - - 	UNcompressed	      	- - -
+> > - - - 	kernel image	      	- - -
+> > - - -			      	- - -
+> > - - ----------------------------- - -
+> > - --------------------------------- -
+> > -------------------------------------
+>=20
+> Please explain.
+>=20
+> In my understanding, an "uImage" file is a  image  consisting  of  an
+> U-Boot  header (64 bytes) followed by an (compressed or uncompressed)
+> Linux kernel image.
+>=20
+> So what do you mean by "compressed uImage"? If you take  an  "uImage"
+> file  according  to  above definition and compress it, it will not be
+> recognized by U-Boot.
 
+I don't know if my understanding is exactly what Matt means.  But the
+compressed uImage seems to be (u-boot header + compress(wrapper + FDT +
+kernel image)), instead of original (u-boot header + compress(kernel
+image)).  A better naming probably is needed to prevent misleading.
 
-Personally, I would like to consider a zImage that could be either an open
-firmware client or a kexec kernel.  However, I'm not sure that requires the
-full ops set.  I just did the seperate image to get the function I needed quickly.
-
-Also, were not some of the ops pre-existing?
-
-milton
+>=20
+> And why do you need a second, "UNcompressed  kernel  image"  in  your
+> setup?  I  must  be missing something, because including *two* kernel
+> images makes no sense to me, and I don't  understand  why  you  would
+> want to insist of an "UNcompressed" image...
+>=20
+> Best regards,
+>=20
+> Wolfgang Denk
