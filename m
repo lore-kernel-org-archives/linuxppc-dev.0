@@ -1,14 +1,16 @@
-Return-Path: <msm@freescale.com>
-Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
-From: Matthew McClintock <msm@freescale.com>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <3115462902741b71efb4.2044897763.miltonm@bga.com>
-References: <3115462902741b71efb4.2044897763.miltonm@bga.com>
-Content-Type: text/plain
-Date: Thu, 03 Aug 2006 13:53:28 -0500
-Message-Id: <1154631208.5094.25.camel@localhost>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 3 Aug 2006 12:26:29 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
+Message-ID: <20060803192629.GD25251@mag.az.mvista.com>
+References: <20060719230014.GB3887@mag.az.mvista.com>
+	<17616.12251.339657.215571@cargo.ozlabs.ibm.com>
+	<17616.17129.964122.125259@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17616.17129.964122.125259@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,33 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-03 at 13:17 -0500, Milton Miller wrote:
-> On Thu Aug  3 2006 10:30:13 AM CDT, Matthew McClintock wrote:
-> > On Thu, 2006-08-03 at 04:47 -0700, Li Yang-r58472 wrote:
-> > > If my understanding to Matt's idea is correct, it will be a good way,
-> > > IMHO.  How about use the naming of uwImage(U-boot Wrapped Image) or
-> > > utImage(u-boot device-Tree Image). 
-> > 
-> > I am completely open to a better name. Anyone else care to share their
-> > opinion?
+On Wed, Aug 02, 2006 at 04:15:05PM +1000, Paul Mackerras wrote:
+> I wrote:
 > 
-> Do newer versions of uboot support device tree kernels directly?  If not, then
-> I would say make this uimage.  Otherwise,  I would say uzImage unless we
-> decide to call the wrapper that adds the tree something else, like uImage.dt.
+> > The ops structure seems like a reasonable concept, but I question
+> > whether we need to have platform_ops separate from fw_ops, since the
+> > firmware is essentially part of the implementation of the platform.
+> > Also I don't see why we need to do a double indirection to get to each
+> > ops function.
 > 
-> Or maybe its uImage and config vars say which it is.
-> 
+> Thinking about this a bit more, why do we need the indirect function
+> calls at all?  Do we ever want to be able to choose (e.g.) one of
+> several possible console implementations at runtime?  Don't we know at
+> compile time which one we will be using, and thus can't we use the
+> linker to make the necessary linkages?
 
-There is an unofficial way to boot device tree kernels directly from
-U-Boot. There was an older method that has been in U-Boot a long time
-(and still is), however I just submitted a series of patches which
-updates that method.
+Hi Paul,
 
-As far as I know the new method is liked better by Wolfgang, so maybe he
-will start accepted board patches based on my work? Either way, for
-boards with newer U-Boots (at some point) will not boot using this
-method.
+I realize that I didn't really answer your question.  Its at least
+possible that the console driver could not be known at link time.
 
-Wolfgang, care to comment?
+An example I used in another email is a platform that has 4 serial
+ports, 2-16550 and 2-mpsc, say.  The /chosen/linux,stdout-path could
+pick any of the four so you would need to compile in a low-level
+serial driver for both and hook the correct one up at runtime.
 
--Matthew
+Same could be said for a serial vs. video console.
+
+At least for now, I'd like to keep the flexibility.  Once things
+settle down we can take another look to see what was is really
+necessary and what's overkill.
+
+Mark
