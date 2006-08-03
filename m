@@ -1,12 +1,12 @@
 Return-Path: <msm@freescale.com>
-Subject: Re: [RFC] New target 'cuImage' - compatibility uImage
+Subject: RE: [RFC] New target 'cuImage' - compatibility uImage
 From: Matthew McClintock <msm@freescale.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060802223302.9667135360F@atlas.denx.de>
-References: <20060802223302.9667135360F@atlas.denx.de>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0B2F61@zch01exm20.fsl.freescale.net>
+References: <4879B0C6C249214CBE7AB04453F84E4D0B2F61@zch01exm20.fsl.freescale.net>
 Content-Type: text/plain
-Date: Thu, 03 Aug 2006 10:29:05 -0500
-Message-Id: <1154618945.5094.6.camel@localhost>
+Date: Thu, 03 Aug 2006 10:30:13 -0500
+Message-Id: <1154619014.5094.7.camel@localhost>
 Mime-Version: 1.0
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,35 +18,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-03 at 00:33 +0200, Wolfgang Denk wrote:
-> 
-> In my understanding, an "uImage" file is a  image  consisting  of  an
-> U-Boot  header (64 bytes) followed by an (compressed or uncompressed)
-> Linux kernel image.
+On Thu, 2006-08-03 at 04:47 -0700, Li Yang-r58472 wrote:
+> If my understanding to Matt's idea is correct, it will be a good way,
+> IMHO.  How about use the naming of uwImage(U-boot Wrapped Image) or
+> utImage(u-boot device-Tree Image). 
 
-Yes
-
-> 
-> So what do you mean by "compressed uImage"? If you take  an  "uImage"
-> file  according  to  above definition and compress it, it will not be
-> recognized by U-Boot.
-
-I mean that the data contained within the uImage is compressed. In this
-case where the uImage data is compressed I choose to skip compressing
-the kernel section in the zImage (because have it compressed twice was
-wasteful)
-
-> 
-> And why do you need a second, "UNcompressed  kernel  image"  in  your
-> setup?  I  must  be missing something, because including *two* kernel
-> images makes no sense to me, and I don't  understand  why  you  would
-> want to insist of an "UNcompressed" image...
-
-So to clarify. The current method has a zImage with a compressed kernel
-section where the actual kernel lives. The zImage uncompressed this code
-to the kernel load address. The 'cuImage' would be packaged in a uImage
-with the entire zImage compressed, except in this case the kernel
-section would not be compressed (to avoid have a compressed image within
-a compressed image)
+I am completely open to a better name. Anyone else care to share their
+opinion?
 
 -Matthew
