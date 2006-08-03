@@ -1,32 +1,15 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B6CF567B63
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 06:13:05 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k73KD2tL020136
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 16:13:02 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k73KD2HU160036
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 14:13:02 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k73KD16p015646
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 14:13:02 -0600
-Date: Thu, 3 Aug 2006 15:13:01 -0500
-To: akpm@osdl.org, hollisbl@us.ibm.com
-Subject: [PATCH] pSeries hvsi char driver null pointer deref
-Message-ID: <20060803201300.GB10638@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <wd@denx.de>
+To: Matthew McClintock <msm@freescale.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [RFC] New target 'cuImage' - compatibility uImage 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 03 Aug 2006 11:24:06 CDT."
+	<1154622246.5094.18.camel@localhost>
+Date: Thu, 03 Aug 2006 22:14:41 +0200
+Sender: wd@denx.de
+Message-Id: <20060803201441.C8A89352660@atlas.denx.de>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,33 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message <1154622246.5094.18.camel@localhost> you wrote:
+>
+> I'm not sure that is correct. Let me walk through the steps to verify.
+> 
+> 1) Load cuImage at a load address 
+> 2) Extract zImage at an address and begin execution
+> 3) Copy kernel to load address and fixup DTB, etc.
+> 4) Start kernel execution
+> 
+> versus...
+> 
+> 1) Load cuImage at a load address
+> 2) Copy zImage to an address and begin execution
+> 3) Extract kernel to load address and fixup DTB, etc.
+> 4) Start kernel execution
 
-Andrew, 
-Please apply.
+Both approaches seem broken to me.
 
-Under certain rare circumstances, it appears that there can be
-be a NULL-pointer deref when a user fiddles with terminal
-emeulation programs while outpu is being sent to the console.
-This patch checks for and avoids a NULL-pointer deref.
+You should make sure that  your  bootstrap  code  comes  *after*  the
+kernel  image,  so  you  can  load  the  whole blob at address 0x0000
+(mkimage option "-a 0") while starting  it  at  the  bootstrap  entry
+point (mkimage option "-e <your_address>").
 
-Signed-off-by: Hollis Blanchard <hollisbl@austin.ibm.com>
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+This way U-Boot will load (and if necessary  uncompress)  the  kernel
+image plus your attached bootstrap code to it's normal start address.
+Then  it starts your bootstrap code which can fixup DTB and then just
+start the kernel.
 
-----
- drivers/char/hvsi.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Please avoid any aditional memory copy. It's not necessary.
 
-Index: linux-2.6.18-rc3-git1/drivers/char/hvsi.c
-===================================================================
---- linux-2.6.18-rc3-git1.orig/drivers/char/hvsi.c	2006-08-03 14:50:00.000000000 -0500
-+++ linux-2.6.18-rc3-git1/drivers/char/hvsi.c	2006-08-03 14:51:46.000000000 -0500
-@@ -311,7 +311,8 @@ static void hvsi_recv_control(struct hvs
- 				/* CD went away; no more connection */
- 				pr_debug("hvsi%i: CD dropped\n", hp->index);
- 				hp->mctrl &= TIOCM_CD;
--				if (!(hp->tty->flags & CLOCAL))
-+				/* If userland hasn't done an open(2) yet, hp->tty is NULL. */
-+				if (hp->tty && !(hp->tty->flags & CLOCAL))
- 					*to_hangup = hp->tty;
- 			}
- 			break;
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"In Christianity neither morality nor religion come into contact with
+reality at any point."                          - Friedrich Nietzsche
