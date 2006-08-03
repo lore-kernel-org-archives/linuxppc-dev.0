@@ -1,18 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0345367BDD
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 13:57:40 +1000 (EST)
-Date: Thu, 3 Aug 2006 13:57:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mike Kravetz <kravetz@us.ibm.com>
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 83B32679E0
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Aug 2006 14:05:23 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7345FFI006647
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Aug 2006 00:05:18 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k7344qli215910
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Aug 2006 22:04:58 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7344k5T000558
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Aug 2006 22:04:47 -0600
+Date: Wed, 2 Aug 2006 21:05:06 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [RFC] asm code for Hypervisor Call Instrumentation
-Message-Id: <20060803135717.754bd37f.sfr@canb.auug.org.au>
-In-Reply-To: <20060802175947.GA7489@w-mikek2.ibm.com>
+Message-ID: <20060803040506.GB3484@monkey.ibm.com>
 References: <20060802175947.GA7489@w-mikek2.ibm.com>
+	<20060803135717.754bd37f.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__3_Aug_2006_13_57_17_+1000_H.5yMtcSw7uNyn1z"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060803135717.754bd37f.sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,37 +39,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__3_Aug_2006_13_57_17_+1000_H.5yMtcSw7uNyn1z
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Aug 03, 2006 at 01:57:17PM +1000, Stephen Rothwell wrote:
+> Hi Mike,
+> 
+> On Wed, 2 Aug 2006 10:59:47 -0700 Mike Kravetz <kravetz@us.ibm.com> wrote:
+> >
+> > +#else
+> > +
+> > +#define STACKFRAMESIZE	0
+> > +#define HCALL_INST_PRECALL	nop
+> > +#define HCALL_INST_POSTCALL	nop
+> 
+> Why even "nop", why not just blank?
 
-Hi Mike,
+At first I was concerned about macro expansion and knew a 'nop'
+would be ok.  Intended to go back and try 'blank', but forgot.
+I'll give it a try.
 
-On Wed, 2 Aug 2006 10:59:47 -0700 Mike Kravetz <kravetz@us.ibm.com> wrote:
->
-> +#else
-> +
-> +#define STACKFRAMESIZE	0
-> +#define HCALL_INST_PRECALL	nop
-> +#define HCALL_INST_POSTCALL	nop
-
-Why even "nop", why not just blank?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__3_Aug_2006_13_57_17_+1000_H.5yMtcSw7uNyn1z
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQFE0XQkFdBgD/zoJvwRAtRhAJ4zIXvlEvsbLPKA55jKT1R37iOjDwCdFCzW
-rKxZjbP8x+gQqJFTVW6gG6c=
-=vc5M
------END PGP SIGNATURE-----
-
---Signature=_Thu__3_Aug_2006_13_57_17_+1000_H.5yMtcSw7uNyn1z--
+-- 
+Mike
