@@ -1,21 +1,11 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from sccrmhc12.comcast.net (sccrmhc12.comcast.net [63.240.77.82])
-	by ozlabs.org (Postfix) with ESMTP id C4296679A6
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Aug 2006 16:35:12 +1000 (EST)
-Message-ID: <44D1991A.2070208@dlasys.net>
-Date: Thu, 03 Aug 2006 02:35:06 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+Return-Path: <namaskar_alok@yahoo.co.in>
+Message-ID: <20060803064726.28572.qmail@web8909.mail.in.yahoo.com>
+Date: Wed, 2 Aug 2006 23:47:26 -0700 (PDT)
+From: Alok Barsode <namaskar_alok@yahoo.co.in>
+Subject: Query regarding cicada PHYs 
+To: Linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Ameet Patil <ammubhai@gmail.com>,  edb@datadesigncorp.net,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Xilinx TEMAC
-References: <44CE4C1D.6050103@datadesigncorp.net>
-	<44CE5EA5.3030306@gmail.com>	<44CF89B5.7080906@datadesigncorp.net>
-	<44D07B38.5060700@gmail.com>
-In-Reply-To: <44D07B38.5060700@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@comcast.net
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,43 +16,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ameet Patil wrote:
->  > Did you happen to get an Ethernet mac going on the virtex2 or
->  > virtex4 with the 2.6 kernel?
->
-> Nope! :-(
-> Rumour has it that Montavista is soon going to release the source for 
-> 2.6 kernel to run on Xilinx platforms.
->
->   
-    I have 2 different TEMAC's working under 2.6 with a V4.
+hi, 
+I am working on the MPC8555E dev board. It has a
+Cicada 8204 (10/100/1000 Base-TX)PHY. I am not able to
+find more info on this phy.(Cicada is taken over by
+Vitesse?)
+I wanted to know if 8204 PHY differs from 8201/8202
+PHYs?
+>From the gianfar driver, it appears that 8201 forms
+some kind of auxillary ctrl/status register and is not
+a complete PHY.I am not sure. 
 
-    The MontaVista driver that has been posted on the list that I think
-is from MontaVista for the PLB TEMAC with very minor modifications to
-get it to work at speeds other than GigaBit.
+Where can i get the user programming manual for the
+CIS8204?
 
-    A driver I wrote for the LocalLink TEMAC that works limpingly. I
-have been unable to figure out how to get a receive interrupt from the
-LocalLink TEMAC so receives are polled and performance is poor.
-    I have pretty much abandoned work on it  - my client wants the
-smallest possible FPGA footprint BUTanother OS I am porting requires
-interrupt driven  IO and we are looking for a single minimal hardware
-implimentation for all platforms.
-
-    Anyway, if anyone wants the LL TEMAC in its current state I can post it.
-    Currently it sends fine. It drops about 50% of all received packets
-- but that is probably debugging overhead and poll rate tuning.
-   
+Thanks,
+Alok 
 
 
+"Let the wisdom of the old guide the buoyancy and vitality of the youth; let the buoyancy and vitality of the youth sustain the wisdom of the old." - Stanislavski
 
-
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
