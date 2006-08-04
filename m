@@ -1,16 +1,19 @@
-Return-Path: <francois.barre@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id A18F4679FB
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 19:53:26 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id p48so1399001nfa
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Aug 2006 02:53:24 -0700 (PDT)
-Message-ID: <fd8d0180608040253h11ebf168p8656b370857f1647@mail.gmail.com>
-Date: Fri, 4 Aug 2006 11:53:24 +0200
-From: "Francois Barre" <francois.barre@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: AOA and Toonie (Mac Mini) : nothing happens
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 379D167B22
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Aug 2006 19:56:54 +1000 (EST)
+Message-ID: <44D319E0.9080502@sipsolutions.net>
+Date: Fri, 04 Aug 2006 11:56:48 +0200
+From: Johannes Berg <johannes@sipsolutions.net>
 MIME-Version: 1.0
+To: Francois Barre <francois.barre@gmail.com>
+Subject: Re: AOA and Toonie (Mac Mini) : nothing happens
+References: <fd8d0180608040253h11ebf168p8656b370857f1647@mail.gmail.com>
+In-Reply-To: <fd8d0180608040253h11ebf168p8656b370857f1647@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi,
 
-I am now trying the AOA driver on a Mac Mini 1.2Ghz, using 2.6.18-rc3
-linux/kernel/git/linville/wireless-dev.git kernel.
-At startup, no module is loaded. When I try to manually modprobe
-snd-aoa-*.ko and snd-aoa-codec-toonie.ko, no error is shown in dmesg,
-but no device is binded to modules. Finally, nothing happens.
+The mac mini isn't quite supported yet, the relevant patches are in the 
+alsa mercurial repo.
 
-I know I shall provide more data but I lost connection to the machine right now.
+However, it should auto-load snd-aoa-fabric-layout (and then crash). Can 
+you privately send me a tarball of /proc/device-tree?
 
-Did I miss something ?
-What is the process for loading modules in AOA ?
-Do I have to alter my alsa config files ?
-
-Regards,
+johannes
