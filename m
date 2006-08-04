@@ -1,26 +1,15 @@
-Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
-Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
-	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id EAEF667A2E
+Return-Path: <paravpandit@yahoo.com>
+Received: from web36613.mail.mud.yahoo.com (web36613.mail.mud.yahoo.com
+	[209.191.85.30]) by ozlabs.org (Postfix) with SMTP id CFAAB67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Aug 2006 18:02:45 +1000 (EST)
-Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
-	[131.188.3.181]) by max71.rrze.uni-erlangen.de with ESMTP for
-	linuxppc-embedded@ozlabs.org; Fri, 4 Aug 2006 10:02:28 +0200
-Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
-	by max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de [127.0.0.1])
-	(amavisd-new)
-	with ESMTP id 11623-06-1688 for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Aug 2006 10:02:27 +0200 (MEST)
-Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
-	mailhub.rrze.uni-erlangen.de with ESMTP for
-	linuxppc-embedded@ozlabs.org; Fri, 4 Aug 2006 10:02:27 +0200
-Message-Id: <44D2FF19.20500@cs.fau.de>
-Date: Fri, 04 Aug 2006 10:02:33 +0200
-From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
-MIME-Version: 1.0
+	Fri,  4 Aug 2006 20:18:00 +1000 (EST)
+Message-ID: <20060804101758.6282.qmail@web36613.mail.mud.yahoo.com>
+Date: Fri, 4 Aug 2006 03:17:58 -0700 (PDT)
+From: Parav Pandit <paravpandit@yahoo.com>
+Subject: ioctl() hangs in Lite5200b FEC driver?
 To: linuxppc-embedded@ozlabs.org
-Subject: Help for USB host driver for MPC8xx
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,20 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Hello Wei,
+1. Is drivers/net/fec.c is the correct driver for the
+Lite5200B board in 2.6.x?
 
-i ported Brad Parkers mpc8xx usb driver for linux 2.4 to linux 2.6 and merged it with the cpm2usb project's m82xx usb driver. Using it i can mount an usb-stick with linux 2.6.18 running on a m8xx. But for sure, there have to get some more bugs fixed, and i have to validate that the included cpm2usb code for m82xx still works, before i can send a patch for an official linux release.
+2. If yes, it doesn't have any implementation for
+do_ioctl() call.
+In my case ifconfig tries to set the IFF_RUNNING |
+IFF_UP flag using SIOCGIFFLAGS ioctl cmd, but my
+ifconfig utility hangs in the ioctl().
+Can some one tell me why does it hang?
+Can some one tell me, when do_ioctl() is not
+implemented by the driver, than which default function
+gets called by the system?
 
-So if you like i will send you my code and you tell me if it also works for your needs!
+Regards,
+Parav Pandit
 
-Josef
 
-
-Hi All,
-
-Dose anyone use USB host drivers for MPC875 with Linux 2.4.25? I just 
-found these notes from http://www.heeltoe.com/software/usb/usb.html, 
-but I have no idea about how to use it, any advice? Thanks.
-
-Wei
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
