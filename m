@@ -1,22 +1,22 @@
-Return-Path: <AZeffertt@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E2E667B22
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 53A0B679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Aug 2006 00:02:05 +1000 (EST)
-Message-ID: <44D35355.2090606@cambridgebroadband.com>
-Date: Fri, 04 Aug 2006 15:01:57 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Sat,  5 Aug 2006 00:27:59 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1G90EP-0002Ac-LN
+	for linuxppc-embedded@ozlabs.org; Fri, 04 Aug 2006 16:00:54 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
+References: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
+	<44D1021C.5080602@dlasys.net>
+Date: Fri, 04 Aug 2006 16:00:52 +0200
+In-Reply-To: <44D1021C.5080602@dlasys.net> (David H. Lynch, Jr.'s message of
+	"Wed, 2 Aug 2006 21:50:52 +0200")
+Message-ID: <87irl8zjl7.fsf@sleipner.barco.com>
 MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Subject: Re: invalidate_dcache_range Kernel 2.6.14
-References: <20060804130938.78980@gmx.net>
-	<44D352DE.9060007@cambridgebroadband.com>
-In-Reply-To: <44D352DE.9060007@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: GSM909@gmx.de, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,17 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex Zeffertt wrote:
-> GSM909@gmx.de wrote:
->> I have an old driver that need the funktion invalidate_dcache_range but when I compile the driver : Unknown symbol invalidate_dcache_range.
->>
->> Whats the name of this funktion now ???
->>
-> 
-> The same.  You just need to add EXPORT_SYMBOL(invalidate_dcache_range) to
-> ppc_ksys.c for your module to see it.
-> 
+>>>>> "DHL" == David H Lynch <dhlii@dlasys.net> writes:
 
-Oh, and obviously add it to a header file.
+>> Linux/PPC load: console=ttyS0,9600.....
+>> 
+>> Uncompressing Linux...inflate returned FFFFFFFB exit
+>> 
 
-Alex
+DHL>     Zlib was upgraded with 2.6.17. The updated Zlib is broken on
+DHL> ppc32.  I am pretty certain it is fixed in 2.6.18-rc3
+
+No, that was ony added in 2.6.18-rc1 (and the fix was only added
+post-rc3), so that can't be it..
+
+-- 
+Bye, Peter Korsgaard
