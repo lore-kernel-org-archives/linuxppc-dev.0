@@ -1,17 +1,19 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32202.mail.mud.yahoo.com (web32202.mail.mud.yahoo.com
-	[68.142.207.133]) by ozlabs.org (Postfix) with SMTP id 954BF679E0
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id A3417679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Aug 2006 06:43:29 +1000 (EST)
-Message-ID: <20060804204327.16319.qmail@web32202.mail.mud.yahoo.com>
-Date: Fri, 4 Aug 2006 13:43:27 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-Subject: Re: ELDK 3.1.1 support for x86_64 host architecture 
-To: Wolfgang Denk <wd@denx.de>, Michael Carey <MCarey@nearfield.com>
+	Sat,  5 Aug 2006 07:00:29 +1000 (EST)
+Subject: Re: ELDK 3.1.1 support for x86_64 host architecture
+From: Ben Warren <bwarren@qstreams.com>
+To: Wolfgang Denk <wd@denx.de>
 In-Reply-To: <20060804201127.00D2D352640@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+References: <20060804201127.00D2D352640@atlas.denx.de>
+Content-Type: text/plain
+Date: Fri, 04 Aug 2006 17:00:25 -0400
+Message-Id: <1154725225.5020.7.camel@saruman.qstreams.net>
+Mime-Version: 1.0
+Cc: Michael Carey <MCarey@nearfield.com>, linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,38 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2006-08-04 at 22:11 +0200, Wolfgang Denk wrote:
 
-
---- Wolfgang Denk <wd@denx.de> wrote:
-
-> In message <44D22E43020000710000243E@webmail.nearfield.com>
-> you wrote:
-> > I found the subject "ELDK 3.1.1 support for x86_64 host
-> architecture" in the archives (Apr 15 2005) which describes my
-> problem, however there was never any posting of a resolution.
+> Yes, SuSE has always found interesting ways to  break  compatibility.
+> That's  why  I avoid it. IIRC, SuSE provides a special tool "linux32"
+> which has to be used to run 32-bit applications on a x86_64 system.
 > 
-> There was none, as  there  is  no  problem.  ELDK  3.1.1  (and
->  later
-> versions)  runs  fine on x86_64 hosts, assuming you're using
-> any sane
-> Linux distribution. For example:
+> Don't ask  me  why  they  need  it.  Other  distros  run  the  32-bit
+> applications just fine without such intricacy.
 > 
-> -> ppc_8xx-gcc -v
-> Reading specs from
-> /opt/eldk-3.1.1/usr/bin/../lib/gcc-lib/ppc-linux/3.3.3/specs
-> Configured with: ../configure --prefix=/usr
-> --mandir=/usr/share/man --infodir=/usr/share/info
-> --enable-shared --enable-threads=posix --disable-checking
-> --with-system-zlib --enable-__cxa_atexit --with-newlib
-> --enable-languages=c,c++ --disable-libgcj
-> --host=i386-redhat-linux --target=ppc-linux
-> Thread model: posix
-> gcc version 3.3.3 (DENX ELDK 3.1.1 3.3.3-9)
-> ------------------------^^^^^^^^^^
-There is something wrong with your Suse installation. I have
-been using ELDK with Suse(9.2 and 10.1) since 2004 without any problems...
+> 
+I don't know about SUSE, but to get ELDK 4.0 running on my Debian x86_64
+server I had to install a package called 'ia32_libs'.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+regards,
+Ben
