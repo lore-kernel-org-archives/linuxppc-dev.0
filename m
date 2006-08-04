@@ -1,22 +1,21 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 53A0B679E7
+Return-Path: <ned@softwaresystemsgroup.com>
+Received: from server153.softwaresystemsgroup.com (softwaresystemsgroup.com
+	[209.61.184.153])
+	(using SSLv3 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F3AC679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Aug 2006 00:27:59 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1G90EP-0002Ac-LN
-	for linuxppc-embedded@ozlabs.org; Fri, 04 Aug 2006 16:00:54 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
-References: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
-	<44D1021C.5080602@dlasys.net>
-Date: Fri, 04 Aug 2006 16:00:52 +0200
-In-Reply-To: <44D1021C.5080602@dlasys.net> (David H. Lynch, Jr.'s message of
-	"Wed, 2 Aug 2006 21:50:52 +0200")
-Message-ID: <87irl8zjl7.fsf@sleipner.barco.com>
+	Sat,  5 Aug 2006 00:33:48 +1000 (EST)
+From: "Ned W. Rhodes" <ned@softwaresystemsgroup.com>
+To: "'David H. Lynch Jr.'" <dhlii@dlasys.net>
+Subject: RE: MTD Flash Howto ?
+Date: Fri, 4 Aug 2006 10:20:09 -0400
+Message-ID: <001a01c6b7d1$17dd6130$6201eed0@ssgpoweredge>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <mailman.2056.1154699657.11183.linuxppc-embedded@ozlabs.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,18 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "DHL" == David H Lynch <dhlii@dlasys.net> writes:
+The book Building Embedded Linux Systems has a good section on the use of
+flash file systems.
 
->> Linux/PPC load: console=ttyS0,9600.....
->> 
->> Uncompressing Linux...inflate returned FFFFFFFB exit
->> 
+When you boot, you will see something like this, depending on the type of
+flash driver you have. Make sure you have defined your mtd map in
+kernel/drivers/mtd/map.
 
-DHL>     Zlib was upgraded with 2.6.17. The updated Zlib is broken on
-DHL> ppc32.  I am pretty certain it is fixed in 2.6.18-rc3
+JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
+JFS: nTxBlock = 965, nTxLock = 7720
 
-No, that was ony added in 2.6.18-rc1 (and the fix was only added
-post-rc3), so that can't be it..
+Then if you have the MTD partitions correctly identified, the kernel will
+show you something like:
 
--- 
-Bye, Peter Korsgaard
+CBG flash bank 0: Found 1 x16 devices at 0x0 in 16-bit bank
+ Intel/Sharp Extended Query Table at 0x0031
+Using buffer write method
+cfi_cmdset_0001: Erase suspend on write enabled
+Creating 2 MTD partitions on "CBG flash bank 0":
+0x00000000-0x01800000 : "ffw1"
+0x01800000-0x02000000 : "filesystem1"
+
+Once booted you can look at /proc/mtd and you should see the partitions
+something like:
+
+[root@lbg ]# cat /proc/mtd
+dev:    size   erasesize  name
+mtd0: 01800000 00020000 "ffw1"
+mtd1: 00800000 00020000 "filesystem1"
+
+Your mileage may vary depending on the type of flash you have and all the
+configuration options, but that is basically how to tell that things are
+mapped and ready for use.
+
+Ned W. Rhodes
+Software System Group
+703.812.5072 x100
