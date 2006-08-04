@@ -1,15 +1,17 @@
-Return-Path: <MCarey@nearfield.com>
-Received: from webmail.nearfield.com (webmail.nearfield.com [63.200.6.70])
-	by ozlabs.org (Postfix) with ESMTP id 38B0267B84
+Return-Path: <dhlii@dlasys.net>
+Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.77.84])
+	by ozlabs.org (Postfix) with ESMTP id C98BC679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Aug 2006 10:32:39 +1000 (EST)
-Message-Id: <44D22E43020000710000243E@webmail.nearfield.com>
-Date: Thu, 03 Aug 2006 17:11:31 -0700
-From: "Michael Carey" <MCarey@nearfield.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: ELDK 3.1.1 support for x86_64 host architecture
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri,  4 Aug 2006 14:04:29 +1000 (EST)
+Message-ID: <44D2C746.70303@dlasys.net>
+Date: Fri, 04 Aug 2006 00:04:22 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: MTD Flash Howto ?
+Content-Type: multipart/alternative;
+	boundary="------------060809090406080104030508"
+Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,55 +22,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I found the subject "ELDK 3.1.1 support for x86_64 host architecture" in =
-the archives (Apr 15 2005) which describes my problem, however there was =
-never any posting of a resolution.
+This is a multi-part message in MIME format.
+--------------060809090406080104030508
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-When I attempt to run: "./install -d /opt/eldk" I get the following =
-output:
 
-Do you really want to install into /opt/eldk directory[y/n]?: y
+    I need to put together a filesystem driver for the flash in the Pico
+E-12.
+    I think I have a pretty good grasp of what I need of the FileSystem
+end of things.
 
-Creating directories
-Done
-Installing cross RPMs
+    But I am less certain of the peices needed to get from the flash to
+the block driver that I assume underly's the FileSystem.
+    I have enabled MTD, and configured a starting address and size.
+    I got a signon banner. How can I tell if it has really found my
+flash and if it actually knows the type of flash it found - in my
+    instance Spansion S29GL512N.
 
-Preparing...                ########################################### =
-[100%]
-        package rpm-4.1.1-1.8xa_10 is intended for a i386 architecture
-can't change dir: No such file or directory
+    I have found some documentation covering details, I think I am more
+interested in something that gives a more zoomed out view.
 
-The details on my system are:
+    Is anyone aware of a relevant howto ? Maybe some web pages on the
+end-end process of going from flash devices to filesystems over flash ?
 
-mcarey@mmtdev:~> cat /etc/issue
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-Welcome to SUSE LINUX 10.1 (X86-64) - Kernel \r (\l).
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
 
-mcarey@mmtdev:~> uname -a
-Linux mmtdev 2.6.16.13-4-default #1 Wed May 3 04:53:23 UTC 2006 x86_64 =
-x86_64 x86_64 GNU/Linux
-mcarey@mmtdev:~> cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 4
-model name      :               Intel(R) Pentium(R) 4 CPU 3.06GHz
-stepping        : 1
-cpu MHz         : 3065.612
-cache size      : 1024 KB
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 5
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall nx lm =
-constant_tsc pni monitor ds_cpl tm2 cid cx16 xtpr
-bogomips        : 6140.72
-clflush size    : 64
-cache_alignment : 128
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
 
-//
-Thanks for any help you could provide,
-Michael Carey
+--------------060809090406080104030508
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<font face="Arial"><br>
+&nbsp;&nbsp;&nbsp; I need to put together a filesystem driver for the flash in the
+Pico E-12.<br>
+&nbsp;&nbsp;&nbsp; I think I have a pretty good grasp of what I need of the FileSystem
+end of things.<br>
+<br>
+&nbsp;&nbsp;&nbsp; But I am less certain of the peices needed to get from the flash to
+the block driver that I assume underly's the FileSystem.<br>
+&nbsp;&nbsp;&nbsp; I have enabled MTD, and configured a starting address and size.<br>
+&nbsp;&nbsp;&nbsp; I got a signon banner. How can I tell if it has really found my
+flash and if it actually knows the type of flash it found - in my <br>
+&nbsp;&nbsp;&nbsp; instance Spansion S29GL512N.<br>
+<br>
+&nbsp;&nbsp;&nbsp; I have found some documentation covering details, I think I am more
+interested in something that gives a more zoomed out view.<br>
+<br>
+&nbsp;&nbsp;&nbsp; Is anyone aware of a relevant howto ? Maybe some web pages on the
+end-end process of going from flash devices to filesystems over flash ?<br>
+<br>
+</font>
+<pre class="moz-signature" cols="72">-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       <a class="moz-txt-link-abbreviated"
+ href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a
+ class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
+</pre>
+</body>
+</html>
+
+--------------060809090406080104030508--
