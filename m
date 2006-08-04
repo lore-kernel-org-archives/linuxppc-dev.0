@@ -1,23 +1,19 @@
-Return-Path: <Tom.Ziomek@motorola.com>
-Received: from motgate5.mot.com (motgate5.mot.com [144.189.100.105])
-	by ozlabs.org (Postfix) with ESMTP id 8F0A2679E2
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id F33A1679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Aug 2006 02:41:10 +1000 (EST)
-Received: from az33exr04.mot.com (az33exr04.mot.com [10.64.251.234])
-	by motgate5.mot.com (8.12.11/Motorola) with ESMTP id k74Gf43f000651
-	for <linuxppc-embedded@ozlabs.org>; Fri, 4 Aug 2006 09:41:04 -0700 (MST)
-Received: from de01exm60.ds.mot.com (de01exm60.am.mot.com [10.176.8.105])
-	by az33exr04.mot.com (8.13.1/8.13.0) with ESMTP id k74Gf2OV027761
-	for <linuxppc-embedded@ozlabs.org>; Fri, 4 Aug 2006 11:41:03 -0500 (CDT)
-Date: Fri, 4 Aug 2006 11:41:01 -0500 (Central Daylight Time)
-From: T Ziomek <ctz001@email.mot.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>, dhlii@comcast.net
-Subject: Re: MTD Flash Howto ?
-In-Reply-To: <44D2C746.70303@dlasys.net>
-Message-ID: <Pine.WNT.4.61.0608041138330.2760@holyoke.labs.mot.com>
-References: <44D2C746.70303@dlasys.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat,  5 Aug 2006 06:11:29 +1000 (EST)
+To: "Michael Carey" <MCarey@nearfield.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ELDK 3.1.1 support for x86_64 host architecture 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 03 Aug 2006 17:11:31 PDT."
+	<44D22E43020000710000243E@webmail.nearfield.com>
+Date: Fri, 04 Aug 2006 22:11:26 +0200
+Sender: wd@denx.de
+Message-Id: <20060804201127.00D2D352640@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +24,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The documents we've found helpful are
+In message <44D22E43020000710000243E@webmail.nearfield.com> you wrote:
+> I found the subject "ELDK 3.1.1 support for x86_64 host architecture" in the archives (Apr 15 2005) which describes my problem, however there was never any posting of a resolution.
 
-Linux MTD, JFFS HOWTO
-<ftp://ftp.uk.linux.org/pub/people/dwmw2/mtd/cvs/mtd/mtd-jffs-HOWTO.txt>
+There was none, as  there  is  no  problem.  ELDK  3.1.1  (and  later
+versions)  runs  fine on x86_64 hosts, assuming you're using any sane
+Linux distribution. For example:
 
-"Embedded Linux - Managing Flash Memory" (a much better MTD FAQ than the
-official one)
-<http://www.ssiembedded.com/embedded_linux_managing_memory.html>
+-> ppc_8xx-gcc -v
+Reading specs from /opt/eldk-3.1.1/usr/bin/../lib/gcc-lib/ppc-linux/3.3.3/specs
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --enable-shared --enable-threads=posix --disable-checking --with-system-zlib --enable-__cxa_atexit --with-newlib --enable-languages=c,c++ --disable-libgcj --host=i386-redhat-linux --target=ppc-linux
+Thread model: posix
+gcc version 3.3.3 (DENX ELDK 3.1.1 3.3.3-9)
+------------------------^^^^^^^^^^
+-> uname -a
+Linux pollux.denx.de 2.6.10-1.771_FC2smp #1 SMP Mon Mar 28 01:05:47 EST 2005 x86_64 x86_64 x86_64 GNU/Linux
+-----------------------------------------------------------------------------^^^^^^
+-> cat /etc/issue
+Fedora Core release 2 (Tettnang)
+...
 
-"Find your Root File System with MTD" (written for uClinux, but generally
-not uClinux-specific)
-<http://www.ucdot.org/article.pl?sid=03/01/11/1049210>
+>         package rpm-4.1.1-1.8xa_10 is intended for a i386 architecture
+
+Your Linux distro is kind of broken.
+
+> The details on my system are:
+...
+> Welcome to SUSE LINUX 10.1 (X86-64) - Kernel \r (\l).
+
+Yes, SuSE has always found interesting ways to  break  compatibility.
+That's  why  I avoid it. IIRC, SuSE provides a special tool "linux32"
+which has to be used to run 32-bit applications on a x86_64 system.
+
+Don't ask  me  why  they  need  it.  Other  distros  run  the  32-bit
+applications just fine without such intricacy.
 
 
-Tom
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-   /"\  ASCII Ribbon Campaign   |
-   \ /                          |   Email to user 'CTZ001'
-    X        Against HTML       |             at 'email.mot.com'
-   / \     in e-mail & news     |
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There are very few personal problems that cannot be solved through  a
+suitable application of high explosives.
