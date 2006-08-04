@@ -1,18 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <mporter@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C09F0679E7
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Aug 2006 02:38:09 +1000 (EST)
+Received: from gate.crashing.org (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k74GfpiH005375
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Aug 2006 11:41:51 -0500
+Received: (from mporter@localhost)
+	by gate.crashing.org (8.12.8/8.12.8/Submit) id k74GfpER005374
+	for linuxppc-dev@ozlabs.org; Fri, 4 Aug 2006 11:41:51 -0500
+Date: Fri, 4 Aug 2006 11:41:51 -0500
+From: Matt Porter <mporter@embeddedalley.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Remove flush_dcache_all export
+Message-ID: <20060804164151.GA4959@gate.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17619.55376.662510.379504@cargo.ozlabs.ibm.com>
-Date: Sat, 5 Aug 2006 09:29:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Subject: Re: RFC: Location for Device Tree Sources?
-In-Reply-To: <20060804175418.GA28095@smtp.west.cox.net>
-References: <3115459755319495cff4.1649760492.miltonm@bga.com>
-	<20060803135440.GB3075@smtp.west.cox.net>
-	<17618.53692.364647.412406@cargo.ozlabs.ibm.com>
-	<20060804175418.GA28095@smtp.west.cox.net>
-Cc: linuxppc-dev@ozlabs.org, g.liakhovetski@gmx.de,
-	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tom Rini writes:
+Removes the flush_dcache_all export for non coherent platforms.
+We removed the last in-kernel user of this years ago in arch/ppc
+so it no longer serves a purpose. Plus, it breaks the build
+at the moment.
 
-> But doesn't the representation include meaning?
+Signed-off-by: Matt Porter <mporter@embeddedalley.com>
 
-No, in the sense that the device-tree representation doesn't define
-what meaning or interpretation is to be given to particular node and
-property names or to particular property values.
-
-> I'll rephrase what I said to what I think we all agree.  Changing
-> existing fields meanings in incompatible ways and not somehow allowing
-> that to still work (like by adding a flag so new trees are interpreted
-> one way, old trees are fixed-up or whatever) is a problem.
-
-Yes it's a problem.  Not one that we want to solve by changing the dt
-version number, though.
-
-Paul.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 4b052ae..0e18342 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -127,10 +127,6 @@ EXPORT_SYMBOL(pci_bus_mem_base_phys);
+ EXPORT_SYMBOL(pci_bus_to_hose);
+ #endif /* CONFIG_PCI */
+ 
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-EXPORT_SYMBOL(flush_dcache_all);
+-#endif
+-
+ EXPORT_SYMBOL(start_thread);
+ EXPORT_SYMBOL(kernel_thread);
+ 
