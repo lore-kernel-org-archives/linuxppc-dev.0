@@ -1,11 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mikey@ozlabs.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17622.58559.879330.496619@cargo.ozlabs.ibm.com>
-Date: Mon, 7 Aug 2006 16:59:11 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Who cares about PReP?
+Subject: [PATCH] Update lppaca offset comments
+Date: Mon, 07 Aug 2006 17:34:50 +1000
+Sender: mikey@ozlabs.org
+Message-Id: <20060807073451.A055D67A3F@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,13 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I started looking at moving the PReP code over to arch/powerpc.  I am
-struck by how many ifdefs there are in there to set things up for
-particular individual PReP implementations.  We can do better than
-that, I'm sure, but the issue becomes one of testing.  The only PReP I
-have here is an RS/6000 43p-140.
+Update offset comments.  No functional change. 
 
-Who else has a PReP system and would be willing to do some testing and
-debugging?  If so, what sort of PReP is it?
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ include/asm-powerpc/lppaca.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Paul.
+Index: linux-2.6-ozlabs/include/asm-powerpc/lppaca.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/lppaca.h
++++ linux-2.6-ozlabs/include/asm-powerpc/lppaca.h
+@@ -114,7 +114,7 @@ struct lppaca {
+ 
+ 
+ //=============================================================================
+-// CACHE_LINE_3 0x0100 - 0x007F: This line is shared with other processors
++// CACHE_LINE_3 0x0100 - 0x017F: This line is shared with other processors
+ //=============================================================================
+ 	// This is the yield_count.  An "odd" value (low bit on) means that
+ 	// the processor is yielded (either because of an OS yield or a PLIC
+@@ -126,7 +126,7 @@ struct lppaca {
+ 	u8	reserved6[124];		// Reserved                     x04-x7F
+ 
+ //=============================================================================
+-// CACHE_LINE_4-5 0x0100 - 0x01FF Contains PMC interrupt data
++// CACHE_LINE_4-5 0x0180 - 0x027F Contains PMC interrupt data
+ //=============================================================================
+ 	u8	pmc_save_area[256];	// PMC interrupt Area           x00-xFF
+ } __attribute__((__aligned__(0x400)));
