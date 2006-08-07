@@ -1,17 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17622.57931.631871.287907@cargo.ozlabs.ibm.com>
-Date: Mon, 7 Aug 2006 16:48:43 +1000
+Message-ID: <17622.56592.41532.206800@cargo.ozlabs.ibm.com>
+Date: Mon, 7 Aug 2006 16:26:24 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-In-Reply-To: <20060803192629.GD25251@mag.az.mvista.com>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-	<17616.12251.339657.215571@cargo.ozlabs.ibm.com>
-	<17616.17129.964122.125259@cargo.ozlabs.ibm.com>
-	<20060803192629.GD25251@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Subject: Re: [RFC] asm code for Hypervisor Call Instrumentation
+In-Reply-To: <20060802175947.GA7489@w-mikek2.ibm.com>
+References: <20060802175947.GA7489@w-mikek2.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer writes:
+Mike Kravetz writes:
 
-> I realize that I didn't really answer your question.  Its at least
-> possible that the console driver could not be known at link time.
-> 
-> An example I used in another email is a platform that has 4 serial
-> ports, 2-16550 and 2-mpsc, say.  The /chosen/linux,stdout-path could
-> pick any of the four so you would need to compile in a low-level
-> serial driver for both and hook the correct one up at runtime.
-> 
-> Same could be said for a serial vs. video console.
+> This patch is built on top of Anton's hcall cleanup patch.  One
+> remaining issue is 'where should the statistic data structures
+> be updated?'.  For simplicity, I have the asm code call the
+> following C routine to perform the updates.
 
-OK, that's reasonable.  Still would be nice not to have to do the
-double dereference though.  I think that the platform_ops and the
-fw_ops could probably be combined.  Also, an init method for the
-platform/fw_ops would be useful - it would let us remove the kludge
-you have in the OF malloc implementation.
+Hmmm, doing the update in assembly would avoid the need to create a
+stack frame, which would be nice...  Maybe we need to add some macros
+to include/asm-powerpc/percpu.h to make it easier to access per-cpu
+variables from assembly code.
 
-The OF malloc is currently applying a minimum address constraint for
-all platforms, where it used to apply it only for 64-bit platforms.
-We need to fix that up somehow too.
+Alternatively, we could put a pointer to the hcall_stats array for
+each cpu in its paca.  That's very easily accessed from assembly code.
 
-Regards,
 Paul.
