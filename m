@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id CDC17679A6
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 0ACB2679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  6 Aug 2006 05:32:18 +1000 (EST)
-To: Frank <frannk_m1@yahoo.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: ELDK 3.1.1 support for x86_64 host architecture 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 04 Aug 2006 13:43:27 PDT."
-	<20060804204327.16319.qmail@web32202.mail.mud.yahoo.com>
-Date: Sat, 05 Aug 2006 21:32:15 +0200
-Sender: wd@denx.de
-Message-Id: <20060805193215.B182A35360F@atlas.denx.de>
-Cc: Michael Carey <MCarey@nearfield.com>, linuxppc-embedded@ozlabs.org
+	Mon,  7 Aug 2006 17:40:18 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1G9zig-0006HG-RA
+	for linuxppc-embedded@ozlabs.org; Mon, 07 Aug 2006 09:40:14 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
+References: <20060801100220.26176938@bob.dt.e-technik.uni-dortmund.de>
+	<44D1021C.5080602@dlasys.net> <87irl8zjl7.fsf@sleipner.barco.com>
+	<44D36940.7050908@dlasys.net>
+Date: Mon, 07 Aug 2006 09:40:14 +0200
+In-Reply-To: <44D36940.7050908@dlasys.net> (David H. Lynch, Jr.'s message of
+	"Fri, 4 Aug 2006 17:35:28 +0200")
+Message-ID: <87lkq1uh7l.fsf@sleipner.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +28,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20060804204327.16319.qmail@web32202.mail.mud.yahoo.com> you wrote:
-> 
-> There is something wrong with your Suse installation. I have
-> been using ELDK with Suse(9.2 and 10.1) since 2004 without any problems...
+>>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
 
-Good to hear. But I heard similar reports before. Eventually they are
-just missing some compatibility packages. I have no idea. I  keep  my
-fingers off SuSE.
+Hi,
 
-Best regards,
+David>     Have you tried 2.6.18.x to see if your stuff works with it
+David> ?
 
-Wolfgang Denk
+Yes, 2.6.18-rc3 + my zlib fix
+(http://thread.gmane.org/gmane.linux.kernel/428436) or -rc4 once it
+hits kernel.org works fine on my v2p-based board.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Were there fewer fools, knaves would starve.              - Anonymous
+Bye, Peter Korsgaard
