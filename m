@@ -1,15 +1,21 @@
-Return-Path: <vows_siu@yahoo.com.hk>
-Received: from web50801.mail.yahoo.com (web50801.mail.yahoo.com
-	[206.190.38.110]) by ozlabs.org (Postfix) with SMTP id E944667B58
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 845DB67B54
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Aug 2006 02:17:31 +1000 (EST)
-Message-ID: <20060808161050.33138.qmail@web50801.mail.yahoo.com>
-Date: Wed, 9 Aug 2006 00:10:50 +0800 (CST)
-From: chun fung siu <vows_siu@yahoo.com.hk>
-Subject: Trouble on building crossover compiler for Synology 8041 PPC based NAS
-To: linuxppc-embedded@ozlabs.org
+	Wed,  9 Aug 2006 02:43:30 +1000 (EST)
+Message-ID: <44D8BF02.6090103@ovro.caltech.edu>
+Date: Tue, 08 Aug 2006 09:42:42 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1326917224-1155053450=:32546"
+To: Eric Heim <sheldoninstruments@yahoo.com>
+Subject: Re: MPC8349 clocking
+References: <20060808155533.33325.qmail@web37803.mail.mud.yahoo.com>
+In-Reply-To: <20060808155533.33325.qmail@web37803.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,25 +26,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1326917224-1155053450=:32546
-Content-Type: text/plain; charset=big5
-Content-Transfer-Encoding: 8bit
+Eric Heim wrote:
+> Anyone know of a patch for the MPC8349 clocking scheme.  All my time 
+> tests are indicating that the clock is running at half speed though I 
+> see no indication in the /proc/cpuinfo.  I run a sleep(5) and it takes 
+> ten seconds but gettimeofday( ) and the time base register indicate that 
+> 5 seconds passed.
+> 
 
-Hi,
-   
-  I recently bought a Synology Network Attached Server DS-106e, run using a "Linux 2. 4.22-uc-0" Kernel, under 8041 PPC, no "gcc" installed. I want to build a crosslink gcc compiler for it in another "debian 2.6 kernel" linux. I find many options in the crosslink build script on ppc, but can't find any option for 8041 PPC. So what option should I choose? And further can I put the artifacts just compiled in my Network Attached Server? So that I can compile anything directly in my NAS.
-   
-  Many Thanks,
-  Roy
+Hi Tim,
 
- _______________________________________
- YM - 離線訊息
- 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
- http://messenger.yahoo.com.hk
---0-1326917224-1155053450=:32546
-Content-Type: text/html; charset=big5
-Content-Transfer-Encoding: 8bit
+Can you let us know the kernel and the u-boot version you are using
+(and the origin, eg. Freescale or Denx or ...).
 
-<DIV><SPAN class=812200007-08082006><FONT size=2>Hi,</FONT></SPAN></DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2></FONT></SPAN>&nbsp;</DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2>I recently bought a Synology Network Attached Server DS-106e,</FONT></SPAN><SPAN class=812200007-08082006><FONT size=2> run using <FONT face=新細明體>a&nbsp;</FONT><FONT face="Times New Roman">"Linux 2. 4.22-uc-0" Kernel, under 8041 PPC, no "gcc" installed. I want to build a crosslink gcc compiler for it in another "debian 2.6 kernel" linux.&nbsp;I find many options in the crosslink build script on ppc, but can't find any option for 8041 PPC. So what option should I choose? And further can I&nbsp;put&nbsp;the artifacts just compiled in my Network Attached Server? So that I can compile anything directly in my NAS.</FONT></FONT></SPAN></DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2></FONT></SPAN>&nbsp;</DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2>Many
- Thanks,</FONT></SPAN></DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2>Roy</FONT></SPAN></DIV><p>&#32;_______________________________________<br> YM - 離線訊息<br> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<br> http://messenger.yahoo.com.hk
---0-1326917224-1155053450=:32546--
+The issue could be in either U-Boot or Linux.
+
+0n my MDS board with the latest U-Boot and Denx Linux kernel,
+bdinfo indication 528MHz CPU, 264MHz bus frequency, then
+Linux shows these same numbers in /proc/cpuinfo.
+
+date; sleep 10; date
+
+run on the x86 development machine at the same time
+as the MDS board (well, as fast as I could move my mouse),
+showed a 10s delay on both, and both finished at the
+same time.
+
+So, I think its fixed.
+
+grep for csb_clk in the latest U-boot source shows it up
+in cpu/mpc83xx/speed.c, lbiu_clk is also in there.
+(lbiu_clk is the local-bus interface unit clock).
+I'm not sure which clock is used for the timer time-base,
+so find out the clock source of the timer the kernel
+is using, and then check the clock settings in your
+U-Boot versus the latest source (which you can obtain
+using the git tool from Denx's repository).
+
+grep in the arch/ppc folder of the Linux source (Denx git
+version) didn't show anything for csb_clk or lbiu_clk,
+so either their names are different there, or the U-Boot
+source is the location of the problem setting.
+
+I believe Kumar posted a csb_clk (or lbiu_clk) patch that fixed
+a setting error ... but I can't recall if it was a U-Boot
+patch or a kernel patch. I looked in the CHANGELOG for
+U-Boot and I didn't see a comment related to the clock
+settings (searching based on Kumar, MPC8349, or MPC83xx).
+
+Perhaps someone reading the list has a better recollection
+than I :)
+
+Cheers
+Dave
