@@ -1,20 +1,18 @@
-Return-Path: <danny@mailmij.org>
-Received: from mail.mailmij.org (mail.mailmij.org [82.93.140.149])
-	by ozlabs.org (Postfix) with ESMTP id 2198D67B6A
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 02:50:25 +1000 (EST)
-Date: Tue, 8 Aug 2006 18:50:23 +0200
-From: danny@mailmij.org
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] fix for firewire patch added in 2.6.17.2 that breaks
-	things on ppc
-Message-ID: <20060808185023.B21209@luna.ellen.dexterslabs.com>
-References: <20060805151050.B24484@luna.ellen.dexterslabs.com>
-	<20060807063854.B641@luna.ellen.dexterslabs.com>
-	<17624.7051.905145.470927@cargo.ozlabs.ibm.com>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 8 Aug 2006 11:04:08 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [RFC] consolidated libdt proposal
+Message-ID: <20060808180408.GD6079@mag.az.mvista.com>
+References: <20060719230544.GD3887@mag.az.mvista.com>
+	<1154911082.27074.104.camel@diesel>
+	<1154987921.24455.32.camel@basalt.austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17624.7051.905145.470927@cargo.ozlabs.ibm.com>;
-	from paulus@samba.org on Tue, Aug 08, 2006 at 03:05:15PM +1000
+In-Reply-To: <1154987921.24455.32.camel@basalt.austin.ibm.com>
+Cc: Pantelis Antoniou <pantelis@embeddedalley.com>,
+	"xen-ppc-devel@lists.xensource.com" <xen-ppc-devel@lists.xensource.com>,
+	linuxppc-dev@ozlabs.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 08, 2006 at 03:05:15PM +1000, Paul Mackerras wrote:
-> danny@mailmij.org writes:
-> 
-> > -#endif
-> > -
-> > +#else
-> >  	pci_save_state(pdev);
-> > -
-> > +#endif /* CONFIG_PPC_PMAC */
-> 
-> Shouldn't we just move the pci_save_state call up before the
-> pmac_call_feature() call?
-> 
-> Paul.
-> 
-I tested this. It works, but it has no effect (pci_restore_state does not report that anything changed,
-thus this means that the config space already contained the correct values).
+Hi Hollis,
 
-I discovered one additional problem with leaving a device running through a sleep/resume cycle:
-suspend:
-ohci1394: fw-host0: SelfID received outside of bus reset sequence
-resume:
-ohci1394: fw-host0: SelfID is inconsistent [0x7e80773f/0x7e80773f]
-The last leads to the node not being able to resume when the device is actually plugged.
+On Mon, Aug 07, 2006 at 04:58:41PM -0500, Hollis Blanchard wrote:
+> On Sun, 2006-08-06 at 19:38 -0500, Hollis Blanchard wrote:
+> > 
+> > Hmm, so we'll have at least three copies of this code: uboot, kernel,
+> > and Xen. Would it make sense to put this stuff into a libdt.a?
+> > Technically, dtc has a "libdt" already, but it's absurdly incomplete
+> > (I don't even know why it's there), so we could just replace it. 
+> 
+> Mark, I had a look at the code Pantelis wrote for u-boot, and it was
+> pretty easy to adapt to meet Xen's (userspace-based) needs. I've
+> attached my version below (and see ft_setup() at the bottom of the
+> file). Does it meet your requirements for the kernel bootwrapper?
 
-Anyway, it's a separate issue, I will investigate.
+[Disclaimer: I did a fairly quick scan of your patch so I may have
+misread or missed something.]
 
-Danny
+Except for not being able to extend a property (see below),
+I think it does meet my needs (at least as I know them today).
+
+However, I was hoping to keep the interfaces in the bootwrapper
+similar to the ones used in the kernel.  To that end, I had a
+routine to find a device node and other routines to find and modify
+a property within that node.  I didn't notice a "finddevice" type of
+function to find a device node.  Would you have a problem adding one?
+
+> One limitation of the attached code is that it doesn't support changing
+> the *size* of properties, though I don't think that would be too
+> difficult to add if needed.
+
+If we're going to allow cmdline editing in the bootwrapper, we would
+need to extend the size of a property.  We've never really talked about
+cmdline editing in the powerpc branch but I assume that its a good
+thing(tm).  I know I would like to have it so, IMHO, I think we should
+add it (and therefore require extending a property).
+
+Mark
