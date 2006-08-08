@@ -1,20 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5859E67B5F
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 00:44:37 +1000 (EST)
-Message-ID: <44D8A33D.6070000@sipsolutions.net>
-Date: Tue, 08 Aug 2006 16:44:13 +0200
-From: Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 5580A67B58
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 01:20:33 +1000 (EST)
+Date: Tue, 8 Aug 2006 10:19:40 -0500
+To: Lei CL Cheng <chenglcl@cn.ibm.com>
+Subject: Re: Umount reiserfs partition caused crash on 2.6.18-rc3-mm2
+Message-ID: <20060808151940.GB29823@pb15.lixom.net>
+References: <OFBE03114B.A48C7930-ON482571C4.001E80F2-482571C4.0020774E@cn.ibm.com>
 MIME-Version: 1.0
-To: will_schmidt@vnet.ibm.com
-Subject: Re: [PATCH] update {g5,iseries,pseries}_defconfigs
-References: <1154718328.5748.13.camel@farscape.rchland.ibm.com>	<17624.10083.56514.758904@cargo.ozlabs.ibm.com>	<44D84145.7020408@sipsolutions.net>
-	<1155048001.5454.27.camel@farscape.rchland.ibm.com>
-In-Reply-To: <1155048001.5454.27.camel@farscape.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFBE03114B.A48C7930-ON482571C4.001E80F2-482571C4.0020774E@cn.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Will Schmidt wrote:
-> For G5, I've enabled SND_AOA and friends as
-> modules; this includes the FABRIC_LAYOUT, ONYX, TAS, TOONIE and
-> SOUNDBUS* config options.  
->   
-Great, thanks.
+On Tue, Aug 08, 2006 at 01:57:19PM +0800, Lei CL Cheng wrote:
+> Hi,
+> 
+> I installed latest mm kernel 2.6.18-rc3-mm2 on ppc64 with RHEL4-U3.
+> And I made a reiserfs partition by mkfs command in this kernel.
+> But when I tried to umount this reiserfs partition, the kernel
+> crashed and xmon will be entered.
 
-Another thing I didn't think about earlier: does Apple ship any G5s that 
-are old enough to not have a layout_id in their device tree? I'm not 
-aware of any. If not, you might want to disable CONFIG_SND_POWERMAC for g5.
+Hi,
 
-johannes
+This doesn't at first look seem like a PPC-specific bug. You will probably
+get more eyes on the problem if you report it on LKML instead.
+
+
+-Olof
