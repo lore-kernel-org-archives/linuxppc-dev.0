@@ -1,23 +1,15 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CA31F67B53
+Return-Path: <vows_siu@yahoo.com.hk>
+Received: from web50801.mail.yahoo.com (web50801.mail.yahoo.com
+	[206.190.38.110]) by ozlabs.org (Postfix) with SMTP id E944667B58
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Aug 2006 02:07:21 +1000 (EST)
-Received: from [192.100.16.36] (kiwi.ovro.caltech.edu [192.100.16.36])
-	by ovro.ovro.caltech.edu (8.13.6/8.13.6) with ESMTP id k78G7HSe029069
-	for <linuxppc-embedded@ozlabs.org>; Tue, 8 Aug 2006 09:07:17 -0700
-Message-ID: <44D8B69B.9080507@ovro.caltech.edu>
-Date: Tue, 08 Aug 2006 09:06:51 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
+	Wed,  9 Aug 2006 02:17:31 +1000 (EST)
+Message-ID: <20060808161050.33138.qmail@web50801.mail.yahoo.com>
+Date: Wed, 9 Aug 2006 00:10:50 +0800 (CST)
+From: chun fung siu <vows_siu@yahoo.com.hk>
+Subject: Trouble on building crossover compiler for Synology 8041 PPC based NAS
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: PowerPC Local Bus
-References: <20060808135020.GG26606@igloo.df.lth.se>
-In-Reply-To: <20060808135020.GG26606@igloo.df.lth.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1326917224-1155053450=:32546"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,45 +20,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fredrik Roubert wrote:
-> Hi!
-> 
-> I'm about to write drivers for some FPGA's that are connected to the
-> local bus of a PowerQUICC II Pro processor and use the user-programmable
-> machines (UPM's) to transfer data over the bus. What code does already
-> exist for Linux to help me with this? In the stock kernels, I can't even
-> find a structure definition for the registers of the local bus
-> controller, but it seems strange that no-one has written such code
-> before me. Will I really have to write everything from scratch, or what
-> code is there that I don't know about yet?
-> 
-> Cheers // Fredrik Roubert
-> 
+--0-1326917224-1155053450=:32546
+Content-Type: text/plain; charset=big5
+Content-Transfer-Encoding: 8bit
 
-Hi Fredrik,
+Hi,
+   
+  I recently bought a Synology Network Attached Server DS-106e, run using a "Linux 2. 4.22-uc-0" Kernel, under 8041 PPC, no "gcc" installed. I want to build a crosslink gcc compiler for it in another "debian 2.6 kernel" linux. I find many options in the crosslink build script on ppc, but can't find any option for 8041 PPC. So what option should I choose? And further can I put the artifacts just compiled in my Network Attached Server? So that I can compile anything directly in my NAS.
+   
+  Many Thanks,
+  Roy
 
-I'm going to working on something similar soon. If you want
-to discuss it off-list, feel free to. We can report the
-results back to the list once we have something working.
+ _______________________________________
+ YM - 離線訊息
+ 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
+ http://messenger.yahoo.com.hk
+--0-1326917224-1155053450=:32546
+Content-Type: text/html; charset=big5
+Content-Transfer-Encoding: 8bit
 
-This is something that can either go in U-Boot or Linux. The
-UPM looks fairly easy to setup. Freescale has a UPM programming
-tool that allows you to setup waveforms for the single-read/write
-and burst-read/write sequences. I was going to connect up
-an FPGA to the MPC8349E-MDS local bus (using the unloaded
-SDRAM pads) and then capture logic analyzer traces of the
-transactions.
-
-I plan to setup a burst mode interface to an FPGA. Actually,
-I'll probably decode one chip select to non-burst registers,
-and another to burstable memory.
-
-Like I said, we can chat off-list if you like since this discussion
-will not be of general interest (but if anyone thinks this should
-stay on-list, let me know, and we'll discuss it here).
-
-What FPGA family are you using? I'll be attaching an Altera
-Stratix II FPGA onto the local-bus.
-
-Dave Hawkins
-Caltech.
+<DIV><SPAN class=812200007-08082006><FONT size=2>Hi,</FONT></SPAN></DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2></FONT></SPAN>&nbsp;</DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2>I recently bought a Synology Network Attached Server DS-106e,</FONT></SPAN><SPAN class=812200007-08082006><FONT size=2> run using <FONT face=新細明體>a&nbsp;</FONT><FONT face="Times New Roman">"Linux 2. 4.22-uc-0" Kernel, under 8041 PPC, no "gcc" installed. I want to build a crosslink gcc compiler for it in another "debian 2.6 kernel" linux.&nbsp;I find many options in the crosslink build script on ppc, but can't find any option for 8041 PPC. So what option should I choose? And further can I&nbsp;put&nbsp;the artifacts just compiled in my Network Attached Server? So that I can compile anything directly in my NAS.</FONT></FONT></SPAN></DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2></FONT></SPAN>&nbsp;</DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2>Many
+ Thanks,</FONT></SPAN></DIV>  <DIV><SPAN class=812200007-08082006><FONT size=2>Roy</FONT></SPAN></DIV><p>&#32;_______________________________________<br> YM - 離線訊息<br> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<br> http://messenger.yahoo.com.hk
+--0-1326917224-1155053450=:32546--
