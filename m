@@ -1,19 +1,14 @@
-Return-Path: <horms@koto.vergenet.net>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id AD3D4679F0
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Aug 2006 14:18:02 +1000 (EST)
-Date: Tue, 8 Aug 2006 12:46:47 +0900
-From: Horms <horms@verge.net.au>
-To: Russell King <rmk@arm.linux.org.uk>,
-	Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Andi Kleen <ak@suse.de>,
-	Chris Zankel <chris@zankel.net>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Change panic_on_oops message to "Fatal exception"
-Message-ID: <20060808034645.GA7658@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, discuss@x86-64.org
+Return-Path: <mikey@ozlabs.org>
+To: Milton Miller <miltonm@bga.com>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] SLB shadow buffer 
+In-reply-to: <11154999753625558ec1.596516649.miltonm@bga.com> 
+References: <11154999753625558ec1.596516649.miltonm@bga.com>
+Date: Tue, 08 Aug 2006 14:21:05 +1000
+Sender: mikey@ozlabs.org
+Message-Id: <20060808042106.4379E679FD@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,103 +18,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Change panic_on_oops message to "Fatal exception"
+> > +#define SHADOW_SLB_BOLTED_STACK_ESID \
+> > +		(SLBSHADOW_SAVEAREA + 0x10*(SLB_NUM_BOLTED-1))
+> > +#define SHADOW_SLB_BOLTED_STACK_VSID \
+> > +		(SLBSHADOW_SAVEAREA + 0x10*(SLB_NUM_BOLTED-1) + 8)
+> > +
+> Still a bit of magic size, but not likely to change.
+> 
+> Maybe an expicit define for the slot?
 
-Previously the message was "Fatal exception: panic_on_oops", as introduced
-in a recent patch whith removed a somewhat dangerous call to ssleep() in
-the panic_on_oops path.  However, Paul Mackerras suggested that this was
-somewhat confusing, leadind people to believe that it was panic_on_oops
-that was the root cause of the fatal exception. On his suggestion, this
-patch changes the message to simply "Fatal exception".  A suitable oops
-message should already have been displayed.
+Arrh nice, I can do this all in asm-offsets.  Much less magic.
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
----
- arch/arm/kernel/traps.c     |    2 +-
- arch/i386/kernel/traps.c    |    2 +-
- arch/ia64/kernel/traps.c    |    2 +-
- arch/powerpc/kernel/traps.c |    2 +-
- arch/x86_64/kernel/traps.c  |    2 +-
- arch/xtensa/kernel/traps.c  |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+> > +	/* Update the last bolted SLB */
+> > +	ld	r9,PACA_SLBSHADOWPTR(r13)
+> > + 	li	r12,0
+> > +  	std	r12,SHADOW_SLB_BOLTED_STACK_ESID(r9) /* Clear ESID */
+> > +	std	r7,SHADOW_SLB_BOLTED_STACK_VSID(r9)  /* Save VSID */
+> > + 	std	r0,SHADOW_SLB_BOLTED_STACK_ESID(r9)  /* Save ESID */
+> > +
+> 
+>  Still some leading spaces hiding
 
-diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
-index 4e29dd0..aeeed80 100644
---- a/arch/arm/kernel/traps.c
-+++ b/arch/arm/kernel/traps.c
-@@ -233,7 +233,7 @@ NORET_TYPE void die(const char *str, str
- 	spin_unlock_irq(&die_lock);
- 
- 	if (panic_on_oops)
--		panic("Fatal exception: panic_on_oops");
-+		panic("Fatal exception");
- 
- 	do_exit(SIGSEGV);
- }
-diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
-index 0d4005d..82e0fd0 100644
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -454,7 +454,7 @@ #endif
- 		panic("Fatal exception in interrupt");
- 
- 	if (panic_on_oops)
--		panic("Fatal exception: panic_on_oops");
-+		panic("Fatal exception");
- 
- 	oops_exit();
- 	do_exit(SIGSEGV);
-diff --git a/arch/ia64/kernel/traps.c b/arch/ia64/kernel/traps.c
-index 5a04204..fffa9e0 100644
---- a/arch/ia64/kernel/traps.c
-+++ b/arch/ia64/kernel/traps.c
-@@ -118,7 +118,7 @@ die (const char *str, struct pt_regs *re
- 	spin_unlock_irq(&die.lock);
- 
- 	if (panic_on_oops)
--		panic("Fatal exception: panic_on_oops");
-+		panic("Fatal exception");
- 
-   	do_exit(SIGSEGV);
- }
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2105767..05682a2 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -151,7 +151,7 @@ #endif
- 		panic("Fatal exception in interrupt");
- 
- 	if (panic_on_oops)
--		panic("Fatal exception: panic_on_oops");
-+		panic("Fatal exception");
- 
- 	do_exit(err);
- 
-diff --git a/arch/x86_64/kernel/traps.c b/arch/x86_64/kernel/traps.c
-index 4e9938d..14052f0 100644
---- a/arch/x86_64/kernel/traps.c
-+++ b/arch/x86_64/kernel/traps.c
-@@ -529,7 +529,7 @@ void __kprobes oops_end(unsigned long fl
- 		/* Nest count reaches zero, release the lock. */
- 		spin_unlock_irqrestore(&die_lock, flags);
- 	if (panic_on_oops)
--		panic("Fatal exception: panic_on_oops");
-+		panic("Fatal exception");
- }
- 
- void __kprobes __die(const char * str, struct pt_regs * regs, long err)
-diff --git a/arch/xtensa/kernel/traps.c b/arch/xtensa/kernel/traps.c
-index 9734960..ce077d6 100644
---- a/arch/xtensa/kernel/traps.c
-+++ b/arch/xtensa/kernel/traps.c
-@@ -488,7 +488,7 @@ #endif
- 		panic("Fatal exception in interrupt");
- 
- 	if (panic_on_oops)
--		panic("Fatal exception: panic_on_oops");
-+		panic("Fatal exception");
- 
- 	do_exit(err);
- }
--- 
-1.4.1.gd3ba6
+Yep... oops.  
+
+> 
+> >  Index: linux-2.6-ozlabs/include/asm-powerpc/lppaca.h
+> 
+> > @@ -133,5 +135,22 @@ struct > > > lppaca {
+> >  
+> >  extern struct lppaca lppaca[];
+> >  
+> > +/*
+> > + * SLB shadow buffer structure as defined in the PAPR.  The save_area
+> > + * contains adjacent ESID and VSID pairs for each shadowed SLB.  The
+> > + * ESID is stored in the lower 64bits, then the VSID.
+> > + */
+> > +struct slb_shadow {
+> > +	u32	persistent;		// Number of persistent SLBs	x00-x03
+> > +	u32	buffer_length;		// Total shadow buffer length	x04-x07
+> > +	u64	reserved;		// Alignment			x08-x0f
+> > +	struct	{
+> > +		u64     esid;
+> > +		u64	vsid;
+> > +	} save_area[SLB_NUM_BOLTED];	//				x10-x40
+> > +} ____cacheline_aligned;
+> > +
+> 
+> C comments ... or in the separate cleanup patch
+
+I think I'll post a full lppaca cleanup patch in a bit.  
+
+> > +extern struct slb_shadow slb_shadow[];
+> > +
+> >  #endif /* __KERNEL__ */
+> >  #endif /* _ASM_POWERPC_LPPACA_H */
+> > Index: linux-2.6-ozlabs/include/asm-powerpc/paca.h
+> > ===================================================================
+> > 
+> >  	/* accumulated system TB ticks */
+> >  	u64 startpurr;			/* PURR/TB value snapshot */
+> > +
+> > +	struct slb_shadow *slb_shadow_ptr;
+> >  };
+>  
+> Do we need the extra line?  (I haven't looked at the result)
+
+They are broken into logical groups, so no.
+
+Updated patch to come.
+
+Michael
