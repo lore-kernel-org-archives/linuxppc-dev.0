@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17624.11412.737888.950794@cargo.ozlabs.ibm.com>
-Date: Tue, 8 Aug 2006 16:17:56 +1000
+Message-ID: <17624.14147.502469.136322@cargo.ozlabs.ibm.com>
+Date: Tue, 8 Aug 2006 17:03:31 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: PATCH: Enable PCI by default on PPC_86xx boards
-In-Reply-To: <1154378023.5107.39.camel@cashmere.sps.mot.com>
-References: <1154378023.5107.39.camel@cashmere.sps.mot.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Nicolas DET <nicolas@det-net.org>
+Subject: Re: [PATCH] cputable: Correct IBM/750CXe rev3.x setup
+In-Reply-To: <20060806104200.49c5f6bf.nicolas@det-net.org>
+References: <20060806104200.49c5f6bf.nicolas@det-net.org>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,24 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger writes:
+Nicolas DET writes:
 
->  config PCI
-> -	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx ||
-> PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) \
-> -				  || MPC7448HPC2
-> -	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx
-> && !PPC_86xx
-> +	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx
-> \
-> +		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2
-> +	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
-> +		&& !PPC_85xx && !PPC_86xx
+> This patch simply add an entry in the cputable to recognize
+> correctly the IBM750CXe rev3.1. Only rev 2.x was correctly detected
+> before.
 
-I see how that means we offer PCI if PPC_86xx, but I don't see how
-that enables it by default...  All you've done to the default y line
-is to stick backslash-newline-whitespace in the middle.
+[Patch annoyingly as an attachment...]
 
-(Patch is linewrapped, by the way.)
++	{	/* 750CXe rev 3.1 (0008x311) */
++		.pvr_mask		= 0xffff0fff,
++		.pvr_value		= 0x00080311,
++		.cpu_name		= "750CXe",
+
+Any reason to make this so specific?  The rest of the entry is
+identical to the ones we have for PVR values 0x0008221x and
+0x00083214 (except that you missed out PPC_FEATURE_PPC_LE).
+It looks to me like we could collapse all three into a single entry
+with a suitable pvr_mask value (say 0xffff0e00?).
+
+(akpm - consider this a nack)
 
 Paul.
