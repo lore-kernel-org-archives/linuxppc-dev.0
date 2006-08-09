@@ -1,20 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 463B867B67
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 02:59:29 +1000 (EST)
-Date: Wed, 9 Aug 2006 10:03:23 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Jon Loeliger <jdl@jdl.com>
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A344867B6C
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 04:48:19 +1000 (EST)
+In-Reply-To: <1155139501.17187.76.camel@localhost.localdomain>
+References: <20060809140336.9E3C93535D4@atlas.denx.de>
+	<1155139501.17187.76.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1E9164B4-0EFC-4A7D-8C1C-9D7365232E16@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
 Subject: Re: RFC: Location for Device Tree Sources?
-Message-ID: <20060809170323.GC17759@mag.az.mvista.com>
-References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
-	<1155122309.4040.94.camel@localhost.localdomain>
-	<1155128205.3944.1.camel@zod.rchland.ibm.com>
-	<20060809163839.GB17759@mag.az.mvista.com>
-	<E1GArEQ-0006OP-7H@jdl.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1GArEQ-0006OP-7H@jdl.com>
+Date: Wed, 9 Aug 2006 13:47:59 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,52 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 09, 2006 at 11:48:34AM -0500, Jon Loeliger wrote:
-> So, like, the other day "Mark A. Greer" mumbled:
-> > > We're only talking about the _source_ files.  The .dts files.  Not the
-> > > binary trees themselves.
-> > > 
-> > > The basic summary is that having a .dts in the kernel for every
-> > > defconfig would be good.  (I think that was the summary anyway.)
-> > 
-> > That's my understanding too.  A 1-1 matching of default config files
-> > and dts files kept in the kernel src trees.
-> 
-> And the keen observer who watches Paul's tree will have
-> noticed that the first DTS file, mpc8641_hpcn.dts, has already
-> been added to arch/powerpc/boot/dts!
-> 
-> > Any extra dts files 
-> 
-> ... of which there are none...
 
-Yet...
+On Aug 9, 2006, at 11:05, Benjamin Herrenschmidt wrote:
 
-> > ...would be kept whereever dtc src is stored (i.e., jdl.com).
-> >  I haven't heard jdl agree to this, though.  :)
-> 
-> Sure.  No problem by me.
-> 
-> Though I do have a question WRT the notion of the libdt...
-> 
-> So, if I understand this proposal correctly, making libdt.a
-> would mean that we will now have to link the kernel against
-> this new, external dependency library.  It would also mean
-> that we'd have to link U-Boot against this new, external
-> library as well.
-> 
-> Did I misunderstand or is everyone hip, jiggie and down with that?
+>> It's just that I think that the DT *sources* should not  be  part  of
+>> the  U-Boot  soutrce  tree, and that the DT should be in fact part of
+>> the kernel images that gets booted by U-Boot.
+>
+> Fair enough, I misunderstood.
+>
+>> This has been discussed before (see archives), and the agreement  (?)
+>> was  to  use  U-Boot's multifile image format for this purpose, where
+>> you can combine a Linux kenrel image with a DT image  into  one  file
+>> bootable by U-Boot.
+>
+> Well, I would still like something else. For example, I'm vendor  
+> NetFoo
+> selling network appliances (ADSL modems, routers, wireless APs, ...).
+>
+> A certain amount of my products are based on a very similar chipset
+> provided by vendor NarrowCom, same core, same ethernet cell, though my
+> devices have subtle differences in the various varieties of those  
+> chips
+> used and what other chips are put around on the board.
+>
+> I want my devices to have a firmware that pass a DT to the kernel.  
+> That
+> DT is bolted into the firmware. In fact, it could be separate flash
+> blocks (especially if the flash has some small blocks) from the actual
+> firmware code but that does not really matter.
+>
+> That way, I can distribute and maintain a single kernel image update
+> package as part of my software update/maintainance solution.
 
-I thought the proposal was a master copy kept by you and then the
-various users would copy it over when they wanted.
 
->From Hollis' email
-(http://ozlabs.org/pipermail/linuxppc-embedded/2006-August/023882.htm):
+I think you'll find that the changes Matt McClintock made to u-boot  
+make this quite possible.  The dtb is kept separate, and passed in by  
+u-boot.  If those patches are acceptable, they provide what you  
+want.  If they aren't acceptable, we'd be happy to make changes.  We  
+just need to know, one way or another.
 
-	"I think we should turn it into a library in the dtc source
-	tree. The various projects using it could then include snapshots
-	(to avoid dependencies)."
-
-I think that means we copy.
-
-Mark
+Andy
