@@ -1,16 +1,14 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id D068467B54
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 10:35:59 +1000 (EST)
-Date: Tue, 8 Aug 2006 19:35:55 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Perhaps git-update-server-info needs to be run on
-	.../paulus/powerpc.git?
-Message-Id: <20060808193555.301bc229.kim.phillips@freescale.com>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id C12C167B55
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 11:23:40 +1000 (EST)
+Date: Tue, 8 Aug 2006 20:22:03 -0500
+From: Milton Miller <miltonm@bga.com>
+To: jimix@watson.ibm.com, linuxppc-dev@ozlabs.org,
+Subject: Re: [RFC] Debugging with a HW probe.
+Message-Id: <311550865236b8b45674.846930886.miltonm@bga.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus' tree clones fine, paulus' doesn't:
+On Sun Aug  6 2006 09:42:16 AM CDT, Jimi Xenidis wrote:
+> On the XenPPC project we've been playing around with using GDB to
+> source debug Linux (and Xen) using a RiscWatch HW probe.
 
-$ git clone http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-Cannot get remote repository information.
-Perhaps git-update-server-info needs to be run there?
-$ git --version
-git version 1.4.1
-$ cg-clone http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-defaulting to local storage area
-Fetching head...
-Fetching objects...
-Getting alternates list for http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git/
-Also look at http://git.kernel.or
-Getting pack list for http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git/
-Getting pack list for http://git.kernel.or
-error: Unable to find b1f5b9df2ae1f4eede001d7751b099d4ae34be95 under http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git/
-Cannot obtain needed blob b1f5b9df2ae1f4eede001d7751b099d4ae34be95
-while processing commit 81b73dd92b97423b8f5324a59044da478c04f4c4.
-progress: 12 objects, 8836 bytes
-cg-fetch: objects fetch failed
-$
+> We have found it useful to teach xmon to make this call so we can then
+> debug the SW thru the probe. Is this useful to anyone else
 
-Kim
+Since you only invoke the attention on command from the debugger, how
+is this better than just invoking the stop command from the probe?  Is it you
+are not dispatched out?  That you are not at a random point in the input
+polling?
+
+milton
