@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4572267BA4
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:37:38 +1000 (EST)
-Subject: Re: [PATCH] update {g5,iseries,pseries}_defconfigs
+	by ozlabs.org (Postfix) with ESMTP id AB8CB67BA6
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:37:47 +1000 (EST)
+Subject: Re: boot problems on pseries
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <44D8A33D.6070000@sipsolutions.net>
-References: <1154718328.5748.13.camel@farscape.rchland.ibm.com>
-	<17624.10083.56514.758904@cargo.ozlabs.ibm.com>
-	<44D84145.7020408@sipsolutions.net>
-	<1155048001.5454.27.camel@farscape.rchland.ibm.com>
-	<44D8A33D.6070000@sipsolutions.net>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+In-Reply-To: <20060809013609.GA10876@ca-server1.us.oracle.com>
+References: <20060809013609.GA10876@ca-server1.us.oracle.com>
 Content-Type: text/plain
-Date: Wed, 09 Aug 2006 17:35:25 +0200
-Message-Id: <1155137725.17187.46.camel@localhost.localdomain>
+Date: Wed, 09 Aug 2006 17:37:30 +0200
+Message-Id: <1155137850.17187.48.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-08-08 at 16:44 +0200, Johannes Berg wrote:
-> Will Schmidt wrote:
-> > For G5, I've enabled SND_AOA and friends as
-> > modules; this includes the FABRIC_LAYOUT, ONYX, TAS, TOONIE and
-> > SOUNDBUS* config options.  
-> >   
-> Great, thanks.
+On Tue, 2006-08-08 at 18:36 -0700, Mark Fasheh wrote:
+> Hello,
+> 	So I do most of my work on some IBM JS20 powerpc blades. They
+> usually run a git kernel on a stock RHEL4 distribution. The contents of
+> /proc/cpuinfo is:
 > 
-> Another thing I didn't think about earlier: does Apple ship any G5s that 
-> are old enough to not have a layout_id in their device tree? I'm not 
-> aware of any. If not, you might want to disable CONFIG_SND_POWERMAC for g5.
+> processor       : 0
+> cpu             : PPC970, altivec supported
+> clock           : 1600.000000MHz
+> revision        : 2.2 (pvr 0039 0202)
+> 
+> processor       : 1
+> cpu             : PPC970, altivec supported
+> clock           : 1600.000000MHz
+> revision        : 2.2 (pvr 0039 0202)
+> 
+> timebase        : 199837651
+> platform        : pSeries
+> machine         : CHRP IBM,8842-21X
+> 
+> 
+> Recently, I discovered that newer kernels would no longer fully boot.
+> There's no oops or panic message and they get through most of the kernel
+> initialization before simply hanging. I spent some quality time today with
+> git-bisect, and traced the badness down to this commit:
 
-None.
+I'm just back from vacation and looking into this. 
 
 Ben.
