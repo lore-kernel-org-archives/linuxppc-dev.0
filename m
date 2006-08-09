@@ -1,16 +1,19 @@
-Return-Path: <alexander@mdivac.com>
+Return-Path: <lombardo@mdivac.com>
 Received: from mail.mdivac.com (adsl-68-253-104-89.dsl.bcvloh.ameritech.net
-	[68.253.104.89]) by ozlabs.org (Postfix) with ESMTP id 3BA8D679F0
+	[68.253.104.89]) by ozlabs.org (Postfix) with ESMTP id D8DC9679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Aug 2006 04:05:30 +1000 (EST)
-Message-ID: <44DA210D.5010101@mdivac.com>
-Date: Wed, 09 Aug 2006 13:53:17 -0400
-From: stevea-mdi <alexander@mdivac.com>
+	Thu, 10 Aug 2006 06:09:37 +1000 (EST)
+Message-ID: <44DA40FF.90504@mdivac.com>
+Date: Wed, 09 Aug 2006 16:09:35 -0400
+From: Frank D Lombardo <lombardo@mdivac.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: U-Boot on Xilinx ML403/patch for ml403&ml300 UBoot
+To: sudheer <urwithsudheer@gmail.com>
+Subject: Re: SystemAce Driver.
+References: <20060724121452.55760.qmail@web53608.mail.yahoo.com>	<44C4BE5B.3000002@gmail.com>
+	<44D9F9DF.5020100@gmail.com>
+In-Reply-To: <44D9F9DF.5020100@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: alexander@mdivac.com
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,57 +24,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ming Lui asks
+sudheer wrote:
+> Hello Ameet Patil
+>
+> I am looking for linux kernel source 2.6.16 with system ace controller 
+> support. I downloaded the linux-2.6.16 and linux-2.6.17-1 source from 
+> kernel.org but could not find any files related to system ace 
+> controller  ( No xilinx_sysace directory in  drivers/block/) .  I have 
+> checked penguinppc.org also but could not get it.
+>
+> Can you please send to me the link where i could download the 
+> linuxppc-2.6.16 source with system ace support.
+>
+> Thanks & Regards
+> Sudheer
+>
+> Ameet Patil wrote:
+>> Hi Raja,
+>>     I have ported the Xilinx System ACE driver to 2.6 kernel. Find the 
+>> latest one here:
+>> http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch
+>>
+>> NOTE: this patch wouldn't work if you are using the TEMAC driver. In 
+>> which case use the -after-TEMAC patch found in the patches folder above.
+>>
+>> Check the following discussions (threads) for more details:
+>> 1. "Xilinx SystemACE driver for 2.6"
+>> 2. "Xilinx BSP for linux 2.6"
+>> 3. "Kernel hangs after "Now booting the kernel"."
+>>
+>> cheers,
+>> -Ameet
+>>
+>> Raja Chidambaram wrote:
+>>   
+>>>  Hi all,
+>>>  We are working on customized board with amcc 440SPe
+>>> processor & xilinx System Ace controller. The System
+>>> Ace controller is connected to compact flash driver.
+>>>
+>>> We use u-boot 1.2 as bootloader & linux kernel
+>>> 2.6.16-2.
+>>>
+>>> On the process the u-boot is able to detect compact
+>>> flash through Xilinx SystemAce controller & able to
+>>> load the kernel image into compact flash.But when the
+>>> linux boot's up it not able to detect the System Ace
+>>> controller or compact flash.
+>>>
+>>> Note:we need to have the root file system in compact
+>>> flash.
+>>>
+>>> Is their any drivers available for SystemAce
+>>> controller on linux 2.6,if their how to get it.please
+>>> help me in this
+>>>                                     with regards
+>>>                                      raja
+>>>
+>>>
+>>>
+>>> __________________________________________________
+>>> Do You Yahoo!?
+>>> Tired of spam?  Yahoo! Mail has the best spam protection around 
+>>> http://mail.yahoo.com 
+>>> _______________________________________________
+>>> Linuxppc-embedded mailing list
+>>> Linuxppc-embedded@ozlabs.org
+>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>>
+>>>     
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>>   
+>
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Sudheer,
 
->Are there any patches needed? Any document about this topic is 
->appreciated. Thanks a lot for your help.
+You need to download the SystemAce patch and apply it to the 2.6.17.1 
+Kernel.  The patch can be downloaded from: 
+http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch
 
-Yes.  I'd recommend applying Ameet's patches at
-http://www.linux.get2knowmore.com/
-however you will still need to change a few macro lines for the
-COMPACTFLASH addresses.
+Save the patch to the root of the Kernel sources and run the following 
+command:
+patch -p1 < linuxppc-2.6.17.1-sysace-1.2.patch
 
-There is also a major error in the board_info structure.  Someone
-changed this data structure for the ml403 & ml300 so that it
-no longer matches the UBoot form.  The one in asm/ppcboot.h is
-correct. Someone else asked about this back in June.  So ....
+Frank
+<http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch>
 
-
-diff -Naur linux-2.6.17-4.patch1/arch/ppc/platforms/4xx/xilinx_ml300.h linux-2.6.17-4.working/arch/ppc/platforms/4xx/xilinx_ml300.h
---- linux-2.6.17-4.patch1/arch/ppc/platforms/4xx/xilinx_ml300.h 2006-07-25 16:42:50.000000000 -0400
-+++ linux-2.6.17-4.working/arch/ppc/platforms/4xx/xilinx_ml300.h        2006-08-02 19:47:00.000000000 -0400
-@@ -19,14 +19,7 @@
- #ifndef __ASSEMBLY__
-
- #include <linux/types.h>
--
--typedef struct board_info {
--       unsigned int     bi_memsize;            /* DRAM installed, in bytes */
--       unsigned char    bi_enetaddr[6];        /* Local Ethernet MAC address */
--       unsigned int     bi_intfreq;            /* Processor speed, in Hz */
--       unsigned int     bi_busfreq;            /* PLB Bus speed, in Hz */
--       unsigned int     bi_pci_busfreq;        /* PCI Bus speed, in Hz */
--} bd_t;
-+#include <asm/ppcboot.h>
-
- /* Some 4xx parts use a different timebase frequency from the internal clock.
- */
-diff -Naur linux-2.6.17-4.patch1/arch/ppc/platforms/4xx/xilinx_ml403.h linux-2.6.17-4.working/arch/ppc/platforms/4xx/xilinx_ml403.h
---- linux-2.6.17-4.patch1/arch/ppc/platforms/4xx/xilinx_ml403.h 2006-07-25 16:42:50.000000000 -0400
-+++ linux-2.6.17-4.working/arch/ppc/platforms/4xx/xilinx_ml403.h        2006-08-02 19:46:46.000000000 -0400
-@@ -23,14 +23,7 @@
- #ifndef __ASSEMBLY__
-
- #include <linux/types.h>
--
--typedef struct board_info {
--       unsigned int     bi_memsize;            /* DRAM installed, in bytes */
--       unsigned char    bi_enetaddr[6];        /* Local Ethernet MAC address */
--       unsigned int     bi_intfreq;            /* Processor speed, in Hz */
--       unsigned int     bi_busfreq;            /* PLB Bus speed, in Hz */
--       unsigned int     bi_pci_busfreq;        /* PCI Bus speed, in Hz */
--} bd_t;
-+#include <asm/ppcboot.h>
-
- /* Some 4xx parts use a different timebase frequency from the internal clock.
- */
+//
+//
