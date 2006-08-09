@@ -1,20 +1,17 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (mail.jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E5AD679E9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:00:56 +1000 (EST)
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "'Paul Mackerras'" <paulus@samba.org>,
-	<linuxppc-dev@ozlabs.org>
-Subject: RE: Who cares about PReP?
-Date: Wed, 9 Aug 2006 17:00:50 +0200
-Message-ID: <013401c6bbc4$9d2acd90$99dfdfdf@bakuhatsu.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <17622.58559.879330.496619@cargo.ozlabs.ibm.com>
-Reply-To: matt@genesi-usa.com
+	by ozlabs.org (Postfix) with ESMTP id E381F67B69
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:37:32 +1000 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
+	id 1GAq7c-0005si-VE
+	for linuxppc-dev@ozlabs.org; Wed, 09 Aug 2006 10:37:29 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Offer PCI as a CONFIG choice for PPC_86xx.
+Date: Wed, 09 Aug 2006 10:37:28 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1GAq7c-0005si-VE@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Also fix 80-column run-over.
 
-QEMU PPC implements a PReP system too.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
-Probably a good place to test without needing a real system.
+---
 
-However it's the kind of thing you'd want to throw a CHRP
-ROM onto in the end, and forget PReP for emulation (after
-all, nobody makes 'em anymore).
+I misspoke myself on the earlier, ill-formed version of this patch. :-)
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+ arch/powerpc/Kconfig |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 13e583f..abb325e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -836,9 +836,10 @@ config MCA
+ 	bool
  
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org] 
-> On Behalf Of Paul Mackerras
-> Sent: Monday, August 07, 2006 8:59 AM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Who cares about PReP?
-> 
-> I started looking at moving the PReP code over to 
-> arch/powerpc.  I am struck by how many ifdefs there are in 
-> there to set things up for particular individual PReP 
-> implementations.  We can do better than that, I'm sure, but 
-> the issue becomes one of testing.  The only PReP I have here 
-> is an RS/6000 43p-140.
-> 
-> Who else has a PReP system and would be willing to do some 
-> testing and debugging?  If so, what sort of PReP is it?
-> 
-> Paul.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+ config PCI
+-	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) \
+-				  || MPC7448HPC2
+-	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx && !PPC_86xx
++	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
++		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2
++	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
++		&& !PPC_85xx && !PPC_86xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+ 	help
