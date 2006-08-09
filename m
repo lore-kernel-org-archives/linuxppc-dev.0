@@ -1,20 +1,35 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 1872E67BC1
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 23:06:53 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so113815ugf
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Aug 2006 06:06:50 -0700 (PDT)
-Date: Wed, 9 Aug 2006 17:06:46 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 1/6] ehea: interface to network stack
-Message-ID: <20060809130646.GA6846@martell.zuzino.mipt.ru>
-References: <44D99EFC.3000105@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44D99EFC.3000105@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B464067BB1
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 23:14:51 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k79DEmqk031544
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 09:14:48 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k79DEmCp285654
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 09:14:48 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k79DElb6017245
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 09:14:48 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/6] ehea: pHYP interface
+Date: Wed, 9 Aug 2006 15:14:46 +0200
+References: <44D99F1A.4080905@de.ibm.com>
+In-Reply-To: <44D99F1A.4080905@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608091514.46861.arnd.bergmann@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
 	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,153 +40,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 09, 2006 at 10:38:20AM +0200, Jan-Bernd Themann wrote:
-> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_main.c
-> +++ kernel/drivers/net/ehea/ehea_main.c
-
-> +static inline u64 get_swqe_addr(u64 tmp_addr, int addr_seg)
-> +{
-> +	u64 addr;
-> +	addr = tmp_addr;
-> +	return addr;
-> +}
-> +
-> +static inline u64 get_rwqe_addr(u64 tmp_addr)
-> +{
-> +	return tmp_addr;
-> +}
-
-The point of this exercise?
-
-> +static inline int ehea_refill_rq3_def(struct ehea_port_res *pr, int nr_of_wqes)
-
-Way too big to be inline function.
-
-> +{
-> +	int i;
-> +	int ret = 0;
-> +	struct ehea_qp *qp;
-> +	struct ehea_rwqe *rwqe;
-> +	int skb_arr_rq3_len = pr->skb_arr_rq3_len;
-> +	struct sk_buff **skb_arr_rq3 = pr->skb_arr_rq3;
-> +	EDEB_EN(8, "pr=%p, nr_of_wqes=%d", pr, nr_of_wqes);
-> +	if (nr_of_wqes == 0)
-> +		return -EINVAL;
-> +	qp = pr->qp;
-> +	for (i = 0; i < nr_of_wqes; i++) {
-> +		int index = pr->skb_rq3_index++;
-> +		struct sk_buff *skb = dev_alloc_skb(EHEA_MAX_PACKET_SIZE
-> +						    + NET_IP_ALIGN);
-> +
-> +		if (!skb) {
-> +			EDEB_ERR(4, "No memory for skb. Only %d rwqe 
-> filled.",
-> +				 i);
-> +			ret = -ENOMEM;
-> +			break;
-> +		}
-> +		skb_reserve(skb, NET_IP_ALIGN);
-> +
-> +		rwqe = ehea_get_next_rwqe(qp, 3);
-> +		pr->skb_rq3_index %= skb_arr_rq3_len;
-> +		skb_arr_rq3[index] = skb;
-> +		rwqe->wr_id = EHEA_BMASK_SET(EHEA_WR_ID_TYPE, 
-> EHEA_RWQE3_TYPE)
-> +		    | EHEA_BMASK_SET(EHEA_WR_ID_INDEX, index);
-> +		rwqe->sg_list[0].l_key = ehea_get_recv_lkey(pr);
-> +		rwqe->sg_list[0].vaddr = get_rwqe_addr((u64)skb->data);
-> +		rwqe->sg_list[0].len = EHEA_MAX_PACKET_SIZE;
-> +		rwqe->data_segments = 1;
-> +	}
-> +
-> +	/* Ring doorbell */
-> +	iosync();
-> +	ehea_update_rq3a(qp, i);
-> +	EDEB_EX(8, "");
-> +	return ret;
-> +}
-> +
-> +
-> +static inline int ehea_refill_rq3(struct ehea_port_res *pr, int nr_of_wqes)
-> +{
-> +	return ehea_refill_rq3_def(pr, nr_of_wqes);
-> +}
-
-ehea_refill_rq3[123] appears to be 1:1 wrappers around
-ehea_refill_rq3[123]_def. Any idea behind them?
-
-> +	init_attr = (struct ehea_qp_init_attr*)
-> +	    kzalloc(sizeof(struct ehea_qp_init_attr), GFP_KERNEL);
-
-Useless cast.
-
-> +	pr->skb_arr_sq = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
-> +						    * (max_rq_entries + 1));
-
-Useless cast
-
-> +	pr->skb_arr_rq1 = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
-> +						     * (max_rq_entries + 1));
-
-> +	pr->skb_arr_rq2 = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
-> +						     * (max_rq_entries + 1));
-
-> +	pr->skb_arr_rq3 = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
-> +						     * (max_rq_entries + 1));
-
-> +static int ehea_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-> +{
-> +	EDEB_ERR(4, "ioctl not supported: dev=%s cmd=%d", dev->name, cmd);
-
-Then copy NULL into ->do_ioctl!
-
-> +	return -EOPNOTSUPP;
-> +}
-
-> +	ehea_port_cb_0 = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> +
-> +	if (!ehea_port_cb_0) {
-> +		EDEB_ERR(4, "No memory for ehea_port control block");
-> +		ret = -ENOMEM;
-> +		goto kzalloc_failed;
-> +	}
-> +
-> +	memcpy((u8*)(&(ehea_port_cb_0->port_mac_addr)),
-> +	       (u8*)&(mac_addr->sa_data[0]), 6);
-
-No casts on memcpy arguments.
-
-> +	memcpy((u8*)&ehea_mcl_entry->macaddr, mc_mac_addr, ETH_ALEN);
-
-> +static inline void ehea_xmit2(struct sk_buff *skb,
-> +			      struct net_device *dev, struct ehea_swqe *swqe,
-> +			      u32 lkey)
-> +{
-> +	int nfrags;
-> +	unsigned short skb_protocol = skb->protocol;
-
-Useless variable. And it should be __be16, FYI.
-
-> +	nfrags = skb_shinfo(skb)->nr_frags;
-> +	EDEB_EN(7, "skb->nfrags=%d (0x%X)", nfrags, nfrags);
-> +
-> +	if (skb_protocol == ETH_P_IP) {
-
-ITYM, htons(ETH_P_IP).
-
-> +static inline void ehea_xmit3(struct sk_buff *skb,
-> +			      struct net_device *dev, struct ehea_swqe *swqe)
-> +{
-> +	int i;
-> +	skb_frag_t *frag;
-> +	int nfrags = skb_shinfo(skb)->nr_frags;
-> +	u8 *imm_data = &swqe->u.immdata_nodesc.immediate_data[0];
-> +	u64 skb_protocol = skb->protocol;
-
-Useless var.
+On Wednesday 09 August 2006 10:38, Jan-Bernd Themann wrote:
+> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_hcall.h=A01969-12-31 16:0=
+0:00.000000000 -0800
+> +++ kernel/drivers/net/ehea/ehea_hcall.h=A0=A0=A0=A0=A0=A0=A0=A02006-08-0=
+8 23:59:38.111462960 -0700
+> @@ -0,0 +1,52 @@
 
 > +
-> +	EDEB_EN(7, "");
-> +	if (likely(skb_protocol == ETH_P_IP)) {
+> +/**
+> + * This file contains HCALL defines that are to be included in the appro=
+priate
+> + * kernel files later
+> + */
+> +
+> +#define H_ALLOC_HEA_RESOURCE =A0 0x278
+> +#define H_MODIFY_HEA_QP =A0 =A0 =A0 =A00x250
+> +#define H_QUERY_HEA_QP =A0 =A0 =A0 =A0 0x254
+> +#define H_QUERY_HEA =A0 =A0 =A0 =A0 =A0 =A00x258
+> +#define H_QUERY_HEA_PORT =A0 =A0 =A0 0x25C
+> +#define H_MODIFY_HEA_PORT =A0 =A0 =A00x260
+> +#define H_REG_BCMC =A0 =A0 =A0 =A0 =A0 =A0 0x264
+> +#define H_DEREG_BCMC =A0 =A0 =A0 =A0 =A0 0x268
+> +#define H_REGISTER_HEA_RPAGES =A00x26C
+> +#define H_DISABLE_AND_GET_HEA =A00x270
+> +#define H_GET_HEA_INFO =A0 =A0 =A0 =A0 0x274
+> +#define H_ADD_CONN =A0 =A0 =A0 =A0 =A0 =A0 0x284
+> +#define H_DEL_CONN =A0 =A0 =A0 =A0 =A0 =A0 0x288
 
-				   htons(ETH_P_IP)
+I  guess these should go to include/asm-powerpc/hvcall.h instead.
+
+	Arnd <><
