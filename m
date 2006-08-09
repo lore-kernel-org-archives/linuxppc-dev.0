@@ -1,20 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3374E679FC
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 02:34:14 +1000 (EST)
-Date: Wed, 9 Aug 2006 11:33:13 -0500
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 6/6] ehea: Kernel build (Kconfig / Makefile)
-Message-ID: <20060809163313.GC29823@pb15.lixom.net>
-References: <44D99F92.60407@de.ibm.com>
-MIME-Version: 1.0
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 50977679FC
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 02:34:47 +1000 (EST)
+Date: Wed, 9 Aug 2006 09:38:39 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Subject: Re: RFC: Location for Device Tree Sources?
+Message-ID: <20060809163839.GB17759@mag.az.mvista.com>
+References: <1154464346.19994.4.camel@cashmere.sps.mot.com>
+	<1155122309.4040.94.camel@localhost.localdomain>
+	<1155128205.3944.1.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44D99F92.60407@de.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+In-Reply-To: <1155128205.3944.1.camel@zod.rchland.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 09, 2006 at 10:40:50AM +0200, Jan-Bernd Themann wrote:
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+On Wed, Aug 09, 2006 at 07:56:45AM -0500, Josh Boyer wrote:
+> On Wed, 2006-08-09 at 13:18 +0200, Benjamin Herrenschmidt wrote:
+> > On Tue, 2006-08-01 at 15:32 -0500, Jon Loeliger wrote:
+> > > Folks,
+> > > 
+> > > Where should we place the sources for the OF Flat Device
+> > > Tree source files?  They used to be in U-Boot, but that
+> > > isn't happening any more.
+> > 
+> > Why ? While having device-tree's in zImages is good to handle firmwares
+> > that can't pass them, I still think that the proper thing to do is to
+> > have the firmware provide the DT to the kernel. Did Denk decide once for
+> > all against having DTs passed by uboot at all ? In which case, it's
+> > probably time to consider a fork...
 > 
+> We're only talking about the _source_ files.  The .dts files.  Not the
+> binary trees themselves.
 > 
->   drivers/net/Kconfig  |    6 ++++++
->   drivers/net/Makefile |    1 +
->   2 files changed, 7 insertions(+)
-> 
-> 
-> 
-> diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Kconfig patched_kernel/drivers/net/Kconfig
-> --- linux-2.6.18-rc4/drivers/net/Kconfig	2006-08-06 11:20:11.000000000 -0700
-> +++ patched_kernel/drivers/net/Kconfig	2006-08-08 03:00:49.526421944 -0700
-> @@ -2277,6 +2277,12 @@ config CHELSIO_T1
->             To compile this driver as a module, choose M here: the module
->             will be called cxgb.
-> 
-> +config EHEA
-> +        tristate "eHEA Ethernet support"
-> +        depends on IBMEBUS
-> +        ---help---
-> +          This driver supports the IBM pSeries ethernet adapter
+> The basic summary is that having a .dts in the kernel for every
+> defconfig would be good.  (I think that was the summary anyway.)
 
-Does this adapter really not have a better name for the option
-description? That's a very vague description given that IBM pSeries
-machines have had all sorts of ethernet adapters through the years.
+That's my understanding too.  A 1-1 matching of default config files
+and dts files kept in the kernel src trees.  Any extra dts files would
+be kept whereever dtc src is stored (i.e., jdl.com).  I haven't heard
+jdl agree to this, though.  :)
 
-
-
--Olof
+Mark
