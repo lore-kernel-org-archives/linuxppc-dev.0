@@ -2,18 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB8CB67BA6
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:37:47 +1000 (EST)
-Subject: Re: boot problems on pseries
+	by ozlabs.org (Postfix) with ESMTP id F144467B69
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:38:35 +1000 (EST)
+Subject: Re: [PATCH][0/2] RTAS MSI
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-In-Reply-To: <20060809013609.GA10876@ca-server1.us.oracle.com>
-References: <20060809013609.GA10876@ca-server1.us.oracle.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1155090210.7087.4.camel@localhost.localdomain>
+References: <1154024154.29826.229.camel@goblue>
+	<1154062599.21801.40.camel@localhost.localdomain>
+	<802085A1-AA37-4787-A2D6-B619C6BE7AB4@kernel.crashing.org>
+	<1155090210.7087.4.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 09 Aug 2006 17:37:30 +0200
-Message-Id: <1155137850.17187.48.camel@localhost.localdomain>
+Date: Wed, 09 Aug 2006 17:38:10 +0200
+Message-Id: <1155137891.17187.50.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-08-08 at 18:36 -0700, Mark Fasheh wrote:
-> Hello,
-> 	So I do most of my work on some IBM JS20 powerpc blades. They
-> usually run a git kernel on a stock RHEL4 distribution. The contents of
-> /proc/cpuinfo is:
-> 
-> processor       : 0
-> cpu             : PPC970, altivec supported
-> clock           : 1600.000000MHz
-> revision        : 2.2 (pvr 0039 0202)
-> 
-> processor       : 1
-> cpu             : PPC970, altivec supported
-> clock           : 1600.000000MHz
-> revision        : 2.2 (pvr 0039 0202)
-> 
-> timebase        : 199837651
-> platform        : pSeries
-> machine         : CHRP IBM,8842-21X
-> 
-> 
-> Recently, I discovered that newer kernels would no longer fully boot.
-> There's no oops or panic message and they get through most of the kernel
-> initialization before simply hanging. I spent some quality time today with
-> git-bisect, and traced the badness down to this commit:
 
-I'm just back from vacation and looking into this. 
+> So this might lead to the state where the card has been configured to
+> use x MSIs, but we only tell the driver about 1 of them. I don't know
+> enough PCI to grok if that's going to be a problem.
+
+It probably will
 
 Ben.
