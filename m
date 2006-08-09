@@ -1,27 +1,22 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id DE99667B8A
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 14:33:02 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k794X1WY003564
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2006 21:33:01 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k794WxAt002742
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2006 23:33:00 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Perhaps git-update-server-info needs to be run
-	on.../paulus/powerpc.git?
-Date: Wed, 9 Aug 2006 12:32:57 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19D4EA@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20060809121150.6ee17129.sfr@canb.auug.org.au>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	paulus@samba.org
+Return-Path: <nkbj@mail.tele.dk>
+Received: from fep33.mail.dk (fep33.mail.dk [80.160.76.197])
+	by ozlabs.org (Postfix) with ESMTP id 5DED967B8F
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 15:04:02 +1000 (EST)
+Received: from fep44.mail.dk ([195.41.46.227]) by fep31.mail.dk
+	(InterMail vM.6.01.06.01 201-2131-130-101-20060113) with ESMTP
+	id <20060809035933.YLMI11067.fep31.mail.dk@fep44.mail.dk>
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 05:59:33 +0200
+Received: from [87.51.137.148] by fep44.mail.dk
+	(InterMail vG.2.02.00.00 201-2161-120-101-20051020) with ESMTP
+	id <20060809035932.KFMZ15124.fep44.mail.dk@[87.51.137.148]>
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 05:59:32 +0200
+Subject: Re: booting with BootX corrupts memory
+From: Niels Kristian Bech Jensen <nkbj@mail.tele.dk>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 09 Aug 2006 06:00:24 +0200
+Message-Id: <1155096025.3813.6.camel@plutonium.opasia.dk>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,12 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ On Tue, Aug  1, Olaf Hering wrote:
 
-> Have you tried using the git protocol ("git://" instead of=20
-> "http://")? Or cloning Linus tree and then fetching Paulus=20
-> tree into it?
->=20
-I can not penetrate the firewall with "git://".=20
-Now http works.
-Thanks
-Roy
+> Booting an old Mac with BootX corrupts memory, the kernel seldom gets
+> into init. Even the built-in initramfs archive gets corrupted. So far I
+> havent figured out where the corruption starts. The only data point so
+> far is that a passed initrd gets overwritten with stuff that looks like
+> part of the device-tree after the call to free_area_init_node() from
+> paging_init(). Perhaps the virtual/real address mapping isnt handled
+> correctly.
+
+> This is broken since at least 2.6.15, 2.6.14 dies very early, 2.6.13 was
+> still ok.
+
+> Symptoms differ, depending on used .config and wether an initrd is passed.
+
+I think I've been hit by this bug on my beige G3 running Ubuntu Edgy.
+
+When booting with initrd the boot process stops before any kernel output (CONFIG_BOOTX_TEXT is not enabled). Booting without initrd works fine - at least until it cannot find the root filesystem driver. ;-)
+
+Anything I can do to help debug this?
+
+Regards,
+-- 
+Niels Kristian Bech Jensen
+
+Stop software piracy --- use free software.
