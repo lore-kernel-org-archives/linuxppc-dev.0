@@ -1,27 +1,21 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 96DA567B70
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 11:30:21 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k791UKp6004973
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2006 18:30:20 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k791UFZ1024562
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2006 20:30:18 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Perhaps git-update-server-info needs to be run
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 345EB67A3E
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 12:11:57 +1000 (EST)
+Date: Wed, 9 Aug 2006 12:11:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
+Subject: Re: Perhaps git-update-server-info needs to be run
 	on.../paulus/powerpc.git?
-Date: Wed, 9 Aug 2006 09:30:13 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19D489@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20060808193555.301bc229.kim.phillips@freescale.com>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>,
-	"Paul Mackerras" <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <20060809121150.6ee17129.sfr@canb.auug.org.au>
+In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19D489@zch01exm23.fsl.freescale.net>
+References: <20060808193555.301bc229.kim.phillips@freescale.com>
+	<7EA18FDD2DC2154AA3BD6D2F22A62A0E19D489@zch01exm23.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__9_Aug_2006_12_11_50_+1000_UH7cS=UZBrMG8TWi"
+Cc: linuxppc-dev@ozlabs.org, Kim.Phillips@freescale.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,8 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__9_Aug_2006_12_11_50_+1000_UH7cS=UZBrMG8TWi
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Linus' tree clones fine, paulus' doesn't:
->=20
-I have the same issue.
-Roy
+On Wed, 9 Aug 2006 09:30:13 +0800 "Zang Roy-r61911" <tie-fei.zang@freescale=
+.com> wrote:
+>
+> > Linus' tree clones fine, paulus' doesn't:
+> >=20
+> I have the same issue.
+
+Have you tried using the git protocol ("git://" instead of "http://")? Or
+cloning Linus tree and then fetching Paulus tree into it?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__9_Aug_2006_12_11_50_+1000_UH7cS=UZBrMG8TWi
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFE2URwFdBgD/zoJvwRAib7AKCVu1srOnLeu5gOTRSI7OxEVpv0TACgmKSC
+vsixgjJS8gakL4ra5c0/Ctc=
+=PJNd
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Aug_2006_12_11_50_+1000_UH7cS=UZBrMG8TWi--
