@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 93CEA67A5E
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 02:05:38 +1000 (EST)
-Subject: Re: RFC: Location for Device Tree Sources?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060809140336.9E3C93535D4@atlas.denx.de>
-References: <20060809140336.9E3C93535D4@atlas.denx.de>
-Content-Type: text/plain
-Date: Wed, 09 Aug 2006 18:05:01 +0200
-Message-Id: <1155139501.17187.76.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 3374E679FC
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 02:34:14 +1000 (EST)
+Date: Wed, 9 Aug 2006 11:33:13 -0500
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH 6/6] ehea: Kernel build (Kconfig / Makefile)
+Message-ID: <20060809163313.GC29823@pb15.lixom.net>
+References: <44D99F92.60407@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <44D99F92.60407@de.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> It's just that I think that the DT *sources* should not  be  part  of
-> the  U-Boot  soutrce  tree, and that the DT should be in fact part of
-> the kernel images that gets booted by U-Boot.
+On Wed, Aug 09, 2006 at 10:40:50AM +0200, Jan-Bernd Themann wrote:
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> 
+> 
+>   drivers/net/Kconfig  |    6 ++++++
+>   drivers/net/Makefile |    1 +
+>   2 files changed, 7 insertions(+)
+> 
+> 
+> 
+> diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Kconfig patched_kernel/drivers/net/Kconfig
+> --- linux-2.6.18-rc4/drivers/net/Kconfig	2006-08-06 11:20:11.000000000 -0700
+> +++ patched_kernel/drivers/net/Kconfig	2006-08-08 03:00:49.526421944 -0700
+> @@ -2277,6 +2277,12 @@ config CHELSIO_T1
+>             To compile this driver as a module, choose M here: the module
+>             will be called cxgb.
+> 
+> +config EHEA
+> +        tristate "eHEA Ethernet support"
+> +        depends on IBMEBUS
+> +        ---help---
+> +          This driver supports the IBM pSeries ethernet adapter
 
-Fair enough, I misunderstood.
+Does this adapter really not have a better name for the option
+description? That's a very vague description given that IBM pSeries
+machines have had all sorts of ethernet adapters through the years.
 
-> This has been discussed before (see archives), and the agreement  (?)
-> was  to  use  U-Boot's multifile image format for this purpose, where
-> you can combine a Linux kenrel image with a DT image  into  one  file
-> bootable by U-Boot.
 
-Well, I would still like something else. For example, I'm vendor NetFoo
-selling network appliances (ADSL modems, routers, wireless APs, ...).
 
-A certain amount of my products are based on a very similar chipset
-provided by vendor NarrowCom, same core, same ethernet cell, though my
-devices have subtle differences in the various varieties of those chips
-used and what other chips are put around on the board.
-
-I want my devices to have a firmware that pass a DT to the kernel. That
-DT is bolted into the firmware. In fact, it could be separate flash
-blocks (especially if the flash has some small blocks) from the actual
-firmware code but that does not really matter.
-
-That way, I can distribute and maintain a single kernel image update
-package as part of my software update/maintainance solution.
-
-Now you might argue that the way to work around that is to distribute a
-vmlinux + DT files and have the "installer" merge them together at flash
-time. I don't disagree... that works... if the kernel is in flash. It's
-a bit more annoying once you start having it on a removable support
-though...
-
-It's not _the_ only solution but it's something that I think should be
-considered.
-
-Now as far as having an official repository for the .dts files of boards
-supported by the kernel, I suppose indeed that the kenrel tree is an as
-good location as anything else.
-
-Cheers,
-Ben.
+-Olof
