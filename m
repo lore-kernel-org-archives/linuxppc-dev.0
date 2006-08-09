@@ -1,32 +1,24 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6870867D6D
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 18:40:56 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.7/8.13.7) with ESMTP id k798epk8198004
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 08:40:51 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k798iU9h152946
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 10:44:30 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k798eoDc025454
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 10:40:50 +0200
-Message-ID: <44D99F92.60407@de.ibm.com>
-Date: Wed, 09 Aug 2006 10:40:50 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-MIME-Version: 1.0
-To: netdev <netdev@vger.kernel.org>
-Subject: [PATCH 6/6] ehea: Kernel build (Kconfig / Makefile)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>, Marcus Eder <meder@de.ibm.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B0E3667B89
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 19:52:47 +1000 (EST)
+In-Reply-To: <1155090210.7087.4.camel@localhost.localdomain>
+References: <1154024154.29826.229.camel@goblue>
+	<1154062599.21801.40.camel@localhost.localdomain>
+	<802085A1-AA37-4787-A2D6-B619C6BE7AB4@kernel.crashing.org>
+	<1155090210.7087.4.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F5E5EF18-6452-4E9D-8A43-6D1CE9C3E43E@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH][0/2] RTAS MSI
+Date: Wed, 9 Aug 2006 11:52:24 +0200
+To: michael@ellerman.id.au
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,38 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> I was just re-reading this thread and this got me thinking. I think  
+> the
+> current code does violate this rule if firmware has allocated more  
+> than
+> one MSI to the device.
+>
+> In rtas_enable_msi() we ask firmware how many MSIs the device has been
+> given (by firmware), we then return one to the driver, but leave any
+> extras configured.
+>
+> So this might lead to the state where the card has been configured to
+> use x MSIs, but we only tell the driver about 1 of them. I don't know
+> enough PCI to grok if that's going to be a problem.
+
+A device could in principle happily start using all MSIs it has been
+assigned as soon as its global interrupt enable bit is set.  So lying
+to the driver about what MSIs are enabled can in principle cause nasty
+problems.
+
+In reality however, on any (recent) device, every interrupt cause also
+has its own enable bits that the driver needs to set.  So we're sort-of
+safe here.
+
+Eventually, we should change the API for pci_enable_msi() so that it
+can enable multiple MSIs as well; an arch implementation can always
+choose to do just one.  This lets us roll the APIs for MSI and MSI-X
+into one as well btw -- always a good thing!
 
 
-  drivers/net/Kconfig  |    6 ++++++
-  drivers/net/Makefile |    1 +
-  2 files changed, 7 insertions(+)
-
-
-
-diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Kconfig patched_kernel/drivers/net/Kconfig
---- linux-2.6.18-rc4/drivers/net/Kconfig	2006-08-06 11:20:11.000000000 -0700
-+++ patched_kernel/drivers/net/Kconfig	2006-08-08 03:00:49.526421944 -0700
-@@ -2277,6 +2277,12 @@ config CHELSIO_T1
-            To compile this driver as a module, choose M here: the module
-            will be called cxgb.
-
-+config EHEA
-+        tristate "eHEA Ethernet support"
-+        depends on IBMEBUS
-+        ---help---
-+          This driver supports the IBM pSeries ethernet adapter
-+
-  config IXGB
-  	tristate "Intel(R) PRO/10GbE support"
-  	depends on PCI
-diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Makefile patched_kernel/drivers/net/Makefile
---- linux-2.6.18-rc4/drivers/net/Makefile	2006-08-06 11:20:11.000000000 -0700
-+++ patched_kernel/drivers/net/Makefile	2006-08-08 03:00:30.061451584 -0700
-@@ -10,6 +10,7 @@ obj-$(CONFIG_E1000) += e1000/
-  obj-$(CONFIG_IBM_EMAC) += ibm_emac/
-  obj-$(CONFIG_IXGB) += ixgb/
-  obj-$(CONFIG_CHELSIO_T1) += chelsio/
-+obj-$(CONFIG_EHEA) += ehea/
-  obj-$(CONFIG_BONDING) += bonding/
-  obj-$(CONFIG_GIANFAR) += gianfar_driver.o
+Segher
