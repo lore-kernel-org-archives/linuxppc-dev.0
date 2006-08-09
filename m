@@ -1,21 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH][0/2] RTAS MSI
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <F5E5EF18-6452-4E9D-8A43-6D1CE9C3E43E@kernel.crashing.org>
-References: <1154024154.29826.229.camel@goblue>
-	<1154062599.21801.40.camel@localhost.localdomain>
-	<802085A1-AA37-4787-A2D6-B619C6BE7AB4@kernel.crashing.org>
-	<1155090210.7087.4.camel@localhost.localdomain>
-	<F5E5EF18-6452-4E9D-8A43-6D1CE9C3E43E@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-4m1h9O1V/Y0ueA4jjkT0"
-Date: Wed, 09 Aug 2006 20:27:08 +1000
-Message-Id: <1155119228.6949.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <jimix@watson.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E6FB567B9C
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 20:44:44 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k79AifFP032251
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 06:44:41 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k79AifAv305582
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 04:44:41 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k79AiekD026132
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 04:44:41 -0600
+In-Reply-To: <311550865236b8b45674.846930886.miltonm@bga.com>
+References: <311550865236b8b45674.846930886.miltonm@bga.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F85E58BF-063E-4F25-85F0-C6741041E692@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [RFC] Debugging with a HW probe.
+Date: Wed, 9 Aug 2006 06:44:38 -0400
+To: Milton Miller <miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,75 +39,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-4m1h9O1V/Y0ueA4jjkT0
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Aug 8, 2006, at 9:22 PM, Milton Miller wrote:
 
-On Wed, 2006-08-09 at 11:52 +0200, Segher Boessenkool wrote:
-> > I was just re-reading this thread and this got me thinking. I think =20
-> > the
-> > current code does violate this rule if firmware has allocated more =20
-> > than
-> > one MSI to the device.
-> >
-> > In rtas_enable_msi() we ask firmware how many MSIs the device has been
-> > given (by firmware), we then return one to the driver, but leave any
-> > extras configured.
-> >
-> > So this might lead to the state where the card has been configured to
-> > use x MSIs, but we only tell the driver about 1 of them. I don't know
-> > enough PCI to grok if that's going to be a problem.
->=20
-> A device could in principle happily start using all MSIs it has been
-> assigned as soon as its global interrupt enable bit is set.  So lying
-> to the driver about what MSIs are enabled can in principle cause nasty
-> problems.
->=20
-> In reality however, on any (recent) device, every interrupt cause also
-> has its own enable bits that the driver needs to set.  So we're sort-of
-> safe here.
+> On Sun Aug  6 2006 09:42:16 AM CDT, Jimi Xenidis wrote:
+>> On the XenPPC project we've been playing around with using GDB to
+>> source debug Linux (and Xen) using a RiscWatch HW probe.
+>
+>> We have found it useful to teach xmon to make this call so we can  
+>> then
+>> debug the SW thru the probe. Is this useful to anyone else
+>
+> Since you only invoke the attention on command from the debugger, how
+> is this better than just invoking the stop command from the probe?   
+> Is it you
+> are not dispatched out?  That you are not at a random point in the  
+> input
+> polling?
 
-Yeah ok, I thought that was probably the answer - it's possible, but
-probably not a problem IRL.
+Thats exactly it!
+If I get the probe to stop the CPU I could stop in the OS or in a  
+user app.  Since we are working on Xen it could be Xen or any number  
+of OSes or user apps on OSes.
+When interrogating the machine state, the probe (almost) respects the  
+modes of the CPU and MMU so memory accesses are translated (if xlate  
+is on).  Since, probe "soft breakpoints" are ATTN instructions as  
+well they get written into memory by the probe.
 
-> Eventually, we should change the API for pci_enable_msi() so that it
-> can enable multiple MSIs as well; an arch implementation can always
-> choose to do just one.  This lets us roll the APIs for MSI and MSI-X
-> into one as well btw -- always a good thing!
+Having SW "call out" allows me to make sure that I'm in the address  
+space I care about.
+Since I only invoke it from xmon it assumes you have xmon support and  
+to really be useful you need to SysReq to xmon.
+I could be useful to make this part of SysReq, but I think we want to  
+make sure that its use is entirely intentional.
+You can also insert 'asm volatile(".long 0x200;nop");' in you own  
+code or even add it to BUG()/panic() and skip the suffering the xmon/ 
+SysReq trap.
 
-Yeah. Looking at the way drivers use the current API (and there's only a
-few), they generally seem to try to enable n MSI-X vectors, then
-fallback to a single MSI then LSI. And then there's some that just want
-a single MSI as a drop-in replacement for LSI.
-
-So I think we could have pci_enable_msi(dev), which would enable a
-single MSI _or_ MSI-X vector, depending on what's available. That'd be
-used by drivers that just want a simple replacement for LSI. And then
-pci_enable_multi_msi(dev, num_irqs) which would give the driver num_irqs
-MSI or MSI-X vectors.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-4m1h9O1V/Y0ueA4jjkT0
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBE2bh8dSjSd0sB4dIRAu8pAJ0ayspMA5xISXb7SsAzhcxGtEet+QCeL5mq
-9NXybbN9XwD5gdjCsVj4uWM=
-=7eT1
------END PGP SIGNATURE-----
-
---=-4m1h9O1V/Y0ueA4jjkT0--
+BTW: I say "almost" because the probe does not respect the truncating  
+of the upper bits when xlate is off and 0xC00... addresses are  
+useless, we hacked the gdb stub to work around that.
+BTW2: (I'm sure obvious to some), Since the probe writes ATTN  
+instructions, I do not know what would happen if the probe wrote ATTN  
+to an unmapped page, this is why debugging user space might be useless.
+-JX
