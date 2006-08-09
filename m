@@ -1,38 +1,17 @@
-Return-Path: <borntrae@de.ibm.com>
-Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9031267B91
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 19:08:57 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate5.uk.ibm.com (8.13.7/8.13.7) with ESMTP id k7998q0V054494
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 09:08:53 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k799AfHP092442
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 10:10:41 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7998q4u023935
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Aug 2006 10:08:52 +0100
-From: Christian Borntraeger <borntrae@de.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 1/6] ehea: interface to network stack
-Date: Wed, 9 Aug 2006 11:08:51 +0200
-References: <44D99EFC.3000105@de.ibm.com>
-In-Reply-To: <44D99EFC.3000105@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608091108.51774.borntrae@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id 4BBE7679FB
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 21:51:17 +1000 (EST)
+Date: Wed, 9 Aug 2006 13:51:09 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Subject: Re: boot problems on pseries
+Message-ID: <20060809115109.GA4290@aepfle.de>
+References: <20060809013609.GA10876@ca-server1.us.oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060809013609.GA10876@ca-server1.us.oracle.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,295 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jan-Bernd,
+On Tue, Aug 08, 2006 at 06:36:09PM -0700, Mark Fasheh wrote:
 
-I had some minutes, here are some finding after a quick look.
+> Recently, I discovered that newer kernels would no longer fully boot.
 
-On Wednesday 09 August 2006 10:38, you wrote:
-> +static struct net_device_stats *ehea_get_stats(struct net_device *dev)
-> +{
-> +	int i;
-> +	u64 hret =3D H_HARDWARE;
-> +	u64 rx_packets =3D 0;
-> +	struct ehea_port *port =3D (struct ehea_port*)dev->priv;
-
-dev->priv is a void pointer, this cast is unnecessary. When we are at it, h=
-ave=20
-you considered the netdev_priv macro? This will require some prep in=20
-alloc_netdev and might not always pe possible.=20
-
-> +	struct ehea_adapter *adapter =3D port->adapter;
-> +	struct hcp_query_ehea_port_cb_2 *cb2 =3D NULL;
-> +	struct net_device_stats *stats =3D &port->stats;
-> +
-> +	EDEB_EN(7, "net_device=3D%p", dev);
-> +
-> +	cb2 =3D kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> +	if (!cb2) {
-> +		EDEB_ERR(4, "No memory for cb2");
-> +		goto get_stat_exit;
-> +	}
-> +
-> +	hret =3D ehea_h_query_ehea_port(adapter->handle,
-> +				      port->logical_port_id,
-> +				      H_PORT_CB2,
-> +				      H_PORT_CB2_ALL,
-> +				      cb2);
-> +
-> +	if (hret !=3D H_SUCCESS) {
-> +		EDEB_ERR(4, "query_ehea_port failed for cb2");
-> +		goto get_stat_exit;
-> +	}
-
-You leak memory here, dont you? (cb2 points to allocated memory and you are=
- in=20
-an error path.)
-
-> +
-> +	EDEB_DMP(7, (u8*)cb2,
-> +		 sizeof(struct hcp_query_ehea_port_cb_2), "After HCALL");
-> +
-> +	for (i =3D 0; i < port->num_def_qps; i++) {
-> +		rx_packets +=3D port->port_res[i].rx_packets;
-> +	}
-> +
-> +	stats->tx_packets =3D cb2->txucp + cb2->txmcp + cb2->txbcp;
-> +	stats->multicast =3D cb2->rxmcp;
-> +	stats->rx_errors =3D cb2->rxuerr;
-> +	stats->rx_bytes =3D cb2->rxo;
-> +	stats->tx_bytes =3D cb2->txo;
-> +	stats->rx_packets =3D rx_packets;
-> +
-> +get_stat_exit:
-> +	EDEB_EX(7, "");
-> +	return stats;
-> +}
-
-again, cb2 is not freed.
-[...]
-
-> +static inline u64 get_swqe_addr(u64 tmp_addr, int addr_seg)
-> +{
-> +	u64 addr;
-> +	addr =3D tmp_addr;
-> +	return addr;
-> +}
-
-This is suppsed to change in the future? If not you can get rid of it.=20
-
-> +
-> +static inline u64 get_rwqe_addr(u64 tmp_addr)
-> +{
-> +	return tmp_addr;
-> +}
-
-same here.=20
-
-> +
-> +static int ehea_poll(struct net_device *dev, int *budget)
-> +{
-> +	struct ehea_port *port =3D (struct ehea_port*)dev->priv;
-
-Again. no cast, maybe netdev_priv macro.=20
-
-> +	struct ehea_port_res *port_res =3D &port->port_res[0];
-> +	struct ehea_cqe *cqe;
-> +	struct ehea_qp *qp =3D port_res->qp;
-> +	int wqe_index =3D 0;
-> +	int last_wqe_index =3D 0;
-> +	int x =3D 0;
-> +	int processed =3D 0;
-> +	int processed_RQ1 =3D 0;
-> +	int processed_RQ2 =3D 0;
-> +	int processed_RQ3 =3D 0;
-> +	int rq;
-> +	int intreq;
-> +	struct sk_buff **skb_arr_rq1 =3D port_res->skb_arr_rq1;
-> +	struct sk_buff **skb_arr_rq2 =3D port_res->skb_arr_rq2;
-> +	struct sk_buff **skb_arr_rq3 =3D port_res->skb_arr_rq3;
-> +	int skb_arr_rq1_len =3D port_res->skb_arr_rq1_len;
-> +	int my_quota =3D min(*budget, dev->quota);
-> +
-> +	EDEB_EN(7, "dev=3D%p, port_res=3D%p, budget=3D%d, quota=3D%d, qp_nr=3D%=
-x",
-> +		dev, port_res, *budget, dev->quota,
-> +		port_res->qp->init_attr.qp_nr);
-> +	my_quota =3D min(my_quota, EHEA_MAX_RWQE);
-> +
-> +	/* rq0 is low latency RQ */
-> +	cqe =3D ehea_poll_rq1(qp, &wqe_index);
-> +	while ((my_quota > 0) && cqe) {
-> +		ehea_inc_rq1(qp);
-> +		processed_RQ1++;
-> +		processed++;
-> +		my_quota--;
-> +
-> +		EDEB_DMP(6, (u8*)cqe, 4 * 16, "CQE");
-> +		last_wqe_index =3D wqe_index;
-> +		rmb();
-> +		if (!ehea_check_cqe(cqe, &rq)) {
-> +			struct sk_buff *skb;
-> +			if (rq =3D=3D 1) {	/* LL RQ1 */
-> +				void *pref;
-> +
-> +				x =3D (wqe_index + 1) % skb_arr_rq1_len;
-> +				pref =3D (void*)skb_arr_rq1[x];
-> +				prefetchw(pref);
-> +				prefetchw(pref + EHEA_CACHE_LINE);
-> +
-> +				x =3D (wqe_index + 1) % skb_arr_rq1_len;
-> +				pref =3D (void*)(skb_arr_rq1[x]->data);
-> +				prefetchw(pref);
-> +				prefetchw(pref + EHEA_CACHE_LINE);
-> +
-> +				skb =3D skb_arr_rq1[wqe_index];
-> +				if (unlikely(!skb)) {
-> +					EDEB_ERR(4, "LL SBK=3DNULL, wqe_index=3D%d",
-> +						 wqe_index);
-> +					skb =3D dev_alloc_skb(EHEA_LL_PKT_SIZE);
-> +					if (!skb)
-> +						panic("Alloc SKB failed");
-> +				}
-> +				skb_arr_rq1[wqe_index] =3D NULL;
-> +				ehea_fill_skb_ll(dev, skb, cqe);
-> +			} else if (rq =3D=3D 2) {	/* RQ2 */
-> +				void *pref;
-> +				int skb_index =3D EHEA_BMASK_GET(EHEA_WR_ID_INDEX,
-> +							       cqe->wr_id);
-> +				x =3D (skb_index + 1) % port_res->skb_arr_rq2_len;
-> +				pref =3D (void*)skb_arr_rq2[x];
-> +				prefetchw(pref);
-> +				prefetchw(pref + EHEA_CACHE_LINE);
-> +
-> +				x =3D (skb_index + 1) % port_res->skb_arr_rq2_len;
-> +				pref =3D (void*)(skb_arr_rq2[x]->data);
-> +
-> +				prefetch(pref);
-> +				prefetch(pref + EHEA_CACHE_LINE);
-> +				prefetch(pref + EHEA_CACHE_LINE * 2);
-> +				prefetch(pref + EHEA_CACHE_LINE * 3);
-> +				skb =3D skb_arr_rq2[skb_index];
-> +
-> +				if (unlikely(!skb)) {
-> +					EDEB_ERR(4, "rq2: SKB=3DNULL, index=3D%d",
-> +						 skb_index);
-> +					break;
-> +				}
-> +				skb_arr_rq2[skb_index] =3D NULL;
-> +				ehea_fill_skb(dev, skb, cqe);
-> +				processed_RQ2++;
-> +			} else {
-> +				void *pref;
-> +				int skb_index =3D EHEA_BMASK_GET(EHEA_WR_ID_INDEX,
-> +							       cqe->wr_id);
-> +				x =3D (skb_index + 1) % port_res->skb_arr_rq3_len;
-> +				pref =3D (void*)skb_arr_rq3[x];
-> +				prefetchw(pref);
-> +				prefetchw(pref + EHEA_CACHE_LINE);
-> +
-> +				x =3D (skb_index + 1) % port_res->skb_arr_rq3_len;
-> +				pref =3D (void*)(skb_arr_rq3[x]->data);
-> +				prefetch(pref);
-> +				prefetch(pref + EHEA_CACHE_LINE);
-> +				prefetch(pref + EHEA_CACHE_LINE * 2);
-> +				prefetch(pref + EHEA_CACHE_LINE * 3);
-> +
-> +				skb =3D skb_arr_rq3[skb_index];
-> +				if (unlikely(!skb)) {
-> +					EDEB_ERR(4, "rq3: SKB=3DNULL, index=3D%d",
-> +						 skb_index);
-> +					break;
-> +				}
-> +				skb_arr_rq3[skb_index] =3D NULL;
-> +				ehea_fill_skb(dev, skb, cqe);
-> +				processed_RQ3++;
-> +			}
-> +
-> +			EDEB(6, "About to pass SKB: dev=3D%p\n"
-> +			     "skb=3D%p skb->data=3D%p skb->len=3D%d"
-> +			     " skb->data_len=3D0x%x nr_frags=3D%d",
-> +			     dev,
-> +			     skb,
-> +			     skb->data,
-> +			     skb->len,
-> +			     skb->data_len, skb_shinfo(skb)->nr_frags);
-> +			if (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT) {
-> +				EDEB(7, "VLAN TAG extracted: %4x, vgrp=3D%p",
-> +				     cqe->vlan_tag, port->vgrp);
-> +				EDEB(7, "vlan_devices[vlan_tag]=3D%p",
-> +				     port->vgrp->vlan_devices[cqe->vlan_tag]);
-> +				vlan_hwaccel_receive_skb(skb, port->vgrp,
-> +							 cqe->vlan_tag);
-> +			} else {
-> +				EDEB(7, "netif_receive_skb");
-> +				netif_receive_skb(skb);
-> +			}
-> +			EDEB(7, "SKB passed (netif_receive(skb) called)");
-> +
-> +		} else {
-> +			struct sk_buff *skb;
-> +
-> +			EDEB_ERR(4, "cqe->status indicating error: CQE:");
-> +			EDEB_DMP(4, (u8*)cqe, 4 * 16, "");
-> +			if (rq =3D=3D 2) {
-> +				processed_RQ2++;
-> +				skb =3D skb_arr_rq2[
-> +					EHEA_BMASK_GET(EHEA_WR_ID_INDEX,
-> +							  cqe->wr_id)];
-> +				skb_arr_rq2[EHEA_BMASK_GET(EHEA_WR_ID_INDEX,
-> +							  cqe->wr_id)] =3D NULL;
-> +				dev_kfree_skb(skb);
-> +			}
-> +			if (rq =3D=3D 3) {
-> +				processed_RQ3++;
-> +				skb =3D skb_arr_rq3[
-> +					EHEA_BMASK_GET(EHEA_WR_ID_INDEX,
-> +								cqe->wr_id)];
-> +				skb_arr_rq3[EHEA_BMASK_GET(EHEA_WR_ID_INDEX,
-> +							  cqe->wr_id)] =3D NULL;
-> +				dev_kfree_skb(skb);
-> +			}
-> +		}
-> +		cqe =3D ehea_poll_rq1(qp, &wqe_index);
-> +	}
-> +
-> +	dev->quota -=3D processed;
-> +	*budget -=3D processed;
-> +
-> +	port_res->p_state.ehea_poll +=3D 1;
-> +
-> +	port_res->rx_packets +=3D processed;
-> +
-> +	ehea_refill_rq1(port_res, last_wqe_index, processed_RQ1);
-> +	ehea_refill_rq2(port_res, processed_RQ2);
-> +	ehea_refill_rq3(port_res, processed_RQ3);
-> +
-> +	intreq =3D ((port_res->p_state.ehea_poll & 0xF) =3D=3D 0xF);
-> +
-> +	EDEB_EX(7, "processed=3D%d, *budget=3D%d, dev->quota=3D%d",
-> +		processed, *budget, dev->quota);
-> +
-> +	if (!cqe || intreq) {
-> +		netif_rx_complete(dev);
-> +		ehea_reset_cq_ep(port_res->recv_cq);
-> +		ehea_reset_cq_n1(port_res->recv_cq);
-> +		cqe =3D ipz_qeit_get_valid(&qp->ipz_rqueue1);
-> +		EDEB(7, "CQE=3D%p, break ehea_poll while loop", cqe);
-> +		if (!cqe || intreq)
-> +			return 0;
-> +		if (!netif_rx_reschedule(dev, my_quota))
-> +			return 0;
-> +	}
-> +	return 1;
-> +}
-
-The poll function seems too long and therefore hard to review. Please consi=
-der=20
-splitting it.=20
-
-
-=2D-=20
-Mit freundlichen Gr=FC=DFen / Best Regards
-
-Christian Borntraeger
-Linux Software Engineer zSeries Linux & Virtualization
+The IDE controller got irq32 in older kernels, now it gets irq17.
+...
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+AMD8111: IDE controller at PCI slot 0000:00:04.1
+AMD8111: chipset revision 3
+AMD8111: 0000:00:04.1 (rev 03) UDMA133 controller
+AMD8111: 100% native mode on irq 17
+    ide0: BM-DMA at 0x7c00-0x7c07, BIOS settings: hda:pio, hdb:pio
+    ide1: BM-DMA at 0x7c08-0x7c0f, BIOS settings: hdc:pio, hdd:pio
+Probing IDE interface ide0...
+hda: TOSHIBA MK6026GAXB, ATA DISK drive
+ide0 at 0x7400-0x7407,0x6c02 on irq 17
+Probing IDE interface ide1...
+Probing IDE interface ide1...
+hda: max request size: 128KiB
+hda: lost interrupt
+hda: lost interrupt
+...
