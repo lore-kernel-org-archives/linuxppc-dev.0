@@ -1,14 +1,27 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id C12C167B55
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 11:23:40 +1000 (EST)
-Date: Tue, 8 Aug 2006 20:22:03 -0500
-From: Milton Miller <miltonm@bga.com>
-To: jimix@watson.ibm.com, linuxppc-dev@ozlabs.org,
-Subject: Re: [RFC] Debugging with a HW probe.
-Message-Id: <311550865236b8b45674.846930886.miltonm@bga.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 96DA567B70
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 11:30:21 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k791UKp6004973
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2006 18:30:20 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k791UFZ1024562
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Aug 2006 20:30:18 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Perhaps git-update-server-info needs to be run
+	on.../paulus/powerpc.git?
+Date: Wed, 9 Aug 2006 09:30:13 +0800
+Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19D489@zch01exm23.fsl.freescale.net>
+In-Reply-To: <20060808193555.301bc229.kim.phillips@freescale.com>
+From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
+To: "Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>,
+	"Paul Mackerras" <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +31,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun Aug  6 2006 09:42:16 AM CDT, Jimi Xenidis wrote:
-> On the XenPPC project we've been playing around with using GDB to
-> source debug Linux (and Xen) using a RiscWatch HW probe.
 
-> We have found it useful to teach xmon to make this call so we can then
-> debug the SW thru the probe. Is this useful to anyone else
-
-Since you only invoke the attention on command from the debugger, how
-is this better than just invoking the stop command from the probe?  Is it you
-are not dispatched out?  That you are not at a random point in the input
-polling?
-
-milton
+> Linus' tree clones fine, paulus' doesn't:
+>=20
+I have the same issue.
+Roy
