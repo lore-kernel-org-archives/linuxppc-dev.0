@@ -1,17 +1,23 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (mail.jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E381F67B69
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:37:32 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1GAq7c-0005si-VE
-	for linuxppc-dev@ozlabs.org; Wed, 09 Aug 2006 10:37:29 -0500
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Offer PCI as a CONFIG choice for PPC_86xx.
-Date: Wed, 09 Aug 2006 10:37:28 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1GAq7c-0005si-VE@jdl.com>
+	by ozlabs.org (Postfix) with ESMTP id 4572267BA4
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:37:38 +1000 (EST)
+Subject: Re: [PATCH] update {g5,iseries,pseries}_defconfigs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <44D8A33D.6070000@sipsolutions.net>
+References: <1154718328.5748.13.camel@farscape.rchland.ibm.com>
+	<17624.10083.56514.758904@cargo.ozlabs.ibm.com>
+	<44D84145.7020408@sipsolutions.net>
+	<1155048001.5454.27.camel@farscape.rchland.ibm.com>
+	<44D8A33D.6070000@sipsolutions.net>
+Content-Type: text/plain
+Date: Wed, 09 Aug 2006 17:35:25 +0200
+Message-Id: <1155137725.17187.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Also fix 80-column run-over.
+On Tue, 2006-08-08 at 16:44 +0200, Johannes Berg wrote:
+> Will Schmidt wrote:
+> > For G5, I've enabled SND_AOA and friends as
+> > modules; this includes the FABRIC_LAYOUT, ONYX, TAS, TOONIE and
+> > SOUNDBUS* config options.  
+> >   
+> Great, thanks.
+> 
+> Another thing I didn't think about earlier: does Apple ship any G5s that 
+> are old enough to not have a layout_id in their device tree? I'm not 
+> aware of any. If not, you might want to disable CONFIG_SND_POWERMAC for g5.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
+None.
 
----
-
-I misspoke myself on the earlier, ill-formed version of this patch. :-)
-
- arch/powerpc/Kconfig |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 13e583f..abb325e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -836,9 +836,10 @@ config MCA
- 	bool
- 
- config PCI
--	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) \
--				  || MPC7448HPC2
--	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx && !PPC_86xx
-+	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
-+		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2
-+	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
-+		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
- 	help
+Ben.
