@@ -1,17 +1,21 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
-	by ozlabs.org (Postfix) with ESMTP id 4BBE7679FB
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 21:51:17 +1000 (EST)
-Date: Wed, 9 Aug 2006 13:51:09 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: boot problems on pseries
-Message-ID: <20060809115109.GA4290@aepfle.de>
-References: <20060809013609.GA10876@ca-server1.us.oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060809013609.GA10876@ca-server1.us.oracle.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7669667BA2
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Aug 2006 22:29:56 +1000 (EST)
+Message-ID: <44D9D532.9010200@sipsolutions.net>
+Date: Wed, 09 Aug 2006 14:29:38 +0200
+From: Johannes Berg <johannes@sipsolutions.net>
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [Alsa-devel] Linux v2.6.18-rc4, snd-aoa link error
+References: <Pine.LNX.4.64.0608061127070.5167@g5.osdl.org>	<20060808194651.GA29482@aepfle.de>	<1155067429.26338.96.camel@mindpipe>	<s5hoduudypc.wl%tiwai@suse.de>	<44D9B1BE.9070600@sipsolutions.net>	<s5hk65idwia.wl%tiwai@suse.de>	<44D9C8E5.10109@sipsolutions.net>
+	<s5h7j1idrvf.wl%tiwai@suse.de>
+In-Reply-To: <s5h7j1idrvf.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Lee Revell <rlrevell@joe-job.com>,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 08, 2006 at 06:36:09PM -0700, Mark Fasheh wrote:
+Takashi Iwai wrote:
+>> Yeah, I really should know :) But I'm not sure at the moment, and the 
+>> powermac I own is a few hundred kilometers away...
+>>     
+>
+> Don't worry, we can wait :)
+>   
+Maybe someone on linuxppc-dev can quickly check? Does a G5 use 
+I2C_POWERMAC for access to the codecs? I think it does, but there are 
+other I2C busses as well.
+>> That looks good to me, and should get rid of the build failure. However, 
+>> if one doesn't configure I2C_POWERMAC, no codec will ever be found at 
+>> runtime.
+>>     
+>
+> Yes, that's my concern, too.
+>   
+I'm not sure how much we should force the users to a sensible 
+configuration ;) But I suppose selecting I2C_POWERMAC is fine for all 
+relevant machines for now.
 
-> Recently, I discovered that newer kernels would no longer fully boot.
-
-The IDE controller got irq32 in older kernels, now it gets irq17.
-...
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-AMD8111: IDE controller at PCI slot 0000:00:04.1
-AMD8111: chipset revision 3
-AMD8111: 0000:00:04.1 (rev 03) UDMA133 controller
-AMD8111: 100% native mode on irq 17
-    ide0: BM-DMA at 0x7c00-0x7c07, BIOS settings: hda:pio, hdb:pio
-    ide1: BM-DMA at 0x7c08-0x7c0f, BIOS settings: hdc:pio, hdd:pio
-Probing IDE interface ide0...
-hda: TOSHIBA MK6026GAXB, ATA DISK drive
-ide0 at 0x7400-0x7407,0x6c02 on irq 17
-Probing IDE interface ide1...
-Probing IDE interface ide1...
-hda: max request size: 128KiB
-hda: lost interrupt
-hda: lost interrupt
-...
+johannes
