@@ -2,23 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 03CBE67B93
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 01:41:39 +1000 (EST)
-Subject: Re: [PATCH][0/2] RTAS MSI
+	by ozlabs.org (Postfix) with ESMTP id 93CEA67A5E
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 02:05:38 +1000 (EST)
+Subject: Re: RFC: Location for Device Tree Sources?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1155119228.6949.24.camel@localhost.localdomain>
-References: <1154024154.29826.229.camel@goblue>
-	<1154062599.21801.40.camel@localhost.localdomain>
-	<802085A1-AA37-4787-A2D6-B619C6BE7AB4@kernel.crashing.org>
-	<1155090210.7087.4.camel@localhost.localdomain>
-	<F5E5EF18-6452-4E9D-8A43-6D1CE9C3E43E@kernel.crashing.org>
-	<1155119228.6949.24.camel@localhost.localdomain>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20060809140336.9E3C93535D4@atlas.denx.de>
+References: <20060809140336.9E3C93535D4@atlas.denx.de>
 Content-Type: text/plain
-Date: Wed, 09 Aug 2006 17:41:24 +0200
-Message-Id: <1155138084.17187.53.camel@localhost.localdomain>
+Date: Wed, 09 Aug 2006 18:05:01 +0200
+Message-Id: <1155139501.17187.76.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> So I think we could have pci_enable_msi(dev), which would enable a
-> single MSI _or_ MSI-X vector, depending on what's available. That'd be
-> used by drivers that just want a simple replacement for LSI. And then
-> pci_enable_multi_msi(dev, num_irqs) which would give the driver num_irqs
-> MSI or MSI-X vectors.
+> It's just that I think that the DT *sources* should not  be  part  of
+> the  U-Boot  soutrce  tree, and that the DT should be in fact part of
+> the kernel images that gets booted by U-Boot.
 
-You cannot lie and have pci_enable_msi() enable an MSI-X vector. Some
-cards need additional tweaking when enabling MSI or MSI-X and if the
-system enables MSI-X while the driver thinks it's MSI, bad things might
-happen.
+Fair enough, I misunderstood.
 
-pci_enable_msi() should call the firmware to reconfigure for only one
-MSI and enable just that. MSI-X is the only really sexy thing anyway
-(that and a way to spread MSI-X accross CPUs from the kernel but that's
-another topic)
+> This has been discussed before (see archives), and the agreement  (?)
+> was  to  use  U-Boot's multifile image format for this purpose, where
+> you can combine a Linux kenrel image with a DT image  into  one  file
+> bootable by U-Boot.
 
+Well, I would still like something else. For example, I'm vendor NetFoo
+selling network appliances (ADSL modems, routers, wireless APs, ...).
+
+A certain amount of my products are based on a very similar chipset
+provided by vendor NarrowCom, same core, same ethernet cell, though my
+devices have subtle differences in the various varieties of those chips
+used and what other chips are put around on the board.
+
+I want my devices to have a firmware that pass a DT to the kernel. That
+DT is bolted into the firmware. In fact, it could be separate flash
+blocks (especially if the flash has some small blocks) from the actual
+firmware code but that does not really matter.
+
+That way, I can distribute and maintain a single kernel image update
+package as part of my software update/maintainance solution.
+
+Now you might argue that the way to work around that is to distribute a
+vmlinux + DT files and have the "installer" merge them together at flash
+time. I don't disagree... that works... if the kernel is in flash. It's
+a bit more annoying once you start having it on a removable support
+though...
+
+It's not _the_ only solution but it's something that I think should be
+considered.
+
+Now as far as having an official repository for the .dts files of boards
+supported by the kernel, I suppose indeed that the kenrel tree is an as
+good location as anything else.
+
+Cheers,
 Ben.
