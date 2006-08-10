@@ -1,17 +1,19 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 80F8A67B5F
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id 8588567B76
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 06:12:50 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Fri, 11 Aug 2006 06:53:56 +1000 (EST)
 Subject: RE: Debugging with no serial port
-Date: Thu, 10 Aug 2006 13:12:47 -0700
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE487105FD14A0@VCAEXCH01.hq.corp.viasat.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: <bwarren@qstreams.com>
+From: Ben Warren <bwarren@qstreams.com>
+To: "Martin, Tim" <tim.martin@viasat.com>
+In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE487105FD14A0@VCAEXCH01.hq.corp.viasat.com>
+References: <821B2170E9E7F04FA38DF7EC21DE487105FD14A0@VCAEXCH01.hq.corp.viasat.com>
+Content-Type: text/plain
+Date: Thu, 10 Aug 2006 16:53:53 -0400
+Message-Id: <1155243233.920.34.camel@saruman.qstreams.net>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,31 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ben,
+Martin,
 
->	How about something a bit simpler like running gdb within a
-'script' context,
-> which will log your session to a file.  Get gdb to print the variables
-to the screen
-> (using 'print' or whatever), wrap your data with easily searchable
-characters=20
-> (eg. ***data1 data2 data3***), then filter your data from the script
-file with sed/awk
-> or perl scripts?
-=09
-I tried this as well and have the same GDB synchronization problem e.g.
+On Thu, 2006-08-10 at 13:12 -0700, Martin, Tim wrote:
 
-break log_stuff
-commands
-   silent
-   if (variable_logging_enabled)
-      printf "(%d,%d)\n",stuff1_variable,stuff2_variable
-   end
-   cont
-end
+> 	
+> I tried this as well and have the same GDB synchronization problem e.g.
+> 
+> break log_stuff
+> commands
+>    silent
+>    if (variable_logging_enabled)
+>       printf "(%d,%d)\n",stuff1_variable,stuff2_variable
+>    end
+>    cont
+> end
+> 
+That's too bad.  I wonder if you could run gdb from expect or some other
+auto-scripting language and have it issue the 'cont' once all data is
+printed (Have your code spit out a special 'end of data' delimiter). 
 
-The printf's don't complete before the cont happens.  Sounds like maybe
-this is a GDB problem...
+Just a thought - no idea if it would work.  
 
-Tim
-=09
+I'm not 100% certain how BDI-2000/gdb works, but I guess the gdb server
+is running on the box, in which case you probably don't have much
+control over how it works, and thus can't control if the output stream
+is buffered or not.  My BDI-2000 book doesn't have much on configuring
+the gdb part.
+
+Anyway, sorry for rambling.
+
+regards,
+Ben
