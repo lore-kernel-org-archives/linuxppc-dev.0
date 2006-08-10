@@ -1,18 +1,35 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9ABAB67A5E
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 01:20:46 +1000 (EST)
-Date: Fri, 11 Aug 2006 01:20:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH] ehea: PPC - New hcall opcode defines
-Message-Id: <20060811012044.1c8fcd20.sfr@canb.auug.org.au>
-In-Reply-To: <44DB4B38.9030502@de.ibm.com>
-References: <44DB4B38.9030502@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: tklein@de.ibm.com, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	meder@de.ibm.com, themann@de.ibm.com
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E49BC67B54
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 01:28:00 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7AFRuTf112516
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 15:27:56 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k7AFVbP4143562
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 17:31:37 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7AFRtEx019967
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 17:27:55 +0200
+Message-ID: <44DB4782.9050602@de.ibm.com>
+Date: Thu, 10 Aug 2006 16:49:38 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 1/6] ehea: interface to network stack
+References: <44D99EFC.3000105@de.ibm.com>
+	<20060809130646.GA6846@martell.zuzino.mipt.ru>
+In-Reply-To: <20060809130646.GA6846@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +39,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 Aug 2006 17:05:28 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
->
-> diff -Nurp -X dontdiff linux-2.6.18-rc4/include/asm-powerpc/hvcall.h patched_kernel/include/asm-powerpc/hvcall.h
-> --- linux-2.6.18-rc4/include/asm-powerpc/hvcall.h	2006-08-06 11:20:11.000000000 -0700
-> +++ patched_kernel/include/asm-powerpc/hvcall.h	2006-08-10 06:26:33.018907062 -0700
-> @@ -201,6 +201,19 @@
->   #define H_JOIN			0x298
->   #define H_VASI_STATE            0x2A4
->   #define H_ENABLE_CRQ		0x2B0
-> +#define H_ALLOC_HEA_RESOURCE	0x278
-> +#define H_MODIFY_HEA_QP		0x250
-> +#define H_QUERY_HEA_QP		0x254
-> +#define H_QUERY_HEA		0x258
-> +#define H_QUERY_HEA_PORT	0x25C
-> +#define H_MODIFY_HEA_PORT	0x260
-> +#define H_REG_BCMC		0x264
-> +#define H_DEREG_BCMC		0x268
-> +#define H_REGISTER_HEA_RPAGES	0x26C
-> +#define H_DISABLE_AND_GET_HEA	0x270
-> +#define H_GET_HEA_INFO		0x274
-> +#define H_ADD_CONN		0x284
-> +#define H_DEL_CONN		0x288
+Hi,
 
-This patch appears to be whitespace damaged and it would be preferable if
-the new defines were in there correct places in numerical order.
+thanks for your comments!
 
-Thanks.
+We'll post a modified patch very soon.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Jan-Bernd
+
+Alexey Dobriyan wrote:
+> On Wed, Aug 09, 2006 at 10:38:20AM +0200, Jan-Bernd Themann wrote:
+>> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_main.c
+>> +++ kernel/drivers/net/ehea/ehea_main.c
+> 
+>> +static inline u64 get_swqe_addr(u64 tmp_addr, int addr_seg)
+>> +{
+>> +	u64 addr;
+>> +	addr = tmp_addr;
+>> +	return addr;
+>> +}
+>> +
+>> +static inline u64 get_rwqe_addr(u64 tmp_addr)
+>> +{
+>> +	return tmp_addr;
+>> +}
+> 
+> The point of this exercise?
+
+has been removed
+
+> 
+>> +static inline int ehea_refill_rq3_def(struct ehea_port_res *pr, int nr_of_wqes)
+> 
+> Way too big to be inline function.
+> 
+>> +{
+>> +	int i;
+>> +	int ret = 0;
+>> +	struct ehea_qp *qp;
+>> +	struct ehea_rwqe *rwqe;
+>> +	int skb_arr_rq3_len = pr->skb_arr_rq3_len;
+>> +	struct sk_buff **skb_arr_rq3 = pr->skb_arr_rq3;
+>> +	EDEB_EN(8, "pr=%p, nr_of_wqes=%d", pr, nr_of_wqes);
+>> +	if (nr_of_wqes == 0)
+>> +		return -EINVAL;
+>> +	qp = pr->qp;
+>> +	for (i = 0; i < nr_of_wqes; i++) {
+>> +		int index = pr->skb_rq3_index++;
+>> +		struct sk_buff *skb = dev_alloc_skb(EHEA_MAX_PACKET_SIZE
+>> +						    + NET_IP_ALIGN);
+>> +
+>> +		if (!skb) {
+>> +			EDEB_ERR(4, "No memory for skb. Only %d rwqe 
+>> filled.",
+>> +				 i);
+>> +			ret = -ENOMEM;
+>> +			break;
+>> +		}
+>> +		skb_reserve(skb, NET_IP_ALIGN);
+>> +
+>> +		rwqe = ehea_get_next_rwqe(qp, 3);
+>> +		pr->skb_rq3_index %= skb_arr_rq3_len;
+>> +		skb_arr_rq3[index] = skb;
+>> +		rwqe->wr_id = EHEA_BMASK_SET(EHEA_WR_ID_TYPE, 
+>> EHEA_RWQE3_TYPE)
+>> +		    | EHEA_BMASK_SET(EHEA_WR_ID_INDEX, index);
+>> +		rwqe->sg_list[0].l_key = ehea_get_recv_lkey(pr);
+>> +		rwqe->sg_list[0].vaddr = get_rwqe_addr((u64)skb->data);
+>> +		rwqe->sg_list[0].len = EHEA_MAX_PACKET_SIZE;
+>> +		rwqe->data_segments = 1;
+>> +	}
+>> +
+>> +	/* Ring doorbell */
+>> +	iosync();
+>> +	ehea_update_rq3a(qp, i);
+>> +	EDEB_EX(8, "");
+>> +	return ret;
+>> +}
+>> +
+>> +
+>> +static inline int ehea_refill_rq3(struct ehea_port_res *pr, int nr_of_wqes)
+>> +{
+>> +	return ehea_refill_rq3_def(pr, nr_of_wqes);
+>> +}
+> 
+> ehea_refill_rq3[123] appears to be 1:1 wrappers around
+> ehea_refill_rq3[123]_def. Any idea behind them?
+> 
+
+introduced for near future features
+
+>> +	init_attr = (struct ehea_qp_init_attr*)
+>> +	    kzalloc(sizeof(struct ehea_qp_init_attr), GFP_KERNEL);
+> 
+> Useless cast.
+> 
+
+removed
+
+>> +	pr->skb_arr_sq = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
+>> +						    * (max_rq_entries + 1));
+> 
+> Useless cast
+
+removed
+> 
+>> +	pr->skb_arr_rq1 = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
+>> +						     * (max_rq_entries + 1));
+> 
+>> +	pr->skb_arr_rq2 = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
+>> +						     * (max_rq_entries + 1));
+> 
+>> +	pr->skb_arr_rq3 = (struct sk_buff**)vmalloc(sizeof(struct sk_buff*)
+>> +						     * (max_rq_entries + 1));
+> 
+>> +static int ehea_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+>> +{
+>> +	EDEB_ERR(4, "ioctl not supported: dev=%s cmd=%d", dev->name, cmd);
+> 
+> Then copy NULL into ->do_ioctl!
+> 
+
+done
+
+>> +	return -EOPNOTSUPP;
+>> +}
+> 
+>> +	ehea_port_cb_0 = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
+>> +
+>> +	if (!ehea_port_cb_0) {
+>> +		EDEB_ERR(4, "No memory for ehea_port control block");
+>> +		ret = -ENOMEM;
+>> +		goto kzalloc_failed;
+>> +	}
+>> +
+>> +	memcpy((u8*)(&(ehea_port_cb_0->port_mac_addr)),
+>> +	       (u8*)&(mac_addr->sa_data[0]), 6);
+> 
+> No casts on memcpy arguments.
+
+done
+
+> 
+>> +	memcpy((u8*)&ehea_mcl_entry->macaddr, mc_mac_addr, ETH_ALEN);
+> 
+>> +static inline void ehea_xmit2(struct sk_buff *skb,
+>> +			      struct net_device *dev, struct ehea_swqe *swqe,
+>> +			      u32 lkey)
+>> +{
+>> +	int nfrags;
+>> +	unsigned short skb_protocol = skb->protocol;
+> 
+> Useless variable. And it should be __be16, FYI.
+> 
+
+changed
+
+>> +	nfrags = skb_shinfo(skb)->nr_frags;
+>> +	EDEB_EN(7, "skb->nfrags=%d (0x%X)", nfrags, nfrags);
+>> +
+>> +	if (skb_protocol == ETH_P_IP) {
+> 
+> ITYM, htons(ETH_P_IP).
+> 
+
+good point, thx
+
+>> +static inline void ehea_xmit3(struct sk_buff *skb,
+>> +			      struct net_device *dev, struct ehea_swqe *swqe)
+>> +{
+>> +	int i;
+>> +	skb_frag_t *frag;
+>> +	int nfrags = skb_shinfo(skb)->nr_frags;
+>> +	u8 *imm_data = &swqe->u.immdata_nodesc.immediate_data[0];
+>> +	u64 skb_protocol = skb->protocol;
+> 
+> Useless var.
+
+removed
+
+> 
+>> +
+>> +	EDEB_EN(7, "");
+>> +	if (likely(skb_protocol == ETH_P_IP)) {
+> 
+> 				   htons(ETH_P_IP)
+> 
