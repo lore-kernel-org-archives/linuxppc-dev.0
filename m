@@ -1,17 +1,18 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 9329567B64
+Return-Path: <bwaite@irobot.com>
+Received: from irobot.com (smtp1.irobot.com [66.238.211.203])
+	by ozlabs.org (Postfix) with ESMTP id 6629067B76
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 05:00:10 +1000 (EST)
+	Fri, 11 Aug 2006 05:25:55 +1000 (EST)
+From: Brian Waite <bwaite@irobot.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Debugging with no serial port
+Date: Thu, 10 Aug 2006 15:13:58 -0400
+References: <821B2170E9E7F04FA38DF7EC21DE487105FD1342@VCAEXCH01.hq.corp.viasat.com>
+In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE487105FD1342@VCAEXCH01.hq.corp.viasat.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Debugging with no serial port
-Date: Thu, 10 Aug 2006 12:00:08 -0700
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE487105FD1342@VCAEXCH01.hq.corp.viasat.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: "Frank" <frannk_m1@yahoo.com>,
-	<linuxppc-embedded@ozlabs.org>
+  charset="iso-8859-1"
+Message-Id: <200608101513.58626.bwaite@irobot.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,18 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
->> Second question would be - is there an easier way to accomplish what=20
->> I'm trying to do, which is basically emulate a serial port with GDB.
+On Thursday 10 August 2006 15:00, Martin, Tim wrote:
+> >> Second question would be - is there an easier way to accomplish what
+> >> I'm trying to do, which is basically emulate a serial port with GDB.
+> >
+> > Use NetConsole or remotey log it with syslog...
+>
+> I guess I wasn't clear in the problem statement - this target doesn't
+> have a serial port, an ethernet port, or a file system.  So I can't log
+> over Ethernet or log by writing to a file.  I'm fairly restricted to
+> getting data out of the system using GDB controlling a hardware JTAG
+> debugger (think BDI2000).
+I don't know GDB internals so I cannot answer the specific question relating 
+to synchronous writes via GDB.
+But...
+How much data are we talking and is there some area of private memory to stash 
+the logged data in and use the JTAG adapter to fetch the memory blocks and 
+write to a local file for post processing? I've done this in places where I 
+am doing kernbel bringup without a serial port. Your other option is use a 
+few IO pins (if available) and make a bit banging serial interface with some 
+extrnal components. 
 
->=20
-> Use NetConsole or remotey log it with syslog...
->=20
-
-I guess I wasn't clear in the problem statement - this target doesn't
-have a serial port, an ethernet port, or a file system.  So I can't log
-over Ethernet or log by writing to a file.  I'm fairly restricted to
-getting data out of the system using GDB controlling a hardware JTAG
-debugger (think BDI2000).
-
-Tim
+Thanks
+Brian
