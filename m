@@ -1,20 +1,21 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/6] ehea: interface to network stack
+Subject: Re: [PATCH][2/2] RTAS MSI
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <1155190553.9801.38.camel@localhost.localdomain>
-References: <44D99EFC.3000105@de.ibm.com>
-	<1155190553.9801.38.camel@localhost.localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1155117003.4040.69.camel@localhost.localdomain>
+References: <1154024154.29826.229.camel@goblue>
+	<1154024834.29826.240.camel@goblue>
+	<1154320382.19883.26.camel@localhost.localdomain>
+	<1154379714.29826.396.camel@goblue>
+	<1154509462.26242.9.camel@localhost.localdomain>
+	<1155117003.4040.69.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-GaCv2NE0p8UwUhN37GLQ"
-Date: Thu, 10 Aug 2006 17:30:50 +1000
-Message-Id: <1155195050.9801.67.camel@localhost.localdomain>
+	boundary="=-F6Aqa2rLiI9YnXjbazK1"
+Date: Thu, 10 Aug 2006 18:03:35 +1000
+Message-Id: <1155197015.9801.82.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, PaulMackerras <paulus@samba.org>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,36 +27,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-GaCv2NE0p8UwUhN37GLQ
+--=-F6Aqa2rLiI9YnXjbazK1
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-08-10 at 16:15 +1000, Michael Ellerman wrote:
-> > +	struct hcp_query_ehea_port_cb_2 *cb2 =3D NULL;
-> > +	struct net_device_stats *stats =3D &port->stats;
-> > +
-> > +	EDEB_EN(7, "net_device=3D%p", dev);
-> > +
-> > +	cb2 =3D kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> > +	if (!cb2) {
-> > +		EDEB_ERR(4, "No memory for cb2");
-> > +		goto get_stat_exit;
+On Wed, 2006-08-09 at 11:50 +0200, Benjamin Herrenschmidt wrote:
+> > I'm only just starting to get benh's new irq code, but I think
+> > irq_find_host(dn) isn't doing what we want here. It's probably harmless=
+,
+> > but AFAICT irq_find_host() is only meant to be called when you have the
+> > node of the irq controller, not for an arbitrary dn. The doco's a bit
+> > ambiguous:
+> >=20
+> >  * irq_find_host - Locates a host for a given device node
+> >  * @node: device-tree node of the interrupt controller
+> >=20
+> > But looking at the implementation, it doesn't do a search up the tree o=
+r
+> > anything, it just checks node against each host.
 >=20
-> You leak cb2 here.
->=20
-> > +	}
-> > +
-> > +	hret =3D ehea_h_query_ehea_port(adapter->handle,
-> > +				      port->logical_port_id,
-> > +				      H_PORT_CB2,
-> > +				      H_PORT_CB2_ALL,
-> > +				      cb2);
-> > +
-> > +	if (hret !=3D H_SUCCESS) {
-> > +		EDEB_ERR(4, "query_ehea_port failed for cb2");
-> > +		goto get_stat_exit;
+> For pSeries, passing NULL is fine for host anyway as there is only one
+> domain that is relevant for MSIs (there might be a 8259 legacy domain
+> too but it's not relevant) and that domain is set to be the default
+> host.
 
-Sorry, here.
+OK, will fix it. In the long run we probably want a function that takes
+any dn and finds the host for it.
+
+>=20
+> > Also, since's benh's latest patch went in we'll have to split this into
+> > two calls, I think we want:
+> >=20
+> > virq =3D irq_create_mapping(NULL ???, ret[0]);
+> > set_irq_type(virq, ret[1] ? IRQ_TYPE_EDGE_RISING : IRQ_TYPE_LEVEL_LOW);
+>=20
+> MSIs are always edge (though there might be an issue with some P5IOC
+> errata lurking here...). The xics code doesn't care much at this point
+> though.
+
+Err, great. Anymore info? I'll just set it to EDGE for now.
 
 cheers
 
@@ -69,16 +79,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-GaCv2NE0p8UwUhN37GLQ
+--=-F6Aqa2rLiI9YnXjbazK1
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQBE2uCqdSjSd0sB4dIRAkLbAJoD4gD9x3bXAO+mlQ2p21Bng4qHIwCggJAD
-EZZ0k3+qO3f3A2lfDFDoa8c=
-=Xtps
+iD8DBQBE2uhXdSjSd0sB4dIRAjGGAKCuD2V6hixdJiQ+i1cftC1d7ssJOgCfc5I8
+259kveEU+Y+56Sr/2F5RA78=
+=Ix5R
 -----END PGP SIGNATURE-----
 
---=-GaCv2NE0p8UwUhN37GLQ--
+--=-F6Aqa2rLiI9YnXjbazK1--
