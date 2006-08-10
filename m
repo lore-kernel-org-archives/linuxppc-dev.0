@@ -1,16 +1,16 @@
-Return-Path: <Prashant.Yendigeri@lntinfotech.com>
-Received: from mail41.messagelabs.com (mail41.messagelabs.com [216.82.242.51])
-	by ozlabs.org (Postfix) with SMTP id 4FD60679E2
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 9CAA867B5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Aug 2006 21:19:21 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
-Subject: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different outputs
+	Fri, 11 Aug 2006 03:14:54 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <OF403D77BC.13F5C3B5-ON652571C6.003D5A1C-652571C6.003E28AE@lntinfotech.com>
-From: Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
-Date: Thu, 10 Aug 2006 16:48:56 +0530
 Content-Type: multipart/alternative;
-	boundary="=_alternative 003E28AA652571C6_="
+	boundary="----_=_NextPart_001_01C6BCA0.7E3EFC59"
+Subject: Debugging with no serial port
+Date: Thu, 10 Aug 2006 10:14:53 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE487105FD10D3@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,150 +21,147 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 003E28AA652571C6_=
-Content-Type: text/plain; charset="US-ASCII"
+This is a multi-part message in MIME format.
 
-Hi,
+------_=_NextPart_001_01C6BCA0.7E3EFC59
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-The gianfar driver of 2.6.12 and 2.4.20 give different outputs on the same 
-PPC 8540 board.
+This may be more of a question for GDB folks...but I'll post it here
+because it relates to embedded systems as well.
+=20
+I'm trying to validate some signal processing software on an embedded
+Virtex4 PowerPC 405.  Basically, the validation consists of calling
+functions and looking at their outputs.  Over time, there are several
+thousand numbers to look at, so manually looking at each number at a
+break point would be very time consuming (to put it mildly).
+=20
+The normal way I would go about doing this is to print out the data
+(e.g. to a serial port) and post-process the data somewhere else.  But
+on this particular target, I don't have a serial port.  So I thought
+about using GDB's breakpoint command list feature.  When the software
+has data it wants to print out, it calls a function "log_stuff".  I then
+set a breakpoint and command list in the "log_stuff" function, which
+writes out the variables I'm interested in checking out to a file named
+outputfile.bin.  E.g. the following command file does this:
+=20
+break log_stuff
+commands
+   silent
+   if (variable_logging_enabled)
+      append value outputfile.bin stuff1_variable
+      append value outputfile.bin stuff2_variable
+   end
+   cont
+end
+=20
+The problem I have with this approach is that GDB doesn't finish writing
+out everything before it continues executing the program, so a backlog
+develops.  So my first question would be, is there some GDB "flush" like
+command I could run before the cont statement?
+=20
+Second question would be - is there an easier way to accomplish what I'm
+trying to do, which is basically emulate a serial port with GDB.
+=20
+Tim
+=20
 
-What could be the reason ? 
+------_=_NextPart_001_01C6BCA0.7E3EFC59
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Output on 2.4.20 : 
-/root # ifconfig eth0 172.28.8.254 up
-eth0: PHY is Marvell 88E1011S (1410c62)
-eth0: Auto-negotiation done
-eth0: Half Duplex
-eth0: Speed 10BT
-eth0: Link is up
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1400" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>This may be more of a question for GDB =
+folks...but I'll=20
+post it here because it relates to embedded systems as =
+well.</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>I'm trying to validate some signal processing =
+software on=20
+an embedded Virtex4 PowerPC 405.&nbsp; Basically, the validation =
+consists of=20
+calling functions and looking at their outputs.&nbsp; Over time, there =
+are=20
+several thousand numbers to look at, so manually looking at each number =
+at a=20
+break point would be very time consuming (to put it =
+mildly).</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>The normal way I would go about doing this is =
+to print out=20
+the data (e.g. to a serial port) and post-process the data somewhere =
+else.&nbsp;=20
+But on this particular target, I don't have a serial port.&nbsp; So I =
+thought=20
+about using GDB's breakpoint command list feature.&nbsp; When the =
+software has=20
+data it wants to print out, it calls a function "log_stuff".&nbsp; I =
+then set a=20
+breakpoint and command list in the "log_stuff" function, which writes =
+out the=20
+variables I'm interested in checking out to a file named =
+outputfile.bin.&nbsp;=20
+E.g. the&nbsp;following command file does this:</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+size=3D2>break=20
+log_stuff<BR>commands<BR>&nbsp;&nbsp; silent<BR>&nbsp;&nbsp; if=20
+(variable_logging_enabled)<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; append =
+value=20
+outputfile.bin stuff1_variable</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT=20
+size=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; append value outputfile.bin=20
+stuff2_variable<BR>&nbsp;&nbsp; end<BR>&nbsp;&nbsp;=20
+cont<BR>end</DIV></FONT></SPAN>
+<DIV dir=3Dltr align=3Dleft><SPAN =
+class=3D947103416-10082006></SPAN><SPAN=20
+class=3D947103416-10082006><FONT face=3DArial color=3D#0000ff=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>The problem I have with this approach is that =
+GDB doesn't=20
+finish writing out everything before it continues executing the program, =
+so a=20
+backlog develops.&nbsp; So my first question would be, is there some GDB =
+"flush"=20
+like command I could run before the cont statement?</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>Second question would be - is there an easier =
+way to=20
+accomplish what I'm trying to do, which is basically emulate a serial =
+port with=20
+GDB.</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>Tim</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D947103416-10082006><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV></BODY></HTML>
 
-Output on 2.6.12
-/ # ifconfig eth0 172.28.8.254 up
- eth0: PHY is Generic MII (ffffffff)
-
-Kernel bootup mesages on 2.6.12 for eth initialisation :
-[    1.706436] eth0: Gianfar Ethernet Controller Version 1.1, 
-00:01:af:07:9b:8a
-
-[    1.713769] eth0: Running with NAPI disabled
-[    1.718137] eth0: 64/64 RX/TX BD ring size
-[    1.722483] eth1: Gianfar Ethernet Controller Version 1.1, 
-fd:e4:75:9d:72:6f
-
-[    1.729812] eth1: Running with NAPI disabled
-[    1.734180] eth1: 64/64 RX/TX BD ring size
-[    1.738521] eth2: Gianfar Ethernet Controller Version 1.1, 
-6f:74:3d:2f:64:65
-
-[    1.745851] eth2: Running with NAPI disabled
-[    1.750218] eth2: 64/64 RX/TX BD ring size
-
-On 2.4.20 it is the same :
-eth0: Gianfar Ethernet Controller Version 1.0, 00:01:af:07:9b:8a
-eth0: Running with NAPI disabled
-eth0: 64/64 RX/TX BD ring size
-eth1: Gianfar Ethernet Controller Version 1.0, fd:e4:75:9d:72:6f
-eth1: Running with NAPI disabled
-eth1: 64/64 RX/TX BD ring size
-eth2: Gianfar Ethernet Controller Version 1.0, 6f:74:3d:2f:64:65
-eth2: Running with NAPI disabled
-eth2: 64/64 RX/TX BD ring size
-
-I am able to ping and use telnet,ftp etc when booted from 2.4.20 but ping, 
-telnet,ftp, don't work eventhough i use same ramdisk in both the cases.
-ifconfig shows card is up in 2.6.12 too.
-
-
-Regards,
-Prashant 
-
-
-
-
-
-
-
-______________________________________________________________________
---=_alternative 003E28AA652571C6_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi,</font>
-<br>
-<br><font size=2 face="sans-serif">The gianfar driver of 2.6.12 and 2.4.20
-give different outputs on the same PPC 8540 board.</font>
-<br>
-<br><font size=2 face="sans-serif">What could be the reason ? </font>
-<br>
-<br><font size=2 face="sans-serif">Output on 2.4.20 : </font>
-<br><font size=2 face="sans-serif">/root # ifconfig eth0 172.28.8.254 up</font>
-<br><font size=2 face="sans-serif">eth0: PHY is Marvell 88E1011S (1410c62)</font>
-<br><font size=2 face="sans-serif">eth0: Auto-negotiation done</font>
-<br><font size=2 face="sans-serif">eth0: Half Duplex</font>
-<br><font size=2 face="sans-serif">eth0: Speed 10BT</font>
-<br><font size=2 face="sans-serif">eth0: Link is up</font>
-<br>
-<br><font size=2 face="sans-serif">Output on 2.6.12</font>
-<br><font size=2 face="sans-serif">/ # ifconfig eth0 172.28.8.254 up</font>
-<br><font size=2 face="sans-serif">&nbsp;eth0: PHY is Generic MII (ffffffff)</font>
-<br>
-<br><font size=2 face="sans-serif">Kernel bootup mesages on 2.6.12 for
-eth initialisation :</font>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.706436] eth0: Gianfar
-Ethernet Controller Version 1.1, 00:01:af:07:9b:8a</font>
-<br>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.713769] eth0: Running
-with NAPI disabled</font>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.718137] eth0: 64/64
-RX/TX BD ring size</font>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.722483] eth1: Gianfar
-Ethernet Controller Version 1.1, fd:e4:75:9d:72:6f</font>
-<br>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.729812] eth1: Running
-with NAPI disabled</font>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.734180] eth1: 64/64
-RX/TX BD ring size</font>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.738521] eth2: Gianfar
-Ethernet Controller Version 1.1, 6f:74:3d:2f:64:65</font>
-<br>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.745851] eth2: Running
-with NAPI disabled</font>
-<br><font size=2 face="sans-serif">[ &nbsp; &nbsp;1.750218] eth2: 64/64
-RX/TX BD ring size</font>
-<br>
-<br><font size=2 face="sans-serif">On 2.4.20 it is the same :</font>
-<br><font size=2 face="sans-serif">eth0: Gianfar Ethernet Controller Version
-1.0, 00:01:af:07:9b:8a</font>
-<br><font size=2 face="sans-serif">eth0: Running with NAPI disabled</font>
-<br><font size=2 face="sans-serif">eth0: 64/64 RX/TX BD ring size</font>
-<br><font size=2 face="sans-serif">eth1: Gianfar Ethernet Controller Version
-1.0, fd:e4:75:9d:72:6f</font>
-<br><font size=2 face="sans-serif">eth1: Running with NAPI disabled</font>
-<br><font size=2 face="sans-serif">eth1: 64/64 RX/TX BD ring size</font>
-<br><font size=2 face="sans-serif">eth2: Gianfar Ethernet Controller Version
-1.0, 6f:74:3d:2f:64:65</font>
-<br><font size=2 face="sans-serif">eth2: Running with NAPI disabled</font>
-<br><font size=2 face="sans-serif">eth2: 64/64 RX/TX BD ring size</font>
-<br>
-<br><font size=2 face="sans-serif">I am able to ping and use telnet,ftp
-etc when booted from 2.4.20 but ping, telnet,ftp, don't work eventhough
-i use same ramdisk in both the cases.</font>
-<br><font size=2 face="sans-serif">ifconfig shows card is up in 2.6.12
-too.</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">Regards,</font>
-<br><font size=2 face="sans-serif">Prashant </font>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-
-<BR>
-______________________________________________________________________<BR>
-
---=_alternative 003E28AA652571C6_=--
+------_=_NextPart_001_01C6BCA0.7E3EFC59--
