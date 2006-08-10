@@ -1,13 +1,15 @@
 Return-Path: <miltonm@bga.com>
-Date: Thu, 10 Aug 2006 11:51:30 -0500
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 76D1067E77
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 02:59:27 +1000 (EST)
+Date: Thu, 10 Aug 2006 11:51:46 -0500
 From: Milton Miller <miltonm@bga.com>
-To: mgreer@mvista.com, hollisb@us.ibm.com,
-Subject: Re: [RFC] consolidated libdt proposal
-Message-Id: <11155228690643c98691.1714636915.miltonm@bga.com>
+To: v.selvamuthukumar@gdatech.co.in, linuxppc-dev@ozlabs.org,
+Subject: Re: Reg. Serial and Virtual consoles
+Message-Id: <3115522870674b0dc514.719885386.miltonm@bga.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, pantelis@embeddedalley.com,
-	linuxppc-embedded@ozlabs.org, xen-ppc-devel@lists.xensource.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,14 +19,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue Aug  8 2006 01:04:08 PM CDT, Mark A. Greer wrote:
-> If we're going to allow cmdline editing in the bootwrapper, we would
-> need to extend the size of a property.  We've never really talked about
-> cmdline editing in the powerpc branch but I assume that its a good
-> thing(tm).  I know I would like to have it so, IMHO, I think we should
-> add it (and therefore require extending a property).
+It sounds to me that you want all input and output on the serial line to be echoed to  the vga screen both user and kernel.  Do you also require keyboard input?
 
-We already have replace the command line merged (it's why my patches
-don't apply).
+While others have described how to get the kernel messages displayed on both the screen and the serial port, they were missing the userspace requirement.
+
+You will either need to write your own multiplexer program in user space and do the mirroring there, or use something like the screen program.  Either way the program will be running on a pty and some agent will be mirroring the text.  If you only require serial input it could be as simple as opening tty1, ttyS0, and the pty master and forking tee and cat to handle the master, your getty would run on the slave.
 
 milton
