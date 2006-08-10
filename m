@@ -1,19 +1,29 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (amanaus.varma-el.com [195.144.240.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.varma-el.com",
-	Issuer "mail.varma-el.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8B864679E7
+Return-Path: <urwithsudheer@gmail.com>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id 9B5D267B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Aug 2006 09:34:29 +1000 (EST)
-Message-ID: <44DA6A72.7020502@varma-el.com>
-Date: Thu, 10 Aug 2006 03:06:26 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
+	Thu, 10 Aug 2006 13:06:44 +1000 (EST)
+Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 825948780AB
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  9 Aug 2006 20:06:42 -0700 (PDT)
+Received: from gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
+	1.3.4.5154-maint13 $Rev: 5154 $) id r689200642D-00-2
+	for linuxppc-embedded@ozlabs.org; Wed, 09 Aug 2006 20:06:42 -0700
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 536168780A3
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  9 Aug 2006 20:06:42 -0700 (PDT)
+Message-ID: <44DAA2BD.2000406@gmail.com>
+Date: Thu, 10 Aug 2006 08:36:37 +0530
+From: sudheer <urwithsudheer@gmail.com>
 MIME-Version: 1.0
-To: urwithsudheer <urwithsudheer@gmail.com>
-Subject: Re: regarding pci  vga card output with powerpc
-References: <44D7097C.7040907@gmail.com>
-In-Reply-To: <44D7097C.7040907@gmail.com>
+To: Frank D Lombardo <lombardo@mdivac.com>
+Subject: Re: SystemAce Driver.
+References: <20060724121452.55760.qmail@web53608.mail.yahoo.com>	<44C4BE5B.3000002@gmail.com>
+	<44D9F9DF.5020100@gmail.com> <44DA40FF.90504@mdivac.com>
+In-Reply-To: <44DA40FF.90504@mdivac.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,53 +36,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-urwithsudheer wrote:
-> Hello All,
-> I am working with a pci based vga card. I have connected the vga card 
-> next to the  pci slot of my target processor on the baseboard.
-> I have connected a monitor to the vga card.
-> When i boot linux from minicom, i could see all the kernel log messages 
-> on both the minicom and vga card monitor. But on the vga monitor, i 
-> could not see any messages after asking for login as below:
-> .
-> .
-> 
-> Mounting filesystems
-> Running depmod
-> Setting up networking on loopback device:
-> Setting up networking on eth0:
-> eth0: PHY is Marvell 88E11x1 (1410cc2)
-> Adding static route for default gateway to 192.168.3.1:
-> Setting nameserver to 192.168.0.1 in /etc/resolv.conf:
-> Starting inetd:
-> 
-> login:
-> 
-> 
-> Though i am entering my login and passwd at the minicom, nothing comes 
-> on to the vga monitor. But i am able to write to vga monitor using the 
-> following commands from minicom:
-> 
-> # echo "Hello" > /dev/tty1
-> # echo "Hi " > /dev/tty1
-> My requirement is to get on the vga monitor whatever i am typing on the 
-> minicom after logging into the linux like .
-> ls or pwd commands.
-> 
-> Anyone pl help me.
-> 
-> Thanks & Regards
-> Sudheer
-> 
+Hi Frank D Lombardo
 
-See Documentation/kernel-parameters.txt.
+Thanks for the reply.
 
-If be short, add:
+I have done the same and  got the support files for system ace.
 
-     console=/dev/ttySxx console=/dev/tty1
+Thanks & Regards
+Sudheer
 
-(both) to a kernel parameters string.
 
---
-Regards
-Andrey
+
+Frank D Lombardo wrote:
+> sudheer wrote:
+>> Hello Ameet Patil
+>>
+>> I am looking for linux kernel source 2.6.16 with system ace 
+>> controller support. I downloaded the linux-2.6.16 and linux-2.6.17-1 
+>> source from kernel.org but could not find any files related to system 
+>> ace controller  ( No xilinx_sysace directory in  drivers/block/) .  I 
+>> have checked penguinppc.org also but could not get it.
+>>
+>> Can you please send to me the link where i could download the 
+>> linuxppc-2.6.16 source with system ace support.
+>>
+>> Thanks & Regards
+>> Sudheer
+>>
+>> Ameet Patil wrote:
+>>> Hi Raja,
+>>>     I have ported the Xilinx System ACE driver to 2.6 kernel. Find 
+>>> the latest one here:
+>>> http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch 
+>>>
+>>>
+>>> NOTE: this patch wouldn't work if you are using the TEMAC driver. In 
+>>> which case use the -after-TEMAC patch found in the patches folder 
+>>> above.
+>>>
+>>> Check the following discussions (threads) for more details:
+>>> 1. "Xilinx SystemACE driver for 2.6"
+>>> 2. "Xilinx BSP for linux 2.6"
+>>> 3. "Kernel hangs after "Now booting the kernel"."
+>>>
+>>> cheers,
+>>> -Ameet
+>>>
+>>> Raja Chidambaram wrote:
+>>>  
+>>>>  Hi all,
+>>>>  We are working on customized board with amcc 440SPe
+>>>> processor & xilinx System Ace controller. The System
+>>>> Ace controller is connected to compact flash driver.
+>>>>
+>>>> We use u-boot 1.2 as bootloader & linux kernel
+>>>> 2.6.16-2.
+>>>>
+>>>> On the process the u-boot is able to detect compact
+>>>> flash through Xilinx SystemAce controller & able to
+>>>> load the kernel image into compact flash.But when the
+>>>> linux boot's up it not able to detect the System Ace
+>>>> controller or compact flash.
+>>>>
+>>>> Note:we need to have the root file system in compact
+>>>> flash.
+>>>>
+>>>> Is their any drivers available for SystemAce
+>>>> controller on linux 2.6,if their how to get it.please
+>>>> help me in this
+>>>>                                     with regards
+>>>>                                      raja
+>>>>
+>>>>
+>>>>
+>>>> __________________________________________________
+>>>> Do You Yahoo!?
+>>>> Tired of spam?  Yahoo! Mail has the best spam protection around 
+>>>> http://mail.yahoo.com _______________________________________________
+>>>> Linuxppc-embedded mailing list
+>>>> Linuxppc-embedded@ozlabs.org
+>>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>>>
+>>>>     
+>>> _______________________________________________
+>>> Linuxppc-embedded mailing list
+>>> Linuxppc-embedded@ozlabs.org
+>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>>
+>>>   
+>>
+>> ------------------------------------------------------------------------
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> Sudheer,
+>
+> You need to download the SystemAce patch and apply it to the 2.6.17.1 
+> Kernel.  The patch can be downloaded from: 
+> http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch 
+>
+>
+> Save the patch to the root of the Kernel sources and run the following 
+> command:
+> patch -p1 < linuxppc-2.6.17.1-sysace-1.2.patch
+>
+> Frank
+> <http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch> 
+>
+>
+> //
+> //
+>
+>
+>
