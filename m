@@ -1,22 +1,30 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E48467B96
+	by ozlabs.org (Postfix) with ESMTP id DD47367B8C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 23:08:53 +1000 (EST)
-Message-ID: <44DC8152.1030806@gmail.com>
-Date: Fri, 11 Aug 2006 14:08:34 +0100
-From: Ameet Patil <ammubhai@gmail.com>
-MIME-Version: 1.0
-To: Ujwal <ujwal.mailinglist@gmail.com>
-Subject: Re: how to apply a PowerPC patch to linux 2.4 kernel and port to
-	memec	board with vertex II pro FPGA?
-References: <b47d45990608102310l4cba891fnce5ee8d60c7134ef@mail.gmail.com>
-	<b47d45990608110402i6dc0dba7idcb189a7026e8bdd@mail.gmail.com>
-In-Reply-To: <b47d45990608110402i6dc0dba7idcb189a7026e8bdd@mail.gmail.com>
+	Fri, 11 Aug 2006 23:48:53 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1GBXNF-00013m-9y
+	for linuxppc-embedded@ozlabs.org; Fri, 11 Aug 2006 15:48:33 +0200
+Received: from rusfw02.rohde-schwarz.com ([80.246.32.40])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Fri, 11 Aug 2006 15:48:29 +0200
+Received: from euphoria by rusfw02.rohde-schwarz.com with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Fri, 11 Aug 2006 15:48:29 +0200
+To: linuxppc-embedded@ozlabs.org
+From: Florian Boelstler <euphoria@arcor.de>
+Subject: Re: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
+Date: Fri, 11 Aug 2006 15:48:12 +0200
+Message-ID: <ebi1qo$dcp$1@sea.gmane.org>
+References: <3140C9D90FB6D911ABD7000F206DC92603D6E0FC@zhk08exm40.ap.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <3140C9D90FB6D911ABD7000F206DC92603D6E0FC@zhk08exm40.ap.freescale.net>
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,39 +35,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ujwal,
+Hi Jeffrey,
 
-Have a look at:
-http://splish.ee.byu.edu/projects/LinuxFPGA/configuring.htm
-http://www.crhc.uiuc.edu/IMPACT/gsrc/hardwarelab/docs/kernel-HOWTO.html
-http://linux.get2knowmore.com/
+I got one more question.
+Is it enough to jumper the MPC8548 to an endpoint device?
+Or is some additional code required (like your U-Boot commands) to make 
+a MPC8548 work as an EP.
+Up to now I was assuming there is a certain EEPROM that contains a 
+sufficient PCIe EP configuration.
 
-U might get some idea.
+Thanks,
 
--Ameet
-
-Ujwal wrote:
-> 
-> 
-> hi all,
->  
-> im new to porting of Linux to PowerPC . Could anyone let me know
->  
-> 1) the procedure of how to Port a linux OS to PowerPC for a VirtexII Pro 
-> memec board??
->  
-> whats are the steps that i need to follow?
->  
-> 2) where can i find the power-pc patch for linux 2.4 kernel?
->  
->  
-> Thanks and Regards,
-> Ujwal
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+   Florian
