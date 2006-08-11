@@ -1,21 +1,26 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED42E67B67
+Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
+Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
+	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id A2CCD67B6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 19:37:40 +1000 (EST)
-Message-ID: <44DC4F34.1070308@gmail.com>
-Date: Fri, 11 Aug 2006 10:34:44 +0100
-From: Ameet Patil <ammubhai@gmail.com>
+	Fri, 11 Aug 2006 20:40:06 +1000 (EST)
+Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
+	[131.188.3.181]) by max71.rrze.uni-erlangen.de with ESMTP for
+	linuxppc-embedded@ozlabs.org; Fri, 11 Aug 2006 12:39:52 +0200
+Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
+	by max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de [127.0.0.1])
+	(amavisd-new)
+	with ESMTP id 11787-08-10 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 11 Aug 2006 12:39:52 +0200 (MEST)
+Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
+	mailhub.rrze.uni-erlangen.de with ESMTP for
+	linuxppc-embedded@ozlabs.org; Fri, 11 Aug 2006 12:39:52 +0200
+Message-Id: <44DC5E7A.4010907@cs.fau.de>
+Date: Fri, 11 Aug 2006 12:39:54 +0200
+From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
 MIME-Version: 1.0
-To: sudheer <urwithsudheer@gmail.com>
-Subject: Re: SystemAce Driver.
-References: <20060724121452.55760.qmail@web53608.mail.yahoo.com>	<44C4BE5B.3000002@gmail.com>
-	<44D9F9DF.5020100@gmail.com>
-In-Reply-To: <44D9F9DF.5020100@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: mpc8xx usb controller on linux 2.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,89 +31,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Sudheer,
-    Frank has already answered your questions. If you have any problems 
-with the SysAce patch... do let me know. I have written a small tutorial 
-here if it helps...
+Hello,
 
-http://linux.get2knowmore.com
+I am using linux 2.6.18 on a MPC875, which runs on a custom board. Some changes to the official kernel allow me to get the mpc8xx internal usb host controller working and access an usb stick successfully. I just used Brad Parkers 2.4 patch, ported it to linux 2.6 and merged
+it with the cpm2usb project. Until now it just worked for my board. Maybe any skilled programmer would like to test the patch also on his own board, fix some bugs and give me some confidence that the patch is somehow stable so that it once can be added to official linux source tree. I would appreciate that and try to help to get it working.
 
+You can find the patch at
 
--Ameet
+http://wwwcip.informatik.uni-erlangen.de/~sijoange/
 
-sudheer wrote:
-> Hello Ameet Patil
-> 
-> I am looking for linux kernel source 2.6.16 with system ace controller 
-> support. I downloaded the linux-2.6.16 and linux-2.6.17-1 source from 
-> kernel.org but could not find any files related to system ace 
-> controller  ( No xilinx_sysace directory in  drivers/block/) .  I have 
-> checked penguinppc.org also but could not get it.
-> 
-> Can you please send to me the link where i could download the 
-> linuxppc-2.6.16 source with system ace support.
-> 
-> Thanks & Regards
-> Sudheer
-> 
-> Ameet Patil wrote:
->> Hi Raja,
->>     I have ported the Xilinx System ACE driver to 2.6 kernel. Find the 
->> latest one here:
->> http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2.patch
->>
->> NOTE: this patch wouldn't work if you are using the TEMAC driver. In 
->> which case use the -after-TEMAC patch found in the patches folder above.
->>
->> Check the following discussions (threads) for more details:
->> 1. "Xilinx SystemACE driver for 2.6"
->> 2. "Xilinx BSP for linux 2.6"
->> 3. "Kernel hangs after "Now booting the kernel"."
->>
->> cheers,
->> -Ameet
->>
->> Raja Chidambaram wrote:
->>   
->>>  Hi all,
->>>  We are working on customized board with amcc 440SPe
->>> processor & xilinx System Ace controller. The System
->>> Ace controller is connected to compact flash driver.
->>>
->>> We use u-boot 1.2 as bootloader & linux kernel
->>> 2.6.16-2.
->>>
->>> On the process the u-boot is able to detect compact
->>> flash through Xilinx SystemAce controller & able to
->>> load the kernel image into compact flash.But when the
->>> linux boot's up it not able to detect the System Ace
->>> controller or compact flash.
->>>
->>> Note:we need to have the root file system in compact
->>> flash.
->>>
->>> Is their any drivers available for SystemAce
->>> controller on linux 2.6,if their how to get it.please
->>> help me in this
->>>                                     with regards
->>>                                      raja
->>>
->>>
->>>
->>> __________________________________________________
->>> Do You Yahoo!?
->>> Tired of spam?  Yahoo! Mail has the best spam protection around 
->>> http://mail.yahoo.com 
->>> _______________________________________________
->>> Linuxppc-embedded mailing list
->>> Linuxppc-embedded@ozlabs.org
->>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>
->>>     
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->>   
-> 
+Because of a bug in the m8xx USB CPM (read m8xx errata) you must feed a 1khz signal out and feed it at the DREQ pin in again on your board. Then you have to patch the kernel, configure linux to use the m8xx usb sof patch and the m8xx usb host controller, startup the compiled linux, fix some bugs, give me some feedback. 
+
+Regards,
+Josef
