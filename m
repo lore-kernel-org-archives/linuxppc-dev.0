@@ -1,16 +1,22 @@
-Return-Path: <Prashant.Yendigeri@lntinfotech.com>
-In-Reply-To: <CFF33627-951D-495D-8DBB-B0AC7F9D13D7@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 :
-	different	outputs
+Return-Path: <ammubhai@gmail.com>
+Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5E48467B96
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 11 Aug 2006 23:08:53 +1000 (EST)
+Message-ID: <44DC8152.1030806@gmail.com>
+Date: Fri, 11 Aug 2006 14:08:34 +0100
+From: Ameet Patil <ammubhai@gmail.com>
 MIME-Version: 1.0
-Message-ID: <OF1D72900B.401371DD-ON652571C7.0045AB5D-652571C7.0045E5FC@lntinfotech.com>
-From: Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
-Date: Fri, 11 Aug 2006 18:13:28 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 0045E5F4652571C7_="
-Cc: linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+To: Ujwal <ujwal.mailinglist@gmail.com>
+Subject: Re: how to apply a PowerPC patch to linux 2.4 kernel and port to
+	memec	board with vertex II pro FPGA?
+References: <b47d45990608102310l4cba891fnce5ee8d60c7134ef@mail.gmail.com>
+	<b47d45990608110402i6dc0dba7idcb189a7026e8bdd@mail.gmail.com>
+In-Reply-To: <b47d45990608110402i6dc0dba7idcb189a7026e8bdd@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,394 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 0045E5F4652571C7_=
-Content-Type: text/plain; charset="US-ASCII"
+Ujwal,
 
-Hi,
+Have a look at:
+http://splish.ee.byu.edu/projects/LinuxFPGA/configuring.htm
+http://www.crhc.uiuc.edu/IMPACT/gsrc/hardwarelab/docs/kernel-HOWTO.html
+http://linux.get2knowmore.com/
 
-This is a standard board designed by GDA technologies Inc. 
-(www.gdatech.com) and eth on 2.4.20 works very much.
+U might get some idea.
 
-U-Boot messages :
+-Ameet
 
-U-Boot 1.1.0(pq3-20040423-r1) (May  5 2006 - 08:56:54)
-
-Freescale PowerPC
-    Core: E500, Version: 2.0, (0x80200020)
-    System: 8540, Version: 2.0, (0x80300020)
-    Clocks: CPU: 660 MHz, CCB: 264 MHz, DDR: 132 MHz, LBC:  66 MHz
-    L1 D-cache 32KB, L1 I-cache 32KB enabled.
-Board: Freescale EVAL8540 Board
-        CPU: 660 MHz
-        CCB: 264 MHz
-        DDR: 132 MHz
-        LBC: 66 MHz
-L1 D-cache 32KB, L1 I-cache 32KB enabled.
-I2C:   ready
-DRAM:  256 MB
-FLASH:  8 MB
-L2 cache enabled: 256KB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   Freescale ENET0: PHY is Marvell 88E1011S (1410c62)
-Freescale ENET1: PHY is Marvell 88E1011S (1410c62)
-Freescale ENET2: PHY is Intel LXT971A (1378e2)
-Freescale ENET0, Freescale ENET1, Freescale ENET2
-Hit any key to stop autoboot:  0
-MPC8540EVAL=>
-
-
--prashant 
-
-
-
-
-Kumar Gala <galak@kernel.crashing.org> 
-Sent by: 
-linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org
-08/11/2006 06:07 PM
-
-To
-Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
-cc
-linuxppc-embedded@ozlabs.org
-Subject
-Re: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different outputs
-
-
-
-
-
-
-
-On Aug 11, 2006, at 6:21 AM, Prashant Yendigeri wrote:
-
->
-> Hi,
->
-> Downloaded 2.6.16.26 and booted up and got this :
->
-> / # ifconfig eth0 172.28.8.254 up
-> [   34.034596] 0:00 not found
-> [   34.037330] eth0: Could not attach to PHY
-> [   34.041809] 0:00 not found
-> SIOCSIFFLAGS: No[   34.044526] eth0: Could not attach to PHY
->  such device
-> SIOCSIFFLAGS: No such device
->
-> I had enabled all the PHY devices in .config and also tried only 
-> with Marvell phy enabled.
-
-
-Are you doing this on a custom board?  If so what is the PHY address 
-for the Marvell phy you are using?
-
-- k
-
->
-> Kernel boot messages :
-> [    2.296555] Gianfar MII Bus: probed
-> [    2.301789] eth0: Gianfar Ethernet Controller Version 1.2, 
-> 00:01:af:07:9b:8a
->
-> [    2.309039] eth0: Running with NAPI disabled
-> [    2.313307] eth0: 64/64 RX/TX BD ring size
-> [    2.318498] eth1: Gianfar Ethernet Controller Version 1.2, 
-> 00:00:00:00:72:6f
->
-> [    2.325738] eth1: Running with NAPI disabled
-> [    2.330006] eth1: 64/64 RX/TX BD ring size
-> [    2.335198] eth2: Gianfar Ethernet Controller Version 1.2, 6f: 
-> 74:3d:2f:64:65
->
-> [    2.342377] eth2: Running with NAPI disabled
-> [    2.346662] eth2: 64/64 RX/TX BD ring size
-> [    2.351586] Marvell 88E1101: Registered new driver
-> [    2.357010] Davicom DM9161E: Registered new driver
-> [    2.362443] Davicom DM9131: Registered new driver
-> [    2.367775] Cicada Cis8204: Registered new driver
-> [    2.373136] LXT970: Registered new driver
-> [    2.377794] LXT971: Registered new driver
-> [    2.382461] QS6612: Registered new driver
->
->
-> Regards,
-> Prashant
->
->
->
->
->
-> Kumar Gala <galak@kernel.crashing.org>
-> 08/11/2006 09:40 AM
->
-> To
-> Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
-> cc
-> linuxppc-embedded@ozlabs.org
-> Subject
-> Re: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different 
-> outputs
->
->
->
->
->
->
-> On Aug 10, 2006, at 6:18 AM, Prashant Yendigeri wrote:
->
-> >
-> > Hi,
-> >
-> > The gianfar driver of 2.6.12 and 2.4.20 give different outputs on
-> > the same PPC 8540 board.
-> >
-> > What could be the reason ?
-> >
-> > Output on 2.4.20 :
-> > /root # ifconfig eth0 172.28.8.254 up
-> > eth0: PHY is Marvell 88E1011S (1410c62)
-> > eth0: Auto-negotiation done
-> > eth0: Half Duplex
-> > eth0: Speed 10BT
-> > eth0: Link is up
-> >
-> > Output on 2.6.12
-> > / # ifconfig eth0 172.28.8.254 up
-> >  eth0: PHY is Generic MII (ffffffff)
->
-> It looks like your 2.6.12 kernel isn't handling the PHY correctly.
-> I'd recommend upgrading to something newer which has the phylib
-> (can't remember which 2.6 that went into).
->
-> - kumar
->
-> ______________________________________________________________________
->
->
-> ______________________________________________________________________
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-______________________________________________________________________
-
-
-
-______________________________________________________________________
---=_alternative 0045E5F4652571C7_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi,</font>
-<br>
-<br><font size=2 face="sans-serif">This is a standard board designed by
-GDA technologies Inc. (www.gdatech.com) and eth on 2.4.20 works very much.</font>
-<br>
-<br><font size=2 face="sans-serif">U-Boot messages :</font>
-<br>
-<br><font size=2 face="sans-serif">U-Boot 1.1.0(pq3-20040423-r1) (May &nbsp;5
-2006 - 08:56:54)</font>
-<br>
-<br><font size=2 face="sans-serif">Freescale PowerPC</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; Core: E500, Version: 2.0,
-(0x80200020)</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; System: 8540, Version:
-2.0, (0x80300020)</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; Clocks: CPU: 660 MHz,
-CCB: 264 MHz, DDR: 132 MHz, LBC: &nbsp;66 MHz</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; L1 D-cache 32KB, L1 I-cache
-32KB enabled.</font>
-<br><font size=2 face="sans-serif">Board: Freescale EVAL8540 Board</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; CPU: 660
-MHz</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; CCB: 264
-MHz</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; DDR: 132
-MHz</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; LBC: 66
-MHz</font>
-<br><font size=2 face="sans-serif">L1 D-cache 32KB, L1 I-cache 32KB enabled.</font>
-<br><font size=2 face="sans-serif">I2C: &nbsp; ready</font>
-<br><font size=2 face="sans-serif">DRAM: &nbsp;256 MB</font>
-<br><font size=2 face="sans-serif">FLASH: &nbsp;8 MB</font>
-<br><font size=2 face="sans-serif">L2 cache enabled: 256KB</font>
-<br><font size=2 face="sans-serif">In: &nbsp; &nbsp;serial</font>
-<br><font size=2 face="sans-serif">Out: &nbsp; serial</font>
-<br><font size=2 face="sans-serif">Err: &nbsp; serial</font>
-<br><font size=2 face="sans-serif">Net: &nbsp; Freescale ENET0: PHY is
-Marvell 88E1011S (1410c62)</font>
-<br><font size=2 face="sans-serif">Freescale ENET1: PHY is Marvell 88E1011S
-(1410c62)</font>
-<br><font size=2 face="sans-serif">Freescale ENET2: PHY is Intel LXT971A
-(1378e2)</font>
-<br><font size=2 face="sans-serif">Freescale ENET0, Freescale ENET1, Freescale
-ENET2</font>
-<br><font size=2 face="sans-serif">Hit any key to stop autoboot: &nbsp;0</font>
-<br><font size=2 face="sans-serif">MPC8540EVAL=&gt;</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">-prashant </font>
-<br>
-<br>
-<br>
-<br>
-<table width=100%>
-<tr valign=top>
-<td width=40%><font size=1 face="sans-serif"><b>Kumar Gala &lt;galak@kernel.crashing.org&gt;</b>
-</font>
-<br><font size=1 face="sans-serif">Sent by: linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org</font>
-<p><font size=1 face="sans-serif">08/11/2006 06:07 PM</font>
-<td width=59%>
-<table width=100%>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">To</font></div>
-<td><font size=1 face="sans-serif">Prashant Yendigeri &lt;Prashant.Yendigeri@lntinfotech.com&gt;</font>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">cc</font></div>
-<td><font size=1 face="sans-serif">linuxppc-embedded@ozlabs.org</font>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">Subject</font></div>
-<td><font size=1 face="sans-serif">Re: Gianfar eth driver on 8540 ppc -
-for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp;outputs</font></table>
-<br>
-<table>
-<tr valign=top>
-<td>
-<td></table>
-<br></table>
-<br>
-<br>
-<br><tt><font size=2><br>
-On Aug 11, 2006, at 6:21 AM, Prashant Yendigeri wrote:<br>
-<br>
-&gt;<br>
-&gt; Hi,<br>
-&gt;<br>
-&gt; Downloaded 2.6.16.26 and booted up and got this :<br>
-&gt;<br>
-&gt; / # ifconfig eth0 172.28.8.254 up<br>
-&gt; [ &nbsp; 34.034596] 0:00 not found<br>
-&gt; [ &nbsp; 34.037330] eth0: Could not attach to PHY<br>
-&gt; [ &nbsp; 34.041809] 0:00 not found<br>
-&gt; SIOCSIFFLAGS: No[ &nbsp; 34.044526] eth0: Could not attach to PHY<br>
-&gt; &nbsp;such device<br>
-&gt; SIOCSIFFLAGS: No such device<br>
-&gt;<br>
-&gt; I had enabled all the PHY devices in .config and also tried only &nbsp;<br>
-&gt; with Marvell phy enabled.<br>
-<br>
-<br>
-Are you doing this on a custom board? &nbsp;If so what is the PHY address
-&nbsp;<br>
-for the Marvell phy you are using?<br>
-<br>
-- k<br>
-<br>
-&gt;<br>
-&gt; Kernel boot messages :<br>
-&gt; [ &nbsp; &nbsp;2.296555] Gianfar MII Bus: probed<br>
-&gt; [ &nbsp; &nbsp;2.301789] eth0: Gianfar Ethernet Controller Version
-1.2, &nbsp;<br>
-&gt; 00:01:af:07:9b:8a<br>
-&gt;<br>
-&gt; [ &nbsp; &nbsp;2.309039] eth0: Running with NAPI disabled<br>
-&gt; [ &nbsp; &nbsp;2.313307] eth0: 64/64 RX/TX BD ring size<br>
-&gt; [ &nbsp; &nbsp;2.318498] eth1: Gianfar Ethernet Controller Version
-1.2, &nbsp;<br>
-&gt; 00:00:00:00:72:6f<br>
-&gt;<br>
-&gt; [ &nbsp; &nbsp;2.325738] eth1: Running with NAPI disabled<br>
-&gt; [ &nbsp; &nbsp;2.330006] eth1: 64/64 RX/TX BD ring size<br>
-&gt; [ &nbsp; &nbsp;2.335198] eth2: Gianfar Ethernet Controller Version
-1.2, 6f: <br>
-&gt; 74:3d:2f:64:65<br>
-&gt;<br>
-&gt; [ &nbsp; &nbsp;2.342377] eth2: Running with NAPI disabled<br>
-&gt; [ &nbsp; &nbsp;2.346662] eth2: 64/64 RX/TX BD ring size<br>
-&gt; [ &nbsp; &nbsp;2.351586] Marvell 88E1101: Registered new driver<br>
-&gt; [ &nbsp; &nbsp;2.357010] Davicom DM9161E: Registered new driver<br>
-&gt; [ &nbsp; &nbsp;2.362443] Davicom DM9131: Registered new driver<br>
-&gt; [ &nbsp; &nbsp;2.367775] Cicada Cis8204: Registered new driver<br>
-&gt; [ &nbsp; &nbsp;2.373136] LXT970: Registered new driver<br>
-&gt; [ &nbsp; &nbsp;2.377794] LXT971: Registered new driver<br>
-&gt; [ &nbsp; &nbsp;2.382461] QS6612: Registered new driver<br>
-&gt;<br>
-&gt;<br>
-&gt; Regards,<br>
-&gt; Prashant<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt; Kumar Gala &lt;galak@kernel.crashing.org&gt;<br>
-&gt; 08/11/2006 09:40 AM<br>
-&gt;<br>
-&gt; To<br>
-&gt; Prashant Yendigeri &lt;Prashant.Yendigeri@lntinfotech.com&gt;<br>
-&gt; cc<br>
-&gt; linuxppc-embedded@ozlabs.org<br>
-&gt; Subject<br>
-&gt; Re: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different &nbsp;<br>
-&gt; outputs<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt; On Aug 10, 2006, at 6:18 AM, Prashant Yendigeri wrote:<br>
-&gt;<br>
-&gt; &gt;<br>
-&gt; &gt; Hi,<br>
-&gt; &gt;<br>
-&gt; &gt; The gianfar driver of 2.6.12 and 2.4.20 give different outputs
-on<br>
-&gt; &gt; the same PPC 8540 board.<br>
-&gt; &gt;<br>
-&gt; &gt; What could be the reason ?<br>
-&gt; &gt;<br>
-&gt; &gt; Output on 2.4.20 :<br>
-&gt; &gt; /root # ifconfig eth0 172.28.8.254 up<br>
-&gt; &gt; eth0: PHY is Marvell 88E1011S (1410c62)<br>
-&gt; &gt; eth0: Auto-negotiation done<br>
-&gt; &gt; eth0: Half Duplex<br>
-&gt; &gt; eth0: Speed 10BT<br>
-&gt; &gt; eth0: Link is up<br>
-&gt; &gt;<br>
-&gt; &gt; Output on 2.6.12<br>
-&gt; &gt; / # ifconfig eth0 172.28.8.254 up<br>
-&gt; &gt; &nbsp;eth0: PHY is Generic MII (ffffffff)<br>
-&gt;<br>
-&gt; It looks like your 2.6.12 kernel isn't handling the PHY correctly.<br>
-&gt; I'd recommend upgrading to something newer which has the phylib<br>
-&gt; (can't remember which 2.6 that went into).<br>
-&gt;<br>
-&gt; - kumar<br>
-&gt;<br>
-&gt; ______________________________________________________________________<br>
-&gt;<br>
-&gt;<br>
-&gt; ______________________________________________________________________<br>
-<br>
-_______________________________________________<br>
-Linuxppc-embedded mailing list<br>
-Linuxppc-embedded@ozlabs.org<br>
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded<br>
-<br>
-______________________________________________________________________<br>
-</font></tt>
-<br>
-
-<BR>
-______________________________________________________________________<BR>
-
---=_alternative 0045E5F4652571C7_=--
+Ujwal wrote:
+> 
+> 
+> hi all,
+>  
+> im new to porting of Linux to PowerPC . Could anyone let me know
+>  
+> 1) the procedure of how to Port a linux OS to PowerPC for a VirtexII Pro 
+> memec board??
+>  
+> whats are the steps that i need to follow?
+>  
+> 2) where can i find the power-pc patch for linux 2.4 kernel?
+>  
+>  
+> Thanks and Regards,
+> Ujwal
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
