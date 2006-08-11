@@ -1,33 +1,36 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 367B867BCF
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 03:18:49 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7BHIeNK027877
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 07E4D679E9
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 03:42:50 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7BHglPc019782
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 13:18:41 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k7BHIeGa295714
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 13:42:47 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k7BHgkKo101374
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 13:18:40 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7BHIeNK030921
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 13:18:40 -0400
-Date: Fri, 11 Aug 2006 12:18:39 -0500
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: Reg. Serial and Virtual consoles
-Message-ID: <20060811171839.GM10638@austin.ibm.com>
-References: <3115522870674b0dc514.719885386.miltonm@bga.com>
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 11:42:46 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7BHgjFI011108
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 11:42:46 -0600
+Message-ID: <44DCC18F.3030201@austin.ibm.com>
+Date: Fri, 11 Aug 2006 12:42:39 -0500
+From: jschopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3115522870674b0dc514.719885386.miltonm@bga.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 0/4]:  powerpc/cell spidernet ethernet driver fixes
+References: <20060811170337.GH10638@austin.ibm.com>
+In-Reply-To: <20060811170337.GH10638@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
+	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,19 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 10, 2006 at 11:51:46AM -0500, Milton Miller wrote:
-> It sounds to me that you want all input and output on the serial line to be echoed to  the vga screen both user and kernel.  Do you also require keyboard input?
+Linas Vepstas wrote:
+> The following series of patches implement some fixes and performance
+> improvements for the Spedernet ethernet device driver. The high point
+> of the patch series is some code to implement a low-watermark interrupt
+> on the transmit queue. The bundle of patches raises transmit performance 
+> from some embarassingly low value to a reasonable 730 Megabits per
+> second for 1500 byte packets.
+> 
+> Please note that the spider is an ethernet controller that is 
+> integrated into the south bridge, and is thus available only on
+> Cell-based platforms.
+> 
+> These have been well-tested over the last few weeks. Please apply. 
 
-I missed the start of the conversation, so the following suggestion may
-be irrelevent. However, if the goal is to get kernel messages displayed
-in lots of different places, this is easily done by running syslogd, and
-adding the following to /etc/syslog.conf:
+With these patches the spidernet driver performance goes from bad to usable.  They are all 
+good changes.  I'd expect some more bottlnecks to be identified now that these are 
+cleared.  Maybe Jim and Linas can get the driver performance up from usable to good next.
 
-kern.*;*.err      *
-
-If you don' want them slatered everywhere, but only on 
-the console, then:
-
-kern.*;*.err      |/dev/console
-
---linas
+Acked-by: Joel Schopp <jschopp@austin.ibm.com>
