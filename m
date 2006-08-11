@@ -1,17 +1,15 @@
-Return-Path: <miltonm@bga.com>
-In-Reply-To: <20060810185514.GA12848@mag.az.mvista.com>
-References: <11155228690643c98691.1714636915.miltonm@bga.com>
-	<20060810185514.GA12848@mag.az.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a90773d560ff8b4efc68c2de3c3bf7d5@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC] consolidated libdt proposal
-Date: Thu, 10 Aug 2006 23:55:32 -0500
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: hollisb@us.ibm.com, pantelis@embeddedalley.com,
-	xen-ppc-devel@lists.xensource.com, linuxppc-dev@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 70B9267B68
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 15:09:41 +1000 (EST)
+Date: Fri, 11 Aug 2006 00:01:59 -0500
+To: paulus@samba.org
+Subject: [PATCH 0/2]: powerpc: Cpu init cleanups
+Message-ID: <20060811050159.GA5879@pb15.lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Aug 10, 2006, at 1:55 PM, Mark A. Greer wrote:
-> On Thu, Aug 10, 2006 at 11:51:30AM -0500, Milton Miller wrote:
->> On Tue Aug  8 2006 01:04:08 PM CDT, Mark A. Greer wrote:
->>> If we're going to allow cmdline editing in the bootwrapper, we would
->>> need to extend the size of a property.
-...
->> We already have replace the command line merged (it's why my patches
->> don't apply).
-> That's different.
-...
+Hi,
 
-Yes, but it still requires changing the size or inserting a
-property, which is the real requirement we were discussing.
+Attached are two patches to cleanup the cpu inits a bit. First one just
+renames cpu_setup_power4.S to cpu_setup_ppc970.S, since that's really
+what it contains. No functional changes at all in there to simplify
+review.
 
-Yes, editing at command line would require an input function.
+Second patch renames some of the setup functions, and make the restore
+functions come of the cputable instead of being hardcoded. Current setup
+makes it awkward to add new cpus without editing the ppc970 setup/restore
+functions or add more PVR checks in the assembly, which would be nice
+to avoid. Only the really early one is still needed in assembly, since
+cputables have not yet been setup at that point.
 
-milton
+Earlier patch submission was all baked together, which makes it harder
+to review and tell what is new and not.
+
+Boot tested on PowerMac and POWER5. Please consider for 2.6.19 merge
+window.
+
+
+Thanks,
+
+Olof
