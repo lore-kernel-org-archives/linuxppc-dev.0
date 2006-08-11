@@ -1,16 +1,18 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s6.bay0.hotmail.com (bay0-omc2-s6.bay0.hotmail.com
-	[65.54.246.142]) by ozlabs.org (Postfix) with ESMTP id DEF5267B8E
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 00FCA67B8C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Aug 2006 01:54:06 +1000 (EST)
-Message-ID: <BAY110-F2328BD6F6D0E887EC94392B24B0@phx.gbl>
-In-Reply-To: <44DCA4CF.4090607@mdivac.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: lombardo@mdivac.com
-Subject: Re: U-boot on ML403
-Date: Fri, 11 Aug 2006 15:54:02 +0000
+	Sat, 12 Aug 2006 01:55:02 +1000 (EST)
+Date: Fri, 11 Aug 2006 10:54:58 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Brent Cook <bcook@bpointsys.com>
+Subject: Re: Realtime preemption patch on PPC
+Message-Id: <20060811105458.047f95ac.kim.phillips@freescale.com>
+In-Reply-To: <200608110938.45385.bcook@bpointsys.com>
+References: <1155251072.5950.80.camel@localhost>
+	<200608110938.45385.bcook@bpointsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,43 +24,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Frank,
-OK then. 
+On Fri, 11 Aug 2006 09:38:45 -0500
+Brent Cook <bcook@bpointsys.com> wrote:
 
-I have tried to find the patch. But I failed. So maybe it's better to 
-contact Xilinx.
+> On Thursday 10 August 2006 18:04, Ben Weintraub wrote:
 
-Thanks for your help anyway.
+> I have gotten them to work with MPC7448 boards, but it has hardware floating 
+> point, so no math-emu problems.
+> 
+> > Anyhow, when I boot on an MPC8555 with my hack, I get an endless stream
+> > of:
 
-Regards
-Ming
+if you can, you might want to rebuild your binaries with -msoft-float
 
-
->From: Frank D Lombardo <lombardo@mdivac.com>
->To: Ming Liu <eemingliu@hotmail.com>
->CC: linuxppc-embedded@ozlabs.org
->Subject: Re: U-boot on ML403
->Date: Fri, 11 Aug 2006 11:39:59 -0400
->
->Ming Liu wrote:
-> > Dear Frank,
-> > So you mean, you built your ML403 system with U-Boot supported
-> > according to the updated version of xapp542, right? There are NOT some
-> > patches open to everyone to include ML403 support into the U-Boot
-> > tree, right?
-> > If both answers for the two questions are yes, then I have to contact
-> > Xilinx to ask for help. Anyway, thanks for your information and reply.
-> > Regards
-> > Ming
-> >
-> >
-> >
->Ming,
->
->There may be public patches available, but I don't know where to obtain
->them. I used the patches from Xilinx.
->
->Frank
-
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+Kim
