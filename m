@@ -1,16 +1,23 @@
-Return-Path: <Vipin.Malik@EmersonProcess.com>
-Received: from NAOUT-CINEXS02.nasmtpout.emrsn.com
-	(naout-cinexs02.nasmtpout.emrsn.com [67.96.16.12])
-	by ozlabs.org (Postfix) with ESMTP id A005067B61
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 11:02:47 +1000 (EST)
-Subject: Problem with SCC uart in UART mode on mpc8270 w/ Linux-2.6.17.6
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 10 Aug 2006 19:55:34 -0500
-Message-ID: <E52B7395D85BAD46B0BC59D3324B9EF7010D8270@ushou-exm01.na.emersonprocess.com>
-From: <Vipin.Malik@EmersonProcess.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benwei@veriwave.com>
+Received: from mxout4.cac.washington.edu (mxout4.cac.washington.edu
+	[140.142.33.19])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout4.cac.washington.edu",
+	Issuer "UW Services CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CA619679E0
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 11:58:22 +1000 (EST)
+Received: from smtp.washington.edu (smtp.washington.edu [140.142.33.9])
+	by mxout4.cac.washington.edu (8.13.7+UW06.06/8.13.7+UW06.03) with ESMTP
+	id k7B0tFb8006158
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Aug 2006 17:55:16 -0700
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Message-Id: <F8C64E4D-6034-4602-9114-8D3DE8288D43@veriwave.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: linuxppc-dev@ozlabs.org
+From: Ben Weintraub <benwei@veriwave.com>
+Subject: Realtime preemption patch on PPC
+Date: Thu, 10 Aug 2006 17:55:35 -0700
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,42 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+(Sorry for those of you who see this message twice, it was originally  
+posted in the linuxppc-embedded list, but Mark Greer suggested  
+posting it here too)
 
-I'm trying to use the SCC1 in uart mode on a MPC8270 under 2.6.17.4 from
-kernel.org
+Howdy,
 
-I've turned on all SCC uarts and I can send and rx data but have an
-issue:
-The first time I open the port (ttyCPM2) by "cat /dev/ttyCPM2" and "cat
->/dev/ttyCPM2"
-I can tx and rx fine.
+I'm wondering if anyone has had success getting Ingo Molnar's realtime
+preemption patch (the one here:
+http://people.redhat.com/mingo/realtime-preempt/ ) working on the ppc
+arch.
 
-The problem occurs when I close the first cat session and open it again.
+I'm working with patch-2.6.17-rt8 (the latest) and linux-2.6.17.  The
+realtime-preempt patch seems to include the generic timeofday patch, but
+with no support for the ppc arch, only powerpc, so I've hacked in
+support for ppc by basically replicating the powerpc arch-specific stuff
+found here:
+http://sr71.net/~jstultz/tod/archive/linux-2.6.17-rc3_timekeeping_C2/ 
+broken-out/linux-2.6.17-rc3_timeofday-arch-ppc_C2.patch
 
-This time, my TX has some sort of threshold in it. It seems that only
-after a few 10's of bytes have been sent to the port (the fifo size?
-Need to
-check) does the scc actually send the data. After that it's all ok.
+I can attach my patch if anyone would like, but for all I know it could
+be wildly inaccurate.
 
-However, my rx never works after the 1st port open.
+Anyhow, when I boot on an MPC8555 with my hack, I get an endless stream
+of:
 
-Console is on SMC1 and works fine all the time.
+BUG: sleeping function called from invalid context init(1) at
+arch/powerpc/math-emu/math.c:226
+in_atomic():0 [00000000], irqs_disabled():1
+Call Trace:
+[A0BB3E90] [A000934C] show_stack+0x48/0x194 (unreliable)
+[A0BB3EC0] [A001B7DC] __might_sleep+0xe8/0xf4
+[A0BB3EE0] [A00136C0] do_mathemu+0x30/0x8c8
+[A0BB3F00] [A00036AC] program_check_exception+0x1ac/0x514
+[A0BB3F40] [A0002A08] ret_from_except_full+0x0/0x4c
 
-I'm using non-platform mode (whatever I tried to do in platform mode, my
-SMC1 console stopped working/board stopped working. I would not get any
-output after u-boot starts the kernel- not even the Linux version
-string).
+Line 226 in arch/powerpc/math-emu/math.c is part of the do_mathemu()
+function, and contains a call to get_user(), which calls
+__might_sleep(), causing this problem.
 
-Any ideas?
+I did find this message in the LKML archives describing a very similar
+problem:
+http://lkml.org/lkml/2006/2/23/312
 
-TIA
+And so tried putting a call to local_irq_enable() before the call to
+do_mathemu() in program_check_excpetion(), but this causes a hard lockup
+with no messages printed when I try to bring up my network interface.  I
+assume this means I've done something Very Bad with interrupts by adding
+in local_irq_enable() at the wrong spot.  I also tried adding it at the
+exact same spot as the patch given by Paul in his reply, but in this
+case I still get the endless stream of BUG messages.
 
-Vipin
-P.S. I had to hack the compat code to get the BRG's wired properly for
-the SCC's, but the SCC works the 1st time and tx works (besides the
-threshold
- issue)- so I don't think that is the cause.
+Can anyone offer some guidance or advice?
 
-I also tried to get platform code working, but not luck. Is there any
- document or email anywhere I can read that explains that setup?
+Thanks so much,
+Ben
