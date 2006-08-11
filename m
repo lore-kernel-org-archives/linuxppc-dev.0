@@ -1,15 +1,19 @@
-Return-Path: <jimmyzhmliu@yahoo.com>
-Received: from web53115.mail.yahoo.com (web53115.mail.yahoo.com
-	[206.190.49.65]) by ozlabs.org (Postfix) with SMTP id E2D5167B94
+Return-Path: <msm@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5AE16679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 23:57:48 +1000 (EST)
-Message-ID: <20060811135746.68402.qmail@web53115.mail.yahoo.com>
-Date: Fri, 11 Aug 2006 06:57:46 -0700 (PDT)
-From: jimmy liu <jimmyzhmliu@yahoo.com>
-Subject: PCI DMA_MR Problem
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sat, 12 Aug 2006 00:30:41 +1000 (EST)
+Subject: Re: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 :
+	different	outputs
+From: Matthew McClintock <msm@freescale.com>
+To: Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
+In-Reply-To: <OF1D72900B.401371DD-ON652571C7.0045AB5D-652571C7.0045E5FC@lntinfotech.com>
+References: <OF1D72900B.401371DD-ON652571C7.0045AB5D-652571C7.0045E5FC@lntinfotech.com>
+Content-Type: text/plain
+Date: Fri, 11 Aug 2006 09:30:32 -0500
+Message-Id: <1155306633.5252.1.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,41 +24,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I got a problem when I set the pci dmamr for MPC8250
-for DMA PCI transfering data on linux kernel 2.6.17.
-When I set the values for the pci_dmamr registers,
-then print the register values back, some bits can not
-be set. Did anybody know what are the problem, or I
-have to set other stuff.
+On Fri, 2006-08-11 at 18:13 +0530, Prashant Yendigeri wrote:
+> Hi, 
+> 
+> This is a standard board designed by GDA technologies Inc.
+> (www.gdatech.com) and eth on 2.4.20 works very much. 
 
-Thanks.
+I used a 8540 GDA board once upon a time and all I needed to do was to
+change the PHY address. Lookat your 2.4 source and determine what the
+correct value is and double check.
 
-The code like this:
-
-volatile cpm2_map_t *immap = cpm2_immr;
-immap->im_pci.pci_dmamr0 = 0x0042b00c;
-immap->im_pci.pci_dmamr1 = 0x0042b00c;
-immap->im_pci.pci_dmamr2 = 0x0042b00c;
-immap->im_pci.pci_dmamr3 = 0x0042b00c;
-
-printk("DMA0 MR = 0x%08x\n",
-immap->im_pci.pci_dmamr0);
-printk("DMA1 MR (0x%08x) = 0x%08x\n",
-immap->im_pci.pci_dmamr1);
-printk("DMA2 MR (0x%08x) = 0x%08x\n",
-immap->im_pci.pci_dmamr2);
-printk("DMA3 MR (0x%08x) = 0x%08x\n",
-immap->im_pci.pci_dmamr3);
-
-The results are following:
-DMA0 MR (0xf0010500) = 0x0040b000
-DMA1 MR (0xf0010580) = 0x0040b000
-DMA2 MR (0xf0010600) = 0x0040b000
-DMA3 MR (0xf0010680) = 0x0040b000
-
-
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+-Matthew
