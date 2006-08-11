@@ -1,33 +1,16 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 07E4D679E9
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 03:42:50 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7BHglPc019782
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 13:42:47 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k7BHgkKo101374
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 11:42:46 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7BHgjFI011108
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 11:42:46 -0600
-Message-ID: <44DCC18F.3030201@austin.ibm.com>
-Date: Fri, 11 Aug 2006 12:42:39 -0500
-From: jschopp <jschopp@austin.ibm.com>
-MIME-Version: 1.0
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtp.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id 7197A67B86
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 03:45:11 +1000 (EST)
+Date: Fri, 11 Aug 2006 19:44:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Linas Vepstas <linas@austin.ibm.com>
 Subject: Re: [PATCH 0/4]:  powerpc/cell spidernet ethernet driver fixes
+Message-ID: <20060811174439.GA30191@mars.ravnborg.org>
 References: <20060811170337.GH10638@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20060811170337.GH10638@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
 	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
@@ -40,7 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas wrote:
+On Fri, Aug 11, 2006 at 12:03:37PM -0500, Linas Vepstas wrote:
+> 
 > The following series of patches implement some fixes and performance
 > improvements for the Spedernet ethernet device driver. The high point
 > of the patch series is some code to implement a low-watermark interrupt
@@ -53,9 +37,13 @@ Linas Vepstas wrote:
 > Cell-based platforms.
 > 
 > These have been well-tested over the last few weeks. Please apply. 
+Hi Linas.
+Just noticed a nit-pick detail.
+The general rule is to add your Signed-off-by: at the bottom of the
+patch, so the top-most Signed-of-by: is also the original author whereas
+the last Signed-of-by: is the one that added this patch to the kernel.
+Likewise you add Cc: before your Signed-off-by: line.
 
-With these patches the spidernet driver performance goes from bad to usable.  They are all 
-good changes.  I'd expect some more bottlnecks to be identified now that these are 
-cleared.  Maybe Jim and Linas can get the driver performance up from usable to good next.
+See patches from for example Andrew Morton for examples.
 
-Acked-by: Joel Schopp <jschopp@austin.ibm.com>
+	Sam
