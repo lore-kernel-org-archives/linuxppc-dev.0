@@ -1,30 +1,15 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD47367B8C
+Return-Path: <jimmyzhmliu@yahoo.com>
+Received: from web53115.mail.yahoo.com (web53115.mail.yahoo.com
+	[206.190.49.65]) by ozlabs.org (Postfix) with SMTP id E2D5167B94
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 23:48:53 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1GBXNF-00013m-9y
-	for linuxppc-embedded@ozlabs.org; Fri, 11 Aug 2006 15:48:33 +0200
-Received: from rusfw02.rohde-schwarz.com ([80.246.32.40])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 11 Aug 2006 15:48:29 +0200
-Received: from euphoria by rusfw02.rohde-schwarz.com with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 11 Aug 2006 15:48:29 +0200
+	Fri, 11 Aug 2006 23:57:48 +1000 (EST)
+Message-ID: <20060811135746.68402.qmail@web53115.mail.yahoo.com>
+Date: Fri, 11 Aug 2006 06:57:46 -0700 (PDT)
+From: jimmy liu <jimmyzhmliu@yahoo.com>
+Subject: PCI DMA_MR Problem
 To: linuxppc-embedded@ozlabs.org
-From: Florian Boelstler <euphoria@arcor.de>
-Subject: Re: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
-Date: Fri, 11 Aug 2006 15:48:12 +0200
-Message-ID: <ebi1qo$dcp$1@sea.gmane.org>
-References: <3140C9D90FB6D911ABD7000F206DC92603D6E0FC@zhk08exm40.ap.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-In-Reply-To: <3140C9D90FB6D911ABD7000F206DC92603D6E0FC@zhk08exm40.ap.freescale.net>
-Sender: news <news@sea.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,15 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Jeffrey,
+I got a problem when I set the pci dmamr for MPC8250
+for DMA PCI transfering data on linux kernel 2.6.17.
+When I set the values for the pci_dmamr registers,
+then print the register values back, some bits can not
+be set. Did anybody know what are the problem, or I
+have to set other stuff.
 
-I got one more question.
-Is it enough to jumper the MPC8548 to an endpoint device?
-Or is some additional code required (like your U-Boot commands) to make 
-a MPC8548 work as an EP.
-Up to now I was assuming there is a certain EEPROM that contains a 
-sufficient PCIe EP configuration.
+Thanks.
 
-Thanks,
+The code like this:
 
-   Florian
+volatile cpm2_map_t *immap = cpm2_immr;
+immap->im_pci.pci_dmamr0 = 0x0042b00c;
+immap->im_pci.pci_dmamr1 = 0x0042b00c;
+immap->im_pci.pci_dmamr2 = 0x0042b00c;
+immap->im_pci.pci_dmamr3 = 0x0042b00c;
+
+printk("DMA0 MR = 0x%08x\n",
+immap->im_pci.pci_dmamr0);
+printk("DMA1 MR (0x%08x) = 0x%08x\n",
+immap->im_pci.pci_dmamr1);
+printk("DMA2 MR (0x%08x) = 0x%08x\n",
+immap->im_pci.pci_dmamr2);
+printk("DMA3 MR (0x%08x) = 0x%08x\n",
+immap->im_pci.pci_dmamr3);
+
+The results are following:
+DMA0 MR (0xf0010500) = 0x0040b000
+DMA1 MR (0xf0010580) = 0x0040b000
+DMA2 MR (0xf0010600) = 0x0040b000
+DMA3 MR (0xf0010680) = 0x0040b000
+
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
