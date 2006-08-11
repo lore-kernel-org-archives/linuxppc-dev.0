@@ -1,15 +1,39 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Message-ID: <44DCA2BF.1030002@ru.mvista.com>
-Date: Fri, 11 Aug 2006 19:31:11 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [195.212.29.135])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1A36167BCD
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 02:09:26 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate2.uk.ibm.com (8.13.7/8.13.7) with ESMTP id k7BG9NtQ034086
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 16:09:23 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k7BGBCWP130314
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 17:11:12 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7BG9Lb3003930
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 17:09:22 +0100
+Message-ID: <44DCABB1.2090300@de.ibm.com>
+Date: Fri, 11 Aug 2006 18:09:21 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
-	linux-mtd@lists.infradead.org
-Subject: [RFC] Adding MTD to device tree
-References: <20060614213643.137680b8@vitb.ru.mvista.com>	<44A83AE1.4020707@ru.mvista.com>	<20060705153118.6ffbe97d@localhost.localdomain>	<44ABC0D1.1020407@ru.mvista.com>	<20060705191007.54e8b4b6@localhost.localdomain>	<44B00C03.5010409@ru.mvista.com>
-	<20060709001435.7a94294e@localhost.localdomain>
-In-Reply-To: <20060709001435.7a94294e@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------080005010505060805080604"
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 3/6] ehea: queue management
+References: <44D99F38.8010306@de.ibm.com>
+	<20060811000540.200CE67B6B@ozlabs.org>
+In-Reply-To: <20060811000540.200CE67B6B@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Thomas Klein <osstklei@de.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,224 +43,420 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080005010505060805080604
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Mikey,
 
-Hello.
+first of all thanks a lot for the effort you invested to review our code.
+We're quite happy about the improvements we made due to your comments.
+See our answers below.
 
-    Here's the proposal for the representation of the MTD (optionally having
-some partitions) in the device tree, along with the sample code that parses 
-the MTD node and hands the necessary information to the 'physmap' driver using 
-the 'platform_device' method.  The representation was fitted to the current 
-Linux MTD driver model, so it doesn't bear any information on the chip models 
-or the flash interflace, letting the MTD probing code figure all that out 
-(this part might need some changes I suspect).
-
-    To me, however, this method seems too limiting: we have to look thru the
-device tree for each particular kind MTDs (assuming that there could be
-different ones that 'physmap' can't drive) and register each of them its own
-way.  If we teach 'physmap' to register on the 'of_platform_device' bus, we
-may look up the device tree for *any* MTD nodes somewhere in arch/powerpc/ 
-tree, register them all, and leave it up to the particular driver to claim 
-them and get the information the driver needs from their node's properties. 
-That would require introducing another MTD partition pasrsing module (so the 
-code that parses the partitions in this patch will move into the separate 
-module under drivers/mtd/).
-
-    Opinions on what way should be taken and what needs to be added from both
-PowerPC and MTD communities are very welcome.
-
-WBR, Sergei
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Kind regards
+Thomas
 
 
---------------080005010505060805080604
-Content-Type: text/plain;
- name="OF-physmap-device.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="OF-physmap-device.patch"
 
-Index: powerpc/Documentation/powerpc/booting-without-of.txt
-===================================================================
---- powerpc.orig/Documentation/powerpc/booting-without-of.txt
-+++ powerpc/Documentation/powerpc/booting-without-of.txt
-@@ -6,6 +6,8 @@
-     IBM Corp.
- (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
-     Freescale Semiconductor, FSL SOC and 32-bit additions
-+(c) 2006 MontaVista Software, Inc.
-+    MTD node definition
- 
-    May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
- 
-@@ -1442,6 +1444,42 @@ platforms are moved over to use the flat
-        };
- 
- 
-+   h) MTD nodes
-+
-+   Memory Technology Devices are flash, ROM, and similar chips, often used
-+   for solid state file systems on embedded devices.
-+
-+   Required properties:
-+
-+    - device_type : has to be "mtd"
-+    - compatible : Should be the name of the MTD driver. Currently, this is
-+      most likely to be "physmap".
-+    - reg : Offset and length of the register set for the device.
-+
-+   Recommended properties :
-+
-+    - bank-width : Width of the flash data bus in bytes. Must be specified
-+      for the NOR flashes.
-+    - partitions : Several pairs of 32-bit values where the first value is
-+      partition's offset from the start of the MTD device and the second
-+      one is partition size in bytes with LSB used to signify a read only
-+      partititon (so, the parition size should always be an even number).
-+    - partition-names : The list of concatenated zero terminated strings
-+      representing the partition names.
-+
-+  Example:
-+
-+	flash@ff000000 {
-+		device_type = "mtd";
-+		compatible = "physmap";
-+		reg = <ff000000 01000000>;
-+		bank-width = <4>;
-+		partitions = <00000000 00f80000
-+			      00f80000 00080001>;
-+		partition-names = "fs\0firmware";
-+	};
-+
-+
-    More devices will be defined as this spec matures.
- 
- 
-Index: powerpc/arch/powerpc/sysdev/Makefile
-===================================================================
---- powerpc.orig/arch/powerpc/sysdev/Makefile
-+++ powerpc/arch/powerpc/sysdev/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_PPC_83xx)		+= ipic.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_PPC_TODC)		+= todc.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
-+obj-$(CONFIG_MTD)		+= flash.o
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
-Index: powerpc/arch/powerpc/sysdev/flash.c
-===================================================================
---- /dev/null
-+++ powerpc/arch/powerpc/sysdev/flash.c
-@@ -0,0 +1,104 @@
-+/*
-+ * arch/powerpc/sysdev/flash.c
-+ *
-+ * Flash memory registration
-+ *
-+ * (C) 2006 MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/physmap.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/platform_device.h>
-+#include <asm/prom.h>
-+
-+static void parse_flash_partitions(struct device_node *node,
-+				   struct physmap_flash_data *physmap_data)
-+{
-+#ifdef CONFIG_MTD_PARTITIONS
-+	int i, plen, num_parts;
-+	const  u32  *part;
-+	const  char *name;
-+
-+	part = get_property(node, "partitions", &plen);
-+	if (part == NULL)
-+		return;
-+
-+	physmap_data->nr_parts = num_parts = plen / (2 * sizeof(u32));
-+	physmap_data->parts = kcalloc(num_parts, sizeof(struct mtd_partition),
-+				      GFP_KERNEL);
-+	if (physmap_data->parts == NULL) {
-+		printk(KERN_ERR "Can't allocate the flash partition data!\n");
-+		return;
-+	}
-+
-+	name = get_property(node, "partition-names", &plen);
-+
-+	for (i = 0; i < num_parts; i++) {
-+		physmap_data->parts[i].offset = *part++;
-+		physmap_data->parts[i].size   = *part & ~1;
-+		if (*part++ & 1) /* bit 0 set signifies read only partition */
-+			physmap_data->parts[i].mask_flags = MTD_WRITEABLE;
-+
-+		if (name != NULL && plen > 0) {
-+			int len = strlen(name) + 1;
-+
-+			physmap_data->parts[i].name = (char *)name;
-+			plen -= len;
-+			name += len;
-+		} else
-+			physmap_data->parts[i].name = "unnamed";
-+	}
-+#endif
-+}
-+
-+static int __init powerpc_flash_init(void)
-+{
-+	struct device_node *node = NULL;
-+	int num = 0;
-+
-+	while ((node = of_find_compatible_node(node, "mtd", "physmap")) != NULL) {
-+		struct platform_device *physmap_flash;
-+		struct physmap_flash_data physmap_data;
-+		struct resource res;
-+		const  u32 *width;
-+
-+		if (of_address_to_resource(node, 0, &res)) {
-+			printk(KERN_ERR "Can't get the flash mapping!\n");
-+			continue;
-+		}
-+
-+		width = get_property(node, "bank-width", NULL);
-+		if (width == NULL) {
-+			printk(KERN_ERR "Can't get the flash bank width!\n");
-+			continue;
-+		}
-+
-+		physmap_flash = platform_device_register_simple("physmap-flash",
-+								num, &res, 1);
-+		if (IS_ERR(physmap_flash)) {
-+			printk(KERN_ERR "Can't register the \"physmap-flash\" "
-+			       "platform device!\n");
-+			continue;
-+		}
-+
-+		memset(&physmap_data, 0, sizeof(physmap_data));
-+		physmap_data.width = *width;
-+
-+		parse_flash_partitions(node, &physmap_data);
-+
-+		if (platform_device_add_data(physmap_flash, &physmap_data,
-+					     sizeof(struct physmap_flash_data))) {
-+			printk(KERN_ERR "Can't pass data to physmap driver!\n");
-+			platform_device_unregister(physmap_flash);
-+			continue;
-+		}
-+		++num;
-+	}
-+	return 0;
-+}
-+
-+arch_initcall(powerpc_flash_init);
+Michael Neuling wrote:
+> Please add comments to make the code more readable, especially at the
+> start of functions/structures to describe what they do.  A large readme
+> at the start of ehea_main.c which gave an overview of the driver design
+> would be really useful.
+
+We'll improve comments over the next patch iterations.
+
+>> +static int ipz_queue_ctor(struct ipz_queue *queue,
+>> +                      const u32 nr_of_pages,
+>> +                      const u32 pagesize, const u32 qe_size,
+>> +                      const u32 nr_of_sg)
+>> +{
+>> +    int f;
+>> +    EDEB_EN(7, "nr_of_pages=%x pagesize=%x qe_size=%x",
+>> +            nr_of_pages, pagesize, qe_size);
+>> +    queue->queue_length = nr_of_pages * pagesize;
+>> +    queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
+>
+>> +    if (!queue->queue_pages) {
+>> +            EDEB(4, "ERROR!! didn't get the memory");
+>> +            return 0;
+>> +    }
+>> +    memset(queue->queue_pages, 0, nr_of_pages * sizeof(void *));
+>> +
+>> +    for (f = 0; f < nr_of_pages; f++) {
+>> +            (queue->queue_pages)[f] =
+>> +                (struct ipz_page *)get_zeroed_page(GFP_KERNEL);
+>> +            if (!(queue->queue_pages)[f]) {
+>> +                    break;
+>> +            }
+>> +    }
+>> +    if (f < nr_of_pages) {
+>> +            int g;
+>> +            EDEB_ERR(4, "couldn't get 0ed pages queue=%p f=%x "
+>> +                     "nr_of_pages=%x", queue, f, nr_of_pages);
+>> +            for (g = 0; g < f; g++) {
+>> +                    free_page((unsigned long)(queue->queue_pages)[g]);
+>> +            }
+>> +            return 0;
+>
+> If you return here when calling from ehea_create_eq, I think you are
+> leaking the queue->queue_pages allocation (the pages they point to are
+> freed correctly).
+
+You're right. Fixed it.
 
 
---------------080005010505060805080604--
+>> +void ehea_cq_delete(struct ehea_cq *cq)
+>> +{
+>> +    vfree(cq);
+>> +}
+>
+> This is used in only two places.  Do we need it?
+
+No. The ehea_?q_new()/ehea_?q_delete() functions were entirely removed.
+
+>
+> If we do... can we static inline?
+>
+
+
+>> +    hret = ehea_h_alloc_resource_cq(adapter->handle,
+>> +                                    cq,
+>> +                                    &cq->attr,
+>> +                                    &cq->ipz_cq_handle, &cq->galpas);
+>
+> hret set twice...
+
+Fixed.
+
+>
+>
+>
+>> +    if (hret != H_SUCCESS) {
+>> +            EDEB_ERR(4, "ehea_h_alloc_resource_cq failed. hret=%lx", hret);
+>> +            goto create_cq_exit1;
+>> +    }
+>> +
+>> +    ipz_rc = ipz_queue_ctor(&cq->ipz_queue, cq->attr.nr_pages,
+>> +                            EHEA_PAGESIZE, sizeof(struct ehea_cqe), 0);
+>> +    if (!ipz_rc)
+>> +            goto create_cq_exit2;
+>> +
+>> +    hret = H_SUCCESS;
+>> +
+>> +    for (counter = 0; counter < cq->attr.nr_pages; counter++) {
+>> +            vpage = ipz_qpageit_get_inc(&cq->ipz_queue);
+>
+> vpga set twice...
+
+vpage gets assigned to rpage via the virt_to_abs() call. So using
+it again afterwards is ok.
+
+>
+>> +            if (!vpage) {
+>> +                    EDEB_ERR(4, "ipz_qpageit_get_inc() "
+>> +                             "returns NULL adapter=%p", adapter);
+>> +                    goto create_cq_exit3;
+>> +            }
+>> +
+>> +            rpage = virt_to_abs(vpage);
+>> +
+>> +            hret = ehea_h_register_rpage_cq(adapter->handle,
+>> +                                            cq->ipz_cq_handle,
+>> +                                            0,
+>> +                                            HIPZ_CQ_REGISTER_ORIG,
+>> +                                            rpage, 1, cq->galpas.kernel);
+>> +
+>> +            if (hret < H_SUCCESS) {
+>> +                    EDEB_ERR(4, "ehea_h_register_rpage_cq() failed "
+>> +                             "ehea_cq=%p hret=%lx "
+>> +                             "counter=%i act_pages=%i",
+>> +                             cq, hret, counter, cq->attr.nr_pages);
+>> +                    goto create_cq_exit3;
+>> +            }
+>> +
+>> +            if (counter == (cq->attr.nr_pages - 1)) {
+>> +                    vpage = ipz_qpageit_get_inc(&cq->ipz_queue);
+>> +
+>> +                    if ((hret != H_SUCCESS) || (vpage)) {
+>> +                            EDEB_ERR(4, "Registration of pages not "
+>> +                                     "complete ehea_cq=%p hret=%lx",
+>> +                                     cq, hret)
+>> +                            goto create_cq_exit3;
+>> +                    }
+>> +            } else {
+>> +                    if ((hret != H_PAGE_REGISTERED) || (vpage == 0)) {
+>> +                            EDEB_ERR(4, "Registration of page failed "
+>> +                                     "ehea_cq=%p hret=%lx"
+>> +                                     "counter=%i act_pages=%i",
+>> +                                     cq, hret, counter, cq->attr.nr_pages);
+>> +                            goto create_cq_exit3;
+>> +                    }
+>> +            }
+>> +    }
+
+
+>> +void ehea_eq_delete(struct ehea_eq *eq)
+>> +{
+>> +    vfree(eq);
+>> +}
+>
+> Again, is this really needed and what about static inline?
+
+removed. see above.
+
+
+>> +struct ehea_qp *ehea_qp_new(void) {
+>> +    struct ehea_qp *qp = vmalloc(sizeof(*qp));
+>> +    if (qp != 0) {
+>
+> if (qp) ??
+
+removed. see above.
+
+
+>> +static inline u32 map_swqe_size(u8 swqe_enc_size)
+>> +{
+>> +    return 128 << swqe_enc_size;
+>> +}
+>> +
+>> +static inline u32 map_rwqe_size(u8 rwqe_enc_size)
+>> +{
+>> +    return 128 << rwqe_enc_size;
+>> +}
+>
+> Snap!  These are identical...
+
+Agreed. Functions were replaced by a single map_wqe_size() function.
+
+
+>> +                    hret = ehea_h_register_rpage_mr(adapter->handle,
+>> +                                                    adapter->mr.handle,
+>> +                                                    0,
+>> +                                                    0,
+>> +                                                    (u64)pt_abs,
+>> +                                                    num_pages);
+>
+> They probably don't all need their own line.
+
+Agreed.
+
+>
+>> +                    nr_pages -= num_pages;
+>> +            } else {
+>> +                    u64 abs_adr = virt_to_abs((void *)(((u64)start)
+>> +                                                       + (k * PAGE_SIZE)));
+>> +                    hret = ehea_h_register_rpage_mr(adapter->handle,
+>> +                                                    adapter->mr.handle,
+>> +                                                    0,
+>> +                                                    0,
+>> +                                                    abs_adr,
+>> +                                                    1);
+>
+> Ditto.
+
+Agreed.
+
+
+>> +    if (nr_pages > 1)
+>> +            hret = ehea_h_register_rpage_mr(adapter->handle,
+>> +                                            mr->handle,
+>> +                                            0,
+>> +                                            0,
+>> +                                            (u64)pt_abs,
+>> +                                            nr_pages);
+>> +    else
+>> +            hret = ehea_h_register_rpage_mr(adapter->handle,
+>> +                                            mr->handle,
+>> +                                            0,
+>> +                                            0,
+>> +                                            first_page,
+>> +                                            1);
+>
+> hret = ehea_h_register_rpage_mr(adapter->handle, mr->handle, 0,
+>                               0, (nr_pages > 1)?(u64)pt_abs:first_page,
+>                               nr_pages);
+> Simpler?
+
+It would have to be
+hret = ehea_h_register_rpage_mr(adapter->handle, mr->handle, 0,
+                                0, (nr_pages > 1)?(u64)pt_abs:first_page,
+                                (nr_pages > 1)?nr_pages:1);
+
+It's more sophisticated but surely not more readable to have this in a function call.
+
+>
+> Or get ehea_h_register_rpage_mr to do this for you?  You seem to do this
+> same decode twice?
+
+You're basically right, but the ehea_h_*() function are by design not supposed
+to contain such logic but to simply execute the hcall with the given parameters.
+I confess we need a few more lines of code doing it our way but we prefer to
+be consistent in this case.
+
+
+>> +/* tx control flags for swqe */
+>> +#define EHEA_SWQE_CRC                    0x8000
+>> +#define EHEA_SWQE_IP_CHECKSUM            0x4000
+>> +#define EHEA_SWQE_TCP_CHECKSUM           0x2000
+>> +#define EHEA_SWQE_TSO                    0x1000
+>> +#define EHEA_SWQE_SIGNALLED_COMPLETION   0x0800
+>> +#define EHEA_SWQE_VLAN_INSERT            0x0400
+>> +#define EHEA_SWQE_IMM_DATA_PRESENT   0x0200
+>> +#define EHEA_SWQE_DESCRIPTORS_PRESENT    0x0100
+>> +#define EHEA_SWQE_WRAP_CTL_REC           0x0080
+>> +#define EHEA_SWQE_WRAP_CTL_FORCE         0x0040
+>> +#define EHEA_SWQE_BIND                   0x0020
+>> +#define EHEA_SWQE_PURGE                  0x0010
+>> +
+>> +#define SWQE_HEADER_SIZE 32
+>
+> This is never used...
+
+Used in ehea_main.c in function ehea_post_nwqe()
+
+>
+> Would be nice to document some of the names here.  What are SWQE, RWQE,
+> WQE, CQE, IPZ etc?
+
+Agreed. Added comment sections which explains the abbreviations.
+
+
+>> +#define EHEA_EQE_VALID           EHEA_BMASK_IBM(0, 0)
+>> +#define EHEA_EQE_IS_CQE          EHEA_BMASK_IBM(1, 1)
+>> +#define EHEA_EQE_IDENTIFIER      EHEA_BMASK_IBM(2, 7)
+>> +#define EHEA_EQE_QP_CQ_NUMBER    EHEA_BMASK_IBM(8, 31)
+>> +#define EHEA_EQE_QP_TOKEN        EHEA_BMASK_IBM(32, 63)
+>> +#define EHEA_EQE_CQ_TOKEN        EHEA_BMASK_IBM(32, 63)
+>> +#define EHEA_EQE_KEY             EHEA_BMASK_IBM(32, 63)
+>
+> 3 the same here?
+
+Yes, it's correct. Those defines are used to operate on different data
+sources, so it's possible that the same bits have to be accessed.
+
+>
+>> +#define EHEA_EQE_PORT_NUMBER     EHEA_BMASK_IBM(56, 63)
+>> +#define EHEA_EQE_EQ_NUMBER       EHEA_BMASK_IBM(48, 63)
+>> +#define EHEA_EQE_SM_ID           EHEA_BMASK_IBM(48, 63)
+>
+> 2 the same here?
+
+ditto
+
+>
+>> +#define EHEA_EQE_SM_MECH_NUMBER  EHEA_BMASK_IBM(48, 55)
+>> +#define EHEA_EQE_SM_PORT_NUMBER  EHEA_BMASK_IBM(56, 63)
+>> +
+>> +struct ehea_eqe {
+>> +    u64 entry;
+>> +};
+>
+> ehea_ege.. what is that and why a struct if only 1 item?  Comments
+> please.
+
+Already answered in separate mail.
+
+>
+> In ehea_main.c you use this with a ehea_poll_eq which returns a void *
+> Mostly you cast to a (struct ehea_eqe *) but you don't need to.
+
+Agreed. Done.
+
+>> +static inline struct ehea_cqe *ehea_poll_rq1(struct ehea_qp *qp, int *wqe_in
+>> +static inline void ehea_inc_rq1(struct ehea_qp *qp)
+>> +static inline struct ehea_cqe *ehea_poll_cq(struct ehea_cq *my_cq)
+>
+> Can we stick all these functions in the .c and put only the prototypes here?
+
+These functions must be inline due to performance considerations and therefore
+have to stay in the header file.
+
+>> +/*
+>> + *  linux/drivers/net/ehea/ehea_ethtool.c
+>> + *
+>> + *  eHEA ethernet device driver for IBM eServer System p
+>> + *
+>> + *  (C) Copyright IBM Corp. 2006
+>> + *
+>> + *  Authors:
+>> + *       Christoph Raisch <raisch@de.ibm.com>
+>> + *       Jan-Bernd Themann <themann@de.ibm.com>
+>> + *       Heiko-Joerg Schick <schickhj@de.ibm.com>
+>> + *       Thomas Klein <tklein@de.ibm.com>
+>> + *
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License as published by
+>> + * the Free Software Foundation; either version 2, or (at your option)
+>> + * any later version.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.      See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU General Public License
+>> + * along with this program; if not, write to the Free Software
+>> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+>> + */
+>> +
+>> +static int netdev_nway_reset(struct net_device *dev)
+>> +{
+>> +    printk("nway reset\n");
+>> +    return 0;
+>> +}
+>> +
+>> +static void netdev_get_pauseparam(struct net_device *dev,
+>> +                              struct ethtool_pauseparam *pauseparam)
+>> +{
+>> +    printk("get pauseparam\n");
+>> +}
+>> +
+>> +static int netdev_set_pauseparam(struct net_device *dev,
+>> +                             struct ethtool_pauseparam *pauseparam)
+>> +{
+>> +    printk("set pauseparam\n");
+>> +    return 0;
+>> +}
+>> +
+>> +static u32 netdev_get_rx_csum(struct net_device *dev)
+>> +{
+>> +    printk("set rx_csum\n");
+>> +    return 0;
+>> +}
+>> +
+>> +static int netdev_set_rx_csum(struct net_device *dev, u32 value)
+>> +{
+>> +    printk("set rx_csum\n");
+>> +    return 0;
+>> +}
+>> +
+>> +static int netdev_self_test_count(struct net_device *dev)
+>> +{
+>> +    printk("self test count\n");
+>> +    return 0;
+>> +}
+>> +
+>> +static void netdev_self_test(struct net_device *dev, struct ethtool_test *te
+> st,
+>> +                         u64 *value)
+>> +{
+>> +    printk("self test\n");
+>> +}
+>> +
+>> +static int netdev_phys_id(struct net_device *dev, u32 value)
+>> +{
+>> +    printk("physical id\n");
+>> +    return 0;
+>> +}
+>
+> These are yet to be done?
+
+Exactly.
+
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+>
+> I hope this helps...
+
+It helped a lot! Thank you very much :-)
