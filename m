@@ -1,22 +1,38 @@
-Return-Path: <nkbj@mail.tele.dk>
-Received: from fep30.mail.dk (fep30.mail.dk [80.160.76.194])
-	by ozlabs.org (Postfix) with ESMTP id 16CC767B6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 16:14:02 +1000 (EST)
-Received: from fep43.mail.dk ([195.41.46.226]) by fep30.mail.dk
-	(InterMail vM.6.01.06.01 201-2131-130-101-20060113) with ESMTP
-	id <20060811061400.IRXW11550.fep30.mail.dk@fep43.mail.dk>
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 08:14:00 +0200
-Received: from [87.51.138.62] by fep43.mail.dk
-	(InterMail vG.2.02.00.00 201-2161-120-101-20051020) with ESMTP
-	id <20060811061359.RQSL15950.fep43.mail.dk@[87.51.138.62]>
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 08:13:59 +0200
-Subject: latest git: compile error: arch/powerpc/kernel/built-in.o
-From: Niels Kristian Bech Jensen <nkbj@mail.tele.dk>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 11 Aug 2006 08:13:55 +0200
-Message-Id: <1155276835.4844.2.camel@localhost>
-Mime-Version: 1.0
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8F3B5679E7
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 17:28:31 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7B7SRiR065388
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 07:28:27 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k7B7W9M0114154
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 09:32:10 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7B7SQEA020509
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 09:28:26 +0200
+Message-ID: <44DC319A.10802@de.ibm.com>
+Date: Fri, 11 Aug 2006 09:28:26 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 3/6] ehea: queue management
+References: <44D99F38.8010306@de.ibm.com>
+	<20060811000540.200CE67B6B@ozlabs.org>
+	<20060811003204.GA6935@martell.zuzino.mipt.ru>
+	<20060811004602.23EB467B64@ozlabs.org>
+In-Reply-To: <20060811004602.23EB467B64@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Raisch <raisch@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	Marcus Eder <meder@de.ibm.com>, Alexey Dobriyan <adobriyan@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->   LD      .tmp_vmlinux1
-> arch/powerpc/kernel/built-in.o: In function `__restore_cpu_setup':
-> (.text+0xcd34): undefined reference to `kexec_sr_activated'
-> arch/powerpc/kernel/built-in.o: In function `__restore_cpu_setup':
-> (.text+0xcd44): undefined reference to `crash_kexec_secondary'
-> arch/powerpc/kernel/built-in.o: In function `early_init_devtree':
-> (.init.text+0x1cdc): undefined reference to `reserve_crashkernel'
-> arch/powerpc/kernel/built-in.o: In function `early_init_devtree':
-> (.init.text+0x1e1c): undefined reference to `overlaps_crashkernel'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make[1]: Leaving directory `/home/shorty/kernel-factory/git.08102006/linux-2.6'
-> make: *** [debian/stamp-build-kernel] Error 2
+Michael Neuling wrote:
+>>>> +static inline u32 map_swqe_size(u8 swqe_enc_size)
+>>>> +{
+>>>> +	return 128 << swqe_enc_size;
+>>>> +}		      ^
+>>>> +		      |
+>>>> +static inline u32|map_rwqe_size(u8 rwqe_enc_size)
+>>>> +{		      |
+>>>> +	return 128 << rwqe_enc_size;
+>>>>         
+>> 		      ^
+>>     
+>>>> +}		      |
+>>>>         
+>>> 		      |
+>>> Snap!  These are ide|tical...
+>>>       
+>> 		      |
+>> No, they aren't. -----+
+>>     
+>
+> Functionally identical.
+>
+> Mikey
+>
+>   
+Agreed. Functions were replaced by a single map_wqe_size() function.
 
-I've hit the same build error in 2.6.18-rc4. Maybe the patches should also be added to the main kernel tree?
-
-Regards,
-Niels Kristian
+Thomas
