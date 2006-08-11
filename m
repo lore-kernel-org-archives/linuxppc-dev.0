@@ -1,20 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 3681F67BC4
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 07:10:53 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [RFC] Adding MTD to device tree
-Date: Fri, 11 Aug 2006 23:10:40 +0200
-References: <20060614213643.137680b8@vitb.ru.mvista.com>
-	<20060709001435.7a94294e@localhost.localdomain>
-	<44DCA2BF.1030002@ru.mvista.com>
-In-Reply-To: <44DCA2BF.1030002@ru.mvista.com>
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 12 Aug 2006 07:13:14 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH 2/6] ehea: pHYP interface
+Message-ID: <20060811211314.GF479@krispykreme>
+References: <44D99F1A.4080905@de.ibm.com>
 MIME-Version: 1.0
-Message-Id: <200608112310.41110.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <44D99F1A.4080905@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 11 August 2006 17:31, Sergei Shtylyov wrote:
-> + =A0 h) MTD nodes
-> +
-> + =A0 Memory Technology Devices are flash, ROM, and similar chips, often =
-used
-> + =A0 for solid state file systems on embedded devices.
-> +
-> + =A0 Required properties:
-> +
-> + =A0 =A0- device_type : has to be "mtd"
-> + =A0 =A0- compatible : Should be the name of the MTD driver. Currently, =
-this is
-> + =A0 =A0 =A0most likely to be "physmap".
-> + =A0 =A0- reg : Offset and length of the register set for the device.
 
-I would prefer to call them something different in the device tree.
-The name 'mtd' is very specific to Linux, but the device tree
-is a more generic concept.
+Hi,
 
-I understand that the booting-without-of.txt file is by definition
-Linux specific as well, but we should be prepared for making parts
-of it a OS independent binding at the point where we put the same
-device nodes into actual OF implementations that able to boot
-different operating systems.
+> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_phyp.c	1969-12-31 16:00:00.000000000 -0800
 
-I would prefer a naming that has=20
+> +u64 ehea_h_alloc_resource_eq(const u64 hcp_adapter_handle,
+...
+> +u64 hipz_h_reregister_pmr(const u64 adapter_handle,
+...
+> +static inline int hcp_galpas_ctor(struct h_galpas *galpas,
 
-   Required properties:
-    - device_type : one of "nand-flash", "nor-flash", or "rom".
-    - model : an identifier for the actual controller chip used.
-    - compatible : Should be the name of the MTD driver. For
-      type "rom", this is most likely "physmap".
+Be nice to have some consistent names, hipz_ and hcp_ is kind of
+cryptic.
 
-	Arnd <><
+> +#define H_QP_CR_STATE_RESET	    0x0000010000000000	/*  Reset */
+
+Probably want ULL on here and the other 64bit constants.
+
+Anton
