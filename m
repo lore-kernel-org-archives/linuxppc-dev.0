@@ -1,21 +1,34 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id AE2CB67B70
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 04:04:14 +1000 (EST)
-Date: Fri, 11 Aug 2006 13:00:13 -0500
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH 4/4]: powerpc/cell spidernet ethtool -i version number
-	info.
-Message-ID: <20060811180013.GB6550@pb15.lixom.net>
-References: <20060811170337.GH10638@austin.ibm.com>
-	<20060811171117.GL10638@austin.ibm.com>
-MIME-Version: 1.0
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6E7E067BA6
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 04:29:39 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7BITWMG024024
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 14:29:34 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k7BITVXU273490
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 14:29:32 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7BITVTt012347
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 14:29:31 -0400
+Date: Fri, 11 Aug 2006 11:30:30 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC] asm code for Hypervisor Call Instrumentation
+Message-ID: <20060811183029.GA4535@monkey.ibm.com>
+References: <20060802175947.GA7489@w-mikek2.ibm.com>
+	<17622.56592.41532.206800@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060811171117.GL10638@austin.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
+In-Reply-To: <17622.56592.41532.206800@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +38,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 11, 2006 at 12:11:17PM -0500, Linas Vepstas wrote:
+On Mon, Aug 07, 2006 at 04:26:24PM +1000, Paul Mackerras wrote:
+> Hmmm, doing the update in assembly would avoid the need to create a
+> stack frame, which would be nice...  Maybe we need to add some macros
+> to include/asm-powerpc/percpu.h to make it easier to access per-cpu
+> variables from assembly code.
+> 
+> Alternatively, we could put a pointer to the hcall_stats array for
+> each cpu in its paca.  That's very easily accessed from assembly code.
 
-> This patch adds version information as reported by 
-> ethtool -i to the Spidernet driver.
+I finally got around to doing the update in assembly.  I have attached
+the code in question below.  Macros were added (elsewhere) for things like 
+stat structure and offsets within the structure.  No macros for per-cpu
+data.  Rather, I just used some existing definitions and based code on
+descriptions in asm-powerpc/percpu.h.  Let me know if this introduces too
+many (unchecked at compile time assumptions) into the code.
 
-Why does a driver that's in the mainline kernel need to have a version
-number besides the kernel version?
+The many comments are mostly for my benefit. :)
 
-I can understand it for drivers like e1000 that Intel maintain outside
-of the kernel as well. But spidernet is a fully mainline maintained
-driver, right?
+Thanks,
+-- 
+Mike
 
+#define STK_PARM(i)     (48 + ((i)-3)*8)
 
--Olof
+#ifdef CONFIG_HCALL_STATS
+/*
+ * precall must preserve all registers.  use unused STK_PARM()
+ * areas to save snapshots and opcode.
+ */
+#define HCALL_INST_PRECALL					\
+	std	r3,STK_PARM(r3)(r1);	/* save opcode */	\
+	mftb	r3;			/* get timebase and */	\
+	std     r3,STK_PARM(r5)(r1);	/* save for later */	\
+BEGIN_FTR_SECTION;						\
+	mfspr	r3,SPRN_PURR;		/* get PURR and */	\
+END_FTR_SECTION_IFSET(CPU_FTR_PURR);				\
+	std	r3,STK_PARM(r6)(r1);	/* save for later */	\
+	ld	r3,STK_PARM(r3)(r1);	/* opcode back in r3 */
+	
+/*
+ * postcall is performed immediately before function return which
+ * allows liberal use of non-volital registers.
+ */
+#define HCALL_INST_POSTCALL					\
+	/* get time and PURR snapshots after hcall */		\
+	mftb	r7;			/* timebase after */	\
+BEGIN_FTR_SECTION;						\
+	mfspr	r8,SPRN_PURR;		/* PURR after */	\
+END_FTR_SECTION_IFSET(CPU_FTR_PURR);				\
+								\
+	/* calculate time and PURR deltas for call */		\
+	ld	r5,STK_PARM(r5)(r1);	/* timebase before */	\
+	subf	r5,r5,r7;					\
+	ld	r6,STK_PARM(r6)(r1);	/* PURR before */	\
+	subf	r6,r6,r8;					\
+								\
+	/* calculate address of stat structure */		\
+	ld	r4,STK_PARM(r3)(r1);	/* use opcode as */	\
+	rldicl	r4,r4,62,2;		/* index into array */	\
+	mulli	r4,r4,HCALL_STAT_SIZE;				\
+	LOAD_REG_ADDR(r7, per_cpu__hcall_stats);		\
+	add	r4,r4,r7;					\
+	ld	r7,PACA_DATA_OFFSET(r13); /* per cpu offset */	\
+	add	r4,r4,r7;					\
+								\
+	/* update stats	*/					\
+	ld	r7,HCALL_STAT_CALLS(r4); /* count */		\
+	addi	r7,r7,1;					\
+	std	r7,HCALL_STAT_CALLS(r4);			\
+	ld      r7,HCALL_STAT_TB(r4);	/* timebase */		\
+	add	r7,r7,r5;					\
+	std	r7,HCALL_STAT_TB(r4);				\
+	ld	r7,HCALL_STAT_PURR(r4);	/* PURR */		\
+	add	r7,r7,r6;					\
+	std	r7,HCALL_STAT_PURR(r4);
+#else
+
+#define HCALL_INST_PRECALL
+#define HCALL_INST_POSTCALL
+#endif
