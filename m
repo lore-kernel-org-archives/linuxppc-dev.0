@@ -1,23 +1,15 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-40-242-100.roch.qwest.net
-	[67.40.242.100])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7B34767B62
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 11:53:57 +1000 (EST)
-Subject: Re: [RFC] Adding MTD to device tree
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200608112310.41110.arnd@arndb.de>
-References: <20060614213643.137680b8@vitb.ru.mvista.com>
-	<20060709001435.7a94294e@localhost.localdomain>
-	<44DCA2BF.1030002@ru.mvista.com>  <200608112310.41110.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 11 Aug 2006 20:53:21 -0500
-Message-Id: <1155347601.3108.7.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <TKLEIN@de.ibm.com>
+In-Reply-To: <20060810053024.C691F67A5E@ozlabs.org>
+To: Michael Neuling <mikey@neuling.org>
+MIME-Version: 1.0
+Subject: Re: [PATCH 6/6] ehea: Kernel build (Kconfig / Makefile)
+Message-ID: <OFE2F0858C.27A0FCEC-ONC12571C7.002B6A8F-C12571C7.002BE93A@de.ibm.com>
+From: Thomas Q Klein <TKLEIN@de.ibm.com>
+Date: Fri, 11 Aug 2006 10:03:22 +0200
+Content-Type: multipart/alternative;
+	boundary="=_alternative 002BE936C12571C7_="
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, mikey@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>, osstklei@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,55 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-08-11 at 23:10 +0200, Arnd Bergmann wrote:
-> On Friday 11 August 2006 17:31, Sergei Shtylyov wrote:
-> > +   h) MTD nodes
-> > +
-> > +   Memory Technology Devices are flash, ROM, and similar chips, often used
-> > +   for solid state file systems on embedded devices.
-> > +
-> > +   Required properties:
-> > +
-> > +    - device_type : has to be "mtd"
-> > +    - compatible : Should be the name of the MTD driver. Currently, this is
-> > +      most likely to be "physmap".
-> > +    - reg : Offset and length of the register set for the device.
+This is a multipart message in MIME format.
+--=_alternative 002BE936C12571C7_=
+Content-Type: text/plain; charset="US-ASCII"
+
+mikey@ozlabs.org wrote on 10.08.2006 07:30:24:
+
+> > --- linux-2.6.18-rc4/drivers/net/Makefile   2006-08-06 
+11:20:11.000000000 -
+> 0700
+> > +++ patched_kernel/drivers/net/Makefile   2006-08-08 
+03:00:30.061451584 -
+> 0700
+> > @@ -10,6 +10,7 @@ obj-$(CONFIG_E1000) += e1000/
+> >   obj-$(CONFIG_IBM_EMAC) += ibm_emac/
+> >   obj-$(CONFIG_IXGB) += ixgb/
+> >   obj-$(CONFIG_CHELSIO_T1) += chelsio/
+> > +obj-$(CONFIG_EHEA) += ehea/
+> >   obj-$(CONFIG_BONDING) += bonding/
+> >   obj-$(CONFIG_GIANFAR) += gianfar_driver.o
 > 
-> I would prefer to call them something different in the device tree.
-> The name 'mtd' is very specific to Linux, but the device tree
-> is a more generic concept.
-
-Agreed here.
-
+> Looks like the whitespace has been munged here... 
 > 
-> I understand that the booting-without-of.txt file is by definition
-> Linux specific as well, but we should be prepared for making parts
-> of it a OS independent binding at the point where we put the same
-> device nodes into actual OF implementations that able to boot
-> different operating systems.
-> 
-> I would prefer a naming that has 
-> 
->    Required properties:
->     - device_type : one of "nand-flash", "nor-flash", or "rom".
+> Mikey
 
-There are more than just those kinds of MTDs.  There's dataflash,
-AG-AND, NVRAM, ioremappable DRAM, etc.  I'd prefer it to just be called
-"flash".  See more below.
+I see it looks damaged but infact it isn't. All obj-$(CONFIG_*) lines in
+the Makefile start at column 0 and so does the one I added. I don't know
+why it appears in the diff like that.
 
->     - model : an identifier for the actual controller chip used.
+Thomas
 
-Meaning what exactly?  Lots of NOR flash doesn't have a "controller".
+--=_alternative 002BE936C12571C7_=
+Content-Type: text/html; charset="US-ASCII"
 
->     - compatible : Should be the name of the MTD driver. For
->       type "rom", this is most likely "physmap".
 
-This I agree with, but Sergei already had this.  And since you're
-specifying the name of the MTD driver, that typically already knows what
-type of chip it's talking to.
-
-For example, physmap will probe for CFI, JEDEC, and ROM devices already.
-It can't do NAND flash, so you'd have to specify the name of a NAND
-driver, such as ndfc.c and that only deals with NAND flash.
-
-josh
+<br><tt><font size=2>mikey@ozlabs.org wrote on 10.08.2006 07:30:24:<br>
+<br>
+&gt; &gt; --- linux-2.6.18-rc4/drivers/net/Makefile &nbsp; 2006-08-06 11:20:11.000000000
+-<br>
+&gt; 0700<br>
+&gt; &gt; +++ patched_kernel/drivers/net/Makefile &nbsp; 2006-08-08 03:00:30.061451584
+-<br>
+&gt; 0700<br>
+&gt; &gt; @@ -10,6 +10,7 @@ obj-$(CONFIG_E1000) += e1000/<br>
+&gt; &gt; &nbsp; obj-$(CONFIG_IBM_EMAC) += ibm_emac/<br>
+&gt; &gt; &nbsp; obj-$(CONFIG_IXGB) += ixgb/<br>
+&gt; &gt; &nbsp; obj-$(CONFIG_CHELSIO_T1) += chelsio/<br>
+&gt; &gt; +obj-$(CONFIG_EHEA) += ehea/<br>
+&gt; &gt; &nbsp; obj-$(CONFIG_BONDING) += bonding/<br>
+&gt; &gt; &nbsp; obj-$(CONFIG_GIANFAR) += gianfar_driver.o<br>
+&gt; <br>
+&gt; Looks like the whitespace has been munged here... <br>
+&gt; <br>
+&gt; Mikey<br>
+</font></tt>
+<br><tt><font size=2>I see it looks damaged but infact it isn't. All obj-$(CONFIG_*)
+lines in</font></tt>
+<br><tt><font size=2>the Makefile start at column 0 and so does the one
+I added. I don't know</font></tt>
+<br><tt><font size=2>why it appears in the diff like that.</font></tt>
+<br>
+<br><tt><font size=2>Thomas</font></tt>
+<br>
+--=_alternative 002BE936C12571C7_=--
