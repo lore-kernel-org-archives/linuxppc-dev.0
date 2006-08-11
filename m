@@ -1,27 +1,21 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9EB7C67B5E
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7BF39679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Aug 2006 13:40:23 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k7B4wh9D004317 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Aug 2006 22:58:43 -0600 (MDT)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7B3eIpW014974
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Aug 2006 22:40:20 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: PCI driver on EB8347
-Date: Fri, 11 Aug 2006 11:40:17 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D2635018CA7@zch01exm21.fsl.freescale.net>
-In-Reply-To: <4DA89577C33E194ABEBC978921E858541B8E38@exchange.ingenient.net>
-From: "Liu Dave-r63238" <DaveLiu@freescale.com>
-To: "rajan rai" <Rajan.Rai@ingenient.com>,
-	"Gala Kumar K.-galak" <kumar.gala@freescale.com>
+	Fri, 11 Aug 2006 14:11:05 +1000 (EST)
+In-Reply-To: <OF403D77BC.13F5C3B5-ON652571C6.003D5A1C-652571C6.003E28AE@lntinfotech.com>
+References: <OF403D77BC.13F5C3B5-ON652571C6.003D5A1C-652571C6.003E28AE@lntinfotech.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E5C22C0A-45C9-4FA8-B10D-8F3EBDA03878@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different
+	outputs
+Date: Thu, 10 Aug 2006 23:10:45 -0500
+To: Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -34,28 +28,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Rajan>        I have written PCI driver which works fine along with
-MPC8347 and two PCI
-Rajan> card connected in a single PCI bus. When I try to communicate
-same PCI card
-Rajan> using PCI bridge ( PCI2050B ), Linux does detect PCI card on
-Secondary bus=20
-Rajan> but same driver doesn't work !!!!
+On Aug 10, 2006, at 6:18 AM, Prashant Yendigeri wrote:
 
-PCI interrupt for secondary bus set up properly?
-     =20
-Rajan>        Do I need to enable support for second PCI host controller
-at kernel level to=20
-Rajan>make it work? Or I need to do something else ? I tried compiling
-PPC-linux kernel
-Rajan> after enabling CONFIG_85xx_PCI2 kernel doesn't compile it gives
-me error while=20
-Rajan>compiling "arch/ppc/syslib/ppc83xx_setup.c" Kernel version I'm
-using is 2.6.13.
+>
+> Hi,
+>
+> The gianfar driver of 2.6.12 and 2.4.20 give different outputs on  
+> the same PPC 8540 board.
+>
+> What could be the reason ?
+>
+> Output on 2.4.20 :
+> /root # ifconfig eth0 172.28.8.254 up
+> eth0: PHY is Marvell 88E1011S (1410c62)
+> eth0: Auto-negotiation done
+> eth0: Half Duplex
+> eth0: Speed 10BT
+> eth0: Link is up
+>
+> Output on 2.6.12
+> / # ifconfig eth0 172.28.8.254 up
+>  eth0: PHY is Generic MII (ffffffff)
 
-Why you enable CONFIG_85xx_PCI2 in kernel? It is for 85xx, but you are
-using 8347 processor.
+It looks like your 2.6.12 kernel isn't handling the PHY correctly.   
+I'd recommend upgrading to something newer which has the phylib  
+(can't remember which 2.6 that went into).
 
-<snip>
-
-Dave
+- kumar
