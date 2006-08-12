@@ -1,16 +1,18 @@
-Return-Path: <acahalan@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 1731667B52
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 15:50:49 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id k27so1838118nfc
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 22:50:47 -0700 (PDT)
-Message-ID: <787b0d920608112250q551c98f5j328183c31eebaf77@mail.gmail.com>
-Date: Sat, 12 Aug 2006 01:50:47 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
-Subject: PowerPC paxtest results w/ gcc-4.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <1155347601.3108.7.camel@vader.jdub.homelinux.org>
+References: <20060614213643.137680b8@vitb.ru.mvista.com>
+	<20060709001435.7a94294e@localhost.localdomain>
+	<44DCA2BF.1030002@ru.mvista.com> <200608112310.41110.arnd@arndb.de>
+	<1155347601.3108.7.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <001C3287-87E7-4DF9-AB4E-E1448EC20518@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC] Adding MTD to device tree
+Date: Sat, 12 Aug 2006 11:58:01 +0200
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,74 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just ran paxtest on a Mac G4 Cube. Ouch. The results are shameful.
-Does nobody care to fix this? (well heck, the patched firefox isn't
-showing up via aptitude yet, and my browser just died a horrible
-and unexpected death involving a pop-up ad, so I guess not!)
+>>    Required properties:
+>>     - device_type : one of "nand-flash", "nor-flash", or "rom".
+>
+> There are more than just those kinds of MTDs.  There's dataflash,
+> AG-AND, NVRAM, ioremappable DRAM, etc.  I'd prefer it to just be  
+> called
+> "flash".  See more below.
 
-I suppose part of the problem is that paxtest requires serious
-hacking to work right on PowerPC. Critical fixes are:
+Existing firmwares call it "rom", "nvram", "flash".  All of those
+are easy; and I have really no opinion how all the weirdo nand-flash
+etc. interfaces should be handled.
 
-1. unnest the dummy() function (PaX marketing bullshit)
-2. change the return opcode (see code below)
-3. flush the cache as needed (see code below)
-4. use the Makefile-portable that Gentoo has
-5. compile with "-W -Wall -fno-strict-aliasing" and fix warnings
+device_type communicates to the device-tree consumer what other
+properties to expect in this node -- it does not indicate the exact
+programming model of the device itself.
 
-With all that done, gasp in horror at the truth:
+I suspect for most nand-flash you can get away with a device_type
+of "nand-flash"; for some you might have to specify something more
+detailed.
 
-Linux cube 2.6.17-rc5 #1 PREEMPT Sat May 27 20:35:12 EDT 2006 ppc GNU/Linux
-Executable anonymous mapping             : Vulnerable
-Executable bss                           : Vulnerable
-Executable data                          : Vulnerable
-Executable heap                          : Vulnerable
-Executable stack                         : Vulnerable
-Executable anonymous mapping (mprotect)  : Vulnerable
-Executable bss (mprotect)                : Vulnerable
-Executable data (mprotect)               : Vulnerable
-Executable heap (mprotect)               : Vulnerable
-Executable stack (mprotect)              : Vulnerable
-Executable shared library bss (mprotect) : Vulnerable
-Executable shared library data (mprotect): Vulnerable
-Writable text segments                   : Vulnerable
-Anonymous mapping randomisation test     : No randomisation
-Heap randomisation test (ET_EXEC)        : No randomisation
-Heap randomisation test (ET_DYN)         : No randomisation
-Main executable randomisation (ET_EXEC)  : No randomisation
-Main executable randomisation (ET_DYN)   : No randomisation
-Shared library randomisation test        : No randomisation
-Stack randomisation test (SEGMEXEC)      : 11 bits (guessed)
-Stack randomisation test (PAGEEXEC)      : 11 bits (guessed)
-Return to function (strcpy)              : paxtest: bad luck
-Return to function (memcpy)              : Vulnerable
-Return to function (strcpy, RANDEXEC)    : paxtest: bad luck
-Return to function (memcpy, RANDEXEC)    : Vulnerable
-Executable shared library bss            : Vulnerable
-Executable shared library data           : Vulnerable
+>>     - model : an identifier for the actual controller chip used.
+>
+> Meaning what exactly?  Lots of NOR flash doesn't have a "controller".
 
-About the only saving grace is that the attacker would have
-to get lucky with the cache if they need code executed.
+Lots of those chips from different vendors are pin-compatible as well,
+so you cannot really hardcode one specific model number.  I don't see
+this information being very useful anyway.  Instead, in most cases, the
+information you're really after is the programming interface for the
+device.  And that goes...
 
-Look, it's not as if we get closed-source binaries on PowerPC
-anyway. Non-free isn't the Debian way either. Screw the ABI.
-We need a fail-safe (enabled by default) fix for this.
+>>     - compatible : Should be the name of the MTD driver. For
+>>       type "rom", this is most likely "physmap".
+>
+> This I agree with, but Sergei already had this.  And since you're
+> specifying the name of the MTD driver, that typically already knows  
+> what
+> type of chip it's talking to.
 
-///////// code added to the top of paxtest body.h //////////
-// use this code in the obvious way
-#if defined(__ppc__) || defined(__powerpc__)
-#define RET 0x4e800020     // "blr" or "bclr 20,0"
-#define FLUSH(x) __asm__ __volatile__(\
-  "dcbf 0,%0  ;  sync  ; icbi 0,%0  ; sync  ;  isync  ; sync" \
-  :                        \
-  : "r" (x)                \
-  : "memory"              \
-)
-#endif
+"compatible" contains a list, most specific first.  So for example
+for a NOR-flash it could be "jedec-flash,nor-flash,flash" or whatnot.
+(Btw: no comma's, but 0-chars in the actual properties!)
 
-#if defined(__i386__) || defined(__x86_64__)
-#define RET 0xc3c3c3c3     // ret ret ret ret
-#define FLUSH(x)
-#endif
 
-#include <string.h>
-///////////////////////////////////////////////////////////
+Segher
