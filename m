@@ -3,13 +3,14 @@ Received: from localhost.localdomain (cdma-45-244.msk.skylink.ru
 	[83.217.45.244])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CDB2867C9A
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 10:20:43 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 812BF67BC6
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 10:20:50 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 3/6] POWERPC: move the generic cpm2 stuff to the powerpc
-Date: Sat, 12 Aug 2006 04:10:14 +0400
-Message-Id: <20060812001013.6186.41337.stgit@localhost.localdomain>
+Subject: [PATCH 6/6] [RFC] POWERPC: generic CPM2 peripherals rehaul with
+	cpm2_map mechanism
+Date: Sat, 12 Aug 2006 04:10:29 +0400
+Message-Id: <20060812001029.6186.18474.stgit@localhost.localdomain>
 In-Reply-To: <20060812000655.6186.42738.stgit@localhost.localdomain>
 References: <20060812000655.6186.42738.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -24,562 +25,583 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This moves the cpm2 common code and PIC stuff to the powerpc. Most of the files
-were just copied from ppc/, with minor tuning to make it compile, and, subsequently, work.
+Incorporating the new way of cpm2 immr access, introduced in the previous
+patch, into CPM2 peripheral devices (fs_enet and cpm_uart). Both ppc and
+powerpc approved working( real actions taken in powerpc only, ppc just
+has a wrapper to keep init stuff consistent).
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- arch/powerpc/lib/Makefile         |    5 +
- arch/powerpc/sysdev/Makefile      |    7 +
- arch/powerpc/sysdev/cpm2_common.c |  204 +++++++++++++++++++++++++++++
- arch/powerpc/sysdev/cpm2_pic.c    |  256 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/cpm2_pic.h    |    8 +
- include/asm-ppc/cpm2.h            |    6 +
- 6 files changed, 484 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c |  109 ++++++++++++++++-------------
+ arch/powerpc/sysdev/cpm2_common.c         |   90 ++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.c             |   10 +++
+ arch/ppc/platforms/mpc8272ads_setup.c     |    8 +-
+ arch/ppc/platforms/mpc866ads_setup.c      |    8 +-
+ arch/ppc/platforms/mpc885ads_setup.c      |   10 +--
+ drivers/net/fs_enet/fs_enet-main.c        |    2 -
+ drivers/serial/cpm_uart/cpm_uart_core.c   |    4 +
+ include/asm-ppc/cpm2.h                    |   53 ++++++++++++++
+ include/linux/fs_enet_pd.h                |   10 ++-
+ include/linux/fs_uart_pd.h                |    4 +
+ 11 files changed, 239 insertions(+), 69 deletions(-)
 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 336dd19..460cea0 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -20,3 +20,8 @@ ifeq ($(CONFIG_PPC64),y)
- obj-$(CONFIG_SMP)	+= locks.o
- obj-$(CONFIG_DEBUG_KERNEL) += sstep.o
- endif
-+
-+# Temporary hack until we have migrated to asm-powerpc
-+ifeq ($(ARCH),powerpc)
-+obj-$(CONFIG_CPM2)	+= rheap.o
-+endif
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index cebfae2..0f44f06 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -16,4 +16,9 @@ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pc
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 974e035..52be63a 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -292,71 +292,84 @@ #endif
+ /*
+  * Setup the architecture
+  */
+-static void init_fcc_ioports(void)
++#ifdef CONFIG_CPM2
++void init_fcc_ioports(struct fs_platform_info *fpi)
+ {
+-	struct immap *immap;
+-	struct io_port *io;
++	struct io_port *io = cpm2_map(im_ioport);
++	int fcc_no = fs_get_fcc_index(fpi->fs_no);
++	int target;
+ 	u32 tempval;
  
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
-- endif
-+endif
+-	immap = cpm2_immr;
+-
+-	io = &immap->im_ioport;
+-	/* FCC2/3 are on the ports B/C. */
+-	tempval = in_be32(&io->iop_pdirb);
+-	tempval &= ~PB2_DIRB0;
+-	tempval |= PB2_DIRB1;
+-	out_be32(&io->iop_pdirb, tempval);
+-
+-	tempval = in_be32(&io->iop_psorb);
+-	tempval &= ~PB2_PSORB0;
+-	tempval |= PB2_PSORB1;
+-	out_be32(&io->iop_psorb, tempval);
+-
+-	tempval = in_be32(&io->iop_pparb);
+-	tempval |= (PB2_DIRB0 | PB2_DIRB1);
+-	out_be32(&io->iop_pparb, tempval);
+-
+-	tempval = in_be32(&io->iop_pdirb);
+-	tempval &= ~PB3_DIRB0;
+-	tempval |= PB3_DIRB1;
+-	out_be32(&io->iop_pdirb, tempval);
+-
+-	tempval = in_be32(&io->iop_psorb);
+-	tempval &= ~PB3_PSORB0;
+-	tempval |= PB3_PSORB1;
+-	out_be32(&io->iop_psorb, tempval);
+-
+-	tempval = in_be32(&io->iop_pparb);
+-	tempval |= (PB3_DIRB0 | PB3_DIRB1);
+-	out_be32(&io->iop_pparb, tempval);
+-
+-	tempval = in_be32(&io->iop_pdirc);
+-	tempval |= PC3_DIRC1;
+-	out_be32(&io->iop_pdirc, tempval);
+-
+-	tempval = in_be32(&io->iop_pparc);
+-	tempval |= PC3_DIRC1;
+-	out_be32(&io->iop_pparc, tempval);
++	switch(fcc_no) {
++	case 1:
++		tempval = in_be32(&io->iop_pdirb);
++		tempval &= ~PB2_DIRB0;
++		tempval |= PB2_DIRB1;
++		out_be32(&io->iop_pdirb, tempval);
 +
-+# Temporary hack until we have migrated to asm-powerpc
-+ifeq ($(ARCH),powerpc)
-+obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
-+endif
++		tempval = in_be32(&io->iop_psorb);
++		tempval &= ~PB2_PSORB0;
++		tempval |= PB2_PSORB1;
++		out_be32(&io->iop_psorb, tempval);
++
++		tempval = in_be32(&io->iop_pparb);
++		tempval |= (PB2_DIRB0 | PB2_DIRB1);
++		out_be32(&io->iop_pparb, tempval);
++
++		target = CPM_CLK_FCC2;
++		break;
++	case 2:
++		tempval = in_be32(&io->iop_pdirb);
++		tempval &= ~PB3_DIRB0;
++		tempval |= PB3_DIRB1;
++		out_be32(&io->iop_pdirb, tempval);
++
++		tempval = in_be32(&io->iop_psorb);
++		tempval &= ~PB3_PSORB0;
++		tempval |= PB3_PSORB1;
++		out_be32(&io->iop_psorb, tempval);
++
++		tempval = in_be32(&io->iop_pparb);
++		tempval |= (PB3_DIRB0 | PB3_DIRB1);
++		out_be32(&io->iop_pparb, tempval);
++
++		tempval = in_be32(&io->iop_pdirc);
++		tempval |= PC3_DIRC1;
++		out_be32(&io->iop_pdirc, tempval);
++
++		tempval = in_be32(&io->iop_pparc);
++		tempval |= PC3_DIRC1;
++		out_be32(&io->iop_pparc, tempval);
++
++		target = CPM_CLK_FCC3;
++		break;
++	default:
++                printk(KERN_ERR "init_fcc_ioports: invalid FCC number\n");
++                return;
++	}
+ 
+ 	/* Port C has clocks......  */
+ 	tempval = in_be32(&io->iop_psorc);
+-	tempval &= ~(CLK_TRX);
++	tempval &= ~(PC_CLK(fpi->clk_rx - 8) | PC_CLK(fpi->clk_tx - 8));
+ 	out_be32(&io->iop_psorc, tempval);
+ 
+ 	tempval = in_be32(&io->iop_pdirc);
+-	tempval &= ~(CLK_TRX);
++	tempval &= ~(PC_CLK(fpi->clk_rx - 8) | PC_CLK(fpi->clk_tx - 8));
+ 	out_be32(&io->iop_pdirc, tempval);
+ 	tempval = in_be32(&io->iop_pparc);
+-	tempval |= (CLK_TRX);
++	tempval |= (PC_CLK(fpi->clk_rx - 8) | PC_CLK(fpi->clk_tx - 8));
+ 	out_be32(&io->iop_pparc, tempval);
+ 
++	cpm2_unmap(io);
++
+ 	/* Configure Serial Interface clock routing.
+-	 * First,  clear all FCC bits to zero,
++	 * First,  clear FCC bits to zero,
+ 	 * then set the ones we want.
+ 	 */
+-	immap->im_cpmux.cmx_fcr &= ~(CPMUX_CLK_MASK);
+-	immap->im_cpmux.cmx_fcr |= CPMUX_CLK_ROUTE;
++	cpm2_clk_setup(target, fpi->clk_rx, CPM_CLK_RX);
++	cpm2_clk_setup(target, fpi->clk_tx, CPM_CLK_TX);
+ }
++#endif
+ 
+ static void __init mpc85xx_ads_setup_arch(void)
+ {
 diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-new file mode 100644
-index 0000000..1161970
---- /dev/null
+index ea1a7bf..8558c63 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
 +++ b/arch/powerpc/sysdev/cpm2_common.c
-@@ -0,0 +1,204 @@
-+/*
-+ * General Purpose functions for the global management of the
-+ * 8260 Communication Processor Module.
-+ * Copyright (c) 1999 Dan Malek (dmalek@jlc.net)
-+ * Copyright (c) 2000 MontaVista Software, Inc (source@mvista.com)
-+ *	2.3.99 Updates
-+ * 
-+ * 2006 (c) MontaVista Software, Inc.
-+ * Vitaly Bordug <vbordug@ru.mvista.com>
-+ * 	Merged to arch/powerpc from arch/ppc/syslib/cpm2_common.c 
-+ *
-+ * In addition to the individual control of the communication
-+ * channels, there are a few functions that globally affect the
-+ * communication processor.
-+ *
-+ * Buffer descriptors must be allocated from the dual ported memory
-+ * space.  The allocator for that is here.  When the communication
-+ * process is reset, we reclaim the memory available.  There is
-+ * currently no deallocator for this memory.
-+ */
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/param.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <asm/io.h>
-+#include <asm/irq.h>
-+#include <asm/mpc8260.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/cpm2.h>
-+#include <asm/rheap.h>
-+#include <asm/fs_pd.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+static void cpm2_dpinit(void);
-+cpm_cpm2_t	*cpmp;		/* Pointer to comm processor space */
-+
-+/* We allocate this here because it is used almost exclusively for
-+ * the communication processor devices.
-+ */
-+cpm2_map_t *cpm2_immr;
-+
-+#define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
-+					   of space for CPM as it is larger
-+					   than on PQ2 */
-+
-+void
-+cpm2_reset(void)
+@@ -124,6 +124,96 @@ cpm2_fastbrg(uint brg, uint rate, int di
+ 	cpm2_unmap(bp);
+ }
+ 
++int cpm2_clk_setup(enum cpm_clk_target target, int clock, int mode)
 +{
-+	cpm2_immr = (cpm2_map_t *)ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
++	int ret = 0;
++	int shift;
++	int i, bits = 0;
++	cpmux_t *im_cpmux;
++	u32 *reg;
++	u32 mask = 7;
++	u8 clk_map [24][3] = {
++		{CPM_CLK_FCC1, CPM_BRG5, 0},
++		{CPM_CLK_FCC1, CPM_BRG6, 1},
++		{CPM_CLK_FCC1, CPM_BRG7, 2},
++		{CPM_CLK_FCC1, CPM_BRG8, 3},
++		{CPM_CLK_FCC1, CPM_CLK9, 4},
++		{CPM_CLK_FCC1, CPM_CLK10, 5},
++		{CPM_CLK_FCC1, CPM_CLK11, 6},
++		{CPM_CLK_FCC1, CPM_CLK12, 7},
++		{CPM_CLK_FCC2, CPM_BRG5, 0},
++		{CPM_CLK_FCC2, CPM_BRG6, 1},
++		{CPM_CLK_FCC2, CPM_BRG7, 2},
++		{CPM_CLK_FCC2, CPM_BRG8, 3},
++		{CPM_CLK_FCC2, CPM_CLK13, 4},
++		{CPM_CLK_FCC2, CPM_CLK14, 5},
++		{CPM_CLK_FCC2, CPM_CLK15, 6},
++		{CPM_CLK_FCC2, CPM_CLK16, 7},
++		{CPM_CLK_FCC3, CPM_BRG5, 0},
++		{CPM_CLK_FCC3, CPM_BRG6, 1},
++		{CPM_CLK_FCC3, CPM_BRG7, 2},
++		{CPM_CLK_FCC3, CPM_BRG8, 3},
++		{CPM_CLK_FCC3, CPM_CLK13, 4},
++		{CPM_CLK_FCC3, CPM_CLK14, 5},
++		{CPM_CLK_FCC3, CPM_CLK15, 6},
++		{CPM_CLK_FCC3, CPM_CLK16, 7}
++		};
 +
-+	/* Reclaim the DP memory for our use.
-+	 */
-+	cpm2_dpinit();
++	im_cpmux = cpm2_map(im_cpmux);
 +
-+	/* Tell everyone where the comm processor resides.
-+	 */
-+	cpmp = &cpm2_immr->im_cpm;
-+}
-+
-+/* Set a baud rate generator.  This needs lots of work.  There are
-+ * eight BRGs, which can be connected to the CPM channels or output
-+ * as clocks.  The BRGs are in two different block of internal
-+ * memory mapped space.
-+ * The baud rate clock is the system clock divided by something.
-+ * It was set up long ago during the initial boot phase and is
-+ * is given to us.
-+ * Baud rate clocks are zero-based in the driver code (as that maps
-+ * to port numbers).  Documentation uses 1-based numbering.
-+ */
-+#define BRG_INT_CLK	(get_brgfreq())
-+#define BRG_UART_CLK	(BRG_INT_CLK/16)
-+
-+/* This function is used by UARTS, or anything else that uses a 16x
-+ * oversampled clock.
-+ */
-+void
-+cpm_setbrg(uint brg, uint rate)
-+{
-+	volatile uint	*bp;
-+
-+	/* This is good enough to get SMCs running.....
-+	*/
-+	if (brg < 4) {
-+		bp = (uint *)&cpm2_immr->im_brgc1;
++	switch (target) {
++	case CPM_CLK_SCC1:
++		reg = &im_cpmux->cmx_scr;
++		shift = 24;
++	case CPM_CLK_SCC2:
++		reg = &im_cpmux->cmx_scr;
++		shift = 16;
++		break;
++	case CPM_CLK_SCC3:
++		reg = &im_cpmux->cmx_scr;
++		shift = 8;
++		break;
++	case CPM_CLK_SCC4:
++		reg = &im_cpmux->cmx_scr;
++		shift = 0;
++		break;
++	case CPM_CLK_FCC1:
++		reg = &im_cpmux->cmx_fcr;
++		shift = 24;
++		break;
++	case CPM_CLK_FCC2:
++		reg = &im_cpmux->cmx_fcr;
++		shift = 16;
++		break;
++	case CPM_CLK_FCC3:
++		reg = &im_cpmux->cmx_fcr;
++		shift = 8;
++		break;
++	default:
++		printk(KERN_ERR "cpm2_clock_setup: invalid clock target\n");
++		return -EINVAL;
 +	}
-+	else {
-+		bp = (uint *)&cpm2_immr->im_brgc5;
-+		brg -= 4;
++
++	if (mode == CPM_CLK_RX)
++		shift +=3;
++
++	for (i=0; i<24; i++) {
++		if (clk_map[i][0] == target && clk_map[i][1] == clock) {
++			bits = clk_map[i][2];
++			break;
++		}
 +	}
-+	bp += brg;
-+	*bp = ((BRG_UART_CLK / rate) << 1) | CPM_BRG_EN;
-+}
++	if (i == sizeof(clk_map)/3)
++	    ret = -EINVAL;
 +
-+/* This function is used to set high speed synchronous baud rate
-+ * clocks.
-+ */
-+void
-+cpm2_fastbrg(uint brg, uint rate, int div16)
-+{
-+	volatile uint	*bp;
++	bits <<= shift;
++	mask <<= shift;
++	out_be32(reg, (in_be32(reg) & ~mask) | bits);
 +
-+	if (brg < 4) {
-+		bp = (uint *)&cpm2_immr->im_brgc1;
-+	}
-+	else {
-+		bp = (uint *)&cpm2_immr->im_brgc5;
-+		brg -= 4;
-+	}
-+	bp += brg;
-+	*bp = ((BRG_INT_CLK / rate) << 1) | CPM_BRG_EN;
-+	if (div16)
-+		*bp |= CPM_BRG_DIV16;
-+}
-+
-+/*
-+ * dpalloc / dpfree bits.
-+ */
-+static spinlock_t cpm_dpmem_lock;
-+/* 16 blocks should be enough to satisfy all requests
-+ * until the memory subsystem goes up... */
-+static rh_block_t cpm_boot_dpmem_rh_block[16];
-+static rh_info_t cpm_dpmem_info;
-+
-+static void cpm2_dpinit(void)
-+{
-+	spin_lock_init(&cpm_dpmem_lock);
-+
-+	/* initialize the info header */
-+	rh_init(&cpm_dpmem_info, 1,
-+			sizeof(cpm_boot_dpmem_rh_block) /
-+			sizeof(cpm_boot_dpmem_rh_block[0]),
-+			cpm_boot_dpmem_rh_block);
-+
-+	/* Attach the usable dpmem area */
-+	/* XXX: This is actually crap. CPM_DATAONLY_BASE and
-+	 * CPM_DATAONLY_SIZE is only a subset of the available dpram. It
-+	 * varies with the processor and the microcode patches activated.
-+	 * But the following should be at least safe.
-+	 */
-+	rh_attach_region(&cpm_dpmem_info, (void *)CPM_DATAONLY_BASE,
-+			CPM_DATAONLY_SIZE);
-+}
-+
-+/* This function returns an index into the DPRAM area.
-+ */
-+uint cpm_dpalloc(uint size, uint align)
-+{
-+	void *start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpm_dpmem_lock, flags);
-+	cpm_dpmem_info.alignment = align;
-+	start = rh_alloc(&cpm_dpmem_info, size, "commproc");
-+	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
-+
-+	return (uint)start;
-+}
-+EXPORT_SYMBOL(cpm_dpalloc);
-+
-+int cpm_dpfree(uint offset)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpm_dpmem_lock, flags);
-+	ret = rh_free(&cpm_dpmem_info, (void *)offset);
-+	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
-+
++	cpm2_unmap(im_cpmux);
 +	return ret;
 +}
-+EXPORT_SYMBOL(cpm_dpfree);
 +
-+/* not sure if this is ever needed */
-+uint cpm_dpalloc_fixed(uint offset, uint size, uint align)
-+{
-+	void *start;
-+	unsigned long flags;
+ /*
+  * dpalloc / dpfree bits.
+  */
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index cff9bf7..7878613 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -34,7 +34,11 @@ #include <asm/time.h>
+ #include <asm/prom.h>
+ #include <sysdev/fsl_soc.h>
+ #include <mm/mmu_decl.h>
++#ifdef CONFIG_CPM2
++#include <asm/cpm2.h>
++#endif
+ 
++extern void init_fcc_ioports(struct fs_platform_info*);
+ static phys_addr_t immrbase = -1;
+ 
+ phys_addr_t get_immrbase(void)
+@@ -619,6 +623,9 @@ static int __init fs_enet_of_init(void)
+                         goto unreg;
+                 }
+ 
++		fs_enet_data.clk_rx = *((u32 *) get_property(np, "rx-clock", NULL));
++		fs_enet_data.clk_tx = *((u32 *) get_property(np, "tx-clock", NULL));
 +
-+	spin_lock_irqsave(&cpm_dpmem_lock, flags);
-+	cpm_dpmem_info.alignment = align;
-+	start = rh_alloc_fixed(&cpm_dpmem_info, (void *)offset, size, "commproc");
-+	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
-+
-+	return (uint)start;
-+}
-+EXPORT_SYMBOL(cpm_dpalloc_fixed);
-+
-+void cpm_dpdump(void)
-+{
-+	rh_dump(&cpm_dpmem_info);
-+}
-+EXPORT_SYMBOL(cpm_dpdump);
-+
-+void *cpm_dpram_addr(uint offset)
-+{
-+	return (void *)&cpm2_immr->im_dprambase[offset];
-+}
-+EXPORT_SYMBOL(cpm_dpram_addr);
-diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-new file mode 100644
-index 0000000..ec9df31
---- /dev/null
-+++ b/arch/powerpc/sysdev/cpm2_pic.c
-@@ -0,0 +1,256 @@
-+/*
-+ * Platform information definitions.
-+ * 
-+ * Copied from arch/ppc/syslib/cpm2_pic.c with minor subsequent updates
-+ * to make in work in arch/powerpc/. Original (c) belongs to Dan Malek AFAIK. 
-+ * 
-+ * 2006 (c) MontaVista Software, Inc.
-+ * Vitaly Bordug <vbordug@ru.mvista.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+         
-+/* The CPM2 internal interrupt controller.  It is usually
-+ * the only interrupt controller.
-+ * There are two 32-bit registers (high/low) for up to 64
-+ * possible interrupts.
-+ *
-+ * Now, the fun starts.....Interrupt Numbers DO NOT MAP
-+ * in a simple arithmetic fashion to mask or pending registers.
-+ * That is, interrupt 4 does not map to bit position 4.
-+ * We create two tables, indexed by vector number, to indicate
-+ * which register to use and which bit in the register to use.
-+ */
-+
-+#include <linux/stddef.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/signal.h>
-+#include <linux/irq.h>
-+
-+#include <asm/immap_cpm2.h>
-+#include <asm/mpc8260.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+
-+#include "cpm2_pic.h"
-+
-+static struct device_node *cpm2_pic_node;
-+static struct irq_host *cpm2_pic_host;
-+#define NR_MASK_WORDS   ((NR_IRQS + 31) / 32)
-+static unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
-+
-+static	u_char	irq_to_siureg[] = {
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	0, 0, 0, 0, 0, 0, 0, 0,
-+	0, 0, 0, 0, 0, 0, 0, 0,
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	0, 0, 0, 0, 0, 0, 0, 0,
-+	0, 0, 0, 0, 0, 0, 0, 0
-+};
-+
-+/* bit numbers do not match the docs, these are precomputed so the bit for
-+ * a given irq is (1 << irq_to_siubit[irq]) */
-+static	u_char	irq_to_siubit[] = {
-+	 0, 15, 14, 13, 12, 11, 10,  9,
-+	 8,  7,  6,  5,  4,  3,  2,  1,
-+	 2,  1,  0, 14, 13, 12, 11, 10,
-+	 9,  8,  7,  6,  5,  4,  3,  0,
-+	31, 30, 29, 28, 27, 26, 25, 24,
-+	23, 22, 21, 20, 19, 18, 17, 16,
-+	16, 17, 18, 19, 20, 21, 22, 23,
-+	24, 25, 26, 27, 28, 29, 30, 31,
-+};
-+
-+static void cpm2_mask_irq(unsigned int irq_nr)
-+{
-+	int	bit, word;
-+	volatile uint	*simr;
-+
-+	irq_nr -= CPM_IRQ_OFFSET;
-+
-+	bit = irq_to_siubit[irq_nr];
-+	word = irq_to_siureg[irq_nr];
-+
-+	simr = &(cpm2_immr->im_intctl.ic_simrh);
-+	ppc_cached_irq_mask[word] &= ~(1 << bit);
-+	simr[word] = ppc_cached_irq_mask[word];
-+}
-+
-+static void cpm2_unmask_irq(unsigned int irq_nr)
-+{
-+	int	bit, word;
-+	volatile uint	*simr;
-+
-+	irq_nr -= CPM_IRQ_OFFSET;
-+
-+	bit = irq_to_siubit[irq_nr];
-+	word = irq_to_siureg[irq_nr];
-+
-+	simr = &(cpm2_immr->im_intctl.ic_simrh);
-+	ppc_cached_irq_mask[word] |= 1 << bit;
-+	simr[word] = ppc_cached_irq_mask[word];
-+}
-+
-+static void cpm2_mask_and_ack(unsigned int irq_nr)
-+{
-+	int	bit, word;
-+	volatile uint	*simr, *sipnr;
-+
-+	irq_nr -= CPM_IRQ_OFFSET;
-+
-+	bit = irq_to_siubit[irq_nr];
-+	word = irq_to_siureg[irq_nr];
-+
-+	simr = &(cpm2_immr->im_intctl.ic_simrh);
-+	sipnr = &(cpm2_immr->im_intctl.ic_sipnrh);
-+	ppc_cached_irq_mask[word] &= ~(1 << bit);
-+	simr[word] = ppc_cached_irq_mask[word];
-+	sipnr[word] = 1 << bit;
-+}
-+
-+static void cpm2_end_irq(unsigned int irq_nr)
-+{
-+	int	bit, word;
-+	volatile uint	*simr;
-+
-+	if (!(irq_desc[irq_nr].status & (IRQ_DISABLED|IRQ_INPROGRESS))
-+			&& irq_desc[irq_nr].action) {
-+
-+		irq_nr -= CPM_IRQ_OFFSET;
-+		bit = irq_to_siubit[irq_nr];
-+		word = irq_to_siureg[irq_nr];
-+
-+		simr = &(cpm2_immr->im_intctl.ic_simrh);
-+		ppc_cached_irq_mask[word] |= 1 << bit;
-+		simr[word] = ppc_cached_irq_mask[word];
-+		/*
-+		 * Work around large numbers of spurious IRQs on PowerPC 82xx
-+		 * systems.
-+		 */
-+		mb();
-+	}
-+}
-+
-+static struct irq_chip cpm2_pic = {
-+	.typename = " CPM2 SIU ",
-+	.enable = cpm2_unmask_irq,
-+	.disable = cpm2_mask_irq,
-+	.unmask = cpm2_unmask_irq,
-+	.mask_ack = cpm2_mask_and_ack,
-+	.end = cpm2_end_irq,
-+};
-+
-+int cpm2_get_irq(struct pt_regs *regs)
-+{
-+	int irq;
-+        unsigned long bits;
-+
-+        /* For CPM2, read the SIVEC register and shift the bits down
-+         * to get the irq number.         */
-+        bits = cpm2_immr->im_intctl.ic_sivec;
-+        irq = bits >> 26;
-+
-+	if (irq == 0)
-+		return(-1);
-+	return irq+CPM_IRQ_OFFSET;
-+}
-+
-+static int cpm2_pic_host_match(struct irq_host *h, struct device_node *node)
-+{
-+	return cpm2_pic_node == NULL || cpm2_pic_node == node;
-+}
-+
-+static int cpm2_pic_host_map(struct irq_host *h, unsigned int virq,
-+			  irq_hw_number_t hw)
-+{
-+	pr_debug("cpm2_pic_host_map(%d, 0x%lx)\n", virq, hw);
-+
-+	get_irq_desc(virq)->status |= IRQ_LEVEL;
-+	set_irq_chip_and_handler(virq, &cpm2_pic, handle_level_irq);
-+	return 0;
-+}
-+
-+static void cpm2_host_unmap(struct irq_host *h, unsigned int virq)
-+{
-+	/* Make sure irq is masked in hardware */
-+	cpm2_mask_irq(virq);
-+
-+	/* remove chip and handler */
-+	set_irq_chip_and_handler(virq, NULL, NULL);
-+}
-+
-+static int cpm2_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-+			    u32 *intspec, unsigned int intsize,
-+			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
-+{
-+	static unsigned char map_cpm2_senses[4] = {
-+		IRQ_TYPE_LEVEL_LOW,
-+		IRQ_TYPE_LEVEL_HIGH,
-+		IRQ_TYPE_EDGE_FALLING,
-+		IRQ_TYPE_EDGE_RISING,
-+	};
-+
-+	*out_hwirq = intspec[0];
-+	if (intsize > 1 && intspec[1] < 4)
-+		*out_flags = map_cpm2_senses[intspec[1]];
-+	else
-+		*out_flags = IRQ_TYPE_NONE;
-+
-+	return 0;
-+}
-+
-+
-+static struct irq_host_ops cpm2_pic_host_ops = {
-+	.match = cpm2_pic_host_match,
-+	.map = cpm2_pic_host_map,
-+	.unmap = cpm2_host_unmap,
-+	.xlate = cpm2_pic_host_xlate,
-+};
-+
-+
-+void cpm2_pic_init(struct device_node *node)
-+{
-+	int i;
-+
-+	/* Clear the CPM IRQ controller, in case it has any bits set
-+	 * from the bootloader
-+	 */
-+
-+	/* Mask out everything */
-+
-+	cpm2_immr->im_intctl.ic_simrh = 0x00000000;
-+	cpm2_immr->im_intctl.ic_simrl = 0x00000000;
-+
-+	wmb();
-+
-+	/* Ack everything */
-+	cpm2_immr->im_intctl.ic_sipnrh = 0xffffffff;
-+	cpm2_immr->im_intctl.ic_sipnrl = 0xffffffff;
-+	wmb();
-+
-+	/* Dummy read of the vector */
-+	i = cpm2_immr->im_intctl.ic_sivec;
-+	rmb();
-+
-+	/* Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
-+	 */
-+	cpm2_immr->im_intctl.ic_sicr = 0;
-+	cpm2_immr->im_intctl.ic_scprrh = 0x05309770;
-+	cpm2_immr->im_intctl.ic_scprrl = 0x05309770;
-+
-+	/* create a legacy host */
-+	if (node)
-+		cpm2_pic_node = of_node_get(node);
-+
-+	cpm2_pic_host = irq_alloc_host(IRQ_HOST_MAP_LINEAR, 64, &cpm2_pic_host_ops, 64);
-+	if (cpm2_pic_host == NULL) {
-+		printk(KERN_ERR "CPM2 PIC: failed to allocate irq host!\n");
-+		return;
-+	}
-+}
-diff --git a/arch/powerpc/sysdev/cpm2_pic.h b/arch/powerpc/sysdev/cpm2_pic.h
-new file mode 100644
-index 0000000..436cca7
---- /dev/null
-+++ b/arch/powerpc/sysdev/cpm2_pic.h
-@@ -0,0 +1,8 @@
-+#ifndef _PPC_KERNEL_CPM2_H
-+#define _PPC_KERNEL_CPM2_H
-+
-+extern int cpm2_get_irq(struct pt_regs *regs);
-+
-+extern void cpm2_pic_init(struct device_node*);
-+
-+#endif /* _PPC_KERNEL_CPM2_H */
+ 		if (strstr(model, "FCC")) {
+ 			int fcc_index = fs_get_fcc_index(*id);
+ 
+@@ -635,6 +642,7 @@ static int __init fs_enet_of_init(void)
+ 			snprintf((char*)&bus_id[(*id)], BUS_ID_SIZE, "%x:%02x",
+ 							(u32)res.start, fs_enet_data.phy_addr);
+ 			fs_enet_data.bus_id = (char*)&bus_id[(*id)];
++			fs_enet_data.init_ioports = init_fcc_ioports;
+ 		}
+ 
+ 		of_node_put(phy);
+@@ -706,6 +714,8 @@ static int __init cpm_uart_of_init(void)
+ 		cpm_uart_data.tx_buf_size = 32;
+ 		cpm_uart_data.rx_num_fifo = 4;
+ 		cpm_uart_data.rx_buf_size = 32;
++		cpm_uart_data.clk_rx = *((u32 *) get_property(np, "rx-clock", NULL));
++		cpm_uart_data.clk_tx = *((u32 *) get_property(np, "tx-clock", NULL));
+ 
+ 		ret =
+ 		    platform_device_add_data(cpm_uart_dev, &cpm_uart_data,
+diff --git a/arch/ppc/platforms/mpc8272ads_setup.c b/arch/ppc/platforms/mpc8272ads_setup.c
+index 2a35fe2..d5d36c3 100644
+--- a/arch/ppc/platforms/mpc8272ads_setup.c
++++ b/arch/ppc/platforms/mpc8272ads_setup.c
+@@ -103,7 +103,7 @@ static struct fs_platform_info mpc82xx_e
+ 	},
+ };
+ 
+-static void init_fcc1_ioports(void)
++static void init_fcc1_ioports(struct fs_platform_info*)
+ {
+ 	struct io_port *io;
+ 	u32 tempval;
+@@ -144,7 +144,7 @@ static void init_fcc1_ioports(void)
+ 	iounmap(immap);
+ }
+ 
+-static void init_fcc2_ioports(void)
++static void init_fcc2_ioports(struct fs_platform_info*)
+ {
+ 	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
+ 	u32 *bcsr = ioremap(BCSR_ADDR+12, sizeof(u32));
+@@ -229,7 +229,7 @@ static void mpc8272ads_fixup_uart_pdata(
+ 	}
+ }
+ 
+-static void init_scc1_uart_ioports(void)
++static void init_scc1_uart_ioports(struct fs_uart_platform_info*)
+ {
+ 	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
+ 
+@@ -246,7 +246,7 @@ static void init_scc1_uart_ioports(void)
+ 	iounmap(immap);
+ }
+ 
+-static void init_scc4_uart_ioports(void)
++static void init_scc4_uart_ioports(struct fs_uart_platform_info*)
+ {
+ 	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
+ 
+diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
+index e12cece..5f130dc 100644
+--- a/arch/ppc/platforms/mpc866ads_setup.c
++++ b/arch/ppc/platforms/mpc866ads_setup.c
+@@ -137,7 +137,7 @@ #endif
+ 	iounmap(bcsr_io);
+ }
+ 
+-static void setup_fec1_ioports(void)
++static void setup_fec1_ioports(struct fs_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 
+@@ -145,7 +145,7 @@ static void setup_fec1_ioports(void)
+ 	setbits16(&immap->im_ioport.iop_pddir, 0x1fff);
+ }
+ 
+-static void setup_scc1_ioports(void)
++static void setup_scc1_ioports(struct fs_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 	unsigned *bcsr_io;
+@@ -194,7 +194,7 @@ static void setup_scc1_ioports(void)
+ 
+ }
+ 
+-static void setup_smc1_ioports(void)
++static void setup_smc1_ioports(struct fs_uart_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 	unsigned *bcsr_io;
+@@ -216,7 +216,7 @@ static void setup_smc1_ioports(void)
+ 
+ }
+ 
+-static void setup_smc2_ioports(void)
++static void setup_smc2_ioports(struct fs_uart_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 	unsigned *bcsr_io;
+diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
+index 5dfa4e6..bf388ed 100644
+--- a/arch/ppc/platforms/mpc885ads_setup.c
++++ b/arch/ppc/platforms/mpc885ads_setup.c
+@@ -161,7 +161,7 @@ #endif
+ #endif
+ }
+ 
+-static void setup_fec1_ioports(void)
++static void setup_fec1_ioports(struct fs_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 
+@@ -181,7 +181,7 @@ static void setup_fec1_ioports(void)
+ 	clrbits32(&immap->im_cpm.cp_cptr, 0x00000100);
+ }
+ 
+-static void setup_fec2_ioports(void)
++static void setup_fec2_ioports(struct fs_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 
+@@ -193,7 +193,7 @@ static void setup_fec2_ioports(void)
+ 	clrbits32(&immap->im_cpm.cp_cptr, 0x00000080);
+ }
+ 
+-static void setup_scc3_ioports(void)
++static void setup_scc3_ioports(struct fs_platform_info*)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+ 	unsigned *bcsr_io;
+@@ -315,7 +315,7 @@ static void __init mpc885ads_fixup_scc_e
+ 	mpc885ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
+ }
+ 
+-static void setup_smc1_ioports(void)
++static void setup_smc1_ioports(struct fs_uart_platform_info*)
+ {
+         immap_t *immap = (immap_t *) IMAP_ADDR;
+         unsigned *bcsr_io;
+@@ -335,7 +335,7 @@ static void setup_smc1_ioports(void)
+         clrbits16(&immap->im_cpm.cp_pbodr, iobits);
+ }
+ 
+-static void setup_smc2_ioports(void)
++static void setup_smc2_ioports(struct fs_uart_platform_info*)
+ {
+         immap_t *immap = (immap_t *) IMAP_ADDR;
+         unsigned *bcsr_io;
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index df62506..f358ee6 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -971,7 +971,7 @@ static struct net_device *fs_init_instan
+ 	dev_set_drvdata(dev, ndev);
+ 	fep->fpi = fpi;
+ 	if (fpi->init_ioports)
+-		fpi->init_ioports();
++		fpi->init_ioports((struct fs_platform_info *)fpi);
+ 
+ #ifdef CONFIG_FS_ENET_HAS_FEC
+ 	if (fs_get_fec_index(fpi->fs_no) >= 0)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index dfa06b6..24613a6 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1180,7 +1180,7 @@ static int __init cpm_uart_console_setup
+ 		pdata = pdev->dev.platform_data;
+ 		if (pdata)
+ 			if (pdata->init_ioports)
+-    	                	pdata->init_ioports();
++    	                	pdata->init_ioports(pdata);
+ 
+ 		cpm_uart_drv_get_platform_data(pdev, 1);
+ 	}
+@@ -1269,7 +1269,7 @@ static int cpm_uart_drv_probe(struct dev
+ 		return ret;
+ 
+ 	if (pdata->init_ioports)
+-                pdata->init_ioports();
++                pdata->init_ioports(pdata);
+ 
+ 	ret = uart_add_one_port(&cpm_reg, &cpm_uart_ports[pdata->fs_no].port);
+ 
 diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
-index f6a7ff0..876974e 100644
+index bd6623a..220cc2d 100644
 --- a/include/asm-ppc/cpm2.h
 +++ b/include/asm-ppc/cpm2.h
-@@ -42,6 +42,8 @@ #define CPM_CR_IDMA3_SBLOCK	(0x16)
- #define CPM_CR_IDMA4_SBLOCK	(0x17)
- #define CPM_CR_MCC1_SBLOCK	(0x1c)
- 
-+#define CPM_CR_FCC_SBLOCK(x)	(x + 0x10)
-+
- #define CPM_CR_SCC1_PAGE	(0x00)
- #define CPM_CR_SCC2_PAGE	(0x01)
- #define CPM_CR_SCC3_PAGE	(0x02)
-@@ -62,6 +64,8 @@ #define CPM_CR_IDMA4_PAGE	(0x0a)
- #define CPM_CR_MCC1_PAGE	(0x07)
- #define CPM_CR_MCC2_PAGE	(0x08)
- 
-+#define CPM_CR_FCC_PAGE(x)	(x + 0x04)
-+
- /* Some opcodes (there are more...later)
- */
- #define CPM_CR_INIT_TRX		((ushort)0x0000)
-@@ -1186,7 +1190,7 @@ #define PC3_DIRC1	(PC3_TXDAT)
- #define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
- #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
+@@ -1196,5 +1196,58 @@ #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0
  #define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
--#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
-+#define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
+ #define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
  
++/* Clocks and GRG's */
++
++enum cpm_clk_dir {
++	CPM_CLK_RX,
++	CPM_CLK_TX,
++	CPM_CLK_RTX
++};
++
++enum cpm_clk_target {
++	CPM_CLK_SCC1,
++	CPM_CLK_SCC2,
++	CPM_CLK_SCC3,
++	CPM_CLK_SCC4,
++	CPM_CLK_FCC1,
++	CPM_CLK_FCC2,
++	CPM_CLK_FCC3
++};
++
++enum cpm_clk {
++	CPM_CLK_NONE = 0,
++	CPM_BRG1,	/* Baud Rate Generator  1 */
++	CPM_BRG2,	/* Baud Rate Generator  2 */
++	CPM_BRG3,	/* Baud Rate Generator  3 */
++	CPM_BRG4,	/* Baud Rate Generator  4 */
++	CPM_BRG5,	/* Baud Rate Generator  5 */
++	CPM_BRG6,	/* Baud Rate Generator  6 */
++	CPM_BRG7,	/* Baud Rate Generator  7 */
++	CPM_BRG8,	/* Baud Rate Generator  8 */
++	CPM_CLK1,	/* Clock  1 */
++	CPM_CLK2,	/* Clock  2 */
++	CPM_CLK3,	/* Clock  3 */
++	CPM_CLK4,	/* Clock  4 */
++	CPM_CLK5,	/* Clock  5 */
++	CPM_CLK6,	/* Clock  6 */
++	CPM_CLK7,	/* Clock  7 */
++	CPM_CLK8,	/* Clock  8 */
++	CPM_CLK9,	/* Clock  9 */
++	CPM_CLK10,	/* Clock 10 */
++	CPM_CLK11,	/* Clock 11 */
++	CPM_CLK12,	/* Clock 12 */
++	CPM_CLK13,	/* Clock 13 */
++	CPM_CLK14,	/* Clock 14 */
++	CPM_CLK15,	/* Clock 15 */
++	CPM_CLK16,	/* Clock 16 */
++	CPM_CLK17,	/* Clock 17 */
++	CPM_CLK18,	/* Clock 18 */
++	CPM_CLK19,	/* Clock 19 */
++	CPM_CLK20,	/* Clock 20 */
++	CPM_CLK_DUMMY
++};
++
++extern int cpm2_clk_setup(enum cpm_clk_target target, int clock, int mode);
++
  #endif /* __CPM2__ */
  #endif /* __KERNEL__ */
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 74ed35a..9322235 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -87,18 +87,20 @@ struct fs_mii_bb_platform_info {
+ };
+ 
+ struct fs_platform_info {
+-	
+-	void(*init_ioports)(void);
++
++	void(*init_ioports)(struct fs_platform_info *);
+ 	/* device specific information */
+ 	int fs_no;		/* controller index            */
+ 
+ 	u32 cp_page;		/* CPM page */
+ 	u32 cp_block;		/* CPM sblock */
+-	
++
+ 	u32 clk_trx;		/* some stuff for pins & mux configuration*/
++	u32 clk_rx;
++	u32 clk_tx;
+ 	u32 clk_route;
+ 	u32 clk_mask;
+-	
++
+ 	u32 mem_offset;
+ 	u32 dpram_offset;
+ 	u32 fcc_regs_c;
+diff --git a/include/linux/fs_uart_pd.h b/include/linux/fs_uart_pd.h
+index f597512..a99a020 100644
+--- a/include/linux/fs_uart_pd.h
++++ b/include/linux/fs_uart_pd.h
+@@ -46,7 +46,7 @@ static inline int fs_uart_id_fsid2smc(in
+ }
+ 
+ struct fs_uart_platform_info {
+-        void(*init_ioports)(void);
++        void(*init_ioports)(struct fs_uart_platform_info *);
+ 	/* device specific information */
+ 	int fs_no;		/* controller index */
+ 	u32 uart_clk;
+@@ -55,6 +55,8 @@ struct fs_uart_platform_info {
+ 	u8 rx_num_fifo;
+ 	u8 rx_buf_size;
+ 	u8 brg;
++	u8 clk_rx;
++	u8 clk_tx;
+ };
+ 
+ #endif
