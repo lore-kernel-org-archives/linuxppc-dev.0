@@ -1,12 +1,16 @@
-Return-Path: <miltonm@bga.com>
-Date: Fri, 11 Aug 2006 22:56:47 -0500
-From: Milton Miller <miltonm@bga.com>
-To: arnd@arndb.de, linuxppc-embedded@ozlabs.org,
-Subject: Re: [RFC] Adding MTD to device tree
-Message-Id: <311553550076b8b45674.846930886.miltonm@bga.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Return-Path: <acahalan@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 1731667B52
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 15:50:49 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id k27so1838118nfc
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Aug 2006 22:50:47 -0700 (PDT)
+Message-ID: <787b0d920608112250q551c98f5j328183c31eebaf77@mail.gmail.com>
+Date: Sat, 12 Aug 2006 01:50:47 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Subject: PowerPC paxtest results w/ gcc-4.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,35 +20,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gIEZyaSBBdWcgMTEgMjAwNiAwNDoxMDo0MCBQTSBDRFQsIEFybmQgQmVyZ21hbm4gd3JvdGU6
-DQo+IE9uIEZyaWRheSAxMSBBdWd1c3QgMjAwNiAxNzozMSwgU2VyZ2VpIFNodHlseW92IHdyb3Rl
-Og0KPiA+ICsgwqAgaCkgTVREIG5vZGVzDQo+ID4gKw0KPiA+ICsgwqAgTWVtb3J5IFRlY2hub2xv
-Z3kgRGV2aWNlcyBhcmUgZmxhc2gsIFJPTSwgYW5kIHNpbWlsYXIgY2hpcHMsIG9mdGVuIHVzZWQN
-Cj4gPiArIMKgIGZvciBzb2xpZCBzdGF0ZSBmaWxlIHN5c3RlbXMgb24gZW1iZWRkZWQgZGV2aWNl
-cy4NCj4gPiArDQo+ID4gKyDCoCBSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+ICsNCj4gPiArIMKg
-IMKgLSBkZXZpY2VfdHlwZSA6IGhhcyB0byBiZSAibXRkIg0KPiA+ICsgwqAgwqAtIGNvbXBhdGli
-bGUgOiBTaG91bGQgYmUgdGhlIG5hbWUgb2YgdGhlIE1URCBkcml2ZXIuIEN1cnJlbnRseSwgdGhp
-cyBpcw0KPiA+ICsgwqAgwqAgwqBtb3N0IGxpa2VseSB0byBiZSAicGh5c21hcCIuDQo+ID4gKyDC
-oCDCoC0gcmVnIDogT2Zmc2V0IGFuZCBsZW5ndGggb2YgdGhlIHJlZ2lzdGVyIHNldCBmb3IgdGhl
-IGRldmljZS4NCj4gDQo+IEkgd291bGQgcHJlZmVyIHRvIGNhbGwgdGhlbSBzb21ldGhpbmcgZGlm
-ZmVyZW50IGluIHRoZSBkZXZpY2UgdHJlZS4NCj4gVGhlIG5hbWUgJ210ZCcgaXMgdmVyeSBzcGVj
-aWZpYyB0byBMaW51eCwgYnV0IHRoZSBkZXZpY2UgdHJlZQ0KPiBpcyBhIG1vcmUgZ2VuZXJpYyBj
-b25jZXB0Lg0KPiANCj4gSSB1bmRlcnN0YW5kIHRoYXQgdGhlIGJvb3Rpbmctd2l0aG91dC1vZi50
-eHQgZmlsZSBpcyBieSBkZWZpbml0aW9uDQo+IExpbnV4IHNwZWNpZmljIGFzIHdlbGwsIGJ1dCB3
-ZSBzaG91bGQgYmUgcHJlcGFyZWQgZm9yIG1ha2luZyBwYXJ0cw0KPiBvZiBpdCBhIE9TIGluZGVw
-ZW5kZW50IGJpbmRpbmcgYXQgdGhlIHBvaW50IHdoZXJlIHdlIHB1dCB0aGUgc2FtZQ0KPiBkZXZp
-Y2Ugbm9kZXMgaW50byBhY3R1YWwgT0YgaW1wbGVtZW50YXRpb25zIHRoYXQgYWJsZSB0byBib290
-DQo+IGRpZmZlcmVudCBvcGVyYXRpbmcgc3lzdGVtcy4NCj4gDQo+IEkgd291bGQgcHJlZmVyIGEg
-bmFtaW5nIHRoYXQgaGFzIA0KPiANCj4gICAgUmVxdWlyZWQgcHJvcGVydGllczoNCj4gICAgIC0g
-ZGV2aWNlX3R5cGUgOiBvbmUgb2YgIm5hbmQtZmxhc2giLCAibm9yLWZsYXNoIiwgb3IgInJvbSIu
-DQo+ICAgICAtIG1vZGVsIDogYW4gaWRlbnRpZmllciBmb3IgdGhlIGFjdHVhbCBjb250cm9sbGVy
-IGNoaXAgdXNlZC4NCj4gICAgIC0gY29tcGF0aWJsZSA6IFNob3VsZCBiZSB0aGUgbmFtZSBvZiB0
-aGUgTVREIGRyaXZlci4gRm9yDQo+ICAgICAgIHR5cGUgInJvbSIsIHRoaXMgaXMgbW9zdCBsaWtl
-bHkgInBoeXNtYXAiLg0KDQpJJ20gd2l0aCB5b3VyIHN1Z2dlc3Rpb24gZm9yIGRldmljZV90eXBl
-IGFuZCBtb2RlbCwgYnV0IG5vdCANCmNvbXBhdGFibGUuICAgInBoeXNtYXAiPyAgV2hhdCBraW5k
-IG9mIGRldmljZSBpcyB0aGF0PyAgQSANCmNvbW1hbmQgc2V0IG5hbWUsIG1heWJlIHdpdGggYSB3
-aWR0aCwgd291bGQgYmUgDQphcHByb3ByaWF0ZS4gICBQaHlzbWFwIGlzIHRoZSBuYW1lIG9mIGFu
-b3RoZXIgbGludXggZHJpdmVyLiAgIA0KU29tZXRoaW5nIGxpa2UgZGlyZWN0IG9yIGxpbmVhciBt
-aWdodCBiZSBhcHByb3ByaWF0ZSBmb3IgYSByb20sIA0Kd2hlcmUganVzdCBhZGRyZXNzIGFuZCBs
-ZW5ndGggYXBwZWFyLiAgRXZlbiByb20gd291bGQgYmUNCmJldHRlciB0aGFuIHBoeXNtYXAuDQoN
-Cm1pbHRvbg0K
+I just ran paxtest on a Mac G4 Cube. Ouch. The results are shameful.
+Does nobody care to fix this? (well heck, the patched firefox isn't
+showing up via aptitude yet, and my browser just died a horrible
+and unexpected death involving a pop-up ad, so I guess not!)
+
+I suppose part of the problem is that paxtest requires serious
+hacking to work right on PowerPC. Critical fixes are:
+
+1. unnest the dummy() function (PaX marketing bullshit)
+2. change the return opcode (see code below)
+3. flush the cache as needed (see code below)
+4. use the Makefile-portable that Gentoo has
+5. compile with "-W -Wall -fno-strict-aliasing" and fix warnings
+
+With all that done, gasp in horror at the truth:
+
+Linux cube 2.6.17-rc5 #1 PREEMPT Sat May 27 20:35:12 EDT 2006 ppc GNU/Linux
+Executable anonymous mapping             : Vulnerable
+Executable bss                           : Vulnerable
+Executable data                          : Vulnerable
+Executable heap                          : Vulnerable
+Executable stack                         : Vulnerable
+Executable anonymous mapping (mprotect)  : Vulnerable
+Executable bss (mprotect)                : Vulnerable
+Executable data (mprotect)               : Vulnerable
+Executable heap (mprotect)               : Vulnerable
+Executable stack (mprotect)              : Vulnerable
+Executable shared library bss (mprotect) : Vulnerable
+Executable shared library data (mprotect): Vulnerable
+Writable text segments                   : Vulnerable
+Anonymous mapping randomisation test     : No randomisation
+Heap randomisation test (ET_EXEC)        : No randomisation
+Heap randomisation test (ET_DYN)         : No randomisation
+Main executable randomisation (ET_EXEC)  : No randomisation
+Main executable randomisation (ET_DYN)   : No randomisation
+Shared library randomisation test        : No randomisation
+Stack randomisation test (SEGMEXEC)      : 11 bits (guessed)
+Stack randomisation test (PAGEEXEC)      : 11 bits (guessed)
+Return to function (strcpy)              : paxtest: bad luck
+Return to function (memcpy)              : Vulnerable
+Return to function (strcpy, RANDEXEC)    : paxtest: bad luck
+Return to function (memcpy, RANDEXEC)    : Vulnerable
+Executable shared library bss            : Vulnerable
+Executable shared library data           : Vulnerable
+
+About the only saving grace is that the attacker would have
+to get lucky with the cache if they need code executed.
+
+Look, it's not as if we get closed-source binaries on PowerPC
+anyway. Non-free isn't the Debian way either. Screw the ABI.
+We need a fail-safe (enabled by default) fix for this.
+
+///////// code added to the top of paxtest body.h //////////
+// use this code in the obvious way
+#if defined(__ppc__) || defined(__powerpc__)
+#define RET 0x4e800020     // "blr" or "bclr 20,0"
+#define FLUSH(x) __asm__ __volatile__(\
+  "dcbf 0,%0  ;  sync  ; icbi 0,%0  ; sync  ;  isync  ; sync" \
+  :                        \
+  : "r" (x)                \
+  : "memory"              \
+)
+#endif
+
+#if defined(__i386__) || defined(__x86_64__)
+#define RET 0xc3c3c3c3     // ret ret ret ret
+#define FLUSH(x)
+#endif
+
+#include <string.h>
+///////////////////////////////////////////////////////////
