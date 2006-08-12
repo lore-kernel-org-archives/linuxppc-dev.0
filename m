@@ -1,17 +1,35 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Message-ID: <44DDFF94.3090402@ru.mvista.com>
-Date: Sat, 12 Aug 2006 20:19:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A0F4C67C0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Aug 2006 02:37:09 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7CGb5ap121552
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 16:37:05 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k7CGentt090448
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 18:40:49 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7CGb4tf015978
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Aug 2006 18:37:04 +0200
+Message-ID: <44DE03B0.1060607@de.ibm.com>
+Date: Sat, 12 Aug 2006 18:37:04 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] Adding MTD to device tree
-References: <20060614213643.137680b8@vitb.ru.mvista.com>	<20060709001435.7a94294e@localhost.localdomain>	<44DCA2BF.1030002@ru.mvista.com>
-	<200608112310.41110.arnd@arndb.de>	<1155347601.3108.7.camel@vader.jdub.homelinux.org>
-	<001C3287-87E7-4DF9-AB4E-E1448EC20518@kernel.crashing.org>
-In-Reply-To: <001C3287-87E7-4DF9-AB4E-E1448EC20518@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
+To: Anton Blanchard <anton@samba.org>, Jan-Bernd Themann <themann@de.ibm.com>
+Subject: Re: [PATCH 3/6] ehea: queue management
+References: <44D99F38.8010306@de.ibm.com> <20060811215225.GH479@krispykreme>
+In-Reply-To: <20060811215225.GH479@krispykreme>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,71 +39,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Anton Blanchard wrote:
+> Hi,
+>
+>   
+>> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_ethtool.c	1969-12-31 
+>>     
+>
+>   
+>> +static void netdev_get_pauseparam(struct net_device *dev,
+>> +				  struct ethtool_pauseparam *pauseparam)
+>> +{
+>> +	printk("get pauseparam\n");
+>> +}
+>>     
+>
+> There are a number of stubbed out ethtool functions like this. Best not
+> to implement them and allow the upper layers to return a correct error.
+>
+> Anton
+>   
+I agree, stubbs were removed.
 
-Segher Boessenkool wrote:
-
->>>   Required properties:
->>>    - device_type : one of "nand-flash", "nor-flash", or "rom".
-
-    I thought about having the separate device types initially, then I decided 
-that all the differences can be handled on the driver level...
-
->>There are more than just those kinds of MTDs.  There's dataflash,
->>AG-AND, NVRAM, ioremappable DRAM, etc.  I'd prefer it to just be  
->>called "flash".  See more below.
-
-> Existing firmwares call it "rom", "nvram", "flash".  All of those
-> are easy; and I have really no opinion how all the weirdo nand-flash
-> etc. interfaces should be handled.
-
-> device_type communicates to the device-tree consumer what other
-> properties to expect in this node -- it does not indicate the exact
-> programming model of the device itself.
-
-    Erm, IIUC the exact set of properties is defined by the node name (or the 
-"compatible" property). The device type defines some mandatory set of 
-properties/methods but there may be some specific...
-
-> I suspect for most nand-flash you can get away with a device_type
-> of "nand-flash"; for some you might have to specify something more
-> detailed.
-
-    Hm, not sure that you need to be so much detailed with the device type.
-The original OF spec. had device type "block" signifying any kind of blocked 
-storage device.
-
->>>    - model : an identifier for the actual controller chip used.
-
->>Meaning what exactly?  Lots of NOR flash doesn't have a "controller".
-
-> Lots of those chips from different vendors are pin-compatible as well,
-> so you cannot really hardcode one specific model number.  I don't see
-> this information being very useful anyway.  Instead, in most cases, the
-> information you're really after is the programming interface for the
-> device.  And that goes...
-
-    This property might be marked optional still.
-
->>>    - compatible : Should be the name of the MTD driver. For
->>>      type "rom", this is most likely "physmap".
-
->>This I agree with, but Sergei already had this.  And since you're
->>specifying the name of the MTD driver, that typically already knows  
->>what
->>type of chip it's talking to.
-
-> "compatible" contains a list, most specific first.  So for example
-> for a NOR-flash it could be "jedec-flash,nor-flash,flash" or whatnot.
-> (Btw: no comma's, but 0-chars in the actual properties!)
-
-    The "compatible" prop (as well as "name") should define which driver to 
-select according to spec. (the Generic Names spec. delegates this role solely 
-to the "compatible" prop). While specifying the flash interface (JEDEC in this 
-case) is indeed useful (however, the current 'platform_device' based 'physmap' 
-implementation doesn't allow to pass the probe type to the driver), the prop 
-in the form suggested doesn't really help with selecting the MTD map driver 
-(without which you can't support a NOR flash). A reference to 'physmap' should 
-still be present in the node in one or another form...
-
-WBR, Sergei
+Thomas
