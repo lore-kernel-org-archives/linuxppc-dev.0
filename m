@@ -1,16 +1,21 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 1108D67BD8
+Return-Path: <Rajan.Rai@ingenient.com>
+Received: from mail.ingenient.com (unknown [63.87.52.245])
+	by ozlabs.org (Postfix) with ESMTP id 02D0B67BDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Aug 2006 14:41:22 +1000 (EST)
-Date: Fri, 11 Aug 2006 23:37:25 -0500
-From: Milton Miller <miltonm@bga.com>
-To: benjamin.heyne@uni-dortmund.de, linuxppc-embedded@ozlabs.org,
-Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
-Message-Id: <31155357445643c98694.1714636915.miltonm@bga.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 12 Aug 2006 22:35:29 +1000 (EST)
+Message-ID: <44DDCAB8.80106@ingenient.com>
+Date: Sat, 12 Aug 2006 08:34:00 -0400
+From: Rajan Rai <Rajan.Rai@ingenient.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: PCI driver on EB8347
+References: <995B09A8299C2C44B59866F6391D2635018CA7@zch01exm21.fsl.freescale.net>
+	<4DA89577C33E194ABEBC978921E858541B8E3B@exchange.ingenient.net>
+	<94857DB0-ABC7-4AA5-BE5B-1CBEAA09D906@kernel.crashing.org>
+In-Reply-To: <94857DB0-ABC7-4AA5-BE5B-1CBEAA09D906@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "Gala Kumar K.-galak" <kumar.gala@freescale.com>,
+	Liu Dave-r63238 <DaveLiu@freescale.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,29 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon Aug  7 2006 04:46:43 AM CDT, Benjamin Heyne wrote:
-> Peter Korsgaard <jacmet@sunsite.dk> wrote as thus:
-> > >>>>> "David" == David H Lynch <dhlii@dlasys.net> 
-> > David>     Have you tried 2.6.18.x to see if your stuff works with it
-> > David> ?
-> > 
-> > Yes, 2.6.18-rc3 + my zlib fix
-> > (http://thread.gmane.org/gmane.linux.kernel/428436) or -rc4 once it
-> > hits kernel.org works fine on my v2p-based board.
-> 
-> Well, unfortunately I am still getting the inflate error
-> as soon as the image grows >2MB (about). Have you tried with
-> images of this size? If the image is smaller, everything works
-> fine...
 
-My first reaction when I saw this thread was that you didn't allocate 
-something in memory and overlapped something.  However, looking
-at your original post again, I think your kernel is growing larger than
-4MB, which is the link address of the zImage.  This is based on the 
-kernel is decompressed to address 0 in
-ppc/boot/simple/misc-embedded.c, and a 50% compression factor 
-and 2MB compressed image.
 
-You can look at the file size of vmlinux to see if this is close.
+          Thanks IRQ problem is resolved. As  pointed out it was problem 
+with IRQ IDSEL mapping. Mapping needs to be different on Eval board I'm 
+using and our custom design. But my driver is still not working on our 
+custom design. PCI device doesn't receive any messages from MPC8347 on 
+our custom design mother board which uses pci-bridge where as it works 
+fine on Eval board which doesn't use PCI bridge.
 
-milton
+                         I guess problem lies at the kernel level and 
+not the driver. Any tips apart from IDSEL IRQ settings at kernel level 
+what else I need to change when I move from 1 mother board to another.  
+My PCI  devices do get base address 0 and 1 allocated properly by the 
+OS. But when I try to write any messages on those addresses PCI device 
+doesn't see them
+
+Regards,
+-Rajan
+
+Kumar Gala wrote:
+>
+> On Aug 11, 2006, at 4:15 AM, rajan rai wrote:
+>
+>>
+>>                       I'm using polling mechanism and not interrupts 
+>> in my driver. Although I'm not using polling I see strange behavior 
+>> When I do lspci -v I don't see any interrupts being allocated to PCI 
+>> device behind PCI bridge !!!! But when I use same card directly on 
+>> primary bus I do see interrupt being allocated to PCI device. Any 
+>> advise why IRQ's being not allocated in case its attached to PCI 
+>> bridge ?
+>>
+>>                               Do I need to take care of any extra 
+>> configuration in case of PCI card is attached to PCI bridge ?
+>
+> You need to make sure that the pci_map_irq/mpc83xx_map_irq function 
+> handles the right swizziling for the P2P bridge for your setup.  If 
+> you are just connected directly its pretty straight forward.  However 
+> IRQ assignment behind the bridge can be very board specific and so you 
+> need to make sure that the code is doing the right think for you.
+>
+> What ever strangeness do you see from lspci?
+>
+> - k
+>
+>
