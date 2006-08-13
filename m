@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17630.27174.711916.643790@cargo.ozlabs.ibm.com>
-Date: Sun, 13 Aug 2006 09:54:14 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Albert Cahalan" <acahalan@gmail.com>
-Subject: Re: PowerPC paxtest results w/ gcc-4.1
-In-Reply-To: <787b0d920608120736n1ba0bc03jccf2964bf7ebb1d5@mail.gmail.com>
-References: <787b0d920608112250q551c98f5j328183c31eebaf77@mail.gmail.com>
-	<17629.48408.564322.747132@cargo.ozlabs.ibm.com>
-	<787b0d920608120736n1ba0bc03jccf2964bf7ebb1d5@mail.gmail.com>
-Cc: , linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Return-Path: <wd@denx.de>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [RFC] Adding MTD to device tree 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 13 Aug 2006 02:00:36 +0400."
+	<44DE4F84.9030802@ru.mvista.com>
+Date: Sun, 13 Aug 2006 02:20:40 +0200
+Sender: wd@denx.de
+Message-Id: <20060813002040.DFA8D352660@atlas.denx.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,36 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Albert Cahalan writes:
+In message <44DE4F84.9030802@ru.mvista.com> you wrote:
+> 
+>     Hm, MTD is a short for "memory type device", what Linux has to do with it 
 
-> gcc version 4.1.2 20060613 (prerelease) (Debian 4.1.1-5)
+Memory Technology Device.
 
-OK, so I think that version should have the new -msecure-plt flag,
-which changes the ppc32 ABI so that the PLT no longer has to be
-writable and executable.  Previously the dynamic linker would rewrite
-each PLT entry, the first time it is used, to jump directly to the
-target routine.  That was the reason why the heap had to be
-executable.
+Best regards,
 
-To get the full benefit of -msecure-plt, every object file in your
-executable has to be compiled with it, and I think every shared
-library the program uses has to be compiled with it too.  On a system
-where everything has been compiled with -msecure-plt, I believe the
-heap and stack will automatically be made non-executable.
+Wolfgang Denk
 
-Of course, that won't make all that much difference on your Cube,
-because the G4 CPU doesn't have hardware support for non-executable
-pages (any readable page is executable).  The G5 does, as do the 4xx
-and Book E 32-bit CPUs, and any 64-bit CPU from POWER4 on.
-
-As for the randomization, I'm surprised we got no stack randomization,
-since that appears to be handled generically (randomize_stack_stop()
-in fs/binfmt_elf.c).  What does cat /proc/sys/kernel/randomize_va_space
-give you?  (i386 also does arch-specific randomization of some low
-bits of the stack pointer, which we could do too.)
-
-Shared library randomization is a glibc thing, I assume.  (It is
-incompatible with prelink, of course.)  I don't believe we can do
-ET_EXEC address randomization, and I don't think x86 can do it either.
-
-Paul.
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+We are Microsoft. Unix is irrelevant. Openness is futile.  Prepare to
+be assimilated.
