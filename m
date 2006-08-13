@@ -1,21 +1,19 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from qsrv01ps.mx.bigpond.com (qsrv01ps.mx.bigpond.com
-	[144.140.82.181]) by ozlabs.org (Postfix) with ESMTP id B162767C3A
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Aug 2006 14:17:02 +1000 (EST)
-Date: Sun, 13 Aug 2006 12:59:57 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: PowerPC paxtest results w/ gcc-4.1
-Message-ID: <20060813032957.GB14822@bubble.grove.modra.org>
-References: <787b0d920608112250q551c98f5j328183c31eebaf77@mail.gmail.com>
-	<17629.48408.564322.747132@cargo.ozlabs.ibm.com>
-	<787b0d920608120736n1ba0bc03jccf2964bf7ebb1d5@mail.gmail.com>
-	<17630.27174.711916.643790@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 14 Aug 2006 00:44:00 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH 3/6] ehea: queue management
+Message-ID: <20060813144400.GJ479@krispykreme>
+References: <44D99F38.8010306@de.ibm.com> <20060811215225.GH479@krispykreme>
+	<44DE03B0.1060607@de.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17630.27174.711916.643790@cargo.ozlabs.ibm.com>
-Cc: Albert Cahalan <acahalan@gmail.com>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org
+In-Reply-To: <44DE03B0.1060607@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	roland@topspin.com, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Aug 13, 2006 at 09:54:14AM +1000, Paul Mackerras wrote:
-> To get the full benefit of -msecure-plt, every object file in your
-> executable has to be compiled with it
 
-Yes.  In particular, glibc startup files need to be compiled with
--msecure-plt.  If ld links any object file that uses the old scheme
-requiring an executable .got into the executable, then the old layout is
-forced.
+Hi,
 
->, and I think every shared
-> library the program uses has to be compiled with it too.
+> I agree, stubbs were removed.
 
-No, this isn't necessary.
+Thanks.
 
->  On a system
-> where everything has been compiled with -msecure-plt, I believe the
-> heap and stack will automatically be made non-executable.
+What is going to be done about the debug infrastructure in the ehea
+driver? The entry and exit traces really need to go, and any other debug
+you think is important to users needs to go into debugfs or something
+similar.
 
-Exec stack is a separate issue from the plt/got layout.  You need a
-kernel that sets non-exec stack by default and respects PT_GNU_STACK
-program header.
+I see a similar issue in the ehca driver that I am in the middle of
+reviewing.
 
--- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
+Anton
