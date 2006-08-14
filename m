@@ -1,20 +1,19 @@
-Return-Path: <benjamin.heyne@uni-dortmund.de>
-Received: from unimail.uni-dortmund.de (mx1.HRZ.Uni-Dortmund.DE
-	[129.217.128.51]) by ozlabs.org (Postfix) with ESMTP id 0BD9B67BB8
+Return-Path: <ujwal.mailinglist@gmail.com>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.232])
+	by ozlabs.org (Postfix) with ESMTP id 5A20D67BE8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Aug 2006 00:42:40 +1000 (EST)
-Date: Mon, 14 Aug 2006 16:42:07 +0200
-From: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
-Message-ID: <20060814164207.4eb13b03@bob.dt.e-technik.uni-dortmund.de>
-In-Reply-To: <d81b12fdf4409d827c83f98985a96822@bga.com>
-References: <31155357445643c98694.1714636915.miltonm@bga.com>
-	<20060814111014.4506dc19@bob.dt.e-technik.uni-dortmund.de>
-	<d81b12fdf4409d827c83f98985a96822@bga.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 15 Aug 2006 02:56:17 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id c7so1238880qbc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 14 Aug 2006 09:56:15 -0700 (PDT)
+Message-ID: <b47d45990608140956s1a1dcdbbh8b454d0fe487a271@mail.gmail.com>
+Date: Mon, 14 Aug 2006 22:26:14 +0530
+From: Ujwal <ujwal.mailinglist@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Can red hat linux be ported to Power PC ???????????????
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_87683_24116321.1155574574224"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,45 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-And so it came to pass, that on Mon, 14 Aug 2006 09:00:33 -0500
-Milton Miller <miltonm@bga.com> wrote as thus:
+------=_Part_87683_24116321.1155574574224
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> >>
-> >> I think your kernel is growing larger than
-> >> 4MB, which is the link address of the zImage.
-> >
-> > Well - That's exactly the case. But looking into misc-embedded.c, I 
-> > noticed
-> > that the load address for gunzip is fixed to 0x400000...shouldn't this
-> > be dependent on CONFIG_BOOT_LOAD_BOOL and CONFIG_BOOT_LOAD?
-> >
-> > I've changed the line to
-> >
-> > #ifdef CONFIG_BOOT_LOAD_BOOL
-> > 	gunzip(0, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
-> > #else	
-> > 	gunzip(0, 0x400000, zimage_start, &zimage_size);
-> > #endif
-> >
-> > and now it seems to work fine for big images (if CONFIG_BOOT_LOAD
-> > is set large enough of course...) - which wasn't the case before.
-> 
-> It shouldn't depend on CONFIG_BOOT_LOAD_BOOL.   CONFIG_BOOT_LOAD is
-> set all the time (the question is dependent on _BOOL not the variable
-> and the default is used).
-> 
-> milton
-> 
+hi all,
 
-OK - Thanks. So replacing
+can red hat linux(2.4 kernel with a the .config file of ML310 board ) be
+ported to PowerPC on a development board?
 
-	gunzip(0, 0x400000, zimage_start, &zimage_size);
-with
-	gunzip(0, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
+Thanks and Regards,
+Ujwal
 
-should do the trick. Maybe we should report this to the file maintainer,
-if you'd consider this to be a bug, too....
+------=_Part_87683_24116321.1155574574224
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Best regards
--- 
-Benjamin Heyne
+hi all,<br><br>can red hat linux(2.4 kernel with a the .config file of ML310 board ) be ported to PowerPC on a development board?<br><br>Thanks and Regards,<br>Ujwal<br>
+
+------=_Part_87683_24116321.1155574574224--
