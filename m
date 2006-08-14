@@ -1,18 +1,16 @@
-Return-Path: <benjamin.heyne@uni-dortmund.de>
-Received: from unimail.uni-dortmund.de (mx1.HRZ.Uni-Dortmund.DE
-	[129.217.128.51]) by ozlabs.org (Postfix) with ESMTP id 893E1679A6
+Return-Path: <jimmyzhmliu@yahoo.com>
+Received: from web53101.mail.yahoo.com (web53101.mail.yahoo.com
+	[206.190.49.51]) by ozlabs.org (Postfix) with SMTP id 649BB67BBE
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Aug 2006 19:13:16 +1000 (EST)
-Date: Mon, 14 Aug 2006 11:10:14 +0200
-From: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: XUPV2P, Kernel 2.6.17 boot problem
-Message-ID: <20060814111014.4506dc19@bob.dt.e-technik.uni-dortmund.de>
-In-Reply-To: <31155357445643c98694.1714636915.miltonm@bga.com>
-References: <31155357445643c98694.1714636915.miltonm@bga.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 14 Aug 2006 22:38:33 +1000 (EST)
+Message-ID: <20060814123832.30219.qmail@web53101.mail.yahoo.com>
+Date: Mon, 14 Aug 2006 05:38:32 -0700 (PDT)
+From: jimmy liu <jimmyzhmliu@yahoo.com>
+Subject: RE: PCI DMA_MR Problem
+To: Liu Dave-r63238 <DaveLiu@freescale.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <995B09A8299C2C44B59866F6391D26350CD593@zch01exm21.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,54 +21,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-And so it came to pass, that on Fri, 11 Aug 2006 23:37:25 -0500
-Milton Miller <miltonm@bga.com> wrote as thus:
+I see.
 
-> On Mon Aug  7 2006 04:46:43 AM CDT, Benjamin Heyne wrote:
-> > Peter Korsgaard <jacmet@sunsite.dk> wrote as thus:
-> > > >>>>> "David" == David H Lynch <dhlii@dlasys.net> 
-> > > David>     Have you tried 2.6.18.x to see if your stuff works with it
-> > > David> ?
-> > > 
-> > > Yes, 2.6.18-rc3 + my zlib fix
-> > > (http://thread.gmane.org/gmane.linux.kernel/428436) or -rc4 once it
-> > > hits kernel.org works fine on my v2p-based board.
+Thanks.
+
+Jimmy
+
+--- Liu Dave-r63238 <DaveLiu@freescale.com> wrote:
+
+> The memory map configuration registers is
+> little-endain. Be careful this
+> Please byte swap this
+> -Dave 
 > > 
-> > Well, unfortunately I am still getting the inflate error
-> > as soon as the image grows >2MB (about). Have you tried with
-> > images of this size? If the image is smaller, everything works
-> > fine...
+> > I got a problem when I set the pci dmamr for
+> MPC8250 for DMA 
+> > PCI transfering data on linux kernel 2.6.17.
+> > When I set the values for the pci_dmamr registers,
+> then print 
+> > the register values back, some bits can not be
+> set. Did 
+> > anybody know what are the problem, or I have to
+> set other stuff.
+> > 
+> > Thanks.
+> > 
+> > The code like this:
+> > 
+> > volatile cpm2_map_t *immap = cpm2_immr;
+> > immap->im_pci.pci_dmamr0 = 0x0042b00c;
+> > immap->im_pci.pci_dmamr1 = 0x0042b00c;
+> > immap->im_pci.pci_dmamr2 = 0x0042b00c;
+> > immap->im_pci.pci_dmamr3 = 0x0042b00c;
+> > 
+> > printk("DMA0 MR = 0x%08x\n",
+> > immap->im_pci.pci_dmamr0);
+> > printk("DMA1 MR (0x%08x) = 0x%08x\n",
+> > immap->im_pci.pci_dmamr1);
+> > printk("DMA2 MR (0x%08x) = 0x%08x\n",
+> > immap->im_pci.pci_dmamr2);
+> > printk("DMA3 MR (0x%08x) = 0x%08x\n",
+> > immap->im_pci.pci_dmamr3);
+> > 
+> > The results are following:
+> > DMA0 MR (0xf0010500) = 0x0040b000
+> > DMA1 MR (0xf0010580) = 0x0040b000
+> > DMA2 MR (0xf0010600) = 0x0040b000
+> > DMA3 MR (0xf0010680) = 0x0040b000
+> > 
+> > 
+> > 
+> > __________________________________________________
+> > Do You Yahoo!?
+> > Tired of spam?  Yahoo! Mail has the best spam
+> protection 
+> > around http://mail.yahoo.com 
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> >
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > 
 > 
-> My first reaction when I saw this thread was that you didn't allocate 
-> something in memory and overlapped something.  However, looking
-> at your original post again, I think your kernel is growing larger than
-> 4MB, which is the link address of the zImage.  This is based on the 
-> kernel is decompressed to address 0 in
-> ppc/boot/simple/misc-embedded.c, and a 50% compression factor 
-> and 2MB compressed image.
-> 
-> You can look at the file size of vmlinux to see if this is close.
-> 
-> milton
-
-Well - That's exactly the case. But looking into misc-embedded.c, I noticed
-that the load address for gunzip is fixed to 0x400000...shouldn't this
-be dependent on CONFIG_BOOT_LOAD_BOOL and CONFIG_BOOT_LOAD?
-
-I've changed the line to
 
 
-#ifdef CONFIG_BOOT_LOAD_BOOL
-	gunzip(0, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
-#else	
-	gunzip(0, 0x400000, zimage_start, &zimage_size);
-#endif
-
-
-and now it seems to work fine for big images (if CONFIG_BOOT_LOAD 
-is set large enough of course...) - which wasn't the case before.
-
-
-Best regards
--- 
-Benjamin Heyne
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
