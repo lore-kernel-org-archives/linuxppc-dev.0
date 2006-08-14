@@ -1,35 +1,22 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A34DA679FC
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 23:53:25 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7EDrJeC050164
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 13:53:20 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k7EDv7ZK155520
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 15:57:07 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7EDrJd9025824
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 15:53:19 +0200
-Message-ID: <44E07732.4010508@de.ibm.com>
-Date: Mon, 14 Aug 2006 15:14:26 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 2/6] ehea: pHYP interface
-References: <44D99F1A.4080905@de.ibm.com> <20060811211314.GF479@krispykreme>
-In-Reply-To: <20060811211314.GF479@krispykreme>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B1E4E67BBD
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 00:20:22 +1000 (EST)
+In-Reply-To: <000401c6bf9b$9be32ab0$99dfdfdf@bakuhatsu.net>
+References: <000401c6bf9b$9be32ab0$99dfdfdf@bakuhatsu.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E4BC5B1C-329D-48D7-A605-81931B83011D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: PowerPC paxtest results w/ gcc-4.1
+Date: Mon, 14 Aug 2006 09:20:09 -0500
+To: matt@genesi-usa.com
+Cc: 'Albert Cahalan' <acahalan@gmail.com>, linuxppc-dev@ozlabs.org,
+	'debian-powerpc' <debian-powerpc@lists.debian.org>,
+	'Paul Mackerras' <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,32 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
 
-Anton Blanchard wrote:
- > Hi,
- >
- >> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_phyp.c       1969-12-31 16:00:00.000000000 -0800
- >
- >> +u64 ehea_h_alloc_resource_eq(const u64 hcp_adapter_handle,
- > ...
- >> +u64 hipz_h_reregister_pmr(const u64 adapter_handle,
- > ...
- >> +static inline int hcp_galpas_ctor(struct h_galpas *galpas,
- >
- > Be nice to have some consistent names, hipz_ and hcp_ is kind of
- > cryptic.
+On Aug 14, 2006, at 7:17 AM, Matt Sealey wrote:
 
-We choose some more meaningful names and added comments to explain those.
+>
+>
+>> That looks like a 64-bit system, which doesn't have the
+>> granularity problem anyway. 32-bit powerpc seems to be
+>> decent. The heap shares with the executable itself, and of
+>> course there is the yucky 2 GB limit.
+>
+> One thing I'm curious about, has anyone EVER made a system which
+> actually used the 36-bit addressing on the G4?
 
- >
- >> +#define H_QP_CR_STATE_RESET     0x0000010000000000  /*  Reset */
- >
- > Probably want ULL on here and the other 64bit constants.
- >
+I believe Marvell was the only one that had chipsets that supported  
+the larger addressing.  Looks like the TSI 108 does as well.
 
-ULL added
+The 44x has some "hacks" to allow support for larger pages for IO  
+operations.  Having struct resource now be 64-bits and some of the  
+page mapping functions takes pfn's make it easier to support 36-bit  
+physical.
 
- > Anton
+> I always wondered why such support was never in Linux but then
+> again if nobody connected the other 4 address lines on any PowerPC
+> board ever made that ran Linux, there's nothing ever to test it
+> on anyway. It wouldn't be any more problematic (same way as the NX
+> bit..) than Intel PAE support, right?
 
-Jan-Bernd
+True, there is more infrastructure now to support it better.  I'm not  
+sure how well PAE is supported in stock kernels.  Go look for  
+discussions on the 4G/4G patches.
+
+- kumar
