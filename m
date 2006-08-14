@@ -1,33 +1,37 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8CAE567C82
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 02:32:19 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.7/8.13.7) with ESMTP id k7EGW1rS084356
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 16:32:01 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k7EGXrUl144290
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 17:33:53 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7EGW1CY031221
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 17:32:01 +0100
-Message-ID: <44E0A580.9020507@de.ibm.com>
-Date: Mon, 14 Aug 2006 18:32:00 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 857E067BED
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 02:59:53 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7EGxow8003292
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 12:59:50 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7EGxo5Z289800
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 12:59:50 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7EGxork018899
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 12:59:50 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/6] ehea: interface to network stack
+Date: Mon, 14 Aug 2006 18:59:47 +0200
+References: <44D99EFC.3000105@de.ibm.com> <20060814143842.GM479@krispykreme>
+	<44E09A19.9050205@de.ibm.com>
+In-Reply-To: <44E09A19.9050205@de.ibm.com>
 MIME-Version: 1.0
-To: netdev <netdev@vger.kernel.org>
-Subject: [PATCH 7/7] ehea: Makefile & Kconfig
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608141859.48868.arnd.bergmann@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+	Christoph Raisch <raisch@de.ibm.com>, Anton Blanchard <anton@samba.org>,
+	=?iso-8859-1?q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,38 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+On Monday 14 August 2006 17:43, Jan-Bernd Themann wrote:
+> as our queue size is always a power of 2, we simply use:
+> i++;
+> i &= (ringbufferlength - 1)
+> 
+> So we can get along without the if.
+> 
 
+The recommended (by Linus) way for dealing with ring buffers
+like that is to always read the counter through an accessor
+and don't care about the overflow when updating it.
 
-  drivers/net/Kconfig  |    6 ++++++
-  drivers/net/Makefile |    1 +
-  2 files changed, 7 insertions(+)
+You can write small access functions for that:
 
+struct my_struct {
+	...
+	unsigned rbuf_index;
+	unsigned rbuf_mask;
+	...
+};
 
+static inline unsigned int my_index(struct my_struct *p)
+{
+	return p->rb_index & p->rb_mask;
+}
 
-diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Kconfig patched_kernel/drivers/net/Kconfig
---- linux-2.6.18-rc4/drivers/net/Kconfig	2006-08-06 11:20:11.000000000 -0700
-+++ patched_kernel/drivers/net/Kconfig	2006-08-08 03:00:49.526421944 -0700
-@@ -2277,6 +2277,12 @@ config CHELSIO_T1
-            To compile this driver as a module, choose M here: the module
-            will be called cxgb.
+static inline unsigned int my_index_next(struct my_struct *p)
+{
+	return (++p->rb_index) & p->rb_mask;
+}
 
-+config EHEA
-+        tristate "eHEA Ethernet support"
-+        depends on IBMEBUS
-+        ---help---
-+          This driver supports the IBM pSeries ethernet adapter
-+
-  config IXGB
-  	tristate "Intel(R) PRO/10GbE support"
-  	depends on PCI
-diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Makefile patched_kernel/drivers/net/Makefile
---- linux-2.6.18-rc4/drivers/net/Makefile	2006-08-06 11:20:11.000000000 -0700
-+++ patched_kernel/drivers/net/Makefile	2006-08-08 03:00:30.061451584 -0700
-@@ -10,6 +10,7 @@ obj-$(CONFIG_E1000) += e1000/
-  obj-$(CONFIG_IBM_EMAC) += ibm_emac/
-  obj-$(CONFIG_IXGB) += ixgb/
-  obj-$(CONFIG_CHELSIO_T1) += chelsio/
-+obj-$(CONFIG_EHEA) += ehea/
-  obj-$(CONFIG_BONDING) += bonding/
-  obj-$(CONFIG_GIANFAR) += gianfar_driver.o
+	Arnd <><
