@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17631.62819.24167.555967@cargo.ozlabs.ibm.com>
-Date: Mon, 14 Aug 2006 14:00:35 +1000
+Message-ID: <17631.62940.63888.908937@cargo.ozlabs.ibm.com>
+Date: Mon, 14 Aug 2006 14:02:36 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: "Albert Cahalan" <acahalan@gmail.com>
 Subject: Re: [PATCH] no-execute -- please test
@@ -20,14 +20,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Albert Cahalan writes:
 
-> This kernel patch implements no-execute protection (like x86 "NX bit")
-> for the Mac G2, Mac G3, Mac G4, and other systems running 32-bit
-> PowerPC processors in the 6xx, 7xx, and 7xxx families.
+> If you want heap protection, change VM_DATA_DEFAULT_FLAGS32
+> in include/asm-powerpc/page.h to be like VM_STACK_DEFAULT_FLAGS.
+> I'd love to hear if anybody can get X to start with this change.
 
-I'd be interested in benchmark comparisons with/without this patch, if
-anyone cares to run lmbench, kernbench etc. with and without...  If
-the performance impact is minimal I'll be happy to apply it.  If the
-impact is noticeable then it might need to be selectable with a config
-option.
+In general I would expect dynamically-linked programs to fail unless
+you compile everything with gcc -msecure-plt.
 
 Paul.
