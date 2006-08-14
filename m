@@ -1,21 +1,17 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5C1367B32
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:17:28 +1000 (EST)
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "'Albert Cahalan'" <acahalan@gmail.com>,
-	"'Paul Mackerras'" <paulus@samba.org>
-Subject: RE: PowerPC paxtest results w/ gcc-4.1
-Date: Mon, 14 Aug 2006 14:17:21 +0200
-Message-ID: <000401c6bf9b$9be32ab0$99dfdfdf@bakuhatsu.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <787b0d920608122111p79f29d74r600382658599cd63@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, 'debian-powerpc' <debian-powerpc@lists.debian.org>
-Reply-To: matt@genesi-usa.com
+Return-Path: <SRS0+39adbeeb351d55a7a44b+1086+infradead.org+dwmw2@canuck.srs.infradead.org>
+Subject: Re: [RFC] Adding MTD to device tree
+From: David Woodhouse <dwmw2@infradead.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <9FC79123-7439-4800-B5B5-752AB81A6E4F@kernel.crashing.org>
+References: <311553550076b8b45674.846930886.miltonm@bga.com>
+	<44DE1357.5010703@ru.mvista.com>
+	<9FC79123-7439-4800-B5B5-752AB81A6E4F@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 14 Aug 2006 13:39:26 +0100
+Message-Id: <1155559166.3321.138.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: arnd@arndb.de, Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +21,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2006-08-12 at 20:48 +0200, Segher Boessenkool wrote:
+> >     "Memory type devices" are specific to Linux? Doubt it. :-)
+> 
+> The name "mtd" is. 
 
-
-> That looks like a 64-bit system, which doesn't have the 
-> granularity problem anyway. 32-bit powerpc seems to be 
-> decent. The heap shares with the executable itself, and of 
-> course there is the yucky 2 GB limit.
-
-One thing I'm curious about, has anyone EVER made a system which
-actually used the 36-bit addressing on the G4?
-
-I always wondered why such support was never in Linux but then
-again if nobody connected the other 4 address lines on any PowerPC
-board ever made that ran Linux, there's nothing ever to test it
-on anyway. It wouldn't be any more problematic (same way as the NX
-bit..) than Intel PAE support, right?
+Actually it came from PCMCIA.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+dwmw2
