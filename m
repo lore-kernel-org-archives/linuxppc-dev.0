@@ -1,16 +1,15 @@
-Return-Path: <jimmyzhmliu@yahoo.com>
-Received: from web53101.mail.yahoo.com (web53101.mail.yahoo.com
-	[206.190.49.51]) by ozlabs.org (Postfix) with SMTP id 649BB67BBE
+Return-Path: <dimensions_infinite@yahoo.com>
+Received: from web33213.mail.mud.yahoo.com (web33213.mail.mud.yahoo.com
+	[209.191.69.161]) by ozlabs.org (Postfix) with SMTP id 9AAB467BC4
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Aug 2006 22:38:33 +1000 (EST)
-Message-ID: <20060814123832.30219.qmail@web53101.mail.yahoo.com>
-Date: Mon, 14 Aug 2006 05:38:32 -0700 (PDT)
-From: jimmy liu <jimmyzhmliu@yahoo.com>
-Subject: RE: PCI DMA_MR Problem
-To: Liu Dave-r63238 <DaveLiu@freescale.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <995B09A8299C2C44B59866F6391D26350CD593@zch01exm21.fsl.freescale.net>
+	Mon, 14 Aug 2006 21:42:07 +1000 (EST)
+Message-ID: <20060814113526.71320.qmail@web33213.mail.mud.yahoo.com>
+Date: Mon, 14 Aug 2006 04:35:26 -0700 (PDT)
+From: pranav choudhary <dimensions_infinite@yahoo.com>
+Subject: U-boot and 2.6 kernel
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/alternative; boundary="0-610614270-1155555326=:70988"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,72 +20,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I see.
+--0-610614270-1155555326=:70988
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Thanks.
+Hi,
+I am using an old version of u-boot and 2.6.13 kernel on IXDP425 hardware. The booting process stalls. After a little debugging i found that the booting stalls sfter call to jump() [__FUNCTION__ = CON_Run_Firmware, __FILE__ == conleaf.c. It seems that the correct image is not copied to KERNEL_RUN_ADDRESS.
+I found another thread that talked of old u-boot and 2.6 kernels but i could not make out anything useful from it. Can someone please give me some pointers on where to start debugging...
 
-Jimmy
-
---- Liu Dave-r63238 <DaveLiu@freescale.com> wrote:
-
-> The memory map configuration registers is
-> little-endain. Be careful this
-> Please byte swap this
-> -Dave 
-> > 
-> > I got a problem when I set the pci dmamr for
-> MPC8250 for DMA 
-> > PCI transfering data on linux kernel 2.6.17.
-> > When I set the values for the pci_dmamr registers,
-> then print 
-> > the register values back, some bits can not be
-> set. Did 
-> > anybody know what are the problem, or I have to
-> set other stuff.
-> > 
-> > Thanks.
-> > 
-> > The code like this:
-> > 
-> > volatile cpm2_map_t *immap = cpm2_immr;
-> > immap->im_pci.pci_dmamr0 = 0x0042b00c;
-> > immap->im_pci.pci_dmamr1 = 0x0042b00c;
-> > immap->im_pci.pci_dmamr2 = 0x0042b00c;
-> > immap->im_pci.pci_dmamr3 = 0x0042b00c;
-> > 
-> > printk("DMA0 MR = 0x%08x\n",
-> > immap->im_pci.pci_dmamr0);
-> > printk("DMA1 MR (0x%08x) = 0x%08x\n",
-> > immap->im_pci.pci_dmamr1);
-> > printk("DMA2 MR (0x%08x) = 0x%08x\n",
-> > immap->im_pci.pci_dmamr2);
-> > printk("DMA3 MR (0x%08x) = 0x%08x\n",
-> > immap->im_pci.pci_dmamr3);
-> > 
-> > The results are following:
-> > DMA0 MR (0xf0010500) = 0x0040b000
-> > DMA1 MR (0xf0010580) = 0x0040b000
-> > DMA2 MR (0xf0010600) = 0x0040b000
-> > DMA3 MR (0xf0010680) = 0x0040b000
-> > 
-> > 
-> > 
-> > __________________________________________________
-> > Do You Yahoo!?
-> > Tired of spam?  Yahoo! Mail has the best spam
-> protection 
-> > around http://mail.yahoo.com 
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> >
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > 
-> 
+---
+dimensions_infinite@yahoo.com
 
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Pranav Choudhary
+Software Engineer
+Net Devices India Pvt. Ltd
+Bangalore
+
+ 		
+---------------------------------
+How low will we go? Check out Yahoo! Messenger’s low  PC-to-Phone call rates.
+--0-610614270-1155555326=:70988
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hi,<br>I am using an old version of u-boot and 2.6.13 kernel on IXDP425 hardware. The booting process stalls. After a little debugging i found that the booting stalls sfter call to jump() [__FUNCTION__ = CON_Run_Firmware, __FILE__ == conleaf.c. It seems that the correct image is not copied to KERNEL_RUN_ADDRESS.<br>I found another thread that talked of old u-boot and 2.6 kernels but i could not make out anything useful from it. Can someone please give me some pointers on where to start debugging...<br><br>---<br>dimensions_infinite@yahoo.com<br><BR><BR><span style="color: rgb(255, 0, 0);">Pranav Choudhary<br><span style="color: rgb(0, 96, 191);"><font size="2">Software Engineer</font></span><br><span style="color: rgb(0, 0, 191);"><font size="2">Net Devices India Pvt. Ltd<br>Bangalore<br></font></span></span><p>&#32;
+		<hr size=1>How low will we go? Check out Yahoo! Messenger’s low <a href="http://us.rd.yahoo.com/mail_us/taglines/postman8/*http://us.rd.yahoo.com/evt=39663/*http://voice.yahoo.com"> PC-to-Phone call rates.
+--0-610614270-1155555326=:70988--
