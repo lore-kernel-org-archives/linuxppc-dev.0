@@ -1,36 +1,23 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 219E767B5A
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 16:57:57 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7E6vq56121760
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 06:57:52 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k7E71eEn140916
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 09:01:40 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7E6vqND008460
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 08:57:52 +0200
-Message-ID: <44E015D5.8040301@de.ibm.com>
-Date: Mon, 14 Aug 2006 08:19:01 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F0C4D67BCF
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 18:46:41 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] no-execute -- please test
+References: <787b0d920608132020q4ad2b5c2y49e25ca7ecc33536@mail.gmail.com>
+	<17631.62940.63888.908937@cargo.ozlabs.ibm.com>
+Date: Mon, 14 Aug 2006 10:46:32 +0200
+In-Reply-To: <17631.62940.63888.908937@cargo.ozlabs.ibm.com> (Paul Mackerras's
+	message of "Mon, 14 Aug 2006 14:02:36 +1000")
+Message-ID: <jehd0fso0n.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 4/6] ehea: header files
-References: <44D99F56.7010201@de.ibm.com> <20060811214020.GG479@krispykreme>
-	<1155525611.7807.4.camel@localhost.localdomain>
-In-Reply-To: <1155525611.7807.4.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Anton Blanchard <anton@samba.org>, Marcus Eder <meder@de.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Albert Cahalan <acahalan@gmail.com>, linuxppc-dev@ozlabs.org,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,24 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Sat, 2006-08-12 at 07:40 +1000, Anton Blanchard wrote:
->> Hi,
->>
->>>  drivers/net/ehea/ehea.h    |  452 
->>> +#define EHEA_DRIVER_NAME	"IBM eHEA"
->> You are using this for ethtool get_drvinfo. Im not sure if it should
->> match the module name, and I worry about having a space in the name. Any
->> ideas on what we should be doing here?
-> 
-> I believe it must match the module name. It also might be nice to call
-> it "DRV_NAME" like most other network drivers do.
-> 
-> cheers
-> 
+Paul Mackerras <paulus@samba.org> writes:
 
+> Albert Cahalan writes:
+>
+>> If you want heap protection, change VM_DATA_DEFAULT_FLAGS32
+>> in include/asm-powerpc/page.h to be like VM_STACK_DEFAULT_FLAGS.
+>> I'd love to hear if anybody can get X to start with this change.
+>
+> In general I would expect dynamically-linked programs to fail unless
+> you compile everything with gcc -msecure-plt.
 
-We rename EHEA_DRIVER_NAME to DRV_NAME (and EHEA_DRIVER_VERSION
-to DRV_VERSION) and assign "ehea" to it
+X (before X.org 7) does it's own module loading that cannot cope with a
+non-executable heap.  X.org 7, on the other hand, uses dlopen now and
+should work fine.
 
-Jan-Bernd
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
