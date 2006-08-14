@@ -1,20 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/6] ehea: header files
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20060811214020.GG479@krispykreme>
-References: <44D99F56.7010201@de.ibm.com> <20060811214020.GG479@krispykreme>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-3A6egLWVpu6081XYtX6J"
-Date: Mon, 14 Aug 2006 13:20:11 +1000
-Message-Id: <1155525611.7807.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <acahalan@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
+	by ozlabs.org (Postfix) with ESMTP id 99CF067C4D
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 13:20:34 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id k27so2430728nfc
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Aug 2006 20:20:32 -0700 (PDT)
+Message-ID: <787b0d920608132020q4ad2b5c2y49e25ca7ecc33536@mail.gmail.com>
+Date: Sun, 13 Aug 2006 23:20:32 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: linuxppc-dev@ozlabs.org, debian-powerpc <debian-powerpc@lists.debian.org>
+Subject: [PATCH] no-execute -- please test
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +20,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This kernel patch implements no-execute protection (like x86 "NX bit")
+for the Mac G2, Mac G3, Mac G4, and other systems running 32-bit
+PowerPC processors in the 6xx, 7xx, and 7xxx families.
 
---=-3A6egLWVpu6081XYtX6J
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+As given, it usually protects from executing code on the stack.
+This has to do with the typical buffer overflow exploit.
 
-On Sat, 2006-08-12 at 07:40 +1000, Anton Blanchard wrote:
-> Hi,
->=20
-> >  drivers/net/ehea/ehea.h    |  452=20
->=20
-> > +#define EHEA_DRIVER_NAME	"IBM eHEA"
->=20
-> You are using this for ethtool get_drvinfo. Im not sure if it should
-> match the module name, and I worry about having a space in the name. Any
-> ideas on what we should be doing here?
+I'm running this now on a Mac G4, including X, with no ill effect.
 
-I believe it must match the module name. It also might be nice to call
-it "DRV_NAME" like most other network drivers do.
+If you want to see messages when an app violates this, change
+the "#if 0" to "#if 1". I get no messages except when I run
+paxtest to verify that the protection works.
 
-cheers
+If you want heap protection, change VM_DATA_DEFAULT_FLAGS32
+in include/asm-powerpc/page.h to be like VM_STACK_DEFAULT_FLAGS.
+I'd love to hear if anybody can get X to start with this change.
+For me (Xorg w/ ATI) a module load fails. Probably because of
+poor address space layout, paxtest shows no improvement with this.
+Still, I'd love to hear if X (perhaps framebuffer and no GL) works
+OK with this extra change.
 
---=20
-Michael Ellerman
-IBM OzLabs
+Apply like this:
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+cd directory-with-kernel-source
+patch -p1 -s -E -l < file-containing-this-email
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+--- linux-2.6.17-rc5/arch/powerpc/kernel/head_32.S      2006-05-24
+21:50:17.000000000 -0400
++++ linux-17rc5-secure/arch/powerpc/kernel/head_32.S    2006-08-13
+10:48:38.000000000 -0400
+@@ -1182,7 +1182,7 @@
+ _GLOBAL(set_context)
+        mulli   r3,r3,897       /* multiply context by skew factor */
+        rlwinm  r3,r3,4,8,27    /* VSID = (context & 0xfffff) << 4 */
+-       addis   r3,r3,0x6000    /* Set Ks, Ku bits */
++       addis   r3,r3,0x7000    /* Set Ks, Ku, N bits */
+        li      r0,NUM_USER_SEGMENTS
+        mtctr   r0
 
---=-3A6egLWVpu6081XYtX6J
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--- linux-2.6.17-rc5/arch/powerpc/mm/fault.c    2006-05-24
+21:50:17.000000000 -0400
++++ linux-17rc5-secure/arch/powerpc/mm/fault.c  2006-08-13
+19:17:22.000000000 -0400
+@@ -134,8 +134,8 @@
+         * bits we are interested in.  But there are some bits which
+         * indicate errors in DSISR but can validly be set in SRR1.
+         */
+-       if (trap == 0x400)
+-               error_code &= 0x48200000;
++       if (is_exec)
++               error_code &= 0x58200000;
+        else
+                is_write = error_code & DSISR_ISSTORE;
+ #else
+@@ -242,7 +242,7 @@
+ good_area:
+        code = SEGV_ACCERR;
+ #if defined(CONFIG_6xx)
+-       if (error_code & 0x95700000)
++       if (error_code & 0x85700000)
+                /* an error such as lwarx to I/O controller space,
+                   address matching DABR, eciwx, etc. */
+                goto bad_area;
+@@ -258,12 +258,24 @@
+ #endif /* CONFIG_8xx */
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
+        if (is_exec) {
++               if (!(vma->vm_flags & VM_EXEC)) {
++#if 0
++                       static __typeof__(jiffies) oldjif;
++                       static int count;
++                       if(count++ < 5)
++                       printk(KERN_CRIT "fuckup @ %08lx with trap
+0x%x code %08lx by %s\n",
++                               address, trap, error_code, current->comm);
++                       if(jiffies/(HZ*15) != oldjif/(HZ*15)) {
++                               oldjif = jiffies;
++                               count = 0;
++                       }
++#endif
++                       goto bad_area;
++               }
+ #ifdef CONFIG_PPC64
+                /* protection fault */
+                if (error_code & DSISR_PROTFAULT)
+                        goto bad_area;
+-               if (!(vma->vm_flags & VM_EXEC))
+-                       goto bad_area;
+ #endif
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+                pte_t *ptep;
+@@ -291,6 +303,27 @@
+                        pte_unmap_unlock(ptep, ptl);
+                }
+ #endif
++#if !defined(CONFIG_4xx) && !defined(CONFIG_BOOKE) && !defined(CONFIG_PPC64)
++               if (!(error_code & 0x10000000))
++                       goto survive;
++               /* It was an ISI exception with SRR1 bit 3 set.
++                * We have no-execute bits in the 256 MiB segments.
++                * We sometimes take faults to turn the bits on.
++                * Faults happen when the user executes from guarded mem,
++                * no-execute segment, or (extinct) direct-store segment.
++                * The segment-related faults happen first. */
++               unsigned segreg;
++               __asm__ __volatile__("mfsrin %0,%1":"=r"(segreg):"r"(address));
++               /* if current segment is no-execute but not direct-store */
++               if (segreg>>28==7) {
++                       /* clear the N bit to make it executable */
++                       segreg &= 0x6fffffff;
++                       __asm__ __volatile__("mtsrin
+%0,%1"::"r"(segreg),"r"(address));
++                       /* TODO: as this one goes executable, make
+other segments not */
++                       up_read(&mm->mmap_sem);
++                       return 0;
++               }
++#endif
+        /* a write */
+        } else if (is_write) {
+                if (!(vma->vm_flags & VM_WRITE))
+@@ -300,7 +333,7 @@
+                /* protection fault */
+                if (error_code & 0x08000000)
+                        goto bad_area;
+-               if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
++               if (!(vma->vm_flags & (VM_READ | VM_EXEC))) /* VM_EXEC
+wrong for ppc32? */
+                        goto bad_area;
+        }
 
-iD8DBQBE3+vrdSjSd0sB4dIRAleSAJ4pjJgmkcdfTSPqSNorBim1Yt/jOgCeJRI+
-ScHIOnwZsiu2/nB/yqIRH28=
-=osyf
------END PGP SIGNATURE-----
+--- linux-2.6.17-rc5/include/asm-powerpc/page.h 2006-05-24
+21:50:17.000000000 -0400
++++ linux-17rc5-secure/include/asm-powerpc/page.h       2006-08-13
+11:58:25.000000000 -0400
+@@ -90,6 +90,9 @@
+ #define VM_DATA_DEFAULT_FLAGS64        (VM_READ | VM_WRITE | \
+                                 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 
---=-3A6egLWVpu6081XYtX6J--
++#define VM_STACK_DEFAULT_FLAGS (VM_READ | VM_WRITE | \
++                                VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
++
+ #ifdef __powerpc64__
+ #include <asm/page_64.h>
+ #else
