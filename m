@@ -1,19 +1,19 @@
 Return-Path: <acahalan@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id 2E67067BE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 14:33:32 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id k27so2446472nfc
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Aug 2006 21:33:31 -0700 (PDT)
-Message-ID: <787b0d920608132133g6e052fah4df23fcf81a71e6d@mail.gmail.com>
-Date: Mon, 14 Aug 2006 00:33:30 -0400
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
+	by ozlabs.org (Postfix) with ESMTP id 7756D67BE1
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 14:41:08 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id k27so2448117nfc
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Aug 2006 21:41:06 -0700 (PDT)
+Message-ID: <787b0d920608132141v729665ayac50674d5ad147f4@mail.gmail.com>
+Date: Mon, 14 Aug 2006 00:41:06 -0400
 From: "Albert Cahalan" <acahalan@gmail.com>
 To: "Paul Mackerras" <paulus@samba.org>
 Subject: Re: [PATCH] no-execute -- please test
-In-Reply-To: <17631.62940.63888.908937@cargo.ozlabs.ibm.com>
+In-Reply-To: <17631.62819.24167.555967@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <787b0d920608132020q4ad2b5c2y49e25ca7ecc33536@mail.gmail.com>
-	<17631.62940.63888.908937@cargo.ozlabs.ibm.com>
+	<17631.62819.24167.555967@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,33 +27,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On 8/14/06, Paul Mackerras <paulus@samba.org> wrote:
 > Albert Cahalan writes:
 >
-> > If you want heap protection, change VM_DATA_DEFAULT_FLAGS32
-> > in include/asm-powerpc/page.h to be like VM_STACK_DEFAULT_FLAGS.
-> > I'd love to hear if anybody can get X to start with this change.
+> > This kernel patch implements no-execute protection (like x86 "NX bit")
+> > for the Mac G2, Mac G3, Mac G4, and other systems running 32-bit
+> > PowerPC processors in the 6xx, 7xx, and 7xxx families.
 >
-> In general I would expect dynamically-linked programs to fail unless
-> you compile everything with gcc -msecure-plt.
+> I'd be interested in benchmark comparisons with/without this patch, if
+> anyone cares to run lmbench, kernbench etc. with and without...  If
+> the performance impact is minimal I'll be happy to apply it.  If the
+> impact is noticeable then it might need to be selectable with a config
+> option.
 
-I wouldn't, unless they are also buggy. The PLT should be
-marked for full rwx permissions. Enforcing W^X is another
-matter entirely of course.
+There are a couple optimizations that can be done if needed.
 
-For me, X is the only observed failure with that extra change.
-I successfully got to a console, did a bit of exploring at the
-command prompt, watched X go to the stiple background
-before shutting down in an orderly fashion, and rebooted.
-Perhaps do_brk could get a third argument to specify the
-caller, so that VM_EXEC could be cleared for some callers.
-Then again, pretending to be a Vista developer, I could just
-have the kernel recognize the buggy X server.
+The first is to avoid taking the initial fault on the segment
+which contains the instruction pointer.
 
-Other notes:
-
-For maximum benefit, shared objects should be built such
-that the executable part can be mapped without any
-relation to the other parts. The next best thing would be
-to have the executable parts start 256 MiB above where
-the other parts start. This allows randomization to be
-added without causing loss of no-execute capability.
-
-We need a new gcc default: -msecure-plt -pie -fPIE
+The second is to avoid cache or TLB invalidates or flushes
+in certain circumstances. OpenBSD developers report that
+this type of optimization is of great benefit on sparc and ppc.
+It's an optimization than is only valid when no-execute is
+in use, so the performance effects go both ways.
