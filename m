@@ -1,20 +1,36 @@
-Return-Path: <acahalan@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
-	by ozlabs.org (Postfix) with ESMTP id 7756D67BE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 14:41:08 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id k27so2448117nfc
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Aug 2006 21:41:06 -0700 (PDT)
-Message-ID: <787b0d920608132141v729665ayac50674d5ad147f4@mail.gmail.com>
-Date: Mon, 14 Aug 2006 00:41:06 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [PATCH] no-execute -- please test
-In-Reply-To: <17631.62819.24167.555967@cargo.ozlabs.ibm.com>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 219E767B5A
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 16:57:57 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7E6vq56121760
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 06:57:52 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k7E71eEn140916
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 09:01:40 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7E6vqND008460
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 08:57:52 +0200
+Message-ID: <44E015D5.8040301@de.ibm.com>
+Date: Mon, 14 Aug 2006 08:19:01 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
 MIME-Version: 1.0
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 4/6] ehea: header files
+References: <44D99F56.7010201@de.ibm.com> <20060811214020.GG479@krispykreme>
+	<1155525611.7807.4.camel@localhost.localdomain>
+In-Reply-To: <1155525611.7807.4.camel@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <787b0d920608132020q4ad2b5c2y49e25ca7ecc33536@mail.gmail.com>
-	<17631.62819.24167.555967@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc <debian-powerpc@lists.debian.org>
+Cc: Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Anton Blanchard <anton@samba.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 8/14/06, Paul Mackerras <paulus@samba.org> wrote:
-> Albert Cahalan writes:
->
-> > This kernel patch implements no-execute protection (like x86 "NX bit")
-> > for the Mac G2, Mac G3, Mac G4, and other systems running 32-bit
-> > PowerPC processors in the 6xx, 7xx, and 7xxx families.
->
-> I'd be interested in benchmark comparisons with/without this patch, if
-> anyone cares to run lmbench, kernbench etc. with and without...  If
-> the performance impact is minimal I'll be happy to apply it.  If the
-> impact is noticeable then it might need to be selectable with a config
-> option.
+Michael Ellerman wrote:
+> On Sat, 2006-08-12 at 07:40 +1000, Anton Blanchard wrote:
+>> Hi,
+>>
+>>>  drivers/net/ehea/ehea.h    |  452 
+>>> +#define EHEA_DRIVER_NAME	"IBM eHEA"
+>> You are using this for ethtool get_drvinfo. Im not sure if it should
+>> match the module name, and I worry about having a space in the name. Any
+>> ideas on what we should be doing here?
+> 
+> I believe it must match the module name. It also might be nice to call
+> it "DRV_NAME" like most other network drivers do.
+> 
+> cheers
+> 
 
-There are a couple optimizations that can be done if needed.
 
-The first is to avoid taking the initial fault on the segment
-which contains the instruction pointer.
+We rename EHEA_DRIVER_NAME to DRV_NAME (and EHEA_DRIVER_VERSION
+to DRV_VERSION) and assign "ehea" to it
 
-The second is to avoid cache or TLB invalidates or flushes
-in certain circumstances. OpenBSD developers report that
-this type of optimization is of great benefit on sparc and ppc.
-It's an optimization than is only valid when no-execute is
-in use, so the performance effects go both ways.
+Jan-Bernd
