@@ -1,16 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from mail8-fra-R.bigfish.com (mail-fra.bigfish.com [62.209.45.166])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 026B3679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 09:35:19 +1000 (EST)
+Message-ID: <44E108B0.4070207@am.sony.com>
+Date: Mon, 14 Aug 2006 16:35:12 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17633.2179.582261.162544@cargo.ozlabs.ibm.com>
-Date: Tue, 15 Aug 2006 09:34:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Albert Cahalan" <acahalan@gmail.com>
-Subject: Re: [PATCH] no-execute -- please test
-In-Reply-To: <787b0d920608132141v729665ayac50674d5ad147f4@mail.gmail.com>
-References: <787b0d920608132020q4ad2b5c2y49e25ca7ecc33536@mail.gmail.com>
-	<17631.62819.24167.555967@cargo.ozlabs.ibm.com>
-	<787b0d920608132141v729665ayac50674d5ad147f4@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc <debian-powerpc@lists.debian.org>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Subject: Re: [PATCH] powerpc: Instrument Hypervisor Calls
+References: <20060814232144.GG3213@w-mikek2.ibm.com>
+In-Reply-To: <20060814232144.GG3213@w-mikek2.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Albert Cahalan writes:
+Mike Kravetz wrote:
 
-> The first is to avoid taking the initial fault on the segment
-> which contains the instruction pointer.
+> +config HCALL_STATS
+> +	bool "Hypervisor call instrumentation"
+> +	depends on PPC_PSERIES && DEBUG_FS
+> +	help
+> +	  Adds code to keep track of the number of hypervisor calls made and
+> +	  the amount of time spent in hypervisor calls: both wall time (based
+> +	  on time base) and cpu time (based on PURR).  A directory named
+> +	  hcall_inst is added at the root of the debugfs filesystem.
 
-Good idea.
+Could we keep this more generic and not mention platform specific
+things like PURR?
 
-> The second is to avoid cache or TLB invalidates or flushes
-> in certain circumstances. OpenBSD developers report that
-> this type of optimization is of great benefit on sparc and ppc.
-> It's an optimization than is only valid when no-execute is
-> in use, so the performance effects go both ways.
-
-We have a bit per page that says if the page is icache dirty or not.
-On machines with no-execute support, we already avoid flushing the
-page until some process first tries to execute from it.  If we
-extended that to this scheme, when we made a segment executable, we
-would have to find and flush all icache-dirty pages in the segment (up
-to 65536 pages).  We wouldn't want to do that every time we made a
-segment executable - it would need to be optimized (e.g. keep a count
-per segment of icache-dirty pages in the segment).
-
-Paul.
+-Geoff
