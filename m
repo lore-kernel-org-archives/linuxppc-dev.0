@@ -1,21 +1,11 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B357167B69
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 08:07:31 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k7FM7UZb005042
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 15:07:30 -0700 (MST)
-Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k7FM7TB8007240
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 17:07:30 -0500 (CDT)
-Subject: Outstanding Patches Ping
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1155679316.10054.129.camel@cashmere.sps.mot.com>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 15 Aug 2006 15:15:21 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: IDE problems anyone?
+Message-ID: <20060815221521.GB19038@mag.az.mvista.com>
 Mime-Version: 1.0
-Date: Tue, 15 Aug 2006 17:01:57 -0500
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +15,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+I'm having ide problems on the sandpoint (lost interrupt).
+At least one other person is/was having a problem too
+<http://lkml.org/lkml/2006/8/1/343>.
 
-Where do we stand on these two outstanding patches
-that I have sent to the list?
+Is anyone else having a similar problem?
 
-    - 08/03 Convert to mac-address for ethernet MAC data
-    - 08/09 Offer PCI as a CONFIG choice for PPC_86xx
+Maybe I have something horked wrt to the new irq stuff, I'm not sure.
 
-I think all the outstanding issues and commentary
-on them was resolved.
-
-Thanks,
-jdl
+Mark
