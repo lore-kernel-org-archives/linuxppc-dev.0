@@ -1,33 +1,21 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B19B4679A6
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 01:26:29 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7FFQJki024546
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 11:26:19 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7FFQJsG285340
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 11:26:19 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7FFQIdf031435
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 11:26:19 -0400
-Subject: 2.6.18-rc3->rc4 hugetlbfs regression
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain
-Date: Tue, 15 Aug 2006 08:22:24 -0700
-Message-Id: <1155655344.12700.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Suzuki Kp <suzukikp@in.ibm.com>,
-	PPC External List <linuxppc-dev@ozlabs.org>,
-	Yao Fei Zhu <zhuyaof@cn.ibm.com>, lge@us.ibm.com,
-	Nishanth Aravamudan <nacc@us.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 4CAC467B59
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 05:10:22 +1000 (EST)
+Date: Tue, 15 Aug 2006 14:05:24 -0500
+To: James K Lewis <jklewis@us.ibm.com>
+Subject: Re: [PATCH 4/4]: powerpc/cell spidernet ethtool -i version number
+	info.
+Message-ID: <20060815190524.GW6603@pb15.lixom.net>
+References: <20060811180013.GB6550@pb15.lixom.net>
+	<OF934FE4E3.EEC44FDD-ON872571C7.00668651-862571C7.00677A44@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF934FE4E3.EEC44FDD-ON872571C7.00668651-862571C7.00677A44@us.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org, Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,125 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Aug 11, 2006 at 01:50:19PM -0500, James K Lewis wrote:
+>  Hi Olof,
+> 
+>   There are several reasons why an Ethernet driver should have an up to 
+> date version number:
+> 
+> 1. Customers like to see they are really getting a new version.
+> 
+> 2. It makes it easier for support personnel (me in this case) to see which 
+> driver they have. Sure, sometimes I can talk them thru doing a "sum" on 
+> the .ko and all that, but why not just use the version number? That's what 
+> it is for. And no, you can't just assume they have the version that came 
+> with the kernel they are running. It doesn't work that way.
+> 
+> 3. It makes bug reporting easier. 
+> 
+> 4. I have already run into too many problems and wasted too much time 
+> working with drivers when the number was NOT getting updated. 
 
-kernel BUG in cache_free_debugcheck at mm/slab.c:2748!
+Thanks for the info, Jim.
 
-This is from a ppc64 machine running 2.6.18-rc4.  It didn't apparently
-happen with 2.6.18-rc3, but I don't see anything particularly suspect in
-the changelogs, so it might be a wee bit more intermittent than it first
-appeared.
-
-You can get libhugetlbfs from here: http://libhugetlbfs.sourceforge.net/
-
-Steps to reproduce:
-1. boot kernel 2.6.18-rc4 with "hugepages=20"
-2. mount none -t hugetlbfs /mnt/hugetlbfs
-3. run libhugetlbfs, "make check" trigger xmon.
-
-apple-lp1:/kernel/libhugetlbfs.git # make check
-zero_filesize_segment (32):     obj32/zero_filesize_segment:
-obj32/zero_filesize_segment: cannot execute binary file
-zero_filesize_segment (64):     obj64/zero_filesize_segment:
-obj64/zero_filesize_segment: cannot execute binary file
-test_root (32): PASS
-test_root (64): PASS
-meminfo_nohuge (32):    PASS
-meminfo_nohuge (64):    PASS
-gethugepagesize (32):   PASS
-gethugepagesize (64):   PASS
-empty_mounts (32):      PASS
-empty_mounts (64):      PASS
-find_path (32): PASS
-find_path (64): PASS
-unlinked_fd (32):       PASS
-unlinked_fd (64):       PASS
-readback (32):  PASS
+Sounds like it's most useful if a customer (or distro) takes the driver
+out of the tree and run it with a different kernel, i.e. when kernel
+and driver versions no longer go together. Makes sense.
 
 
-Additional info:
-0:mon> e
-cpu 0x0: Vector: 700 (Program Check) at [c0000001cf6e3530]
-    pc: c0000000000c7458: .cache_free_debugcheck+0x1d0/0x2b0
-    lr: c0000000000c7410: .cache_free_debugcheck+0x188/0x2b0
-    sp: c0000001cf6e37b0
-   msr: 8000000000021032
-  current = 0xc0000001ccaf94e0
-  paca    = 0xc000000000622300
-    pid   = 6714, comm = readback
-kernel BUG in cache_free_debugcheck at mm/slab.c:2748!
-
-0:mon> t
-[c0000001cf6e37b0] c0000000000c73cc .cache_free_debugcheck+0x144/0x2b0 (unreliable)
-[c0000001cf6e3860] c0000000000c7a04 .kmem_cache_free+0xd8/0x164
-[c0000001cf6e3900] c00000000002f630 .pgtable_free_tlb+0xd4/0x144
-[c0000001cf6e39a0] c000000000032648 .hugetlb_free_pgd_range+0x1b8/0x26c
-[c0000001cf6e3a70] c0000000000b4f68 .free_pgtables+0x90/0x134
-[c0000001cf6e3b20] c0000000000b61ac .exit_mmap+0xcc/0x180
-[c0000001cf6e3bd0] c00000000006209c .mmput+0x70/0x148
-[c0000001cf6e3c60] c000000000067288 .exit_mm+0x118/0x138
-[c0000001cf6e3cf0] c0000000000692c4 .do_exit+0x21c/0x958
-[c0000001cf6e3da0] c000000000069aa8 .sys_exit_group+0x0/0x8
-[c0000001cf6e3e30] c00000000000871c syscall_exit+0x0/0x40
---- Exception: c01 (System Call) at 000000000feb0b78
-SP (ffcc4090) is in userspace
-
-0:mon> r
-R00 = 000000000000018f   R16 = 00000000100a0000
-R01 = c0000001cf6e37b0   R17 = 00000000100b2eb0
-R02 = c000000000849ce0   R18 = 00000000100a0000
-R03 = c0000001cfe90a08   R19 = 0000000000000000
-R04 = c0000001cfe90a10   R20 = 0000000000000000
-R05 = ffffffffffffffff   R21 = 00000000e0ffffff
-R06 = 0000000000000000   R22 = c0000001cf6e3b90
-R07 = c000000000648c38   R23 = 00000000e0ffffff
-R08 = 000000000001ffff   R24 = 00000000e1000000
-R09 = 0000000000000001   R25 = c00000000002f630
-R10 = 0000000000000019   R26 = c0000001cfe90000
-R11 = 0000000000000850   R27 = 0000000000000000
-R12 = 0000000000000001   R28 = c0000001cfe90978
-R13 = c000000000622300   R29 = 000000000000000e
-R14 = 0000000010080000   R30 = c00000000065f098
-R15 = 0000000000000000   R31 = c000000002b14380
-pc  = c0000000000c7458 .cache_free_debugcheck+0x1d0/0x2b0
-lr  = c0000000000c7410 .cache_free_debugcheck+0x188/0x2b0
-msr = 8000000000021032   cr  = 44000424
-ctr = 0000000000000001   xer = 000000002000001a   trap =  700
-
-0:mon> di c0000000000c7458
-c0000000000c7458  0b090000      tdnei   r9,0
-c0000000000c745c  801f0118      lwz     r0,280(r31)
-c0000000000c7460  7809bfe3      rldicl. r9,r0,55,63
-c0000000000c7464  41820034      beq     c0000000000c7498        #
-.cache_free_debugcheck+0x210/0x2b0
-c0000000000c7468  e93f0148      ld      r9,328(r31)
-c0000000000c746c  e87f01d2      lwa     r3,464(r31)
-c0000000000c7470  7fe4fb78      mr      r4,r31
-c0000000000c7474  38a00005      li      r5,5
-c0000000000c7478  e9690000      ld      r11,0(r9)
-c0000000000c747c  f8410028      std     r2,40(r1)
-c0000000000c7480  7c7c1a14      add     r3,r28,r3
-c0000000000c7484  7d6903a6      mtctr   r11
-c0000000000c7488  e8490008      ld      r2,8(r9)
-c0000000000c748c  e9690010      ld      r11,16(r9)
-c0000000000c7490  4e800421      bctrl
-c0000000000c7494  e8410028      ld      r2,40(r1)
-
-
-The BUG() hit here :
-
-               *dbg_redzone1(cachep, objp) = RED_INACTIVE;
-                *dbg_redzone2(cachep, objp) = RED_INACTIVE;
-        }
-        if (cachep->flags & SLAB_STORE_USER)
-                *dbg_userword(cachep, objp) = caller;
-
-        objnr = obj_to_index(cachep, slabp, objp);
-
-        BUG_ON(objnr >= cachep->num);
-        BUG_ON(objp != index_to_obj(cachep, slabp, objnr)); <---- Hit here.
-
-        if (cachep->flags & SLAB_DEBUG_INITIAL) {
-                /*
-
-
--- Dave
+-Olof
