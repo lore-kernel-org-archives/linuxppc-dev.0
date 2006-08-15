@@ -1,20 +1,21 @@
-Return-Path: <Artur.Barkhudaryan@epygiarm.am>
-Received: from epygiarm.am (smtp.epygiarm.am [195.69.162.137])
-	by ozlabs.org (Postfix) with ESMTP id 58F4267B64
+Return-Path: <yanjun.luo@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 4FC1D67B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Aug 2006 16:46:36 +1000 (EST)
-Received: from [192.168.0.154] ([192.168.0.154])
-	by epygiarm.am (epygiarm.am [192.168.0.156]) (MDaemon PRO v9.0.0)
-	with ESMTP id md50001216317.msg
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 Aug 2006 11:40:59 +0500
-Date: Tue, 15 Aug 2006 11:35:55 +0500
-From: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
-Message-ID: <824771033.20060815113555@epygiarm.am>
-To: linuxppc-embedded@ozlabs.org
-Subject: BDI2000 and MPC8272
+	Tue, 15 Aug 2006 17:31:13 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id f25so1576915pyf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Aug 2006 00:31:10 -0700 (PDT)
+Message-ID: <002201c6c03d$368769e0$9e00a8c0@embed>
+From: "Yanjun Luo" <yanjun.luo@gmail.com>
+To: "Artur Barkhudaryan" <Artur.Barkhudaryan@epygiarm.am>,
+	<linuxppc-embedded@ozlabs.org>
+References: <824771033.20060815113555@epygiarm.am>
+Subject: Re: BDI2000 and MPC8272
+Date: Tue, 15 Aug 2006 15:34:11 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Reply-To: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +26,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I am trying to use a BDI2000 debugger for a custom MPC8272 board. The
-debugger reports support for MPC8xx processors and the following
-information
+Hi Artur,
 
-BDI Type : BDI2000 Rev.C
-Loader : V1.05
-Firmware : V1.10
-Logic : V1.02
+> It does not seem to have support for MPC8272 and I was not able to
+> find any information about how to enable that. I guess I need new
+> firmware, right ? How can I obtain that and where ?
 
-It does not seem to have support for MPC8272 and I was not able to
-find any information about how to enable that. I guess I need new
-firmware, right ? How can I obtain that and where ?
+What message do you see when BDI2000 connect to the board?
+Maybe you should update your firmware of BDI2000.
 
-I know that this is probably not the best place to ask this question,
-but I was unable to find any answer anywhere else...
-
-
-Thanks a lot,
- Artur Barkhudaryan
+Regards,
+Yanjun Luo.
