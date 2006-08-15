@@ -1,26 +1,15 @@
-Return-Path: <Artur.Barkhudaryan@epygiarm.am>
-Received: from epygiarm.am (smtp.epygiarm.am [195.69.162.137])
-	by ozlabs.org (Postfix) with ESMTP id 3D25D67B75
+Return-Path: <GSM909@gmx.de>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 248F167B57
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Aug 2006 19:47:31 +1000 (EST)
-Received: from [192.168.0.154] ([192.168.0.154])
-	by epygiarm.am (epygiarm.am [192.168.0.156]) (MDaemon PRO v9.0.0)
-	with ESMTP id md50001216621.msg
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 Aug 2006 14:46:41 +0500
-Date: Tue, 15 Aug 2006 14:41:34 +0500
-From: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
-Message-ID: <134260637.20060815144134@epygiarm.am>
-To: "Yanjun Luo" <yanjun.luo@gmail.com>
-Subject: Re: BDI2000 and MPC8272
-In-Reply-To: <002c01c6c042$19445140$9e00a8c0@embed>
-References: <824771033.20060815113555@epygiarm.am>
-	<002201c6c03d$368769e0$9e00a8c0@embed>
-	<1005941084.20060815124945@epygiarm.am>
-	<002c01c6c042$19445140$9e00a8c0@embed>
+	Wed, 16 Aug 2006 02:45:23 +1000 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Tue, 15 Aug 2006 18:45:21 +0200
+From: GSM909@gmx.de
+Message-ID: <20060815164521.230780@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
+Subject: No Clock on SPI
+To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,13 +20,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi
 
-> Of course you should get it from www.abatron.ch, or their distributors.
-> I think contact the one who sold the BDI2000 to you is a good idea.
+I´m writing a Driver for SPI. That is not working now.
+I have a MPC8260 using Linux 2.6.14 (rheap patch).
 
-I will try to contact them directly, thanks for your time.
+Did someone else write a driver for SPI on this µC or an other driver? So I can see what i did wrong?
+
+My SPCOM[STR] flag isn´t cleared automatically after one clock cycle.
+What here going wrong ? ( I know this register is write only)
+There is also no Clock on my SPICLK.
+
+How I have to allocate the Memory for the BD´s and the buffer for the BD´s?
+
+Is there something special when I allocate Memory for my Parameter Ram?
+
+Is something wrong with the 2.6 Kernel so i have to use the 2.4 Kernel ?
+
+I hope somebody could help. Thx
+
+Regards
+Fred
+
+-- 
 
 
-Best regards,
- Artur Barkhudaryan
+"Feel free" – 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
