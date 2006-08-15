@@ -1,32 +1,32 @@
 Return-Path: <mkravetz@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A3AB467B92
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 12:31:18 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7F2VE7T000503
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:31:14 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7F2VES3271188
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:31:14 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7F2VDEu027743
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:31:14 -0400
-Date: Mon, 14 Aug 2006 19:32:24 -0700
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F1EAA67B92
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 12:32:59 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7F2WqaJ019389
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:32:52 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7F2Wp2q280632
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:32:51 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7F2WpJE012715
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Aug 2006 22:32:51 -0400
+Date: Mon, 14 Aug 2006 19:34:02 -0700
 From: Mike Kravetz <kravetz@us.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
 Subject: Re: [PATCH] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060815023224.GA3622@monkey.ibm.com>
-References: <20060814232144.GG3213@w-mikek2.ibm.com>
-	<20060815110319.5f34417a.sfr@canb.auug.org.au>
+Message-ID: <20060815023402.GB3622@monkey.ibm.com>
+References: <20060814234146.GA17027@w-mikek2.ibm.com>
+	<44E12B03.6020503@am.sony.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060815110319.5f34417a.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <44E12B03.6020503@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,34 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 15, 2006 at 11:03:19AM +1000, Stephen Rothwell wrote:
-> On Mon, 14 Aug 2006 16:21:44 -0700 Mike Kravetz <kravetz@us.ibm.com> wrote:
-> > +#define HCALL_INST_POSTCALL					\
-> > +	/* get time and PURR snapshots after hcall */		\
-> > +	mftb	r7;			/* timebase after */	\
-> > +BEGIN_FTR_SECTION;						\
-> > +	mfspr	r8,SPRN_PURR;		/* PURR after */	\
-> > +END_FTR_SECTION_IFSET(CPU_FTR_PURR);				\
-> > +								\
-> > +	/* calculate time and PURR deltas for call */		\
-> > +	ld	r5,STK_PARM(r5)(r1);	/* timebase before */	\
-> > +	subf	r5,r5,r7;					\
-> > +	ld	r6,STK_PARM(r6)(r1);	/* PURR before */	\
-> > +	subf	r6,r6,r8;					\
+On Mon, Aug 14, 2006 at 07:01:39PM -0700, Geoff Levand wrote:
+> I want to hook my instrumentation into this config option also, but my
+> platform dosn't have PURR, so I would like you to remove the mention
+> of '(based on PURR)' in the description of the option.  This way we
+> can have a generic 'Hypervisor call instrumentation' option for users,
+> on whatever platform they are using.
 > 
-> But here, if we have no PURR we produce random numbers.  Maybe you should
-> reuse the TB value so the values reported may make some sense.
+> Does it make sense?
 
-Good catch!
+Makes sense.  No problem.  I'll include this update in a revised edition
+of the patch.
 
-My intention was to detect the presence of PURR in the display (debugfs)
-code.  If there is no PURR, then no PURR values are displayed.  My thought
-is that it doesn't matter what values are in the field if we don't display
-them.  
-
-Unfortunately, I left that bit of code out of the patch.
-
-How does that sound?  Suppose I can also put all the 'calculate PURR delta'
-code in the FTR_SECTION to save a few cycles.
+Thanks,
 -- 
 Mike
