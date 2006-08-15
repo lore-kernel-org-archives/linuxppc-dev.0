@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E031B679E9
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 11:03:33 +1000 (EST)
-Date: Tue, 15 Aug 2006 11:03:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
+	[206.16.192.249])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 71B6567B96
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Aug 2006 12:01:55 +1000 (EST)
+Message-ID: <44E12B03.6020503@am.sony.com>
+Date: Mon, 14 Aug 2006 19:01:39 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
 To: Mike Kravetz <kravetz@us.ibm.com>
 Subject: Re: [PATCH] powerpc: Instrument Hypervisor Calls
-Message-Id: <20060815110319.5f34417a.sfr@canb.auug.org.au>
-In-Reply-To: <20060814232144.GG3213@w-mikek2.ibm.com>
-References: <20060814232144.GG3213@w-mikek2.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__15_Aug_2006_11_03_19_+1000_aZoQkw6J0q/k8eXf"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+References: <20060814234146.GA17027@w-mikek2.ibm.com>
+In-Reply-To: <20060814234146.GA17027@w-mikek2.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,79 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__15_Aug_2006_11_03_19_+1000_aZoQkw6J0q/k8eXf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mike Kravetz wrote:
+> On Mon, Aug 14, 2006 at 04:35:12PM -0700, Geoff Levand wrote:
+>> Mike Kravetz wrote:
+>> > +config HCALL_STATS
+>> > +	bool "Hypervisor call instrumentation"
+>> > +	depends on PPC_PSERIES && DEBUG_FS
+>> > +	help
+>> > +	  Adds code to keep track of the number of hypervisor calls made
+> and
+>> > +	  the amount of time spent in hypervisor calls: both wall time
+> (based
+>> > +	  on time base) and cpu time (based on PURR).  A directory named
+>> > +	  hcall_inst is added at the root of the debugfs filesystem.
+>> 
+>> Could we keep this more generic and not mention platform specific
+>> things like PURR?
+> 
+> Not sure if I follow.  PURR will be used/displayed if available.  Time
+> based statistics will always be available.
+> 
+> I can change the description to make this clear.  Or, are you asking
+> that this not be mentioned at all?  Based on previous discussions, I
+> added the ability to display both wall and cpu time if available.
 
-On Mon, 14 Aug 2006 16:21:44 -0700 Mike Kravetz <kravetz@us.ibm.com> wrote:
->
-> diff -Naupr powerpc2/arch/powerpc/platforms/pseries/hvCall.S powerpc2.wor=
-k/arch/powerpc/platforms/pseries/hvCall.S
-> --- powerpc2/arch/powerpc/platforms/pseries/hvCall.S	2006-08-14 18:00:55.=
-000000000 +0000
-> +++ powerpc2.work/arch/powerpc/platforms/pseries/hvCall.S	2006-08-14 22:1=
-7:04.000000000 +0000
-> @@ -10,9 +10,66 @@
->  #include <asm/hvcall.h>
->  #include <asm/processor.h>
->  #include <asm/ppc_asm.h>
-> +#include <asm/asm-offsets.h>
->  =09
->  #define STK_PARM(i)     (48 + ((i)-3)*8)
-> =20
-> +#ifdef CONFIG_HCALL_STATS
-> +/*
-> + * precall must preserve all registers.  use unused STK_PARM()
-> + * areas to save snapshots and opcode.
-> + */
-> +#define HCALL_INST_PRECALL					\
-> +	std	r3,STK_PARM(r3)(r1);	/* save opcode */	\
-> +	mftb	r3;			/* get timebase and */	\
-> +	std     r3,STK_PARM(r5)(r1);	/* save for later */	\
-> +BEGIN_FTR_SECTION;						\
-> +	mfspr	r3,SPRN_PURR;		/* get PURR and */	\
-> +END_FTR_SECTION_IFSET(CPU_FTR_PURR);				\
-> +	std	r3,STK_PARM(r6)(r1);	/* save for later */	\
+I want to hook my instrumentation into this config option also, but my
+platform dosn't have PURR, so I would like you to remove the mention
+of '(based on PURR)' in the description of the option.  This way we
+can have a generic 'Hypervisor call instrumentation' option for users,
+on whatever platform they are using.
 
-So if we have no PURR, we use the TB value (this is fine)
+Does it make sense?
 
-> +	ld	r3,STK_PARM(r3)(r1);	/* opcode back in r3 */
-> +=09
-> +/*
-> + * postcall is performed immediately before function return which
-> + * allows liberal use of volital registers.
-> + */
-> +#define HCALL_INST_POSTCALL					\
-> +	/* get time and PURR snapshots after hcall */		\
-> +	mftb	r7;			/* timebase after */	\
-> +BEGIN_FTR_SECTION;						\
-> +	mfspr	r8,SPRN_PURR;		/* PURR after */	\
-> +END_FTR_SECTION_IFSET(CPU_FTR_PURR);				\
-> +								\
-> +	/* calculate time and PURR deltas for call */		\
-> +	ld	r5,STK_PARM(r5)(r1);	/* timebase before */	\
-> +	subf	r5,r5,r7;					\
-> +	ld	r6,STK_PARM(r6)(r1);	/* PURR before */	\
-> +	subf	r6,r6,r8;					\
-
-But here, if we have no PURR we produce random numbers.  Maybe you should
-reuse the TB value so the values reported may make some sense.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__15_Aug_2006_11_03_19_+1000_aZoQkw6J0q/k8eXf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFE4R1dFdBgD/zoJvwRAhgBAJ0aJm8TDUGlPT/8PYstaDW72A4BzQCdEHsH
-fz9n4tjD0F4mJ+rvAZBtDHw=
-=l/t2
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_Aug_2006_11_03_19_+1000_aZoQkw6J0q/k8eXf--
+-Geoff
