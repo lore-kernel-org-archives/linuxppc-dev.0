@@ -1,18 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Add CONFIG_POWERPC
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17634.40549.377775.121184@cargo.ozlabs.ibm.com>
-References: <20060816041617.690EB67A3F@ozlabs.org>
-	<17634.40549.377775.121184@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-0l8QMuez7+JRisJHNkJw"
-Date: Wed, 16 Aug 2006 15:18:12 +1000
-Message-Id: <1155705492.12715.2.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1F90467B5E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 15:20:41 +1000 (EST)
+Date: Wed, 16 Aug 2006 15:20:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] iseries: remove some gcc 4.1 warnings
+Message-Id: <20060816152032.2407a832.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +19,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+gcc 4.1 produces some warnings that it is ignoring the packed attribute
+on some structure elements, so just remove them.
 
---=-0l8QMuez7+JRisJHNkJw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/iseries/main_store.h |   46 ++++++++++++++-------------
+ 1 files changed, 23 insertions(+), 23 deletions(-)
 
-On Wed, 2006-08-16 at 14:26 +1000, Paul Mackerras wrote:
-> Michael Ellerman writes:
->=20
-> > We don't seem to have a top-level config symbol like other archs do. We=
- have
-> > PPC64 and PPC, but I think it'd be cleaner to have just one for cases w=
-here
-> > we really mean PPC64 and/or PPC.
->=20
-> CONFIG_PPC already means either 32-bit or 64-bit PowerPC (always has
-> done, even before the merge).
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Hmm, but won't that also match arch/ppc ?
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-0l8QMuez7+JRisJHNkJw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBE4qqTdSjSd0sB4dIRAtyRAJ9dC2iheVeId18dAZBLx5XGdyl7/QCfXY7a
-zemPteJJQpj6qsRND4DJ2mk=
-=eiSK
------END PGP SIGNATURE-----
-
---=-0l8QMuez7+JRisJHNkJw--
+diff --git a/arch/powerpc/platforms/iseries/main_store.h b/arch/powerpc/platforms/iseries/main_store.h
+index 74f6889..4b31658 100644
+--- a/arch/powerpc/platforms/iseries/main_store.h
++++ b/arch/powerpc/platforms/iseries/main_store.h
+@@ -63,7 +63,7 @@ struct IoHriMainStoreSegment4 {
+ /* Main Store VPD for Power4 */
+ struct IoHriMainStoreChipInfo1 {
+ 	u32	chipMfgID	__attribute((packed));
+-	char	chipECLevel[4]	__attribute((packed));
++	char	chipECLevel[4];
+ };
+ 
+ struct IoHriMainStoreVpdIdData {
+@@ -74,9 +74,9 @@ struct IoHriMainStoreVpdIdData {
+ };
+ 
+ struct IoHriMainStoreVpdFruData {
+-	char	fruLabel[8]	__attribute((packed));
+-	u8	numberOfSlots	__attribute((packed));
+-	u8	pluggingType	__attribute((packed));
++	char	fruLabel[8];
++	u8	numberOfSlots;
++	u8	pluggingType;
+ 	u16	slotMapIndex	__attribute((packed));
+ };
+ 
+@@ -90,8 +90,8 @@ #define MaxAreaAdrRangeBlocks 4
+ 
+ struct IoHriMainStoreArea4 {
+ 	u32	msVpdFormat			__attribute((packed));
+-	u8	containedVpdType		__attribute((packed));
+-	u8	reserved1			__attribute((packed));
++	u8	containedVpdType;
++	u8	reserved1;
+ 	u16	reserved2			__attribute((packed));
+ 
+ 	u64	msExists			__attribute((packed));
+@@ -101,16 +101,16 @@ struct IoHriMainStoreArea4 {
+ 	u32	procNodeId			__attribute((packed));
+ 
+ 	u32	numAdrRangeBlocks		__attribute((packed));
+-	struct IoHriMainStoreAdrRangeBlock xAdrRangeBlock[MaxAreaAdrRangeBlocks]	__attribute((packed));
++	struct IoHriMainStoreAdrRangeBlock xAdrRangeBlock[MaxAreaAdrRangeBlocks];
+ 
+-	struct IoHriMainStoreChipInfo1	chipInfo0	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo1	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo2	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo3	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo4	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo5	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo6	__attribute((packed));
+-	struct IoHriMainStoreChipInfo1	chipInfo7	__attribute((packed));
++	struct IoHriMainStoreChipInfo1	chipInfo0;
++	struct IoHriMainStoreChipInfo1	chipInfo1;
++	struct IoHriMainStoreChipInfo1	chipInfo2;
++	struct IoHriMainStoreChipInfo1	chipInfo3;
++	struct IoHriMainStoreChipInfo1	chipInfo4;
++	struct IoHriMainStoreChipInfo1	chipInfo5;
++	struct IoHriMainStoreChipInfo1	chipInfo6;
++	struct IoHriMainStoreChipInfo1	chipInfo7;
+ 
+ 	void	*msRamAreaArray			__attribute((packed));
+ 	u32	msRamAreaArrayNumEntries	__attribute((packed));
+@@ -122,22 +122,22 @@ struct IoHriMainStoreArea4 {
+ 	u32	numaDimmArrayNumEntries		__attribute((packed));
+ 	u32	numaDimmArrayEntrySize		__attribute((packed));
+ 
+-	struct IoHriMainStoreVpdIdData idData	__attribute((packed));
++	struct IoHriMainStoreVpdIdData idData;
+ 
+ 	u64	powerData			__attribute((packed));
+ 	u64	cardAssemblyPartNum		__attribute((packed));
+ 	u64	chipSerialNum			__attribute((packed));
+ 
+ 	u64	reserved3			__attribute((packed));
+-	char	reserved4[16]			__attribute((packed));
++	char	reserved4[16];
+ 
+-	struct IoHriMainStoreVpdFruData fruData	__attribute((packed));
++	struct IoHriMainStoreVpdFruData fruData;
+ 
+-	u8	vpdPortNum			__attribute((packed));
+-	u8	reserved5			__attribute((packed));
+-	u8	frameId				__attribute((packed));
+-	u8	rackUnit			__attribute((packed));
+-	char	asciiKeywordVpd[256]		__attribute((packed));
++	u8	vpdPortNum;
++	u8	reserved5;
++	u8	frameId;
++	u8	rackUnit;
++	char	asciiKeywordVpd[256];
+ 	u32	reserved6			__attribute((packed));
+ };
+ 
+-- 
+1.4.1.1
