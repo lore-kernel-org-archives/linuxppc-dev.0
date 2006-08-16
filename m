@@ -1,19 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 89FDD67B53
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 07:19:30 +1000 (EST)
-Date: Wed, 16 Aug 2006 13:46:40 -0700 (PDT)
-Message-Id: <20060816.134640.115912460.davem@davemloft.net>
-To: jeff@garzik.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 8B6FB67B58
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 07:27:13 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH 1/2]: powerpc/cell spidernet bottom half
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <44E38157.4070805@garzik.org>
-References: <44E34825.2020105@garzik.org>
-	<20060816203043.GJ20551@austin.ibm.com>
-	<44E38157.4070805@garzik.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: akpm@osdl.org, arnd@arndb.de, netdev@vger.kernel.org, jklewis@us.ibm.com,
+Date: Wed, 16 Aug 2006 23:24:46 +0200
+References: <44E34825.2020105@garzik.org> <44E38157.4070805@garzik.org>
+	<20060816.134640.115912460.davem@davemloft.net>
+In-Reply-To: <20060816.134640.115912460.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608162324.47235.arnd@arndb.de>
+Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org, jklewis@us.ibm.com,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Jens.Osterkamp@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,26 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Wed, 16 Aug 2006 16:34:31 -0400
+Am Wednesday 16 August 2006 22:46 schrieb David Miller:
+> I'm not familiar with the spidernet TX side interrupt capabilities
+> so I can't say whether that is something that can be directly
+> implied. =A0In fact, I get the impression that spidernet is limited
+> in some way and that's where all the strange approaches are coming
+> from :)
 
-> Linas Vepstas wrote:
-> > I was under the impression that NAPI was for the receive side only.
-> 
-> That depends on the driver implementation.
+Actually, the capabilities of the chip are quite powerful, it only
+seems to be hard to make it go fast using any of them. That may
+be the fault of strange locking rules and other bugs we had in
+the driver before, so maybe you can recommend which one to use.
 
-What Jeff is trying to say is that TX reclaim can occur in
-the NAPI poll routine, and in fact this is what the vast
-majority of NAPI drivers do.
+Cleaning up the TX queue only from ->poll() like all the others
+sounds like the right approach to simplify the code.
 
-It also makes the locking simpler.
+The spider hardware offers at least these options:
 
-In practice, the best thing seems to be to put both RX and TX
-work into ->poll() and have a very mild hw interrupt mitigation
-setting programmed into the chip.
+=2D end of TX queue interrupt
+=2D set a per-descriptor bit to fire an interrupt at a specific frame
+=2D an interrupt for each frame (may be multiple descriptors)
+=2D an interrupt for each descriptor
+=2D timers implemented in the spidernet hardware
 
-I'm not familiar with the spidernet TX side interrupt capabilities
-so I can't say whether that is something that can be directly
-implied.  In fact, I get the impression that spidernet is limited
-in some way and that's where all the strange approaches are coming
-from :)
+We first had an interrupt per descriptor, then got rid of all TX
+interrupts and replaced them by timers to reduce the interrupt load,
+but reducing throughput in the case where user space sleeps on a full
+socket buffer.
+
+The last patches that were suggested introduce marking a single descriptor
+(not the last one, but somewhere near the end of the queue) so we fire
+an interrupt just before the TX queue gets empty.
+
+	Arnd <><
