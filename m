@@ -1,9 +1,13 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 16 Aug 2006 14:16:16 +1000
-Subject: [PATCH] Add CONFIG_POWERPC
-Message-Id: <20060816041617.690EB67A3F@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17634.40549.377775.121184@cargo.ozlabs.ibm.com>
+Date: Wed, 16 Aug 2006 14:26:13 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Add CONFIG_POWERPC
+In-Reply-To: <20060816041617.690EB67A3F@ozlabs.org>
+References: <20060816041617.690EB67A3F@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,28 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We don't seem to have a top-level config symbol like other archs do. We have
-PPC64 and PPC, but I think it'd be cleaner to have just one for cases where
-we really mean PPC64 and/or PPC.
+Michael Ellerman writes:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+> We don't seem to have a top-level config symbol like other archs do. We have
+> PPC64 and PPC, but I think it'd be cleaner to have just one for cases where
+> we really mean PPC64 and/or PPC.
 
- arch/powerpc/Kconfig |    4 ++++
- 1 file changed, 4 insertions(+)
+CONFIG_PPC already means either 32-bit or 64-bit PowerPC (always has
+done, even before the merge).
 
-Index: git/arch/powerpc/Kconfig
-===================================================================
---- git.orig/arch/powerpc/Kconfig
-+++ git/arch/powerpc/Kconfig
-@@ -11,6 +11,10 @@ config PPC64
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
- 
-+config POWERPC
-+	bool
-+	default y
-+
- config PPC32
- 	bool
- 	default y if !PPC64
+Paul.
