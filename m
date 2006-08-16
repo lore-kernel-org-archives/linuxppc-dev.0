@@ -1,22 +1,35 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id F40D367B5A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 08:47:49 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AE78E67B60
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 08:56:03 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7GMu07u031188
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 18:56:00 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7GMu0Hh282612
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 18:56:00 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7GMtx62023375
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 18:56:00 -0400
+Date: Wed, 16 Aug 2006 17:55:58 -0500
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 1/2]: powerpc/cell spidernet bottom half
-Date: Thu, 17 Aug 2006 00:47:00 +0200
-References: <200608162324.47235.arnd@arndb.de>
-	<200608170016.47072.arnd@arndb.de>
-	<20060816.152919.88472383.davem@davemloft.net>
-In-Reply-To: <20060816.152919.88472383.davem@davemloft.net>
+Message-ID: <20060816225558.GM20551@austin.ibm.com>
+References: <44E34825.2020105@garzik.org> <44E38157.4070805@garzik.org>
+	<20060816.134640.115912460.davem@davemloft.net>
+	<200608162324.47235.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608170047.00811.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200608162324.47235.arnd@arndb.de>
+From: linas@austin.ibm.com (Linas Vepstas)
 Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org, jklewis@us.ibm.com,
-	linux-kernel@vger.kernel.org, Jens.Osterkamp@de.ibm.com,
-	David Miller <davem@davemloft.net>
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Jens.Osterkamp@de.ibm.com, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Thursday 17 August 2006 00:29 schrieb David Miller:
-> Didn't you say spidernet's facilities were sophisticated? :)
-> This Tigon3 stuff is like 5+ year old technology.
+On Wed, Aug 16, 2006 at 11:24:46PM +0200, Arnd Bergmann wrote:
+> 
+> it only
+> seems to be hard to make it go fast using any of them. 
 
-I was rather overwhelmed by the 34 different interrupts that
-the chip can create, that does not mean they chose the right
-events for generating them.
-Interestingly, spidernet has five different counters you can
-set up to generate interrupts after a number of received frames,
-but none for transmit...
+Last round of measurements seemed linear for packet sizes between
+60 and 600 bytes, suggesting that the hardware can handle a 
+maximum of 120K descriptors/second, independent of packet size.
+I don't know why this is.
 
-	Arnd <><
+> That may
+> be the fault of strange locking rules 
+
+My fault; a few months ago, we were in panic mode trying to get
+the thing functioning reliably, and I put locks around anything
+and everything.  This last patch removes those locks, and protects
+only a few pointers (the incrementing of the head and the tail 
+pointers, and the location ofthe low watermark) that actually 
+needed protection. They need protection because the code can 
+get called in various different ways.
+
+> Cleaning up the TX queue only from ->poll() like all the others
+
+I'll try this ... 
+
+> sounds like the right approach to simplify the code.
+
+Its not a big a driver. 'wc' says its 2.3 loc, which 
+is 1/3 or 1/5 the size of tg3.c or the e1000*c files.
+
+--linas
