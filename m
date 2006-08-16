@@ -1,15 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1F90467B5E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 15:20:41 +1000 (EST)
-Date: Wed, 16 Aug 2006 15:20:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] iseries: remove some gcc 4.1 warnings
-Message-Id: <20060816152032.2407a832.sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Make RTAS console init generic
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20060816040040.1E20967B55@ozlabs.org>
+References: <20060816040040.1E20967B55@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-PNKyW5KJv4630LcmkXVt"
+Date: Wed, 16 Aug 2006 15:21:35 +1000
+Message-Id: <1155705695.12715.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,112 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-gcc 4.1 produces some warnings that it is ignoring the packed attribute
-on some structure elements, so just remove them.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/iseries/main_store.h |   46 ++++++++++++++-------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+--=-PNKyW5KJv4630LcmkXVt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On Tue, 2006-08-15 at 23:00 -0500, Michael Neuling wrote:
+> The RTAS console doesn't have to be Cell specific.  If we have both
+> the put and get char RTAS functions, init the rtas console.
+>=20
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/rtas.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/rtas.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/rtas.c
+> @@ -910,6 +910,11 @@ int __init early_init_dt_scan_rtas(unsig
+>  	basep =3D of_get_flat_dt_prop(node, "get-term-char", NULL);
+>  	if (basep)
+>  		rtas_getchar_token =3D *basep;
+> +
+> +	if (rtas_putchar_token !=3D RTAS_UNKNOWN_SERVICE &&
+> +	    rtas_getchar_token !=3D RTAS_UNKNOWN_SERVICE)
+> +		udbg_init_rtas_console();
+> +
+>  #endif
+> =20
+>  	/* break now */
+> Index: linux-2.6-ozlabs/arch/powerpc/platforms/cell/setup.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6-ozlabs.orig/arch/powerpc/platforms/cell/setup.c
+> +++ linux-2.6-ozlabs/arch/powerpc/platforms/cell/setup.c
+> @@ -150,10 +150,6 @@ static int __init cell_probe(void)
+>  	    !of_flat_dt_is_compatible(root, "IBM,CPBW-1.0"))
+>  		return 0;
+> =20
+> -#ifdef CONFIG_UDBG_RTAS_CONSOLE
+> -	udbg_init_rtas_console();
+> -#endif
+> -
 
-diff --git a/arch/powerpc/platforms/iseries/main_store.h b/arch/powerpc/platforms/iseries/main_store.h
-index 74f6889..4b31658 100644
---- a/arch/powerpc/platforms/iseries/main_store.h
-+++ b/arch/powerpc/platforms/iseries/main_store.h
-@@ -63,7 +63,7 @@ struct IoHriMainStoreSegment4 {
- /* Main Store VPD for Power4 */
- struct IoHriMainStoreChipInfo1 {
- 	u32	chipMfgID	__attribute((packed));
--	char	chipECLevel[4]	__attribute((packed));
-+	char	chipECLevel[4];
- };
- 
- struct IoHriMainStoreVpdIdData {
-@@ -74,9 +74,9 @@ struct IoHriMainStoreVpdIdData {
- };
- 
- struct IoHriMainStoreVpdFruData {
--	char	fruLabel[8]	__attribute((packed));
--	u8	numberOfSlots	__attribute((packed));
--	u8	pluggingType	__attribute((packed));
-+	char	fruLabel[8];
-+	u8	numberOfSlots;
-+	u8	pluggingType;
- 	u16	slotMapIndex	__attribute((packed));
- };
- 
-@@ -90,8 +90,8 @@ #define MaxAreaAdrRangeBlocks 4
- 
- struct IoHriMainStoreArea4 {
- 	u32	msVpdFormat			__attribute((packed));
--	u8	containedVpdType		__attribute((packed));
--	u8	reserved1			__attribute((packed));
-+	u8	containedVpdType;
-+	u8	reserved1;
- 	u16	reserved2			__attribute((packed));
- 
- 	u64	msExists			__attribute((packed));
-@@ -101,16 +101,16 @@ struct IoHriMainStoreArea4 {
- 	u32	procNodeId			__attribute((packed));
- 
- 	u32	numAdrRangeBlocks		__attribute((packed));
--	struct IoHriMainStoreAdrRangeBlock xAdrRangeBlock[MaxAreaAdrRangeBlocks]	__attribute((packed));
-+	struct IoHriMainStoreAdrRangeBlock xAdrRangeBlock[MaxAreaAdrRangeBlocks];
- 
--	struct IoHriMainStoreChipInfo1	chipInfo0	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo1	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo2	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo3	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo4	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo5	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo6	__attribute((packed));
--	struct IoHriMainStoreChipInfo1	chipInfo7	__attribute((packed));
-+	struct IoHriMainStoreChipInfo1	chipInfo0;
-+	struct IoHriMainStoreChipInfo1	chipInfo1;
-+	struct IoHriMainStoreChipInfo1	chipInfo2;
-+	struct IoHriMainStoreChipInfo1	chipInfo3;
-+	struct IoHriMainStoreChipInfo1	chipInfo4;
-+	struct IoHriMainStoreChipInfo1	chipInfo5;
-+	struct IoHriMainStoreChipInfo1	chipInfo6;
-+	struct IoHriMainStoreChipInfo1	chipInfo7;
- 
- 	void	*msRamAreaArray			__attribute((packed));
- 	u32	msRamAreaArrayNumEntries	__attribute((packed));
-@@ -122,22 +122,22 @@ struct IoHriMainStoreArea4 {
- 	u32	numaDimmArrayNumEntries		__attribute((packed));
- 	u32	numaDimmArrayEntrySize		__attribute((packed));
- 
--	struct IoHriMainStoreVpdIdData idData	__attribute((packed));
-+	struct IoHriMainStoreVpdIdData idData;
- 
- 	u64	powerData			__attribute((packed));
- 	u64	cardAssemblyPartNum		__attribute((packed));
- 	u64	chipSerialNum			__attribute((packed));
- 
- 	u64	reserved3			__attribute((packed));
--	char	reserved4[16]			__attribute((packed));
-+	char	reserved4[16];
- 
--	struct IoHriMainStoreVpdFruData fruData	__attribute((packed));
-+	struct IoHriMainStoreVpdFruData fruData;
- 
--	u8	vpdPortNum			__attribute((packed));
--	u8	reserved5			__attribute((packed));
--	u8	frameId				__attribute((packed));
--	u8	rackUnit			__attribute((packed));
--	char	asciiKeywordVpd[256]		__attribute((packed));
-+	u8	vpdPortNum;
-+	u8	reserved5;
-+	u8	frameId;
-+	u8	rackUnit;
-+	char	asciiKeywordVpd[256];
- 	u32	reserved6			__attribute((packed));
- };
- 
--- 
-1.4.1.1
+I'd like to see it still guarded by UDBG_RTAS_CONSOLE, otherwise there's
+no way to select a different type of early console on a machine which
+has those tokens in the device tree.
+
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-PNKyW5KJv4630LcmkXVt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBE4qtfdSjSd0sB4dIRArSLAKCG0d7fCkECAoztFURTE+cldV9XgQCgvTgP
+HMa41pOLpGazOULLvni2WUg=
+=BMuz
+-----END PGP SIGNATURE-----
+
+--=-PNKyW5KJv4630LcmkXVt--
