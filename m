@@ -1,19 +1,16 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from qsrv01ps.mx.bigpond.com (qsrv01ps.mx.bigpond.com
-	[144.140.82.181]) by ozlabs.org (Postfix) with ESMTP id D2DF367B67
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 16:27:29 +1000 (EST)
-Date: Wed, 16 Aug 2006 15:39:12 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [POWERPC] iseries: remove some gcc 4.1 warnings
-Message-ID: <20060816060912.GA6821@bubble.grove.modra.org>
-References: <20060816152032.2407a832.sfr@canb.auug.org.au>
-	<1155705964.12715.8.camel@localhost.localdomain>
-	<20060816153206.5bd2d64e.sfr@canb.auug.org.au>
+Return-Path: <benjamin.heyne@uni-dortmund.de>
+Received: from unimail.uni-dortmund.de (mx1.HRZ.Uni-Dortmund.DE
+	[129.217.128.51]) by ozlabs.org (Postfix) with ESMTP id ED12D679E2
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 20:14:40 +1000 (EST)
+Date: Wed, 16 Aug 2006 11:31:37 +0200
+From: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Gunzip call fix for PPC kernel images >4MB
+Message-ID: <20060816113137.7a8e5608@bob.dt.e-technik.uni-dortmund.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060816153206.5bd2d64e.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Tom Rini <trini@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 16, 2006 at 03:32:06PM +1000, Stephen Rothwell wrote:
-> On Wed, 16 Aug 2006 15:26:04 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
-> >
-> > On Wed, 2006-08-16 at 15:20 +1000, Stephen Rothwell wrote:
-> > > gcc 4.1 produces some warnings that it is ignoring the packed attribute
-> > > on some structure elements, so just remove them.
-> > 
-> > Why is it ignoring them? Because there's no packing to be done?
-> 
-> A patch went into gcc to warn if the thing you are packing is already
-> minimally aligned.  I have not idea why it warns ...
+If Kernel images for PPC grow >4MB inflating of the kernel fails.
+Increasing the link/load address doesn't help. Problem is 
+solved by replacing the fixed address of the gunzip() call in
+misc-embedded.c with CONFIG_BOOT_LOAD.
 
-http://gcc.gnu.org/ml/gcc-patches/2005-11/msg01883.html
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21166
+Signed-off-by: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
+---
+
+--- arch/ppc/boot/simple/misc-embedded.c.orig 2006-08-16 10:56:10.000000000 +0200 
++++ arch/ppc/boot/simple/misc-embedded.c 2006-08-16 10:56:55.000000000 +0200 
+@@ -213,7 +213,7 @@ load_kernel(unsigned long load_addr, int 
+	*cp = 0;
+ 	puts("\nUncompressing Linux...");
+ 
+-	gunzip(0, 0x400000, zimage_start, &zimage_size);
++	gunzip(0, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
+ 	flush_instruction_cache();
+ 	puts("done.\n");
+ 	{
 
 -- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
+Benjamin Heyne
+=======================================================
+ Arbeitsgebiet Datentechnik, Universitaet Dortmund
+ Information Processing Lab, University of Dortmund
+
+ Otto-Hahn-Strasse 4, 44227 Dortmund, Germany
+ Fon: +49 231 755 7017, Fax: +49 231 755 7019
+ www.dt.e-technik.uni-dortmund.de, Raum/Room P1-04-217
