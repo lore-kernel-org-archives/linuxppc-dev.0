@@ -1,18 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17634.64640.709200.871907@cargo.ozlabs.ibm.com>
-Date: Wed, 16 Aug 2006 21:07:44 +1000
+Message-ID: <17634.65529.252720.646039@cargo.ozlabs.ibm.com>
+Date: Wed, 16 Aug 2006 21:22:33 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: PowerPC paxtest results w/ gcc-4.1
-In-Reply-To: <20060816105925.GB21865@iram.es>
-References: <17630.27174.711916.643790@cargo.ozlabs.ibm.com>
-	<000301c6bf97$e9151e00$99dfdfdf@bakuhatsu.net>
-	<17633.18057.778991.483461@cargo.ozlabs.ibm.com>
-	<20060816105925.GB21865@iram.es>
-Cc: 'Albert Cahalan' <acahalan@gmail.com>, debian-powerpc@lists.debian.org,
-	linuxppc-dev@ozlabs.org
+Subject: Re: Who cares about PReP?
+In-Reply-To: <20060816101527.GA21865@iram.es>
+References: <17622.58559.879330.496619@cargo.ozlabs.ibm.com>
+	<20060816101527.GA21865@iram.es>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +21,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Gabriel Paubert writes:
 
-> I agree, but I don't know why you believe it would cause 
-> a machine check (0x200): from my docs, it is an ISI (0x400). 
+> We are using 20+ MVME boards here so I am interested, 
+> MVME2400/2600/2700 to be precise. 
 
-I don't believe it would cause a machine check either, but that is
-what Matt Sealey was saying.  I don't know where he got that idea.
+If you (and anyone else who is interested) could send me the contents
+of /proc/residual, /proc/iomem, /proc/ioports and /proc/interrupts
+from your systems (one of each different type) that could be helpful.
 
-> BTW, there is one way to make pages non executable: mark
-> them as guarded, but it will have a significant cost in
-> terms of performance. 
-
-Indeed.  I guess we could do that as a config option for machines that
-really want maximum security at the expense of performance, but I
-don't think all users would want that.
-
+Thanks,
 Paul.
