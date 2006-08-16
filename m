@@ -1,22 +1,15 @@
-Return-Path: <yang-qh@neusoft.com>
-Received: from mailgate.neusoft.com (unknown [210.83.25.69])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49AE1679FC
+Return-Path: <jiehanca@yahoo.com.cn>
+Received: from web15110.mail.cnb.yahoo.com (web15110.mail.cnb.yahoo.com
+	[202.165.103.79]) by ozlabs.org (Postfix) with SMTP id B76D567A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Aug 2006 11:56:19 +1000 (EST)
-Date: Wed, 16 Aug 2006 09:47:22 +0800
-From: =?gb2312?B?0e7Hv7rG?= <yang-qh@neusoft.com>
-Subject: Have some truble when porting montavista linux3.1 in ML403 board
-To: Grant Likely <grant.likely@secretlab.ca>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Message-id: <200608160947216778866@neusoft.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=gb2312
-References: <200607141103022417773@neusoft.com>
-	<528646bc0607132112n7ad2ac0fv5c44ff2c7f98bcb7@mail.gmail.com>
-	<200607141248212381692@neusoft.com>
-	<528646bc0607132228x88ab355w4fa978587a76bfbe@mail.gmail.com>
+	Wed, 16 Aug 2006 13:31:05 +1000 (EST)
+Message-ID: <20060816032420.3004.qmail@web15110.mail.cnb.yahoo.com>
+Date: Tue, 15 Aug 2006 20:24:19 -0700 (PDT)
+From: jie han <jiehanca@yahoo.com.cn>
+Subject: hoe to define CPM_MAP_ADDR ?
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1898329840-1155698659=:2661"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,65 +20,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGksIEdyYW50IExpa2VseSANCg0KCUkgYW0gcG9ydGluZyBtb250YXZpc3Rh
-IGxpbnV4My4xIHRvIE1MNDAzIGJvYXJkLiBJIHVzZSB0aGUgcHJvamVjdCBz
-eXN0ZW1fbGludXgueG1kIGluIHRoZSB4aWxpbnggTUw0MDMgcmVmZW5jZSAg
-ZGlzaWduIC4gYW5kIGRvIGV2ZXJ5dGhpbmcgc3RlcCBieSBzdGVwIHdpdGgg
-eW91ciBtYWlsDQoNCglodHRwOi8vb3psYWJzLm9yZy9waXBlcm1haWwvbGlu
-dXhwcGMtZW1iZWRkZWQvMjAwNS1KdWx5LzAxOTA5MS5odG1sDQoNCglkbyBu
-b3QgY2hhbmdlIGFueXRoaW5nLiBCdXQgd2hlbiBJIGRvdyB0aGUgbXkgeklt
-YWdlLmVsZiB3aXRoIFhNRCBhbmQgcnVuIGl0ICx0aGUgY29uc29sZSBzaG93
-IDoNCg0KIGxvYWRlZCBhdDogICAgIDAwNDAwMDAwIDAwNEJBMUU0DQogYm9h
-cmQgZGF0YSBhdDogMDA0QjcxM0MgMDA0QjcxNTQNCiByZWxvY2F0ZWQgdG86
-ICAwMDQwNTY0OCAwMDQwNTY2MA0KIHppbWFnZSBhdDogICAgIDAwNDA1QjUz
-IDAwNEI2M0YzDQogYXZhaWwgcmFtOiAgICAgMDA0QkIwMDAgMDQwMDAwMDAN
-Cg0KIExpbnV4L1BQQyBsb2FkOiBjb25zb2xlPXR0eTEgY29uc29sZT10dHlT
-MCw5NjAwIHJvb3Q9L2Rldi94c3lzYWNlL2Rpc2MwL3BhcnQyIHJ3DQogaXA9
-b2ZmDQogVW5jb21wcmVzc2luZyBMaW51eC4uLmRvbmUuDQogTm93IGJvb3Rp
-bmcgdGhlIGtlcm5lbA0KDQoNCg0KdGhlbiwgaXQgc3RvcCxub3RoaW5nIHRv
-IGRvLklmIEkgZG93IHRoZSAgekltYWdlLmVsZiBvZiB4aWxpbnggYW5kIHJ1
-biBpdCAsdGhlIGNvbnNvbGUgc2hvdyA6DQoNCglsb2FkZWQgYXQ6ICAgICAw
-MDQwMDAwMCAwMDRCQTFFNCAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgDQoJYm9hcmQgZGF0YSBhdDogMDA0QjcxM0MgMDA0QjcxNTQgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIA0KCXJlbG9jYXRlZCB0bzogIDAw
-NDA1NjQ4IDAwNDA1NjYwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICANCgl6aW1hZ2UgYXQ6ICAgICAwMDQwNUMxMyAwMDRCNjk1MCAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgDQoJYXZhaWwgcmFtOiAgICAgMDA0
-QkIwMDAgMDQwMDAwMDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IA0KDQoJTGludXgvUFBDIGxvYWQ6IGNvbnNvbGU9dHR5MSBjb25zb2xlPXR0
-eVMwLDk2MDAgcm9vdD0vZGV2L3hzeXNhY2UvZGlzYzAvcGFydDIgCXJ3ICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiAJaXA9b2ZmICAg
-ICAgIA0KCVVuY29tcHJlc3NpbmcgTGludXguLi5kb25lLiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIA0KCU5vdyBib290aW5nIHRoZSBrZXJuZWwgICAg
-ICAgICAgICAgICAgICAgICAgDQoJTGludXggdmVyc2lvbiAyLjQuMjBfbXZs
-MzEtbWw0MDMgKHJ5c2VycEB6ZXBoeXIwKSAoZ2NjIHZlcnNpb24gMy4zLjEg
-CShNb250YVZpc3RhDQogMy4zLjEtMy4wLjEwLjAzMDA1MzIgMjAwMy0xMi0y
-NCkpICMyIFRodSBGZWIgMTYgMTc6MjcNCgkuLi4uLi4uLi4uLi4uLi4uLi4N
-Cg0KDQoJSXQgaXMgYWJsZSB0byBib290Lg0KDQoJSSBmaW5kIHRoZSB0d28g
-aW1hZ2UgaXMgZGlmZmVyIGluIHppbWFnZSBsb2NhdGlvbg0KICAgICAgbXk6
-DQoJICB6aW1hZ2UgYXQ6ICAgICAwMDQwNUI1MyAwMDRCNjNGMw0KICAgICAg
-eGlsaW54Og0KCSAgemltYWdlIGF0OiAgICAgMDA0MDVDMTMgMDA0QjY5NTAN
-Cg0KDQoJd2h5PyB0aGV5IGFyZSBidWlsZCB3aXRoIHNhbWUgQlNQIGFuZCBj
-b25maWcuDQoNCglXb3VsZCB5b3UgZ2l2ZSBtZSBzb21lIGFkdmljZSAsIHRo
-YW5rcyENCg0KDQpCUiENCkRhdmlkIFlhbmcNCg0KDQoNCqGhoaGhoaGhoaGh
-oaGhoaF5YW5nLXFoQG5ldXNvZnQuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGh
-oTIwMDYtMDgtMTYNCg0KCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tCkNvbmZpZGVudGlhbGl0eSBOb3RpY2U6
-IFRoZSBpbmZvcm1hdGlvbiBjb250YWluZWQgaW4gdGhpcyBlLW1haWwgYW5k
-IGFueSBhY2NvbXBhbnlpbmcgYXR0YWNobWVudChzKSBpcyBpbnRlbmRlZCBv
-bmx5IGZvciB0aGUgdXNlIG9mIHRoZSBpbnRlbmRlZCByZWNpcGllbnQgYW5k
-IG1heSBiZSBjb25maWRlbnRpYWwgYW5kL29yIHByaXZpbGVnZWQgb2YgTmV1
-c29mdCBHcm91cCBMdGQuLCBpdHMgc3Vic2lkaWFyaWVzIGFuZC9vciBpdHMg
-YWZmaWxpYXRlcy4gSWYgYW55IHJlYWRlciBvZiB0aGlzIGNvbW11bmljYXRp
-b24gaXMgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHVuYXV0aG9yaXpl
-ZCB1c2UsIGZvcndhcmRpbmcsIHByaW50aW5nLCBzdG9yaW5nLCBkaXNjbG9z
-dXJlIG9yIGNvcHlpbmcgaXMgc3RyaWN0bHkgcHJvaGliaXRlZCwgYW5kIG1h
-eSBiZSB1bmxhd2Z1bC4gSWYgeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBjb21t
-dW5pY2F0aW9uIGluIGVycm9yLCBwbGVhc2UgaW1tZWRpYXRlbHkgbm90aWZ5
-IHRoZSBzZW5kZXIgYnkgcmV0dXJuIGUtbWFpbCwgYW5kIGRlbGV0ZSB0aGUg
-b3JpZ2luYWwgbWVzc2FnZSBhbmQgYWxsIGNvcGllcyBmcm9tIHlvdXIgc3lz
-dGVtLiBUaGFuayB5b3UuIAotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoK
+--0-1898329840-1155698659=:2661
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+
+I am trying to take a working embedded linux system from kernel 2.4 to 
+2.6. The hardware is a custom board using a MPC8270 processor.
+The working system uses u-boot 1.1.1 with linux kernel 2.4.24.
+I am using the same u-boot and I am trying to port linux kernel 2.6.15 
+to our platform. I just wonder hwo to define CPM_MAP_ADDR to my config file
+at /arch/ppc/platforms/olt8270.h,thsi show file context as follow
+
+#ifndef __OLT8270_PLATFORM
+#define __OLT8270_PLATFORM
+
+//#define CPM_MAP_ADDR  ((uint)0xf0000000)
+#define IMAP_ADDR  ((uint)0xf0000000)
+
+#define BOOTROM_RESTART_ADDR ((uint)0xfff00100)
+
+/* For our show_cpuinfo hooks. */
+#define CPUINFO_VENDOR  "Ocean Broadband Ltd"
+#define CPUINFO_MACHINE  "OLT8270 PowerPC"
+
+/* A Board Information structure that is given to a program when
+ * prom starts it up.
+ */
+typedef struct bd_info {
+ unsigned long bi_memstart; /* Memory start address */
+ unsigned long bi_memsize;     /* Memory (end) size in bytes */
+ unsigned long bi_flashstart; /* start of FLASH memory */
+ unsigned long bi_flashsize; /* size  of FLASH memory */
+ unsigned long bi_flashoffset; /* reserved area for startup monitor */
+    unsigned long   bi_sramstart;   /* start of SRAM memory */
+    unsigned long   bi_sramsize;    /* size of SRAM memory */
+
+ unsigned long bi_immr;     /* IMMR when called from boot rom */
+
+ unsigned long   bi_bootflags;   /* boot flag (for Lynx OS) */
+
+ unsigned long   bi_ip_addr;     /* IP Address */
+ unsigned char   bi_enetaddr[6]; /* Ethernet address */
+ unsigned short  bi_ethspeed;    /* Ethernet speed in Mbps */
+
+ unsigned long bi_intfreq;     /* Internal Freq, in Hz */
+ unsigned long bi_busfreq;     /* Bus Freq, in MHz */
+ unsigned long bi_cpmfreq;     /* CPM Freq, in MHz */
+ unsigned long bi_brgfreq;     /* BRG Freq, in MHz */
+ unsigned long bi_sccfreq;     /* SCC Freq, in MHz */
+ unsigned long bi_vco;      /* VCO Out from PLL */
+ unsigned long bi_baudrate; /* Default console baud rate */
+} bd_t;
+
+extern bd_t m8xx_board_info;
+
+#endif  /* __OLT8270_PLATFORM */
+
+
+
+Sincerely,
+
+
+Jie
+
+
+ 		
+---------------------------------
+Talk is cheap. Use Yahoo! Messenger to make PC-to-Phone calls.  Great rates starting at 1¢/min.
+--0-1898329840-1155698659=:2661
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<pre>I am trying to take a working embedded linux system from kernel 2.4 to <br>2.6. The hardware is a custom board using a MPC8270 processor.<br>The working system uses u-boot 1.1.1 with linux kernel 2.4.24.<br>I am using the same u-boot and I am trying to port linux kernel 2.6.15 <br>to our platform. I just wonder hwo to define CPM_MAP_ADDR to my config file<br>at /arch/ppc/platforms/olt8270.h,thsi show file context as follow<br><br>#ifndef __OLT8270_PLATFORM<br>#define __OLT8270_PLATFORM<br><br>//#define CPM_MAP_ADDR  ((uint)0xf0000000)<br>#define IMAP_ADDR  ((uint)0xf0000000)<br><br>#define BOOTROM_RESTART_ADDR ((uint)0xfff00100)<br><br>/* For our show_cpuinfo hooks. */<br>#define CPUINFO_VENDOR  "Ocean Broadband Ltd"<br>#define CPUINFO_MACHINE  "OLT8270 PowerPC"<br><br>/* A Board Information structure that is given to a program when<br> * prom starts it up.<br> */<br>typedef struct bd_info {<br> unsigned long bi_memstart; /* Memory start address */<br> unsigned long
+ bi_memsize;     /* Memory (end) size in bytes */<br> unsigned long bi_flashstart; /* start of FLASH memory */<br> unsigned long bi_flashsize; /* size  of FLASH memory */<br> unsigned long bi_flashoffset; /* reserved area for startup monitor */<br>    unsigned long   bi_sramstart;   /* start of SRAM memory */<br>    unsigned long   bi_sramsize;    /* size of SRAM memory */<br><br> unsigned long bi_immr;     /* IMMR when called from boot rom */<br><br> unsigned long   bi_bootflags;   /* boot flag (for Lynx OS) */<br><br> unsigned long   bi_ip_addr;     /* IP Address */<br> unsigned char   bi_enetaddr[6]; /* Ethernet address */<br> unsigned short  bi_ethspeed;    /* Ethernet speed in Mbps */<br><br> unsigned long bi_intfreq;     /* Internal Freq, in Hz */<br> unsigned long bi_busfreq;     /* Bus Freq, in MHz */<br> unsigned long bi_cpmfreq;     /* CPM Freq, in MHz */<br> unsigned long bi_brgfreq;     /* BRG Freq, in MHz */<br> unsigned long bi_sccfreq;     /* SCC Freq, in MHz
+ */<br> unsigned long bi_vco;      /* VCO Out from PLL */<br> unsigned long bi_baudrate; /* Default console baud rate */<br>} bd_t;<br><br>extern bd_t m8xx_board_info;<br><br>#endif  /* __OLT8270_PLATFORM */<br><br><br><br>Sincerely,<br><br><br>Jie<br></pre><p>&#32;
+		<hr size=1>Talk is cheap. Use Yahoo! Messenger to make PC-to-Phone calls. <a href="http://us.rd.yahoo.com/mail_us/taglines/postman7/*http://us.rd.yahoo.com/evt=39666/*http://messenger.yahoo.com"> Great rates starting at 1¢/min.
+--0-1898329840-1155698659=:2661--
