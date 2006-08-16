@@ -1,16 +1,17 @@
-Return-Path: <benjamin.heyne@uni-dortmund.de>
-Received: from unimail.uni-dortmund.de (mx1.HRZ.Uni-Dortmund.DE
-	[129.217.128.51]) by ozlabs.org (Postfix) with ESMTP id ED12D679E2
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 20:14:40 +1000 (EST)
-Date: Wed, 16 Aug 2006 11:31:37 +0200
-From: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Gunzip call fix for PPC kernel images >4MB
-Message-ID: <20060816113137.7a8e5608@bob.dt.e-technik.uni-dortmund.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tom Rini <trini@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 6DAA267A3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 20:39:58 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 16 Aug 2006 12:15:27 +0200
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Who cares about PReP?
+Message-ID: <20060816101527.GA21865@iram.es>
+References: <17622.58559.879330.496619@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17622.58559.879330.496619@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If Kernel images for PPC grow >4MB inflating of the kernel fails.
-Increasing the link/load address doesn't help. Problem is 
-solved by replacing the fixed address of the gunzip() call in
-misc-embedded.c with CONFIG_BOOT_LOAD.
+On Mon, Aug 07, 2006 at 04:59:11PM +1000, Paul Mackerras wrote:
+> I started looking at moving the PReP code over to arch/powerpc.  I am
+> struck by how many ifdefs there are in there to set things up for
+> particular individual PReP implementations.  We can do better than
+> that, I'm sure, 
 
-Signed-off-by: Benjamin Heyne <benjamin.heyne@uni-dortmund.de>
----
+hopefully.
 
---- arch/ppc/boot/simple/misc-embedded.c.orig 2006-08-16 10:56:10.000000000 +0200 
-+++ arch/ppc/boot/simple/misc-embedded.c 2006-08-16 10:56:55.000000000 +0200 
-@@ -213,7 +213,7 @@ load_kernel(unsigned long load_addr, int 
-	*cp = 0;
- 	puts("\nUncompressing Linux...");
- 
--	gunzip(0, 0x400000, zimage_start, &zimage_size);
-+	gunzip(0, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
- 	flush_instruction_cache();
- 	puts("done.\n");
- 	{
+> but the issue becomes one of testing.  The only PReP I
+> have here is an RS/6000 43p-140.
+> 
+> Who else has a PReP system and would be willing to do some testing and
+> debugging?  If so, what sort of PReP is it?
 
--- 
-Benjamin Heyne
-=======================================================
- Arbeitsgebiet Datentechnik, Universitaet Dortmund
- Information Processing Lab, University of Dortmund
+We are using 20+ MVME boards here so I am interested, 
+MVME2400/2600/2700 to be precise. 
 
- Otto-Hahn-Strasse 4, 44227 Dortmund, Germany
- Fon: +49 231 755 7017, Fax: +49 231 755 7019
- www.dt.e-technik.uni-dortmund.de, Raum/Room P1-04-217
+Right now I can test patches and not much more, I'm really 
+short of time and fighting other issues. Among them my PB 
+G4 from last December just completely failed (and Apple 
+told me to bring it to a shop in this city that is closed 
+for holidays until ... September 4th).
+
+
+	Regards,
+	Gabriel
