@@ -1,23 +1,35 @@
-Return-Path: <acahalan@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id ACFD667B59
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 00:43:38 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id p48so625761nfa
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 07:43:36 -0700 (PDT)
-Message-ID: <787b0d920608160743t60ba42b7m5dd1426e0ee1f576@mail.gmail.com>
-Date: Wed, 16 Aug 2006 10:43:36 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: PowerPC paxtest results w/ gcc-4.1
-In-Reply-To: <17634.64640.709200.871907@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <17630.27174.711916.643790@cargo.ozlabs.ibm.com>
-	<000301c6bf97$e9151e00$99dfdfdf@bakuhatsu.net>
-	<17633.18057.778991.483461@cargo.ozlabs.ibm.com>
-	<20060816105925.GB21865@iram.es>
-	<17634.64640.709200.871907@cargo.ozlabs.ibm.com>
-Cc: debian-powerpc@lists.debian.org, linuxppc-dev@ozlabs.org
+Return-Path: <agl@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9644A67B52
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 01:00:14 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7GF06pB012558
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 11:00:09 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7GF06aR267150
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 11:00:06 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7GF060a017860
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 11:00:06 -0400
+Subject: Re: 2.6.18-rc3->rc4 hugetlbfs regression
+From: Adam Litke <agl@us.ibm.com>
+To: Dave Hansen <haveblue@us.ibm.com>
+In-Reply-To: <1155655344.12700.45.camel@localhost.localdomain>
+References: <1155655344.12700.45.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 16 Aug 2006 10:00:04 -0500
+Message-Id: <1155740404.21863.70.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Suzuki Kp <suzukikp@in.ibm.com>,
+	PPC External List <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-mm <linux-mm@kvack.org>, Yao Fei Zhu <zhuyaof@cn.ibm.com>,
+	lge@us.ibm.com, Nishanth Aravamudan <nacc@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 8/16/06, Paul Mackerras <paulus@samba.org> wrote:
-> Gabriel Paubert writes:
+On Tue, 2006-08-15 at 08:22 -0700, Dave Hansen wrote:
+> kernel BUG in cache_free_debugcheck at mm/slab.c:2748!
 
-> > BTW, there is one way to make pages non executable: mark
-> > them as guarded, but it will have a significant cost in
-> > terms of performance.
->
-> Indeed.  I guess we could do that as a config option for machines that
-> really want maximum security at the expense of performance, but I
-> don't think all users would want that.
+Alright, this one is only triggered when slab debugging is enabled.  The slabs
+are assumed to be aligned on a HUGEPTE_TABLE_SIZE boundary.  The free path
+makes use of this assumption and uses the lowest nibble to pass around an index
+into an array of kmem_cache pointers.  With slab debugging turned on, the slab
+is still aligned, but the "working" object pointer is not.  This would break
+the assumption above that a full nibble is available for the PGF_CACHENUM_MASK.
 
-On the other hand, if you want to squeeze some performance
-out of the chip, turn off coherency. (probably not for SMP)
+The following patch reduces PGF_CACHENUM_MASK to cover only the two least
+significant bits, which is enough to cover the current number of 4 pgtable
+cache types.  Then use this constant to mask out the appropriate part of the
+huge pte pointer.
 
-I've done it before, with a non-Linux OS. It does help.
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+---
+ arch/powerpc/mm/hugetlbpage.c |    2 +-
+ include/asm-powerpc/pgalloc.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+diff -upN reference/arch/powerpc/mm/hugetlbpage.c current/arch/powerpc/mm/hugetlbpage.c
+--- reference/arch/powerpc/mm/hugetlbpage.c
++++ current/arch/powerpc/mm/hugetlbpage.c
+@@ -153,7 +153,7 @@ static void free_hugepte_range(struct mm
+ 	hpdp->pd = 0;
+ 	tlb->need_flush = 1;
+ 	pgtable_free_tlb(tlb, pgtable_free_cache(hugepte, HUGEPTE_CACHE_NUM,
+-						 HUGEPTE_TABLE_SIZE-1));
++						 PGF_CACHENUM_MASK));
+ }
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+diff -upN reference/include/asm-powerpc/pgalloc.h current/include/asm-powerpc/pgalloc.h
+--- reference/include/asm-powerpc/pgalloc.h
++++ current/include/asm-powerpc/pgalloc.h
+@@ -117,7 +117,7 @@ static inline void pte_free(struct page 
+ 	pte_free_kernel(page_address(ptepage));
+ }
+ 
+-#define PGF_CACHENUM_MASK	0xf
++#define PGF_CACHENUM_MASK	0x3
+ 
+ typedef struct pgtable_free {
+ 	unsigned long val;
 
-Other tricks are to map userspace via BATs and, on the 7410
-at least, to map half or all of the outermost cache memory as
-a special block of high-speed memory.
+
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
