@@ -1,25 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 153BB679E7
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 03:49:31 +1000 (EST)
-In-Reply-To: <20060816105925.GB21865@iram.es>
-References: <17630.27174.711916.643790@cargo.ozlabs.ibm.com>
-	<000301c6bf97$e9151e00$99dfdfdf@bakuhatsu.net>
-	<17633.18057.778991.483461@cargo.ozlabs.ibm.com>
-	<20060816105925.GB21865@iram.es>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <26A85218-4455-4132-8130-92F0502A8A5A@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: PowerPC paxtest results w/ gcc-4.1
-Date: Wed, 16 Aug 2006 19:49:17 +0200
-To: Gabriel Paubert <paubert@iram.es>
-Cc: 'Albert Cahalan' <acahalan@gmail.com>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <mikey@ozlabs.org>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 7/7] ehea: Makefile & Kconfig 
+In-reply-to: <44E0A580.9020507@de.ibm.com> 
+References: <44E0A580.9020507@de.ibm.com>
+Date: Wed, 16 Aug 2006 14:27:16 -0500
+Sender: mikey@ozlabs.org
+Message-Id: <20060816192721.09C2967A3A@ozlabs.org>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I never understood why PTE entries waste 4 bits (WIMG)
-> for effectively very few valid combinations.
+This patch is still being white space munged so it doesn't apply.  
 
-The only invalid combinations are WI=11 -- if you know of
-a way to fit 12 combinations in fewer than 4 bits, let us
-know :-)
+The context is being shifted over 1 column.  All your other patches add
+new files so there is no context and hence they apply.
 
-Not all of those 12 are very useful, of course.
+Mikey
 
-
-Segher
+In message <44E0A580.9020507@de.ibm.com> you wrote:
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> 
+> 
+>   drivers/net/Kconfig  |    6 ++++++
+>   drivers/net/Makefile |    1 +
+>   2 files changed, 7 insertions(+)
+> 
+> 
+> 
+> diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Kconfig patched_kernel/dr
+ivers/net/Kconfig
+> --- linux-2.6.18-rc4/drivers/net/Kconfig	2006-08-06 11:20:11.000000000 -
+0700
+> +++ patched_kernel/drivers/net/Kconfig	2006-08-08 03:00:49.526421944 -
+0700
+> @@ -2277,6 +2277,12 @@ config CHELSIO_T1
+>             To compile this driver as a module, choose M here: the module
+>             will be called cxgb.
+> 
+> +config EHEA
+> +        tristate "eHEA Ethernet support"
+> +        depends on IBMEBUS
+> +        ---help---
+> +          This driver supports the IBM pSeries ethernet adapter
+> +
+>   config IXGB
+>   	tristate "Intel(R) PRO/10GbE support"
+>   	depends on PCI
+> diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Makefile patched_kernel/d
+rivers/net/Makefile
+> --- linux-2.6.18-rc4/drivers/net/Makefile	2006-08-06 11:20:11.000000000 -
+0700
+> +++ patched_kernel/drivers/net/Makefile	2006-08-08 03:00:30.061451584 -
+0700
+> @@ -10,6 +10,7 @@ obj-$(CONFIG_E1000) += e1000/
+>   obj-$(CONFIG_IBM_EMAC) += ibm_emac/
+>   obj-$(CONFIG_IXGB) += ixgb/
+>   obj-$(CONFIG_CHELSIO_T1) += chelsio/
+> +obj-$(CONFIG_EHEA) += ehea/
+>   obj-$(CONFIG_BONDING) += bonding/
+>   obj-$(CONFIG_GIANFAR) += gianfar_driver.o
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
