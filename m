@@ -1,10 +1,32 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 16 Aug 2006 22:04:14 +1000
-Subject: [PATCH] Add a helper for calculating RTAS "config_addr" parameters
-Message-Id: <20060816120416.E285467B69@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 928EA67B57
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 23:15:36 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7GDFWrW027582
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 09:15:32 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7GDFRhg290270
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 09:15:27 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7GDFQbK005773
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 09:15:27 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [POWERPC] iseries: remove some gcc 4.1 warnings
+Date: Wed, 16 Aug 2006 15:15:25 +0200
+References: <20060816152032.2407a832.sfr@canb.auug.org.au>
+In-Reply-To: <20060816152032.2407a832.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608161515.26166.arnd.bergmann@de.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,68 +36,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Several RTAS calls take a "config_addr" parameter, which is a particular
-way of specifying a PCI busno, devfn and register number into a 32-bit word.
-Currently these are open-coded, and I'll be adding another soon, replace
-them with a helper that encapsulates the logic. Be more strict about masking
-the busno too, just in case.
+On Wednesday 16 August 2006 07:20, Stephen Rothwell wrote:
+> gcc 4.1 produces some warnings that it is ignoring the packed attribute
+> on some structure elements, so just remove them.
+> 
 
-Booted on P5 LPAR.
+Wouldn't it be nicer to just specify the packed attribute on the
+structure instead of each of the members? My reading of the 
+gcc documentation is that this is functionally the same, but
+it makes the source more readable, aside from avoiding this warning.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-
- arch/powerpc/kernel/rtas_pci.c |    6 ++----
- include/asm-powerpc/rtas.h     |   16 ++++++++++++++++
- 2 files changed, 18 insertions(+), 4 deletions(-)
-
-Index: git/arch/powerpc/kernel/rtas_pci.c
-===================================================================
---- git.orig/arch/powerpc/kernel/rtas_pci.c
-+++ git/arch/powerpc/kernel/rtas_pci.c
-@@ -81,8 +81,7 @@ int rtas_read_config(struct pci_dn *pdn,
- 	if (!config_access_valid(pdn, where))
- 		return PCIBIOS_BAD_REGISTER_NUMBER;
- 
--	addr = ((where & 0xf00) << 20) | (pdn->busno << 16) |
--		(pdn->devfn << 8) | (where & 0xff);
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
- 	buid = pdn->phb->buid;
- 	if (buid) {
- 		ret = rtas_call(ibm_read_pci_config, 4, 2, &returnval,
-@@ -134,8 +133,7 @@ int rtas_write_config(struct pci_dn *pdn
- 	if (!config_access_valid(pdn, where))
- 		return PCIBIOS_BAD_REGISTER_NUMBER;
- 
--	addr = ((where & 0xf00) << 20) | (pdn->busno << 16) |
--		(pdn->devfn << 8) | (where & 0xff);
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
- 	buid = pdn->phb->buid;
- 	if (buid) {
- 		ret = rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
-Index: git/include/asm-powerpc/rtas.h
-===================================================================
---- git.orig/include/asm-powerpc/rtas.h
-+++ git/include/asm-powerpc/rtas.h
-@@ -230,5 +230,21 @@ extern unsigned long rtas_rmo_buf;
- 
- #define GLOBAL_INTERRUPT_QUEUE 9005
- 
-+/**
-+ * rtas_config_addr - Format a busno, devfn and reg for RTAS.
-+ * @busno: The bus number.
-+ * @devfn: The device and function number as encoded by PCI_DEVFN().
-+ * @reg: The register number.
-+ *
-+ * This function encodes the given busno, devfn and register number as
-+ * required for RTAS calls that take a "config_addr" parameter.
-+ * See PAPR requirement 7.3.4-1 for more info.
-+ */
-+static inline u32 rtas_config_addr(int busno, int devfn, int reg)
-+{
-+	return ((reg & 0xf00) << 20) | ((busno & 0xff) << 16) |
-+			(devfn << 8) | (reg & 0xff);
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* _POWERPC_RTAS_H */
+	Arnd <><
