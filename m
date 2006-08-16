@@ -1,16 +1,15 @@
-Return-Path: <Hemanth.KumarBS@Lntemsys.com>
-Received: from mail86.messagelabs.com (mail86.messagelabs.com [216.82.244.115])
-	by ozlabs.org (Postfix) with SMTP id D66C167B58
+Return-Path: <GSM909@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 1623667B5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Aug 2006 22:43:32 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
-Subject: help
+	Wed, 16 Aug 2006 22:52:30 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 16 Aug 2006 14:52:28 +0200
+From: "Keinen Namen" <GSM909@gmx.de>
+Message-ID: <20060816125228.98000@gmx.net>
 MIME-Version: 1.0
-Message-ID: <OFA763D274.5D99CFED-ON652571CC.0045F942-652571CC.00461E05@lntemsys.com>
-From: Hemanth KumarBS <Hemanth.KumarBS@Lntemsys.com>
-Date: Wed, 16 Aug 2006 18:16:39 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00461E00652571CC_="
+Subject: Did someone have a working SPI Driver for Linux 2.6
+To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,26 +20,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00461E00652571CC_=
-Content-Type: text/plain; charset="US-ASCII"
+Hi
 
-Hi,
-
-I am working on PPC-8248. Is montavista has driver for DMA based SPI 
-driver ? 
+Did someone have a working SPI Driver for Linux 2.6 and the MPC82xx from Freescale?
 
 Regards
-Hemanth
---=_alternative 00461E00652571CC_=
-Content-Type: text/html; charset="US-ASCII"
+Fred
 
 
-<br><font size=2 face="sans-serif">Hi,</font>
-<br>
-<br><font size=2 face="sans-serif">I am working on PPC-8248. Is montavista
-has driver for DMA based SPI driver ? </font>
-<br>
-<br><font size=2 face="sans-serif">Regards</font>
-<br><font size=2 face="sans-serif">Hemanth</font>
---=_alternative 00461E00652571CC_=--
+-- 
+
+
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
