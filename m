@@ -1,22 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/4]: powerpc/cell spidernet ethtool -i version number
-	info.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20060815190524.GW6603@pb15.lixom.net>
-References: <20060811180013.GB6550@pb15.lixom.net>
-	<OF934FE4E3.EEC44FDD-ON872571C7.00668651-862571C7.00677A44@us.ibm.com>
-	<20060815190524.GW6603@pb15.lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-0hSfKaqUAvN8P1/CJO7c"
-Date: Wed, 16 Aug 2006 10:29:05 +1000
-Message-Id: <1155688145.26911.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
-	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 43CD867B56
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 10:50:05 +1000 (EST)
+In-Reply-To: <1155679316.10054.129.camel@cashmere.sps.mot.com>
+References: <1155679316.10054.129.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <28ED599F-8D9C-4518-B227-7E84C5A38857@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Outstanding Patches Ping
+Date: Tue, 15 Aug 2006 19:50:01 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,75 +25,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-0hSfKaqUAvN8P1/CJO7c
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Aug 15, 2006, at 5:01 PM, Jon Loeliger wrote:
 
-On Tue, 2006-08-15 at 14:05 -0500, Olof Johansson wrote:
-> On Fri, Aug 11, 2006 at 01:50:19PM -0500, James K Lewis wrote:
-> >  Hi Olof,
-> >=20
-> >   There are several reasons why an Ethernet driver should have an up to=
-=20
-> > date version number:
-> >=20
-> > 1. Customers like to see they are really getting a new version.
-> >=20
-> > 2. It makes it easier for support personnel (me in this case) to see wh=
-ich=20
-> > driver they have. Sure, sometimes I can talk them thru doing a "sum" on=
-=20
-> > the .ko and all that, but why not just use the version number? That's w=
-hat=20
-> > it is for. And no, you can't just assume they have the version that cam=
-e=20
-> > with the kernel they are running. It doesn't work that way.
-> >=20
-> > 3. It makes bug reporting easier.=20
-> >=20
-> > 4. I have already run into too many problems and wasted too much time=20
-> > working with drivers when the number was NOT getting updated.=20
->=20
-> Thanks for the info, Jim.
->=20
-> Sounds like it's most useful if a customer (or distro) takes the driver
-> out of the tree and run it with a different kernel, i.e. when kernel
-> and driver versions no longer go together. Makes sense.
+> Paul,
+>
+> Where do we stand on these two outstanding patches
+> that I have sent to the list?
+>
+>     - 08/03 Convert to mac-address for ethernet MAC data
 
-It only makes sense in addition to the kernel version number (which in
-some cases can be meaningless), plus any distro and/or local patches,
-plus the kernel config.
+Ack on the mac-address patch, and I think we should push it for  
+2.6.18, it deals with an interface issue that we really should get  
+into 2.6.18.
 
-Without all that information you don't really know what you're talking
-about, because any one of the many interfaces between the driver and the
-core kernel may have changed.
-
-So in practice I find it's much simpler to just get the exact source
-that they're running, rather than trying to guess based on version
-numbers. But that's just me :)
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-0hSfKaqUAvN8P1/CJO7c
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBE4mbRdSjSd0sB4dIRAvhKAKCA3hLLMSzx/yEn391sbCqBjBz94QCfdQmx
-48APrHG1VW4AMJbYwsld/6w=
-=8Kij
------END PGP SIGNATURE-----
-
---=-0hSfKaqUAvN8P1/CJO7c--
+>     - 08/09 Offer PCI as a CONFIG choice for PPC_86xx
+>
+> I think all the outstanding issues and commentary
+> on them was resolved.
+>
+> Thanks,
+> jdl
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
