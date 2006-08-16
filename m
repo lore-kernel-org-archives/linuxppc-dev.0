@@ -1,32 +1,23 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 928EA67B57
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 23:15:36 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7GDFWrW027582
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 09:15:32 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7GDFRhg290270
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 09:15:27 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7GDFQbK005773
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 09:15:27 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [POWERPC] iseries: remove some gcc 4.1 warnings
-Date: Wed, 16 Aug 2006 15:15:25 +0200
-References: <20060816152032.2407a832.sfr@canb.auug.org.au>
-In-Reply-To: <20060816152032.2407a832.sfr@canb.auug.org.au>
+Return-Path: <acahalan@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id ACFD667B59
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 00:43:38 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id p48so625761nfa
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 07:43:36 -0700 (PDT)
+Message-ID: <787b0d920608160743t60ba42b7m5dd1426e0ee1f576@mail.gmail.com>
+Date: Wed, 16 Aug 2006 10:43:36 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: PowerPC paxtest results w/ gcc-4.1
+In-Reply-To: <17634.64640.709200.871907@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608161515.26166.arnd.bergmann@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <17630.27174.711916.643790@cargo.ozlabs.ibm.com>
+	<000301c6bf97$e9151e00$99dfdfdf@bakuhatsu.net>
+	<17633.18057.778991.483461@cargo.ozlabs.ibm.com>
+	<20060816105925.GB21865@iram.es>
+	<17634.64640.709200.871907@cargo.ozlabs.ibm.com>
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,14 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 August 2006 07:20, Stephen Rothwell wrote:
-> gcc 4.1 produces some warnings that it is ignoring the packed attribute
-> on some structure elements, so just remove them.
-> 
+On 8/16/06, Paul Mackerras <paulus@samba.org> wrote:
+> Gabriel Paubert writes:
 
-Wouldn't it be nicer to just specify the packed attribute on the
-structure instead of each of the members? My reading of the 
-gcc documentation is that this is functionally the same, but
-it makes the source more readable, aside from avoiding this warning.
+> > BTW, there is one way to make pages non executable: mark
+> > them as guarded, but it will have a significant cost in
+> > terms of performance.
+>
+> Indeed.  I guess we could do that as a config option for machines that
+> really want maximum security at the expense of performance, but I
+> don't think all users would want that.
 
-	Arnd <><
+On the other hand, if you want to squeeze some performance
+out of the chip, turn off coherency. (probably not for SMP)
+
+I've done it before, with a non-Linux OS. It does help.
+
+Other tricks are to map userspace via BATs and, on the 7410
+at least, to map half or all of the outermost cache memory as
+a special block of high-speed memory.
