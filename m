@@ -1,17 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Make RTAS console init generic
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20060816040040.1E20967B55@ozlabs.org>
-References: <20060816040040.1E20967B55@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-PNKyW5KJv4630LcmkXVt"
-Date: Wed, 16 Aug 2006 15:21:35 +1000
-Message-Id: <1155705695.12715.7.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C83BA67B5E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 15:24:35 +1000 (EST)
+Date: Wed, 16 Aug 2006 15:24:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] iseries: remove const warning
+Message-Id: <20060816152428.46183e42.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,74 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Just one bit of fallout from the constification of the get_property
+return value.
 
---=-PNKyW5KJv4630LcmkXVt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/iseries/viopath.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-On Tue, 2006-08-15 at 23:00 -0500, Michael Neuling wrote:
-> The RTAS console doesn't have to be Cell specific.  If we have both
-> the put and get char RTAS functions, init the rtas console.
->=20
-> Index: linux-2.6-ozlabs/arch/powerpc/kernel/rtas.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/rtas.c
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/rtas.c
-> @@ -910,6 +910,11 @@ int __init early_init_dt_scan_rtas(unsig
->  	basep =3D of_get_flat_dt_prop(node, "get-term-char", NULL);
->  	if (basep)
->  		rtas_getchar_token =3D *basep;
-> +
-> +	if (rtas_putchar_token !=3D RTAS_UNKNOWN_SERVICE &&
-> +	    rtas_getchar_token !=3D RTAS_UNKNOWN_SERVICE)
-> +		udbg_init_rtas_console();
-> +
->  #endif
-> =20
->  	/* break now */
-> Index: linux-2.6-ozlabs/arch/powerpc/platforms/cell/setup.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6-ozlabs.orig/arch/powerpc/platforms/cell/setup.c
-> +++ linux-2.6-ozlabs/arch/powerpc/platforms/cell/setup.c
-> @@ -150,10 +150,6 @@ static int __init cell_probe(void)
->  	    !of_flat_dt_is_compatible(root, "IBM,CPBW-1.0"))
->  		return 0;
-> =20
-> -#ifdef CONFIG_UDBG_RTAS_CONSOLE
-> -	udbg_init_rtas_console();
-> -#endif
-> -
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'd like to see it still guarded by UDBG_RTAS_CONSOLE, otherwise there's
-no way to select a different type of early console on a machine which
-has those tokens in the device tree.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-PNKyW5KJv4630LcmkXVt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBE4qtfdSjSd0sB4dIRArSLAKCG0d7fCkECAoztFURTE+cldV9XgQCgvTgP
-HMa41pOLpGazOULLvni2WUg=
-=BMuz
------END PGP SIGNATURE-----
-
---=-PNKyW5KJv4630LcmkXVt--
+diff --git a/arch/powerpc/platforms/iseries/viopath.c b/arch/powerpc/platforms/iseries/viopath.c
+index efeb6ae..9baa4ee 100644
+--- a/arch/powerpc/platforms/iseries/viopath.c
++++ b/arch/powerpc/platforms/iseries/viopath.c
+@@ -117,6 +117,7 @@ static int proc_viopath_show(struct seq_
+ 	HvLpEvent_Rc hvrc;
+ 	DECLARE_MUTEX_LOCKED(Semaphore);
+ 	struct device_node *node;
++	const char *sysid;
+ 
+ 	buf = kmalloc(HW_PAGE_SIZE, GFP_KERNEL);
+ 	if (!buf)
+@@ -152,15 +153,15 @@ static int proc_viopath_show(struct seq_
+ 	seq_printf(m, "AVAILABLE_VETH=%x\n", vlanMap);
+ 
+ 	node = of_find_node_by_path("/");
+-	buf = NULL;
++	sysid = NULL;
+ 	if (node != NULL)
+-		buf = get_property(node, "system-id", NULL);
++		sysid = get_property(node, "system-id", NULL);
+ 
+-	if (buf == NULL)
++	if (sysid == NULL)
+ 		seq_printf(m, "SRLNBR=<UNKNOWN>\n");
+ 	else
+ 		/* Skip "IBM," on front of serial number, see dt.c */
+-		seq_printf(m, "SRLNBR=%s\n", buf + 4);
++		seq_printf(m, "SRLNBR=%s\n", sysid + 4);
+ 
+ 	of_node_put(node);
+ 
+-- 
+1.4.1.1
