@@ -1,36 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 901B267BF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 09:48:33 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7GNmTF6005110
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 19:48:30 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7GNlTvu124448
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 17:47:29 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7GNlSrl022024
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 17:47:29 -0600
-Date: Wed, 16 Aug 2006 18:47:28 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/2]: powerpc/cell spidernet bottom half
-Message-ID: <20060816234728.GP20551@austin.ibm.com>
-References: <44E34825.2020105@garzik.org> <200608162324.47235.arnd@arndb.de>
-	<20060816225558.GM20551@austin.ibm.com>
-	<200608170103.21097.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200608170103.21097.arnd@arndb.de>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org, jklewis@us.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jens.Osterkamp@de.ibm.com, David Miller <davem@davemloft.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 29DBF67D95
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 09:49:04 +1000 (EST)
+Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20060811204105.GK3233@localdomain>
+References: <20060811204105.GK3233@localdomain>
+Content-Type: text/plain
+Date: Thu, 17 Aug 2006 01:48:54 +0200
+Message-Id: <1155772134.11312.119.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,32 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 17, 2006 at 01:03:20AM +0200, Arnd Bergmann wrote:
+On Fri, 2006-08-11 at 15:41 -0500, Nathan Lynch wrote:
+
+> +	/* Sampling the time base must be done after loading
+> +	 * do_gtod.varp in order to avoid racing with update_gtod.
+> +	 */
+> +	rmb();
+> +	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
+
+The barrier isn't necessary and the race not completely closed imho... I
+need to think about it a bit more closely but what about instead just
+check if tb_ticks goes negative, and if yes, just do get_tb() again ?
+That might be faster than having a sync in there and should still be
+correct.
+
+>  	temp_tb_to_xs = temp_varp->tb_to_xs;
+>  	temp_stamp_xsec = temp_varp->stamp_xsec;
+>  	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
+> @@ -464,7 +469,7 @@ void do_gettimeofday(struct timeval *tv)
+>  		tv->tv_usec = usec;
+>  		return;
+>  	}
+> -	__do_gettimeofday(tv, get_tb());
+> +	__do_gettimeofday(tv);
+>  }
+>  
+>  EXPORT_SYMBOL(do_gettimeofday);
 > 
-> Could well be related to latencies when going to the remote
-> node for descriptor DMAs. Have you tried if the hch's NUMA
-> patch or using numactl makes a difference here?
-
-No. I guess I should try.
-
-> > > sounds like the right approach to simplify the code.
-> >
-> > Its not a big a driver. 'wc' says its 2.3 loc, which
-> > is 1/3 or 1/5 the size of tg3.c or the e1000*c files.
-> 
-> Right, I was thinking of removing a lock or another, not
-> throwing out half of the driver ;-)
-
-There's only four lock points grand total. 
--- One on the receive side,
--- one to protect the transmit head pointer, 
--- one to protect the transmit tail pointer, 
--- one to protect the location of the transmit low watermark.
-
-The last three share the same lock. I tried using distinct
-locks, but this worsened things, probably due to cache-line 
-trashing. I tried removing the head pointer lock, but this
-failed. I don't know why, and was surprised by this. I thought
-hard_start_xmit() was serialized.
-
---linas
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
