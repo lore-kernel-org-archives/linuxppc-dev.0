@@ -1,11 +1,11 @@
 Return-Path: <rolandd@cisco.com>
 Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id 3541A67D86
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:20:48 +1000 (EST)
-Subject: [PATCH 07/13] IB/ehca: cq
-In-Reply-To: <20068171311.L4phXwdeU9u1VjBq@cisco.com>
-Date: Thu, 17 Aug 2006 13:11:01 -0700
-Message-Id: <20068171311.4HUmviC1Ip8J2EpE@cisco.com>
+	by ozlabs.org (Postfix) with ESMTP id 6597D68251
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:20:52 +1000 (EST)
+Subject: [PATCH 00/13] IB/ehca: uverbs
+In-Reply-To: <2006817139.e1epJYk9xVvFdTao@cisco.com>
+Date: Thu, 17 Aug 2006 13:11:00 -0700
+Message-Id: <20068171311.QJ2lcO2NjghtFOX6@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: openib-general@openib.org, linux-kernel@vger.kernel.org,
@@ -21,26 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- drivers/infiniband/hw/ehca/ehca_cq.c |  449 ++++++++++++++++++++++++++++++++++
- 1 files changed, 449 insertions(+), 0 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_uverbs.c |  400 ++++++++++++++++++++++++++++++
+ 1 files changed, 400 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
+diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
 new file mode 100644
-index 0000000..c52d1c3
+index 0000000..c148c23
 --- /dev/null
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -0,0 +1,449 @@
++++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
+@@ -0,0 +1,400 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  Completion queue handling
++ *  userspace support verbs
 + *
-+ *  Authors: Waleri Fomin <fomin@de.ibm.com>
-+ *           Khadija Souissi <souissi@de.ibm.com>
-+ *           Reinhard Ernst <rernst@de.ibm.com>
-+ *           Heiko J Schick <schickhj@de.ibm.com>
++ *  Authors: Christoph Raisch <raisch@de.ibm.com>
 + *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-+ *
++ *           Heiko J Schick <schickhj@de.ibm.com>
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
@@ -75,408 +72,362 @@ index 0000000..c52d1c3
 + * POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#define DEB_PREFIX "e_cq"
++#undef DEB_PREFIX
++#define DEB_PREFIX "uver"
 +
 +#include <asm/current.h>
 +
-+#include "ehca_iverbs.h"
 +#include "ehca_classes.h"
-+#include "ehca_irq.h"
++#include "ehca_iverbs.h"
++#include "ehca_mrmw.h"
++#include "ehca_tools.h"
 +#include "hcp_if.h"
 +
-+int ehca_cq_assign_qp(struct ehca_cq *cq, struct ehca_qp *qp)
++struct ib_ucontext *ehca_alloc_ucontext(struct ib_device *device,
++					struct ib_udata *udata)
 +{
-+	unsigned int qp_num = qp->real_qp_num;
-+	unsigned int key = qp_num & (QP_HASHTAB_LEN-1);
-+	unsigned long spl_flags = 0;
++	struct ehca_ucontext *my_context = NULL;
 +
-+	spin_lock_irqsave(&cq->spinlock, spl_flags);
-+	hlist_add_head(&qp->list_entries, &cq->qp_hashtab[key]);
-+	spin_unlock_irqrestore(&cq->spinlock, spl_flags);
++	EHCA_CHECK_ADR_P(device);
++	EDEB_EN(7, "device=%p name=%s", device, device->name);
 +
-+	EDEB(7, "cq_num=%x real_qp_num=%x", cq->cq_number, qp_num);
++	my_context = kzalloc(sizeof *my_context, GFP_KERNEL);
++	if (!my_context) {
++		EDEB_ERR(4, "Out of memory device=%p", device);
++		return ERR_PTR(-ENOMEM);
++	}
 +
++	EDEB_EX(7, "device=%p ucontext=%p", device, my_context);
++
++	return &my_context->ib_ucontext;
++}
++
++int ehca_dealloc_ucontext(struct ib_ucontext *context)
++{
++	struct ehca_ucontext *my_context = NULL;
++	EHCA_CHECK_ADR(context);
++	EDEB_EN(7, "ucontext=%p", context);
++	my_context = container_of(context, struct ehca_ucontext, ib_ucontext);
++	kfree(my_context);
++	EDEB_EN(7, "ucontext=%p", context);
 +	return 0;
 +}
 +
-+int ehca_cq_unassign_qp(struct ehca_cq *cq, unsigned int real_qp_num)
++struct page *ehca_nopage(struct vm_area_struct *vma,
++			 unsigned long address, int *type)
 +{
-+	int ret = -EINVAL;
-+	unsigned int key = real_qp_num & (QP_HASHTAB_LEN-1);
-+	struct hlist_node *iter = NULL;
-+	struct ehca_qp *qp = NULL;
-+	unsigned long spl_flags = 0;
-+
-+	spin_lock_irqsave(&cq->spinlock, spl_flags);
-+	hlist_for_each(iter, &cq->qp_hashtab[key]) {
-+		qp = hlist_entry(iter, struct ehca_qp, list_entries);
-+		if (qp->real_qp_num == real_qp_num) {
-+			hlist_del(iter);
-+			EDEB(7, "removed qp from cq .cq_num=%x real_qp_num=%x",
-+			     cq->cq_number, real_qp_num);
-+			ret = 0;
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&cq->spinlock, spl_flags);
-+	if (ret) {
-+		EDEB_ERR(4, "qp not found cq_num=%x real_qp_num=%x",
-+			 cq->cq_number, real_qp_num);
-+	}
-+
-+	return ret;
-+}
-+
-+struct ehca_qp* ehca_cq_get_qp(struct ehca_cq *cq, int real_qp_num)
-+{
-+	struct ehca_qp *ret = NULL;
-+	unsigned int key = real_qp_num & (QP_HASHTAB_LEN-1);
-+	struct hlist_node *iter = NULL;
-+	struct ehca_qp *qp = NULL;
-+	hlist_for_each(iter, &cq->qp_hashtab[key]) {
-+		qp = hlist_entry(iter, struct ehca_qp, list_entries);
-+		if (qp->real_qp_num == real_qp_num) {
-+			ret = qp;
-+			break;
-+		}
-+	}
-+	return ret;
-+}
-+
-+struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe,
-+			     struct ib_ucontext *context,
-+			     struct ib_udata *udata)
-+{
-+	extern struct ehca_module ehca_module;
-+	struct ib_cq *cq = NULL;
-+	struct ehca_cq *my_cq = NULL;
-+	struct ehca_shca *shca = NULL;
-+	struct ipz_adapter_handle adapter_handle;
-+	/* h_call's out parameters */
-+	struct ehca_alloc_cq_parms param;
-+	u32 counter = 0;
-+	void *vpage = NULL;
-+	u64 rpage = 0;
-+	struct h_galpa gal;
-+	u64 cqx_fec = 0;
-+	u64 h_ret = 0;
-+	int ipz_rc = 0;
-+	int ret = 0;
-+	const u32 additional_cqe=20;
-+	int i= 0;
++	struct page *mypage = NULL;
++	u64 fileoffset = vma->vm_pgoff << PAGE_SHIFT;
++	u32 idr_handle = fileoffset >> 32;
++	u32 q_type = (fileoffset >> 28) & 0xF;	  /* CQ, QP,...        */
++	u32 rsrc_type = (fileoffset >> 24) & 0xF; /* sq,rq,cmnd_window */
++	u32 cur_pid = current->tgid;
 +	unsigned long flags;
 +
-+	EHCA_CHECK_DEVICE_P(device);
-+	EDEB_EN(7,  "device=%p cqe=%x context=%p", device, cqe, context);
++	EDEB_EN(7, "vm_start=%lx vm_end=%lx vm_page_prot=%lx vm_fileoff=%lx "
++		"address=%lx",
++		vma->vm_start, vma->vm_end, vma->vm_page_prot, fileoffset,
++		address);
 +
-+	if (cqe >= 0xFFFFFFFF - 64 - additional_cqe)
-+		return ERR_PTR(-EINVAL);
-+
-+	my_cq = kmem_cache_alloc(ehca_module.cache_cq, SLAB_KERNEL);
-+	if (!my_cq) {
-+		cq = ERR_PTR(-ENOMEM);
-+		EDEB_ERR(4, "Out of memory for ehca_cq struct device=%p",
-+			 device);
-+		goto create_cq_exit0;
-+	}
-+
-+	memset(my_cq, 0, sizeof(struct ehca_cq));
-+	memset(&param, 0, sizeof(struct ehca_alloc_cq_parms));
-+
-+	spin_lock_init(&my_cq->spinlock);
-+	spin_lock_init(&my_cq->cb_lock);
-+	spin_lock_init(&my_cq->task_lock);
-+	my_cq->ownpid = current->tgid;
-+
-+	cq = &my_cq->ib_cq;
-+
-+	shca = container_of(device, struct ehca_shca, ib_device);
-+	adapter_handle = shca->ipz_hca_handle;
-+	param.eq_handle = shca->eq.ipz_eq_handle;
-+
-+
-+	do {
-+		if (!idr_pre_get(&ehca_cq_idr, GFP_KERNEL)) {
-+			cq = ERR_PTR(-ENOMEM);
-+			EDEB_ERR(4,
-+				 "Can't reserve idr resources. "
-+				 "device=%p", device);
-+			goto create_cq_exit1;
-+		}
++	if (q_type == 1) { /* CQ */
++		struct ehca_cq *cq = NULL;
++		u64 offset;
++		void *vaddr = NULL;
 +
 +		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+		ret = idr_get_new(&ehca_cq_idr, my_cq, &my_cq->token);
++		cq = idr_find(&ehca_cq_idr, idr_handle);
 +		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
 +
-+	} while (ret == -EAGAIN);
-+
-+	if (ret) {
-+		cq = ERR_PTR(-ENOMEM);
-+		EDEB_ERR(4,
-+			 "Can't allocate new idr entry. "
-+			 "device=%p", device);
-+		goto create_cq_exit1;
-+	}
-+
-+	/*
-+	 * CQs maximum depth is 4GB-64, but we need additional 20 as buffer
-+	 * for receiving errors CQEs.
-+	 */
-+	param.nr_cqe = cqe + additional_cqe;
-+	h_ret = hipz_h_alloc_resource_cq(adapter_handle, my_cq, &param);
-+
-+	if (h_ret != H_SUCCESS) {
-+		EDEB_ERR(4,"hipz_h_alloc_resource_cq() failed "
-+			 "h_ret=%lx device=%p", h_ret, device);
-+		cq = ERR_PTR(ehca2ib_return_code(h_ret));
-+		goto create_cq_exit2;
-+	}
-+
-+	ipz_rc = ipz_queue_ctor(&my_cq->ipz_queue, param.act_pages,
-+				EHCA_PAGESIZE, sizeof(struct ehca_cqe), 0);
-+	if (!ipz_rc) {
-+		EDEB_ERR(4,
-+			 "ipz_queue_ctor() failed "
-+			 "ipz_rc=%x device=%p", ipz_rc, device);
-+		cq = ERR_PTR(-EINVAL);
-+		goto create_cq_exit3;
-+	}
-+
-+	for (counter = 0; counter < param.act_pages; counter++) {
-+		vpage = ipz_qpageit_get_inc(&my_cq->ipz_queue);
-+		if (!vpage) {
-+			EDEB_ERR(4, "ipz_qpageit_get_inc() "
-+				 "returns NULL device=%p", device);
-+			cq = ERR_PTR(-EAGAIN);
-+			goto create_cq_exit4;
-+		}
-+		rpage = virt_to_abs(vpage);
-+
-+		h_ret = hipz_h_register_rpage_cq(adapter_handle,
-+						 my_cq->ipz_cq_handle,
-+						 &my_cq->pf,
-+						 0,
-+						 0,
-+						 rpage,
-+						 1,
-+						 my_cq->galpas.
-+						 kernel);
-+
-+		if (h_ret < H_SUCCESS) {
-+			EDEB_ERR(4, "hipz_h_register_rpage_cq() failed "
-+				 "ehca_cq=%p cq_num=%x h_ret=%lx "
-+				 "counter=%i act_pages=%i",
-+				 my_cq, my_cq->cq_number,
-+				 h_ret, counter, param.act_pages);
-+			cq = ERR_PTR(-EINVAL);
-+			goto create_cq_exit4;
++		if (cq->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, cq->ownpid);
++			return NOPAGE_SIGBUS;
 +		}
 +
-+		if (counter == (param.act_pages - 1)) {
-+			vpage = ipz_qpageit_get_inc(&my_cq->ipz_queue);
-+			if ((h_ret != H_SUCCESS) || vpage) {
-+				EDEB_ERR(4, "Registration of pages not "
-+					 "complete ehca_cq=%p cq_num=%x "
-+					 "h_ret=%lx",
-+					 my_cq, my_cq->cq_number, h_ret);
-+				cq = ERR_PTR(-EAGAIN);
-+				goto create_cq_exit4;
-+			}
-+		} else {
-+			if (h_ret != H_PAGE_REGISTERED) {
-+				EDEB_ERR(4, "Registration of page failed "
-+					 "ehca_cq=%p cq_num=%x h_ret=%lx"
-+					 "counter=%i act_pages=%i",
-+					 my_cq, my_cq->cq_number,
-+					 h_ret, counter, param.act_pages);
-+				cq = ERR_PTR(-ENOMEM);
-+				goto create_cq_exit4;
-+			}
++		/* make sure this mmap really belongs to the authorized user */
++		if (!cq) {
++			EDEB_ERR(4, "cq is NULL ret=NOPAGE_SIGBUS");
++			return NOPAGE_SIGBUS;
++		}
++		if (rsrc_type == 2) {
++			EDEB(6, "cq=%p cq queuearea", cq);
++			offset = address - vma->vm_start;
++			vaddr = ipz_qeit_calc(&cq->ipz_queue, offset);
++			EDEB(6, "offset=%lx vaddr=%p", offset, vaddr);
++			mypage = virt_to_page(vaddr);
++		}
++	} else if (q_type == 2) { /* QP */
++		struct ehca_qp *qp = NULL;
++		struct ehca_pd *pd = NULL;
++		u64 offset;
++		void *vaddr = NULL;
++
++		spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++		qp = idr_find(&ehca_qp_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++
++
++		pd = container_of(qp->ib_qp.pd, struct ehca_pd, ib_pd);
++		if (pd->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, pd->ownpid);
++			return NOPAGE_SIGBUS;
++		}
++
++		/* make sure this mmap really belongs to the authorized user */
++		if (!qp) {
++			EDEB_ERR(4, "qp is NULL ret=NOPAGE_SIGBUS");
++			return NOPAGE_SIGBUS;
++		}
++		if (rsrc_type == 2) {	/* rqueue */
++			EDEB(6, "qp=%p qp rqueuearea", qp);
++			offset = address - vma->vm_start;
++			vaddr = ipz_qeit_calc(&qp->ipz_rqueue, offset);
++			EDEB(6, "offset=%lx vaddr=%p", offset, vaddr);
++			mypage = virt_to_page(vaddr);
++		} else if (rsrc_type == 3) {	/* squeue */
++			EDEB(6, "qp=%p qp squeuearea", qp);
++			offset = address - vma->vm_start;
++			vaddr = ipz_qeit_calc(&qp->ipz_squeue, offset);
++			EDEB(6, "offset=%lx vaddr=%p", offset, vaddr);
++			mypage = virt_to_page(vaddr);
 +		}
 +	}
 +
-+	ipz_qeit_reset(&my_cq->ipz_queue);
-+
-+	gal = my_cq->galpas.kernel;
-+	cqx_fec = hipz_galpa_load(gal, CQTEMM_OFFSET(cqx_fec));
-+	EDEB(8, "ehca_cq=%p cq_num=%x CQX_FEC=%lx",
-+	     my_cq, my_cq->cq_number, cqx_fec);
-+
-+	my_cq->ib_cq.cqe = my_cq->nr_of_entries =
-+		param.act_nr_of_entries - additional_cqe;
-+	my_cq->cq_number = (my_cq->ipz_cq_handle.handle) & 0xffff;
-+
-+	for (i = 0; i < QP_HASHTAB_LEN; i++)
-+		INIT_HLIST_HEAD(&my_cq->qp_hashtab[i]);
-+
-+	if (context) {
-+		struct ipz_queue *ipz_queue = &my_cq->ipz_queue;
-+		struct ehca_create_cq_resp resp;
-+		struct vm_area_struct *vma = NULL;
-+		memset(&resp, 0, sizeof(resp));
-+		resp.cq_number = my_cq->cq_number;
-+		resp.token = my_cq->token;
-+		resp.ipz_queue.qe_size = ipz_queue->qe_size;
-+		resp.ipz_queue.act_nr_of_sg = ipz_queue->act_nr_of_sg;
-+		resp.ipz_queue.queue_length = ipz_queue->queue_length;
-+		resp.ipz_queue.pagesize = ipz_queue->pagesize;
-+		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
-+		ret = ehca_mmap_nopage(((u64)(my_cq->token) << 32) | 0x12000000,
-+				       ipz_queue->queue_length,
-+				       (void**)&resp.ipz_queue.queue,
-+				       &vma);
-+		if (ret) {
-+			EDEB_ERR(4, "Could not mmap queue pages");
-+			cq = ERR_PTR(ret);
-+			goto create_cq_exit4;
-+		}
-+		my_cq->uspace_queue = resp.ipz_queue.queue;
-+		resp.galpas = my_cq->galpas;
-+		ret = ehca_mmap_register(my_cq->galpas.user.fw_handle,
-+					 (void**)&resp.galpas.kernel.fw_handle,
-+					 &vma);
-+		if (ret) {
-+			EDEB_ERR(4, "Could not mmap fw_handle");
-+			cq = ERR_PTR(ret);
-+			goto create_cq_exit5;
-+		}
-+		my_cq->uspace_fwh = (u64)resp.galpas.kernel.fw_handle;
-+		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
-+			EDEB_ERR(4,  "Copy to udata failed.");
-+			goto create_cq_exit6;
-+		}
++	if (!mypage) {
++		EDEB_ERR(4, "Invalid page adr==NULL ret=NOPAGE_SIGBUS");
++		return NOPAGE_SIGBUS;
 +	}
-+
-+	EDEB_EX(7,"retcode=%p ehca_cq=%p cq_num=%x cq_size=%x",
-+		cq, my_cq, my_cq->cq_number, param.act_nr_of_entries);
-+	return cq;
-+
-+create_cq_exit6:
-+	ehca_munmap(my_cq->uspace_fwh, EHCA_PAGESIZE);
-+
-+create_cq_exit5:
-+	ehca_munmap(my_cq->uspace_queue, my_cq->ipz_queue.queue_length);
-+
-+create_cq_exit4:
-+	ipz_queue_dtor(&my_cq->ipz_queue);
-+
-+create_cq_exit3:
-+	h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 1);
-+	if (h_ret != H_SUCCESS)
-+		EDEB(4, "hipz_h_destroy_cq() failed ehca_cq=%p cq_num=%x "
-+		     "h_ret=%lx", my_cq, my_cq->cq_number, h_ret);
-+
-+create_cq_exit2:
-+	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+	idr_remove(&ehca_cq_idr, my_cq->token);
-+	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
-+
-+create_cq_exit1:
-+	kmem_cache_free(ehca_module.cache_cq, my_cq);
-+
-+create_cq_exit0:
-+	EDEB_EX(4, "An error has occured retcode=%p", cq);
-+	return cq;
++	get_page(mypage);
++	EDEB_EX(7, "page adr=%p", mypage);
++	return mypage;
 +}
 +
-+int ehca_destroy_cq(struct ib_cq *cq)
++static struct vm_operations_struct ehcau_vm_ops = {
++	.nopage = ehca_nopage,
++};
++
++int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
 +{
-+	extern struct ehca_module ehca_module;
-+	u64 h_ret = 0;
-+	int ret = 0;
-+	struct ehca_cq *my_cq = NULL;
-+	int cq_num = 0;
-+	struct ib_device *device = NULL;
-+	struct ehca_shca *shca = NULL;
-+	struct ipz_adapter_handle adapter_handle;
++	u64 fileoffset = vma->vm_pgoff << PAGE_SHIFT;
++	u32 idr_handle = fileoffset >> 32;
++	u32 q_type = (fileoffset >> 28) & 0xF;	  /* CQ, QP,...        */
++	u32 rsrc_type = (fileoffset >> 24) & 0xF; /* sq,rq,cmnd_window */
++	u32 ret = -EFAULT;	/* assume the worst             */
++	u64 vsize = 0;		/* must be calculated/set below */
++	u64 physical = 0;	/* must be calculated/set below */
 +	u32 cur_pid = current->tgid;
 +	unsigned long flags;
 +
-+	EHCA_CHECK_CQ(cq);
-+	my_cq = container_of(cq, struct ehca_cq, ib_cq);
-+	cq_num = my_cq->cq_number;
-+	device = cq->device;
-+	EHCA_CHECK_DEVICE(device);
-+	shca = container_of(device, struct ehca_shca, ib_device);
-+	adapter_handle = shca->ipz_hca_handle;
-+	EDEB_EN(7, "ehca_cq=%p cq_num=%x",
-+		my_cq, my_cq->cq_number);
++	EDEB_EN(7, "vm_start=%lx vm_end=%lx vm_page_prot=%lx vm_fileoff=%lx",
++		vma->vm_start, vma->vm_end, vma->vm_page_prot, fileoffset);
 +
-+	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+	while (my_cq->nr_callbacks)
-+		yield();
++	if (q_type == 1) { /* CQ */
++		struct ehca_cq *cq;
 +
-+	idr_remove(&ehca_cq_idr, my_cq->token);
-+	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		cq = idr_find(&ehca_cq_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
 +
-+	if (my_cq->uspace_queue && my_cq->ownpid != cur_pid) {
-+		EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
-+			 cur_pid, my_cq->ownpid);
-+		return -EINVAL;
++		if (cq->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, cq->ownpid);
++			return -ENOMEM;
++		}
++
++		/* make sure this mmap really belongs to the authorized user */
++		if (!cq)
++			return -EINVAL;
++		if (!cq->ib_cq.uobject)
++			return -EINVAL;
++		if (cq->ib_cq.uobject->context != context)
++			return -EINVAL;
++		if (rsrc_type == 1) {	/* galpa fw handle */
++			EDEB(6, "cq=%p cq triggerarea", cq);
++			vma->vm_flags |= VM_RESERVED;
++			vsize = vma->vm_end - vma->vm_start;
++			if (vsize != EHCA_PAGESIZE) {
++				EDEB_ERR(4, "invalid vsize=%lx",
++					 vma->vm_end - vma->vm_start);
++				ret = -EINVAL;
++				goto mmap_exit0;
++			}
++
++			physical = cq->galpas.user.fw_handle;
++			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++			vma->vm_flags |= VM_IO | VM_RESERVED;
++
++			EDEB(6, "vsize=%lx physical=%lx", vsize, physical);
++			ret = remap_pfn_range(vma, vma->vm_start,
++					      physical >> PAGE_SHIFT, vsize,
++					      vma->vm_page_prot);
++			if (ret) {
++				EDEB_ERR(4, "remap_pfn_range() failed ret=%x",
++					 ret);
++				ret = -ENOMEM;
++			}
++			goto mmap_exit0;
++		} else if (rsrc_type == 2) {	/* cq queue_addr */
++			EDEB(6, "cq=%p cq q_addr", cq);
++			vma->vm_flags |= VM_RESERVED;
++			vma->vm_ops = &ehcau_vm_ops;
++			ret = 0;
++			goto mmap_exit0;
++		} else {
++			EDEB_ERR(6, "bad resource type %x", rsrc_type);
++			ret = -EINVAL;
++			goto mmap_exit0;
++		}
++	} else if (q_type == 2) { /* QP */
++		struct ehca_qp *qp = NULL;
++		struct ehca_pd *pd = NULL;
++
++		spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++		qp = idr_find(&ehca_qp_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++
++		pd = container_of(qp->ib_qp.pd, struct ehca_pd, ib_pd);
++		if (pd->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, pd->ownpid);
++			return -ENOMEM;
++		}
++
++		/* make sure this mmap really belongs to the authorized user */
++		if (!qp || !qp->ib_qp.uobject ||
++		    qp->ib_qp.uobject->context != context) {
++			EDEB(6, "qp=%p, uobject=%p, context=%p",
++			     qp, qp->ib_qp.uobject, qp->ib_qp.uobject->context);
++			ret = -EINVAL;
++			goto mmap_exit0;
++		}
++		if (rsrc_type == 1) {	/* galpa fw handle */
++			EDEB(6, "qp=%p qp triggerarea", qp);
++			vma->vm_flags |= VM_RESERVED;
++			vsize = vma->vm_end - vma->vm_start;
++			if (vsize != EHCA_PAGESIZE) {
++				EDEB_ERR(4, "invalid vsize=%lx",
++					 vma->vm_end - vma->vm_start);
++				ret = -EINVAL;
++				goto mmap_exit0;
++			}
++
++			physical = qp->galpas.user.fw_handle;
++			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++			vma->vm_flags |= VM_IO | VM_RESERVED;
++
++			EDEB(6, "vsize=%lx physical=%lx", vsize, physical);
++			ret = remap_pfn_range(vma, vma->vm_start,
++					      physical >> PAGE_SHIFT, vsize,
++					      vma->vm_page_prot);
++			if (ret) {
++				EDEB_ERR(4, "remap_pfn_range() failed ret=%x",
++					 ret);
++				ret = -ENOMEM;
++			}
++			goto mmap_exit0;
++		} else if (rsrc_type == 2) {	/* qp rqueue_addr */
++			EDEB(6, "qp=%p qp rqueue_addr", qp);
++			vma->vm_flags |= VM_RESERVED;
++			vma->vm_ops = &ehcau_vm_ops;
++			ret = 0;
++			goto mmap_exit0;
++		} else if (rsrc_type == 3) {	/* qp squeue_addr */
++			EDEB(6, "qp=%p qp squeue_addr", qp);
++			vma->vm_flags |= VM_RESERVED;
++			vma->vm_ops = &ehcau_vm_ops;
++			ret = 0;
++			goto mmap_exit0;
++		} else {
++			EDEB_ERR(4, "bad resource type %x", rsrc_type);
++			ret = -EINVAL;
++			goto mmap_exit0;
++		}
++	} else {
++		EDEB_ERR(4, "bad queue type %x", q_type);
++		ret = -EINVAL;
++		goto mmap_exit0;
 +	}
 +
-+	/* un-mmap if vma alloc */
-+	if (my_cq->uspace_queue ) {
-+		ret = ehca_munmap(my_cq->uspace_queue,
-+				      my_cq->ipz_queue.queue_length);
-+		ret = ehca_munmap(my_cq->uspace_fwh, EHCA_PAGESIZE);
-+	}
-+
-+	h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 0);
-+	if (h_ret == H_R_STATE) {
-+		/* cq in err: read err data and destroy it forcibly */
-+		EDEB(4, "ehca_cq=%p cq_num=%x ressource=%lx in err state. "
-+		     "Try to delete it forcibly.",
-+		     my_cq, my_cq->cq_number, my_cq->ipz_cq_handle.handle);
-+		ehca_error_data(shca, my_cq, my_cq->ipz_cq_handle.handle);
-+		h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 1);
-+		if (h_ret == H_SUCCESS)
-+			EDEB(4, "ehca_cq=%p cq_num=%x deleted successfully.",
-+			     my_cq, my_cq->cq_number);
-+	}
-+	if (h_ret != H_SUCCESS) {
-+		EDEB_ERR(4,"hipz_h_destroy_cq() failed "
-+			 "h_ret=%lx ehca_cq=%p cq_num=%x",
-+			 h_ret, my_cq, my_cq->cq_number);
-+		ret = ehca2ib_return_code(h_ret);
-+		goto destroy_cq_exit0;
-+	}
-+	ipz_queue_dtor(&my_cq->ipz_queue);
-+	kmem_cache_free(ehca_module.cache_cq, my_cq);
-+
-+destroy_cq_exit0:
-+	EDEB_EX(7, "ehca_cq=%p cq_num=%x ret=%x ",
-+		my_cq, cq_num, ret);
++mmap_exit0:
++	EDEB_EX(7, "ret=%x", ret);
 +	return ret;
 +}
 +
-+int ehca_resize_cq(struct ib_cq *cq, int cqe, struct ib_udata *udata)
++int ehca_mmap_nopage(u64 foffset, u64 length, void ** mapped,
++		     struct vm_area_struct ** vma)
 +{
-+	int ret = 0;
-+	struct ehca_cq *my_cq = NULL;
-+	u32 cur_pid = current->tgid;
-+
-+	if (unlikely(!cq)) {
-+		EDEB_ERR(4, "cq is NULL");
-+		return -EFAULT;
-+	}
-+
-+	my_cq = container_of(cq, struct ehca_cq, ib_cq);
-+	EDEB_EN(7, "ehca_cq=%p cq_num=%x",
-+		my_cq, my_cq->cq_number);
-+
-+	if (my_cq->uspace_queue && my_cq->ownpid != cur_pid) {
-+		EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
-+			 cur_pid, my_cq->ownpid);
++	EDEB_EN(7, "foffset=%lx length=%lx", foffset, length);
++	down_write(&current->mm->mmap_sem);
++	*mapped = (void*)do_mmap(NULL,0, length, PROT_WRITE,
++				 MAP_SHARED | MAP_ANONYMOUS,
++				 foffset);
++	up_write(&current->mm->mmap_sem);
++	if (!(*mapped)) {
++		EDEB_ERR(4, "couldn't mmap foffset=%lx length=%lx",
++			 foffset, length);
 +		return -EINVAL;
 +	}
 +
-+	/* TODO: proper resize needs to be done */
-+	ret = -EFAULT;
-+	EDEB_ERR(4, "not implemented yet");
++	*vma = find_vma(current->mm, (u64)*mapped);
++	if (!(*vma)) {
++		down_write(&current->mm->mmap_sem);
++		do_munmap(current->mm, 0, length);
++		up_write(&current->mm->mmap_sem);
++		EDEB_ERR(4, "couldn't find vma queue=%p", *mapped);
++		return -EINVAL;
++	}
++	(*vma)->vm_flags |= VM_RESERVED;
++	(*vma)->vm_ops = &ehcau_vm_ops;
 +
-+	EDEB_EX(7, "ehca_cq=%p cq_num=%x",
-+		my_cq, my_cq->cq_number);
++	EDEB_EX(7, "mapped=%p", *mapped);
++	return 0;
++}
++
++int ehca_mmap_register(u64 physical, void ** mapped,
++		       struct vm_area_struct ** vma)
++{
++	int ret = 0;
++	unsigned long vsize;
++	/* ehca hw supports only 4k page */
++	ret = ehca_mmap_nopage(0, EHCA_PAGESIZE, mapped, vma);
++	if (ret) {
++		EDEB(4, "could'nt mmap physical=%lx", physical);
++		return ret;
++	}
++
++	(*vma)->vm_flags |= VM_RESERVED;
++	vsize = (*vma)->vm_end - (*vma)->vm_start;
++	if (vsize != EHCA_PAGESIZE) {
++		EDEB_ERR(4, "invalid vsize=%lx",
++			 (*vma)->vm_end - (*vma)->vm_start);
++		ret = -EINVAL;
++		return ret;
++	}
++
++	(*vma)->vm_page_prot = pgprot_noncached((*vma)->vm_page_prot);
++	(*vma)->vm_flags |= VM_IO | VM_RESERVED;
++
++	EDEB(6, "vsize=%lx physical=%lx", vsize, physical);
++	ret = remap_pfn_range((*vma), (*vma)->vm_start,
++			      physical >> PAGE_SHIFT, vsize,
++			      (*vma)->vm_page_prot);
++	if (ret) {
++		EDEB_ERR(4, "remap_pfn_range() failed ret=%x", ret);
++		ret = -ENOMEM;
++	}
++	return ret;
++
++}
++
++int ehca_munmap(unsigned long addr, size_t len) {
++	int ret = 0;
++	struct mm_struct *mm = current->mm;
++	if (mm) {
++		down_write(&mm->mmap_sem);
++		ret = do_munmap(mm, addr, len);
++		up_write(&mm->mmap_sem);
++	}
 +	return ret;
 +}
 -- 
