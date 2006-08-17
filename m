@@ -1,16 +1,28 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id 516CF67B32
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 05:01:49 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id f25so785338pyf
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 12:01:48 -0700 (PDT)
-Message-ID: <c3d0340b0608171201t1768f60l5ba7b247f8c5fdfc@mail.gmail.com>
-Date: Thu, 17 Aug 2006 12:01:48 -0700
-From: "Shawn Jin" <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Subject: PCIe enhanced configuration mechanism support on ppc arch
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 74AC667B32
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 05:05:35 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1GDmBd-0006k7-Co
+	for linuxppc-dev@ozlabs.org; Thu, 17 Aug 2006 20:01:45 +0200
+Received: from rchp4.rochester.ibm.com ([129.42.161.36])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 20:01:45 +0200
+Received: from drfickle by rchp4.rochester.ibm.com with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 20:01:45 +0200
+To: linuxppc-dev@ozlabs.org
+From: "Steve Fox" <drfickle@us.ibm.com>
+Subject: Re: [PATCH] Fix irq radix tree remapping typo
+Date: Thu, 17 Aug 2006 18:01:25 +0000 (UTC)
+Message-ID: <ec2atk$f9m$1@sea.gmane.org>
+References: <1155779967.11312.143.camel@localhost.localdomain> 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,17 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 17 Aug 2006 03:59:27 +0200, Benjamin Herrenschmidt wrote:
 
-I'm trying to find out if the current PCI subsystem supports the PCIe
-enhanced configuration mechanism, in particular, on the ppc/powerpc
-arch, which is basically a MMIO access with the address containing all
-bus, device, function, and offset info.
+> The code for using the radix tree for reverse mapping of interrupts has
+> a typo that causes it to create incorrect mappings if the software and
+> hardware numbers happen to be different. This would, among others, cause
+> the IDE interrupt to fail on js20's. This fixes it.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Please apply to 2.6.18
+> 
+> Index: linux-work/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/irq.c	2006-08-17 09:26:19.000000000 +1000
+> +++ linux-work/arch/powerpc/kernel/irq.c	2006-08-17 11:27:30.000000000 +1000
+> @@ -693,7 +693,7 @@ unsigned int irq_radix_revmap(struct irq
+>  	/* If not there, try to insert it */
+>  	virq = irq_find_mapping(host, hwirq);
+>  	if (virq != NO_IRQ)
+> -		radix_tree_insert(tree, virq, &irq_map[virq]);
+> +		radix_tree_insert(tree, hwirq, &irq_map[virq]);
+>   bail:
+>  	spin_unlock_irqrestore(&irq_big_lock, flags);
+>  	return virq;
 
-Could someone here give an authoritative answer? Or point me to
-somewhere I can look for it by myself, such as which file or directory
-in the kernel tree. I searched at arch/ppc/kernel,
-arch/powerpc/kernel, and drivers/pci but couldn't find an answer. :(
+This patch has fixed booting on the machine I originally reported the
+issue with. Thanks much.
 
-Thanks,
--Shawn.
+Acked-by: Steve Fox <drfickle@us.ibm.com>
+
+-- 
+
+Steve Fox
+IBM Linux Technology Center
