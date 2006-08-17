@@ -1,13 +1,27 @@
-Return-Path: <mikey@ozlabs.org>
-To: paulus@samba.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: Make RTAS console init generic
-From: Michael Neuling <mikey@neuling.org>
-Date: Wed, 16 Aug 2006 23:12:14 -0500
-Sender: mikey@ozlabs.org
-Message-Id: <20060817041220.4EB4867B78@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-Reply-To: Michael Neuling <mikey@neuling.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7982867B76
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 14:44:15 +1000 (EST)
+Subject: Re: [RFC PATCH 1/4] powerpc 2.6.16-rt17: to build on powerpc w/ RT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: john stultz <johnstul@us.ibm.com>
+In-Reply-To: <1155776171.15360.22.camel@localhost.localdomain>
+References: <yyiodushvxs.wl@forest.swc.toshiba.co.jp>
+	<17628.4499.609213.401518@cargo.ozlabs.ibm.com>
+	<yyiac6biz3c.wl@forest.swc.toshiba.co.jp>
+	<1155318983.5337.2.camel@localhost.localdomain>
+	<1155771487.11312.114.camel@localhost.localdomain>
+	<1155772859.15360.12.camel@localhost.localdomain>
+	<1155774368.11312.135.camel@localhost.localdomain>
+	<1155776171.15360.22.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 17 Aug 2006 06:43:21 +0200
+Message-Id: <1155789801.11312.152.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,60 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The rtas console doesn't have to be Cell specific.  If we get both
-RTAS tokens, we should just enabled the console then and there.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Fixed RTAS dependency bug.
+> > Well, I've been wanting to look at your stuff and possibly do the
+> > conversion for some time, provided we don't lose performances ... Our
+> > current implementation is very optimized to avoid even memory barriers
+> > in most cases and I doubt we'll be able to be as fine tuned using your
+> > generic code, thus it's a tradeoff decision that we have to do. But
+> > then, I need to look into the details before doing any final
+> > statement :)
+> 
+> Ok, although do let me know if you see places where the generic code
+> could use any of the optimizations used in powerpc.
 
- arch/powerpc/Kconfig                |    3 ++-
- arch/powerpc/kernel/rtas.c          |    5 +++++
- arch/powerpc/platforms/cell/setup.c |    4 ----
- 3 files changed, 7 insertions(+), 5 deletions(-)
+Difficult... but maybe. One of the main idea is that the 3 values used
+for "calibration" (pre-mult offset, multiplier and post-mult offset) are
+in a structure. There is an array of 2 of these and a pointer to the
+"current" one. When changing those values, we update the "other" one,
+wmb, then flip the pointer. The readers can then mostly be barrier-less
+since there is a natural data dependency on the pointer.
 
-Index: linux-2.6-ozlabs/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/Kconfig
-+++ linux-2.6-ozlabs/arch/powerpc/Kconfig
-@@ -426,7 +426,8 @@ config PPC_IBM_CELL_BLADE
- 	select UDBG_RTAS_CONSOLE
- 
- config UDBG_RTAS_CONSOLE
--	bool
-+	bool "RTAS based debug console"
-+	depends on PPC_RTAS
- 	default n
- 
- config XICS
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/rtas.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/rtas.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/rtas.c
-@@ -910,6 +910,11 @@ int __init early_init_dt_scan_rtas(unsig
- 	basep = of_get_flat_dt_prop(node, "get-term-char", NULL);
- 	if (basep)
- 		rtas_getchar_token = *basep;
-+
-+	if (rtas_putchar_token != RTAS_UNKNOWN_SERVICE &&
-+	    rtas_getchar_token != RTAS_UNKNOWN_SERVICE)
-+		udbg_init_rtas_console();
-+
- #endif
- 
- 	/* break now */
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/cell/setup.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/cell/setup.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/cell/setup.c
-@@ -150,10 +150,6 @@ static int __init cell_probe(void)
- 	    !of_flat_dt_is_compatible(root, "IBM,CPBW-1.0"))
- 		return 0;
- 
--#ifdef CONFIG_UDBG_RTAS_CONSOLE
--	udbg_init_rtas_console();
--#endif
--
- 	hpte_init_native();
- 
- 	return 1;
+Ben.
