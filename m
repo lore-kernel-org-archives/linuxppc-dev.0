@@ -1,29 +1,16 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DD4C6679E2
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 04:54:14 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7HIsB01009645
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 14:54:11 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7HIsBsL147660
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 14:54:11 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7HIsA39018031
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 14:54:10 -0400
-Subject: [PATCH] powerpc: emulate power5 popcntb instruction
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Thu, 17 Aug 2006 13:53:49 -0500
-Message-Id: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <shawnxjin@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 516CF67B32
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 05:01:49 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id f25so785338pyf
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 12:01:48 -0700 (PDT)
+Message-ID: <c3d0340b0608171201t1768f60l5ba7b247f8c5fdfc@mail.gmail.com>
+Date: Thu, 17 Aug 2006 12:01:48 -0700
+From: "Shawn Jin" <shawnxjin@gmail.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>
+Subject: PCIe enhanced configuration mechanism support on ppc arch
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,66 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-In an attempt to make it easier for a power5 optimized app to run on a 
-power4 or a 970 or random earlier machine, this provides emulation of the popcntb 
-instruction. 
+I'm trying to find out if the current PCI subsystem supports the PCIe
+enhanced configuration mechanism, in particular, on the ppc/powerpc
+arch, which is basically a MMIO access with the address containing all
+bus, device, function, and offset info.
 
-tested on power4 and 970.  
+Could someone here give an authoritative answer? Or point me to
+somewhere I can look for it by myself, such as which file or directory
+in the kernel tree. I searched at arch/ppc/kernel,
+arch/powerpc/kernel, and drivers/pci but couldn't find an answer. :(
 
-Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-
----
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2105767..3e5ed30 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -588,6 +588,8 @@ #define INST_LSWX		0x7c00042a
- #define INST_STSWI		0x7c0005aa
- #define INST_STSWX		0x7c00052a
- 
-+#define INST_POPCNTB		0x7c0000f4
-+
- static int emulate_string_inst(struct pt_regs *regs, u32 instword)
- {
- 	u8 rT = (instword >> 21) & 0x1f;
-@@ -656,6 +658,26 @@ static int emulate_string_inst(struct pt
- 	return 0;
- }
- 
-+static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
-+{
-+	u32 ra,rs;
-+	u32 countreg,tmp;
-+	u32 x,y;
-+
-+	ra = (instword >> 16) & 0x1f;
-+	rs = (instword >> 21) & 0x1f;
-+	countreg = regs->gpr[rs];
-+	regs->gpr[ra] = 0;
-+
-+	/* y=4 bytes, x=8 bits/byte */
-+	for (y = 0; y < 4; y++) {
-+		for (tmp = 0, x = 0; x < 8; x++)
-+			if (countreg & (0x1 << (x + 8 * y))) tmp++;
-+		regs->gpr[ra] += (tmp <<  8 * y );
-+	}
-+	return 0;
-+}
-+
- static int emulate_instruction(struct pt_regs *regs)
- {
- 	u32 instword;
-@@ -693,6 +715,11 @@ static int emulate_instruction(struct pt
- 	if ((instword & INST_STRING_GEN_MASK) == INST_STRING)
- 		return emulate_string_inst(regs, instword);
- 
-+	/* Emulate the popcntb (Population Count Bytes) instruction. */
-+	if ((instword & INST_POPCNTB) == INST_POPCNTB) {
-+		return emulate_popcntb_inst(regs, instword);
-+	}
-+
- 	return -EINVAL;
- }
- 
+Thanks,
+-Shawn.
