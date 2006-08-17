@@ -1,21 +1,18 @@
-Return-Path: <jdl@freescale.com>
+Return-Path: <afleming@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id F30D367B5C
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 05:33:48 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k7HJXlZH022568
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 12:33:47 -0700 (MST)
-Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k7HJXkb9027556
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 14:33:46 -0500 (CDT)
-Subject: [PATCH] Use mpc8641hpcn PIC base address from dev tree.
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1155842877.10054.149.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Thu, 17 Aug 2006 14:27:57 -0500
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7FC8267A2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:04:23 +1000 (EST)
+In-Reply-To: <20060812001017.6186.99359.stgit@localhost.localdomain>
+References: <20060812000655.6186.42738.stgit@localhost.localdomain>
+	<20060812001017.6186.99359.stgit@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6A1F08CA-2FAE-4BE6-82BF-30F35053483C@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 4/6] POWERPC: add support of mpc8560 eval board
+Date: Thu, 17 Aug 2006 15:04:11 -0500
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,78 +23,368 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-After going through the trouble of setting up the PIC base
-address in the pic@40000 device tree node, use it instead
-of the obsolete hard-coded value.
+On Aug 11, 2006, at 19:10, Vitaly Bordug wrote:
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
----
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   19 +++++++++----------
- include/asm-powerpc/mpc86xx.h              |    1 -
- 2 files changed, 9 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 496cc7c..8e43310 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -68,37 +68,36 @@ mpc86xx_hpcn_init_irq(void)
- {
- 	struct mpic *mpic1;
- 	struct device_node *np;
--	phys_addr_t openpic_paddr;
-+	struct resource res;
- #ifdef CONFIG_PCI
- 	struct device_node *cascade_node = NULL;
- 	int cascade_irq;
- #endif
- 
-+	/* Determine PIC address. */
- 	np = of_find_node_by_type(NULL, "open-pic");
- 	if (np == NULL)
- 		return;
--
--	/* Determine the Physical Address of the OpenPIC regs */
--	openpic_paddr = get_immrbase() + MPC86xx_OPENPIC_OFFSET;
-+	of_address_to_resource(np, 0, &res);
- 
- 	/* Alloc mpic structure and per isu has 16 INT entries. */
--	mpic1 = mpic_alloc(np, openpic_paddr,
-+	mpic1 = mpic_alloc(np, res.start,
- 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
- 			16, NR_IRQS - 4,
- 			" MPIC     ");
- 	BUG_ON(mpic1 == NULL);
- 
--	mpic_assign_isu(mpic1, 0, openpic_paddr + 0x10000);
-+	mpic_assign_isu(mpic1, 0, res.start + 0x10000);
- 
- 	/* 48 Internal Interrupts */
--	mpic_assign_isu(mpic1, 1, openpic_paddr + 0x10200);
--	mpic_assign_isu(mpic1, 2, openpic_paddr + 0x10400);
--	mpic_assign_isu(mpic1, 3, openpic_paddr + 0x10600);
-+	mpic_assign_isu(mpic1, 1, res.start + 0x10200);
-+	mpic_assign_isu(mpic1, 2, res.start + 0x10400);
-+	mpic_assign_isu(mpic1, 3, res.start + 0x10600);
- 
- 	/* 16 External interrupts
- 	 * Moving them from [0 - 15] to [64 - 79]
- 	 */
--	mpic_assign_isu(mpic1, 4, openpic_paddr + 0x10000);
-+	mpic_assign_isu(mpic1, 4, res.start + 0x10000);
- 
- 	mpic_init(mpic1);
- 
-diff --git a/include/asm-powerpc/mpc86xx.h b/include/asm-powerpc/mpc86xx.h
-index 2d6ad85..b85df45 100644
---- a/include/asm-powerpc/mpc86xx.h
-+++ b/include/asm-powerpc/mpc86xx.h
-@@ -31,7 +31,6 @@ #define CPU_ALL_RELEASED (CPU0_BOOT_RELE
- #define MCM_PORT_CONFIG_OFFSET 0x1010
- 
- /* Offset from CCSRBAR */
--#define MPC86xx_OPENPIC_OFFSET	(0x40000)
- #define MPC86xx_MCM_OFFSET      (0x00000)
- #define MPC86xx_MCM_SIZE        (0x02000)
- 
--- 
-2006_06_07.01.gittree_pull-dirty
+>
+> diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/ 
+> boot/dts/mpc8560ads.dts
+> new file mode 100644
+> index 0000000..f6ccb99
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+> @@ -0,0 +1,310 @@
+>
+> +
+> +		ethernet@24000 {
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <24000 1000>;
+> +			address = [ 00 00 0C 00 00 FD ];
+> +			interrupts = <d 0 e 0 12 0>;
+
+Your sense values are wrong here.  Should be "2"
+ie - interrupts = <d 2 e 2 12 2>;
+
+
+> +			interrupt-parent = <40000>;
+> +			phy-handle = <2452000>;
+> +		};
+> +
+> +		ethernet@25000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <25000 1000>;
+> +			address = [ 00 00 0C 00 01 FD ];
+> +			interrupts = <13 0 14 0 18 0>;
+
+
+Here, too
+
+> +		pic@40000 {
+> +			linux,phandle = <40000>;
+> +			interrupt-controller;
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <2>;
+> +			reg = <40000 20100>;
+> +			built-in;
+> +			device_type = "mpic";
+
+This is wrong.  It should be "open-pic";
+
+> +		};
+> +		
+> +		cpm@e0000000 {
+
+I'm going to leave this to others to discuss, since I'm not a CPM  
+expert.  But you may want to double-check your interrupt sense  
+values, and make sure the encodings are right.
+
+
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/ 
+> platforms/85xx/Kconfig
+> index 454fc53..3d440de 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -11,6 +11,12 @@ config MPC8540_ADS
+>  	help
+>  	  This option enables support for the MPC 8540 ADS board
+>
+> +config MPC8560_ADS
+> +	bool "Freescale MPC8560 ADS"
+> +	select DEFAULT_UIMAGE
+> +	help
+> +	  This option enables support for the MPC 8560 ADS board
+> +
+
+
+If at all possible, I think that the 8560 shouldn't be a config  
+option.  It's just an 85xx ADS, and use the dts to distinguish.  But  
+keeping separate defconfigs seems like a good idea.
+
+
+
+> diff --git a/arch/powerpc/platforms/85xx/mpc8540_ads.h b/arch/ 
+> powerpc/platforms/85xx/mpc8540_ads.h
+> index c0d56d2..670abaf 100644
+> --- a/arch/powerpc/platforms/85xx/mpc8540_ads.h
+> +++ b/arch/powerpc/platforms/85xx/mpc8540_ads.h
+> @@ -6,6 +6,10 @@
+>   * Maintainer: Kumar Gala <kumar.gala@freescale.com>
+>   *
+>   * Copyright 2004 Freescale Semiconductor Inc.
+> + *
+> + * 2006 (c) MontaVista Software, Inc.
+> + * Vitaly Bordug <vbordug@ru.mvista.com>
+> + *	Merged to arch/powerpc
+>   *
+>   * This program is free software; you can redistribute  it and/or  
+> modify it
+>   * under  the terms of  the GNU General  Public License as  
+> published by the
+> @@ -24,10 +28,10 @@ #define BCSR_ADDR		((uint)0xf8000000)
+>  #define BCSR_SIZE		((uint)(32 * 1024))
+>
+>  /* PCI interrupt controller */
+> -#define PIRQA		MPC85xx_IRQ_EXT1
+> -#define PIRQB		MPC85xx_IRQ_EXT2
+> -#define PIRQC		MPC85xx_IRQ_EXT3
+> -#define PIRQD		MPC85xx_IRQ_EXT4
+> +#define PIRQA		49
+> +#define PIRQB		50
+> +#define PIRQC		51
+> +#define PIRQD		52
+
+
+Wha?!  I can't imagine any reason this change would be acceptable.   
+Especially since your patch needs to apply against a tree with the  
+new irq code, which doesn't need such hard-coded values.  We get them  
+from the dts.
+
+
+> diff --git a/arch/powerpc/platforms/85xx/mpc8560_ads.h b/arch/ 
+> powerpc/platforms/85xx/mpc8560_ads.h
+
+This file should be able to go away, now, and get merged with  
+mpc8540_ads.h.  While we're at it, mpc8540_ads.h should become  
+mpc85xx_ads.h
+
+
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx.h b/arch/powerpc/ 
+> platforms/85xx/mpc85xx.h
+> index b44db62..4fe613e 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx.h
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx.h
+> @@ -16,3 +16,4 @@
+>
+>  extern void mpc85xx_restart(char *);
+>  extern int add_bridge(struct device_node *dev);
+> +extern void mpc85xx_pcibios_fixup(void);
+
+Why is this being "exported"?
+
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/ 
+> powerpc/platforms/85xx/mpc85xx_ads.c
+> index d0cfcdb..974e035 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> @@ -4,6 +4,10 @@
+>   * Maintained by Kumar Gala (see MAINTAINERS for contact information)
+>   *
+>   * Copyright 2005 Freescale Semiconductor Inc.
+> + *
+> + * 2006 (c) MontaVista Software, Inc.
+> + * Vitaly Bordug <vbordug@ru.mvista.com>
+> + * 	Merged to arch/powerpc
+
+This comment is confusing.  This file was already "merged".   
+Regardless, I believe there's a general policy against putting change  
+logs in the header.
+
+
+>
+> @@ -47,19 +59,19 @@ static u_char mpc85xx_ads_openpic_initse
+>  	MPC85XX_INTERNAL_IRQ_SENSES,
+>  	0x0,			/* External  0: */
+>  #if defined(CONFIG_PCI)
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 1: PCI slot 0 */
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 2: PCI slot 1 */
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 3: PCI slot 2 */
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 4: PCI slot 3 */
+> +	IRQ_TYPE_LEVEL_LOW, 	/* Ext 1: PCI slot 0 */
+> +	IRQ_TYPE_LEVEL_LOW, 	/* Ext 2: PCI slot 1 */
+> +	IRQ_TYPE_LEVEL_LOW, 	/* Ext 3: PCI slot 2 */
+> +	IRQ_TYPE_LEVEL_LOW, 	/* Ext 4: PCI slot 3 */
+>  #else
+>  	0x0,			/* External  1: */
+>  	0x0,			/* External  2: */
+>  	0x0,			/* External  3: */
+>  	0x0,			/* External  4: */
+>  #endif
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 5: PHY */
+> +	IRQ_TYPE_LEVEL_LOW,  	/* External  5: PHY */
+>  	0x0,			/* External  6: */
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 7: PHY */
+> +	IRQ_TYPE_LEVEL_LOW,  	/* External  7: PHY */
+>  	0x0,			/* External  8: */
+>  	0x0,			/* External  9: */
+>  	0x0,			/* External 10: */
+
+
+This isn't how interrupt senses are supposed to be done now.  They  
+should be gotten from the device tree.  This whole array can be deleted.
+
+
+> @@ -74,40 +86,109 @@ #ifdef CONFIG_PCI
+>  int
+>  mpc85xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned  
+> char pin)
+>  {
+
+This whole function can be deleted.
+
+> +	struct device_node * pci_OF;
+> +	struct irq_map_of_mask {
+> +		unsigned int idsel_msk;
+> +		unsigned int slot_msk;
+> +		unsigned int offset_irqs_msk;
+> +		unsigned int line_msk;
+> +	} *ip;
+> +	int i;
+> +	struct irq_of_table_s {
+> +		struct {
+> +			unsigned int idsel;
+> +			unsigned int slot;
+> +			unsigned int offset_irqs;
+> +			unsigned int line;
+> +			unsigned int parent;
+> +			unsigned int table_item;
+> +			unsigned int ext_irqs;
+> +		} idsel[1];
+> +	}* irq_of_table;
+> +
+> +
+> +	pci_OF = of_find_node_by_type(NULL, "pci");
+> +	if (pci_OF) {
+> +		unsigned long max_idsel = 0;
+> +		unsigned long min_idsel = 0xffffffff;
+> +		unsigned long irqs_per_slot = 0;
+> +		unsigned int idsel_ = 0;
+> +		unsigned int line;
+> +		unsigned int* irq;
+> +		unsigned int ip_len;
+> +		unsigned int irq_table_len;
+> +		unsigned int irq_len;
+> +
+> +		ip = (struct irq_map_of_mask*)get_property(pci_OF, "interrupt- 
+> map-mask", &ip_len);
+> +
+> +		irq_of_table = (struct irq_of_table_s*)get_property(pci_OF,  
+> "interrupt-map", &irq_table_len);
+> +
+> +		irq = (unsigned int*)get_property(pci_OF, "interrupts", &irq_len);
+> +
+> +		if (ip && irq_of_table && irq && ip_len && irq_table_len &&  
+> irq_len ) {
+> +			for (i=0; i<irq_table_len/sizeof(irq_of_table->idsel[0]); i++) {
+> +				line = irq_of_table->idsel[i].line & ip->line_msk;
+> +				idsel_ = (irq_of_table->idsel[i].idsel & ip->idsel_msk) >> 11;
+> +
+> +				irqs_per_slot = (line > irqs_per_slot) ? line : irqs_per_slot;
+> +				min_idsel =  (idsel_ < min_idsel) ? idsel_ : min_idsel;
+> +				max_idsel =  (idsel_ > max_idsel) ? idsel_ : max_idsel;
+> +			}
+> +
+> +			do {
+> +				char pci_irq_table[max_idsel - min_idsel + 1][irqs_per_slot];
+> +
+> +				memset(&pci_irq_table[0][0], 0, sizeof(pci_irq_table));
+> +				for (i = irq_table_len/sizeof(irq_of_table->idsel[0]) - 1;  
+> i>=0;  i--) {
+> +					idsel_ = (irq_of_table->idsel[i].idsel & ip->idsel_msk) >> 11;
+> +
+> +					line = irq_of_table->idsel[i].line & ip->line_msk;
+> +					pci_irq_table[idsel_ - min_idsel][line-1] =
+> +							irq_of_table->idsel[i].table_item;
+> +				}
+> +
+> +				return PCI_IRQ_TABLE_LOOKUP;
+> +			} while(0);
+> +		} else {
+> +			printk(KERN_INFO "%s: device tree ERROR\n",__func__);
+> +			return -1;
+> +		}
+> +	} else {
+> +		static char pci_irq_table[][4] =
+> +		    /*
+> +		     * This is little evil, but works around the fact
+> +		     * that revA boards have IDSEL starting at 18
+> +		     * and others boards (older) start at 12
+> +		     *
+> +		     *      PCI IDSEL/INTPIN->INTLINE
+> +		     *       A      B      C      D
+> +		     */
+> +		{
+> +			{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 2 */
+> +			{PIRQD, PIRQA, PIRQB, PIRQC},
+> +			{PIRQC, PIRQD, PIRQA, PIRQB},
+> +			{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 5 */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 12 */
+> +			{PIRQD, PIRQA, PIRQB, PIRQC},
+> +			{PIRQC, PIRQD, PIRQA, PIRQB},
+> +			{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 15 */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{0, 0, 0, 0},	/* -- */
+> +			{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 18 */
+> +			{PIRQD, PIRQA, PIRQB, PIRQC},
+> +			{PIRQC, PIRQD, PIRQA, PIRQB},
+> +			{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 21 */
+> +		};
+> +
+> +		const long min_idsel = 2, max_idsel = 21, irqs_per_slot = 4;
+> +		return PCI_IRQ_TABLE_LOOKUP;
+> +	}
+
+
+Is there some reason you reimplemented code that already exists for  
+mapping PCI interrupts?  Delete this function, and instead add:
+
+void __init
+mpc85xx_pcibios_fixup(void)
+{
+         struct pci_dev *dev = NULL;
+
+         for_each_pci_dev(dev)
+                 pci_read_irq_line(dev);
+}
+
+Hm.  I see you added that function to pci.c.  Anyway, you don't need  
+the map_irq function anymore
+
+
+
+> +	mpic_set_default_senses(mpic1,
+> +				mpc85xx_ads_openpic_initsenses,
+> +				sizeof(mpc85xx_ads_openpic_initsenses));
+> +
+
+No.  We have parse_and_map to handle this.
+
+>  	mpic_init(mpic1);
+> +	of_node_put(np);
+
+Are we definitely supposed to release the of nodes after we call  
+init?  Actually, it looks like you can put that after mpic_alloc().   
+mpic_alloc() grabs a reference, so we don't need it after that.
+
+
+>
+>  /*
+>   * Setup the architecture
+>   */
+
+There should probably be an #ifdef CONFIG_CPM2 here
+
+> +static void init_fcc_ioports(void)
+
+...
+
+
+
+> diff --git a/include/asm-powerpc/mpc85xx.h b/include/asm-powerpc/ 
+> mpc85xx.h
+
+This file really needs to be cleaned up.  Most of the stuff in here  
+can go.
+
+Andy
