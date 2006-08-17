@@ -1,14 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17636.3393.801267.484874@cargo.ozlabs.ibm.com>
-Date: Thu, 17 Aug 2006 16:31:29 +1000
+Message-ID: <17636.4022.216093.611990@cargo.ozlabs.ibm.com>
+Date: Thu, 17 Aug 2006 16:41:58 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: Outstanding Patches Ping
-In-Reply-To: <1155679316.10054.129.camel@cashmere.sps.mot.com>
-References: <1155679316.10054.129.camel@cashmere.sps.mot.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Wolfgang Pfeiffer <roto@gmx.net>
+Subject: Re: latest git: compile error: arch/powerpc/kernel/built-in.o
+In-Reply-To: <20060810232102.GB3668@localhost>
+References: <20060810181154.GA3668@localhost> <44DBA1C6.2020902@us.ibm.com>
+	<20060810232102.GB3668@localhost>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, ellerman@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger writes:
+Wolfgang Pfeiffer writes:
 
->     - 08/03 Convert to mac-address for ethernet MAC data
+> Strange tho' - for me at least - that these patches from about 5 weeks (!)
+> ago still don't seem to have made it into the current git tree ...
 
-I don't seem to have this one, could you resend?
+5 weeks ago was a particularly bad time for patches trying to get into
+the git tree, since I was on vacation and then travelling to OLS. :)
 
->     - 08/09 Offer PCI as a CONFIG choice for PPC_86xx
-
-I'll push it to powerpc.git (to go in 2.6.19) shortly, unless you
-particularly want it and your "Allow MPC8641 HPCN to build with
-CONFIG_PCI disabled too" patches in 2.6.18.
+I've picked up these patches now and I'll send them on for inclusion
+in 2.6.18.
 
 Paul.
