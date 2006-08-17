@@ -1,28 +1,21 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 74AC667B32
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 05:05:35 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1GDmBd-0006k7-Co
-	for linuxppc-dev@ozlabs.org; Thu, 17 Aug 2006 20:01:45 +0200
-Received: from rchp4.rochester.ibm.com ([129.42.161.36])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 20:01:45 +0200
-Received: from drfickle by rchp4.rochester.ibm.com with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 20:01:45 +0200
-To: linuxppc-dev@ozlabs.org
-From: "Steve Fox" <drfickle@us.ibm.com>
-Subject: Re: [PATCH] Fix irq radix tree remapping typo
-Date: Thu, 17 Aug 2006 18:01:25 +0000 (UTC)
-Message-ID: <ec2atk$f9m$1@sea.gmane.org>
-References: <1155779967.11312.143.camel@localhost.localdomain> 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Sender: news <news@sea.gmane.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 84F8167B5C
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 05:24:57 +1000 (EST)
+In-Reply-To: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <36A1A5C6-5269-4BDA-9F3E-A632B3A627DB@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+Date: Thu, 17 Aug 2006 21:24:44 +0200
+To: will_schmidt@vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,38 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Aug 2006 03:59:27 +0200, Benjamin Herrenschmidt wrote:
+> +static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
+> +{
+> +	u32 ra,rs;
+> +	u32 countreg,tmp;
+> +	u32 x,y;
+> +
+> +	ra = (instword >> 16) & 0x1f;
+> +	rs = (instword >> 21) & 0x1f;
+> +	countreg = regs->gpr[rs];
+> +	regs->gpr[ra] = 0;
+> +
+> +	/* y=4 bytes, x=8 bits/byte */
+> +	for (y = 0; y < 4; y++) {
+> +		for (tmp = 0, x = 0; x < 8; x++)
+> +			if (countreg & (0x1 << (x + 8 * y))) tmp++;
+> +		regs->gpr[ra] += (tmp <<  8 * y );
+> +	}
+> +	return 0;
+> +}
 
-> The code for using the radix tree for reverse mapping of interrupts has
-> a typo that causes it to create incorrect mappings if the software and
-> hardware numbers happen to be different. This would, among others, cause
-> the IDE interrupt to fail on js20's. This fixes it.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Please apply to 2.6.18
-> 
-> Index: linux-work/arch/powerpc/kernel/irq.c
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/kernel/irq.c	2006-08-17 09:26:19.000000000 +1000
-> +++ linux-work/arch/powerpc/kernel/irq.c	2006-08-17 11:27:30.000000000 +1000
-> @@ -693,7 +693,7 @@ unsigned int irq_radix_revmap(struct irq
->  	/* If not there, try to insert it */
->  	virq = irq_find_mapping(host, hwirq);
->  	if (virq != NO_IRQ)
-> -		radix_tree_insert(tree, virq, &irq_map[virq]);
-> +		radix_tree_insert(tree, hwirq, &irq_map[virq]);
->   bail:
->  	spin_unlock_irqrestore(&irq_big_lock, flags);
->  	return virq;
+x in, x out:
 
-This patch has fixed booting on the machine I originally reported the
-issue with. Thanks much.
+	x -= (x >> 1) & 0x5555555555555555;
+	x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+	x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f;
 
-Acked-by: Steve Fox <drfickle@us.ibm.com>
+(Your code only runs on 4 bytes; shouldn't it be 8?)
 
--- 
 
-Steve Fox
-IBM Linux Technology Center
+Segher
