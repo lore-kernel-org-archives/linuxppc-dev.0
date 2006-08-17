@@ -2,24 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1365E67B96
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 10:26:41 +1000 (EST)
-Subject: Re: [RFC PATCH 1/4] powerpc 2.6.16-rt17: to build on powerpc w/ RT
+	by ozlabs.org (Postfix) with ESMTP id 4D4E267BA8
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 10:28:10 +1000 (EST)
+Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: john stultz <johnstul@us.ibm.com>
-In-Reply-To: <1155772859.15360.12.camel@localhost.localdomain>
-References: <yyiodushvxs.wl@forest.swc.toshiba.co.jp>
-	<17628.4499.609213.401518@cargo.ozlabs.ibm.com>
-	<yyiac6biz3c.wl@forest.swc.toshiba.co.jp>
-	<1155318983.5337.2.camel@localhost.localdomain>
-	<1155771487.11312.114.camel@localhost.localdomain>
-	<1155772859.15360.12.camel@localhost.localdomain>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20060817001807.GB354@localdomain>
+References: <20060811204105.GK3233@localdomain>
+	<1155772134.11312.119.camel@localhost.localdomain>
+	<20060817001807.GB354@localdomain>
 Content-Type: text/plain
-Date: Thu, 17 Aug 2006 02:26:07 +0200
-Message-Id: <1155774368.11312.135.camel@localhost.localdomain>
+Date: Thu, 17 Aug 2006 02:27:57 +0200
+Message-Id: <1155774477.11312.137.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, mingo@elte.hu, tglx@linutronix.de
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,31 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2006-08-16 at 19:18 -0500, Nathan Lynch wrote:
 
-> Hey Ben,
-> 	I appreciate your looking over my patch. You are correct, the
-> conversion is a bit rough and I've not yet been able to work on the
-> powerpc vDSO, although I'd like to get it working so any help or
-> suggestions would be appreciated (is there a reason the vDSO is written
-> in ASM?).
+> No?  I didn't find anything about mftb having synchronizing
+> behavior.  How should we ensure that temp_varp is assigned before
+> reading the timebase?
+
+I sync an isync would be enough.
+
+> Surely at least a compiler barrier is needed?
+
+Yeah.
+
+> > and the race not completely closed imho... 
 > 
-> If you have any other concerns w/ that patch, or the generic timekeeping
-> code, please let me know and I'll do what I can to address them.
+> How so?  I could've missed something, but I've hammered the patch
+> pretty hard, fwiw.
 
-Well, I've been wanting to look at your stuff and possibly do the
-conversion for some time, provided we don't lose performances ... Our
-current implementation is very optimized to avoid even memory barriers
-in most cases and I doubt we'll be able to be as fine tuned using your
-generic code, thus it's a tradeoff decision that we have to do. But
-then, I need to look into the details before doing any final
-statement :)
+Nah you are right, but you may be using a too big hammer
 
-As for why the vDSO is in assembly, well... because it's kewl ? :) More
-seriously, because it's much more simpler that way (and it's hand
-optimized in a couple of places, though that would probably benefit
-going through a proper scheduling analysis). The vDSO code has "special"
-calling conventions (like the need to tweak cr.so, the non-use of the
-TOC, the lack of procedure descriptors, symbols are offsets to the
-functions, etc...) that makes it awkward to write it in C.
+> > I need to think about it a bit more closely but what about instead
+> > just check if tb_ticks goes negative, and if yes, just do get_tb()
+> > again ?  That might be faster than having a sync in there and should
+> > still be correct.
+> 
+> I did try something like that but found that a loop (i.e. multiple
+> get_tb's to "catch up") was necessary.
 
-Ben
+Hrm... even with an isync ?
+
+Ben.
