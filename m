@@ -1,20 +1,23 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id A7A2767BDF
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:47:25 +1000 (EST)
-Date: Thu, 17 Aug 2006 15:47:12 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
-Message-ID: <20060817204712.GD354@localdomain>
-References: <20060811204105.GK3233@localdomain>
-	<1155772134.11312.119.camel@localhost.localdomain>
-	<20060817001807.GB354@localdomain>
-	<1155774477.11312.137.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1155774477.11312.137.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 27A5B67B82
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:56:06 +1000 (EST)
+In-Reply-To: <6A1F08CA-2FAE-4BE6-82BF-30F35053483C@freescale.com>
+References: <20060812000655.6186.42738.stgit@localhost.localdomain>
+	<20060812001017.6186.99359.stgit@localhost.localdomain>
+	<6A1F08CA-2FAE-4BE6-82BF-30F35053483C@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4EA47548-7323-4464-B088-468692AE5759@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 4/6] POWERPC: add support of mpc8560 eval board
+Date: Thu, 17 Aug 2006 22:55:32 +0200
+To: Andy Fleming <afleming@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2006-08-16 at 19:18 -0500, Nathan Lynch wrote:
-> 
-> > No?  I didn't find anything about mftb having synchronizing
-> > behavior.  How should we ensure that temp_varp is assigned before
-> > reading the timebase?
-> 
-> I sync an isync would be enough.
+>> +		pic@40000 {
+>> +			linux,phandle = <40000>;
+>> +			interrupt-controller;
+>> +			#address-cells = <0>;
+>> +			#interrupt-cells = <2>;
+>> +			reg = <40000 20100>;
+>> +			built-in;
+>> +			device_type = "mpic";
+>
+> This is wrong.  It should be "open-pic";
 
-I see, thanks.
+Not necessarily; if not, it should have "open-pic" somewhere
+in the "compatible" property though.
 
-> > > I need to think about it a bit more closely but what about instead
-> > > just check if tb_ticks goes negative, and if yes, just do get_tb()
-> > > again ?  That might be faster than having a sync in there and should
-> > > still be correct.
-> > 
-> > I did try something like that but found that a loop (i.e. multiple
-> > get_tb's to "catch up") was necessary.
-> 
-> Hrm... even with an isync ?
+Best might be to have device_type = interrupt-controller,
+and put "mpic,open-pic" in the "compatible" property (no
+comma but a zero byte...)
 
-No, sorry, I was confusing this with a different bug (cpu
-hotplug-related, separate patch for that forthcoming).
+Or prefix it with the name of your _exact_ interrupt controller,
+even.
+
+
+Segher
