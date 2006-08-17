@@ -1,11 +1,11 @@
 Return-Path: <rolandd@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id D08F46826F
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:20:58 +1000 (EST)
-Subject: [PATCH 12/13] IB/ehca: phyp
-In-Reply-To: <20068171311.NYGfAW00YTmK6YKh@cisco.com>
-Date: Thu, 17 Aug 2006 13:11:02 -0700
-Message-Id: <20068171311.P1OwgyzMAlKlrkeW@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id 2032D67D37
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:21:06 +1000 (EST)
+Subject: [PATCH 06/13] IB/ehca: eq
+In-Reply-To: <20068171311.8D49tRUe7xsVtB0H@cisco.com>
+Date: Thu, 17 Aug 2006 13:11:01 -0700
+Message-Id: <20068171311.L4phXwdeU9u1VjBq@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: openib-general@openib.org, linux-kernel@vger.kernel.org,
@@ -21,23 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- drivers/infiniband/hw/ehca/hcp_phyp.c |   92 ++++++++++++++++++++++++++++++++
- drivers/infiniband/hw/ehca/hcp_phyp.h |   96 +++++++++++++++++++++++++++++++++
- 2 files changed, 188 insertions(+), 0 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_eq.c |  222 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 222 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/hcp_phyp.c b/drivers/infiniband/hw/ehca/hcp_phyp.c
+diff --git a/drivers/infiniband/hw/ehca/ehca_eq.c b/drivers/infiniband/hw/ehca/ehca_eq.c
 new file mode 100644
-index 0000000..d522d50
+index 0000000..080ed02
 --- /dev/null
-+++ b/drivers/infiniband/hw/ehca/hcp_phyp.c
-@@ -0,0 +1,92 @@
++++ b/drivers/infiniband/hw/ehca/ehca_eq.c
+@@ -0,0 +1,222 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *   load store abstraction for ehca register access with tracing
++ *  Event queue handling
 + *
-+ *  Authors: Christoph Raisch <raisch@de.ibm.com>
++ *  Authors: Waleri Fomin <fomin@de.ibm.com>
++ *           Khadija Souissi <souissi@de.ibm.com>
++ *           Reinhard Ernst <rernst@de.ibm.com>
++ *           Heiko J Schick <schickhj@de.ibm.com>
 + *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
++ *
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
@@ -72,158 +75,182 @@ index 0000000..d522d50
 + * POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#define DEB_PREFIX "PHYP"
++#define DEB_PREFIX "e_eq"
 +
 +#include "ehca_classes.h"
-+#include "hipz_hw.h"
++#include "ehca_irq.h"
++#include "ehca_iverbs.h"
++#include "ehca_qes.h"
++#include "hcp_if.h"
++#include "ipz_pt_fn.h"
 +
-+int hcall_map_page(u64 physaddr, u64 *mapaddr)
++int ehca_create_eq(struct ehca_shca *shca,
++		   struct ehca_eq *eq,
++		   const enum ehca_eq_type type, const u32 length)
 +{
-+	*mapaddr = (u64)(ioremap(physaddr, EHCA_PAGESIZE));
++	u64 ret = H_SUCCESS;
++	u32 nr_pages = 0;
++	u32 i;
++	void *vpage = NULL;
 +
-+	EDEB(7, "ioremap physaddr=%lx mapaddr=%lx", physaddr, *mapaddr);
++	EDEB_EN(7, "shca=%p eq=%p length=%x", shca, eq, length);
++	EHCA_CHECK_ADR(shca);
++	EHCA_CHECK_ADR(eq);
++
++	spin_lock_init(&eq->spinlock);
++	eq->is_initialized = 0;
++
++	if (type != EHCA_EQ && type != EHCA_NEQ) {
++		EDEB_ERR(4, "Invalid EQ type %x. eq=%p", type, eq);
++		return -EINVAL;
++	}
++	if (length == 0) {
++		EDEB_ERR(4, "EQ length must not be zero. eq=%p", eq);
++		return -EINVAL;
++	}
++
++	ret = hipz_h_alloc_resource_eq(shca->ipz_hca_handle,
++				       &eq->pf,
++				       type,
++				       length,
++				       &eq->ipz_eq_handle,
++				       &eq->length,
++				       &nr_pages, &eq->ist);
++
++	if (ret != H_SUCCESS) {
++		EDEB_ERR(4, "Can't allocate EQ / NEQ. eq=%p", eq);
++		return -EINVAL;
++	}
++
++	ret = ipz_queue_ctor(&eq->ipz_queue, nr_pages,
++			     EHCA_PAGESIZE, sizeof(struct ehca_eqe), 0);
++	if (!ret) {
++		EDEB_ERR(4, "Can't allocate EQ pages. eq=%p", eq);
++		goto create_eq_exit1;
++	}
++
++	for (i = 0; i < nr_pages; i++) {
++		u64 rpage;
++
++		if (!(vpage = ipz_qpageit_get_inc(&eq->ipz_queue))) {
++			ret = H_RESOURCE;
++			goto create_eq_exit2;
++		}
++
++		rpage = virt_to_abs(vpage);
++		ret = hipz_h_register_rpage_eq(shca->ipz_hca_handle,
++					       eq->ipz_eq_handle,
++					       &eq->pf,
++					       0, 0, rpage, 1);
++
++		if (i == (nr_pages - 1)) {
++			/* last page */
++			vpage = ipz_qpageit_get_inc(&eq->ipz_queue);
++			if (ret != H_SUCCESS || vpage)
++				goto create_eq_exit2;
++		} else {
++			if (ret != H_PAGE_REGISTERED || !vpage)
++				goto create_eq_exit2;
++		}
++	}
++
++	ipz_qeit_reset(&eq->ipz_queue);
++
++	/* register interrupt handlers and initialize work queues */
++	if (type == EHCA_EQ) {
++		ret = ibmebus_request_irq(NULL, eq->ist, ehca_interrupt_eq,
++					  SA_INTERRUPT, "ehca_eq",
++					  (void *)shca);
++		if (ret < 0)
++			EDEB_ERR(4, "Can't map interrupt handler.");
++
++		tasklet_init(&eq->interrupt_task, ehca_tasklet_eq, (long)shca);
++	} else if (type == EHCA_NEQ) {
++		ret = ibmebus_request_irq(NULL, eq->ist, ehca_interrupt_neq,
++					  SA_INTERRUPT, "ehca_neq",
++					  (void *)shca);
++		if (ret < 0)
++			EDEB_ERR(4, "Can't map interrupt handler.");
++
++		tasklet_init(&eq->interrupt_task, ehca_tasklet_neq, (long)shca);
++	}
++
++	eq->is_initialized = 1;
++
++	EDEB_EX(7, "ret=%lx", ret);
++
 +	return 0;
++
++create_eq_exit2:
++	ipz_queue_dtor(&eq->ipz_queue);
++
++create_eq_exit1:
++	hipz_h_destroy_eq(shca->ipz_hca_handle, eq);
++
++	EDEB_EX(7, "ret=%lx", ret);
++
++	return -EINVAL;
 +}
 +
-+int hcall_unmap_page(u64 mapaddr)
++void *ehca_poll_eq(struct ehca_shca *shca, struct ehca_eq *eq)
 +{
-+	EDEB(7, "mapaddr=%lx", mapaddr);
-+	iounmap((volatile void __iomem*)mapaddr);
-+	return 0;
++	unsigned long flags = 0;
++	void *eqe = NULL;
++
++	EDEB_EN(7, "shca=%p  eq=%p", shca, eq);
++	EHCA_CHECK_ADR_P(shca);
++	EHCA_CHECK_EQ_P(eq);
++
++	spin_lock_irqsave(&eq->spinlock, flags);
++	eqe = ipz_eqit_eq_get_inc_valid(&eq->ipz_queue);
++	spin_unlock_irqrestore(&eq->spinlock, flags);
++
++	EDEB_EX(7, "eq=%p eqe=%p", eq, eqe);
++
++	return eqe;
 +}
 +
-+int hcp_galpas_ctor(struct h_galpas *galpas,
-+		    u64 paddr_kernel, u64 paddr_user)
++void ehca_poll_eqs(unsigned long data)
 +{
-+	int ret = hcall_map_page(paddr_kernel, &galpas->kernel.fw_handle);
-+	if (ret)
-+		return ret;
++	struct ehca_shca *shca;
++	struct ehca_module *module = (struct ehca_module*)data;
 +
-+	galpas->user.fw_handle = paddr_user;
++	spin_lock(&module->shca_lock);
++	list_for_each_entry(shca, &module->shca_list, shca_list) {
++		if (shca->eq.is_initialized)
++			ehca_tasklet_eq((unsigned long)(void*)shca);
++	}
++	mod_timer(&module->timer, jiffies + HZ);
++	spin_unlock(&module->shca_lock);
 +
-+	EDEB(7, "paddr_kernel=%lx paddr_user=%lx galpas->kernel=%lx"
-+	     " galpas->user=%lx",
-+	     paddr_kernel, paddr_user, galpas->kernel.fw_handle,
-+	     galpas->user.fw_handle);
-+
-+	return ret;
++	return;
 +}
 +
-+int hcp_galpas_dtor(struct h_galpas *galpas)
++int ehca_destroy_eq(struct ehca_shca *shca, struct ehca_eq *eq)
 +{
-+	int ret = 0;
++	unsigned long flags = 0;
++	u64 h_ret = H_SUCCESS;
 +
-+	if (galpas->kernel.fw_handle)
-+		ret = hcall_unmap_page(galpas->kernel.fw_handle);
++	EDEB_EN(7, "shca=%p  eq=%p", shca, eq);
++	EHCA_CHECK_ADR(shca);
++	EHCA_CHECK_EQ(eq);
 +
-+	if (ret)
-+		return ret;
++	spin_lock_irqsave(&eq->spinlock, flags);
++	ibmebus_free_irq(NULL, eq->ist, (void *)shca);
 +
-+	galpas->user.fw_handle = galpas->kernel.fw_handle = 0;
++	h_ret = hipz_h_destroy_eq(shca->ipz_hca_handle, eq);
 +
-+	return ret;
++	spin_unlock_irqrestore(&eq->spinlock, flags);
++
++	if (h_ret != H_SUCCESS) {
++		EDEB_ERR(4, "Can't free EQ resources.");
++		return -EINVAL;
++	}
++	ipz_queue_dtor(&eq->ipz_queue);
++
++	EDEB_EX(7, "h_ret=%lx", h_ret);
++
++	return h_ret;
 +}
-diff --git a/drivers/infiniband/hw/ehca/hcp_phyp.h b/drivers/infiniband/hw/ehca/hcp_phyp.h
-new file mode 100644
-index 0000000..ecb1117
---- /dev/null
-+++ b/drivers/infiniband/hw/ehca/hcp_phyp.h
-@@ -0,0 +1,96 @@
-+/*
-+ *  IBM eServer eHCA Infiniband device driver for Linux on POWER
-+ *
-+ *  Firmware calls
-+ *
-+ *  Authors: Christoph Raisch <raisch@de.ibm.com>
-+ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-+ *           Waleri Fomin <fomin@de.ibm.com>
-+ *           Gerd Bayer <gerd.bayer@de.ibm.com>
-+ *
-+ *  Copyright (c) 2005 IBM Corporation
-+ *
-+ *  All rights reserved.
-+ *
-+ *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
-+ *  BSD.
-+ *
-+ * OpenIB BSD License
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ * Redistributions of source code must retain the above copyright notice, this
-+ * list of conditions and the following disclaimer.
-+ *
-+ * Redistributions in binary form must reproduce the above copyright notice,
-+ * this list of conditions and the following disclaimer in the documentation
-+ * and/or other materials
-+ * provided with the distribution.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef __HCP_PHYP_H__
-+#define __HCP_PHYP_H__
-+
-+
-+/*
-+ * eHCA page (mapped into memory)
-+ * resource to access eHCA register pages in CPU address space
-+*/
-+struct h_galpa {
-+	u64 fw_handle;
-+	/* for pSeries this is a 64bit memory address where
-+	   I/O memory is mapped into CPU address space (kv) */
-+};
-+
-+/*
-+ * resource to access eHCA address space registers, all types
-+ */
-+struct h_galpas {
-+	u32 pid;		/*PID of userspace galpa checking */
-+	struct h_galpa user;	/* user space accessible resource,
-+				   set to 0 if unused */
-+	struct h_galpa kernel;	/* kernel space accessible resource,
-+				   set to 0 if unused */
-+};
-+
-+static inline u64 hipz_galpa_load(struct h_galpa galpa, u32 offset)
-+{
-+	u64 addr = galpa.fw_handle + offset;
-+	u64 out;
-+	EDEB_EN(7, "addr=%lx offset=%x ", addr, offset);
-+	out = *(u64 *) addr;
-+	EDEB_EX(7, "addr=%lx value=%lx", addr, out);
-+	return out;
-+}
-+
-+static inline void hipz_galpa_store(struct h_galpa galpa, u32 offset, u64 value)
-+{
-+	u64 addr = galpa.fw_handle + offset;
-+	EDEB(7, "addr=%lx offset=%x value=%lx", addr,
-+	     offset, value);
-+	*(u64 *) addr = value;
-+}
-+
-+int hcp_galpas_ctor(struct h_galpas *galpas,
-+		    u64 paddr_kernel, u64 paddr_user);
-+
-+int hcp_galpas_dtor(struct h_galpas *galpas);
-+
-+int hcall_map_page(u64 physaddr, u64 * mapaddr);
-+
-+int hcall_unmap_page(u64 mapaddr);
-+
-+#endif
 -- 
 1.4.1
