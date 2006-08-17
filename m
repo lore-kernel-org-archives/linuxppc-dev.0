@@ -1,36 +1,25 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D25C467BAA
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 10:23:17 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7H0NAJO022811
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 20:23:10 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7H0NAGE278988
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 20:23:10 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7H0N9PY004645
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Aug 2006 20:23:10 -0400
-Date: Wed, 16 Aug 2006 19:23:07 -0500
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/2]: powerpc/cell spidernet bottom half
-Message-ID: <20060817002307.GQ20551@austin.ibm.com>
-References: <20060816.143203.11626235.davem@davemloft.net>
-	<200608170016.47072.arnd@arndb.de>
-	<20060816233028.GO20551@austin.ibm.com>
-	<20060816.163252.64000941.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060816.163252.64000941.davem@davemloft.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: akpm@osdl.org, arnd@arndb.de, jeff@garzik.org, netdev@vger.kernel.org,
-	jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Jens.Osterkamp@de.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1365E67B96
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 10:26:41 +1000 (EST)
+Subject: Re: [RFC PATCH 1/4] powerpc 2.6.16-rt17: to build on powerpc w/ RT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: john stultz <johnstul@us.ibm.com>
+In-Reply-To: <1155772859.15360.12.camel@localhost.localdomain>
+References: <yyiodushvxs.wl@forest.swc.toshiba.co.jp>
+	<17628.4499.609213.401518@cargo.ozlabs.ibm.com>
+	<yyiac6biz3c.wl@forest.swc.toshiba.co.jp>
+	<1155318983.5337.2.camel@localhost.localdomain>
+	<1155771487.11312.114.camel@localhost.localdomain>
+	<1155772859.15360.12.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 17 Aug 2006 02:26:07 +0200
+Message-Id: <1155774368.11312.135.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,84 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 16, 2006 at 04:32:52PM -0700, David Miller wrote:
-> From: linas@austin.ibm.com (Linas Vepstas)
-> > Why would you want to do this? It seems like a cruddier strategy 
-> > than what we can already do  (which is to never get an transmit
-> > interrupt, as long as the kernel can shove data into the device fast
-> > enough to keep the queue from going empty.)  The whole *point* of a 
-> > low-watermark interrupt is to never have to actually get the interrupt, 
-> > if the rest of the system is on its toes and is supplying data fast
-> > enough.
+
+> Hey Ben,
+> 	I appreciate your looking over my patch. You are correct, the
+> conversion is a bit rough and I've not yet been able to work on the
+> powerpc vDSO, although I'd like to get it working so any help or
+> suggestions would be appreciated (is there a reason the vDSO is written
+> in ASM?).
 > 
-> As long as TX packets get freed within a certain latency
-> boundary, this kind of scheme should be fine.
+> If you have any other concerns w/ that patch, or the generic timekeeping
+> code, please let me know and I'll do what I can to address them.
 
-I just had some fun making sure I wasn't making a liar out of myself.
-So far, I'm good.
+Well, I've been wanting to look at your stuff and possibly do the
+conversion for some time, provided we don't lose performances ... Our
+current implementation is very optimized to avoid even memory barriers
+in most cases and I doubt we'll be able to be as fine tuned using your
+generic code, thus it's a tradeoff decision that we have to do. But
+then, I need to look into the details before doing any final
+statement :)
 
-Did
+As for why the vDSO is in assembly, well... because it's kewl ? :) More
+seriously, because it's much more simpler that way (and it's hand
+optimized in a couple of places, though that would probably benefit
+going through a proper scheduling analysis). The vDSO code has "special"
+calling conventions (like the need to tweak cr.so, the non-use of the
+TOC, the lack of procedure descriptors, symbols are offsets to the
+functions, etc...) that makes it awkward to write it in C.
 
-echo 768111 > /proc/sys/net/core/wmem_max
-echo 768111 > /proc/sys/net/core/wmem_default
-
-to make sure that the app never blocked on a full socket.
-
-(If the socket is small, then the app blocks, 
-the transmit queue drains, and we do get an interupt -- 
-about 1K/sec, which is what is expected).
-
-Ran 'vmstat 10' to watch the interrupts in real time. 
-Ran netperf, got 904 Mbits/sec, and *no* interrupts. 
-Yahoo!
-
-Ran oprofile to see where he time went:
-
-CPU: ppc64 Cell Broadband Engine, speed 3200 MHz (estimated)
-Counted CYCLES events (Processor Cycles) with a unit mask of 0x00 (No unit mask) count 100000
-samples  %        image name               app name                 symbol name
-13748742 77.6620  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .cbe_idle
-936172    5.2881  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__copy_tofrom_user
-569353    3.2161  spidernet.ko             spidernet                .spider_net_xmit
-450826    2.5466  spidernet.ko             spidernet                .spider_net_release_tx_chain
-220374    1.2448  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       ._spin_unlock_irqrestore
-112432    0.6351  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       ._spin_lock
-91328     0.5159  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__qdisc_run
-84804     0.4790  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .packet_sendmsg
-76167     0.4302  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .kfree
-74321     0.4198  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .sock_alloc_send_skb
-65323     0.3690  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .kmem_cache_free
-60334     0.3408  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       ._read_lock
-60071     0.3393  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .dev_queue_xmit
-56900     0.3214  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .kmem_cache_alloc_node
-55281     0.3123  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .sock_wfree
-51242     0.2894  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .dev_get_by_index
-50438     0.2849  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .compat_sys_socketcall
-49247     0.2782  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .fput
-48589     0.2745  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .sync_buffer
-46055     0.2601  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       system_call_common
-40607     0.2294  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .local_bh_enable
-40273     0.2275  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__might_sleep
-38757     0.2189  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .fget_light
-38219     0.2159  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__kfree_skb
-36804     0.2079  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .sock_def_write_space
-36443     0.2059  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .skb_release_data
-32174     0.1817  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .sys_sendto
-31828     0.1798  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .sock_sendmsg
-30676     0.1733  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .pfifo_fast_dequeue
-29607     0.1672  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .add_event_entry
-25870     0.1461  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       syscall_exit
-25329     0.1431  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__alloc_skb
-23885     0.1349  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__do_softirq
-22046     0.1245  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .kmem_find_general_cachep
-21610     0.1221  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .__dev_get_by_index
-21059     0.1190  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .dma_map_single
-21044     0.1189  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       ._spin_lock_irqsave
-20105     0.1136  vmlinux-2.6.18-rc2       vmlinux-2.6.18-rc2       .memset
-
-.__copy_tofrom_user          -- ouch spider does not currently do scatter-gather
-.spider_net_xmit             -- hmmm ?? why is it this large ??
-.spider_net_release_tx_chain --  ?? a lot of time being spent cleaning up tx queues.
-._spin_unlock_irqrestore     -- hmm ? why so high? lock contention?
-
-I presume the rest is normal.
+Ben
