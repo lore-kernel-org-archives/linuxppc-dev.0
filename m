@@ -1,13 +1,17 @@
 Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 4792A68BD6
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:23:58 +1000 (EST)
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, openib-general@openib.org
-Subject: InfiniBand merge plans for 2.6.19
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 603EB67C00
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:31:40 +1000 (EST)
+To: openib-general@openib.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com, HNGUYEN@de.ibm.com,
+	MEDER@de.ibm.com
+Subject: Re: [openib-general] [PATCH 00/16] IB/ehca: introduction
+References: <2006817139.43eVtRoa2IK8yOPl@cisco.com>
 From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 17 Aug 2006 13:13:57 -0700
-Message-ID: <adawt9786ii.fsf@cisco.com>
+Date: Thu, 17 Aug 2006 13:31:37 -0700
+In-Reply-To: <2006817139.43eVtRoa2IK8yOPl@cisco.com> (Roland Dreier's message
+	of "Thu, 17 Aug 2006 13:09:27 -0700")
+Message-ID: <adasljv85p2.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,47 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's a short summary of what I plan to merge for 2.6.19.  Some of
-this is already in infiniband.git[1], while some still needs to be
-merged up.  Highlights:
+Sorry-- my patchbombing script blew up in the middle, and I didn't
+restart quite correctly.  But I'm pretty sure all 16 patches did make
+it out, although the numbering is screwy.  The correct series is:
 
-    o  iWARP core support[2].  This updates drivers/infiniband to work
-       with devices that do RDMA over IP/ethernet in addition to
-       InfiniBand devices.  As a first user of this support, I also
-       plan to merge the amso1100[3] driver for Ammasso RNIC.
+    01/16, 02/16, 00/13, 01/13, ..., 13/13
 
-       I will post this for review one more time after I pull it into
-       my git tree for last minute cleanups.  But if you feel this
-       iWARP support should not be merged, please let me know why now.
+I'm not going to spam everybody and resend to all the lists, but I'm
+happy to resend privately to anyone who asks, or you can clone the
+git tree to get the series
 
-    o  IBM eHCA driver, which supports IBM pSeries-specific InfiniBand
-       hardware.  This is in the ehca branch of infiniband.git, and I
-       will post it for review one more time.  My feeling is that more
-       cleanups are certainly possible, but this driver is "good
-       enough to merge" now and has languished out of tree for long
-       enough.  I'm certainly happy to merge cleanup patches, though.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git ehca
 
-    o  mmap()ed userspace work queues for ipath.  This is a
-       performance enhancement for QLogic/PathScale HCAs but it does
-       touch core stuff in minor ways.  Should not be controversial.
-
-    o  I also have the following minor changes queued in the
-       for-2.6.19 branch of infiniband.git:
-
-       Ishai Rabinovitz:
-             IB/srp: Add port/device attributes
-
-       James Lentini:
-             IB/mthca: Include the header we really want
-
-       Michael S. Tsirkin:
-             IB/mthca: Don't use privileged UAR for kernel access
-             IB/ipoib: Fix flush/start xmit race (from code review)
-       
-       Roland Dreier:
-             IB/uverbs: Use idr_read_cq() where appropriate
-             IB/uverbs: Fix lockdep warning when QP is created with 2 CQs
-
-[1]  git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git
-[2]  http://thread.gmane.org/gmane.linux.network/40903
-[3]  http://thread.gmane.org/gmane.linux.drivers.openib/28657
+Thanks,
+  Roland
