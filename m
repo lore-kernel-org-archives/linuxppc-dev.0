@@ -1,19 +1,20 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id 603EB67C00
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:31:40 +1000 (EST)
-To: openib-general@openib.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com, HNGUYEN@de.ibm.com,
-	MEDER@de.ibm.com
-Subject: Re: [openib-general] [PATCH 00/16] IB/ehca: introduction
-References: <2006817139.43eVtRoa2IK8yOPl@cisco.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 17 Aug 2006 13:31:37 -0700
-In-Reply-To: <2006817139.43eVtRoa2IK8yOPl@cisco.com> (Roland Dreier's message
-	of "Thu, 17 Aug 2006 13:09:27 -0700")
-Message-ID: <adasljv85p2.fsf@cisco.com>
-MIME-Version: 1.0
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id A7A2767BDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:47:25 +1000 (EST)
+Date: Thu, 17 Aug 2006 15:47:12 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
+Message-ID: <20060817204712.GD354@localdomain>
+References: <20060811204105.GK3233@localdomain>
+	<1155772134.11312.119.camel@localhost.localdomain>
+	<20060817001807.GB354@localdomain>
+	<1155774477.11312.137.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1155774477.11312.137.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry-- my patchbombing script blew up in the middle, and I didn't
-restart quite correctly.  But I'm pretty sure all 16 patches did make
-it out, although the numbering is screwy.  The correct series is:
+Benjamin Herrenschmidt wrote:
+> On Wed, 2006-08-16 at 19:18 -0500, Nathan Lynch wrote:
+> 
+> > No?  I didn't find anything about mftb having synchronizing
+> > behavior.  How should we ensure that temp_varp is assigned before
+> > reading the timebase?
+> 
+> I sync an isync would be enough.
 
-    01/16, 02/16, 00/13, 01/13, ..., 13/13
+I see, thanks.
 
-I'm not going to spam everybody and resend to all the lists, but I'm
-happy to resend privately to anyone who asks, or you can clone the
-git tree to get the series
+> > > I need to think about it a bit more closely but what about instead
+> > > just check if tb_ticks goes negative, and if yes, just do get_tb()
+> > > again ?  That might be faster than having a sync in there and should
+> > > still be correct.
+> > 
+> > I did try something like that but found that a loop (i.e. multiple
+> > get_tb's to "catch up") was necessary.
+> 
+> Hrm... even with an isync ?
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git ehca
-
-Thanks,
-  Roland
+No, sorry, I was confusing this with a different bug (cpu
+hotplug-related, separate patch for that forthcoming).
