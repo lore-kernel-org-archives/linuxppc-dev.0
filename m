@@ -1,17 +1,34 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Date: Fri, 18 Aug 2006 01:19:22 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 6/6] bootwrapper: Add support for the sandpoint platform
-In-Reply-To: <Pine.LNX.4.60.0608172352220.8228@poirot.grange>
-Message-ID: <Pine.LNX.4.60.0608180109060.8228@poirot.grange>
-References: <20060719231725.GG3887@mag.az.mvista.com>
-	<Pine.LNX.4.60.0608172200080.8228@poirot.grange>
-	<20060817211353.GA1402@mag.az.mvista.com>
-	<Pine.LNX.4.60.0608172352220.8228@poirot.grange>
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 23CC667B5C
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 09:35:14 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7HNYfGc002616
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 19:34:41 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7HNYfUo373402
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 17:34:41 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7HNYfoE020137
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Aug 2006 17:34:41 -0600
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 13/13] IB/ehca: makefiles/kconfig
+Date: Fri, 18 Aug 2006 01:34:37 +0200
+References: <20068171311.WDFBWw0F6z9B3Qes@cisco.com>
+In-Reply-To: <20068171311.WDFBWw0F6z9B3Qes@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608180134.39050.arnd.bergmann@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org, RAISCH@de.ibm.com,
+	HNGUYEN@de.ibm.com, MEDER@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +38,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Aug 2006, Guennadi Liakhovetski wrote:
+On Thursday 17 August 2006 22:11, Roland Dreier wrote:
+> +
+> +CFLAGS += -DEHCA_USE_HCALL -DEHCA_USE_HCALL_KERNEL
 
-> On Thu, 17 Aug 2006, Mark A. Greer wrote:
-> 
-> > Depends on what you mean by "__boot__".  This is the code needed to
-> > prepare things--the flat dev tree in this case--so that the kernel
-> > can boot when running the DINK firmware on a sandpoint.
-> 
-> ...after getting some vitamins on irc and re-reading some emails, I 
-> finally realised what the stuff under boot is for. Expect more confusion 
-> from me:-)
+This seems really pointless, since you're always defining these
+macros to the same value.
 
-Ok, I think, now I have an idea what all these wrappers are about:
+Just drop the CFLAGS and remove the code that depends on them
+being different.
 
-we want to be able to boot linux from a number of different environments:
-
-OF
-
-various firmwares / boot ROMs / bootloaders with very different 
-capabilities of running foreign code and different calling conventions
-
-"native" Linux bootloaders like u-Boot, etc.
-
-kexec
-
-...
-
-and the chosen approach is to have a kernel proper common to all these 
-possibilities, and "wrappers". These wrappers are boot-method and board 
-specific, are distributed with the kernel, located under 
-arch/powerpc/boot, get linked with the kernel proper, fdt, with various 
-compression possibilities...
-
-Have I got it right now? One of the reasons of me having problems to 
-understand this is that on ARM we just say "to boot kernel you have to 
-have MMU switched off, registers must contain this and that, you have to 
-prepare a list of ATAGs, copy the kernel to a certain address, and jump to 
-it. If you don't do that you cannot run Linux on your system":-)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+	Arnd <><
