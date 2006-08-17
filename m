@@ -1,23 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 27A5B67B82
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:56:06 +1000 (EST)
-In-Reply-To: <6A1F08CA-2FAE-4BE6-82BF-30F35053483C@freescale.com>
-References: <20060812000655.6186.42738.stgit@localhost.localdomain>
-	<20060812001017.6186.99359.stgit@localhost.localdomain>
-	<6A1F08CA-2FAE-4BE6-82BF-30F35053483C@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4EA47548-7323-4464-B088-468692AE5759@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 4/6] POWERPC: add support of mpc8560 eval board
-Date: Thu, 17 Aug 2006 22:55:32 +0200
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 17 Aug 2006 14:13:53 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 6/6] bootwrapper: Add support for the sandpoint platform
+Message-ID: <20060817211353.GA1402@mag.az.mvista.com>
+References: <20060719231725.GG3887@mag.az.mvista.com>
+	<Pine.LNX.4.60.0608172200080.8228@poirot.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.60.0608172200080.8228@poirot.grange>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +		pic@40000 {
->> +			linux,phandle = <40000>;
->> +			interrupt-controller;
->> +			#address-cells = <0>;
->> +			#interrupt-cells = <2>;
->> +			reg = <40000 20100>;
->> +			built-in;
->> +			device_type = "mpic";
->
-> This is wrong.  It should be "open-pic";
+On Thu, Aug 17, 2006 at 10:16:16PM +0200, Guennadi Liakhovetski wrote:
+> On Wed, 19 Jul 2006, Mark A. Greer wrote:
+> 
+> > This patch adds support for the Freescale Sandpoint platform
+> > to the bootwrapper.
 
-Not necessarily; if not, it should have "open-pic" somewhere
-in the "compatible" property though.
+Hi Guennadi.
 
-Best might be to have device_type = interrupt-controller,
-and put "mpic,open-pic" in the "compatible" property (no
-comma but a zero byte...)
+> Mark,
+> 
+> you put sandpoint.c and mpc10x.c under boot... I don't quite understand 
+> your concept now: you mean this is the code needed to __boot__ sandpoint. 
 
-Or prefix it with the name of your _exact_ interrupt controller,
-even.
+Depends on what you mean by "__boot__".  This is the code needed to
+prepare things--the flat dev tree in this case--so that the kernel
+can boot when running the DINK firmware on a sandpoint.
 
+> Ok. I can also imagine that as soon as the system is up you don't need any 
+> further specific code - only .init* sections. But - does this mean that 
+> every platform will now put its support flat under boot?
 
-Segher
+You need to read <file:Documentation/powerpc/booting-without-of.txt>.
+
+> Or is it a 
+> special case? Or are there also run-time fixups that you didn't include 
+> with this patch-series?  Also <board>_reset doesn't quite fit under boot,
+
+Yes it does.  Follow exit().
+
+> or am I misunderstanding something?
+
+Yes, you're missing the whole point of the patch series...
+
+Did you read "[PATCH 0/6] bootwrapper: arch/powerpc/boot code reorg
+patches"?
+
+The intent was not to add kernel support for the sanpoint.  The intent
+was to solicit comments on a reorg of the bootwrapper code.
+
+Mark
