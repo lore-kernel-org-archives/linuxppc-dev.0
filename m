@@ -1,11 +1,11 @@
 Return-Path: <rolandd@cisco.com>
 Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id 0AAC267D91
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:20:46 +1000 (EST)
-Subject: [PATCH 03/13] IB/ehca: irq
-In-Reply-To: <20068171311.X1v1Q4Gk1v3wd7qJ@cisco.com>
+	by ozlabs.org (Postfix) with ESMTP id 3541A67D86
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 06:20:48 +1000 (EST)
+Subject: [PATCH 07/13] IB/ehca: cq
+In-Reply-To: <20068171311.L4phXwdeU9u1VjBq@cisco.com>
 Date: Thu, 17 Aug 2006 13:11:01 -0700
-Message-Id: <20068171311.VUo6fig31aLNQqvN@cisco.com>
+Message-Id: <20068171311.4HUmviC1Ip8J2EpE@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: openib-general@openib.org, linux-kernel@vger.kernel.org,
@@ -21,23 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- drivers/infiniband/hw/ehca/ehca_irq.c |  847 +++++++++++++++++++++++++++++++++
- drivers/infiniband/hw/ehca/ehca_irq.h |   77 +++
- 2 files changed, 924 insertions(+), 0 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_cq.c |  449 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 449 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
 new file mode 100644
-index 0000000..c66c6aa
+index 0000000..c52d1c3
 --- /dev/null
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -0,0 +1,847 @@
++++ b/drivers/infiniband/hw/ehca/ehca_cq.c
+@@ -0,0 +1,449 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  Functions for EQs, NEQs and interrupts
++ *  Completion queue handling
 + *
-+ *  Authors: Heiko J Schick <schickhj@de.ibm.com>
++ *  Authors: Waleri Fomin <fomin@de.ibm.com>
 + *           Khadija Souissi <souissi@de.ibm.com>
++ *           Reinhard Ernst <rernst@de.ibm.com>
++ *           Heiko J Schick <schickhj@de.ibm.com>
++ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
++ *
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
@@ -72,894 +75,409 @@ index 0000000..c66c6aa
 + * POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#define DEB_PREFIX "eirq"
++#define DEB_PREFIX "e_cq"
 +
++#include <asm/current.h>
++
++#include "ehca_iverbs.h"
 +#include "ehca_classes.h"
 +#include "ehca_irq.h"
-+#include "ehca_iverbs.h"
-+#include "ehca_tools.h"
 +#include "hcp_if.h"
-+#include "hipz_fns.h"
 +
-+#define EQE_COMPLETION_EVENT   EHCA_BMASK_IBM(1,1)
-+#define EQE_CQ_QP_NUMBER       EHCA_BMASK_IBM(8,31)
-+#define EQE_EE_IDENTIFIER      EHCA_BMASK_IBM(2,7)
-+#define EQE_CQ_NUMBER          EHCA_BMASK_IBM(8,31)
-+#define EQE_QP_NUMBER          EHCA_BMASK_IBM(8,31)
-+#define EQE_QP_TOKEN           EHCA_BMASK_IBM(32,63)
-+#define EQE_CQ_TOKEN           EHCA_BMASK_IBM(32,63)
-+
-+#define NEQE_COMPLETION_EVENT  EHCA_BMASK_IBM(1,1)
-+#define NEQE_EVENT_CODE        EHCA_BMASK_IBM(2,7)
-+#define NEQE_PORT_NUMBER       EHCA_BMASK_IBM(8,15)
-+#define NEQE_PORT_AVAILABILITY EHCA_BMASK_IBM(16,16)
-+
-+#define ERROR_DATA_LENGTH      EHCA_BMASK_IBM(52,63)
-+#define ERROR_DATA_TYPE        EHCA_BMASK_IBM(0,7)
-+
-+static void queue_comp_task(struct ehca_cq *__cq);
-+
-+static struct ehca_comp_pool* pool;
-+static struct notifier_block comp_pool_callback_nb;
-+
-+static inline void comp_event_callback(struct ehca_cq *cq)
++int ehca_cq_assign_qp(struct ehca_cq *cq, struct ehca_qp *qp)
 +{
-+	EDEB_EN(7, "cq=%p", cq);
-+
-+	if (!cq->ib_cq.comp_handler)
-+		return;
-+
-+	spin_lock(&cq->cb_lock);
-+	cq->ib_cq.comp_handler(&cq->ib_cq, cq->ib_cq.cq_context);
-+	spin_unlock(&cq->cb_lock);
-+
-+	EDEB_EX(7, "cq=%p", cq);
-+
-+	return;
-+}
-+
-+static void print_error_data(struct ehca_shca * shca, void* data,
-+			     u64* rblock, int length)
-+{
-+	u64 type = EHCA_BMASK_GET(ERROR_DATA_TYPE, rblock[2]);
-+	u64 resource = rblock[1];
-+
-+	EDEB_EN(7, "shca=%p data=%p rblock=%p length=%x",
-+		shca, data, rblock, length);
-+
-+	switch (type) {
-+	case 0x1: /* Queue Pair */
-+	{
-+		struct ehca_qp *qp = (struct ehca_qp*)data;
-+
-+		/* only print error data if AER is set */
-+		if (rblock[6] == 0)
-+			return;
-+
-+		EDEB_ERR(4, "QP 0x%x (resource=%lx) has errors.",
-+			 qp->ib_qp.qp_num, resource);
-+		break;
-+	}
-+	case 0x4: /* Completion Queue */
-+	{
-+		struct ehca_cq *cq = (struct ehca_cq*)data;
-+
-+		EDEB_ERR(4, "CQ 0x%x (resource=%lx) has errors.",
-+			 cq->cq_number, resource);
-+		break;
-+	}
-+	default:
-+		EDEB_ERR(4, "Unknown errror type: %lx on %s.",
-+			 type, shca->ib_device.name);
-+		break;
-+	}
-+
-+	EDEB_ERR(4, "Error data is available: %lx.", resource);
-+	EDEB_ERR(4, "EHCA ----- error data begin "
-+		 "---------------------------------------------------");
-+	EDEB_DMP(4, rblock, length, "resource=%lx", resource);
-+	EDEB_ERR(4, "EHCA ----- error data end "
-+		 "----------------------------------------------------");
-+
-+	EDEB_EX(7, "");
-+
-+	return;
-+}
-+
-+int ehca_error_data(struct ehca_shca *shca, void *data,
-+		    u64 resource)
-+{
-+
-+	unsigned long ret = 0;
-+	u64 *rblock;
-+	unsigned long block_count;
-+
-+	EDEB_EN(7, "shca=%p data=%p resource=%lx", shca, data, resource);
-+
-+	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	if (!rblock) {
-+		EDEB_ERR(4, "Cannot allocate rblock memory.");
-+		ret = -ENOMEM;
-+		goto error_data1;
-+	}
-+
-+	ret = hipz_h_error_data(shca->ipz_hca_handle,
-+				resource,
-+				rblock,
-+				&block_count);
-+
-+	if (ret == H_R_STATE) {
-+		EDEB_ERR(4, "No error data is available: %lx.", resource);
-+	}
-+	else if (ret == H_SUCCESS) {
-+		int length;
-+
-+		length = EHCA_BMASK_GET(ERROR_DATA_LENGTH, rblock[0]);
-+
-+		if (length > PAGE_SIZE)
-+			length = PAGE_SIZE;
-+
-+		print_error_data(shca, data, rblock, length);
-+	}
-+	else {
-+		EDEB_ERR(4, "Error data could not be fetched: %lx", resource);
-+	}
-+
-+	kfree(rblock);
-+
-+error_data1:
-+	return ret;
-+
-+}
-+
-+static void qp_event_callback(struct ehca_shca *shca,
-+			      u64 eqe,
-+			      enum ib_event_type event_type)
-+{
-+	struct ib_event event;
-+	struct ehca_qp *qp;
-+	unsigned long flags;
-+	u32 token = EHCA_BMASK_GET(EQE_QP_TOKEN, eqe);
-+
-+	EDEB_EN(7, "eqe=%lx", eqe);
-+
-+	spin_lock_irqsave(&ehca_qp_idr_lock, flags);
-+	qp = idr_find(&ehca_qp_idr, token);
-+	spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
-+
-+
-+	if (!qp)
-+		return;
-+
-+	ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
-+
-+	if (!qp->ib_qp.event_handler)
-+		return;
-+
-+	event.device     = &shca->ib_device;
-+	event.event      = event_type;
-+	event.element.qp = &qp->ib_qp;
-+
-+	qp->ib_qp.event_handler(&event, qp->ib_qp.qp_context);
-+
-+	EDEB_EX(7, "qp=%p", qp);
-+
-+	return;
-+}
-+
-+static void cq_event_callback(struct ehca_shca *shca,
-+					  u64 eqe)
-+{
-+	struct ehca_cq *cq;
-+	unsigned long flags;
-+	u32 token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe);
-+
-+	EDEB_EN(7, "eqe=%lx", eqe);
-+
-+	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+	cq = idr_find(&ehca_cq_idr, token);
-+	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
-+
-+	if (!cq)
-+		return;
-+
-+	ehca_error_data(shca, cq, cq->ipz_cq_handle.handle);
-+
-+	EDEB_EX(7, "cq=%p", cq);
-+
-+	return;
-+}
-+
-+static void parse_identifier(struct ehca_shca *shca, u64 eqe)
-+{
-+	u8 identifier = EHCA_BMASK_GET(EQE_EE_IDENTIFIER, eqe);
-+
-+	EDEB_EN(7, "shca=%p eqe=%lx", shca, eqe);
-+
-+	switch (identifier) {
-+	case 0x02: /* path migrated */
-+		qp_event_callback(shca, eqe, IB_EVENT_PATH_MIG);
-+		break;
-+	case 0x03: /* communication established */
-+		qp_event_callback(shca, eqe, IB_EVENT_COMM_EST);
-+		break;
-+	case 0x04: /* send queue drained */
-+		qp_event_callback(shca, eqe, IB_EVENT_SQ_DRAINED);
-+		break;
-+	case 0x05: /* QP error */
-+	case 0x06: /* QP error */
-+		qp_event_callback(shca, eqe, IB_EVENT_QP_FATAL);
-+		break;
-+	case 0x07: /* CQ error */
-+	case 0x08: /* CQ error */
-+		cq_event_callback(shca, eqe);
-+		break;
-+	case 0x09: /* MRMWPTE error */
-+		EDEB_ERR(4, "MRMWPTE error.");
-+		break;
-+	case 0x0A: /* port event */
-+		EDEB_ERR(4, "Port event.");
-+		break;
-+	case 0x0B: /* MR access error */
-+		EDEB_ERR(4, "MR access error.");
-+		break;
-+	case 0x0C: /* EQ error */
-+		EDEB_ERR(4, "EQ error.");
-+		break;
-+	case 0x0D: /* P/Q_Key mismatch */
-+		EDEB_ERR(4, "P/Q_Key mismatch.");
-+		break;
-+	case 0x10: /* sampling complete */
-+		EDEB_ERR(4, "Sampling complete.");
-+		break;
-+	case 0x11: /* unaffiliated access error */
-+		EDEB_ERR(4, "Unaffiliated access error.");
-+		break;
-+	case 0x12: /* path migrating error */
-+		EDEB_ERR(4, "Path migration error.");
-+		break;
-+	case 0x13: /* interface trace stopped */
-+		EDEB_ERR(4, "Interface trace stopped.");
-+		break;
-+	case 0x14: /* first error capture info available */
-+	default:
-+		EDEB_ERR(4, "Unknown identifier: %x on %s.",
-+			 identifier, shca->ib_device.name);
-+		break;
-+	}
-+
-+	EDEB_EX(7, "eqe=%lx identifier=%x", eqe, identifier);
-+
-+	return;
-+}
-+
-+static void parse_ec(struct ehca_shca *shca, u64 eqe)
-+{
-+	struct ib_event event;
-+	u8 ec   = EHCA_BMASK_GET(NEQE_EVENT_CODE, eqe);
-+	u8 port = EHCA_BMASK_GET(NEQE_PORT_NUMBER, eqe);
-+
-+	EDEB_EN(7, "shca=%p eqe=%lx", shca, eqe);
-+
-+	switch (ec) {
-+	case 0x30: /* port availability change */
-+		if (EHCA_BMASK_GET(NEQE_PORT_AVAILABILITY, eqe)) {
-+			EDEB(4, "%s: port %x is active.",
-+			     shca->ib_device.name, port);
-+			event.device = &shca->ib_device;
-+			event.event = IB_EVENT_PORT_ACTIVE;
-+			event.element.port_num = port;
-+			shca->sport[port - 1].port_state = IB_PORT_ACTIVE;
-+			ib_dispatch_event(&event);
-+		} else {
-+			EDEB(4, "%s: port %x is inactive.",
-+			     shca->ib_device.name, port);
-+			event.device = &shca->ib_device;
-+			event.event = IB_EVENT_PORT_ERR;
-+			event.element.port_num = port;
-+			shca->sport[port - 1].port_state = IB_PORT_DOWN;
-+			ib_dispatch_event(&event);
-+		}
-+		break;
-+	case 0x31:
-+		/* port configuration change
-+		 * disruptive change is caused by
-+		 * LID, PKEY or SM change
-+		 */
-+		 EDEB(4, "EHCA disruptive port %x "
-+		     "configuration change.", port);
-+
-+		EDEB(4, "%s: port %x is inactive.",
-+		     shca->ib_device.name, port);
-+		event.device = &shca->ib_device;
-+		event.event = IB_EVENT_PORT_ERR;
-+		event.element.port_num = port;
-+		shca->sport[port - 1].port_state = IB_PORT_DOWN;
-+		ib_dispatch_event(&event);
-+
-+		EDEB(4, "%s: port %x is active.",
-+			     shca->ib_device.name, port);
-+		event.device = &shca->ib_device;
-+		event.event = IB_EVENT_PORT_ACTIVE;
-+		event.element.port_num = port;
-+		shca->sport[port - 1].port_state = IB_PORT_ACTIVE;
-+		ib_dispatch_event(&event);
-+		break;
-+	case 0x32: /* adapter malfunction */
-+		EDEB_ERR(4, "Adapter malfunction.");
-+		break;
-+	case 0x33:  /* trace stopped */
-+		EDEB_ERR(4, "Traced stopped.");
-+		break;
-+	default:
-+		EDEB_ERR(4, "Unknown event code: %x on %s.",
-+			 ec, shca->ib_device.name);
-+		break;
-+	}
-+
-+	EDEB_EN(7, "eqe=%lx ec=%x", eqe, ec);
-+
-+	return;
-+}
-+
-+static inline void reset_eq_pending(struct ehca_cq *cq)
-+{
-+	u64 CQx_EP = 0;
-+	struct h_galpa gal = cq->galpas.kernel;
-+
-+	EDEB_EN(7, "cq=%p", cq);
-+
-+	hipz_galpa_store_cq(gal, cqx_ep, 0x0);
-+	CQx_EP = hipz_galpa_load(gal, CQTEMM_OFFSET(cqx_ep));
-+	EDEB(7, "CQx_EP=%lx", CQx_EP);
-+
-+	EDEB_EX(7, "cq=%p", cq);
-+
-+	return;
-+}
-+
-+irqreturn_t ehca_interrupt_neq(int irq, void *dev_id, struct pt_regs *regs)
-+{
-+	struct ehca_shca *shca = (struct ehca_shca*)dev_id;
-+
-+	EDEB_EN(7, "dev_id=%p", dev_id);
-+
-+	tasklet_hi_schedule(&shca->neq.interrupt_task);
-+
-+	EDEB_EX(7, "");
-+
-+	return IRQ_HANDLED;
-+}
-+
-+void ehca_tasklet_neq(unsigned long data)
-+{
-+	struct ehca_shca *shca = (struct ehca_shca*)data;
-+	struct ehca_eqe *eqe;
-+	u64 ret = H_SUCCESS;
-+
-+	EDEB_EN(7, "shca=%p", shca);
-+
-+	eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->neq);
-+
-+	while (eqe) {
-+		if (!EHCA_BMASK_GET(NEQE_COMPLETION_EVENT, eqe->entry))
-+			parse_ec(shca, eqe->entry);
-+
-+		eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->neq);
-+	}
-+
-+	ret = hipz_h_reset_event(shca->ipz_hca_handle,
-+				 shca->neq.ipz_eq_handle, 0xFFFFFFFFFFFFFFFFL);
-+
-+	if (ret != H_SUCCESS)
-+		EDEB_ERR(4, "Can't clear notification events.");
-+
-+	EDEB_EX(7, "shca=%p", shca);
-+
-+	return;
-+}
-+
-+irqreturn_t ehca_interrupt_eq(int irq, void *dev_id, struct pt_regs *regs)
-+{
-+	struct ehca_shca *shca = (struct ehca_shca*)dev_id;
-+
-+	EDEB_EN(7, "dev_id=%p", dev_id);
-+
-+	tasklet_hi_schedule(&shca->eq.interrupt_task);
-+
-+	EDEB_EX(7, "");
-+
-+	return IRQ_HANDLED;
-+}
-+
-+void ehca_tasklet_eq(unsigned long data)
-+{
-+	struct ehca_shca *shca = (struct ehca_shca*)data;
-+	struct ehca_eqe *eqe;
-+	int int_state;
-+	int query_cnt = 0;
-+
-+	EDEB_EN(7, "shca=%p", shca);
-+
-+	do {
-+		eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->eq);
-+
-+		if ((shca->hw_level >= 2) && eqe)
-+			int_state = 1;
-+		else
-+			int_state = 0;
-+
-+		while ((int_state == 1) || eqe) {
-+			while (eqe) {
-+				u64 eqe_value = eqe->entry;
-+
-+				EDEB(7, "eqe_value=%lx", eqe_value);
-+
-+				/* TODO: better structure */
-+				if (EHCA_BMASK_GET(EQE_COMPLETION_EVENT,
-+						   eqe_value)) {
-+					extern struct idr ehca_cq_idr;
-+					unsigned long flags;
-+					u32 token;
-+					struct ehca_cq *cq;
-+
-+					EDEB(6, "... completion event");
-+					token =
-+						EHCA_BMASK_GET(EQE_CQ_TOKEN,
-+							       eqe_value);
-+					spin_lock_irqsave(&ehca_cq_idr_lock,
-+							  flags);
-+					cq = idr_find(&ehca_cq_idr, token);
-+
-+					if (cq == NULL) {
-+						spin_unlock(&ehca_cq_idr_lock);
-+						break;
-+					}
-+
-+					reset_eq_pending(cq);
-+#ifdef CONFIG_INFINIBAND_EHCA_SCALING
-+					queue_comp_task(cq);
-+					spin_unlock_irqrestore(&ehca_cq_idr_lock,
-+							       flags);
-+#else
-+					spin_unlock_irqrestore(&ehca_cq_idr_lock,
-+							       flags);
-+					comp_event_callback(cq);
-+#endif
-+				} else {
-+					EDEB(6, "... non completion event");
-+					parse_identifier(shca, eqe_value);
-+				}
-+				eqe =
-+					(struct ehca_eqe *)ehca_poll_eq(shca,
-+								    &shca->eq);
-+			}
-+
-+			if (shca->hw_level >= 2) {
-+				int_state =
-+				    hipz_h_query_int_state(shca->ipz_hca_handle,
-+							   shca->eq.ist);
-+				query_cnt++;
-+				iosync();
-+				if (query_cnt >= 100) {
-+					query_cnt = 0;
-+					int_state = 0;
-+				}
-+			}
-+			eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->eq);
-+
-+		}
-+	} while (int_state != 0);
-+
-+	EDEB_EX(7, "shca=%p", shca);
-+
-+	return;
-+}
-+
-+static inline int find_next_online_cpu(struct ehca_comp_pool* pool)
-+{
-+	unsigned long flags_last_cpu;
-+
-+	EDEB_DMP(7, &cpu_online_map, sizeof(cpumask_t), "");
-+
-+	spin_lock_irqsave(&pool->last_cpu_lock, flags_last_cpu);
-+	pool->last_cpu = next_cpu(pool->last_cpu, cpu_online_map);
-+
-+	if (pool->last_cpu == NR_CPUS)
-+		pool->last_cpu = 0;
-+	if (!cpu_online(pool->last_cpu))
-+		pool->last_cpu = next_cpu(pool->last_cpu, cpu_online_map);
-+
-+	spin_unlock_irqrestore(&pool->last_cpu_lock, flags_last_cpu);
-+
-+	// return pool->last_cpu;
-+	return 1;
-+}
-+
-+static void __queue_comp_task(struct ehca_cq *__cq,
-+			      struct ehca_cpu_comp_task *cct)
-+{
-+	unsigned long flags_cct;
-+	unsigned long flags_cq;
-+
-+	EDEB_EN(7, "__cq=%p cct=%p", __cq, cct);
-+
-+	spin_lock_irqsave(&cct->task_lock, flags_cct);
-+	spin_lock_irqsave(&__cq->task_lock, flags_cq);
-+
-+	if (__cq->nr_callbacks == 0) {
-+		__cq->nr_callbacks++;
-+		list_add_tail(&__cq->entry, &cct->cq_list);
-+		cct->cq_jobs++;
-+		wake_up(&cct->wait_queue);
-+	}
-+	else
-+		__cq->nr_callbacks++;
-+
-+	spin_unlock_irqrestore(&__cq->task_lock, flags_cq);
-+	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+
-+
-+	EDEB_EX(7, "");
-+
-+}
-+
-+static void queue_comp_task(struct ehca_cq *__cq)
-+{
-+	int cpu;
-+	int cpu_id;
-+	struct ehca_cpu_comp_task *cct;
-+
-+	cpu = get_cpu();
-+	cpu_id = find_next_online_cpu(pool);
-+
-+	EDEB_EN(7, "pool=%p cq=%p cq_nr=%x CPU=%x:%x:%x:%x",
-+		pool, __cq, __cq->cq_number,
-+		cpu, cpu_id, num_online_cpus(), num_possible_cpus());
-+
-+	BUG_ON(!cpu_online(cpu_id));
-+
-+	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
-+
-+	if (cct->cq_jobs > 0) {
-+		cpu_id = find_next_online_cpu(pool);
-+		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
-+	}
-+
-+	__queue_comp_task(__cq, cct);
-+
-+	put_cpu();
-+
-+	EDEB_EX(7, "cct=%p", cct);
-+
-+	return;
-+}
-+
-+static void run_comp_task(struct ehca_cpu_comp_task* cct)
-+{
-+	struct ehca_cq *cq = NULL;
-+	unsigned long flags_cct;
-+	unsigned long flags_cq;
-+
-+
-+	EDEB_EN(7, "cct=%p", cct);
-+
-+	spin_lock_irqsave(&cct->task_lock, flags_cct);
-+
-+	while (!list_empty(&cct->cq_list)) {
-+		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
-+		spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+		comp_event_callback(cq);
-+		spin_lock_irqsave(&cct->task_lock, flags_cct);
-+
-+		spin_lock_irqsave(&cq->task_lock, flags_cq);
-+		cq->nr_callbacks--;
-+		if (cq->nr_callbacks == 0) {
-+			list_del_init(cct->cq_list.next);
-+			cct->cq_jobs--;
-+		}
-+		spin_unlock_irqrestore(&cq->task_lock, flags_cq);
-+
-+	}
-+
-+	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+
-+	EDEB_EX(7, "cct=%p cq=%p", cct, cq);
-+
-+	return;
-+}
-+
-+static int comp_task(void *__cct)
-+{
-+	struct ehca_cpu_comp_task* cct = __cct;
-+	DECLARE_WAITQUEUE(wait, current);
-+
-+	EDEB_EN(7, "cct=%p", cct);
-+
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	while(!kthread_should_stop()) {
-+		add_wait_queue(&cct->wait_queue, &wait);
-+
-+		if (list_empty(&cct->cq_list))
-+			schedule();
-+		else
-+			__set_current_state(TASK_RUNNING);
-+
-+		remove_wait_queue(&cct->wait_queue, &wait);
-+
-+		if (!list_empty(&cct->cq_list))
-+			run_comp_task(__cct);
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+	}
-+	__set_current_state(TASK_RUNNING);
-+
-+	EDEB_EX(7, "");
++	unsigned int qp_num = qp->real_qp_num;
++	unsigned int key = qp_num & (QP_HASHTAB_LEN-1);
++	unsigned long spl_flags = 0;
++
++	spin_lock_irqsave(&cq->spinlock, spl_flags);
++	hlist_add_head(&qp->list_entries, &cq->qp_hashtab[key]);
++	spin_unlock_irqrestore(&cq->spinlock, spl_flags);
++
++	EDEB(7, "cq_num=%x real_qp_num=%x", cq->cq_number, qp_num);
 +
 +	return 0;
 +}
 +
-+static struct task_struct *create_comp_task(struct ehca_comp_pool *pool,
-+					    int cpu)
++int ehca_cq_unassign_qp(struct ehca_cq *cq, unsigned int real_qp_num)
 +{
-+	struct ehca_cpu_comp_task *cct;
++	int ret = -EINVAL;
++	unsigned int key = real_qp_num & (QP_HASHTAB_LEN-1);
++	struct hlist_node *iter = NULL;
++	struct ehca_qp *qp = NULL;
++	unsigned long spl_flags = 0;
 +
-+	EDEB_EN(7, "cpu=%d:%d", cpu, NR_CPUS);
-+
-+	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
-+	spin_lock_init(&cct->task_lock);
-+	INIT_LIST_HEAD(&cct->cq_list);
-+	init_waitqueue_head(&cct->wait_queue);
-+	cct->task = kthread_create(comp_task, cct, "ehca_comp/%d", cpu);
-+
-+	EDEB_EX(7, "cct/%d=%p", cpu, cct);
-+
-+	return cct->task;
-+}
-+
-+static void destroy_comp_task(struct ehca_comp_pool *pool,
-+			      int cpu)
-+{
-+	struct ehca_cpu_comp_task *cct;
-+	struct task_struct *task;
-+	unsigned long flags_cct;
-+
-+	EDEB_EN(7, "pool=%p cpu=%d:%d", pool, cpu, NR_CPUS);
-+
-+	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
-+
-+	spin_lock_irqsave(&cct->task_lock, flags_cct);
-+
-+	task = cct->task;
-+	cct->task = NULL;
-+	cct->cq_jobs = 0;
-+
-+	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+
-+	if (task)
-+		kthread_stop(task);
-+
-+	EDEB_EX(7, "");
-+
-+	return;
-+}
-+
-+static void take_over_work(struct ehca_comp_pool *pool,
-+			   int cpu)
-+{
-+	struct ehca_cpu_comp_task *cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
-+	LIST_HEAD(list);
-+	struct ehca_cq *cq;
-+	unsigned long flags_cct;
-+
-+	EDEB_EN(7, "cpu=%x", cpu);
-+
-+	spin_lock_irqsave(&cct->task_lock, flags_cct);
-+
-+	list_splice_init(&cct->cq_list, &list);
-+
-+	while(!list_empty(&list)) {
-+	       cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
-+
-+	       list_del(&cq->entry);
-+	       __queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
-+						 smp_processor_id()));
-+	}
-+
-+	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+
-+	EDEB_EX(7, "");
-+
-+}
-+
-+static int comp_pool_callback(struct notifier_block *nfb,
-+			      unsigned long action,
-+			      void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+	struct ehca_cpu_comp_task *cct;
-+
-+	EDEB_EN(7, "CPU number changed (action=%lx)", action);
-+
-+	switch (action) {
-+	case CPU_UP_PREPARE:
-+		EDEB(4, "CPU: %x (CPU_PREPARE)", cpu);
-+		if(!create_comp_task(pool, cpu)) {
-+			EDEB_ERR(4, "Can't create comp_task for cpu: %x", cpu);
-+			return NOTIFY_BAD;
++	spin_lock_irqsave(&cq->spinlock, spl_flags);
++	hlist_for_each(iter, &cq->qp_hashtab[key]) {
++		qp = hlist_entry(iter, struct ehca_qp, list_entries);
++		if (qp->real_qp_num == real_qp_num) {
++			hlist_del(iter);
++			EDEB(7, "removed qp from cq .cq_num=%x real_qp_num=%x",
++			     cq->cq_number, real_qp_num);
++			ret = 0;
++			break;
 +		}
-+		break;
-+	case CPU_UP_CANCELED:
-+		EDEB(4, "CPU: %x (CPU_CANCELED)", cpu);
-+		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
-+		kthread_bind(cct->task, any_online_cpu(cpu_online_map));
-+		destroy_comp_task(pool, cpu);
-+		break;
-+	case CPU_ONLINE:
-+		EDEB(4, "CPU: %x (CPU_ONLINE)", cpu);
-+		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
-+		kthread_bind(cct->task, cpu);
-+		wake_up_process(cct->task);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+		EDEB(4, "CPU: %x (CPU_DOWN_PREPARE)", cpu);
-+		break;
-+	case CPU_DOWN_FAILED:
-+		EDEB(4, "CPU: %x (CPU_DOWN_FAILED)", cpu);
-+		break;
-+	case CPU_DEAD:
-+		EDEB(4, "CPU: %x (CPU_DEAD)", cpu);
-+		destroy_comp_task(pool, cpu);
-+		take_over_work(pool, cpu);
-+		break;
++	}
++	spin_unlock_irqrestore(&cq->spinlock, spl_flags);
++	if (ret) {
++		EDEB_ERR(4, "qp not found cq_num=%x real_qp_num=%x",
++			 cq->cq_number, real_qp_num);
 +	}
 +
-+	EDEB_EX(7, "CPU number changed");
-+
-+	return NOTIFY_OK;
++	return ret;
 +}
 +
-+int ehca_create_comp_pool(void)
++struct ehca_qp* ehca_cq_get_qp(struct ehca_cq *cq, int real_qp_num)
 +{
-+#ifdef CONFIG_INFINIBAND_EHCA_SCALING
-+	int cpu;
-+	struct task_struct *task;
++	struct ehca_qp *ret = NULL;
++	unsigned int key = real_qp_num & (QP_HASHTAB_LEN-1);
++	struct hlist_node *iter = NULL;
++	struct ehca_qp *qp = NULL;
++	hlist_for_each(iter, &cq->qp_hashtab[key]) {
++		qp = hlist_entry(iter, struct ehca_qp, list_entries);
++		if (qp->real_qp_num == real_qp_num) {
++			ret = qp;
++			break;
++		}
++	}
++	return ret;
++}
 +
-+	EDEB_EN(7, "");
++struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe,
++			     struct ib_ucontext *context,
++			     struct ib_udata *udata)
++{
++	extern struct ehca_module ehca_module;
++	struct ib_cq *cq = NULL;
++	struct ehca_cq *my_cq = NULL;
++	struct ehca_shca *shca = NULL;
++	struct ipz_adapter_handle adapter_handle;
++	/* h_call's out parameters */
++	struct ehca_alloc_cq_parms param;
++	u32 counter = 0;
++	void *vpage = NULL;
++	u64 rpage = 0;
++	struct h_galpa gal;
++	u64 cqx_fec = 0;
++	u64 h_ret = 0;
++	int ipz_rc = 0;
++	int ret = 0;
++	const u32 additional_cqe=20;
++	int i= 0;
++	unsigned long flags;
++
++	EHCA_CHECK_DEVICE_P(device);
++	EDEB_EN(7,  "device=%p cqe=%x context=%p", device, cqe, context);
++
++	if (cqe >= 0xFFFFFFFF - 64 - additional_cqe)
++		return ERR_PTR(-EINVAL);
++
++	my_cq = kmem_cache_alloc(ehca_module.cache_cq, SLAB_KERNEL);
++	if (!my_cq) {
++		cq = ERR_PTR(-ENOMEM);
++		EDEB_ERR(4, "Out of memory for ehca_cq struct device=%p",
++			 device);
++		goto create_cq_exit0;
++	}
++
++	memset(my_cq, 0, sizeof(struct ehca_cq));
++	memset(&param, 0, sizeof(struct ehca_alloc_cq_parms));
++
++	spin_lock_init(&my_cq->spinlock);
++	spin_lock_init(&my_cq->cb_lock);
++	spin_lock_init(&my_cq->task_lock);
++	my_cq->ownpid = current->tgid;
++
++	cq = &my_cq->ib_cq;
++
++	shca = container_of(device, struct ehca_shca, ib_device);
++	adapter_handle = shca->ipz_hca_handle;
++	param.eq_handle = shca->eq.ipz_eq_handle;
 +
 +
-+	pool = kzalloc(sizeof(struct ehca_comp_pool), GFP_KERNEL);
-+	if (pool == NULL)
-+		return -ENOMEM;
++	do {
++		if (!idr_pre_get(&ehca_cq_idr, GFP_KERNEL)) {
++			cq = ERR_PTR(-ENOMEM);
++			EDEB_ERR(4,
++				 "Can't reserve idr resources. "
++				 "device=%p", device);
++			goto create_cq_exit1;
++		}
 +
-+	spin_lock_init(&pool->last_cpu_lock);
-+	pool->last_cpu = any_online_cpu(cpu_online_map);
++		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		ret = idr_get_new(&ehca_cq_idr, my_cq, &my_cq->token);
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
 +
-+	pool->cpu_comp_tasks = alloc_percpu(struct ehca_cpu_comp_task);
-+	if (pool->cpu_comp_tasks == NULL) {
-+		kfree(pool);
++	} while (ret == -EAGAIN);
++
++	if (ret) {
++		cq = ERR_PTR(-ENOMEM);
++		EDEB_ERR(4,
++			 "Can't allocate new idr entry. "
++			 "device=%p", device);
++		goto create_cq_exit1;
++	}
++
++	/*
++	 * CQs maximum depth is 4GB-64, but we need additional 20 as buffer
++	 * for receiving errors CQEs.
++	 */
++	param.nr_cqe = cqe + additional_cqe;
++	h_ret = hipz_h_alloc_resource_cq(adapter_handle, my_cq, &param);
++
++	if (h_ret != H_SUCCESS) {
++		EDEB_ERR(4,"hipz_h_alloc_resource_cq() failed "
++			 "h_ret=%lx device=%p", h_ret, device);
++		cq = ERR_PTR(ehca2ib_return_code(h_ret));
++		goto create_cq_exit2;
++	}
++
++	ipz_rc = ipz_queue_ctor(&my_cq->ipz_queue, param.act_pages,
++				EHCA_PAGESIZE, sizeof(struct ehca_cqe), 0);
++	if (!ipz_rc) {
++		EDEB_ERR(4,
++			 "ipz_queue_ctor() failed "
++			 "ipz_rc=%x device=%p", ipz_rc, device);
++		cq = ERR_PTR(-EINVAL);
++		goto create_cq_exit3;
++	}
++
++	for (counter = 0; counter < param.act_pages; counter++) {
++		vpage = ipz_qpageit_get_inc(&my_cq->ipz_queue);
++		if (!vpage) {
++			EDEB_ERR(4, "ipz_qpageit_get_inc() "
++				 "returns NULL device=%p", device);
++			cq = ERR_PTR(-EAGAIN);
++			goto create_cq_exit4;
++		}
++		rpage = virt_to_abs(vpage);
++
++		h_ret = hipz_h_register_rpage_cq(adapter_handle,
++						 my_cq->ipz_cq_handle,
++						 &my_cq->pf,
++						 0,
++						 0,
++						 rpage,
++						 1,
++						 my_cq->galpas.
++						 kernel);
++
++		if (h_ret < H_SUCCESS) {
++			EDEB_ERR(4, "hipz_h_register_rpage_cq() failed "
++				 "ehca_cq=%p cq_num=%x h_ret=%lx "
++				 "counter=%i act_pages=%i",
++				 my_cq, my_cq->cq_number,
++				 h_ret, counter, param.act_pages);
++			cq = ERR_PTR(-EINVAL);
++			goto create_cq_exit4;
++		}
++
++		if (counter == (param.act_pages - 1)) {
++			vpage = ipz_qpageit_get_inc(&my_cq->ipz_queue);
++			if ((h_ret != H_SUCCESS) || vpage) {
++				EDEB_ERR(4, "Registration of pages not "
++					 "complete ehca_cq=%p cq_num=%x "
++					 "h_ret=%lx",
++					 my_cq, my_cq->cq_number, h_ret);
++				cq = ERR_PTR(-EAGAIN);
++				goto create_cq_exit4;
++			}
++		} else {
++			if (h_ret != H_PAGE_REGISTERED) {
++				EDEB_ERR(4, "Registration of page failed "
++					 "ehca_cq=%p cq_num=%x h_ret=%lx"
++					 "counter=%i act_pages=%i",
++					 my_cq, my_cq->cq_number,
++					 h_ret, counter, param.act_pages);
++				cq = ERR_PTR(-ENOMEM);
++				goto create_cq_exit4;
++			}
++		}
++	}
++
++	ipz_qeit_reset(&my_cq->ipz_queue);
++
++	gal = my_cq->galpas.kernel;
++	cqx_fec = hipz_galpa_load(gal, CQTEMM_OFFSET(cqx_fec));
++	EDEB(8, "ehca_cq=%p cq_num=%x CQX_FEC=%lx",
++	     my_cq, my_cq->cq_number, cqx_fec);
++
++	my_cq->ib_cq.cqe = my_cq->nr_of_entries =
++		param.act_nr_of_entries - additional_cqe;
++	my_cq->cq_number = (my_cq->ipz_cq_handle.handle) & 0xffff;
++
++	for (i = 0; i < QP_HASHTAB_LEN; i++)
++		INIT_HLIST_HEAD(&my_cq->qp_hashtab[i]);
++
++	if (context) {
++		struct ipz_queue *ipz_queue = &my_cq->ipz_queue;
++		struct ehca_create_cq_resp resp;
++		struct vm_area_struct *vma = NULL;
++		memset(&resp, 0, sizeof(resp));
++		resp.cq_number = my_cq->cq_number;
++		resp.token = my_cq->token;
++		resp.ipz_queue.qe_size = ipz_queue->qe_size;
++		resp.ipz_queue.act_nr_of_sg = ipz_queue->act_nr_of_sg;
++		resp.ipz_queue.queue_length = ipz_queue->queue_length;
++		resp.ipz_queue.pagesize = ipz_queue->pagesize;
++		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
++		ret = ehca_mmap_nopage(((u64)(my_cq->token) << 32) | 0x12000000,
++				       ipz_queue->queue_length,
++				       (void**)&resp.ipz_queue.queue,
++				       &vma);
++		if (ret) {
++			EDEB_ERR(4, "Could not mmap queue pages");
++			cq = ERR_PTR(ret);
++			goto create_cq_exit4;
++		}
++		my_cq->uspace_queue = resp.ipz_queue.queue;
++		resp.galpas = my_cq->galpas;
++		ret = ehca_mmap_register(my_cq->galpas.user.fw_handle,
++					 (void**)&resp.galpas.kernel.fw_handle,
++					 &vma);
++		if (ret) {
++			EDEB_ERR(4, "Could not mmap fw_handle");
++			cq = ERR_PTR(ret);
++			goto create_cq_exit5;
++		}
++		my_cq->uspace_fwh = (u64)resp.galpas.kernel.fw_handle;
++		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
++			EDEB_ERR(4,  "Copy to udata failed.");
++			goto create_cq_exit6;
++		}
++	}
++
++	EDEB_EX(7,"retcode=%p ehca_cq=%p cq_num=%x cq_size=%x",
++		cq, my_cq, my_cq->cq_number, param.act_nr_of_entries);
++	return cq;
++
++create_cq_exit6:
++	ehca_munmap(my_cq->uspace_fwh, EHCA_PAGESIZE);
++
++create_cq_exit5:
++	ehca_munmap(my_cq->uspace_queue, my_cq->ipz_queue.queue_length);
++
++create_cq_exit4:
++	ipz_queue_dtor(&my_cq->ipz_queue);
++
++create_cq_exit3:
++	h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 1);
++	if (h_ret != H_SUCCESS)
++		EDEB(4, "hipz_h_destroy_cq() failed ehca_cq=%p cq_num=%x "
++		     "h_ret=%lx", my_cq, my_cq->cq_number, h_ret);
++
++create_cq_exit2:
++	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++	idr_remove(&ehca_cq_idr, my_cq->token);
++	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++
++create_cq_exit1:
++	kmem_cache_free(ehca_module.cache_cq, my_cq);
++
++create_cq_exit0:
++	EDEB_EX(4, "An error has occured retcode=%p", cq);
++	return cq;
++}
++
++int ehca_destroy_cq(struct ib_cq *cq)
++{
++	extern struct ehca_module ehca_module;
++	u64 h_ret = 0;
++	int ret = 0;
++	struct ehca_cq *my_cq = NULL;
++	int cq_num = 0;
++	struct ib_device *device = NULL;
++	struct ehca_shca *shca = NULL;
++	struct ipz_adapter_handle adapter_handle;
++	u32 cur_pid = current->tgid;
++	unsigned long flags;
++
++	EHCA_CHECK_CQ(cq);
++	my_cq = container_of(cq, struct ehca_cq, ib_cq);
++	cq_num = my_cq->cq_number;
++	device = cq->device;
++	EHCA_CHECK_DEVICE(device);
++	shca = container_of(device, struct ehca_shca, ib_device);
++	adapter_handle = shca->ipz_hca_handle;
++	EDEB_EN(7, "ehca_cq=%p cq_num=%x",
++		my_cq, my_cq->cq_number);
++
++	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++	while (my_cq->nr_callbacks)
++		yield();
++
++	idr_remove(&ehca_cq_idr, my_cq->token);
++	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++
++	if (my_cq->uspace_queue && my_cq->ownpid != cur_pid) {
++		EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++			 cur_pid, my_cq->ownpid);
 +		return -EINVAL;
 +	}
 +
-+	for_each_online_cpu(cpu) {
-+		task = create_comp_task(pool, cpu);
-+		if (task) {
-+			kthread_bind(task, cpu);
-+			wake_up_process(task);
-+		}
++	/* un-mmap if vma alloc */
++	if (my_cq->uspace_queue ) {
++		ret = ehca_munmap(my_cq->uspace_queue,
++				      my_cq->ipz_queue.queue_length);
++		ret = ehca_munmap(my_cq->uspace_fwh, EHCA_PAGESIZE);
 +	}
 +
-+	comp_pool_callback_nb.notifier_call = comp_pool_callback;
-+	comp_pool_callback_nb.priority =0;
-+	register_cpu_notifier(&comp_pool_callback_nb);
++	h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 0);
++	if (h_ret == H_R_STATE) {
++		/* cq in err: read err data and destroy it forcibly */
++		EDEB(4, "ehca_cq=%p cq_num=%x ressource=%lx in err state. "
++		     "Try to delete it forcibly.",
++		     my_cq, my_cq->cq_number, my_cq->ipz_cq_handle.handle);
++		ehca_error_data(shca, my_cq, my_cq->ipz_cq_handle.handle);
++		h_ret = hipz_h_destroy_cq(adapter_handle, my_cq, 1);
++		if (h_ret == H_SUCCESS)
++			EDEB(4, "ehca_cq=%p cq_num=%x deleted successfully.",
++			     my_cq, my_cq->cq_number);
++	}
++	if (h_ret != H_SUCCESS) {
++		EDEB_ERR(4,"hipz_h_destroy_cq() failed "
++			 "h_ret=%lx ehca_cq=%p cq_num=%x",
++			 h_ret, my_cq, my_cq->cq_number);
++		ret = ehca2ib_return_code(h_ret);
++		goto destroy_cq_exit0;
++	}
++	ipz_queue_dtor(&my_cq->ipz_queue);
++	kmem_cache_free(ehca_module.cache_cq, my_cq);
 +
-+	EDEB_EX(7, "pool=%p", pool);
-+#endif
-+
-+	return 0;
++destroy_cq_exit0:
++	EDEB_EX(7, "ehca_cq=%p cq_num=%x ret=%x ",
++		my_cq, cq_num, ret);
++	return ret;
 +}
 +
-+void ehca_destroy_comp_pool(void)
++int ehca_resize_cq(struct ib_cq *cq, int cqe, struct ib_udata *udata)
 +{
-+#ifdef CONFIG_INFINIBAND_EHCA_SCALING
-+	int i;
++	int ret = 0;
++	struct ehca_cq *my_cq = NULL;
++	u32 cur_pid = current->tgid;
 +
-+	EDEB_EN(7, "pool=%p", pool);
-+
-+	unregister_cpu_notifier(&comp_pool_callback_nb);
-+
-+	for (i = 0; i < NR_CPUS; i++) {
-+		if (cpu_online(i))
-+			destroy_comp_task(pool, i);
++	if (unlikely(!cq)) {
++		EDEB_ERR(4, "cq is NULL");
++		return -EFAULT;
 +	}
 +
-+	EDEB_EN(7, "");
-+#endif
++	my_cq = container_of(cq, struct ehca_cq, ib_cq);
++	EDEB_EN(7, "ehca_cq=%p cq_num=%x",
++		my_cq, my_cq->cq_number);
 +
-+	return;
++	if (my_cq->uspace_queue && my_cq->ownpid != cur_pid) {
++		EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++			 cur_pid, my_cq->ownpid);
++		return -EINVAL;
++	}
++
++	/* TODO: proper resize needs to be done */
++	ret = -EFAULT;
++	EDEB_ERR(4, "not implemented yet");
++
++	EDEB_EX(7, "ehca_cq=%p cq_num=%x",
++		my_cq, my_cq->cq_number);
++	return ret;
 +}
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.h b/drivers/infiniband/hw/ehca/ehca_irq.h
-new file mode 100644
-index 0000000..85bf1fe
---- /dev/null
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.h
-@@ -0,0 +1,77 @@
-+/*
-+ *  IBM eServer eHCA Infiniband device driver for Linux on POWER
-+ *
-+ *  Function definitions and structs for EQs, NEQs and interrupts
-+ *
-+ *  Authors: Heiko J Schick <schickhj@de.ibm.com>
-+ *           Khadija Souissi <souissi@de.ibm.com>
-+ *
-+ *  Copyright (c) 2005 IBM Corporation
-+ *
-+ *  All rights reserved.
-+ *
-+ *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
-+ *  BSD.
-+ *
-+ * OpenIB BSD License
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ * Redistributions of source code must retain the above copyright notice, this
-+ * list of conditions and the following disclaimer.
-+ *
-+ * Redistributions in binary form must reproduce the above copyright notice,
-+ * this list of conditions and the following disclaimer in the documentation
-+ * and/or other materials
-+ * provided with the distribution.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef __EHCA_IRQ_H
-+#define __EHCA_IRQ_H
-+
-+
-+struct ehca_shca;
-+
-+#include <linux/interrupt.h>
-+#include <linux/types.h>
-+#include <asm/atomic.h>
-+
-+int ehca_error_data(struct ehca_shca *shca, void *data, u64 resource);
-+
-+irqreturn_t ehca_interrupt_neq(int irq, void *dev_id, struct pt_regs *regs);
-+void ehca_tasklet_neq(unsigned long data);
-+
-+irqreturn_t ehca_interrupt_eq(int irq, void *dev_id, struct pt_regs *regs);
-+void ehca_tasklet_eq(unsigned long data);
-+
-+struct ehca_cpu_comp_task {
-+	wait_queue_head_t wait_queue;
-+	struct list_head cq_list;
-+	struct task_struct *task;
-+	spinlock_t task_lock;
-+	int cq_jobs;
-+};
-+
-+struct ehca_comp_pool {
-+	struct ehca_cpu_comp_task *cpu_comp_tasks;
-+	int last_cpu;
-+	spinlock_t last_cpu_lock;
-+};
-+
-+int ehca_create_comp_pool(void);
-+void ehca_destroy_comp_pool(void);
-+
-+#endif
 -- 
 1.4.1
