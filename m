@@ -1,19 +1,25 @@
-Return-Path: <pantelis@embeddedalley.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id CD46A67B75
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 03:20:22 +1000 (EST)
-In-Reply-To: <1155919908.23182.28.camel@basalt.austin.ibm.com>
-References: <1155860626.27466.126.camel@basalt.austin.ibm.com>
-	<1155919908.23182.28.camel@basalt.austin.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Message-Id: <18484D7D-5CB3-4468-BC70-8594996A3ADB@embeddedalley.com>
-From: Pantelis Antoniou <pantelis@embeddedalley.com>
-Subject: Re: update: consolidated flat device tree code
-Date: Fri, 18 Aug 2006 19:52:18 +0300
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6603A67B6F
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 03:38:46 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k7IHcjDm011526
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 10:38:45 -0700 (MST)
+Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7IHciAS003594
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:38:44 -0500 (CDT)
+Subject: Re: [PATCH] Directly reference i8259@4d0 nodes in mpc8641_hpcn.dts.
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1155849609.10054.175.camel@cashmere.sps.mot.com>
+References: <1155835482.10054.140.camel@cashmere.sps.mot.com>
+	<1155840700.27466.64.camel@basalt.austin.ibm.com>
+	<1155849609.10054.175.camel@cashmere.sps.mot.com>
+Content-Type: text/plain
+Message-Id: <1155922375.10054.201.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Fri, 18 Aug 2006 12:32:56 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-08-17 at 16:20, Jon Loeliger wrote:
+> Rather than using some hand-coded linux,phandle
+> node references, use DTC's direct node refs ability
+> and let it manage the phandle names instead.
+> 
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+> 
+> On Thu, 2006-08-17 at 13:51, Hollis Blanchard wrote:
+> > Doesn't the device tree compiler add linux,phandle properties as needed?
+> > In this case that would be when the node is referenced by a
+> > "<&/foo/bar/i8259@4d0>" property.
+> > 
+> > On Thu, 2006-08-17 at 12:24 -0500, Jon Loeliger wrote:
+> > > Add 'linux,phandle' entry to i8259@4d0 node.
+> > > 
+> > > Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> > > Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> > > ---
+> 
+> Paul,
+> 
+> If you think this is better, please apply this patch
+> instead of my previous patch with the subject line:
+> 
+>     Patch] Fix the mpc8641_hpcn.dts file.
+> 
+> Thanks,
+> jdl
 
-On 18 =CE=91=CF=85=CE=B3 2006, at 7:51 =CE=9C=CE=9C, Hollis Blanchard =
-wrote:
+Paul,
 
-> On Thu, 2006-08-17 at 19:23 -0500, Hollis Blanchard wrote:
->> - added an explicit copyright statement.
->
-> On this subject, it's just been asked that the Xen library containing
-> this code be relicensed as LGPL (instead of GPL).
->
-> Panto, you're the original author of that code. Since we are trying to
-> make a library, I think LGPL makes sense. Is relicensing OK with you?
->
-> (Matt, this would be relevant to your outstanding patches as well.)
->
-> --=20
-> Hollis Blanchard
-> IBM Linux Technology Center
->
+I'll take the application of the original patch,
 
-Yes, this is fine.
+	Fix the mpc8641_hpcn.dts file.
 
-Please go ahead.
+as an indication that this, alternate version should
+now be simply dropped!
 
-Pantelis
+Thanks,
+jdl
