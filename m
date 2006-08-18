@@ -1,18 +1,18 @@
 Return-Path: <adobriyan@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.226])
-	by ozlabs.org (Postfix) with ESMTP id 0F201679E9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:16:14 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id t14so673958wxc
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 07:16:11 -0700 (PDT)
-Date: Fri, 18 Aug 2006 18:16:00 +0400
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 59B1C67A5E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:18:56 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c2so1431740nfe
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 07:18:54 -0700 (PDT)
+Date: Fri, 18 Aug 2006 18:18:47 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [2.6.19 PATCH 5/7] ehea: main header files
-Message-ID: <20060818141600.GD5201@martell.zuzino.mipt.ru>
-References: <200608181334.57701.ossthema@de.ibm.com>
+Subject: Re: [2.6.19 PATCH 7/7] ehea: Makefile & Kconfig
+Message-ID: <20060818141847.GE5201@martell.zuzino.mipt.ru>
+References: <200608181337.44153.ossthema@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200608181334.57701.ossthema@de.ibm.com>
+In-Reply-To: <200608181337.44153.ossthema@de.ibm.com>
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
 	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
@@ -26,44 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2006 at 01:34:57PM +0200, Jan-Bernd Themann wrote:
-> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea.h
-> +++ kernel/drivers/net/ehea/ehea.h
+On Fri, Aug 18, 2006 at 01:37:44PM +0200, Jan-Bernd Themann wrote:
+> --- linux-2.6.18-rc4/drivers/net/Kconfig
+> +++ patched_kernel/drivers/net/Kconfig
+> @@ -2277,6 +2277,12 @@ config CHELSIO_T1
+>            To compile this driver as a module, choose M here: the module
+>            will be called cxgb.
+>
+> +config EHEA
+> +        tristate "eHEA Ethernet support"
+> +        depends on IBMEBUS
+> +        ---help---
+> +          This driver supports the IBM pSeries ethernet adapter
+								  .
 
-> +#include <linux/version.h>
+People usually add the following boilerplate:
 
-Not needed.
-
-> +#include <linux/module.h>
-> +#include <linux/moduleparam.h>
-
-Really?
-
-> +#include <linux/kernel.h>
-> +#include <linux/vmalloc.h>
-> +#include <linux/mm.h>
-> +#include <linux/slab.h>
-> +#include <linux/sched.h>
-> +#include <linux/err.h>
-> +#include <linux/list.h>
-> +#include <linux/netdevice.h>
-> +#include <linux/etherdevice.h>
-> +#include <linux/kthread.h>
-
-Nothing is used here. grep kthread
-
-> +#include <linux/ethtool.h>
-> +#include <linux/if_vlan.h>
-
-It this because of "struct vlan_group" just add "struct vlan_group;" at
-the beginning of the headers.
-
-> +#include <asm/ibmebus.h>
-> +#include <asm/of_device.h>
-> +#include <asm/abs_addr.h>
-> +#include <asm/semaphore.h>
-> +#include <asm/current.h>
-> +#include <asm/io.h>
-
-Please, use only headers you only really need. Full rebuilds are already pretty
-enough. I've included half of include/linux disaster must stop.
+	To compile this driver as a module, choose M here: the module
+	will be called $FOO.
