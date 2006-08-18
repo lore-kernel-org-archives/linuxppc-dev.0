@@ -1,21 +1,36 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 80A0B679E7
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 09:09:26 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/6]: powerpc/cell spidernet low watermark patch.
-Date: Sat, 19 Aug 2006 01:09:13 +0200
-References: <20060818220700.GG26889@austin.ibm.com>
-	<20060818222146.GI26889@austin.ibm.com>
-In-Reply-To: <20060818222146.GI26889@austin.ibm.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B4BC267B6C
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 09:29:57 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7INTig4031299
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 19:29:44 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7INThCo374212
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 17:29:43 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7INThVa000691
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 17:29:43 -0600
+Date: Fri, 18 Aug 2006 18:29:42 -0500
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
+Message-ID: <20060818232942.GO26889@austin.ibm.com>
+References: <20060818192356.GD26889@austin.ibm.com>
+	<20060818.142513.29571851.davem@davemloft.net>
+	<20060818224618.GN26889@austin.ibm.com>
+	<20060818.155116.112621100.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608190109.15129.arnd@arndb.de>
-Cc: akpm@osdl.org, James K Lewis <jklewis@us.ibm.com>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	Jeff Garzik <jgarzik@pobox.com>, ens Osterkamp <Jens.Osterkamp@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060818.155116.112621100.davem@davemloft.net>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Jens.Osterkamp@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +40,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gU2F0dXJkYXkgMTkgQXVndXN0IDIwMDYgMDA6MjEsIExpbmFzIFZlcHN0YXMgd3JvdGU6Cj4g
-K6CgoKCgoKAvKiBNZWFzdXJlIHRoZSBsZW5ndGggb2YgdGhlIHF1ZXVlLiAqLwo+ICugoKCgoKCg
-d2hpbGUgKGRlc2NyICE9IGNhcmQtPnR4X2NoYWluLmhlYWQpIHsKPiAroKCgoKCgoKCgoKCgoKCg
-c3RhdHVzID0gZGVzY3ItPmRtYWNfY21kX3N0YXR1cyAmIFNQSURFUl9ORVRfREVTQ1JfTk9UX0lO
-X1VTRTsKPiAroKCgoKCgoKCgoKCgoKCgaWYgKHN0YXR1cyA9PSBTUElERVJfTkVUX0RFU0NSX05P
-VF9JTl9VU0UpCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgYnJlYWs7Cj4gK6CgoKCgoKCgoKCg
-oKCgoGRlc2NyID0gZGVzY3ItPm5leHQ7Cj4gK6CgoKCgoKCgoKCgoKCgoGNudCsrOwo+ICugoKCg
-oKCgfQo+ICugoKCgoKCgaWYgKGNudCA9PSAwKQo+ICugoKCgoKCgoKCgoKCgoKByZXR1cm47Cj4g
-Kwo+ICugoKCgoKCgLyogU2V0IGxvdy13YXRlcm1hcmsgMy80dGgncyBvZiB0aGUgd2F5IGludG8g
-dGhlIHF1ZXVlLiAqLwo+ICugoKCgoKCgZGVzY3IgPSBjYXJkLT50eF9jaGFpbi50YWlsOwo+ICug
-oKCgoKCgY250ID0gKGNudCozKS80Owo+ICugoKCgoKCgZm9yIChpPTA7aTxjbnQ7IGkrKykKPiAr
-oKCgoKCgoKCgoKCgoKCgZGVzY3IgPSBkZXNjci0+bmV4dDsKCkkgd29uZGVyIGlmIGNhbGxpbmcg
-dGhpcyBmcmVxdWVudGx5IHJlc3VsdHMgaW4gYSBzaWduaWZpY2FudCBwcm9jZXNzaW5nCm92ZXJo
-ZWFkIGluIHRoZSBDUFUuIERvZXMgdGhlIHNwaWRlcl9uZXRfc2V0X2xvd193YXRlcm1hcmsgZnVu
-Y3Rpb24Kc2hvdyB1cCBpbiB5b3VyIHByb2ZpbGVzPwoKQSBtb3JlIGVmZmljaWVudCBpbXBsZW1l
-bnRhdGlvbiBtaWdodCBiZSB0byBtYXJrIG9uZSBkZXNjcmlwdG9yIHRoYXQKaXMgYXQgYSBmaXhl
-ZCBvZmZzZXQgZnJvbSB0aGUgVFggcXVldWUgdGFpbCwgc28gd2Ugb25seSBuZWVkIHRvIGRvCgpj
-YXJkLT5sb3dfd2F0ZXJtYXJrLT5uZXh0LT5kbWFjX2NtZF9zdGF0dXMgfD0gU1BJREVSX05FVF9E
-RVNDUl9UWERFU0ZMRzsKbWIoKTsKY2FyZC0+bG93X3dhdGVybWFyay0+ZG1hY19jbWRfc3RhdHVz
-ICY9IH5TUElERVJfTkVUX0RFU0NSX1RYREVTRkxHOwpjYXJkLT5sb3dfd2F0ZXJtYXJrID0gY2Fy
-ZC0+bG93X3dhdGVybWFyay0+bmV4dDsKCndoZW4gd2UgcXVldWUgYW5vdGhlciBmcmFtZSBmb3Ig
-VFguCgoJQXJuZCA8PjwK
+On Fri, Aug 18, 2006 at 03:51:16PM -0700, David Miller wrote:
+> I see you moving TX reclaim into tasklets and stuff.  I've vehemently
+> against that because you wouldn't need it in order to move TX
+> processing into software interrupts if you did it all in NAPI
+> ->poll().
+
+I don't understand what you are saying. If I call the transmit 
+queue cleanup code from the poll() routine, nothing hapens, 
+because the kernel does not call the poll() routine often 
+enough. I've stated this several times.  
+
+--linas
