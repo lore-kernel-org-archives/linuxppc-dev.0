@@ -1,22 +1,18 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
-	by ozlabs.org (Postfix) with ESMTP id 69B9967B5D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 01:06:11 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c2so1443754nfe
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 08:06:10 -0700 (PDT)
-Date: Fri, 18 Aug 2006 19:06:00 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 19 Aug 2006 01:13:40 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
 Subject: Re: [2.6.19 PATCH 2/7] ehea: pHYP interface
-Message-ID: <20060818150600.GG5201@martell.zuzino.mipt.ru>
+Message-ID: <20060818151340.GB27947@krispykreme>
 References: <200608181330.21507.ossthema@de.ibm.com>
-Mime-Version: 1.0
+	<20060818150600.GG5201@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200608181330.21507.ossthema@de.ibm.com>
+In-Reply-To: <20060818150600.GG5201@martell.zuzino.mipt.ru>
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+	Christoph Raisch <raisch@de.ibm.com>, Thomas Klein <osstklei@de.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,102 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2006 at 01:30:21PM +0200, Jan-Bernd Themann wrote:
-> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_phyp.c
-> +++ kernel/drivers/net/ehea/ehea_phyp.c
+ 
+Hi,
 
-> +	hret = ehea_hcall_9arg_9ret(H_QUERY_HEA_QP,
-> +				    hcp_adapter_handle,	        /* R4 */
-> +				    qp_category,	        /* R5 */
-> +				    qp_handle,	                /* R6 */
-> +				    sel_mask,	                /* R7 */
-> +				    virt_to_abs(cb_addr),	/* R8 */
-> +				    0, 0, 0, 0,	                /* R9-R12 */
-> +				    &dummy,                     /* R4 */
-> +				    &dummy,                     /* R5 */
-> +				    &dummy,	                /* R6 */
-> +				    &dummy,	                /* R7 */
-> +				    &dummy,	                /* R8 */
-> +				    &dummy,	                /* R9 */
-> +				    &dummy,	                /* R10 */
-> +				    &dummy,	                /* R11 */
-> +				    &dummy);	                /* R12 */
+> I asked SO to recount arguments and we've come to a conclusion that
+> there're in fact 19 args not 18 as the name suggests. 19 args is
+> I-N-S-A-N-E.
 
-I asked SO to recount arguments and we've come to a conclusion that
-there're in fact 19 args not 18 as the name suggests. 19 args is
-I-N-S-A-N-E.
+It will be partially cleaned up by:
 
-> +u64 ehea_h_register_rpage_eq(const u64 hcp_adapter_handle,
-> +			     const u64 eq_handle,
-> +			     const u8 pagesize,
-> +			     const u8 queue_type,
-> +			     const u64 log_pageaddr, const u64 count)
-> +{
-> +	u64 hret = H_ADAPTER_PARM;
-> +
-> +	if (count != 1)
-> +		return H_PARAMETER;
-> +
-> +	hret = ehea_h_register_rpage(hcp_adapter_handle, pagesize, queue_type,
-> +				     eq_handle, log_pageaddr, count);
-> +	return hret;
+http://ozlabs.org/pipermail/linuxppc-dev/2006-July/024556.html
 
-Just
+However it doesnt fix the fact someone has architected such a crazy
+interface :(
 
-	return ehea_h_register_rpage(...);
-
-> +u64 ehea_h_register_rpage_cq(const u64 hcp_adapter_handle,
-> +			     const u64 cq_handle,
-> +			     const u8 pagesize,
-> +			     const u8 queue_type,
-> +			     const u64 log_pageaddr,
-> +			     const u64 count, const struct h_epa epa)
-> +{
-> +	u64 hret = H_ADAPTER_PARM;
-> +
-> +	if (count != 1)
-> +		return H_PARAMETER;
-> +
-> +	hret = ehea_h_register_rpage(hcp_adapter_handle, pagesize, queue_type,
-> +				     cq_handle, log_pageaddr, count);
-> +	return hret;
-
-Ditto.
-
-> +u64 ehea_h_register_rpage_qp(const u64 hcp_adapter_handle,
-> +			     const u64 qp_handle,
-> +			     const u8 pagesize,
-> +			     const u8 queue_type,
-> +			     const u64 log_pageaddr,
-> +			     const u64 count, struct h_epa epa)
-> +{
-> +	u64 hret = H_ADAPTER_PARM;
-> +
-> +	if (count != 1)
-> +		return H_PARAMETER;
-> +
-> +	hret = ehea_h_register_rpage(hcp_adapter_handle, pagesize, queue_type,
-> +				     qp_handle, log_pageaddr, count);
-> +	return hret;
-> +}
-
-Ditto.
-
-> +static inline int hcp_epas_ctor(struct h_epas *epas, u64 paddr_kernel,
-> +				u64 paddr_user)
-> +{
-> +	epas->kernel.fw_handle = (u64) ioremap(paddr_kernel, PAGE_SIZE);
-> +	epas->user.fw_handle = paddr_user;
-> +	return 0;
-> +}
-> +
-> +static inline int hcp_epas_dtor(struct h_epas *epas)
-> +{
-> +
-> +	if (epas->kernel.fw_handle)
-> +		iounmap((void *)epas->kernel.fw_handle);
-> +	epas->user.fw_handle = epas->kernel.fw_handle = 0;
-> +	return 0;
-> +}
-
-Always returns 0;
+Anton
