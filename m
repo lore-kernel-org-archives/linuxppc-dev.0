@@ -1,11 +1,21 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sat, 19 Aug 2006 04:48:22 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] PURR should use correct cpu feature bit
-Message-ID: <20060818184821.GC27947@krispykreme>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 844B867B52
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 05:05:55 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+Date: Fri, 18 Aug 2006 21:05:44 +0200
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+	<36A1A5C6-5269-4BDA-9F3E-A632B3A627DB@kernel.crashing.org>
+	<1155924687.9659.25.camel@farscape.rchland.ibm.com>
+In-Reply-To: <1155924687.9659.25.camel@farscape.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200608182105.45264.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,31 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 18 August 2006 20:11, Will Schmidt wrote:
+> +#define INST_POPCNTB           0x7c0000f4
+> +
 
-Now we have a PURR cpu feature bit, we should use it in sysfs code.
+> +=A0=A0=A0=A0=A0=A0=A0/* Emulate the popcntb (Population Count Bytes) ins=
+truction. */
+> +=A0=A0=A0=A0=A0=A0=A0if ((instword & INST_POPCNTB) =3D=3D INST_POPCNTB) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return emulate_popcntb_inst=
+(regs, instword);
+> +=A0=A0=A0=A0=A0=A0=A0}
+> +
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Is that the right check? The other similar traps check against a
+mask of 0x7c0007fe.
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index fec228c..a8172de 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -231,7 +231,7 @@ #endif
- 	if (cur_cpu_spec->num_pmcs >= 8)
- 		sysdev_create_file(s, &attr_pmc8);
- 
--	if (cpu_has_feature(CPU_FTR_SMT))
-+	if (cpu_has_feature(CPU_FTR_PURR))
- 		sysdev_create_file(s, &attr_purr);
- }
- 
-@@ -273,7 +273,7 @@ #endif
- 	if (cur_cpu_spec->num_pmcs >= 8)
- 		sysdev_remove_file(s, &attr_pmc8);
- 
--	if (cpu_has_feature(CPU_FTR_SMT))
-+	if (cpu_has_feature(CPU_FTR_PURR))
- 		sysdev_remove_file(s, &attr_purr);
- }
- #endif /* CONFIG_HOTPLUG_CPU */
+	Arnd <><
