@@ -1,22 +1,19 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id D8E7B67B6D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:05:21 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so892137ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 07:05:19 -0700 (PDT)
-Date: Fri, 18 Aug 2006 18:05:06 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
-Message-ID: <20060818140506.GC5201@martell.zuzino.mipt.ru>
-References: <200608181333.23031.ossthema@de.ibm.com>
+Return-Path: <mporter@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 07AE3679E2
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:12:21 +1000 (EST)
+Date: Fri, 18 Aug 2006 09:15:02 -0500
+From: Matt Porter <mporter@embeddedalley.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+Message-ID: <20060818141502.GB4893@gate.crashing.org>
+References: <17637.8568.40692.21510@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200608181333.23031.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+In-Reply-To: <17637.8568.40692.21510@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,115 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2006 at 01:33:22PM +0200, Jan-Bernd Themann wrote:
-> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_ethtool.c
-> +++ kernel/drivers/net/ehea/ehea_ethtool.c
-> +static int netdev_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
-> +{
-> +	u64 hret = H_HARDWARE;
+On Fri, Aug 18, 2006 at 12:10:00PM +1000, Paul Mackerras wrote:
 
-useless assignment;
+Paul,
 
-> +	struct ehea_port *port = netdev_priv(dev);
-> +	struct ehea_adapter *adapter = port->adapter;
-> +	struct hcp_query_ehea_port_cb_4 *cb4 = NULL;
-> +
-> +	cb4 = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> +	if(!cb4) {
-> +		ehea_error("no mem for cb4");
-> +		goto get_settings_exit;
-> +	}
-> +
-> +	hret = ehea_h_query_ehea_port(adapter->handle,
-> +				      port->logical_port_id,
-> +				      H_PORT_CB4,
-> +				      H_PORT_CB4_ALL,
-> +				      cb4);
+Could you please add the following 4xx patches that were previously
+posted? Thanks.
 
-> +static void netdev_get_drvinfo(struct net_device *dev,
-> +			       struct ethtool_drvinfo *info)
-> +{
-> +	strncpy(info->driver, DRV_NAME, sizeof(info->driver) - 1);
-> +	strncpy(info->version, DRV_VERSION, sizeof(info->version) - 1);
+[PATCH] Remove flush_dcache_all export
+[PATCH] Fix powerpc 44x_mmu build
 
-Use strlcpy() to not forget -1 accidently.
-
-> +static u32 netdev_get_msglevel(struct net_device *dev)
-			 ^^^^^^^^
-> +{
-> +	struct ehea_port *port = netdev_priv(dev);
-> +	return port->msg_enable;
-			 ^^^^^^
-
-Something is mis-named here.
-
-> +}
-> +
-> +static void netdev_set_msglevel(struct net_device *dev, u32 value)
-> +{
-> +	struct ehea_port *port = netdev_priv(dev);
-> +	port->msg_enable = value;
-> +}
-
-And here.
-
-> +static void netdev_get_ethtool_stats(struct net_device *dev,
-> +				     struct ethtool_stats *stats, u64 *data)
-> +{
-> +	int i = 0;
-> +	u64 hret = H_HARDWARE;
-
-Useless assignment.
-
-> +	struct ehea_port *port = netdev_priv(dev);
-> +	struct ehea_adapter *adapter = port->adapter;
-> +	struct ehea_port_res *pr = &port->port_res[0];
-> +	struct port_state *p_state = &pr->p_state;
-> +	struct hcp_query_ehea_port_cb_6 *cb6 = NULL;
-
-Ditto.
-
-> +	cb6 = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> +	if(!cb6) {
-> +		ehea_error("no mem for cb6");
-> +		goto stats_exit;
-> +	}
-> +
-> +	hret = ehea_h_query_ehea_port(adapter->handle,
-> +				      port->logical_port_id,
-> +				      H_PORT_CB6,
-> +				      H_PORT_CB6_ALL,
-> +				      cb6);
-
-> +struct ethtool_ops ehea_ethtool_ops = {
-> +	.get_settings = netdev_get_settings,
-> +	.get_drvinfo = netdev_get_drvinfo,
-> +	.get_msglevel = netdev_get_msglevel,
-> +	.set_msglevel = netdev_set_msglevel,
-> +        .get_link = ethtool_op_get_link,
-> +        .get_tx_csum = ethtool_op_get_tx_csum,
-
-Whitespace breakage.
-
-> +	.set_tx_csum = ethtool_op_set_tx_csum,
-> +	.get_sg = ethtool_op_get_sg,
-> +	.set_sg = ethtool_op_set_sg,
-> +	.get_tso = ethtool_op_get_tso,
-> +	.set_tso = ethtool_op_set_tso,
-> +	.get_strings = netdev_get_strings,
-> +	.get_stats_count = netdev_get_stats_count,
-> +	.get_ethtool_stats = netdev_get_ethtool_stats,
-
-
-
-> +	.set_settings = NULL,
-> +	.nway_reset = NULL,
-> +	.get_pauseparam = NULL,
-> +	.set_pauseparam = NULL,
-> +	.get_rx_csum = NULL,
-> +	.set_rx_csum = NULL,
-> +	.phys_id = NULL,
-> +	.self_test = NULL,
-> +	.self_test_count = NULL
-
-If you don't use them, don't mention them at all. Compiler will DTRT.
+-Matt
