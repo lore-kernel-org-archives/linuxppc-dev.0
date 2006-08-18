@@ -1,21 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 4D3E667B5F
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 08:51:12 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/6]: powerpc/cell spidernet burst alignment patch
-Date: Sat, 19 Aug 2006 00:51:01 +0200
-References: <20060818220700.GG26889@austin.ibm.com>
-	<20060818222038.GH26889@austin.ibm.com>
-In-Reply-To: <20060818222038.GH26889@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608190051.03105.arnd@arndb.de>
-Cc: akpm@osdl.org, James K Lewis <jklewis@us.ibm.com>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	Jeff Garzik <jgarzik@pobox.com>, ens Osterkamp <Jens.Osterkamp@de.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
+	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 77FCB67B67
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 08:51:15 +1000 (EST)
+Date: Fri, 18 Aug 2006 15:51:16 -0700 (PDT)
+Message-Id: <20060818.155116.112621100.davem@davemloft.net>
+To: linas@austin.ibm.com
+Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20060818224618.GN26889@austin.ibm.com>
+References: <20060818192356.GD26889@austin.ibm.com>
+	<20060818.142513.29571851.davem@davemloft.net>
+	<20060818224618.GN26889@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Jens.Osterkamp@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,9 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 19 August 2006 00:20, Linas Vepstas wrote:
-> This patch increases the Burst Address alignment from 64 to 1024 in the
-> Spidernet driver. This improves transmit performance for arge packets
-> from about 100Mbps to 300-400Mbps.
+From: linas@austin.ibm.com (Linas Vepstas)
+Date: Fri, 18 Aug 2006 17:46:18 -0500
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> > We're not saying to use the RX interrupt as the trigger for
+> > RX and TX work.  Rather, either of RX or TX interrupt will
+> > schedule the NAPI poll.
+> 
+> And, for a lark, this is exactly what I did. Just to see.
+> Because there are so few ack packets, there are very few 
+> RX interrupts -- not enough to get NAPI to actually keep
+> the device busy.
+
+You're misreading me.  TX interrupts are intended to be "enabled" and
+trigger NAPI polls.  TX IRQ enabled, enabled :-)
+
+If you want to eliminate them if the kernel keeps hopping into
+the ->hard_start_xmit() via hw interrupt mitigation or whatever,
+that's fine.  But if you do need to do TX interrupt processing,
+do it in NAPI ->poll().
+
+> I'm somewhat disoriened from this conversation. Its presumably
+> clear that low-watermark mechanisms are superior to NAPI. 
+> >From what I gather, NAPI was invented to deal with cheap 
+> or low-function hardware; it adds nothing to this particular
+> situation. Why are we talking about this?
+
+NAPI is meant to give fairness to all devices receiving packets
+in the system, particularly in times of high load or overload.
+
+And equally importantly, it allows you to run the majority of your
+interrupt handler in software IRQ context.  This allows not only your
+locking to be simpler, but it also allows things like oprofile to
+monitor almost your entire IRQ processing path even with just timer
+interrupt based oprofile profiling.
+
+I see you moving TX reclaim into tasklets and stuff.  I've vehemently
+against that because you wouldn't need it in order to move TX
+processing into software interrupts if you did it all in NAPI
+->poll().
