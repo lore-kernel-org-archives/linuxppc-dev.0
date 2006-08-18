@@ -1,35 +1,21 @@
-Return-Path: <michaele@au1.ibm.com>
-Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 04916679E1
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 10:01:50 +1000 (EST)
-Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
-	by ausmtp06.au.ibm.com (8.13.6/8.13.6) with ESMTP id k7I03CwL9195566
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 10:03:12 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
-	by sd0208e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7I057lo154714
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 10:05:07 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7I01hOp001936
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 10:01:43 +1000
-Subject: Re: latest git: compile error: arch/powerpc/kernel/built-in.o
-From: Michael Ellerman <michaele@au1.ibm.com>
-To: Wolfgang Pfeiffer <roto@gmx.net>
-In-Reply-To: <20060817120653.GA3440@localhost>
-References: <20060810181154.GA3668@localhost> <44DBA1C6.2020902@us.ibm.com>
-	<20060810232102.GB3668@localhost>
-	<17636.4022.216093.611990@cargo.ozlabs.ibm.com>
-	<20060817120653.GA3440@localhost>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 81864679E0
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 10:09:38 +1000 (EST)
+Subject: Re: [PATCH] Directly reference i8259@4d0 nodes in mpc8641_hpcn.dts.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Loeliger <jdl@freescale.com>
+In-Reply-To: <1155849609.10054.175.camel@cashmere.sps.mot.com>
+References: <1155835482.10054.140.camel@cashmere.sps.mot.com>
+	<1155840700.27466.64.camel@basalt.austin.ibm.com>
+	<1155849609.10054.175.camel@cashmere.sps.mot.com>
 Content-Type: text/plain
-Date: Fri, 18 Aug 2006 10:01:42 +1000
-Message-Id: <1155859302.20832.0.camel@localhost.localdomain>
+Date: Fri, 18 Aug 2006 10:09:21 +1000
+Message-Id: <1155859761.5803.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
-	Michael Ellerman <ellerman@au1.ibm.com>, Paul Mackerras <paulus@samba.org>
-Reply-To: michaele@au1.ibm.com
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,36 +25,212 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-17 at 14:06 +0200, Wolfgang Pfeiffer wrote:
-> On Thu, Aug 17, 2006 at 04:41:58PM +1000, Paul Mackerras wrote:
-> > Wolfgang Pfeiffer writes:
+On Thu, 2006-08-17 at 16:20 -0500, Jon Loeliger wrote:
+> Rather than using some hand-coded linux,phandle
+> node references, use DTC's direct node refs ability
+> and let it manage the phandle names instead.
+
+Not 100% sure here but can't we use a label and do &label rather than
+having to copy the full path every time ? Would make things easier :) If
+not, that's probably something to add to dtc...
+
+Cheers,
+Ben.
+
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+> 
+> On Thu, 2006-08-17 at 13:51, Hollis Blanchard wrote:
+> > Doesn't the device tree compiler add linux,phandle properties as needed?
+> > In this case that would be when the node is referenced by a
+> > "<&/foo/bar/i8259@4d0>" property.
 > > 
-> > > Strange tho' - for me at least - that these patches from about 5 weeks (!)
-> > > ago still don't seem to have made it into the current git tree ...
-> > 
-> > 5 weeks ago was a particularly bad time for patches trying to get into
-> > the git tree, since I was on vacation and then travelling to OLS. :)
+> > On Thu, 2006-08-17 at 12:24 -0500, Jon Loeliger wrote:
+> > > Add 'linux,phandle' entry to i8259@4d0 node.
+> > > 
+> > > Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> > > Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> > > ---
 > 
->     [ ... ]
+> Paul,
 > 
-> Michael, Paul, and everyone else being involved:
+> If you think this is better, please apply this patch
+> instead of my previous patch with the subject line:
 > 
-> My apologies for my perhaps too strong wording when I was complaining
-> about the delay ... I didn't mean the words as ugly as they actually
-> might read ...
-
-No worries, thanks for catching the error and reporting it.
-
-cheers
-
--- 
-Michael Ellerman
-IBM OzLabs
-
-email: michaele@au.ibm.com
-stime: ellerman@au1.ibm.com
-notes: Michael Ellerman/Australia/IBM
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+>     Patch] Fix the mpc8641_hpcn.dts file.
+> 
+> Thanks,
+> jdl
+> 
+> 
+>  arch/powerpc/boot/dts/mpc8641_hpcn.dts |  121 ++++++++++++++++----------------
+>  1 files changed, 60 insertions(+), 61 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> index e832a88..49d85a5 100644
+> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> @@ -32,7 +32,6 @@
+>  			bus-frequency = <0>;		// From uboot
+>  			clock-frequency = <0>;		// From uboot
+>  			32-bit;
+> -			linux,boot-cpu;
+>  		};
+>  		PowerPC,8641@1 {
+>  			device_type = "cpu";
+> @@ -202,95 +201,95 @@
+>  			interrupt-map-mask = <f800 0 0 7>;
+>  			interrupt-map = <
+>  				/* IDSEL 0x11 */
+> -				8800 0 0 1 4d0 3 2
+> -				8800 0 0 2 4d0 4 2
+> -				8800 0 0 3 4d0 5 2
+> -				8800 0 0 4 4d0 6 2
+> +				8800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 3 2
+> +				8800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 4 2
+> +				8800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 5 2
+> +				8800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 6 2
+>  
+>  				/* IDSEL 0x12 */
+> -				9000 0 0 1 4d0 4 2
+> -				9000 0 0 2 4d0 5 2
+> -				9000 0 0 3 4d0 6 2
+> -				9000 0 0 4 4d0 3 2
+> +				9000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 4 2
+> +				9000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 5 2
+> +				9000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 6 2
+> +				9000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 3 2
+>  
+>  				/* IDSEL 0x13 */
+> -				9800 0 0 1 4d0 0 0
+> -				9800 0 0 2 4d0 0 0
+> -				9800 0 0 3 4d0 0 0
+> -				9800 0 0 4 4d0 0 0
+> +				9800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				9800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				9800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				9800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x14 */
+> -				a000 0 0 1 4d0 0 0
+> -				a000 0 0 2 4d0 0 0
+> -				a000 0 0 3 4d0 0 0
+> -				a000 0 0 4 4d0 0 0
+> +				a000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				a000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				a000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				a000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x15 */
+> -				a800 0 0 1 4d0 0 0
+> -				a800 0 0 2 4d0 0 0
+> -				a800 0 0 3 4d0 0 0
+> -				a800 0 0 4 4d0 0 0
+> +				a800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				a800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				a800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				a800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x16 */
+> -				b000 0 0 1 4d0 0 0
+> -				b000 0 0 2 4d0 0 0
+> -				b000 0 0 3 4d0 0 0
+> -				b000 0 0 4 4d0 0 0
+> +				b000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				b000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				b000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				b000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x17 */
+> -				b800 0 0 1 4d0 0 0
+> -				b800 0 0 2 4d0 0 0
+> -				b800 0 0 3 4d0 0 0
+> -				b800 0 0 4 4d0 0 0
+> +				b800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				b800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				b800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				b800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x18 */
+> -				c000 0 0 1 4d0 0 0
+> -				c000 0 0 2 4d0 0 0
+> -				c000 0 0 3 4d0 0 0
+> -				c000 0 0 4 4d0 0 0
+> +				c000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				c000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				c000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				c000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x19 */
+> -				c800 0 0 1 4d0 0 0
+> -				c800 0 0 2 4d0 0 0
+> -				c800 0 0 3 4d0 0 0
+> -				c800 0 0 4 4d0 0 0
+> +				c800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				c800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				c800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				c800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x1a */
+> -				d000 0 0 1 4d0 6 2
+> -				d000 0 0 2 4d0 3 2
+> -				d000 0 0 3 4d0 4 2
+> -				d000 0 0 4 4d0 5 2
+> +				d000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 6 2
+> +				d000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 3 2
+> +				d000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 4 2
+> +				d000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 5 2
+>  
+> 
+>  				/* IDSEL 0x1b */
+> -				d800 0 0 1 4d0 5 2
+> -				d800 0 0 2 4d0 0 0
+> -				d800 0 0 3 4d0 0 0
+> -				d800 0 0 4 4d0 0 0
+> +				d800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 5 2
+> +				d800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				d800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				d800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x1c */
+> -				e000 0 0 1 4d0 9 2
+> -				e000 0 0 2 4d0 a 2
+> -				e000 0 0 3 4d0 c 2
+> -				e000 0 0 4 4d0 7 2
+> +				e000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 9 2
+> +				e000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 a 2
+> +				e000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 c 2
+> +				e000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 7 2
+>  
+>  				/* IDSEL 0x1d */
+> -				e800 0 0 1 4d0 9 2
+> -				e800 0 0 2 4d0 a 2
+> -				e800 0 0 3 4d0 b 2
+> -				e800 0 0 4 4d0 0 0
+> +				e800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 9 2
+> +				e800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 a 2
+> +				e800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 b 2
+> +				e800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x1e */
+> -				f000 0 0 1 4d0 c 2
+> -				f000 0 0 2 4d0 0 0
+> -				f000 0 0 3 4d0 0 0
+> -				f000 0 0 4 4d0 0 0
+> +				f000 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 c 2
+> +				f000 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				f000 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				f000 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  
+>  				/* IDSEL 0x1f */
+> -				f800 0 0 1 4d0 6 2
+> -				f800 0 0 2 4d0 0 0
+> -				f800 0 0 3 4d0 0 0
+> -				f800 0 0 4 4d0 0 0
+> +				f800 0 0 1 &/soc8641@f8000000/pci@8000/i8259@4d0 6 2
+> +				f800 0 0 2 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				f800 0 0 3 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+> +				f800 0 0 4 &/soc8641@f8000000/pci@8000/i8259@4d0 0 0
+>  				>;
+>  			i8259@4d0 {
+>  				clock-frequency = <0>;
