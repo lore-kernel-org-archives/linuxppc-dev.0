@@ -1,38 +1,18 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B209867BFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 23:47:52 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7IDln1f004397
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 09:47:49 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7IDlm3K290228
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 09:47:48 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7IDlmFp002972
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 09:47:48 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [2.6.19 PATCH 3/7] ehea: queue management
-Date: Fri, 18 Aug 2006 15:47:46 +0200
-References: <200608181331.19501.ossthema@de.ibm.com>
-	<1155903451.4494.168.camel@laptopd505.fenrus.org>
-	<44E5BFB7.4000400@de.ibm.com>
-In-Reply-To: <44E5BFB7.4000400@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608181547.47081.arnd.bergmann@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Arjan van de Ven <arjan@infradead.org>
+Return-Path: <mporter@gate.crashing.org>
+Date: Fri, 18 Aug 2006 09:00:27 -0500
+From: Matt Porter <mporter@embeddedalley.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 6/6] bootwrapper: Add support for the sandpoint platform
+Message-ID: <20060818140027.GA4893@gate.crashing.org>
+References: <20060719231725.GG3887@mag.az.mvista.com>
+	<Pine.LNX.4.60.0608172200080.8228@poirot.grange>
+	<20060817211353.GA1402@mag.az.mvista.com>
+	<Pine.LNX.4.60.0608172352220.8228@poirot.grange>
+	<Pine.LNX.4.60.0608180109060.8228@poirot.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.60.0608180109060.8228@poirot.grange>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,18 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 August 2006 15:25, Thomas Klein wrote:
+On Fri, Aug 18, 2006 at 01:19:22AM +0200, Guennadi Liakhovetski wrote:
+> On Fri, 18 Aug 2006, Guennadi Liakhovetski wrote:
 > 
-> > wow... is this really so large that it warrants a vmalloc()???
+> > On Thu, 17 Aug 2006, Mark A. Greer wrote:
+> > 
+> > > Depends on what you mean by "__boot__".  This is the code needed to
+> > > prepare things--the flat dev tree in this case--so that the kernel
+> > > can boot when running the DINK firmware on a sandpoint.
+> > 
+> > ...after getting some vitamins on irc and re-reading some emails, I 
+> > finally realised what the stuff under boot is for. Expect more confusion 
+> > from me:-)
 > 
-> Agreed: Replaced with kmalloc()
+> Ok, I think, now I have an idea what all these wrappers are about:
+> 
+> we want to be able to boot linux from a number of different environments:
+> 
+> OF
+> 
+> various firmwares / boot ROMs / bootloaders with very different 
+> capabilities of running foreign code and different calling conventions
+> 
+> "native" Linux bootloaders like u-Boot, etc.
+> 
+> kexec
+> 
+> ...
+> 
+> and the chosen approach is to have a kernel proper common to all these 
+> possibilities, and "wrappers". These wrappers are boot-method and board 
+> specific, are distributed with the kernel, located under 
+> arch/powerpc/boot, get linked with the kernel proper, fdt, with various 
+> compression possibilities...
+> 
+> Have I got it right now? One of the reasons of me having problems to 
+> understand this is that on ARM we just say "to boot kernel you have to 
+> have MMU switched off, registers must contain this and that, you have to 
+> prepare a list of ATAGs, copy the kernel to a certain address, and jump to 
+> it. If you don't do that you cannot run Linux on your system":-)
 
-My understanding from the previous discussion was that it actually
-is a multi-page power of two allocation, so the right choice might
-be __get_free_pages() instead of kmalloc, but it probably doesn't
-make much of a difference.
+Sure, everybody that's familiar with ARM Linux is aware of that.
+That's what the new fdt requirement in arch/powerpc/ does for
+PPC as well.  arch/powerpc/boot/ wrapper code isn't technically
+part of the kernel, it's merely distributed with the kernel source
+for convenience. It's a boot shim to translate from "legacy"
+firmwares (since they aren't easily replaced) to the standard
+method. It is independent of the kernel proper.
 
-You should really do some measurements to see what the minimal
-queue sizes are that can get you optimal throughput.
-
-	Arnd <><
+-Matt
