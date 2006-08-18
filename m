@@ -1,18 +1,22 @@
-Return-Path: <mporter@gate.crashing.org>
-Date: Fri, 18 Aug 2006 09:00:27 -0500
-From: Matt Porter <mporter@embeddedalley.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 6/6] bootwrapper: Add support for the sandpoint platform
-Message-ID: <20060818140027.GA4893@gate.crashing.org>
-References: <20060719231725.GG3887@mag.az.mvista.com>
-	<Pine.LNX.4.60.0608172200080.8228@poirot.grange>
-	<20060817211353.GA1402@mag.az.mvista.com>
-	<Pine.LNX.4.60.0608172352220.8228@poirot.grange>
-	<Pine.LNX.4.60.0608180109060.8228@poirot.grange>
+Return-Path: <adobriyan@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id D8E7B67B6D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:05:21 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id e2so892137ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 07:05:19 -0700 (PDT)
+Date: Fri, 18 Aug 2006 18:05:06 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
+Message-ID: <20060818140506.GC5201@martell.zuzino.mipt.ru>
+References: <200608181333.23031.ossthema@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0608180109060.8228@poirot.grange>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <200608181333.23031.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,52 +26,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2006 at 01:19:22AM +0200, Guennadi Liakhovetski wrote:
-> On Fri, 18 Aug 2006, Guennadi Liakhovetski wrote:
-> 
-> > On Thu, 17 Aug 2006, Mark A. Greer wrote:
-> > 
-> > > Depends on what you mean by "__boot__".  This is the code needed to
-> > > prepare things--the flat dev tree in this case--so that the kernel
-> > > can boot when running the DINK firmware on a sandpoint.
-> > 
-> > ...after getting some vitamins on irc and re-reading some emails, I 
-> > finally realised what the stuff under boot is for. Expect more confusion 
-> > from me:-)
-> 
-> Ok, I think, now I have an idea what all these wrappers are about:
-> 
-> we want to be able to boot linux from a number of different environments:
-> 
-> OF
-> 
-> various firmwares / boot ROMs / bootloaders with very different 
-> capabilities of running foreign code and different calling conventions
-> 
-> "native" Linux bootloaders like u-Boot, etc.
-> 
-> kexec
-> 
-> ...
-> 
-> and the chosen approach is to have a kernel proper common to all these 
-> possibilities, and "wrappers". These wrappers are boot-method and board 
-> specific, are distributed with the kernel, located under 
-> arch/powerpc/boot, get linked with the kernel proper, fdt, with various 
-> compression possibilities...
-> 
-> Have I got it right now? One of the reasons of me having problems to 
-> understand this is that on ARM we just say "to boot kernel you have to 
-> have MMU switched off, registers must contain this and that, you have to 
-> prepare a list of ATAGs, copy the kernel to a certain address, and jump to 
-> it. If you don't do that you cannot run Linux on your system":-)
+On Fri, Aug 18, 2006 at 01:33:22PM +0200, Jan-Bernd Themann wrote:
+> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_ethtool.c
+> +++ kernel/drivers/net/ehea/ehea_ethtool.c
+> +static int netdev_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+> +{
+> +	u64 hret = H_HARDWARE;
 
-Sure, everybody that's familiar with ARM Linux is aware of that.
-That's what the new fdt requirement in arch/powerpc/ does for
-PPC as well.  arch/powerpc/boot/ wrapper code isn't technically
-part of the kernel, it's merely distributed with the kernel source
-for convenience. It's a boot shim to translate from "legacy"
-firmwares (since they aren't easily replaced) to the standard
-method. It is independent of the kernel proper.
+useless assignment;
 
--Matt
+> +	struct ehea_port *port = netdev_priv(dev);
+> +	struct ehea_adapter *adapter = port->adapter;
+> +	struct hcp_query_ehea_port_cb_4 *cb4 = NULL;
+> +
+> +	cb4 = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
+> +	if(!cb4) {
+> +		ehea_error("no mem for cb4");
+> +		goto get_settings_exit;
+> +	}
+> +
+> +	hret = ehea_h_query_ehea_port(adapter->handle,
+> +				      port->logical_port_id,
+> +				      H_PORT_CB4,
+> +				      H_PORT_CB4_ALL,
+> +				      cb4);
+
+> +static void netdev_get_drvinfo(struct net_device *dev,
+> +			       struct ethtool_drvinfo *info)
+> +{
+> +	strncpy(info->driver, DRV_NAME, sizeof(info->driver) - 1);
+> +	strncpy(info->version, DRV_VERSION, sizeof(info->version) - 1);
+
+Use strlcpy() to not forget -1 accidently.
+
+> +static u32 netdev_get_msglevel(struct net_device *dev)
+			 ^^^^^^^^
+> +{
+> +	struct ehea_port *port = netdev_priv(dev);
+> +	return port->msg_enable;
+			 ^^^^^^
+
+Something is mis-named here.
+
+> +}
+> +
+> +static void netdev_set_msglevel(struct net_device *dev, u32 value)
+> +{
+> +	struct ehea_port *port = netdev_priv(dev);
+> +	port->msg_enable = value;
+> +}
+
+And here.
+
+> +static void netdev_get_ethtool_stats(struct net_device *dev,
+> +				     struct ethtool_stats *stats, u64 *data)
+> +{
+> +	int i = 0;
+> +	u64 hret = H_HARDWARE;
+
+Useless assignment.
+
+> +	struct ehea_port *port = netdev_priv(dev);
+> +	struct ehea_adapter *adapter = port->adapter;
+> +	struct ehea_port_res *pr = &port->port_res[0];
+> +	struct port_state *p_state = &pr->p_state;
+> +	struct hcp_query_ehea_port_cb_6 *cb6 = NULL;
+
+Ditto.
+
+> +	cb6 = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
+> +	if(!cb6) {
+> +		ehea_error("no mem for cb6");
+> +		goto stats_exit;
+> +	}
+> +
+> +	hret = ehea_h_query_ehea_port(adapter->handle,
+> +				      port->logical_port_id,
+> +				      H_PORT_CB6,
+> +				      H_PORT_CB6_ALL,
+> +				      cb6);
+
+> +struct ethtool_ops ehea_ethtool_ops = {
+> +	.get_settings = netdev_get_settings,
+> +	.get_drvinfo = netdev_get_drvinfo,
+> +	.get_msglevel = netdev_get_msglevel,
+> +	.set_msglevel = netdev_set_msglevel,
+> +        .get_link = ethtool_op_get_link,
+> +        .get_tx_csum = ethtool_op_get_tx_csum,
+
+Whitespace breakage.
+
+> +	.set_tx_csum = ethtool_op_set_tx_csum,
+> +	.get_sg = ethtool_op_get_sg,
+> +	.set_sg = ethtool_op_set_sg,
+> +	.get_tso = ethtool_op_get_tso,
+> +	.set_tso = ethtool_op_set_tso,
+> +	.get_strings = netdev_get_strings,
+> +	.get_stats_count = netdev_get_stats_count,
+> +	.get_ethtool_stats = netdev_get_ethtool_stats,
+
+
+
+> +	.set_settings = NULL,
+> +	.nway_reset = NULL,
+> +	.get_pauseparam = NULL,
+> +	.set_pauseparam = NULL,
+> +	.get_rx_csum = NULL,
+> +	.set_rx_csum = NULL,
+> +	.phys_id = NULL,
+> +	.self_test = NULL,
+> +	.self_test_count = NULL
+
+If you don't use them, don't mention them at all. Compiler will DTRT.
