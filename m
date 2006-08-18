@@ -1,33 +1,26 @@
-Return-Path: <HNGUYEN@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ACBBF67B7A
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 01:39:27 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7IFdM7g160708
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 15:39:22 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k7IFhGfh125670
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 17:43:16 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7IFdL0X023477
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 17:39:21 +0200
-In-Reply-To: <200608180134.39050.arnd.bergmann@de.ibm.com>
-Subject: Re: [PATCH 13/13] IB/ehca: makefiles/kconfig
-To: abergman@de.ibm.com
-Message-ID: <OFC07EB1C7.B6C18CC5-ONC12571CE.0056110B-C12571CE.0055FF7C@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Fri, 18 Aug 2006 17:43:13 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Marcus Eder <MEDER@de.ibm.com>
+Return-Path: <shemminger@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4047667B6F
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 03:45:58 +1000 (EST)
+Date: Fri, 18 Aug 2006 10:45:47 -0700
+From: Stephen Hemminger <shemminger@osdl.org>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
+Message-ID: <20060818104547.5ad1352f@localhost.localdomain>
+In-Reply-To: <44E5DFA6.7040707@de.ibm.com>
+References: <200608181333.23031.ossthema@de.ibm.com>
+	<20060818140506.GC5201@martell.zuzino.mipt.ru>
+	<44E5DFA6.7040707@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Thomas Klein <tklein@de.ibm.com>, Marcus,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Eder <meder@de.ibm.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,18 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 18 Aug 2006 17:41:26 +0200
+Thomas Klein <osstklei@de.ibm.com> wrote:
 
-abergman@de.ltcfwd.linux.ibm.com wrote on 18.08.2006 01:34:37:
+> Hi Alexey,
+> 
+> first of all thanks a lot for the extensive review.
+> 
+> 
+> Alexey Dobriyan wrote:
+> >> +	u64 hret = H_HARDWARE;
+> > 
+> > Useless assignment here and everywhere.
+> > 
+> 
+> Initializing returncodes to errorstate is a cheap way to prevent
+> accidentally returning (uninitalized) success returncodes which
+> can lead to catastrophic misbehaviour.
 
-> On Thursday 17 August 2006 22:11, Roland Dreier wrote:
-> > +
-> > +CFLAGS += -DEHCA_USE_HCALL -DEHCA_USE_HCALL_KERNEL
->
-> This seems really pointless, since you're always defining these
-> macros to the same value.
->
-> Just drop the CFLAGS and remove the code that depends on them
-> being different.
-Yes, that's true. Those defines are unnecessary. We'll throw them out.
-Thx
-Hoang-Nam Nguyen
+That is old thinking. Current compilers do live/dead analysis
+and tell you about this at compile time which is better than relying
+on default behavior at runtime.
