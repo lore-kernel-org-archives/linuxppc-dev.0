@@ -1,19 +1,19 @@
-Return-Path: <billfink@mindspring.com>
-Received: from elasmtp-scoter.atl.sa.earthlink.net
-	(elasmtp-scoter.atl.sa.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id 95A68679FD
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 15:36:42 +1000 (EST)
-Date: Fri, 18 Aug 2006 01:28:24 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Wolfgang Pfeiffer <roto@gmx.net>
-Subject: Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
-Message-Id: <20060818012824.22e70b0f.billfink@mindspring.com>
-In-Reply-To: <20060817230347.GC3440@localhost>
-References: <20060817230347.GC3440@localhost>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5075267A3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 17:22:10 +1000 (EST)
+Subject: RE: [PATCH] Directly reference i8259@4d0 nodes in mpc8641_hpcn.dts.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+In-Reply-To: <2176B872C0407E44887F07CCAA8692930F6005@zch01exm21.fsl.freescale.net>
+References: <2176B872C0407E44887F07CCAA8692930F6005@zch01exm21.fsl.freescale.net>
+Content-Type: text/plain
+Date: Fri, 18 Aug 2006 17:21:45 +1000
+Message-Id: <1155885706.5803.35.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
-	stefanr@s5r6.in-berlin.de
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Wolfgang,
+On Fri, 2006-08-18 at 13:54 +0800, Zhang Wei-r63237 wrote:
+> Is it a good idea? Why we can not endure the "linux,phandle = <4d0>" in
+> i8259 node? And besides, this node was already referenced by the other
+> entries.
 
-On Fri, 18 Aug 2006, Wolfgang Pfeiffer wrote:
+Because magic numbers are evil and nice names are better ? :)
 
-> Hi All
-> 
-> Short version first:
-> 
-> The SCSI/FW routines seem to work like a charm with a LSILogic Model/
-> SYM13FW500-Disk on my old Macintosh titanium-IV laptop, with exactly
-> the same relatively fresh git-kernel that does not work on the
-> PowerBook5,8.  That is I compiled the kernel on the Apple Powerbook5,8
-> and installed it on both machines.
-> 
-> 
-> SCSI/FW didn't work ever on the new PowerBook5,8.
-> 
-> I'll give you first some error messages for the failing FW disk,
-> and at the end of this mail you'll find links to technical
-> documentation for the 2 failng machines (Powerbook5,8 and FW board/disk)
-> 
-> First I load the drivers with this little script:
-> 
-> ------------------------------------------
-> #!/bin/sh -x
-> /bin/sh -n /home/shorty/scripts/scsi.start.sh && \
-> 
-> modprobe raw1394 && \
-> modprobe ieee1394 disable_irm=0 disable_nodemgr=1 && \
-> modprobe ohci1394 && \
-> modprobe eth1394 && \
-> modprobe sbp2 max_speed=3 workarounds=0x1 serialize_io=0 && \
-> sleep 4 && \
-> chown root.shorty /dev/raw1394
-> -------------------------------------------
-
-I don't know if it matters for you (haven't tried Firewire yet on
-a PowerBook), but on my desktop PowerMac systems, I need a "sleep 2"
-before the modprobe for sbp2, to get my Firewire disks to work
-properly.
-
-						-Hope this helps
-
-						-Bill
+> Using "&/soc8641@f8000000/pci@8000/i8259@4d0" or label seems so verbose
+> and weird.
