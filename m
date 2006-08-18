@@ -1,33 +1,35 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B565267B83
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 08:29:06 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7IMT3Bh031588
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:29:03 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7IMT361256998
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:29:03 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7IMT2Sq024763
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:29:03 -0400
-Date: Fri, 18 Aug 2006 17:29:02 -0500
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH 6/6]:  powerpc/cell spidernet refine locking
-Message-ID: <20060818222902.GM26889@austin.ibm.com>
-References: <20060818220700.GG26889@austin.ibm.com>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DE2A0679FC
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 08:46:29 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7IMkJEh019458
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:46:19 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7IMkJ71271822
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:46:19 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7IMkIM0006332
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:46:19 -0400
+Date: Fri, 18 Aug 2006 17:46:18 -0500
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
+Message-ID: <20060818224618.GN26889@austin.ibm.com>
+References: <20060811170813.GJ10638@austin.ibm.com>
+	<1155771820.11312.116.camel@localhost.localdomain>
+	<20060818192356.GD26889@austin.ibm.com>
+	<20060818.142513.29571851.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060818220700.GG26889@austin.ibm.com>
+In-Reply-To: <20060818.142513.29571851.davem@davemloft.net>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: akpm@osdl.org, Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, ens Osterkamp <Jens.Osterkamp@de.ibm.com>
+Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Jens.Osterkamp@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,246 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Aug 18, 2006 at 02:25:13PM -0700, David Miller wrote:
+> From: linas@austin.ibm.com (Linas Vepstas)
+> Date: Fri, 18 Aug 2006 14:23:56 -0500
+> 
+> > On Thu, Aug 17, 2006 at 01:43:40AM +0200, Benjamin Herrenschmidt wrote:
+> > > 
+> > > Sounds good (without actually looking at the code though :), that was a
+> > > long required improvement to that driver. Also, we should probably look
+> > > into using NAPI polling for tx completion queue as well, no ?
+> > 
+> > Just for a lark, I tried using NAPI polling, while disabling all TX
+> > interrupts. Performance was a disaster: 8Mbits/sec, fom which I conclude
+> > that the tcp ack packets do not flow back fast enough to allw reliance
+> > on NAPI polling for transmit.
+> 
+> The idea is to use NAPI polling with TX interrupts disabled.
 
+The idea of a low-watermark mark interrupt is that there are *zero*
+interrupts, as long as the kernel keeps feeding packets to the device.
 
-The transmit side of the spider ethernet driver currently
-places locks around some very large chunks of code. This
-results in a fair amount of lock contention is some cases. 
-This patch makes the locks much more fine-grained, protecting
-only the cirtical sections. One lock is used to protect 
-three locations: the queue head and tail pointers, and the 
-queue low-watermark location.
+In my last email to you, I attached a real-life vmstat trace 
+showing exactly zero interrupts over a two minute period. 
 
-This, with the previous patches, result in the following 
-performance, using netperf, averaged over 5 minute runs:
+However, the zero-interrupt scenario only occurs if the kernel
+is actually feeding packets to the driver.  If the socket beffers
+are small, then the app blocks, the kernel is idle, and there
+are not enough tcp ack packets coming back the other way to 
+actually get the NAPI polling to keep the adapter fed.
 
-pkt size    rate
---------    ----
-1500        804 Mbits/sec
- 800        701 Mbits/sec
- 600        600 Mbits/sec
- 300        280 Mbits/sec
-  60         60 Mbits/sec
+> We're not saying to use the RX interrupt as the trigger for
+> RX and TX work.  Rather, either of RX or TX interrupt will
+> schedule the NAPI poll.
 
+And, for a lark, this is exactly what I did. Just to see.
+Because there are so few ack packets, there are very few 
+RX interrupts -- not enough to get NAPI to actually keep
+the device busy.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: Utz Bacher <utz.bacher@de.ibm.com>
-Cc: Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
-Cc: James K Lewis <jklewis@us.ibm.com>
+------
+I'm somewhat disoriened from this conversation. Its presumably
+clear that low-watermark mechanisms are superior to NAPI. 
+>From what I gather, NAPI was invented to deal with cheap 
+or low-function hardware; it adds nothing to this particular
+situation. Why are we talking about this?
 
-----
- drivers/net/spider_net.c |   77 ++++++++++++++++++++---------------------------
- drivers/net/spider_net.h |    2 -
- 2 files changed, 35 insertions(+), 44 deletions(-)
-
-Index: linux-2.6.18-rc3-mm2/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.18-rc3-mm2.orig/drivers/net/spider_net.c	2006-08-15 14:28:56.000000000 -0500
-+++ linux-2.6.18-rc3-mm2/drivers/net/spider_net.c	2006-08-15 14:29:36.000000000 -0500
-@@ -644,8 +644,9 @@ static int
- spider_net_prepare_tx_descr(struct spider_net_card *card,
- 			    struct sk_buff *skb)
- {
--	struct spider_net_descr *descr = card->tx_chain.head;
-+	struct spider_net_descr *descr;
- 	dma_addr_t buf;
-+	unsigned long flags;
- 
- 	buf = pci_map_single(card->pdev, skb->data, skb->len, PCI_DMA_TODEVICE);
- 	if (buf == DMA_ERROR_CODE) {
-@@ -655,6 +656,10 @@ spider_net_prepare_tx_descr(struct spide
- 		return -ENOMEM;
- 	}
- 
-+	spin_lock_irqsave(&card->tx_chain.lock, flags);
-+	descr = card->tx_chain.head;
-+	card->tx_chain.head = card->tx_chain.head->next;
-+
- 	descr->buf_addr = buf;
- 	descr->buf_size = skb->len;
- 	descr->next_descr_addr = 0;
-@@ -663,6 +668,8 @@ spider_net_prepare_tx_descr(struct spide
- 
- 	descr->dmac_cmd_status =
- 			SPIDER_NET_DESCR_CARDOWNED | SPIDER_NET_DMAC_NOCS;
-+	spin_unlock_irqrestore(&card->tx_chain.lock, flags);
-+
- 	if (skb->protocol == htons(ETH_P_IP))
- 		switch (skb->nh.iph->protocol) {
- 		case IPPROTO_TCP:
-@@ -673,37 +680,16 @@ spider_net_prepare_tx_descr(struct spide
- 			break;
- 		}
- 
-+	/* Chain the bus address, so that the DMA engine finds this descr. */
- 	descr->prev->next_descr_addr = descr->bus_addr;
- 
- 	return 0;
- }
- 
--/**
-- * spider_net_release_tx_descr - processes a used tx descriptor
-- * @card: card structure
-- * @descr: descriptor to release
-- *
-- * releases a used tx descriptor (unmapping, freeing of skb)
-- */
--static inline void
--spider_net_release_tx_descr(struct spider_net_card *card)
--{
--	struct spider_net_descr *descr = card->tx_chain.tail;
--	struct sk_buff *skb;
--
--	card->tx_chain.tail = card->tx_chain.tail->next;
--	descr->dmac_cmd_status |= SPIDER_NET_DESCR_NOT_IN_USE;
--
--	/* unmap the skb */
--	skb = descr->skb;
--	pci_unmap_single(card->pdev, descr->buf_addr, skb->len,
--			PCI_DMA_TODEVICE);
--	dev_kfree_skb_any(skb);
--}
--
- static void
- spider_net_set_low_watermark(struct spider_net_card *card)
- {
-+	unsigned long flags;
- 	int status;
- 	int cnt=0;
- 	int i;
-@@ -727,11 +713,13 @@ spider_net_set_low_watermark(struct spid
- 		descr = descr->next;
- 
- 	/* Set the new watermark, clear the old wtermark */
-+	spin_lock_irqsave(&card->tx_chain.lock, flags);
- 	descr->dmac_cmd_status |= SPIDER_NET_DESCR_TXDESFLG;
- 	if (card->low_watermark && card->low_watermark != descr)
- 		card->low_watermark->dmac_cmd_status =
- 		     card->low_watermark->dmac_cmd_status & ~SPIDER_NET_DESCR_TXDESFLG;
- 	card->low_watermark = descr;
-+	spin_unlock_irqrestore(&card->tx_chain.lock, flags);
- }
- 
- /**
-@@ -750,22 +738,30 @@ static int
- spider_net_release_tx_chain(struct spider_net_card *card, int brutal)
- {
- 	struct spider_net_descr_chain *chain = &card->tx_chain;
-+	struct spider_net_descr *descr;
-+	struct sk_buff *skb;
-+	u32 buf_addr;
-+	unsigned long flags;
- 	int status;
- 	int rc=0;
- 
- 	spider_net_read_reg(card, SPIDER_NET_GDTDMACCNTR);
- 
- 	while (chain->tail != chain->head) {
--		status = spider_net_get_descr_status(chain->tail);
-+		spin_lock_irqsave(&chain->lock, flags);
-+		descr = chain->tail;
-+
-+		status = spider_net_get_descr_status(descr);
- 		switch (status) {
- 		case SPIDER_NET_DESCR_COMPLETE:
- 			card->netdev_stats.tx_packets++;
--			card->netdev_stats.tx_bytes += chain->tail->skb->len;
-+			card->netdev_stats.tx_bytes += descr->skb->len;
- 			break;
- 
- 		case SPIDER_NET_DESCR_CARDOWNED:
- 			if (!brutal) {
- 				rc = 1;
-+				spin_unlock_irqrestore(&chain->lock, flags);
- 				goto done;
- 			}
- 			/* fallthrough, if we release the descriptors
-@@ -785,9 +781,19 @@ spider_net_release_tx_chain(struct spide
- 		default:
- 			card->netdev_stats.tx_dropped++;
- 			rc = 1;
-+			spin_unlock_irqrestore(&chain->lock, flags);
- 			goto done;
- 		}
--		spider_net_release_tx_descr(card);
-+
-+		chain->tail = chain->tail->next;
-+		descr->dmac_cmd_status |= SPIDER_NET_DESCR_NOT_IN_USE;
-+		skb = descr->skb;
-+		buf_addr = descr->buf_addr;
-+		spin_unlock_irqrestore(&chain->lock, flags);
-+
-+		/* unmap the skb */
-+		pci_unmap_single(card->pdev, buf_addr, skb->len, PCI_DMA_TODEVICE);
-+		dev_kfree_skb_any(skb);
- 	}
- done:
- 	if (rc == 1)
-@@ -844,11 +850,8 @@ spider_net_xmit(struct sk_buff *skb, str
- 	struct spider_net_card *card = netdev_priv(netdev);
- 	struct spider_net_descr_chain *chain = &card->tx_chain;
- 	struct spider_net_descr *descr = chain->head;
--	unsigned long flags;
- 	int result;
- 
--	spin_lock_irqsave(&chain->lock, flags);
--
- 	spider_net_release_tx_chain(card, 0);
- 
- 	if (chain->head->next == chain->tail->prev) {
-@@ -869,12 +872,9 @@ spider_net_xmit(struct sk_buff *skb, str
- 	}
- 
- 	result = NETDEV_TX_OK;
--
- 	spider_net_kick_tx_dma(card);
--	card->tx_chain.head = card->tx_chain.head->next;
- 
- out:
--	spin_unlock_irqrestore(&chain->lock, flags);
- 	netif_wake_queue(netdev);
- 	return result;
- }
-@@ -891,17 +891,11 @@ out:
- static void
- spider_net_cleanup_tx_ring(struct spider_net_card *card)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&card->tx_chain.lock, flags);
--
- 	if ((spider_net_release_tx_chain(card, 0) != 0) &&
- 	    (card->netdev->flags & IFF_UP)) {
- 		spider_net_kick_tx_dma(card);
- 		netif_wake_queue(card->netdev);
- 	}
--
--	spin_unlock_irqrestore(&card->tx_chain.lock, flags);
- }
- 
- static void
-@@ -1932,10 +1926,7 @@ spider_net_stop(struct net_device *netde
- 	spider_net_disable_rxdmac(card);
- 
- 	/* release chains */
--	if (spin_trylock(&card->tx_chain.lock)) {
--		spider_net_release_tx_chain(card, 1);
--		spin_unlock(&card->tx_chain.lock);
--	}
-+	spider_net_release_tx_chain(card, 1);
- 
- 	spider_net_free_chain(card, &card->tx_chain);
- 	spider_net_free_chain(card, &card->rx_chain);
-Index: linux-2.6.18-rc3-mm2/drivers/net/spider_net.h
-===================================================================
---- linux-2.6.18-rc3-mm2.orig/drivers/net/spider_net.h	2006-08-15 14:28:56.000000000 -0500
-+++ linux-2.6.18-rc3-mm2/drivers/net/spider_net.h	2006-08-15 14:29:36.000000000 -0500
-@@ -24,7 +24,7 @@
- #ifndef _SPIDER_NET_H
- #define _SPIDER_NET_H
- 
--#define VERSION "1.1 B"
-+#define VERSION "1.1 C"
- 
- #include "sungem_phy.h"
- 
+--linas
