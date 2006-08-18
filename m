@@ -1,20 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 1D26E67A3D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 07:25:12 +1000 (EST)
-Date: Fri, 18 Aug 2006 14:25:13 -0700 (PDT)
-Message-Id: <20060818.142513.29571851.davem@davemloft.net>
-To: linas@austin.ibm.com
-Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20060818192356.GD26889@austin.ibm.com>
-References: <20060811170813.GJ10638@austin.ibm.com>
-	<1155771820.11312.116.camel@localhost.localdomain>
-	<20060818192356.GD26889@austin.ibm.com>
+Return-Path: <mgreer@mvista.com>
+Date: Fri, 18 Aug 2006 14:46:50 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Hollis Blanchard <hollis@penguinppc.org>
+Subject: Re: [PATCH 0/6] bootwrapper: arch/powerpc/boot code reorg patches
+Message-ID: <20060818214649.GA30418@mag.az.mvista.com>
+References: <20060719225356.GA3887@mag.az.mvista.com>
+	<20060808191450.GA10108@mag.az.mvista.com>
+	<1155670626.6338.3.camel@basalt.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Jens.Osterkamp@de.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1155670626.6338.3.camel@basalt.austin.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: linas@austin.ibm.com (Linas Vepstas)
-Date: Fri, 18 Aug 2006 14:23:56 -0500
-
-> On Thu, Aug 17, 2006 at 01:43:40AM +0200, Benjamin Herrenschmidt wrote:
-> > 
-> > Sounds good (without actually looking at the code though :), that was a
-> > long required improvement to that driver. Also, we should probably look
-> > into using NAPI polling for tx completion queue as well, no ?
+On Tue, Aug 15, 2006 at 02:37:06PM -0500, Hollis Blanchard wrote:
+> On Tue, 2006-08-08 at 12:14 -0700, Mark A. Greer wrote:
+> > Just a note that I will respin my patches to address all of your
+> > comments.  However, it looks like the fdt code is going to change
+> > to use code from a common source base.  I'm going to wait until
+> > that has settled and then I'll modify the code and repost the patches.
 > 
-> Just for a lark, I tried using NAPI polling, while disabling all TX
-> interrupts. Performance was a disaster: 8Mbits/sec, fom which I conclude
-> that the tcp ack packets do not flow back fast enough to allw reliance
-> on NAPI polling for transmit.
+> By the way, I don't expect the (ft_build.h) interface to change much
+> from what I emailed last week. So I think it's safe to build on top of
+> those.
+> 
+> The only addition I'd like to make is creating an ft_set_prop() that
+> will handle resizing the tree for you. With that change, you wouldn't
+> ft_get_prop() and then write directly to that pointer (as is done
+> currently).
+> 
+> I'm still waiting to hear the outcome of Matt's patches. I don't need
+> them, but if u-boot does then I'll have to merge them into the
+> standalone code.
 
-The idea is to use NAPI polling with TX interrupts disabled.
+Another note.  Hollis and I have been talking some more and may change
+some code.  IOW, I'm still going to wait a bit to see what comes out of
+it before respining the patches.
 
-We're not saying to use the RX interrupt as the trigger for
-RX and TX work.  Rather, either of RX or TX interrupt will
-schedule the NAPI poll.
+Mark
