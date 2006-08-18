@@ -1,12 +1,12 @@
 Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8AC8167BDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 09:03:14 +1000 (EST)
-Date: Fri, 18 Aug 2006 18:03:08 -0500 (CDT)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id C1C3767B77
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 09:04:39 +1000 (EST)
+Date: Fri, 18 Aug 2006 18:04:34 -0500 (CDT)
 From: Andy Fleming <afleming@freescale.com>
 To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix interrupts on 8540 ADS board
-Message-ID: <Pine.LNX.4.61.0608181800001.2878@ld0175-tx32.am.freescale.net>
+Subject: [PATCH] Add 85xx DTS files to powerpc
+Message-ID: <Pine.LNX.4.61.0608181803160.2878@ld0175-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,221 +18,1069 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Fixed 8540 ADS support for the new irq layer
-* Fixed 8540 ADS support for mapping PCI interrupts
-* Updated 8540 ADS to use device tree for interrupt assignment
-  and sense values
+Added the mpc85xx family of dts files to the powerpc tree
 ---
+ arch/powerpc/boot/dts/mpc8540ads.dts |  257 ++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8541cds.dts |  244 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8548cds.dts |  287 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8555cds.dts |  244 +++++++++++++++++++++++++++++
+ 4 files changed, 1032 insertions(+), 0 deletions(-)
 
-Ok.  Many, many apologies for the previous patch.  *This* patch is 
-tested on a fresh tree.  The arguments for it going in from before still 
-apply, though.  The current mainline for 2.6.18 doesn't build, let alone 
-boot, so we *need* this patch to go in, as well as the CDS patch from 
-before.
-
- arch/powerpc/platforms/85xx/mpc85xx_ads.c |  162 ++++++++++-------------------
- 1 files changed, 55 insertions(+), 107 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index d0cfcdb..cae6b73 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -37,79 +37,7 @@ unsigned long isa_io_base = 0;
- unsigned long isa_mem_base = 0;
- #endif
- 
--/*
-- * Internal interrupts are all Level Sensitive, and Positive Polarity
-- *
-- * Note:  Likely, this table and the following function should be
-- *        obtained and derived from the OF Device Tree.
-- */
--static u_char mpc85xx_ads_openpic_initsenses[] __initdata = {
--	MPC85XX_INTERNAL_IRQ_SENSES,
--	0x0,			/* External  0: */
--#if defined(CONFIG_PCI)
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 1: PCI slot 0 */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 2: PCI slot 1 */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 3: PCI slot 2 */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 4: PCI slot 3 */
--#else
--	0x0,			/* External  1: */
--	0x0,			/* External  2: */
--	0x0,			/* External  3: */
--	0x0,			/* External  4: */
--#endif
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 5: PHY */
--	0x0,			/* External  6: */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 7: PHY */
--	0x0,			/* External  8: */
--	0x0,			/* External  9: */
--	0x0,			/* External 10: */
--	0x0,			/* External 11: */
--};
--
- #ifdef CONFIG_PCI
--/*
-- * interrupt routing
-- */
--
--int
--mpc85xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
--{
--	static char pci_irq_table[][4] =
--	    /*
--	     * This is little evil, but works around the fact
--	     * that revA boards have IDSEL starting at 18
--	     * and others boards (older) start at 12
--	     *
--	     *      PCI IDSEL/INTPIN->INTLINE
--	     *       A      B      C      D
--	     */
--	{
--		{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 2 */
--		{PIRQD, PIRQA, PIRQB, PIRQC},
--		{PIRQC, PIRQD, PIRQA, PIRQB},
--		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 5 */
--		{0, 0, 0, 0},	/* -- */
--		{0, 0, 0, 0},	/* -- */
--		{0, 0, 0, 0},	/* -- */
--		{0, 0, 0, 0},	/* -- */
--		{0, 0, 0, 0},	/* -- */
--		{0, 0, 0, 0},	/* -- */
--		{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 12 */
--		{PIRQD, PIRQA, PIRQB, PIRQC},
--		{PIRQC, PIRQD, PIRQA, PIRQB},
--		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 15 */
--		{0, 0, 0, 0},	/* -- */
--		{0, 0, 0, 0},	/* -- */
--		{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 18 */
--		{PIRQD, PIRQA, PIRQB, PIRQC},
--		{PIRQC, PIRQD, PIRQA, PIRQB},
--		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 21 */
--	};
--
--	const long min_idsel = 2, max_idsel = 21, irqs_per_slot = 4;
--	return PCI_IRQ_TABLE_LOOKUP;
--}
--
- int
- mpc85xx_exclude_device(u_char bus, u_char devfn)
- {
-@@ -119,44 +47,63 @@ mpc85xx_exclude_device(u_char bus, u_cha
- 		return PCIBIOS_SUCCESSFUL;
- }
- 
-+void __init
-+mpc85xx_pcibios_fixup(void)
-+{
-+	struct pci_dev *dev = NULL;
+diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
+new file mode 100644
+index 0000000..93d2c2d
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+@@ -0,0 +1,257 @@
++/*
++ * MPC8540 ADS Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+	for_each_pci_dev(dev)
-+		pci_read_irq_line(dev);
-+}
- #endif /* CONFIG_PCI */
- 
- 
- void __init mpc85xx_ads_pic_init(void)
- {
--	struct mpic *mpic1;
--	phys_addr_t OpenPIC_PAddr;
--
--	/* Determine the Physical Address of the OpenPIC regs */
--	OpenPIC_PAddr = get_immrbase() + MPC85xx_OPENPIC_OFFSET;
--
--	mpic1 = mpic_alloc(OpenPIC_PAddr,
--			   MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
--			   4, MPC85xx_OPENPIC_IRQ_OFFSET, 0, 250,
--			   mpc85xx_ads_openpic_initsenses,
--			   sizeof(mpc85xx_ads_openpic_initsenses),
--			   " OpenPIC  ");
--	BUG_ON(mpic1 == NULL);
--	mpic_assign_isu(mpic1, 0, OpenPIC_PAddr + 0x10200);
--	mpic_assign_isu(mpic1, 1, OpenPIC_PAddr + 0x10280);
--	mpic_assign_isu(mpic1, 2, OpenPIC_PAddr + 0x10300);
--	mpic_assign_isu(mpic1, 3, OpenPIC_PAddr + 0x10380);
--	mpic_assign_isu(mpic1, 4, OpenPIC_PAddr + 0x10400);
--	mpic_assign_isu(mpic1, 5, OpenPIC_PAddr + 0x10480);
--	mpic_assign_isu(mpic1, 6, OpenPIC_PAddr + 0x10500);
--	mpic_assign_isu(mpic1, 7, OpenPIC_PAddr + 0x10580);
--
--	/* dummy mappings to get to 48 */
--	mpic_assign_isu(mpic1, 8, OpenPIC_PAddr + 0x10600);
--	mpic_assign_isu(mpic1, 9, OpenPIC_PAddr + 0x10680);
--	mpic_assign_isu(mpic1, 10, OpenPIC_PAddr + 0x10700);
--	mpic_assign_isu(mpic1, 11, OpenPIC_PAddr + 0x10780);
--
--	/* External ints */
--	mpic_assign_isu(mpic1, 12, OpenPIC_PAddr + 0x10000);
--	mpic_assign_isu(mpic1, 13, OpenPIC_PAddr + 0x10080);
--	mpic_assign_isu(mpic1, 14, OpenPIC_PAddr + 0x10100);
--	mpic_init(mpic1);
-+	struct mpic *mpic;
-+	struct resource r;
-+	struct device_node *np = NULL;
 +
-+	np = of_find_node_by_type(np, "open-pic");
++/ {
++	model = "MPC8540ADS";
++	compatible = "MPC85xxADS";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	linux,phandle = <100>;
 +
-+	if (np == NULL) {
-+		printk(KERN_ERR "Could not find open-pic node\n");
-+		return;
-+	}
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		linux,phandle = <200>;
 +
-+	if(of_address_to_resource(np, 0, &r)) {
-+		printk(KERN_ERR "Could not map mpic register space\n");
-+		of_node_put(np);
-+		return;
-+	}
++		PowerPC,8540@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	//  33 MHz, from uboot
++			bus-frequency = <0>;	// 166 MHz
++			clock-frequency = <0>;	// 825 MHz, from uboot
++			32-bit;
++			linux,phandle = <201>;
++		};
++	};
 +
-+	mpic = mpic_alloc(np, r.start,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			4, 0, " OpenPIC  ");
-+	BUG_ON(mpic == NULL);
-+	of_node_put(np);
++	memory {
++		device_type = "memory";
++		linux,phandle = <300>;
++		reg = <00000000 08000000>;	// 128M at 0x0
++	};
 +
-+	mpic_assign_isu(mpic, 0, r.start + 0x10200);
-+	mpic_assign_isu(mpic, 1, r.start + 0x10280);
-+	mpic_assign_isu(mpic, 2, r.start + 0x10300);
-+	mpic_assign_isu(mpic, 3, r.start + 0x10380);
-+	mpic_assign_isu(mpic, 4, r.start + 0x10400);
-+	mpic_assign_isu(mpic, 5, r.start + 0x10480);
-+	mpic_assign_isu(mpic, 6, r.start + 0x10500);
-+	mpic_assign_isu(mpic, 7, r.start + 0x10580);
++	soc8540@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00100000>;	// CCSRBAR 1M
++		bus-frequency = <0>;
 +
-+	/* Unused on this platform (leave room for 8548) */
-+	mpic_assign_isu(mpic, 8, r.start + 0x10600);
-+	mpic_assign_isu(mpic, 9, r.start + 0x10680);
-+	mpic_assign_isu(mpic, 10, r.start + 0x10700);
-+	mpic_assign_isu(mpic, 11, r.start + 0x10780);
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <1b 2>;
++			interrupt-parent = <40000>;
++			dfsrr;
++		};
 +
-+	/* External Interrupts */
-+	mpic_assign_isu(mpic, 12, r.start + 0x10000);
-+	mpic_assign_isu(mpic, 13, r.start + 0x10080);
-+	mpic_assign_isu(mpic, 14, r.start + 0x10100);
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			linux,phandle = <24520>;
++			ethernet-phy@0 {
++				linux,phandle = <2452000>;
++				interrupt-parent = <40000>;
++				interrupts = <35 1>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@1 {
++				linux,phandle = <2452001>;
++				interrupt-parent = <40000>;
++				interrupts = <35 1>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@2 {
++				linux,phandle = <2452002>;
++				interrupt-parent = <40000>;
++				interrupts = <37 1>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+	mpic_init(mpic);
- }
- 
- /*
-@@ -165,7 +112,9 @@ void __init mpc85xx_ads_pic_init(void)
- static void __init mpc85xx_ads_setup_arch(void)
- {
- 	struct device_node *cpu;
-+#ifdef CONFIG_PCI
- 	struct device_node *np;
-+#endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_ads_setup_arch()", 0);
-@@ -186,8 +135,7 @@ #ifdef CONFIG_PCI
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		add_bridge(np);
- 
--	ppc_md.pci_swizzle = common_swizzle;
--	ppc_md.pci_map_irq = mpc85xx_map_irq;
-+	ppc_md.pcibios_fixup = mpc85xx_pcibios_fixup;
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
- 
++		ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			address = [ 00 E0 0C 00 73 00 ];
++			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			interrupts = <d 2 e 2 12 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452000>;
++		};
++
++		ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			address = [ 00 E0 0C 00 73 01 ];
++			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			interrupts = <13 2 14 2 18 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++
++		ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <26000 1000>;
++			address = [ 00 E0 0C 00 73 02 ];
++			local-mac-address = [ 00 E0 0C 00 73 02 ];
++			interrupts = <19 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452002>;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>; 	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++		pci@8000 {
++			linux,phandle = <8000>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x02 */
++				1000 0 0 1 40000 31 1
++				1000 0 0 2 40000 32 1
++				1000 0 0 3 40000 33 1
++				1000 0 0 4 40000 34 1
++
++				/* IDSEL 0x03 */
++				1800 0 0 1 40000 34 1
++				1800 0 0 2 40000 31 1
++				1800 0 0 3 40000 32 1
++				1800 0 0 4 40000 33 1
++
++				/* IDSEL 0x04 */
++				2000 0 0 1 40000 33 1
++				2000 0 0 2 40000 34 1
++				2000 0 0 3 40000 31 1
++				2000 0 0 4 40000 32 1
++
++				/* IDSEL 0x05 */
++				2800 0 0 1 40000 32 1
++				2800 0 0 2 40000 33 1
++				2800 0 0 3 40000 34 1
++				2800 0 0 4 40000 31 1
++
++				/* IDSEL 0x0c */
++				6000 0 0 1 40000 31 1
++				6000 0 0 2 40000 32 1
++				6000 0 0 3 40000 33 1
++				6000 0 0 4 40000 34 1
++
++				/* IDSEL 0x0d */
++				6800 0 0 1 40000 34 1
++				6800 0 0 2 40000 31 1
++				6800 0 0 3 40000 32 1
++				6800 0 0 4 40000 33 1
++
++				/* IDSEL 0x0e */
++				7000 0 0 1 40000 33 1
++				7000 0 0 2 40000 34 1
++				7000 0 0 3 40000 31 1
++				7000 0 0 4 40000 32 1
++
++				/* IDSEL 0x0f */
++				7800 0 0 1 40000 32 1
++				7800 0 0 2 40000 33 1
++				7800 0 0 3 40000 34 1
++				7800 0 0 4 40000 31 1
++
++				/* IDSEL 0x12 */
++				9000 0 0 1 40000 31 1
++				9000 0 0 2 40000 32 1
++				9000 0 0 3 40000 33 1
++				9000 0 0 4 40000 34 1
++
++				/* IDSEL 0x13 */
++				9800 0 0 1 40000 34 1
++				9800 0 0 2 40000 31 1
++				9800 0 0 3 40000 32 1
++				9800 0 0 4 40000 33 1
++
++				/* IDSEL 0x14 */
++				a000 0 0 1 40000 33 1
++				a000 0 0 2 40000 34 1
++				a000 0 0 3 40000 31 1
++				a000 0 0 4 40000 32 1
++
++				/* IDSEL 0x15 */
++				a800 0 0 1 40000 32 1
++				a800 0 0 2 40000 33 1
++				a800 0 0 3 40000 34 1
++				a800 0 0 4 40000 31 1>;
++			interrupt-parent = <40000>;
++			interrupts = <08 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 80000000 80000000 0 20000000
++				  01000000 0 00000000 e2000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++		};
++
++		pic@40000 {
++			linux,phandle = <40000>;
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			built-in;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                        big-endian;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
+new file mode 100644
+index 0000000..d526397
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8541cds.dts
+@@ -0,0 +1,244 @@
++/*
++ * MPC8541 CDS Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++
++/ {
++	model = "MPC8541CDS";
++	compatible = "MPC85xxCDS";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	linux,phandle = <100>;
++
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		linux,phandle = <200>;
++
++		PowerPC,8541@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	//  33 MHz, from uboot
++			bus-frequency = <0>;	// 166 MHz
++			clock-frequency = <0>;	// 825 MHz, from uboot
++			32-bit;
++			linux,phandle = <201>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		linux,phandle = <300>;
++		reg = <00000000 08000000>;	// 128M at 0x0
++	};
++
++	soc8541@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00100000>;	// CCSRBAR 1M
++		bus-frequency = <0>;
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <1b 2>;
++			interrupt-parent = <40000>;
++			dfsrr;
++		};
++
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			linux,phandle = <24520>;
++			ethernet-phy@0 {
++				linux,phandle = <2452000>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@1 {
++				linux,phandle = <2452001>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			interrupts = <d 2 e 2 12 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452000>;
++		};
++
++		ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			interrupts = <13 2 14 2 18 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>; 	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		pci@8000 {
++			linux,phandle = <8000>;
++			interrupt-map-mask = <1f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x10 */
++				08000 0 0 1 40000 30 1
++				08000 0 0 2 40000 31 1
++				08000 0 0 3 40000 32 1
++				08000 0 0 4 40000 33 1
++
++				/* IDSEL 0x11 */
++				08800 0 0 1 40000 30 1
++				08800 0 0 2 40000 31 1
++				08800 0 0 3 40000 32 1
++				08800 0 0 4 40000 33 1
++
++				/* IDSEL 0x12 (Slot 1) */
++				09000 0 0 1 40000 30 1
++				09000 0 0 2 40000 31 1
++				09000 0 0 3 40000 32 1
++				09000 0 0 4 40000 33 1
++
++				/* IDSEL 0x13 (Slot 2) */
++				09800 0 0 1 40000 31 1
++				09800 0 0 2 40000 32 1
++				09800 0 0 3 40000 33 1
++				09800 0 0 4 40000 30 1
++
++				/* IDSEL 0x14 (Slot 3) */
++				0a000 0 0 1 40000 32 1
++				0a000 0 0 2 40000 33 1
++				0a000 0 0 3 40000 30 1
++				0a000 0 0 4 40000 31 1
++
++				/* IDSEL 0x15 (Slot 4) */
++				0a800 0 0 1 40000 33 1
++				0a800 0 0 2 40000 30 1
++				0a800 0 0 3 40000 31 1
++				0a800 0 0 4 40000 32 1
++				
++				/* Bus 1 (Tundra Bridge) */
++				/* IDSEL 0x12 (ISA bridge) */
++				19000 0 0 1 40000 30 1
++				19000 0 0 2 40000 31 1
++				19000 0 0 3 40000 32 1
++				19000 0 0 4 40000 33 1>;
++			interrupt-parent = <40000>;
++			interrupts = <08 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 80000000 80000000 0 20000000
++				  01000000 0 00000000 e2000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++
++			i8259@19000 {
++				clock-frequency = <0>;
++				interrupt-controller;
++				device_type = "interrupt-controller";
++				reg = <19000 0 0 0 1>;
++				#address-cells = <0>;
++				#interrupt-cells = <2>;
++				built-in;
++				compatible = "chrp,iic";
++				big-endian;
++				interrupts = <1>;
++				interrupt-parent = <8000>;
++			};
++		};
++
++		pci@9000 {
++			linux,phandle = <9000>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x15 */
++				a800 0 0 1 40000 3b 1
++				a800 0 0 2 40000 3b 1
++				a800 0 0 3 40000 3b 1
++				a800 0 0 4 40000 3b 1>;
++			interrupt-parent = <40000>;
++			interrupts = <09 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 a0000000 a0000000 0 20000000
++				  01000000 0 00000000 e3000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <9000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++		};
++
++		pic@40000 {
++			linux,phandle = <40000>;
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			built-in;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                        big-endian;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
+new file mode 100644
+index 0000000..ec1446a
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8548cds.dts
+@@ -0,0 +1,287 @@
++/*
++ * MPC8555 CDS Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++
++/ {
++	model = "MPC8548CDS";
++	compatible = "MPC85xxCDS";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	linux,phandle = <100>;
++
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		linux,phandle = <200>;
++
++		PowerPC,8548@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	//  33 MHz, from uboot
++			bus-frequency = <0>;	// 166 MHz
++			clock-frequency = <0>;	// 825 MHz, from uboot
++			32-bit;
++			linux,phandle = <201>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		linux,phandle = <300>;
++		reg = <00000000 08000000>;	// 128M at 0x0
++	};
++
++	soc8548@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00100000>;	// CCSRBAR 1M
++		bus-frequency = <0>;
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <1b 2>;
++			interrupt-parent = <40000>;
++			dfsrr;
++		};
++
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			linux,phandle = <24520>;
++			ethernet-phy@0 {
++				linux,phandle = <2452000>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@1 {
++				linux,phandle = <2452001>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++
++			ethernet-phy@2 {
++				linux,phandle = <2452002>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@3 {
++				linux,phandle = <2452003>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <3>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			interrupts = <d 2 e 2 12 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452000>;
++		};
++
++		ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			interrupts = <13 2 14 2 18 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++
++		ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <26000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 02 ];
++			interrupts = <f 2 10 2 11 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++
++/* eTSEC 4 is currently broken
++		ethernet@27000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <27000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 03 ];
++			interrupts = <15 2 16 2 17 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++ */
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>; 	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		pci@8000 {
++			linux,phandle = <8000>;
++			interrupt-map-mask = <1f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x10 */
++				08000 0 0 1 40000 30 1
++				08000 0 0 2 40000 31 1
++				08000 0 0 3 40000 32 1
++				08000 0 0 4 40000 33 1
++
++				/* IDSEL 0x11 */
++				08800 0 0 1 40000 30 1
++				08800 0 0 2 40000 31 1
++				08800 0 0 3 40000 32 1
++				08800 0 0 4 40000 33 1
++
++				/* IDSEL 0x12 (Slot 1) */
++				09000 0 0 1 40000 30 1
++				09000 0 0 2 40000 31 1
++				09000 0 0 3 40000 32 1
++				09000 0 0 4 40000 33 1
++
++				/* IDSEL 0x13 (Slot 2) */
++				09800 0 0 1 40000 31 1
++				09800 0 0 2 40000 32 1
++				09800 0 0 3 40000 33 1
++				09800 0 0 4 40000 30 1
++
++				/* IDSEL 0x14 (Slot 3) */
++				0a000 0 0 1 40000 32 1
++				0a000 0 0 2 40000 33 1
++				0a000 0 0 3 40000 30 1
++				0a000 0 0 4 40000 31 1
++
++				/* IDSEL 0x15 (Slot 4) */
++				0a800 0 0 1 40000 33 1
++				0a800 0 0 2 40000 30 1
++				0a800 0 0 3 40000 31 1
++				0a800 0 0 4 40000 32 1
++				
++				/* Bus 1 (Tundra Bridge) */
++				/* IDSEL 0x12 (ISA bridge) */
++				19000 0 0 1 40000 30 1
++				19000 0 0 2 40000 31 1
++				19000 0 0 3 40000 32 1
++				19000 0 0 4 40000 33 1>;
++			interrupt-parent = <40000>;
++			interrupts = <08 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 80000000 80000000 0 20000000
++				  01000000 0 00000000 e2000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++
++			i8259@19000 {
++				clock-frequency = <0>;
++				interrupt-controller;
++				device_type = "interrupt-controller";
++				reg = <19000 0 0 0 1>;
++				#address-cells = <0>;
++				#interrupt-cells = <2>;
++				built-in;
++				compatible = "chrp,iic";
++				big-endian;
++				interrupts = <1>;
++				interrupt-parent = <8000>;
++			};
++		};
++
++		pci@9000 {
++			linux,phandle = <9000>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x15 */
++				a800 0 0 1 40000 3b 1
++				a800 0 0 2 40000 3b 1
++				a800 0 0 3 40000 3b 1
++				a800 0 0 4 40000 3b 1>;
++			interrupt-parent = <40000>;
++			interrupts = <09 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 a0000000 a0000000 0 20000000
++				  01000000 0 00000000 e3000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <9000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++		};
++
++		pic@40000 {
++			linux,phandle = <40000>;
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			built-in;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                        big-endian;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
+new file mode 100644
+index 0000000..71fea14
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8555cds.dts
+@@ -0,0 +1,244 @@
++/*
++ * MPC8555 CDS Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++
++/ {
++	model = "MPC8555CDS";
++	compatible = "MPC85xxCDS";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	linux,phandle = <100>;
++
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		linux,phandle = <200>;
++
++		PowerPC,8555@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	//  33 MHz, from uboot
++			bus-frequency = <0>;	// 166 MHz
++			clock-frequency = <0>;	// 825 MHz, from uboot
++			32-bit;
++			linux,phandle = <201>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		linux,phandle = <300>;
++		reg = <00000000 08000000>;	// 128M at 0x0
++	};
++
++	soc8555@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00100000>;	// CCSRBAR 1M
++		bus-frequency = <0>;
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <1b 2>;
++			interrupt-parent = <40000>;
++			dfsrr;
++		};
++
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			linux,phandle = <24520>;
++			ethernet-phy@0 {
++				linux,phandle = <2452000>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@1 {
++				linux,phandle = <2452001>;
++				interrupt-parent = <40000>;
++				interrupts = <35 0>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			interrupts = <0d 2 0e 2 12 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452000>;
++		};
++
++		ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			interrupts = <13 2 14 2 18 2>;
++			interrupt-parent = <40000>;
++			phy-handle = <2452001>;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>; 	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <1a 2>;
++			interrupt-parent = <40000>;
++		};
++
++		pci@8000 {
++			linux,phandle = <8000>;
++			interrupt-map-mask = <1f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x10 */
++				08000 0 0 1 40000 30 1
++				08000 0 0 2 40000 31 1
++				08000 0 0 3 40000 32 1
++				08000 0 0 4 40000 33 1
++
++				/* IDSEL 0x11 */
++				08800 0 0 1 40000 30 1
++				08800 0 0 2 40000 31 1
++				08800 0 0 3 40000 32 1
++				08800 0 0 4 40000 33 1
++
++				/* IDSEL 0x12 (Slot 1) */
++				09000 0 0 1 40000 30 1
++				09000 0 0 2 40000 31 1
++				09000 0 0 3 40000 32 1
++				09000 0 0 4 40000 33 1
++
++				/* IDSEL 0x13 (Slot 2) */
++				09800 0 0 1 40000 31 1
++				09800 0 0 2 40000 32 1
++				09800 0 0 3 40000 33 1
++				09800 0 0 4 40000 30 1
++
++				/* IDSEL 0x14 (Slot 3) */
++				0a000 0 0 1 40000 32 1
++				0a000 0 0 2 40000 33 1
++				0a000 0 0 3 40000 30 1
++				0a000 0 0 4 40000 31 1
++
++				/* IDSEL 0x15 (Slot 4) */
++				0a800 0 0 1 40000 33 1
++				0a800 0 0 2 40000 30 1
++				0a800 0 0 3 40000 31 1
++				0a800 0 0 4 40000 32 1
++				
++				/* Bus 1 (Tundra Bridge) */
++				/* IDSEL 0x12 (ISA bridge) */
++				19000 0 0 1 40000 30 1
++				19000 0 0 2 40000 31 1
++				19000 0 0 3 40000 32 1
++				19000 0 0 4 40000 33 1>;
++			interrupt-parent = <40000>;
++			interrupts = <08 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 80000000 80000000 0 20000000
++				  01000000 0 00000000 e2000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++
++			i8259@19000 {
++				clock-frequency = <0>;
++				interrupt-controller;
++				device_type = "interrupt-controller";
++				reg = <19000 0 0 0 1>;
++				#address-cells = <0>;
++				#interrupt-cells = <2>;
++				built-in;
++				compatible = "chrp,iic";
++				big-endian;
++				interrupts = <1>;
++				interrupt-parent = <8000>;
++			};
++		};
++
++		pci@9000 {
++			linux,phandle = <9000>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x15 */
++				a800 0 0 1 40000 3b 1
++				a800 0 0 2 40000 3b 1
++				a800 0 0 3 40000 3b 1
++				a800 0 0 4 40000 3b 1>;
++			interrupt-parent = <40000>;
++			interrupts = <09 2>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 a0000000 a0000000 0 20000000
++				  01000000 0 00000000 e3000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <9000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++		};
++
++		pic@40000 {
++			linux,phandle = <40000>;
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			built-in;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                        big-endian;
++		};
++	};
++};
 -- 
 2006_06_07.01.gittree_pull-dirty
