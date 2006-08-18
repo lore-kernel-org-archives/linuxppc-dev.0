@@ -1,26 +1,26 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B9B7267B5F
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 08:23:17 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7IMNCOH019532
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:23:12 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7IMNCp1161990
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 16:23:12 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7IMNBqh016849
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 16:23:11 -0600
-Date: Fri, 18 Aug 2006 17:23:11 -0500
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D22E867B60
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 08:25:05 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7IMP2Jx021266
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:25:02 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7IMP18K238414
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 16:25:01 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7IMP1iu031305
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 16:25:01 -0600
+Date: Fri, 18 Aug 2006 17:25:00 -0500
 To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH 3/6]: powerpc/cell spidernet stop error printing patch.
-Message-ID: <20060818222311.GJ26889@austin.ibm.com>
+Subject: [PATCH 4/6]: powerpc/cell spidernet ethtool -i version number info.
+Message-ID: <20060818222500.GK26889@austin.ibm.com>
 References: <20060818220700.GG26889@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -40,62 +40,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 
-Turn off mis-interpretation of the queue-empty interrupt
-status bit as an error. This bit is set as a part of 
-the previous low-watermark patch.
+This patch adds version information as reported by 
+ethtool -i to the Spidernet driver.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+From: James K Lewis <jklewis@us.ibm.com>
 Signed-off-by: James K Lewis <jklewis@us.ibm.com>
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: Utz Bacher <utz.bacher@de.ibm.com>
 Cc: Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
 
 ----
- drivers/net/spider_net.c |   13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ drivers/net/spider_net.c         |    3 +++
+ drivers/net/spider_net.h         |    2 ++
+ drivers/net/spider_net_ethtool.c |    2 +-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
 Index: linux-2.6.18-rc3-mm2/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.18-rc3-mm2.orig/drivers/net/spider_net.c	2006-08-11 11:23:24.000000000 -0500
-+++ linux-2.6.18-rc3-mm2/drivers/net/spider_net.c	2006-08-11 11:34:16.000000000 -0500
-@@ -1275,12 +1275,15 @@ spider_net_handle_error_irq(struct spide
- 	case SPIDER_NET_PHYINT:
- 	case SPIDER_NET_GMAC2INT:
- 	case SPIDER_NET_GMAC1INT:
--	case SPIDER_NET_GIPSINT:
- 	case SPIDER_NET_GFIFOINT:
- 	case SPIDER_NET_DMACINT:
- 	case SPIDER_NET_GSYSINT:
- 		break; */
+--- linux-2.6.18-rc3-mm2.orig/drivers/net/spider_net.c	2006-08-11 11:34:16.000000000 -0500
++++ linux-2.6.18-rc3-mm2/drivers/net/spider_net.c	2006-08-11 11:38:48.000000000 -0500
+@@ -55,6 +55,7 @@ MODULE_AUTHOR("Utz Bacher <utz.bacher@de
+ 	      "<Jens.Osterkamp@de.ibm.com>");
+ MODULE_DESCRIPTION("Spider Southbridge Gigabit Ethernet driver");
+ MODULE_LICENSE("GPL");
++MODULE_VERSION(VERSION);
  
-+	case SPIDER_NET_GIPSINT:
-+		show_error = 0;
-+		break;
+ static int rx_descriptors = SPIDER_NET_RX_DESCRIPTORS_DEFAULT;
+ static int tx_descriptors = SPIDER_NET_TX_DESCRIPTORS_DEFAULT;
+@@ -2293,6 +2294,8 @@ static struct pci_driver spider_net_driv
+  */
+ static int __init spider_net_init(void)
+ {
++	printk("spidernet Version %s.\n",VERSION);
 +
- 	case SPIDER_NET_GPWOPCMPINT:
- 		/* PHY write operation completed */
- 		show_error = 0;
-@@ -1339,9 +1342,10 @@ spider_net_handle_error_irq(struct spide
- 	case SPIDER_NET_GDTDCEINT:
- 		/* chain end. If a descriptor should be sent, kick off
- 		 * tx dma
--		if (card->tx_chain.tail == card->tx_chain.head)
-+		if (card->tx_chain.tail != card->tx_chain.head)
- 			spider_net_kick_tx_dma(card);
--		show_error = 0; */
-+		*/
-+		show_error = 0;
- 		break;
+ 	if (rx_descriptors < SPIDER_NET_RX_DESCRIPTORS_MIN) {
+ 		rx_descriptors = SPIDER_NET_RX_DESCRIPTORS_MIN;
+ 		pr_info("adjusting rx descriptors to %i.\n", rx_descriptors);
+Index: linux-2.6.18-rc3-mm2/drivers/net/spider_net.h
+===================================================================
+--- linux-2.6.18-rc3-mm2.orig/drivers/net/spider_net.h	2006-08-11 11:19:47.000000000 -0500
++++ linux-2.6.18-rc3-mm2/drivers/net/spider_net.h	2006-08-11 11:38:48.000000000 -0500
+@@ -24,6 +24,8 @@
+ #ifndef _SPIDER_NET_H
+ #define _SPIDER_NET_H
  
- 	/* case SPIDER_NET_G1TMCNTINT: not used. print a message */
-@@ -1455,8 +1459,9 @@ spider_net_handle_error_irq(struct spide
- 	}
++#define VERSION "1.1 A"
++
+ #include "sungem_phy.h"
  
- 	if ((show_error) && (netif_msg_intr(card)))
--		pr_err("Got error interrupt, GHIINT0STS = 0x%08x, "
-+		pr_err("Got error interrupt on %s, GHIINT0STS = 0x%08x, "
- 		       "GHIINT1STS = 0x%08x, GHIINT2STS = 0x%08x\n",
-+		       card->netdev->name,
- 		       status_reg, error_reg1, error_reg2);
- 
- 	/* clear interrupt sources */
+ extern int spider_net_stop(struct net_device *netdev);
+Index: linux-2.6.18-rc3-mm2/drivers/net/spider_net_ethtool.c
+===================================================================
+--- linux-2.6.18-rc3-mm2.orig/drivers/net/spider_net_ethtool.c	2006-06-17 20:49:35.000000000 -0500
++++ linux-2.6.18-rc3-mm2/drivers/net/spider_net_ethtool.c	2006-08-11 11:38:48.000000000 -0500
+@@ -55,7 +55,7 @@ spider_net_ethtool_get_drvinfo(struct ne
+ 	/* clear and fill out info */
+ 	memset(drvinfo, 0, sizeof(struct ethtool_drvinfo));
+ 	strncpy(drvinfo->driver, spider_net_driver_name, 32);
+-	strncpy(drvinfo->version, "0.1", 32);
++	strncpy(drvinfo->version, VERSION, 32);
+ 	strcpy(drvinfo->fw_version, "no information");
+ 	strncpy(drvinfo->bus_info, pci_name(card->pdev), 32);
+ }
