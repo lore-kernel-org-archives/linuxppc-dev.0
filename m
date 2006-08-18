@@ -1,21 +1,23 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 095DA67B98
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:21:25 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Outstanding Patches Ping 
-In-Reply-To: Your message of "Fri, 18 Aug 2006 10:07:47 +1000."
-	<17637.1235.223857.925995@cargo.ozlabs.ibm.com>
-References: <1155679316.10054.129.camel@cashmere.sps.mot.com>
-	<17636.3393.801267.484874@cargo.ozlabs.ibm.com>
-	<E1GDhtO-0002Mk-2j@jdl.com>
-	<17637.1235.223857.925995@cargo.ozlabs.ibm.com>
-Date: Fri, 18 Aug 2006 09:21:16 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1GE5Do-0000XJ-UM@jdl.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from wohnheim.fh-wedel.de (wohnheim.fh-wedel.de [213.39.233.138])
+	by ozlabs.org (Postfix) with ESMTP id 3AC6167B5F
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 00:33:40 +1000 (EST)
+Date: Fri, 18 Aug 2006 16:33:28 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [2.6.19 PATCH 3/7] ehea: queue management
+Message-ID: <20060818143328.GC6393@wohnheim.fh-wedel.de>
+References: <200608181331.19501.ossthema@de.ibm.com>
+	<1155903451.4494.168.camel@laptopd505.fenrus.org>
+	<44E5BFB7.4000400@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <44E5BFB7.4000400@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Marcus Eder <meder@de.ibm.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Paul Mackerras mumbled:
+On Fri, 18 August 2006 15:25:11 +0200, Thomas Klein wrote:
+> Arjan van de Ven wrote:
+> >>+	queue->queue_length = nr_of_pages * pagesize;
+> >>+	queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
+> >
+> >
+> >wow... is this really so large that it warrants a vmalloc()???
 > 
-> The "Allow MPC8641 HPCN to build with CONFIG_PCI disabled too" patch
-> depends on your "Rewrite the PPC 86xx IRQ handling to use Flat Device
-> Tree" which isn't in the queue for 2.6.18, and doesn't apply for
-> 2.6.18 since it depends on the constifying of get_property.
+> Agreed: Replaced with kmalloc()
 
-Argh!  That IRQ rewrite patch is the critical patch to get into 2.6.18
-as it is currently totally broken without it, and works with it!
-Any chance?  I mean, it was working in the early -rc versions of .18
-before Ben changed the IRQ world.  This is just cleanup effort to
-have it continue to work in in .18.
+kzalloc() and you can remove the memset() as well.
 
-jdl
+Jörn
+
+-- 
+Data dominates. If you've chosen the right data structures and organized
+things well, the algorithms will almost always be self-evident. Data
+structures, not algorithms, are central to programming.
+-- Rob Pike
