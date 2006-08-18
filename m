@@ -1,23 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7617E67B32
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:00:05 +1000 (EST)
-Subject: Re: [PATCH] Directly reference i8259@4d0 nodes in mpc8641_hpcn.dts.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20060818004301.GA8734@mag.az.mvista.com>
-References: <1155835482.10054.140.camel@cashmere.sps.mot.com>
-	<1155840700.27466.64.camel@basalt.austin.ibm.com>
-	<1155849609.10054.175.camel@cashmere.sps.mot.com>
-	<1155859761.5803.6.camel@localhost.localdomain>
-	<20060818004301.GA8734@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Fri, 18 Aug 2006 11:59:48 +1000
-Message-Id: <1155866388.5803.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17637.8568.40692.21510@cargo.ozlabs.ibm.com>
+Date: Fri, 18 Aug 2006 12:10:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: gregkh@suse.de, linuxppc-dev@ozlabs.org
+Subject: Please pull powerpc.git 'merge' branch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +15,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-17 at 17:43 -0700, Mark A. Greer wrote:
-> On Fri, Aug 18, 2006 at 10:09:21AM +1000, Benjamin Herrenschmidt wrote:
-> > On Thu, 2006-08-17 at 16:20 -0500, Jon Loeliger wrote:
-> > > Rather than using some hand-coded linux,phandle
-> > > node references, use DTC's direct node refs ability
-> > > and let it manage the phandle names instead.
-> > 
-> > Not 100% sure here but can't we use a label and do &label rather than
-> > having to copy the full path every time ? Would make things easier :) If
-> > not, that's probably something to add to dtc...
-> 
-> Isn't linux,phandle basically the label that you speak of, though?
-> IOW, you may be saying, "No, keep using the linux,phandle".
+Greg,
 
-No, more something like
+Please do:
 
-pic:
-  <pic_node>
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-and later
+to get the following PowerPC updates for 2.6.18.
 
-&pic
+Thanks,
+Paul.
 
-> Just trying to clarify things although I'm not sure that I really am...  :)
-> 
-> Mark
+ Documentation/powerpc/booting-without-of.txt |   10 -
+ arch/powerpc/Kconfig                         |    7 -
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts       |  339 ++++++++++++++++++++++++++
+ arch/powerpc/configs/g5_defconfig            |  122 ++++++++-
+ arch/powerpc/configs/iseries_defconfig       |   78 +++++-
+ arch/powerpc/configs/pseries_defconfig       |   78 +++++-
+ arch/powerpc/kernel/Makefile                 |    4 
+ arch/powerpc/kernel/cpu_setup_power4.S       |    2 
+ arch/powerpc/kernel/crash.c                  |   11 +
+ arch/powerpc/kernel/irq.c                    |    2 
+ arch/powerpc/kernel/kprobes.c                |    2 
+ arch/powerpc/kernel/machine_kexec.c          |   56 ++++
+ arch/powerpc/kernel/machine_kexec_64.c       |   57 ----
+ arch/powerpc/kernel/rtas.c                   |   21 ++
+ arch/powerpc/kernel/traps.c                  |   16 +
+ arch/powerpc/platforms/pseries/setup.c       |    2 
+ arch/powerpc/platforms/pseries/xics.c        |    6 
+ arch/powerpc/sysdev/fsl_soc.c                |   12 +
+ include/asm-powerpc/kexec.h                  |    3 
+ include/asm-powerpc/rtas.h                   |    1 
+ 20 files changed, 695 insertions(+), 134 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8641_hpcn.dts
+
+Ananth N Mavinakayanahalli:
+      [POWERPC] kprobes: Fix possible system crash during out-of-line single-stepping
+
+Benjamin Herrenschmidt:
+      [POWERPC] Fix irq radix tree remapping typo
+
+David Wilder:
+      [POWERPC] Make secondary CPUs call into kdump on reset exception
+
+Haren Myneni:
+      [POWERPC] Fix might-sleep warning on removing cpus
+
+Jon Loeliger:
+      [POWERPC] Convert to mac-address for ethernet MAC address data.
+      [POWERPC] Add MPC8641 HPCN Device Tree Source file.
+      [POWERPC] Offer PCI as a CONFIG choice for PPC_86xx.
+      [POWERPC] Fix the mpc8641_hpcn.dts file.
+
+Michael Ellerman:
+      [POWERPC] Move some kexec logic into machine_kexec.c
+      [POWERPC] Make crash.c work on 32-bit and 64-bit
+
+Olof Johansson:
+      [POWERPC] powerpc: Clear HID0 attention enable on PPC970 at boot time
+
+Sonny Rao:
+      [POWERPC] fix PMU initialization on pseries lpar
+
+Will Schmidt:
+      [POWERPC] update {g5,iseries,pseries}_defconfigs
