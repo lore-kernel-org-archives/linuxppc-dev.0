@@ -1,36 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C681667B68
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 09:45:41 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7INjYgg008269
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 19:45:34 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7INjYkY264782
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 19:45:34 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7INjXJS019718
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 19:45:34 -0400
-Date: Fri, 18 Aug 2006 18:45:32 -0500
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
-Message-ID: <20060818234532.GA8644@austin.ibm.com>
-References: <20060818192356.GD26889@austin.ibm.com>
-	<20060818.142513.29571851.davem@davemloft.net>
-	<20060818224618.GN26889@austin.ibm.com>
-	<20060818.155116.112621100.davem@davemloft.net>
-	<20060818232942.GO26889@austin.ibm.com>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id AA76267B6E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 09:49:09 +1000 (EST)
+Date: Sat, 19 Aug 2006 01:49:30 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
+Message-ID: <20060818234930.GB2662@localhost>
+References: <20060817230347.GC3440@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060818232942.GO26889@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Jens.Osterkamp@de.ibm.com
+In-Reply-To: <20060817230347.GC3440@localhost>
+Cc: linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,16 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 18, 2006 at 06:29:42PM -0500, linas wrote:
+On Fri, Aug 18, 2006 at 01:03:47AM +0200, Wolfgang Pfeiffer wrote:
+> Hi All
 > 
-> I don't understand what you are saying. If I call the transmit 
-> queue cleanup code from the poll() routine, nothing hapens, 
-> because the kernel does not call the poll() routine often 
-> enough. I've stated this several times.  
+> Short version first:
+> 
+> The SCSI/FW routines seem to work like a charm with a LSILogic Model/
+> SYM13FW500-Disk on my old Macintosh titanium-IV laptop, with exactly
+> the same relatively fresh git-kernel that does not work on the
+> PowerBook5,8.  That is I compiled the kernel on the Apple Powerbook5,8
+> and installed it on both machines.
+> 
 
-OK, Arnd gave me a clue stick. I need to call the (misnamed)
-netif_rx_schedule() from the tx interrupt in order to get 
-this to work. That makes sense, and its easy, I'll send the 
-revised patch.. well, not tonight, but shortly.
+   [ ... ]
 
---linas
+In the meantime I suspect a hardware problem.
+
+Here's why:
+
+I connected the FW disk I was reporting about in previous postings to
+both an older Apple titanium Powerbook and to the newer Apple alubook
+5,8.
+
+In both instances I rebooted the machines with the accompanying
+different Apple OS X install CD's. Both CD's have a so-called "Disk
+Utility" tool with them, a tool that generally detects and repairs
+disks. The tool clearly detected the FW disk attached to my old
+titanium. And the same tool didn't detect the same FW disk on the
+newer alubook 5,8 ... :)
+
+In both instances I connected the FW disk to the FW 400 connector of
+the machines.
+
+So unless there are differing FW 400 versions available on both
+machines I'd suspect a hardware prob with the 5,8.
+
+[Note: Do there actually exist different Firewire 400 versions?]
+
+I'll make this issue clear next week with a trip to the shop where I
+bought the alubook.
+
+And I'll be back as soon as I know more ...
+
+Thanks. And sorry the idea with the check via OSX didn't come to my
+mind earlier ...
+
+Until then, and a nice week-end to everyone
+
+Regards
+Wolfgang
+
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
