@@ -3,22 +3,22 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 60D4A67B66
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 22:17:40 +1000 (EST)
-Subject: Re: [2.6.19 PATCH 3/7] ehea: queue management
+	by ozlabs.org (Postfix) with ESMTP id CD7C167B70
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 23:56:28 +1000 (EST)
+Subject: Re: [2.6.19 PATCH 1/7] ehea: interface to network stack
 From: Arjan van de Ven <arjan@infradead.org>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200608181331.19501.ossthema@de.ibm.com>
-References: <200608181331.19501.ossthema@de.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20060818134728.GB5201@martell.zuzino.mipt.ru>
+References: <200608181329.02042.ossthema@de.ibm.com>
+	<20060818134728.GB5201@martell.zuzino.mipt.ru>
 Content-Type: text/plain
-Date: Fri, 18 Aug 2006 14:17:31 +0200
-Message-Id: <1155903451.4494.168.camel@laptopd505.fenrus.org>
+Date: Fri, 18 Aug 2006 15:56:17 +0200
+Message-Id: <1155909377.4494.192.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Thomas Klein <osstklei@de.ibm.com>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,8 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +	queue->queue_length = nr_of_pages * pagesize;
-> +	queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
+On Fri, 2006-08-18 at 17:47 +0400, Alexey Dobriyan wrote:
+> On Fri, Aug 18, 2006 at 01:29:01PM +0200, Jan-Bernd Themann wrote:
+> 
+> Was there noticeable performance difference when explicit prefetching is
+> removed? At some (invisible) point CPUs will become smarter about prefetching
+> than programmers and this code will be slower than possible.
 
+Hi,
 
-wow... is this really so large that it warrants a vmalloc()???
+what you say is true in general, however the packet response part of the
+kernel is special; the cpu just cannot know where your card just dma'd
+the packet to (and thus cleared it from any caches anywhere in the
+system) so it's going to be pretty much a 100% cachemiss always...
+
+Greetings,
+   Arjan van de Ven
