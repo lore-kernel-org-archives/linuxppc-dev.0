@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 18 Aug 2006 18:13:28 +1000
-Subject: [RFC/PATCH 1/4] Add firmware flags for PCIe/MSI
-Message-Id: <20060818081329.AADA067B54@ozlabs.org>
+Date: Fri, 18 Aug 2006 18:13:29 +1000
+Subject: [RFC/PATCH 2/4] Allow for non-Intel MSI implementations
+Message-Id: <20060818081330.9ADC867B55@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,37 +16,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Jake Moilanen <moilanen@austin.ibm.com>
 
-Add firmware flags for PCIe/MSI.
+This allows an architecture to provide its own MSI implementation
+instead of msi.c and msi-apic.c.  We will need this on IBM System-p
+machines where the hypervisor controls the assignment and setup of
+MSIs.  A following patch will provide an MSI implementation for these
+machines.
 
 Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
 ---
 
- arch/powerpc/kernel/prom_init.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/pci/Makefile |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Index: git/arch/powerpc/kernel/prom_init.c
+Index: git/drivers/pci/Makefile
 ===================================================================
---- git.orig/arch/powerpc/kernel/prom_init.c
-+++ git/arch/powerpc/kernel/prom_init.c
-@@ -634,6 +634,12 @@ static void __init early_cmdline_parse(v
- /* ibm,dynamic-reconfiguration-memory property supported */
- #define OV5_DRCONF_MEMORY	0x20
- #define OV5_LARGE_PAGES		0x10	/* large pages supported */
-+/* PCIe/MSI support. Without MSI full PCIe is not supported */
-+#ifdef CONFIG_PCI_MSI
-+#define OV5_MSI			0x01	/* PCIe/MSI supported */
-+#else
-+#define OV5_MSI			0x00
-+#endif
+--- git.orig/drivers/pci/Makefile
++++ git/drivers/pci/Makefile
+@@ -27,9 +27,11 @@ obj-$(CONFIG_PPC64) += setup-bus.o
+ obj-$(CONFIG_MIPS) += setup-bus.o setup-irq.o
+ obj-$(CONFIG_X86_VISWS) += setup-irq.o
  
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-@@ -677,7 +683,7 @@ static unsigned char ibm_architecture_ve
- 	/* option vector 5: PAPR/OF options */
- 	3 - 1,				/* length */
- 	0,				/* don't ignore, don't halt */
--	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES,
-+	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_MSI,
- };
+-msiobj-y := msi.o msi-apic.o
+-msiobj-$(CONFIG_IA64_GENERIC) += msi-altix.o
+-msiobj-$(CONFIG_IA64_SGI_SN2) += msi-altix.o
++msiobj-$(CONFIG_X86) := msi.o msi-apic.o
++msiobj-$(CONFIG_IA64) := msi.o msi-apic.o
++msiobj-$(CONFIG_IA64_GENERIC) := msi-altix.o
++msiobj-$(CONFIG_IA64_SGI_SN2) := msi-altix.o
++
+ obj-$(CONFIG_PCI_MSI) += $(msiobj-y)
  
- /* Old method - ELF header with PT_NOTE sections */
+ #
