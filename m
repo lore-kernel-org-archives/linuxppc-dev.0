@@ -1,35 +1,37 @@
-Return-Path: <RAISCH@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4E74067B85
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 01:58:28 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7IFwObS150254
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 15:58:24 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k7IG2IA0147978
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 18:02:18 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7IFwNe3029182
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 17:58:23 +0200
-In-Reply-To: <20060818151340.GB27947@krispykreme>
-Subject: Re: [2.6.19 PATCH 2/7] ehea: pHYP interface
-To: Anton Blanchard <anton@samba.org>
-Message-ID: <OFF0CF1858.B1C22ED6-ONC12571CE.0056FB13-C12571CE.0057BEA6@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Fri, 18 Aug 2006 18:02:17 +0200
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A914867B7C
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 02:16:59 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7IGGtRV005510
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:16:55 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7IGGs6P290304
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:16:54 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7IGGsxu023420
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:16:54 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [2.6.19 PATCH 3/7] ehea: queue management
+Date: Fri, 18 Aug 2006 18:16:51 +0200
+References: <OFC184057C.C58732A2-ONC12571CE.004E5EF6-C12571CE.004ED1D4@de.ibm.com>
+In-Reply-To: <OFC184057C.C58732A2-ONC12571CE.004E5EF6-C12571CE.004ED1D4@de.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608181816.52079.arnd.bergmann@de.ibm.com>
 Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <RAISCH@de.ibm.com>,
 	Marcus Eder <meder@de.ibm.com>, tklein@linux.ibm.com,
-	Alexey Dobriyan <adobriyan@gmail.com>
+	abergman@de.ibm.com, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,28 +41,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 18 August 2006 16:24, Christoph Raisch wrote:
+> And as always in performance tuning... one size fits all unfortunately is
+> not the correct answer.
 
->
-> Hi,
->
-> > I asked SO to recount arguments and we've come to a conclusion that
-> > there're in fact 19 args not 18 as the name suggests. 19 args is
-> > I-N-S-A-N-E.
->
-> It will be partially cleaned up by:
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2006-July/024556.html
->
-> However it doesnt fix the fact someone has architected such a crazy
-> interface :(
->
-> Anton
+Ah, good. What is the maximum sensible value that you came up with?
 
+> Therefore we'll leave that open to the user as most other new ethernet
+> driver did as well.
 
-well, just as background info, this is the wrapper around
-a single assembly instruction which calls system firmware and takes
-9 CPU registers for input and 9 CPU registers for output parameters.
-This definition by platform architecture won't change in the near future,
-but the good news is with Antons change the wrapper will look much nicer.
+Sure. The interesting question is whether you want to allow users
+to set it to a value that is no longer sensible to do with
+__get_free_pages() and requires vmalloc().
 
-Gruss / Regards . . . Christoph R
+	Arnd <><
