@@ -1,18 +1,33 @@
-Return-Path: <mikey@ozlabs.org>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-From: Michael Neuling <mikey@neuling.org>
-Subject: Re: [2.6.19 PATCH 5/7] ehea: main header files 
-In-reply-to: <200608181334.57701.ossthema@de.ibm.com> 
-References: <200608181334.57701.ossthema@de.ibm.com>
-Date: Fri, 18 Aug 2006 13:03:41 -0500
-Sender: mikey@ozlabs.org
-Message-Id: <20060818180345.9660E67B64@ozlabs.org>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
-Reply-To: Michael Neuling <mikey@neuling.org>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 11DD067B58
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 04:11:53 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7IIBjwM029668
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 14:11:45 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7IIBo3Q240684
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 14:11:50 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7IIBn0P029578
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 14:11:50 -0400
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <36A1A5C6-5269-4BDA-9F3E-A632B3A627DB@kernel.crashing.org>
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+	<36A1A5C6-5269-4BDA-9F3E-A632B3A627DB@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 18 Aug 2006 13:11:26 -0500
+Message-Id: <1155924687.9659.25.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +37,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +static inline void ehea_update_sqa(struct ehea_qp *qp, u16 nr_wqes)
-> +{
-> +	struct h_epa epa = qp->epas.kernel;
-> +	epa_store_acc(epa, QPTEMM_OFFSET(qpx_sqa),
-> +		      EHEA_BMASK_SET(QPX_SQA_VALUE, nr_wqes));
-> +}
-> +
-> +static inline void ehea_update_rq3a(struct ehea_qp *qp, u16 nr_wqes)
-> +{
-> +	struct h_epa epa = qp->epas.kernel;
-> +	epa_store_acc(epa, QPTEMM_OFFSET(qpx_rq3a),
-> +		      EHEA_BMASK_SET(QPX_RQ1A_VALUE, nr_wqes));
-> +}
-> +
-> +static inline void ehea_update_rq2a(struct ehea_qp *qp, u16 nr_wqes)
-> +{
-> +	struct h_epa epa = qp->epas.kernel;
-> +	epa_store_acc(epa, QPTEMM_OFFSET(qpx_rq2a),
-> +		      EHEA_BMASK_SET(QPX_RQ1A_VALUE, nr_wqes));
-> +}
-> +
-> +static inline void ehea_update_rq1a(struct ehea_qp *qp, u16 nr_wqes)
-> +{
-> +	struct h_epa epa = qp->epas.kernel;
-> +	epa_store_acc(epa, QPTEMM_OFFSET(qpx_rq1a),
-> +		      EHEA_BMASK_SET(QPX_RQ1A_VALUE, nr_wqes));
-> +}
-> +
-> +static inline void ehea_update_feca(struct ehea_cq *cq, u32 nr_cqes)
-> +{
-> +	struct h_epa epa = cq->epas.kernel;
-> +	epa_store_acc(epa, CQTEMM_OFFSET(cqx_feca),
-> +		      EHEA_BMASK_SET(CQX_FECADDER, nr_cqes));
-> +}
-> +
-> +static inline void ehea_reset_cq_n1(struct ehea_cq *cq)
-> +{
-> +	struct h_epa epa = cq->epas.kernel;
-> +	epa_store_cq(epa, cqx_n1,
-> +		     EHEA_BMASK_SET(CQX_N1_GENERATE_COMP_EVENT, 1));
-> +}
-> +
-> +static inline void ehea_reset_cq_ep(struct ehea_cq *my_cq)
-> +{
-> +	struct h_epa epa = my_cq->epas.kernel;
-> +	epa_store_acc(epa, CQTEMM_OFFSET(cqx_ep),
-> +		      EHEA_BMASK_SET(CQX_EP_EVENT_PENDING, 0));
-> +}
 
-These are almost identical... I'm sure most (if not all) could be merged
-into a single function or #define.
+In an attempt to make it easier for a power5 optimized app to run on a 
+power4 or a 970 or random earlier machine, this provides emulation of
+the popcntb instruction.    Rewritten to use a slicker algorithm as
+suggested by Segher.   I left a 'tmp' variable in play, as it seemed
+cleaner to use tmp than referring to regs->gpr[rs] and [ra] multiple
+times within the magic algorithm.  
 
-Mikey
+Also tested on power4 with both 32 and 64 userspace this time.
+*blush*.  :-) 
+
+
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+
+---
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 2105767..a0e80dd 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -588,6 +588,8 @@ #define INST_LSWX		0x7c00042a
+ #define INST_STSWI		0x7c0005aa
+ #define INST_STSWX		0x7c00052a
+ 
++#define INST_POPCNTB		0x7c0000f4
++
+ static int emulate_string_inst(struct pt_regs *regs, u32 instword)
+ {
+ 	u8 rT = (instword >> 21) & 0x1f;
+@@ -656,6 +658,23 @@ static int emulate_string_inst(struct pt
+ 	return 0;
+ }
+ 
++static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
++{
++	u32 ra,rs;
++	unsigned long tmp;
++
++	ra = (instword >> 16) & 0x1f;
++	rs = (instword >> 21) & 0x1f;
++
++	tmp = regs->gpr[rs];
++	tmp = tmp - ((tmp >> 1) & 0x5555555555555555);
++	tmp = (tmp & 0x3333333333333333) + ((tmp >> 2) & 0x3333333333333333);
++	tmp = (tmp + (tmp >> 4)) & 0x0f0f0f0f0f0f0f0f;
++	regs->gpr[ra] = tmp;
++
++	return 0;
++}
++
+ static int emulate_instruction(struct pt_regs *regs)
+ {
+ 	u32 instword;
+@@ -693,6 +712,11 @@ static int emulate_instruction(struct pt
+ 	if ((instword & INST_STRING_GEN_MASK) == INST_STRING)
+ 		return emulate_string_inst(regs, instword);
+ 
++	/* Emulate the popcntb (Population Count Bytes) instruction. */
++	if ((instword & INST_POPCNTB) == INST_POPCNTB) {
++		return emulate_popcntb_inst(regs, instword);
++	}
++
+ 	return -EINVAL;
+ }
+ 
