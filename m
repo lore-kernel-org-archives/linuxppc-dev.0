@@ -1,17 +1,11 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 9277167B57
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 04:36:33 +1000 (EST)
-Message-ID: <44E608F3.4060505@ru.mvista.com>
-Date: Fri, 18 Aug 2006 22:37:39 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 19 Aug 2006 04:48:22 +1000
+From: Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: [PATCH] PURR should use correct cpu feature bit
+Message-ID: <20060818184821.GC27947@krispykreme>
 MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] Fix IRQ handling on MPC8540 ADS
-References: <Pine.LNX.4.61.0608172019390.420@ld0175-tx32.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.61.0608172019390.420@ld0175-tx32.am.freescale.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +15,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Andy Fleming wrote:
-> * Fixed IRQ handling for the 85xx ADS boards so it uses the new
->   generic irq stuff
-> * Fixed PCI IRQ mapping so it comes from the device tree
+Now we have a PURR cpu feature bit, we should use it in sysfs code.
 
-    NAK. The kernel doesn't build with this patch. I'm getting this:
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-   CC      arch/powerpc/platforms/85xx/mpc85xx_ads.o
-arch/powerpc/platforms/85xx/mpc85xx_ads.c: In function `mpc85xx_ads_pic_init':
-arch/powerpc/platforms/85xx/mpc85xx_ads.c:76: warning: implicit declaration of
-function `of_put_node'
-
-   and then finally:
-
-   LD      .tmp_vmlinux1
-arch/powerpc/platforms/built-in.o(.init.text+0x26c): In function 
-`mpc85xx_ads_pic_init':
-arch/powerpc/platforms/85xx/mpc85xx_ads.c:84: undefined reference to `of_put_node'
-arch/powerpc/platforms/built-in.o(.init.text+0x404):arch/powerpc/platforms/85xx/mpc85xx_ads.c:76: 
-undefined reference to `of_put_node'
-make: *** [.tmp_vmlinux1] Error 1
-
-    There's no such function in the kernel -- it actually aclled 
-of_node_put(). I can post an updated patch after testing (if it succeeds) if 
-you like...
-
-> This patch *really* needs to go in before 2.6.18 is final, else 2.6.18 
-> doesn't build for 85xx.
-
-    Looks like it's a bit crude yet to be committed...
-
-> Thanks,
-> Andy
-
-WBR, Sergei
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index fec228c..a8172de 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -231,7 +231,7 @@ #endif
+ 	if (cur_cpu_spec->num_pmcs >= 8)
+ 		sysdev_create_file(s, &attr_pmc8);
+ 
+-	if (cpu_has_feature(CPU_FTR_SMT))
++	if (cpu_has_feature(CPU_FTR_PURR))
+ 		sysdev_create_file(s, &attr_purr);
+ }
+ 
+@@ -273,7 +273,7 @@ #endif
+ 	if (cur_cpu_spec->num_pmcs >= 8)
+ 		sysdev_remove_file(s, &attr_pmc8);
+ 
+-	if (cpu_has_feature(CPU_FTR_SMT))
++	if (cpu_has_feature(CPU_FTR_PURR))
+ 		sysdev_remove_file(s, &attr_purr);
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
