@@ -1,37 +1,20 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A914867B7C
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 02:16:59 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7IGGtRV005510
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:16:55 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7IGGs6P290304
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:16:54 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7IGGsxu023420
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 12:16:54 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [2.6.19 PATCH 3/7] ehea: queue management
-Date: Fri, 18 Aug 2006 18:16:51 +0200
-References: <OFC184057C.C58732A2-ONC12571CE.004E5EF6-C12571CE.004ED1D4@de.ibm.com>
-In-Reply-To: <OFC184057C.C58732A2-ONC12571CE.004E5EF6-C12571CE.004ED1D4@de.ibm.com>
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A503167B7E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 02:21:56 +1000 (EST)
+Date: Fri, 18 Aug 2006 09:20:47 -0700
+From: Greg KH <gregkh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+Message-ID: <20060818162047.GA14980@suse.de>
+References: <17637.8568.40692.21510@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608181816.52079.arnd.bergmann@de.ibm.com>
-Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, tklein@linux.ibm.com,
-	abergman@de.ibm.com, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17637.8568.40692.21510@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,17 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 August 2006 16:24, Christoph Raisch wrote:
-> And as always in performance tuning... one size fits all unfortunately is
-> not the correct answer.
+On Fri, Aug 18, 2006 at 12:10:00PM +1000, Paul Mackerras wrote:
+> Greg,
+> 
+> Please do:
+> 
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> 
+> to get the following PowerPC updates for 2.6.18.
 
-Ah, good. What is the maximum sensible value that you came up with?
+Pulled from, and pushed out.
 
-> Therefore we'll leave that open to the user as most other new ethernet
-> driver did as well.
+thanks,
 
-Sure. The interesting question is whether you want to allow users
-to set it to a value that is no longer sensible to do with
-__get_free_pages() and requires vmalloc().
-
-	Arnd <><
+greg k-h
