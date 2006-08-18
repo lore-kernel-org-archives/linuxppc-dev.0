@@ -1,20 +1,14 @@
-Return-Path: <Marc.Dietrich@ap.physik.uni-giessen.de>
-Received: from merkurneu.hrz.uni-giessen.de (merkurneu.hrz.uni-giessen.de
-	[134.176.2.3]) by ozlabs.org (Postfix) with ESMTP id 45E5667B63
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 03:48:57 +1000 (EST)
-Date: Thu, 17 Aug 2006 19:16:42 +0200
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Who cares about PReP?
-Message-Id: <20060817191642.a9cb43bc.marc.dietrich@ap.physik.uni-giessen.de>
-In-Reply-To: <17634.65529.252720.646039@cargo.ozlabs.ibm.com>
-References: <17622.58559.879330.496619@cargo.ozlabs.ibm.com>
-	<20060816101527.GA21865@iram.es>
-	<17634.65529.252720.646039@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="Multipart=_Thu__17_Aug_2006_19_16_42_+0200_FjEPg2R0.iIajo44"
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D471E67B56
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Aug 2006 11:22:34 +1000 (EST)
+Date: Thu, 17 Aug 2006 20:22:28 -0500 (CDT)
+From: Andy Fleming <afleming@freescale.com>
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix IRQ handling on MPC8540 ADS
+Message-ID: <Pine.LNX.4.61.0608172019390.420@ld0175-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,109 +18,222 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+* Fixed IRQ handling for the 85xx ADS boards so it uses the new
+  generic irq stuff
+* Fixed PCI IRQ mapping so it comes from the device tree
 
---Multipart=_Thu__17_Aug_2006_19_16_42_+0200_FjEPg2R0.iIajo44
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+---
 
-On Wed, 16 Aug 2006 21:22:33 +1000
-Paul Mackerras <paulus@samba.org> wrote:
-> If you (and anyone else who is interested) could send me the contents
-> of /proc/residual, /proc/iomem, /proc/ioports and /proc/interrupts
-> from your systems (one of each different type) that could be helpful.
+This patch *really* needs to go in before 2.6.18 is final, else 2.6.18 
+doesn't build for 85xx.
 
-ok
+Thanks,
+Andy
 
-# cat /proc/cpuinfo
-processor       : 0
-cpu             : 604
-clock           : 133MHz
-revision        : 3.4 (pvr 0004 0304)
-bogomips        : 266.24
-machine         : PReP IBM 7248, PowerSeries 830/850 (Carolina)
-upgrade cpu     : not present
-scsi fuse       : ok
-simms           : 0:32MiB 1:32MiB 2:8MiB 3:8MiB 
-l2 cache        : 512KiB, sync
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c |  162 ++++++++++-------------------
+ 1 files changed, 55 insertions(+), 107 deletions(-)
 
-# cat /proc/iomem
-c0000000-feffffff : PCI host bridge
-  c0000000-c07fffff : 0000:00:0e.0
-  c0800000-c080001f : 0000:00:0c.0
-  c0800100-c08001ff : 0000:00:10.0
-    c0800100-c08001ff : sym53c8xx
-  c0804000-c0807fff : 0000:00:12.0
-    c0804000-c0807fff : matroxfb MMIO
-  c1000000-c17fffff : 0000:00:12.0
-    c1000000-c17fffff : matroxfb FB
-  c1800000-c1ffffff : 0000:00:12.0
-
-# cat /proc/ioports
-  00000000-0000001f : dma1
-  00000020-00000021 : 8259 (master)
-  00000040-0000005f : timer
-  00000060-0000006f : i8042
-  00000074-0000007b : nvram
-  00000080-0000008f : dma page reg
-  000000a0-000000a1 : 8259 (slave)
-  000000c0-000000df : dma2
-  000002f8-000002ff : serial
-  000003c0-000003df : vga+
-  000003f8-000003ff : serial
-  000004d0-000004d1 : 8259 edge control
-  00001000-00001007 : 0000:00:0b.0
-  00001020-0000103f : 0000:00:0c.0
-    00001020-0000103f : pcnet32_probe_pci
-  00001400-000014ff : 0000:00:10.0
-    00001400-000014ff : sym53c8xx
-
-# cat /proc/interrupts
-           CPU0       
-  1:       2645   i8259     Edge      i8042
-  2:          0   i8259     Edge      82c59 secondary cascade
- 12:      23379   i8259     Edge      i8042
- 15:       6379   i8259     Level     sym53c8xx, eth0
-BAD:          0
-
-residual is attached
-
-thanks !
-	
-marvin
-
---Multipart=_Thu__17_Aug_2006_19_16_42_+0200_FjEPg2R0.iIajo44
-Content-Type: application/octet-stream;
- name="7248_residual.gz"
-Content-Disposition: attachment;
- filename="7248_residual.gz"
-Content-Transfer-Encoding: base64
-
-H4sIAA+i5EQCA+2aTWhcVRTHz3n3zrybSdqZRWttjfpMuohTF6Ek7fg9KchgIZhaCvUL0phqFMEs
-apz4gS86SHFhpWiVLmpw4UJBaxEREVss3alkIcVlqYLBjcFFrRAYz/14H/OaN0JFEHp+w5n78j/n
-nnfevXfuzeIBPN0HCHD/rvFgYmJvMP7s9MFngp3bR2rB0H23Qgz5tTg6un3H2K7RIICronwOoKIv
-ivqeWfw/FvaJv+ofu9hF+gpcfJCydE/tlE5PXZsQ/eWRhZlWexCkkHANU3BGrHfjFjWebXHVjmmB
-2t3CjusETdJJHVcHpUP1lwxBKXdNGRV1EctmiqH3stPJ+qgRK/a67FqdvqxjfJu+3AY7T1pvh27O
-lLkH4MvAMP8NMrW/RIv5WmOT/r1tHYdSmwAYivaHeHt244IU40cxSnqRv4esSrbNxfTGMSresm8j
-u5PsLh0zttQLcYyIY+4mewDMZmPyqDgmKWgP2RTZ4zYPJHmS42Ga7ATZ+zbGS2IwjtFnzEWyn929
-CnFMMb7XL+SiscHr9fiMLZVEFFOUUR7cTNsm1eQ9qNcSxcT3KuqQ/WZb3UsbIMWJLe5em2zMTF3G
-9YgbyEbJdtiafZdnqo5eNM5iJ9kc2fM2RqKNueWsj3FMk+xtKuUpXQ/dq2z1wRDdDkvyIbIXyV6y
-eYruzKzWMa5H0p4r3yE7lorxMjHvkn1KdtLGFNDmoXqiYwXkZ2Tf0/nwayrG64wp0KFRpD/8m2wM
-JvPlRffybya7newOGyOiuTjekyxTWl8+rR9/wsaUo5ijPfFS9Wmu/INkT9j56nHdD5wzy3DWxDwJ
-UKKZKz3kxvA6N4ZnTZpJ/VV6mOwRskd5C2UYhmEYhmEYhmEYhmEYhmEYhmEYhmEY5v/Ac7h1XITN
-ZrOBG9QGhdjAftVPbWsdePp1DYSAPp4wIYpA1H1WjpAwABQ+C7OAntbgiAk6BIdIaOAczAGiDpPQ
-QJ1Fq4uwaNoluSRtN1xobYQeEQCstNundVHRqx8mnREqDQwhBAwaeAbOmLYkS1InqsiKxOEGLsgF
-ib0NPC/PS8RqRdrclGMQAtXAqqoqHV9TNfOYk2rStFNqyj0TvtYqgNqzxdxY10RFw+U+W4vqGLDI
-u/J7+950xbHezuiPgaBMob5eda1hv33lxbyuMolQdn/BbOo6TK7xpL62H++t5LpVhOK+xVX0WjdC
-wb2ncyYz1aYg6zdvs4Sdbltqyr/Q4YDwnsQv0h3DdEsjl8wp9gK852Kj93BoQhUoDGlCVWhaqEBF
-TwzNYwVlA+e9eU9PzHxpvqTbw+KwQKmfcOPQK9DWFcDaT4hRhdDtCQehZF9X8kCApOAi+FRTD5Sg
-F/pgHaynAdXLNqBiRwojBSw2sO7VPVxXxZmqN6N9dYgecMU9YDG9BEj/U3QMH1TlTMsVrhOEceDX
-LjAa1GZ128xwF3+s+516uk9TdK7aWL+iT/Dv+ng5fYqdfWrN/q3j/dA/tgSy2RLgox//MFfog9Re
-EpcE/XDrL8SeWfpoz5yY055QewYq8U0uZwpuDndxDg+oxOdlfUm/oItvuYuvJrr061LLlTkTX62L
-70IX31DGV6Nhy396HrYuw4a0B9ShDnpjOgAHwJ4UFXP6eeSbhEnQm9Q0TLvDDiprqIMQquhsiN5s
-zJ4Zn2d2ykj/0ukyo592el9G/06snf+HnPw/5ug/Ob2Q0Zd3ZfL/0/8Yu9euZ/nVHP31HP2NHP3N
-HP1ojn4sRz+eo5/I0T/I0T/M0T/K0T/J0U/l6F/k6F/l6N/k6BfX1n9bQ/cCc566JRJYfTNIJO0C
-aj38Nu1rGvjfa4ZhGIZhGIZhGIZhGIZhGIZhGIZhGIZhGIZhGIZhGIZhGIZhGIZhmKvmb3CmTncM
-agAA
-
---Multipart=_Thu__17_Aug_2006_19_16_42_+0200_FjEPg2R0.iIajo44--
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index d0cfcdb..6223409 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -37,79 +37,7 @@ unsigned long isa_io_base = 0;
+ unsigned long isa_mem_base = 0;
+ #endif
+ 
+-/*
+- * Internal interrupts are all Level Sensitive, and Positive Polarity
+- *
+- * Note:  Likely, this table and the following function should be
+- *        obtained and derived from the OF Device Tree.
+- */
+-static u_char mpc85xx_ads_openpic_initsenses[] __initdata = {
+-	MPC85XX_INTERNAL_IRQ_SENSES,
+-	0x0,			/* External  0: */
+-#if defined(CONFIG_PCI)
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 1: PCI slot 0 */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 2: PCI slot 1 */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 3: PCI slot 2 */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 4: PCI slot 3 */
+-#else
+-	0x0,			/* External  1: */
+-	0x0,			/* External  2: */
+-	0x0,			/* External  3: */
+-	0x0,			/* External  4: */
+-#endif
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 5: PHY */
+-	0x0,			/* External  6: */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 7: PHY */
+-	0x0,			/* External  8: */
+-	0x0,			/* External  9: */
+-	0x0,			/* External 10: */
+-	0x0,			/* External 11: */
+-};
+-
+ #ifdef CONFIG_PCI
+-/*
+- * interrupt routing
+- */
+-
+-int
+-mpc85xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+-{
+-	static char pci_irq_table[][4] =
+-	    /*
+-	     * This is little evil, but works around the fact
+-	     * that revA boards have IDSEL starting at 18
+-	     * and others boards (older) start at 12
+-	     *
+-	     *      PCI IDSEL/INTPIN->INTLINE
+-	     *       A      B      C      D
+-	     */
+-	{
+-		{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 2 */
+-		{PIRQD, PIRQA, PIRQB, PIRQC},
+-		{PIRQC, PIRQD, PIRQA, PIRQB},
+-		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 5 */
+-		{0, 0, 0, 0},	/* -- */
+-		{0, 0, 0, 0},	/* -- */
+-		{0, 0, 0, 0},	/* -- */
+-		{0, 0, 0, 0},	/* -- */
+-		{0, 0, 0, 0},	/* -- */
+-		{0, 0, 0, 0},	/* -- */
+-		{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 12 */
+-		{PIRQD, PIRQA, PIRQB, PIRQC},
+-		{PIRQC, PIRQD, PIRQA, PIRQB},
+-		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 15 */
+-		{0, 0, 0, 0},	/* -- */
+-		{0, 0, 0, 0},	/* -- */
+-		{PIRQA, PIRQB, PIRQC, PIRQD},	/* IDSEL 18 */
+-		{PIRQD, PIRQA, PIRQB, PIRQC},
+-		{PIRQC, PIRQD, PIRQA, PIRQB},
+-		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 21 */
+-	};
+-
+-	const long min_idsel = 2, max_idsel = 21, irqs_per_slot = 4;
+-	return PCI_IRQ_TABLE_LOOKUP;
+-}
+-
+ int
+ mpc85xx_exclude_device(u_char bus, u_char devfn)
+ {
+@@ -119,44 +47,63 @@ mpc85xx_exclude_device(u_char bus, u_cha
+ 		return PCIBIOS_SUCCESSFUL;
+ }
+ 
++void __init
++mpc85xx_pcibios_fixup(void)
++{
++	struct pci_dev *dev = NULL;
++
++	for_each_pci_dev(dev)
++		pci_read_irq_line(dev);
++}
+ #endif /* CONFIG_PCI */
+ 
+ 
+ void __init mpc85xx_ads_pic_init(void)
+ {
+-	struct mpic *mpic1;
+-	phys_addr_t OpenPIC_PAddr;
+-
+-	/* Determine the Physical Address of the OpenPIC regs */
+-	OpenPIC_PAddr = get_immrbase() + MPC85xx_OPENPIC_OFFSET;
+-
+-	mpic1 = mpic_alloc(OpenPIC_PAddr,
+-			   MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+-			   4, MPC85xx_OPENPIC_IRQ_OFFSET, 0, 250,
+-			   mpc85xx_ads_openpic_initsenses,
+-			   sizeof(mpc85xx_ads_openpic_initsenses),
+-			   " OpenPIC  ");
+-	BUG_ON(mpic1 == NULL);
+-	mpic_assign_isu(mpic1, 0, OpenPIC_PAddr + 0x10200);
+-	mpic_assign_isu(mpic1, 1, OpenPIC_PAddr + 0x10280);
+-	mpic_assign_isu(mpic1, 2, OpenPIC_PAddr + 0x10300);
+-	mpic_assign_isu(mpic1, 3, OpenPIC_PAddr + 0x10380);
+-	mpic_assign_isu(mpic1, 4, OpenPIC_PAddr + 0x10400);
+-	mpic_assign_isu(mpic1, 5, OpenPIC_PAddr + 0x10480);
+-	mpic_assign_isu(mpic1, 6, OpenPIC_PAddr + 0x10500);
+-	mpic_assign_isu(mpic1, 7, OpenPIC_PAddr + 0x10580);
+-
+-	/* dummy mappings to get to 48 */
+-	mpic_assign_isu(mpic1, 8, OpenPIC_PAddr + 0x10600);
+-	mpic_assign_isu(mpic1, 9, OpenPIC_PAddr + 0x10680);
+-	mpic_assign_isu(mpic1, 10, OpenPIC_PAddr + 0x10700);
+-	mpic_assign_isu(mpic1, 11, OpenPIC_PAddr + 0x10780);
+-
+-	/* External ints */
+-	mpic_assign_isu(mpic1, 12, OpenPIC_PAddr + 0x10000);
+-	mpic_assign_isu(mpic1, 13, OpenPIC_PAddr + 0x10080);
+-	mpic_assign_isu(mpic1, 14, OpenPIC_PAddr + 0x10100);
+-	mpic_init(mpic1);
++	struct mpic *mpic;
++	struct resource r;
++	struct device_node *np = NULL;
++
++	np = of_find_node_by_type(np, "open-pic");
++
++	if (np == NULL) {
++		printk(KERN_ERR "Could not find open-pic node\n");
++		return;
++	}
++
++	if(of_address_to_resource(np, 0, &r)) {
++		printk(KERN_ERR "Could not map mpic register space\n");
++		of_put_node(np);
++		return;
++	}
++
++	mpic = mpic_alloc(np, r.start,
++			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
++			4, 0, " OpenPIC  ");
++	BUG_ON(mpic == NULL);
++	of_put_node(np);
++
++	mpic_assign_isu(mpic, 0, r.start + 0x10200);
++	mpic_assign_isu(mpic, 1, r.start + 0x10280);
++	mpic_assign_isu(mpic, 2, r.start + 0x10300);
++	mpic_assign_isu(mpic, 3, r.start + 0x10380);
++	mpic_assign_isu(mpic, 4, r.start + 0x10400);
++	mpic_assign_isu(mpic, 5, r.start + 0x10480);
++	mpic_assign_isu(mpic, 6, r.start + 0x10500);
++	mpic_assign_isu(mpic, 7, r.start + 0x10580);
++
++	/* Unused on this platform (leave room for 8548) */
++	mpic_assign_isu(mpic, 8, r.start + 0x10600);
++	mpic_assign_isu(mpic, 9, r.start + 0x10680);
++	mpic_assign_isu(mpic, 10, r.start + 0x10700);
++	mpic_assign_isu(mpic, 11, r.start + 0x10780);
++
++	/* External Interrupts */
++	mpic_assign_isu(mpic, 12, r.start + 0x10000);
++	mpic_assign_isu(mpic, 13, r.start + 0x10080);
++	mpic_assign_isu(mpic, 14, r.start + 0x10100);
++
++	mpic_init(mpic);
+ }
+ 
+ /*
+@@ -165,7 +112,9 @@ void __init mpc85xx_ads_pic_init(void)
+ static void __init mpc85xx_ads_setup_arch(void)
+ {
+ 	struct device_node *cpu;
++#ifdef CONFIG_PCI
+ 	struct device_node *np;
++#endif
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_ads_setup_arch()", 0);
+@@ -186,8 +135,7 @@ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+ 		add_bridge(np);
+ 
+-	ppc_md.pci_swizzle = common_swizzle;
+-	ppc_md.pci_map_irq = mpc85xx_map_irq;
++	ppc_md.pcibios_fixup = mpc85xx_pcibios_fixup;
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ 
+-- 
+2006_06_07.01.gittree_pull-dirty
