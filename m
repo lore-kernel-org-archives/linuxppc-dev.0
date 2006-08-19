@@ -1,17 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 06DC167A5E
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 04:26:09 +1000 (EST)
-Message-ID: <44E75801.1030606@ru.mvista.com>
-Date: Sat, 19 Aug 2006 22:27:13 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6407F67B6A
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 04:56:46 +1000 (EST)
+From: segher@gate.crashing.org
+Message-ID: <50880.84.105.60.119.1156014547.squirrel@gate.crashing.org>
+Date: Sat, 19 Aug 2006 14:09:07 -0500 (CDT)
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+To: <galak@kernel.crashing.org>
+In-Reply-To: <FE1A4DBD-9AAB-434A-B487-06B68AC61CC0@kernel.crashing.org>
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+	<36A1A5C6-5269-4BDA-9F3E-A632B3A627DB@kernel.crashing.org>
+	<1155924687.9659.25.camel@farscape.rchland.ibm.com>
+	<FE1A4DBD-9AAB-434A-B487-06B68AC61CC0@kernel.crashing.org>
 MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] Add 85xx DTS files to powerpc
-References: <Pine.LNX.4.61.0608181803160.2878@ld0175-tx32.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.61.0608181803160.2878@ld0175-tx32.am.freescale.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+>> +static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
+>> +{
+>> +	u32 ra,rs;
+>> +	unsigned long tmp;
+>> +
+>> +	ra = (instword >> 16) & 0x1f;
+>> +	rs = (instword >> 21) & 0x1f;
+>> +
+>> +	tmp = regs->gpr[rs];
+>> +	tmp = tmp - ((tmp >> 1) & 0x5555555555555555);
+>> +	tmp = (tmp & 0x3333333333333333) + ((tmp >> 2) &
+>> 0x3333333333333333);
+>> +	tmp = (tmp + (tmp >> 4)) & 0x0f0f0f0f0f0f0f0f;
+>> +	regs->gpr[ra] = tmp;
+>> +
+>> +	return 0;
+>> +}
+>
+> This is going to give warnings on ppc32 kernel compiles, maybe
+> something like:
+>
+> (unsigned long) 0x5555555555555555ull
 
-Andy Fleming wrote:
-> Added the mpc85xx family of dts files to the powerpc tree
-> ---
->  arch/powerpc/boot/dts/mpc8540ads.dts |  257 ++++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8541cds.dts |  244 +++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8548cds.dts |  287 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8555cds.dts |  244 +++++++++++++++++++++++++++++
->  4 files changed, 1032 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
-> new file mode 100644
-> index 0000000..93d2c2d
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+Nah, just make "tmp" an u64.  And/or don't do this emulation on
+32-bit machines at all.
 
-[...]
+And if the compiler warns about the non-qualified constants --
+well, we should compile with -std=gnu99 anyway, eh?
 
-> +			ethernet-phy@2 {
-> +				linux,phandle = <2452002>;
-> +				interrupt-parent = <40000>;
-> +				interrupts = <37 1>;
-> +				reg = <2>;
-> +				device_type = "ethernet-phy";
-> +			};
 
-    Well, there's PHYs #2 and #3 on the board, #2 is probably not tied to
-anything though.
-
-> +		ethernet@26000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			device_type = "network";
-> +			model = "TSEC";
-> +			compatible = "gianfar";
-> +			reg = <26000 1000>;
-> +			address = [ 00 E0 0C 00 73 02 ];
-> +			local-mac-address = [ 00 E0 0C 00 73 02 ];
-> +			interrupts = <19 2>;
-> +			interrupt-parent = <40000>;
-> +			phy-handle = <2452002>;
-> +		};
-
-    Shouldn't it be "FEC" instead? The third controller is actually Fast
-Ethernet and fsl_soc.c differs TSEC and FEC WRT the interrupts (FEC has only
-one). So, this entry looks incorrect...
-
-> +		pic@40000 {
-> +			linux,phandle = <40000>;
-> +			clock-frequency = <0>;
-> +			interrupt-controller;
-> +			#address-cells = <0>;
-> +			#interrupt-cells = <2>;
-> +			reg = <40000 40000>;
-> +			built-in;
-> +			compatible = "chrp,open-pic";
-> +			device_type = "open-pic";
-> +                        big-endian;
-
-    Spaces instead of tabs in this line...
-
-> +		};
-> +	};
-> +};
-
-WBR, Sergei
+Segher
