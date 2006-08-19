@@ -1,12 +1,11 @@
-Return-Path: <mgreer@mvista.com>
-Date: Fri, 18 Aug 2006 11:34:54 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: laurent.pinchart@tbox.biz
-Subject: Re: [RFC] MPC8260 SPI driver
-Message-ID: <20060818183454.GA21882@mag.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Return-Path: <paravpandit@yahoo.com>
+Message-ID: <20060819065247.10235.qmail@web36608.mail.mud.yahoo.com>
+Date: Fri, 18 Aug 2006 23:52:47 -0700 (PDT)
+From: Parav Pandit <paravpandit@yahoo.com>
+Subject: ioremap() twice on same memory mapped area?
+To: Linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2039895730-1155970367=:9676"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,13 +16,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Laurent,
+--0-2039895730-1155970367=:9676
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Should this driver also work on 8247/48/71/72?
-If so, renaming 8260 -> 82xx or similar would be nice.
+Hi,
+   
+  I have memory mapped device and two device drivers wants to use the same area for different external device.
+  To access the same space there is a global spin lock to avoid any race condition.
+   
+  Question is:
+  Can both the driver call the ioremap() on the same space and get the different virtual address? or ioremap() should fail?
+   
+  Regards,
+  Parav Pandit
+   
 
-Also, please put patches inline (not as attachments).
+ 		
+---------------------------------
+Get your email and more, right on the  new Yahoo.com 
+--0-2039895730-1155970367=:9676
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Thanks,
+<div>Hi,</div>  <div>&nbsp;</div>  <div>I have memory mapped device and two device drivers wants to use the same area for different external device.</div>  <div>To access the same space there is a global spin lock to avoid any race condition.</div>  <div>&nbsp;</div>  <div>Question is:</div>  <div>Can both the driver call the ioremap() on the same space and get the different virtual address? or ioremap() should fail?</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Parav Pandit</div>  <div>&nbsp;</div><p>&#32;
+		<hr size=1>Get your email and more, right on the <a href="http://us.rd.yahoo.com/evt=42973/*http://www.yahoo.com/preview"> new Yahoo.com</a> 
 
-Mark
+--0-2039895730-1155970367=:9676--
