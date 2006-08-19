@@ -1,25 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Andy Gay <andy@andynet.net>
-In-Reply-To: <1155970112.7302.434.camel@tahini.andynet.net>
-References: <200608181333.23031.ossthema@de.ibm.com>
-	<20060818140506.GC5201@martell.zuzino.mipt.ru>
-	<44E5DFA6.7040707@de.ibm.com>
-	<1155968305.1388.4.camel@localhost.localdomain>
-	<1155970112.7302.434.camel@tahini.andynet.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-km1jr+c+vrMYyrWp/uHS"
-Date: Sat, 19 Aug 2006 18:41:27 +1000
-Message-Id: <1155976887.1388.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 99C0C67B56
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 21:26:21 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Hemminger <shemminger@osdl.org>
+Subject: Re: [RFC] HOWTO use NAPI to reduce TX interrupts
+Date: Sat, 19 Aug 2006 13:25:18 +0200
+References: <20060818220700.GG26889@austin.ibm.com>
+	<200608190256.26373.arnd@arndb.de> <44E7BB7F.7030204@osdl.org>
+In-Reply-To: <44E7BB7F.7030204@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608191325.19557.arnd@arndb.de>
+Cc: akpm@osdl.org, netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
+	Jeff Garzik <jgarzik@pobox.com>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,66 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-km1jr+c+vrMYyrWp/uHS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Sat, 2006-08-19 at 02:48 -0400, Andy Gay wrote:
-> On Sat, 2006-08-19 at 16:18 +1000, Michael Ellerman wrote:
+On Sunday 20 August 2006 03:31, Stephen Hemminger wrote:
 >=20
-> >=20
-> > If you try to return an uninitialized value the compiler will warn you,
-> > you'll then look at the code and realise you missed a case, you might
-> > save yourself a bug.=20
+> The reason reclaim via poll() is efficient is because it avoid causing a=
+=20
+> softirq that is
+> necessary when skb_free_irq() is done. Instead it reuses the softirq=20
+> from the poll() routine.=20
+
+Ok, I completely missed this point so far, thanks for the info.
+
+> Like all Rx NAPI, using poll() for reclaim means:=20
+> =A0 =A0 + aggregating multiple frames in one irq
+> =A0 =A0 - increased overhead of twiddling with the IRQ mask
+> =A0 =A0 - more ways to get driver stuck
+
+What is the best way to treat the IRQ mask for TX interrupts?
+I guess it should be roughly:
+
+=2D off when we expect ->poll() to be called, i.e. after calling
+  netif_rx_schedule() or returning after a partial rx from poll().
+=2D off when there are no packets left in the TX queue
+=2D on while RX interrupts are on and we're waiting for packets
+  to be transmitted.
+
+> Some drivers do all their irq work in the poll() routine (including PHY=20
+> handling).
+> This is good if reading the IRQ status does an auto mask operation.
 >=20
-> You *should* look at the code :)
->=20
-> So should we be reporting these as bugs?
+> The whole NAPI documentation area is a mess and needs a good writer
+> to do some major restructuring. It should also be split into reference=20
+> information,
+> tutorial and guide sections.
 
-No you're better off sending patches ;)
+I won't be able to do that work, I'm neither a good writer nor a networking
+person.
 
-A lot of these have started appearing recently, which I think is due to
-GCC becoming more vocal. Unfortunately many of them are false positives
-caused by GCC not seeming to grok that this is ok:
+Do you think we should still merge a section like the text I wrote up, even
+if it makes the text even less well structured? Should I maybe add it
+somewhere else than the appendix?
 
-void foo(int *x) { *x =3D 1; }
-...
-int x;
-foo(&x);
-return x;
-
-It's a pity because it creates noise, but still it's beside the point.
-
-New code going into the kernel should be 100% warning free, and so if
-the eHEA guys had missed an error case they'd spot the warning before
-they submitted it.
-
-Doing the initialise-to-some-value "trick" means you only spot the bug
-via testing.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-km1jr+c+vrMYyrWp/uHS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBE5s63dSjSd0sB4dIRAs4JAKC8Wh4R1q7mYXxSHT8QL6amzEHJOgCgh/Rj
-Dp8bX8YxxoUmTyO2MgNtSbU=
-=AFky
------END PGP SIGNATURE-----
-
---=-km1jr+c+vrMYyrWp/uHS--
+	Arnd <><
