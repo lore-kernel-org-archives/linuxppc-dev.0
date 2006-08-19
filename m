@@ -1,26 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2487767A3D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 14:34:09 +1000 (EST)
-Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20060818234532.GA8644@austin.ibm.com>
-References: <20060818192356.GD26889@austin.ibm.com>
-	<20060818.142513.29571851.davem@davemloft.net>
-	<20060818224618.GN26889@austin.ibm.com>
-	<20060818.155116.112621100.davem@davemloft.net>
-	<20060818232942.GO26889@austin.ibm.com>
-	<20060818234532.GA8644@austin.ibm.com>
-Content-Type: text/plain
-Date: Sat, 19 Aug 2006 14:33:42 +1000
-Message-Id: <1155962022.5803.68.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [2.6.19 PATCH 7/7] ehea: Makefile & Kconfig
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+In-Reply-To: <200608181337.44153.ossthema@de.ibm.com>
+References: <200608181337.44153.ossthema@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-d/zVtJ0sXMaA9uYIOfCS"
+Date: Sat, 19 Aug 2006 15:25:57 +1000
+Message-Id: <1155965157.1388.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: arnd@arndb.de, netdev@vger.kernel.org, jklewis@us.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jens.Osterkamp@de.ibm.com, David Miller <davem@davemloft.net>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-08-18 at 18:45 -0500, Linas Vepstas wrote:
-> On Fri, Aug 18, 2006 at 06:29:42PM -0500, linas wrote:
-> > 
-> > I don't understand what you are saying. If I call the transmit 
-> > queue cleanup code from the poll() routine, nothing hapens, 
-> > because the kernel does not call the poll() routine often 
-> > enough. I've stated this several times.  
-> 
-> OK, Arnd gave me a clue stick. I need to call the (misnamed)
-> netif_rx_schedule() from the tx interrupt in order to get 
-> this to work. That makes sense, and its easy, I'll send the 
-> revised patch.. well, not tonight, but shortly.
 
-You might not want to call it all the time though... You need some
-interrupt mitigation and thus a timer that calls netif_rx_schedule()
-might be of some use still...
+--=-d/zVtJ0sXMaA9uYIOfCS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ben.
+On Fri, 2006-08-18 at 13:37 +0200, Jan-Bernd Themann wrote:
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>=20
+>=20
+>=20
+>  drivers/net/Kconfig  |    6 ++++++
+>  drivers/net/Makefile |    1 +
+>  2 files changed, 7 insertions(+)
+>=20
+>=20
+>=20
+> diff -Nurp -X dontdiff linux-2.6.18-rc4/drivers/net/Kconfig patched_kerne=
+l/drivers/net/Kconfig
+> --- linux-2.6.18-rc4/drivers/net/Kconfig	2006-08-06 11:20:11.000000000 -0=
+700
+> +++ patched_kernel/drivers/net/Kconfig	2006-08-08 03:00:49.526421944 -070=
+0
+> @@ -2277,6 +2277,12 @@ config CHELSIO_T1
+>            To compile this driver as a module, choose M here: the module
+>            will be called cxgb.
+> =20
+> +config EHEA
+> +        tristate "eHEA Ethernet support"
+> +        depends on IBMEBUS
+> +        ---help---
+> +          This driver supports the IBM pSeries ethernet adapter
+> +
+
+Please give it a more detailed description. I have a pSeries machine
+here with three NICs and none of them are eHEA.
+
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-d/zVtJ0sXMaA9uYIOfCS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBE5qDldSjSd0sB4dIRAjdxAKCPxNLMPLzPoSlWprLmOr8tzBMOwQCfR8zd
+bJUO/0D0cZJTpGHNTepB/08=
+=eqF6
+-----END PGP SIGNATURE-----
+
+--=-d/zVtJ0sXMaA9uYIOfCS--
