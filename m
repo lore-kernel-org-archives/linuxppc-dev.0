@@ -1,25 +1,28 @@
-Return-Path: <shemminger@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B85AD67B22
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 11:31:52 +1000 (EST)
-Message-ID: <44E7BB7F.7030204@osdl.org>
-Date: Sat, 19 Aug 2006 18:31:43 -0700
-From: Stephen Hemminger <shemminger@osdl.org>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC] HOWTO use NAPI to reduce TX interrupts
-References: <20060818220700.GG26889@austin.ibm.com>
-	<20060818222657.GL26889@austin.ibm.com>
-	<200608190103.05649.arnd@arndb.de>
-	<200608190256.26373.arnd@arndb.de>
-In-Reply-To: <200608190256.26373.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: akpm@osdl.org, netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
-	Jeff Garzik <jgarzik@pobox.com>, David Miller <davem@davemloft.net>
+Return-Path: <andy@andynet.net>
+Received: from vms046pub.verizon.net (vms046pub.verizon.net [206.46.252.46])
+	by ozlabs.org (Postfix) with ESMTP id 2E83967A3D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 17:48:43 +1000 (EST)
+Received: from andyhp.tranquilitynj.net ([70.21.171.40])
+	by vms046.mailsrvcs.net
+	(Sun Java System Messaging Server 6.2-4.02 (built Sep  9 2005))
+	with ESMTPA id <0J4800IPFG91B493@vms046.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Sat, 19 Aug 2006 01:48:38 -0500 (CDT)
+Date: Sat, 19 Aug 2006 02:48:32 -0400
+From: Andy Gay <andy@andynet.net>
+Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
+In-reply-to: <1155968305.1388.4.camel@localhost.localdomain>
+To: michael@ellerman.id.au
+Message-id: <1155970112.7302.434.camel@tahini.andynet.net>
+MIME-version: 1.0
+Content-type: text/plain
+References: <200608181333.23031.ossthema@de.ibm.com>
+	<20060818140506.GC5201@martell.zuzino.mipt.ru>	<44E5DFA6.7040707@de.ibm.com>
+	<1155968305.1388.4.camel@localhost.localdomain>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,28 +32,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Saturday 19 August 2006 01:03, Arnd Bergmann wrote:
->   
->> Someone should probably document that in 
->> Documentation/networking/NAPI_HOWTO.txt, I might end up doing that
->> once we get it right for spidernet
->>     
+On Sat, 2006-08-19 at 16:18 +1000, Michael Ellerman wrote:
 
-The reason reclaim via poll() is efficient is because it avoid causing a 
-softirq that is
-necessary when skb_free_irq() is done. Instead it reuses the softirq 
-from the poll()
-routine. Like all Rx NAPI, using poll() for reclaim means:
-    + aggregating multiple frames in one irq
-    - increased overhead of twiddling with the IRQ mask
-    - more ways to get driver stuck
-   
-Some drivers do all their irq work in the poll() routine (including PHY 
-handling).
-This is good if reading the IRQ status does an auto mask operation.
+> 
+> If you try to return an uninitialized value the compiler will warn you,
+> you'll then look at the code and realise you missed a case, you might
+> save yourself a bug. 
 
-The whole NAPI documentation area is a mess and needs a good writer
-to do some major restructuring. It should also be split into reference 
-information,
-tutorial and guide sections.
+You *should* look at the code :)
+
+So should we be reporting these as bugs?
+
+andy@cx02:~/linux/linux-2.6.17.6$ script make.script
+Script started, file is make.script
+andy@cx02:~/linux/linux-2.6.17.6$ make
+
+...
+
+Script done, file is make.script
+andy@cx02:~/linux/linux-2.6.17.6$ fgrep warning make.script
+arch/i386/kernel/cpu/transmeta.c:12: warning: 'cpu_freq' may be used uninitialized in this function
+fs/bio.c:169: warning: 'idx' may be used uninitialized in this function
+fs/eventpoll.c:500: warning: 'fd' may be used uninitialized in this function
+fs/isofs/namei.c:162: warning: 'offset' may be used uninitialized in this function
+fs/isofs/namei.c:162: warning: 'block' may be used uninitialized in this function
+fs/nfsd/nfsctl.c:292: warning: 'maxsize' may be used uninitialized in this function
+fs/udf/balloc.c:751: warning: 'goal_eloc.logicalBlockNum' may be used uninitialized in this function
+fs/udf/super.c:1358: warning: 'ino.partitionReferenceNum' may be used uninitialized in this function
+fs/xfs/xfs_alloc_btree.c:611: warning: 'nkey.ar_startblock' may be used uninitialized in this function
+fs/xfs/xfs_alloc_btree.c:611: warning: 'nkey.ar_blockcount' may be used uninitialized in this function
+fs/xfs/xfs_bmap.c:2498: warning: 'rtx' is used uninitialized in this function
+fs/xfs/xfs_bmap_btree.c:753: warning: 'nkey.br_startoff' may be used uninitialized in this function
+fs/xfs/xfs_da_btree.c:151: warning: 'action' may be used uninitialized in this function
+fs/xfs/xfs_dir.c:363: warning: 'totallen' may be used uninitialized in this function
+fs/xfs/xfs_dir.c:363: warning: 'count' may be used uninitialized in this function
+fs/xfs/xfs_ialloc_btree.c:545: warning: 'nkey.ir_startino' may be used uninitialized in this function
+fs/xfs/xfs_inode.c:1958: warning: 'last_dip' may be used uninitialized in this function
+fs/xfs/xfs_inode.c:1960: warning: 'last_offset' may be used uninitialized in this function
+fs/xfs/xfs_log.c:1749: warning: 'iclog' may be used uninitialized in this function
+fs/xfs/xfs_log_recover.c:523: warning: 'first_blk' may be used uninitialized in this function
+ipc/msg.c:338: warning: 'setbuf.qbytes' may be used uninitialized in this function
+ipc/msg.c:338: warning: 'setbuf.uid' may be used uninitialized in this function
+ipc/msg.c:338: warning: 'setbuf.gid' may be used uninitialized in this function
+ipc/msg.c:338: warning: 'setbuf.mode' may be used uninitialized in this function
+ipc/sem.c:810: warning: 'setbuf.uid' may be used uninitialized in this function
+ipc/sem.c:810: warning: 'setbuf.gid' may be used uninitialized in this function
+ipc/sem.c:810: warning: 'setbuf.mode' may be used uninitialized in this function
+drivers/md/dm-table.c:431: warning: 'dev' may be used uninitialized in this function
+drivers/md/dm-ioctl.c:1388: warning: 'param' may be used uninitialized in this function
+net/sched/sch_cbq.c:409: warning: 'ret' may be used uninitialized in this function
+lib/zlib_inflate/inftrees.c:121: warning: 'r.base' may be used uninitialized in this function
