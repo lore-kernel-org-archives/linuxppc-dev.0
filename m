@@ -1,24 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 3E85567B8C
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 23:47:26 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- michael@ellerman.id.au
-Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
-Date: Sat, 19 Aug 2006 15:47:11 +0200
-References: <200608181333.23031.ossthema@de.ibm.com>
-	<1155970112.7302.434.camel@tahini.andynet.net>
-	<1155976887.1388.17.camel@localhost.localdomain>
-In-Reply-To: <1155976887.1388.17.camel@localhost.localdomain>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 93F5E67B5C
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 00:41:02 +1000 (EST)
+Message-ID: <44E722E9.5090109@garzik.org>
+Date: Sat, 19 Aug 2006 10:40:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Message-Id: <200608191547.12161.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Andy Gay <andy@andynet.net>
+Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
+References: <200608181333.23031.ossthema@de.ibm.com>	<20060818140506.GC5201@martell.zuzino.mipt.ru>	<44E5DFA6.7040707@de.ibm.com>	<1155968305.1388.4.camel@localhost.localdomain>
+	<1155970112.7302.434.camel@tahini.andynet.net>
+In-Reply-To: <1155970112.7302.434.camel@tahini.andynet.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Andy Gay <andy@andynet.net>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
 	Alexey Dobriyan <adobriyan@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,31 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 19 August 2006 10:41, Michael Ellerman wrote:
-> A lot of these have started appearing recently, which I think is due to
-> GCC becoming more vocal. Unfortunately many of them are false positives
-> caused by GCC not seeming to grok that this is ok:
-> 
-> void foo(int *x) { *x = 1; }
-> ...
-> int x;
-> foo(&x);
-> return x;
-> 
+Andy Gay wrote:
+> fs/bio.c:169: warning: 'idx' may be used uninitialized in this function
+> fs/eventpoll.c:500: warning: 'fd' may be used uninitialized in this function
+> fs/isofs/namei.c:162: warning: 'offset' may be used uninitialized in this function
+> fs/isofs/namei.c:162: warning: 'block' may be used uninitialized in this function
+> fs/nfsd/nfsctl.c:292: warning: 'maxsize' may be used uninitialized in this function
+> fs/udf/balloc.c:751: warning: 'goal_eloc.logicalBlockNum' may be used uninitialized in this function
+> fs/udf/super.c:1358: warning: 'ino.partitionReferenceNum' may be used uninitialized in this function
+> fs/xfs/xfs_alloc_btree.c:611: warning: 'nkey.ar_startblock' may be used uninitialized in this function
+> fs/xfs/xfs_alloc_btree.c:611: warning: 'nkey.ar_blockcount' may be used uninitialized in this function
+> fs/xfs/xfs_bmap.c:2498: warning: 'rtx' is used uninitialized in this function
+> fs/xfs/xfs_bmap_btree.c:753: warning: 'nkey.br_startoff' may be used uninitialized in this function
+> fs/xfs/xfs_da_btree.c:151: warning: 'action' may be used uninitialized in this function
+> fs/xfs/xfs_dir.c:363: warning: 'totallen' may be used uninitialized in this function
+> fs/xfs/xfs_dir.c:363: warning: 'count' may be used uninitialized in this function
+> fs/xfs/xfs_ialloc_btree.c:545: warning: 'nkey.ir_startino' may be used uninitialized in this function
+> fs/xfs/xfs_inode.c:1958: warning: 'last_dip' may be used uninitialized in this function
+> fs/xfs/xfs_inode.c:1960: warning: 'last_offset' may be used uninitialized in this function
+> fs/xfs/xfs_log.c:1749: warning: 'iclog' may be used uninitialized in this function
+> fs/xfs/xfs_log_recover.c:523: warning: 'first_blk' may be used uninitialized in this function
+> ipc/msg.c:338: warning: 'setbuf.qbytes' may be used uninitialized in this function
+> ipc/msg.c:338: warning: 'setbuf.uid' may be used uninitialized in this function
+> ipc/msg.c:338: warning: 'setbuf.gid' may be used uninitialized in this function
+> ipc/msg.c:338: warning: 'setbuf.mode' may be used uninitialized in this function
+> ipc/sem.c:810: warning: 'setbuf.uid' may be used uninitialized in this function
+> ipc/sem.c:810: warning: 'setbuf.gid' may be used uninitialized in this function
+> ipc/sem.c:810: warning: 'setbuf.mode' may be used uninitialized in this function
+> drivers/md/dm-table.c:431: warning: 'dev' may be used uninitialized in this function
+> drivers/md/dm-ioctl.c:1388: warning: 'param' may be used uninitialized in this function
+> net/sched/sch_cbq.c:409: warning: 'ret' may be used uninitialized in this function
+> lib/zlib_inflate/inftrees.c:121: warning: 'r.base' may be used uninitialized in this function
 
-It's more subtle than this, gcc only gets it wrong when multiple
-things come together, the most common one seems to be:
 
-- it tries to inline foo()
-- foo has a path where it initializes *x and another one where it
-  doesn't
-- x is accessed after foo() returns, but only when foo indeed has
-  initialized it.
+These are gcc bugs.  We don't patch the kernel for gcc bugs.
 
-The problem is that gcc now is more aggressive about inlining
-functions. It used to assume that all functions initialize their
-pointer arguments, now it does some more checking, but not enough,
-so there are lots of false positives. Every gcc-4.x release seems
-to fix some of these cases, but a few others remain.
-
-	Arnd <><
+	Jeff
