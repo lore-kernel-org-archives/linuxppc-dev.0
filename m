@@ -1,11 +1,13 @@
-Return-Path: <paravpandit@yahoo.com>
-Message-ID: <20060819065247.10235.qmail@web36608.mail.mud.yahoo.com>
-Date: Fri, 18 Aug 2006 23:52:47 -0700 (PDT)
-From: Parav Pandit <paravpandit@yahoo.com>
-Subject: ioremap() twice on same memory mapped area?
+Return-Path: <sshebbar@gmail.com>
+From: Srinivasa Hebbar <sshebbar@gmail.com>
 To: Linuxppc-embedded@ozlabs.org
+Subject: e2fsck error on compact flash.
+Date: Sat, 19 Aug 2006 16:00:08 +0530
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2039895730-1155970367=:9676"
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200608191600.09050.sshebbar@gmail.com>
+Cc: sshebbar@yahoo.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,30 +18,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-2039895730-1155970367=:9676
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hello,
 
-Hi,
-   
-  I have memory mapped device and two device drivers wants to use the same area for different external device.
-  To access the same space there is a global spin lock to avoid any race condition.
-   
-  Question is:
-  Can both the driver call the ioremap() on the same space and get the different virtual address? or ioremap() should fail?
-   
-  Regards,
-  Parav Pandit
-   
+Problem: 
+e2fsck is unable to determine the size of the physical device on a compact flash.
+/dev/hda is a compact flash disk with 4 partitions. (3primary+1extended).
+ls -l /dev/hda* shows all the devices. 
 
- 		
----------------------------------
-Get your email and more, right on the  new Yahoo.com 
---0-2039895730-1155970367=:9676
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+If I mount any partition on /dev/hda* to /tmp/tmp
+(for eg: /dev/hda1 to /tmp/tmp) and run e2fsck
+on /dev/hda3 (or any other), e2fsck runs fine without problem.
 
-<div>Hi,</div>  <div>&nbsp;</div>  <div>I have memory mapped device and two device drivers wants to use the same area for different external device.</div>  <div>To access the same space there is a global spin lock to avoid any race condition.</div>  <div>&nbsp;</div>  <div>Question is:</div>  <div>Can both the driver call the ioremap() on the same space and get the different virtual address? or ioremap() should fail?</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Parav Pandit</div>  <div>&nbsp;</div><p>&#32;
-		<hr size=1>Get your email and more, right on the <a href="http://us.rd.yahoo.com/evt=42973/*http://www.yahoo.com/preview"> new Yahoo.com</a> 
+All 4 partitions on the CF disk are ext3.
 
---0-2039895730-1155970367=:9676--
+The output of the commands are below.
+
+Any help is appreciated.
+
+Thanks,
+Hebbar.
+
+
+# e2fsck -v /dev/hda3
+e2fsck 1.38 (30-Jun-2005)
+Error determining size of the physical device: No such file or directory
+
+# ls -l /dev/hda*
+brw-rw----    1 0        0          3,   5 /dev/hda5
+brw-rw----    1 0        0          3,   4 /dev/hda4
+brw-rw----    1 0        0          3,   3 /dev/hda3
+brw-rw----    1 0        0          3,   2 /dev/hda2
+brw-rw----    1 0        0          3,   1 /dev/hda1
+brw-rw----    1 0        0          3,   0 /dev/hda
+
+#mount -t ext3 /dev/hda1 /tmp/tmp
+
+# e2fsck -v /dev/hda3
+e2fsck 1.38 (30-Jun-2005)
+/dev/hda3 has been mounted 21 times without being checked, check forced.
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
