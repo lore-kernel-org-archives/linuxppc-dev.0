@@ -1,20 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id B4E6A67B86
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 06:19:14 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
-Date: Sat, 19 Aug 2006 22:19:02 +0200
-References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
-	<200608182105.45264.arnd@arndb.de>
-	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
-In-Reply-To: <50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
+Return-Path: <mlan@cpu.lu>
+Received: from smtp-out.coditel.net (smtp-out.coditel.net [212.95.66.33])
+	by ozlabs.org (Postfix) with ESMTP id C1BA467B8F
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 06:40:25 +1000 (EST)
+Date: Sat, 19 Aug 2006 22:10:46 +0200 (CEST)
+From: Mich Lanners <mlan@cpu.lu>
+Subject: Re: HDLC drivers on 8260
+To: alexfestss@hotmail.com
+In-Reply-To: <BAY106-F227AE7DF98822643447FA7DB430@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608192219.03178.arnd@arndb.de>
-Cc: paulus@samba.org, segher@gate.crashing.org
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E1GEX9g-0005UG-SN@owl.grunz.lu>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gU2F0dXJkYXkgMTkgQXVndXN0IDIwMDYgMjE6MTAsIHNlZ2hlckBnYXRlLmNyYXNoaW5nLm9y
-ZyB3cm90ZToKPiA+IElzIHRoYXQgdGhlIHJpZ2h0IGNoZWNrPyBUaGUgb3RoZXIgc2ltaWxhciB0
-cmFwcyBjaGVjayBhZ2FpbnN0IGEKPiA+IG1hc2sgb2YgMHg3YzAwMDdmZS4KPiAKPiBJIGhvcGUg
-eW91IG1lYW4gMHhmYzAwMDdmZT8KPiAKCk5vLCB0aGUgY29kZSBpbiBxdWVzdGlvbiBpcyAKCiNk
-ZWZpbmUgSU5TVF9NRlNQUl9QVlKtt623t7e3t7e3MHg3YzFmNDJhNgojZGVmaW5lIElOU1RfTUZT
-UFJfUFZSX01BU0utt7e3tzB4ZmMxZmZmZmYKCiNkZWZpbmUgSU5TVF9EQ0JBrbe3t7e3t623t7e3
-t7e3MHg3YzAwMDVlYwojZGVmaW5lIElOU1RfRENCQV9NQVNLrbett7e3t7e3tzB4N2MwMDA3ZmUK
-CiNkZWZpbmUgSU5TVF9NQ1JYUq23t7e3t623t7e3t7e3MHg3YzAwMDQwMAojZGVmaW5lIElOU1Rf
-TUNSWFJfTUFTS62tt7e3t7e3tzB4N2MwMDA3ZmUKCiNkZWZpbmUgSU5TVF9TVFJJTkett7e3t623
-t7e3t7e3MHg3YzAwMDQyYQojZGVmaW5lIElOU1RfU1RSSU5HX01BU0utt7e3t7e3tzB4N2MwMDA3
-ZmUKI2RlZmluZSBJTlNUX1NUUklOR19HRU5fTUFTS623t7cweDdjMDAwNjdlCiNkZWZpbmUgSU5T
-VF9MU1dJrbe3t7e3t623t7e3t7e3MHg3YzAwMDRhYQojZGVmaW5lIElOU1RfTFNXWK23t7e3t7et
-t7e3t7e3tzB4N2MwMDA0MmEKI2RlZmluZSBJTlNUX1NUU1dJrbe3t7e3rbe3t7e3t7cweDdjMDAw
-NWFhCiNkZWZpbmUgSU5TVF9TVFNXWK23t7e3t623t7e3t7e3MHg3YzAwMDUyYQoKV2hhdCBkb2Vz
-IHRoZSBNU0IgZG8gaW4gb3VyIGluc3RydWN0aW9ucz8KCglBcm5kIDw+PAo=
+Hi,
+
+On  19 Aug, this message from Alejandro C echoed through cyberspace:
+> I've just started developing a driver to use the four SCCs (CPM of the 
+> Motorola
+> MPC8260) in the HDLC mode. I've found references to a HDLC driver
+> somewhere on the internet, but I haven't been able to locate the
+> source code. Does anyone know where to find this or something else I
+> can use as an example/starting point?
+
+I don't know a thing about the SCCs in the MPC8260, but you may want to
+have a look at the Cyclades PC300 driver in the kernel. It does HDLC
+(but I don't remember whether it's the PC300 driver or a generic HDLC
+driver in the kernel). What HDLC do you wnat to implement? There is no
+generic HDLC per se, but different framings using a HDLC-like framing.
+Examples would be Cisco's IP over HDLC, or PPP.
+
+For Cisco's HDLC, I added IP address autoconfiguration to the PC300
+(submitted to the maintainer, but never found it's way into the official
+kernels).
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
