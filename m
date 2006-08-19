@@ -1,22 +1,20 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F6CB67B84
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 04:57:59 +1000 (EST)
-From: segher@gate.crashing.org
-Message-ID: <50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
-Date: Sat, 19 Aug 2006 14:10:14 -0500 (CDT)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id B4E6A67B86
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 06:19:14 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
-To: <arnd@arndb.de>
-In-Reply-To: <200608182105.45264.arnd@arndb.de>
+Date: Sat, 19 Aug 2006 22:19:02 +0200
 References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
-	<36A1A5C6-5269-4BDA-9F3E-A632B3A627DB@kernel.crashing.org>
-	<1155924687.9659.25.camel@farscape.rchland.ibm.com>
 	<200608182105.45264.arnd@arndb.de>
+	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
+In-Reply-To: <50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608192219.03178.arnd@arndb.de>
+Cc: paulus@samba.org, segher@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +#define INST_POPCNTB           0x7c0000f4
->> +
->
->> +       /* Emulate the popcntb (Population Count Bytes) instruction.
->> */ +       if ((instword & INST_POPCNTB) == INST_POPCNTB) {
->> +               return emulate_popcntb_inst(regs, instword);
->> +       }
->> +
->
-> Is that the right check? The other similar traps check against a
-> mask of 0x7c0007fe.
-
-I hope you mean 0xfc0007fe?
-
-
-Segher
+T24gU2F0dXJkYXkgMTkgQXVndXN0IDIwMDYgMjE6MTAsIHNlZ2hlckBnYXRlLmNyYXNoaW5nLm9y
+ZyB3cm90ZToKPiA+IElzIHRoYXQgdGhlIHJpZ2h0IGNoZWNrPyBUaGUgb3RoZXIgc2ltaWxhciB0
+cmFwcyBjaGVjayBhZ2FpbnN0IGEKPiA+IG1hc2sgb2YgMHg3YzAwMDdmZS4KPiAKPiBJIGhvcGUg
+eW91IG1lYW4gMHhmYzAwMDdmZT8KPiAKCk5vLCB0aGUgY29kZSBpbiBxdWVzdGlvbiBpcyAKCiNk
+ZWZpbmUgSU5TVF9NRlNQUl9QVlKtt623t7e3t7e3MHg3YzFmNDJhNgojZGVmaW5lIElOU1RfTUZT
+UFJfUFZSX01BU0utt7e3tzB4ZmMxZmZmZmYKCiNkZWZpbmUgSU5TVF9EQ0JBrbe3t7e3t623t7e3
+t7e3MHg3YzAwMDVlYwojZGVmaW5lIElOU1RfRENCQV9NQVNLrbett7e3t7e3tzB4N2MwMDA3ZmUK
+CiNkZWZpbmUgSU5TVF9NQ1JYUq23t7e3t623t7e3t7e3MHg3YzAwMDQwMAojZGVmaW5lIElOU1Rf
+TUNSWFJfTUFTS62tt7e3t7e3tzB4N2MwMDA3ZmUKCiNkZWZpbmUgSU5TVF9TVFJJTkett7e3t623
+t7e3t7e3MHg3YzAwMDQyYQojZGVmaW5lIElOU1RfU1RSSU5HX01BU0utt7e3t7e3tzB4N2MwMDA3
+ZmUKI2RlZmluZSBJTlNUX1NUUklOR19HRU5fTUFTS623t7cweDdjMDAwNjdlCiNkZWZpbmUgSU5T
+VF9MU1dJrbe3t7e3t623t7e3t7e3MHg3YzAwMDRhYQojZGVmaW5lIElOU1RfTFNXWK23t7e3t7et
+t7e3t7e3tzB4N2MwMDA0MmEKI2RlZmluZSBJTlNUX1NUU1dJrbe3t7e3rbe3t7e3t7cweDdjMDAw
+NWFhCiNkZWZpbmUgSU5TVF9TVFNXWK23t7e3t623t7e3t7e3MHg3YzAwMDUyYQoKV2hhdCBkb2Vz
+IHRoZSBNU0IgZG8gaW4gb3VyIGluc3RydWN0aW9ucz8KCglBcm5kIDw+PAo=
