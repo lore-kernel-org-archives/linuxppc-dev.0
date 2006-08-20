@@ -1,22 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id C8F0667B94
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 20:03:58 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/6]: powerpc/cell spidernet low watermark patch.
-Date: Sun, 20 Aug 2006 12:03:14 +0200
-References: <20060818220700.GG26889@austin.ibm.com>
-	<200608190109.15129.arnd@arndb.de>
-	<1156055509.5803.77.camel@localhost.localdomain>
-In-Reply-To: <1156055509.5803.77.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200608201203.15645.arnd@arndb.de>
-Cc: akpm@osdl.org, netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	ens Osterkamp <Jens.Osterkamp@de.ibm.com>, Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <dtutty@porchlight.ca>
+Received: from tor-pinab.porchlight.ca (tor-pinab.porchlight.ca
+	[209.171.52.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1379567B9F
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 03:21:01 +1000 (EST)
+Received: from keep.hooton (tor-ppp-209.29.44.101.porchlight.ca
+	[209.29.44.101]) (authenticated bits=0)
+	by tor-pinab.porchlight.ca (8.13.1/8.13.1) with ESMTP id k7KH0xOc021553
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Aug 2006 13:01:00 -0400
+Received: from dtutty by keep.hooton with local (Exim 4.50) id 1GEqfR-0002Ks-5e
+	for linuxppc-dev@ozlabs.org; Sun, 20 Aug 2006 13:00:57 -0400
+Date: Sun, 20 Aug 2006 13:00:56 -0400
+From: dtutty@porchlight.ca
+To: linuxppc-dev@ozlabs.org
+Subject: boot problems on pseries
+Message-ID: <20060820170055.GA8958@hooton>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 20 August 2006 08:31, Benjamin Herrenschmidt wrote:
-> > card->low_watermark->next->dmac_cmd_status |= SPIDER_NET_DESCR_TXDESFLG;
-> > mb();
-> > card->low_watermark->dmac_cmd_status &= ~SPIDER_NET_DESCR_TXDESFLG;
-> > card->low_watermark = card->low_watermark->next;
-> > 
-> > when we queue another frame for TX.
-> 
-> I would have expected those to be racy vs. the hardware... what if the
-> hardware is updating dmac_cmd_status just as your are trying to and the
-> bit out of it ?
+Hello,
 
-Right, that doesn't work. It is the only bit we use in that byte though,
-so maybe it can be done with a single byte write.
+I'm switching from an IBM 486 and purchasing an IBM H50 (7026-H50), so
+I'm new to the PPC.  My vendor wants to ensure that it boots linux
+before he ships it.  I burned and sent him a few different distro CDs to
+try and none boot.  We can get yaboot to boot then get stuck at the
+yaboot command line and can't get futher.  As a fall-back, I was hoping
+to use OF to boot the kernel directly and get a kernel-panic when it
+can't find init but we can't get that far either.  The error message
+'claim failed' is returned immediatly with no indication that the kernel
+tried to start.
 
-	Arnd <><
+I'm told by several people that the H50 is the same as the F50 in a
+different format and that the F50 is known to work.  Since the task at
+hand is to get any linux to boot and not to actually install linux, I
+need a kernel that will boot.  Even a simple boot-floppy set would be
+great.  
+
+Does anyone have a link to a boot/root floppy set that will work?
+
+Hardware details:  IBM 7026-H50, 256 MB ram, dual PPC 604e 332 MHz, 9.1
+GB HD in Bay 2, standard CD-ROM, PowerGXT130P graphics accelerator.
+
+Thanks,
+Doug.
