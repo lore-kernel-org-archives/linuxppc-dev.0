@@ -1,22 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3499B67BA7
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 03:48:53 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stephen Hemminger <shemminger@osdl.org>
-Subject: [RFC v2] HOWTO use NAPI to reduce TX interrupts
-Date: Sun, 20 Aug 2006 19:48:19 +0200
-References: <20060818220700.GG26889@austin.ibm.com>
-	<44E7BB7F.7030204@osdl.org> <200608191325.19557.arnd@arndb.de>
-In-Reply-To: <200608191325.19557.arnd@arndb.de>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id A6C0767B92
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 08:16:02 +1000 (EST)
+Received: from lyakh (helo=localhost)
+	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
+	id 1GEvaP-0002Au-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 00:16:05 +0200
+Date: Mon, 21 Aug 2006 00:16:05 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: mpic_alloc() parameter change in 2.6.18-rc4 - must update users
+Message-ID: <Pine.LNX.4.60.0608210008200.8128@poirot.grange>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608201948.20596.arnd@arndb.de>
-Cc: akpm@osdl.org, netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
-	Jeff Garzik <jgarzik@pobox.com>, David Miller <davem@davemloft.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,108 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A recent discussion about the spidernet driver resulted in the dicovery
-that network drivers are supposed to use NAPI for both their receive and
-transmit paths, but this is documented nowhere.
+Hi all,
 
-In order to help the next person writing a NAPI based driver, I wrote
-down what I found missing about this.
+have all platforms been updated for the mpic_alloc() change in -rc4 since 
+then? AFAICS, at least 85xx/mpc85xx_cds.c, 86xx/mpc86xx_hpcn.c, 
+embedded6xx/mpc7448_hpc2.c in -rc4 are new and are calling it with the old 
+parameters. Or has it already been fixed in some tree?
 
-Please tell me if anything in here is still wrong or could use better
-wording.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
+Thanks
+Guennadi
 ---
-This is the second version of my mini howto, after a few comments
-I got from Stephen Hemminger and  Avuton Olrich.
-
-Index: linux-cg/Documentation/networking/NAPI_HOWTO.txt
-===================================================================
---- linux-cg.orig/Documentation/networking/NAPI_HOWTO.txt	2006-08-20 16:51:12.000000000 +0200
-+++ linux-cg/Documentation/networking/NAPI_HOWTO.txt	2006-08-20 19:42:20.000000000 +0200
-@@ -1,11 +1,6 @@
--HISTORY:
--February 16/2002 -- revision 0.2.1:
--COR typo corrected
--February 10/2002 -- revision 0.2:
--some spell checking ;->
--January 12/2002 -- revision 0.1
--This is still work in progress so may change.
--To keep up to date please watch this space.
-+Note: this document could use a serious cleanup by a good writer.
-+It would be nice to split out the reference parts into a kerneldoc
-+document and turn the rest into a tutorial.
- 
- Introduction to NAPI
- ====================
-@@ -738,6 +733,64 @@
- root         3  0.2  0.0     0     0  ?  RWN Aug 15 602:00 (ksoftirqd_CPU0)
- root       232  0.0  7.9 41400 40884  ?  S   Aug 15  74:12 gated 
- 
-+
-+APPENDIX 4: Using NAPI for TX skb cleanup
-+=========================================
-+
-+While most of the discussion is focused on optimizing the receive path, in
-+most drivers it is also beneficial to free TX buffers from the dev->poll()
-+function. Many devices trigger an interrupt for each packet that has been
-+sent out to notify the driver that it can free the skb. This results in
-+a large amount of interrupt processing that we want to avoid. It is also
-+suboptimal to free skbs in a hardirq context, because dev_kfree_skb_irq()
-+needs to schedule a softirq to do the actual work. Calling dev_kfree_skb()
-+from dev->poll() directly avoids these extra softirq schedules.
-+
-+The simplistic approach of setting a long kernel timer to clean up
-+descriptors results in poor throughput because a user process that tries
-+to send out a lot of data then blocks on its socket send buffer, while
-+the driver never frees up the skbs in that buffer until the timeout.
-+
-+Trying the cleanup every time that hard_start_xmit() is entered provides
-+relatively good throughput, but typically causes extra processing overhead
-+because of mmio accesses and/or spinlocks, so you normally want to batch
-+skb reclaim.
-+
-+In order to get optimal throughput on transmit, the sent skbs need to be
-+cleaned up before the chip runs out of data to transmit, so relying on
-+an end of queue interrupt means that in the window between the interrupt
-+and the time that new user packets have arrived in the adapter, there is
-+no outgoing data on the wire, even if user data is available.  It may
-+also be bad to defer freeing skbs too long because they may consume a
-+significant amount of memory.
-+
-+Experience shows that combination of events that trigger skb reclaim
-+works best. These events include:
-+- new packets coming in through hard_start_xmit()
-+- packets coming in from the network through dev->poll()
-+- time has passed since the first packet was send over the wire
-+  but has not been reclaimed (tx_coalesce_usecs)
-+- a number of packets have been sent (tx_max_coalesced_frames)
-+
-+We can avoid expensive locking between these by using the poll() function
-+as the only place to call skb reclaim. This also means that in the
-+interrupt handler, we always call netif_rx_schedule() for any interrupt,
-+including those for tx or e.g. PHY handling.  This is particularly
-+helpful if reading the IRQ status does an auto mask operation.
-+
-+Depending on the actual hardware, slightly different methods for coalesced
-+tx interrupts may be used:
-+- a timer that starts with the successful transmission of a packet
-+  may need to be replaced with a timer that is started at when a packet
-+  is submitted to the adapter.
-+- instead of an interrupt that is triggered after a fixed number
-+  of transmitted packets, it may be possible to mark a specific packet
-+  so it generates an interrupt after processing.
-+- If the adapter knows about the number of packets that have been
-+  queued, a low-watermark interrupt may be used that fires when the
-+  number drops below a user-defined value.
-+
-+
- --------------------------------------------------------------------
- 
- relevant sites:
-@@ -764,3 +817,4 @@
- Manfred Spraul <manfred@colorfullife.com>
- Donald Becker <becker@scyld.com>
- Jeff Garzik <jgarzik@pobox.com>
-+Arnd Bergmann <arnd@arndb.de>
+Guennadi Liakhovetski
