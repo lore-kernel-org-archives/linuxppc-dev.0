@@ -2,25 +2,24 @@ Return-Path: <shemminger@osdl.org>
 Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4047667B6F
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 03:45:58 +1000 (EST)
-Date: Fri, 18 Aug 2006 10:45:47 -0700
+	by ozlabs.org (Postfix) with ESMTP id B85AD67B22
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Aug 2006 11:31:52 +1000 (EST)
+Message-ID: <44E7BB7F.7030204@osdl.org>
+Date: Sat, 19 Aug 2006 18:31:43 -0700
 From: Stephen Hemminger <shemminger@osdl.org>
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [2.6.19 PATCH 4/7] ehea: ethtool interface
-Message-ID: <20060818104547.5ad1352f@localhost.localdomain>
-In-Reply-To: <44E5DFA6.7040707@de.ibm.com>
-References: <200608181333.23031.ossthema@de.ibm.com>
-	<20060818140506.GC5201@martell.zuzino.mipt.ru>
-	<44E5DFA6.7040707@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Thomas Klein <tklein@de.ibm.com>, Marcus,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Eder <meder@de.ibm.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC] HOWTO use NAPI to reduce TX interrupts
+References: <20060818220700.GG26889@austin.ibm.com>
+	<20060818222657.GL26889@austin.ibm.com>
+	<200608190103.05649.arnd@arndb.de>
+	<200608190256.26373.arnd@arndb.de>
+In-Reply-To: <200608190256.26373.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: akpm@osdl.org, netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
+	Jeff Garzik <jgarzik@pobox.com>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,24 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Aug 2006 17:41:26 +0200
-Thomas Klein <osstklei@de.ibm.com> wrote:
+Arnd Bergmann wrote:
+> On Saturday 19 August 2006 01:03, Arnd Bergmann wrote:
+>   
+>> Someone should probably document that in 
+>> Documentation/networking/NAPI_HOWTO.txt, I might end up doing that
+>> once we get it right for spidernet
+>>     
 
-> Hi Alexey,
-> 
-> first of all thanks a lot for the extensive review.
-> 
-> 
-> Alexey Dobriyan wrote:
-> >> +	u64 hret = H_HARDWARE;
-> > 
-> > Useless assignment here and everywhere.
-> > 
-> 
-> Initializing returncodes to errorstate is a cheap way to prevent
-> accidentally returning (uninitalized) success returncodes which
-> can lead to catastrophic misbehaviour.
+The reason reclaim via poll() is efficient is because it avoid causing a 
+softirq that is
+necessary when skb_free_irq() is done. Instead it reuses the softirq 
+from the poll()
+routine. Like all Rx NAPI, using poll() for reclaim means:
+    + aggregating multiple frames in one irq
+    - increased overhead of twiddling with the IRQ mask
+    - more ways to get driver stuck
+   
+Some drivers do all their irq work in the poll() routine (including PHY 
+handling).
+This is good if reading the IRQ status does an auto mask operation.
 
-That is old thinking. Current compilers do live/dead analysis
-and tell you about this at compile time which is better than relying
-on default behavior at runtime.
+The whole NAPI documentation area is a mess and needs a good writer
+to do some major restructuring. It should also be split into reference 
+information,
+tutorial and guide sections.
