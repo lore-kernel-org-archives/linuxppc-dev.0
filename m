@@ -1,23 +1,19 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from wohnheim.fh-wedel.de (wohnheim.fh-wedel.de [213.39.233.138])
-	by ozlabs.org (Postfix) with ESMTP id 9C99D67BB4
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 23:18:38 +1000 (EST)
-Date: Mon, 21 Aug 2006 15:18:31 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [2.6.19 PATCH 1/7] ehea: interface to network stack
-Message-ID: <20060821131831.GA31094@wohnheim.fh-wedel.de>
-References: <200608181329.02042.ossthema@de.ibm.com>
-	<20060818144429.GF5201@martell.zuzino.mipt.ru>
-	<200608211423.54250.ossthema@de.ibm.com>
+Return-Path: <halr@voltaire.com>
+Received: from mailgw.voltaire.com (mailgw.voltaire.com [193.47.165.252])
+	by ozlabs.org (Postfix) with ESMTP id 2038B67C11
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 23:03:58 +1000 (EST)
+Subject: Re: [openib-general] [PATCH 08/13] IB/ehca: qp
+From: Hal Rosenstock <halr@voltaire.com>
+To: Roland Dreier <rolandd@cisco.com>
+In-Reply-To: <20068171311.7Z4EtLP0ZYtya78R@cisco.com>
+References: <20068171311.7Z4EtLP0ZYtya78R@cisco.com>
+Content-Type: text/plain
+Message-Id: <1156164265.9855.196633.camel@hal.voltaire.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200608211423.54250.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>
+Date: 21 Aug 2006 08:44:53 -0400
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	HNGUYEN@de.ibm.com, MEDER@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 21 August 2006 14:23:53 +0200, Jan-Bernd Themann wrote:
-> 
-> Is it valid (common in the kernel environment) to treat NULL as 0 after a memset
-> and thus to forget about initialization?
+On Thu, 2006-08-17 at 16:11, Roland Dreier wrote:
 
-Yes.  According to C99, "An implementation might conveivably have
-codes for floating zero and/or null pointer other than all bits zero."
-But as long as you don't use floating point (you shouldn't) and don't
-redefine NULL to something other than (void*)0, this is rather
-"inconceivable" for the kernel.
+[snip...]
 
-Jörn
+> diff --git a/drivers/infiniband/hw/ehca/ehca_sqp.c b/drivers/infiniband/hw/ehca/ehca_sqp.c
+> new file mode 100644
+> index 0000000..d2c5552
+> --- /dev/null
+> +++ b/drivers/infiniband/hw/ehca/ehca_sqp.c
+> @@ -0,0 +1,123 @@
+> +/*
+> + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
+> + *
+> + *  SQP functions
+> + *
+> + *  Authors: Khadija Souissi <souissi@de.ibm.com>
+> + *           Heiko J Schick <schickhj@de.ibm.com>
 
--- 
-Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it.
--- Brian W. Kernighan
+[snip...]
+
+> +
+> +extern int ehca_create_aqp1(struct ehca_shca *shca, struct ehca_sport *sport);
+> +extern int ehca_destroy_aqp1(struct ehca_sport *sport);
+> +
+> +extern int ehca_port_act_time;
+> +
+> +/**
+> + * ehca_define_sqp - Defines special queue pair 1 (GSI QP). When special queue
+> + * pair is created successfully, the corresponding port gets active.
+> + *
+> + * Define Special Queue pair 0 (SMI QP) is still not supported.
+> + *
+> + * @qp_init_attr: Queue pair init attributes with port and queue pair type
+> + */
+> +
+> +u64 ehca_define_sqp(struct ehca_shca *shca,
+> +		    struct ehca_qp *ehca_qp,
+> +		    struct ib_qp_init_attr *qp_init_attr)
+> +{
+> +
+> +	u32 pma_qp_nr = 0;
+> +	u32 bma_qp_nr = 0;
+> +	u64 ret = H_SUCCESS;
+> +	u8 port = qp_init_attr->port_num;
+> +	int counter = 0;
+> +
+> +	EDEB_EN(7, "port=%x qp_type=%x",
+> +		port, qp_init_attr->qp_type);
+> +
+> +	shca->sport[port - 1].port_state = IB_PORT_DOWN;
+> +
+> +	switch (qp_init_attr->qp_type) {
+> +	case IB_QPT_SMI:
+> +		/* function not supported yet */
+> +		break;
+> +	case IB_QPT_GSI:
+> +		ret = hipz_h_define_aqp1(shca->ipz_hca_handle,
+> +					 ehca_qp->ipz_qp_handle,
+> +					 ehca_qp->galpas.kernel,
+> +					 (u32) qp_init_attr->port_num,
+> +					 &pma_qp_nr, &bma_qp_nr);
+> +
+> +		if (ret != H_SUCCESS) {
+> +			EDEB_ERR(4, "Can't define AQP1 for port %x. rc=%lx",
+> +				    port, ret);
+> +			goto ehca_define_aqp1;
+> +		}
+> +		break;
+> +	default:
+> +		ret = H_PARAMETER;
+> +		goto ehca_define_aqp1;
+> +	}
+> +
+> +	while ((shca->sport[port - 1].port_state != IB_PORT_ACTIVE) &&
+> +	       (counter < ehca_port_act_time)) {
+> +		EDEB(6, "... wait until port %x is active",
+> +			port);
+> +		msleep_interruptible(1000);
+> +		counter++;
+> +	}
+> +
+> +	if (counter == ehca_port_act_time) {
+> +		EDEB_ERR(4, "Port %x is not active.", port);
+> +		ret = H_HARDWARE;
+> +	}
+> +
+> +ehca_define_aqp1:
+> +	EDEB_EX(7, "ret=%lx", ret);
+> +
+> +	return ret;
+> +}
+
+I, for one, was hoping that the timer based transition to active for QP1
+would have been resolved before being submitted. Any idea on the plan to
+resolve this ?
+
+-- Hal
