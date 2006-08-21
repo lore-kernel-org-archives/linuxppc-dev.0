@@ -1,20 +1,24 @@
-Return-Path: <Artur.Barkhudaryan@epygiarm.am>
-Received: from epygiarm.am (smtp.epygiarm.am [195.69.162.137])
-	by ozlabs.org (Postfix) with ESMTP id 471D467B77
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 8F92067B8F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Aug 2006 01:20:02 +1000 (EST)
-Received: from [192.168.0.154] ([192.168.0.154])
-	by epygiarm.am (epygiarm.am [192.168.0.156]) (MDaemon PRO v9.0.0)
-	with ESMTP id md50001229456.msg
-	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Aug 2006 20:19:18 +0500
-Date: Mon, 21 Aug 2006 20:14:09 +0500
-From: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
-Message-ID: <777574358.20060821201409@epygiarm.am>
-To: linuxppc-embedded@ozlabs.org
-Subject: u-boot problem with serial console on SMC1
+	Tue, 22 Aug 2006 01:38:10 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id e2so1653166ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Aug 2006 08:38:08 -0700 (PDT)
+Message-ID: <528646bc0608210838p4071f9eeie560fbba18ae2b3d@mail.gmail.com>
+Date: Mon, 21 Aug 2006 09:38:08 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Wade Maxfield" <wmaxfield@gmail.com>
+Subject: Re: PPC beginner questions
+In-Reply-To: <45a1b53e0608210759p270c2f8dy694e91f409d57729@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Reply-To: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <45a1b53e0608210651s4f5de382w77e092463dbbf5b7@mail.gmail.com>
+	<528646bc0608210714g51928043lb729e80bda753d4d@mail.gmail.com>
+	<45a1b53e0608210759p270c2f8dy694e91f409d57729@mail.gmail.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +29,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On 8/21/06, Wade Maxfield <wmaxfield@gmail.com> wrote:
+> Hi Grant,
+>
+>   Thanks!
+>
+>   in*
+>   out*
+>
+>   I'm assuming inb() outb(), inw() outw()??  I've been googling and have
+> come up short with info that makes sense. It is almost all x86 centric.
 
-I have an MPC8272 board with serial console on SMC1. I am trying to
-make it work with u-boot 1.1.4. It does work, but it hangs when I
-press Enter continuously (sometimes after just the first key press).
-The trap code is 0200 and it appears to be some SMC1 receive problem.
-Does anyone else experience the same problem ?
+in_8, in_be16, in_be32, out_8, out_be16, out_be32 for big-endian
+device registers
+in_8, in_le16, in_le32, out_8, out_le16, out_le32 for little endian
+device registers
+
+>
+>   We will not be porting these drivers, this is a captive box internal use
+> only, limited run (200 units or so), 10 to 20 year lifespan once it hits the
+> field.
+>
+>   So, the virtual address I get back can be used directly.  Can I cast to
+> short * and long * and char *?
+
+heh, yes you can; but if your writing new code why not use good
+practice from the start?  :)
+
+>
+>    I apologize for the basic questions, but I expect this will be a final
+> question for quite some time.
+
+No worries; ask away!
+
+Cheers,
+g.
+
+
+BTW, when on the mailing list, please use "reply to all" and put your
+comments below what you're commenting on.  This keeps the thread on
+the mailing list for others to see, and it makes it blatentely obvious
+what you're commenting on.  (just general list-etiquette)
 
 -- 
-Thanks,
- Artur Barkhudaryan
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
