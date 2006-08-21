@@ -1,19 +1,36 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from calculon.skynet.ie (calculon.skynet.ie [193.1.99.88])
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 727E967BEB
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 00:10:48 +1000 (EST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@osdl.org
-Message-Id: <20060821134658.22179.79853.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20060821134518.22179.46355.sendpatchset@skynet.skynet.ie>
-References: <20060821134518.22179.46355.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 5/6] Have ia64 use add_active_range() and free_area_init_nodes
-Date: Mon, 21 Aug 2006 14:46:58 +0100 (IST)
-Cc: tony.luck@intel.com, linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org, bob.picco@hp.com, ak@suse.de,
-	linuxppc-dev@ozlabs.org
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C1E467C46
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 00:52:44 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7LEqdYK036336
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 14:52:39 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k7LEuc37122206
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 16:56:38 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7LEqcBA006103
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 16:52:39 +0200
+Message-ID: <44E9C8B6.7030701@de.ibm.com>
+Date: Mon, 21 Aug 2006 16:52:38 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [2.6.19 PATCH 1/7] ehea: interface to network stack
+References: <200608181329.02042.ossthema@de.ibm.com>
+	<20060818144429.GF5201@martell.zuzino.mipt.ru>
+In-Reply-To: <20060818144429.GF5201@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,246 +40,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Alexey Dobriyan wrote:
+ > On Fri, Aug 18, 2006 at 01:29:01PM +0200, Jan-Bernd Themann wrote:
+ >> --- linux-2.6.18-rc4-orig/drivers/net/ehea/ehea_main.c
+ >> +++ kernel/drivers/net/ehea/ehea_main.c
+ >
+ >> +static inline int ehea_refill_rq3_def(struct ehea_port_res *pr, int nr_of_wqes)
+ >
+ > This one looks too big to be inlined as well as other similalry named
+ > functions.
 
-Size zones and holes in an architecture independent manner for ia64.
+Agreed. Inlining avoided where possible.
+
+ >> +static int ehea_clean_port_res(struct ehea_port *port, struct ehea_port_res *pr)
+ >
+ > Freeing/deallocating/cleaning functions usually return void. The fact
+ > that you always return -EINVAL only reaffirmes my belief. ;-)
+ >
+
+Fixed.
+
+ >> +static inline void write_swqe2_data(struct sk_buff *skb,
+ >> +                                struct net_device *dev,
+ >> +                                struct ehea_swqe *swqe,
+ >> +                                u32 lkey)
+ >
+ > Way too big.
+
+Function split.
+
+ >> +static inline void ehea_xmit2(struct sk_buff *skb,
+ >> +                          struct net_device *dev, struct ehea_swqe *swqe,
+ >> +                          u32 lkey)
+ >> +
+ >> +static inline void ehea_xmit3(struct sk_buff *skb,
+ >> +                          struct net_device *dev, struct ehea_swqe *swqe)
+ >
+ > Ditto.
+
+These functions are on a performance-critical path and they are called
+exactly once - so the object's size isn't affected and having them inline
+seems appropriate to me.
+
+ >> +    if (grp)
+ >> +            memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
+ >> +    else
+ >> +            memset(cb1->vlan_filter, 1, sizeof(cb1->vlan_filter));
+ >
+ > Just to be sure, this should be 1 not 0xff?
+ >
+
+Will be checked.
+
+ >> +void ehea_clean_all_port_res(struct ehea_port *port)
+ >> +{
+ >> +    int ret;
+ >> +    int i;
+ >> +    for(i = 0; i < port->num_def_qps + port->num_tx_qps; i++)
+ >> +            ehea_clean_port_res(port, &port->port_res[i]);
+ >> +
+ >> +    ret = ehea_destroy_eq(port->qp_eq);
+ >> +}
+ >
+ > ret is entirely useless.
+
+Correct. It's gone.
+
+ >
+ >> +int __init ehea_module_init(void)
+ > static
+ >
+ >> +{
+ >> +    int ret = -EINVAL;
+ >> +
+ >> +    printk("IBM eHEA Ethernet Device Driver (Release %s)\n", DRV_VERSION);
+ >> +
+ >> +    ret = ibmebus_register_driver(&ehea_driver);
+ >> +    if (ret) {
+ >> +            ehea_error("failed registering eHEA device driver on ebus");
+ >> +            return -EINVAL;
+ >> +    }
+ >> +
+ >> +    return 0;
+ >> +}
+ >
+ > Pass ret to upper layer. Simplest way is:
+ >
+ >       static int __init ehea_module_init(void)
+ >       {
+ >               return ibmebus_register_driver(&ehea_driver);
+ >       }
+
+Agreed to pass ret to upper layer, but we want to keep the error message.
+Code modified accordingly.
 
 
- arch/ia64/Kconfig          |    3 ++
- arch/ia64/mm/contig.c      |   60 ++++++----------------------------------
- arch/ia64/mm/discontig.c   |   44 ++++++-----------------------
- arch/ia64/mm/init.c        |   12 ++++++++
- include/asm-ia64/meminit.h |    1 
- 5 files changed, 34 insertions(+), 86 deletions(-)
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Bob Picco <bob.picco@hp.com>
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/Kconfig linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/Kconfig
---- linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/Kconfig	2006-08-21 09:23:50.000000000 +0100
-+++ linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/Kconfig	2006-08-21 10:17:10.000000000 +0100
-@@ -352,6 +352,9 @@ config NODES_SHIFT
- 	  MAX_NUMNODES will be 2^(This value).
- 	  If in doubt, use the default.
- 
-+config ARCH_POPULATES_NODE_MAP
-+	def_bool y
-+
- # VIRTUAL_MEM_MAP and FLAT_NODE_MEM_MAP are functionally equivalent.
- # VIRTUAL_MEM_MAP has been retained for historical reasons.
- config VIRTUAL_MEM_MAP
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/mm/contig.c linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/mm/contig.c
---- linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/mm/contig.c	2006-08-06 19:20:11.000000000 +0100
-+++ linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/mm/contig.c	2006-08-21 10:17:10.000000000 +0100
-@@ -26,7 +26,6 @@
- #include <asm/mca.h>
- 
- #ifdef CONFIG_VIRTUAL_MEM_MAP
--static unsigned long num_dma_physpages;
- static unsigned long max_gap;
- #endif
- 
-@@ -218,18 +217,6 @@ count_pages (u64 start, u64 end, void *a
- 	return 0;
- }
- 
--#ifdef CONFIG_VIRTUAL_MEM_MAP
--static int
--count_dma_pages (u64 start, u64 end, void *arg)
--{
--	unsigned long *count = arg;
--
--	if (start < MAX_DMA_ADDRESS)
--		*count += (min(end, MAX_DMA_ADDRESS) - start) >> PAGE_SHIFT;
--	return 0;
--}
--#endif
--
- /*
-  * Set up the page tables.
-  */
-@@ -238,45 +225,22 @@ void __init
- paging_init (void)
- {
- 	unsigned long max_dma;
--	unsigned long zones_size[MAX_NR_ZONES];
--#ifdef CONFIG_VIRTUAL_MEM_MAP
--	unsigned long zholes_size[MAX_NR_ZONES];
--#endif
--
--	/* initialize mem_map[] */
--
--	memset(zones_size, 0, sizeof(zones_size));
-+	unsigned long nid = 0;
-+	unsigned long max_zone_pfns[MAX_NR_ZONES];
- 
- 	num_physpages = 0;
- 	efi_memmap_walk(count_pages, &num_physpages);
- 
- 	max_dma = virt_to_phys((void *) MAX_DMA_ADDRESS) >> PAGE_SHIFT;
-+	max_zone_pfns[ZONE_DMA] = max_dma;
-+	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
- 
- #ifdef CONFIG_VIRTUAL_MEM_MAP
--	memset(zholes_size, 0, sizeof(zholes_size));
--
--	num_dma_physpages = 0;
--	efi_memmap_walk(count_dma_pages, &num_dma_physpages);
--
--	if (max_low_pfn < max_dma) {
--		zones_size[ZONE_DMA] = max_low_pfn;
--		zholes_size[ZONE_DMA] = max_low_pfn - num_dma_physpages;
--	} else {
--		zones_size[ZONE_DMA] = max_dma;
--		zholes_size[ZONE_DMA] = max_dma - num_dma_physpages;
--		if (num_physpages > num_dma_physpages) {
--			zones_size[ZONE_NORMAL] = max_low_pfn - max_dma;
--			zholes_size[ZONE_NORMAL] =
--				((max_low_pfn - max_dma) -
--				 (num_physpages - num_dma_physpages));
--		}
--	}
--
-+	efi_memmap_walk(register_active_ranges, &nid);
- 	efi_memmap_walk(find_largest_hole, (u64 *)&max_gap);
- 	if (max_gap < LARGE_GAP) {
- 		vmem_map = (struct page *) 0;
--		free_area_init_node(0, NODE_DATA(0), zones_size, 0,
--				    zholes_size);
-+		free_area_init_nodes(max_zone_pfns);
- 	} else {
- 		unsigned long map_size;
- 
-@@ -289,19 +253,13 @@ paging_init (void)
- 		efi_memmap_walk(create_mem_map_page_table, NULL);
- 
- 		NODE_DATA(0)->node_mem_map = vmem_map;
--		free_area_init_node(0, NODE_DATA(0), zones_size,
--				    0, zholes_size);
-+		free_area_init_nodes(max_zone_pfns);
- 
- 		printk("Virtual mem_map starts at 0x%p\n", mem_map);
- 	}
- #else /* !CONFIG_VIRTUAL_MEM_MAP */
--	if (max_low_pfn < max_dma)
--		zones_size[ZONE_DMA] = max_low_pfn;
--	else {
--		zones_size[ZONE_DMA] = max_dma;
--		zones_size[ZONE_NORMAL] = max_low_pfn - max_dma;
--	}
--	free_area_init(zones_size);
-+	add_active_range(0, 0, max_low_pfn);
-+	free_area_init_nodes(max_zone_pfns);
- #endif /* !CONFIG_VIRTUAL_MEM_MAP */
- 	zero_page_memmap_ptr = virt_to_page(ia64_imva(empty_zero_page));
- }
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/mm/discontig.c linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/mm/discontig.c
---- linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/mm/discontig.c	2006-08-06 19:20:11.000000000 +0100
-+++ linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/mm/discontig.c	2006-08-21 10:17:10.000000000 +0100
-@@ -654,6 +654,7 @@ static __init int count_node_pages(unsig
- {
- 	unsigned long end = start + len;
- 
-+	add_active_range(node, start >> PAGE_SHIFT, end >> PAGE_SHIFT);
- 	mem_data[node].num_physpages += len >> PAGE_SHIFT;
- 	if (start <= __pa(MAX_DMA_ADDRESS))
- 		mem_data[node].num_dma_physpages +=
-@@ -678,10 +679,10 @@ static __init int count_node_pages(unsig
- void __init paging_init(void)
- {
- 	unsigned long max_dma;
--	unsigned long zones_size[MAX_NR_ZONES];
--	unsigned long zholes_size[MAX_NR_ZONES];
- 	unsigned long pfn_offset = 0;
-+	unsigned long max_pfn = 0;
- 	int node;
-+	unsigned long max_zone_pfns[MAX_NR_ZONES];
- 
- 	max_dma = virt_to_phys((void *) MAX_DMA_ADDRESS) >> PAGE_SHIFT;
- 
-@@ -698,47 +699,20 @@ void __init paging_init(void)
- #endif
- 
- 	for_each_online_node(node) {
--		memset(zones_size, 0, sizeof(zones_size));
--		memset(zholes_size, 0, sizeof(zholes_size));
--
- 		num_physpages += mem_data[node].num_physpages;
--
--		if (mem_data[node].min_pfn >= max_dma) {
--			/* All of this node's memory is above ZONE_DMA */
--			zones_size[ZONE_NORMAL] = mem_data[node].max_pfn -
--				mem_data[node].min_pfn;
--			zholes_size[ZONE_NORMAL] = mem_data[node].max_pfn -
--				mem_data[node].min_pfn -
--				mem_data[node].num_physpages;
--		} else if (mem_data[node].max_pfn < max_dma) {
--			/* All of this node's memory is in ZONE_DMA */
--			zones_size[ZONE_DMA] = mem_data[node].max_pfn -
--				mem_data[node].min_pfn;
--			zholes_size[ZONE_DMA] = mem_data[node].max_pfn -
--				mem_data[node].min_pfn -
--				mem_data[node].num_dma_physpages;
--		} else {
--			/* This node has memory in both zones */
--			zones_size[ZONE_DMA] = max_dma -
--				mem_data[node].min_pfn;
--			zholes_size[ZONE_DMA] = zones_size[ZONE_DMA] -
--				mem_data[node].num_dma_physpages;
--			zones_size[ZONE_NORMAL] = mem_data[node].max_pfn -
--				max_dma;
--			zholes_size[ZONE_NORMAL] = zones_size[ZONE_NORMAL] -
--				(mem_data[node].num_physpages -
--				 mem_data[node].num_dma_physpages);
--		}
--
- 		pfn_offset = mem_data[node].min_pfn;
- 
- #ifdef CONFIG_VIRTUAL_MEM_MAP
- 		NODE_DATA(node)->node_mem_map = vmem_map + pfn_offset;
- #endif
--		free_area_init_node(node, NODE_DATA(node), zones_size,
--				    pfn_offset, zholes_size);
-+		if (mem_data[node].max_pfn > max_pfn)
-+			max_pfn = mem_data[node].max_pfn;
- 	}
- 
-+	max_zone_pfns[ZONE_DMA] = max_dma;
-+	max_zone_pfns[ZONE_NORMAL] = max_pfn;
-+	free_area_init_nodes(max_zone_pfns);
-+
- 	zero_page_memmap_ptr = virt_to_page(ia64_imva(empty_zero_page));
- }
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/mm/init.c linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/mm/init.c
---- linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/ia64/mm/init.c	2006-08-06 19:20:11.000000000 +0100
-+++ linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/arch/ia64/mm/init.c	2006-08-21 10:17:10.000000000 +0100
-@@ -593,6 +593,18 @@ find_largest_hole (u64 start, u64 end, v
- 	last_end = end;
- 	return 0;
- }
-+
-+int __init
-+register_active_ranges(u64 start, u64 end, void *nid)
-+{
-+	BUG_ON(nid == NULL);
-+	BUG_ON(*(unsigned long *)nid >= MAX_NUMNODES);
-+
-+	add_active_range(*(unsigned long *)nid,
-+				__pa(start) >> PAGE_SHIFT,
-+				__pa(end) >> PAGE_SHIFT);
-+	return 0;
-+}
- #endif /* CONFIG_VIRTUAL_MEM_MAP */
- 
- static int __init
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/include/asm-ia64/meminit.h linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/include/asm-ia64/meminit.h
---- linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/include/asm-ia64/meminit.h	2006-08-21 09:23:52.000000000 +0100
-+++ linux-2.6.18-rc4-mm2-105-ia64_use_init_nodes/include/asm-ia64/meminit.h	2006-08-21 10:17:10.000000000 +0100
-@@ -56,6 +56,7 @@ extern void efi_memmap_init(unsigned lon
-   extern unsigned long vmalloc_end;
-   extern struct page *vmem_map;
-   extern int find_largest_hole (u64 start, u64 end, void *arg);
-+  extern int register_active_ranges (u64 start, u64 end, void *arg);
-   extern int create_mem_map_page_table (u64 start, u64 end, void *arg);
-   extern int vmemmap_find_next_valid_pfn(int, int);
- #else
+Regards
+Thomas
