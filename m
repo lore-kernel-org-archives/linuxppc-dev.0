@@ -1,18 +1,18 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 9D74B67B64
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 10:39:58 +1000 (EST)
-Date: Mon, 21 Aug 2006 02:40:22 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from hp3.statik.tu-cottbus.de (hp3.statik.TU-Cottbus.De
+	[141.43.120.68]) by ozlabs.org (Postfix) with ESMTP id EB03067B7A
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 18:25:41 +1000 (EST)
+Message-ID: <44E96719.6060003@s5r6.in-berlin.de>
+Date: Mon, 21 Aug 2006 09:56:09 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: Wolfgang Pfeiffer <roto@gmx.net>
 Subject: Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
-Message-ID: <20060821004022.GB2736@localhost>
 References: <20060817230347.GC3440@localhost> <20060818234930.GB2662@localhost>
 	<44E6D634.3000207@s5r6.in-berlin.de>
-	<20060821002921.GA2736@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060821002921.GA2736@localhost>
+	<20060820013121.GA2732@localhost>
+In-Reply-To: <20060820013121.GA2732@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,22 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 21, 2006 at 02:29:21AM +0200, Wolfgang Pfeiffer wrote:
+Wolfgang Pfeiffer wrote:
+[...]
+> So at least it looks now as if the Firewire 400 Hardware on the
+> alubook is not broken. Correct? Would be a great relief as I hate it
+> to have it away at the repair service.
+> 
+> I could mount the 2 tibook partitions easily on the alubook.
 
-> Note: About 2 days ago I had, IIRC, ext2fsx
+Yes, the port is certainly working correctly.
 
-wrong: I had ext2fsx_dev installed, IIRC.
+> OTOH: Connecting the alubook and tibook with Linux up and running on
+> both machines did not create a working (FW) connection between them ..
 
-> (http://sourceforge.net/project/showfiles.php?group_id=64713) shortly
-> installed on OSX - I quickly uninstalled it afterwards, [ ... ]
+Of course they won't export SBP-2 targets then. But they should be
+visible in Linux' sysfs or gscanbus or OS X' system profiler as external
+nodes. It is also possible to establish an IPv4 connection over FireWire
+between them, using eth1394 on Linux and OS X' network preferences panel.
 
+[...]
+> BTW: Do you know how to switch off verbose logging for the 1394
+> drivers once they're compiled into the kernel, via some
+> echo  "<some-value>" to /sys/*/* ?
+> I didn't find any entry there until now for that purpose ...
 
-Sorry
-Wolfgang
-
+It can only be configured at compile time.
 -- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+Stefan Richter
+-=====-=-==- =--- =-=-=
+http://arcgraph.de/sr/
