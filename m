@@ -1,18 +1,18 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 154C467C05
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id BCB0467C17
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Aug 2006 06:39:10 +1000 (EST)
-Date: Mon, 21 Aug 2006 13:43:20 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-Subject: Re: [PATCH] Add adder87x board support to 2.6.x
-Message-ID: <20060821204320.GD16290@mag.az.mvista.com>
-References: <20060820203649.4dbf89a6@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060820203649.4dbf89a6@localhost.localdomain>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 22 Aug 2006 06:45:30 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linux hanging on Xilinx SystemACE
+Date: Mon, 21 Aug 2006 16:45:27 -0400
+Message-ID: <3C02138692C13C4BB675FE7EA240952918DE10@bluefin.Soneticom.local>
+In-Reply-To: <OF66C0423D.E933F8BD-ON072571CC.0077CC69-072571CC.007906BE@mck.us.ray.com>
+From: "Clint Thomas" <cthomas@Soneticom.com>
+To: "Keith J Outwater" <kjoutwater@raytheon.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +23,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Aug 20, 2006 at 08:36:49PM +0100, Bryan O'Donoghue wrote:
-> Greetings all.
-> 
-> This set of patches adds support for the Analogue & Micro Adder87x to Linux.
-> 
-> The port is based on mpc885ads in the 2.6.18-rc4 tree.
-> The patches are very simple really consisting of a stripped down version of
-> mpc885ads renamed to adder87x*blah, a defconfig and appropriate entries in 
-> arch/ppc/Kconfig, arch/ppc/platforms/Makefile and include/asm-ppc/mpc8xx.h.
-> 
-> I've spent a bit of time testing this out, and I'm reasonably happy that this
-> should be useful to others using this development board.
-> 
-> 
-> Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+The adapter.c file fixed the problem, however running in polling I/O
+mode is far too slow. Since this is not an option for successful
+operation of our machine, do you know of a driver fix for this problem?
+Perhaps a newer version of the linux source tree is necessary. I'm using
+the Linuxppc_2_4_devel tree available from bkbits/mvista. Thanks for the
+help so far!
 
-Bryan,
+Clint Thomas
 
-If you're not already on the linuxppc-dev mailing list, you should be.
-The 'ppc' tree is deprecated and all new work should be happening in the
-'powerpc' tree (as in arch/powerpc).
+-----Original Message-----
+From: linuxppc-embedded-bounces+cthomas=3Dsoneticom.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+cthomas=3Dsoneticom.com@ozlabs.org] On
+Behalf Of Keith J Outwater
+Sent: Wednesday, August 16, 2006 6:02 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux hanging on Xilinx SystemACE
 
-The odds of this being accepted are slim but either way, you should read
-the mail archive and get involved in the powerpc migration.
+Clint,
 
-Mark
+> Using the powerpc development tree of Linux 2.4, I am trying to boot=20
+> my
+system from CompactFlash using Xilinx SystemACE. My compact flash card
+has two partitions, a 16MB FAT16 that holds the combination FPGA image /
+Linux Kernel ELF file, and an Ext2 partition that holds the root file
+system.=20
+The system starts the boot process, uncompresses the Linux kernel and
+begins loading drivers. Part way into this process, it conducts a
+partition check of the drive being reported to it by SystemACE, however,
+it hangs at that point. No kernel panic, no error message, it simply
+hangs. Here is the output at that point...
+>=20
+> Partition check:
+>  xsysacea:
+>=20
+> what I am trying to find out is if this problem has been seen/fixed in
+the past? or did I format the CF card incorrectly?
+>=20
+
+I have a system that uses the SystemAce in a similar way.  I was also
+having lockups.  After a lot of digging, I found a patch by John Masters
+(e-mail unknown) to the MontaVista SystemAce driver in the 2.4 kernel
+that disables the use of interrupts and runs the SystemAce in a polled
+mode.=20
+Performance is not that great, but at least it does not crash with the
+patch.  As I recall, the reason that the unpatched driver crashed is
+that the SystemAce is issuing more than one interrupt upon completion of
+a sector read or write.  Apparently, the Xilinx ML300 board works fine
+without this patch while other eval boards like the Memec DS-BD-2VPxx
+crash without the patch.
+
+This still may not be your problem, but the patch may help later on.
+
+I've attached the patched file.  The file is from
+./drivers/block/xilinx_sysace/adapter.c in the 2.4.30 from MontaVista.
+
+Keith
