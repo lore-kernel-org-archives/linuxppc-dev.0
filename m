@@ -1,24 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DF4667C3E
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 07:43:22 +1000 (EST)
-Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20060821212555.GC9828@localdomain>
-References: <20060811204105.GK3233@localdomain>
-	<1155772134.11312.119.camel@localhost.localdomain>
-	<20060817001807.GB354@localdomain>
-	<1155774477.11312.137.camel@localhost.localdomain>
-	<20060817204712.GD354@localdomain> <20060821212555.GC9828@localdomain>
-Content-Type: text/plain
-Date: Tue, 22 Aug 2006 07:43:10 +1000
-Message-Id: <1156196590.21752.52.camel@localhost.localdomain>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
+	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 24DBC67C66
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 08:04:55 +1000 (EST)
+Date: Mon, 21 Aug 2006 15:05:09 -0700 (PDT)
+Message-Id: <20060821.150509.111198790.davem@davemloft.net>
+To: shemminger@osdl.org
+Subject: Re: NAPI documentation
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20060821134053.7225987b@dxpl.pdx.osdl.net>
+References: <200608191325.19557.arnd@arndb.de>
+	<200608201948.20596.arnd@arndb.de>
+	<20060821134053.7225987b@dxpl.pdx.osdl.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: akpm@osdl.org, arnd@arndb.de, netdev@vger.kernel.org, jklewis@us.ibm.com,
+	corbet@lwn.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Jens.Osterkamp@de.ibm.com, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-08-21 at 16:25 -0500, Nathan Lynch wrote:
-> Nathan Lynch wrote:
-> > Benjamin Herrenschmidt wrote:
-> > > On Wed, 2006-08-16 at 19:18 -0500, Nathan Lynch wrote:
-> > > 
-> > > > No?  I didn't find anything about mftb having synchronizing
-> > > > behavior.  How should we ensure that temp_varp is assigned before
-> > > > reading the timebase?
-> > > 
-> > > I sync an isync would be enough.
-> > 
-> > I see, thanks.
+From: Stephen Hemminger <shemminger@osdl.org>
+Date: Mon, 21 Aug 2006 13:40:53 -0700
+
+> Please edit and improve
+> 	http://linux-net.osdl.org/index.php/NAPI
 > 
-> Actually, after checking Book 2 and discussing with some other folks
-> I'm not so sure -- isync "may complete before storage accesses
-> associated with instructions preceding the isync instruction have been
-> performed."
+> When the page is in good shape, I will de-wiki it to place in kernel doc tree.
 
-Of sure, I was thinking about isync preventing mftb from being executed
-and we can have a proper data dependency. Anyway, that's not necessary,
-I've looked at the code and we no longer need to pass the tb value in
-(it's historical). Thus we can just move the mftb in the protected area
-and maybe with a twi/isync pair make sure we got the gtod pointer before
-we do the mftb
+How do I edit the introduction paragraphs at the top?  I want to edit
+this sentence since it sounds awful:
 
-Ben.
+	NAPI ("New API") is a modification to the packet process, ...
+
+I want to change "packet process" to something more descriptive
+and accurate.
