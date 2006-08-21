@@ -1,21 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id CD18467BE2
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 08:17:31 +1000 (EST)
-Date: Mon, 21 Aug 2006 15:17:45 -0700 (PDT)
-Message-Id: <20060821.151745.64003001.davem@davemloft.net>
-To: shemminger@osdl.org
-Subject: Re: NAPI documentation
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20060821150935.0d59791b@localhost.localdomain>
-References: <20060821134053.7225987b@dxpl.pdx.osdl.net>
-	<20060821.150509.111198790.davem@davemloft.net>
-	<20060821150935.0d59791b@localhost.localdomain>
+Return-Path: <adobriyan@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 377B967BE2
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 09:22:42 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id e2so1778751ugf
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Aug 2006 16:22:41 -0700 (PDT)
+Date: Tue, 22 Aug 2006 03:22:23 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] windfarm_smu_sat.c: simplify around i2c_add_driver()
+Message-ID: <20060821232223.GB5220@martell.zuzino.mipt.ru>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: akpm@osdl.org, arnd@arndb.de, netdev@vger.kernel.org, jklewis@us.ibm.com,
-	corbet@lwn.net, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Jens.Osterkamp@de.ibm.com, jgarzik@pobox.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stephen Hemminger <shemminger@osdl.org>
-Date: Mon, 21 Aug 2006 15:09:35 -0700
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-> Click edit on wiki and it is the first sentence.
+ drivers/macintosh/windfarm_smu_sat.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-Thanks a lot.
-
-> Also, does Jamal have a link to his UKUUG paper?
-
-I don't think there is a copy online right now.
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -397,12 +397,7 @@ static int wf_sat_detach(struct i2c_clie
+ 
+ static int __init sat_sensors_init(void)
+ {
+-	int err;
+-
+-	err = i2c_add_driver(&wf_sat_driver);
+-	if (err < 0)
+-		return err;
+-	return 0;
++	return i2c_add_driver(&wf_sat_driver);
+ }
+ 
+ static void __exit sat_sensors_exit(void)
