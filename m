@@ -1,22 +1,21 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 7DE0467C30
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 07:26:08 +1000 (EST)
-Date: Mon, 21 Aug 2006 16:25:55 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
-Message-ID: <20060821212555.GC9828@localdomain>
-References: <20060811204105.GK3233@localdomain>
-	<1155772134.11312.119.camel@localhost.localdomain>
-	<20060817001807.GB354@localdomain>
-	<1155774477.11312.137.camel@localhost.localdomain>
-	<20060817204712.GD354@localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8178F67C31
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 07:31:49 +1000 (EST)
+Subject: Re: booting with BootX corrupts memory
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20060821121708.GA28713@aepfle.de>
+References: <1155096025.3813.6.camel@plutonium.opasia.dk>
+	<1155873732.5803.16.camel@localhost.localdomain>
+	<20060818070113.GA28088@aepfle.de> <20060821121708.GA28713@aepfle.de>
+Content-Type: text/plain
+Date: Tue, 22 Aug 2006 07:31:17 +1000
+Message-Id: <1156195877.21752.39.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060817204712.GD354@localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Niels Kristian Bech Jensen <nkbj@mail.tele.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Wed, 2006-08-16 at 19:18 -0500, Nathan Lynch wrote:
-> > 
-> > > No?  I didn't find anything about mftb having synchronizing
-> > > behavior.  How should we ensure that temp_varp is assigned before
-> > > reading the timebase?
-> > 
-> > I sync an isync would be enough.
-> 
-> I see, thanks.
 
-Actually, after checking Book 2 and discussing with some other folks
-I'm not so sure -- isync "may complete before storage accesses
-associated with instructions preceding the isync instruction have been
-performed."
+> > No, now I dont even get console= output on serial console.
+> 
+> It doesnt work on a 7200, butit works on a beige G3.
+> But later it locks up in 'PM: Adding info for No Bus:target0:0',
+> after mesh init. This one is likely unrelated.
+
+Depends.... does it work if you netboot a zImage.coff ?
+
+Ben.
