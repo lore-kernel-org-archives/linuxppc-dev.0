@@ -1,24 +1,22 @@
-Return-Path: <shemminger@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DF3A567C12
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 06:41:07 +1000 (EST)
-Date: Mon, 21 Aug 2006 13:40:53 -0700
-From: Stephen Hemminger <shemminger@osdl.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: NAPI documentation
-Message-ID: <20060821134053.7225987b@dxpl.pdx.osdl.net>
-In-Reply-To: <200608201948.20596.arnd@arndb.de>
-References: <20060818220700.GG26889@austin.ibm.com> <44E7BB7F.7030204@osdl.org>
-	<200608191325.19557.arnd@arndb.de>
-	<200608201948.20596.arnd@arndb.de>
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 7DE0467C30
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 07:26:08 +1000 (EST)
+Date: Mon, 21 Aug 2006 16:25:55 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] fix gettimeofday vs. update_gtod race
+Message-ID: <20060821212555.GC9828@localdomain>
+References: <20060811204105.GK3233@localdomain>
+	<1155772134.11312.119.camel@localhost.localdomain>
+	<20060817001807.GB354@localdomain>
+	<1155774477.11312.137.camel@localhost.localdomain>
+	<20060817204712.GD354@localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: akpm@osdl.org, netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>, Linas,
-	Jeff Garzik <jgarzik@pobox.com>, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060817204712.GD354@localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I took this opportunity to get a start on improving NAPI documentation.
-I mashed together the short text about NAPI (with permission) from lwn.net
-and the existing NAPI-HOWTO, to make a page on the Linux net wiki.
+Nathan Lynch wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Wed, 2006-08-16 at 19:18 -0500, Nathan Lynch wrote:
+> > 
+> > > No?  I didn't find anything about mftb having synchronizing
+> > > behavior.  How should we ensure that temp_varp is assigned before
+> > > reading the timebase?
+> > 
+> > I sync an isync would be enough.
+> 
+> I see, thanks.
 
-I took the liberty of removing some of the bits that were out of date, or referred
-to old Becker code. It still needs lots of editing to be presentable.
-
-Please edit and improve
-	http://linux-net.osdl.org/index.php/NAPI
-
-When the page is in good shape, I will de-wiki it to place in kernel doc tree.
+Actually, after checking Book 2 and discussing with some other folks
+I'm not so sure -- isync "may complete before storage accesses
+associated with instructions preceding the isync instruction have been
+performed."
