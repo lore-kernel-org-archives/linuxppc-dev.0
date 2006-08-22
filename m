@@ -1,22 +1,20 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id EEEB3679E9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 10:29:10 +1000 (EST)
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC] HOWTO use NAPI to reduce TX interrupts
-References: <44E7BB7F.7030204@osdl.org> <200608191325.19557.arnd@arndb.de>
-	<20060821235244.GJ5427@austin.ibm.com>
-	<20060821.165616.107936004.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 21 Aug 2006 17:29:05 -0700
-In-Reply-To: <20060821.165616.107936004.davem@davemloft.net> (David Miller's
-	message of "Mon, 21 Aug 2006 16:56:16 -0700 (PDT)")
-Message-ID: <adaac5x3966.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: akpm@osdl.org, arnd@arndb.de, netdev@vger.kernel.org, jklewis@us.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jens.Osterkamp@de.ibm.com, jgarzik@pobox.com, shemminger@osdl.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
+	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 7EF5E679E9
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 10:30:02 +1000 (EST)
+Date: Mon, 21 Aug 2006 17:30:16 -0700 (PDT)
+Message-Id: <20060821.173016.116359572.davem@davemloft.net>
+To: linas@austin.ibm.com
+Subject: Re: [PATCH 2/4]: powerpc/cell spidernet low watermark patch.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20060822001311.GK5427@austin.ibm.com>
+References: <20060818234532.GA8644@austin.ibm.com>
+	<1155962022.5803.68.camel@localhost.localdomain>
+	<20060822001311.GK5427@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Jens.Osterkamp@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-    David> Don't touch interrupts until both RX and TX queue work is
-    David> fullydepleted.  You seem to have this notion that RX and TX
-    David> interrupts are seperate.  They aren't, even if your device
-    David> can generate those events individually.  Whatever interrupt
-    David> you get, you shut down all interrupt sources and schedule
-    David> the ->poll().  Then ->poll() does something like:
+From: linas@austin.ibm.com (Linas Vepstas)
+Date: Mon, 21 Aug 2006 19:13:11 -0500
 
-This is a digression from spidernet, but what if a device is able to
-generate separate MSIs for TX and RX?  Some people from IBM have
-suggested that it is beneficial for throughput to handle TX work and
-RX work for IP-over-InfiniBand in parallel on separate CPUs, and
-handling everything through the ->poll() method would defeat this.
+> @@ -1495,16 +1500,16 @@ spider_net_interrupt(int irq, void *ptr,
+>  	if (!status_reg)
+>  		return IRQ_NONE;
+>  
+> -	if (status_reg & SPIDER_NET_RXINT ) {
+> +	if (status_reg & SPIDER_NET_RXINT) {
+>  		spider_net_rx_irq_off(card);
+>  		netif_rx_schedule(netdev);
+>  	}
+> -	if (status_reg & SPIDER_NET_TXINT ) {
+> -		spider_net_cleanup_tx_ring(card);
+> -		netif_wake_queue(netdev);
+> -	}
+>  
+> -	if (status_reg & SPIDER_NET_ERRINT )
+> +	/* Call rx_schedule from the tx interrupt, so that NAPI poll runs. */
+> +	if (status_reg & SPIDER_NET_TXINT)
+> +		netif_rx_schedule(netdev);
+> +
+> +	if (status_reg & SPIDER_NET_ERRINT)
 
- - R.
+This should be:
+
+	if ((status_reg & (SPIDET_NET_RXINT | SPIDET_NET_TXINT))) {
+		spider_net_rx_and_tx_irq_off(card);
+		netif_rx_schedule();
+	}
