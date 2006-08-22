@@ -1,18 +1,18 @@
 Return-Path: <Prashant.Yendigeri@lntinfotech.com>
-Received: from mail41.messagelabs.com (mail41.messagelabs.com [216.82.242.51])
-	by ozlabs.org (Postfix) with SMTP id DB21367BFF
+Received: from mail42.messagelabs.com (mail42.messagelabs.com [216.82.244.163])
+	by ozlabs.org (Postfix) with SMTP id D2C4267BF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Aug 2006 22:18:59 +1000 (EST)
-In-Reply-To: <OF3EFEEE4F.C1FFA5F2-ON652571CD.00345D42-652571CD.003481A2@lntinfotech.com>
+	Tue, 22 Aug 2006 22:54:46 +1000 (EST)
+In-Reply-To: <OF4994B4A2.853A7058-ON652571D2.0042D6D3-652571D2.0043A270@lntinfotech.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different
-	outputs - i have made some progress.
+Subject: RE: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 :
+	different	outputs - i have made some progress.
 MIME-Version: 1.0
-Message-ID: <OF4994B4A2.853A7058-ON652571D2.0042D6D3-652571D2.0043A270@lntinfotech.com>
+Message-ID: <OF348E06B4.BC78EE13-ON652571D2.0046BBEA-652571D2.0046EC4D@lntinfotech.com>
 From: Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com>
-Date: Tue, 22 Aug 2006 17:48:45 +0530
+Date: Tue, 22 Aug 2006 18:24:40 +0530
 Content-Type: multipart/alternative;
-	boundary="=_alternative 0043A26A652571D2_="
+	boundary="=_alternative 0046EC4A652571D2_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,14 +24,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multipart message in MIME format.
---=_alternative 0043A26A652571D2_=
+--=_alternative 0046EC4A652571D2_=
 Content-Type: text/plain; charset="US-ASCII"
 
 Hi,
+I made a small change in arch/ppc/platforms/85xx/mpc8540*c . I changed the 
+phyid value of TSEC1 to 4 and TSEC2 to 5. And it started working.
+
+-Prashant 
+
+
+
+Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com> 
+Sent by: 
+linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org
+08/22/2006 05:48 PM
+
+To
+linuxppc-embedded@ozlabs.org
+cc
+
+Subject
+RE: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different outputs - 
+i have made some progress.
+
+
+
+
+
+
+
+Hi, 
 
 Finally i have reached a position, where the PHY is detected . Now i am 
 using kernel version 2.6.14.4 and the gianfar_driver and phy driver seem 
-to be ok
+to be ok 
 
 But my problem now is after the PHY is detected (correctly) I don't get 
 messages like Speed, Full or half duplex, link is up etc. 
@@ -40,34 +67,36 @@ This means that the driver is not completely up, right ?
 What might be the problem ? 
 
 I am loading gianfar driver as a loadable module, but the marvell and 
-generic phy driver are built into the kernel.
+generic phy driver are built into the kernel. 
 
-This is my output :
-/ # ifconfig eth0 172.28.8.254 up
-eth0: PHY is Marvell 88E1101/88E1111 (1410c62)
+This is my output : 
+/ # ifconfig eth0 172.28.8.254 up 
+eth0: PHY is Marvell 88E1101/88E1111 (1410c62) 
 
-But after this no output, like Speed, etc.
+But after this no output, like Speed, etc. 
 I checked the code, this info is in a function , gfar_phy_change which 
 inturn is setup in a PHY change work queue called INIT_WORK. All of this 
 code is in 
-drivers/net/gianfar.c
+drivers/net/gianfar.c 
 
-Regards,
+Regards, 
 -prashant 
-
 
 
 Prashant Yendigeri <Prashant.Yendigeri@lntinfotech.com> 
 Sent by: 
-linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org
-08/17/2006 03:03 PM
+linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org 
+08/17/2006 03:03 PM 
+
 
 To
-Ho Jeffrey-r26191 <r26191@freescale.com>
+Ho Jeffrey-r26191 <r26191@freescale.com> 
 cc
-linuxppc-embedded@ozlabs.org
+linuxppc-embedded@ozlabs.org 
 Subject
 RE: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different outputs
+
+
 
 
 
@@ -81,15 +110,15 @@ This is what i am getting from u-boot print messages :
 U-Boot 1.1.0(pq3-20040423-r1) (May  5 2006 - 08:56:54) 
 
 Freescale PowerPC 
-    Core: E500, Version: 2.0, (0x80200020) 
-    System: 8540, Version: 2.0, (0x80300020) 
-    Clocks: CPU: 660 MHz, CCB: 264 MHz, DDR: 132 MHz, LBC:  66 MHz 
-    L1 D-cache 32KB, L1 I-cache 32KB enabled. 
+   Core: E500, Version: 2.0, (0x80200020) 
+   System: 8540, Version: 2.0, (0x80300020) 
+   Clocks: CPU: 660 MHz, CCB: 264 MHz, DDR: 132 MHz, LBC:  66 MHz 
+   L1 D-cache 32KB, L1 I-cache 32KB enabled. 
 Board: Freescale EVAL8540 Board 
-        CPU: 660 MHz 
-        CCB: 264 MHz 
-        DDR: 132 MHz 
-        LBC: 66 MHz 
+       CPU: 660 MHz 
+       CCB: 264 MHz 
+       DDR: 132 MHz 
+       LBC: 66 MHz 
 L1 D-cache 32KB, L1 I-cache 32KB enabled. 
 I2C:   ready 
 DRAM:  256 MB 
@@ -112,7 +141,6 @@ for this.
 
 -prashant 
 
-
 Ho Jeffrey-r26191 <r26191@freescale.com> 
 08/12/2006 06:32 AM 
 
@@ -124,6 +152,8 @@ cc
 linuxppc-embedded@ozlabs.org 
 Subject
 RE: Gianfar eth driver on 8540 ppc - for 2.4 and 2.6 : different outputs
+
+
 
 
 
@@ -153,80 +183,80 @@ Freescale Semiconductor HK Ltd
 
 ________________________________
 
-                From: 
+               From: 
 linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org 
 [mailto:linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org] On 
 Behalf Of Prashant Yendigeri
-                Sent: Friday, August 11, 2006 7:21 PM
-                To: Kumar Gala
-                Cc: linuxppc-embedded@ozlabs.org
-                Subject: Re: Gianfar eth driver on 8540 ppc - for 2.4 and 
+               Sent: Friday, August 11, 2006 7:21 PM
+               To: Kumar Gala
+               Cc: linuxppc-embedded@ozlabs.org
+               Subject: Re: Gianfar eth driver on 8540 ppc - for 2.4 and 
 2.6 : different outputs
  
  
 
-                Hi, 
+               Hi, 
  
-                Downloaded 2.6.16.26 and booted up and got this : 
+               Downloaded 2.6.16.26 and booted up and got this : 
  
-                / # ifconfig eth0 172.28.8.254 up 
-                [   34.034596] 0:00 not found 
-                [   34.037330] eth0: Could not attach to PHY 
-                [   34.041809] 0:00 not found 
-                SIOCSIFFLAGS: No[   34.044526] eth0: Could not attach to 
+               / # ifconfig eth0 172.28.8.254 up 
+               [   34.034596] 0:00 not found 
+               [   34.037330] eth0: Could not attach to PHY 
+               [   34.041809] 0:00 not found 
+               SIOCSIFFLAGS: No[   34.044526] eth0: Could not attach to 
 PHY 
-                 such device 
-                SIOCSIFFLAGS: No such device 
+                such device 
+               SIOCSIFFLAGS: No such device 
  
-                I had enabled all the PHY devices in .config and also 
-tried only with Marvell phy enabled. 
+               I had enabled all the PHY devices in .config and also tried 
+only with Marvell phy enabled. 
  
-                Kernel boot messages : 
-                [    2.296555] Gianfar MII Bus: probed 
-                [    2.301789] eth0: Gianfar Ethernet Controller Version 
+               Kernel boot messages : 
+               [    2.296555] Gianfar MII Bus: probed 
+               [    2.301789] eth0: Gianfar Ethernet Controller Version 
 1.2, 00:01:af:07:9b:8a 
  
-                [    2.309039] eth0: Running with NAPI disabled 
-                [    2.313307] eth0: 64/64 RX/TX BD ring size 
-                [    2.318498] eth1: Gianfar Ethernet Controller Version 
+               [    2.309039] eth0: Running with NAPI disabled 
+               [    2.313307] eth0: 64/64 RX/TX BD ring size 
+               [    2.318498] eth1: Gianfar Ethernet Controller Version 
 1.2, 00:00:00:00:72:6f 
  
-                [    2.325738] eth1: Running with NAPI disabled 
-                [    2.330006] eth1: 64/64 RX/TX BD ring size 
-                [    2.335198] eth2: Gianfar Ethernet Controller Version 
+               [    2.325738] eth1: Running with NAPI disabled 
+               [    2.330006] eth1: 64/64 RX/TX BD ring size 
+               [    2.335198] eth2: Gianfar Ethernet Controller Version 
 1.2, 6f:74:3d:2f:64:65 
  
-                [    2.342377] eth2: Running with NAPI disabled 
-                [    2.346662] eth2: 64/64 RX/TX BD ring size 
-                [    2.351586] Marvell 88E1101: Registered new driver 
-                [    2.357010] Davicom DM9161E: Registered new driver 
-                [    2.362443] Davicom DM9131: Registered new driver 
-                [    2.367775] Cicada Cis8204: Registered new driver 
-                [    2.373136] LXT970: Registered new driver 
-                [    2.377794] LXT971: Registered new driver 
-                [    2.382461] QS6612: Registered new driver 
+               [    2.342377] eth2: Running with NAPI disabled 
+               [    2.346662] eth2: 64/64 RX/TX BD ring size 
+               [    2.351586] Marvell 88E1101: Registered new driver 
+               [    2.357010] Davicom DM9161E: Registered new driver 
+               [    2.362443] Davicom DM9131: Registered new driver 
+               [    2.367775] Cicada Cis8204: Registered new driver 
+               [    2.373136] LXT970: Registered new driver 
+               [    2.377794] LXT971: Registered new driver 
+               [    2.382461] QS6612: Registered new driver 
  
  
-                Regards, 
-                Prashant 
- 
- 
- 
+               Regards, 
+               Prashant 
  
  
  
-                Kumar Gala <galak@kernel.crashing.org> 
+ 
+ 
+ 
+               Kumar Gala <galak@kernel.crashing.org> 
 
-                08/11/2006 09:40 AM 
+               08/11/2006 09:40 AM 
 
  
-                                 To
-                                 Prashant Yendigeri 
+                                To
+                                Prashant Yendigeri 
 <Prashant.Yendigeri@lntinfotech.com> 
-                                 cc
-                                 linuxppc-embedded@ozlabs.org 
-                                 Subject
-                                 Re: Gianfar eth driver on 8540 ppc - for 
+                                cc
+                                linuxppc-embedded@ozlabs.org 
+                                Subject
+                                Re: Gianfar eth driver on 8540 ppc - for 
 2.4 and 2.6 : different outputs
 
  
@@ -235,36 +265,36 @@ tried only with Marvell phy enabled.
 
 
  
-                On Aug 10, 2006, at 6:18 AM, Prashant Yendigeri wrote:
+               On Aug 10, 2006, at 6:18 AM, Prashant Yendigeri wrote:
  
-                >
-                > Hi,
-                >
-                > The gianfar driver of 2.6.12 and 2.4.20 give different 
+               >
+               > Hi,
+               >
+               > The gianfar driver of 2.6.12 and 2.4.20 give different 
 outputs on 
-                > the same PPC 8540 board.
-                >
-                > What could be the reason ?
-                >
-                > Output on 2.4.20 :
-                > /root # ifconfig eth0 172.28.8.254 up
-                > eth0: PHY is Marvell 88E1011S (1410c62)
-                > eth0: Auto-negotiation done
-                > eth0: Half Duplex
-                > eth0: Speed 10BT
-                > eth0: Link is up
-                >
-                > Output on 2.6.12
-                > / # ifconfig eth0 172.28.8.254 up
-                >  eth0: PHY is Generic MII (ffffffff)
+               > the same PPC 8540 board.
+               >
+               > What could be the reason ?
+               >
+               > Output on 2.4.20 :
+               > /root # ifconfig eth0 172.28.8.254 up
+               > eth0: PHY is Marvell 88E1011S (1410c62)
+               > eth0: Auto-negotiation done
+               > eth0: Half Duplex
+               > eth0: Speed 10BT
+               > eth0: Link is up
+               >
+               > Output on 2.6.12
+               > / # ifconfig eth0 172.28.8.254 up
+               >  eth0: PHY is Generic MII (ffffffff)
  
-                It looks like your 2.6.12 kernel isn't handling the PHY 
+               It looks like your 2.6.12 kernel isn't handling the PHY 
 correctly. 
-                I'd recommend upgrading to something newer which has the 
+               I'd recommend upgrading to something newer which has the 
 phylib 
-                (can't remember which 2.6 that went into).
+               (can't remember which 2.6 that went into).
  
-                - kumar
+               - kumar
  
  ______________________________________________________________________
  
@@ -282,45 +312,28 @@ ______________________________________________________________________
 _______________________________________________
 Linuxppc-embedded mailing list
 Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded 
+
+______________________________________________________________________
+
+______________________________________________________________________
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
 https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 
 ______________________________________________________________________
---=_alternative 0043A26A652571D2_=
+--=_alternative 0046EC4A652571D2_=
 Content-Type: text/html; charset="US-ASCII"
 
 
 <br><font size=2 face="sans-serif">Hi,</font>
+<br><font size=2 face="sans-serif">I made a small change in arch/ppc/platforms/85xx/mpc8540*c
+. I changed the phyid value of TSEC1 to 4 and TSEC2 to 5. And it started
+working.</font>
 <br>
-<br><font size=2 face="sans-serif">Finally i have reached a position, where
-the PHY is detected . Now i am using kernel version 2.6.14.4 and the gianfar_driver
-and phy driver seem to be ok</font>
-<br>
-<br><font size=2 face="sans-serif">But my problem now is after the PHY
-is detected (correctly) I don't get messages like Speed, Full or half duplex,
-link is up etc. </font>
-<br><font size=2 face="sans-serif">This means that the driver is not completely
-up, right ? </font>
-<br>
-<br><font size=2 face="sans-serif">What might be the problem ? </font>
-<br>
-<br><font size=2 face="sans-serif">I am loading gianfar driver as a loadable
-module, but the marvell and generic phy driver are built into the kernel.</font>
-<br>
-<br><font size=2 face="sans-serif">This is my output :</font>
-<br><font size=2 face="sans-serif">/ # ifconfig eth0 172.28.8.254 up</font>
-<br><font size=2 face="sans-serif">eth0: PHY is Marvell 88E1101/88E1111
-(1410c62)</font>
-<br>
-<br><font size=2 face="sans-serif">But after this no output, like Speed,
-etc.</font>
-<br><font size=2 face="sans-serif">I checked the code, this info is in
-a function , gfar_phy_change which inturn is setup in a PHY change work
-queue called INIT_WORK. All of this code is in </font>
-<br><font size=2 face="sans-serif">drivers/net/gianfar.c</font>
-<br>
-<br><font size=2 face="sans-serif">Regards,</font>
-<br><font size=2 face="sans-serif">-prashant </font>
+<br><font size=2 face="sans-serif">-Prashant </font>
 <br>
 <br>
 <br>
@@ -329,22 +342,23 @@ queue called INIT_WORK. All of this code is in </font>
 <td width=40%><font size=1 face="sans-serif"><b>Prashant Yendigeri &lt;Prashant.Yendigeri@lntinfotech.com&gt;</b>
 </font>
 <br><font size=1 face="sans-serif">Sent by: linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org</font>
-<p><font size=1 face="sans-serif">08/17/2006 03:03 PM</font>
+<p><font size=1 face="sans-serif">08/22/2006 05:48 PM</font>
 <td width=59%>
 <table width=100%>
 <tr valign=top>
 <td>
 <div align=right><font size=1 face="sans-serif">To</font></div>
-<td><font size=1 face="sans-serif">Ho Jeffrey-r26191 &lt;r26191@freescale.com&gt;</font>
+<td><font size=1 face="sans-serif">linuxppc-embedded@ozlabs.org</font>
 <tr valign=top>
 <td>
 <div align=right><font size=1 face="sans-serif">cc</font></div>
-<td><font size=1 face="sans-serif">linuxppc-embedded@ozlabs.org</font>
+<td>
 <tr valign=top>
 <td>
 <div align=right><font size=1 face="sans-serif">Subject</font></div>
 <td><font size=1 face="sans-serif">RE: Gianfar eth driver on 8540 ppc -
-for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp;outputs</font></table>
+for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp;outputs
+- i have made some progress.</font></table>
 <br>
 <table>
 <tr valign=top>
@@ -354,27 +368,90 @@ for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp;outputs</font></table>
 <br>
 <br>
 <br><font size=2 face="sans-serif"><br>
+Hi,</font><font size=3> <br>
+</font><font size=2 face="sans-serif"><br>
+Finally i have reached a position, where the PHY is detected . Now i am
+using kernel version 2.6.14.4 and the gianfar_driver and phy driver seem
+to be ok</font><font size=3> <br>
+</font><font size=2 face="sans-serif"><br>
+But my problem now is after the PHY is detected (correctly) I don't get
+messages like Speed, Full or half duplex, link is up etc. <br>
+This means that the driver is not completely up, right ? </font><font size=3><br>
+</font><font size=2 face="sans-serif"><br>
+What might be the problem ? </font><font size=3><br>
+</font><font size=2 face="sans-serif"><br>
+I am loading gianfar driver as a loadable module, but the marvell and generic
+phy driver are built into the kernel.</font><font size=3> <br>
+</font><font size=2 face="sans-serif"><br>
+This is my output :</font><font size=3> </font><font size=2 face="sans-serif"><br>
+/ # ifconfig eth0 172.28.8.254 up</font><font size=3> </font><font size=2 face="sans-serif"><br>
+eth0: PHY is Marvell 88E1101/88E1111 (1410c62)</font><font size=3> <br>
+</font><font size=2 face="sans-serif"><br>
+But after this no output, like Speed, etc.</font><font size=3> </font><font size=2 face="sans-serif"><br>
+I checked the code, this info is in a function , gfar_phy_change which
+inturn is setup in a PHY change work queue called INIT_WORK. All of this
+code is in <br>
+drivers/net/gianfar.c</font><font size=3> <br>
+</font><font size=2 face="sans-serif"><br>
+Regards,</font><font size=3> </font><font size=2 face="sans-serif"><br>
+-prashant </font><font size=3><br>
+<br>
+</font>
+<table width=100%>
+<tr valign=top>
+<td width=51%><font size=1 face="sans-serif"><b>Prashant Yendigeri &lt;Prashant.Yendigeri@lntinfotech.com&gt;</b>
+<br>
+Sent by: linuxppc-embedded-bounces+prashant.yendigeri=lntinfotech.com@ozlabs.org</font><font size=3>
+</font>
+<p><font size=1 face="sans-serif">08/17/2006 03:03 PM</font><font size=3>
+</font>
+<td width=48%>
+<br>
+<table width=100%>
+<tr valign=top>
+<td width=9%>
+<div align=right><font size=1 face="sans-serif">To</font></div>
+<td width=90%><font size=1 face="sans-serif">Ho Jeffrey-r26191 &lt;r26191@freescale.com&gt;</font><font size=3>
+</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">cc</font></div>
+<td><font size=1 face="sans-serif">linuxppc-embedded@ozlabs.org</font><font size=3>
+</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">Subject</font></div>
+<td><font size=1 face="sans-serif">RE: Gianfar eth driver on 8540 ppc -
+for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp;outputs</font></table>
+<br>
+<br>
+<table width=100%>
+<tr valign=top>
+<td width=50%>
+<td width=50%></table>
+<br></table>
+<br><font size=3><br>
+<br>
+</font><font size=2 face="sans-serif"><br>
+<br>
 Hi,</font><font size=3> </font><font size=2 face="sans-serif"><br>
 This is what i am getting from u-boot print messages :</font><font size=3>
-<br>
 </font><font size=2 face="sans-serif"><br>
+<br>
 U-Boot 1.1.0(pq3-20040423-r1) (May &nbsp;5 2006 - 08:56:54)</font><font size=3>
+</font><font size=2 face="sans-serif"><br>
 <br>
-</font><font size=2 face="sans-serif"><br>
 Freescale PowerPC</font><font size=3> </font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp;Core: E500, Version: 2.0, (0x80200020)</font><font size=3>
-</font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp;System: 8540, Version: 2.0, (0x80300020)</font><font size=3>
-</font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp;Clocks: CPU: 660 MHz, CCB: 264 MHz, DDR: 132 MHz, LBC: &nbsp;66
+ &nbsp; Core: E500, Version: 2.0, (0x80200020)</font><font size=3> </font><font size=2 face="sans-serif"><br>
+ &nbsp; System: 8540, Version: 2.0, (0x80300020)</font><font size=3> </font><font size=2 face="sans-serif"><br>
+ &nbsp; Clocks: CPU: 660 MHz, CCB: 264 MHz, DDR: 132 MHz, LBC: &nbsp;66
 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp;L1 D-cache 32KB, L1 I-cache 32KB enabled.</font><font size=3>
-</font><font size=2 face="sans-serif"><br>
+ &nbsp; L1 D-cache 32KB, L1 I-cache 32KB enabled.</font><font size=3> </font><font size=2 face="sans-serif"><br>
 Board: Freescale EVAL8540 Board</font><font size=3> </font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp; &nbsp; &nbsp;CPU: 660 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp; &nbsp; &nbsp;CCB: 264 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp; &nbsp; &nbsp;DDR: 132 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
- &nbsp; &nbsp; &nbsp; &nbsp;LBC: 66 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
+ &nbsp; &nbsp; &nbsp; CPU: 660 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
+ &nbsp; &nbsp; &nbsp; CCB: 264 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
+ &nbsp; &nbsp; &nbsp; DDR: 132 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
+ &nbsp; &nbsp; &nbsp; LBC: 66 MHz</font><font size=3> </font><font size=2 face="sans-serif"><br>
 L1 D-cache 32KB, L1 I-cache 32KB enabled.</font><font size=3> </font><font size=2 face="sans-serif"><br>
 I2C: &nbsp; ready</font><font size=3> </font><font size=2 face="sans-serif"><br>
 DRAM: &nbsp;256 MB</font><font size=3> </font><font size=2 face="sans-serif"><br>
@@ -391,14 +468,13 @@ Freescale ENET2: PHY is Intel LXT971A (1378e2)</font><font size=3> </font><font 
 Freescale ENET0, Freescale ENET1, Freescale ENET2</font><font size=3> </font><font size=2 face="sans-serif"><br>
 Hit any key to stop autoboot: &nbsp;0</font><font size=3> </font><font size=2 face="sans-serif"><br>
 MPC8540EVAL=&gt;</font><font size=3> </font><font size=2 face="sans-serif"><br>
-MPC8540EVAL=&gt;</font><font size=3> <br>
-</font><font size=2 face="sans-serif"><br>
+MPC8540EVAL=&gt;</font><font size=3> </font><font size=2 face="sans-serif"><br>
+<br>
 This seems to me it is a old board from GDATECH . Data sheet not available
 for this.</font><font size=3> <br>
-<br>
 </font><font size=2 face="sans-serif"><br>
--prashant </font><font size=3><br>
 <br>
+-prashant </font><font size=3><br>
 </font>
 <table width=100%>
 <tr valign=top>
@@ -425,7 +501,8 @@ for this.</font><font size=3> <br>
 <div align=right><font size=1 face="sans-serif">Subject</font></div>
 <td><font size=1 face="sans-serif">RE: Gianfar eth driver on 8540 ppc -
 for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp; outputs</font></table>
-<br>
+<br><font size=3><br>
+</font>
 <br>
 <table width=100%>
 <tr valign=top>
@@ -435,6 +512,7 @@ for 2.4 and 2.6 : different &nbsp; &nbsp; &nbsp; &nbsp; outputs</font></table>
 <br><font size=3><br>
 <br>
 </font><tt><font size=2><br>
+<br>
 Hi<br>
 <br>
 &gt;&gt;&gt;&gt;[ &nbsp; 34.041809] 0:00 not found <br>
@@ -456,174 +534,175 @@ Freescale Semiconductor HK Ltd <br>
 <br>
 ________________________________<br>
 <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;From: linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; From: linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org
 [mailto:linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org] On Behalf
 Of Prashant Yendigeri<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Sent: Friday, August
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Sent: Friday, August
 11, 2006 7:21 PM<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;To: Kumar Gala<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Cc: linuxppc-embedded@ozlabs.org<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Subject: Re: Gianfar
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To: Kumar Gala<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Cc: linuxppc-embedded@ozlabs.org<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Subject: Re: Gianfar
 eth driver on 8540 ppc - for 2.4 and 2.6 : different outputs<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
 <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Hi, <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Downloaded 2.6.16.26
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Hi, <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Downloaded 2.6.16.26
 and booted up and got this : <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;/ # ifconfig eth0
-172.28.8.254 up <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; 34.034596]
-0:00 not found <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; 34.037330]
-eth0: Could not attach to PHY <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; 34.041809]
-0:00 not found <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SIOCSIFFLAGS: No[
-&nbsp; 34.044526] eth0: Could not attach to PHY <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; such device <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SIOCSIFFLAGS: No
-such device <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;I had enabled all
-the PHY devices in .config and also tried only with Marvell phy enabled.
-<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Kernel boot messages
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; / # ifconfig eth0 172.28.8.254
+up <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; 34.034596] 0:00
+not found <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; 34.037330] eth0:
+Could not attach to PHY <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; 34.041809] 0:00
+not found <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; SIOCSIFFLAGS: No[ &nbsp;
+34.044526] eth0: Could not attach to PHY <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;such device <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; SIOCSIFFLAGS: No such
+device <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; I had enabled all the
+PHY devices in .config and also tried only with Marvell phy enabled. <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Kernel boot messages
 : <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.296555]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.296555]
 Gianfar MII Bus: probed <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.301789]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.301789]
 eth0: Gianfar Ethernet Controller Version 1.2, 00:01:af:07:9b:8a <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.309039]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.309039]
 eth0: Running with NAPI disabled <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.313307]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.313307]
 eth0: 64/64 RX/TX BD ring size <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.318498]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.318498]
 eth1: Gianfar Ethernet Controller Version 1.2, 00:00:00:00:72:6f <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.325738]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.325738]
 eth1: Running with NAPI disabled <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.330006]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.330006]
 eth1: 64/64 RX/TX BD ring size <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.335198]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.335198]
 eth2: Gianfar Ethernet Controller Version 1.2, 6f:74:3d:2f:64:65 <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.342377]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.342377]
 eth2: Running with NAPI disabled <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.346662]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.346662]
 eth2: 64/64 RX/TX BD ring size <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.351586]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.351586]
 Marvell 88E1101: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.357010]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.357010]
 Davicom DM9161E: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.362443]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.362443]
 Davicom DM9131: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.367775]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.367775]
 Cicada Cis8204: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.373136]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.373136]
 LXT970: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.377794]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.377794]
 LXT971: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;[ &nbsp; &nbsp;2.382461]
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ &nbsp; &nbsp;2.382461]
 QS6612: Registered new driver <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Regards, <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Prashant <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Kumar Gala &lt;galak@kernel.crashing.org&gt;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Regards, <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Prashant <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Kumar Gala &lt;galak@kernel.crashing.org&gt;
 <br>
 <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;08/11/2006 09:40
-AM <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 08/11/2006 09:40 AM <br>
 <br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; To<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;To<br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Prashant Yendigeri &lt;Prashant.Yendigeri@lntinfotech.com&gt;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Prashant Yendigeri &lt;Prashant.Yendigeri@lntinfotech.com&gt;
 <br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; cc<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;cc<br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; linuxppc-embedded@ozlabs.org
-<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;linuxppc-embedded@ozlabs.org <br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Subject<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Subject<br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Re: Gianfar eth driver on 8540
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Re: Gianfar eth driver on 8540
 ppc - for 2.4 and 2.6 : different outputs<br>
 <br>
  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
 <br>
 <br>
 <br>
 <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;On Aug 10, 2006,
-at 6:18 AM, Prashant Yendigeri wrote:<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; Hi,<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; The gianfar
-driver of 2.6.12 and 2.4.20 give different outputs on &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; the same PPC
-8540 board.<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; What could
-be the reason ?<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; Output on
-2.4.20 :<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; /root # ifconfig
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; On Aug 10, 2006, at 6:18
+AM, Prashant Yendigeri wrote:<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; Hi,<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; The gianfar driver
+of 2.6.12 and 2.4.20 give different outputs on &nbsp;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; the same PPC 8540
+board.<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; What could be the
+reason ?<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; Output on 2.4.20
+:<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; /root # ifconfig
 eth0 172.28.8.254 up<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; eth0: PHY
-is Marvell 88E1011S (1410c62)<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; eth0: Auto-negotiation
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; eth0: PHY is Marvell
+88E1011S (1410c62)<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; eth0: Auto-negotiation
 done<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; eth0: Half
-Duplex<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; eth0: Speed
-10BT<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; eth0: Link
-is up<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; Output on
-2.6.12<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; / # ifconfig
-eth0 172.28.8.254 up<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&gt; &nbsp;eth0:
-PHY is Generic MII (ffffffff)<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;It looks like your
-2.6.12 kernel isn't handling the PHY correctly. &nbsp; <br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;I'd recommend upgrading
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; eth0: Half Duplex<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; eth0: Speed 10BT<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; eth0: Link is up<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; Output on 2.6.12<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; / # ifconfig eth0
+172.28.8.254 up<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &gt; &nbsp;eth0: PHY
+is Generic MII (ffffffff)<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; It looks like your 2.6.12
+kernel isn't handling the PHY correctly. &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; I'd recommend upgrading
 to something newer which has the phylib &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;(can't remember
-which 2.6 that went into).<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;- kumar<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;______________________________________________________________________<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;______________________________________________________________________<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (can't remember which
+2.6 that went into).<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - kumar<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ______________________________________________________________________<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ______________________________________________________________________<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
 <br>
 <br>
 ______________________________________________________________________</font></tt><font size=3><br>
+<br>
+<br>
+______________________________________________________________________<br>
+<br>
+______________________________________________________________________</font><tt><font size=2>_______________________________________________<br>
+Linuxppc-embedded mailing list<br>
+Linuxppc-embedded@ozlabs.org<br>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded</font></tt><font size=3>
 <br>
 <br>
 ______________________________________________________________________<br>
@@ -637,4 +716,4 @@ https://ozlabs.org/mailman/listinfo/linuxppc-embedded</font></tt>
 <BR>
 ______________________________________________________________________<BR>
 
---=_alternative 0043A26A652571D2_=--
+--=_alternative 0046EC4A652571D2_=--
