@@ -1,16 +1,16 @@
 Return-Path: <rlrevell@joe-job.com>
 Received: from mustang.oldcity.dca.net (mustang.oldcity.dca.net [216.158.38.3])
-	by ozlabs.org (Postfix) with SMTP id 814FA67C14
+	by ozlabs.org (Postfix) with SMTP id 1DE87679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Aug 2006 03:54:56 +1000 (EST)
+	Wed, 23 Aug 2006 03:57:33 +1000 (EST)
 Subject: RE: Deactivate serial console?
 From: Lee Revell <rlrevell@joe-job.com>
 To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
 In-Reply-To: <91B22F93A880FA48879475E134D6F0BE02EEA435@CA1EXCLV02.adcorp.kla-tencor.com>
 References: <91B22F93A880FA48879475E134D6F0BE02EEA435@CA1EXCLV02.adcorp.kla-tencor.com>
 Content-Type: text/plain
-Date: Tue, 22 Aug 2006 13:55:00 -0400
-Message-Id: <1156269300.10565.180.camel@mindpipe>
+Date: Tue, 22 Aug 2006 13:57:38 -0400
+Message-Id: <1156269458.10565.182.camel@mindpipe>
 Mime-Version: 1.0
 Cc: ppc <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,9 +24,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 On Tue, 2006-08-22 at 10:46 -0700, Howard, Marc wrote:
-> stty -F /dev/console 0
+> "stty -F /dev/console 0" or the equivalent in code does the trick for me
+> but it might be implementation dependent.
+> 
 
-Thanks - so if I read the man page correctly the 0 is interpreted as 0
-baud, and I would re-enable it by "stty -F /dev/console 115200"?
+That works for disabling the console but now I can't re-enable it.  stty
+-F /dev/console 115200 does not restore serial console access.
 
 Lee
+
+> Marc W. Howard
+> 
+> > -----Original Message-----
+> > From: 
+> > linuxppc-embedded-bounces+marc.howard=kla-tencor.com@ozlabs.or
+> g [mailto:linuxppc-embedded-bounces+marc.howard=kla->
+> tencor.com@ozlabs.org] On Behalf Of Lee Revell
+> > Sent: Tuesday, August 22, 2006 9:19 AM
+> > To: ppc
+> > Subject: Deactivate serial console?
+> > 
+> > We're developing a PPC440 based system for a customer who 
+> > requires that
+> > it be possible to disable/enable the serial console without a reboot.
+> > Is this possible without hacking the kernel?
+> > 
+> > Lee
+> > 
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > 
+> 
