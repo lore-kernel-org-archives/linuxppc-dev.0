@@ -1,19 +1,19 @@
-Return-Path: <rlrevell@joe-job.com>
-Received: from mustang.oldcity.dca.net (mustang.oldcity.dca.net [216.158.38.3])
-	by ozlabs.org (Postfix) with SMTP id DD26467BA7
+Return-Path: <Marc.Howard@kla-tencor.com>
+Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
+	[192.146.1.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C7D7567C3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Aug 2006 04:27:19 +1000 (EST)
+	Wed, 23 Aug 2006 04:44:32 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Subject: RE: Deactivate serial console?
-From: Lee Revell <rlrevell@joe-job.com>
-To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
-In-Reply-To: <1156269458.10565.182.camel@mindpipe>
-References: <91B22F93A880FA48879475E134D6F0BE02EEA435@CA1EXCLV02.adcorp.kla-tencor.com>
-	<1156269458.10565.182.camel@mindpipe>
-Content-Type: text/plain
-Date: Tue, 22 Aug 2006 14:27:24 -0400
-Message-Id: <1156271244.10565.200.camel@mindpipe>
-Mime-Version: 1.0
-Cc: ppc <linuxppc-embedded@ozlabs.org>
+Date: Tue, 22 Aug 2006 10:46:57 -0700
+Message-ID: <91B22F93A880FA48879475E134D6F0BE02EEA435@CA1EXCLV02.adcorp.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
+To: "Lee Revell" <rlrevell@joe-job.com>, "ppc" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,18 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-08-22 at 13:57 -0400, Lee Revell wrote:
-> On Tue, 2006-08-22 at 10:46 -0700, Howard, Marc wrote:
-> > "stty -F /dev/console 0" or the equivalent in code does the trick for me
-> > but it might be implementation dependent.
-> > 
-> 
-> That works for disabling the console but now I can't re-enable it.  stty
-> -F /dev/console 115200 does not restore serial console access.
+"stty -F /dev/console 0" or the equivalent in code does the trick for me
+but it might be implementation dependent.
 
-OK, for the benefit of the list readers, this solution does work.
-However the disable command must be issued from telnet/SSH prompt - if
-issued from the a serial console, the serial console locks up and cannot
-be restored without a reboot.
+Marc W. Howard
 
-Lee
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+marc.howard=3Dkla-tencor.com@ozlabs.or
+g [mailto:linuxppc-embedded-bounces+marc.howard=3Dkla->
+tencor.com@ozlabs.org] On Behalf Of Lee Revell
+> Sent: Tuesday, August 22, 2006 9:19 AM
+> To: ppc
+> Subject: Deactivate serial console?
+>=20
+> We're developing a PPC440 based system for a customer who=20
+> requires that
+> it be possible to disable/enable the serial console without a reboot.
+> Is this possible without hacking the kernel?
+>=20
+> Lee
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
