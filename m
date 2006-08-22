@@ -1,12 +1,12 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id A3A8167BFC
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 21:07:36 +1000 (EST)
-Date: Tue, 22 Aug 2006 15:03:45 +0400
+	by ozlabs.org (Postfix) with ESMTP id 1F85F67C11
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 21:13:54 +1000 (EST)
+Date: Tue, 22 Aug 2006 15:13:38 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: Andy Fleming <afleming@freescale.com>
 Subject: Re: [PATCH 4/6] POWERPC: add support of mpc8560 eval board
-Message-ID: <20060822150345.08865190@localhost.localdomain>
+Message-ID: <20060822151338.513895fc@localhost.localdomain>
 In-Reply-To: <6A1F08CA-2FAE-4BE6-82BF-30F35053483C@freescale.com>
 References: <20060812000655.6186.42738.stgit@localhost.localdomain>
 	<20060812001017.6186.99359.stgit@localhost.localdomain>
