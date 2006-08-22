@@ -1,21 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 80DFF679E9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 10:32:10 +1000 (EST)
-Date: Mon, 21 Aug 2006 17:32:25 -0700 (PDT)
-Message-Id: <20060821.173225.68047257.davem@davemloft.net>
-To: rdreier@cisco.com
-Subject: Re: [RFC] HOWTO use NAPI to reduce TX interrupts
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adaac5x3966.fsf@cisco.com>
-References: <20060821235244.GJ5427@austin.ibm.com>
-	<20060821.165616.107936004.davem@davemloft.net>
-	<adaac5x3966.fsf@cisco.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EB94467B86
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 13:27:25 +1000 (EST)
+Subject: Re: [PATCH] windfarm_smu_sat.c: simplify around i2c_add_driver()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20060821232223.GB5220@martell.zuzino.mipt.ru>
+References: <20060821232223.GB5220@martell.zuzino.mipt.ru>
+Content-Type: text/plain
+Date: Tue, 22 Aug 2006 13:27:03 +1000
+Message-Id: <1156217223.21752.61.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: akpm@osdl.org, arnd@arndb.de, netdev@vger.kernel.org, jklewis@us.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jens.Osterkamp@de.ibm.com, jgarzik@pobox.com, shemminger@osdl.org
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 21 Aug 2006 17:29:05 -0700
+On Tue, 2006-08-22 at 03:22 +0400, Alexey Dobriyan wrote:
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-> This is a digression from spidernet, but what if a device is able to
-> generate separate MSIs for TX and RX?  Some people from IBM have
-> suggested that it is beneficial for throughput to handle TX work and
-> RX work for IP-over-InfiniBand in parallel on separate CPUs, and
-> handling everything through the ->poll() method would defeat this.
+Oops ... :)
 
-The TX work is so incredibly cheap, relatively speaking, compared
-to the full input packet processing path that the RX side runs
-that I see no real benefit.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-In fact, you might even get better locality due to the way the
-locking can be performed if TX reclaim runs inside of ->poll()
+> ---
+> 
+>  drivers/macintosh/windfarm_smu_sat.c |    7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> --- a/drivers/macintosh/windfarm_smu_sat.c
+> +++ b/drivers/macintosh/windfarm_smu_sat.c
+> @@ -397,12 +397,7 @@ static int wf_sat_detach(struct i2c_clie
+>  
+>  static int __init sat_sensors_init(void)
+>  {
+> -	int err;
+> -
+> -	err = i2c_add_driver(&wf_sat_driver);
+> -	if (err < 0)
+> -		return err;
+> -	return 0;
+> +	return i2c_add_driver(&wf_sat_driver);
+>  }
+>  
+>  static void __exit sat_sensors_exit(void)
