@@ -1,17 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+Return-Path: <adrian@humboldt.co.uk>
+Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 368F867BED
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 00:56:38 +1000 (EST)
-Subject: [PATCH] make checkstack work with ARCH=powerpc
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 3759167BE4
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 03:15:40 +1000 (EST)
+Subject: Re: [PATCH ] powerpc: Add tsi108/9 and non standard mpic support
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19E353@zch01exm23.fsl.freescale.net>
+References: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19E353@zch01exm23.fsl.freescale.net>
 Content-Type: text/plain
-Date: Tue, 22 Aug 2006 16:57:05 +0200
-Message-Id: <1156258625.3825.5.camel@ux156>
+Date: Tue, 22 Aug 2006 18:15:14 +0100
+Message-Id: <1156266914.10233.26.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
+	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds 'powerpc' architecture support to checkstack.pl.
+On Tue, 2006-08-22 at 18:07 +0800, Zang Roy-r61911 wrote:
+> The patch adds new hardware information table for mpic. This 
+> enables mpic code to deal with mpic controller with 
+> hardware behavior difference.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> +		TSI108_CPU_BASE,
+> +		TSI108_CPU_STRIDE,
+> +		TSI108_CPU_IPI_DISPATCH_0,
+> +		TSI108_CPU_IPI_DISPATCH_STRIDE,
+> +		TSI108_CPU_CURRENT_TASK_PRI,
 
---- wireless-dev.orig/scripts/checkstack.pl	2006-08-22 15:47:37.000000000 +0200
-+++ wireless-dev/scripts/checkstack.pl	2006-08-22 15:47:40.000000000 +0200
-@@ -62,6 +62,8 @@ my (@stack, $re, $x, $xs);
- 	} elsif ($arch eq 'ppc64') {
- 		#XXX
- 		$re = qr/.*stdu.*r1,-($x{1,8})\(r1\)/o;
-+	} elsif ($arch eq 'powerpc') {
-+		$re = qr/.*st[dw]u.*r1,-($x{1,8})\(r1\)/o;
- 	} elsif ($arch =~ /^s390x?$/) {
- 		#   11160:       a7 fb ff 60             aghi   %r15,-160
- 		$re = qr/.*ag?hi.*\%r15,-(([0-9]{2}|[3-9])[0-9]{2})/o;
+This isn't actually enough to get SMP working on a Tsi109, as the Tsi109
+mailbox and doorbell registers don't behave like standard MPIC IPIs.
+
+So far I've experimented with a hack that uses the doorbell registers:
+Doorbell 0 delivers IPI 0 to processor 0
+Doorbell 1 delivers IPI 1 to processor 0
+Doorbell 2 delivers IPI 0 to processor 1
+Doorbell 3 delivers IPI 1 to processor 1
+
+I don't support IPI 2 and IPI 3, though it would be possible to use the
+mailbox registers in a similar scheme. This approach works, but I've not
+worked out how to cleanly integrate this with the rest of the MPIC
+driver, and won't have any time to do this in the near future.
+
+-- 
+Adrian Cox <adrian@humboldt.co.uk>
