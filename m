@@ -1,19 +1,15 @@
-Return-Path: <Marc.Howard@kla-tencor.com>
-Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
-	[192.146.1.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7D7567C3C
+Return-Path: <tliang@yahoo.com>
+Received: from web36105.mail.mud.yahoo.com (web36105.mail.mud.yahoo.com
+	[66.163.179.219]) by ozlabs.org (Postfix) with SMTP id C208C679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Aug 2006 04:44:32 +1000 (EST)
+	Wed, 23 Aug 2006 06:57:06 +1000 (EST)
+Message-ID: <20060822205024.98433.qmail@web36105.mail.mud.yahoo.com>
+Date: Tue, 22 Aug 2006 13:50:24 -0700 (PDT)
+From: Xupei Liang <tliang@yahoo.com>
+Subject: atomic operations in user space
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Deactivate serial console?
-Date: Tue, 22 Aug 2006 10:46:57 -0700
-Message-ID: <91B22F93A880FA48879475E134D6F0BE02EEA435@CA1EXCLV02.adcorp.kla-tencor.com>
-From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
-To: "Lee Revell" <rlrevell@joe-job.com>, "ppc" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +20,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"stty -F /dev/console 0" or the equivalent in code does the trick for me
-but it might be implementation dependent.
+Hi,
 
-Marc W. Howard
+On the PPC platform, can I use the atomic operations
+defined in the kernel, e.g. atomic_add(),
+atomic_dec(), etc. in the user space programs? 
 
-> -----Original Message-----
-> From:=20
-> linuxppc-embedded-bounces+marc.howard=3Dkla-tencor.com@ozlabs.or
-g [mailto:linuxppc-embedded-bounces+marc.howard=3Dkla->
-tencor.com@ozlabs.org] On Behalf Of Lee Revell
-> Sent: Tuesday, August 22, 2006 9:19 AM
-> To: ppc
-> Subject: Deactivate serial console?
->=20
-> We're developing a PPC440 based system for a customer who=20
-> requires that
-> it be possible to disable/enable the serial console without a reboot.
-> Is this possible without hacking the kernel?
->=20
-> Lee
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
+I compiled the following program:
+
+#include <asm-ppc/atomic.h>
+
+int main()
+{
+	atomic_t atom;
+
+	atomic_add(1, &atom);
+	return (0);
+}
+
+I am able to compile it and the atomic_add seems to be
+translated into the correct instructions. Can anybody
+please confirm? Thanks.
+
+Regards,
+
+Terry Liang
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
