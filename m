@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mel@csn.ul.ie>
+Received: from calculon.skynet.ie (calculon.skynet.ie [193.1.99.88])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C3C5D67BB9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 17:25:50 +1000 (EST)
-Subject: Re: [PATCH 2/2] uninorth: Add module param 'aperture' for aperture
-	size
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-In-Reply-To: <1156176559.16513.78.camel@thor.lorrainebruecke.local>
-References: <115608447678-git-send-email->  <11560844762890-git-send-email->
-	<1156176559.16513.78.camel@thor.lorrainebruecke.local>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 22 Aug 2006 17:25:36 +1000
-Message-Id: <1156231536.21752.100.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id A27D6679E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Aug 2006 18:38:57 +1000 (EST)
+Date: Tue, 22 Aug 2006 09:38:50 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+To: Keith Mannthey <kmannth@gmail.com>
+Subject: Re: [PATCH 0/6] Sizing zones and holes in an architecture independent
+	manner V9
+In-Reply-To: <a762e240608211152x5d4f11f0wd26f7e3d75d38e0a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0608220923280.11152@skynet.skynet.ie>
+References: <20060821134518.22179.46355.sendpatchset@skynet.skynet.ie>
+	<a762e240608211152x5d4f11f0wd26f7e3d75d38e0a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: akpm@osdl.org, tony.luck@intel.com, linuxppc-dev@ozlabs.org, ak@suse.de,
+	bob.picco@hp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Memory Management List <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-08-21 at 18:09 +0200, Michel Dänzer wrote:
+On Mon, 21 Aug 2006, Keith Mannthey wrote:
 
-> In contrast to most if not all PC BIOSes, OpenFirmware (OF) on PowerMacs with
-> UniNorth bridges does not allow changing the aperture size. The size set up by
-> OF is usually 16 MB, which is too low for graphics intensive environments.
-> Hence, add a module parameter that allows changing the aperture size at driver
-> initialization time. When the parameter is not specified, the default is still
-> to leave the size unchanged, usually as set up by OF.
+> On 8/21/06, Mel Gorman <mel@csn.ul.ie> wrote:
+>> This is V9 of the patchset to size zones and memory holes in an
+>> architecture-independent manner. It booted successfully on 5 different
+>> machines (arches were x86, x86_64, ppc64 and ia64) in a number of different
+>> configurations and successfully built a kernel. If it fails on any machine,
+>> booting with loglevel=8 and the console log should tell me what went wrong.
+>> 
+>
+> I am wondering why this new api didn't cleanup the pfn_to_nid code
+> path as well. Arches are left to still keep another set of
+> nid-start-end info around. We are sending info like
+>
 
-The right fix is to allow changing it by the driver ... can't we do it
-such that AGPSize will work & change it ? The firmware doesn't actually
-configure it at all I suspect... those 16M are basically 
-what the HW comes up with as a default setting (unless the firmware runs
-some diagnostics and sets it as a result of these). It's basically
-expected that we set it ourselves and a module option doesn't seem like
-a terribly good idea to me...
+pfn_to_nid() is used at runtime and the early_node_map[] is deleted by 
+then. As this step, I only want to get the initialisation correct. What 
+can be replaced is the architecture-specific early_pfn_to_nid() function 
+which I did for power and x86.
 
-Maybe we should just have the driver default to something more sensible
-in addition to what AGPSize comes from userland ? like 64M ?
+> add_active_range(unsigned int nid, unsigned long start_pfn, unsigned
+> long end_pfn)
+>
+> With this info making a common pnf_to_nid seems to be of intrest so we
+> don't have to keep redundant information in both generic and arch
+> specific data structures.
+>
 
-Ben.
+To implement a common one of interest, the array would have to be 
+converted to a linked list at the end of boot so it could be modified by 
+memory hot-add, then pfn_to_nid() would walk the linked list rather than 
+the existing array. pfn_valid() would probably be replaced as well. 
+However, this is going to be slower (if more accurate in some cases) than 
+the existing pfn_valid() and so I would treat it as a separate issue.
+
+> Are you intending the hot-add memory code path to call add_active_range or 
+> ???
+>
+
+Not at this time. I want to make sure the memory initialisation is right 
+before dealing with additional complications.
+
+> Thanks,
+> Keith
+>
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
