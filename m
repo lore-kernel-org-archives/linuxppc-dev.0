@@ -1,20 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 85D3967BBC
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 08:03:13 +1000 (EST)
-Date: Wed, 23 Aug 2006 15:03:14 -0700 (PDT)
-Message-Id: <20060823.150314.41637066.davem@davemloft.net>
-To: linas@austin.ibm.com
-Subject: Re: [PATCH 2/6]: powerpc/cell spidernet low watermark patch.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20060823213642.GG4401@austin.ibm.com>
-References: <1156055509.5803.77.camel@localhost.localdomain>
-	<200608201203.15645.arnd@arndb.de>
-	<20060823213642.GG4401@austin.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B8E7B67C05
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 08:40:30 +1000 (EST)
+Subject: Re: [PATCH ] powerpc:  pass UPIO_TSI flag to 8259 serial driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <44EC15A1.4090807@freescale.com>
+References: <7EA18FDD2DC2154AA3BD6D2F22A62A0E26E532@zch01exm23.fsl.freescale.net>
+	<1156304163.8433.19.camel@localhost.localdomain>
+	<44EC15A1.4090807@freescale.com>
+Content-Type: text/plain
+Date: Thu, 24 Aug 2006 07:52:21 +1000
+Message-Id: <1156369941.8433.57.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: arnd@arndb.de, jklewis@us.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: linas@austin.ibm.com (Linas Vepstas)
-Date: Wed, 23 Aug 2006 16:36:42 -0500
+On Wed, 2006-08-23 at 16:45 +0800, Zang Roy-r61911 wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Wed, 2006-08-23 at 10:20 +0800, Zang Roy-r61911 wrote:
+> >   
+> >> The patch passes the UPIO_TSI flag to general 8259 serial driver
+> >>     
+> >
+> > Patch looks damaged to me... appart from that, what it does looks ok to
+> > me.
+> Sorry. It seems imported by my mail client. Please pick up the following 
+> one.
 
-> I could create a searate patch to change struct descr {} to split 
-> the u32 into several u8's; there's a dozen spots that get touched.
+Seems to be damaged as well ! What mail client do you use ? 
+
+Ben.
+
+> Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
 > 
-> Alternatel, I could do a cheesy cast to char[4] and access that way.
-> Opinions?
-
-The most portable scheme would be a "u32/u8[4]" union with
-appropriate endianness checks when determining which byte
-to access in the u8[] view.
+>  ---
+> 
+>  arch/powerpc/kernel/legacy_serial.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/legacy_serial.c 
+> b/arch/powerpc/kernel/legacy_serial.c
+> index 359ab89..07c2c00 100644
+> --- a/arch/powerpc/kernel/legacy_serial.c
+> +++ b/arch/powerpc/kernel/legacy_serial.c
+> @@ -115,6 +115,7 @@ static int __init add_legacy_soc_port(st
+>      u64 addr;
+>      u32 *addrp;
+>      upf_t flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ;
+> +    struct device_node *tsi = of_get_parent(np);
+>  
+>      /* We only support ports that have a clock frequency properly
+>       * encoded in the device-tree.
+> @@ -134,7 +135,10 @@ static int __init add_legacy_soc_port(st
+>      /* Add port, irq will be dealt with later. We passed a translated
+>       * IO port value. It will be fixed up later along with the irq
+>       */
+> -    return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, flags, 0);
+> +    if (tsi && !strcmp(tsi->type, "tsi-bridge"))
+> +        return add_legacy_port(np, -1, UPIO_TSI, addr, addr, NO_IRQ, 
+> flags, 0);
+> +    else
+> +        return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, 
+> flags, 0);
+>  }
+>  
+>  static int __init add_legacy_isa_port(struct device_node *np,
+> @@ -464,7 +468,7 @@ static int __init serial_dev_init(void)
+>              fixup_port_irq(i, np, port);
+>          if (port->iotype == UPIO_PORT)
+>              fixup_port_pio(i, np, port);
+> -        if (port->iotype == UPIO_MEM)
+> +        if ((port->iotype == UPIO_MEM) || (port->iotype == UPIO_TSI))
+>              fixup_port_mmio(i, np, port);
+>      }
+>  
