@@ -1,25 +1,34 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from admin.zirkelwireless.com (admin.zirkelwireless.com
-	[209.216.203.65])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 197DB67CF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 19:15:02 +1000 (EST)
-Subject: Re: [PATCH 2/2] uninorth: Add module param 'aperture' for aperture
-	size
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1156285033.21752.107.camel@localhost.localdomain>
-References: <115608447678-git-send-email->  <11560844762890-git-send-email->
-	<1156176559.16513.78.camel@thor.lorrainebruecke.local>
-	<1156231536.21752.100.camel@localhost.localdomain>
-	<1156236954.16513.141.camel@thor.lorrainebruecke.local>
-	<1156285033.21752.107.camel@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 23 Aug 2006 11:14:41 +0200
-Message-Id: <1156324481.30411.50.camel@thor.lorrainebruecke.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, davej@codemonkey.org.uk
+	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2FB7167BB4
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 19:36:08 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate1.uk.ibm.com (8.13.7/8.13.7) with ESMTP id k7N9a3Tp195232
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 09:36:03 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k7N9c1HM565306
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 10:38:01 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k7N9a2AI004963
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 10:36:03 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [2.6.19 PATCH 0/7] ehea: IBM eHEA Ethernet Device Driver
+Date: Wed, 23 Aug 2006 10:55:49 +0200
+MIME-Version: 1.0
+To: netdev <netdev@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608231055.49375.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-08-23 at 08:17 +1000, Benjamin Herrenschmidt wrote:
-> > > It's basically expected that we set it ourselves and a module option 
-> > > doesn't seem like a terribly good idea to me...
-> > 
-> > Well, wasn't it you who suggested this? :)
-> 
-> Possibly, I don't always have good ideas :) I would rather have that
-> size be configured by the client driver... 
+Hi,
 
-That would certainly be ideal. Digging into the code a little deeper, it
-seems like the backend's insert_memory hook should be able to adjust the
-GATT table size on the fly. Not sure __get_free_pages() is expected to
-succeed for dozens of pages at any given time though.
+in this latest version of the IBM eHEA Ethernet Device Driver
+we removed all unnecessary variable initializations and did some
+code cleanup. We hope that we didn't miss to respond to any of your
+suggestions. Please feel free to send us further feedback. We highly
+appreciate your efforts.
 
+Thanks,
+Jan-Bernd
 
-> oh well, let's workaround that for now by using a better default _and_ 
-> the module option.
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Changelog-by: =A0Jan-Bernd Themann <themann@de.ibm.com>
 
-Agreed, I'll re-send the patch with the default changed to 64M.
+Differences to patch set http://www.spinics.net/lists/netdev/msg12702.html
 
+Changelog:
 
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+=2D Unnecessary variable initializations removed
+=2D Promiscuous mode support included
+
+ drivers/net/Kconfig             |    9=20
+ drivers/net/Makefile            |    1=20
+ drivers/net/ehea/Makefile       |    7=20
+ drivers/net/ehea/ehea.h         |  438 ++++++
+ drivers/net/ehea/ehea_ethtool.c |  244 +++
+ drivers/net/ehea/ehea_hcall.h   |   51=20
+ drivers/net/ehea/ehea_hw.h      |  290 ++++
+ drivers/net/ehea/ehea_main.c    | 2677 +++++++++++++++++++++++++++++++++++=
++++++
+ drivers/net/ehea/ehea_phyp.c    |  784 +++++++++++
+ drivers/net/ehea/ehea_phyp.h    |  463 ++++++
+ drivers/net/ehea/ehea_qmr.c     |  607 +++++++++
+ drivers/net/ehea/ehea_qmr.h     |  361 +++++
+ 12 files changed, 5932 insertions(+)
