@@ -1,20 +1,18 @@
-Return-Path: <tliang@Brocade.COM>
-Received: from mail53.messagelabs.com (mail53.messagelabs.com [216.82.249.211])
-	by ozlabs.org (Postfix) with SMTP id 2F52167BE3
+Return-Path: <kbabu@automatika.com>
+Received: from mail.int.automatika.com (64-44-36-66.customer.uswo.net
+	[64.44.36.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A30E367BFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 05:03:35 +1000 (EST)
-Received: from hq-exch-1.corp.brocade.com (hq-exch-1.brocade.com [10.3.8.21])
-	by scooby.brocade.com (Postfix) with ESMTP id F394225801B
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Aug 2006 11:59:50 -0700 (PDT)
+	Thu, 24 Aug 2006 05:23:52 +1000 (EST)
+Message-ID: <44ECA983.2090303@automatika.com>
+Date: Wed, 23 Aug 2006 15:16:19 -0400
+From: Kartik Babu <kbabu@automatika.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6C6E6.D3860D69"
-Subject: atomic operations in user space
-Date: Wed, 23 Aug 2006 12:03:32 -0700
-Message-ID: <82557754AC6C0448A2218FD1C7D50E2AC6FE9F@hq-exch-1.corp.brocade.com>
-From: "Terry Liang" <tliang@Brocade.COM>
-To: <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org, kylej@aiinet.com
+Subject: Philips isp1362 linux driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,53 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,
 
-------_=_NextPart_001_01C6C6E6.D3860D69
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+  I was looking through the ozlabs forums, and saw your post about the 
+driver for the Philips isp1362 USB host controller. You had offered to 
+put up the for this driver to another poster.
+  I was wondering if you would be able to share that code with me, I'm 
+working on getting USB working reliably on a Phytec PXA255 board, and 
+I'm having some issues. I was looking to see if the other drivers out 
+there would do a better job. (Currently using the driver from ELINOS).
 
-Thanks. Arnd. My main concern is whether the operations are really =
-atomic as they are in the kernel space. I have read some discussion in =
-another forum that on other platforms, even if you are able to compile =
-the atomic_add(), atomic_set(), etc. from an user space application,  =
-they don't guarantee to be atomic. Thanks.
-
-Regards,
-
-Terry Liang
-
-------_=_NextPart_001_01C6C6E6.D3860D69
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>atomic operations in user space</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks. Arnd. My main concern is =
-whether the operations are really atomic as they are in the kernel =
-space. I have read some discussion in another forum that on other =
-platforms, even if you are able to compile the atomic_add(), =
-atomic_set(), etc. from an user space application,&nbsp; they don't =
-guarantee to be atomic. Thanks.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Regards,</FONT>
-<BR>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Terry Liang</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C6C6E6.D3860D69--
+Thanks in advance.
+Kartik
