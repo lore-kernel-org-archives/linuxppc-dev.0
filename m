@@ -1,17 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17644.21336.231834.981262@cargo.ozlabs.ibm.com>
-Date: Wed, 23 Aug 2006 23:08:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH ] powerpc:  pass UPIO_TSI flag to 8259 serial driver
-In-Reply-To: <44EC15A1.4090807@freescale.com>
-References: <7EA18FDD2DC2154AA3BD6D2F22A62A0E26E532@zch01exm23.fsl.freescale.net>
-	<1156304163.8433.19.camel@localhost.localdomain>
-	<44EC15A1.4090807@freescale.com>
-Cc: Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <hollisb@us.ibm.com>
+Subject: Re: update: consolidated flat device tree code
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17643.64011.666743.300278@cargo.ozlabs.ibm.com>
+References: <1155860626.27466.126.camel@basalt.austin.ibm.com>
+	<17643.64011.666743.300278@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 23 Aug 2006 09:42:58 -0500
+Message-Id: <1156344179.7960.4.camel@basalt.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Pantelis Antoniou <pantelis@embeddedalley.com>,
+	"Sachin P. Sant" <sachinp@in.ibm.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,11 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Zang Roy-r61911 writes:
+On Wed, 2006-08-23 at 16:47 +1000, Paul Mackerras wrote:
+> Hollis Blanchard writes:
+> 
+> > Still haven't looked to merge Matt's changes (because I'm busy, the
+> > current code works for me, and they haven't been accepted in u-boot
+> > yet).
+> 
+> The other version that was posted had support for modifying an
+> existing flat tree, which I need for the wrapper code for prep.  Are
+> those "Matt's changes"?  Are you thinking of adding that capability to
+> your version?
 
-> Sorry. It seems imported by my mail client. Please pick up the following 
-> one.
+You can do this now with the ft_set_prop() function, which is what I'm
+using for Xen.
 
-Still busted, but don't worry, I fixed it up by hand.
+At the moment that function isn't able to modify the size of a property,
+but Mark is going to adapt his code (which supports that).
 
-Paul.
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
