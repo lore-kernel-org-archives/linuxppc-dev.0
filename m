@@ -1,17 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 53D9067C73
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 11:45:18 +1000 (EST)
-Subject: [PATCH] powepc: Fix BootX booting with an initrd
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Wed, 23 Aug 2006 11:45:12 +1000
-Message-Id: <1156297512.8433.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id F02B967C8F
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 11:49:48 +1000 (EST)
+Date: Wed, 23 Aug 2006 03:50:14 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [Correction #2] Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
+Message-ID: <20060823015014.GA2702@localhost>
+References: <20060817230347.GC3440@localhost> <20060818234930.GB2662@localhost>
+	<44E6D634.3000207@s5r6.in-berlin.de>
+	<20060823002801.GA2709@localhost> <20060823003638.GB2709@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060823003638.GB2709@localhost>
+Cc: linuxppc-dev@ozlabs.org, billfink@mindspring.com,
+	linux1394-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bootx_init.c trampoline didn't properly add the ramdisk to the
-"reserve map" (list of reserved areas of memory), thus causing all sorts
-of failures when using BootX with an initrd. Also fixes a possible
-problem if the ramdisk is located before the device-tree passed by
-BootX.
+On Wed, Aug 23, 2006 at 02:36:38AM +0200, Wolfgang Pfeiffer wrote:
+> On Wed, Aug 23, 2006 at 02:28:01AM +0200, Wolfgang Pfeiffer wrote:
+> 
+> > [ ... ]
+> 
+> > Some tests on the Alubook:
+> > 
+> > I compiled a fresh git kernel now with verbose ieee logging turned on.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> >   [ ..... ]
+> > 
+> > Only after running the latter script, I switch on the FW disk. The log
+> > for these moments covering about 60 seconds is here:
+> > 
+> > wolfgangpfeiffer.com/kern.log.when.fw.disk.is.switched.on.txt
+> > 
+> > Then, some time later on with no /dev/sda available, I run gscanbus,
+> > forcing a bus reset. The log, again covering about 60 seconds is here:
+> > 
+> > wolfgangpfeiffer.com/kern.log.with.gscanbus.after.failed.fw.connection.txt
+> 
+> 
+> Sorry, forgot that: After running gscanbus above, and a few minutes after
+> sending the quoted message: still no /dev/sda
 
-Index: linux-work/arch/powerpc/platforms/powermac/bootx_init.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/bootx_init.c	2006-08-17 16:16:03.000000000 +1000
-+++ linux-work/arch/powerpc/platforms/powermac/bootx_init.c	2006-08-18 14:01:36.000000000 +1000
-@@ -411,8 +411,15 @@
- 	DBG("End of boot params: %x\n", mem_end);
- 	rsvmap[0] = mem_start;
- 	rsvmap[1] = mem_end;
--	rsvmap[2] = 0;
--	rsvmap[3] = 0;
-+	if (bootx_info->ramDisk) {
-+		rsvmap[2] = ((unsigned long)bootx_info) + bootx_info->ramDisk;
-+		rsvmap[3] = rsvmap[2] + bootx_info->ramDiskSize;
-+		rsvmap[4] = 0;
-+		rsvmap[5] = 0;
-+	} else {
-+		rsvmap[2] = 0;
-+		rsvmap[3] = 0;
-+	}
- 
- 	return (unsigned long)hdr;
- }
-@@ -543,12 +550,12 @@
- 	 */
- 	if (bi->version < 5) {
- 		space = bi->deviceTreeOffset + bi->deviceTreeSize;
--		if (bi->ramDisk)
-+		if (bi->ramDisk >= space)
- 			space = bi->ramDisk + bi->ramDiskSize;
- 	} else
- 		space = bi->totalParamsSize;
- 
--	bootx_printf("Total space used by parameters & ramdisk: %x \n", space);
-+	bootx_printf("Total space used by parameters & ramdisk: 0x%x \n", space);
- 
- 	/* New BootX will have flushed all TLBs and enters kernel with
- 	 * MMU switched OFF, so this should not be useful anymore.
+
+More precise, IIRC, it should have said: 
+
+"Minutes after running gscanbus, that is a few minutes after sending
+the quoted message: still no /dev/sda"
+
+Sorry for the overhead
+Wolfgang
+
+
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
