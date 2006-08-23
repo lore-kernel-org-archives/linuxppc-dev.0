@@ -1,18 +1,15 @@
-Return-Path: <xma@us.ibm.com>
-In-Reply-To: <20060821.173225.68047257.davem@davemloft.net>
-Subject: Re: [RFC] HOWTO use NAPI to reduce TX interrupts
-To: David Miller <davem@davemloft.net>
-Message-ID: <OFF5798F90.C3D3FCBB-ON872571D3.0007EC7F-882571D2.0072BA84@us.ibm.com>
-From: Shirley Ma <xma@us.ibm.com>
-Date: Tue, 22 Aug 2006 18:29:37 -0700
-MIME-Version: 1.0
-Content-type: multipart/alternative;
-	Boundary="0__=08BBFB40DF946AEF8f9e8a93df938690918c08BBFB40DF946AEF"
-Cc: akpm@osdl.org, arnd@arndb.de, Jens.Osterkamp@de.ibm.com,
-	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	linuxppc-dev-bounces+xma=us.ibm.com@ozlabs.org,
-	jgarzik@pobox.com, rdreier@cisco.com, shemminger@osdl.org
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id C004367C7C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 11:36:18 +1000 (EST)
+Date: Tue, 22 Aug 2006 20:36:05 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix gettimeofday inaccuracies
+Message-ID: <20060823013605.GC11309@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,67 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0__=08BBFB40DF946AEF8f9e8a93df938690918c08BBFB40DF946AEF
-Content-type: text/plain; charset=US-ASCII
+There are two problems in the powerpc gettimeofday code which can
+cause incorrect results to be returned.
+
+The first is that there is a race between do_gettimeofday and the
+timer interrupt:
+
+1. do_gettimeofday does get_tb()
+
+2. decrementer exception on boot cpu which runs timer_recalc_offset,
+   which also samples the timebase and updates the do_gtod structure
+   with a greater timebase value.
+
+3. do_gettimeofday calls __do_gettimeofday, which leads to the
+   negative result from tb_val - temp_varp->tb_orig_stamp.
+
+The second is caused by taking the boot cpu offline, which can cause
+the value of tb_last_jiffy to be increased past the currently
+available timebase, causing the same underflow as above.
 
 
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-
-
-> > This is a digression from spidernet, but what if a device is able to
-> > generate separate MSIs for TX and RX?  Some people from IBM have
-> > suggested that it is beneficial for throughput to handle TX work and
-> > RX work for IP-over-InfiniBand in parallel on separate CPUs, and
-> > handling everything through the ->poll() method would defeat this.
->
-> The TX work is so incredibly cheap, relatively speaking, compared
-> to the full input packet processing path that the RX side runs
-> that I see no real benefit.
->
-> In fact, you might even get better locality due to the way the
-> locking can be performed if TX reclaim runs inside of ->poll()
-
-We are still comparing these two approaches IPoIB performance under
-different configurations. Hopefully the performance work can be done soon.
-So we can have some data to share.
-
-Thanks
-Shirley Ma
-IBM Linux Technology Center
-15300 SW Koll Parkway
-Beaverton, OR 97006-6063
-Phone(Fax): (503) 578-7638
-
-
-
---0__=08BBFB40DF946AEF8f9e8a93df938690918c08BBFB40DF946AEF
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-
-<html><body>
-<p><tt>&gt; &gt; This is a digression from spidernet, but what if a device is able to<br>
-&gt; &gt; generate separate MSIs for TX and RX? &nbsp;Some people from IBM have<br>
-&gt; &gt; suggested that it is beneficial for throughput to handle TX work and<br>
-&gt; &gt; RX work for IP-over-InfiniBand in parallel on separate CPUs, and<br>
-&gt; &gt; handling everything through the -&gt;poll() method would defeat this.<br>
-&gt; <br>
-&gt; The TX work is so incredibly cheap, relatively speaking, compared<br>
-&gt; to the full input packet processing path that the RX side runs<br>
-&gt; that I see no real benefit.<br>
-&gt; <br>
-&gt; In fact, you might even get better locality due to the way the<br>
-&gt; locking can be performed if TX reclaim runs inside of -&gt;poll()<br>
-</tt><br>
-<tt>We are still comparing these two approaches IPoIB performance under different configurations. Hopefully the performance work can be done soon. So we can have some data to share.</tt><br>
-<br>
-Thanks<br>
-Shirley Ma<br>
-IBM Linux Technology Center<br>
-15300 SW Koll Parkway<br>
-Beaverton, OR 97006-6063<br>
-Phone(Fax): (503) 578-7638<br>
-<br>
-<br>
-<br>
-</body></html>
---0__=08BBFB40DF946AEF8f9e8a93df938690918c08BBFB40DF946AEF--
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -417,7 +417,7 @@ static __inline__ void timer_check_rtc(v
+ /*
+  * This version of gettimeofday has microsecond resolution.
+  */
+-static inline void __do_gettimeofday(struct timeval *tv, u64 tb_val)
++static inline void __do_gettimeofday(struct timeval *tv)
+ {
+ 	unsigned long sec, usec;
+ 	u64 tb_ticks, xsec;
+@@ -431,7 +431,12 @@ static inline void __do_gettimeofday(str
+ 	 * without a divide (and in fact, without a multiply)
+ 	 */
+ 	temp_varp = do_gtod.varp;
+-	tb_ticks = tb_val - temp_varp->tb_orig_stamp;
++
++	/* Sampling the time base must be done after loading
++	 * do_gtod.varp in order to avoid racing with update_gtod.
++	 */
++	mb();
++	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
+ 	temp_tb_to_xs = temp_varp->tb_to_xs;
+ 	temp_stamp_xsec = temp_varp->stamp_xsec;
+ 	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
+@@ -464,7 +469,7 @@ void do_gettimeofday(struct timeval *tv)
+ 		tv->tv_usec = usec;
+ 		return;
+ 	}
+-	__do_gettimeofday(tv, get_tb());
++	__do_gettimeofday(tv);
+ }
+ 
+ EXPORT_SYMBOL(do_gettimeofday);
+@@ -650,6 +655,7 @@ void timer_interrupt(struct pt_regs * re
+ 	int next_dec;
+ 	int cpu = smp_processor_id();
+ 	unsigned long ticks;
++	u64 tb_next_jiffy;
+ 
+ #ifdef CONFIG_PPC32
+ 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+@@ -691,11 +697,14 @@ void timer_interrupt(struct pt_regs * re
+ 			continue;
+ 
+ 		write_seqlock(&xtime_lock);
+-		tb_last_jiffy += tb_ticks_per_jiffy;
+-		tb_last_stamp = per_cpu(last_jiffy, cpu);
+-		do_timer(regs);
+-		timer_recalc_offset(tb_last_jiffy);
+-		timer_check_rtc();
++		tb_next_jiffy = tb_last_jiffy + tb_ticks_per_jiffy;
++		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
++			tb_last_jiffy = tb_next_jiffy;
++			tb_last_stamp = per_cpu(last_jiffy, cpu);
++			do_timer(regs);
++			timer_recalc_offset(tb_last_jiffy);
++			timer_check_rtc();
++		}
+ 		write_sequnlock(&xtime_lock);
+ 	}
+ 	
