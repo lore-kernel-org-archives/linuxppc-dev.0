@@ -1,18 +1,20 @@
-Return-Path: <lombardo@mdivac.com>
-Received: from mail.mdivac.com (adsl-68-253-104-89.dsl.bcvloh.ameritech.net
-	[68.253.104.89]) by ozlabs.org (Postfix) with ESMTP id 4CC9E67C90
+Return-Path: <tliang@Brocade.COM>
+Received: from mail53.messagelabs.com (mail53.messagelabs.com [216.82.249.211])
+	by ozlabs.org (Postfix) with SMTP id 2F52167BE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 01:08:51 +1000 (EST)
-Message-ID: <44EC6F81.9050101@mdivac.com>
-Date: Wed, 23 Aug 2006 11:08:49 -0400
-From: Frank D Lombardo <lombardo@mdivac.com>
+	Thu, 24 Aug 2006 05:03:35 +1000 (EST)
+Received: from hq-exch-1.corp.brocade.com (hq-exch-1.brocade.com [10.3.8.21])
+	by scooby.brocade.com (Postfix) with ESMTP id F394225801B
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 Aug 2006 11:59:50 -0700 (PDT)
 MIME-Version: 1.0
-To: Ming Liu <eemingliu@hotmail.com>
-Subject: Re: TEMAC problem on ML403 with U-boot.
-References: <BAY110-F391AE6DCE84284F62F4FEAB2460@phx.gbl>
-In-Reply-To: <BAY110-F391AE6DCE84284F62F4FEAB2460@phx.gbl>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6C6E6.D3860D69"
+Subject: atomic operations in user space
+Date: Wed, 23 Aug 2006 12:03:32 -0700
+Message-ID: <82557754AC6C0448A2218FD1C7D50E2AC6FE9F@hq-exch-1.corp.brocade.com>
+From: "Terry Liang" <tliang@Brocade.COM>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +25,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ming Liu wrote:
-> Dear Frank,
-> In your ML403 design which is booted by U-boot, do you use the normal
-> 10/100M Enet MAC or TEMAC? Is TEMAC supported by U-Boot 1.1.4? In my
-> design I use TEMAC and it works well when I boot my Linux directly
-> using Xilinx EDK bootloader. However it fails when using U-boot......
->
-> Thanks for your telling.
->
-> Regards
-> Ming
->
-> _________________________________________________________________
-> 享用世界上最大的电子邮件系统— MSN Hotmail。 http://www.hotmail.com
->
-Ming,
+This is a multi-part message in MIME format.
 
-The ML403 reference design from Xilinx uses the 10/100 Ethernet MAC and
-works with U-Boot 1.1.4. The Xilinx GSRD design uses the ll_temac and it
-does not work with U-Boot. We have decided that it would not be worth
-the effort to port the ll_temac driver to work with U-Boot. However, if
-anybody has done so, I would be interested.
+------_=_NextPart_001_01C6C6E6.D3860D69
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Frank
+Thanks. Arnd. My main concern is whether the operations are really =
+atomic as they are in the kernel space. I have read some discussion in =
+another forum that on other platforms, even if you are able to compile =
+the atomic_add(), atomic_set(), etc. from an user space application,  =
+they don't guarantee to be atomic. Thanks.
+
+Regards,
+
+Terry Liang
+
+------_=_NextPart_001_01C6C6E6.D3860D69
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>atomic operations in user space</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks. Arnd. My main concern is =
+whether the operations are really atomic as they are in the kernel =
+space. I have read some discussion in another forum that on other =
+platforms, even if you are able to compile the atomic_add(), =
+atomic_set(), etc. from an user space application,&nbsp; they don't =
+guarantee to be atomic. Thanks.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Regards,</FONT>
+<BR>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Terry Liang</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C6C6E6.D3860D69--
