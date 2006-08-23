@@ -1,15 +1,17 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id C004367C7C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 11:36:18 +1000 (EST)
-Date: Tue, 22 Aug 2006 20:36:05 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix gettimeofday inaccuracies
-Message-ID: <20060823013605.GC11309@localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53D9067C73
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 11:45:18 +1000 (EST)
+Subject: [PATCH] powepc: Fix BootX booting with an initrd
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Wed, 23 Aug 2006 11:45:12 +1000
+Message-Id: <1156297512.8433.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,87 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There are two problems in the powerpc gettimeofday code which can
-cause incorrect results to be returned.
+The bootx_init.c trampoline didn't properly add the ramdisk to the
+"reserve map" (list of reserved areas of memory), thus causing all sorts
+of failures when using BootX with an initrd. Also fixes a possible
+problem if the ramdisk is located before the device-tree passed by
+BootX.
 
-The first is that there is a race between do_gettimeofday and the
-timer interrupt:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-1. do_gettimeofday does get_tb()
-
-2. decrementer exception on boot cpu which runs timer_recalc_offset,
-   which also samples the timebase and updates the do_gtod structure
-   with a greater timebase value.
-
-3. do_gettimeofday calls __do_gettimeofday, which leads to the
-   negative result from tb_val - temp_varp->tb_orig_stamp.
-
-The second is caused by taking the boot cpu offline, which can cause
-the value of tb_last_jiffy to be increased past the currently
-available timebase, causing the same underflow as above.
-
-
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
-
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -417,7 +417,7 @@ static __inline__ void timer_check_rtc(v
- /*
-  * This version of gettimeofday has microsecond resolution.
-  */
--static inline void __do_gettimeofday(struct timeval *tv, u64 tb_val)
-+static inline void __do_gettimeofday(struct timeval *tv)
- {
- 	unsigned long sec, usec;
- 	u64 tb_ticks, xsec;
-@@ -431,7 +431,12 @@ static inline void __do_gettimeofday(str
- 	 * without a divide (and in fact, without a multiply)
- 	 */
- 	temp_varp = do_gtod.varp;
--	tb_ticks = tb_val - temp_varp->tb_orig_stamp;
-+
-+	/* Sampling the time base must be done after loading
-+	 * do_gtod.varp in order to avoid racing with update_gtod.
-+	 */
-+	mb();
-+	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
- 	temp_tb_to_xs = temp_varp->tb_to_xs;
- 	temp_stamp_xsec = temp_varp->stamp_xsec;
- 	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
-@@ -464,7 +469,7 @@ void do_gettimeofday(struct timeval *tv)
- 		tv->tv_usec = usec;
- 		return;
- 	}
--	__do_gettimeofday(tv, get_tb());
-+	__do_gettimeofday(tv);
+Index: linux-work/arch/powerpc/platforms/powermac/bootx_init.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/bootx_init.c	2006-08-17 16:16:03.000000000 +1000
++++ linux-work/arch/powerpc/platforms/powermac/bootx_init.c	2006-08-18 14:01:36.000000000 +1000
+@@ -411,8 +411,15 @@
+ 	DBG("End of boot params: %x\n", mem_end);
+ 	rsvmap[0] = mem_start;
+ 	rsvmap[1] = mem_end;
+-	rsvmap[2] = 0;
+-	rsvmap[3] = 0;
++	if (bootx_info->ramDisk) {
++		rsvmap[2] = ((unsigned long)bootx_info) + bootx_info->ramDisk;
++		rsvmap[3] = rsvmap[2] + bootx_info->ramDiskSize;
++		rsvmap[4] = 0;
++		rsvmap[5] = 0;
++	} else {
++		rsvmap[2] = 0;
++		rsvmap[3] = 0;
++	}
+ 
+ 	return (unsigned long)hdr;
  }
+@@ -543,12 +550,12 @@
+ 	 */
+ 	if (bi->version < 5) {
+ 		space = bi->deviceTreeOffset + bi->deviceTreeSize;
+-		if (bi->ramDisk)
++		if (bi->ramDisk >= space)
+ 			space = bi->ramDisk + bi->ramDiskSize;
+ 	} else
+ 		space = bi->totalParamsSize;
  
- EXPORT_SYMBOL(do_gettimeofday);
-@@ -650,6 +655,7 @@ void timer_interrupt(struct pt_regs * re
- 	int next_dec;
- 	int cpu = smp_processor_id();
- 	unsigned long ticks;
-+	u64 tb_next_jiffy;
+-	bootx_printf("Total space used by parameters & ramdisk: %x \n", space);
++	bootx_printf("Total space used by parameters & ramdisk: 0x%x \n", space);
  
- #ifdef CONFIG_PPC32
- 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
-@@ -691,11 +697,14 @@ void timer_interrupt(struct pt_regs * re
- 			continue;
- 
- 		write_seqlock(&xtime_lock);
--		tb_last_jiffy += tb_ticks_per_jiffy;
--		tb_last_stamp = per_cpu(last_jiffy, cpu);
--		do_timer(regs);
--		timer_recalc_offset(tb_last_jiffy);
--		timer_check_rtc();
-+		tb_next_jiffy = tb_last_jiffy + tb_ticks_per_jiffy;
-+		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
-+			tb_last_jiffy = tb_next_jiffy;
-+			tb_last_stamp = per_cpu(last_jiffy, cpu);
-+			do_timer(regs);
-+			timer_recalc_offset(tb_last_jiffy);
-+			timer_check_rtc();
-+		}
- 		write_sequnlock(&xtime_lock);
- 	}
- 	
+ 	/* New BootX will have flushed all TLBs and enters kernel with
+ 	 * MMU switched OFF, so this should not be useful anymore.
