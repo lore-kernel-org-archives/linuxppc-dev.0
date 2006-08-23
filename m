@@ -1,33 +1,36 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4975C67BFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 04:06:53 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7NI6m8d010179
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 14:06:48 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7NI6m8q278734
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 14:06:48 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7NI6lpM002281
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 14:06:48 -0400
-Date: Wed, 23 Aug 2006 13:06:47 -0500
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: BogoMIPS no longer supported on PowerPC?
-Message-ID: <20060823180647.GF4401@austin.ibm.com>
-References: <1156329453.3914.13.camel@ux156>
-	<4879B0C6C249214CBE7AB04453F84E4D0FC20C@zch01exm20.fsl.freescale.net>
-	<20060823145138.GH614@pb15.lixom.net>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2250867BFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 07:36:51 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k7NLahEw025030
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 17:36:43 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7NLahmZ347060
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 15:36:43 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7NLahW5005287
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 15:36:43 -0600
+Date: Wed, 23 Aug 2006 16:36:42 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/6]: powerpc/cell spidernet low watermark patch.
+Message-ID: <20060823213642.GG4401@austin.ibm.com>
+References: <20060818220700.GG26889@austin.ibm.com>
+	<200608190109.15129.arnd@arndb.de>
+	<1156055509.5803.77.camel@localhost.localdomain>
+	<200608201203.15645.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060823145138.GH614@pb15.lixom.net>
+In-Reply-To: <200608201203.15645.arnd@arndb.de>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, James K Lewis <jklewis@us.ibm.com>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,9 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 23, 2006 at 09:51:38AM -0500, Olof Johansson wrote:
+On Sun, Aug 20, 2006 at 12:03:14PM +0200, Arnd Bergmann wrote:
+> On Sunday 20 August 2006 08:31, Benjamin Herrenschmidt wrote:
+> > > card->low_watermark->next->dmac_cmd_status |= SPIDER_NET_DESCR_TXDESFLG;
+> > > mb();
+> > > card->low_watermark->dmac_cmd_status &= ~SPIDER_NET_DESCR_TXDESFLG;
+> > > card->low_watermark = card->low_watermark->next;
+> > > 
+> > > when we queue another frame for TX.
+> > 
+> > I would have expected those to be racy vs. the hardware... what if the
+> > hardware is updating dmac_cmd_status just as your are trying to and the
+> > bit out of it ?
 > 
-> For reference, my G5 here has 66.56 bogomips, 
+> Right, that doesn't work. It is the only bit we use in that byte though,
+> so maybe it can be done with a single byte write.
 
-H3y d00d3, 1ik3, my 12-year-old 486DX100  h4s m0r3 bogomips 
-th4n th4t! 486 r0x and p0w3rpc sux! 
+Thanks, you're right, I missed that.  I'll change this to byte access 
+shortly.  Any recommendations for style/api for byte access? 
+
+I could create a searate patch to change struct descr {} to split 
+the u32 into several u8's; there's a dozen spots that get touched.
+
+Alternatel, I could do a cheesy cast to char[4] and access that way.
+Opinions?
+
+--linas
