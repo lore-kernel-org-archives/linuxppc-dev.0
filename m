@@ -1,22 +1,16 @@
-Return-Path: <Phil.Nitschke@avalon.com.au>
-Received: from camden.avalon.com.au (unknown [150.101.131.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EBE9F67DAF
+Return-Path: <yang.chun2@zte.com.cn>
+Received: from mx4.zte.com.cn (gd-linux.org [202.103.147.155])
+	by ozlabs.org (Postfix) with ESMTP id 5167467D13
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Aug 2006 20:08:11 +1000 (EST)
-Subject: Re: ioremap() fails for >64 MB
-From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
-To: Matt Porter <mporter@embeddedalley.com>
-In-Reply-To: <20060822142233.GA21339@gate.crashing.org>
-References: <1156232469.26041.19.camel@caxton.int.avalon.com.au>
-	<20060822142233.GA21339@gate.crashing.org>
-Content-Type: text/plain
-Date: Wed, 23 Aug 2006 19:30:37 +0930
-Message-Id: <1156327238.6735.9.camel@lamorak.int.avalon.com.au>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: Phil.Nitschke@avalon.com.au
+	Wed, 23 Aug 2006 18:21:01 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org <linuxppc-embedded@ozlabs.org>
+Subject: the 8260 MMU problem
+MIME-Version: 1.0
+Message-ID: <OFDEABB59B.A4DA1869-ON482571D3.002BFA2D-482571D3.002C4F35@zte.com.cn>
+From: yang.chun2@zte.com.cn
+Date: Wed, 23 Aug 2006 16:02:06 +0800
+Content-Type: multipart/alternative;
+	boundary="=_alternative 002C4F31482571D3_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,48 +21,88 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-08-22 at 09:22 -0500, Matt Porter wrote:
-> On Tue, Aug 22, 2006 at 05:11:09PM +0930, Phil Nitschke wrote:
-> > Hi all,
-> > 
-> > I have 2 GB memory on a 7448 processor, and want to reserve a huge chunk
-> > of it at boot-time, then ioremap() it into the kernel space inside a
-> > device driver.  So far I've succeeded with 64 MB, but can't go any
-> > higher, as mm/vmalloc.c tells me: "allocation failed: out of vmalloc
-> > space - use vmalloc=<size> to increase size."
-> > 
-> > So I tried adding a vmalloc line to the kernel command line as follows:
-> > Kernel cmd line: root=/dev/nfs rw mem=1920M vmalloc=1024M nfsroot=... 
->  
-> Yeah, that suggestion is bogus. That option can't help with getting
-> more vmalloc space in this case.
-> 
-> > So the vmalloc=<size> argument has made no difference.  What do I need
-> > to do to make this work?
-> 
-> Go to the "Advanced setup" menu. There's a number of options to provide
-> fine-grained control of the PPC kernel virtual address space.
+This is a multipart message in MIME format.
+--=_alternative 002C4F31482571D3_=
+Content-Type: text/plain; charset="GB2312"
+Content-Transfer-Encoding: base64
 
-<SNIP>
+SSBtZWV0IHNvbWUgcHJvYmxlbXMgYWJvdXQgTU1VIHdpdGggODI2MCBjcHUuSW4gdGhlIGZ1bmN0
+aW9uIG9mIA0KbWFwX3BhZ2UoKSx0aGUgcmVmZXJlbmNlIGYgaXMgdGhlIGZsYWcgdG8gc2V0IHRo
+ZSBwYWdlIHByZXNlbnQgYW5kIGNhbiBiZSANCnJlYWQgb3Igd3JpdGUuIA0KYnV0IEkgZmluZCBp
+ZiBJIHNldCB0aGUgZmxhZyB6ZXJvLHRoZSBsaW51eCB3aWxsIHN0YXJ0IG5vcm1hbCBhbmQgbWVt
+b3J5IA0KY2FuIGJlIHJlYWQgYW5kIHdyaXRlIGFsc28gLHNvIHdoeSB0aGVzZSAgaGFwcGVuZWQ/
+IFRoZSBNTVUgZG8gbm90IHdvcmtlZCANCm5vcm1hbGx5IQ0Kd2lzaCB5b3UgcmVwbHksdGhpbmsg
+eW91Lg0KIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIHlhbmcuY2h1bg0KICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMjAwNi44LjIzDQoNCg0Kfn5+fn5+fn5+fn5+
+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fg0K1tDQy82o0bazyba80dC+v8v5DQqzyba8
+ytC439DCx/i438XvtPO1wDO6xdDCz6PN+7Tzz8M2wqUNCk1TTqO6eWNfbWFpbEBleW91LmNvbQ0K
+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fg0KDQoNCg0KLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClpURSBJ
+bmZvcm1hdGlvbiBTZWN1cml0eSBOb3RpY2U6IFRoZSBpbmZvcm1hdGlvbiBjb250YWluZWQgaW4g
+dGhpcyBtYWlsIGlzIHNvbGVseSBwcm9wZXJ0eSBvZiB0aGUgc2VuZGVyJ3Mgb3JnYW5pemF0aW9u
+LiBUaGlzIG1haWwgY29tbXVuaWNhdGlvbiBpcyBjb25maWRlbnRpYWwuIFJlY2lwaWVudHMgbmFt
+ZWQgYWJvdmUgYXJlIG9ibGlnYXRlZCB0byBtYWludGFpbiBzZWNyZWN5IGFuZCBhcmUgbm90IHBl
+cm1pdHRlZCB0byBkaXNjbG9zZSB0aGUgY29udGVudHMgb2YgdGhpcyBjb21tdW5pY2F0aW9uIHRv
+IG90aGVycy4NClRoaXMgZW1haWwgYW5kIGFueSBmaWxlcyB0cmFuc21pdHRlZCB3aXRoIGl0IGFy
+ZSBjb25maWRlbnRpYWwgYW5kIGludGVuZGVkIHNvbGVseSBmb3IgdGhlIHVzZSBvZiB0aGUgaW5k
+aXZpZHVhbCBvciBlbnRpdHkgdG8gd2hvbSB0aGV5IGFyZSBhZGRyZXNzZWQuIElmIHlvdSBoYXZl
+IHJlY2VpdmVkIHRoaXMgZW1haWwgaW4gZXJyb3IgcGxlYXNlIG5vdGlmeSB0aGUgb3JpZ2luYXRv
+ciBvZiB0aGUgbWVzc2FnZS4gQW55IHZpZXdzIGV4cHJlc3NlZCBpbiB0aGlzIG1lc3NhZ2UgYXJl
+IHRob3NlIG9mIHRoZSBpbmRpdmlkdWFsIHNlbmRlci4NClRoaXMgbWVzc2FnZSBoYXMgYmVlbiBz
+Y2FubmVkIGZvciB2aXJ1c2VzIGFuZCBTcGFtIGJ5IFpURSBBbnRpLVNwYW0gc3lzdGVtLg0K
+--=_alternative 002C4F31482571D3_=
+Content-Type: text/html; charset="GB2312"
+Content-Transfer-Encoding: base64
 
-Thanks Matt (and others) for your suggestions.  Matt has given me the
-answers I was looking for.
-
-Since my (2 GB) memory is within the (4 GB) addressable by a 32-bit
-processor, why do I need high memory at all?  
-
-Are there performance implications on this platform from having a non
-optimal low/high ratio?
-
-> That said, why don't you just use alloc_bootmem() to reserve memory
-> for your driver at boot time? 
-
-I avoided this simply because I wanted to load/unload my driver (during
-development), and alloc_bootmem() seemed better suited to drivers
-compiled into the kernel.  But I'll look again at this idea if further
-problems arise with the approach above.
-
-Thanks again,
-
--- 
-Phil
+DQo8cD48Zm9udCBzaXplPTEgZmFjZT0iy87M5SI+SSBtZWV0IHNvbWUgcHJvYmxlbXMgYWJvdXQg
+TU1VIHdpdGggODI2MA0KY3B1LkluIHRoZSA8L2ZvbnQ+PGZvbnQgc2l6ZT0xPjx0dD5mdW5jdGlv
+biBvZiBtYXBfcGFnZSgpLHRoZSByZWZlcmVuY2UNCmYgaXMgdGhlIGZsYWcgdG8gc2V0IHRoZSBw
+YWdlIHByZXNlbnQgYW5kIGNhbiBiZSByZWFkIG9yIHdyaXRlLiA8L3R0PjwvZm9udD4NCjxwPjxm
+b250IHNpemU9MSBmYWNlPSLLzszlIj5idXQgSSBmaW5kIGlmIEkgc2V0IHRoZSBmbGFnIHplcm8s
+dGhlIGxpbnV4DQp3aWxsIHN0YXJ0IG5vcm1hbCBhbmQgbWVtb3J5IGNhbiBiZSByZWFkIGFuZCB3
+cml0ZSBhbHNvICxzbyB3aHkgdGhlc2UgJm5ic3A7aGFwcGVuZWQ/DQpUaGUgTU1VIGRvIG5vdCB3
+b3JrZWQgbm9ybWFsbHkhPC9mb250Pg0KPHA+PGZvbnQgc2l6ZT0xIGZhY2U9IsvOzOUiPndpc2gg
+eW91IHJlcGx5LHRoaW5rIHlvdS48YnI+DQogJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZu
+YnNwOyAmbmJzcDs8L2ZvbnQ+DQo8cD48Zm9udCBzaXplPTEgZmFjZT0iy87M5SI+Jm5ic3A7ICZu
+YnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsNCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZu
+YnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsNCiZu
+YnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5i
+c3A7ICZuYnNwOyAmbmJzcDsNCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5i
+c3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsNCiZuYnNwOyAmbmJzcDsgJm5i
+c3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJz
+cDsNCiZuYnNwOyB5YW5nLmNodW48L2ZvbnQ+DQo8cD48Zm9udCBzaXplPTEgZmFjZT0iy87M5SI+
+Jm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsNCiZuYnNwOyAmbmJzcDsg
+Jm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAm
+bmJzcDsNCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAm
+bmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsNCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAm
+bmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsNCiZuYnNwOyAm
+bmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZu
+YnNwOyAmbmJzcDsNCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZu
+YnNwOzIwMDYuOC4yMzxicj4NCjxicj4NCjxicj4NCn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+
+fn5+fn5+fn5+fn5+fn5+fn48YnI+DQrW0NDLzajRtrPJtrzR0L6/y/k8YnI+DQqzyba8ytC439DC
+x/i438XvtPO1wDO6xdDCz6PN+7Tzz8M2wqU8YnI+DQpNU06junljX21haWxAZXlvdS5jb208YnI+
+DQp+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+PGJyPg0KPC9mb250
+Pg0KPGJyPjxwcmU+DQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQ0KWlRFJm5ic3A7SW5mb3JtYXRpb24mbmJzcDtTZWN1cml0eSZuYnNwO05v
+dGljZTombmJzcDtUaGUmbmJzcDtpbmZvcm1hdGlvbiZuYnNwO2NvbnRhaW5lZCZuYnNwO2luJm5i
+c3A7dGhpcyZuYnNwO21haWwmbmJzcDtpcyZuYnNwO3NvbGVseSZuYnNwO3Byb3BlcnR5Jm5ic3A7
+b2YmbmJzcDt0aGUmbmJzcDtzZW5kZXIncyZuYnNwO29yZ2FuaXphdGlvbi4mbmJzcDtUaGlzJm5i
+c3A7bWFpbCZuYnNwO2NvbW11bmljYXRpb24mbmJzcDtpcyZuYnNwO2NvbmZpZGVudGlhbC4mbmJz
+cDtSZWNpcGllbnRzJm5ic3A7bmFtZWQmbmJzcDthYm92ZSZuYnNwO2FyZSZuYnNwO29ibGlnYXRl
+ZCZuYnNwO3RvJm5ic3A7bWFpbnRhaW4mbmJzcDtzZWNyZWN5Jm5ic3A7YW5kJm5ic3A7YXJlJm5i
+c3A7bm90Jm5ic3A7cGVybWl0dGVkJm5ic3A7dG8mbmJzcDtkaXNjbG9zZSZuYnNwO3RoZSZuYnNw
+O2NvbnRlbnRzJm5ic3A7b2YmbmJzcDt0aGlzJm5ic3A7Y29tbXVuaWNhdGlvbiZuYnNwO3RvJm5i
+c3A7b3RoZXJzLg0KVGhpcyZuYnNwO2VtYWlsJm5ic3A7YW5kJm5ic3A7YW55Jm5ic3A7ZmlsZXMm
+bmJzcDt0cmFuc21pdHRlZCZuYnNwO3dpdGgmbmJzcDtpdCZuYnNwO2FyZSZuYnNwO2NvbmZpZGVu
+dGlhbCZuYnNwO2FuZCZuYnNwO2ludGVuZGVkJm5ic3A7c29sZWx5Jm5ic3A7Zm9yJm5ic3A7dGhl
+Jm5ic3A7dXNlJm5ic3A7b2YmbmJzcDt0aGUmbmJzcDtpbmRpdmlkdWFsJm5ic3A7b3ImbmJzcDtl
+bnRpdHkmbmJzcDt0byZuYnNwO3dob20mbmJzcDt0aGV5Jm5ic3A7YXJlJm5ic3A7YWRkcmVzc2Vk
+LiZuYnNwO0lmJm5ic3A7eW91Jm5ic3A7aGF2ZSZuYnNwO3JlY2VpdmVkJm5ic3A7dGhpcyZuYnNw
+O2VtYWlsJm5ic3A7aW4mbmJzcDtlcnJvciZuYnNwO3BsZWFzZSZuYnNwO25vdGlmeSZuYnNwO3Ro
+ZSZuYnNwO29yaWdpbmF0b3ImbmJzcDtvZiZuYnNwO3RoZSZuYnNwO21lc3NhZ2UuJm5ic3A7QW55
+Jm5ic3A7dmlld3MmbmJzcDtleHByZXNzZWQmbmJzcDtpbiZuYnNwO3RoaXMmbmJzcDttZXNzYWdl
+Jm5ic3A7YXJlJm5ic3A7dGhvc2UmbmJzcDtvZiZuYnNwO3RoZSZuYnNwO2luZGl2aWR1YWwmbmJz
+cDtzZW5kZXIuDQpUaGlzJm5ic3A7bWVzc2FnZSZuYnNwO2hhcyZuYnNwO2JlZW4mbmJzcDtzY2Fu
+bmVkJm5ic3A7Zm9yJm5ic3A7dmlydXNlcyZuYnNwO2FuZCZuYnNwO1NwYW0mbmJzcDtieSZuYnNw
+O1pURSZuYnNwO0FudGktU3BhbSZuYnNwO3N5c3RlbS4NCjwvcHJlPg==
+--=_alternative 002C4F31482571D3_=--
