@@ -1,21 +1,19 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
-	by ozlabs.org (Postfix) with ESMTP id 8025567C93
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 00:55:38 +1000 (EST)
-Date: Wed, 23 Aug 2006 16:55:12 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: booting with BootX corrupts memory
-Message-ID: <20060823145512.GA12791@aepfle.de>
-References: <1155096025.3813.6.camel@plutonium.opasia.dk>
-	<1155873732.5803.16.camel@localhost.localdomain>
-	<20060818070113.GA28088@aepfle.de>
-	<20060821121708.GA28713@aepfle.de>
-	<1156195877.21752.39.camel@localhost.localdomain>
+Return-Path: <tim.bird@am.sony.com>
+Received: from mail43-fra-R.bigfish.com (mail-fra.bigfish.com [62.209.45.166])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E812D67B70
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 02:33:15 +1000 (EST)
+Message-ID: <44EC8338.3050203@am.sony.com>
+Date: Wed, 23 Aug 2006 09:32:56 -0700
+From: Tim Bird <tim.bird@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1156195877.21752.39.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Niels Kristian Bech Jensen <nkbj@mail.tele.dk>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: BogoMIPS no longer supported on PowerPC?
+References: <1156329453.3914.13.camel@ux156>
+In-Reply-To: <1156329453.3914.13.camel@ux156>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 22, Benjamin Herrenschmidt wrote:
-
+Johannes Berg wrote:
+> On Wed, 2006-08-23 at 18:25 +0800, Li Yang-r58472 wrote:
+>  > I noticed a recent modification to __delay has changed from using empty
+>  > loops to reading timebase.  Thus, breaks the calculation of bogomips,
+>  > and makes it terribly low.  Is the bogomips no longer being supported on
+>  > powerpc arch?
 > 
-> > > No, now I dont even get console= output on serial console.
-> > 
-> > It doesnt work on a 7200, butit works on a beige G3.
-> > But later it locks up in 'PM: Adding info for No Bus:target0:0',
-> > after mesh init. This one is likely unrelated.
-> 
-> Depends.... does it work if you netboot a zImage.coff ?
+> What's there to be 'supported'? The only purpose of bogomips is
+> calibrating the delay loop, and that has changed now by using timebase,
+> hence bogomips no longer have a purpose. There was even a patch to
+> remove it from /proc/cpuinfo but I'm not sure whether that got applied
+> or not.
 
-Have to try that, but 2.6.16 freezes as well.
+I missed the patch for this, but I have a related question.
+What is the status of the calibration code now for PPC?
+Is it just skipped?
+
+I assume that the ability to set a preset loops_per_jiffy
+is no longer relevant?
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Electronics
+=============================
