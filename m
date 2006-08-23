@@ -1,18 +1,18 @@
-Return-Path: <hollisb@us.ibm.com>
-Subject: Re: update: consolidated flat device tree code
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17643.64011.666743.300278@cargo.ozlabs.ibm.com>
-References: <1155860626.27466.126.camel@basalt.austin.ibm.com>
-	<17643.64011.666743.300278@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 23 Aug 2006 09:42:58 -0500
-Message-Id: <1156344179.7960.4.camel@basalt.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Pantelis Antoniou <pantelis@embeddedalley.com>,
-	"Sachin P. Sant" <sachinp@in.ibm.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id B9F5D67C75
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 00:52:49 +1000 (EST)
+Date: Wed, 23 Aug 2006 09:51:38 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Subject: Re: BogoMIPS no longer supported on PowerPC?
+Message-ID: <20060823145138.GH614@pb15.lixom.net>
+References: <1156329453.3914.13.camel@ux156>
+	<4879B0C6C249214CBE7AB04453F84E4D0FC20C@zch01exm20.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC20C@zch01exm20.fsl.freescale.net>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-08-23 at 16:47 +1000, Paul Mackerras wrote:
-> Hollis Blanchard writes:
-> 
-> > Still haven't looked to merge Matt's changes (because I'm busy, the
-> > current code works for me, and they haven't been accepted in u-boot
-> > yet).
-> 
-> The other version that was posted had support for modifying an
-> existing flat tree, which I need for the wrapper code for prep.  Are
-> those "Matt's changes"?  Are you thinking of adding that capability to
-> your version?
+On Wed, Aug 23, 2006 at 06:55:26PM +0800, Li Yang-r58472 wrote:
+> Ok, I rephrase my question as is it no longer needed?  Sometimes people
+> may use this value as a rough estimation of CPU performance.  There are
+> people even maintained a list of bogoMIPS of most CPUs.  Maybe it is
+> still needed for some legacy reasons.  I'm not very sure.  :)   At leave
+> we need to inform people who do look at this magic number and find it
+> amazingly low.
 
-You can do this now with the ft_set_prop() function, which is what I'm
-using for Xen.
+Bogomips has never had anything to do with performance on PPC, it's just
+a number that's based on the decrementer frequency. For processors with
+external/fixed decrementer clock, it will not vary between different
+processors in a meaningful way.
 
-At the moment that function isn't able to modify the size of a property,
-but Mark is going to adapt his code (which supports that).
+Every now and then someone will ask "why does my PPC box have such low
+bogomips, is it really that much slower than my PC?". Removing all output
+would certainly help avoid that confusion.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+For reference, my G5 here has 66.56 bogomips, which corresponds well to
+the 33MHz decrementer clock it uses.
+
+
+-Olof
