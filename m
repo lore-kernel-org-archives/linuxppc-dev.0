@@ -1,11 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 24 Aug 2006 16:54:08 +1000
-Subject: [PATCH] Split out vpa unregister logic from
-	pseries_kexec_cpu_down_xics()
-Message-Id: <20060824065409.645DD67C42@ozlabs.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17645.18647.720814.903612@cargo.ozlabs.ibm.com>
+Date: Thu, 24 Aug 2006 16:36:07 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+In-Reply-To: <1156190965.9659.41.camel@farscape.rchland.ibm.com>
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+	<200608182105.45264.arnd@arndb.de>
+	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
+	<200608192219.03178.arnd@arndb.de>
+	<37280.84.105.60.119.1156030372.squirrel@gate.crashing.org>
+	<1156190965.9659.41.camel@farscape.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de, segher@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,54 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As part of the new irq code pseries_kexec_cpu_down() was split into a
-xics and mpic version. The vpa unregister logic is now only done in the
-xics routine, and although that's ok in practice (we don't have SPLPAR
-machines with mpic), I'd rather have the two concepts stay separate.
+Will Schmidt writes:
 
-So move the vpa unregister into pseries_kexec_cpu_down(), which gets called
-by both the xics and mpic routines. This also gives us an obvious place to
-put any new kexec-down logic needed in future.
+> I'm not Arnd :-) , but since I'm poking at it anyways,.. how about
+> this? 
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+I just did a patch to fix the existing masks.  Could you do a new
+version of this patch that doesn't include the unrelated mask fixes
+please?  Also it would be really nice if you could figure out a way to
+avoid doing the unnecessary 64-bit logical operations on 32-bit
+machines - i.e. using an unsigned long for tmp, but then the constants
+become problematic.  Maybe you need something like
 
- arch/powerpc/platforms/pseries/setup.c |   18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+#define LCONST(x)	((unsigned long)(x##ULL))
 
-Index: to-merge/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/pseries/setup.c
-+++ to-merge/arch/powerpc/platforms/pseries/setup.c
-@@ -223,12 +223,7 @@ static void pseries_lpar_enable_pmcs(voi
- }
- 
- #ifdef CONFIG_KEXEC
--static void pseries_kexec_cpu_down_mpic(int crash_shutdown, int secondary)
--{
--	mpic_teardown_this_cpu(secondary);
--}
--
--static void pseries_kexec_cpu_down_xics(int crash_shutdown, int secondary)
-+static void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
- {
- 	/* Don't risk a hypervisor call if we're crashing */
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown) {
-@@ -248,6 +243,17 @@ static void pseries_kexec_cpu_down_xics(
- 					hard_smp_processor_id());
- 		}
- 	}
-+}
-+
-+static void pseries_kexec_cpu_down_mpic(int crash_shutdown, int secondary)
-+{
-+	pseries_kexec_cpu_down(crash_shutdown, secondary);
-+	mpic_teardown_this_cpu(secondary);
-+}
-+
-+static void pseries_kexec_cpu_down_xics(int crash_shutdown, int secondary)
-+{
-+	pseries_kexec_cpu_down(crash_shutdown, secondary);
- 	xics_teardown_cpu(secondary);
- }
- #endif /* CONFIG_KEXEC */
+Thanks,
+Paul.
