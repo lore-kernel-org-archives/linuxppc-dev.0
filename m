@@ -1,26 +1,26 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id A491C67C26
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6E2EF679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 20:38:50 +1000 (EST)
+	Thu, 24 Aug 2006 20:48:52 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k7OBvZCt027938 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 05:57:35 -0600 (MDT)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k7OB107V008060 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 24 Aug 2006 04:01:00 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7OAckdv000181
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7OAmmBi002201
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 05:38:47 -0500 (CDT)
+	Thu, 24 Aug 2006 05:48:50 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: RE: atomic operations in user space
-Date: Thu, 24 Aug 2006 18:39:16 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0FC380@zch01exm20.fsl.freescale.net>
-In-Reply-To: <82557754AC6C0448A2218FD1C7D50E2AC6FE9F@hq-exch-1.corp.brocade.com>
+Subject: RE: I2C driver for SAA7121 on MPC855 and linux-2.4.25
+Date: Thu, 24 Aug 2006 18:49:18 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0FC383@zch01exm20.fsl.freescale.net>
+In-Reply-To: <84681EC46E2C6347953892915BA5DAB1038FE72F@SHAMLVEM01.e2k.ad.ge.com>
 From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Terry Liang" <tliang@Brocade.COM>, <linuxppc-embedded@ozlabs.org>
+To: "Xu, Li \(GE, Research\)" <li.xu@ge.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,29 +31,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Why do you need atomic operations in user land?  IPC will be sufficient
-to deal with race conditions between processes.=20
-
-Best Regards,
-Leo
 > -----Original Message-----
 > From: linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org
 > [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org] On
 Behalf Of
-> Terry Liang
-> Sent: Thursday, August 24, 2006 3:04 AM
+> Xu, Li (GE, Research)
+> Sent: Thursday, August 24, 2006 4:02 PM
 > To: linuxppc-embedded@ozlabs.org
-> Subject: atomic operations in user space
+> Subject: I2C driver for SAA7121 on MPC855 and linux-2.4.25
 >=20
-> Thanks. Arnd. My main concern is whether the operations are really
-atomic as they
-> are in the kernel space. I have read some discussion in another forum
-that on other
-> platforms, even if you are able to compile the atomic_add(),
-atomic_set(), etc.
-> from an user space application,  they don't guarantee to be atomic.
-Thanks.
+> Hi,
 >=20
-> Regards,
+> I am trying to setup i2c driver for saa7121 on my mpc855 based board
+> normally the address for saa7121 is 0x88, but when I enable i2c bus
+> scan, the driver detect it's address is 0x34, so I just stick to 0x34.
+
+Is it the only device on i2c bus?=20
 >=20
-> Terry Liang
+> Anyway, I can write to saa7121via i2c bus successfully, but I can't
+enable
+> color bar, so I don't know whether the driver is working properly or
+not?
+
+Are you sure you are operating on the correct device?  What operation
+can you do successfully on the device?  Can you read from the i2c bus?
+>=20
+> BTW, I setup I2C driver for SAA7113 and it works fine.
+>=20
+> Tim
