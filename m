@@ -1,17 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id AD58667D7B
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F34EE67D75
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Aug 2006 04:06:23 +1000 (EST)
-Date: Thu, 24 Aug 2006 22:06:25 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Fri, 25 Aug 2006 04:25:12 +1000 (EST)
+In-Reply-To: <1156430695.17977.28.camel@saruman.qstreams.net>
+References: <1156371402.17977.21.camel@saruman.qstreams.net>
+	<AB150E9C-6BB3-46C1-980D-311D3277BFC1@kernel.crashing.org>
+	<1156430695.17977.28.camel@saruman.qstreams.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9861097B-ACAD-45E6-9FA7-B86F0C1E8FA1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: CompactFlash on PQII Pro
+Date: Thu, 24 Aug 2006 13:25:06 -0500
 To: bwarren@qstreams.com
-Subject: Re: Platform device style question
-Message-ID: <20060824220625.515d9b3c@vitb.ru.mvista.com>
-In-Reply-To: <1156441997.17977.44.camel@saruman.qstreams.net>
-References: <1156441997.17977.44.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,48 +28,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 24 Aug 2006 13:53:17 -0400
-Ben Warren <bwarren@qstreams.com> wrote:
 
-> Hello,
-> 
-> A 'newbie-to-platform-devices' question:
-> 
-> In a patch that Kumar just sent for a compact flash device, the resource
-> data (I/O addresses, IRQ # etc.) are retrieved from the platform system.
-> I guess I can either modify the device tree in U-boot by adding
-> additional nodes, or instantiate a platform device in Linux __init code
-> based on static information.  The former gives the advantage of having
-> the bootloader pass the info to the OS.  (Somebody please correct me if
-> I'm off-base here!)  
-> 
-I'd suggest to make a look at LDD concerning linux device model...
-For platform device, there's no need to cope with u-boot at all. You'll prolly need to 
-register the respective platform device from the board-specific code, with proper name 
-and driver's board-specific platform info. You may have a look at arch/ppc/syslib/ppc_sys.c about static
-PD definitions usage.
+On Aug 24, 2006, at 9:44 AM, Ben Warren wrote:
 
+> Thanks Kumar,
+>
+> As always, you're several steps ahead of me.
+>
+> On Wed, 2006-08-23 at 18:04 -0500, Kumar Gala wrote:
+>
+>> I know I posted a patch for cf-ide.c to lkml some time ago, this was
+>> to do a CF in true ide mode using the 83xx localbus.
+>>
+>> http://marc.theaimsgroup.com/?l=linux-kernel&m=113877891224982&w=2
+>>
+>> We did some UPM setup in u-boot to use two CS on Localbus for this.
+> In our case, we only have one CS available but it's going to a CPLD  
+> that
+> will decode and provide two CSs to the CF.  This will work as long as
+> the UPM setup is identical for the two chip selects.  Should be...
+> Off-topic to this list, but do you have the U-boot code that you can
+> share?  If not, no worries.
 
-> Are device trees meant to only contain information about the CPU and
-> tightly-coupled peripherals, or is it considered OK-form to also include
-> board-level hardware info?  I guess they can really hold anything, but
-> I'm trying to figure out the original intent.
-> 
-I'd make sense to figure out the platform device bus before digging into device trees. It's slightly 
-different stuff, for similar aim, but anyway... Actually you do not strictly need devtree to cope with 
-your case afaiu.
+The only code in u-boot was the UPM setup code, I'm happy to send  
+that to you.
 
-> regards,
-> Ben
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
-
--- 
-Sincerely, 
-Vitaly
+- kumar
