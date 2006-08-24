@@ -1,24 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail.arcor.de (mail-in-05.arcor-online.net [151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8DA6D67C4D
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 23:33:22 +1000 (EST)
-In-Reply-To: <E1GGFAL-0004qP-3D@jdl.com>
-References: <17644.63105.27596.85261@cargo.ozlabs.ibm.com>
-	<20060824010508.GA17848@suse.de>
-	<17645.9406.384676.189697@cargo.ozlabs.ibm.com>
-	<20060824041027.GA19887@suse.de> <E1GGFAL-0004qP-3D@jdl.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0F06167B7E
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 01:54:10 +1000 (EST)
+In-Reply-To: <17645.18647.720814.903612@cargo.ozlabs.ibm.com>
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+	<200608182105.45264.arnd@arndb.de>
+	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
+	<200608192219.03178.arnd@arndb.de>
+	<37280.84.105.60.119.1156030372.squirrel@gate.crashing.org>
+	<1156190965.9659.41.camel@farscape.rchland.ibm.com>
+	<17645.18647.720814.903612@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C5EF9E87-BAC1-4796-845F-E25CA4D8EC6F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull powerpc.git 'merge' branch 
-Date: Thu, 24 Aug 2006 08:33:11 -0500
-To: Jon Loeliger <jdl@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>,
-	Paul Mackerras <paulus@samba.org>
+Message-Id: <9FF8F72E-5990-4AED-A826-9E1C9C889DB6@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+Date: Thu, 24 Aug 2006 17:53:56 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de, segher@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Also it would be really nice if you could figure out a way to
+> avoid doing the unnecessary 64-bit logical operations on 32-bit
+> machines
 
-On Aug 24, 2006, at 8:22 AM, Jon Loeliger wrote:
+Like I asked before -- should we run this emulation on 32-bit
+machines at all?  The instruction only exists in the 64-bit
+architecture after all.
 
-> So, like, the other day Greg KH mumbled:
->> On Thu, Aug 24, 2006 at 02:02:06PM +1000, Paul Mackerras wrote:
->>>
->>> No, that's the right branch, but the mirroring was very slow. My
->>> update of hours ago has only just propagated out.  Try again now.
->>
->> Ok, that worked.  I can pull from master@kernel.org too, which would
->> have worked here :)
->
-> Paul and Greg,
->
-> Thanks for picking up those 86xx and 85xx patches!
->
-> So, has there been a change in the general flow of things
-> for PowerPC these days?  Will all the PPC patches be going
-> through Greg K-H from now on?  Or is that a temporary flow?
 
-Greg's acting in Linus's place til he gets back.
-
-- k
+Segher
