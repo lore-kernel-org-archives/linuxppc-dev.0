@@ -1,34 +1,21 @@
-Return-Path: <jdub@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <mporter@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A42D467BCD
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A9FC067BE5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 23:06:49 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k7OD6jl5008334
-	for <linuxppc-embedded@ozlabs.org>; Thu, 24 Aug 2006 09:06:45 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7OD6jXx305314
-	for <linuxppc-embedded@ozlabs.org>; Thu, 24 Aug 2006 07:06:45 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7OD6j7Y023060
-	for <linuxppc-embedded@ozlabs.org>; Thu, 24 Aug 2006 07:06:45 -0600
+	Thu, 24 Aug 2006 23:11:41 +1000 (EST)
+Date: Thu, 24 Aug 2006 08:23:38 -0500
+From: Matt Porter <mporter@embeddedalley.com>
+To: Benjamin Delagoutte <BDE@teamlog.com>
 Subject: Re: ARCH=ppc or ARCH=powerpc
-From: Josh Boyer <jdub@us.ibm.com>
-To: BDE@teamlog.com
-In-Reply-To: <1156424295.19482.11.camel@localhost>
+Message-ID: <20060824132338.GA27468@gate.crashing.org>
 References: <20060824123841.4756.qmail@web36601.mail.mud.yahoo.com>
 	<1156423796.5640.23.camel@zod.rchland.ibm.com>
 	<1156424295.19482.11.camel@localhost>
-Content-Type: text/plain
-Date: Thu, 24 Aug 2006 08:07:20 -0500
-Message-Id: <1156424840.5640.27.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1156424295.19482.11.camel@localhost>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -40,23 +27,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-08-24 at 14:58 +0200, Benjamin Delagoutte wrote:
+On Thu, Aug 24, 2006 at 02:58:15PM +0200, Benjamin Delagoutte wrote:
+> Le jeudi 24 août 2006 à 07:49 -0500, Josh Boyer a écrit :
+> > On Thu, 2006-08-24 at 05:38 -0700, Parav Pandit wrote:
+> > > ppc = 32bit.
+> > > powerpc= 64bit.
+> > > Correct me if I am wrong.
+> > 
+> > Yes, you're wrong.  Some 32 bit boards are also under arch/powerpc now.
+> > 
+> > >  
+> > > I am not sure why community didn't adopt the name ppc and ppc64 just
+> > > like ia-32 and ia64.
+> > 
+> > They did originally.
+> > 
+> > The new direction is to have everything under arch/powerpc, both 32 and
+> > 64 bit.  The reason arch/ppc still exists is because some 32 bit
+> > platforms have not been fully migrated to the requirements to be merged
+> > into arch/powerpc.  Namely, the code has to boot from an OpenFirmware
+> > like flattened device tree.  The PPC 4xx family of processors, as an
+> > example, does not do this yet though there is work going on to adapt it.
 > 
 > I'm currently working on a PPC 405 based developement card. Does it mean
 > I have to work using the arch/ppc tree ? 
 
-For now, yes.  Set ARCH=ppc when you compile the kernel.
+PPC405 is only supported in the arch/ppc tree currenty. Unless you
+want to contribute to the effort to move to arch/powerpc, you'll
+have to work with arch/ppc/
 
 > What about the includes ? Do I have to use only include/asm-ppc or are
 > include/asm-powerpc necessary as well ?
 
-I believe there are some hacks in the makefiles to pull common asm files
-from include/asm-powerpc when needed.  Basically, you should be able to
-just do:
+When you do an arch/ppc build it automagically includes shared
+includes from asm-powerpc as necessary. There's nothing to worry
+about there.
 
-#include <asm/foo.h>
+The goal is to have the new 4xx arch/powerpc support not break 4xx
+arch/ppc support. So as boards are merged and verified working,
+we'll remove the equivalent support from arch/ppc...
 
-and it should work.  If you're adding new .h files, I suppose asm-ppc is
-the place to add them for now.  That's just my opinion though :)
+Some boards/chips may just die if no maintainer step up to port
+them over...but all the important stuff should get an interested
+party once we get the initial 4xx support in arch/powerpc working.
 
-josh
+-Matt
