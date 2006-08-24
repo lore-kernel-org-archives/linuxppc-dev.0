@@ -1,26 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6EE2A67CA5
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 21:13:48 +1000 (EST)
-Subject: Re: [PATCH ] powerpc: Add tsi108/9 and non standard mpic support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1156417448.7107.1.camel@localhost.localdomain>
-References: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19E353@zch01exm23.fsl.freescale.net>
-	<1156398135.5913.43.camel@localhost.localdomain>
-	<1156398861.8433.197.camel@localhost.localdomain>
-	<1156413135.6591.14.camel@localhost.localdomain>
-	<1156416857.8433.244.camel@localhost.localdomain>
-	<1156417448.7107.1.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 24 Aug 2006 21:13:23 +1000
-Message-Id: <1156418003.8433.246.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 4FA0A67CB6
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 23:22:43 +1000 (EST)
+To: Greg KH <gregkh@suse.de>
+Subject: Re: Please pull powerpc.git 'merge' branch 
+In-Reply-To: Your message of "Wed, 23 Aug 2006 21:10:27 PDT."
+	<20060824041027.GA19887@suse.de>
+References: <17644.63105.27596.85261@cargo.ozlabs.ibm.com>
+	<20060824010508.GA17848@suse.de>
+	<17645.9406.384676.189697@cargo.ozlabs.ibm.com>
+	<20060824041027.GA19887@suse.de>
+Date: Thu, 24 Aug 2006 08:22:37 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1GGFAL-0004qP-3D@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,15 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So, like, the other day Greg KH mumbled:
+> On Thu, Aug 24, 2006 at 02:02:06PM +1000, Paul Mackerras wrote:
+> > 
+> > No, that's the right branch, but the mirroring was very slow. My
+> > update of hours ago has only just propagated out.  Try again now.
+> 
+> Ok, that worked.  I can pull from master@kernel.org too, which would
+> have worked here :)
 
-> I have tested on mpc8641hpcn board with CONFIG_MPIC.
+Paul and Greg,
 
-I need to test it with normal MPIC machines and CONFIG_MPIC_WEIRD
-enabled
+Thanks for picking up those 86xx and 85xx patches!
 
-> Hope to see it in 2.6.18.
+So, has there been a change in the general flow of things
+for PowerPC these days?  Will all the PPC patches be going
+through Greg K-H from now on?  Or is that a temporary flow?
 
-This is not my call unfortunately though I reckon that it could go in
-since it's been sitting around for a while. We'll see.
-
-Ben.
+Just curious,
+jdl
