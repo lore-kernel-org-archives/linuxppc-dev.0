@@ -1,28 +1,20 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 89FA067CE1
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 15:54:47 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k7O66vO8014456
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 23:06:57 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7O5sh1X003002
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 00:54:45 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH ] powerpc:  pass UPIO_TSI flag to 8259 serial driver
-Date: Thu, 24 Aug 2006 13:54:42 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E26E738@zch01exm23.fsl.freescale.net>
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC2F6@zch01exm20.fsl.freescale.net>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A26C967C47
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 15:56:38 +1000 (EST)
+Subject: RE: [PATCH 1/3] Adapt ipic driver to new host_ops interface,
+	addset_irq_type to set IRQ sense
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC2F3@zch01exm20.fsl.freescale.net>
+References: <4879B0C6C249214CBE7AB04453F84E4D0FC2F3@zch01exm20.fsl.freescale.net>
+Content-Type: text/plain
+Date: Thu, 24 Aug 2006 15:56:22 +1000
+Message-Id: <1156398982.8433.200.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,34 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > On Thu, 2006-08-24 at 13:17, Benjamin Herrenschmidt wrote:
-> > > > Evolution 1.2.2. I had found the reason and tested on my side.
-> > > > Paul, if you do not modify it by hand, please select=20
-> the following
-> > > :-).
-> > > > I will repost the mpic and mpc7448hph2 irq update=20
-> patch.Very sorry
-> > > for that.
-> > >
-> > > Ok, the trick with evolution is to use the "preformat" style.
-> > >
-> > > Typically, when posting a patch, I write my description, put the=20
-> > > caret where I want to insert the patch itself, set the style to=20
-> > > "Preformat" (from the pop-up menu just above the text=20
-> editing zone),=20
-> > > and do Insert->Text File from the menu.
-> > >
-> > > You can also select a bit of text/patch and change the style to=20
-> > > "Preformat" afterward if you missed it before doing the import.
-> > >
-> > You words are  principle to post patch with evolution :-).
->=20
-> Why did no one ever add a mail client guide to the kernel=20
-> documentation?  It seems such problem happens a lot.
->=20
 
-I think there should be one in other place. But we do not know where it
-is.
-I have tried Thunderbird, but failed.
+> But for IRQ with a specified type, set_irq_type() will be called two
+> times continuously.  Why not call the set_irq_type() in any case in
+> irq_create_of_mapping()?
 
-Roy
+well... it would still not be called by irq_create_mapping() (the non-OF
+one). You need to make sure your stuff is properly initialized in the
+case there it's not called. That is that you have a proper default irq
+type, handler, and HW setup after host_map() returns.
+
+It's not terribly harmful to have set_irq_type() called twice. Another
+option is to have host_map re-do what your set_type() does, or move the
+common code into a low level __set_type() that gets called by both
+set_irq_type() and your host_map ...
+
+Ben.
