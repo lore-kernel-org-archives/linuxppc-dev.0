@@ -1,20 +1,19 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
-	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id 123C167D79
+Return-Path: <lombardo@mdivac.com>
+Received: from mail.mdivac.com (adsl-68-253-104-89.dsl.bcvloh.ameritech.net
+	[68.253.104.89]) by ozlabs.org (Postfix) with ESMTP id 9186D67C2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Aug 2006 04:43:15 +1000 (EST)
-Subject: Re: Platform device style question
-From: Ben Warren <bwarren@qstreams.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <20060824220625.515d9b3c@vitb.ru.mvista.com>
-References: <1156441997.17977.44.camel@saruman.qstreams.net>
-	<20060824220625.515d9b3c@vitb.ru.mvista.com>
-Content-Type: text/plain
-Date: Thu, 24 Aug 2006 14:43:12 -0400
-Message-Id: <1156444992.17977.66.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+	Fri, 25 Aug 2006 05:27:26 +1000 (EST)
+Message-ID: <44EDFD9C.4010003@mdivac.com>
+Date: Thu, 24 Aug 2006 15:27:24 -0400
+From: Frank D Lombardo <lombardo@mdivac.com>
+MIME-Version: 1.0
+To: Wade Maxfield <wmaxfield@gmail.com>
+Subject: Re: MontaVista 2.6 Kernel support for Xilinx ML40x
+References: <DADA32856852FC458E0F96B664A6F55E011E2423@kom-mailsrv1.kontron-modular.com>	<45a1b53e0608240836l52ed51b5u309e31dd8486cc5b@mail.gmail.com>	<44EDD947.3000105@xilinx.com>
+	<45a1b53e0608241057j4ebe519drd1e431a2275ccdde@mail.gmail.com>
+In-Reply-To: <45a1b53e0608241057j4ebe519drd1e431a2275ccdde@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: ppc <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +24,131 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Vitaly,
+The ml403 reference design has several evaluation cores: opb_uart16550, 
+opb_iic and opb_ethernet.  They seem to time-out after about eight hours.
 
-On Thu, 2006-08-24 at 22:06 +0400, Vitaly Bordug wrote:
+Frank
 
-> I'd suggest to make a look at LDD concerning linux device model...
-Thanks.  I'll read it again.  My little brain absorbs this stuff very
-slowly.
-> For platform device, there's no need to cope with u-boot at all. You'll prolly need to 
-> register the respective platform device from the board-specific code, with proper name 
-> and driver's board-specific platform info. You may have a look at arch/ppc/syslib/ppc_sys.c about static
-> PD definitions usage.
-
-My particular platform (MPC8349) gets its hardware info (CPU, IMMBAR,
-PCI, I2C, SPI resources etc.) from an OF device tree that is generated
-alongside U-boot and I guess embedded in the uImage file.  (I apologize
-if I'm getting my jargon mixed up here)  The OF device tree idea seemed
-like a slick way to abstract away some HW settings from Linux.  I was
-imagining writing board-side platform device registration that gets its
-settings from the device tree, allowing a bit of re-use between similar
-but not identical boards.
-> 
-
-> I'd make sense to figure out the platform device bus before digging into device trees. It's slightly 
-> different stuff, for similar aim, but anyway... Actually you do not strictly need devtree to cope with 
-> your case afaiu.
-
-I definitely have much learning to do.  Thanks very much for the
-pointers!
-
-regards,
-Ben
+Wade Maxfield wrote:
+> Good question.  How long before lockup?  The only core that should be 
+> licensed is the ethernet, and I know it was sysgened on a system with 
+> a license.  This is the Xilinx reference design for the ml403 board.
+>
+>
+> On 8/24/06, *Peter Ryser* <peter.ryser@xilinx.com 
+> <mailto:peter.ryser@xilinx.com>> wrote:
+>
+>     Wade,
+>
+>     are you sure that you did not build your hardware with evaluation
+>     cores of the licenses? If you are using the evaluation licenses
+>     the hardware (FPGA design) will stop working after a certain
+>     amount of time and you will see a lock-up.
+>
+>     - Peter
+>
+>
+>     Wade Maxfield wrote:
+>
+>       I've got the LSP, and have booted it on the ML40X.
+>      
+>       In my opinion it is currently unstable, but that is my opinion. 
+>     I've not been able to keep it powered up for 24 hours without it
+>     locking up on the RS232 serial terminal.  Also, running updatedb
+>     over nfs causes it to abort with a kernel panic, although that
+>     might be an interraction with the nfs server.  (Although even if
+>     the nfs server dies (which it did not), I don't expect a kernel
+>     panic).
+>
+>        I have had it run over 6 hours without issue, so I expect
+>     subtle memory leaks, not serious problems.
+>
+>
+>
+>     On 8/24/06, *Claus Gindhart* < claus.gindhart@kontron.com
+>     <mailto:claus.gindhart@kontron.com>> wrote:
+>
+>         Frank,
+>
+>         due to my understanding of the GPL (and i have already
+>         invested some time
+>         in understanding the various flavours of open source
+>         licences), you should
+>         contact Montavista, and ask them for the sources.
+>
+>         This board adaption is derivative work of the GPL Kernel, so
+>         the result of
+>         this work also falls under the GPL, and has to be made freely
+>         available
+>         under the terms of the GPL.
+>
+>         --
+>         Mit freundlichen Gruessen / Best regards
+>
+>         Claus Gindhart
+>         SW R&D
+>         Kontron Modular Computers
+>         phone :++49 (0)8341-803-374
+>         mailto:claus.gindhart@kontron-modular.com
+>         <mailto:claus.gindhart@kontron-modular.com>
+>         http://www.kontron.com
+>
+>         -----BEGIN GEEK CODE BLOCK-----
+>           Version: 3.1
+>           GU d- s++:>++:+ a+ C++$ !U !P L++>$ E-- W+(-) N- o?
+>           K? w !O !M V !PS PE- Y+ PGP+ t 5? X R* tv- b+ DI+++
+>           D-- G e++> h--- !r x+++
+>         ------END GEEK CODE BLOCK------
+>
+>
+>         -----Original Message-----
+>         From:
+>         linuxppc-embedded-bounces+claus.gindhart=kontron.com@ozlabs.org
+>         <mailto:kontron.com@ozlabs.org>
+>         [mailto:
+>         linuxppc-embedded-bounces+claus.gindhart=kontron.com@ozlabs.org
+>         <mailto:linuxppc-embedded-bounces+claus.gindhart=kontron.com@ozlabs.org>]
+>         On Behalf Of Frank D Lombardo
+>         Sent: Donnerstag, 24. August 2006 15:59
+>         To: linuxppc-embedded@ozlabs.org
+>         <mailto:linuxppc-embedded@ozlabs.org>
+>         Subject: MontaVista 2.6 Kernel support for Xilinx ML40x
+>
+>
+>         I noticed that MontaVista now has their Pro 4.0 version (2.6
+>         Kernel)
+>         available for the Xilinx ML40x series of boards.  I would
+>         assume that
+>         means driver support for at least most of the hardware on the
+>         boards.
+>         Is this code that should be freely available?  How would one
+>         get a copy
+>         of these drivers?  I am interested in drivers for the ML403.
+>
+>         Thanks,
+>         Frank
+>         _______________________________________________
+>         Linuxppc-embedded mailing list
+>         Linuxppc-embedded@ozlabs.org <mailto:Linuxppc-embedded@ozlabs.org>
+>         https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>         _______________________________________________
+>         Linuxppc-embedded mailing list
+>         Linuxppc-embedded@ozlabs.org <mailto:Linuxppc-embedded@ozlabs.org>
+>         https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>         <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>
+>
+>
+>     ------------------------------------------------------------------------
+>
+>     _______________________________________________ Linuxppc-embedded
+>     mailing list Linuxppc-embedded@ozlabs.org
+>     <mailto:Linuxppc-embedded@ozlabs.org>
+>     https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
