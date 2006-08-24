@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58C0F67C24
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 13:46:42 +1000 (EST)
-Subject: Re: [PATCH 2/3] Fix MPC834x SYS platform to get IRQ data from
-	device tree and use new IRQ layer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20060823203937.578cae45.kim.phillips@freescale.com>
-References: <20060823203937.578cae45.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Thu, 24 Aug 2006 13:46:26 +1000
-Message-Id: <1156391186.8433.168.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17645.9406.384676.189697@cargo.ozlabs.ibm.com>
+Date: Thu, 24 Aug 2006 14:02:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: Please pull powerpc.git 'merge' branch
+In-Reply-To: <20060824010508.GA17848@suse.de>
+References: <17644.63105.27596.85261@cargo.ozlabs.ibm.com>
+	<20060824010508.GA17848@suse.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,21 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Greg KH writes:
 
-> +void __init mpc83xx_pcibios_fixup(void)
-> +{
-> +	struct pci_dev *dev = NULL;
-> +
-> +	/* map all the PCI irqs */
-> +	dev = NULL;
-> +	for_each_pci_dev(dev)
-> +		pci_read_irq_line(dev);
-> +}
-> +
-Some seriously redundant assignements above :) I'm not even sure we need
-the initial assignement at all in the first place anyway.
+> $ git pull  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> Already up-to-date.
+> 
+> Perhaps I should be pulling from a different branch?
 
-Appart from that, looks good.
+No, that's the right branch, but the mirroring was very slow. My
+update of hours ago has only just propagated out.  Try again now.
 
-Cheers,
-Ben.
+Thanks,
+Paul.
