@@ -1,20 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A26C967C47
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 15:56:38 +1000 (EST)
-Subject: RE: [PATCH 1/3] Adapt ipic driver to new host_ops interface,
-	addset_irq_type to set IRQ sense
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC2F3@zch01exm20.fsl.freescale.net>
-References: <4879B0C6C249214CBE7AB04453F84E4D0FC2F3@zch01exm20.fsl.freescale.net>
-Content-Type: text/plain
-Date: Thu, 24 Aug 2006 15:56:22 +1000
-Message-Id: <1156398982.8433.200.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 24 Aug 2006 16:54:08 +1000
+Subject: [PATCH] Split out vpa unregister logic from
+	pseries_kexec_cpu_down_xics()
+Message-Id: <20060824065409.645DD67C42@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +15,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+As part of the new irq code pseries_kexec_cpu_down() was split into a
+xics and mpic version. The vpa unregister logic is now only done in the
+xics routine, and although that's ok in practice (we don't have SPLPAR
+machines with mpic), I'd rather have the two concepts stay separate.
 
-> But for IRQ with a specified type, set_irq_type() will be called two
-> times continuously.  Why not call the set_irq_type() in any case in
-> irq_create_of_mapping()?
+So move the vpa unregister into pseries_kexec_cpu_down(), which gets called
+by both the xics and mpic routines. This also gives us an obvious place to
+put any new kexec-down logic needed in future.
 
-well... it would still not be called by irq_create_mapping() (the non-OF
-one). You need to make sure your stuff is properly initialized in the
-case there it's not called. That is that you have a proper default irq
-type, handler, and HW setup after host_map() returns.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-It's not terribly harmful to have set_irq_type() called twice. Another
-option is to have host_map re-do what your set_type() does, or move the
-common code into a low level __set_type() that gets called by both
-set_irq_type() and your host_map ...
+ arch/powerpc/platforms/pseries/setup.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Ben.
+Index: to-merge/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/pseries/setup.c
++++ to-merge/arch/powerpc/platforms/pseries/setup.c
+@@ -223,12 +223,7 @@ static void pseries_lpar_enable_pmcs(voi
+ }
+ 
+ #ifdef CONFIG_KEXEC
+-static void pseries_kexec_cpu_down_mpic(int crash_shutdown, int secondary)
+-{
+-	mpic_teardown_this_cpu(secondary);
+-}
+-
+-static void pseries_kexec_cpu_down_xics(int crash_shutdown, int secondary)
++static void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+ 	/* Don't risk a hypervisor call if we're crashing */
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown) {
+@@ -248,6 +243,17 @@ static void pseries_kexec_cpu_down_xics(
+ 					hard_smp_processor_id());
+ 		}
+ 	}
++}
++
++static void pseries_kexec_cpu_down_mpic(int crash_shutdown, int secondary)
++{
++	pseries_kexec_cpu_down(crash_shutdown, secondary);
++	mpic_teardown_this_cpu(secondary);
++}
++
++static void pseries_kexec_cpu_down_xics(int crash_shutdown, int secondary)
++{
++	pseries_kexec_cpu_down(crash_shutdown, secondary);
+ 	xics_teardown_cpu(secondary);
+ }
+ #endif /* CONFIG_KEXEC */
