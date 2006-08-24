@@ -1,15 +1,20 @@
-Return-Path: <paravpandit@yahoo.com>
-Received: from web36612.mail.mud.yahoo.com (web36612.mail.mud.yahoo.com
-	[209.191.85.29]) by ozlabs.org (Postfix) with SMTP id 8C46967CAA
+Return-Path: <BDE@teamlog.com>
+Received: from me-ml2.teamlog.fr (smtp-grenoble1.teamlog.com [194.2.68.40])
+	by ozlabs.org (Postfix) with ESMTP id B2DF167C8C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 22:52:08 +1000 (EST)
-Message-ID: <20060824125206.18305.qmail@web36612.mail.mud.yahoo.com>
-Date: Thu, 24 Aug 2006 05:52:06 -0700 (PDT)
-From: Parav Pandit <paravpandit@yahoo.com>
-Subject: MPC8555 PCI interrupts are not coming
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-529286412-1156423926=:17980"
+	Thu, 24 Aug 2006 22:58:05 +1000 (EST)
+Subject: Re: ARCH=ppc or ARCH=powerpc
+From: Benjamin Delagoutte <BDE@teamlog.com>
+To: Josh Boyer <jdub@us.ibm.com>
+In-Reply-To: <1156423796.5640.23.camel@zod.rchland.ibm.com>
+References: <20060824123841.4756.qmail@web36601.mail.mud.yahoo.com>
+	<1156423796.5640.23.camel@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 24 Aug 2006 14:58:15 +0200
+Message-Id: <1156424295.19482.11.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: BDE@teamlog.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,40 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-529286412-1156423926=:17980
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Le jeudi 24 août 2006 à 07:49 -0500, Josh Boyer a écrit :
+> On Thu, 2006-08-24 at 05:38 -0700, Parav Pandit wrote:
+> > ppc = 32bit.
+> > powerpc= 64bit.
+> > Correct me if I am wrong.
+> 
+> Yes, you're wrong.  Some 32 bit boards are also under arch/powerpc now.
+> 
+> >  
+> > I am not sure why community didn't adopt the name ppc and ppc64 just
+> > like ia-32 and ia64.
+> 
+> They did originally.
+> 
+> The new direction is to have everything under arch/powerpc, both 32 and
+> 64 bit.  The reason arch/ppc still exists is because some 32 bit
+> platforms have not been fully migrated to the requirements to be merged
+> into arch/powerpc.  Namely, the code has to boot from an OpenFirmware
+> like flattened device tree.  The PPC 4xx family of processors, as an
+> example, does not do this yet though there is work going on to adapt it.
 
-Hi,
-   
-  Can someone give light on PCI interrupts routing to the OS from the openPIC?
-   
-  Basically I am able to talk to PCI end device connected on MPC8555 board in 2.6.13 but not getting interrupts reported by my device.
-   
-  When I read the INTERRUPT_LINE byte, it comes as 0. pdev->irq is also reporting 0.
-  Due to that request_irq() fails. But now I request for IRQ line 8 + openPIC offset.
-  Handler gets registered but still not getting the interrupts. (PCI interrupt line is 8,9 in case of MPC8555).
-   
-  Can anyone please guide me, what are the different things need be configure in the platform code to receive the PCI interrupts in the driver?
-   
-  I don't understand the pci_irq_table, and what it should represent?
-  Currrently no one is writing the INTERRUPT LINE value in the config space.
-  In which function I should configure that value? pcibios_fixup??
-   
-  Regards,
-  Parav Pandit
-   
+I'm currently working on a PPC 405 based developement card. Does it mean
+I have to work using the arch/ppc tree ? 
 
- 		
----------------------------------
-Do you Yahoo!?
- Get on board. You're invited to try the new Yahoo! Mail.
---0-529286412-1156423926=:17980
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+What about the includes ? Do I have to use only include/asm-ppc or are
+include/asm-powerpc necessary as well ?
 
-<div>Hi,</div>  <div>&nbsp;</div>  <div>Can someone give light on PCI interrupts routing to the OS from the openPIC?</div>  <div>&nbsp;</div>  <div>Basically I am able to talk to PCI end device connected on MPC8555 board in 2.6.13 but not getting interrupts reported by my device.</div>  <div>&nbsp;</div>  <div>When I read the INTERRUPT_LINE byte, it comes as 0. pdev-&gt;irq is also reporting 0.</div>  <div>Due to that request_irq() fails. But now I request for IRQ line 8 + openPIC offset.</div>  <div>Handler gets registered but still not getting the interrupts. (PCI interrupt line is 8,9 in case of MPC8555).</div>  <div>&nbsp;</div>  <div>Can anyone please&nbsp;guide me, what are the different things need be configure in the platform code to receive the PCI interrupts in the driver?</div>  <div>&nbsp;</div>  <div>I don't understand the pci_irq_table, and what it should represent?</div>  <div>Currrently no one is writing the INTERRUPT LINE value in the config space.</div> 
- <div>In which function I should configure that value? pcibios_fixup??</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Parav Pandit</div>  <div>&nbsp;</div><p>&#32;
-		<hr size=1>Do you Yahoo!?<br> 
-Get on board. <a href="http://us.rd.yahoo.com/evt=40791/*http://advision.webevents.yahoo.com/mailbeta">You're invited</a> to try the new Yahoo! Mail.
---0-529286412-1156423926=:17980--
+> Eventually, arch/ppc will go away and all of PowerPC will be under
+> arch/powerpc.  That's the goal anyway.
+> 
+> josh
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
