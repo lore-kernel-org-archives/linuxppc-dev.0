@@ -1,20 +1,17 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp103.biz.mail.mud.yahoo.com (smtp103.biz.mail.mud.yahoo.com
-	[68.142.200.238]) by ozlabs.org (Postfix) with SMTP id CF3D167C1E
+Return-Path: <claus.gindhart@kontron.com>
+Received: from mail.kontron-modular.com (mail.e2brain.de [62.159.155.200])
+	by ozlabs.org (Postfix) with ESMTP id 4F1AE67C35
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Aug 2006 00:44:59 +1000 (EST)
-Subject: Re: CompactFlash on PQII Pro
-From: Ben Warren <bwarren@qstreams.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <AB150E9C-6BB3-46C1-980D-311D3277BFC1@kernel.crashing.org>
-References: <1156371402.17977.21.camel@saruman.qstreams.net>
-	<AB150E9C-6BB3-46C1-980D-311D3277BFC1@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 24 Aug 2006 10:44:55 -0400
-Message-Id: <1156430695.17977.28.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+	Fri, 25 Aug 2006 01:02:20 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: MontaVista 2.6 Kernel support for Xilinx ML40x
+Date: Thu, 24 Aug 2006 17:02:15 +0200
+Message-ID: <DADA32856852FC458E0F96B664A6F55E011E2423@kom-mailsrv1.kontron-modular.com>
+From: "Claus Gindhart" <claus.gindhart@kontron.com>
+To: "Frank D Lombardo" <lombardo@mdivac.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Kumar,
+Frank,
 
-As always, you're several steps ahead of me.
+due to my understanding of the GPL (and i have already invested some =
+time
+in understanding the various flavours of open source licences), you =
+should
+contact Montavista, and ask them for the sources.
 
-On Wed, 2006-08-23 at 18:04 -0500, Kumar Gala wrote:
+This board adaption is derivative work of the GPL Kernel, so the result =
+of
+this work also falls under the GPL, and has to be made freely available=20
+under the terms of the GPL.
 
-> I know I posted a patch for cf-ide.c to lkml some time ago, this was  
-> to do a CF in true ide mode using the 83xx localbus.
-> 
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=113877891224982&w=2
-> 
-> We did some UPM setup in u-boot to use two CS on Localbus for this.
-In our case, we only have one CS available but it's going to a CPLD that
-will decode and provide two CSs to the CF.  This will work as long as
-the UPM setup is identical for the two chip selects.  Should be...  
-Off-topic to this list, but do you have the U-boot code that you can
-share?  If not, no worries.
+--=20
+Mit freundlichen Gruessen / Best regards
 
-thanks,
-Ben
+Claus Gindhart
+SW R&D
+Kontron Modular Computers
+phone :++49 (0)8341-803-374
+mailto:claus.gindhart@kontron-modular.com
+http://www.kontron.com
+
+-----BEGIN GEEK CODE BLOCK-----
+  Version: 3.1
+  GU d- s++:>++:+ a+ C++$ !U !P L++>$ E-- W+(-) N- o?
+  K? w !O !M V !PS PE- Y+ PGP+ t 5? X R* tv- b+ DI+++
+  D-- G e++> h--- !r x+++
+------END GEEK CODE BLOCK------
+=20
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+claus.gindhart=3Dkontron.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+claus.gindhart=3Dkontron.com@ozlabs.org=
+]
+On Behalf Of Frank D Lombardo
+Sent: Donnerstag, 24. August 2006 15:59
+To: linuxppc-embedded@ozlabs.org
+Subject: MontaVista 2.6 Kernel support for Xilinx ML40x
+
+
+I noticed that MontaVista now has their Pro 4.0 version (2.6 Kernel)=20
+available for the Xilinx ML40x series of boards.  I would assume that=20
+means driver support for at least most of the hardware on the boards. =20
+Is this code that should be freely available?  How would one get a copy=20
+of these drivers?  I am interested in drivers for the ML403.
+
+Thanks,
+Frank
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
