@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF58567C0C
+Return-Path: <vows_siu@yahoo.com.hk>
+Received: from wmail05dat.netvigator.com (wmail05.netvigator.com
+	[218.102.48.220]) by ozlabs.org (Postfix) with ESMTP id 5CC0D67C29
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 09:06:32 +1000 (EST)
-In-Reply-To: <3C02138692C13C4BB675FE7EA240952918DFB7@bluefin.Soneticom.local>
-References: <3C02138692C13C4BB675FE7EA240952918DFB7@bluefin.Soneticom.local>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <09339AC2-6F79-4261-92B8-3068A4B33876@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PCI resource allocation MPC8540ADS
-Date: Wed, 23 Aug 2006 18:06:26 -0500
-To: Clint Thomas <cthomas@Soneticom.com>
+	Thu, 24 Aug 2006 12:51:25 +1000 (EST)
+From: "alva" <vows_siu@yahoo.com.hk>
+To: <Phil.Nitschke@avalon.com.au>, "'Matt Porter'" <mporter@embeddedalley.com>
+Subject: RE: ioremap() fails for >64 MB
+Date: Thu, 24 Aug 2006 10:54:23 +0800
+Message-ID: <000001c6c728$9aeeac30$8500a8c0@dc.roysiu.servebbs.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="windows-1250"
+In-Reply-To: <1156327238.6735.9.camel@lamorak.int.avalon.com.au>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,52 +23,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I think 64MB limitation of ioremap() is due to the kernel's page size.
+When compiling kernel, it has an option to choose the memory page size
+which is default 64MB. To use memory greater than 64MB, there is two
+methods. One is to make the kernel's page size larger as Phil Nitschke
+said. Another is to modify ioremap() a little bit --- just make it use
+another file for "mmap" while larger than 64MB. Since the central
+concept of linux is file-based, I think more files are not harmful that
+only waste a little bit inode structure. And it is much more feasible
+that one can choose to use file in memory or harddisk or mounted device
+harddisk/memory ... ...
 
-On Aug 23, 2006, at 4:11 PM, Clint Thomas wrote:
+-----Original Message-----
+From: linuxppc-embedded-bounces+vows_siu=yahoo.com.hk@ozlabs.org
+[mailto:linuxppc-embedded-bounces+vows_siu=yahoo.com.hk@ozlabs.org] On
+Behalf Of Phil Nitschke
+Sent: Wednesday, August 23, 2006 6:01 PM
+To: Matt Porter
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: ioremap() fails for >64 MB
 
-> Hey guys,
->
-> I have a development board based loosely off the MPC8540ADS design  
-> that I am trying to move to the Linux kernel 2.6. I already have  
-> this system working successfully in Linux Kernel 2.4, but after  
-> dealing with compilation and load errors, i've come to the point  
-> where I can get to a console. However, this problem at boot time  
-> keeps me from using a lot of onboard hardware. When I enable PCI  
-> support in the Kernel configuration, this is the text I get at boot  
-> time...
+On Tue, 2006-08-22 at 09:22 -0500, Matt Porter wrote:
+> On Tue, Aug 22, 2006 at 05:11:09PM +0930, Phil Nitschke wrote:
+> > Hi all,
+> > 
+> > I have 2 GB memory on a 7448 processor, and want to reserve a huge
+chunk
+> > of it at boot-time, then ioremap() it into the kernel space inside a
+> > device driver.  So far I've succeeded with 64 MB, but can't go any
+> > higher, as mm/vmalloc.c tells me: "allocation failed: out of vmalloc
+> > space - use vmalloc=<size> to increase size."
+> > 
+> > So I tried adding a vmalloc line to the kernel command line as
+follows:
+> > Kernel cmd line: root=/dev/nfs rw mem=1920M vmalloc=1024M
+nfsroot=... 
+>  
+> Yeah, that suggestion is bogus. That option can't help with getting
+> more vmalloc space in this case.
+> 
+> > So the vmalloc=<size> argument has made no difference.  What do I
+need
+> > to do to make this work?
+> 
+> Go to the "Advanced setup" menu. There's a number of options to
+provide
+> fine-grained control of the PPC kernel virtual address space.
 
-which 2.6 kernel are you using?
+<SNIP>
 
-> PCI: Probing PCI hardware
-> PCI: Cannot allocate resource region 1 of PCI bridge 1
-> PCI: Cannot allocate resource region 2 of PCI bridge 1
-> PCI: bridge 1 resource 2 moved to 9ff00000..9fffffff
-> PCI: Cannot allocate resource region 1 of PCI bridge 2
-> PCI: Cannot allocate resource region 2 of PCI bridge 2
-> PCI: bridge 2 resource 2 moved to 9fe00000..9fefffff
-> PCI: Cannot allocate resource region 1 of device 0000:00:14.0
-> PCI: Cannot allocate resource region 2 of device 0000:00:14.0
-> PCI: Cannot allocate resource region 0 of device 0000:01:01.0
-> PCI: Cannot allocate resource region 1 of device 0000:01:01.0
-> PCI: Cannot allocate resource region 2 of device 0000:01:01.0
-> PCI: Cannot allocate resource region 0 of device 0000:01:05.0
-> PCI: Cannot allocate resource region 1 of device 0000:01:05.0
-> PCI: Cannot allocate resource region 2 of device 0000:01:05.0
-> PCI: Cannot allocate resource region 0 of device 0000:01:06.0
-> PCI: Cannot allocate resource region 0 of device 0000:01:06.1
-> PCI: Cannot allocate resource region 0 of device 0000:01:06.2
-> PCI: Failed to allocate mem resource #0:1000000@0 for 0000:01:01.0
-> PCI: Failed to allocate I/O resource #1:100@1000 for 0000:01:01.0
-> PCI: Failed to allocate mem resource #2:1000@0 for 0000:01:01.0
-> PCI: Failed to allocate mem resource #0:10000@0 for 0000:01:05.0
-> PCI: Failed to allocate mem resource #2:10000@0 for 0000:01:05.0
-> PCI: Failed to allocate mem resource #0:1000@0 for 0000:01:06.0
-> PCI: Failed to allocate mem resource #0:1000@0 for 0000:01:06.1
-> PCI: Failed to allocate mem resource #0:100@0 for 0000:01:06.2
->
-> the system is using a PLX PCI bridge chip. Like I said, this works  
-> fine in my 2.4 distribution. Thanks for any and all help!
+Thanks Matt (and others) for your suggestions.  Matt has given me the
+answers I was looking for.
 
-can you post an lspci -v output.
+Since my (2 GB) memory is within the (4 GB) addressable by a 32-bit
+processor, why do I need high memory at all?  
 
-- kumar
+Are there performance implications on this platform from having a non
+optimal low/high ratio?
+
+> That said, why don't you just use alloc_bootmem() to reserve memory
+> for your driver at boot time? 
+
+I avoided this simply because I wanted to load/unload my driver (during
+development), and alloc_bootmem() seemed better suited to drivers
+compiled into the kernel.  But I'll look again at this idea if further
+problems arise with the approach above.
+
+Thanks again,
+
+-- 
+Phil
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+-- 
+No virus found in this incoming message.
+Checked by AVG Free Edition.
+Version: 7.1.405 / Virus Database: 268.11.5/425 - Release Date:
+2006/8/22
+ 
+
+-- 
+No virus found in this outgoing message.
+Checked by AVG Free Edition.
+Version: 7.1.405 / Virus Database: 268.11.5/426 - Release Date:
+2006/8/23
+ 
