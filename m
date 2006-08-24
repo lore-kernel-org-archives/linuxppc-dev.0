@@ -1,13 +1,13 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A1C0B67C03
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 11:39:48 +1000 (EST)
-Date: Wed, 23 Aug 2006 20:39:37 -0500
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8C64C67C04
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 11:39:49 +1000 (EST)
+Date: Wed, 23 Aug 2006 20:39:44 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] Fix MPC834x SYS platform to get IRQ data from device
-	tree and use new IRQ layer
-Message-Id: <20060823203937.578cae45.kim.phillips@freescale.com>
+Subject: [PATCH 3/3] Add MPC8349E MDS device tree source file to
+	arch/powerpc/boot/dts
+Message-Id: <20060823203944.34c85a6a.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,140 +19,347 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes MPC834x SYS platform code to get IRQ data (including PCI) from the device tree, and to use the new IPIC code.
+Add MPC8349E MDS device tree source file to arch/powerpc/boot/dts
+
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-
 ---
 
-please apply to 2.6.18
+ arch/powerpc/boot/dts/mpc8349emds.dts |  327 +++++++++++++++++++++++++++++++++
+ 1 files changed, 327 insertions(+), 0 deletions(-)
 
- arch/powerpc/platforms/83xx/mpc834x_sys.c |   58 +++++------------------------
- arch/powerpc/platforms/83xx/mpc83xx.h     |    1 +
- arch/powerpc/platforms/83xx/pci.c         |   10 +++++
- 3 files changed, 21 insertions(+), 48 deletions(-)
-
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.c b/arch/powerpc/platforms/83xx/mpc834x_sys.c
-index 5eadf9d..d864571 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_sys.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_sys.c
-@@ -43,33 +43,6 @@ unsigned long isa_io_base = 0;
- unsigned long isa_mem_base = 0;
- #endif
- 
--#ifdef CONFIG_PCI
--static int
--mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
--{
--	static char pci_irq_table[][4] =
--	    /*
--	     *      PCI IDSEL/INTPIN->INTLINE
--	     *       A      B      C      D
--	     */
--	{
--		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x11 */
--		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x12 */
--		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x13 */
--		{0, 0, 0, 0},
--		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x15 */
--		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x16 */
--		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x17 */
--		{PIRQB, PIRQC, PIRQD, PIRQA},	/* idsel 0x18 */
--		{0, 0, 0, 0},			/* idsel 0x19 */
--		{0, 0, 0, 0},			/* idsel 0x20 */
--	};
--
--	const long min_idsel = 0x11, max_idsel = 0x20, irqs_per_slot = 4;
--	return PCI_IRQ_TABLE_LOOKUP;
--}
--#endif				/* CONFIG_PCI */
--
- /* ************************************************************************
-  *
-  * Setup the architecture
-@@ -96,8 +69,6 @@ #ifdef CONFIG_PCI
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		add_bridge(np);
- 
--	ppc_md.pci_swizzle = common_swizzle;
--	ppc_md.pci_map_irq = mpc83xx_map_irq;
- 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
- #endif
- 
-@@ -110,25 +81,13 @@ #endif
- 
- void __init mpc834x_sys_init_IRQ(void)
- {
--	u8 senses[8] = {
--		0,			/* EXT 0 */
--		IRQ_SENSE_LEVEL,	/* EXT 1 */
--		IRQ_SENSE_LEVEL,	/* EXT 2 */
--		0,			/* EXT 3 */
--#ifdef CONFIG_PCI
--		IRQ_SENSE_LEVEL,	/* EXT 4 */
--		IRQ_SENSE_LEVEL,	/* EXT 5 */
--		IRQ_SENSE_LEVEL,	/* EXT 6 */
--		IRQ_SENSE_LEVEL,	/* EXT 7 */
--#else
--		0,			/* EXT 4 */
--		0,			/* EXT 5 */
--		0,			/* EXT 6 */
--		0,			/* EXT 7 */
--#endif
--	};
--
--	ipic_init(get_immrbase() + 0x00700, 0, 0, senses, 8);
-+	struct device_node *np;
+diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
+new file mode 100644
+index 0000000..0c37274
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+@@ -0,0 +1,327 @@
++/*
++ * MPC8349E MDS Device Tree Source
++ *
++ * Copyright 2005, 2006 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+	np = of_find_node_by_type(NULL, "ipic");
-+	if (!np)
-+		return;
++/ {
++	model = "MPC8349EMDS";
++	compatible = "MPC834xMDS";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+	ipic_init(np, 0);
- 
- 	/* Initialize the default interrupt mapping priorities,
- 	 * in case the boot rom changed something on us.
-@@ -178,4 +137,7 @@ define_machine(mpc834x_sys) {
- 	.time_init		= mpc83xx_time_init,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup		= mpc83xx_pcibios_fixup,
-+#endif
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index 01cae10..2c82bca 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -11,6 +11,7 @@ #include <linux/device.h>
- 
- extern int add_bridge(struct device_node *dev);
- extern int mpc83xx_exclude_device(u_char bus, u_char devfn);
-+extern void mpc83xx_pcibios_fixup(void);
- extern void mpc83xx_restart(char *cmd);
- extern long mpc83xx_time_init(void);
- 
-diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
-index 9c36505..ae12547 100644
---- a/arch/powerpc/platforms/83xx/pci.c
-+++ b/arch/powerpc/platforms/83xx/pci.c
-@@ -45,6 +45,16 @@ int mpc83xx_exclude_device(u_char bus, u
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-+void __init mpc83xx_pcibios_fixup(void)
-+{
-+	struct pci_dev *dev = NULL;
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	/* map all the PCI irqs */
-+	dev = NULL;
-+	for_each_pci_dev(dev)
-+		pci_read_irq_line(dev);
-+}
++		PowerPC,8349@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++			32-bit;
++		};
++	};
 +
- int __init add_bridge(struct device_node *dev)
- {
- 	int len;
++	memory {
++		device_type = "memory";
++		reg = <00000000 10000000>;	// 256MB at 0
++	};
++
++	soc8349@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00000200>;
++		bus-frequency = <0>;
++
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <200 100>;
++		};
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <e 8>;
++			interrupt-parent = <700>;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3100 100>;
++			interrupts = <f 8>;
++			interrupt-parent = <700>;
++			dfsrr;
++		};
++
++		spi@7000 {
++			device_type = "spi";
++			compatible = "mpc83xx_spi";
++			reg = <7000 1000>;
++			interrupts = <10 8>;
++			interrupt-parent = <700>;
++			mode = <0>;
++		};
++
++		/* phy type (ULPI or SERIAL) are only types supportted for MPH */
++		/* port = 0 or 1 */
++		usb@22000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-mph";
++			reg = <22000 1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <700>;
++			interrupts = <27 2>;
++			phy_type = "ulpi";
++			port1;
++		};
++		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
++		usb@23000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-dr";
++			reg = <23000 1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <700>;
++			interrupts = <26 2>;
++			phy_type = "ulpi";
++		};
++
++		mdio@24520 {
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			linux,phandle = <24520>;
++			ethernet-phy@0 {
++				linux,phandle = <2452000>;
++				interrupt-parent = <700>;
++				interrupts = <11 2>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			ethernet-phy@1 {
++				linux,phandle = <2452001>;
++				interrupt-parent = <700>;
++				interrupts = <12 2>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		ethernet@24000 {
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			address = [ 00 00 00 00 00 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <20 8 21 8 22 8>;
++			interrupt-parent = <700>;
++			phy-handle = <2452000>;
++		};
++
++		ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			address = [ 00 00 00 00 00 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <23 8 24 8 25 8>;
++			interrupt-parent = <700>;
++			phy-handle = <2452001>;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;
++			clock-frequency = <0>;
++			interrupts = <9 8>;
++			interrupt-parent = <700>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;
++			clock-frequency = <0>;
++			interrupts = <a 8>;
++			interrupt-parent = <700>;
++		};
++
++		pci@8500 {
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++					/* IDSEL 0x11 */
++					 8800 0 0 1 700 14 0
++					 8800 0 0 2 700 15 0
++					 8800 0 0 3 700 16 0
++					 8800 0 0 4 700 17 0
++
++					/* IDSEL 0x12 */
++					 9000 0 0 1 700 16 0
++					 9000 0 0 2 700 17 0
++					 9000 0 0 3 700 14 0
++					 9000 0 0 4 700 15 0
++
++					/* IDSEL 0x13 */
++					 9800 0 0 1 700 17 0
++					 9800 0 0 2 700 14 0
++					 9800 0 0 3 700 15 0
++					 9800 0 0 4 700 16 0
++
++					/* IDSEL 0x15 */
++					 a800 0 0 1 700 14 0
++					 a800 0 0 2 700 15 0
++					 a800 0 0 3 700 16 0
++					 a800 0 0 4 700 17 0
++
++					/* IDSEL 0x16 */
++					 b000 0 0 1 700 17 0
++					 b000 0 0 2 700 14 0
++					 b000 0 0 3 700 15 0
++					 b000 0 0 4 700 16 0
++
++					/* IDSEL 0x17 */
++					 b800 0 0 1 700 16 0
++					 b800 0 0 2 700 17 0
++					 b800 0 0 3 700 14 0
++					 b800 0 0 4 700 15 0
++
++					/* IDSEL 0x18 */
++					 b000 0 0 1 700 15 0
++					 b000 0 0 2 700 16 0
++					 b000 0 0 3 700 17 0
++					 b000 0 0 4 700 14 0>;
++			interrupt-parent = <700>;
++			interrupts = <42 8>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 a0000000 a0000000 0 10000000
++				  42000000 0 80000000 80000000 0 10000000
++				  01000000 0 00000000 e2000000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8500 100>;
++			compatible = "83xx";
++			device_type = "pci";
++		};
++
++		pci@8600 {
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++					/* IDSEL 0x11 */
++					 8800 0 0 1 700 14 0
++					 8800 0 0 2 700 15 0
++					 8800 0 0 3 700 16 0
++					 8800 0 0 4 700 17 0
++
++					/* IDSEL 0x12 */
++					 9000 0 0 1 700 16 0
++					 9000 0 0 2 700 17 0
++					 9000 0 0 3 700 14 0
++					 9000 0 0 4 700 15 0
++
++					/* IDSEL 0x13 */
++					 9800 0 0 1 700 17 0
++					 9800 0 0 2 700 14 0
++					 9800 0 0 3 700 15 0
++					 9800 0 0 4 700 16 0
++
++					/* IDSEL 0x15 */
++					 a800 0 0 1 700 14 0
++					 a800 0 0 2 700 15 0
++					 a800 0 0 3 700 16 0
++					 a800 0 0 4 700 17 0
++
++					/* IDSEL 0x16 */
++					 b000 0 0 1 700 17 0
++					 b000 0 0 2 700 14 0
++					 b000 0 0 3 700 15 0
++					 b000 0 0 4 700 16 0
++
++					/* IDSEL 0x17 */
++					 b800 0 0 1 700 16 0
++					 b800 0 0 2 700 17 0
++					 b800 0 0 3 700 14 0
++					 b800 0 0 4 700 15 0
++
++					/* IDSEL 0x18 */
++					 b000 0 0 1 700 15 0
++					 b000 0 0 2 700 16 0
++					 b000 0 0 3 700 17 0
++					 b000 0 0 4 700 14 0>;
++			interrupt-parent = <700>;
++			interrupts = <42 8>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 b0000000 b0000000 0 10000000
++				  42000000 0 90000000 90000000 0 10000000
++				  01000000 0 00000000 e2100000 0 00100000>;
++			clock-frequency = <3f940aa>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <8600 100>;
++			compatible = "83xx";
++			device_type = "pci";
++		};
++
++		/* May need to remove if on a part without crypto engine */
++		crypto@30000 {
++			device_type = "crypto";
++			model = "SEC2";
++			compatible = "talitos";
++			reg = <30000 10000>;
++			interrupts = <b 8>;
++			interrupt-parent = <700>;
++			num-channels = <4>;
++			channel-fifo-len = <18>;
++			exec-units-mask = <0000007e>;
++			/* desc mask is for rev2.0,
++			 * we need runtime fixup for >2.0 */
++			descriptor-types-mask = <01010ebf>;
++		};
++
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		pic@700 {
++			linux,phandle = <700>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <700 100>;
++			built-in;
++			device_type = "ipic";
++		};
++	};
++};
 -- 
 2006_06_07.01.gittree_pull-dirty
