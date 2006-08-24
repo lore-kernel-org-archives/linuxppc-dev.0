@@ -1,22 +1,30 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A4F4467C29
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 14:10:38 +1000 (EST)
-Date: Wed, 23 Aug 2006 21:10:27 -0700
-From: Greg KH <gregkh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git 'merge' branch
-Message-ID: <20060824041027.GA19887@suse.de>
-References: <17644.63105.27596.85261@cargo.ozlabs.ibm.com>
-	<20060824010508.GA17848@suse.de>
-	<17645.9406.384676.189697@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17645.9406.384676.189697@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id AA0D867C36
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Aug 2006 14:43:40 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k7O4hcew007427
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 21:43:38 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7O4hZ1m027516
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Aug 2006 23:43:37 -0500 (CDT)
+Subject: Re: [PATCH ] powerpc:  pass UPIO_TSI flag to 8259 serial driver
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1156369941.8433.57.camel@localhost.localdomain>
+References: <7EA18FDD2DC2154AA3BD6D2F22A62A0E26E532@zch01exm23.fsl.freescale.net>
+	<1156304163.8433.19.camel@localhost.localdomain>
+	<44EC15A1.4090807@freescale.com>
+	<1156369941.8433.57.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1156394597.5310.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 24 Aug 2006 12:43:17 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +34,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 24, 2006 at 02:02:06PM +1000, Paul Mackerras wrote:
-> Greg KH writes:
+On Thu, 2006-08-24 at 05:52, Benjamin Herrenschmidt wrote:
+> On Wed, 2006-08-23 at 16:45 +0800, Zang Roy-r61911 wrote:
+> > Benjamin Herrenschmidt wrote:
+> > > On Wed, 2006-08-23 at 10:20 +0800, Zang Roy-r61911 wrote:
+> > >   
+> > >> The patch passes the UPIO_TSI flag to general 8259 serial driver
+> > >>     
+> > >
+> > > Patch looks damaged to me... appart from that, what it does looks
+> ok to
+> > > me.
+> > Sorry. It seems imported by my mail client. Please pick up the
+> following 
+> > one.
 > 
-> > $ git pull  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> > Already up-to-date.
-> > 
-> > Perhaps I should be pulling from a different branch?
+> Seems to be damaged as well ! What mail client do you use ? 
 > 
-> No, that's the right branch, but the mirroring was very slow. My
-> update of hours ago has only just propagated out.  Try again now.
+> Ben.
+Evolution 1.2.2. I had found the reason and tested on my side.
+Paul, if you do not modify it by hand, please select the following :-).
+I will repost the mpic and mpc7448hph2 irq update patch.Very sorry for that.
 
-Ok, that worked.  I can pull from master@kernel.org too, which would
-have worked here :)
+Signed-off-by: Roy Zang       <tie-fei.zang@freescale.com> 
 
-thanks,
+---
+ arch/powerpc/kernel/legacy_serial.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-greg k-h
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 359ab89..07c2c00 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -115,6 +115,7 @@ static int __init add_legacy_soc_port(st
+ 	u64 addr;
+ 	u32 *addrp;
+ 	upf_t flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ;
++	struct device_node *tsi = of_get_parent(np);
+ 
+ 	/* We only support ports that have a clock frequency properly
+ 	 * encoded in the device-tree.
+@@ -134,7 +135,10 @@ static int __init add_legacy_soc_port(st
+ 	/* Add port, irq will be dealt with later. We passed a translated
+ 	 * IO port value. It will be fixed up later along with the irq
+ 	 */
+-	return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, flags, 0);
++	if (tsi && !strcmp(tsi->type, "tsi-bridge"))
++		return add_legacy_port(np, -1, UPIO_TSI, addr, addr, NO_IRQ, flags, 0);
++	else 
++		return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, flags, 0);
+ }
+ 
+ static int __init add_legacy_isa_port(struct device_node *np,
+@@ -464,7 +468,7 @@ static int __init serial_dev_init(void)
+ 			fixup_port_irq(i, np, port);
+ 		if (port->iotype == UPIO_PORT)
+ 			fixup_port_pio(i, np, port);
+-		if (port->iotype == UPIO_MEM)
++		if ((port->iotype == UPIO_MEM) || (port->iotype == UPIO_TSI))
+ 			fixup_port_mmio(i, np, port);
+ 	}
+ 
+-- 
+1.4.0
