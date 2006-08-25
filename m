@@ -1,27 +1,29 @@
-Return-Path: <vgoyal@in.ibm.com>
-Date: Fri, 25 Aug 2006 16:16:17 -0400
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [CFT] ELF Relocatable x86 and x86_64 bzImages
-Message-ID: <20060825201617.GC8909@in.ibm.com>
-References: <20060705222448.GC992@in.ibm.com>
-	<aec7e5c30607051932r49bbcc7eh2c190daa06859dcc@mail.gmail.com>
-	<20060706081520.GB28225@host0.dyn.jankratochvil.net>
-	<aec7e5c30607070147g657d2624qa93a145dd4515484@mail.gmail.com>
-	<20060707133518.GA15810@in.ibm.com>
-	<20060707143519.GB13097@host0.dyn.jankratochvil.net>
-	<20060710233219.GF16215@in.ibm.com>
-	<20060711010815.GB1021@host0.dyn.jankratochvil.net>
-	<m1d5c92yv4.fsf@ebiederm.dsl.xmission.com>
-	<m1u04x4uiv.fsf_-_@ebiederm.dsl.xmission.com>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C90BB67C61
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 06:47:06 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7PKl09B030298
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 16:47:00 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7PKl2J8294472
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 16:47:02 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7PKl2TK027961
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 16:47:02 -0400
+Subject: [PATCH] fixup ibm_architecture_vec definition
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Fri, 25 Aug 2006 15:46:59 -0500
+Message-Id: <1156538819.5959.18.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m1u04x4uiv.fsf_-_@ebiederm.dsl.xmission.com>
-Cc: fastboot@osdl.org, Jan Kratochvil <lace@jankratochvil.net>,
-	linux-kernel@vger.kernel.org, Linda Wang <lwang@redhat.com>,
-	Horms <horms@verge.net.au>, "H. Peter Anvin" <hpa@zytor.com>,
-	linuxppc64-dev@ozlabs.org
-Reply-To: vgoyal@in.ibm.com
+Cc: Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,65 +33,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 31, 2006 at 10:19:04AM -0600, Eric W. Biederman wrote:
-> 
-> I have spent some time and have gotten my relocatable kernel patches
-> working against the latest kernels.  I intend to push this upstream
-> shortly.
-> 
-> Could all of the people who care take a look and test this out
-> to make certain that it doesn't just work on my test box?
-> 
-> My approach is to extend bzImage so that it is an ET_DYN ELF executable
-> (we have what used to be a bootsector where we can put the header).
-> Boot loaders are explicitly not expected to process relocations.
-> 
-> The x86_64 kernel is simply built to live at a fixed virtual address
-> and the boot page tables are relocated.  The i386 kernel is built
-> to process relocates generated with --embedded-relocs (after vmlinux.lds.S)
-> has been fixed up to sort out static and dynamic relocations.
-> 
-> Currently there are 33 patches in my tree to do this.
-> 
-> The weirdest symptom I have had so far is that page faults did not
-> trigger the early exception handler on x86_64 (instead I got a reboot).
-> 
-> The code should be available shortly at:
-> git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/linux-2.6-reloc.git#reloc-v2.6.18-rc3
-> 
-> If all goes well with the testing I will push the patches to Andrew in the next couple 
-> of days.
+Hi, 
 
-It breaks powerpc build as poewrpc does not seem to be defining symbol
-_text which is used by arch independent kallsyms.c. Attached is the one
-line fix.
+This problem was noticed by one of the Phyp firmware folks.
+Our ibm,client-architecture-support call was failing.
 
-Thanks
-Vivek
+This patch correctly terminates the PVR list, and corrects the vector
+length parms being passed in.  
 
+Please apply.   :-) 
 
-o ppc64 does not seem to be defining symbol _text  which is used by
-  kernel/kallsyms.c for relocatable kernel patches. Instead of absolute
-  symbol addresses now it is stored as offset from symbol _text
-  (_text + offset) so that relocations entries for this section are
-  generated, if need be. (currently i386 will be the only user once
-  the relocatable kernel patches are merged).
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
 
-Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
----
-
- arch/powerpc/kernel/vmlinux.lds.S |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -puN arch/powerpc/kernel/vmlinux.lds.S~ppc64-compilation-fix arch/powerpc/kernel/vmlinux.lds.S
---- linux-2.6.18-rc3-1M/arch/powerpc/kernel/vmlinux.lds.S~ppc64-compilation-fix	2006-08-24 16:16:17.000000000 -0400
-+++ linux-2.6.18-rc3-1M-root/arch/powerpc/kernel/vmlinux.lds.S	2006-08-24 16:26:33.000000000 -0400
-@@ -33,6 +33,7 @@ SECTIONS
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 462bced..7065390 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -643,16 +643,17 @@ static unsigned char ibm_architecture_ve
+ 	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
+ 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
+ 	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
++	W(0x00000000), W(0xffffffff),	/* Terminator-list-entry */
+ 	5 - 1,				/* 5 option vectors */
  
- 	/* Text and gots */
- 	.text : {
-+		_text = .;
- 		*(.text .text.*)
- 		SCHED_TEXT
- 		LOCK_TEXT
-_
+ 	/* option vector 1: processor architectures supported */
+-	3 - 1,				/* length */
++	3 - 2,				/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV1_PPC_2_00 | OV1_PPC_2_01 | OV1_PPC_2_02 | OV1_PPC_2_03 |
+ 	OV1_PPC_2_04 | OV1_PPC_2_05,
+ 
+ 	/* option vector 2: Open Firmware options supported */
+-	34 - 1,				/* length */
++	34 - 2,				/* length */
+ 	OV2_REAL_MODE,
+ 	0, 0,
+ 	W(0xffffffff),			/* real_base */
+@@ -666,16 +667,16 @@ static unsigned char ibm_architecture_ve
+ 	48,				/* max log_2(hash table size) */
+ 
+ 	/* option vector 3: processor options supported */
+-	3 - 1,				/* length */
++	3 - 2,				/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV3_FP | OV3_VMX,
+ 
+ 	/* option vector 4: IBM PAPR implementation */
+-	2 - 1,				/* length */
++	2 - 2,				/* length */
+ 	0,				/* don't halt */
+ 
+ 	/* option vector 5: PAPR/OF options */
+-	3 - 1,				/* length */
++	3 - 2,				/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES,
+ };
