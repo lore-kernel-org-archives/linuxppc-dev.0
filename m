@@ -1,15 +1,22 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id F406B67DB7
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 02:59:51 +1000 (EST)
-Date: Fri, 25 Aug 2006 11:59:47 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/4] Add MPC8349E MDS device tree source file to
-	arch/powerpc/boot/dts
-Message-Id: <20060825115947.0d9ad52f.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1434967C5C
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 03:30:54 +1000 (EST)
+In-Reply-To: <1156481183.8433.300.camel@localhost.localdomain>
+References: <1156481183.8433.300.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2EC1B4EF-BD81-4579-91DF-05D52202865C@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Make OF irq map code detect more error cases
+Date: Fri, 25 Aug 2006 19:30:40 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,348 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add MPC8349E MDS device tree source file to arch/powerpc/boot/dts, aptly indicating new school sense values definition.
+> Device-tree bugs on js20 with some versions of SLOF were causing the
+> interrupt for IDE to not be parsed correctly and fail to boot. This
+> patch adds a bit more sanity checking to the parser to detet some of
+> those errors and fail instead of returning bogus informations. The
+> powerpc PCI code can then trigger a fallback that works on those
+> machines.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Quite similar to my patch you have been refusing, so I'll just
 
----
+ACK
 
- arch/powerpc/boot/dts/mpc8349emds.dts |  328 +++++++++++++++++++++++++++++++++
- 1 files changed, 328 insertions(+), 0 deletions(-)
+it, irrespective of if we need it or not (anymore) -- it's a good,
+useful, cheap sanity check.  The patch looks good, too.
 
-diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
-new file mode 100644
-index 0000000..7e4508b
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8349emds.dts
-@@ -0,0 +1,328 @@
-+/*
-+ * MPC8349E MDS Device Tree Source
-+ *
-+ * Copyright 2005, 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/ {
-+	model = "MPC8349EMDS";
-+	compatible = "MPC834xMDS";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	cpus {
-+		#cpus = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,8349@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <20>;	// 32 bytes
-+			i-cache-line-size = <20>;	// 32 bytes
-+			d-cache-size = <8000>;		// L1, 32K
-+			i-cache-size = <8000>;		// L1, 32K
-+			timebase-frequency = <0>;	// from bootloader
-+			bus-frequency = <0>;		// from bootloader
-+			clock-frequency = <0>;		// from bootloader
-+			32-bit;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <00000000 10000000>;	// 256MB at 0
-+	};
-+
-+	soc8349@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "soc";
-+		ranges = <0 e0000000 00100000>;
-+		reg = <e0000000 00000200>;
-+		bus-frequency = <0>;
-+
-+		wdt@200 {
-+			device_type = "watchdog";
-+			compatible = "mpc83xx_wdt";
-+			reg = <200 100>;
-+		};
-+
-+		i2c@3000 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3000 100>;
-+			interrupts = <e 8>;
-+			interrupt-parent = <700>;
-+			dfsrr;
-+		};
-+
-+		i2c@3100 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3100 100>;
-+			interrupts = <f 8>;
-+			interrupt-parent = <700>;
-+			dfsrr;
-+		};
-+
-+		spi@7000 {
-+			device_type = "spi";
-+			compatible = "mpc83xx_spi";
-+			reg = <7000 1000>;
-+			interrupts = <10 8>;
-+			interrupt-parent = <700>;
-+			mode = <0>;
-+		};
-+
-+		/* phy type (ULPI or SERIAL) are only types supportted for MPH */
-+		/* port = 0 or 1 */
-+		usb@22000 {
-+			device_type = "usb";
-+			compatible = "fsl-usb2-mph";
-+			reg = <22000 1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = <700>;
-+			interrupts = <27 2>;
-+			phy_type = "ulpi";
-+			port1;
-+		};
-+		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
-+		usb@23000 {
-+			device_type = "usb";
-+			compatible = "fsl-usb2-dr";
-+			reg = <23000 1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = <700>;
-+			interrupts = <26 2>;
-+			phy_type = "ulpi";
-+		};
-+
-+		mdio@24520 {
-+			device_type = "mdio";
-+			compatible = "gianfar";
-+			reg = <24520 20>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			linux,phandle = <24520>;
-+			ethernet-phy@0 {
-+				linux,phandle = <2452000>;
-+				interrupt-parent = <700>;
-+				interrupts = <11 2>;
-+				reg = <0>;
-+				device_type = "ethernet-phy";
-+			};
-+			ethernet-phy@1 {
-+				linux,phandle = <2452001>;
-+				interrupt-parent = <700>;
-+				interrupts = <12 2>;
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@24000 {
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <24000 1000>;
-+			address = [ 00 00 00 00 00 00 ];
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <20 8 21 8 22 8>;
-+			interrupt-parent = <700>;
-+			phy-handle = <2452000>;
-+		};
-+
-+		ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <25000 1000>;
-+			address = [ 00 00 00 00 00 00 ];
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <23 8 24 8 25 8>;
-+			interrupt-parent = <700>;
-+			phy-handle = <2452001>;
-+		};
-+
-+		serial@4500 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4500 100>;
-+			clock-frequency = <0>;
-+			interrupts = <9 8>;
-+			interrupt-parent = <700>;
-+		};
-+
-+		serial@4600 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4600 100>;
-+			clock-frequency = <0>;
-+			interrupts = <a 8>;
-+			interrupt-parent = <700>;
-+		};
-+
-+		pci@8500 {
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+
-+					/* IDSEL 0x11 */
-+					 8800 0 0 1 700 14 0
-+					 8800 0 0 2 700 15 0
-+					 8800 0 0 3 700 16 0
-+					 8800 0 0 4 700 17 0
-+
-+					/* IDSEL 0x12 */
-+					 9000 0 0 1 700 16 0
-+					 9000 0 0 2 700 17 0
-+					 9000 0 0 3 700 14 0
-+					 9000 0 0 4 700 15 0
-+
-+					/* IDSEL 0x13 */
-+					 9800 0 0 1 700 17 0
-+					 9800 0 0 2 700 14 0
-+					 9800 0 0 3 700 15 0
-+					 9800 0 0 4 700 16 0
-+
-+					/* IDSEL 0x15 */
-+					 a800 0 0 1 700 14 0
-+					 a800 0 0 2 700 15 0
-+					 a800 0 0 3 700 16 0
-+					 a800 0 0 4 700 17 0
-+
-+					/* IDSEL 0x16 */
-+					 b000 0 0 1 700 17 0
-+					 b000 0 0 2 700 14 0
-+					 b000 0 0 3 700 15 0
-+					 b000 0 0 4 700 16 0
-+
-+					/* IDSEL 0x17 */
-+					 b800 0 0 1 700 16 0
-+					 b800 0 0 2 700 17 0
-+					 b800 0 0 3 700 14 0
-+					 b800 0 0 4 700 15 0
-+
-+					/* IDSEL 0x18 */
-+					 b000 0 0 1 700 15 0
-+					 b000 0 0 2 700 16 0
-+					 b000 0 0 3 700 17 0
-+					 b000 0 0 4 700 14 0>;
-+			interrupt-parent = <700>;
-+			interrupts = <42 8>;
-+			bus-range = <0 0>;
-+			ranges = <02000000 0 a0000000 a0000000 0 10000000
-+				  42000000 0 80000000 80000000 0 10000000
-+				  01000000 0 00000000 e2000000 0 00100000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8500 100>;
-+			compatible = "83xx";
-+			device_type = "pci";
-+		};
-+
-+		pci@8600 {
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+
-+					/* IDSEL 0x11 */
-+					 8800 0 0 1 700 14 0
-+					 8800 0 0 2 700 15 0
-+					 8800 0 0 3 700 16 0
-+					 8800 0 0 4 700 17 0
-+
-+					/* IDSEL 0x12 */
-+					 9000 0 0 1 700 16 0
-+					 9000 0 0 2 700 17 0
-+					 9000 0 0 3 700 14 0
-+					 9000 0 0 4 700 15 0
-+
-+					/* IDSEL 0x13 */
-+					 9800 0 0 1 700 17 0
-+					 9800 0 0 2 700 14 0
-+					 9800 0 0 3 700 15 0
-+					 9800 0 0 4 700 16 0
-+
-+					/* IDSEL 0x15 */
-+					 a800 0 0 1 700 14 0
-+					 a800 0 0 2 700 15 0
-+					 a800 0 0 3 700 16 0
-+					 a800 0 0 4 700 17 0
-+
-+					/* IDSEL 0x16 */
-+					 b000 0 0 1 700 17 0
-+					 b000 0 0 2 700 14 0
-+					 b000 0 0 3 700 15 0
-+					 b000 0 0 4 700 16 0
-+
-+					/* IDSEL 0x17 */
-+					 b800 0 0 1 700 16 0
-+					 b800 0 0 2 700 17 0
-+					 b800 0 0 3 700 14 0
-+					 b800 0 0 4 700 15 0
-+
-+					/* IDSEL 0x18 */
-+					 b000 0 0 1 700 15 0
-+					 b000 0 0 2 700 16 0
-+					 b000 0 0 3 700 17 0
-+					 b000 0 0 4 700 14 0>;
-+			interrupt-parent = <700>;
-+			interrupts = <42 8>;
-+			bus-range = <0 0>;
-+			ranges = <02000000 0 b0000000 b0000000 0 10000000
-+				  42000000 0 90000000 90000000 0 10000000
-+				  01000000 0 00000000 e2100000 0 00100000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8600 100>;
-+			compatible = "83xx";
-+			device_type = "pci";
-+		};
-+
-+		/* May need to remove if on a part without crypto engine */
-+		crypto@30000 {
-+			device_type = "crypto";
-+			model = "SEC2";
-+			compatible = "talitos";
-+			reg = <30000 10000>;
-+			interrupts = <b 8>;
-+			interrupt-parent = <700>;
-+			num-channels = <4>;
-+			channel-fifo-len = <18>;
-+			exec-units-mask = <0000007e>;
-+			/* desc mask is for rev2.0,
-+			 * we need runtime fixup for >2.0 */
-+			descriptor-types-mask = <01010ebf>;
-+		};
-+
-+		/* IPIC
-+		 * interrupts cell = <intr #, sense>
-+		 * sense values match linux IORESOURCE_IRQ_* defines:
-+		 * sense == 8: Level, low assertion
-+		 * sense == 2: Edge, high-to-low change
-+		 */
-+		pic@700 {
-+			linux,phandle = <700>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <700 100>;
-+			built-in;
-+			device_type = "ipic";
-+		};
-+	};
-+};
--- 
-1.4.1
+
+Segher
