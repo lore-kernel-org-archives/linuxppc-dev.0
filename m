@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 62DAD67C36
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 14:46:38 +1000 (EST)
-Subject: [PATCH] powerpc: Make OF irq map code detect more error cases
+	by ozlabs.org (Postfix) with ESMTP id 6B0F767C1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 16:05:05 +1000 (EST)
+Subject: [PATCH] powerpc: Improve IRQ radix tree locking
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Fri, 25 Aug 2006 14:46:23 +1000
-Message-Id: <1156481183.8433.300.camel@localhost.localdomain>
+Date: Fri, 25 Aug 2006 16:04:52 +1000
+Message-Id: <1156485893.8433.315.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,130 +21,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Device-tree bugs on js20 with some versions of SLOF were causing the
-interrupt for IDE to not be parsed correctly and fail to boot. This
-patch adds a bit more sanity checking to the parser to detet some of
-those errors and fail instead of returning bogus informations. The
-powerpc PCI code can then trigger a fallback that works on those
-machines.
+When reworking the powerpc irq code, I figured out that we were using
+the radix tree in a racy way. As a temporary fix, I put a spinlock in
+there. However, this can have a significant impact on performances. This
+patch reworks that to use a smarter technique based on the fact that
+what we need is in fact a rwlock with extremely rare writers (thus
+optimized for the read path).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Index: linux-work/arch/powerpc/kernel/pci_64.c
+Index: linux-work/arch/powerpc/kernel/irq.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/pci_64.c	2006-08-17 09:26:19.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/pci_64.c	2006-08-25 14:38:55.000000000 +1000
-@@ -1289,6 +1289,9 @@ int pci_read_irq_line(struct pci_dev *pc
+--- linux-work.orig/arch/powerpc/kernel/irq.c	2006-08-25 14:08:41.000000000 +1000
++++ linux-work/arch/powerpc/kernel/irq.c	2006-08-25 15:56:17.000000000 +1000
+@@ -322,7 +322,8 @@ EXPORT_SYMBOL(do_softirq);
  
- 	DBG("Try to map irq for %s...\n", pci_name(pci_dev));
- 
-+#ifdef DEBUG
-+	memset(&oirq, 0xff, sizeof(oirq));
-+#endif
- 	/* Try to get a mapping from the device-tree */
- 	if (of_irq_map_pci(pci_dev, &oirq)) {
- 		u8 line, pin;
-@@ -1314,8 +1317,9 @@ int pci_read_irq_line(struct pci_dev *pc
- 		if (virq != NO_IRQ)
- 			set_irq_type(virq, IRQ_TYPE_LEVEL_LOW);
- 	} else {
--		DBG(" -> got one, spec %d cells (0x%08x...) on %s\n",
--		    oirq.size, oirq.specifier[0], oirq.controller->full_name);
-+		DBG(" -> got one, spec %d cells (0x%08x 0x%08x...) on %s\n",
-+		    oirq.size, oirq.specifier[0], oirq.specifier[1],
-+		    oirq.controller->full_name);
- 
- 		virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
- 					     oirq.size);
-@@ -1324,6 +1328,9 @@ int pci_read_irq_line(struct pci_dev *pc
- 		DBG(" -> failed to map !\n");
- 		return -1;
- 	}
-+
-+	DBG(" -> mapped to linux irq %d\n", virq);
-+
- 	pci_dev->irq = virq;
- 	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
- 
-Index: linux-work/arch/powerpc/kernel/prom_parse.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/prom_parse.c	2006-08-17 09:26:19.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/prom_parse.c	2006-08-25 14:38:29.000000000 +1000
-@@ -644,14 +644,17 @@ void of_irq_map_init(unsigned int flags)
- 
+ static LIST_HEAD(irq_hosts);
+ static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
+-
++static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
++static unsigned int irq_radix_writer;
+ struct irq_map_entry irq_map[NR_IRQS];
+ static unsigned int irq_virq_count = NR_IRQS;
+ static struct irq_host *irq_default_host;
+@@ -455,6 +456,60 @@ void irq_set_virq_count(unsigned int cou
+ 		irq_virq_count = count;
  }
  
--int of_irq_map_raw(struct device_node *parent, u32 *intspec, u32 *addr,
--		   struct of_irq *out_irq)
-+int of_irq_map_raw(struct device_node *parent, u32 *intspec, u32 ointsize,
-+		   u32 *addr, struct of_irq *out_irq)
++/* radix tree not lockless safe ! we use a brlock-type mecanism
++ * for now, until we can use a lockless radix tree
++ */
++static void irq_radix_wrlock(unsigned long *flags)
++{
++	unsigned int cpu, ok;
++
++	spin_lock_irqsave(&irq_big_lock, *flags);
++	irq_radix_writer = 1;
++	do {
++		ok = 1;
++		smp_mb();
++		for_each_possible_cpu(cpu) {
++			if (per_cpu(irq_radix_reader, cpu)) {
++				ok = 0;
++				break;
++			}
++		}
++		if (!ok)
++			cpu_relax();
++	} while(!ok);
++}
++
++static void irq_radix_wrunlock(unsigned long flags)
++{
++	smp_wmb();
++	irq_radix_writer = 0;
++	spin_unlock_irqrestore(&irq_big_lock, flags);
++}
++
++static void irq_radix_rdlock(unsigned long *flags)
++{
++	local_irq_save(*flags);
++	if (irq_radix_writer)
++		goto slow;
++	__get_cpu_var(irq_radix_reader) = 1;
++	smp_mb();
++	if (irq_radix_writer == 0)
++		return;
++	__get_cpu_var(irq_radix_reader) = 0;
++	smp_wmb();
++ slow:
++	spin_lock(&irq_big_lock);
++	__get_cpu_var(irq_radix_reader) = 1;
++	spin_unlock(&irq_big_lock);
++}
++
++static void irq_radix_rdunlock(unsigned long flags)
++{
++	__get_cpu_var(irq_radix_reader) = 0;
++	local_irq_restore(flags);
++}
++
++
+ unsigned int irq_create_mapping(struct irq_host *host,
+ 				irq_hw_number_t hwirq)
  {
- 	struct device_node *ipar, *tnode, *old = NULL, *newpar = NULL;
- 	u32 *tmp, *imap, *imask;
- 	u32 intsize = 1, addrsize, newintsize = 0, newaddrsize = 0;
- 	int imaplen, match, i;
- 
-+	DBG("of_irq_map_raw: par=%s,intspec=[0x%08x 0x%08x...],ointsize=%d\n",
-+	    parent->full_name, intspec[0], intspec[1], ointsize);
-+
- 	ipar = of_node_get(parent);
- 
- 	/* First get the #interrupt-cells property of the current cursor
-@@ -675,6 +678,9 @@ int of_irq_map_raw(struct device_node *p
- 
- 	DBG("of_irq_map_raw: ipar=%s, size=%d\n", ipar->full_name, intsize);
- 
-+	if (ointsize != intsize)
-+		return -EINVAL;
-+
- 	/* Look for this #address-cells. We have to implement the old linux
- 	 * trick of looking for the parent here as some device-trees rely on it
- 	 */
-@@ -880,12 +886,15 @@ int of_irq_map_one(struct device_node *d
+@@ -604,13 +659,9 @@ void irq_dispose_mapping(unsigned int vi
+ 		/* Check if radix tree allocated yet */
+ 		if (host->revmap_data.tree.gfp_mask == 0)
+ 			break;
+-		/* XXX radix tree not safe ! remove lock whem it becomes safe
+-		 * and use some RCU sync to make sure everything is ok before we
+-		 * can re-use that map entry
+-		 */
+-		spin_lock_irqsave(&irq_big_lock, flags);
++		irq_radix_wrlock(&flags);
+ 		radix_tree_delete(&host->revmap_data.tree, hwirq);
+-		spin_unlock_irqrestore(&irq_big_lock, flags);
++		irq_radix_wrunlock(flags);
+ 		break;
  	}
- 	intsize = *tmp;
  
-+	DBG(" intsize=%d intlen=%d\n", intsize, intlen);
+@@ -677,25 +728,24 @@ unsigned int irq_radix_revmap(struct irq
+ 	if (tree->gfp_mask == 0)
+ 		return irq_find_mapping(host, hwirq);
+ 
+-	/* XXX Current radix trees are NOT SMP safe !!! Remove that lock
+-	 * when that is fixed (when Nick's patch gets in
+-	 */
+-	spin_lock_irqsave(&irq_big_lock, flags);
+-
+ 	/* Now try to resolve */
++	irq_radix_rdlock(&flags);
+ 	ptr = radix_tree_lookup(tree, hwirq);
++	irq_radix_rdunlock(flags);
 +
- 	/* Check index */
- 	if ((index + 1) * intsize > intlen)
- 		return -EINVAL;
+ 	/* Found it, return */
+ 	if (ptr) {
+ 		virq = ptr - irq_map;
+-		goto bail;
++		return virq;
+ 	}
  
- 	/* Get new specifier and map it */
--	res = of_irq_map_raw(p, intspec + index * intsize, addr, out_irq);
-+	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
-+			     addr, out_irq);
- 	of_node_put(p);
- 	return res;
+ 	/* If not there, try to insert it */
+ 	virq = irq_find_mapping(host, hwirq);
+-	if (virq != NO_IRQ)
++	if (virq != NO_IRQ) {
++		irq_radix_wrlock(&flags);
+ 		radix_tree_insert(tree, hwirq, &irq_map[virq]);
+- bail:
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++		irq_radix_wrunlock(flags);
++	}
+ 	return virq;
  }
-@@ -964,7 +973,7 @@ int of_irq_map_pci(struct pci_dev *pdev,
- 	laddr[0] = (pdev->bus->number << 16)
- 		| (pdev->devfn << 8);
- 	laddr[1]  = laddr[2] = 0;
--	return of_irq_map_raw(ppnode, &lspec, laddr, out_irq);
-+	return of_irq_map_raw(ppnode, &lspec, 1, laddr, out_irq);
+ 
+@@ -806,12 +856,12 @@ static int irq_late_init(void)
+ 	struct irq_host *h;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&irq_big_lock, flags);
++	irq_radix_wrlock(&flags);
+ 	list_for_each_entry(h, &irq_hosts, link) {
+ 		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+ 			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+ 	}
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++	irq_radix_wrunlock(flags);
+ 
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(of_irq_map_pci);
- 
-Index: linux-work/include/asm-powerpc/prom.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/prom.h	2006-08-17 09:26:22.000000000 +1000
-+++ linux-work/include/asm-powerpc/prom.h	2006-08-25 14:35:55.000000000 +1000
-@@ -276,6 +276,7 @@ extern void of_irq_map_init(unsigned int
-  * of_irq_map_raw - Low level interrupt tree parsing
-  * @parent:	the device interrupt parent
-  * @intspec:	interrupt specifier ("interrupts" property of the device)
-+ * @ointsize:   size of the passed in interrupt specifier
-  * @addr:	address specifier (start of "reg" property of the device)
-  * @out_irq:	structure of_irq filled by this function
-  *
-@@ -288,7 +289,8 @@ extern void of_irq_map_init(unsigned int
-  *
-  */
- 
--extern int of_irq_map_raw(struct device_node *parent, u32 *intspec, u32 *addr,
-+extern int of_irq_map_raw(struct device_node *parent, u32 *intspec,
-+			  u32 ointsize, u32 *addr,
- 			  struct of_irq *out_irq);
- 
- 
