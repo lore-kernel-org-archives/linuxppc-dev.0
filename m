@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7BFA9679A6
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 08:54:43 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Improve IRQ radix tree locking
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <e991208eced0af7536e9f71bf6cb7016@bga.com>
-References: <e991208eced0af7536e9f71bf6cb7016@bga.com>
-Content-Type: text/plain
-Date: Sat, 26 Aug 2006 08:54:23 +1000
-Message-Id: <1156546464.8433.336.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5745667BFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 09:03:17 +1000 (EST)
+Message-ID: <44EF8182.2000401@am.sony.com>
+Date: Fri, 25 Aug 2006 16:02:26 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: powerpc virq: minor cleanups
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,81 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-08-25 at 09:42 -0500, Milton Miller wrote:
-> On Fri Aug 25 16:04:52 EST 2006,  Benjamin Herrenschmidt wrote:
-> > When reworking the powerpc irq code, I figured out that we were using
-> > the radix tree in a racy way. As a temporary fix, I put a spinlock in
-> > there. However, this can have a significant impact on performances. 
-> > This
-> > patch reworks that to use a smarter technique based on the fact that
-> > what we need is in fact a rwlock with extremely rare writers (thus
-> > optimized for the read path).
-> 
-> 
-> > +static void irq_radix_wrlock(unsigned long *flags)
-> > +{
-> > +       unsigned int cpu, ok;
-> > +
-> > +       spin_lock_irqsave(&irq_big_lock, *flags);
-> > +       irq_radix_writer = 1;
-> 
-> I think the smp_mb() is needed after here
-> 
-> > +       do {
-> > +               ok = 1;
-> > +               smp_mb();
-> 
-> but not every time we poll the cpus.  We are only
-> updating our local variable ok which we have not
-> given anyone else.   It could even be a register.
+Ben,
 
-Doesn't really matter, the write case is extremely rare and not at all
-performance critical. If I don't put the mb in the loop, I wonder if the
-compiler might start optimizing out the reads... and I don't want to add
-a volatile in there. I feel safer with the smp_mb() in there.
+Please consider these cleanups.
 
-> > +               for_each_possible_cpu(cpu) {
-> > +                       if (per_cpu(irq_radix_reader, cpu)) {
-> > +                               ok = 0;
-> > +                               break;
-> > +                       }
-> > +               }
-> > +               if (!ok)
-> > +                       cpu_relax();
-> 
-> Hmmm.  the gcc barrier is conditional.   How about putting
-> barrier() before the ok=1 at the top, to avoid any optimization
-> blockage but still telling gcc you must read every time?
 
-Yeah, well, as I said, smp_mb() hits both cases and this isn't perf.
-critical... 
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-> > +       } while(!ok);
-> > +}
-> > +
-> 
-> Oh, and how about some (un)likely in irq_radix_rdlock ?  It
-> could happen by default by why not show our expected path?
-
-Yup, that would make sense. I might also drop the first test of
-irq_radix_writer. The will penalize a bit more the contention case vs.
-the read case but that's exactly what I want...
-
-> And, while I'm thinking of changes, when set ok=0 above add:
-> #ifdef CONFIG_SPINLOCK_DEBUG
->                                BUG_ON(cpu == smp_processor_id());
-> #endif
-
-Do you see any case where I might actually hit that ? :)
-
-> Hmm... just thought of something .... we are spinning under
-> irq lock.  We are waiting on some other thread, but not
-> telling the hypervisor.   Should we confer our execution
-> over to the cpu we are waiting on?  I know, it sounds ugly
-> to call that code.   I guess we would want a
-> cpu_waiting_on(cpu) that calls cpu_relax and/or hypervisor.
-
-I'm not sure this will really matter in real life. The write case is
-really so rare and the contention case even more...
-
-Ben.
+---
+Index: cell--common--4/arch/powerpc/kernel/irq.c
+===================================================================
+--- cell--common--4.orig/arch/powerpc/kernel/irq.c
++++ cell--common--4/arch/powerpc/kernel/irq.c
+@@ -678,7 +680,7 @@
+ }
+ EXPORT_SYMBOL_GPL(irq_dispose_mapping);
+ 
+-unsigned int irq_find_mapping(struct irq_host *host,
++unsigned int irq_find_mapping(const struct irq_host *host,
+ 			      irq_hw_number_t hwirq)
+ {
+ 	unsigned int i;
+Index: cell--common--4/include/asm-powerpc/irq.h
+===================================================================
+--- cell--common--4.orig/include/asm-powerpc/irq.h
++++ cell--common--4/include/asm-powerpc/irq.h
+@@ -28,10 +28,10 @@
+ 
+ #ifdef CONFIG_PPC_MERGE
+ 
+-/* This number is used when no interrupt has been assigned */
++/* This number is used when no virq has been assigned */
+ #define NO_IRQ			(0)
+ 
+-/* This is a special irq number to return from get_irq() to tell that
++/* This is a special virq number to return from get_irq() to tell that
+  * no interrupt happened _and_ ignore it (don't count it as bad). Some
+  * platforms like iSeries rely on that.
+  */
+@@ -217,7 +222,7 @@
+  * irq controller implementation directly calls the appropriate low level
+  * mapping function.
+  */
+-extern unsigned int irq_find_mapping(struct irq_host *host,
++extern unsigned int irq_find_mapping(const struct irq_host *host,
+ 				     irq_hw_number_t hwirq);
+ 
+ 
