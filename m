@@ -1,30 +1,32 @@
-Return-Path: <strosake@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 55EDD67C5F
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 04:33:57 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7PIXnwT020239
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 14:33:49 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7PIXpSU234536
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 14:33:51 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7PIXpAo008125
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 14:33:51 -0400
-Message-ID: <44EF428B.8010100@austin.ibm.com>
-Date: Fri, 25 Aug 2006 13:33:47 -0500
-From: Mike Strosaker <strosake@austin.ibm.com>
-MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] reboot when panic_timout is set
-References: <20060821161132.GA31085@aepfle.de>
-In-Reply-To: <20060821161132.GA31085@aepfle.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B517467C61
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 04:52:31 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7PIqSTF021113
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 14:52:28 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7PIqSgk094688
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 12:52:28 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7PIqRIe001643
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 12:52:27 -0600
+Date: Fri, 25 Aug 2006 11:52:40 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: Instrument Hypervisor Calls
+Message-ID: <20060825185240.GA1619@w-mikek2.ibm.com>
+References: <20060816160456.GA4170@w-mikek2.ibm.com>
+	<17645.19790.527223.207556@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17645.19790.527223.207556@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,53 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
+On Thu, Aug 24, 2006 at 04:55:10PM +1000, Paul Mackerras wrote:
+> > +	/* calculate address of stat structure */		\
+> > +	ld	r4,STK_PARM(r3)(r1);	/* use opcode as */	\
+> > +	rldicl	r4,r4,62,2;		/* index into array */	\
+> > +	mulli	r4,r4,HCALL_STAT_SIZE;				\
+> 
+> It's a pity our multiplies are slow (6 cycles).  The rldicl would I
+> think be more clearly expressed as srdi r4,r4,2.  We could use a shift
+> and add instead of the multiply if we put a big fat comment in the
+> header that defines the structure warning people to adjust the
+> assembly if they change the structure.  Might not be worth it though.
 
->Only call into RTAS when booted with panic=0 because the RTAS call does not return.
->The system has to be rebooted via the HMC or via the management console right now.
->This is cumbersome and not what the default panic=180 is supposed to do.
->  
->
-The os-term call is supposed to indicate to the platform that it should 
-follow it's abnormal OS termination policy.  I normally set my 
-partitions to reboot immediately after an os-term call.  I believe that 
-"/usr/sbin/serv_config -b" (installed with powerpc-utils-papr) is used 
-to set that policy from the command line.
+I would rather keep the multiply and minimal safety it provides when
+people change the structure.
 
-In general, I think it's best to have the OS follow the policy stored on 
-the platform whenever possible.  Some systems can be configured to 
-perform system administrator calls/pages, and there may be some other 
-configurable options, too; it would be a shame to have a sysadmin set up 
-an automatic reboot and a page, and have neither happen because he 
-didn't know that the default OS policy of a three-minute reboot overrode 
-the policy he just defined.
+> BTW are we going to die horribly if someone uses an hcall greater than
+> MAX_HCALL_OPCODES?  The hcall functions are available to modules, so
+> it would be quite possible for a module to come along and try to use
+> some new hcalls that weren't known about when the kernel was built.
 
-Thanks,
+Yes, bad things would happen.  This is/was a bad assumption on my part
+that all callers would pass in valid opcodes.  I'll put in a simple check
+for that.
+
+-- 
 Mike
-
->Signed-off-by: Olaf Hering <olh@suse.de>
->
->---
-> arch/powerpc/kernel/rtas.c |    3 +++
-> 1 file changed, 3 insertions(+)
->
->Index: linux-2.6.18-rc4/arch/powerpc/kernel/rtas.c
->===================================================================
->--- linux-2.6.18-rc4.orig/arch/powerpc/kernel/rtas.c
->+++ linux-2.6.18-rc4/arch/powerpc/kernel/rtas.c
->@@ -628,6 +628,9 @@ void rtas_os_term(char *str)
-> {
-> 	int status;
-> 
->+	if (panic_timeout)
->+		return;
->+
-> 	if (RTAS_UNKNOWN_SERVICE == rtas_token("ibm,os-term"))
-> 		return;
-> 
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-dev
->  
->
