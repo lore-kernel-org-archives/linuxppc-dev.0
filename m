@@ -1,17 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6B0F767C1F
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 16:05:05 +1000 (EST)
-Subject: [PATCH] powerpc: Improve IRQ radix tree locking
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A45D067C34
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 17:48:03 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k7P7m2jA016111
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 00:48:02 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7P7lxMA013813
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 02:48:01 -0500 (CDT)
+Subject: Re: [PATCH] powerpc: Support for "weird" MPICs and fixup mpc7448_hpc2
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1156479390.8433.293.camel@localhost.localdomain>
+References: <1156479390.8433.293.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 25 Aug 2006 16:04:52 +1000
-Message-Id: <1156485893.8433.315.camel@localhost.localdomain>
+Message-Id: <1156492062.7107.26.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: 25 Aug 2006 15:47:42 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,152 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When reworking the powerpc irq code, I figured out that we were using
-the radix tree in a racy way. As a temporary fix, I put a spinlock in
-there. However, this can have a significant impact on performances. This
-patch reworks that to use a smarter technique based on the fact that
-what we need is in fact a rwlock with extremely rare writers (thus
-optimized for the read path).
+On Fri, 2006-08-25 at 12:16, Benjamin Herrenschmidt wrote:
+> This patch is a slightly cleaned up version of Zang Roy's support for
+> the TSI108 MPIC variant. It also fixes up MPC7448_hpc2 to use the new
+> version of the type macros and changes the way MPIC is selected in
+> Kconfig to better match what is done for other system devices.
+> 
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Zang Roy, please verify that it still works for you. I've tested it on
+> an Apple G5 with and without CONFIG_MPIC_WEIRD .
+> 
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+It works OK on my mpc7448hpc2 board. 
+There is a sequence for the patch applying.
 
-Index: linux-work/arch/powerpc/kernel/irq.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/irq.c	2006-08-25 14:08:41.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/irq.c	2006-08-25 15:56:17.000000000 +1000
-@@ -322,7 +322,8 @@ EXPORT_SYMBOL(do_softirq);
+(1) patch for IRQ update for mpc7448hpc2:
+http://ozlabs.org/pipermail/linuxppc-dev/2006-August/025559.html
+
+(2) the weird mpic patch repost by your mail.
+(3) the following minor patch to build mpic.o for CONFIG_MPIC_WEIRD
+
+Signed-off-by: Roy Zang     <tie-fei.zang@freescale.com> 
+---
+
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index cebfae2..8ae887b 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -3,6 +3,7 @@ EXTRA_CFLAGS			+= -mno-minimal-toc
+ endif
  
- static LIST_HEAD(irq_hosts);
- static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
--
-+static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
-+static unsigned int irq_radix_writer;
- struct irq_map_entry irq_map[NR_IRQS];
- static unsigned int irq_virq_count = NR_IRQS;
- static struct irq_host *irq_default_host;
-@@ -455,6 +456,60 @@ void irq_set_virq_count(unsigned int cou
- 		irq_virq_count = count;
- }
- 
-+/* radix tree not lockless safe ! we use a brlock-type mecanism
-+ * for now, until we can use a lockless radix tree
-+ */
-+static void irq_radix_wrlock(unsigned long *flags)
-+{
-+	unsigned int cpu, ok;
-+
-+	spin_lock_irqsave(&irq_big_lock, *flags);
-+	irq_radix_writer = 1;
-+	do {
-+		ok = 1;
-+		smp_mb();
-+		for_each_possible_cpu(cpu) {
-+			if (per_cpu(irq_radix_reader, cpu)) {
-+				ok = 0;
-+				break;
-+			}
-+		}
-+		if (!ok)
-+			cpu_relax();
-+	} while(!ok);
-+}
-+
-+static void irq_radix_wrunlock(unsigned long flags)
-+{
-+	smp_wmb();
-+	irq_radix_writer = 0;
-+	spin_unlock_irqrestore(&irq_big_lock, flags);
-+}
-+
-+static void irq_radix_rdlock(unsigned long *flags)
-+{
-+	local_irq_save(*flags);
-+	if (irq_radix_writer)
-+		goto slow;
-+	__get_cpu_var(irq_radix_reader) = 1;
-+	smp_mb();
-+	if (irq_radix_writer == 0)
-+		return;
-+	__get_cpu_var(irq_radix_reader) = 0;
-+	smp_wmb();
-+ slow:
-+	spin_lock(&irq_big_lock);
-+	__get_cpu_var(irq_radix_reader) = 1;
-+	spin_unlock(&irq_big_lock);
-+}
-+
-+static void irq_radix_rdunlock(unsigned long flags)
-+{
-+	__get_cpu_var(irq_radix_reader) = 0;
-+	local_irq_restore(flags);
-+}
-+
-+
- unsigned int irq_create_mapping(struct irq_host *host,
- 				irq_hw_number_t hwirq)
- {
-@@ -604,13 +659,9 @@ void irq_dispose_mapping(unsigned int vi
- 		/* Check if radix tree allocated yet */
- 		if (host->revmap_data.tree.gfp_mask == 0)
- 			break;
--		/* XXX radix tree not safe ! remove lock whem it becomes safe
--		 * and use some RCU sync to make sure everything is ok before we
--		 * can re-use that map entry
--		 */
--		spin_lock_irqsave(&irq_big_lock, flags);
-+		irq_radix_wrlock(&flags);
- 		radix_tree_delete(&host->revmap_data.tree, hwirq);
--		spin_unlock_irqrestore(&irq_big_lock, flags);
-+		irq_radix_wrunlock(flags);
- 		break;
- 	}
- 
-@@ -677,25 +728,24 @@ unsigned int irq_radix_revmap(struct irq
- 	if (tree->gfp_mask == 0)
- 		return irq_find_mapping(host, hwirq);
- 
--	/* XXX Current radix trees are NOT SMP safe !!! Remove that lock
--	 * when that is fixed (when Nick's patch gets in
--	 */
--	spin_lock_irqsave(&irq_big_lock, flags);
--
- 	/* Now try to resolve */
-+	irq_radix_rdlock(&flags);
- 	ptr = radix_tree_lookup(tree, hwirq);
-+	irq_radix_rdunlock(flags);
-+
- 	/* Found it, return */
- 	if (ptr) {
- 		virq = ptr - irq_map;
--		goto bail;
-+		return virq;
- 	}
- 
- 	/* If not there, try to insert it */
- 	virq = irq_find_mapping(host, hwirq);
--	if (virq != NO_IRQ)
-+	if (virq != NO_IRQ) {
-+		irq_radix_wrlock(&flags);
- 		radix_tree_insert(tree, hwirq, &irq_map[virq]);
-- bail:
--	spin_unlock_irqrestore(&irq_big_lock, flags);
-+		irq_radix_wrunlock(flags);
-+	}
- 	return virq;
- }
- 
-@@ -806,12 +856,12 @@ static int irq_late_init(void)
- 	struct irq_host *h;
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&irq_big_lock, flags);
-+	irq_radix_wrlock(&flags);
- 	list_for_each_entry(h, &irq_hosts, link) {
- 		if (h->revmap_type == IRQ_HOST_MAP_TREE)
- 			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
- 	}
--	spin_unlock_irqrestore(&irq_big_lock, flags);
-+	irq_radix_wrunlock(flags);
- 
- 	return 0;
- }
+ obj-$(CONFIG_MPIC)		+= mpic.o
++obj-$(CONFIG_MPIC_WEIRD)	+= mpic.o
+ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
+ obj-$(CONFIG_PPC_MPC106)	+= grackle.o
+ obj-$(CONFIG_BOOKE)		+= dcr.o
