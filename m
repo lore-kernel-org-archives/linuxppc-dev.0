@@ -1,27 +1,26 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 396A167C33
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id DA67867B52
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Aug 2006 12:33:03 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k7P2X1Yv011080 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 19:33:01 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7P2Ww0Z014913
+	Fri, 25 Aug 2006 13:26:22 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k7P3QK8s009144 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 24 Aug 2006 20:26:20 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k7P3QIMV019636
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Aug 2006 21:33:00 -0500 (CDT)
+	Thu, 24 Aug 2006 22:26:19 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: atomic operations in user space
-Date: Fri, 25 Aug 2006 10:33:28 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0FC41E@zch01exm20.fsl.freescale.net>
-In-Reply-To: <200608240918.19450.bcook@bpointsys.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Brent Cook" <bcook@bpointsys.com>, <linuxppc-embedded@ozlabs.org>
-Cc: Terry Liang <tliang@brocade.com>
+	charset="us-ascii"
+Subject: RE: Cache coherency question
+Date: Fri, 25 Aug 2006 11:26:16 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D263511B7A0@zch01exm21.fsl.freescale.net>
+In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE487106282397@VCAEXCH01.hq.corp.viasat.com>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Martin, Tim" <tim.martin@viasat.com>, "ppc" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,57 +31,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Brent Cook [mailto:bcook@bpointsys.com]
-> Sent: Thursday, August 24, 2006 10:18 PM
-> To: linuxppc-embedded@ozlabs.org
-> Cc: Li Yang-r58472; Terry Liang
-> Subject: Re: atomic operations in user space
->=20
-> On Thursday 24 August 2006 05:39, Li Yang-r58472 wrote:
->=20
-> > Why do you need atomic operations in user land? IPC will be
-sufficient
->=20
-> > to deal with race conditions between processes.
->=20
-> >
->=20
-> > Best Regards,
->=20
-> > Leo
->=20
-> What about multiple threads within a process updating a counter?
+Tim> I'm using an MVME6100 with Linux 2.6.14 and experiencing what=20
+Tim> I think is a cache coherency problem.  An external PCIX=20
+Tim> master performs a DMA transfer of a well known data pattern=20
+Tim> into SDRAM, but when the device driver goes to look at the=20
+Tim> data it is mostly okay, but occasionally has garbage.
 
-Is there anything preventing semaphore to be used in threads?
->=20
-> Of course, if you look at these functions in the kernel header,
-they're just 2 or
-> 3 inline assembly calls - you could easily rewrite them. Google for
-'PowerPC atomic
-> increment' and grab one of the unencumbered implementations if you
-need to use it
-> in a non-GPL program.
->=20
-> On the other hand, I see no license at the top of my
-/usr/include/asm-i386/atomic.h
-> file at all, same for PowerPC - are Linux header files actually GPL or
-are they
-> more like the glibc headers, with exceptions made for userspace
-programs?
->=20
-> The atomic operations on x86 were accidentally exported early on, so
-they have to
-> hang around apparently for compatibility (there are some mailing list
-threads out
-> there to this effect.) Currently, you just have to assume in Linux
-that if you
-> include something from /usr/include/linux or asm that it will not
-necessarily be
-> cross-version or cross-architecture compatible. Not every arch in
-Linux even has
-> atomic operations of this nature, which I guess is the main reason why
-they are
-> not exported in general.
->=20
-> - Brent
+If the hardware is reliable, I think you are right. The cache coherency
+problem.
+
+Tim> I'm allocating the memory using alloc_skb, then giving a PCI=20
+Tim> translated pointer to the PCIX master.  Since I think it is a=20
+Tim> cache coherency problem, I tried to use the dma_cache_inv=20
+Tim> macro to invalidate the cache before looking at the data, but=20
+Tim> realized that for this board, that function does nothing=20
+Tim> since CONFIG_NOT_COHERENT_CACHE is undefined.  So
+Tim> questions:
+
+If the CONFIG_NOT_COHERENT_CACHE is not set.
+You are assuming and using the hardware cache coherency mechanism.
+
+Tim> 1) Should the processor bus cache snooping actually work on=20
+Tim> an MVME6100?
+Tim> E.g. is it correct that CONFIG_NOT_COHERENT_CACHE is undefined?
+
+Yes, you can undefine the CONFIG_NOT_COHERENT_CACHE, but you must
+make sure the host bridge did the snooping setup for PCI inbound
+transaction.
+If you setup the snooping window, I think the host bridge will assert
+/GLB signal
+to processor. The processor will snoop the 60x/MPX bus to keep cache
+coherence.
+
+Also, you can define the CONFIG_NOT_COHERENT_CACHE, then you are
+assuming
+The system has not hardware coherency. You need use the software to keep
+the cache
+coherency.
+
+Tim> 1a) Does this type of bus snooping work when a bus master=20
+Tim> physically external to the PowerPC chip is doing the transfer?
+
+As above, you must tell the bridge what address need snoop. If you did,
+The proceesor will do snooping.
+
+Tim> 2) If this really is a cache coherency problem, are there=20
+Tim> other cache management functions available in ppc linux=20
+Tim> besides the dma_cache_inv, dma_cache_wback,=20
+Tim> dma_cache_wback_inv macros I should be looking at?
+
+I think it is a cache coherency problem,
+if you define the CONFIG_NOT_COHERENT_CACHE
+You can get these functions, dma_map_single
+
+
+-Dave
