@@ -1,26 +1,26 @@
 Return-Path: <tie-fei.zang@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A45D067C34
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 17:48:03 +1000 (EST)
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 01CCD67C39
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 18:43:45 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k7P7m2jA016111
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 00:48:02 -0700 (MST)
+	k7P8hi4Q001460
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 01:43:44 -0700 (MST)
 Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
 	[10.192.129.207])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7P7lxMA013813
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 02:48:01 -0500 (CDT)
-Subject: Re: [PATCH] powerpc: Support for "weird" MPICs and fixup mpc7448_hpc2
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7P8hgI0026992
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 03:43:43 -0500 (CDT)
+Subject: [PATCH ] powerpc: mpc7448hpc2 device tree source file
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1156479390.8433.293.camel@localhost.localdomain>
-References: <1156479390.8433.293.camel@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19E353@zch01exm23.fsl.freescale.net>
+References: <7EA18FDD2DC2154AA3BD6D2F22A62A0E19E353@zch01exm23.fsl.freescale.net>
 Content-Type: text/plain
-Message-Id: <1156492062.7107.26.camel@localhost.localdomain>
+Message-Id: <1156495404.7107.42.camel@localhost.localdomain>
 Mime-Version: 1.0
-Date: 25 Aug 2006 15:47:42 +0800
+Date: 25 Aug 2006 16:43:25 +0800
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +30,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-08-25 at 12:16, Benjamin Herrenschmidt wrote:
-> This patch is a slightly cleaned up version of Zang Roy's support for
-> the TSI108 MPIC variant. It also fixes up MPC7448_hpc2 to use the new
-> version of the type macros and changes the way MPIC is selected in
-> Kconfig to better match what is done for other system devices.
-> 
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Zang Roy, please verify that it still works for you. I've tested it on
-> an Apple G5 with and without CONFIG_MPIC_WEIRD .
-> 
+This patch adds the mpc7448hpc2 device tree source file.
 
-It works OK on my mpc7448hpc2 board. 
-There is a sequence for the patch applying.
+Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
 
-(1) patch for IRQ update for mpc7448hpc2:
-http://ozlabs.org/pipermail/linuxppc-dev/2006-August/025559.html
 
-(2) the weird mpic patch repost by your mail.
-(3) the following minor patch to build mpic.o for CONFIG_MPIC_WEIRD
-
-Signed-off-by: Roy Zang     <tie-fei.zang@freescale.com> 
 ---
+ arch/powerpc/boot/dts/mpc7448hpc2.dts |  190 +++++++++++++++++++++++++++++++++
+ 1 files changed, 190 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index cebfae2..8ae887b 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -3,6 +3,7 @@ EXTRA_CFLAGS			+= -mno-minimal-toc
- endif
- 
- obj-$(CONFIG_MPIC)		+= mpic.o
-+obj-$(CONFIG_MPIC_WEIRD)	+= mpic.o
- obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_MPC106)	+= grackle.o
- obj-$(CONFIG_BOOKE)		+= dcr.o
+diff --git a/arch/powerpc/boot/dts/mpc7448hpc2.dts b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+new file mode 100644
+index 0000000..d7b985e
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+@@ -0,0 +1,190 @@
++/*
++ * MPC7448HPC2 (Taiga) board Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ * 2006 Roy Zang <Roy Zang at freescale.com>.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++
++/ {
++	model = "mpc7448hpc2";
++	compatible = "mpc74xx";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	linux,phandle = <100>;
++
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells =<0>;
++		linux,phandle = <200>;
++				
++		PowerPC,7448@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K bytes
++			i-cache-size = <8000>;		// L1, 32K bytes
++			timebase-frequency = <0>;	// 33 MHz, from uboot
++			clock-frequency = <0>;		// From U-Boot
++			bus-frequency = <0>;		// From U-Boot
++			32-bit;
++			linux,phandle = <201>;
++			linux,boot-cpu;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		linux,phandle = <300>;
++		reg = <00000000 20000000	// DDR2   512M at 0
++		       >;
++	};
++
++  	tsi108@c0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "tsi-bridge";
++		ranges = <00000000 c0000000 00010000>;
++		reg = <c0000000 00010000>;
++		bus-frequency = <0>;
++
++		i2c@7000 {
++			interrupt-parent = <7400>;
++			interrupts = <E 0>;
++			reg = <7000 400>;
++			device_type = "i2c";
++			compatible  = "tsi-i2c";
++		};
++
++		mdio@6000 {
++			device_type = "mdio";
++			compatible = "tsi-ethernet";
++
++			ethernet-phy@6000 {
++				linux,phandle = <6000>;
++				interrupt-parent = <7400>;
++				interrupts = <2 1>;
++				reg = <6000 50>;
++				phy-id = <8>;
++				device_type = "ethernet-phy";
++			};
++
++			ethernet-phy@6400 {
++				linux,phandle = <6400>;
++				interrupt-parent = <7400>;
++				interrupts = <2 1>;
++				reg = <6000 50>;
++				phy-id = <9>;
++				device_type = "ethernet-phy";
++			};
++
++		};
++
++		ethernet@6200 {
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSI-ETH";
++			compatible = "tsi-ethernet";
++			reg = <6000 200>;
++			address = [ 00 06 D2 00 00 01 ];
++			interrupts = <10 2>;
++			interrupt-parent = <7400>;
++			phy-handle = <6000>;
++		};
++
++		ethernet@6600 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "network";
++			model = "TSI-ETH";
++			compatible = "tsi-ethernet";
++			reg = <6400 200>;
++			address = [ 00 06 D2 00 00 02 ];
++			interrupts = <11 2>;
++			interrupt-parent = <7400>;
++			phy-handle = <6400>;
++		};
++
++		serial@7808 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <7808 200>;
++			clock-frequency = <3f6b5a00>;
++			interrupts = <c 0>;
++			interrupt-parent = <7400>;
++		};
++
++		serial@7c08 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <7c08 200>;
++			clock-frequency = <3f6b5a00>;
++			interrupts = <d 0>;
++			interrupt-parent = <7400>;
++		};
++
++	  	pic@7400 {
++			linux,phandle = <7400>;
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <7400 400>;
++			built-in;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                       	big-endian;
++		};
++		pci@1000 {
++			compatible = "tsi10x";
++			device_type = "pci";
++			linux,phandle = <1000>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <1000 1000>;
++			bus-range = <0 0>;
++			ranges = <02000000 0 e0000000 e0000000 0 1A000000	
++				  01000000 0 00000000 fa000000 0 00010000>;
++			clock-frequency = <7f28154>;
++			interrupt-parent = <7400>;
++			interrupts = <17 2>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x11 */
++				0800 0 0 1 7400 24 0
++				0800 0 0 2 7400 25 0
++				0800 0 0 3 7400 26 0
++				0800 0 0 4 7400 27 0
++
++				/* IDSEL 0x12 */
++				1000 0 0 1 7400 25 0
++				1000 0 0 2 7400 26 0
++				1000 0 0 3 7400 27 0
++				1000 0 0 4 7400 24 0
++
++				/* IDSEL 0x13 */
++				1800 0 0 1 7400 26 0
++				1800 0 0 2 7400 27 0
++				1800 0 0 3 7400 24 0
++				1800 0 0 4 7400 25 0
++
++				/* IDSEL 0x14 */
++				2000 0 0 1 7400 27 0
++				2000 0 0 2 7400 24 0
++				2000 0 0 3 7400 25 0
++				2000 0 0 4 7400 26 0
++				>;
++		};
++	};
++
++};
+-- 
+1.4.0
