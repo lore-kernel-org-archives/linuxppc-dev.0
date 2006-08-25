@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14AB267C6D
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 08:50:36 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Support for "weird" MPICs and fixup mpc7448_hpc2
+	by ozlabs.org (Postfix) with ESMTP id 7BFA9679A6
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Aug 2006 08:54:43 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Improve IRQ radix tree locking
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1156492062.7107.26.camel@localhost.localdomain>
-References: <1156479390.8433.293.camel@localhost.localdomain>
-	<1156492062.7107.26.camel@localhost.localdomain>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <e991208eced0af7536e9f71bf6cb7016@bga.com>
+References: <e991208eced0af7536e9f71bf6cb7016@bga.com>
 Content-Type: text/plain
-Date: Sat, 26 Aug 2006 08:50:13 +1000
-Message-Id: <1156546214.8433.331.camel@localhost.localdomain>
+Date: Sat, 26 Aug 2006 08:54:23 +1000
+Message-Id: <1156546464.8433.336.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +24,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-08-25 at 15:47 +0800, Zang Roy-r61911 wrote:
-> On Fri, 2006-08-25 at 12:16, Benjamin Herrenschmidt wrote:
-> > This patch is a slightly cleaned up version of Zang Roy's support for
-> > the TSI108 MPIC variant. It also fixes up MPC7448_hpc2 to use the new
-> > version of the type macros and changes the way MPIC is selected in
-> > Kconfig to better match what is done for other system devices.
-> > 
-> > Signed-off-by: Roy Zang <tie-fei.zang@freescale.com> 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> > 
-> > Zang Roy, please verify that it still works for you. I've tested it on
-> > an Apple G5 with and without CONFIG_MPIC_WEIRD .
-> > 
+On Fri, 2006-08-25 at 09:42 -0500, Milton Miller wrote:
+> On Fri Aug 25 16:04:52 EST 2006,  Benjamin Herrenschmidt wrote:
+> > When reworking the powerpc irq code, I figured out that we were using
+> > the radix tree in a racy way. As a temporary fix, I put a spinlock in
+> > there. However, this can have a significant impact on performances. 
+> > This
+> > patch reworks that to use a smarter technique based on the fact that
+> > what we need is in fact a rwlock with extremely rare writers (thus
+> > optimized for the read path).
 > 
-> It works OK on my mpc7448hpc2 board. 
-> There is a sequence for the patch applying.
 > 
-> (1) patch for IRQ update for mpc7448hpc2:
-> http://ozlabs.org/pipermail/linuxppc-dev/2006-August/025559.html
+> > +static void irq_radix_wrlock(unsigned long *flags)
+> > +{
+> > +       unsigned int cpu, ok;
+> > +
+> > +       spin_lock_irqsave(&irq_big_lock, *flags);
+> > +       irq_radix_writer = 1;
 > 
-> (2) the weird mpic patch repost by your mail.
-> (3) the following minor patch to build mpic.o for CONFIG_MPIC_WEIRD
+> I think the smp_mb() is needed after here
+> 
+> > +       do {
+> > +               ok = 1;
+> > +               smp_mb();
+> 
+> but not every time we poll the cpus.  We are only
+> updating our local variable ok which we have not
+> given anyone else.   It could even be a register.
 
-The later shouldn't be needed.
+Doesn't really matter, the write case is extremely rare and not at all
+performance critical. If I don't put the mb in the loop, I wonder if the
+compiler might start optimizing out the reads... and I don't want to add
+a volatile in there. I feel safer with the smp_mb() in there.
 
-CONFIG_MPIC_WEIRD is an _addition_ to CONFIG_MPIC. That is, for example,
-your HPC2 platform should define both CONFIG_MPIC and CONFIG_MPIC_WEIRD
+> > +               for_each_possible_cpu(cpu) {
+> > +                       if (per_cpu(irq_radix_reader, cpu)) {
+> > +                               ok = 0;
+> > +                               break;
+> > +                       }
+> > +               }
+> > +               if (!ok)
+> > +                       cpu_relax();
+> 
+> Hmmm.  the gcc barrier is conditional.   How about putting
+> barrier() before the ok=1 at the top, to avoid any optimization
+> blockage but still telling gcc you must read every time?
+
+Yeah, well, as I said, smp_mb() hits both cases and this isn't perf.
+critical... 
+
+> > +       } while(!ok);
+> > +}
+> > +
+> 
+> Oh, and how about some (un)likely in irq_radix_rdlock ?  It
+> could happen by default by why not show our expected path?
+
+Yup, that would make sense. I might also drop the first test of
+irq_radix_writer. The will penalize a bit more the contention case vs.
+the read case but that's exactly what I want...
+
+> And, while I'm thinking of changes, when set ok=0 above add:
+> #ifdef CONFIG_SPINLOCK_DEBUG
+>                                BUG_ON(cpu == smp_processor_id());
+> #endif
+
+Do you see any case where I might actually hit that ? :)
+
+> Hmm... just thought of something .... we are spinning under
+> irq lock.  We are waiting on some other thread, but not
+> telling the hypervisor.   Should we confer our execution
+> over to the cpu we are waiting on?  I know, it sounds ugly
+> to call that code.   I guess we would want a
+> cpu_waiting_on(cpu) that calls cpu_relax and/or hypervisor.
+
+I'm not sure this will really matter in real life. The write case is
+really so rare and the contention case even more...
 
 Ben.
