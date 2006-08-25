@@ -1,35 +1,21 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5A9EB67BFC
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 21:17:03 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.7/8.13.7) with ESMTP id k7PBGwWs079504
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 11:16:58 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k7PBL3Bd3006666
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 13:21:04 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k7PBGwMr017143
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Aug 2006 13:16:58 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: IBM eHEA Device Driver upstream inclusion
-Date: Fri, 25 Aug 2006 12:36:25 +0200
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200608251236.25638.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17646.62392.318654.762210@cargo.ozlabs.ibm.com>
+Date: Fri, 25 Aug 2006 22:57:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
+In-Reply-To: <9FF8F72E-5990-4AED-A826-9E1C9C889DB6@kernel.crashing.org>
+References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
+	<200608182105.45264.arnd@arndb.de>
+	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
+	<200608192219.03178.arnd@arndb.de>
+	<37280.84.105.60.119.1156030372.squirrel@gate.crashing.org>
+	<1156190965.9659.41.camel@farscape.rchland.ibm.com>
+	<17645.18647.720814.903612@cargo.ozlabs.ibm.com>
+	<9FF8F72E-5990-4AED-A826-9E1C9C889DB6@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de, segher@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,17 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jeff,
+Segher Boessenkool writes:
 
-the IBM eHEA Device Driver has been discussed on the netdev, linux-ppc and 
-kernel mailing list for some time. The latest patch set we posted can be
-found at:
+> Like I asked before -- should we run this emulation on 32-bit
+> machines at all?  The instruction only exists in the 64-bit
+> architecture after all.
 
-http://www.spinics.net/lists/netdev/msg12820.html
+It could be argued either way, but on the whole I would prefer to
+minimize the number of things which could cause a 32-bit program that
+runs quite happily on a 64-bit CPU to fail on a 32-bit CPU...
 
-As the discussion seems to have settled, please consider our driver for
-upstream inclusion.
-
-Thanks,
-
-Jan-Bernd Themann & Christoph Raisch
+Paul.
