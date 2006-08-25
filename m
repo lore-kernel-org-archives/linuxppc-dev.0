@@ -1,25 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CCDBF67C53
+Return-Path: <wei.li4@elf.mcgill.ca>
+Received: from torrent.cc.mcgill.ca (torrent.CC.McGill.CA [132.206.27.49])
+	by ozlabs.org (Postfix) with ESMTP id 9579A67C23
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Aug 2006 02:39:34 +1000 (EST)
-In-Reply-To: <1156444531.17977.59.camel@saruman.qstreams.net>
-References: <1156371402.17977.21.camel@saruman.qstreams.net>
-	<AB150E9C-6BB3-46C1-980D-311D3277BFC1@kernel.crashing.org>
-	<1156430695.17977.28.camel@saruman.qstreams.net>
-	<9861097B-ACAD-45E6-9FA7-B86F0C1E8FA1@kernel.crashing.org>
-	<1156444531.17977.59.camel@saruman.qstreams.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <DB2639AB-266C-460E-B8C2-C946A847640C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: CompactFlash on PQII Pro
-Date: Fri, 25 Aug 2006 11:39:28 -0500
-To: bwarren@qstreams.com
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 26 Aug 2006 04:23:39 +1000 (EST)
+Received: from mailscan5.CC.McGill.CA (mailscan5.CC.McGill.CA [132.216.77.252])
+	by torrent.cc.mcgill.ca (8.12.11/8.12.3) with ESMTP id k7PINaeF030727
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Aug 2006 14:23:37 -0400
+Received: from wgrappe3.cc.mcgill.ca (wgrappe3.CC.McGill.CA [132.216.46.252])
+	by mailscan5.CC.McGill.CA (8.12.11/8.12.11) with ESMTP id
+	k7PINL9h006519
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Aug 2006 14:23:21 -0400
+Received: from wgrappe3.cc.mcgill.ca (localhost.localdomain [127.0.0.1])
+	by wgrappe3.cc.mcgill.ca (8.13.7/8.13.4) with ESMTP id k7PINLur019260
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Aug 2006 14:23:21 -0400
+Received: (from apache@localhost)
+	by wgrappe3.cc.mcgill.ca (8.13.7/8.13.7/Submit) id k7PINLWi019257
+	for linuxppc-embedded@ozlabs.org; Fri, 25 Aug 2006 14:23:21 -0400
+Message-ID: <20060825142321.hia52dw9vk0ss44g@webmail.mcgill.ca>
+Date: Fri, 25 Aug 2006 14:23:21 -0400
+From: wei.li4@elf.mcgill.ca
+To: linuxppc-embedded@ozlabs.org
+Subject: Help for re-building powerpc-linux-gdb
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,21 +35,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi All,
 
-On Aug 24, 2006, at 1:35 PM, Ben Warren wrote:
+I am trying to build powerpc-linux-gdb with gdb-5.0.tar.gz and 
+mpcbdm-1.2.3.tar.gz packages under Fedora 2, but it is failed, I guess 
+my gcc is too new, I am using BDM4GDB from www.denx.com, is there 
+anyone who has the same experience and can help me? Thanks.
 
-> Kumar,
->
-> On Thu, 2006-08-24 at 13:25 -0500, Kumar Gala wrote:
->
->> The only code in u-boot was the UPM setup code, I'm happy to send
->> that to you.
->>
-> If it's no trouble, that would be great.  My HW guy is calculating the
-> settings, but this stuff can be frustrating to debug.  BTW - was the
-> system bus speed for your CPU 33 or 66 MHz?  We're targeting for a
-> 400MHz 8349 which has a 33MHz system bus.
-
-I think we were running @ 66Mhz, but I've run the FSL ref board @ 33MHZ.
-
-- k
+Wei
