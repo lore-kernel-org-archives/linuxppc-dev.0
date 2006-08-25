@@ -1,21 +1,17 @@
-Return-Path: <AZeffertt@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23ADE67C45
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 04DD267C45
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Aug 2006 00:34:18 +1000 (EST)
-Message-ID: <44EF0A61.3050205@cambridgebroadband.com>
-Date: Fri, 25 Aug 2006 15:34:09 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Sat, 26 Aug 2006 02:05:03 +1000 (EST)
 MIME-Version: 1.0
-To: Keinen Namen <GSM909@gmx.de>
-Subject: Re: m8260_cpm_dpalloc -> m8260_cpm_dpfree ?
-References: <20060825121947.88490@gmx.net>
-In-Reply-To: <20060825121947.88490@gmx.net>
-Content-Type: multipart/mixed; boundary="------------020407030202030601030003"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Cache coherency question
+Date: Fri, 25 Aug 2006 09:05:01 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871062827EA@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Liu Dave-r63238" <DaveLiu@freescale.com>,
+	"ppc" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,341 +22,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020407030202030601030003
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+>=20
+> Tim> I'm using an MVME6100 with Linux 2.6.14 and experiencing what I=20
+> Tim> think is a cache coherency problem.  An external PCIX master=20
+> Tim> performs a DMA transfer of a well known data pattern into SDRAM,=20
+> Tim> but when the device driver goes to look at the data it is mostly=20
+> Tim> okay, but occasionally has garbage.
+>=20
+> If the hardware is reliable, I think you are right. The cache=20
+> coherency problem.
 
-Keinen Namen wrote:
-> Hi
-> 
-> Simple Question, I allocate Memory for my BDs with m8260_cpm_dpalloc, but there are no dpfree in Linux 2.4.25. In Linux 2.6 are a funktion to free dp memory.
-> 
-> Are there no funktion in Linux 2.4 ? 
-> 
+The hardware is reliable.
 
-I've implemented the free function for my own benefit.  See attached patch
-which should work against ELDK 3.1
+>=20
+> Tim> 1) Should the processor bus cache snooping actually work on an=20
+> Tim> MVME6100?
+> Tim> E.g. is it correct that CONFIG_NOT_COHERENT_CACHE is undefined?
+>=20
+> Yes, you can undefine the CONFIG_NOT_COHERENT_CACHE, but you=20
+> must make sure the host bridge did the snooping setup for PCI=20
+> inbound transaction.
+> If you setup the snooping window, I think the host bridge=20
+> will assert /GLB signal to processor. The processor will=20
+> snoop the 60x/MPX bus to keep cache coherence.
+>=20
 
-Alex
+Ah.  This must be the problem.  I have a few PCI devices, and on one of
+them it looked like snooping was working.  I just assumed the other
+device was setup correctly.
 
+> Also, you can define the CONFIG_NOT_COHERENT_CACHE, then you=20
+> are assuming The system has not hardware coherency. You need=20
+> use the software to keep the cache coherency.
+>=20
 
---------------020407030202030601030003
-Content-Type: text/plain;
- name="patch-2006-08-25-m8260_cpm_dpfree"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch-2006-08-25-m8260_cpm_dpfree"
+I tried this, and got compiler errors.
 
-Index: commproc.c
-===================================================================
-RCS file: /newcvs/pq2-linux/kernel/arch/ppc/8260_io/commproc.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.3
-diff -u -r1.1.1.1 -r1.3
---- commproc.c	24 Aug 2005 12:05:13 -0000	1.1.1.1
-+++ commproc.c	11 May 2006 13:14:31 -0000	1.3
-@@ -29,12 +29,264 @@
- #include <asm/immap_8260.h>
- #include <asm/cpm_8260.h>
- 
-+#define DPFREE
-+
-+#ifdef DPFREE
-+typedef struct	cpm_dpalloc_entry_s {
-+	u_short				start_addr;
-+    u_short             retloc;    /* This is start_addr + alignment offset: only valid in alloc list */
-+	u_short				size;
-+	struct	cpm_dpalloc_entry_s *	next_entr;
-+} cpm_dpalloc_entry_t;
-+
-+static	void	cpm_dpalloc_init(void);
-+static	void	cpm_dpalloc_data_init(cpm_dpalloc_entry_t  *);
-+static	int	    cpm_dpalloc_cl(cpm_dpalloc_entry_t *);
-+static	int  	cpm_dpalloc_rem(cpm_dpalloc_entry_t **, cpm_dpalloc_entry_t *);
-+static	void	cpm_dpalloc_ins(cpm_dpalloc_entry_t **, cpm_dpalloc_entry_t *);
-+# define CPM_DPALLOC_COUNT (CPM_DATAONLY_SIZE / sizeof(cbd_t) + 1)  
-+/* Dynamic lists of allocated and free DPRAM */
-+static	cpm_dpalloc_entry_t  *cpm_dpalloc_free;
-+static	cpm_dpalloc_entry_t  *cpm_dpalloc_alloc;
-+static	cpm_dpalloc_entry_t	cpm_dpalloc_list[CPM_DPALLOC_COUNT];
-+#else
- static	uint	dp_alloc_base;	/* Starting offset in DP ram */
- static	uint	dp_alloc_top;	/* Max offset + 1 */
-+#endif
- static	uint	host_buffer;	/* One page of host buffer */
- static	uint	host_end;	/* end + 1 */
- cpm8260_t	*cpmp;		/* Pointer to comm processor space */
- 
-+#ifdef DPFREE
-+/* Initialize dynamic lists
-+ */
-+static void cpm_dpalloc_init(void)
-+{
-+	int i;
-+
-+	cpm_dpalloc_free = cpm_dpalloc_list;
-+	cpm_dpalloc_free->start_addr = CPM_DATAONLY_BASE;
-+	cpm_dpalloc_free->size = CPM_DATAONLY_SIZE;
-+	cpm_dpalloc_free->next_entr = NULL;
-+	cpm_dpalloc_alloc = NULL;
-+
-+	for(i = 1; i <= CPM_DPALLOC_COUNT; i++) {
-+		cpm_dpalloc_data_init (cpm_dpalloc_list + i);
-+	}
-+}
-+
-+/* Initialize element in list of DPRAM
-+ */
-+static void cpm_dpalloc_data_init(cpm_dpalloc_entry_t * ptr)
-+{
-+	ptr->retloc = ptr->start_addr = 0;
-+	ptr->size = 0;
-+	ptr->next_entr = NULL;
-+}
-+
-+static int cpm_dpalloc_cl(cpm_dpalloc_entry_t * head)
-+{
-+	cpm_dpalloc_entry_t	* curr;
-+	cpm_dpalloc_entry_t	* next;
-+	int			  retloc;
-+
-+	curr = head;
-+	retloc = -1;
-+
-+	if (curr) {
-+		retloc = 0;
-+
-+		while ((next = curr->next_entr)) {
-+			if (curr->start_addr + curr->size == next->start_addr) {
-+				curr->size = curr->size + next->size;
-+				curr->next_entr = next->next_entr;
-+				cpm_dpalloc_data_init(next);
-+			} else {
-+				curr = next;
-+			}
-+		 }
-+	}
-+
-+	return retloc;
-+}
-+
-+/* Remove element from dynamic list of DPRAM
-+ */
-+static int cpm_dpalloc_rem(cpm_dpalloc_entry_t ** head, cpm_dpalloc_entry_t * ptr)
-+{
-+	cpm_dpalloc_entry_t	* prev;
-+	cpm_dpalloc_entry_t	* curr;
-+	int			  retloc;
-+
-+	retloc = -1;
-+	for (prev = NULL , curr = *head;
-+	     curr != NULL && ptr != curr;
-+	     prev = curr , curr = curr->next_entr)
-+		/* EMPTY */ ;
-+
-+	if (curr) {
-+		if (prev) {
-+			prev->next_entr = curr->next_entr;
-+		} else {
-+			*head = curr->next_entr;
-+		}
-+		retloc = 0;
-+	}
-+
-+	return retloc;
-+}
-+
-+/* Insert element in dynamic list of DPRAM
-+ */
-+static void cpm_dpalloc_ins(cpm_dpalloc_entry_t ** head, cpm_dpalloc_entry_t * ptr)
-+{
-+	cpm_dpalloc_entry_t	* prev;
-+	cpm_dpalloc_entry_t	* curr;
-+
-+	for (prev = NULL , curr = *head;
-+	     curr != NULL && ptr->start_addr >= curr->start_addr;
-+	     prev = curr , curr = curr->next_entr)
-+		/* EMPTY */ ;
-+
-+	ptr->next_entr = curr;
-+
-+	if (prev) {
-+		prev->next_entr = ptr;
-+	} else {
-+		*head = ptr;
-+	}
-+}
-+/* Allocate some memory from the dual ported ram.  We may want to
-+ * enforce alignment restrictions, but right now everyone is a good
-+ * citizen.
-+ */
-+uint m8260_cpm_dpalloc(uint size, uint align)
-+{
-+    cpm_dpalloc_entry_t   * new_el;
-+    cpm_dpalloc_entry_t   * p;
-+    cpm_dpalloc_entry_t   * p1;
-+    uint			retloc;
-+    u_short			max;
-+    unsigned long		flags;
-+    int			i;
-+    uint align_mask;
-+    uint off;
-+
-+    size = (size + 7) & ~7;
-+    align_mask = align - 1;
-+    max = CPM_DATAONLY_SIZE;
-+    retloc = CPM_DP_NOSPACE;
-+    new_el = NULL;
-+
-+    if (size == 0) goto DONE;
-+
-+    save_flags(flags);
-+    cli();
-+
-+    /* Find free area in DPRAM
-+     */
-+    for (p = cpm_dpalloc_free; p != NULL; p = p->next_entr) {
-+        if (p->size <= max) {
-+            off = ((p->start_addr + align_mask) & (~align_mask)) - p->start_addr;
-+            if (p->size >= size + off) {
-+                new_el = p;
-+                max = p->size;
-+                retloc = p->start_addr + off;
-+            }
-+        }
-+    }
-+
-+    if (new_el == NULL) goto DONE1;
-+
-+    /* Insert new element in the list of allocated DPRAM
-+     */
-+    p1 = cpm_dpalloc_list;
-+    p = NULL;
-+    i = 0;
-+    while (i < CPM_DPALLOC_COUNT) {
-+        if (p1->start_addr == 0 && !p1->size && !p1->next_entr) {
-+            p = p1;
-+            break;
-+        }
-+        i ++;
-+        p1 ++;
-+    }
-+
-+    if (p == NULL) {
-+        panic ("m8xx_cpm_dpalloc: INTERNAL ERROR\n");
-+    }
-+
-+    off = retloc - new_el->start_addr;
-+
-+    p->start_addr = new_el->start_addr;
-+    p->retloc = retloc;
-+    p->size = size + off;
-+
-+    if (new_el->size >  (size+off)) {
-+        new_el->size -= (size+off);
-+        new_el->start_addr += (size+off);
-+        cpm_dpalloc_ins(&cpm_dpalloc_alloc, p);
-+    } else {
-+        cpm_dpalloc_ins(&cpm_dpalloc_alloc, p);
-+        i = cpm_dpalloc_rem(&cpm_dpalloc_free, new_el);
-+
-+        if ( i == -1) {
-+            panic ("m8xx_cpm_dpalloc: INTERNAL ERROR\n");
-+        }
-+
-+        cpm_dpalloc_data_init(new_el);
-+    }
-+
-+ DONE1:
-+    restore_flags(flags);
-+ DONE:
-+    return retloc;
-+}
-+
-+int m8260_cpm_dpfree(uint retloc)
-+{
-+	cpm_dpalloc_entry_t   * r;
-+	int			retval;
-+	unsigned long		flags;
-+
-+	retval = -1;
-+
-+	if ((retloc < CPM_DATAONLY_BASE) ||
-+	    (retloc > CPM_DATAONLY_SIZE + CPM_DATAONLY_BASE)) {
-+		goto DONE;
-+	}
-+
-+	save_flags(flags);
-+	cli();
-+
-+	for (r = cpm_dpalloc_alloc;
-+	     (r != NULL) && (r->retloc != retloc);
-+	     r = r->next_entr)
-+		/* EMPTY */ ;
-+
-+	if (r) {
-+		retval = cpm_dpalloc_rem(&cpm_dpalloc_alloc, r);
-+
-+		if (retval == -1) {
-+			panic("m8xx_cpm_dpfree: INTERNAL ERROR\n");
-+		}
-+		cpm_dpalloc_ins(&cpm_dpalloc_free, r);
-+		retval = cpm_dpalloc_cl(cpm_dpalloc_free);
-+
-+		if (retval == -1) {
-+			panic("m8xx_cpm_dpfree: INTERNAL ERROR\n");
-+		}
-+		retval = 0;
-+	} else {
-+	  printk(KERN_ERR "m8xx_cpm_dpfree: address not found in alloc list\n");
-+	}
-+
-+	restore_flags(flags);
-+DONE:
-+	return retval;
-+}
-+#endif /* DPFREE */
-+
- /* We allocate this here because it is used almost exclusively for
-  * the communication processor devices.
-  */
-@@ -50,11 +302,14 @@
- 	immr = imp = (volatile immap_t *)IMAP_ADDR;
- 	commproc = &imp->im_cpm;
- 
-+#ifdef DPFREE
-+	cpm_dpalloc_init();
-+#else
- 	/* Reclaim the DP memory for our use.
- 	*/
- 	dp_alloc_base = CPM_DATAONLY_BASE;
- 	dp_alloc_top = dp_alloc_base + CPM_DATAONLY_SIZE;
--
-+#endif
- 	/* Set the host page for allocation.
- 	*/
- 	host_buffer =
-@@ -68,6 +323,7 @@
- 	cpmp = (cpm8260_t *)commproc;
- }
- 
-+#ifndef DPFREE
- /* Allocate some memory from the dual ported ram.
-  * To help protocols with object alignment restrictions, we do that
-  * if they ask.
-@@ -95,6 +351,12 @@
- 
- 	return(retloc);
- }
-+int m8260_cpm_dpfree(uint start_addr)
-+{
-+    printk(KERN_ERR "%s() not implemented\n", __FUNCTION__);
-+    return -1;
-+}
-+#endif /*ifndef DPFREE*/
- 
- /* We also own one page of host buffer space for the allocation of
-  * UART "fifos" and the like.
+>=20
+> Tim> 2) If this really is a cache coherency problem, are there other=20
+> Tim> cache management functions available in ppc linux besides the=20
+> Tim> dma_cache_inv, dma_cache_wback, dma_cache_wback_inv=20
+> macros I should=20
+> Tim> be looking at?
+>=20
+> I think it is a cache coherency problem, if you define the=20
+> CONFIG_NOT_COHERENT_CACHE You can get these functions, dma_map_single
+>=20
 
---------------020407030202030601030003--
+I added some inline assembly dcbi/dcbf (invalidate/flush) instructions
+to the particular code in question, and the problems went away.  So
+definitely a cache problem.  As I said above, defining
+CONFIG_NOT_COHERENT_CACHE causes compiler errors, so I'm going to look
+into this more.  I suppose whatever file implements the
+include/linux/dma-mapping.h stuff isn't BSP specific, so its probably
+just not being compiled in?  Will look into it.
+
+Thanks for you help,
+Tim
