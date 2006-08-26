@@ -1,19 +1,22 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
-	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id 76B7667C5F
+Return-Path: <akhilesh@innomedia.soft.net>
+Received: from gateway.innomedia.soft.net (unknown [220.227.188.61])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A2BE2679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Aug 2006 05:33:02 +1000 (EST)
-In-Reply-To: <Pine.WNT.4.61.0608251400100.200@holyoke.labs.mot.com>
-References: <DADA32856852FC458E0F96B664A6F55E011E2425@kom-mailsrv1.kontron-modular.com>
-	<Pine.WNT.4.61.0608251400100.200@holyoke.labs.mot.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <561D5B15-7033-4231-BF61-DC4BEEA52CF2@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: "ip=" command line strangeness...
-Date: Fri, 25 Aug 2006 15:32:59 -0400
-To: T Ziomek <ctz001@email.mot.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Sat, 26 Aug 2006 14:54:58 +1000 (EST)
+Received: from innomedia ([192.168.18.10]) (authenticated bits=0)
+	by gateway.innomedia.soft.net (8.12.11/8.12.11) with ESMTP id
+	k7Q4spvZ024923
+	for <linuxppc-embedded@ozlabs.org>; Sat, 26 Aug 2006 10:24:51 +0530
+Message-ID: <005601c6c8cb$67bc0750$0a12a8c0@innomedia>
+From: "Akhilesh Soni" <akhilesh@innomedia.soft.net>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Difference between zImage.treeboot zImage
+Date: Sat, 26 Aug 2006 10:22:16 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0053_01C6C8F9.8163A180"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,35 +27,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Aug 25, 2006, at 3:18 PM, T Ziomek wrote:
+------=_NextPart_000_0053_01C6C8F9.8163A180
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
->> please provide the ip-commandline in the full-size format
->> ip=<my ip>:<server ip>:<host ip>:<net mask>:<hostname>:<which  
->> ethernet port, e.g. "eth0">
->
-> The port should be followed by ":<autoconf>", right?  I'm basing  
-> that on
-> Documentation/nfsroot.txt .
+Hi,
 
-Documentation is out of date.  After the port number should be
-one of:
-	off | none
-	on | any
-	dhcp | bootp | rarp
-	both
+I'm using opebios on IBM redwood6 ppc405 platform. Currently when I =
+compile my kernel by doing "make zImage" I get one file zImage.treeboot. =
+I just want to know what is the difference between normal zImage and =
+zImage.treeboot.
 
-I usually use 'on' or 'any' to cause the autoconfig to happen.
+One more thing I've noticed that there is also a small boot program =
+inside the kernel also (arch/ppc/boot/simple) which decompresses the =
+kernel and jumps to start of zImage. Why this is required ? In normal =
+U-boot which I've worked earlier directly decompresses the zImage by =
+bootm command and starts its execution. Please help me in understanding =
+this mechanism.
 
-> Meh...that string is so bloody long I don't want to bother trying  
-> it since
-> I know that "ip=<my IP>:gibberish" works well enough...
-
-If you run a dhcp server (which I do), all you need is 'ip=any'.
-If you are really doing the configuration with all of those options
-on the command line, you have to use 'off' after the port
-identifier or it will try to contact a server using one of the
-configured protocols (dhcp, bootp. rarp) to get the information.
+Also If I want to build linux kernel 2.6 then will my opebios will work =
+with it or I'll have to change to uboot for for 2.6 kernel.
 
 
-	-- Dan
+regards,
+Akhilesh
+
+
+------=_NextPart_000_0053_01C6C8F9.8163A180
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2600.0" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I'm using opebios on IBM redwood6 =
+ppc405 platform.=20
+Currently when I compile my kernel&nbsp;by doing "make zImage" I get one =
+file=20
+zImage.treeboot. I just want to know what is the difference between =
+normal=20
+zImage and zImage.treeboot.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>One more thing I've noticed that there =
+is also a=20
+small boot program inside the kernel also (arch/ppc/boot/simple) which=20
+decompresses the kernel and jumps to start of zImage. Why this is =
+required ? In=20
+normal U-boot which I've worked earlier directly decompresses the zImage =
+by=20
+bootm command and starts its execution. Please help me in understanding =
+this=20
+mechanism.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Also If I want to build linux kernel =
+2.6 then will=20
+my opebios will work with it or I'll have to change to uboot for for 2.6 =
+
+kernel.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>regards,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Akhilesh</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
+
+------=_NextPart_000_0053_01C6C8F9.8163A180--
