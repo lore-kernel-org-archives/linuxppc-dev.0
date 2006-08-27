@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EB50E67C6D
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 09:11:18 +1000 (EST)
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D9B3667A3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 09:24:57 +1000 (EST)
+Date: Mon, 28 Aug 2006 01:24:52 +0200
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] Keyboard backlight driver for Oct 2005 PowerBooks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20060827230714.GA12569@hansmi.ch>
+Message-ID: <20060827232452.GB12569@hansmi.ch>
 References: <20060827123015.GA4697@hansmi.ch>
 	<1156718063.8433.358.camel@localhost.localdomain>
 	<20060827230714.GA12569@hansmi.ch>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 28 Aug 2006 09:11:03 +1000
-Message-Id: <1156720264.8433.362.camel@localhost.localdomain>
+	<1156720264.8433.362.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1156720264.8433.362.camel@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net, rpurdie@rpsys.net,
 	linux-kernel@killerfox.forkbomb.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,52 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-08-28 at 01:07 +0200, Michael Hanselmann wrote:
-> On Mon, Aug 28, 2006 at 08:34:23AM +1000, Benjamin Herrenschmidt wrote:
-> > Why would we need a driver ? Userland can emit PMU commands directly...
-> 
-> Drivers are there to abstract hardware. Userland shouldn't know about
-> hardware specific commands (PMU commands in this case).
+On Mon, Aug 28, 2006 at 09:11:03AM +1000, Benjamin Herrenschmidt wrote:
+> > Drivers are there to abstract hardware. Userland shouldn't know about
+> > hardware specific commands (PMU commands in this case).
 
-This is a bit of a broad statement :) If I were to follow you, thinks
-like USB scanner or printer drivers should all be in the kernel :)
-Well... they happen not to be.
+> This is a bit of a broad statement :) If I were to follow you, thinks
+> like USB scanner or printer drivers should all be in the kernel :)
+> Well... they happen not to be.
 
-Only drivers providing services to the kernel itself (block,
-network, ...) or doing things like direct DMA, interrupts, etc... that
-aren't useable from an exposed userland interfaces need to be in the
-kernel.
+True. But then again, a printer driver does little more than configuring
+a single PWM value.
 
-> It would make it much simpler for programs to use these devices, because
-> not each of them has to implement everything needed to locate the device
-> and control it.
+If there wasn't an I²C variant, we could even export these things as PMU
+sub-devices. But there is one and a driver could easily hide these
+differences from userland, because they simply don't matter there.
 
-Then the best is to do a library.
+> Then the best is to do a library.
 
-> pbbuttonsd supports both the I²C and PMU variant. The code is a mess
-> there and a generic driver would help to clean it up. And yes, I'm
-> partly responsible for it, since I supplied the original patch for the
-> PMU keyboard backlight support in pbbuttonsd.
-> 
-> Maybe controlling the keyboard backlight could be moved to its own
-> program anyway, because the algorithm used by pbbuttonsd isn't appealing
-> to all people. But those are just ideas.
+There was some effort ongoing on that a few months ago (at least on
+IRC). Was there anything coming out of it?
 
-Yeah, separate program or library would do the trick just fine. Also,
-your driver doesn't handle reading the light sensors, does it ?
+> Yeah, separate program or library would do the trick just fine. Also,
+> your driver doesn't handle reading the light sensors, does it ?
 
-> Oh, and using the LED class allows users to attach it to some trigger.
-> Maybe someone wants to use it as the IDE LED. :-)
+No, it doesn't. The light sensor is a different device and doesn't
+belong into a LED driver. I plan to do a driver for it separately.
 
-That would be just insane :)
+So the target is to have one driver for backlight and one for sensors,
+each handling the I²C and PMU variants. MacBooks have some other
+variant, which could be included, theoretically. Lacking the hardware, I
+can't do that, tough.
 
-> > At least, if we do a driver, it should provide a common interface to
-> > both PMU and i2c based LMUs
-> 
-> Yeah, I figured after sending it. You'll hear again from me once I got
-> my hands on an I²C backlight. Something like the AMS driver would be
-> nice.
+The main reason I did not do all at once is that I feared a discussion
+like we have it now. I'm not going to invest much time for unused code
+anymore like I did with the ctrl+click patch.
 
-I still think this has little to do in the kernel ...
-
-Ben.
+Greets,
+Michael
