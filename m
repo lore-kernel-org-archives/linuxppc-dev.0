@@ -1,36 +1,12 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2FB9C679E7
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 04:03:54 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7SI3khA005052
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 14:03:46 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7SI3lei283950
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 14:03:47 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7SI3lXi016525
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 14:03:47 -0400
-Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
-From: Willschm <will_schmidt@vnet.ibm.com>
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 28 Aug 2006 13:05:17 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17645.18647.720814.903612@cargo.ozlabs.ibm.com>
-References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
-	<200608182105.45264.arnd@arndb.de>
-	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
-	<200608192219.03178.arnd@arndb.de>
-	<37280.84.105.60.119.1156030372.squirrel@gate.crashing.org>
-	<1156190965.9659.41.camel@farscape.rchland.ibm.com>
-	<17645.18647.720814.903612@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 28 Aug 2006 13:03:35 -0500
-Message-Id: <1156788215.5959.25.camel@localhost>
+Subject: Re: [CFT:PATCH] Removing possible wrong asm/serial.h inclusions
+Message-ID: <20060828200517.GD21522@mag.az.mvista.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de, segher@gate.crashing.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,76 +16,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-24-08 at 16:36 +1000, Paul Mackerras wrote:
-> Will Schmidt writes:
-> 
-> I just did a patch to fix the existing masks.  Could you do a new
-> version of this patch that doesn't include the unrelated mask fixes
-> please?  Also it would be really nice if you could figure out a way to
-> avoid doing the unnecessary 64-bit logical operations on 32-bit
-> machines - i.e. using an unsigned long for tmp, but then the constants
-> become problematic.  Maybe you need something like
-> 
-> #define LCONST(x)	((unsigned long)(x##ULL))
+All,
 
-Ok, how about this..
+This was sent to linuxppc-embedded by Russel King.  In case you missed it,
+I'm forwarding it here:
 
-In an attempt to make it easier for a power5 optimized app to run on a 
-power4 or a 970 or random earlier machine, this provides emulation of
-the popcntb instruction.
+Mark
+--
 
-Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-August/024178.html
 
----
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2105767..f85a3af 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -588,6 +588,9 @@ #define INST_LSWX		0x7c00042a
- #define INST_STSWI		0x7c0005aa
- #define INST_STSWX		0x7c00052a
+--
+
+asm/serial.h is supposed to contain the definitions for the architecture
+specific 8250 ports for the 8250 driver.  It may also define BASE_BAUD,
+but this is the base baud for the architecture specific ports _only_.
+
+Therefore, nothing other than the 8250 driver should be including this
+header file.  In order to move towards this goal, here is a patch which
+removes some of the more obvious incorrect includes of the file.
+
+MIPS and PPC has rather a lot of stuff in asm/serial.h, some of it looks
+related to non-8250 ports.  Hence, it's not trivial to conclude that
+these includes are indeed unnecessary, so can mips and ppc people please
+test this patch carefully.
+
+Thanks.
+
+diff --git a/arch/frv/kernel/setup.c b/arch/frv/kernel/setup.c
+--- a/arch/frv/kernel/setup.c
++++ b/arch/frv/kernel/setup.c
+@@ -31,7 +31,6 @@
+ #include <linux/serial_reg.h>
  
-+#define INST_POPCNTB		0x7c0000f4
-+#define INST_POPCNTB_MASK	0xfc0007fe
-+
- static int emulate_string_inst(struct pt_regs *regs, u32 instword)
- {
- 	u8 rT = (instword >> 21) & 0x1f;
-@@ -656,6 +659,25 @@ static int emulate_string_inst(struct pt
- 	return 0;
- }
+ #include <asm/setup.h>
+-#include <asm/serial.h>
+ #include <asm/irq.h>
+ #include <asm/sections.h>
+ #include <asm/pgalloc.h>
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -54,7 +54,6 @@
+ #include <asm/processor.h>
+ #include <asm/sal.h>
+ #include <asm/sections.h>
+-#include <asm/serial.h>
+ #include <asm/setup.h>
+ #include <asm/smp.h>
+ #include <asm/system.h>
+diff --git a/arch/mips/cobalt/setup.c b/arch/mips/cobalt/setup.c
+--- a/arch/mips/cobalt/setup.c
++++ b/arch/mips/cobalt/setup.c
+@@ -23,7 +23,6 @@
+ #include <asm/processor.h>
+ #include <asm/reboot.h>
+ #include <asm/gt64120.h>
+-#include <asm/serial.h>
  
-+#define LCONST(x)	((unsigned long)(x##ULL))
-+
-+static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
-+{
-+	u32 ra,rs;
-+	u64 tmp;
-+
-+	ra = (instword >> 16) & 0x1f;
-+	rs = (instword >> 21) & 0x1f;
-+
-+	tmp = regs->gpr[rs];
-+	tmp = tmp - ((tmp >> 1) & LCONST(0x5555555555555555));
-+	tmp = (tmp & LCONST(0x3333333333333333)) + ((tmp >> 2) & LCONST(0x3333333333333333));
-+	tmp = (tmp + (tmp >> 4)) & LCONST(0x0f0f0f0f0f0f0f0f);
-+	regs->gpr[ra] = tmp;
-+
-+	return 0;
-+}
-+
- static int emulate_instruction(struct pt_regs *regs)
- {
- 	u32 instword;
-@@ -693,6 +715,11 @@ static int emulate_instruction(struct pt
- 	if ((instword & INST_STRING_GEN_MASK) == INST_STRING)
- 		return emulate_string_inst(regs, instword);
+ #include <asm/mach-cobalt/cobalt.h>
  
-+	/* Emulate the popcntb (Population Count Bytes) instruction. */
-+	if ((instword & INST_POPCNTB_MASK) == INST_POPCNTB) {
-+		return emulate_popcntb_inst(regs, instword);
-+	}
-+
- 	return -EINVAL;
- }
+diff --git a/arch/mips/lasat/setup.c b/arch/mips/lasat/setup.c
+--- a/arch/mips/lasat/setup.c
++++ b/arch/mips/lasat/setup.c
+@@ -34,7 +34,6 @@
+ #include <asm/cpu.h>
+ #include <asm/bootinfo.h>
+ #include <asm/irq.h>
+-#include <asm/serial.h>
+ #include <asm/lasat/lasat.h>
+ #include <asm/lasat/serial.h>
  
+diff --git a/arch/powerpc/kernel/setup-common.c
+b/arch/powerpc/kernel/setup-common.c
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -51,7 +51,6 @@
+ #include <asm/system.h>
+ #include <asm/rtas.h>
+ #include <asm/iommu.h>
+-#include <asm/serial.h>
+ #include <asm/cache.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+diff --git a/arch/powerpc/kernel/setup_32.c
+b/arch/powerpc/kernel/setup_32.c
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -38,7 +38,6 @@
+ #include <asm/nvram.h>
+ #include <asm/xmon.h>
+ #include <asm/time.h>
+-#include <asm/serial.h>
+ #include <asm/udbg.h>
+ 
+ #include "setup.h"
+diff --git a/arch/powerpc/kernel/setup_64.c
+b/arch/powerpc/kernel/setup_64.c
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -51,7 +51,6 @@
+ #include <asm/system.h>
+ #include <asm/rtas.h>
+ #include <asm/iommu.h>
+-#include <asm/serial.h>
+ #include <asm/cache.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+diff --git a/drivers/char/pcmcia/synclink_cs.c
+b/drivers/char/pcmcia/synclink_cs.c
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -57,7 +57,6 @@
+ #include <linux/netdevice.h>
+ #include <linux/vmalloc.h>
+ #include <linux/init.h>
+-#include <asm/serial.h>
+ #include <linux/delay.h>
+ #include <linux/ioctl.h>
+ 
+diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
+--- a/drivers/char/synclink.c
++++ b/drivers/char/synclink.c
+@@ -87,7 +87,6 @@
+ 
+ #include <linux/vmalloc.h>
+ #include <linux/init.h>
+-#include <asm/serial.h>
+ 
+ #include <linux/delay.h>
+ #include <linux/ioctl.h>
+diff --git a/drivers/serial/m32r_sio.c b/drivers/serial/m32r_sio.c
+--- a/drivers/serial/m32r_sio.c
++++ b/drivers/serial/m32r_sio.c
+@@ -76,17 +76,16 @@
+  */
+ #define is_real_interrupt(irq)	((irq) != 0)
+ 
+-#include <asm/serial.h>
++#define BASE_BAUD	115200
+ 
+ /* Standard COM flags */
+ #define STD_COM_FLAGS (UPF_BOOT_AUTOCONF | UPF_SKIP_TEST)
+ 
+ /*
+  * SERIAL_PORT_DFNS tells us about built-in ports that have no
+  * standard enumeration mechanism.   Platforms that can find all
+  * serial ports via mechanisms like ACPI or PCI need not supply it.
+  */
+-#undef SERIAL_PORT_DFNS
+ #if defined(CONFIG_PLAT_USRV)
+ 
+ #define SERIAL_PORT_DFNS
+\
+@@ -109,7 +108,7 @@
+ #endif /* !CONFIG_PLAT_USRV */
+ 
+ static struct old_serial_port old_serial_port[] = {
+-	SERIAL_PORT_DFNS	/* defined in asm/serial.h */
++	SERIAL_PORT_DFNS
+ };
+ 
+ #define UART_NR	ARRAY_SIZE(old_serial_port)
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
