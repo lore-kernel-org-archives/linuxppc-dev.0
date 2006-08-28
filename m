@@ -1,27 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 28135679E1
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 16:11:36 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k7S7UTxP028120
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 01:30:29 -0600 (MDT)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7S6BVaE001651
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 01:11:33 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 4/4] Add MPC8349E MDS device tree source
-	filetoarch/powerpc/boot/dts
-Date: Mon, 28 Aug 2006 14:11:30 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0FC5DC@zch01exm20.fsl.freescale.net>
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC5A7@zch01exm20.fsl.freescale.net>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>,
-	"Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0FA9767B5E
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 17:16:28 +1000 (EST)
+In-Reply-To: <1156728139.8433.413.camel@localhost.localdomain>
+References: <44EF818B.9080301@am.sony.com>
+	<1156728139.8433.413.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <17A2B887-8653-4814-8E28-46C5E2192245@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: powerpc virq: new routine virq_to_hw
+Date: Mon, 28 Aug 2006 09:16:06 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,20 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> {snip}
-> > +
-> > +		pci@8500 {
-> > +			interrupt-map-mask =3D <f800 0 0 7>;
-> > +			interrupt-map =3D <
-> > +
-> > +					/* IDSEL 0x11 */
-> > +					 8800 0 0 1 700 14 0
-> > +					 8800 0 0 2 700 15 0
-> > +					 8800 0 0 3 700 16 0
-> > +					 8800 0 0 4 700 17 0
->=20
-> If we are changing sense definition in IPIC, we should change the
-> mapping to lines like below:
-> 					 8800 0 0 1 700 14 2
+> I'd much prefer:
+>
+> static inline irq_hw_number_t virq_to_hw (unsigned int virq)
+> {
+> 	return irq_map[virq].hwirq;
+> }
+>
+> I've grown to dislike the CR between the return type and the function
+> name (I used to do that too) and it seems that this opinion is  
+> shared by
+> Linus (there was an old thread on lkml about it).
 
-Sorry, should be 8 for level low.
+And while we're at it: no space before parenthesis in a function
+declaration/definition.
+
+
+Segher
