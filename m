@@ -1,25 +1,17 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D9B3667A3A
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 09:24:57 +1000 (EST)
-Date: Mon, 28 Aug 2006 01:24:52 +0200
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Keyboard backlight driver for Oct 2005 PowerBooks
-Message-ID: <20060827232452.GB12569@hansmi.ch>
-References: <20060827123015.GA4697@hansmi.ch>
-	<1156718063.8433.358.camel@localhost.localdomain>
-	<20060827230714.GA12569@hansmi.ch>
-	<1156720264.8433.362.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7639767A3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 11:17:48 +1000 (EST)
+Subject: [PATCH] powerpc: Improve IRQ radix tree locking (#2)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Mon, 28 Aug 2006 11:17:37 +1000
+Message-Id: <1156727857.8433.406.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1156720264.8433.362.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net, rpurdie@rpsys.net,
-	linux-kernel@killerfox.forkbomb.ch
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +21,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 28, 2006 at 09:11:03AM +1000, Benjamin Herrenschmidt wrote:
-> > Drivers are there to abstract hardware. Userland shouldn't know about
-> > hardware specific commands (PMU commands in this case).
+When reworking the powerpc irq code, I figured out that we were using
+the radix tree in a racy way. As a temporary fix, I put a spinlock in
+there. However, this can have a significant impact on performances. This
+patch reworks that to use a smarter technique based on the fact that
+what we need is in fact a rwlock with extremely rare writers (thus
+optimized for the read path).
 
-> This is a bit of a broad statement :) If I were to follow you, thinks
-> like USB scanner or printer drivers should all be in the kernel :)
-> Well... they happen not to be.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-True. But then again, a printer driver does little more than configuring
-a single PWM value.
+This version includes changes based on Milton's comments. I also removed
+the first test of irq_radix_writer in irq_radix_rdlock(). The result
+should still be correct, though penalizing the contention path a bit
+more while slightly improving the fast path, which is my goal.
 
-If there wasn't an I²C variant, we could even export these things as PMU
-sub-devices. But there is one and a driver could easily hide these
-differences from userland, because they simply don't matter there.
-
-> Then the best is to do a library.
-
-There was some effort ongoing on that a few months ago (at least on
-IRC). Was there anything coming out of it?
-
-> Yeah, separate program or library would do the trick just fine. Also,
-> your driver doesn't handle reading the light sensors, does it ?
-
-No, it doesn't. The light sensor is a different device and doesn't
-belong into a LED driver. I plan to do a driver for it separately.
-
-So the target is to have one driver for backlight and one for sensors,
-each handling the I²C and PMU variants. MacBooks have some other
-variant, which could be included, theoretically. Lacking the hardware, I
-can't do that, tough.
-
-The main reason I did not do all at once is that I feared a discussion
-like we have it now. I'm not going to invest much time for unused code
-anymore like I did with the ctrl+click patch.
-
-Greets,
-Michael
+Index: linux-work/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/irq.c	2006-08-25 14:08:41.000000000 +1000
++++ linux-work/arch/powerpc/kernel/irq.c	2006-08-28 11:13:02.000000000 +1000
+@@ -322,7 +322,8 @@ EXPORT_SYMBOL(do_softirq);
+ 
+ static LIST_HEAD(irq_hosts);
+ static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
+-
++static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
++static unsigned int irq_radix_writer;
+ struct irq_map_entry irq_map[NR_IRQS];
+ static unsigned int irq_virq_count = NR_IRQS;
+ static struct irq_host *irq_default_host;
+@@ -455,6 +456,58 @@ void irq_set_virq_count(unsigned int cou
+ 		irq_virq_count = count;
+ }
+ 
++/* radix tree not lockless safe ! we use a brlock-type mecanism
++ * for now, until we can use a lockless radix tree
++ */
++static void irq_radix_wrlock(unsigned long *flags)
++{
++	unsigned int cpu, ok;
++
++	spin_lock_irqsave(&irq_big_lock, *flags);
++	irq_radix_writer = 1;
++	smp_mb();
++	do {
++		barrier();
++		ok = 1;
++		for_each_possible_cpu(cpu) {
++			if (per_cpu(irq_radix_reader, cpu)) {
++				ok = 0;
++				break;
++			}
++		}
++		if (!ok)
++			cpu_relax();
++	} while(!ok);
++}
++
++static void irq_radix_wrunlock(unsigned long flags)
++{
++	smp_wmb();
++	irq_radix_writer = 0;
++	spin_unlock_irqrestore(&irq_big_lock, flags);
++}
++
++static void irq_radix_rdlock(unsigned long *flags)
++{
++	local_irq_save(*flags);
++	__get_cpu_var(irq_radix_reader) = 1;
++	smp_mb();
++	if (likely(irq_radix_writer == 0))
++		return;
++	__get_cpu_var(irq_radix_reader) = 0;
++	smp_wmb();
++	spin_lock(&irq_big_lock);
++	__get_cpu_var(irq_radix_reader) = 1;
++	spin_unlock(&irq_big_lock);
++}
++
++static void irq_radix_rdunlock(unsigned long flags)
++{
++	__get_cpu_var(irq_radix_reader) = 0;
++	local_irq_restore(flags);
++}
++
++
+ unsigned int irq_create_mapping(struct irq_host *host,
+ 				irq_hw_number_t hwirq)
+ {
+@@ -604,13 +657,9 @@ void irq_dispose_mapping(unsigned int vi
+ 		/* Check if radix tree allocated yet */
+ 		if (host->revmap_data.tree.gfp_mask == 0)
+ 			break;
+-		/* XXX radix tree not safe ! remove lock whem it becomes safe
+-		 * and use some RCU sync to make sure everything is ok before we
+-		 * can re-use that map entry
+-		 */
+-		spin_lock_irqsave(&irq_big_lock, flags);
++		irq_radix_wrlock(&flags);
+ 		radix_tree_delete(&host->revmap_data.tree, hwirq);
+-		spin_unlock_irqrestore(&irq_big_lock, flags);
++		irq_radix_wrunlock(flags);
+ 		break;
+ 	}
+ 
+@@ -677,25 +726,24 @@ unsigned int irq_radix_revmap(struct irq
+ 	if (tree->gfp_mask == 0)
+ 		return irq_find_mapping(host, hwirq);
+ 
+-	/* XXX Current radix trees are NOT SMP safe !!! Remove that lock
+-	 * when that is fixed (when Nick's patch gets in
+-	 */
+-	spin_lock_irqsave(&irq_big_lock, flags);
+-
+ 	/* Now try to resolve */
++	irq_radix_rdlock(&flags);
+ 	ptr = radix_tree_lookup(tree, hwirq);
++	irq_radix_rdunlock(flags);
++
+ 	/* Found it, return */
+ 	if (ptr) {
+ 		virq = ptr - irq_map;
+-		goto bail;
++		return virq;
+ 	}
+ 
+ 	/* If not there, try to insert it */
+ 	virq = irq_find_mapping(host, hwirq);
+-	if (virq != NO_IRQ)
++	if (virq != NO_IRQ) {
++		irq_radix_wrlock(&flags);
+ 		radix_tree_insert(tree, hwirq, &irq_map[virq]);
+- bail:
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++		irq_radix_wrunlock(flags);
++	}
+ 	return virq;
+ }
+ 
+@@ -806,12 +854,12 @@ static int irq_late_init(void)
+ 	struct irq_host *h;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&irq_big_lock, flags);
++	irq_radix_wrlock(&flags);
+ 	list_for_each_entry(h, &irq_hosts, link) {
+ 		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+ 			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+ 	}
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++	irq_radix_wrunlock(flags);
+ 
+ 	return 0;
+ }
