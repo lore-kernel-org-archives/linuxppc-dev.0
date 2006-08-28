@@ -1,15 +1,15 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 1045A67B54
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id BC16067B69
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Aug 2006 05:52:34 +1000 (EST)
+	Tue, 29 Aug 2006 05:56:41 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Converting to new IRQ code
-Date: Mon, 28 Aug 2006 14:40:27 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DF1E@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6CADC.1357E43D"
+Subject: PPC405 system slow boot
+Date: Mon, 28 Aug 2006 15:56:38 -0400
+Message-ID: <3C02138692C13C4BB675FE7EA240952918E1E2@bluefin.Soneticom.local>
+From: "Clint Thomas" <cthomas@Soneticom.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,200 +21,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi.
+This is a multi-part message in MIME format.
 
+------_=_NextPart_001_01C6CADC.1357E43D
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Can anybody help me convert the following IRQ demux code to the new IRQ
-setup?
-I tried just changing irq_desc[irq].handler to irq_desc_[irq].chip, but
-then it dumps in _do_IRQ()
+Hey guys,
 
-This is on a MPC8280 with an ecternal (in FPGA) PCI IRQ mux
+I've run through the loops to try and figure what could be wrong with
+this system. The board in question is modeled after the Xilinx ML300
+board. It uses a Xilinx System ACE chip to load a FPGA / Kernel image
+from compact flash. Originally, I was trying to use the CompactFlash as
+the root file system, but because of issues in either the design or
+software, this would only work if SysAce was in polled I/O mode. To
+circumvent this, I built my root filesystem into an initrd image and
+built a single ELF file with the Kernel and RFS, then strapped that to
+the FPGA bit file to make a single FPGA/Kernel/RFS SysAce file.
 
+Upon decompression, the Linux kernel boots quickly and loads all of the
+device drivers. However when it gets to the prompt, it starts slowing
+down. Output and input to and from the board becomes very very slow (it
+displays 2 characters roughly every 20 seconds). Originally I believed
+this to be the CPU still polling SystemAce, so I disabled the Linux
+System ACE drivers to remove that as a possibility, however after doing
+this, the problem still persists, even with the RFS in ram! Has anybody
+encountered a similar situation to this before, with possible insight
+towards a solution? Thank you for your time.
+=20
+Clinton Thomas
+cthomas@soneticom.com
+=20
 
-static volatile unsigned short * pci_status_reg;
-static volatile unsigned short * pci_mask_reg;
+------_=_NextPart_001_01C6CADC.1357E43D
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-static inline int
-innsys_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char
-pin)
-{
-    //struct pci_controller *hose =3D pci_bus_to_hose(dev->bus->number);
-    //int temp;
-    if (!dev->bus->number)  // PCI bus 0
-    {
-	    static char pci_irq_table[][4] =3D
-	    /*
-	     *	PCI IDSEL/INTPIN->INTLINE
-	     * 	  A      B      C      D
-	     */
-	    {
-		    { PIRQ0, PIRQ0, PIRQ0, PIRQ0 },	/* IDSEL 16 -
-CPU2 */
-		    { PIRQ5, PIRQ5, PIRQ5, PIRQ5 },	/* IDSEL 17 -
-IDE controller */
-		    { PIRQ1, PIRQ2, PIRQ3, PIRQ4 },	/* IDSEL 18 -
-Bridge */
-	    };
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D068485119-28082006><FONT face=3DArial size=3D2>Hey=20
+guys,<BR><BR>I've run through the loops to try and figure what could be =
+wrong=20
+with this system. The board in question is modeled after the Xilinx =
+ML300 board.=20
+It uses a Xilinx System ACE chip to load a FPGA / Kernel image from =
+compact=20
+flash. Originally, I was trying to use the CompactFlash as the root file =
+system,=20
+but because of issues in either the design or software, this would only =
+work if=20
+SysAce was in polled I/O mode. To circumvent this, I built my root =
+filesystem=20
+into an initrd image and built a single ELF file with the Kernel and =
+RFS, then=20
+strapped that to the FPGA bit file to make a single FPGA/Kernel/RFS =
+SysAce=20
+file.<BR><BR>Upon decompression, the Linux kernel boots quickly and =
+loads all of=20
+the device drivers. However when it gets to the prompt, it starts =
+slowing down.=20
+Output and input to and from the board becomes very very slow (it =
+displays 2=20
+characters roughly every 20 seconds). Originally I believed this to be =
+the CPU=20
+still polling SystemAce, so I disabled the Linux System ACE drivers to =
+remove=20
+that as a possibility, however after doing this, the problem still =
+persists,=20
+even with the RFS in ram! Has anybody encountered a similar situation to =
+this=20
+before, with possible insight towards a solution? Thank you for your=20
+time.</FONT></SPAN></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton=20
+Thomas<BR>cthomas@soneticom.com</FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
 
-	    const long min_idsel =3D 0x10, max_idsel =3D 0x12, irqs_per_slot
-=3D 4;
-        //temp =3D PCI_IRQ_TABLE_LOOKUP;
-        //printk("<1>0: PCI map IRQ for bus %d, device %d; IDsel =3D %d,
-pin %d, irq =3D %d\n",
-        //        dev->bus->number, dev->bus->device, idsel, pin, temp);
-	    return PCI_IRQ_TABLE_LOOKUP;
-        //return temp;
-    }
-    else  // PCI bus 1
-    {
-	    static char pci_irq_table[][4] =3D
-	    /*
-	     *	PCI IDSEL/INTPIN->INTLINE
-	     * 	  A      B      C      D
-	     */
-	    {
-		    { PIRQ1, PIRQ2, PIRQ3, PIRQ4 },	/* IDSEL 16 -
-DSP 0 */
-		    { PIRQ2, PIRQ2, PIRQ2, PIRQ2 },	/* IDSEL 17 -
-DSP 1 */
-		    { PIRQ3, PIRQ3, PIRQ3, PIRQ3 },	/* IDSEL 18 -
-DSP 2 */
-		    { PIRQ4, PIRQ4, PIRQ4, PIRQ4 },	/* IDSEL 19 -
-DSP 2 */
-	    };
-
-	    const long min_idsel =3D 18, max_idsel =3D 18, irqs_per_slot =3D
-4;
-	    return PCI_IRQ_TABLE_LOOKUP;  =20
-        //temp =3D PCI_IRQ_TABLE_LOOKUP;
-        //printk("<1>1: PCI map IRQ for bus %d, device %d; IDsel =3D %d,
-pin %d, irq =3D %d\n",
-        //        dev->bus->number, dev->bus->device, idsel, pin, temp);
-	    //return PCI_IRQ_TABLE_LOOKUP;
-        //return temp;
-
-    }
-}
-
-static void
-innsys_mask_irq(unsigned int irq)
-{
-	int bit =3D irq - PCI_INT_OFFSET;
-    // 0 is masked, 1 is enabled
-	//*(volatile unsigned short *) PCI_INT_MASK_REG &=3D  ~(1 << bit);
-	*pci_mask_reg &=3D  ~(1 << bit);
-	return;
-}
-
-static void
-innsys_unmask_irq(unsigned int irq)
-{
-	int bit =3D irq - PCI_INT_OFFSET;
-
-	//*(volatile unsigned short *) PCI_INT_MASK_REG |=3D (1 << bit);
-	*pci_mask_reg |=3D (1 << bit);
-	return;
-}
-
-static void
-innsys_mask_and_ack(unsigned int irq)
-{
-	int bit =3D irq - PCI_INT_OFFSET;
-
-	//*(volatile unsigned short *) PCI_INT_MASK_REG &=3D  ~(1 << bit);
-	*pci_mask_reg &=3D  ~(1 << bit);
-    //__asm("sync");
-	return;
-}
-
-static void
-innsys_end_irq(unsigned int irq)
-{
-	int bit =3D irq - PCI_INT_OFFSET;
-
-	//*(volatile unsigned short *) PCI_INT_MASK_REG |=3D (1 << bit);
-	*pci_mask_reg |=3D (1 << bit);
-	return;
-}
-
-struct hw_interrupt_type innsys_ic =3D {
-	" AP2PCI   ",
-	NULL,
-	NULL,
-	innsys_unmask_irq,
-	innsys_mask_irq,
-	innsys_mask_and_ack,
-	innsys_end_irq,
-	0
-};
-
-static irqreturn_t
-pci_irq_demux(int irq, void *dev_id, struct pt_regs *regs)
-{
-	unsigned short stat, mask, pend;
-	int bit;
-
-	for(;;) {
-		//stat =3D *(volatile unsigned short *) PCI_INT_STAT_REG;
-		//mask =3D *(volatile unsigned short *) PCI_INT_MASK_REG;
-		stat =3D *pci_status_reg;
-		mask =3D *pci_mask_reg;
-	=09
-		pend =3D stat & mask & 0x3f;
-        //printk("<1>\tInt status =3D 0x%04x, mask =3D 0x%04x, pend =3D
-0x%04x\n", stat, mask, pend);=09
-		if (!pend)
-			break;
-		for (bit =3D 0; pend !=3D 0; ++bit, pend >>=3D 1) {
-			if (pend & 1)
-            {
-                //printk("<1> dispatch int %d\n", PCI_INT_OFFSET + bit);
-				//ppc_irq_dispatch_handler(regs,
-PCI_INT_OFFSET + bit);
-				__do_IRQ((PCI_INT_OFFSET + bit), regs);
-            }
-		}
-	}
-	return IRQ_HANDLED;
-}
-
-
-static struct irqaction innsys_pci_action =3D {
-    .handler=3D pci_irq_demux,
-    .flags          =3D SA_INTERRUPT,
-    .mask           =3D CPU_MASK_NONE,
-    .name           =3D "PCI IRQ demux",
-};
-
-void
-innsys_init_irq(void)
-{
-	int irq;
-	void * tmp;
-	volatile cpm2_map_t *immap =3D cpm2_immr;
-	uint32_t fpga_base;
-	tmp =3D innsys_map_irq;
-
-    // map mask and status registers
-    fpga_base =3D immap->im_memctl.memc_br5 & 0xffff8000;
-    pci_status_reg =3D (unsigned short *)(fpga_base + PCI_INT_STAT_REG);
-    pci_mask_reg =3D (unsigned short *)(fpga_base + PCI_INT_MASK_REG);
-=09
-	for (irq =3D PCI_INT_OFFSET; irq < PCI_INT_OFFSET + NUM_PCI_INTS;
-irq++)
-                irq_desc[irq].handler =3D &innsys_ic;
-
-	/* make IRQ7 level sensitive */
-	((volatile cpm2_map_t *) CPM_MAP_ADDR)->im_intctl.ic_siexr &=3D
-		~(1 << (14 - (SIU_INT_IRQ7 - SIU_INT_IRQ1)));
-=09
-	/* mask all PCI interrupts */
-	//*(volatile unsigned short *) PCI_INT_MASK_REG =3D 0;
-	*pci_mask_reg =3D 0;
-
-	/* install the demultiplexer for the PCI cascade interrupt */
-
-    setup_irq(SIU_INT_IRQ7, &innsys_pci_action);
-	return;
-}
+------_=_NextPart_001_01C6CADC.1357E43D--
