@@ -1,16 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0D409679FB
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 00:50:24 +1000 (EST)
-Date: Mon, 28 Aug 2006 18:50:22 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
-Subject: Re: uart_cpm scc Rx problem after second open of the device
-Message-ID: <20060828185022.51e98fc4@vitb.ru.mvista.com>
-In-Reply-To: <op.tezypejhnhx3hy@draco>
-References: <op.tezypejhnhx3hy@draco>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4519C67A3F
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 01:03:13 +1000 (EST)
+Message-ID: <44F305AA.5020101@am.sony.com>
+Date: Mon, 28 Aug 2006 08:03:06 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc virq: new routine virq_to_hw
+References: <44EF818B.9080301@am.sony.com>
+	<1156728139.8433.413.camel@localhost.localdomain>
+In-Reply-To: <1156728139.8433.413.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,22 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 28 Aug 2006 17:04:16 +0300
-"Alexandros Kostopoulos" <akostop@inaccessnetworks.com> wrote:
-
-> I experienced a problem with the cpm_uart scc driver (kernel version  
-> 2.6.13) while running the driver for a serial port NOT configured as a  
-> console.
-> The problem is as follows:
-> The first time the device (/dev/ttyCPM0) is opened, everything works ok.  
-> The second time, however, the device is opened, receive does not work. The  
-> device can only transmit, but doesn't receive anything.
+Benjamin Herrenschmidt wrote:
+> I'd much prefer:
 > 
-I'm recalling to fix it a while ago (later than .14 though). There were not just the line below,
-but you cant find the respective stuff on the line (linuxppc-embedded) archive/ kernel git.
+> static inline irq_hw_number_t virq_to_hw (unsigned int virq)
+> {
+> 	return irq_map[virq].hwirq;
+> }
+
+Here is an updated version.
+
+-Geoff
 
 
+This adds an accessor routine virq_to_hw() to the
+virq routines which hides the implementation details
+of the virq to hwirq map.
 
--- 
-Sincerely, 
-Vitaly
+
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
+---
+Index: cell--common--4/include/asm-powerpc/irq.h
+===================================================================
+--- cell--common--4.orig/include/asm-powerpc/irq.h
++++ cell--common--4/include/asm-powerpc/irq.h
+@@ -136,6 +136,10 @@
+ 
+ extern struct irq_map_entry irq_map[NR_IRQS];
+ 
++static inline irq_hw_number_t virq_to_hw(unsigned int virq)
++{
++	return irq_map[virq].hwirq;
++}
+ 
+ /**
+  * irq_alloc_host - Allocate a new irq_host data structure
