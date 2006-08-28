@@ -1,27 +1,33 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C49BE67B57
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 6A14B67B32
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Aug 2006 17:07:50 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k7S8Qiii007593 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Aug 2006 02:26:44 -0600 (MDT)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7S77k5p012379
+	Mon, 28 Aug 2006 18:56:36 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id A28C1CC165
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Aug 2006 02:07:48 -0500 (CDT)
+	Mon, 28 Aug 2006 10:26:09 +0200 (CEST)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id 5EAC0CC025
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Aug 2006 10:26:09 +0200 (CEST)
+Received: from kah.ulm.sysgo.com (kah.sysgo.com [172.40.1.2])
+	by donald.sysgo.com (Postfix) with ESMTP id 2156E26857B
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Aug 2006 10:26:06 +0200 (CEST)
+Received: from gja.ulm.sysgo.com (gja.ulm.sysgo.com [172.40.1.130])
+	by kah.ulm.sysgo.com (8.9.3/8.8.8) with ESMTP id KAA10102
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Aug 2006 10:52:13 +0200
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Cache coherency question
+Date: Mon, 28 Aug 2006 10:26:00 +0200
+References: <4879B0C6C249214CBE7AB04453F84E4D0FC602@zch01exm20.fsl.freescale.net>
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC602@zch01exm20.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Cache coherency question
-Date: Mon, 28 Aug 2006 15:08:17 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0FC602@zch01exm20.fsl.freescale.net>
-In-Reply-To: <995B09A8299C2C44B59866F6391D263511B930@zch01exm21.fsl.freescale.net>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Liu Dave-r63238" <DaveLiu@freescale.com>,
-	"Martin, Tim" <tim.martin@viasat.com>, "ppc" <linuxppc-embedded@ozlabs.org>
+  charset="iso-8859-1"
+Message-Id: <200608281026.00619.g.jaeger@sysgo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,23 +38,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Monday 28 August 2006 09:08, Li Yang-r58472 wrote:
+> 
+> > -----Original Message-----
+> > From: Liu Dave-r63238
+> > Sent: Monday, August 28, 2006 3:00 PM
+> > To: Li Yang-r58472; 'Martin, Tim'; 'ppc'
+> > Subject: RE: Cache coherency question
+> > 
+> > <snip>
+> > > Looking from source code, there is such problem for MV64360.
+> > > It's likely that MV54360 has the same problem.
+> > 
+> > What is the MV54360?
+> 
+> From document at
+> http://www.motorola.com/mot/doc/5/5503_MotDoc.pdf#search=%22MV54360%22
+> The board uses MV54360.
+> 
+> I don't know if it is a typo or new variant though.
 
-> -----Original Message-----
-> From: Liu Dave-r63238
-> Sent: Monday, August 28, 2006 3:00 PM
-> To: Li Yang-r58472; 'Martin, Tim'; 'ppc'
-> Subject: RE: Cache coherency question
->=20
-> <snip>
-> > Looking from source code, there is such problem for MV64360.
-> > It's likely that MV54360 has the same problem.
->=20
-> What is the MV54360?
+It's definitely a typo. In the block diagramm you'll see Discovery II
+as system bridge and this one is the Marvel MV64360 (at least on the MVME6100).
 
->From document at
-http://www.motorola.com/mot/doc/5/5503_MotDoc.pdf#search=3D%22MV54360%22
-The board uses MV54360.
+-Gerhard
 
-I don't know if it is a typo or new variant though.
->=20
-> -Dave
+-- 
+Gerhard Jaeger <gjaeger@sysgo.com>            
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
