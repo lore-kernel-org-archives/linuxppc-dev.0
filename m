@@ -1,21 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6600679FC
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 23:49:42 +1000 (EST)
-In-Reply-To: <995B09A8299C2C44B59866F6391D263511B945@zch01exm21.fsl.freescale.net>
-References: <995B09A8299C2C44B59866F6391D263511B945@zch01exm21.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4495EF77-BC25-45B9-AC7B-BFCEBC619510@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [QUESTION] Enable coherency for all pages on 83xx to fix PCI data
-	corruption
-Date: Mon, 28 Aug 2006 08:49:41 -0500
-To: Liu Dave-r63238 <DaveLiu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id D5A88679FC
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 00:24:34 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id k7SE55jD030540
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 17:05:05 +0300
+Received: from inaccessnetworks.com ([127.0.0.1])
+	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
+	port 10024) with LMTP id 30187-03 for <linuxppc-dev@ozlabs.org>;
+	Mon, 28 Aug 2006 17:05:04 +0300 (EEST)
+Received: from priv.inaccessnetworks.com (orion.priv.inaccessnetworks.com
+	[192.168.1.2])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id k7SE4GXI030518
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 17:04:16 +0300
+Received: from draco (draco.priv.inaccessnetworks.com [192.168.1.3])
+	by priv.inaccessnetworks.com (8.12.1/8.12.1) with ESMTP id
+	k7SE4G6p012955
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 17:04:16 +0300
+Date: Mon, 28 Aug 2006 17:04:16 +0300
+To: linuxppc-dev@ozlabs.org
+Subject: uart_cpm scc Rx problem after second open of the device
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+MIME-Version: 1.0
+Message-ID: <op.tezypejhnhx3hy@draco>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,80 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This was to address PCI5 if I remember correctly.
+I experienced a problem with the cpm_uart scc driver (kernel version  =
 
-- kumar
+2.6.13) while running the driver for a serial port NOT configured as a  =
 
-On Aug 28, 2006, at 2:49 AM, Liu Dave-r63238 wrote:
+console.
+The problem is as follows:
+The first time the device (/dev/ttyCPM0) is opened, everything works ok.=
+  =
 
-> All,
->
-> I want to know which PCI errata is solved by this patch
-> and if this patch did test on real hardware.
->
-> I know this patch turn on the 'M' bit -memory coherency.
-> But I don't believe this can solved the "PCI read multi-line"
-> errata.
->
-> -DAve
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2006-February/021267.html
->
-> On the 83xx platform to ensure the PCI inbound memory is handled
-> properly we
-> have to turn on coherency for all pages in the MMU.  Otherwise we see
-> corruption if inbound "prefetching/streaming" is enabled on the PCI
-> controller.
->
-> Signed-off-by: Randy Vinson <rvinson at mvista.com>
-> Signed-off-by: Kumar Gala <galak at kernel.crashing.org>
->
-> ---
->
-> (For 2.6.16 if we can get it in)
->
-> commit 4b2f4b1585f15d1c30cd2eda6d5f9a2ca7dcf998
-> tree 7aebf508d10127831cf92fb7ce919230924ad85d
-> parent 7cfb7344aae902edfd5d51dd5f734cbf2585649c
-> author Kumar Gala <galak at kernel.crashing.org> Wed, 22 Feb 2006
-> 09:53:34 -0600
-> committer Kumar Gala <galak at kernel.crashing.org> Wed, 22 Feb 2006
-> 09:53:34 -0600
->
->  include/asm-powerpc/cputable.h |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/include/asm-powerpc/cputable.h
-> b/include/asm-powerpc/cputable.h
-> index 6421054..90d005b 100644
-> --- a/include/asm-powerpc/cputable.h
-> +++ b/include/asm-powerpc/cputable.h
-> @@ -159,9 +159,11 @@ extern void do_cpu_ftr_fixups(unsigned l
->  #endif
->
->  /* We need to mark all pages as being coherent if we're SMP or we
-> - * have a 74[45]x and an MPC107 host bridge.
-> + * have a 74[45]x and an MPC107 host bridge. Also 83xx requires
-> + * it for PCI "streaming/prefetch" to work properly.
->   */
-> -#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE)
-> +#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE) \
-> +	|| defined(CONFIG_PPC_83xx)
->  #define CPU_FTR_COMMON                  CPU_FTR_NEED_COHERENT
->  #else
->  #define CPU_FTR_COMMON                  0
-> @@ -277,7 +279,8 @@ enum {
->  	CPU_FTRS_G2_LE = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE
-> |
->  	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP |
-> CPU_FTR_HAS_HIGH_BATS,
->  	CPU_FTRS_E300 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE
-> |
-> -	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP |
-> CPU_FTR_HAS_HIGH_BATS,
-> +	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP |
-> CPU_FTR_HAS_HIGH_BATS |
-> +	    CPU_FTR_COMMON,
->  	CPU_FTRS_CLASSIC32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
->  	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
->  	CPU_FTRS_POWER3_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+The second time, however, the device is opened, receive does not work. T=
+he  =
+
+device can only transmit, but doesn't receive anything.
+
+Well, by looking into the code, I found out that the ENR (Receiver enabl=
+e)  =
+
+bit of the GSMR-L register is only set in cpm_uart_init_scc and NOT in
+cpm_uart_startup, as I think it should. Then, the bit is cleared on  =
+
+cpm_uart_shutdown. Thus, the first time the device is opened, the bit is=
+  =
+
+set (and so, the device normally receives data), but the second time the=
+  =
+
+device is opened, the bit is NOT set and the device cannot receive  =
+
+anything from the serial port.
+
+The diff of my code against the original 2.6.13 code follows (although i=
+  =
+
+saw that the 2.6.17 code is exactly the same as far as the ENR bit is
+concerned):
+
+Index: cpm_uart_core.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- cpm_uart_core.c     (revision 79)
++++ cpm_uart_core.c     (revision 105)
+@@ -393,6 +393,7 @@
+                 pinfo->smcp->smc_smcm |=3D SMCM_RX;
+                 pinfo->smcp->smc_smcmr |=3D SMCMR_REN;
+         } else {
++        pinfo->sccp->scc_gsmrl |=3D (SCC_GSMRL_ENR);
+                 pinfo->sccp->scc_sccm |=3D UART_SCCM_RX;
+         }
+
+
+Am I missing something here?
+
+Thanks for any comments,
+Alex.
