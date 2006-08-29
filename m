@@ -1,26 +1,32 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id D144467B53
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 12:04:19 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k7T3NEVa025947
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 21:23:14 -0600 (MDT)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7T24Fm0001207
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 21:04:16 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [QUESTION] Enable coherency for all pages on 83xx to fix PCI data
-	corruption
-Date: Tue, 29 Aug 2006 10:04:14 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D263511B9EA@zch01exm21.fsl.freescale.net>
-In-Reply-To: <4495EF77-BC25-45B9-AC7B-BFCEBC619510@kernel.crashing.org>
-From: "Liu Dave-r63238" <DaveLiu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <hollisb@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6DDF667B6E
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 12:12:48 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7T2Cijj010698
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 22:12:44 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7T2CiV8268506
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 22:12:44 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7T2CiUi005448
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 22:12:44 -0400
+Subject: Re: copy_4K_page() doesn't use dcbtst?
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17651.34629.132793.190742@cargo.ozlabs.ibm.com>
+References: <1156786523.28490.52.camel@basalt.austin.ibm.com>
+	<17651.34629.132793.190742@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 28 Aug 2006 21:11:53 -0500
+Message-Id: <1156817513.13497.12.camel@diesel>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	xen-ppc-devel <xen-ppc-devel@lists.xensource.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This was to address PCI5 if I remember correctly.
->=20
-> - kumar
->=20
-> On Aug 28, 2006, at 2:49 AM, Liu Dave-r63238 wrote:
->=20
-> > All,
-> >
-> > I want to know which PCI errata is solved by this patch and if this=20
-> > patch did test on real hardware.
-> >
-> > I know this patch turn on the 'M' bit -memory coherency.
-> > But I don't believe this can solved the "PCI read multi-line"
-> > errata.
-> >
-> > -DAve
-<snip>
+On Tue, 2006-08-29 at 10:16 +1000, Paul Mackerras wrote:
+> Hollis Blanchard writes:
+> 
+> > Hi Paul, some Xen people were just noticing that copy_4K_page
+> > (arch/powerpc/lib/copypage_64.S) doesn't use the dcbtst instruction. Why
+> > doesn't it help there?
+> 
+> Why would we want to read the cache lines for the destination from
+> memory when we're only going to overwrite them completely anyway?
+> 
+> A stronger argument would be for using dcbz, but IIRC it actually made
+> things slower (on POWER4 at least).  I suspect the hardware is
+> gathering the stores for the whole of each cache line automatically,
+> so using dcbz doesn't provide any benefit.
 
-I also don't believe this patch can solve the PCI5 errata, The PCI5
-description:
+Yes, dcbz makes more sense.
 
-When external PCI devices try to read from the memory which is defined
-as
-prefetchable and where the transaction is more than one cache line,
-there
-may be data corruption.
+> I did a lot of measurements of memory copy speed on POWER4 (using
+> different copy loops, copy sizes, alignments, cache hot/cold cases)
+> and the copy_4K_page loop is the fastest I could come up with for
+> POWER4.  If anyone can come up with a routine that is measurably
+> faster on current machines, I'm happy to look at it, of course.
 
--DAve
+I figured you had done measurements; we were just curious about the
+unexpected results. Thanks!
+
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
