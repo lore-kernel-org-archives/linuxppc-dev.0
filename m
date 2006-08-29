@@ -1,17 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
+	by ozlabs.org (Postfix) with ESMTP id 813F867A5E
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 10:56:29 +1000 (EST)
+Date: Tue, 29 Aug 2006 16:57:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: Re: libnuma interleaving oddness
+In-Reply-To: <20060829231545.GY5195@us.ibm.com>
+Message-ID: <Pine.LNX.4.64.0608291655160.22397@schroedinger.engr.sgi.com>
+References: <20060829231545.GY5195@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17652.55334.554969.284398@cargo.ozlabs.ibm.com>
-Date: Wed, 30 Aug 2006 10:13:26 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: undefined reference to pci_io_base
-In-Reply-To: <44F4D458.7030707@am.sony.com>
-References: <44F47ABE.7080602@am.sony.com>
-	<17652.49904.419167.448821@cargo.ozlabs.ibm.com>
-	<20060829232026.GC27372@austin.ibm.com>
-	<44F4D458.7030707@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: linux-mm@kvack.org, lnxninja@us.ibm.com, ak@suse.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand writes:
+On Tue, 29 Aug 2006, Nishanth Aravamudan wrote:
 
-> I found the same, but was thinking
-> 
-> #if defined(CONFIG_ISA) && !defined(__mc68000__)
-> 
-> So it is only built when CONFIG_ISA=y.  Is there any
-> reason to always have it whit PCI?
+> I don't know if this is a libnuma bug (I extracted out the code from
+> libnuma, it looked sane; and even reimplemented it in libhugetlbfs for
+> testing purposes, but got the same results) or a NUMA kernel bug (mbind
+> is some hairy code...) or a ppc64 bug or maybe not a bug at all.
+> Regardless, I'm getting somewhat inconsistent behavior. I can provide
+> more debugging output, or whatever is requested, but I wasn't sure what
+> to include. I'm hoping someone has heard of or seen something similar?
 
-It's occasionally useful with PCI && !ISA.  It's pretty useless with
-!PCI && !ISA.
-
-> Paul, can I send you that fix, or should I send it to
-> someone else?
-
-Send it to Andrew Morton.
-
-Paul.
+Are you setting the tasks allocation policy before the allocation or do 
+you set a vma based policy? The vma based policies will only work for 
+anonymous pages.
