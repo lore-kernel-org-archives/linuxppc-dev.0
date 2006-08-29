@@ -1,15 +1,15 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 254A067A3D
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 08:49:16 +1000 (EST)
-Date: Mon, 28 Aug 2006 17:49:10 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] corrected PCI interrupt sense values to level low in
-	mpc8349emds.dts
-Message-Id: <20060828174910.236bf042.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17651.34629.132793.190742@cargo.ozlabs.ibm.com>
+Date: Tue, 29 Aug 2006 10:16:05 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: copy_4K_page() doesn't use dcbtst?
+In-Reply-To: <1156786523.28490.52.camel@basalt.austin.ibm.com>
+References: <1156786523.28490.52.camel@basalt.austin.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	xen-ppc-devel <xen-ppc-devel@lists.xensource.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,170 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Corrected PCI interrupt sense values to level low in mpc8349emds.dts, per Leo's recommendation.
+Hollis Blanchard writes:
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
+> Hi Paul, some Xen people were just noticing that copy_4K_page
+> (arch/powerpc/lib/copypage_64.S) doesn't use the dcbtst instruction. Why
+> doesn't it help there?
 
-applies on top of "[PATCH 4/4] Add MPC8349E MDS device tree source file to arch/powerpc/boot/dts"
+Why would we want to read the cache lines for the destination from
+memory when we're only going to overwrite them completely anyway?
 
+A stronger argument would be for using dcbz, but IIRC it actually made
+things slower (on POWER4 at least).  I suspect the hardware is
+gathering the stores for the whole of each cache line automatically,
+so using dcbz doesn't provide any benefit.
 
- arch/powerpc/boot/dts/mpc8349emds.dts |  112 +++++++++++++++++----------------
- 1 files changed, 56 insertions(+), 56 deletions(-)
+I did a lot of measurements of memory copy speed on POWER4 (using
+different copy loops, copy sizes, alignments, cache hot/cold cases)
+and the copy_4K_page loop is the fastest I could come up with for
+POWER4.  If anyone can come up with a routine that is measurably
+faster on current machines, I'm happy to look at it, of course.
 
-diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
-index 7e4508b..0643db9 100644
---- a/arch/powerpc/boot/dts/mpc8349emds.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emds.dts
-@@ -178,46 +178,46 @@
- 			interrupt-map = <
- 
- 					/* IDSEL 0x11 */
--					 8800 0 0 1 700 14 0
--					 8800 0 0 2 700 15 0
--					 8800 0 0 3 700 16 0
--					 8800 0 0 4 700 17 0
-+					 8800 0 0 1 700 14 2
-+					 8800 0 0 2 700 15 2
-+					 8800 0 0 3 700 16 2
-+					 8800 0 0 4 700 17 2
- 
- 					/* IDSEL 0x12 */
--					 9000 0 0 1 700 16 0
--					 9000 0 0 2 700 17 0
--					 9000 0 0 3 700 14 0
--					 9000 0 0 4 700 15 0
-+					 9000 0 0 1 700 16 2
-+					 9000 0 0 2 700 17 2
-+					 9000 0 0 3 700 14 2
-+					 9000 0 0 4 700 15 2
- 
- 					/* IDSEL 0x13 */
--					 9800 0 0 1 700 17 0
--					 9800 0 0 2 700 14 0
--					 9800 0 0 3 700 15 0
--					 9800 0 0 4 700 16 0
-+					 9800 0 0 1 700 17 2
-+					 9800 0 0 2 700 14 2
-+					 9800 0 0 3 700 15 2
-+					 9800 0 0 4 700 16 2
- 
- 					/* IDSEL 0x15 */
--					 a800 0 0 1 700 14 0
--					 a800 0 0 2 700 15 0
--					 a800 0 0 3 700 16 0
--					 a800 0 0 4 700 17 0
-+					 a800 0 0 1 700 14 2
-+					 a800 0 0 2 700 15 2
-+					 a800 0 0 3 700 16 2
-+					 a800 0 0 4 700 17 2
- 
- 					/* IDSEL 0x16 */
--					 b000 0 0 1 700 17 0
--					 b000 0 0 2 700 14 0
--					 b000 0 0 3 700 15 0
--					 b000 0 0 4 700 16 0
-+					 b000 0 0 1 700 17 2
-+					 b000 0 0 2 700 14 2
-+					 b000 0 0 3 700 15 2
-+					 b000 0 0 4 700 16 2
- 
- 					/* IDSEL 0x17 */
--					 b800 0 0 1 700 16 0
--					 b800 0 0 2 700 17 0
--					 b800 0 0 3 700 14 0
--					 b800 0 0 4 700 15 0
-+					 b800 0 0 1 700 16 2
-+					 b800 0 0 2 700 17 2
-+					 b800 0 0 3 700 14 2
-+					 b800 0 0 4 700 15 2
- 
- 					/* IDSEL 0x18 */
--					 b000 0 0 1 700 15 0
--					 b000 0 0 2 700 16 0
--					 b000 0 0 3 700 17 0
--					 b000 0 0 4 700 14 0>;
-+					 b000 0 0 1 700 15 2
-+					 b000 0 0 2 700 16 2
-+					 b000 0 0 3 700 17 2
-+					 b000 0 0 4 700 14 2>;
- 			interrupt-parent = <700>;
- 			interrupts = <42 8>;
- 			bus-range = <0 0>;
-@@ -238,46 +238,46 @@
- 			interrupt-map = <
- 
- 					/* IDSEL 0x11 */
--					 8800 0 0 1 700 14 0
--					 8800 0 0 2 700 15 0
--					 8800 0 0 3 700 16 0
--					 8800 0 0 4 700 17 0
-+					 8800 0 0 1 700 14 2
-+					 8800 0 0 2 700 15 2
-+					 8800 0 0 3 700 16 2
-+					 8800 0 0 4 700 17 2
- 
- 					/* IDSEL 0x12 */
--					 9000 0 0 1 700 16 0
--					 9000 0 0 2 700 17 0
--					 9000 0 0 3 700 14 0
--					 9000 0 0 4 700 15 0
-+					 9000 0 0 1 700 16 2
-+					 9000 0 0 2 700 17 2
-+					 9000 0 0 3 700 14 2
-+					 9000 0 0 4 700 15 2
- 
- 					/* IDSEL 0x13 */
--					 9800 0 0 1 700 17 0
--					 9800 0 0 2 700 14 0
--					 9800 0 0 3 700 15 0
--					 9800 0 0 4 700 16 0
-+					 9800 0 0 1 700 17 2
-+					 9800 0 0 2 700 14 2
-+					 9800 0 0 3 700 15 2
-+					 9800 0 0 4 700 16 2
- 
- 					/* IDSEL 0x15 */
--					 a800 0 0 1 700 14 0
--					 a800 0 0 2 700 15 0
--					 a800 0 0 3 700 16 0
--					 a800 0 0 4 700 17 0
-+					 a800 0 0 1 700 14 2
-+					 a800 0 0 2 700 15 2
-+					 a800 0 0 3 700 16 2
-+					 a800 0 0 4 700 17 2
- 
- 					/* IDSEL 0x16 */
--					 b000 0 0 1 700 17 0
--					 b000 0 0 2 700 14 0
--					 b000 0 0 3 700 15 0
--					 b000 0 0 4 700 16 0
-+					 b000 0 0 1 700 17 2
-+					 b000 0 0 2 700 14 2
-+					 b000 0 0 3 700 15 2
-+					 b000 0 0 4 700 16 2
- 
- 					/* IDSEL 0x17 */
--					 b800 0 0 1 700 16 0
--					 b800 0 0 2 700 17 0
--					 b800 0 0 3 700 14 0
--					 b800 0 0 4 700 15 0
-+					 b800 0 0 1 700 16 2
-+					 b800 0 0 2 700 17 2
-+					 b800 0 0 3 700 14 2
-+					 b800 0 0 4 700 15 2
- 
- 					/* IDSEL 0x18 */
--					 b000 0 0 1 700 15 0
--					 b000 0 0 2 700 16 0
--					 b000 0 0 3 700 17 0
--					 b000 0 0 4 700 14 0>;
-+					 b000 0 0 1 700 15 2
-+					 b000 0 0 2 700 16 2
-+					 b000 0 0 3 700 17 2
-+					 b000 0 0 4 700 14 2>;
- 			interrupt-parent = <700>;
- 			interrupts = <42 8>;
- 			bus-range = <0 0>;
--- 
-1.4.1
+Paul.
