@@ -1,15 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Kallol_Biswas@pmc-sierra.com>
+Received: from mother.pmc-sierra.bc.ca (mother.pmc-sierra.com [216.241.224.12])
+	by ozlabs.org (Postfix) with SMTP id CFD0A67B62
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 12:00:51 +1000 (EST)
+Message-ID: <478F19F21671F04298A2116393EEC3D5540A32@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
+From: Kallol Biswas <Kallol_Biswas@pmc-sierra.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: PPC 2.6.11.4 kernel panics while doing insmod (store fault with d
+	cbst in icache_flush_range)
+Date: Mon, 28 Aug 2006 18:53:58 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17651.34629.132793.190742@cargo.ozlabs.ibm.com>
-Date: Tue, 29 Aug 2006 10:16:05 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: copy_4K_page() doesn't use dcbtst?
-In-Reply-To: <1156786523.28490.52.camel@basalt.austin.ibm.com>
-References: <1156786523.28490.52.camel@basalt.austin.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	xen-ppc-devel <xen-ppc-devel@lists.xensource.com>
+Content-Type: text/plain
+Cc: Ronald Lee <Ronald_Lee@pmc-sierra.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Radjendirane Codandaramane <Radjendirane_Codandaramane@pmc-sierra.com>,
+	Shawn Jin <Shawn_Jin@pmc-sierra.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hollis Blanchard writes:
+I have been getting an "oops" while doing insmod.
 
-> Hi Paul, some Xen people were just noticing that copy_4K_page
-> (arch/powerpc/lib/copypage_64.S) doesn't use the dcbtst instruction. Why
-> doesn't it help there?
+Sys_init_module() -> Load_module() -> module_alloc(mod->core_size)
 
-Why would we want to read the cache lines for the destination from
-memory when we're only going to overwrite them completely anyway?
+Mod->core_size is = 0x1ff4
 
-A stronger argument would be for using dcbz, but IIRC it actually made
-things slower (on POWER4 at least).  I suspect the hardware is
-gathering the stores for the whole of each cache line automatically,
-so using dcbz doesn't provide any benefit.
+A few lines from module_alloc() routine:
 
-I did a lot of measurements of memory copy speed on POWER4 (using
-different copy loops, copy sizes, alignments, cache hot/cold cases)
-and the copy_4K_page loop is the fastest I could come up with for
-POWER4.  If anyone can come up with a routine that is measurably
-faster on current machines, I'm happy to look at it, of course.
+ptr = module_alloc(mod->core_size); // core_size is 0x1ff4
+        if (!ptr) {
+                err = -ENOMEM;
+                goto free_percpu;
+        }
+  memset(ptr, 0, mod->core_size);
+  mod->module_core = ptr;
 
-Paul.
+Module_alloc calls vmalloc, which populates the page tables entries; no TLB entry is updated at this moment for the newly vmalloc'd memory.
+
+Next, when memset is done, we do see two TLB entries are allocated one for each page (ptr == D21B8000, core_size being 0x1ff4 we need two pages).
+
+0x0000-0000
+0xD21B-8210
+0x0063-B000
+0x0000-0107
+
+0x0000-0000
+0xD21B-9210
+0x0063-7000
+0x0000-0107
+
+A few lines from sys_init_module()
+  /* Do all the hard work */
+        mod = load_module(umod, len, uargs);
+        if (IS_ERR(mod)) {
+                up(&module_mutex);
+                return PTR_ERR(mod);
+        }
+
+        /* Flush the instruction cache, since we've played with text */
+        if (mod->module_init)
+                flush_icache_range((unsigned long)mod->module_init,
+                                   (unsigned long)mod->module_init
+                                   + mod->init_size);
+        flush_icache_range((unsigned long)mod->module_core,
+                           (unsigned long)mod->module_core + mod->core_size);
+
+Next, at the routine          
+
+flush_icache_range((unsigned long)mod->module_core,
+                       (unsigned long)mod->module_core + mod->core_size);
+
+we see that one of the TLB entries is not present, which is probably normal.
+
+A few lines from flush_icache_range():
+
+        mr      r6,r3
+1:      dcbst   0,r3
+        addi    r3,r3,L1_CACHE_LINE_SIZE
+        bdnz    1b
+
+The instruction takes a store fault (DST bit, bit 8 of ESR gets set), kernel panics with oops (signal 11).
+
+It is probably normal that the TLB entry for vmalloc'd memory may not be present.
+
+How do we fix the problem?
+
+We do see the problem only when we have big drivers compiled into the kernel.
+
+Thanks,
+Kallol
