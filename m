@@ -1,39 +1,30 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5EE4367B55
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 03:35:12 +1000 (EST)
-Received: from outbound1-ash.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound1-ash-R.bigfish.com (Postfix) with ESMTP id C8DCE12A5792
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 17:34:58 +0000 (UTC)
-Received: from mail33-ash-R.bigfish.com (unknown [172.18.2.3])
-	by outbound1-ash.bigfish.com (Postfix) with ESMTP id 3A5F012A38B9
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 17:34:58 +0000 (UTC)
-Received: from mail33-ash.bigfish.com (localhost.localdomain [127.0.0.1])
-	by mail33-ash-R.bigfish.com (Postfix) with ESMTP id 19085826143
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 17:34:56 +0000 (UTC)
-Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(No client certificate requested)
-	by mail33-ash.bigfish.com (Postfix) with ESMTP id 0419782ACF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 17:34:55 +0000 (UTC)
-Received: from mail1.sgo.in.sel.sony.com (mail1.sgo.in.sel.sony.com
-	[43.130.1.111])
-	by mail8.fw-bc.sony.com (8.12.11/8.12.11) with ESMTP id k7THYt5k025841
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 17:34:55 GMT
-Received: from USSDIXIM01.am.sony.com (ussdixim01.am.sony.com [43.130.140.33])
-	by mail1.sgo.in.sel.sony.com (8.12.11/8.12.11) with ESMTP id
-	k7THYs9x005308
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 17:34:54 GMT
-Message-ID: <44F47ABE.7080602@am.sony.com>
-Date: Tue, 29 Aug 2006 10:34:54 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9C02367B58
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 06:28:37 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7TKSWOb004003
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 16:28:32 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7TKSWqc269522
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 16:28:32 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7TKSW3P001989
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 16:28:32 -0400
+Date: Tue, 29 Aug 2006 15:28:31 -0500
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: undefined reference to pci_io_base
+Message-ID: <20060829202831.GB27372@austin.ibm.com>
+References: <44F47ABE.7080602@am.sony.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: undefined reference to pci_io_base
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <44F47ABE.7080602@am.sony.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,42 +34,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to understand the intended design of the inb()
-and outb() macros in asm-powerpc/io.h. They are causing
-me some grief when I set CONFIG_PCI=n:
+On Tue, Aug 29, 2006 at 10:34:54AM -0700, Geoff Levand wrote:
+> I'm trying to understand the intended design of the inb()
+> and outb() macros in asm-powerpc/io.h. They are causing
+> me some grief when I set CONFIG_PCI=n:
+> 
+>   drivers/built-in.o: undefined reference to `pci_io_base'
+> 
+> This is coming from drivers/char/mem.c, which is always
+> built in, and is referencing pci_io_base through inb()
+> and outb().
+> 
+> Anyway, it seems asm-powerpc/io.h has two sets of io macros,
+> one set for iSeries, and one generic set for everything else.
+> The problem arises because the generic macros just use the eeh
+> macros in eeh.h, which in turn, directly use pci_io_base. 
+> 
+> I can think of three solutions to this that work for me, but
+> I'm not sure which, if any, would be the most proper.  One
+> would be to just have this in io.h:
+> 
+>   #if defined(CONFI_PCI)
+>   extern unsigned long pci_io_base;
+>   #else
+>   #define pci_io_base 0
+>   #endif
 
-  drivers/built-in.o: undefined reference to `pci_io_base'
+This makes the most sense to me; it compiles to something nice.
 
-This is coming from drivers/char/mem.c, which is always
-built in, and is referencing pci_io_base through inb()
-and outb().
+> Another would be to have this in some file that is always built
+> in, like setup-common.c:
+> 
+>   #if !defined(CONFI_PCI)
+>   unsigned long pci_io_base;
+>   EXPORT_SYMBOL(pci_io_base);
+>   #endif
 
-Anyway, it seems asm-powerpc/io.h has two sets of io macros,
-one set for iSeries, and one generic set for everything else.
-The problem arises because the generic macros just use the eeh
-macros in eeh.h, which in turn, directly use pci_io_base. 
+This compiles to something ugly and pointless ... 
 
-I can think of three solutions to this that work for me, but
-I'm not sure which, if any, would be the most proper.  One
-would be to just have this in io.h:
+> A third would be to have another set of io macros in io.h that
+> are used when CONFIG_PCI=n.
 
-  #if defined(CONFI_PCI)
-  extern unsigned long pci_io_base;
-  #else
-  #define pci_io_base 0
-  #endif
+I'm not sure that yet-another set of macros improves readabily.
+Those macros are already fairly byzantine in thier inter-connections.
 
-Another would be to have this in some file that is always built
-in, like setup-common.c:
-
-  #if !defined(CONFI_PCI)
-  unsigned long pci_io_base;
-  EXPORT_SYMBOL(pci_io_base);
-  #endif
-
-A third would be to have another set of io macros in io.h that
-are used when CONFIG_PCI=n.
-
-Comments welcome.
-
--Geoff
+--linas
