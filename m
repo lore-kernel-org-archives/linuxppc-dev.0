@@ -2,24 +2,24 @@ Return-Path: <nacc@us.ibm.com>
 Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 96F4767B32
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 09:01:49 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7TN1jFw022906
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 19:01:45 -0400
+	by ozlabs.org (Postfix) with ESMTP id 41300679F0
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 09:15:35 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7TNFUaP007352
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 19:15:30 -0400
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7TN1jd9284840
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 19:01:45 -0400
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7TNFUlZ241394
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 19:15:30 -0400
 Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
 	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7TN1jZB025308
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 19:01:45 -0400
-Date: Tue, 29 Aug 2006 16:02:00 -0700
+	k7TNFUrh002811
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 19:15:30 -0400
+Date: Tue, 29 Aug 2006 16:15:45 -0700
 From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: lameter@sgi.com, ak@suse.de
+To: clameter@sgi.com, ak@suse.de
 Subject: libnuma interleaving oddness
-Message-ID: <20060829230200.GW5195@us.ibm.com>
+Message-ID: <20060829231545.GY5195@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linux-mm@kvack.org, lnxninja@us.ibm.com, linuxppc-dev@ozlabs.org
@@ -31,6 +31,8 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+[Sorry for the double-post, correcting Christoph's address]
 
 Hi,
 
