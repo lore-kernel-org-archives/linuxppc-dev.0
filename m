@@ -1,19 +1,20 @@
 Return-Path: <nielsen.esben@gogglemail.com>
-Received: from mx02.stofanet.dk (mx02.stofanet.dk [212.10.10.12])
-	by ozlabs.org (Postfix) with ESMTP id 64929679E7
+Received: from mx01.stofanet.dk (mx01.stofanet.dk [212.10.10.11])
+	by ozlabs.org (Postfix) with ESMTP id 4F35467B32
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Aug 2006 19:59:45 +1000 (EST)
-Date: Tue, 29 Aug 2006 11:56:30 +0200 (CEST)
+	Tue, 29 Aug 2006 21:28:20 +1000 (EST)
+Date: Tue, 29 Aug 2006 13:26:17 +0200 (CEST)
 From: Esben Nielsen <nielsen.esben@gogglemail.com>
-To: Liu Dave-r63238 <DaveLiu@freescale.com>
+To: Li Yang-r58472 <LeoLi@freescale.com>
 Subject: RE: atomic operations in user space
-In-Reply-To: <995B09A8299C2C44B59866F6391D263511BAE8@zch01exm21.fsl.freescale.net>
-Message-ID: <Pine.LNX.4.64.0608291136370.12461@frodo.shire>
-References: <995B09A8299C2C44B59866F6391D263511BAE8@zch01exm21.fsl.freescale.net>
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC7A3@zch01exm20.fsl.freescale.net>
+Message-ID: <Pine.LNX.4.64.0608291323390.12461@frodo.shire>
+References: <4879B0C6C249214CBE7AB04453F84E4D0FC7A3@zch01exm20.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: Esben Nielsen <nielsen.esben@gogglemail.com>,
-	Xupei Liang <tliang@yahoo.com>, linuxppc-embedded@ozlabs.org
+	Xupei Liang <tliang@yahoo.com>, Liu Dave-r63238 <DaveLiu@freescale.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,52 +27,103 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 
 
-On Tue, 29 Aug 2006, Liu Dave-r63238 wrote:
+On Tue, 29 Aug 2006, Li Yang-r58472 wrote:
 
->>> 2) These mutexes are based on futexes which requires atomic
->>> operations in userspace. These are available on most architectures.
-> Look at
->>> the glibc code in
->>> nptl/sysdeps/unix/sysv/linux/powerpc/lowlevellock.h for instance.
->>> Use that and your PPC manual to implement your atomic operations.
+>
+>> -----Original Message-----
+>> From: Esben Nielsen [mailto:nielsen.esben@gogglemail.com]
+>> Sent: Tuesday, August 29, 2006 5:57 PM
+>> To: Liu Dave-r63238
+>> Cc: Li Yang-r58472; Esben Nielsen; Xupei Liang;
+> linuxppc-embedded@ozlabs.org
+>> Subject: RE: atomic operations in user space
 >>
->> No matter semaphore or futex, it uses system calls to kernel.
-
-There is only a system call if there is congestion - that is the whole idea
-behind the futex.
-
->> And the
->> true atomic operation is in kernel not user space.
-
-"True" atomic operations are available in user space on most architectures.
-
->> Maybe
->> it's feasible
->> for other architectures to do atomic operations directly in
->> user space.
->> IMHO, not for powerpc.
-
-It is available for PowerPC, but not in POWER and POWER2 instructionsets 
-according to http://www.nersc.gov/vendor_docs/ibm/asm/lwarx.htm#idx607
-It is the same in the ARM world: Atomic instructions was introduced in 
-ARMv6 I believe. Older ARM processors don't have them.
-
+>>
+>>
+>> On Tue, 29 Aug 2006, Liu Dave-r63238 wrote:
+>>
+>>>>> 2) These mutexes are based on futexes which requires atomic
+>>>>> operations in userspace. These are available on most
+> architectures.
+>>> Look at
+>>>>> the glibc code in
+>>>>> nptl/sysdeps/unix/sysv/linux/powerpc/lowlevellock.h for instance.
+>>>>> Use that and your PPC manual to implement your atomic operations.
+>>>>
+>>>> No matter semaphore or futex, it uses system calls to kernel.
+>>
+>> There is only a system call if there is congestion - that is the whole
+> idea
+>> behind the futex.
+>>
+>>>> And the
+>>>> true atomic operation is in kernel not user space.
+>>
+>> "True" atomic operations are available in user space on most
+> architectures.
+>>
+>>>> Maybe
+>>>> it's feasible
+>>>> for other architectures to do atomic operations directly in
+>>>> user space.
+>>>> IMHO, not for powerpc.
+>>
+>> It is available for PowerPC, but not in POWER and POWER2
+> instructionsets
+>> according to http://www.nersc.gov/vendor_docs/ibm/asm/lwarx.htm#idx607
+>> It is the same in the ARM world: Atomic instructions was introduced in
+>> ARMv6 I believe. Older ARM processors don't have them.
 >
-> Are you meaning that we didn't do atomic operations directly in user
-> space
-> on powerpc platform ?
+> Yes, I do know there are lwarx and stwrx instructions.  But there is
+> only one reservation per CPU and reservation can be re-established with
+> no difference.
+> So there are possibilities reservation is broken and reserved again in
+> one atomic block.
+>
+> Task A			Task B
+> lwarx
+> 				......
+> 				lwarx
+> 				stwrx
+>
+> 				.....
+> 				.....
+> 				lwarx
+> stwrx
+> .....
+> 				stwrx
+>
+> The addresses of above operations are the same.
+>
+> In this case Thread A thinks that it is atomic as it holds the same
+> reservation, but it is actually broken.  Such control flow can't be
+> prevented in user space.
 >
 
-Well, that is not the conclusion I get either when reading the glibc code.
-Try to look at glibc-2.3.5/sysdeps/powerpc/bits/atomic.h.
-
-This is by the way probably what the original post in this thread wanted 
-in the first place!
+So you are saying that futexes on powerpc are broken?
 
 Esben
 
-
-> -DAve
+>>
+>>>
+>>> Are you meaning that we didn't do atomic operations directly in user
+>>> space
+>>> on powerpc platform ?
+>>>
+>>
+>> Well, that is not the conclusion I get either when reading the glibc
+> code.
+>> Try to look at glibc-2.3.5/sysdeps/powerpc/bits/atomic.h.
+>>
+>> This is by the way probably what the original post in this thread
+> wanted
+>> in the first place!
+>>
+>> Esben
+>>
+>>
+>>> -DAve
+>
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
