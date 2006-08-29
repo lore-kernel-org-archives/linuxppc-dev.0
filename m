@@ -1,15 +1,22 @@
-Return-Path: <tliang@yahoo.com>
-Received: from web36110.mail.mud.yahoo.com (web36110.mail.mud.yahoo.com
-	[66.163.179.224]) by ozlabs.org (Postfix) with SMTP id A6E7A67B56
+Return-Path: <peter.ryser@xilinx.com>
+Received: from outbound2-kan-R.bigfish.com (outbound-kan.frontbridge.com
+	[63.161.60.23])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D1BF767B83
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Aug 2006 10:43:38 +1000 (EST)
-Message-ID: <20060829004336.97699.qmail@web36110.mail.mud.yahoo.com>
-Date: Mon, 28 Aug 2006 17:43:36 -0700 (PDT)
-From: Xupei Liang <tliang@yahoo.com>
-Subject: RE: atomic operations in user space
-To: linuxppc-embedded@ozlabs.org
+	Tue, 29 Aug 2006 11:08:01 +1000 (EST)
+Message-ID: <44F38E28.9020201@xilinx.com>
+Date: Mon, 28 Aug 2006 17:45:28 -0700
+From: Peter Ryser <peter.ryser@xilinx.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: Clint Thomas <cthomas@soneticom.com>
+Subject: Re: PPC405 system slow boot
+References: <3C02138692C13C4BB675FE7EA240952918E1E2@bluefin.Soneticom.local>
+In-Reply-To: <3C02138692C13C4BB675FE7EA240952918E1E2@bluefin.Soneticom.local>
+Content-Type: multipart/alternative;
+	boundary="------------020105070800020209070704"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,90 +27,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I think it is less expensive using atomic operation
-sometimes in the user space, e.g. when updating a
-counter. If this counter is to be updated by a lot of
-processes, using semaphore can potentially cause a lot
-of task switching. 
+This is a multi-part message in MIME format.
+--------------020105070800020209070704
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Regards,
+Clint,
 
-Terry Liang
+check the interrupt sub-system of your design. What you describe 
+typically happens when the PPC does not get any interrupts from the 
+UART. It's most likely a mismatch between your hardware and the 
+xparameters.h.
 
-
-> -----Original Message-----
-> From: Brent Cook [mailto:bcook at bpointsys.com]
-> Sent: Thursday, August 24, 2006 10:18 PM
-> To: linuxppc-embedded at ozlabs.org
-> Cc: Li Yang-r58472; Terry Liang
-> Subject: Re: atomic operations in user space
-> 
-> On Thursday 24 August 2006 05:39, Li Yang-r58472
-wrote:
-> 
-> > Why do you need atomic operations in user land?
-IPC will be
-sufficient
-> 
-> > to deal with race conditions between processes.
-> 
-> >
-> 
-> > Best Regards,
-> 
-> > Leo
-> 
-> What about multiple threads within a process
-updating a counter?
-
-Is there anything preventing semaphore to be used in
-threads?
-> 
-> Of course, if you look at these functions in the
-kernel header,
-they're just 2 or
-> 3 inline assembly calls - you could easily rewrite
-them. Google for
-'PowerPC atomic
-> increment' and grab one of the unencumbered
-implementations if you
-need to use it
-> in a non-GPL program.
-> 
-> On the other hand, I see no license at the top of my
-/usr/include/asm-i386/atomic.h
-> file at all, same for PowerPC - are Linux header
-files actually GPL or
-are they
-> more like the glibc headers, with exceptions made
-for userspace
-programs?
-> 
-> The atomic operations on x86 were accidentally
-exported early on, so
-they have to
-> hang around apparently for compatibility (there are
-some mailing list
-threads out
-> there to this effect.) Currently, you just have to
-assume in Linux
-that if you
-> include something from /usr/include/linux or asm
-that it will not
-necessarily be
-> cross-version or cross-architecture compatible. Not
-every arch in
-Linux even has
-> atomic operations of this nature, which I guess is
-the main reason why
-they are
-> not exported in general.
-> 
-> - Brent
+- Peter
 
 
+Clint Thomas wrote:
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+> Hey guys,
+>
+> I've run through the loops to try and figure what could be wrong with 
+> this system. The board in question is modeled after the Xilinx ML300 
+> board. It uses a Xilinx System ACE chip to load a FPGA / Kernel image 
+> from compact flash. Originally, I was trying to use the CompactFlash 
+> as the root file system, but because of issues in either the design or 
+> software, this would only work if SysAce was in polled I/O mode. To 
+> circumvent this, I built my root filesystem into an initrd image and 
+> built a single ELF file with the Kernel and RFS, then strapped that to 
+> the FPGA bit file to make a single FPGA/Kernel/RFS SysAce file.
+>
+> Upon decompression, the Linux kernel boots quickly and loads all of 
+> the device drivers. However when it gets to the prompt, it starts 
+> slowing down. Output and input to and from the board becomes very very 
+> slow (it displays 2 characters roughly every 20 seconds). Originally I 
+> believed this to be the CPU still polling SystemAce, so I disabled the 
+> Linux System ACE drivers to remove that as a possibility, however 
+> after doing this, the problem still persists, even with the RFS in 
+> ram! Has anybody encountered a similar situation to this before, with 
+> possible insight towards a solution? Thank you for your time.
+>  
+> Clinton Thomas
+> cthomas@soneticom.com
+>  
+>
+>------------------------------------------------------------------------
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+
+--------------020105070800020209070704
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Clint,<br>
+<br>
+check the interrupt sub-system of your design. What you describe
+typically happens when the PPC does not get any interrupts from the
+UART. It's most likely a mismatch between your hardware and the
+xparameters.h.<br>
+<br>
+- Peter<br>
+<br>
+<br>
+Clint Thomas wrote:
+<blockquote
+ cite="mid3C02138692C13C4BB675FE7EA240952918E1E2@bluefin.Soneticom.local"
+ type="cite">
+  <meta http-equiv="Content-Type" content="text/html; ">
+  <meta content="MSHTML 6.00.2900.2963" name="GENERATOR">
+  <div><span class="068485119-28082006"><font face="Arial" size="2">Hey
+guys,<br>
+  <br>
+I've run through the loops to try and figure what could be wrong with
+this system. The board in question is modeled after the Xilinx ML300
+board. It uses a Xilinx System ACE chip to load a FPGA / Kernel image
+from compact flash. Originally, I was trying to use the CompactFlash as
+the root file system, but because of issues in either the design or
+software, this would only work if SysAce was in polled I/O mode. To
+circumvent this, I built my root filesystem into an initrd image and
+built a single ELF file with the Kernel and RFS, then strapped that to
+the FPGA bit file to make a single FPGA/Kernel/RFS SysAce file.<br>
+  <br>
+Upon decompression, the Linux kernel boots quickly and loads all of the
+device drivers. However when it gets to the prompt, it starts slowing
+down. Output and input to and from the board becomes very very slow (it
+displays 2 characters roughly every 20 seconds). Originally I believed
+this to be the CPU still polling SystemAce, so I disabled the Linux
+System ACE drivers to remove that as a possibility, however after doing
+this, the problem still persists, even with the RFS in ram! Has anybody
+encountered a similar situation to this before, with possible insight
+towards a solution? Thank you for your time.</font></span></div>
+  <div>&nbsp;</div>
+  <div align="left"><font face="Arial" size="2">Clinton Thomas<br>
+<a class="moz-txt-link-abbreviated" href="mailto:cthomas@soneticom.com">cthomas@soneticom.com</a></font></div>
+  <div>&nbsp;</div>
+  <pre wrap="">
+<hr size="4" width="90%">
+_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
+</blockquote>
+</body>
+</html>
+
+--------------020105070800020209070704--
