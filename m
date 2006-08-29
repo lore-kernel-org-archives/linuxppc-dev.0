@@ -1,23 +1,23 @@
-Return-Path: <linuxppcleo@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.225])
-	by ozlabs.org (Postfix) with ESMTP id 6E46867B59
+Return-Path: <ralf@linux-mips.org>
+Received: from ftp.linux-mips.org (ftp.linux-mips.org [194.74.144.162])
+	by ozlabs.org (Postfix) with ESMTP id B3E2B679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Aug 2006 03:00:37 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id i20so603724wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Aug 2006 10:00:35 -0700 (PDT)
-Message-ID: <a0bc9bf80608291000m5d444709h965a4b436724a937@mail.gmail.com>
-Date: Wed, 30 Aug 2006 01:00:35 +0800
-From: "Li Yang" <LeoLi@freescale.com>
-Sender: linuxppcleo@gmail.com
-To: "Esben Nielsen" <nielsen.esben@gogglemail.com>
-Subject: Re: atomic operations in user space
-In-Reply-To: <Pine.LNX.4.64.0608291804260.22067@frodo.shire>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <a0bc9bf80608290637q165d1f54x2d80e771671c894f@mail.gmail.com>
-	<Pine.LNX.4.64.0608291804260.22067@frodo.shire>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 30 Aug 2006 02:47:27 +1000 (EST)
+Received: from localhost.localdomain ([127.0.0.1]:15061 "EHLO
+	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
+	id S20039457AbWH2QRZ (ORCPT <rfc822;linuxppc-embedded@ozlabs.org>);
+	Tue, 29 Aug 2006 17:17:25 +0100
+Date: Tue, 29 Aug 2006 17:17:48 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+	linuxppc-embedded@ozlabs.org, paulkf@microgate.com,
+	takata@linux-m32r.org, linux-kernel@vger.kernel.org
+Subject: Re: [CFT:PATCH] Removing possible wrong asm/serial.h inclusions
+Message-ID: <20060829161748.GF29289@linux-mips.org>
+References: <20060828085244.GA13544@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060828085244.GA13544@flint.arm.linux.org.uk>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,38 +28,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/30/06, Esben Nielsen <nielsen.esben@gogglemail.com> wrote:
->
->
-> On Tue, 29 Aug 2006, Li Yang wrote:
->
-> >> This is exactly how it is supposed to work! That's why there is a loop
-> >> in the atomic increment - you check if you still had the reservation
-> >> after the transaction by checking the result from the stwcx, and if not,
-> >> retry.
-> >
-> > I surely know all the theories you mentioned clearly.  But please do
-> > look at the case I gave.  Correct me if I missed anything.  Thanks
-> >
-> > All the lwarx and stwcx operate on the same address.
-> >
-> >> Task A               Task B
-> >> lwarx
-> > // Get RESERVATION
-> >>                      ......
-> >>                      lwarx
-> >>                      stwcx
-> >
-> > // RESERVATION cleared
-> >>
-> >>                      .....
-> >>                      .....
-> >>                      lwarx
-> >
-> > // Get RESERVATION again
->
-> Now we do a task switch involving atomic operations, and thus an
-> reservation on another address.
->
+On Mon, Aug 28, 2006 at 09:52:44AM +0100, Russell King wrote:
 
-This makes sense for me.
+> asm/serial.h is supposed to contain the definitions for the architecture
+> specific 8250 ports for the 8250 driver.  It may also define BASE_BAUD,
+> but this is the base baud for the architecture specific ports _only_.
+> 
+> Therefore, nothing other than the 8250 driver should be including this
+> header file.  In order to move towards this goal, here is a patch which
+> removes some of the more obvious incorrect includes of the file.
+> 
+> MIPS and PPC has rather a lot of stuff in asm/serial.h, some of it looks
+> related to non-8250 ports.  Hence, it's not trivial to conclude that
+> these includes are indeed unnecessary, so can mips and ppc people please
+> test this patch carefully.
+
+The MIPS bits were just unused leftovers from the days when the arch
+code did did register serials & consoles.  So for the MIPS bits:
+
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
+
+  Ralf
