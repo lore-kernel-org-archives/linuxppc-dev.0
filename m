@@ -1,32 +1,26 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6DDF667B6E
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 12:12:48 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7T2Cijj010698
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 22:12:44 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7T2CiV8268506
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 22:12:44 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7T2CiUi005448
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 22:12:44 -0400
-Subject: Re: copy_4K_page() doesn't use dcbtst?
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17651.34629.132793.190742@cargo.ozlabs.ibm.com>
-References: <1156786523.28490.52.camel@basalt.austin.ibm.com>
-	<17651.34629.132793.190742@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 28 Aug 2006 21:11:53 -0500
-Message-Id: <1156817513.13497.12.camel@diesel>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	xen-ppc-devel <xen-ppc-devel@lists.xensource.com>
+Return-Path: <DaveLiu@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 2C67867B6F
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 12:33:03 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k7T2jIdl004710
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 19:45:18 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7T2WxRH006335
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Aug 2006 21:33:01 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] corrected PCI interrupt sense values to level low
+	inmpc8349emds.dts
+Date: Tue, 29 Aug 2006 10:32:58 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D263511BA03@zch01exm21.fsl.freescale.net>
+In-Reply-To: <20060828174910.236bf042.kim.phillips@freescale.com>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,32 +30,179 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-08-29 at 10:16 +1000, Paul Mackerras wrote:
-> Hollis Blanchard writes:
-> 
-> > Hi Paul, some Xen people were just noticing that copy_4K_page
-> > (arch/powerpc/lib/copypage_64.S) doesn't use the dcbtst instruction. Why
-> > doesn't it help there?
-> 
-> Why would we want to read the cache lines for the destination from
-> memory when we're only going to overwrite them completely anyway?
-> 
-> A stronger argument would be for using dcbz, but IIRC it actually made
-> things slower (on POWER4 at least).  I suspect the hardware is
-> gathering the stores for the whole of each cache line automatically,
-> so using dcbz doesn't provide any benefit.
+> Corrected PCI interrupt sense values to level low in=20
+> mpc8349emds.dts, per Leo's recommendation.
+>=20
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+>=20
+> applies on top of "[PATCH 4/4] Add MPC8349E MDS device tree=20
+> source file to arch/powerpc/boot/dts"
+>=20
+>=20
+>  arch/powerpc/boot/dts/mpc8349emds.dts |  112=20
+> +++++++++++++++++----------------
+>  1 files changed, 56 insertions(+), 56 deletions(-)
+>=20
+> diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts=20
+> b/arch/powerpc/boot/dts/mpc8349emds.dts
+> index 7e4508b..0643db9 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emds.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+> @@ -178,46 +178,46 @@
+>  			interrupt-map =3D <
+> =20
+>  					/* IDSEL 0x11 */
+> -					 8800 0 0 1 700 14 0
+> -					 8800 0 0 2 700 15 0
+> -					 8800 0 0 3 700 16 0
+> -					 8800 0 0 4 700 17 0
+> +					 8800 0 0 1 700 14 2
+> +					 8800 0 0 2 700 15 2
+> +					 8800 0 0 3 700 16 2
+> +					 8800 0 0 4 700 17 2
+> =20
+>  					/* IDSEL 0x12 */
+> -					 9000 0 0 1 700 16 0
+> -					 9000 0 0 2 700 17 0
+> -					 9000 0 0 3 700 14 0
+> -					 9000 0 0 4 700 15 0
+> +					 9000 0 0 1 700 16 2
+> +					 9000 0 0 2 700 17 2
+> +					 9000 0 0 3 700 14 2
+> +					 9000 0 0 4 700 15 2
+> =20
+>  					/* IDSEL 0x13 */
+> -					 9800 0 0 1 700 17 0
+> -					 9800 0 0 2 700 14 0
+> -					 9800 0 0 3 700 15 0
+> -					 9800 0 0 4 700 16 0
+> +					 9800 0 0 1 700 17 2
+> +					 9800 0 0 2 700 14 2
+> +					 9800 0 0 3 700 15 2
+> +					 9800 0 0 4 700 16 2
+> =20
+>  					/* IDSEL 0x15 */
+> -					 a800 0 0 1 700 14 0
+> -					 a800 0 0 2 700 15 0
+> -					 a800 0 0 3 700 16 0
+> -					 a800 0 0 4 700 17 0
+> +					 a800 0 0 1 700 14 2
+> +					 a800 0 0 2 700 15 2
+> +					 a800 0 0 3 700 16 2
+> +					 a800 0 0 4 700 17 2
+> =20
+>  					/* IDSEL 0x16 */
+> -					 b000 0 0 1 700 17 0
+> -					 b000 0 0 2 700 14 0
+> -					 b000 0 0 3 700 15 0
+> -					 b000 0 0 4 700 16 0
+> +					 b000 0 0 1 700 17 2
+> +					 b000 0 0 2 700 14 2
+> +					 b000 0 0 3 700 15 2
+> +					 b000 0 0 4 700 16 2
+> =20
+>  					/* IDSEL 0x17 */
+> -					 b800 0 0 1 700 16 0
+> -					 b800 0 0 2 700 17 0
+> -					 b800 0 0 3 700 14 0
+> -					 b800 0 0 4 700 15 0
+> +					 b800 0 0 1 700 16 2
+> +					 b800 0 0 2 700 17 2
+> +					 b800 0 0 3 700 14 2
+> +					 b800 0 0 4 700 15 2
+> =20
+>  					/* IDSEL 0x18 */
+> -					 b000 0 0 1 700 15 0
+> -					 b000 0 0 2 700 16 0
+> -					 b000 0 0 3 700 17 0
+> -					 b000 0 0 4 700 14 0>;
+> +					 b000 0 0 1 700 15 2
+> +					 b000 0 0 2 700 16 2
+> +					 b000 0 0 3 700 17 2
+> +					 b000 0 0 4 700 14 2>;
+>  			interrupt-parent =3D <700>;
+>  			interrupts =3D <42 8>;
+>  			bus-range =3D <0 0>;
+> @@ -238,46 +238,46 @@
+>  			interrupt-map =3D <
+> =20
+>  					/* IDSEL 0x11 */
+> -					 8800 0 0 1 700 14 0
+> -					 8800 0 0 2 700 15 0
+> -					 8800 0 0 3 700 16 0
+> -					 8800 0 0 4 700 17 0
+> +					 8800 0 0 1 700 14 2
+> +					 8800 0 0 2 700 15 2
+> +					 8800 0 0 3 700 16 2
+> +					 8800 0 0 4 700 17 2
+> =20
+>  					/* IDSEL 0x12 */
+> -					 9000 0 0 1 700 16 0
+> -					 9000 0 0 2 700 17 0
+> -					 9000 0 0 3 700 14 0
+> -					 9000 0 0 4 700 15 0
+> +					 9000 0 0 1 700 16 2
+> +					 9000 0 0 2 700 17 2
+> +					 9000 0 0 3 700 14 2
+> +					 9000 0 0 4 700 15 2
+> =20
+>  					/* IDSEL 0x13 */
+> -					 9800 0 0 1 700 17 0
+> -					 9800 0 0 2 700 14 0
+> -					 9800 0 0 3 700 15 0
+> -					 9800 0 0 4 700 16 0
+> +					 9800 0 0 1 700 17 2
+> +					 9800 0 0 2 700 14 2
+> +					 9800 0 0 3 700 15 2
+> +					 9800 0 0 4 700 16 2
+> =20
+>  					/* IDSEL 0x15 */
+> -					 a800 0 0 1 700 14 0
+> -					 a800 0 0 2 700 15 0
+> -					 a800 0 0 3 700 16 0
+> -					 a800 0 0 4 700 17 0
+> +					 a800 0 0 1 700 14 2
+> +					 a800 0 0 2 700 15 2
+> +					 a800 0 0 3 700 16 2
+> +					 a800 0 0 4 700 17 2
+> =20
+>  					/* IDSEL 0x16 */
+> -					 b000 0 0 1 700 17 0
+> -					 b000 0 0 2 700 14 0
+> -					 b000 0 0 3 700 15 0
+> -					 b000 0 0 4 700 16 0
+> +					 b000 0 0 1 700 17 2
+> +					 b000 0 0 2 700 14 2
+> +					 b000 0 0 3 700 15 2
+> +					 b000 0 0 4 700 16 2
+> =20
+>  					/* IDSEL 0x17 */
+> -					 b800 0 0 1 700 16 0
+> -					 b800 0 0 2 700 17 0
+> -					 b800 0 0 3 700 14 0
+> -					 b800 0 0 4 700 15 0
+> +					 b800 0 0 1 700 16 2
+> +					 b800 0 0 2 700 17 2
+> +					 b800 0 0 3 700 14 2
+> +					 b800 0 0 4 700 15 2
+> =20
+>  					/* IDSEL 0x18 */
+> -					 b000 0 0 1 700 15 0
+> -					 b000 0 0 2 700 16 0
+> -					 b000 0 0 3 700 17 0
+> -					 b000 0 0 4 700 14 0>;
+> +					 b000 0 0 1 700 15 2
+> +					 b000 0 0 2 700 16 2
+> +					 b000 0 0 3 700 17 2
+> +					 b000 0 0 4 700 14 2>;
+>  			interrupt-parent =3D <700>;
+>  			interrupts =3D <42 8>;
+>  			bus-range =3D <0 0>;
+> --
+> 1.4.1
 
-Yes, dcbz makes more sense.
+Where these IDSEL 0x15~0x18 come from on 8349EMDS board?
+Please expain it.
 
-> I did a lot of measurements of memory copy speed on POWER4 (using
-> different copy loops, copy sizes, alignments, cache hot/cold cases)
-> and the copy_4K_page loop is the fastest I could come up with for
-> POWER4.  If anyone can come up with a routine that is measurably
-> faster on current machines, I'm happy to look at it, of course.
-
-I figured you had done measurements; we were just curious about the
-unexpected results. Thanks!
-
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+-DAve
