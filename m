@@ -1,16 +1,26 @@
-Return-Path: <enorm@126.com>
-Received: from m15-111.126.com (m15-111.126.com [220.181.15.111])
-	by ozlabs.org (Postfix) with SMTP id EF20567B61
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C39C667B32
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Aug 2006 12:26:05 +1000 (EST)
-Message-ID: <017001c6cb0e$1b81f440$a309a8c0@SZD823>
-From: "enorm" <enorm@126.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC85xx u-boot definition
-Date: Tue, 29 Aug 2006 09:54:46 +0800
+	Tue, 29 Aug 2006 16:42:57 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k7T6tBa7018888 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Aug 2006 23:55:11 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k7T6gq2U008231
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Aug 2006 01:42:54 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_016D_01C6CB51.290A2CC0"
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: atomic operations in user space
+Date: Tue, 29 Aug 2006 14:43:01 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0FC726@zch01exm20.fsl.freescale.net>
+In-Reply-To: <20060829004336.97699.qmail@web36110.mail.mud.yahoo.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Xupei Liang" <tliang@yahoo.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,73 +31,107 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org] On
+Behalf Of
+> Xupei Liang
+> Sent: Tuesday, August 29, 2006 8:44 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: RE: atomic operations in user space
+>=20
+> I think it is less expensive using atomic operation
+> sometimes in the user space, e.g. when updating a
 
-------=_NextPart_000_016D_01C6CB51.290A2CC0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Atomic operations are working under strict restrictions.  Generally they
+won't work for user space.  Your best bet is to use semaphore instead.
 
-SGksDQogIFNvbWUgbmFpdmUgcXVlc3Rpb25zIGFib3V0IHUtYm9vdCBmb3IgTVBDODV4eCwgIHRo
-ZSBkZWZpbml0aW9uIG9mIA0Kc29tZSBtYWNybyBpbiBwcGNfYXNtLnRtcGwuIENhbiBhbnlvbmUg
-dGhlcmUgZXhwbGFpbiB0aGVtIHRvIG1lIHBsZWFzZT8gDQoNCiAxKSAgIEluIEdFVF9HT1QoeCkg
-d2hhdCBkb2VzICAiIGx3eiByMCwwYi0xYihyMTQpIDsiIGRvPyB3aGF0IGRvZXMgDQoiMGItMWIi
-IHN0YW5kcyBmb3IsIG9yIHRoZSBtZWFuaW5nIG9mIHRoZSBzeW50YXg/IHdoeSBtb3ZlIHRoZSBj
-b250ZW50IA0Kb2YgdGhlIG1lbW9yeSBwb2ludGluZyBieSBMUj8gDQoNCg0KDQojZGVmaW5lIEdF
-VF9HT1QgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwgDQogICAgICAgIGJsICAgICAg
-MWYgICAgICAgICAgICAgIDsgICAgICAgXCANCiAgICAgICAudGV4dCAgIDIgICAgICAgICAgICAg
-ICA7ICAgICAgIFwgDQogMDogICAgIC5sb25nICAgLkxDVE9DMS0xZiAgICAgIDsgICAgICAgXCAN
-CiAgICAgICAudGV4dCAgICAgICAgICAgICAgICAgICA7ICAgICAgIFwgDQoxOiAgICAgIG1mbHIg
-ICAgcjE0ICAgICAgICAgICAgIDsgICAgICAgXCANCiAgICAgICBsd3ogICAgIHIwLDBiLTFiKHIx
-NCkgICA7ICAgICAgIFwgDQogICAgICAgYWRkICAgICByMTQscjAscjE0ICAgICAgOyANCg0KDQoy
-KSBJbiBTVEFSVF9HT1QsICBhbnkgc3BlY2lhbCBtZWFuaW5nIGZvciB0aGUgdmFsdWUgMzI3Njg/
-IA0KID4+IC5MQ1RPQzE9LiszMjc2OCANCg0KMykgU3ludGF4IGZvciBHT1RfRU5UUlkoTkFNRSkg
-IGFuZCBHT1QoTkFNRSksICBsaWtlICAgIC4gLSAuTENUT0MxIChsaW5lIDU3KSBhbmQgLnRleHQg
-MiAobGluZSA1MCkNCmNvdWxkIG5vdCBmaW5kIHRoZW4gaW4gdGhlIEdOVSBkb3VtZW50cyAobGQs
-IGFzLCBnY2MsIGdsaWJjIGV0YykuIA0KDQoNClRoYW5rcyBmb3IgdGhlIGhlbHAhISANCg0K
-
-------=_NextPart_000_016D_01C6CB51.290A2CC0
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjI5NjMiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
-Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPg0KPERJVj5IaSw8L0RJVj4NCjxESVY+Jm5ic3A7
-Jm5ic3A7U29tZSBuYWl2ZSBxdWVzdGlvbnMgYWJvdXQgdS1ib290IGZvciBNUEM4NXh4LCAmbmJz
-cDt0aGUgDQpkZWZpbml0aW9uIG9mIDxCUj5zb21lIG1hY3JvIGluIHBwY19hc20udG1wbC4gQ2Fu
-IGFueW9uZSB0aGVyZSBleHBsYWluIHRoZW0gdG8gDQptZSBwbGVhc2U/IDxCUj48L0RJVj4NCjxE
-SVY+DQo8UD4mbmJzcDsxKSAmbmJzcDsgSW4gR0VUX0dPVCh4KSB3aGF0IGRvZXMgJm5ic3A7IiBs
-d3ogcjAsMGItMWIocjE0KSA7IiBkbz8gd2hhdCANCmRvZXMgPEJSPiIwYi0xYiIgc3RhbmRzIGZv
-ciwgb3IgdGhlIG1lYW5pbmcgb2YgdGhlIHN5bnRheD8gd2h5IG1vdmUgdGhlIGNvbnRlbnQgDQo8
-QlI+b2YgdGhlIG1lbW9yeSBwb2ludGluZyBieSBMUj8gPEJSPg0KPFA+DQo8RElWIGNsYXNzPXF0
-IHN0eWxlPSJESVNQTEFZOiBibG9jayI+I2RlZmluZSBHRVRfR09UICZuYnNwOyAmbmJzcDsgJm5i
-c3A7ICZuYnNwOyANCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZu
-YnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgDQombmJzcDtcJm5ic3A7PC9ESVY+DQo8
-RElWIGNsYXNzPXF0IA0Kc3R5bGU9IkRJU1BMQVk6IGJsb2NrIj4mbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDtibCAmbmJzcDsgDQombmJzcDsgJm5ic3A7MWYg
-Jm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7OyAmbmJzcDsg
-Jm5ic3A7IA0KJm5ic3A7IFwmbmJzcDs8QlI+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7LnRleHQgJm5ic3A7IDIgDQombmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsg
-Jm5ic3A7ICZuYnNwOyAmbmJzcDsgOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyANClwmbmJzcDs8QlI+
-IDA6ICZuYnNwOyAmbmJzcDsgLmxvbmcgJm5ic3A7IC5MQ1RPQzEtMWYgJm5ic3A7ICZuYnNwOyAm
-bmJzcDs7IA0KJm5ic3A7ICZuYnNwOyAmbmJzcDsgXCZuYnNwOzxCUj4mbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsudGV4dCANCiZuYnNwOyAmbmJzcDsgJm5ic3A7ICZu
-YnNwOyAmbmJzcDsgJm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7IDsgJm5ic3A7ICZuYnNwOyAN
-CiZuYnNwOyBcIDxCUj4xOiAmbmJzcDsgJm5ic3A7ICZuYnNwO21mbHIgJm5ic3A7ICZuYnNwO3Ix
-NCAmbmJzcDsgJm5ic3A7ICZuYnNwOyANCiZuYnNwOyAmbmJzcDsgJm5ic3A7IDsgJm5ic3A7ICZu
-YnNwOyAmbmJzcDsgDQpcJm5ic3A7PEJSPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwO2x3eiAmbmJzcDsgJm5ic3A7IA0KcjAsMGItMWIocjE0KSAmbmJzcDsgOyAmbmJz
-cDsgJm5ic3A7ICZuYnNwOyANClwmbmJzcDs8QlI+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7YWRkICZuYnNwOyAmbmJzcDsgDQpyMTQscjAscjE0ICZuYnNwOyAmbmJz
-cDsgJm5ic3A7OyA8QlI+PEJSPjwvRElWPjIpIEluIFNUQVJUX0dPVCwgJm5ic3A7YW55IA0Kc3Bl
-Y2lhbCBtZWFuaW5nIGZvciB0aGUgdmFsdWUgMzI3Njg/IDxCUj4mbmJzcDsmZ3Q7Jmd0OyAuTENU
-T0MxPS4rMzI3NjggPEJSPg0KPFA+MykgU3ludGF4IGZvciBHT1RfRU5UUlkoTkFNRSkgJm5ic3A7
-YW5kIEdPVChOQU1FKSwgDQombmJzcDtsaWtlJm5ic3A7Jm5ic3A7Jm5ic3A7IC4gLSAuTENUT0Mx
-IChsaW5lIDU3KSBhbmQgLnRleHQgMiAobGluZSANCjUwKTxCUj5jb3VsZCBub3QgZmluZCB0aGVu
-IGluIHRoZSBHTlUgZG91bWVudHMgKGxkLCBhcywgZ2NjLCBnbGliYyBldGMpLiA8QlI+DQo8UD5U
-aGFua3MgZm9yIHRoZSBoZWxwISEgPEJSPjwvUD48L0RJVj48L0RJVj48L0JPRFk+PC9IVE1MPg0K
-
-------=_NextPart_000_016D_01C6CB51.290A2CC0--
+> counter. If this counter is to be updated by a lot of
+> processes, using semaphore can potentially cause a lot
+> of task switching.
+>=20
+> Regards,
+>=20
+> Terry Liang
+>=20
+>=20
+> > -----Original Message-----
+> > From: Brent Cook [mailto:bcook at bpointsys.com]
+> > Sent: Thursday, August 24, 2006 10:18 PM
+> > To: linuxppc-embedded at ozlabs.org
+> > Cc: Li Yang-r58472; Terry Liang
+> > Subject: Re: atomic operations in user space
+> >
+> > On Thursday 24 August 2006 05:39, Li Yang-r58472
+> wrote:
+> >
+> > > Why do you need atomic operations in user land?
+> IPC will be
+> sufficient
+> >
+> > > to deal with race conditions between processes.
+> >
+> > >
+> >
+> > > Best Regards,
+> >
+> > > Leo
+> >
+> > What about multiple threads within a process
+> updating a counter?
+>=20
+> Is there anything preventing semaphore to be used in
+> threads?
+> >
+> > Of course, if you look at these functions in the
+> kernel header,
+> they're just 2 or
+> > 3 inline assembly calls - you could easily rewrite
+> them. Google for
+> 'PowerPC atomic
+> > increment' and grab one of the unencumbered
+> implementations if you
+> need to use it
+> > in a non-GPL program.
+> >
+> > On the other hand, I see no license at the top of my
+> /usr/include/asm-i386/atomic.h
+> > file at all, same for PowerPC - are Linux header
+> files actually GPL or
+> are they
+> > more like the glibc headers, with exceptions made
+> for userspace
+> programs?
+> >
+> > The atomic operations on x86 were accidentally
+> exported early on, so
+> they have to
+> > hang around apparently for compatibility (there are
+> some mailing list
+> threads out
+> > there to this effect.) Currently, you just have to
+> assume in Linux
+> that if you
+> > include something from /usr/include/linux or asm
+> that it will not
+> necessarily be
+> > cross-version or cross-architecture compatible. Not
+> every arch in
+> Linux even has
+> > atomic operations of this nature, which I guess is
+> the main reason why
+> they are
+> > not exported in general.
+> >
+> > - Brent
+>=20
+>=20
+>=20
+> __________________________________________________
+> Do You Yahoo!?
+> Tired of spam?  Yahoo! Mail has the best spam protection around
+> http://mail.yahoo.com
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
