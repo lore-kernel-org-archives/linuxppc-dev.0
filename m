@@ -1,29 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C02367B58
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 06:28:37 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7TKSWOb004003
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 16:28:32 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7TKSWqc269522
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 16:28:32 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7TKSW3P001989
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 16:28:32 -0400
-Date: Tue, 29 Aug 2006 15:28:31 -0500
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: undefined reference to pci_io_base
-Message-ID: <20060829202831.GB27372@austin.ibm.com>
-References: <44F47ABE.7080602@am.sony.com>
+Return-Path: <marcus@mc.pp.se>
+Received: from omoikane.mc.pp.se (ua-85-227-1-9.cust.bredbandsbolaget.se
+	[85.227.1.9]) by ozlabs.org (Postfix) with ESMTP id 95FE767B32
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 07:06:02 +1000 (EST)
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Subject: Re: [PATCH] EHCI Oops on CONFIG_NOT_COHERENT_CACHE system
+References: <yf9bqq6p305.fsf@omoikane.mc.pp.se> <20060829150759.269420@gmx.net>
+From: Marcus Comstedt <marcus@mc.pp.se>
+Date: Tue, 29 Aug 2006 23:04:44 +0200
+In-Reply-To: <20060829150759.269420@gmx.net> (Gerhard Pircher's message of
+	"Tue, 29 Aug 2006 17:07:59 +0200")
+Message-ID: <yf9mz9np82b.fsf@omoikane.mc.pp.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44F47ABE.7080602@am.sony.com>
-From: linas@austin.ibm.com (Linas Vepstas)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,48 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 29, 2006 at 10:34:54AM -0700, Geoff Levand wrote:
-> I'm trying to understand the intended design of the inb()
-> and outb() macros in asm-powerpc/io.h. They are causing
-> me some grief when I set CONFIG_PCI=n:
-> 
->   drivers/built-in.o: undefined reference to `pci_io_base'
-> 
-> This is coming from drivers/char/mem.c, which is always
-> built in, and is referencing pci_io_base through inb()
-> and outb().
-> 
-> Anyway, it seems asm-powerpc/io.h has two sets of io macros,
-> one set for iSeries, and one generic set for everything else.
-> The problem arises because the generic macros just use the eeh
-> macros in eeh.h, which in turn, directly use pci_io_base. 
-> 
-> I can think of three solutions to this that work for me, but
-> I'm not sure which, if any, would be the most proper.  One
-> would be to just have this in io.h:
-> 
->   #if defined(CONFI_PCI)
->   extern unsigned long pci_io_base;
->   #else
->   #define pci_io_base 0
->   #endif
 
-This makes the most sense to me; it compiles to something nice.
+"Gerhard Pircher" <gerhard_pircher@gmx.net> writes:
 
-> Another would be to have this in some file that is always built
-> in, like setup-common.c:
-> 
->   #if !defined(CONFI_PCI)
->   unsigned long pci_io_base;
->   EXPORT_SYMBOL(pci_io_base);
->   #endif
+> Hi Marcus,
+>
+> I guess this message should also be forwarded to linux-usb-devel@lists.sourceforge.net. I hope the developers there can make some comments.
+>
+> Gerhard
 
-This compiles to something ugly and pointless ... 
 
-> A third would be to have another set of io macros in io.h that
-> are used when CONFIG_PCI=n.
+Well, I figured the first thing to do would be to reach a consensus
+here on whether or not atomic_t:s in DMA memory should be ruled as
+unallowed.  Judging from the massive silence, there doesn't seem to be
+any strong opinions either way though...
 
-I'm not sure that yet-another set of macros improves readabily.
-Those macros are already fairly byzantine in thier inter-connections.
 
---linas
+  // Marcus
