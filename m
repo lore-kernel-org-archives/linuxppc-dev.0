@@ -1,14 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17652.49904.419167.448821@cargo.ozlabs.ibm.com>
-Date: Wed, 30 Aug 2006 08:42:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: undefined reference to pci_io_base
-In-Reply-To: <44F47ABE.7080602@am.sony.com>
-References: <44F47ABE.7080602@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 58C2467A3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 08:58:07 +1000 (EST)
+Subject: [PATCH] powerpc: Fix MPIC sense codes in doc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Wed, 30 Aug 2006 08:58:00 +1000
+Message-Id: <1156892280.8433.585.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,19 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand writes:
+The booting-without-of.txt had incorrect definition for the sense codes
+for an OpenPIC controller
 
-> I'm trying to understand the intended design of the inb()
-> and outb() macros in asm-powerpc/io.h. They are causing
-> me some grief when I set CONFIG_PCI=n:
-> 
->   drivers/built-in.o: undefined reference to `pci_io_base'
-> 
-> This is coming from drivers/char/mem.c, which is always
-> built in, and is referencing pci_io_base through inb()
-> and outb().
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Hmmm.  inb and outb are designed for accessing PCI I/O space.  I guess
-we could turn them into BUG() when CONFIG_PCI=n.
-
-Paul.
+Index: linux-work/Documentation/powerpc/booting-without-of.txt
+===================================================================
+--- linux-work.orig/Documentation/powerpc/booting-without-of.txt	2006-08-30 08:51:19.000000000 +1000
++++ linux-work/Documentation/powerpc/booting-without-of.txt	2006-08-30 08:56:17.000000000 +1000
+@@ -1136,10 +1136,10 @@
+    Devices connected to openPIC-compatible controllers should encode
+    sense and polarity as follows:
+ 
+-	0 = high to low edge sensitive type enabled
++	0 = low to high edge sensitive type enabled
+ 	1 = active low level sensitive type enabled
+-	2 = low to high edge sensitive type enabled
+-	3 = active high level sensitive type enabled
++	2 = active high level sensitive type enabled
++	3 = high to low edge sensitive type enabled
+ 
+    ISA PIC interrupt controllers should adhere to the ISA PIC
+    encodings listed below:
