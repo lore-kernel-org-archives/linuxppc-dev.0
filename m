@@ -1,20 +1,16 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id F313367B59
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 23:06:40 +1000 (EST)
-Date: Tue, 29 Aug 2006 08:06:29 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: Linux v2.6.18-rc5
-Message-ID: <20060829130629.GW11309@localdomain>
-References: <Pine.LNX.4.64.0608272122250.27779@g5.osdl.org>
-	<20060829115537.GA24256@aepfle.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060829115537.GA24256@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id A95A167B53
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 01:08:01 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Tue, 29 Aug 2006 17:07:59 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <yf9bqq6p305.fsf@omoikane.mc.pp.se>
+Message-ID: <20060829150759.269420@gmx.net>
+MIME-Version: 1.0
+References: <yf9bqq6p305.fsf@omoikane.mc.pp.se>
+Subject: Re: [PATCH] EHCI Oops on CONFIG_NOT_COHERENT_CACHE system
+To: Marcus Comstedt <marcus@mc.pp.se>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,58 +20,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Olaf-
+Hi Marcus,
 
-Olaf Hering wrote:
-> On Sun, Aug 27, Linus Torvalds wrote:
-> 
-> > Pls test it out, and please remind all the appropriate people about any 
-> > regressions you find (including any found earlier if they haven't been 
-> > addressed yet).
-> 
-> > Nathan Lynch:
-> >       [POWERPC] Fix gettimeofday inaccuracies
-> 
-> Tested on B&W G3, iBook1 and a G4/466.
-> This patch causes deadlocks on ppc32, but not on ppc64. Have to verify
-> it on a vanilla kernel, but I'm sure there are no funky patches in
-> openSuSE.
-> 
-> https://bugzilla.novell.com/show_bug.cgi?id=202146
+I guess this message should also be forwarded to linux-usb-devel@lists.sourceforge.net. I hope the developers there can make some comments.
 
-Sorry about that, does this (a partial revert of the change) fix it
-for you?
+Gerhard
+
+-------- Original-Nachricht --------
+Datum: Sun, 27 Aug 2006 18:17:14 +0200
+Von: Marcus Comstedt <marcus@mc.pp.se>
+An: linuxppc-dev@ozlabs.org
+Betreff: [PATCH] EHCI Oops on CONFIG_NOT_COHERENT_CACHE system
+
+> 
+> Hello.
+> 
+> I'm running 2.6.16.27 on an AmigaOneXE, which is a G4 based board
+> which has a northbridge (ArticiaS) which does not support cache
+> coherency.  Because of this, CONFIG_NOT_COHERENT_CACHE is set.
+> 
+> The problem I've been having is that the EHCI USB2 host driver causes
+> a kernel oops (see attachment) immediately on bootup.
+> 
+> First, let me outline why this oops happens:
+> 
+> 1) The EHCI driver uses a structure called "echi_qh", which contains
+>    both data to be accessed by the USB hardware through DMA, and
+>    private housekeeping data.
+> 2) Since part of the structure is for DMA, instances of the structre
+>    are allocated with dma_pool_alloc().
+> 3) Pages allocated with dma_pool_alloc() are cache-inhibited on this
+>    system, due to the lack of cache coherency support.
+> 4) The private data in this structure included a struct kref, which in
+>    turn contains an atomic_t.
+> 5) Incrementing and decrementing an atom_t, and thereby a kref, is
+>    done with lwarx/stwcx.
+> 6) lwarx on a cache-inhibited address is not allowed on G4 (generates
+>    a DSI).
+> 
+> Now, the problem is deciding in which of these steps the actual error
+> lies, since none of these facts (apart from #6) is set in stone.  In
+> my opinion though, it makes sense to simply say that atomic_t:s (and
+> therefore kref:s) are not supported in DMA memory.  This would place
+> the error in the EHCI driver, with two possible solutions:
+> 
+> A) Rewrite qh_get() and qh_put() to use something else than
+>    kref_get()/kref_put().  Simply using non-atomic increment and
+>    decrement made the Oops go away, but as I don't know the design
+>    decision behind using a struct kref, I can't say that atomicity
+>    isn't needed, so such a simple fix might lead to race conditions.
+> 
+> B) Break struct ehci_qh into two parts, one allcated with
+>    dma_pool_alloc() and one allocated with kmalloc(), where the fields
+>    accessed by the hardware is put into the former, and the driver
+>    private data (which includes the kref) in the latter.  Safe and no
+>    major performance hit (just one level of indirection added in some
+>    places, and using cache-enabled memory for the internal data might
+>    actually improve performance), but the change touches a rather
+>    large amount of lines (patch attached).
+> 
+> C) Basically the same as B, but only the kref (and a pointer back to
+>    the rest of the data, so that qh_destroy can find it) is moved to
+>    the kmalloced part.  This means only ehci_qh_alloc(), qh_get() and
+>    qh_put() need to be changed, so the changeset is much smaller.  I
+>    don't have a patch ready for this, but I can make one on request.
+> 
+> A completely different approach would be
+> 
+> D) Make the DSI exception handler emulate lwarx on cache-inhibited
+>    pages.
+> 
+> This seems like a more complex fix though, and I'm sure the
+> performance would be pretty lousy (although only NOT_COHERENT_CACHE
+> systems would be affected of course).
+> 
+> So, what do you guys think?  Which is the best way to rectify the
+> situation?  (Apart from changing to a better northbrige, which I don't
+> see happening, realistically.  :-/ )
+> 
+> 
+>   // Marcus
+> 
+-- 
 
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 18e59e4..fe9b1d9 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -655,7 +655,6 @@ void timer_interrupt(struct pt_regs * re
- 	int next_dec;
- 	int cpu = smp_processor_id();
- 	unsigned long ticks;
--	u64 tb_next_jiffy;
- 
- #ifdef CONFIG_PPC32
- 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
-@@ -697,14 +696,11 @@ void timer_interrupt(struct pt_regs * re
- 			continue;
- 
- 		write_seqlock(&xtime_lock);
--		tb_next_jiffy = tb_last_jiffy + tb_ticks_per_jiffy;
--		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
--			tb_last_jiffy = tb_next_jiffy;
--			tb_last_stamp = per_cpu(last_jiffy, cpu);
--			do_timer(regs);
--			timer_recalc_offset(tb_last_jiffy);
--			timer_check_rtc();
--		}
-+		tb_last_jiffy += tb_ticks_per_jiffy;
-+		tb_last_stamp = per_cpu(last_jiffy, cpu);
-+		do_timer(regs);
-+		timer_recalc_offset(tb_last_jiffy);
-+		timer_check_rtc();
- 		write_sequnlock(&xtime_lock);
- 	}
- 	
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
