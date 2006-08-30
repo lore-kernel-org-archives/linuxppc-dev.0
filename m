@@ -1,32 +1,13 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C87167B22
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 10:20:59 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7U0KtYS013514
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 20:20:55 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7U0Kt3T247746
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 20:20:55 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7U0Ktfb026709
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 20:20:55 -0400
-Date: Tue, 29 Aug 2006 17:21:10 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: libnuma interleaving oddness
-Message-ID: <20060830002110.GZ5195@us.ibm.com>
-References: <20060829231545.GY5195@us.ibm.com>
-	<Pine.LNX.4.64.0608291655160.22397@schroedinger.engr.sgi.com>
+Return-Path: <DaveLiu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0608291655160.22397@schroedinger.engr.sgi.com>
-Cc: linux-mm@kvack.org, lnxninja@us.ibm.com, ak@suse.de,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: atomic operations in user space
+Date: Wed, 30 Aug 2006 10:17:05 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D263511BB47@zch01exm21.fsl.freescale.net>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Li Yang-r58472" <LeoLi@freescale.com>, <linuxppc-embedded@ozlabs.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +17,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 29.08.2006 [16:57:35 -0700], Christoph Lameter wrote:
-> On Tue, 29 Aug 2006, Nishanth Aravamudan wrote:
-> 
-> > I don't know if this is a libnuma bug (I extracted out the code from
-> > libnuma, it looked sane; and even reimplemented it in libhugetlbfs
-> > for testing purposes, but got the same results) or a NUMA kernel bug
-> > (mbind is some hairy code...) or a ppc64 bug or maybe not a bug at
-> > all.  Regardless, I'm getting somewhat inconsistent behavior. I can
-> > provide more debugging output, or whatever is requested, but I
-> > wasn't sure what to include. I'm hoping someone has heard of or seen
-> > something similar?
-> 
-> Are you setting the tasks allocation policy before the allocation or
-> do you set a vma based policy? The vma based policies will only work
-> for anonymous pages.
+[snip]
+> I surely know all the theories you mentioned clearly.  But=20
+> please do look at the case I gave.  Correct me if I missed=20
+> anything.  Thanks
+>=20
+> All the lwarx and stwcx operate on the same address.
+>=20
+> > Task A		Task B
+> > lwarx			=09
+> // Get RESERVATION
+> > 			......
+> > 			lwarx
+> > 			stwcx
+>=20
+> // RESERVATION cleared
+> >
+> > 			.....
+> > 			.....
+> > 			lwarx
+>=20
+> // Get RESERVATION again
+> > stwcx			=09
+>=20
+> //Note here: RESERVATION is valid, address is the same.
+> So the result is commited, no retry for task A
+>=20
+> > .....
+> > 			stwcx
+> //RESERVATION is cleared, retry atomic op for task B
+>=20
+> Please be noted that reservation is only identified by=20
+> reservation bit and address operated on.  So different=20
+> lwarx's on the same address, may be considered as the same=20
+> reservation.
 
-The order is (with necessary params filled in):
+Is this your reason we cannot do atomic operation in user space?
 
-p = mmap( , newsize, RW, PRIVATE, unlinked_hugetlbfs_heap_fd, );
+How about the kernel space? You can image it.
+The context switching as above also happen in kernel space,
+Why we can do atomic operation in kernel space, not do in user space?
 
-numa_interleave_memory(p, newsize);
+You are assuming the context switching cause the reservation broken.
+but we can do atomic operation in kernel space.  The context switching
+really is the execption of processor, If we can clear the wrong
+RESERVATION
+before exception return, I think we can solve this problem. We can dummy
+stwcx. before exception return or the processor automaticly clear the
+reservation in exception.=20
 
-mlock(p, newsize); /* causes all the hugepages to be faulted in */
+Are you missing these important things?
 
-munlock(p,newsize);
-
->From what I gathered from the numa manpages, the interleave policy
-should take effect on the mlock, as that is "fault-time" in this
-context. We're forcing the fault, that is.
-
-Does that answer your question? Sorry if I'm unclear, I'm a bit of a
-newbie to the VM.
-
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+-DAve
