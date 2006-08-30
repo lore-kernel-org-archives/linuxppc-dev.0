@@ -1,14 +1,21 @@
-Return-Path: <DaveLiu@freescale.com>
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
+	by ozlabs.org (Postfix) with ESMTP id 520E467B66
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:27:01 +1000 (EST)
+Date: Tue, 29 Aug 2006 21:26:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: Re: libnuma interleaving oddness
+In-Reply-To: <20060830022621.GA5195@us.ibm.com>
+Message-ID: <Pine.LNX.4.64.0608292123230.23009@schroedinger.engr.sgi.com>
+References: <20060829231545.GY5195@us.ibm.com>
+	<Pine.LNX.4.64.0608291655160.22397@schroedinger.engr.sgi.com>
+	<20060830002110.GZ5195@us.ibm.com> <20060830022621.GA5195@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: RE: atomic operations in user space
-Date: Wed, 30 Aug 2006 10:55:39 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D263511BB62@zch01exm21.fsl.freescale.net>
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D0FC836@zch01exm20.fsl.freescale.net>
-From: "Liu Dave-r63238" <DaveLiu@freescale.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>, <linuxppc-embedded@ozlabs.org>,
-	<linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: linux-mm@kvack.org, lnxninja@us.ibm.com, ak@suse.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,46 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > [snip]
-> > > >
-> > > > Is this your reason we cannot do atomic operation in user space?
-> > > >
-> > > > How about the kernel space? You can image it.
-> > > > The context switching as above also happen in kernel space,
-> > > Why we can
-> > > > do atomic operation in kernel space, not do in user space?
-> > > >
-> > >
-> > > There are substantial different between kernel and user control=20
-> > > path.  First, interrupt can't be interrupted by user process. =20
-> > > Second, context switch can be explicitly controlled in=20
-> kernel, but=20
-> > > not in user space.
-> >=20
-> > I agree this, but from the processor's view, the context=20
-> switch is the=20
-> > same to user space and kernel space. The exception control=20
-> flow only=20
-> > happen at exception interrupt.
-> > What is different you point ?
->=20
-> Exception is special and tiny part of the kernel, which=20
-> should be programmed carefully not to break any thing. =20
-> Anyway, as you found, clear reservation in exception do solve=20
-> all the problems.
+On Tue, 29 Aug 2006, Nishanth Aravamudan wrote:
 
-Can we do atomic operation in user space as kernel space?
+> If I use the default hugepage-aligned hugepage-backed malloc
+> replacement, I get the following in /proc/pid/numa_maps (excerpt):
+> 
+> 20000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
+> 21000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
+> ...
+> 37000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
+> 38000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
 
-> > > > You are assuming the context switching cause the=20
-> reservation broken.
-> > > > but we can do atomic operation in kernel space.  The
-> > > context switching
-> > > > really is the execption of processor, If we can clear the wrong=20
-> > > > RESERVATION before exception return, I think we can solve this=20
-> > > > problem. We can dummy stwcx. before exception return or the
-> > > processor
-> > > > automaticly clear the reservation in exception.
-> > >
-> > > I assume stwcx is a costing instruction, and I don't see=20
-> such code=20
-> > > indeed.
+Is this with nodemask set to [0]?
+
+> If I change the nodemask to 1-7, I get:
+> 
+> 20000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N1=1
+> 21000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N2=1
+> 22000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N3=1
+> 23000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N4=1
+> 24000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N5=1
+> 25000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N6=1
+> 26000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N7=1
+> ...
+> 35000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N1=1
+> 36000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N2=1
+> 37000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N3=1
+> 38000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N4=1
+
+So interleave has an effect.
+
+Are you using cpusets? Or are you only using memory policies? What is the 
+default policy of the task you are running?
+
+> If I then change our malloc implementation to (unnecessarily) mmap a
+> size aligned to 4 hugepages, rather aligned to a single hugepage, but
+> using a nodemask of 0-7, I get:
+> 
+> 20000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
+> 24000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
+> 28000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
+> 2c000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
+> 30000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
+> 34000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
+> 38000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=1 mapped=4 N0=1 N1=1 N2=1 N3=1
+
+Hmm... Strange. Interleaving should continue after the last one....
