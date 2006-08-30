@@ -1,23 +1,23 @@
-Return-Path: <ak@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B01C867B53
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 17:32:24 +1000 (EST)
-From: Andi Kleen <ak@suse.de>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: libnuma interleaving oddness
-Date: Wed, 30 Aug 2006 09:32:23 +0200
-References: <20060829231545.GY5195@us.ibm.com> <200608300919.13125.ak@suse.de>
-	<20060830072948.GE5195@us.ibm.com>
-In-Reply-To: <20060830072948.GE5195@us.ibm.com>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id 7B15B67B86
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 18:05:49 +1000 (EST)
+Date: Wed, 30 Aug 2006 10:05:35 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Linux v2.6.18-rc5
+Message-ID: <20060830080535.GA32408@aepfle.de>
+References: <Pine.LNX.4.64.0608272122250.27779@g5.osdl.org>
+	<20060829115537.GA24256@aepfle.de>
+	<20060829130629.GW11309@localdomain>
+	<20060829155216.GA25861@aepfle.de>
+	<17653.11388.637189.113422@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608300932.23746.ak@suse.de>
-Cc: linuxppc-dev@ozlabs.org, linux-mm@kvack.org, lnxninja@us.ibm.com,
-	Christoph Lameter <clameter@sgi.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <17653.11388.637189.113422@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
+	Nathan Lynch <ntl@pobox.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 30 August 2006 09:29, Nishanth Aravamudan wrote:
+On Wed, Aug 30, Paul Mackerras wrote:
 
-> 
-> > Hmm, maybe mlock() policy() is broken.
-> 
-> I took out the mlock() call, and I get the same results, FWIW.
+> This works fine on my G4 tibook.  Let me know how it goes on your
+> machines.
 
-Then it's probably some new problem in hugetlbfs. Does it work with shmfs?
-
-The regression test for hugetlbfs is numactl is unfortunately still disabled.
-I need to enable it at some point for hugetlbfs now that it reached mainline.
-
--Andi
+Works ok on an iBook1.
