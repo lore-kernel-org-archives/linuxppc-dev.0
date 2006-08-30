@@ -1,16 +1,20 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 95B9067B97
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 00:25:17 +1000 (EST)
-In-Reply-To: <9mz9np82b.fsf@omoikane.mc.pp.se>
-References: <9mz9np82b.fsf@omoikane.mc.pp.se>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3e3f83654b861ae77c6c07cf207ba6af@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] EHCI Oops on CONFIG_NOT_COHERENT_CACHE system
-Date: Wed, 30 Aug 2006 09:24:57 -0500
-To: Marcus Comstedt <marcus@mc.pp.se>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CF45767B62
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 01:05:55 +1000 (EST)
+Message-ID: <44F5A92D.6070902@am.sony.com>
+Date: Wed, 30 Aug 2006 08:05:17 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: undefined reference to pci_io_base
+References: <44F47ABE.7080602@am.sony.com>	<17652.49904.419167.448821@cargo.ozlabs.ibm.com>	<20060829232026.GC27372@austin.ibm.com>	<44F4D458.7030707@am.sony.com>
+	<17652.55334.554969.284398@cargo.ozlabs.ibm.com>
+In-Reply-To: <17652.55334.554969.284398@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,29 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Aug 30, 2006, at 7:04 AM, Marcus Comstedt wrote:
-> "Gerhard Pircher" <gerhard_pircher at gmx.net> writes:
->> I guess this message should also be forwarded to
->> linux-usb-devel at lists.sourceforge.net. I hope the developers there
->> can make some comments.
->
-> Well, I figured the first thing to do would be to reach a consensus
-> here on whether or not atomic_t:s in DMA memory should be ruled as
-> unallowed.  Judging from the massive silence, there doesn't seem to be
-> any strong opinions either way though...
+Paul Mackerras wrote:
+> Geoff Levand writes:
+> 
+>> I found the same, but was thinking
+>> 
+>> #if defined(CONFIG_ISA) && !defined(__mc68000__)
+>> 
+>> So it is only built when CONFIG_ISA=y.  Is there any
+>> reason to always have it whit PCI?
+> 
+> It's occasionally useful with PCI && !ISA.  It's pretty useless with
+> !PCI && !ISA.
+> 
+>> Paul, can I send you that fix, or should I send it to
+>> someone else?
+> 
+> Send it to Andrew Morton.
 
-I think its a case of the people that know the architecture agree
-that atomics and DMA do not mix, and that this is an issue for
-usb-devel to fix.
+For anyone interested, I sent that out here:
 
-The other question is: does the current access polute the cache by
-reading things where the device is supposed to be writing?
+  http://lkml.org/lkml/2006/8/29/374
 
-I think some on that list are familiar with the issues for incoherent
-DMA, as some of the other usb drivers have been cleaned up in that
-regard.
-
-My suggestion is take the issue over there, and only cc us here if
-you get pushback over there.
-
-milton
+-Geoff
