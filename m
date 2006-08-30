@@ -1,40 +1,35 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <agl@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 59A6367B60
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 04:11:51 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7UIBmhS013088
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:11:48 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7UIBmMp260686
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:11:48 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7UIBl7d009499
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:11:48 -0400
-Subject: Re: [PATCH] powerpc: emulate power5 popcntb instruction
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <6DCD2C4D-BB97-487D-A094-7F288970F3F3@kernel.crashing.org>
-References: <1155840829.9659.16.camel@farscape.rchland.ibm.com>
-	<200608182105.45264.arnd@arndb.de>
-	<50883.84.105.60.119.1156014614.squirrel@gate.crashing.org>
-	<200608192219.03178.arnd@arndb.de>
-	<37280.84.105.60.119.1156030372.squirrel@gate.crashing.org>
-	<1156190965.9659.41.camel@farscape.rchland.ibm.com>
-	<17645.18647.720814.903612@cargo.ozlabs.ibm.com>
-	<1156788215.5959.25.camel@localhost>
-	<6DCD2C4D-BB97-487D-A094-7F288970F3F3@kernel.crashing.org>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F0B4067B64
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 04:13:11 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7UID6tv030021
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:13:06 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7UID6po280858
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:13:06 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7UID6tA032111
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:13:06 -0400
+Subject: Re: libnuma interleaving oddness
+From: Adam Litke <agl@us.ibm.com>
+To: Tim Pepper <tpepper@gmail.com>
+In-Reply-To: <eada2a070608301101j205b2711va5c287dbf8aab492@mail.gmail.com>
+References: <20060829231545.GY5195@us.ibm.com>
+	<200608300919.13125.ak@suse.de> <20060830072948.GE5195@us.ibm.com>
+	<200608300932.23746.ak@suse.de>
+	<eada2a070608301101j205b2711va5c287dbf8aab492@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 30 Aug 2006 13:11:38 -0500
-Message-Id: <1156961498.5959.53.camel@localhost>
+Date: Wed, 30 Aug 2006 13:13:05 -0500
+Message-Id: <1156961585.7185.8680.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	segher@gate.crashing.org, arnd@arndb.de
-Reply-To: will_schmidt@vnet.ibm.com
+Cc: linux-mm@kvack.org, Nishanth Aravamudan <nacc@us.ibm.com>,
+	Andi Kleen <ak@suse.de>, linuxppc-dev@ozlabs.org,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,94 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-29-08 at 08:43 +0200, Segher Boessenkool wrote:
-> >> I just did a patch to fix the existing masks.
+On Wed, 2006-08-30 at 11:01 -0700, Tim Pepper wrote:
+> On 8/30/06, Andi Kleen <ak@suse.de> wrote:
+> > Then it's probably some new problem in hugetlbfs.
 > 
-> Thanks Paul.
+> It's something subtle though, because I _am_ able to get interleaving
+> on hugetlbfs with a slightly simplified test case (see previous email)
+> compared to Nish's.
 > 
-> >> Could you do a new
-> >> version of this patch that doesn't include the unrelated mask fixes
-> >> please?  Also it would be really nice if you could figure out a  
-> >> way to
-> >> avoid doing the unnecessary 64-bit logical operations on 32-bit
-> >> machines - i.e. using an unsigned long for tmp, but then the  
-> >> constants
-> >> become problematic.  Maybe you need something like
-> >>
-> >> #define LCONST(x)	((unsigned long)(x##ULL))
-> >
-> > Ok, how about this..
+> > Does it work with shmfs?
 > 
-> Hrm.  The LCONST() thing is butt ugly though; you can just write
-> 0x3333333333333333ULL etc. and GCC will do the right thing (i.e.
-> efficient code), and not warn (don't need the "ULL" even when in
-> C99/gnu99 mode, as we should be but aren't, heh).
-> 
-> You want to make tmp and unsigned long instead of an u64...
+> Haven't tried shmfs, but the following correctly does the expected
+> interleaving with hugepages (although not hugetlbfs backed):
+>      shmid = shmget( 0, NR_HUGE_PAGES, IPC_CREAT | SHM_HUGETLB | 0666 );
+>      shmat_addr = shmat( shmid, NULL, 0 );
+>      ...
+>      numa_interleave_memory( shmat_addr, SHM_SIZE, &nm );
+> I'd expect it works fine with non-huge pages, shmfs.
 
-Ok, so back to unsigned-long to let the 32-bit stuff be happy..
+Actually, the above call will yield hugetlbfs backed huge pages.  The
+kernel just prepares the hugetlbfs file for you.  See
+hugetlb_zero_setup().
 
-Now a bit of a tangent question:  As far as just 64-bit is concerned, is
-there actually any difference between u64 and unsigned long?   Am
-wondering why you suggested that change to u64 from unsigned long
-earlier in the thread.
-
-
-this version looks to build clean with arch=ppc (32-bit). 
-
-This provides emulation of the power5 instruction popcntb.
-
-Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-
-
----
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2105767..4014d71 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -588,6 +588,9 @@ #define INST_LSWX		0x7c00042a
- #define INST_STSWI		0x7c0005aa
- #define INST_STSWX		0x7c00052a
- 
-+#define INST_POPCNTB		0x7c0000f4
-+#define INST_POPCNTB_MASK	0xfc0007fe
-+
- static int emulate_string_inst(struct pt_regs *regs, u32 instword)
- {
- 	u8 rT = (instword >> 21) & 0x1f;
-@@ -656,6 +659,23 @@ static int emulate_string_inst(struct pt
- 	return 0;
- }
- 
-+static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
-+{
-+	u32 ra,rs;
-+	unsigned long tmp;
-+
-+	ra = (instword >> 16) & 0x1f;
-+	rs = (instword >> 21) & 0x1f;
-+
-+	tmp = regs->gpr[rs];
-+	tmp = tmp - ((tmp >> 1) & 0x5555555555555555ULL);
-+	tmp = (tmp & 0x3333333333333333ULL) + ((tmp >> 2) & 0x3333333333333333ULL);
-+	tmp = (tmp + (tmp >> 4)) & 0x0f0f0f0f0f0f0f0fULL;
-+	regs->gpr[ra] = tmp;
-+
-+	return 0;
-+}
-+
- static int emulate_instruction(struct pt_regs *regs)
- {
- 	u32 instword;
-@@ -693,6 +713,11 @@ static int emulate_instruction(struct pt
- 	if ((instword & INST_STRING_GEN_MASK) == INST_STRING)
- 		return emulate_string_inst(regs, instword);
- 
-+	/* Emulate the popcntb (Population Count Bytes) instruction. */
-+	if ((instword & INST_POPCNTB_MASK) == INST_POPCNTB) {
-+		return emulate_popcntb_inst(regs, instword);
-+	}
-+
- 	return -EINVAL;
- }
- 
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
