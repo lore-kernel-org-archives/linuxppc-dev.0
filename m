@@ -1,32 +1,19 @@
-Return-Path: <strosake@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 537FB67A3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 08:13:07 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7UMD3gP018817
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 18:13:03 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7UMD3c7226670
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 18:13:03 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7UMD3Vl022182
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 18:13:03 -0400
-Message-ID: <44F60D6C.6070303@austin.ibm.com>
-Date: Wed, 30 Aug 2006 17:13:00 -0500
-From: Mike Strosaker <strosake@austin.ibm.com>
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id ADEED67B32
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 08:49:24 +1000 (EST)
+Message-ID: <44F60DFF.9080508@mvista.com>
+Date: Wed, 30 Aug 2006 15:15:27 -0700
+From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] reboot when panic_timout is set
-References: <20060821161132.GA31085@aepfle.de>
-	<44EF428B.8010100@austin.ibm.com>
-	<20060825201402.GA28214@aepfle.de>
-In-Reply-To: <20060825201402.GA28214@aepfle.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+To: Liu Dave-r63238 <DaveLiu@freescale.com>
+Subject: Re: [QUESTION] Enable coherency for all pages on 83xx to fix PCI
+	data corruption
+References: <995B09A8299C2C44B59866F6391D263511B9EA@zch01exm21.fsl.freescale.net>
+	<43765FEB-22D2-4435-A074-7DEF969E466B@kernel.crashing.org>
+In-Reply-To: <43765FEB-22D2-4435-A074-7DEF969E466B@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,41 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
+Kumar Gala wrote:
+> Randy may remember but this fixed an issue related that he was seeing  
+> with an e100 or e1000 and it was the solution provided by the  Freescale 
+> Apps team in Austin.
+Hi All,
+  Sorry for the delay in responding, I've been out sick on and off.
 
->On Fri, Aug 25, Mike Strosaker wrote:
->
->>Olaf Hering wrote:
->>    
->>
->>>Only call into RTAS when booted with panic=0 because the RTAS call does 
->>>not return.
->>>The system has to be rebooted via the HMC or via the management console 
->>>right now.
->>>This is cumbersome and not what the default panic=180 is supposed to do.
->>>      
->>>
->>The os-term call is supposed to indicate to the platform that it should 
->>follow it's abnormal OS termination policy.  I normally set my 
->>partitions to reboot immediately after an os-term call.  I believe that 
->>"/usr/sbin/serv_config -b" (installed with powerpc-utils-papr) is used 
->>to set that policy from the command line.
->>    
->>
->
->That doesnt help me at all if the kernel crashes before it reaches
->/init. And if one has to call a binary anyway to set or upgrade the
->policy, this binary can also set /proc/sys/kernel/panic to 0.
->  
->
-Hmm... I thought there was a way to modify the reboot policy from SMS or 
-the OF command line, but I can't find a way offhand.  I'm trying to find 
-out from the firmware people here.  It used to be an NVRAM variable in 
-one of the partitions visible to the OS (and so changable from OF with 
-the setenv command), but that's not the case anymore; it's now modified 
-by the ibm,set-system-parameter RTAS call.
+  The patch does not solve an erratum. It is required for proper operation if prefetching is enabled for any inbound PCI window.
 
->Do I have to set it for each boot, or is a change permanent?
->  
->
-The change is stored in NVRAM, and thus is persistent across reboots.
+  The problem is related to the buffers in the I/O Sequencer (Page 11-1 of the MPC8349 Manual Rev 2). There are 12 of these buffers, each the length of a cache line. When memory prefetching is enabled for an inbound PCI window, these buffers can get pre-loaded with data from main memory. If the processor subsequently modifies this data in main memory and cache coherency is not enabled, the contents of the I/O Sequencer's buffers do not get snooped and stale data is delivered to the PCI bus. If memory coherency is enabled, subsequent writes to pre-fetchable memory are snooped by the I/O Sequencer and the stale data problem is avoided.
+
+  The connection to PCI erratum 5 was false. Marking the inbound PCI memory windows non-prefetchable solved the problem because the I/O Sequencers internal buffers were not pre-loaded and could not contain stale data.
+
+  Kumar is correct in that the solution was provided by the folks at Freescale. Similar corruption has been seen when using a MPC107 host bridge with 74[45]x processors as the MPC107 also has an internal set of buffers that can contain stale data if prefetching is enabled on inbound PCI windows. In fact, there is a comment to that effect just above the comment adding the 83xx in the patch.
+
+		Randy V.
