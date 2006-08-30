@@ -1,18 +1,18 @@
-Return-Path: <rvinson@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id ADEED67B32
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 08:49:24 +1000 (EST)
-Message-ID: <44F60DFF.9080508@mvista.com>
-Date: Wed, 30 Aug 2006 15:15:27 -0700
-From: Randy Vinson <rvinson@mvista.com>
-MIME-Version: 1.0
-To: Liu Dave-r63238 <DaveLiu@freescale.com>
-Subject: Re: [QUESTION] Enable coherency for all pages on 83xx to fix PCI
-	data corruption
-References: <995B09A8299C2C44B59866F6391D263511B9EA@zch01exm21.fsl.freescale.net>
-	<43765FEB-22D2-4435-A074-7DEF969E466B@kernel.crashing.org>
-In-Reply-To: <43765FEB-22D2-4435-A074-7DEF969E466B@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 81238679E2
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 09:03:38 +1000 (EST)
+Subject: Re: PCIe enhanced configuration mechanism support on ppc arch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <7cc604637892c0a00a5e3e38192494d7@bga.com>
+References: <7cc604637892c0a00a5e3e38192494d7@bga.com>
+Content-Type: text/plain
+Date: Thu, 31 Aug 2006 09:03:13 +1000
+Message-Id: <1156978993.12526.97.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,19 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Randy may remember but this fixed an issue related that he was seeing  
-> with an e100 or e1000 and it was the solution provided by the  Freescale 
-> Apps team in Austin.
-Hi All,
-  Sorry for the delay in responding, I've been out sick on and off.
+On Wed, 2006-08-30 at 11:30 -0500, Milton Miller wrote:
+> On Fri Aug 18 05:01:48 EST 2006, Shawn Jin wrote:
+> > I'm trying to find out if the current PCI subsystem supports the PCIe
+> > enhanced configuration mechanism, in particular, on the ppc/powerpc
+> > arch, which is basically a MMIO access with the address containing all
+> > bus, device, function, and offset info.
+> 
+> If what you are really trying to find is the 4k extended config space,
+> then there are some platforms that support that on some slots.
+> 
+> If you are trying to find the mmio address for your adapter, then the
+> answer is I am not aware of any PowerPC platforms that provide that,
+> although I am not familiar with the embedded processor platforms nor
+> the pci express Apple boxes.
+> 
+> > Could someone here give an authoritative answer? Or point me to
+> > somewhere I can look for it by myself, such as which file or directory
+> > in the kernel tree. I searched at arch/ppc/kernel,
+> > arch/powerpc/kernel, and drivers/pci but couldn't find an answer. :(
+> 
+> The config access support is in arch/powerpc/kernel/rtas_pci.c,
+> the setting of pci_ext_config_space is at arch/powerpc/kernel/pci_dn.c.
 
-  The patch does not solve an erratum. It is required for proper operation if prefetching is enabled for any inbound PCI window.
+Actually, that only sets the variable used by the RTAS PCI accessors.
+Other platforms might do differently. The PCI probe code uses the
+generic pci_cfg_space_size() function to determine wether extended
+config space is supported for a given device.
 
-  The problem is related to the buffers in the I/O Sequencer (Page 11-1 of the MPC8349 Manual Rev 2). There are 12 of these buffers, each the length of a cache line. When memory prefetching is enabled for an inbound PCI window, these buffers can get pre-loaded with data from main memory. If the processor subsequently modifies this data in main memory and cache coherency is not enabled, the contents of the I/O Sequencer's buffers do not get snooped and stale data is delivered to the PCI bus. If memory coherency is enabled, subsequent writes to pre-fetchable memory are snooped by the I/O Sequencer and the stale data problem is avoided.
+An example of platform not using RTAS and that does support extended
+config space is the PCI Express link out of the U4 northbridge on
+PowerMac (though not the other PCIe slots connected to the HT<->PCIe
+tunnel, at least not for now).
 
-  The connection to PCI erratum 5 was false. Marking the inbound PCI memory windows non-prefetchable solved the problem because the I/O Sequencers internal buffers were not pre-loaded and could not contain stale data.
+It's basically just a matter of having your low level config access
+routines supporting those >=256 offsets. The generic code tests that by
+doing a dummy access and checks for an error return.
 
-  Kumar is correct in that the solution was provided by the folks at Freescale. Similar corruption has been seen when using a MPC107 host bridge with 74[45]x processors as the MPC107 also has an internal set of buffers that can contain stale data if prefetching is enabled on inbound PCI windows. In fact, there is a comment to that effect just above the comment adding the 83xx in the patch.
-
-		Randy V.
+Ben.
