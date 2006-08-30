@@ -1,34 +1,15 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0E16467B5F
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 12:26:09 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7U2Q6iE011371
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 22:26:06 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7U2Q6Q5275200
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 20:26:06 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7U2Q6kH027511
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Aug 2006 20:26:06 -0600
-Date: Tue, 29 Aug 2006 19:26:21 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: libnuma interleaving oddness
-Message-ID: <20060830022621.GA5195@us.ibm.com>
-References: <20060829231545.GY5195@us.ibm.com>
-	<Pine.LNX.4.64.0608291655160.22397@schroedinger.engr.sgi.com>
-	<20060830002110.GZ5195@us.ibm.com>
+Return-Path: <DaveLiu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060830002110.GZ5195@us.ibm.com>
-Cc: linux-mm@kvack.org, lnxninja@us.ibm.com, ak@suse.de,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: atomic operations in user space
+Date: Wed, 30 Aug 2006 10:27:25 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D263511BB4D@zch01exm21.fsl.freescale.net>
+In-Reply-To: <995B09A8299C2C44B59866F6391D263511BB47@zch01exm21.fsl.freescale.net>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Liu Dave-r63238" <DaveLiu@freescale.com>,
+	"Li Yang-r58472" <LeoLi@freescale.com>, <linuxppc-embedded@ozlabs.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,83 +19,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 29.08.2006 [17:21:10 -0700], Nishanth Aravamudan wrote:
-> On 29.08.2006 [16:57:35 -0700], Christoph Lameter wrote:
-> > On Tue, 29 Aug 2006, Nishanth Aravamudan wrote:
-> > 
-> > > I don't know if this is a libnuma bug (I extracted out the code from
-> > > libnuma, it looked sane; and even reimplemented it in libhugetlbfs
-> > > for testing purposes, but got the same results) or a NUMA kernel bug
-> > > (mbind is some hairy code...) or a ppc64 bug or maybe not a bug at
-> > > all.  Regardless, I'm getting somewhat inconsistent behavior. I can
-> > > provide more debugging output, or whatever is requested, but I
-> > > wasn't sure what to include. I'm hoping someone has heard of or seen
-> > > something similar?
-> > 
-> > Are you setting the tasks allocation policy before the allocation or
-> > do you set a vma based policy? The vma based policies will only work
-> > for anonymous pages.
-> 
-> The order is (with necessary params filled in):
-> 
-> p = mmap( , newsize, RW, PRIVATE, unlinked_hugetlbfs_heap_fd, );
-> 
-> numa_interleave_memory(p, newsize);
-> 
-> mlock(p, newsize); /* causes all the hugepages to be faulted in */
-> 
-> munlock(p,newsize);
-> 
-> From what I gathered from the numa manpages, the interleave policy
-> should take effect on the mlock, as that is "fault-time" in this
-> context. We're forcing the fault, that is.
+> [snip]
+> > I surely know all the theories you mentioned clearly.  But=20
+> please do=20
+> > look at the case I gave.  Correct me if I missed anything.  Thanks
+> >=20
+> > All the lwarx and stwcx operate on the same address.
+> >=20
+> > > Task A		Task B
+> > > lwarx			=09
+> > // Get RESERVATION
+> > > 			......
+> > > 			lwarx
+> > > 			stwcx
+> >=20
+> > // RESERVATION cleared
+> > >
+> > > 			.....
+> > > 			.....
+> > > 			lwarx
+> >=20
+> > // Get RESERVATION again
+> > > stwcx			=09
+> >=20
+> > //Note here: RESERVATION is valid, address is the same.
+> > So the result is commited, no retry for task A
+> >=20
+> > > .....
+> > > 			stwcx
+> > //RESERVATION is cleared, retry atomic op for task B
+> >=20
+> > Please be noted that reservation is only identified by=20
+> reservation bit=20
+> > and address operated on.  So different lwarx's on the same address,=20
+> > may be considered as the same reservation.
+>=20
+> Is this your reason we cannot do atomic operation in user space?
+>=20
+> How about the kernel space? You can image it.
+> The context switching as above also happen in kernel space,=20
+> Why we can do atomic operation in kernel space, not do in user space?
+>=20
+> You are assuming the context switching cause the reservation broken.
+> but we can do atomic operation in kernel space.  The context=20
+> switching really is the execption of processor, If we can=20
+> clear the wrong RESERVATION before exception return, I think=20
+> we can solve this problem. We can dummy stwcx. before=20
+> exception return or the processor automaticly clear the=20
+> reservation in exception.=20
+>=20
+> Are you missing these important things?
+>=20
+> -DAve
 
-For some more data, I did some manipulations of libhugetlbfs and came up
-with the following:
+I got it. I noticed that all of execption return in kernel did stwcx.
+to clear the wrong reserved bit. See the source code.
 
-If I use the default hugepage-aligned hugepage-backed malloc
-replacement, I get the following in /proc/pid/numa_maps (excerpt):
+        .globl  ret_from_except_full
+ret_from_except_full:
+        REST_NVGPRS(r1)
+        /* fall through */
 
-20000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
-21000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
-...
-37000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
-38000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.3JbO7R\040(deleted) huge dirty=1 N0=1
+        .globl  ret_from_except
+ret_from_except:
+           ......
 
-If I change the nodemask to 1-7, I get:
+restore:
+        lwz     r0,GPR0(r1)
+        lwz     r2,GPR2(r1)
+        REST_4GPRS(3, r1)
+        REST_2GPRS(7, r1)
 
-20000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N1=1
-21000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N2=1
-22000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N3=1
-23000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N4=1
-24000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N5=1
-25000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N6=1
-26000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N7=1
-...
-35000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N1=1
-36000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N2=1
-37000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N3=1
-38000000 interleave=1-7 file=/libhugetlbfs/libhugetlbfs.tmp.Eh9Bmp\040(deleted) huge dirty=1 N4=1
+        lwz     r10,_XER(r1)
+        lwz     r11,_CTR(r1)
+        mtspr   SPRN_XER,r10
+        mtctr   r11
 
-If I then change our malloc implementation to (unnecessarily) mmap a
-size aligned to 4 hugepages, rather aligned to a single hugepage, but
-using a nodemask of 0-7, I get:
+        PPC405_ERR77(0,r1)
+        stwcx.  r0,0,r1                 /* to clear the reservation */
 
-20000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
-24000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
-28000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
-2c000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
-30000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
-34000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=4 N0=1 N1=1 N2=1 N3=1
-38000000 interleave=0-7 file=/libhugetlbfs/libhugetlbfs.tmp.PFt0xt\040(deleted) huge dirty=1 mapped=4 N0=1 N1=1 N2=1 N3=1
+          ......
 
-It seems rather odd that it's this inconsistent, and that I'm the only
-one seeing it as such :)
+         rfi
 
-Thanks,
-Nish
+-DAve
 
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+ =20
