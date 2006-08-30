@@ -1,19 +1,24 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id AA08667A3F
+Return-Path: <suneel.reddy@motorola.com>
+Received: from motgate3.mot.com (motgate3.mot.com [144.189.100.103])
+	by ozlabs.org (Postfix) with ESMTP id C8AE367B68
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Aug 2006 09:58:05 +1000 (EST)
-To: wei.li4@elf.mcgill.ca
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Help for building linux 2.6.15 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 29 Aug 2006 17:11:38 EDT."
-	<20060829171138.y9uuwvfi4gs48ws4@webmail.mcgill.ca>
-Date: Wed, 30 Aug 2006 01:58:02 +0200
-Sender: wd@denx.de
-Message-Id: <20060829235802.21DD7352653@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 30 Aug 2006 16:25:34 +1000 (EST)
+Received: from az33exr04.mot.com (az33exr04.mot.com [10.64.251.234])
+	by motgate3.mot.com (8.12.11/Motorola) with ESMTP id k7U6PQdM018339
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Aug 2006 23:25:31 -0700 (MST)
+Received: from ZMY16EXM66.ds.mot.com (zmy16exm66.ap.mot.com [10.179.4.26])
+	by az33exr04.mot.com (8.13.1/8.13.0) with ESMTP id k7U6PONC004903
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 Aug 2006 01:25:26 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6CBFD.137FD51E"
+Subject: How to turn off MMU in MPC8540
+Date: Wed, 30 Aug 2006 14:25:23 +0800
+Message-ID: <405ECA8A30557F439A723E52D50838F9D8295F@ZMY16EXM66.ds.mot.com>
+From: "Reddy Suneel-ASR125" <suneel.reddy@motorola.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +29,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20060829171138.y9uuwvfi4gs48ws4@webmail.mcgill.ca> you wrote:
-> 
-> I am working on ELDK 4.0 package with my evaluation board: A&M MPC875, 
-> after configuration for my board, and do 'make zImage', I got the 
-> following errors:
+This is a multi-part message in MIME format.
 
-I cannot find any board support for this  board  in  the  2.6  kernel
-trees.  Who  ported  Linux  to this hardware? Please go and ask these
-guys.
+------_=_NextPart_001_01C6CBFD.137FD51E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
->   CC      arch/ppc/syslib/m8xx_setup.o
-> arch/ppc/syslib/m8xx_setup.c:56: error: 'bd_t' undeclared here (not in 
-> a function)
+Hi
+=20
+Can anyone know how to turn off MMU in MPC8540?
+=20
+Thanks&regards
+Suneel
 
-Broken code, and/or a broken configuration, if you ask me.
+------_=_NextPart_001_01C6CBFD.137FD51E
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> Can anyone help me? Thanks.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<TITLE>Message</TITLE>
 
-Which board configration are you using? And where is the board support
-coming from?
+<META content=3D"MSHTML 6.00.2800.1561" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D899372306-30082006><FONT face=3DArial=20
+size=3D2>Hi</FONT></SPAN></DIV>
+<DIV><SPAN class=3D899372306-30082006><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D899372306-30082006><FONT face=3DArial size=3D2>Can =
+anyone know how=20
+to turn off MMU in MPC8540?</FONT></SPAN></DIV>
+<DIV><SPAN class=3D899372306-30082006><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D899372306-30082006><FONT face=3DArial=20
+size=3D2>Thanks&amp;regards</FONT></SPAN></DIV>
+<DIV><SPAN class=3D899372306-30082006><FONT face=3DArial=20
+size=3D2>Suneel</FONT></SPAN></DIV></BODY></HTML>
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Change is the essential process of all existence.
-	-- Spock, "Let That Be Your Last Battlefield",
-	   stardate 5730.2
+------_=_NextPart_001_01C6CBFD.137FD51E--
