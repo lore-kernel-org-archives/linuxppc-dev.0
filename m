@@ -1,24 +1,20 @@
-Return-Path: <suneel.reddy@motorola.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id 4F37767B96
+Return-Path: <arvid.staub@mediornet.com>
+Received: from mail.mediornet.com (83-64-147-140.hietzing.xdsl-line.inode.at
+	[83.64.147.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.mediornet.com", Issuer "mediornet.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4BD1467B54
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Aug 2006 17:26:29 +1000 (EST)
-Received: from il06exr03.mot.com (il06exr03.mot.com [129.188.137.133])
-	by motgate8.mot.com (8.12.11/Motorola) with ESMTP id k7U7QRdw017424
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Aug 2006 00:26:27 -0700 (MST)
-Received: from ZMY16EXM66.ds.mot.com (zmy16exm66.ap.mot.com [10.179.4.26])
-	by il06exr03.mot.com (8.13.1/8.13.0) with ESMTP id k7U7QPSb021099
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Aug 2006 02:26:26 -0500 (CDT)
+	Wed, 30 Aug 2006 18:46:26 +1000 (EST)
+Subject: re: PPC405 system slow boot
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6CC05.99925CA1"
-Subject: booting Linux in Linux using kexec tools
-Date: Wed, 30 Aug 2006 15:26:24 +0800
-Message-ID: <405ECA8A30557F439A723E52D50838F9D829C6@ZMY16EXM66.ds.mot.com>
-From: "Reddy Suneel-ASR125" <suneel.reddy@motorola.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 30 Aug 2006 10:20:08 +0200
+Message-ID: <8B59AE8CCFB44040B58FCBC1342ED3C414C4ED@mnx.mediornet.lan>
+From: "Arvid Staub" <Arvid.Staub@mediornet.com>
+To: "Clint Thomas" <cthomas@Soneticom.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,117 +25,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+hi!
 
-------_=_NextPart_001_01C6CC05.99925CA1
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+i've recently had a similar situation with a XC2VP50-based custom board.
+There was no SystemACE involved, we load the FPGA via a CPLD/serial =
+flash.
 
-Hi
-=20
-I am trying to boot Linux (zImage.elf) in Linux using kexec tools.=20
-=20
-I am getting the folling crash
-=20
-sh-2.05b#
-sh-2.05b# kexec -e
-Shutting down gianfar ethernet
-Shutting down gianfar ethernet
-Shutting down gianfar ethernet
-Starting new kernel
-Bye!
-Oops: kernel access of bad area, sig: 11 [#1]
-PREEMPT
-NIP: 2E5C0020 LR: C000A3CC SP: C8D97DF0 REGS: c8d97d40 TRAP: 0400    Not
-taintedMSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-TASK =3D c82f84a0[665] 'kexec' THREAD: c8d96000
-Last syscall: 88
-GPR00: 00000000 C8D97DF0 C82F84A0 2E5C1002 2E5C0000 00000000 00000F35
-C0307DBC
-GPR08: 2E5C0020 C0350000 00000000 C8D96000 00000000 10030450 00000220
-100CBD88
-GPR16: FFFFFFFF 00000000 00000000 00000000 00000000 00000000 FFFFFFFF
-42202442
-GPR24: 100D71C8 100D7508 2E5C1002 C0A8DC80 EE5C0000 2E5C0000 00000000
-C0A8DC80
-Call trace: [c000a2fc]  [c00302d0]  [c000206c]
-Segmentation fault
-sh-2.05b#
-=20
-I am working on MPC8540 processor.
-=20
-can any one help me.
-=20
-Thanks&regards
-Suneel
+the problem resided in the interrupt controller, which was not able to =
+enable interrupts due to an error in the MHS file.
+you should check that your interrupt controller section includes the =
+following parameters:
+PARAMETER C_HAS_IPR =3D 1
+PARAMETER C_HAS_SIE =3D 1
+PARAMETER C_HAS_CIE =3D 1
+PARAMETER C_HAS_IVR =3D 1
 
-------_=_NextPart_001_01C6CC05.99925CA1
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+the intc driver uses SIE and CIE to atomically enable and disable =
+interrupts.
+when the uartlite interrupt was not enabled, the uartlite driver =
+encountered timeouts which caused single characters to appear at the =
+serial console, similar to what you described.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<TITLE>Message</TITLE>
+hope that helps,
+arvid staub
 
-<META content=3D"MSHTML 6.00.2800.1561" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006>Hi</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D432552107-30082006>I am =
-trying to boot=20
-Linux (zImage.elf) in Linux using kexec tools. </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D432552107-30082006>I am =
-getting the=20
-folling crash</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006>sh-2.05b#<BR>sh-2.05b# kexec -e<BR>Shutting =
-down=20
-gianfar ethernet<BR>Shutting down gianfar ethernet<BR>Shutting down =
-gianfar=20
-ethernet<BR>Starting new kernel<BR>Bye!<BR>Oops: kernel access of bad =
-area, sig:=20
-11 [#1]<BR>PREEMPT<BR>NIP: 2E5C0020 LR: C000A3CC SP: C8D97DF0 REGS: =
-c8d97d40=20
-TRAP: 0400&nbsp;&nbsp;&nbsp; Not taintedMSR: 00001000 EE: 0 PR: 0 FP: 0 =
-ME: 1=20
-IR/DR: 00<BR>TASK =3D c82f84a0[665] 'kexec' THREAD: c8d96000<BR>Last =
-syscall:=20
-88<BR>GPR00: 00000000 C8D97DF0 C82F84A0 2E5C1002 2E5C0000 00000000 =
-00000F35=20
-C0307DBC<BR>GPR08: 2E5C0020 C0350000 00000000 C8D96000 00000000 10030450 =
 
-00000220 100CBD88<BR>GPR16: FFFFFFFF 00000000 00000000 00000000 00000000 =
+________________________________________
+Von: linuxppc-embedded-bounces+arvid.staub=3Dmediornet.com@ozlabs.org =
+[mailto:linuxppc-embedded-bounces+arvid.staub=3Dmediornet.com@ozlabs.org]=
+ Im Auftrag von Clint Thomas
+Gesendet: Montag, 28. August 2006 21:57
+An: linuxppc-embedded@ozlabs.org
+Betreff: PPC405 system slow boot
 
-00000000 FFFFFFFF 42202442<BR>GPR24: 100D71C8 100D7508 2E5C1002 C0A8DC80 =
+Hey guys,
 
-EE5C0000 2E5C0000 00000000 C0A8DC80<BR>Call trace: [c000a2fc]&nbsp;=20
-[c00302d0]&nbsp; [c000206c]<BR>Segmentation=20
-fault<BR>sh-2.05b#</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D432552107-30082006>I am =
-working on=20
-MPC8540 processor.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D432552107-30082006>can =
-any one help=20
-me.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006>Thanks&amp;regards</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D432552107-30082006>Suneel</SPAN></FONT></DIV></BODY></HTML>
+I've run through the loops to try and figure what could be wrong with =
+this system. The board in question is modeled after the Xilinx ML300 =
+board. It uses a Xilinx System ACE chip to load a FPGA / Kernel image =
+from compact flash. Originally, I was trying to use the CompactFlash as =
+the root file system, but because of issues in either the design or =
+software, this would only work if SysAce was in polled I/O mode. To =
+circumvent this, I built my root filesystem into an initrd image and =
+built a single ELF file with the Kernel and RFS, then strapped that to =
+the FPGA bit file to make a single FPGA/Kernel/RFS SysAce file.
 
-------_=_NextPart_001_01C6CC05.99925CA1--
+Upon decompression, the Linux kernel boots quickly and loads all of the =
+device drivers. However when it gets to the prompt, it starts slowing =
+down. Output and input to and from the board becomes very very slow (it =
+displays 2 characters roughly every 20 seconds). Originally I believed =
+this to be the CPU still polling SystemAce, so I disabled the Linux =
+System ACE drivers to remove that as a possibility, however after doing =
+this, the problem still persists, even with the RFS in ram! Has anybody =
+encountered a similar situation to this before, with possible insight =
+towards a solution? Thank you for your time.
+=A0
+Clinton Thomas
+cthomas@soneticom.com
+=A0
