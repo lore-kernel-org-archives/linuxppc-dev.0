@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Atomic operations in user space: Yes but No
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20060830063333.GA16468@pb15.lixom.net>
-References: <4879B0C6C249214CBE7AB04453F84E4D0FC836@zch01exm20.fsl.freescale.net>
-	<995B09A8299C2C44B59866F6391D263511BB62@zch01exm21.fsl.freescale.net>
-	<20060830063333.GA16468@pb15.lixom.net>
-Content-Type: text/plain
-Date: Wed, 30 Aug 2006 17:00:40 +1000
-Message-Id: <1156921240.12526.9.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id F407967B8F
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 17:11:45 +1000 (EST)
+Date: Wed, 30 Aug 2006 17:11:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] iseries: define some more i/o accessor functions
+Message-Id: <20060830171134.2fbc2383.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Liu Dave-r63238 <DaveLiu@freescale.com>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-08-30 at 01:33 -0500, Olof Johansson wrote:
-> On Wed, Aug 30, 2006 at 10:55:39AM +0800, Liu Dave-r63238 wrote:
-> 
-> > Can we do atomic operation in user space as kernel space?
+These are merely build fixes that enable (for example) libata and the
+ide code to actually build on iSeries.  The associated hardware will
+never be supported on legacy iSeries, so the code paths don't actually
+need to work, but it is useful (especially for a combined kernel) if
+the code can build.
 
-Ok, let's hope that clarifies it for everybody.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/io.h |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-Atomic operations in user space are possible using reservations
-(lwarx/stwcx. or their 64 bits counterpart). However they are very much
-not recommended.
-
-The reason they work is that the kernel always clears all pending
-reservations in the exception path, thus if there is a task switch, an
-interrupt or anything that can break the user program flow in the middle
-of it's lwarx/stwcx. loop, the kernel will return to userspace with all
-reservations cleared, thus causing stwcx. to fail.
-
-However, they are not recommended unless you know VERY WELL what you are
-doing. When I say, VERY WELL in all uppercases, I really mean it. That
-is examples in books etc... are usually not enough to know very well
-what you are doing :) There are three issues at hand at least that I
-know about use of lwarx/stwcx, from the less to the most important:
-
- - Processor erratas. For example, the 405 requires a sync in an atomic
-loop. The kernel has a mecanism to have those sync's in and eventually
-comment them out at runtime. Future processors might have different
-erratas regarding those instructions. It's better to keep their usage
-local to the kernel and/or glibc to avoid having to fix too much
-userland problems when that happens.
-
- - Performance issues and possible livelocks. There are both processor
-and bus starvation issues related to the use of atomics. On some
-processors, it's very recommended for example, when a lock operation
-fails, to go do something else for a while (intentional branch
-mispredict for example) before trying again. In general, there are
-issues with cache lines used for lwarx/stwcx. ping-ponging all over the
-fabric on some heavy duty SMP machines if great care isn't taken with
-the way atomics or locks are laid out in memory and shared among
-threads. 
-
- - Correctness vs. storage ordering. That's the biggest one. Almost
-every time I've seen userland code try to do their own atomic stuffs, it
-was done without full understanding of the out of order storage model of
-the PowerPC architecture and thus without appropriate barriers. This is
-a complicated topic and thus I won't get into a long explanation here,
-but let's say that outside of pure atomic "counters" that have no
-specific ordering requirements or no locking/exclusion semantics vs. the
-execution flow, you should _not_ try to do it yourself with atomics, but
-instead use some of the primitives provided by glibc. With NPTL,
-nowadays, glibc provides pretty fast implementations that do not use the
-kernel unless there is contention.
-
-So yes, you can, but most of the time, you should not.
-
+Paul, please consider this for 2.6.18 as it does fix the build if you
+happen to enable IDE or SATA on iSeries, currently.
+-- 
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index a9496f3..36c4c34 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -72,6 +72,9 @@ #define outl(data,addr)		writel(data,((v
+  * Neither do the standard versions now, these are just here
+  * for older code.
+  */
++#define insb(port, buf, ns)	_insb((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
++#define insw(port, buf, ns)	_insw_ns((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
++#define insl(port, buf, nl)	_insl_ns((u8 __iomem *)((port)+pci_io_base), (buf), (nl))
+ #define insw_ns(port, buf, ns)	_insw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
+ #define insl_ns(port, buf, nl)	_insl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
+ #else
+@@ -137,12 +140,12 @@ #define insl(port, buf, nl)	eeh_insl_ns(
+ #define insw_ns(port, buf, ns)	eeh_insw_ns((port), (buf), (ns))
+ #define insl_ns(port, buf, nl)	eeh_insl_ns((port), (buf), (nl))
+ 
++#endif
++
+ #define outsb(port, buf, ns)  _outsb((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
+ #define outsw(port, buf, ns)  _outsw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
+ #define outsl(port, buf, nl)  _outsl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
+ 
+-#endif
+-
+ #define readb_relaxed(addr) readb(addr)
+ #define readw_relaxed(addr) readw(addr)
+ #define readl_relaxed(addr) readl(addr)
+-- 
+1.4.1.1
