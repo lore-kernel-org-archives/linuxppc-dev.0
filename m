@@ -1,19 +1,17 @@
-Return-Path: <mporter@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 93A8767B5E
+Return-Path: <solca@guug.org>
+Received: from guug (guug.org [168.234.203.30])
+	by ozlabs.org (Postfix) with ESMTP id 6108D67B75
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Aug 2006 03:13:55 +1000 (EST)
-Date: Wed, 30 Aug 2006 12:25:28 -0500
-From: Matt Porter <mporter@embeddedalley.com>
-To: akhilesh@innomedia.soft.net
-Subject: Re: Driver for OCP Driver for PPC405
-Message-ID: <20060830172528.GA25897@gate.crashing.org>
-References: <1417.59.165.59.34.1156954325.squirrel@59.165.59.34>
+	Thu, 31 Aug 2006 04:28:13 +1000 (EST)
+Date: Wed, 30 Aug 2006 13:23:03 -0500
+To: Chun Chung Lo <cclo@astri.org>
+Subject: Re: 2 Ethernet port operating in a PPC405EP system
+Message-ID: <20060830182303.GB25352@guug.org>
+References: <A7B1E4DD46AA7046A4398F745240F29402737D5D@ASPROEXG.astri.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417.59.165.59.34.1156954325.squirrel@59.165.59.34>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <A7B1E4DD46AA7046A4398F745240F29402737D5D@ASPROEXG.astri.local>
+From: Otto Solares <solca@guug.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,19 +23,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 30, 2006 at 09:42:05PM +0530, akhilesh@innomedia.soft.net wrote:
-> Hi,
+On Wed, Aug 30, 2006 at 09:17:20PM +0800, Chun Chung Lo wrote:
+> I know my source code is vert old. But since there are lots of
+> applications developed base on this 2 sets of source code, if the kernel
+> and U-Boot needs to change, the above applications (tons of codes) also
+> need to revise ... (lots of multimedia players, drivers, and other
+> supporting tools). My team cannot afford such great change.
 > 
-> I need a OCP IDE driver for IBM PPC405 redwood6 platform for 2.6 kernel.
-> Any pointer for same or similar driver would be highly appreciated.
+> So I say "update is not recommended" ...
 
-List archives are your friend.
+Hopefully your product will say:
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-February/016715.html
+"buy this product is not recommended" :)
 
-Read the whole thread...there's a patch that applies to linuxppc-2.5 (and
-the location to rsync that old tree) in a later mail. It didn't go
-upstream because the author didn't clean up some minor things needed
-for upstream inclusion.
+Don't repeat the same mistake as the MediaMVP, it uses the same
+processor and same kernel version, it sucks badly...
 
--Matt
+-otto
