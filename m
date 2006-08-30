@@ -1,14 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "aun.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 722ED67B6F
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 19:13:38 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17653.25129.512456.33157@cargo.ozlabs.ibm.com>
-Date: Wed, 30 Aug 2006 20:02:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: Fwd: [CFT:PATCH] Removing possible wrong asm/serial.h inclusions
-In-Reply-To: <20060830092827.GB19689@flint.arm.linux.org.uk>
-References: <20060830092827.GB19689@flint.arm.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, trini@kernel.crashing.org
+Message-ID: <17653.21437.207484.526897@alkaid.it.uu.se>
+Date: Wed, 30 Aug 2006 11:00:45 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Linux v2.6.18-rc5
+In-Reply-To: <17653.11388.637189.113422@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0608272122250.27779@g5.osdl.org>
+	<20060829115537.GA24256@aepfle.de>
+	<20060829130629.GW11309@localdomain>
+	<20060829155216.GA25861@aepfle.de>
+	<17653.11388.637189.113422@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	Nathan Lynch <ntl@pobox.com>, Linus Torvalds <torvalds@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,32 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Russell King writes:
+Paul Mackerras writes:
+ > Olaf,
+ > 
+ > This patch should fix it.  The problem was that I was comparing a
+ > 32-bit quantity with a 64-bit quantity, and consequently time wasn't
+ > advancing.  This makes us use a 64-bit quantity on all platforms,
+ > which ends up simplifying the code since we can now get rid of the
+ > tb_last_stamp variable (which actually fixes another bug that Ben H
+ > and I noticed while going carefully through the code).
+ > 
+ > This works fine on my G4 tibook.  Let me know how it goes on your
+ > machines.
 
-> Maybe this should've gone to linuxppc-dev?  Can PPC folk please look
-> at the PPC bits of this patch, and also decide whether the following
-> can also have asm/serial.h removed:
-> 
-> arch/ppc/4xx_io/serial_sicc.c
-> arch/ppc/boot/simple/mpc52xx_tty.c
-> arch/ppc/boot/simple/mv64x60_tty.c
+Thanks. This fixed a kernel hang bug on my G4 eMac with 2.6.18-rc5.
 
-The situation is that arch/ppc is the old world.  Platforms are being
-moved over to arch/powerpc as fast as we can manage, where things will
-be much cleaner because the information about type and location of
-serial ports (among other things) will be supplied via a device tree
-rather than hardcoded in header files.  This means, though, that there
-isn't much motivation for cleaning up stuff in arch/ppc.
+The vanilla kernel ran fine until I tar xvf'd a file from an NFS-mount,
+then everything ground to a halt.
 
-The two users in arch/ppc/boot aren't really part of the kernel
-proper.  The compressed image bootwrapper uses definitions from
-serial.h on some platforms to access a serial port for interaction
-with the user.  It may be possible to replicate the string of #ifdefs
-and #includes from serial.h in those files.  Tom Rini can best advise
-about that.
-
-The serial_sicc.c code looks like it should be converted to use the
-serial_core stuff.  I hope that will get done in the process of moving
-4xx over to arch/powerpc.
-
-Paul.
+/Mikael
