@@ -1,35 +1,23 @@
-Return-Path: <agl@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <ak@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0B4067B64
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 04:13:11 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7UID6tv030021
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:13:06 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7UID6po280858
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:13:06 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7UID6tA032111
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 14:13:06 -0400
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A839067B68
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 04:15:05 +1000 (EST)
+From: Andi Kleen <ak@suse.de>
+To: "Tim Pepper" <tpepper@gmail.com>
 Subject: Re: libnuma interleaving oddness
-From: Adam Litke <agl@us.ibm.com>
-To: Tim Pepper <tpepper@gmail.com>
-In-Reply-To: <eada2a070608301101j205b2711va5c287dbf8aab492@mail.gmail.com>
-References: <20060829231545.GY5195@us.ibm.com>
-	<200608300919.13125.ak@suse.de> <20060830072948.GE5195@us.ibm.com>
-	<200608300932.23746.ak@suse.de>
+Date: Wed, 30 Aug 2006 20:12:57 +0200
+References: <20060829231545.GY5195@us.ibm.com> <200608300932.23746.ak@suse.de>
 	<eada2a070608301101j205b2711va5c287dbf8aab492@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 30 Aug 2006 13:13:05 -0500
-Message-Id: <1156961585.7185.8680.camel@localhost.localdomain>
-Mime-Version: 1.0
+In-Reply-To: <eada2a070608301101j205b2711va5c287dbf8aab492@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608302012.57592.ak@suse.de>
 Cc: linux-mm@kvack.org, Nishanth Aravamudan <nacc@us.ibm.com>,
-	Andi Kleen <ak@suse.de>, linuxppc-dev@ozlabs.org,
-	Christoph Lameter <clameter@sgi.com>
+	linuxppc-dev@ozlabs.org, Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,28 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-08-30 at 11:01 -0700, Tim Pepper wrote:
-> On 8/30/06, Andi Kleen <ak@suse.de> wrote:
-> > Then it's probably some new problem in hugetlbfs.
-> 
-> It's something subtle though, because I _am_ able to get interleaving
-> on hugetlbfs with a slightly simplified test case (see previous email)
-> compared to Nish's.
-> 
-> > Does it work with shmfs?
-> 
-> Haven't tried shmfs, but the following correctly does the expected
-> interleaving with hugepages (although not hugetlbfs backed):
->      shmid = shmget( 0, NR_HUGE_PAGES, IPC_CREAT | SHM_HUGETLB | 0666 );
->      shmat_addr = shmat( shmid, NULL, 0 );
->      ...
->      numa_interleave_memory( shmat_addr, SHM_SIZE, &nm );
-> I'd expect it works fine with non-huge pages, shmfs.
 
-Actually, the above call will yield hugetlbfs backed huge pages.  The
-kernel just prepares the hugetlbfs file for you.  See
-hugetlb_zero_setup().
+> On my list of random things to do is trying to improve the test
+> coverage in this area.  We keep running into bugs or possible bugs or
+> confusion on expected behaviour.  I'm going through the code trying to
+> understand it and writing little programs to confirm my understanding
+> here and there anyway.
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+numactl has a little regression test suite in test/* that tests a lot of stuff,
+but not all. Feel free to extend it.
+
+-Andi
