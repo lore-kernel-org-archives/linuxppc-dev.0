@@ -1,20 +1,14 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CF45767B62
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 01:05:55 +1000 (EST)
-Message-ID: <44F5A92D.6070902@am.sony.com>
-Date: Wed, 30 Aug 2006 08:05:17 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: undefined reference to pci_io_base
-References: <44F47ABE.7080602@am.sony.com>	<17652.49904.419167.448821@cargo.ozlabs.ibm.com>	<20060829232026.GC27372@austin.ibm.com>	<44F4D458.7030707@am.sony.com>
-	<17652.55334.554969.284398@cargo.ozlabs.ibm.com>
-In-Reply-To: <17652.55334.554969.284398@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 7B34167B52
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 02:30:59 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7cc604637892c0a00a5e3e38192494d7@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: PCIe enhanced configuration mechanism support on ppc arch
+Date: Wed, 30 Aug 2006 11:30:49 -0500
+To: Shawn Jin <shawnxjin@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,26 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Geoff Levand writes:
-> 
->> I found the same, but was thinking
->> 
->> #if defined(CONFIG_ISA) && !defined(__mc68000__)
->> 
->> So it is only built when CONFIG_ISA=y.  Is there any
->> reason to always have it whit PCI?
-> 
-> It's occasionally useful with PCI && !ISA.  It's pretty useless with
-> !PCI && !ISA.
-> 
->> Paul, can I send you that fix, or should I send it to
->> someone else?
-> 
-> Send it to Andrew Morton.
+On Fri Aug 18 05:01:48 EST 2006, Shawn Jin wrote:
+> I'm trying to find out if the current PCI subsystem supports the PCIe
+> enhanced configuration mechanism, in particular, on the ppc/powerpc
+> arch, which is basically a MMIO access with the address containing all
+> bus, device, function, and offset info.
 
-For anyone interested, I sent that out here:
+If what you are really trying to find is the 4k extended config space,
+then there are some platforms that support that on some slots.
 
-  http://lkml.org/lkml/2006/8/29/374
+If you are trying to find the mmio address for your adapter, then the
+answer is I am not aware of any PowerPC platforms that provide that,
+although I am not familiar with the embedded processor platforms nor
+the pci express Apple boxes.
 
--Geoff
+> Could someone here give an authoritative answer? Or point me to
+> somewhere I can look for it by myself, such as which file or directory
+> in the kernel tree. I searched at arch/ppc/kernel,
+> arch/powerpc/kernel, and drivers/pci but couldn't find an answer. :(
+
+The config access support is in arch/powerpc/kernel/rtas_pci.c,
+the setting of pci_ext_config_space is at arch/powerpc/kernel/pci_dn.c.
+
+milton
