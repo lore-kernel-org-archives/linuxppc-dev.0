@@ -1,26 +1,22 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "aun.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 722ED67B6F
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 19:13:38 +1000 (EST)
-MIME-Version: 1.0
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4FB55679E1
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 21:42:55 +1000 (EST)
+Date: Wed, 30 Aug 2006 21:09:20 +1000
+To: Joy Latten <latten@austin.ibm.com>, paulus@au.ibm.com, anton@au.ibm.com,
+	linuxppc-dev@ozlabs.org
+Subject: Re: IPSec kernel oops on ppc64
+Message-ID: <20060830110920.GA19926@gondor.apana.org.au>
+References: <200608282225.k7SMPF80022173@faith.austin.ibm.com>
+	<20060829013023.GA5865@gondor.apana.org.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17653.21437.207484.526897@alkaid.it.uu.se>
-Date: Wed, 30 Aug 2006 11:00:45 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Linux v2.6.18-rc5
-In-Reply-To: <17653.11388.637189.113422@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0608272122250.27779@g5.osdl.org>
-	<20060829115537.GA24256@aepfle.de>
-	<20060829130629.GW11309@localdomain>
-	<20060829155216.GA25861@aepfle.de>
-	<17653.11388.637189.113422@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	Nathan Lynch <ntl@pobox.com>, Linus Torvalds <torvalds@osdl.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20060829013023.GA5865@gondor.apana.org.au>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: jmorris@redhat.com, gcwilson@us.ibm.com, davem@davemloft.net,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,22 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras writes:
- > Olaf,
- > 
- > This patch should fix it.  The problem was that I was comparing a
- > 32-bit quantity with a 64-bit quantity, and consequently time wasn't
- > advancing.  This makes us use a 64-bit quantity on all platforms,
- > which ends up simplifying the code since we can now get rid of the
- > tb_last_stamp variable (which actually fixes another bug that Ben H
- > and I noticed while going carefully through the code).
- > 
- > This works fine on my G4 tibook.  Let me know how it goes on your
- > machines.
+Hi:
 
-Thanks. This fixed a kernel hang bug on my G4 eMac with 2.6.18-rc5.
+Thanks to some excellent info from Joy, I've trakced the problem down to
+a broken implementation of memmove on ppc64, which in turn is due to a
+broken memcpy.
 
-The vanilla kernel ran fine until I tar xvf'd a file from an NFS-mount,
-then everything ground to a halt.
+Both memmove and memcpy need to return the destination pointer as per
+the C standard.  The ppc64 version of memcpy returns a pointer to the
+last byte copied instead.  Since memmove degenerates into memcpy in
+some cases, this makes it broken as well.
 
-/Mikael
+Something like the following patch should fix the problem.  Be warned
+that I know absolutely nothing about ppc assembly so don't come back
+to me if this patch eats your disk :)
+
+BTW, I spotted a couple of typos in memcpy_64.S/copyuser_64.S where
+"cmpldi cr1,..." became "cmpldi r1,...".  So please fix that up while
+you ppc64 guys are at it.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+index fd66acf..9e8d9e7 100644
+--- a/arch/powerpc/lib/memcpy_64.S
++++ b/arch/powerpc/lib/memcpy_64.S
+@@ -11,6 +11,7 @@ #include <asm/ppc_asm.h>
+ 
+ 	.align	7
+ _GLOBAL(memcpy)
++	std	r3,-8(r1)
+ 	mtcrf	0x01,r5
+ 	cmpldi	cr1,r5,16
+ 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+@@ -53,7 +54,8 @@ _GLOBAL(memcpy)
+ 2:	bf	cr7*4+3,3f
+ 	rotldi	r9,r9,8
+ 	stb	r9,0(r3)
+-3:	blr
++3:	ld	r3,-8(r1)
++	blr
+ 
+ .Lsrc_unaligned:
+ 	srdi	r6,r5,3
+@@ -167,4 +169,5 @@ _GLOBAL(memcpy)
+ 3:	bf	cr7*4+3,4f
+ 	lbz	r0,0(r4)
+ 	stb	r0,0(r3)
+-4:	blr
++4:	ld	r3,-8(r1)
++	blr
