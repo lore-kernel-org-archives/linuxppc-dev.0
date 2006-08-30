@@ -1,20 +1,16 @@
-Return-Path: <arvid.staub@mediornet.com>
-Received: from mail.mediornet.com (83-64-147-140.hietzing.xdsl-line.inode.at
-	[83.64.147.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.mediornet.com", Issuer "mediornet.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4BD1467B54
+Return-Path: <cclo@astri.org>
+Received: from asiwss02.astri.org (mail2.astri.org [203.198.202.21])
+	by ozlabs.org (Postfix) with ESMTP id 935AA67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Aug 2006 18:46:26 +1000 (EST)
-Subject: re: PPC405 system slow boot
+	Wed, 30 Aug 2006 21:52:44 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 30 Aug 2006 10:20:08 +0200
-Message-ID: <8B59AE8CCFB44040B58FCBC1342ED3C414C4ED@mnx.mediornet.lan>
-From: "Arvid Staub" <Arvid.Staub@mediornet.com>
-To: "Clint Thomas" <cthomas@Soneticom.com>,
-	<linuxppc-embedded@ozlabs.org>
+	charset=us-ascii
+Subject: DS1302 driver for powerpc
+Date: Wed, 30 Aug 2006 19:54:16 +0800
+Message-ID: <A7B1E4DD46AA7046A4398F745240F29402737D5B@ASPROEXG.astri.local>
+From: "Chun Chung Lo" <cclo@astri.org>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,61 +21,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi!
 
-i've recently had a similar situation with a XC2VP50-based custom board.
-There was no SystemACE involved, we load the FPGA via a CPLD/serial =
-flash.
+Hi all,
 
-the problem resided in the interrupt controller, which was not able to =
-enable interrupts due to an error in the MHS file.
-you should check that your interrupt controller section includes the =
-following parameters:
-PARAMETER C_HAS_IPR =3D 1
-PARAMETER C_HAS_SIE =3D 1
-PARAMETER C_HAS_CIE =3D 1
-PARAMETER C_HAS_IVR =3D 1
+I am now doing a STB project and the development board uses a DS1302
+(trickle charge timekeeping chip) as a RTC. Our board is a IBM PPC405EP
+with a linux kernel 2.4.20 running on it. And the DS1302 is controlled
+by 2 GPIO pins instead of I2C.=0D
 
-the intc driver uses SIE and CIE to atomically enable and disable =
-interrupts.
-when the uartlite interrupt was not enabled, the uartlite driver =
-encountered timeouts which caused single characters to appear at the =
-serial console, similar to what you described.
+I would like to ask are there any porting of DS1302 support under ppc
+architecture? (I can only find DS1302 is supported under cris
+architecture.)
 
-hope that helps,
-arvid staub
+Thanks all.
 
+Best regards,
+Lo Chun Chung
 
-________________________________________
-Von: linuxppc-embedded-bounces+arvid.staub=3Dmediornet.com@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+arvid.staub=3Dmediornet.com@ozlabs.org]=
- Im Auftrag von Clint Thomas
-Gesendet: Montag, 28. August 2006 21:57
-An: linuxppc-embedded@ozlabs.org
-Betreff: PPC405 system slow boot
-
-Hey guys,
-
-I've run through the loops to try and figure what could be wrong with =
-this system. The board in question is modeled after the Xilinx ML300 =
-board. It uses a Xilinx System ACE chip to load a FPGA / Kernel image =
-from compact flash. Originally, I was trying to use the CompactFlash as =
-the root file system, but because of issues in either the design or =
-software, this would only work if SysAce was in polled I/O mode. To =
-circumvent this, I built my root filesystem into an initrd image and =
-built a single ELF file with the Kernel and RFS, then strapped that to =
-the FPGA bit file to make a single FPGA/Kernel/RFS SysAce file.
-
-Upon decompression, the Linux kernel boots quickly and loads all of the =
-device drivers. However when it gets to the prompt, it starts slowing =
-down. Output and input to and from the board becomes very very slow (it =
-displays 2 characters roughly every 20 seconds). Originally I believed =
-this to be the CPU still polling SystemAce, so I disabled the Linux =
-System ACE drivers to remove that as a possibility, however after doing =
-this, the problem still persists, even with the RFS in ram! Has anybody =
-encountered a similar situation to this before, with possible insight =
-towards a solution? Thank you for your time.
-=A0
-Clinton Thomas
-cthomas@soneticom.com
-=A0
+This message (including any attachments) is for the named addressee(s)'s=
+ use only. It may contain
+sensitive, confidential, private proprietary or legally privileged=
+ information intended for a
+specific individual and purpose, and is protected by law. If you are not=
+ the intended recipient,
+please immediately delete it and all copies of it from your system, destroy=
+ any hard copies of it
+and notify the sender. Any use, disclosure, copying, or distribution of=
+ this message and/or any
+attachments is strictly prohibited.
