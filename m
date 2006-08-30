@@ -1,16 +1,26 @@
-Return-Path: <enorm@126.com>
-Received: from m15-113.126.com (m15-113.126.com [220.181.15.113])
-	by ozlabs.org (Postfix) with SMTP id 8D93B67B83
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 67B5A67B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Aug 2006 00:16:09 +1000 (EST)
-Message-ID: <002f01c6cc3a$a0788420$a309a8c0@SZD823>
-From: "enorm" <enorm@126.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Some problem about code reading 
-Date: Wed, 30 Aug 2006 21:45:59 +0800
+	Thu, 31 Aug 2006 01:05:43 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k7UGOfOA022032 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 Aug 2006 10:24:41 -0600 (MDT)
+Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
+	[10.64.32.8])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7UF5eSS020725
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 Aug 2006 10:05:41 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_002C_01C6CC7D.AE412100"
+	boundary="----_=_NextPart_001_01C6CC45.C1743ED2"
+Subject: RE: Some problem about code reading 
+Date: Wed, 30 Aug 2006 08:05:39 -0700
+Message-ID: <DDEDA444F5BF0E41AC8649FB40392C2901926250@az33exm23.fsl.freescale.net>
+In-Reply-To: <002f01c6cc3a$a0788420$a309a8c0@SZD823>
+From: "Wang Haiying-r54964" <Haiying.Wang@freescale.com>
+To: "enorm" <enorm@126.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,78 +33,257 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_002C_01C6CC7D.AE412100
+------_=_NextPart_001_01C6CC45.C1743ED2
 Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-SGksDQogIEkgbWV0IHNvbWUgcHJvYmxlbXMgd2hlbiByZWFkaW5nIHNvdXJjZWNvZGUgb2YgdS1i
-b290IDEuMS40IChmb3IgbXBjODV4eCkNCg0KZmlsZSAvY3B1L21wYzg1eHgvc3RhcnQucyBsaW5l
-IDI3Ng0KDQoNCjI3Ni4gICAgI2lmIChDRkdfQ0NTUkJBUl9ERUZBVUxUICE9IENGR19DQ1NSQkFS
-KQ0KMjc3LiAgICAvKiBTcGVjaWFsIHNlcXVlbmNlIG5lZWRlZCB0byB1cGRhdGUgQ0NTUkJBUiBp
-dHNlbGYgKi8NCjI3OC4gICAgbGlzIHI0LCBDRkdfQ0NTUkJBUl9ERUZBVUxUQGgNCjI3OS4gICAg
-b3JpIHI0LCByNCwgQ0ZHX0NDU1JCQVJfREVGQVVMVEBsDQoyODAuDQoyODEuICAgIGxpcyByNSwg
-Q0ZHX0NDU1JCQVJAaA0KMjgyLiAgICBvcmkgcjUsIHI1LCBDRkdfQ0NTUkJBUkBsDQoyODMuICAg
-IHNyd2kgcjYscjUsMTINCjI4NC4gICAgc3R3IHI2LCAwKHI0KQ0KMjg1LiAgICBpc3luYw0KMjg2
-Lg0KMjg3LiAgICAgbGlzIHI1LCAweGZmZmYNCjI4OC4gICAgIG9yaSByNSxyNSwweGYwMDANCjI4
-OS4gICAgIGx3eiByNSwgMChyNSkNCjI5MC4gICAgIGlzeW5jDQoyOTEuDQoyOTIuICAgIGxpcyBy
-MywgQ0ZHX0NDU1JCQVJAaA0KMjkzLiAgICBsd3ogcjUsIENGR19DQ1NSQkFSQGwocjMpDQoyOTQu
-ICAgICBpc3luYw0KMjk1LiAgICAjZW5kaWYNCg0KDQpJIHRoaW5rIGl0IG1lYW5zIGlmIHdlIGRv
-bid0IHVzZSBkZWZhdWx0IENDU1JCQVIsIHdlIHB1dCB0aGUgQ0NTUkJBUiBhZGRyIGFjdHVhbGx5
-IHVzZWQgdG8gdGhlIHByb3BlciBwbGFjZSBpbiBkZWZhdWx0IENDU1JCQVIsIHNvIHRoYXQgaXQg
-Y2FuIGp1bXAgdG8gdGhlIGFkZHIgd2Ugd2FudCB0byBhdXRvbWF0aWNhbGx5LihsaW5lIDI3Ni0y
-ODYpLg0KDQpCdXQsIEkgZG9uJ3Qga25vdyB3aGF0IGxpbmUgMjg3LTI5NCBkb2VzLiBDYW4gc29t
-ZSBvbmUgdGVsbCBtZSBwbHM/IA0KVGhhbmtzIGZvciB5b3VyIGhlbHAuIA0K
+Hi,=20
+=20
+please read the following from MPC85xx UM about the sequence on how to
+write CCSRBAR:
+=20
+*************************************
+When the e500 core is writing to CCSRBAR, it should use the following
+sequence:
 
-------=_NextPart_000_002C_01C6CC7D.AE412100
+- Read the current value of CCSRBAR using a load word instruction
+followed by an
+
+    isync. This forces all accesses to configuration space to complete.
+
+- Write the new value to CCSRBAR.
+
+- Perform a load of an address that does not access configuration space
+or the on-chip
+
+SRAM, but has an address mapping already in effect (for example, boot
+ROM).
+
+Follow this load with an isync.
+
+- Read the contents of CCSRBAR from its new location, followed by
+another isync
+
+instruction.
+
+****************************************
+
+The codes  between line 287-294 complete the third step above.
+
+=20
+Haiying=20
+
+
+
+________________________________
+
+	From:
+linuxppc-embedded-bounces+haiying.wang=3Dfreescale.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+haiying.wang=3Dfreescale.com@ozlabs.org=
+]
+On Behalf Of enorm
+	Sent: Wednesday, August 30, 2006 9:46 AM
+	To: linuxppc-embedded@ozlabs.org
+	Subject: Some problem about code reading=20
+=09
+=09
+	Hi,
+	  I met some problems when reading sourcecode of u-boot 1.1.4
+(for mpc85xx)
+	=20
+	file /cpu/mpc85xx/start.s line 276
+	=20
+	=20
+	276.    #if (CFG_CCSRBAR_DEFAULT !=3D CFG_CCSRBAR)
+	277.    /* Special sequence needed to update CCSRBAR itself */
+	278.    lis r4, CFG_CCSRBAR_DEFAULT@h
+	279.    ori r4, r4, CFG_CCSRBAR_DEFAULT@l
+	280.
+	281.    lis r5, CFG_CCSRBAR@h
+	282.    ori r5, r5, CFG_CCSRBAR@l
+	283.    srwi r6,r5,12
+	284.    stw r6, 0(r4)
+	285.    isync
+	286.
+	287.     lis r5, 0xffff
+	288.     ori r5,r5,0xf000
+	289.     lwz r5, 0(r5)
+	290.     isync
+	291.
+	292.    lis r3, CFG_CCSRBAR@h
+	293.    lwz r5, CFG_CCSRBAR@l(r3)
+	294.     isync
+	295.    #endif
+	=20
+	=20
+	I think it means if we don't use default CCSRBAR, we put the
+CCSRBAR addr actually used to the proper place in default CCSRBAR, so
+that it can jump to the addr we want to automatically.(line 276-286).
+	=20
+	But, I don't know what line 287-294 does. Can some one tell me
+pls?=20
+	Thanks for your help.=20
+	=20
+
+
+------_=_NextPart_001_01C6CC45.C1743ED2
 Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjI5NjMiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
-Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj5IaSw8L0ZPTlQ+PC9ESVY+
-DQo8RElWPjxGT05UIHNpemU9Mj4mbmJzcDsgSSBtZXQgc29tZSBwcm9ibGVtcyB3aGVuIHJlYWRp
-bmcgc291cmNlY29kZSBvZiB1LWJvb3QgDQoxLjEuNCAoZm9yIG1wYzg1eHgpPC9GT05UPjwvRElW
-Pg0KPERJVj48Rk9OVCBzaXplPTI+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBzaXpl
-PTI+ZmlsZSAvY3B1L21wYzg1eHgvc3RhcnQucyBsaW5lIDI3NjwvRk9OVD48L0RJVj4NCjxESVY+
-PEZPTlQgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjwvRk9O
-VD4mbmJzcDs8L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjI3Ni4mbmJzcDsmbmJzcDsmbmJzcDsg
-I2lmIChDRkdfQ0NTUkJBUl9ERUZBVUxUICE9IA0KQ0ZHX0NDU1JCQVIpPEJSPjI3Ny4mbmJzcDsm
-bmJzcDsmbmJzcDsgLyogU3BlY2lhbCBzZXF1ZW5jZSBuZWVkZWQgdG8gdXBkYXRlIA0KQ0NTUkJB
-UiBpdHNlbGYgKi88QlI+Mjc4LiZuYnNwOyZuYnNwOyZuYnNwOyBsaXMmbmJzcDtyNCwgPEEgDQpo
-cmVmPSJtYWlsdG86Q0ZHX0NDU1JCQVJfREVGQVVMVEBoIj5DRkdfQ0NTUkJBUl9ERUZBVUxUQGg8
-L0E+PEJSPjI3OS4mbmJzcDsmbmJzcDsmbmJzcDsgDQpvcmkmbmJzcDtyNCwgcjQsIDxBIA0KaHJl
-Zj0ibWFpbHRvOkNGR19DQ1NSQkFSX0RFRkFVTFRAbCI+Q0ZHX0NDU1JCQVJfREVGQVVMVEBsPC9B
-PjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjI4MC48L0ZPTlQ+PC9ESVY+DQo8RElW
-PjxGT05UIHNpemU9Mj4yODEuJm5ic3A7Jm5ic3A7Jm5ic3A7IGxpcyZuYnNwO3I1LCA8QSANCmhy
-ZWY9Im1haWx0bzpDRkdfQ0NTUkJBUkBoIj5DRkdfQ0NTUkJBUkBoPC9BPjxCUj4yODIuJm5ic3A7
-Jm5ic3A7Jm5ic3A7IA0Kb3JpJm5ic3A7cjUsIHI1LCA8QSANCmhyZWY9Im1haWx0bzpDRkdfQ0NT
-UkJBUkBsIj5DRkdfQ0NTUkJBUkBsPC9BPjxCUj4yODMuJm5ic3A7Jm5ic3A7Jm5ic3A7IA0Kc3J3
-aSZuYnNwO3I2LHI1LDEyPEJSPjI4NC4mbmJzcDsmbmJzcDsmbmJzcDsgc3R3Jm5ic3A7cjYsIA0K
-MChyNCk8QlI+Mjg1LiZuYnNwOyZuYnNwOyZuYnNwOyBpc3luYzwvRk9OVD48L0RJVj4NCjxESVY+
-PEZPTlQgc2l6ZT0yPjI4Ni48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj4yODcuJm5i
-c3A7Jm5ic3A7Jm5ic3A7ICZuYnNwO2xpcyZuYnNwO3I1LCANCjB4ZmZmZjxCUj4yODguJm5ic3A7
-Jm5ic3A7Jm5ic3A7IA0KJm5ic3A7b3JpJm5ic3A7cjUscjUsMHhmMDAwPEJSPjI4OS4mbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsgbHd6Jm5ic3A7cjUsIA0KMChyNSk8QlI+MjkwLiZuYnNwOyZuYnNw
-OyZuYnNwOyAmbmJzcDtpc3luYzwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjI5MS48
-L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj4yOTIuJm5ic3A7Jm5ic3A7Jm5ic3A7IGxp
-cyZuYnNwO3IzLCA8QSANCmhyZWY9Im1haWx0bzpDRkdfQ0NTUkJBUkBoIj5DRkdfQ0NTUkJBUkBo
-PC9BPjxCUj4yOTMuJm5ic3A7Jm5ic3A7Jm5ic3A7IA0KbHd6Jm5ic3A7cjUsIDxBIA0KaHJlZj0i
-bWFpbHRvOkNGR19DQ1NSQkFSQGwocjMiPkNGR19DQ1NSQkFSQGwocjM8L0E+KTxCUj4yOTQuJm5i
-c3A7Jm5ic3A7Jm5ic3A7IA0KJm5ic3A7aXN5bmM8QlI+Mjk1LiZuYnNwOyZuYnNwOyZuYnNwOyAj
-ZW5kaWY8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+
-DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9
-Mj5JIHRoaW5rIGl0IG1lYW5zIGlmIHdlIGRvbid0IHVzZSBkZWZhdWx0IENDU1JCQVIsIHdlIHB1
-dCB0aGUgDQpDQ1NSQkFSIGFkZHIgYWN0dWFsbHkgdXNlZCB0byB0aGUgcHJvcGVyIHBsYWNlIGlu
-IGRlZmF1bHQgQ0NTUkJBUiwgc28gdGhhdCBpdCANCmNhbiBqdW1wIHRvIHRoZSBhZGRyIHdlIHdh
-bnQgdG8gYXV0b21hdGljYWxseS4obGluZSAyNzYtMjg2KS48L0ZPTlQ+PC9ESVY+DQo8RElWPjxG
-T05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj5CdXQsIEkg
-ZG9uJ3Qga25vdyB3aGF0IGxpbmUgMjg3LTI5NCBkb2VzLiZuYnNwO0NhbiBzb21lIG9uZSANCnRl
-bGwgbWUgcGxzPyZuYnNwOzwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPlRoYW5rcyBm
-b3IgeW91ciBoZWxwLjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjwvRk9O
-VD4mbmJzcDs8L0RJVj48L0JPRFk+PC9IVE1MPg0K
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
+size=3D2><SPAN=20
+class=3D602505014-30082006>Hi, </SPAN></FONT></DIV>
+<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
+size=3D2><SPAN=20
+class=3D602505014-30082006></SPAN></FONT>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
+size=3D2><SPAN=20
+class=3D602505014-30082006>please read the following from MPC85xx UM =
+about the=20
+sequence on how to write CCSRBAR:</SPAN></FONT></DIV>
+<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
+size=3D2><SPAN=20
+class=3D602505014-30082006></SPAN></FONT>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
+size=3D2><SPAN=20
+class=3D602505014-30082006>*************************************</SPAN></=
+FONT></DIV>
+<DIV dir=3Dltr align=3Dleft><FONT><SPAN class=3D602505014-30082006>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff size=3D2>When the =
+e500 core is=20
+writing to CCSRBAR, it should use the following sequence:</FONT></P>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff size=3D2>&#8211; Read =
+the current value of=20
+CCSRBAR using a load word instruction followed by an</FONT></P><B>
+<P align=3Dleft><FONT color=3D#0000ff><FONT face=3DArial><FONT =
+size=3D2><SPAN=20
+class=3D602505014-30082006>&nbsp;&nbsp;&nbsp;=20
+</SPAN>isync</FONT></FONT></FONT></B><FONT face=3DArial color=3D#0000ff =
+size=3D2>.=20
+This forces all accesses to configuration space to complete.</FONT></P>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff size=3D2>&#8211; =
+Write the new value to=20
+CCSRBAR.</FONT></P>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff size=3D2>&#8211; =
+Perform a load of an=20
+address that does not access configuration space or the =
+on-chip</FONT></P>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff size=3D2>SRAM, but =
+has an address=20
+mapping already in effect (for example, boot ROM).</FONT></P>
+<P align=3Dleft><FONT face=3DArial><FONT size=3D2><FONT =
+color=3D#0000ff>Follow this load=20
+with an </FONT><B><FONT color=3D#0000ff>isync</FONT></B><FONT=20
+color=3D#0000ff>.</FONT></FONT></FONT></P>
+<P align=3Dleft><FONT face=3DArial><FONT size=3D2><FONT =
+color=3D#0000ff>&#8211; Read the=20
+contents of CCSRBAR from its new location, followed by another =
+</FONT><B><FONT=20
+color=3D#0000ff>isync</FONT></P></B></FONT></FONT>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff =
+size=3D2>instruction.</FONT></P>
+<P align=3Dleft><FONT face=3DArial color=3D#0000ff size=3D2><SPAN=20
+class=3D602505014-30082006>****************************************</SPAN=
+></FONT></P>
+<P align=3Dleft></SPAN></FONT><SPAN =
+class=3D602505014-30082006></SPAN><FONT=20
+face=3DArial><FONT size=3D2><FONT color=3D#0000ff>The&nbsp;code<SPAN=20
+class=3D602505014-30082006>s</SPAN>&nbsp;</FONT>&nbsp;<SPAN=20
+class=3D602505014-30082006><FONT color=3D#0000ff>between line 287-294 =
+complete the=20
+third step above.</FONT></SPAN></FONT></FONT></P></DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2><SPAN=20
+class=3D602505014-30082006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2><SPAN=20
+class=3D602505014-30082006>Haiying </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2></FONT><FONT =
+face=3DArial color=3D#0000ff=20
+size=3D2></FONT><BR></DIV>
+<BLOCKQUOTE dir=3Dltr=20
+style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px =
+solid; MARGIN-RIGHT: 0px">
+  <DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
+  <HR tabIndex=3D-1>
+  <FONT face=3DTahoma size=3D2><B>From:</B>=20
+  linuxppc-embedded-bounces+haiying.wang=3Dfreescale.com@ozlabs.org=20
+  =
+[mailto:linuxppc-embedded-bounces+haiying.wang=3Dfreescale.com@ozlabs.org=
+] <B>On=20
+  Behalf Of </B>enorm<BR><B>Sent:</B> Wednesday, August 30, 2006 9:46=20
+  AM<BR><B>To:</B> linuxppc-embedded@ozlabs.org<BR><B>Subject:</B> Some =
+problem=20
+  about code reading <BR></FONT><BR></DIV>
+  <DIV></DIV>
+  <DIV><FONT size=3D2>Hi,</FONT></DIV>
+  <DIV><FONT size=3D2>&nbsp; I met some problems when reading sourcecode =
+of u-boot=20
+  1.1.4 (for mpc85xx)</FONT></DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2>file /cpu/mpc85xx/start.s line 276</FONT></DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2>276.&nbsp;&nbsp;&nbsp; #if (CFG_CCSRBAR_DEFAULT =
+!=3D=20
+  CFG_CCSRBAR)<BR>277.&nbsp;&nbsp;&nbsp; /* Special sequence needed to =
+update=20
+  CCSRBAR itself */<BR>278.&nbsp;&nbsp;&nbsp; lis&nbsp;r4, <A=20
+  =
+href=3D"mailto:CFG_CCSRBAR_DEFAULT@h">CFG_CCSRBAR_DEFAULT@h</A><BR>279.&n=
+bsp;&nbsp;&nbsp;=20
+  ori&nbsp;r4, r4, <A=20
+  =
+href=3D"mailto:CFG_CCSRBAR_DEFAULT@l">CFG_CCSRBAR_DEFAULT@l</A></FONT></D=
+IV>
+  <DIV><FONT size=3D2>280.</FONT></DIV>
+  <DIV><FONT size=3D2>281.&nbsp;&nbsp;&nbsp; lis&nbsp;r5, <A=20
+  =
+href=3D"mailto:CFG_CCSRBAR@h">CFG_CCSRBAR@h</A><BR>282.&nbsp;&nbsp;&nbsp;=
+=20
+  ori&nbsp;r5, r5, <A=20
+  =
+href=3D"mailto:CFG_CCSRBAR@l">CFG_CCSRBAR@l</A><BR>283.&nbsp;&nbsp;&nbsp;=
+=20
+  srwi&nbsp;r6,r5,12<BR>284.&nbsp;&nbsp;&nbsp; stw&nbsp;r6,=20
+  0(r4)<BR>285.&nbsp;&nbsp;&nbsp; isync</FONT></DIV>
+  <DIV><FONT size=3D2>286.</FONT></DIV>
+  <DIV><FONT size=3D2>287.&nbsp;&nbsp;&nbsp; &nbsp;lis&nbsp;r5,=20
+  0xffff<BR>288.&nbsp;&nbsp;&nbsp;=20
+  &nbsp;ori&nbsp;r5,r5,0xf000<BR>289.&nbsp;&nbsp;&nbsp;&nbsp; =
+lwz&nbsp;r5,=20
+  0(r5)<BR>290.&nbsp;&nbsp;&nbsp; &nbsp;isync</FONT></DIV>
+  <DIV><FONT size=3D2>291.</FONT></DIV>
+  <DIV><FONT size=3D2>292.&nbsp;&nbsp;&nbsp; lis&nbsp;r3, <A=20
+  =
+href=3D"mailto:CFG_CCSRBAR@h">CFG_CCSRBAR@h</A><BR>293.&nbsp;&nbsp;&nbsp;=
+=20
+  lwz&nbsp;r5, <A=20
+  =
+href=3D"mailto:CFG_CCSRBAR@l(r3">CFG_CCSRBAR@l(r3</A>)<BR>294.&nbsp;&nbsp=
+;&nbsp;=20
+  &nbsp;isync<BR>295.&nbsp;&nbsp;&nbsp; #endif</FONT></DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2>I think it means if we don't use default CCSRBAR, =
+we put the=20
+  CCSRBAR addr actually used to the proper place in default CCSRBAR, so =
+that it=20
+  can jump to the addr we want to automatically.(line =
+276-286).</FONT></DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2>But, I don't know what line 287-294 does.&nbsp;Can =
+some one=20
+  tell me pls?&nbsp;</FONT></DIV>
+  <DIV><FONT size=3D2>Thanks for your help.</FONT>&nbsp;</DIV>
+  <DIV><FONT size=3D2></FONT>&nbsp;</DIV></BLOCKQUOTE></BODY></HTML>
 
-------=_NextPart_000_002C_01C6CC7D.AE412100--
+------_=_NextPart_001_01C6CC45.C1743ED2--
