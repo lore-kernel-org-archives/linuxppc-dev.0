@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1D15167B54
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 23:30:06 +1000 (EST)
-In-Reply-To: <995B09A8299C2C44B59866F6391D263511BA03@zch01exm21.fsl.freescale.net>
-References: <995B09A8299C2C44B59866F6391D263511BA03@zch01exm21.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E8F8F71E-CEB8-4CEE-ACB7-AB602AB410BF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] corrected PCI interrupt sense values to level low
-	inmpc8349emds.dts
-Date: Wed, 30 Aug 2006 08:29:59 -0500
-To: Liu Dave-r63238 <DaveLiu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 95B9067B97
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 00:25:17 +1000 (EST)
+In-Reply-To: <9mz9np82b.fsf@omoikane.mc.pp.se>
+References: <9mz9np82b.fsf@omoikane.mc.pp.se>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3e3f83654b861ae77c6c07cf207ba6af@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] EHCI Oops on CONFIG_NOT_COHERENT_CACHE system
+Date: Wed, 30 Aug 2006 09:24:57 -0500
+To: Marcus Comstedt <marcus@mc.pp.se>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Where these IDSEL 0x15~0x18 come from on 8349EMDS board?
-> Please expain it.
+On Aug 30, 2006, at 7:04 AM, Marcus Comstedt wrote:
+> "Gerhard Pircher" <gerhard_pircher at gmx.net> writes:
+>> I guess this message should also be forwarded to
+>> linux-usb-devel at lists.sourceforge.net. I hope the developers there
+>> can make some comments.
+>
+> Well, I figured the first thing to do would be to reach a consensus
+> here on whether or not atomic_t:s in DMA memory should be ruled as
+> unallowed.  Judging from the massive silence, there doesn't seem to be
+> any strong opinions either way though...
 
-This is from the docs on the PMC-PCI expansion boards that state what  
-IDSELs are used and how they are wired up.
+I think its a case of the people that know the architecture agree
+that atomics and DMA do not mix, and that this is an issue for
+usb-devel to fix.
 
-- k
+The other question is: does the current access polute the cache by
+reading things where the device is supposed to be writing?
+
+I think some on that list are familiar with the issues for incoherent
+DMA, as some of the other usb drivers have been cleaned up in that
+regard.
+
+My suggestion is take the issue over there, and only cc us here if
+you get pushback over there.
+
+milton
