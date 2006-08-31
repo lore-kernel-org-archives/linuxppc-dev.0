@@ -1,21 +1,26 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0948467B60
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 12:00:14 +1000 (EST)
-Date: Thu, 31 Aug 2006 11:59:43 +1000
-To: Joy Latten <latten@austin.ibm.com>
-Subject: Re: IPSec kernel oops on ppc64
-Message-ID: <20060831015942.GA27423@gondor.apana.org.au>
-References: <200608301636.k7UGaQY5002569@faith.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200608301636.k7UGaQY5002569@faith.austin.ibm.com>
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: jmorris@redhat.com, netdev@vger.kernel.org, anton@au1.ibm.com,
-	linuxppc-dev@ozlabs.org, gcwilson@us.ibm.com, paulus@au1.ibm.com,
-	davem@davemloft.net
+Return-Path: <DaveLiu@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E0F5F67B5C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 12:29:33 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k7V3mXwD017520
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 21:48:33 -0600 (MDT)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k7V2TTFp028016
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Aug 2006 21:29:31 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] corrected PCI interrupt sense values to level low
+	inmpc8349emds.dts
+Date: Thu, 31 Aug 2006 10:29:27 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D263511BCA1@zch01exm21.fsl.freescale.net>
+In-Reply-To: <E8F8F71E-CEB8-4CEE-ACB7-AB602AB410BF@kernel.crashing.org>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 30, 2006 at 11:36:26AM -0500, Joy Latten wrote:
-> 
-> I tried the patch on the following:
-> linux-2.6.17 + patch-2.6.18-rc1
-> 
-> The good news is that the pings worked great!
-> So perhaps ESP is working ok with ICMP.
-> 
-> But when I tried to do sftp, I still got the oops.
-> I don't think TCP and ESP are working.
+<snip>
+>=20
+> > Where these IDSEL 0x15~0x18 come from on 8349EMDS board?
+> > Please expain it.
+>=20
+> This is from the docs on the PMC-PCI expansion boards that=20
+> state what IDSELs are used and how they are wired up.
 
-Interesting.  We were previously off by 28 bytes, now we're off by 8 :)
+Maybe you misunderstand me, I know that, the IDSEL is determined
+by hardware design, I look up the schematic, only AD17/18/19 are
+connected to PCI SLOT, that is IDSEL 0x11~0x13, I cannot find the
+IDSEL 0x15~0x18 are impemented in the PIB. The IDSEL 0x15~0x18
+actually are not existing.
 
-Could you please do a test by deleting the defines for
-__HAVE_ARCH_MEMMOVE and __HAVE_ARCH_MEMCPY from include/asm-powerpc
-to see if using the generic routines help?
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-DAve
