@@ -1,13 +1,15 @@
-Return-Path: <Phil.Mathews@innocon.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6CD10.BEB04127"
-Subject: Unable to build ELDK 4.0
-Date: Thu, 31 Aug 2006 11:18:42 -0400
-Message-ID: <3E8081396F6B524BA2854E7FA3F16438042EB1DB@mail.innocon.com>
-References: <5df98b760608310618p746e1ee7q62b9472fa855660f@mail.gmail.com>
-From: "Mathews, Phil" <Phil.Mathews@innocon.com>
-To: <Linuxppc-embedded@ozlabs.org>
+Return-Path: <wd@denx.de>
+To: "Mathews, Phil" <Phil.Mathews@innocon.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Unable to build ELDK 4.0 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 31 Aug 2006 11:18:42 EDT."
+	<3E8081396F6B524BA2854E7FA3F16438042EB1DB@mail.innocon.com>
+Date: Thu, 31 Aug 2006 17:58:57 +0200
+Sender: wd@denx.de
+Message-Id: <20060831155857.35812352640@atlas.denx.de>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,94 +20,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Dear Phil,
 
-------_=_NextPart_001_01C6CD10.BEB04127
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+in message <3E8081396F6B524BA2854E7FA3F16438042EB1DB@mail.innocon.com> you wrote:
+> 
+> I am attempting to build the ELDK kernel using the directions in
+> /home/mathews/ELDK/ppc_6xx/usr/src/linux-2.6.15/README.  The makefile is
 
-I am attempting to build the ELDK kernel using the directions in =
-/home/mathews/ELDK/ppc_6xx/usr/src/linux-2.6.15/README.  The makefile is =
-trying to execute powerPC code (fixdep) on my Pentium box.  Where can I =
-get a X86 version of this program?
+Please also RTFM: http://www.denx.de/wiki/DULG/Manual?stickboard=yosemite ,
+especially section "6.2. Kernel Configuration and Compilation":
+http://www.denx.de/wiki/view/DULG/LinuxConfiguration#Section_6.2.
 
-##### Make attempt:
-mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> make =
-O=3D/home/name/build/kernel menuconfig
-  HOSTCC  scripts/basic/fixdep
-/bin/sh: scripts/basic/fixdep: cannot execute binary file
-make[2]: *** [scripts/basic/fixdep] Error 126
-make[1]: *** [scripts_basic] Error 2
-make: *** [menuconfig] Error 2
+Note that I selected the DULG-version  for  a  board  for  which  2.6
+kernel support is available.
 
-##### Objdump of scripts/basic/fixdep
-mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> objdump -a =
-scripts/basic/fixdep
+> trying to execute powerPC code (fixdep) on my Pentium box.  Where can I
+> get a X86 version of this program?
 
-scripts/basic/fixdep:     file format elf32-powerpc
-scripts/basic/fixdep
+This is a consequence of wrong make commands.
 
-mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> echo $PATH
-/home/mathews/ELDK/usr/bin:/home/mathews/ELDK/usr/ppc-linux/bin:/home/mat=
-hews/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnom=
-e/bin:/opt/kde3/bin
+> ##### Make attempt:
+> mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> make
+> O=/home/name/build/kernel menuconfig
 
+You must pass correct ARCH= and CROSS_COMPILE= arguments when running
+make, i. e.
 
---  Phil Mathews =20
-    phil.mathews _at_ innocon.com   =20
+	make ARCH=ppc CROSS_COMPILE=ppc_6xx- ... menuconfig
 
-------_=_NextPart_001_01C6CD10.BEB04127
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+etc. Also make sure to start from a clean  source  tree,  i.  e.  run
+"make mrproper" to clean up before configuring your board.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>Unable to build ELDK 4.0</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+Best regards,
 
-<P><FONT SIZE=3D2>I am attempting to build the ELDK kernel using the =
-directions in =
-/home/mathews/ELDK/ppc_6xx/usr/src/linux-2.6.15/README.&nbsp; The =
-makefile is trying to execute powerPC code (fixdep) on my Pentium =
-box.&nbsp; Where can I get a X86 version of this program?<BR>
-<BR>
-##### Make attempt:<BR>
-mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15&gt; make =
-O=3D/home/name/build/kernel menuconfig<BR>
-&nbsp; HOSTCC&nbsp; scripts/basic/fixdep<BR>
-/bin/sh: scripts/basic/fixdep: cannot execute binary file<BR>
-make[2]: *** [scripts/basic/fixdep] Error 126<BR>
-make[1]: *** [scripts_basic] Error 2<BR>
-make: *** [menuconfig] Error 2<BR>
-<BR>
-##### Objdump of scripts/basic/fixdep<BR>
-mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15&gt; objdump -a =
-scripts/basic/fixdep<BR>
-<BR>
-scripts/basic/fixdep:&nbsp;&nbsp;&nbsp;&nbsp; file format =
-elf32-powerpc<BR>
-scripts/basic/fixdep<BR>
-<BR>
-mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15&gt; echo $PATH<BR>
-/home/mathews/ELDK/usr/bin:/home/mathews/ELDK/usr/ppc-linux/bin:/home/mat=
-hews/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnom=
-e/bin:/opt/kde3/bin<BR>
-<BR>
-<BR>
---&nbsp; Phil Mathews&nbsp;<BR>
-&nbsp;&nbsp;&nbsp; phil.mathews _at_ innocon.com&nbsp;&nbsp;&nbsp;<BR>
-</FONT>
-</P>
+Wolfgang Denk
 
-</BODY>
-</HTML>
-------_=_NextPart_001_01C6CD10.BEB04127--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A modem is a baudy house.
