@@ -1,16 +1,16 @@
 Return-Path: <cclo@astri.org>
 Received: from asiwss02.astri.org (mail2.astri.org [203.198.202.21])
-	by ozlabs.org (Postfix) with ESMTP id 7EA8067B22
+	by ozlabs.org (Postfix) with ESMTP id 89A3F67B22
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Aug 2006 10:49:50 +1000 (EST)
+	Thu, 31 Aug 2006 10:52:57 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset=us-ascii
-Subject: RE: DS1302 driver for powerpc
-Date: Thu, 31 Aug 2006 08:51:22 +0800
-Message-ID: <A7B1E4DD46AA7046A4398F745240F29402737D5E@ASPROEXG.astri.local>
+Subject: RE: 2 Ethernet port operating in a PPC405EP system
+Date: Thu, 31 Aug 2006 08:54:19 +0800
+Message-ID: <A7B1E4DD46AA7046A4398F745240F29402737D5F@ASPROEXG.astri.local>
 From: "Chun Chung Lo" <cclo@astri.org>
-To: "Matt Porter" <mporter@embeddedalley.com>
+To: "Otto Solares" <solca@guug.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,13 +25,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-Thanks for your help.
-
-But I also do not have this driver for 83xx. (as my linux is comes from
-Montavista)
-
-Could you mind providing me a link / or a source of such driver for me
-to reference ?
+I really do not know what happened about MediaMVP, could you mind giving
+me a review?
 
 Thanks.
 
@@ -39,37 +34,30 @@ Best regards,
 Lo Chun Chung
 
 -----Original Message-----
-From: Matt Porter [mailto:mporter@embeddedalley.com]=0D
-Sent: Wednesday, 30 August, 2006 9:55 PM
+From: Otto Solares [mailto:solca@guug.org]=0D
+Sent: Thursday, 31 August, 2006 2:23 AM
 To: Chun Chung Lo
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: DS1302 driver for powerpc
+Subject: Re: 2 Ethernet port operating in a PPC405EP system
 
 
-On Wed, Aug 30, 2006 at 07:54:16PM +0800, Chun Chung Lo wrote:
+On Wed, Aug 30, 2006 at 09:17:20PM +0800, Chun Chung Lo wrote:
+> I know my source code is vert old. But since there are lots of=0D
+> applications developed base on this 2 sets of source code, if the=0D
+> kernel and U-Boot needs to change, the above applications (tons of=0D
+> codes) also need to revise ... (lots of multimedia players, drivers,=0D
+> and other supporting tools). My team cannot afford such great change.
 >=0D
-> Hi all,
->=0D
-> I am now doing a STB project and the development board uses a DS1302=0D
-> (trickle charge timekeeping chip) as a RTC. Our board is a IBM=0D
-> PPC405EP with a linux kernel 2.4.20 running on it. And the DS1302 is=0D
-> controlled by 2 GPIO pins instead of I2C.
->=0D
-> I would like to ask are there any porting of DS1302 support under ppc=0D
-> architecture? (I can only find DS1302 is supported under cris
-> architecture.)
+> So I say "update is not recommended" ...
 
-There doesn't seem to be any DS1302 support "for ppc" available.
-However, even if there were a platform with DS1302 support you'd be in
-the same boat as the low-level support for cris.  Support for DS1302 has
-a glue layer that's board-specific based on what GPIO pins are used to
-drive it.  So if you had this driver for another PPC system like 83xx
-you'd still have no better starting point than the cris ds1302 driver
-glue since the GPIO mechanism/connection is different. Porting the
-board-specific glue from arch/cris/drivers/ds1302.c to 4xx GPIO is
-trivial to do though.
+Hopefully your product will say:
 
--Matt
+"buy this product is not recommended" :)
+
+Don't repeat the same mistake as the MediaMVP, it uses the same
+processor and same kernel version, it sucks badly...
+
+-otto
 
 This message (including any attachments) is for the named addressee(s)'s=
  use only. It may contain
