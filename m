@@ -1,20 +1,25 @@
-Return-Path: <mporter@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <guinan@bluebutton.com>
+Received: from ns4.townisp.com (ns4a.townisp.com [216.195.0.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ns4.townisp.com", Issuer "ns4.townisp.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 70F0167B83
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Sep 2006 02:38:09 +1000 (EST)
+Received: from gemini.home.net (dhcp-0-10-57-0-7-57.cpe.townisp.com
+	[64.30.85.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B90CF67BA5
+	by ns4.townisp.com (Postfix) with ESMTP id 24D1A29984
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 02:27:23 +1000 (EST)
-Date: Thu, 31 Aug 2006 11:38:10 -0500
-From: Matt Porter <mporter@embeddedalley.com>
-To: =?iso-8859-1?Q?Lo=EFc?= Damm <loic.damm@college-de-france.fr>
-Subject: Re: mvme
-Message-ID: <20060831163810.GA28485@gate.crashing.org>
-References: <E3141661-C539-4A0D-A342-EDDD18A4E27D@college-de-france.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <E3141661-C539-4A0D-A342-EDDD18A4E27D@college-de-france.fr>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 31 Aug 2006 12:14:13 -0400 (EDT)
+Date: Thu, 31 Aug 2006 12:14:12 -0400 (EDT)
+From: Jamie Guinan <guinan@bluebutton.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Rattler 8347 and USB 2.0
+Message-ID: <Pine.LNX.4.64.0608291535260.23035@gemini.home.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-To: Jamie Guinan <guinan@bluebutton.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,16 +30,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 31, 2006 at 02:25:58PM +0200, Loïc Damm wrote:
-> Hello,
-> 
-> I found a page about MVME cards on the web posted by you... I was  
-> trying to fix a problem with a machine running  OS9, so I was asking  
-> to myself if you could help me. I would be very happy if you took few  
-> minutes to consider this mail...
-> 
-> So, my problem is about booting a Motorola MVME 162-223 card. I have  
 
-MVME162 is a 68k board. Wrong list. Go see http://www.linux-m68k.org
+Greetings,
 
--Matt
+I have an mpc8347 board here (A&M Rattler 8347).  It shipped with a 
+2.6.16 patched enough to boot the board, but support for freescale USB 
+2.0 (ehci) is not present.
+
+Working my way backwards in the mainline kernel tree (2.6.18-rc5), I 
+found drivers/usb/host/ehci-fsl.c, for FreeScale/PPC EHCI support.
+
+In that module, usb_hcd_fsl_probe() requires an initialized "struct 
+fsl_usb2_platform_data", which only appears in 
+arch/powerpc/sysdev/fsl_soc.c, yet the 2.6.16 patch provided puts the 
+board in arch/ppc.
+
+My question is, what would be the best way to go about getting 
+ehci-fsl.c working with this board?
+
+1) Nudge the Rattler port from arch/ppc to arch/powerpc.  One problem
+with this is that the rattler uses RedBoot, and reading this,
+
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-August/024116.html
+
+it looks like arch/powerpc wants to boot from OpenFirmware-like 
+"flattened device tree" (does RedBoot support this?).
+
+2) Support ehci-fsl.c from arch/ppc.  If arch/ppc is deprecated, 
+that's a bad long-term solution.  And since fsl_soc.c lives
+under arch/powerpc, that doesn't look good either.
+
+Thoughts?
+
+-Jamie
