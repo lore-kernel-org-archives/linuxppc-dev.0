@@ -1,24 +1,12 @@
-Return-Path: <kmannth@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.201])
-	by ozlabs.org (Postfix) with ESMTP id F41E867B6E
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2006 03:52:32 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id i1so342281nzh
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 10:52:29 -0700 (PDT)
-Message-ID: <a762e240608311052h28843b2ege651e9fa82c49f2a@mail.gmail.com>
-Date: Thu, 31 Aug 2006 10:52:28 -0700
-From: "Keith Mannthey" <kmannth@gmail.com>
-To: "Mel Gorman" <mel@skynet.ie>
-Subject: Re: [PATCH 4/6] Have x86_64 use add_active_range() and
-	free_area_init_nodes
-In-Reply-To: <20060831154903.GA7011@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20060821134518.22179.46355.sendpatchset@skynet.skynet.ie>
-	<20060821134638.22179.44471.sendpatchset@skynet.skynet.ie>
-	<a762e240608301357n3915250bk8546dd340d5d4d77@mail.gmail.com>
-	<20060831154903.GA7011@skynet.ie>
-Cc: akpm@osdl.org, tony.luck@intel.com, linuxppc-dev@ozlabs.org, ak@suse.de,
-	bob.picco@hp.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 31 Aug 2006 11:40:20 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: hollisb@us.ibm.com
+Subject: common flatdevtree code
+Message-ID: <20060831184020.GA13494@mag.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="VS++wcV0S1rZb1Fb"
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,196 +16,848 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 8/31/06, Mel Gorman <mel@skynet.ie> wrote:
-> On (30/08/06 13:57), Keith Mannthey didst pronounce:
-> > On 8/21/06, Mel Gorman <mel@csn.ul.ie> wrote:
-> > >
 
-> ok, great. How much physical memory is installed on the machine? I want to
-> determine if the "usable" entries in the e820 map contain physical memory
-> or not.
-Usable entries in the e820 contian memory.  I have about 20-24gb
-depending on config.
+--VS++wcV0S1rZb1Fb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
+Hi Hollis,
 
-> When the SRAT is bad, the information is discarded and discovered by an
-> alternative method later in the boot process.
->
-> In this case, numa_initmem_init() is called after acpi_numa_init(). It
-> calls acpi_scan_nodes() which returns -1 because the SRAT is bad. Once
-> that happens, either k8_scan_nodes() will be called and the regions
-> discovered there or if that is not possible, it'll fall through and
-> e820_register_active_regions will be called without any node awareness.
+I'm doing some fairly massive rework to my patches so it'll take
+another day or two (plus 4 day weekend for me).  In the meantime,
+this is what I've done to your code.  :)
 
-sorry I have missed some of the logic in this patch.
+I still plan on changing it a bit to use ft_next in a few more routines
+(e.g., ft_dump_blob).  ft_next has a clumsy interface but I like the fact
+that it separates the "how to traverse the nodes/properties in the tree"
+knowledge from the "what do I want to do with this particular node/property"
+knowledge.  Also, if/when version 0x11 (or whatever) comes along, we only
+have to change one routine to be able to correctly traverse the tree.
 
-I see now in numa_initmem_init that if no numa setup is found it calls
-e820_register_active_regions(0, start_pfn, end_pfn) again.
+I've included flatdevtree.[ch] and the flatdevtree_env.h for the
+bootwrapper for reference.  I didn't make one for you but I can.
 
-So if the srat is discard it runs the e820 code again.
-
-
-> > >diff -rup -X /usr/src/patchset-0.6/bin//dontdiff
-> > >linux-2.6.18-rc4-mm2-103-x86_use_init_nodes/arch/x86_64/mm/srat.c
-> > >linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/x86_64/mm/srat.c
-> > >--- linux-2.6.18-rc4-mm2-103-x86_use_init_nodes/arch/x86_64/mm/srat.c
-> > >2006-08-21 09:23:50.000000000 +0100
-> > >+++ linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/x86_64/mm/srat.c
-> > >2006-08-21 10:15:58.000000000 +0100
-> > >@@ -84,6 +84,7 @@ static __init void bad_srat(void)
-> > >                apicid_to_node[i] = NUMA_NO_NODE;
-> > >        for (i = 0; i < MAX_NUMNODES; i++)
-> > >                nodes_add[i].start = nodes[i].end = 0;
-> > >+       remove_all_active_ranges();
-> > > }
-> >
-> > We go back to setup_arch with no active areas?
-> >
->
-> Yes, and it'll be discovered using an alternative method later. There is
-> no point returning to setup_arch with known bad information about active
-> areas.
-
-Totally agreeded! I just didn't the the fallback path.
->
-> > > static __init inline int srat_disabled(void)
-> > >@@ -166,7 +167,7 @@ static int hotadd_enough_memory(struct b
-> > >
-> > >        if (mem < 0)
-> > >                return 0;
-> > >-       allowed = (end_pfn - e820_hole_size(0, end_pfn)) * PAGE_SIZE;
-> > >+       allowed = (end_pfn - absent_pages_in_range(0, end_pfn)) *
-> > >PAGE_SIZE;
-> > >        allowed = (allowed / 100) * hotadd_percent;
-> > >        if (allocated + mem > allowed) {
-> > >                unsigned long range;
-> > >@@ -238,7 +239,7 @@ static int reserve_hotadd(int node, unsi
-> > >        }
-> > >
-> > >        /* This check might be a bit too strict, but I'm keeping it for
-> > >        now. */
-> > >-       if (e820_hole_size(s_pfn, e_pfn) != e_pfn - s_pfn) {
-> > >+       if (absent_pages_in_range(s_pfn, e_pfn) != e_pfn - s_pfn) {
-> > >                printk(KERN_ERR "SRAT: Hotplug area has existing
-> > >                memory\n");
-> > >                return -1;
-> > >        }
-> > We really do want to to compare against the e820 map at it contains
-> > the memory that is really present (this info was blown away before
-> > acpi_numa)
->
-> The information used by absent_pages_in_range() should match what was
-> available to e820_hole_size().
-
-Is absent_pages_in_range a check against the e820 or the
-add_pages_to_range calls?
-
-> > Anyway I fixed up to have the current chunk added
-> > (e820_register_active_regions) after calling this code so it logicaly
-> > makes sense but it still trip over the check.
-> > I am not sure what you
-> > are printing out in you debug code but dosen't look like pfns or
-> > phys_addresses but maybe it can tell us why the check fails.
-> >
->
-> My debug code for add_active_range() printing out pfns but I spotted one
-> case where absent_pages_in_range(I) does not do what one would expect.
-> Lets say the ranges with physical memory was 0->1000 and 2000-3000 (in
-> pfns).  absent_pages_in_range(0, 3000) would return 1000 as you'd expect but
-> absent_pages_in_range(5000-6000) would return 0! I have a patch that might
-> fix this at the end of the mail but I'm not sure it's the problem you are
-> hitting. In the bootlog, I see;
->
-> SRAT: Node 0 PXM 0 0-80000000
-> Entering add_active_range(0, 0, 152) 0 entries of 3200 used
-> Entering add_active_range(0, 256, 524165) 1 entries of 3200 used
-> SRAT: Node 0 PXM 0 0-470000000
-> Entering add_active_range(0, 0, 152) 2 entries of 3200 used
-> Entering add_active_range(0, 256, 524165) 2 entries of 3200 used
-> Entering add_active_range(0, 1048576, 4653056) 2 entries of 3200 used
-> SRAT: Node 0 PXM 0 0-1070000000
-> SRAT: Hotplug area has existing memory
->
-
-> The last part (0-1070000000) is checked as a hotplug area but it's clear
-> that memory exists in that range.  As reserve_hotadd() requires that the
-> whole range be a hole, I'm having trouble seeing how it ever successfully
-> reserved unless the ranges going into reserve_hotadd() are something other
-> than the pfn range for 0-1070000000). The patch later will print out the
-> range used by reserve_hotadd() so we can see.
-
-No the whole node is 0-1070000000 the hot add range is 470000000-1070000000
-reserve_hotadd is called with start and end not nd->start nd->end.
-470000000-1070000000 sould be empty.
-
-
-> > >@@ -329,6 +330,8 @@ acpi_numa_memory_affinity_init(struct ac
-> > >
-> > >        printk(KERN_INFO "SRAT: Node %u PXM %u %Lx-%Lx\n", node, pxm,
-> > >               nd->start, nd->end);
-> > >+       e820_register_active_regions(node, nd->start >> PAGE_SHIFT,
-> > >+                                               nd->end >> PAGE_SHIFT);
-> >
-> > A node chunk in this section of code may be a hot-pluggable zone. With
-> > MEMORY_HOTPLUG_SPARSE we don't want to register these regions.
-> >
->
-> The ranges should not get registered as active memory by
-> e820_register_active_regions() unless they are marked E820_RAM. My
-> understanding is that the regions for hotadd would be marked "reserved"
-> in the e820 map. Is that wrong?
-
-This is wrong.  In a mult-node system that last node add area will not
-be marked reserved by the e820.  The e820 only defines memory <
-end_pfn. the last node add area is > end_pfn.
-
-With RESERVE based add-memory you want the add-areas repored by the
-srat to be setup during boot like all the other pages.
-
-> > >        if (ma->flags.hot_pluggable && !reserve_hotadd(node, start, end) <
-> > >        0) {
-> > >                /* Ignore hotadd region. Undo damage */
-> >
-> >  I have but the e820_register_active_regions as a else to this
-> > statment the absent pages check fails.
-> >
->
-> The patch below omits this change because I think
-> e820_register_active_regions() will still have got called by the time
-> you encounter a hotplug area.
-
-called but then removed in setup arch.
-> > Also nodes_cover_memory and alot of these check were based against
-> > comparing the srat data against the e820.  Now all this code is
-> > comparing SRAT against SRAT....
-> >
->
-> I don't see why. The SRAT table passes a range to
-> e820_register_active_regions() so should be comparing SRAT to e820
-
-let me go off and look at e820_register_active_regions() some more.
-
-> > I am willing to help here but we should compare the SRAT against to
-> > e820. Table v. Table.
-> >
-> > What to you think should be done?
-> >
->
-> Can you read through this patch and see does it address the problem in any
-> way? If it doesn't, can you send a complete bootlog so I can see what is
-> being sent to reserve_hotadd()? Thanks
-
-Sure thing.  It is just the hot-add area I am guessing it is an off by
-one error of some sort.
-
-What is all this code buying us?  Since this code dosen't appear to do
-anything to help the arch out (just increases it's vm boot code
-complexity a little) maybe insead of weaving
-e820_register_active_regions() calls throught out the boot process you
-should just waint untill things are sorted out and do a quick scan of
-node data that has been setup at the end?
-
-What are the future plans for this api?
+Its a work in progress but let me know if you have any issues so far.
 
 Thanks,
-  Keith u
+
+Mark
+
+--VS++wcV0S1rZb1Fb
+Content-Type: text/x-csrc; charset=us-ascii
+Content-Disposition: attachment; filename="flatdevtree.c"
+
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Copyright Pantelis Antoniou 2006
+ * Copyright (C) IBM Corporation 2006
+ *
+ * Authors: Pantelis Antoniou <pantelis@embeddedalley.com>
+ *          Hollis Blanchard <hollisb@us.ibm.com>
+ */
+
+#include "flatdevtree.h"
+
+static void ft_put_word(struct ft_cxt *cxt, u32 v)
+{
+	if (cxt->overflow)	/* do nothing */
+		return;
+
+	/* check for overflow */
+	if (cxt->p + 4 > cxt->pstr) {
+		cxt->overflow = 1;
+		return;
+	}
+
+	*(u32 *) cxt->p = cpu_to_be32(v);
+	cxt->p += 4;
+}
+
+static inline void ft_put_bin(struct ft_cxt *cxt, const void *data, int sz)
+{
+	char *p;
+
+	if (cxt->overflow)	/* do nothing */
+		return;
+
+	/* next pointer pos */
+	p = (char *) _ALIGN((unsigned long)cxt->p + sz, 4);
+
+	/* check for overflow */
+	if (p > cxt->pstr) {
+		cxt->overflow = 1;
+		return;
+	}
+
+	memcpy(cxt->p, data, sz);
+	if ((sz & 3) != 0)
+		memset(cxt->p + sz, 0, 4 - (sz & 3));
+	cxt->p = p;
+}
+
+void ft_begin_node(struct ft_cxt *cxt, const char *name)
+{
+	ft_put_word(cxt, OF_DT_BEGIN_NODE);
+	ft_put_bin(cxt, name, strlen(name) + 1);
+}
+
+void ft_end_node(struct ft_cxt *cxt)
+{
+	ft_put_word(cxt, OF_DT_END_NODE);
+}
+
+void ft_nop(struct ft_cxt *cxt)
+{
+	ft_put_word(cxt, OF_DT_NOP);
+}
+
+static int lookup_string(struct ft_cxt *cxt, const char *name)
+{
+	char *p;
+
+	p = cxt->pstr;
+	while (p < cxt->pstr_begin) {
+		if (strcmp(p, (char *)name) == 0)
+			return p - cxt->p_begin;
+		p += strlen(p) + 1;
+	}
+
+	return -1;
+}
+
+void ft_prop(struct ft_cxt *cxt, const char *name,
+             const void *data, unsigned int sz)
+{
+	int len, off;
+
+	if (cxt->overflow)
+		return;
+
+	len = strlen(name) + 1;
+
+	off = lookup_string(cxt, name);
+	if (off == -1) {
+		/* check if we have space */
+		if (cxt->p + 12 + sz + len > cxt->pstr) {
+			cxt->overflow = 1;
+			return;
+		}
+
+		cxt->pstr -= len;
+		memcpy(cxt->pstr, name, len);
+		off = cxt->pstr - cxt->p_begin;
+	}
+
+	/* now put offset from beginning of *STRUCTURE* */
+	/* will be fixed up at the end */
+	ft_put_word(cxt, OF_DT_PROP);
+	ft_put_word(cxt, sz);
+	ft_put_word(cxt, off);
+	ft_put_bin(cxt, data, sz);
+}
+
+void ft_prop_str(struct ft_cxt *cxt, const char *name, const char *str)
+{
+	ft_prop(cxt, name, str, strlen(str) + 1);
+}
+
+void ft_prop_int(struct ft_cxt *cxt, const char *name, unsigned int val)
+{
+	u32 v = cpu_to_be32((u32) val);
+
+	ft_prop(cxt, name, &v, 4);
+}
+
+/* start construction of the flat OF tree */
+void ft_begin(struct ft_cxt *cxt, void *blob, unsigned int max_size)
+{
+	struct boot_param_header *bph = blob;
+	u32 off;
+
+	/* clear the cxt */
+	memset(cxt, 0, sizeof(*cxt));
+
+	cxt->bph = bph;
+	cxt->max_size = max_size;
+
+	/* zero everything in the header area */
+	memset(bph, 0, sizeof(*bph));
+
+	bph->magic = cpu_to_be32(OF_DT_HEADER);
+	bph->version = cpu_to_be32(0x10);
+	bph->last_comp_version = cpu_to_be32(0x10);
+
+	/* start pointers */
+	cxt->pres_begin = (char *) _ALIGN((unsigned long)(bph + 1), 8);
+	cxt->pres = cxt->pres_begin;
+
+	off = (unsigned long)cxt->pres_begin - (unsigned long)bph;
+	bph->off_mem_rsvmap = cpu_to_be32(off);
+
+	((u64 *) cxt->pres)[0] = 0;	/* phys = 0, size = 0, terminate */
+	((u64 *) cxt->pres)[1] = 0;
+
+	cxt->p_anchor = cxt->pres + 16;	/* over the terminator */
+}
+
+/* add a reserver physical area to the rsvmap */
+void ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size)
+{
+	((u64 *) cxt->pres)[0] = cpu_to_be64(physaddr);	/* phys = 0, size = 0, terminate */
+	((u64 *) cxt->pres)[1] = cpu_to_be64(size);
+
+	cxt->pres += 18;	/* advance */
+
+	((u64 *) cxt->pres)[0] = 0;	/* phys = 0, size = 0, terminate */
+	((u64 *) cxt->pres)[1] = 0;
+
+	/* keep track of size */
+	cxt->res_size = cxt->pres + 16 - cxt->pres_begin;
+
+	cxt->p_anchor = cxt->pres + 16;	/* over the terminator */
+}
+
+void ft_begin_tree(struct ft_cxt *cxt)
+{
+	cxt->p_begin = cxt->p_anchor;
+	cxt->pstr_begin = (char *)cxt->bph + cxt->max_size;	/* point at the end */
+
+	cxt->p = cxt->p_begin;
+	cxt->pstr = cxt->pstr_begin;
+}
+
+int ft_end_tree(struct ft_cxt *cxt)
+{
+	struct boot_param_header *bph = cxt->bph;
+	int off, sz, sz1;
+	u32 tag, v;
+	char *p;
+
+	ft_put_word(cxt, OF_DT_END);
+
+	if (cxt->overflow)
+		return -ENOMEM;
+
+	/* size of the areas */
+	cxt->struct_size = cxt->p - cxt->p_begin;
+	cxt->strings_size = cxt->pstr_begin - cxt->pstr;
+
+	/* the offset we must move */
+	off = (cxt->pstr_begin - cxt->p_begin) - cxt->strings_size;
+
+	/* the new strings start */
+	cxt->pstr_begin = cxt->p_begin + cxt->struct_size;
+
+	/* move the whole string area */
+	memmove(cxt->pstr_begin, cxt->pstr, cxt->strings_size);
+
+	/* now perform the fixup of the strings */
+	p = cxt->p_begin;
+	while ((tag = be32_to_cpu(*(u32 *) p)) != OF_DT_END) {
+		p += 4;
+
+		if (tag == OF_DT_BEGIN_NODE) {
+			p = (char *) _ALIGN((unsigned long)p + strlen(p) + 1, 4);
+			continue;
+		}
+
+		if (tag == OF_DT_END_NODE || tag == OF_DT_NOP)
+			continue;
+
+		if (tag != OF_DT_PROP)
+			return -EINVAL;
+
+		sz = be32_to_cpu(*(u32 *) p);
+		p += 4;
+
+		v = be32_to_cpu(*(u32 *) p);
+		v -= off;
+		*(u32 *) p = cpu_to_be32(v);	/* move down */
+		p += 4;
+
+		p = (char *) _ALIGN((unsigned long)p + sz, 4);
+	}
+
+	/* fix sizes */
+	p = (char *)cxt->bph;
+	sz = (cxt->pstr_begin + cxt->strings_size) - p;
+	sz1 = _ALIGN(sz, 16);	/* align at 16 bytes */
+	if (sz != sz1)
+		memset(p + sz, 0, sz1 - sz);
+	bph->totalsize = cpu_to_be32(sz1);
+	bph->off_dt_struct = cpu_to_be32(cxt->p_begin - p);
+	bph->off_dt_strings = cpu_to_be32(cxt->pstr_begin - p);
+
+	/* the new strings start */
+	cxt->pstr_begin = cxt->p_begin + cxt->struct_size;
+	cxt->pstr = cxt->pstr_begin + cxt->strings_size;
+
+	return 0;
+}
+
+/**********************************************************************/
+
+static inline int isprint(int c)
+{
+	return c >= 0x20 && c <= 0x7e;
+}
+
+static int is_printable_string(const void *data, int len)
+{
+	const char *s = data;
+	const char *ss;
+
+	/* zero length is not */
+	if (len == 0)
+		return 0;
+
+	/* must terminate with zero */
+	if (s[len - 1] != '\0')
+		return 0;
+
+	ss = s;
+	while (*s && isprint(*s))
+		s++;
+
+	/* not zero, or not done yet */
+	if (*s != '\0' || (s + 1 - ss) < len)
+		return 0;
+
+	return 1;
+}
+
+static void print_data(const void *data, int len)
+{
+	int i;
+	const char *s;
+
+	/* no data, don't print */
+	if (len == 0)
+		return;
+
+	if (is_printable_string(data, len)) {
+		printf(" = \"%s\"", (char *)data);
+		return;
+	}
+
+	switch (len) {
+	case 1:		/* byte */
+		printf(" = <0x%02x>", (*(char *) data) & 0xff);
+		break;
+	case 2:		/* half-word */
+		printf(" = <0x%04x>", be16_to_cpu(*(u16 *) data) & 0xffff);
+		break;
+	case 4:		/* word */
+		printf(" = <0x%08x>", be32_to_cpu(*(u32 *) data) & 0xffffffffU);
+		break;
+	case 8:		/* double-word */
+		printf(" = <0x%16llx>", be64_to_cpu(*(u64 *) data));
+		break;
+	default:		/* anything else... hexdump */
+		printf(" = [");
+		for (i = 0, s = data; i < len; i++)
+			printf("%02x%s", s[i], i < len - 1 ? " " : "");
+		printf("]");
+
+		break;
+	}
+}
+
+void ft_dump_blob(const void *bphp)
+{
+	const struct boot_param_header *bph = bphp;
+	const u64 *p_rsvmap = (const u64 *)
+		((const char *)bph + be32_to_cpu(bph->off_mem_rsvmap));
+	const u32 *p_struct = (const u32 *)
+		((const char *)bph + be32_to_cpu(bph->off_dt_struct));
+	const u32 *p_strings = (const u32 *)
+		((const char *)bph + be32_to_cpu(bph->off_dt_strings));
+	u32 tag;
+	const u32 *p;
+	const char *s, *t;
+	int depth, sz, shift;
+	int i;
+	u64 addr, size;
+
+	if (be32_to_cpu(bph->magic) != OF_DT_HEADER) {
+		/* not valid tree */
+		return;
+	}
+
+	depth = 0;
+	shift = 4;
+
+	for (i = 0;; i++) {
+		addr = be64_to_cpu(p_rsvmap[i * 2]);
+		size = be64_to_cpu(p_rsvmap[i * 2 + 1]);
+		if (addr == 0 && size == 0)
+			break;
+
+		printf("/memreserve/ 0x%llx 0x%llx;\n", addr, size);
+	}
+
+	p = p_struct;
+	while ((tag = be32_to_cpu(*p++)) != OF_DT_END) {
+
+		/* printf("tag: 0x%08x (%d)\n", tag, p - p_struct); */
+
+		if (tag == OF_DT_BEGIN_NODE) {
+			s = (const char *)p;
+			p = (u32 *) _ALIGN((unsigned long)p + strlen(s) + 1, 4);
+
+			printf("%*s%s {\n", depth * shift, "", s);
+
+			depth++;
+			continue;
+		}
+
+		if (tag == OF_DT_END_NODE) {
+			depth--;
+
+			printf("%*s};\n", depth * shift, "");
+			continue;
+		}
+
+		if (tag == OF_DT_NOP) {
+			printf("%*s[NOP]\n", depth * shift, "");
+			continue;
+		}
+
+		if (tag != OF_DT_PROP) {
+			fprintf(stderr, "%*s ** Unknown tag 0x%08x\n",
+				depth * shift, "", tag);
+			break;
+		}
+		sz = be32_to_cpu(*p++);
+		s = (const char *)p_strings + be32_to_cpu(*p++);
+		t = (const char *)p;
+		p = (const u32 *)_ALIGN((unsigned long)p + sz, 4);
+		printf("%*s%s", depth * shift, "", s);
+		print_data(t, sz);
+		printf(";\n");
+	}
+}
+
+void ft_backtrack_node(struct ft_cxt *cxt)
+{
+	if (be32_to_cpu(*(u32 *) (cxt->p - 4)) != OF_DT_END_NODE)
+		return;		/* XXX only for node */
+
+	cxt->p -= 4;
+}
+
+/* note that the root node of the blob is "peeled" off */
+void ft_merge_blob(struct ft_cxt *cxt, void *blob)
+{
+	struct boot_param_header *bph = (struct boot_param_header *)blob;
+	u32 *p_struct = (u32 *) ((char *)bph + be32_to_cpu(bph->off_dt_struct));
+	u32 *p_strings =
+	    (u32 *) ((char *)bph + be32_to_cpu(bph->off_dt_strings));
+	u32 tag, *p;
+	char *s, *t;
+	int depth, sz;
+
+	if (be32_to_cpu(*(u32 *) (cxt->p - 4)) != OF_DT_END_NODE)
+		return;		/* XXX only for node */
+
+	cxt->p -= 4;
+
+	depth = 0;
+	p = p_struct;
+	while ((tag = be32_to_cpu(*p++)) != OF_DT_END) {
+
+		/* printf("tag: 0x%08x (%d) - %d\n", tag, p - p_struct, depth); */
+
+		if (tag == OF_DT_BEGIN_NODE) {
+			s = (char *)p;
+			p = (u32 *) _ALIGN((unsigned long)p + strlen(s) + 1, 4);
+
+			if (depth++ > 0)
+				ft_begin_node(cxt, s);
+
+			continue;
+		}
+
+		if (tag == OF_DT_END_NODE) {
+			ft_end_node(cxt);
+			if (--depth == 0)
+				break;
+			continue;
+		}
+
+		if (tag == OF_DT_NOP)
+			continue;
+
+		if (tag != OF_DT_PROP)
+			break;
+
+		sz = be32_to_cpu(*p++);
+		s = (char *)p_strings + be32_to_cpu(*p++);
+		t = (char *)p;
+		p = (u32 *) _ALIGN((unsigned long)p + sz, 4);
+
+		ft_prop(cxt, s, t, sz);
+	}
+}
+
+/* Set ptrs to current one's info; return addr of next one */
+static inline u32 *ft_next(u32 *p, u32 *p_strings, u32 version,
+		u32 **tagpp, char **namepp, char **datapp, u32 **sizepp)
+{
+	u32 sz;
+
+	*namepp = NULL;
+	*datapp = NULL;
+	*sizepp = NULL;
+	*tagpp = p;
+
+	switch (be32_to_cpu(*p++)) { /* Tag */
+	case OF_DT_BEGIN_NODE:
+		*namepp = (char *)p;
+		p = (u32 *)_ALIGN((u32)p + strlen((char *)p) + 1, 4);
+		break;
+	case OF_DT_PROP:
+		sz = be32_to_cpu(*p);
+		*sizepp = p++;
+		*namepp = (char *)p_strings + be32_to_cpu(*p++);
+		if ((version < 0x10) && (sz >= 8))
+			p = (u32 *)_ALIGN((unsigned long)p, 8);
+		*datapp = (char *)p;
+		p = (u32 *)_ALIGN((unsigned long)p + sz, 4);
+		break;
+	case OF_DT_END_NODE:
+	case OF_DT_NOP:
+		break;
+	case OF_DT_END:
+	default:
+		p = NULL;
+		break;
+	}
+
+	return p;
+}
+
+void *ft_find_device(const void *bphp, const char *srch_path)
+{
+	const struct boot_param_header *bph = bphp;
+	u32 *p_struct = (u32 *)((char *)bph + be32_to_cpu(bph->off_dt_struct));
+	u32 *p_strings= (u32 *)((char *)bph + be32_to_cpu(bph->off_dt_strings));
+	u32 version = be32_to_cpu(bph->version);
+	u32 *p, *tagp, *sizep;
+	char *pathp, *datap;
+	static char path[MAX_PATH_LEN];
+
+	path[0] = '\0';
+	p = p_struct;
+
+	while ((p = ft_next(p, p_strings, version, &tagp, &pathp, &datap,
+					&sizep)) != NULL)
+		switch (be32_to_cpu(*tagp)) {
+		case OF_DT_BEGIN_NODE:
+			strcat(path, pathp);
+			if (!strcmp(path, srch_path))
+				return tagp;
+			strcat(path, "/");
+			break;
+		case OF_DT_END_NODE:
+			ft_parentize(path, 1);
+			break;
+		}
+	return NULL;
+}
+
+int ft_get_prop(const void *bphp, const void *node, const char *propname,
+		void *buf, const unsigned int buflen)
+{
+	const struct boot_param_header *bph = bphp;
+	u32 *p_strings= (u32 *)((char *)bph + be32_to_cpu(bph->off_dt_strings));
+	u32 version = be32_to_cpu(bph->version);
+	u32 *p, *tagp, *sizep, size;
+	char *propnmp, *datap;
+	int level;
+
+	level = 0;
+	p = (u32 *)node;
+
+	while ((p = ft_next(p, p_strings, version, &tagp, &propnmp, &datap,
+					&sizep)) != NULL)
+		switch (be32_to_cpu(*tagp)) {
+		case OF_DT_BEGIN_NODE:
+			level++;
+			break;
+		case OF_DT_PROP:
+			if ((level == 1) && !strcmp(propnmp, propname)) {
+				size = min(be32_to_cpu(*sizep), (u32)buflen);
+				memcpy(buf, datap, size);
+				return size;
+			}
+			break;
+		case OF_DT_END_NODE:
+			if (--level <= 0)
+				return -1;
+			break;
+		}
+	return -1;
+}
+
+static void ft_modify_prop(void **bphpp, char *datap, u32 *old_prop_sizep,
+		const char *buf, const unsigned int buflen)
+{
+	u32 old_prop_data_len, new_prop_data_len;
+
+	old_prop_data_len = _ALIGN(be32_to_cpu(*old_prop_sizep), 4);
+	new_prop_data_len = _ALIGN(buflen, 4);
+
+	/* Check if new prop data fits in old prop data area */
+	if (new_prop_data_len == old_prop_data_len) {
+		memcpy(datap, buf, buflen);
+		*old_prop_sizep = cpu_to_be32(buflen);
+	}
+	else { /* Need to alloc new area to put larger or smaller ft */
+		struct boot_param_header *old_bph = *bphpp, *new_bph;
+		u32 *old_tailp, *new_tailp, *new_datap;
+		u32 old_total_size, new_total_size, head_len, tail_len, diff, v;
+
+		old_total_size = be32_to_cpu(old_bph->totalsize);
+		head_len = (u32)datap - (u32)old_bph;
+		tail_len = old_total_size - (head_len + old_prop_data_len);
+		old_tailp = (u32 *)((u32)datap + old_prop_data_len);
+		new_total_size = head_len + new_prop_data_len + tail_len;
+
+		if (!(new_bph = malloc(new_total_size))) {
+			printf("Can't alloc space for new ft\n\r");
+			exit();
+		}
+
+		new_datap = (u32 *)((u32)new_bph + head_len);
+		new_tailp = (u32 *)((u32)new_datap + new_prop_data_len);
+
+		memcpy(new_bph, *bphpp, head_len);
+		memcpy(new_datap, buf, buflen);
+		memcpy(new_tailp, old_tailp, tail_len);
+
+		*(new_datap - 2) = cpu_to_be32(buflen); /* Set prop size */
+
+		new_bph->totalsize = cpu_to_be32(new_total_size);
+		diff = new_prop_data_len - old_prop_data_len;
+
+		if (be32_to_cpu(old_bph->off_dt_strings)
+				> be32_to_cpu(old_bph->off_dt_struct)) {
+			v = be32_to_cpu(new_bph->off_dt_strings);
+			new_bph->off_dt_strings = cpu_to_be32(v + diff);
+		}
+
+		if (be32_to_cpu(old_bph->off_mem_rsvmap)
+				> be32_to_cpu(old_bph->off_dt_struct)) {
+			v = be32_to_cpu(new_bph->off_mem_rsvmap);
+			new_bph->off_mem_rsvmap = cpu_to_be32(v + diff);
+		}
+
+		free(*bphpp, old_total_size);
+		*bphpp = new_bph;
+	}
+}
+
+/*
+ * - Only modifies existing properties.
+ * - The dev tree passed in may be freed and a new one allocated
+ *   (and *bphpp set to location of new dev tree).
+ */
+int ft_set_prop(void **bphpp, void *node, const char *propname,
+		const void *buf, const unsigned int buflen)
+{
+	struct boot_param_header *bph = *bphpp;
+	u32 *p_strings= (u32 *)((char *)bph + be32_to_cpu(bph->off_dt_strings));
+	u32 version = be32_to_cpu(bph->version);
+	u32 *p, *tagp, *sizep;
+	char *propnmp, *datap;
+	int level;
+
+	level = 0;
+	p = node;
+
+	while ((p = ft_next(p, p_strings, version, &tagp, &propnmp, &datap,
+					&sizep)) != NULL)
+		switch (be32_to_cpu(*tagp)) {
+		case OF_DT_BEGIN_NODE:
+			level++;
+			break;
+		case OF_DT_PROP:
+			if ((level == 1) && !strcmp(propnmp, propname)) {
+				ft_modify_prop(bphpp, datap, sizep, buf,
+						buflen);
+				return be32_to_cpu(*sizep);
+			}
+			break;
+		case OF_DT_END_NODE:
+			if (--level <= 0)
+				return -1;
+			break;
+		}
+	return -1;
+}
+
+--VS++wcV0S1rZb1Fb
+Content-Type: text/x-chdr; charset=us-ascii
+Content-Disposition: attachment; filename="flatdevtree.h"
+
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef FLATDEVTREE_H
+#define FLATDEVTREE_H
+
+#include <flatdevtree_env.h>
+
+/* Definitions used by the flattened device tree */
+#define OF_DT_HEADER            0xd00dfeed      /* marker */
+#define OF_DT_BEGIN_NODE        0x1     /* Start of node, full name */
+#define OF_DT_END_NODE          0x2     /* End node */
+#define OF_DT_PROP              0x3     /* Property: name off, size, content */
+#define OF_DT_NOP               0x4     /* nop */
+#define OF_DT_END               0x9
+
+#define OF_DT_VERSION           0x10
+
+struct boot_param_header {
+	u32 magic;              /* magic word OF_DT_HEADER */
+	u32 totalsize;          /* total size of DT block */
+	u32 off_dt_struct;      /* offset to structure */
+	u32 off_dt_strings;     /* offset to strings */
+	u32 off_mem_rsvmap;     /* offset to memory reserve map */
+	u32 version;            /* format version */
+	u32 last_comp_version;  /* last compatible version */
+	/* version 2 fields below */
+	u32 boot_cpuid_phys;    /* Physical CPU id we're booting on */
+	/* version 3 fields below */
+	u32 dt_strings_size;    /* size of the DT strings block */
+};
+
+struct ft_cxt {
+	struct boot_param_header *bph;
+	int max_size;           /* maximum size of tree */
+	int overflow;           /* set when this happens */
+	char *p, *pstr, *pres;  /* running pointers */
+	char *p_begin, *pstr_begin, *pres_begin;        /* starting pointers */
+	char *p_anchor;         /* start of constructed area */
+	int struct_size, strings_size, res_size;
+};
+
+void ft_begin_node(struct ft_cxt *cxt, const char *name);
+void ft_end_node(struct ft_cxt *cxt);
+
+void ft_begin_tree(struct ft_cxt *cxt);
+int ft_end_tree(struct ft_cxt *cxt);
+
+void ft_nop(struct ft_cxt *cxt);
+void ft_prop(struct ft_cxt *cxt, const char *name,
+             const void *data, unsigned int sz);
+void ft_prop_str(struct ft_cxt *cxt, const char *name, const char *str);
+void ft_prop_int(struct ft_cxt *cxt, const char *name, unsigned int val);
+void ft_begin(struct ft_cxt *cxt, void *blob, unsigned int max_size);
+void ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size);
+
+void ft_dump_blob(const void *bphp);
+void ft_merge_blob(struct ft_cxt *cxt, void *blob);
+void *ft_find_device(const void *bphp, const char *srch_path);
+int ft_get_prop(const void *bphp, const void *node, const char *propname,
+		void *buf, const unsigned int buflen);
+int ft_set_prop(void **bphp, void *node, const char *propname,
+		const void *buf, const unsigned int buflen);
+
+static inline char *ft_strrchr(const char *s, int c)
+{
+	const char *p = s + strlen(s);
+
+	do {
+		if (*p == (char)c)
+			return (char *)p;
+	} while (--p >= s);
+	return NULL;
+}
+
+/* 'path' is modified */
+static inline void ft_parentize(char *path, u8 leave_slash)
+{
+	char *s = &path[strlen(path) - 1];
+
+	if (*s == '/')
+		*s = '\0';
+	s = ft_strrchr(path, '/');
+	if (s != NULL) {
+		if (leave_slash)
+			s[1] = '\0';
+		else if (s[0] == '/')
+			s[0] = '\0';
+	}
+}
+#endif /* FLATDEVTREE_H */
+
+--VS++wcV0S1rZb1Fb
+Content-Type: text/x-chdr; charset=us-ascii
+Content-Disposition: attachment; filename="flatdevtree_env.h"
+
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+
+#ifndef _PPC_BOOT_FLATDEVTREE_ENV_H_
+#define _PPC_BOOT_FLATDEVTREE_ENV_H_
+
+#include <stdarg.h>
+#include <stddef.h>
+#include "types.h"
+#include "page.h"
+#include "string.h"
+#include "stdio.h"
+#include "ops.h"
+
+#define	be16_to_cpu(x)		(x)
+#define	cpu_to_be16(x)		(x)
+#define	be32_to_cpu(x)		(x)
+#define	cpu_to_be32(x)		(x)
+#define	be64_to_cpu(x)		(x)
+#define	cpu_to_be64(x)		(x)
+
+#endif /* _PPC_BOOT_FLATDEVTREE_ENV_H_ */
+
+--VS++wcV0S1rZb1Fb--
