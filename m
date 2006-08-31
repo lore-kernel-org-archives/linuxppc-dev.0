@@ -1,25 +1,23 @@
-Return-Path: <guinan@bluebutton.com>
-Received: from ns4.townisp.com (ns4a.townisp.com [216.195.0.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ns4.townisp.com", Issuer "ns4.townisp.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 70F0167B83
+Return-Path: <lagrange@fr.oleane.com>
+Received: from relay02s.clb.oleane.net (relay02s.clb.oleane.net
+	[213.56.31.143]) by ozlabs.org (Postfix) with ESMTP id 4CC5767B73
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 02:38:09 +1000 (EST)
-Received: from gemini.home.net (dhcp-0-10-57-0-7-57.cpe.townisp.com
-	[64.30.85.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ns4.townisp.com (Postfix) with ESMTP id 24D1A29984
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Aug 2006 12:14:13 -0400 (EDT)
-Date: Thu, 31 Aug 2006 12:14:12 -0400 (EDT)
-From: Jamie Guinan <guinan@bluebutton.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Rattler 8347 and USB 2.0
-Message-ID: <Pine.LNX.4.64.0608291535260.23035@gemini.home.net>
+	Fri,  1 Sep 2006 04:02:58 +1000 (EST)
+Received: from smtp6.clb.oleane.net (smtp6.clb.oleane.net [213.56.31.26])
+	by relay02s.clb.oleane.net with ESMTP id k7VHoYMi009680
+	for <linuxppc-embedded@ozlabs.org>; Thu, 31 Aug 2006 19:51:35 +0200
+Received: from GEG2400 ([194.3.133.184]) (authenticated)
+	by smtp6.clb.oleane.net with ESMTP id k7VHiAQk018484
+	for <linuxppc-embedded@ozlabs.org>; Thu, 31 Aug 2006 19:44:11 +0200
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: 82xx fcc_enet problem between Linux 2.4 and 2.6
+Date: Thu, 31 Aug 2006 19:46:27 +0200
+Message-ID: <002101c6cd25$6945e470$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Reply-To: Jamie Guinan <guinan@bluebutton.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,35 +29,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Greetings,
+Hello,
 
-I have an mpc8347 board here (A&M Rattler 8347).  It shipped with a 
-2.6.16 patched enough to boot the board, but support for freescale USB 
-2.0 (ehci) is not present.
+I work on several custom 82xx boards with Linux 2.4 and 2.6.
 
-Working my way backwards in the mainline kernel tree (2.6.18-rc5), I 
-found drivers/usb/host/ehci-fsl.c, for FreeScale/PPC EHCI support.
+I have ported Linux 2.6.9 on different boards and I noticed
+that I have tx carrier errors on my FCC ports. Almost one
+error per xmit.
 
-In that module, usb_hcd_fsl_probe() requires an initialized "struct 
-fsl_usb2_platform_data", which only appears in 
-arch/powerpc/sysdev/fsl_soc.c, yet the 2.6.16 patch provided puts the 
-board in arch/ppc.
+I reinstalled Linux 2.4.18 on these boards and I have NO ERROR.
 
-My question is, what would be the best way to go about getting 
-ehci-fsl.c working with this board?
+The errors arise with PHY configured in 100M full duplex (or autoneg).
+The FCC has the same duplex as PHY.
 
-1) Nudge the Rattler port from arch/ppc to arch/powerpc.  One problem
-with this is that the rattler uses RedBoot, and reading this,
+I found on web another mail concerning a problem on PQ2FADS Linux2.6.8
+when mounting a NFS. The writer has also noticed that he has
+tx carrier errors but the mail focused on mount and not FCC.
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2006-August/024116.html
+> # ifconfig
+> eth0      Link encap:Ethernet  HWaddr 08:00:17:40:00:03
+>           inet addr:192.168.0.5  Bcast:192.168.0.255  Mask:255.255.255.0
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:122 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:114 errors:0 dropped:0 overruns:0 carrier:114
+>           collisions:0 txqueuelen:1000
+>           RX bytes:20747 (20.2 kb)  TX bytes:14320 (13.9 kb)
+>           Base address:0x8500
 
-it looks like arch/powerpc wants to boot from OpenFirmware-like 
-"flattened device tree" (does RedBoot support this?).
+I think this is not a phy or hardware problem but rather a FCC configuration
+mismatch in fcc_enet.c.
 
-2) Support ehci-fsl.c from arch/ppc.  If arch/ppc is deprecated, 
-that's a bad long-term solution.  And since fsl_soc.c lives
-under arch/powerpc, that doesn't look good either.
-
-Thoughts?
-
--Jamie
+Thanks for any tips
+Laurent
