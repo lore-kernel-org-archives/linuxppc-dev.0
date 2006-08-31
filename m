@@ -1,88 +1,102 @@
-Return-Path: <fodjo@yahoo.com>
-Received: from web52605.mail.yahoo.com (web52605.mail.yahoo.com
-	[206.190.48.208]) by ozlabs.org (Postfix) with SMTP id 6BAA667B5F
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Aug 2006 23:45:39 +1000 (EST)
-Message-ID: <20060831133857.67615.qmail@web52605.mail.yahoo.com>
-Date: Thu, 31 Aug 2006 06:38:57 -0700 (PDT)
-From: Fodjo Yves-Eric <fodjo@yahoo.com>
-Subject: Men em1 MPC5200 kernel don't start using elinos v4.0
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-865822957-1157031537=:65329"
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <latten@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D28CD67B71
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2006 01:07:22 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7VF7FYS003873
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 11:07:15 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k7VF7Fq8341180
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 09:07:15 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k7VF7FKE003771
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 09:07:15 -0600
+Date: Thu, 31 Aug 2006 09:55:58 -0500
+From: Joy Latten <latten@austin.ibm.com>
+Message-Id: <200608311455.k7VEtwUI011729@faith.austin.ibm.com>
+To: paulus@samba.org
+Subject: Re: IPSec kernel oops on ppc64
+Cc: jmorris@redhat.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
+	anton@au1.ibm.com, linuxppc-dev@ozlabs.org, gcwilson@us.ibm.com,
+	davem@davemloft.net
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-865822957-1157031537=:65329
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+It works! I applied the patch to 
+linux-2.6.17 + patch-2.6.17-rc1
+and tried icmp, tcp and udp as well as sftp with 
+ipsec and they all worked. 
 
-Hello 
-In the course of my Thesis I have to Port linux on the board EM01 Rev 01.04.02 of Men  using Elinos V4 PPC.  My host system is Linux Fedora Core 5. I'm using the "menem1" as board. The problem is that the kernel doesn't start at all. After loading the file "hello.img" througth bootp the system give the following output and hang. 
+Thanks!!!!
 
-Searching for server (BOOTP) .
-My IP 192.168.1.10:ffffff00 Server IP 192.168.1.1 GW IP 192.168.1.1
-Loading hello.img...
-to 0x02000000        861 kB
-Loaded 0x000d74e9 bytes
-Detected PPCBOOT header
-    verifiying image CRC...ok
-    Uncompressing Multi-File Image ... ok
-    Moving initrd...ok
-    passing parameters: devfs=mount rootfstype=tmpfs root=dev/ram rw ip=auto
-    Starting Linux Kernel.
+Regards,
+Joy
 
-
-I have tried several combination of kernel parameters without success.
-Here is a part of my ELINOS.sh config file.
-
-# --- Configuration Settings ------------------------------------------
-ELINOS_BOARD="menem1"
-export ELINOS_BOARD
-ELINOS_CPU="ppc"
-export ELINOS_CPU
-ELINOS_ARCH="60x"
-export ELINOS_ARCH
-ELINOS_LIBC="glibc-2.3.4"
-export ELINOS_LIBC
-ELINOS_BOARD_LINUX_ARCH=""
-export ELINOS_BOARD_LINUX_ARCH
-ELINOS_DOSNAME="hello"
-export ELINOS_DOSNAME
-ELINOS_BOOT_STRAT="uboot_multi"
-export ELINOS_BOOT_STRAT
-ELINOS_KERNELPATH="menem1/linux-2.6.12"
-export ELINOS_KERNELPATH
-MKIMAGE_LOAD_ADDRESS="00000000"
-export MKIMAGE_LOAD_ADDRESS
-MKIMAGE_ENTRY_ADDRESS="00000000"
-export MKIMAGE_ENTRY_ADDRESS
-.
-.
-ELINOS_VERSION="4.0"
-
-Thanks.
- 		
----------------------------------
-Stay in the know. Pulse on the new Yahoo.com.  Check it out. 
- 		
----------------------------------
-Do you Yahoo!?
- Get on board. You're invited to try the new Yahoo! Mail.
---0-865822957-1157031537=:65329
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Hello <br>In the course of my Thesis I have to Port linux on the board EM01 Rev 01.04.02 of Men&nbsp; using Elinos V4 PPC.&nbsp; My host system is Linux Fedora Core 5. I'm using the "menem1" as board. The problem is that the kernel doesn't start at all. After loading the file "hello.img" througth bootp the system give the following output and hang. <br><br>Searching for server (BOOTP) .<br>My IP 192.168.1.10:ffffff00 Server IP 192.168.1.1 GW IP 192.168.1.1<br>Loading hello.img...<br>to 0x02000000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 861 kB<br>Loaded 0x000d74e9 bytes<br>Detected PPCBOOT header<br>&nbsp;&nbsp; &nbsp;verifiying image CRC...ok<br>&nbsp;&nbsp; &nbsp;Uncompressing Multi-File Image ... ok<br>&nbsp;&nbsp; &nbsp;Moving initrd...ok<br>&nbsp;&nbsp; &nbsp;passing parameters: devfs=mount rootfstype=tmpfs root=dev/ram rw ip=auto<br>&nbsp;&nbsp; &nbsp;Starting Linux Kernel.<br><br><br>I have tried several combination of kernel parameters without success.<br>Here is a
- part of my ELINOS.sh config file.<br><br># --- Configuration Settings ------------------------------------------<br>ELINOS_BOARD="menem1"<br>export ELINOS_BOARD<br>ELINOS_CPU="ppc"<br>export ELINOS_CPU<br>ELINOS_ARCH="60x"<br>export ELINOS_ARCH<br>ELINOS_LIBC="glibc-2.3.4"<br>export ELINOS_LIBC<br>ELINOS_BOARD_LINUX_ARCH=""<br>export ELINOS_BOARD_LINUX_ARCH<br>ELINOS_DOSNAME="hello"<br>export ELINOS_DOSNAME<br>ELINOS_BOOT_STRAT="uboot_multi"<br>export ELINOS_BOOT_STRAT<br>ELINOS_KERNELPATH="menem1/linux-2.6.12"<br>export ELINOS_KERNELPATH<br>MKIMAGE_LOAD_ADDRESS="00000000"<br>export MKIMAGE_LOAD_ADDRESS<br>MKIMAGE_ENTRY_ADDRESS="00000000"<br>export MKIMAGE_ENTRY_ADDRESS<br>.<br>.<br>ELINOS_VERSION="4.0"<br><br>Thanks.<p> 
-		<hr size=1>Stay in the know. Pulse on the new Yahoo.com. <a href="http://us.rd.yahoo.com/evt=42974/*http://www.yahoo.com/preview"> Check it out.</a> <p>&#32;
-		<hr size=1>Do you Yahoo!?<br> 
-Get on board. <a href="http://us.rd.yahoo.com/evt=40791/*http://advision.webevents.yahoo.com/mailbeta">You're invited</a> to try the new Yahoo! Mail.
---0-865822957-1157031537=:65329--
+>Herbert Xu writes:
+>
+>> Interesting.  We were previously off by 28 bytes, now we're off by 8 :)
+>
+>You missed a couple of 'beqlr' instructions (branch if equal to LR).
+>I'd be interested to know if it still fails with the patch below.
+>
+>Thanks,
+>Paul.
+>
+>diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+>index fd66acf..7173ba9 100644
+>--- a/arch/powerpc/lib/memcpy_64.S
+>+++ b/arch/powerpc/lib/memcpy_64.S
+>@@ -11,6 +11,7 @@ #include <asm/ppc_asm.h>
+> 
+> 	.align	7
+> _GLOBAL(memcpy)
+>+	std	r3,48(r1)	/* save destination pointer for return value */
+> 	mtcrf	0x01,r5
+> 	cmpldi	cr1,r5,16
+> 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+>@@ -38,7 +39,7 @@ _GLOBAL(memcpy)
+> 	stdu	r9,16(r3)
+> 	bdnz	1b
+> 3:	std	r8,8(r3)
+>-	beqlr
+>+	beq	3f
+> 	addi	r3,r3,16
+> 	ld	r9,8(r4)
+> .Ldo_tail:
+>@@ -53,7 +54,8 @@ _GLOBAL(memcpy)
+> 2:	bf	cr7*4+3,3f
+> 	rotldi	r9,r9,8
+> 	stb	r9,0(r3)
+>-3:	blr
+>+3:	ld	r3,48(r1)	/* return dest pointer */
+>+	blr
+> 
+> .Lsrc_unaligned:
+> 	srdi	r6,r5,3
+>@@ -115,7 +117,7 @@ _GLOBAL(memcpy)
+> 5:	srd	r12,r9,r11
+> 	or	r12,r8,r12
+> 	std	r12,24(r3)
+>-	beqlr
+>+	beq	4f
+> 	cmpwi	cr1,r5,8
+> 	addi	r3,r3,32
+> 	sld	r9,r9,r10
+>@@ -167,4 +169,5 @@ _GLOBAL(memcpy)
+> 3:	bf	cr7*4+3,4f
+> 	lbz	r0,0(r4)
+> 	stb	r0,0(r3)
+>-4:	blr
+>+4:	ld	r3,48(r1)	/* return dest pointer */
+>+	blr
