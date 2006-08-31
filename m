@@ -1,36 +1,17 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 82D2567B58
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 16:01:28 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7V61PoC031526
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 02:01:25 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7V61PQj372936
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 00:01:25 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7V60IHP031804
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 00:01:24 -0600
-Date: Wed, 30 Aug 2006 23:00:36 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: libnuma interleaving oddness
-Message-ID: <20060831060036.GA18661@us.ibm.com>
-References: <20060829231545.GY5195@us.ibm.com>
-	<Pine.LNX.4.64.0608291655160.22397@schroedinger.engr.sgi.com>
-	<20060830002110.GZ5195@us.ibm.com> <200608300919.13125.ak@suse.de>
-	<20060830072948.GE5195@us.ibm.com>
-	<Pine.LNX.4.64.0608301401290.4217@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0608301401290.4217@schroedinger.engr.sgi.com>
-Cc: linux-mm@kvack.org, lnxninja@us.ibm.com, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9516E67B5C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 16:43:23 +1000 (EST)
+Subject: [PATCH] powerpc: More via-pmu backlight fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain
+Date: Thu, 31 Aug 2006 16:42:56 +1000
+Message-Id: <1157006577.12526.116.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,119 +21,228 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 30.08.2006 [14:04:40 -0700], Christoph Lameter wrote:
-> > I took out the mlock() call, and I get the same results, FWIW.
-> 
-> What zones are available on your box? Any with HIGHMEM?
+The via-pmu backlight code (introduced in 2.6.18) has various design
+issues causing crashes on machines using it like the old Wallstreet
+powerbook (Michael, the author, never managed to test on these and I
+just got my hand on one of those old beasts).
 
-How do I tell the available zones from userspace? This is ppc64 with
-about 64GB of memory total, it looks like. So, none of the nodes
-(according to /sys/devices/system/node/*/meminfo) have highmem.
+This fixes them by no longer trying to hijack the backlight device of
+the frontmost framebuffer (causing that framebuffer to crash) but having
+it's own local bits instead. Might look weird but it's better that way
+on those old machines, at least as a last-minute fix for 2.6.18. We
+might rework the whole thing later. This patch also changes the way it
+gets notified of sleep and wakeup in order to properly shut the
+backlight down on sleep and bring it back on wakeup.
 
-> Also what kernel version are we talking about? Before 2.6.18?
-
-The SuSE default, 2.6.16.21 -- I thought I mentioned that in one of my
-replies, sorry.
-
-Tim and I spent most of this afternoon debugging the huge_zonelist()
-callpath with kprobes and jprobes. We found the following via a jprobe
-to offset_li_node():
-
-jprobe: vma=0xc000000006dc2d78, pol->policy=0x3, pol->v.nodes=0xff, off=0x0
-jprobe: vma=0xc00000000f247e30, pol->policy=0x3, pol->v.nodes=0xff, off=0x1000
-jprobe: vma=0xc000000006dbf648, pol->policy=0x3, pol->v.nodes=0xff, off=0x2000
-...
-jprobe: vma=0xc00000000f298870, pol->policy=0x3, pol->v.nodes=0xff, off=0x17000
-jprobe: vma=0xc00000000f298368, pol->policy=0x3, pol->v.nodes=0xff, off=0x18000
-
-So, it's quite clear that the nodemask is set appropriately and so is
-the policy. The problem, in fact, is the "offset" being passed into
-offset_li_node().
-
-The problem, I think, is from interleave_nid():
-
-	off = vma->vm_pgoff;
-	off += (addr - vma->vm_start) >> shift;
-	return offset_il_node(pol, vma, off);
-
-For hugetlbfs vma's, since vm_pgoff is in units of small pages, the lower
-(HPAGE_SHIFT - PAGE_SHIFT) bits of vma->vm_pgoff and off will always be zero
-(12 in this case).  Thus, when we get into offset_li_node():
-
-        unsigned nnodes = nodes_weight(pol->v.nodes);
-        unsigned target = (unsigned)off % nnodes;
-        int c;
-        int nid = -1;
-
-        c = 0;
-        do {
-                nid = next_node(nid, pol->v.nodes);
-                c++;
-        } while (c <= target);
-        return nid;
-
-nnodes is 8 (the number of nodes). Our offset (some multiple of 4096) is
-always going to be evenly divided by 8. So, our target node is always
-node 0! Note, that when we took out a bit in our nodemask, nnodes
-changed accordingly and 7 did not evenly divide the offset, and we got
-interleaving as expected.
-
-To test my hypothesis (my analysis may be a bit hand-wavy, sorry), I
-changed interleave_nid() to shift off right by (HPAGE_SHIFT -
-PAGE_SHIFT) only #if CONFIG_HUGETLB_PAGE. This fixes the behavior for
-the page-by-page case. But I'm not sure this is an acceptable mainline
-change, but I've included my signed-off-but-not-for-inclusion patch.
-
-Note, that when I try this with my testcase that makes each allocation
-be 4 hugepages large, I get 4 hugepages on node 0, then 4 on node 4,
-then 4 on node 0, and so on. I believe this is because the offset ends
-up being the same for all of the 4 hugepages in each set, so they go to
-the same node
-
-Many thanks to Tim for his help debugging.
-
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Once again, not for inclusion!
+To be applied to 2.6.18 as the current code crashes on some models.
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-
-diff -urpN 2.6.18-rc5/mm/mempolicy.c 2.6.18-rc5-dev/mm/mempolicy.c
---- 2.6.18-rc5/mm/mempolicy.c	2006-08-30 22:55:33.000000000 -0700
-+++ 2.6.18-rc5-dev/mm/mempolicy.c	2006-08-30 22:56:43.000000000 -0700
-@@ -1169,6 +1169,7 @@ static unsigned offset_il_node(struct me
- 	return nid;
- }
+Index: linux-work/drivers/macintosh/via-pmu-backlight.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/via-pmu-backlight.c	2006-08-17 09:26:20.000000000 +1000
++++ linux-work/drivers/macintosh/via-pmu-backlight.c	2006-08-31 15:49:27.000000000 +1000
+@@ -18,17 +18,48 @@
+ static struct backlight_properties pmu_backlight_data;
+ static spinlock_t pmu_backlight_lock;
+ static int sleeping;
++static u8 bl_curve[FB_BACKLIGHT_LEVELS];
  
-+#ifndef CONFIG_HUGETLBFS
- /* Determine a node number for interleave */
- static inline unsigned interleave_nid(struct mempolicy *pol,
- 		 struct vm_area_struct *vma, unsigned long addr, int shift)
-@@ -1182,8 +1183,22 @@ static inline unsigned interleave_nid(st
- 	} else
- 		return interleave_nodes(pol);
- }
-+#else
-+/* Determine a node number for interleave */
-+static inline unsigned interleave_nid(struct mempolicy *pol,
-+		 struct vm_area_struct *vma, unsigned long addr, int shift)
+-static int pmu_backlight_get_level_brightness(struct fb_info *info,
+-		int level)
++static void pmu_backlight_init_curve(u8 off, u8 min, u8 max)
 +{
-+	if (vma) {
-+		unsigned long off;
++	unsigned int i, flat, count, range = (max - min);
 +
-+		off = vma->vm_pgoff;
-+		off += (addr - vma->vm_start) >> shift;
-+		off >>= (HPAGE_SHIFT - PAGE_SHIFT);
-+		return offset_il_node(pol, vma, off);
-+	} else
-+		return interleave_nodes(pol);
++	bl_curve[0] = off;
++
++	for (flat = 1; flat < (FB_BACKLIGHT_LEVELS / 16); ++flat)
++		bl_curve[flat] = min;
++
++	count = FB_BACKLIGHT_LEVELS * 15 / 16;
++	for (i = 0; i < count; ++i)
++		bl_curve[flat + i] = min + (range * (i + 1) / count);
 +}
- 
--#ifdef CONFIG_HUGETLBFS
- /* Return a zonelist suitable for a huge page allocation. */
- struct zonelist *huge_zonelist(struct vm_area_struct *vma, unsigned long addr)
++
++static int pmu_backlight_curve_lookup(int value)
++{
++	int level = (FB_BACKLIGHT_LEVELS - 1);
++	int i, max = 0;
++
++	/* Look for biggest value */
++	for (i = 0; i < FB_BACKLIGHT_LEVELS; i++)
++		max = max((int)bl_curve[i], max);
++
++	/* Look for nearest value */
++	for (i = 0; i < FB_BACKLIGHT_LEVELS; i++) {
++		int diff = abs(bl_curve[i] - value);
++		if (diff < max) {
++			max = diff;
++			level = i;
++		}
++	}
++	return level;
++}
++
++static int pmu_backlight_get_level_brightness(int level)
  {
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+ 	int pmulevel;
+ 
+ 	/* Get and convert the value */
+-	mutex_lock(&info->bl_mutex);
+-	pmulevel = info->bl_curve[level] * FB_BACKLIGHT_MAX / MAX_PMU_LEVEL;
+-	mutex_unlock(&info->bl_mutex);
+-
++	pmulevel = bl_curve[level] * FB_BACKLIGHT_MAX / MAX_PMU_LEVEL;
+ 	if (pmulevel < 0)
+ 		pmulevel = 0;
+ 	else if (pmulevel > MAX_PMU_LEVEL)
+@@ -39,7 +70,6 @@ static int pmu_backlight_get_level_brigh
+ 
+ static int pmu_backlight_update_status(struct backlight_device *bd)
+ {
+-	struct fb_info *info = class_get_devdata(&bd->class_dev);
+ 	struct adb_request req;
+ 	unsigned long flags;
+ 	int level = bd->props->brightness;
+@@ -55,7 +85,7 @@ static int pmu_backlight_update_status(s
+ 		level = 0;
+ 
+ 	if (level > 0) {
+-		int pmulevel = pmu_backlight_get_level_brightness(info, level);
++		int pmulevel = pmu_backlight_get_level_brightness(level);
+ 
+ 		pmu_request(&req, NULL, 2, PMU_BACKLIGHT_BRIGHT, pmulevel);
+ 		pmu_wait_complete(&req);
+@@ -88,35 +118,19 @@ static struct backlight_properties pmu_b
+ };
+ 
+ #ifdef CONFIG_PM
+-static int pmu_backlight_sleep_call(struct pmu_sleep_notifier *self, int when)
++void pmu_backlight_set_sleep(int sleep)
+ {
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&pmu_backlight_lock, flags);
+-
+-	switch (when) {
+-	case PBOOK_SLEEP_REQUEST:
+-		sleeping = 1;
+-		break;
+-	case PBOOK_WAKE:
+-		sleeping = 0;
+-		break;
+-	}
+-
++	sleeping = sleep;
+ 	spin_unlock_irqrestore(&pmu_backlight_lock, flags);
+-
+-	return PBOOK_SLEEP_OK;
+ }
+-
+-static struct pmu_sleep_notifier pmu_backlight_sleep_notif = {
+-	.notifier_call = pmu_backlight_sleep_call,
+-};
+-#endif
++#endif /* CONFIG_PM */
+ 
+ void __init pmu_backlight_init()
+ {
+ 	struct backlight_device *bd;
+-	struct fb_info *info;
+ 	char name[10];
+ 	int level, autosave;
+ 
+@@ -131,27 +145,14 @@ void __init pmu_backlight_init()
+ 	    !machine_is_compatible("PowerBook1,1"))
+ 		return;
+ 
+-	/* Actually, this is a hack, but I don't know of a better way
+-	 * to get the first framebuffer device.
+-	 */
+-	info = registered_fb[0];
+-	if (!info) {
+-		printk("pmubl: No framebuffer found\n");
+-		goto error;
+-	}
+-
+-	snprintf(name, sizeof(name), "pmubl%d", info->node);
++	snprintf(name, sizeof(name), "pmubl");
+ 
+-	bd = backlight_device_register(name, info, &pmu_backlight_data);
++	bd = backlight_device_register(name, NULL, &pmu_backlight_data);
+ 	if (IS_ERR(bd)) {
+ 		printk("pmubl: Backlight registration failed\n");
+ 		goto error;
+ 	}
+-
+-	mutex_lock(&info->bl_mutex);
+-	info->bl_dev = bd;
+-	fb_bl_default_curve(info, 0x7F, 0x46, 0x0E);
+-	mutex_unlock(&info->bl_mutex);
++	pmu_backlight_init_curve(0x7F, 0x46, 0x0E);
+ 
+ 	level = pmu_backlight_data.max_brightness;
+ 
+@@ -161,11 +162,9 @@ void __init pmu_backlight_init()
+ 		pmu_request(&req, NULL, 2, 0xd9, 0);
+ 		pmu_wait_complete(&req);
+ 
+-		mutex_lock(&info->bl_mutex);
+-		level = pmac_backlight_curve_lookup(info,
++		level = pmu_backlight_curve_lookup(
+ 				(req.reply[0] >> 4) *
+ 				pmu_backlight_data.max_brightness / 15);
+-		mutex_unlock(&info->bl_mutex);
+ 	}
+ 
+ 	up(&bd->sem);
+@@ -179,10 +178,6 @@ void __init pmu_backlight_init()
+ 		pmac_backlight = bd;
+ 	mutex_unlock(&pmac_backlight_mutex);
+ 
+-#ifdef CONFIG_PM
+-	pmu_register_sleep_notifier(&pmu_backlight_sleep_notif);
+-#endif
+-
+ 	printk("pmubl: Backlight initialized (%s)\n", name);
+ 
+ 	return;
+Index: linux-work/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/via-pmu.c	2006-08-17 09:26:20.000000000 +1000
++++ linux-work/drivers/macintosh/via-pmu.c	2006-08-31 15:14:33.000000000 +1000
+@@ -1995,6 +1995,8 @@ restore_via_state(void)
+ 	out_8(&via[IER], IER_SET | SR_INT | CB1_INT);
+ }
+ 
++extern void pmu_backlight_set_sleep(int sleep);
++
+ static int
+ pmac_suspend_devices(void)
+ {
+@@ -2032,6 +2034,11 @@ pmac_suspend_devices(void)
+ 		return -EBUSY;
+ 	}
+ 
++#ifdef CONFIG_PMAC_BACKLIGHT
++	/* Tell backlight code not to muck around with the chip anymore */
++	pmu_backlight_set_sleep(1);
++#endif
++
+ 	/* Call platform functions marked "on sleep" */
+ 	pmac_pfunc_i2c_suspend();
+ 	pmac_pfunc_base_suspend();
+@@ -2090,6 +2097,11 @@ pmac_wakeup_devices(void)
+ {
+ 	mdelay(100);
+ 
++#ifdef CONFIG_PMAC_BACKLIGHT
++	/* Tell backlight code it can use the chip again */
++	pmu_backlight_set_sleep(0);
++#endif
++
+ 	/* Power back up system devices (including the PIC) */
+ 	device_power_up();
+ 
