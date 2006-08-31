@@ -1,23 +1,15 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from relay02s.clb.oleane.net (relay02s.clb.oleane.net
-	[213.56.31.143]) by ozlabs.org (Postfix) with ESMTP id 4CC5767B73
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 04:02:58 +1000 (EST)
-Received: from smtp6.clb.oleane.net (smtp6.clb.oleane.net [213.56.31.26])
-	by relay02s.clb.oleane.net with ESMTP id k7VHoYMi009680
-	for <linuxppc-embedded@ozlabs.org>; Thu, 31 Aug 2006 19:51:35 +0200
-Received: from GEG2400 ([194.3.133.184]) (authenticated)
-	by smtp6.clb.oleane.net with ESMTP id k7VHiAQk018484
-	for <linuxppc-embedded@ozlabs.org>; Thu, 31 Aug 2006 19:44:11 +0200
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: 82xx fcc_enet problem between Linux 2.4 and 2.6
-Date: Thu, 31 Aug 2006 19:46:27 +0200
-Message-ID: <002101c6cd25$6945e470$5201a8c0@GEG2400>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: 
+Return-Path: <wd@denx.de>
+To: "Mathews, Phil" <Phil.Mathews@innocon.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Unable to build ELDK 4.0 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 31 Aug 2006 12:13:11 EDT."
+	<3E8081396F6B524BA2854E7FA3F16438042EB1DF@mail.innocon.com>
+Date: Thu, 31 Aug 2006 22:00:26 +0200
+Sender: wd@denx.de
+Message-Id: <20060831200026.60FA5352640@atlas.denx.de>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,36 +20,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <3E8081396F6B524BA2854E7FA3F16438042EB1DF@mail.innocon.com> you wrote:
+> 
+> mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> make O=/home/name/build/kernel menuconfig
+>   HOSTCC  scripts/basic/fixdep
+> In file included from /home/mathews/ELDK/usr/../ppc_6xx/usr/include/sys/socket.h:35,
+>                  from /home/mathews/ELDK/usr/../ppc_6xx/usr/include/netinet/in.h:24,
+>                  from /home/mathews/ELDK/usr/../ppc_6xx/usr/include/arpa/inet.h:23,
+>                  from /home/mathews/ELDK/ppc_6xx/usr/src/linux-2.6.15/scripts/basic/fixdep.c:115:
+> /home/mathews/ELDK/usr/../ppc_6xx/usr/include/bits/socket.h:304:24: error: asm/socket.h: No such file or directory
+> make[2]: *** [scripts/basic/fixdep] Error 1
+> make[1]: *** [scripts_basic] Error 2
+> make: *** [menuconfig] Error 2
 
-Hello,
+It's working fine here. Did you install from CDROM or  from  a  down-
+load?  Did  you  verify  the  downloaded  files? Were there any error
+messages dureing installation? Did you try a fresh reinstall?
 
-I work on several custom 82xx boards with Linux 2.4 and 2.6.
+Best regards,
 
-I have ported Linux 2.6.9 on different boards and I noticed
-that I have tx carrier errors on my FCC ports. Almost one
-error per xmit.
+Wolfgang Denk
 
-I reinstalled Linux 2.4.18 on these boards and I have NO ERROR.
-
-The errors arise with PHY configured in 100M full duplex (or autoneg).
-The FCC has the same duplex as PHY.
-
-I found on web another mail concerning a problem on PQ2FADS Linux2.6.8
-when mounting a NFS. The writer has also noticed that he has
-tx carrier errors but the mail focused on mount and not FCC.
-
-> # ifconfig
-> eth0      Link encap:Ethernet  HWaddr 08:00:17:40:00:03
->           inet addr:192.168.0.5  Bcast:192.168.0.255  Mask:255.255.255.0
->           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
->           RX packets:122 errors:0 dropped:0 overruns:0 frame:0
->           TX packets:114 errors:0 dropped:0 overruns:0 carrier:114
->           collisions:0 txqueuelen:1000
->           RX bytes:20747 (20.2 kb)  TX bytes:14320 (13.9 kb)
->           Base address:0x8500
-
-I think this is not a phy or hardware problem but rather a FCC configuration
-mismatch in fcc_enet.c.
-
-Thanks for any tips
-Laurent
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I used to be indecisive, now I'm not sure.
