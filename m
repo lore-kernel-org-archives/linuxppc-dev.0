@@ -1,17 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ak@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C272367B61
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 16:46:58 +1000 (EST)
-Subject: [PATCH] powerpc: Fix PowerMac IRQ handling bug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Thu, 31 Aug 2006 16:46:41 +1000
-Message-Id: <1157006801.12526.121.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 99D8967B5C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 17:47:44 +1000 (EST)
+From: Andi Kleen <ak@suse.de>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: Re: libnuma interleaving oddness
+Date: Thu, 31 Aug 2006 09:47:30 +0200
+References: <20060829231545.GY5195@us.ibm.com>
+	<Pine.LNX.4.64.0608301401290.4217@schroedinger.engr.sgi.com>
+	<20060831060036.GA18661@us.ibm.com>
+In-Reply-To: <20060831060036.GA18661@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200608310947.30542.ak@suse.de>
+Cc: linuxppc-dev@ozlabs.org, linux-mm@kvack.org, lnxninja@us.ibm.com,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The port to genirq & the new powerpc interrupt model in 2.6.18
-introduced a bug in the legacy PowerMac PIC code (used on older
-machines) because of a typo potentially causing hangs due to interrupt
-storms. This fixes it, along with a performance issue causing us to do
-spurrious retriggers after masking an interrupt.
+On Thursday 31 August 2006 08:00, Nishanth Aravamudan wrote:
+> On 30.08.2006 [14:04:40 -0700], Christoph Lameter wrote:
+> > > I took out the mlock() call, and I get the same results, FWIW.
+> > 
+> > What zones are available on your box? Any with HIGHMEM?
+> 
+> How do I tell the available zones from userspace? This is ppc64 with
+> about 64GB of memory total, it looks like. So, none of the nodes
+> (according to /sys/devices/system/node/*/meminfo) have highmem.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-This is another 2.6.18 regression, please apply to 2.6.18
+The zones are listed at the beginning of dmesg
 
-Index: linux-work/arch/powerpc/platforms/powermac/pic.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/pic.c	2006-08-17 09:26:19.000000000 +1000
-+++ linux-work/arch/powerpc/platforms/powermac/pic.c	2006-08-31 16:35:05.000000000 +1000
-@@ -87,8 +87,8 @@ static void __pmac_retrigger(unsigned in
- static void pmac_mask_and_ack_irq(unsigned int virq)
- {
- 	unsigned int src = irq_map[virq].hwirq;
--        unsigned long bit = 1UL << (virq & 0x1f);
--        int i = virq >> 5;
-+        unsigned long bit = 1UL << (src & 0x1f);
-+        int i = src >> 5;
-         unsigned long flags;
- 
- 	spin_lock_irqsave(&pmac_pic_lock, flags);
-@@ -175,7 +175,7 @@ static void pmac_mask_irq(unsigned int v
- 
-   	spin_lock_irqsave(&pmac_pic_lock, flags);
-         __clear_bit(src, ppc_cached_irq_mask);
--        __pmac_set_irq_mask(src, 0);
-+        __pmac_set_irq_mask(src, 1);
-   	spin_unlock_irqrestore(&pmac_pic_lock, flags);
- }
- 
+"On node X total pages ...
+      DMA zone ...
+      ..." 
+
+-Andi
