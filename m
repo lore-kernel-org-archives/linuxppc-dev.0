@@ -1,33 +1,24 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4E02367B6E
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2006 03:50:05 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k7VHo3gQ004160
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 13:50:03 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k7VHo3vI278222
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 11:50:03 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k7VHo2HE000344
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 11:50:02 -0600
-Date: Thu, 31 Aug 2006 12:50:01 -0500
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: pci error recovery procedure
-Message-ID: <20060831175001.GE8704@austin.ibm.com>
-References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
+Return-Path: <kmannth@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.201])
+	by ozlabs.org (Postfix) with ESMTP id F41E867B6E
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2006 03:52:32 +1000 (EST)
+Received: by nz-out-0102.google.com with SMTP id i1so342281nzh
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 10:52:29 -0700 (PDT)
+Message-ID: <a762e240608311052h28843b2ege651e9fa82c49f2a@mail.gmail.com>
+Date: Thu, 31 Aug 2006 10:52:28 -0700
+From: "Keith Mannthey" <kmannth@gmail.com>
+To: "Mel Gorman" <mel@skynet.ie>
+Subject: Re: [PATCH 4/6] Have x86_64 use add_active_range() and
+	free_area_init_nodes
+In-Reply-To: <20060831154903.GA7011@skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	Yanmin Zhang <yanmin.zhang@intel.com>,
-	inux-kernel@vger.kernel.org, Rajesh Shah <rajesh.shah@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20060821134518.22179.46355.sendpatchset@skynet.skynet.ie>
+	<20060821134638.22179.44471.sendpatchset@skynet.skynet.ie>
+	<a762e240608301357n3915250bk8546dd340d5d4d77@mail.gmail.com>
+	<20060831154903.GA7011@skynet.ie>
+Cc: akpm@osdl.org, tony.luck@intel.com, linuxppc-dev@ozlabs.org, ak@suse.de,
+	bob.picco@hp.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,82 +28,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 31, 2006 at 03:10:12PM +0800, Zhang, Yanmin wrote:
-> Linas,
-> 
-> I am reviewing the error handlers of e1000 driver and got some ideas. My
-> startpoint is to simplify the err handler implementations for drivers, or
-> driver developers are *not willing* to add it if it's too complicated.
+On 8/31/06, Mel Gorman <mel@skynet.ie> wrote:
+> On (30/08/06 13:57), Keith Mannthey didst pronounce:
+> > On 8/21/06, Mel Gorman <mel@csn.ul.ie> wrote:
+> > >
 
-I don't see that its to complicated ... 
+> ok, great. How much physical memory is installed on the machine? I want to
+> determine if the "usable" entries in the e820 map contain physical memory
+> or not.
+Usable entries in the e820 contian memory.  I have about 20-24gb
+depending on config.
 
-> 1) Callback mmio_enabled looks useless. Documentation/pci-error-recovery.txt
-> says the current powerpc implementation does not implement this callback.
 
-I don't know if its useless or not. I have not needed it yet for the
-symbios, ipr and e1000 drivers, but its possible that some more
-sophisticated device may want it. I'm tempted to keep it a while 
-longer befoe discarding it.
+> When the SRAT is bad, the information is discarded and discovered by an
+> alternative method later in the boot process.
+>
+> In this case, numa_initmem_init() is called after acpi_numa_init(). It
+> calls acpi_scan_nodes() which returns -1 because the SRAT is bad. Once
+> that happens, either k8_scan_nodes() will be called and the regions
+> discovered there or if that is not possible, it'll fall through and
+> e820_register_active_regions will be called without any node awareness.
 
-The scenario is this: the device driver decides that, rather than asking
-for a full electical reset of the card, instead, it wants to perform 
-its own recovery. It can do this as follows:
+sorry I have missed some of the logic in this patch.
 
-a) enable MMIO
-b) issue reset command to adapter
-c) enable DMA.
+I see now in numa_initmem_init that if no numa setup is found it calls
+e820_register_active_regions(0, start_pfn, end_pfn) again.
 
-If we enabled both DMA and MMIO at the same time, there are mnay cases
-where the card will immediately trap again -- for example, if its
-DMA'ing to some crazy address. Thus, typically, one wants DMA disabled 
-until after the card reset.  Withouth the mmio_enabled() reset, there
-is no way of doing this.
+So if the srat is discard it runs the e820 code again.
 
-> 2) Callback slot_reset could be merged with resume. The new resume could be:
-> int (*error_resume)(struct pci_dev *dev); I checked e1000 and e100 drivers and
-> think there is no actual reason to have both slot_reset and resume.
 
-The idea here was to handle multi-function cards.  On a multi-function card, 
-*all* devices need to indicate that they were able to reset. Once all devices 
-have been successfuly reset, then operation can be resumed. If the reset 
-of one function fails, then operation is not resumed for any f the
-functions.
+> > >diff -rup -X /usr/src/patchset-0.6/bin//dontdiff
+> > >linux-2.6.18-rc4-mm2-103-x86_use_init_nodes/arch/x86_64/mm/srat.c
+> > >linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/x86_64/mm/srat.c
+> > >--- linux-2.6.18-rc4-mm2-103-x86_use_init_nodes/arch/x86_64/mm/srat.c
+> > >2006-08-21 09:23:50.000000000 +0100
+> > >+++ linux-2.6.18-rc4-mm2-104-x86_64_use_init_nodes/arch/x86_64/mm/srat.c
+> > >2006-08-21 10:15:58.000000000 +0100
+> > >@@ -84,6 +84,7 @@ static __init void bad_srat(void)
+> > >                apicid_to_node[i] = NUMA_NO_NODE;
+> > >        for (i = 0; i < MAX_NUMNODES; i++)
+> > >                nodes_add[i].start = nodes[i].end = 0;
+> > >+       remove_all_active_ranges();
+> > > }
+> >
+> > We go back to setup_arch with no active areas?
+> >
+>
+> Yes, and it'll be discovered using an alternative method later. There is
+> no point returning to setup_arch with known bad information about active
+> areas.
 
-> 3) link_reset is not used in pci express aer implementation, so it could be
-> deleted also.
+Totally agreeded! I just didn't the the fallback path.
+>
+> > > static __init inline int srat_disabled(void)
+> > >@@ -166,7 +167,7 @@ static int hotadd_enough_memory(struct b
+> > >
+> > >        if (mem < 0)
+> > >                return 0;
+> > >-       allowed = (end_pfn - e820_hole_size(0, end_pfn)) * PAGE_SIZE;
+> > >+       allowed = (end_pfn - absent_pages_in_range(0, end_pfn)) *
+> > >PAGE_SIZE;
+> > >        allowed = (allowed / 100) * hotadd_percent;
+> > >        if (allocated + mem > allowed) {
+> > >                unsigned long range;
+> > >@@ -238,7 +239,7 @@ static int reserve_hotadd(int node, unsi
+> > >        }
+> > >
+> > >        /* This check might be a bit too strict, but I'm keeping it for
+> > >        now. */
+> > >-       if (e820_hole_size(s_pfn, e_pfn) != e_pfn - s_pfn) {
+> > >+       if (absent_pages_in_range(s_pfn, e_pfn) != e_pfn - s_pfn) {
+> > >                printk(KERN_ERR "SRAT: Hotplug area has existing
+> > >                memory\n");
+> > >                return -1;
+> > >        }
+> > We really do want to to compare against the e820 map at it contains
+> > the memory that is really present (this info was blown away before
+> > acpi_numa)
+>
+> The information used by absent_pages_in_range() should match what was
+> available to e820_hole_size().
 
-OK. Link reset was added explicitly to support PCI-E, so if its not wanted,
-we can eliminate it.
+Is absent_pages_in_range a check against the e820 or the
+add_pages_to_range calls?
 
-> How did you test e1000 err_handler? 
+> > Anyway I fixed up to have the current chunk added
+> > (e820_register_active_regions) after calling this code so it logicaly
+> > makes sense but it still trip over the check.
+> > I am not sure what you
+> > are printing out in you debug code but dosen't look like pfns or
+> > phys_addresses but maybe it can tell us why the check fails.
+> >
+>
+> My debug code for add_active_range() printing out pfns but I spotted one
+> case where absent_pages_in_range(I) does not do what one would expect.
+> Lets say the ranges with physical memory was 0->1000 and 2000-3000 (in
+> pfns).  absent_pages_in_range(0, 3000) would return 1000 as you'd expect but
+> absent_pages_in_range(5000-6000) would return 0! I have a patch that might
+> fix this at the end of the mail but I'm not sure it's the problem you are
+> hitting. In the bootlog, I see;
+>
+> SRAT: Node 0 PXM 0 0-80000000
+> Entering add_active_range(0, 0, 152) 0 entries of 3200 used
+> Entering add_active_range(0, 256, 524165) 1 entries of 3200 used
+> SRAT: Node 0 PXM 0 0-470000000
+> Entering add_active_range(0, 0, 152) 2 entries of 3200 used
+> Entering add_active_range(0, 256, 524165) 2 entries of 3200 used
+> Entering add_active_range(0, 1048576, 4653056) 2 entries of 3200 used
+> SRAT: Node 0 PXM 0 0-1070000000
+> SRAT: Hotplug area has existing memory
+>
 
-We have three methods (I thought these were documented). In one, a
-technician brushes a grounding strap to some of the signal pins. 
-In the second, slots are populated with known-bad cards. The third test
-involes sending a command down to the pci bridge chip, telling it to 
-behave as if it detected an error. For development, the last is
-quick-n-easy.
+> The last part (0-1070000000) is checked as a hotplug area but it's clear
+> that memory exists in that range.  As reserve_hotadd() requires that the
+> whole range be a hole, I'm having trouble seeing how it ever successfully
+> reserved unless the ranges going into reserve_hotadd() are something other
+> than the pfn range for 0-1070000000). The patch later will print out the
+> range used by reserve_hotadd() so we can see.
 
-> In the simulated enviroment, the testing might be
-> incorrect. 
+No the whole node is 0-1070000000 the hot add range is 470000000-1070000000
+reserve_hotadd is called with start and end not nd->start nd->end.
+470000000-1070000000 sould be empty.
 
-Why would it be incorrect?  I mean, we don't simulate having someone pour a
-cup of coffee into the guts of the machine ... but my understanding is
-the machines do get standard vibration/thermal/humidity testing, which
-is good enough for me.
 
-> For example, e1000_io_error_detected would call e1000_down to reset NIC. 
+> > >@@ -329,6 +330,8 @@ acpi_numa_memory_affinity_init(struct ac
+> > >
+> > >        printk(KERN_INFO "SRAT: Node %u PXM %u %Lx-%Lx\n", node, pxm,
+> > >               nd->start, nd->end);
+> > >+       e820_register_active_regions(node, nd->start >> PAGE_SHIFT,
+> > >+                                               nd->end >> PAGE_SHIFT);
+> >
+> > A node chunk in this section of code may be a hot-pluggable zone. With
+> > MEMORY_HOTPLUG_SPARSE we don't want to register these regions.
+> >
+>
+> The ranges should not get registered as active memory by
+> e820_register_active_regions() unless they are marked E820_RAM. My
+> understanding is that the regions for hotadd would be marked "reserved"
+> in the e820 map. Is that wrong?
 
-Why would that be incorrect?
+This is wrong.  In a mult-node system that last node add area will not
+be marked reserved by the e820.  The e820 only defines memory <
+end_pfn. the last node add area is > end_pfn.
 
-> During
-> our last discussion on LKML, you said PowerPC will block further I/O if the platform captures
-> a pci error, so the all I/O in e1000_down will be blocked. Later on, e1000_io_slot_reset
-> will reenable pci device and initiate NIC. I guess late initiate might fail because prior
-> e1000_down I/O don't reach NIC.
+With RESERVE based add-memory you want the add-areas repored by the
+srat to be setup during boot like all the other pages.
 
-Why would it fail? The e1000_down serves primarily to get the Linux
-kernel into a known state. It doesn't matter what happens to the card,
-since the next step will be to perform an electrical reset of the card.
+> > >        if (ma->flags.hot_pluggable && !reserve_hotadd(node, start, end) <
+> > >        0) {
+> > >                /* Ignore hotadd region. Undo damage */
+> >
+> >  I have but the e820_register_active_regions as a else to this
+> > statment the absent pages check fails.
+> >
+>
+> The patch below omits this change because I think
+> e820_register_active_regions() will still have got called by the time
+> you encounter a hotplug area.
 
---linas
+called but then removed in setup arch.
+> > Also nodes_cover_memory and alot of these check were based against
+> > comparing the srat data against the e820.  Now all this code is
+> > comparing SRAT against SRAT....
+> >
+>
+> I don't see why. The SRAT table passes a range to
+> e820_register_active_regions() so should be comparing SRAT to e820
+
+let me go off and look at e820_register_active_regions() some more.
+
+> > I am willing to help here but we should compare the SRAT against to
+> > e820. Table v. Table.
+> >
+> > What to you think should be done?
+> >
+>
+> Can you read through this patch and see does it address the problem in any
+> way? If it doesn't, can you send a complete bootlog so I can see what is
+> being sent to reserve_hotadd()? Thanks
+
+Sure thing.  It is just the hot-add area I am guessing it is an off by
+one error of some sort.
+
+What is all this code buying us?  Since this code dosen't appear to do
+anything to help the arch out (just increases it's vm boot code
+complexity a little) maybe insead of weaving
+e820_register_active_regions() calls throught out the boot process you
+should just waint untill things are sorted out and do a quick scan of
+node data that has been setup at the end?
+
+What are the future plans for this api?
+
+Thanks,
+  Keith u
