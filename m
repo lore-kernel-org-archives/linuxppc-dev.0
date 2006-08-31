@@ -1,19 +1,13 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id D893E67A2E
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 00:08:30 +1000 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Men em1 MPC5200 kernel don't start using elinos v4.0
-Date: Thu, 31 Aug 2006 16:08:15 +0200
-References: <20060831133857.67615.qmail@web52605.mail.yahoo.com>
-In-Reply-To: <20060831133857.67615.qmail@web52605.mail.yahoo.com>
+Return-Path: <Phil.Mathews@innocon.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200608311608.15726.g.jaeger@sysgo.com>
-Cc: Fodjo Yves-Eric <fodjo@yahoo.com>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6CD10.BEB04127"
+Subject: Unable to build ELDK 4.0
+Date: Thu, 31 Aug 2006 11:18:42 -0400
+Message-ID: <3E8081396F6B524BA2854E7FA3F16438042EB1DB@mail.innocon.com>
+References: <5df98b760608310618p746e1ee7q62b9472fa855660f@mail.gmail.com>
+From: "Mathews, Phil" <Phil.Mathews@innocon.com>
+To: <Linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +18,94 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 31 August 2006 15:38, Fodjo Yves-Eric wrote:
-> Hello 
-> In the course of my Thesis I have to Port linux on the board EM01 Rev 01.04.02 of Men  using Elinos V4 PPC.  My host system is Linux Fedora Core 5. I'm using the "menem1" as board. The problem is that the kernel doesn't start at all. After loading the file "hello.img" througth bootp the system give the following output and hang. 
-> 
-> Searching for server (BOOTP) .
-> My IP 192.168.1.10:ffffff00 Server IP 192.168.1.1 GW IP 192.168.1.1
-> Loading hello.img...
-> to 0x02000000        861 kB
-> Loaded 0x000d74e9 bytes
-> Detected PPCBOOT header
->     verifiying image CRC...ok
->     Uncompressing Multi-File Image ... ok
->     Moving initrd...ok
->     passing parameters: devfs=mount rootfstype=tmpfs root=dev/ram rw ip=auto
->     Starting Linux Kernel.
-> 
-> 
-> I have tried several combination of kernel parameters without success.
-> Here is a part of my ELINOS.sh config file.
+This is a multi-part message in MIME format.
 
-Hi,
+------_=_NextPart_001_01C6CD10.BEB04127
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I guess this is the wrong list for asking disto specific questions ;)
+I am attempting to build the ELDK kernel using the directions in =
+/home/mathews/ELDK/ppc_6xx/usr/src/linux-2.6.15/README.  The makefile is =
+trying to execute powerPC code (fixdep) on my Pentium box.  Where can I =
+get a X86 version of this program?
 
-I don't have this board here currently, but one guess is, that you should
-add the correct console parameter to the kernelparameter list.
+##### Make attempt:
+mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> make =
+O=3D/home/name/build/kernel menuconfig
+  HOSTCC  scripts/basic/fixdep
+/bin/sh: scripts/basic/fixdep: cannot execute binary file
+make[2]: *** [scripts/basic/fixdep] Error 126
+make[1]: *** [scripts_basic] Error 2
+make: *** [menuconfig] Error 2
 
-HTH
-Gerhard
+##### Objdump of scripts/basic/fixdep
+mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> objdump -a =
+scripts/basic/fixdep
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+scripts/basic/fixdep:     file format elf32-powerpc
+scripts/basic/fixdep
+
+mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15> echo $PATH
+/home/mathews/ELDK/usr/bin:/home/mathews/ELDK/usr/ppc-linux/bin:/home/mat=
+hews/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnom=
+e/bin:/opt/kde3/bin
+
+
+--  Phil Mathews =20
+    phil.mathews _at_ innocon.com   =20
+
+------_=_NextPart_001_01C6CD10.BEB04127
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>Unable to build ELDK 4.0</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>I am attempting to build the ELDK kernel using the =
+directions in =
+/home/mathews/ELDK/ppc_6xx/usr/src/linux-2.6.15/README.&nbsp; The =
+makefile is trying to execute powerPC code (fixdep) on my Pentium =
+box.&nbsp; Where can I get a X86 version of this program?<BR>
+<BR>
+##### Make attempt:<BR>
+mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15&gt; make =
+O=3D/home/name/build/kernel menuconfig<BR>
+&nbsp; HOSTCC&nbsp; scripts/basic/fixdep<BR>
+/bin/sh: scripts/basic/fixdep: cannot execute binary file<BR>
+make[2]: *** [scripts/basic/fixdep] Error 126<BR>
+make[1]: *** [scripts_basic] Error 2<BR>
+make: *** [menuconfig] Error 2<BR>
+<BR>
+##### Objdump of scripts/basic/fixdep<BR>
+mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15&gt; objdump -a =
+scripts/basic/fixdep<BR>
+<BR>
+scripts/basic/fixdep:&nbsp;&nbsp;&nbsp;&nbsp; file format =
+elf32-powerpc<BR>
+scripts/basic/fixdep<BR>
+<BR>
+mathews@mathews:~/ELDK/ppc_6xx/usr/src/linux-2.6.15&gt; echo $PATH<BR>
+/home/mathews/ELDK/usr/bin:/home/mathews/ELDK/usr/ppc-linux/bin:/home/mat=
+hews/bin:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnom=
+e/bin:/opt/kde3/bin<BR>
+<BR>
+<BR>
+--&nbsp; Phil Mathews&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; phil.mathews _at_ innocon.com&nbsp;&nbsp;&nbsp;<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C6CD10.BEB04127--
