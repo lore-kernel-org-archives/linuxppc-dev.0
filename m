@@ -1,24 +1,22 @@
-Return-Path: <ak@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 99D8967B5C
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 17:47:44 +1000 (EST)
-From: Andi Kleen <ak@suse.de>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: libnuma interleaving oddness
-Date: Thu, 31 Aug 2006 09:47:30 +0200
-References: <20060829231545.GY5195@us.ibm.com>
-	<Pine.LNX.4.64.0608301401290.4217@schroedinger.engr.sgi.com>
-	<20060831060036.GA18661@us.ibm.com>
-In-Reply-To: <20060831060036.GA18661@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200608310947.30542.ak@suse.de>
-Cc: linuxppc-dev@ozlabs.org, linux-mm@kvack.org, lnxninja@us.ibm.com,
-	Christoph Lameter <clameter@sgi.com>
+	by ozlabs.org (Postfix) with ESMTP id 6938A67B5C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Aug 2006 20:11:47 +1000 (EST)
+In-Reply-To: <1156978993.12526.97.camel@localhost.localdomain>
+References: <7cc604637892c0a00a5e3e38192494d7@bga.com>
+	<1156978993.12526.97.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <11BC5236-0411-402A-A3F1-0FB5E8059FA0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: PCIe enhanced configuration mechanism support on ppc arch
+Date: Thu, 31 Aug 2006 12:11:27 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 31 August 2006 08:00, Nishanth Aravamudan wrote:
-> On 30.08.2006 [14:04:40 -0700], Christoph Lameter wrote:
-> > > I took out the mlock() call, and I get the same results, FWIW.
-> > 
-> > What zones are available on your box? Any with HIGHMEM?
-> 
-> How do I tell the available zones from userspace? This is ppc64 with
-> about 64GB of memory total, it looks like. So, none of the nodes
-> (according to /sys/devices/system/node/*/meminfo) have highmem.
+> An example of platform not using RTAS and that does support extended
+> config space is the PCI Express link out of the U4 northbridge on
+> PowerMac (though not the other PCIe slots connected to the HT<->PCIe
+> tunnel, at least not for now).
+>
+> It's basically just a matter of having your low level config access
+> routines supporting those >=256 offsets. The generic code tests  
+> that by
+> doing a dummy access and checks for an error return.
 
-The zones are listed at the beginning of dmesg
+The U3/U4 HT config access code never returns the error though; it
+happily accesses the config space of the next device instead.  Got
+a patch, will send it later -- it's not a regression, there's no big
+hurry for 2.6.18.
 
-"On node X total pages ...
-      DMA zone ...
-      ..." 
 
--Andi
+Segher
