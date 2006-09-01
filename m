@@ -1,7 +1,7 @@
 Return-Path: <yanmin_zhang@linux.intel.com>
-Received: from orsmga102-1.jf.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id 17DBC67B82
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2006 13:45:24 +1000 (EST)
+Received: from azsmga101.ch.intel.com (mga07.intel.com [143.182.124.22])
+	by ozlabs.org (Postfix) with ESMTP id C4A6167B88
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Sep 2006 13:54:14 +1000 (EST)
 Subject: Re: pci error recovery procedure
 From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 To: Linas Vepstas <linas@austin.ibm.com>
@@ -9,13 +9,13 @@ In-Reply-To: <20060831175001.GE8704@austin.ibm.com>
 References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
 	<20060831175001.GE8704@austin.ibm.com>
 Content-Type: text/plain
-Message-Id: <1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
+Message-Id: <1157082169.20092.174.camel@ymzhang-perf.sh.intel.com>
 Mime-Version: 1.0
-Date: Fri, 01 Sep 2006 11:33:49 +0800
+Date: Fri, 01 Sep 2006 11:42:49 +0800
 Cc: linuxppc-dev@ozlabs.org,
 	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-	Yanmin Zhang <yanmin.zhang@intel.com>,
-	inux-kernel@vger.kernel.org, Rajesh Shah <rajesh.shah@intel.com>
+	Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+	Rajesh Shah <rajesh.shah@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -68,7 +68,7 @@ If there is really a device having specific requirement to reinitiate it (very r
 it could use walkaround, such like schedule a WORKER. No need to provide a generic
 mmio_enabled.
 
-
+> 
 > > 2) Callback slot_reset could be merged with resume. The new resume could be:
 > > int (*error_resume)(struct pci_dev *dev); I checked e1000 and e100 drivers and
 > > think there is no actual reason to have both slot_reset and resume.
@@ -86,7 +86,6 @@ other functions could just go on to reinitiate. In the end, the error recovery
 procedure (handle_eeh_events in PowerPC implementation) could check all the
 returning values of error_resume. If there is a failure value, then removes
 all the functions' pci_dev of the device from the bus.
-
 
 > 
 > > 3) link_reset is not used in pci express aer implementation, so it could be
@@ -132,3 +131,5 @@ If it's the platform, I agree with you, but if it's e1000_reset, it might not wo
 e1000_reset uses a e1000-specific approach to reset the card. I'm not sure if the e1000_reset
 will restore the NIC to fresh system power-on state. At least, from the source codes, e1000_reset
 couldn't.
+
+Yanmin
