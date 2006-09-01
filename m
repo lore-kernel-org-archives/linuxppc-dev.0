@@ -1,17 +1,17 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp12.clb.oleane.net (smtp12.clb.oleane.net [213.56.31.47])
-	by ozlabs.org (Postfix) with ESMTP id 144A467B79
+Return-Path: <carlos@kenati.com>
+Received: from mail.kenati.com (unknown [69.90.147.196])
+	by ozlabs.org (Postfix) with ESMTP id 1E89E67B78
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Sep 2006 00:23:44 +1000 (EST)
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: "'Bastos Fernandez Alexandre'" <alebas@televes.com>
-Subject: RE: 82xx fcc_enet problem between Linux 2.4 and 2.6
-Date: Fri, 1 Sep 2006 16:26:02 +0200
-Message-ID: <001701c6cdd2$9221c230$5201a8c0@GEG2400>
+	Sat,  2 Sep 2006 03:03:55 +1000 (EST)
+Message-ID: <44F862F3.9020404@kenati.com>
+Date: Fri, 01 Sep 2006 09:42:27 -0700
+From: Carlos Munoz <carlos@kenati.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-15"
-In-Reply-To: <1157111000.44f81cd8cb6d6@webmail.televes.com:443>
+To: "Matias Sundman (AS/EAB)" <matias.sundman@ericsson.com>
+Subject: Re: Backtrace
+References: <24521B9781EAC745A4BE65966F69C9BE02BACDA8@esealmw115.eemea.ericsson.se>
+In-Reply-To: <24521B9781EAC745A4BE65966F69C9BE02BACDA8@esealmw115.eemea.ericsson.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,34 +23,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Matias Sundman (AS/EAB) wrote:
 
-Hello Alex,
+> Comrades,
+> I would like to do a backtrace in kernel space similar to an oops but 
+> then continue the code flow as before i.e. without a crash.
+>
+Try dump_stack(). It should do what you want.
 
-> > I have ported Linux 2.6.9 on different boards and I noticed
-> > that I have tx carrier errors on my FCC ports. Almost one
-> > error per xmit.
-> I have experienced same problem. I suppose you are using the old
-> fcc driver in /arch/ppc
-Yes that's right.
 
-> > I reinstalled Linux 2.4.18 on these boards and I have NO ERROR.
-> > The errors arise with PHY configured in 100M full duplex (or autoneg).
-> > The FCC has the same duplex as PHY.
-> Are you sure? In my case, the problem was that while the PHY had autoneg
-> to full-duplex, the MAC kept in half-duplex mode
-I have modified some code in fcc_enet.c for Linux 2.4 to manage PHY as I
-wanted.
-Perhaps was I in luck to correct something wrong. I checked that the duplex
-were identical for FCC and PHY and I had no carrier error.
-
-> > I think this is not a phy or hardware problem but rather a
-> FCC configuration mismatch in fcc_enet.c.
-> Yes. But I think the driver has been obsoleted by fs_enet one,
-> so modifiying it now has no sense.
-Yes I retreived fs_enet in Linux 2.6.15 and I'll try it.
-This driver seems to appear in Linux 2.6.11 tree not before.
-Is it right ?
-
-Thanks very much for your reply.
-Best regards
-Laurent
+Carlos
