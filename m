@@ -1,24 +1,20 @@
-Return-Path: <jonandia@aotek.es>
-Received: from sollube.sarenet.es (mx1.sarenet.es [194.30.0.37])
-	by ozlabs.org (Postfix) with ESMTP id F120067B86
+Return-Path: <matias.sundman@ericsson.com>
+Received: from mailgw3.ericsson.se (mailgw3.ericsson.se [193.180.251.60])
+	by ozlabs.org (Postfix) with ESMTP id D889267BA7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 19:11:57 +1000 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by sollube.sarenet.es (Postfix) with ESMTP id EB4D2374E1
+	Fri,  1 Sep 2006 19:17:24 +1000 (EST)
+Received: from esealmw129.eemea.ericsson.se (unknown [153.88.254.120])
+	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id 0972AD13
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 08:33:25 +0200 (CEST)
-Message-ID: <44F7D4B8.1010600@fagorautomation.es>
-Date: Fri, 01 Sep 2006 08:35:36 +0200
-From: Josu Onandia <jonandia@fagorautomation.es>
+	Fri,  1 Sep 2006 08:48:45 +0200 (CEST)
 MIME-Version: 1.0
-To: Steven Kaiser <skaiser.uci@gmail.com>
-Subject: Re: Simple module, but won't build
-References: <000001c6cd50$8c0196f0$6e4ec880@volt>
-In-Reply-To: <000001c6cd50$8c0196f0$6e4ec880@volt>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6CD92.AA7EBCC9"
+Subject: Backtrace
+Date: Fri, 1 Sep 2006 08:48:43 +0200
+Message-ID: <24521B9781EAC745A4BE65966F69C9BE02BACDA8@esealmw115.eemea.ericsson.se>
+From: "Matias Sundman \(AS/EAB\)" <matias.sundman@ericsson.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,167 +25,119 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Steven Kaiser wrote:
 
->Hi gurus:
->
->Newbie here.  I am using ELDK 3.1.1, 2.4.25 kernel, and a Lite5200b board.
->I run the kernel in RAM, and mount a filesystem via NFS.  So far so good,
->and I move on to trying to build a simple module to write to a few LEDs.
->
->Simple hello world modules compile and insmod/rmmod fine, but when I try to
->#include <asm/io.h>, here I have the exact same problem as Richard Danter
->did: CONFIG_KERNEL_START and CONFIG_TASK_SIZE are not defined anywhere in
->any headers-- just in the config files.
->
->http://ozlabs.org/pipermail/linuxppc-embedded/2004-May/014037.html
->
->My little wrinkle to add to this problem is I have recompiled the kernel, as
->advised in the replies to Richard's post, with the 'Set Custom Kernel Base
->Address' and 'Set Custom user task size' options enabled, but in my case I
->still I cannot find CONFIG_KERNEL_START and CONFIG_TASK_SIZE defined
->anywhere noteworthy.
->
->My 'include/linux/autoconf.h' file is empty, and I don't even have an
->'include/config/' directory at all.  Where in the steps of recompiling the
->kernel should these files and directories get generated?
->
->My process for building the kernel is:
->
->$ cd /opt/eldk/usr/src/linuxppc_2_4_devel
->$ make mrproper
->$ make lite5200b_config
->$ make menuconfig
->$ make dep
->$ make uImage
->$ cp arch/ppc/boot/images/uImage /tftpboot/MPC5200/uImage
->
->I can manually include CONFIG_KERNEL_START and CONFIG_TASK_SIZE in my module
->source, compile, insmod, and all goes well (except my LEDs don't light up
->but first things first).
->
->When my kernel boots, I get a few gripes which I think are related to this
->issue:
->
->Finding module dependencies:  depmod: Can't open
->/lib/modules/2.4.25/modules.deg [FAILED]
->modprobe: Can't open dependencies file /lib/modules/2.4.25/modules.dep (No
->such)
->
->Young and foolish, I figured maybe I should try:
->
->$ make modules
->$ make modules_install
->
->Oops.  That was bad.  Now I cannot even compile the simplest hello.c module
->without a page of errors, the first being a complaint of not being able to
->find linux/autoconf.h.  Before I only had trouble when I tried to #include
-><asm/io.h>, now it happens 100% of the time.
->
->So I went back and turned off module support, recompiled the kernel, and
->still cannot compile hello.c.  I also tried recompiling the kernel after
->doing a "make oldconfig", and still cannot compile a simple module anymore.
->I think I am going to have to go back to square 1 and reinstall ELDK and
->everything from scratch.  But before I do:
->
->Any insight into the generation of autoconf.h, and whereabouts this file
->should come from?  I will watch for it when I redo the whole process.
->
->Steven Kaiser
->Chemistry Electronics Facility
->University of California, Irvine
->2347 Natural Sciences 2
->Irvine, CA  92697-2025
->(949)824-7520
->
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->  
->
-I can help you with the leds part of your problem. Below is some simple 
-code to manage the leds in a Lite5200b.
+This is a multi-part message in MIME format.
 
-About the rest of the problem, I can't tell, because my linux/autoconf.h 
-is OK, and I can include asm/io.h in my modules without problem. To 
-reinstall everything from scratch is a good idea.
+------_=_NextPart_001_01C6CD92.AA7EBCC9
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I'm writing modules for a Lite5200b right now, using RTAI. I use the 
-leds to do some 'visual debugging'. You can contact me directly if you want.
+Comrades,
+I would like to do a backtrace in kernel space similar to an oops but =
+then continue the code flow as before i.e. without a crash.
+If someone has done anything similar, help and/or tips would be much =
+appreciated!
 
-#include <asm/mpc5xxx.h>
+Cheers //
 
-struct mpc5xxx_wu_gpio {
-   volatile u32 enable;
-   volatile u32 ode;
-   volatile u32 dir;
-   volatile u32 data;    }; 
+Matias Sundman
+Senior Sw Designer
+Ericssonl
+IS Ethernet Switch, DIPN
+Ericsson AB
+Box 1505			Office:	+46  8 719 86 83
+SE-125 25 =C4LVSJ=D6		ECN:	850 98683
+SWEDEN			Mobile:	+46 70 267 2405
+Visiting address:		E-mail:	Matias.Sundman@ericsson.com
+Armborstv=E4gen 14		Web:	http://www.ericsson.com
+=C4lvsj=F6, STOCKHOLM
 
-static void configure_leds(void)
-{
-    struct mpc5xxx_gpio *gpio;
-    struct mpc5xxx_wu_gpio *wu_gpio;
 
-    gpio = (struct mpc5xxx_gpio*) MPC5xxx_GPIO;
-    wu_gpio = (struct mpc5xxx_wu_gpio*)MPC5xxx_WU_GPIO;
-    gpio->port_config &= ~(0x00f00000); 
-    gpio->simple_gpioe |= 0x30000000;
-    gpio->simple_ddr |= 0x30000000;
-    gpio->simple_dvo |= 0x30000000;
-   
-    wu_gpio->enable |= 0x30000000;
-    wu_gpio->ode &= ~0x30000000;
-    wu_gpio->dir |= 0x30000000;  
-}
-static void led_off(int led)
-{
-    struct mpc5xxx_gpio *gpio;
-    struct mpc5xxx_wu_gpio *wu_gpio;
-    gpio = (struct mpc5xxx_gpio*) MPC5xxx_GPIO;
-    wu_gpio = (struct mpc5xxx_wu_gpio*)MPC5xxx_WU_GPIO;
-   
-    switch( led)
-    {
-        case 1:
-            wu_gpio->data |= 0x20000000;
-            break;
-        case 2:
-            gpio->simple_dvo |= 0x10000000;
-            break;
-        case 3:
-            wu_gpio->data |= 0x10000000;
-            break;
-        case 4:
-            gpio->simple_dvo |= 0x20000000;
-            break;
-        default:
-            break;
-    }
-}
-static void led_on(int led)
-{
-    struct mpc5xxx_gpio *gpio;
-    struct mpc5xxx_wu_gpio *wu_gpio;
-    gpio = (struct mpc5xxx_gpio*) MPC5xxx_GPIO;
-    wu_gpio = (struct mpc5xxx_wu_gpio*)MPC5xxx_WU_GPIO;
-   
-    switch(led)
-    {
-        case 1:
-            wu_gpio->data &= ~0x20000000;
-            break;
-        case 2:
-            gpio->simple_dvo &= ~0x10000000;
-            break;
-        case 3:
-            wu_gpio->data &= ~0x10000000;
-            break;
-        case 4:
-            gpio->simple_dvo &= ~0x20000000;
-            break;
-        default:
-            break;
-    }
-}
+
+------_=_NextPart_001_01C6CD92.AA7EBCC9
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7650.28">
+<TITLE>Backtrace</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Comrades,</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">I would like to do a backtrace in =
+kernel space similar to an oops but then continue the code flow as =
+before i.e. without a crash.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">If someone has done anything similar, =
+help and/or tips would be much appreciated!</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Cheers //</FONT>
+</P>
+
+<P><B><I><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Matias =
+Sundman<BR>
+</FONT></SPAN></I></B><I><SPAN LANG=3D"en-us"></SPAN></I><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D1 FACE=3D"Times New Roman">Senior Sw =
+Designer</FONT></SPAN>
+
+<BR><SPAN LANG=3D"en-us"><FONT COLOR=3D"#0000FF" SIZE=3D2 =
+FACE=3D"Ericsson">Ericsson</FONT><B></B><B><FONT COLOR=3D"#0000FF" =
+SIZE=3D1 FACE=3D"Ericsson">l</FONT></B></SPAN>
+
+<BR><SPAN LANG=3D"en-us"><FONT SIZE=3D1 FACE=3D"Arial">IS Ethernet =
+Switch, DIPN</FONT></SPAN>
+
+<BR><SPAN LANG=3D"en-us"><B><FONT SIZE=3D1 FACE=3D"Tahoma">Ericsson =
+AB</FONT></B></SPAN>
+
+<BR><SPAN LANG=3D"sv"><FONT SIZE=3D1 FACE=3D"Tahoma">Box =
+1505&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Office: +46&nbsp; 8 719 86 =
+83</FONT></SPAN>
+
+<BR><SPAN LANG=3D"sv"><FONT SIZE=3D1 FACE=3D"Tahoma">SE-125 25 =
+=C4LVSJ=D6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ECN:&nbsp;&nbsp;&nbsp; 850 =
+98683</FONT></SPAN>
+
+<BR><SPAN LANG=3D"en-us"><FONT SIZE=3D1 FACE=3D"Tahoma">SWEDEN&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Mobile: +46 70 267 =
+2405</FONT></SPAN>
+
+<BR><SPAN LANG=3D"en-us"><FONT SIZE=3D1 FACE=3D"Tahoma">Visiting =
+address:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT></SPAN><SPAN =
+LANG=3D"sv"> <FONT SIZE=3D1 FACE=3D"Tahoma">E-mail:<U> =
+</U></FONT><U><FONT COLOR=3D"#0000FF" SIZE=3D1 =
+FACE=3D"Tahoma">Matias.Sundman@ericsson.com</FONT></U></SPAN><SPAN =
+LANG=3D"en-us"></SPAN>
+
+<BR><SPAN LANG=3D"sv"><FONT SIZE=3D1 FACE=3D"Tahoma">Armborstv=E4gen =
+14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Web:&nbsp;&nbsp;&nbsp; =
+</FONT></SPAN><A HREF=3D"http://www.ericsson.com"><SPAN =
+LANG=3D"sv"></SPAN><SPAN LANG=3D"sv"><U><FONT COLOR=3D"#0000FF" SIZE=3D1 =
+FACE=3D"Tahoma">http://www.ericsson.com</FONT></U></SPAN><SPAN =
+LANG=3D"sv"></SPAN></A><SPAN LANG=3D"sv"></SPAN>
+
+<BR><SPAN LANG=3D"sv"><FONT SIZE=3D1 FACE=3D"Tahoma">=C4lvsj=F6, =
+STOCKHOLM</FONT></SPAN>
+</P>
+<BR>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C6CD92.AA7EBCC9--
