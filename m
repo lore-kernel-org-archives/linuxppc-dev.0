@@ -1,17 +1,17 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id B6D08679A6
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.17])
+	by ozlabs.org (Postfix) with ESMTP id B970667B72
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Sep 2006 21:46:26 +1000 (EST)
-Message-ID: <1157111000.44f81cd8cb6d6@webmail.televes.com:443>
-Date: Fri,  1 Sep 2006 13:43:20 +0200
-From: Bastos Fernandez Alexandre <alebas@televes.com>
-To: Laurent Lagrange <lagrange@fr.oleane.com>
-Subject: Re: 82xx fcc_enet problem between Linux 2.4 and 2.6
-References: <002101c6cd25$6945e470$5201a8c0@GEG2400>
-In-Reply-To: <002101c6cd25$6945e470$5201a8c0@GEG2400>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Fri,  1 Sep 2006 23:55:00 +1000 (EST)
+Subject: Re: Unable to boot kernel 2.6 from u-boot 1.1.4 in Xilinx ML403
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: Aleck Lin <aleck@gdatech.com>
+In-Reply-To: <000a01c6cd6e$5e1970a0$800101df@monstertop>
+References: <000a01c6cd6e$5e1970a0$800101df@monstertop>
+Content-Type: text/plain
+Date: Fri, 01 Sep 2006 09:49:25 -0400
+Message-Id: <1157118566.7650.4.camel@sumo-jaa>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,36 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Laurent,
+On Thu, 2006-08-31 at 19:28 -0700, Aleck Lin wrote:
+> Hi,
+> 
+> I'm working on booting kernel 2.6 on Xilinx. And I'm encountering a few
+> problems. 
+> 
+> 1. When I directly download zImage.elf to the RAM and boot from there, I see
+> the kernel starts booting, but it complains about not being able to mount
+> /dev/sysace/disc0/part2 and thus kernel panic happens.
 
->
-> I work on several custom 82xx boards with Linux 2.4 and 2.6.
->
-> I have ported Linux 2.6.9 on different boards and I noticed
-> that I have tx carrier errors on my FCC ports. Almost one
-> error per xmit.
->
+Can u-boot access the systemace CF?
 
-I have experienced same problem. I suppose you are using the old
-fcc driver in /arch/ppc
+Do the kernel statup messages show that the system ace driver is loaded
+and has successfully initialized?  I don't see this in your boot message
+dump.
 
-> I reinstalled Linux 2.4.18 on these boards and I have NO ERROR.
->
-> The errors arise with PHY configured in 100M full duplex (or autoneg).
-> The FCC has the same duplex as PHY.
 
-Are you sure? In my case, the problem was that while the PHY had autoneg
-to full-duplex, the MAC kept in half-duplex mode
-
-> [...]
->
-> I think this is not a phy or hardware problem but rather a FCC configuration
-> mismatch in fcc_enet.c.
->
-
-Yes. But I thing the driver has been obsoleted by fs_enet one,
-so modifiying it now has no sense.
-
-Best regards,
-
-Alex BASTOS
+Jeff Angielski
+The PTR Group
