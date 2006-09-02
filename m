@@ -1,12 +1,12 @@
 Return-Path: <roto@gmx.net>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 720D767BA7
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Sep 2006 09:09:02 +1000 (EST)
-Date: Sun, 3 Sep 2006 01:08:58 +0200
+	by ozlabs.org (Postfix) with SMTP id 023DF67BB8
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Sep 2006 09:27:02 +1000 (EST)
+Date: Sun, 3 Sep 2006 01:26:44 +0200
 From: Wolfgang Pfeiffer <roto@gmx.net>
 To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Subject: Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
-Message-ID: <20060902230858.GA2814@localhost>
+Message-ID: <20060902232644.GB2814@localhost>
 References: <20060817230347.GC3440@localhost> <20060818234930.GB2662@localhost>
 	<44E6D634.3000207@s5r6.in-berlin.de>
 	<20060823002801.GA2709@localhost> <20060824192200.GA2715@localhost>
@@ -26,85 +26,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Sat, Sep 02, 2006 at 09:18:07PM +0200, Stefan Richter wrote:
-> Wolfgang Pfeiffer wrote on 2006-08-24:
-> >On Wed, Aug 23, 2006 at 02:28:01AM +0200, Wolfgang Pfeiffer wrote:
-> >>Some tests on the Alubook:
-> >
-> >
-> >.. but this time with "modprobe ieee1394 disable_irm=1". 2 logs were be
-> >created: 
-> >www.wolfgangpfeiffer.com/disable-irm.kern.log.when.fw.disk.is.switched.on.txt
-> >www.wolfgangpfeiffer.com/disable-irm.kern.log.with.gscanbus.after.failed.fw.connection.txt
 > 
-> Thanks for all the logs, and sorry for the delay.
-> 
-> What happens is that the ieee1394 base driver or gscanbus via raw1394 
-> are able to read from the beginning of the ROM, but the disk's bridge 
-> does not send response packets anymore at some random point. In the 
-> first log, it happens at ROM offset ffff f000 0448, in the second at 
-> ffff f000 0414, in the third at ffff f000 042c, in the fourth at ffff 
-> f000 0494. The bridge still ack'ed the last attempted read requests with 
-> "ack_pending" like each previous successful read request, but suddenly 
-> it does not follow up with a response.
-> 
-> Unfortunately I cannot see how to cure the problem. 
-
-Sorry to hear that .. 
-
-> There is no indication at all why the disk stops to respond at
-> random points after the first chunks of the ROM were transferred
-> OK. It is not extremely surprising; after all the Datafab's bridge
-> is a pretty old one from before IEEE 1394a-2000. Nevertheless it
-> should work OK with the 1394b-2002 PowerBook since the enclosure
-> even has a 1394a-2000 PHY. I think I already mentioned that I have a
-> similar pre-1394a CD-RW which works well on a 1394b card.
-> 
-> Alas I am out of ideas. Perhaps you should purchase a new enclosure.
-
-I'll be very careful before doing that: Yesterday I was at a computer
-shop downtown for a little test whether the FW 800 port could detect
-the enclosure. The service guy was really helpful, perhaps even
-interested when I explained the FW problem we have with this
-alubook. So we connected via a 9:6 (?) pin cable the enclosure to the
-FW800 of the alubook. To no avail. 
-
-He then proposed to connect the disk instead via the FW enclosure via
-a USB case. Didn't work, too. And this although any USB device (USB stick,
-a camera, mouse) I connected to the USB ports was detected correctly.
- 
+> Alas I am out of ideas. Perhaps you should purchase a new enclosure. 
 > Before you do that, you could test the AluBook running Linux and TiBook 
 > in target disk mode again to exclude the possibility of problems at the 
 > AluBook's side. Use "hdparm -tT /dev/sda" to try a few actual block read 
-> operations. 
-
-I do not have to mount /dev/sda for the test. Correct? 
-
-> This should show about 20 MByte/s. It is a read-only test 
+> operations. This should show about 20 MByte/s. It is a read-only test 
 > and therefore safe.
-> 
-> BTW, I saw one thing in your logs which you are certainly not interested 
-> in at all. :-) 
 
-Not quite true :) ... The only frustrating thing for me is my lacking
-knowledge when it comes to understand code like the one on the
-kernel.org page below .. but I hope I find a way to change that
-situation .. :)
+OK, I did this test with the unmounted Tibook /dev/sda  
+(target mode). So I executed the one-liners below on the
+alubook. /dev/sda should be the hard disk on the tibook:
 
+####################################################
 
-> We seem to have an endianess bug in 
-> ohci1394.c::dma_rcv_tasklet's DBGMSG. My attempt to fix the printout of 
-> tlabels last year didn't get it completely right. 
-> http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=dfe547ab872951949a1a2fcc5cedbedad27a2fe5
-> I think the cond_le32_to_cpu has to be omitted there.
+# /sbin/hdparm -tT /dev/sda
 
+/dev/sda:
+ Timing cached reads:   1244 MB in  2.00 seconds = 620.49 MB/sec
+ Timing buffered disk reads:   34 MB in  3.02 seconds =  11.24 MB/sec
+[root@ 01:21:02]# /sbin/hdparm -tT /dev/sda
 
-Please let me know if I can help with tests if you want to patch
-ohci1394.
+/dev/sda:
+ Timing cached reads:   1232 MB in  2.00 seconds = 615.19 MB/sec
+ Timing buffered disk reads:   34 MB in  3.04 seconds =  11.17 MB/sec
+[root@ 01:21:20]# /sbin/hdparm -tT /dev/sda
 
-And thanks for all your efforts; for your explanations, too, for my
-scsi.start.sh script in your email from Aug 19. It helped me a lot ...
+/dev/sda:
+ Timing cached reads:   1260 MB in  2.00 seconds = 628.93 MB/sec
+ Timing buffered disk reads:   36 MB in  3.07 seconds =  11.72 MB/sec
+[root@ 01:21:35]#
 
-Nice week-end
+##############################################################
+
+Looks good, doesn't it?
+
+Thanks again
 
 Best Regards
 Wolfgang
