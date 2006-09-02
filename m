@@ -1,36 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5112767B79
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Sep 2006 07:32:57 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k81LWrDW029675
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Sep 2006 17:32:53 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k81LWr6Y254374
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Sep 2006 17:32:53 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k81LWql9004553
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Sep 2006 17:32:53 -0400
-Date: Fri, 1 Sep 2006 16:32:51 -0500
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: pci error recovery procedure
-Message-ID: <20060901213251.GT8704@austin.ibm.com>
-References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
-	<20060831175001.GE8704@austin.ibm.com>
-	<1157082169.20092.174.camel@ymzhang-perf.sh.intel.com>
-	<1157101449.20092.180.camel@ymzhang-perf.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1157101449.20092.180.camel@ymzhang-perf.sh.intel.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org,
-	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-	Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-	Rajesh Shah <rajesh.shah@intel.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7549A67B7F
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Sep 2006 13:29:41 +1000 (EST)
+Subject: Re: [PATCH] Add new, missing argument to of_irq_map_raw().
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Loeliger <jdl@freescale.com>
+In-Reply-To: <E1GJAlk-00053S-3U@jdl.com>
+References: <E1GJAlk-00053S-3U@jdl.com>
+Content-Type: text/plain
+Date: Sat, 02 Sep 2006 13:29:06 +1000
+Message-Id: <1157167746.4446.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,23 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 01, 2006 at 05:04:09PM +0800, Zhang, Yanmin wrote:
-> One more comment: The second parameter of error_detected also could be deleted
-> because recovery procedures will save error to pci_dev->error_state.
+On Fri, 2006-09-01 at 10:17 -0500, Jon Loeliger wrote:
+> Ben speaks; we follow.
 
-Yes, I beleive so.
+Ooops, sorry. I din't grep around thinking nobody would need to use that
+low level function but it looks like you do have a good reason to do
+so. 
 
-> So, the err_handler pci_error_handlers could be:
-> struct pci_error_handlers
-> {
->         pci_ers_result_t (*error_detected)(struct pci_dev *dev);
->         pci_ers_result_t (*error_resume)(struct pci_dev *dev);
-> };
+Ben.
 
-No, as per other email, we still need a multi-step process for
-multi-function cards, and for cards that may not want to get
-a full electrical reset. Finally, there might be platforms 
-that cannot perform a per-slot electrical reset, and would 
-therefore require drivers that can recover on thier own.
-
---linas
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+> 
+> Paul,
+> 
+> This patch is needed in the 2.6.18 release for 86xx.
+> Ben's recent changes to of_irq_map_raw() missed one caller.
+> This patch cleans that up.
+> 
+> Thanks,
+> jdl
+> 
+> 
+>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> index 4a33d95..cdaf668 100644
+> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> @@ -154,7 +154,7 @@ get_pci_irq_from_of(struct pci_controlle
+>  
+>  	laddr[0] = (hose->first_busno << 16) | (PCI_DEVFN(slot, 0) << 8);
+>  	laddr[1] = laddr[2] = 0;
+> -	of_irq_map_raw(hosenode, &pin, laddr, &oirq);
+> +	of_irq_map_raw(hosenode, &pin, 1, laddr, &oirq);
+>  	DBG("mpc86xx_hpcn: pci irq addr %x, slot %d, pin %d, irq %d\n",
+>  			laddr[0], slot, pin, oirq.specifier[0]);
+>  	return oirq.specifier[0];
