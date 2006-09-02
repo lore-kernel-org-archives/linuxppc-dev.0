@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7549A67B7F
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Sep 2006 13:29:41 +1000 (EST)
-Subject: Re: [PATCH] Add new, missing argument to of_irq_map_raw().
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <E1GJAlk-00053S-3U@jdl.com>
-References: <E1GJAlk-00053S-3U@jdl.com>
-Content-Type: text/plain
-Date: Sat, 02 Sep 2006 13:29:06 +1000
-Message-Id: <1157167746.4446.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8AEF467B94
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Sep 2006 05:22:43 +1000 (EST)
+Message-ID: <44F9D8EF.6010101@s5r6.in-berlin.de>
+Date: Sat, 02 Sep 2006 21:18:07 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: Wolfgang Pfeiffer <roto@gmx.net>
+Subject: Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
+References: <20060817230347.GC3440@localhost> <20060818234930.GB2662@localhost>
+	<44E6D634.3000207@s5r6.in-berlin.de>
+	<20060823002801.GA2709@localhost> <20060824192200.GA2715@localhost>
+In-Reply-To: <20060824192200.GA2715@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, billfink@mindspring.com,
+	linux1394-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-09-01 at 10:17 -0500, Jon Loeliger wrote:
-> Ben speaks; we follow.
+Wolfgang Pfeiffer wrote on 2006-08-24:
+> On Wed, Aug 23, 2006 at 02:28:01AM +0200, Wolfgang Pfeiffer wrote:
+>> Some tests on the Alubook:
+> 
+> 
+> .. but this time with "modprobe ieee1394 disable_irm=1". 2 logs were be
+> created: 
+> www.wolfgangpfeiffer.com/disable-irm.kern.log.when.fw.disk.is.switched.on.txt
+> www.wolfgangpfeiffer.com/disable-irm.kern.log.with.gscanbus.after.failed.fw.connection.txt
 
-Ooops, sorry. I din't grep around thinking nobody would need to use that
-low level function but it looks like you do have a good reason to do
-so. 
+Thanks for all the logs, and sorry for the delay.
 
-Ben.
+What happens is that the ieee1394 base driver or gscanbus via raw1394 
+are able to read from the beginning of the ROM, but the disk's bridge 
+does not send response packets anymore at some random point. In the 
+first log, it happens at ROM offset ffff f000 0448, in the second at 
+ffff f000 0414, in the third at ffff f000 042c, in the fourth at ffff 
+f000 0494. The bridge still ack'ed the last attempted read requests with 
+"ack_pending" like each previous successful read request, but suddenly 
+it does not follow up with a response.
 
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> ---
-> 
-> Paul,
-> 
-> This patch is needed in the 2.6.18 release for 86xx.
-> Ben's recent changes to of_irq_map_raw() missed one caller.
-> This patch cleans that up.
-> 
-> Thanks,
-> jdl
-> 
-> 
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> index 4a33d95..cdaf668 100644
-> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> @@ -154,7 +154,7 @@ get_pci_irq_from_of(struct pci_controlle
->  
->  	laddr[0] = (hose->first_busno << 16) | (PCI_DEVFN(slot, 0) << 8);
->  	laddr[1] = laddr[2] = 0;
-> -	of_irq_map_raw(hosenode, &pin, laddr, &oirq);
-> +	of_irq_map_raw(hosenode, &pin, 1, laddr, &oirq);
->  	DBG("mpc86xx_hpcn: pci irq addr %x, slot %d, pin %d, irq %d\n",
->  			laddr[0], slot, pin, oirq.specifier[0]);
->  	return oirq.specifier[0];
+Unfortunately I cannot see how to cure the problem. There is no 
+indication at all why the disk stops to respond at random points after 
+the first chunks of the ROM were transferred OK. It is not extremely 
+surprising; after all the Datafab's bridge is a pretty old one from 
+before IEEE 1394a-2000. Nevertheless it should work OK with the 
+1394b-2002 PowerBook since the enclosure even has a 1394a-2000 PHY. I 
+think I already mentioned that I have a similar pre-1394a CD-RW which 
+works well on a 1394b card.
+
+Alas I am out of ideas. Perhaps you should purchase a new enclosure. 
+Before you do that, you could test the AluBook running Linux and TiBook 
+in target disk mode again to exclude the possibility of problems at the 
+AluBook's side. Use "hdparm -tT /dev/sda" to try a few actual block read 
+operations. This should show about 20 MByte/s. It is a read-only test 
+and therefore safe.
+
+BTW, I saw one thing in your logs which you are certainly not interested 
+in at all. :-) We seem to have an endianess bug in 
+ohci1394.c::dma_rcv_tasklet's DBGMSG. My attempt to fix the printout of 
+tlabels last year didn't get it completely right. 
+http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=dfe547ab872951949a1a2fcc5cedbedad27a2fe5
+I think the cond_le32_to_cpu has to be omitted there.
+-- 
+Stefan Richter
+-=====-=-==- =--= ---=-
+http://arcgraph.de/sr/
