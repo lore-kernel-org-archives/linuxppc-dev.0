@@ -1,19 +1,23 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 023DF67BB8
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Sep 2006 09:27:02 +1000 (EST)
-Date: Sun, 3 Sep 2006 01:26:44 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D4FC167BC3
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Sep 2006 09:32:38 +1000 (EST)
+Message-ID: <44FA1386.9030400@s5r6.in-berlin.de>
+Date: Sun, 03 Sep 2006 01:28:06 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: Wolfgang Pfeiffer <roto@gmx.net>
 Subject: Re: Broken Firewire 400/SCSI on ppc Powerbook5,8
-Message-ID: <20060902232644.GB2814@localhost>
 References: <20060817230347.GC3440@localhost> <20060818234930.GB2662@localhost>
 	<44E6D634.3000207@s5r6.in-berlin.de>
 	<20060823002801.GA2709@localhost> <20060824192200.GA2715@localhost>
 	<44F9D8EF.6010101@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44F9D8EF.6010101@s5r6.in-berlin.de>
+	<20060902230858.GA2814@localhost>
+In-Reply-To: <20060902230858.GA2814@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org, billfink@mindspring.com,
 	linux1394-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,50 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Sep 02, 2006 at 09:18:07PM +0200, Stefan Richter wrote:
+Wolfgang Pfeiffer wrote:
+> On Sat, Sep 02, 2006 at 09:18:07PM +0200, Stefan Richter wrote:
+[...]
+>> you could test the AluBook running Linux and TiBook 
+>> in target disk mode again to exclude the possibility of problems at the 
+>> AluBook's side. Use "hdparm -tT /dev/sda" to try a few actual block read 
+>> operations. 
 > 
-> Alas I am out of ideas. Perhaps you should purchase a new enclosure. 
-> Before you do that, you could test the AluBook running Linux and TiBook 
-> in target disk mode again to exclude the possibility of problems at the 
-> AluBook's side. Use "hdparm -tT /dev/sda" to try a few actual block read 
-> operations. This should show about 20 MByte/s. It is a read-only test 
-> and therefore safe.
+> I do not have to mount /dev/sda for the test. Correct? 
 
-OK, I did this test with the unmounted Tibook /dev/sda  
-(target mode). So I executed the one-liners below on the
-alubook. /dev/sda should be the hard disk on the tibook:
+That's right. This works on the block IO level, not via filesystem. It 
+is not even necessary to detect any partitions to run this test. On the 
+other hand, it is not very thorough because only about 50...100 MB will 
+be read. (You could also read from sda with dd or the like.)
 
-####################################################
+[...]
+> The only frustrating thing for me is my lacking
+> knowledge when it comes to understand code like the one on the
+> kernel.org page below ..
 
-# /sbin/hdparm -tT /dev/sda
+That's because it's extremely ugly code. Guess why it's buggy. :-) It's 
+just a debug printk though.
 
-/dev/sda:
- Timing cached reads:   1244 MB in  2.00 seconds = 620.49 MB/sec
- Timing buffered disk reads:   34 MB in  3.02 seconds =  11.24 MB/sec
-[root@ 01:21:02]# /sbin/hdparm -tT /dev/sda
+[...]
+> Please let me know if I can help with tests if you want to patch
+> ohci1394.
 
-/dev/sda:
- Timing cached reads:   1232 MB in  2.00 seconds = 615.19 MB/sec
- Timing buffered disk reads:   34 MB in  3.04 seconds =  11.17 MB/sec
-[root@ 01:21:20]# /sbin/hdparm -tT /dev/sda
-
-/dev/sda:
- Timing cached reads:   1260 MB in  2.00 seconds = 628.93 MB/sec
- Timing buffered disk reads:   36 MB in  3.07 seconds =  11.72 MB/sec
-[root@ 01:21:35]#
-
-##############################################################
-
-Looks good, doesn't it?
-
-Thanks again
-
-Best Regards
-Wolfgang
-
+Thanks, I will Cc you.
 -- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+Stefan Richter
+-=====-=-==- =--= ---==
+http://arcgraph.de/sr/
