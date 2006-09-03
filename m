@@ -1,16 +1,20 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from amsfep14-int.chello.nl (amsfep17-int.chello.nl [213.46.243.15])
-	by ozlabs.org (Postfix) with ESMTP id 2B6CF67BAB
+Return-Path: <wigyori@uid0.hu>
+Received: from smtp01.megaweb.hu (ivymike.megaweb.hu [195.228.155.87])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7EC4267BA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  3 Sep 2006 21:28:36 +1000 (EST)
-Message-ID: <44FAB757.3000801@chello.nl>
-Date: Sun, 03 Sep 2006 13:07:03 +0200
-From: Theo Gjaltema <gjalt007@chello.nl>
+	Mon,  4 Sep 2006 02:08:15 +1000 (EST)
+Received: from [195.38.112.166] (port=1055 helo=[10.1.1.20])
+	by smtp01.megaweb.hu with esmtpsa (Exim 4.60 #1 (Debian))
+	id 1GJtzs-0001pp-Re from <wigyori@uid0.hu>
+	for <linuxppc-embedded@ozlabs.org>; Sun, 03 Sep 2006 17:34:57 +0200
+Message-ID: <44FAF68F.1080206@uid0.hu>
+Date: Sun, 03 Sep 2006 17:36:47 +0200
+From: Zoltan HERPAI <wigyori@uid0.hu>
 MIME-Version: 1.0
-To: Stephen Williams <steve@icarus.com>,  linuxppc-embedded@ozlabs.org
-Subject: Re: Choices of 2.4 Kernel for PPC
-References: <e2b1fi$klf$1@sea.gmane.org>
-In-Reply-To: <e2b1fi$klf$1@sea.gmane.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Serial problem with MPC8241-based board
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,35 +26,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Stephen Williams schreef:
-> I'd been using the BK tree (I know, old old) but it's been stable
-> for me for a while. But I'm starting to see so problems and I want
-> to work with a recent kernel tree. I'm using a PPC405GPr processor.
->
-> I downloaded the linux-2.4.32 tree from kernel.org, but it has
-> none of the Xilinx stuff so I immediately wonder about other things
-> it lacks for embedded PPC.
->
-> I downloaded the linux 2.4 .git tree from Denx, but the makefile
-> in top says it's based on 2.4.25, which is even older then what
-> I've got now.
->
-> I've looked on the penguinppc.org page, but it points me back
-> to the kernel.org distribution and possibly the bk repository.
-> Hmm...
->
-> So what tree is most universally accepted as current so far as
-> embedded PPC goes? And can the penguinppc.org pages be updated
-> to reflect the consensus?
->   
-I've run into the same problems with the kernel.org version of the linux 
-kernel 2.4.32.
-the fec_enet module for the ppc was 0.3 instead of 0.4 (denx 2.4.25) and 
-the config.in file did not contain any of the physical driver info.
-Apart from this the generated kernel crashed when accessing the flash, 
-this worked fine in the denx 2.4.25 kernel as well.
-We decided that the kernel.org 2.4.32 is not suitable for the ppc and 
-stick to the 2.4.25 version as present in the ELDK3.1.1.
+Hi all,
 
-Succes,
-   Theo Gjaltema.
+I've recently acquired an Allnet 6250 NAS, which has an MPC8241-based 
+board. Since its GPL tarball is not available fully, I began to build a 
+toolchain based on gcc-3.4.6 and binutils-2.16.1, and an up-to-date 
+kernel for it. PPCboot states that this is a Sandpoint 8241 Unity board, 
+so the platforms/sandpoint.* was chosen as a starting point, however, 
+after rewriting the irq and ioport values in sandpoint.h to the ones 
+(irq 137, ioport 0x80004500), no output came out of the serial port. 
+After a few days of tweaking around with variables is sandpoint.h, a 
+google session revealed that this board is 99% the same as the Buffalo 
+Linkstation's is, which has a 2.6.x port also, but those kernels are 
+also failing to display any output.
+Can anyone shed some light on what points should I check and what may I 
+have done wrong?
+
+Regards,
+Zoltan HERPAI
