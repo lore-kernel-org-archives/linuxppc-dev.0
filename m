@@ -1,20 +1,23 @@
-Return-Path: <torvalds@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7D44C67BC9
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2006 05:29:31 +1000 (EST)
-Date: Sun, 3 Sep 2006 12:29:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: Please pull powerpc.git 'merge' branch
-In-Reply-To: <44FB2BAF.1080509@ru.mvista.com>
-Message-ID: <Pine.LNX.4.64.0609031227220.27779@g5.osdl.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CCE9C67BE5
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2006 06:41:49 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.64.0609031227220.27779@g5.osdl.org>
 References: <17654.26321.851991.285528@cargo.ozlabs.ibm.com>
 	<Pine.LNX.4.64.0609031213310.27779@g5.osdl.org>
 	<44FB2BAF.1080509@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<Pine.LNX.4.64.0609031227220.27779@g5.osdl.org>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <825CFFCF-6F81-4F5E-929F-54F3CA3CC022@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+Date: Sun, 3 Sep 2006 22:41:19 +0200
+To: Linus Torvalds <torvalds@osdl.org>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,27 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Sun, 3 Sep 2006, Sergei Shtylyov wrote:
+>>> I wrote a sparse extension that warns if an initializer tries to  
+>>> initialize
+>>> the same entry multiple times.
+>>
+>>    Ugh, I expected the C compiler to catch this... :-/
 >
-> Linus Torvalds wrote:
-> 
-> > I wrote a sparse extension that warns if an initializer tries to initialize
-> > the same entry multiple times.
-> 
->    Ugh, I expected the C compiler to catch this... :-/
+> Yeah, me too.
 
-Yeah, me too. The reason I wrote the sparse logic to catch it was that I 
-got another patch where I noticed what was going on, and the author said 
-he had compile-tested it without any warnings. So gcc obviously does _not_ 
-warn about the obvious error.
+Long ago, GCC used to catch this (with an error).  C99 however
+requires the overwriting behaviour.  Having a warning would be
+nice though; this is http://gcc.gnu.org/PR24010 .
 
->    Cut and paste error, should be .read_reg8...
 
-Yeah, the fix is obvious, but somebody who has more knowledge about this 
-particular piece of code and how it would affect things should test that 
-the bug wasn't hiding somethign else on a piece of hardware that is 
-relevant to that initializer (which I don't know what it would be).
-
-		Linus
+Segher
