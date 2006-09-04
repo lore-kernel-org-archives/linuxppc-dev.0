@@ -1,34 +1,28 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+Return-Path: <mel@skynet.ie>
+Received: from calculon.skynet.ie (calculon.skynet.ie [193.1.99.88])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AF91967C2A
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2006 21:27:06 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate3.uk.ibm.com (8.13.7/8.13.7) with ESMTP id k84BQvrA161836
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Sep 2006 12:26:58 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k84BT2Cj1581146
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Sep 2006 12:29:02 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k84BQvfB019550
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Sep 2006 12:26:57 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [2.6.19 PATCH 7/7] ehea: Makefile & Kconfig
-Date: Mon, 4 Sep 2006 12:44:53 +0200
-MIME-Version: 1.0
-To: netdev <netdev@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200609041244.53416.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 49EED67BAD
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2006 01:36:19 +1000 (EST)
+Date: Mon, 4 Sep 2006 16:36:13 +0100
+To: Keith Mannthey <kmannth@gmail.com>
+Subject: Re: [PATCH 4/6] Have x86_64 use add_active_range() and
+	free_area_init_nodes
+Message-ID: <20060904153613.GA14263@skynet.ie>
+References: <20060821134518.22179.46355.sendpatchset@skynet.skynet.ie>
+	<20060821134638.22179.44471.sendpatchset@skynet.skynet.ie>
+	<a762e240608301357n3915250bk8546dd340d5d4d77@mail.gmail.com>
+	<20060831154903.GA7011@skynet.ie>
+	<a762e240608311052h28843b2ege651e9fa82c49f2a@mail.gmail.com>
+	<Pine.LNX.4.64.0608311906300.13392@skynet.skynet.ie>
+	<a762e240608312008v3e35b63ay46c95fbb6c3f15ec@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <a762e240608312008v3e35b63ay46c95fbb6c3f15ec@mail.gmail.com>
+From: mel@skynet.ie (Mel Gorman)
+Cc: akpm@osdl.org, tony.luck@intel.com, linuxppc-dev@ozlabs.org, ak@suse.de,
+	bob.picco@hp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Memory Management List <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,42 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com> 
+On (31/08/06 20:08), Keith Mannthey didst pronounce:
+> >So, do you actally expect a lot of unused mem_map to be allocated with
+> >struct pages that are inactive until memory is hot-added in an
+> >x86_64-specific manner? The arch-independent stuff currently will not do
+> >that. It sets up memmap for where memory really exists. If that is not
+> >what you expect, it will hit issues at hotadd time which is not the
+> >current issue but one that can be fixed.
+> 
+> Yes. RESERVED based is a big waste of mem_map space.  The add areas
+> are marked as RESERVED during boot and then later onlined during add.
+> It might be ok.  I will play with tomorrow.  I might just need to
+> call add_active_range in the right spot :)
+> 
 
+Following this mail should be two patches that may address the problem
+with reserved memory hot-add. One assumption made by arch-independent
+zone-sizing was that the only memory holes of interest were those before the
+end of physical memory.  Another assumption was that mem_map should only be
+allocated for memory that was physically present in the machine.
 
- drivers/net/Kconfig  |    9 +++++++++
- drivers/net/Makefile |    1 +
- 2 files changed, 10 insertions(+)
+With MEMORY_HOTPLUG_RESERVE on x86_64, these assumptions do not hold. This
+feature expects that mem_map is allocated at boot time and later activated
+on a memory hot-add event. To determine if the region is usable for hot-add
+in the future, holes are calculated beyond the end of physical memory.
 
+The following two patches fix these two assumptions. They have been boot-tested
+on a range of hardware (x86, ppc64, ia64 and x86_64) so there should be no
+new regressions.
 
+I don't have access to hardware that can use MEMORY_HOTPLUG_RESERVE so I'd
+appreciate hearing if the patches work. I wrote a test program that simulated
+the input from the machine the problem was reported on.  It registers active
+memory and simulates the check made by reserve_hotadd(). push_node_boundaries()
+is called to push the end of the node out by 100 pages like what SRAT would
+do for reserve hot-add and it appears to do the right thing. Output is below.
 
-diff -Nurp -X dontdiff linux-2.6.18-rc6/drivers/net/Kconfig patched_kernel/drivers/net/Kconfig
---- linux-2.6.18-rc6/drivers/net/Kconfig	2006-09-04 04:19:48.000000000 +0200
-+++ patched_kernel/drivers/net/Kconfig	2006-09-04 11:38:59.000000000 +0200
-@@ -2318,6 +2318,15 @@ config CHELSIO_T1
-           To compile this driver as a module, choose M here: the module
-           will be called cxgb.
- 
-+config EHEA
-+	tristate "eHEA Ethernet support"
-+	depends on IBMEBUS
-+	---help---
-+	  This driver supports the IBM pSeries eHEA ethernet adapter.
-+
-+	  To compile the driver as a module, choose M here. The module
-+	  will be called ehea.
-+
- config IXGB
- 	tristate "Intel(R) PRO/10GbE support"
- 	depends on PCI
-diff -Nurp -X dontdiff linux-2.6.18-rc6/drivers/net/Makefile patched_kernel/drivers/net/Makefile
---- linux-2.6.18-rc6/drivers/net/Makefile	2006-09-04 04:19:48.000000000 +0200
-+++ patched_kernel/drivers/net/Makefile	2006-09-04 11:39:06.000000000 +0200
-@@ -10,6 +10,7 @@ obj-$(CONFIG_E1000) += e1000/
- obj-$(CONFIG_IBM_EMAC) += ibm_emac/
- obj-$(CONFIG_IXGB) += ixgb/
- obj-$(CONFIG_CHELSIO_T1) += chelsio/
-+obj-$(CONFIG_EHEA) += ehea/
- obj-$(CONFIG_BONDING) += bonding/
- obj-$(CONFIG_GIANFAR) += gianfar_driver.o
- 
+mel@arnold:~/patches/brokenout/zonesizing/driver_test$ gcc driver_test.c -o
+driver_test && ./driver_test | grep -v "active with" | grep -v
+account_node_boundary
+Stage 1: Registering active ranges
+Entering add_active_range(0, 0, 152) 0 entries of 96 used
+Entering add_active_range(0, 256, 524165) 1 entries of 96 used
+Entering add_active_range(0, 1048576, 4653056) 2 entries of 96 used
+Entering add_active_range(1, 17235968, 18219008) 3 entries of 96 used
+
+Dumping active map
+0: 0  0 -> 152
+1: 0  256 -> 524165
+2: 0  1048576 -> 4653056
+3: 1  17235968 -> 18219008
+Entering push_node_boundaries(0, 0, 4653156)
+
+Checking reserve-hotadd
+  absent_pages_in_range(4653056, 17235968) == 17235968 - 4653056 == 12582912
+  absent_pages_in_range(18219008, 52428800) == 52428800 - 18219008 == 34209792
+
+Stage 2: Calculating zone sizes and holes
+
+Stage 3: Dumping zone sizes and holes
+zone_size[0][0] =     4096 zone_holes[0][0] =      104
+zone_size[0][1] =  1044480 zone_holes[0][1] =   524411
+zone_size[0][2] =  3604580 zone_holes[0][2] =      100
+zone_size[1][2] =   983040 zone_holes[1][2] =        0
+
+Stage 4: Printing present pages
+On node 0, 4128541 pages
+ zone 0 present_pages = 3992
+ zone 1 present_pages = 520069
+ zone 2 present_pages = 3604480
+On node 1, 983040 pages
+ zone 2 present_pages = 983040
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
