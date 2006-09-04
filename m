@@ -1,25 +1,20 @@
-Return-Path: <romieu@fr.zoreil.com>
-Received: from fr.zoreil.com (electric-eye.fr.zoreil.com [213.41.134.224])
+Return-Path: <SRS0+8d543e8f5a987dca5deb+1107+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B423267BE5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2006 07:52:24 +1000 (EST)
-Date: Mon, 4 Sep 2006 23:49:45 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [2.6.19 PATCH 1/7] ehea: interface to network stack
-Message-ID: <20060904214945.GA30804@electric-eye.fr.zoreil.com>
-References: <200609041237.46528.ossthema@de.ibm.com>
-	<20060904201606.GA24386@electric-eye.fr.zoreil.com>
-	<200609042311.21202.arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id D60C167BEC
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2006 08:32:34 +1000 (EST)
+Subject: Re: [PATCH] Unwire set/get_robust_list
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jeodtvfn4x.fsf@sykes.suse.de>
+References: <jeodtvfn4x.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Mon, 04 Sep 2006 15:32:27 -0700
+Message-Id: <1157409148.2473.209.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200609042311.21202.arnd@arndb.de>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> :
-[...]
-> The driver should get merged as a single commit anyway, even
-> if split diffs are posted for review. Even if it gets merged
-> like this, bisect will work since the Kconfig option is added
-> in the final patch.
+On Mon, 2006-09-04 at 21:27 +0200, Andreas Schwab wrote:
+> The syscalls set/get_robust_list must not be wired up until
+> futex_atomic_cmpxchg_inatomic is implemented.  Otherwise the kernel will
+> hang in handle_futex_death.
 
-I have seen/done worse but it's not exactly pretty.
+Something like this? 
 
-[...]
-> > > +?????int i;
-> >
-> > unsigned int ?
-> 
-> does it matter? int as a counter is pretty standard.
+Untested-but-otherwise-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-ppc64 takes unsigned int as a little optimization. I do not know how
-the target platform behaves here.
+diff --git a/include/asm-powerpc/futex.h b/include/asm-powerpc/futex.h
+index f1b3c00..e8ff12c 100644
+--- a/include/asm-powerpc/futex.h
++++ b/include/asm-powerpc/futex.h
+@@ -84,7 +84,30 @@ static inline int futex_atomic_op_inuser
+ static inline int
+ futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
+ {
+-	return -ENOSYS;
++	int prev;
++
++        __asm__ __volatile__ (
++        LWSYNC_ON_SMP
++"1:     lwarx   %0,0,%2         # futex_atomic_cmpxchg_inatomic\n\
++        cmpw    0,%0,%3\n\
++        bne-    3f\n"
++        PPC405_ERR77(0,%2)
++"2:     stwcx.  %4,0,%2\n\
++        bne-    1b\n"
++        ISYNC_ON_SMP
++"3:	.section .fixup,\"ax\"\n\
++4:	li	%0,%5\n\
++	b	3b\n\
++	.previous\n\
++	.section __ex_table,\"a\"\n\
++	.align 3\n\
++	" PPC_LONG "1b,4b,2b,4b\n\
++	.previous" \
++        : "=&r" (prev), "+m" (*uaddr)
++        : "r" (uaddr), "r" (oldval), "r" (newval), "i" (-EFAULT)
++        : "cc", "memory");
++
++        return prev;
+ }
+ 
+ #endif /* __KERNEL__ */
 
 -- 
-Ueimor
+dwmw2
