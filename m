@@ -1,25 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D584C67BA7
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2006 19:03:36 +1000 (EST)
-Subject: Re: pci error recovery procedure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
-References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
-	<20060831175001.GE8704@austin.ibm.com>
-	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
-	<20060901212548.GS8704@austin.ibm.com>
-	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
-Content-Type: text/plain
-Date: Mon, 04 Sep 2006 19:03:12 +1000
-Message-Id: <1157360592.22705.46.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-	Rajesh Shah <rajesh.shah@intel.com>, linuxppc-dev@ozlabs.org,
-	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5E75167B95
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Sep 2006 21:18:42 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.7/8.13.7) with ESMTP id k84BIbFs114726
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Sep 2006 11:18:37 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k84BMwem2900168
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Sep 2006 13:22:58 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k84BIa8B019169
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Sep 2006 13:18:36 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Mon, 4 Sep 2006 12:36:32 +0200
+MIME-Version: 1.0
+Subject: [2.6.19 PATCH 0/7] ehea: IBM eHEA Ethernet Device Driver
+To: netdev <netdev@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200609041236.32279.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,43 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> As you know, all functions of a device share the same bus number and 5 bit dev number.
-> They just have different 3 bit function number. We could deduce if functions are in the same
-> device (slot).
+this is our current version of the IBM eHEA Ethernet Device Driver. We adde=
+d=20
+minor bug fixes and changes to the last version.
 
-Until you have a P2P bridge ...
+Jeff, this driver has been discussed on the netdev, linux-ppc and=20
+kernel mailing list. We didn't receive any further comments since our previ=
+ous
+patch set from August 23. Please consider our driver for
+upstream inclusion.
 
-> Thanks. Now I understand why you specified mmio_enabled and slot_reset. They are just
-> to map to pSeries platform hardware operation steps. I know little about pSeries hardware,
-> but is it possible to merge such hardware steps from software point of view?
+Thanks,
 
-One of the ideas we had when defining those steps is to be precise
-enough to let drivers who _can_ deal with those fine grained pSeries
-step implement them, but also have the fallback to slot reset whenever
-possible.
+Jan-Bernd Themann & Christoph Raisch
 
-Now, if in practice, after actually implementing this in a number of
-drivers, we see that slot reset is the only ever used path, then we
-might want to simplify things a bit. I didn't want to impose that
-restriction in the initial design though.
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Changelog-by: =A0Jan-Bernd Themann <themann@de.ibm.com>
 
-It's my understanding that doing no slot reset (hardware reset) but just
-re-enabling MMIO, DMA and clearing pending error status in the PCI
-config space is, as far as the driver is concerned, almost functionally
-equivalent to a PCIe link reset. That is, the link reset might not (or
-will not) actually reset the hardware beyond the PCIe link layer.
+Differences to patch set http://www.spinics.net/lists/netdev/msg12820.html
 
-Thus we could simplify the split between link reset / hard reset. The
-former is an attempt at recovery with only resetting the PCI path to the
-device, which on PCIe becomes a link reset, and on old PCI, just
-clearing of the various error bits along the path (and on pSeries,
-re-enabling MMIO and DMA access). However, there is still the problem
-that if you do that, on pSeries at least, you really want to 1- enable
-MMIO, 2- soft reset the card using MMIO, that is make sure all pending
-DMA is stopped, and 3- re-enable DMA. While if we collapse that into a
-single 'link reset' type of operation, we'll end up re-enabling MMIO and
-DMA before the driver has a chance to stop pending DMA's and thus
-increase the chance that we crap out due to a pending DMA on the chip.
+Changelog:
+=2D struct ehea_q_skb_arr introduced to simplify struct ehea_port_res
+=2D promiscuous mode added
+=2D enhanced ethtool support (set port speed)
+=2D destroy functions for QPs, CQs, EQs, MRs reduced to single function
+=2D Bux fix: xmit locking
 
-Ben.
+
+ drivers/net/Kconfig             |    9=20
+ drivers/net/Makefile            |    1=20
+ drivers/net/ehea/Makefile       |    6=20
+ drivers/net/ehea/ehea.h         |  444 ++++++
+ drivers/net/ehea/ehea_ethtool.c |  292 ++++
+ drivers/net/ehea/ehea_hcall.h   |   51=20
+ drivers/net/ehea/ehea_hw.h      |  290 ++++
+ drivers/net/ehea/ehea_main.c    | 2694 +++++++++++++++++++++++++++++++++++=
++++++
+ drivers/net/ehea/ehea_phyp.c    |  705 ++++++++++
+ drivers/net/ehea/ehea_phyp.h    |  454 ++++++
+ drivers/net/ehea/ehea_qmr.c     |  605 ++++++++
+ drivers/net/ehea/ehea_qmr.h     |  361 +++++
+ 12 files changed, 5912 insertions(+)
