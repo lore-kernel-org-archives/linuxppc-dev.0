@@ -1,20 +1,22 @@
-Return-Path: <hlrprasad@tataelxsi.co.in>
-Received: from mail.tataelxsi.co.in (mail.tataelxsi.co.in [203.200.1.48])
-	(using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
-	(Client CN "myname.my.domain",
-	Issuer "www.mirapoint.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EF54167B59
+Return-Path: <AZeffertt@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9AF0167B8C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Sep 2006 16:35:35 +1000 (EST)
-From: Ram Prasad H L <hlrprasad@tataelxsi.co.in>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC5200B - FEC Error
-Date: Tue, 5 Sep 2006 12:00:00 +0530
-Message-ID: <000201c6d0b4$b6d08f50$4129320a@telxsi.com>
+	Tue,  5 Sep 2006 18:33:14 +1000 (EST)
+Message-ID: <44FD3640.30208@cambridgebroadband.com>
+Date: Tue, 05 Sep 2006 09:33:04 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Reply-To: Ram Prasad H L <hlrprasad@tataelxsi.co.in>
+To: "David H. Lynch Jr." <dhlii@dlasys.net>
+Subject: Re: MAC driver issues
+References: <405ECA8A30557F439A723E52D50838F9D829C6@ZMY16EXM66.ds.mot.com>	<Pine.LNX.4.60.0609042336020.5921@poirot.grange>
+	<44FCA93E.1000009@dlasys.net>
+In-Reply-To: <44FCA93E.1000009@dlasys.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,73 +27,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi all,
-	this is Ramprasad, and we are using freescale's Lite5200B
-using MPC5200B as core, for one of our applications.
-The board is booted with u-boot-1.2.2 and linux kernel 2.4.25.
+Hi David,
 
-	I'm finding a very peculiar problem with the board when I
-run my application which extensively uses the FEC for receiving
-video and audio streams from network. The application runs fine for
-some time say 2-3 hrs and suddenly i'm getting the following error
-and the OS starts rebooting.
+I think in order to get any help from this list you need to be more specific
+about how this problem relates to PowerPCs.
 
-The error log looks somewhat like this:
+You also need to say exactly what "never gets handed off to the ARP protocol"
+means.
 
-NIP: C0124ECC XER: 00000000 LR: C0125028 SP: C01B6270 REGS: c01b61c0 TRAP:
-0300    Not tainted
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 000000F0, DSISR: 20000000
-TASK = c01b4470[0] 'swapper' Last syscall: 120
-last math c228a000 last altivec 00000000
-GPR00: 000000F0 C01B6270 C01B4470 00001032 00001032 00000006 C0C11034
-C3C61CC0
-GPR08: 0000003F 00000000 C01CE9F8 C01CEAD0 00000002 1012A714 03FBA000
-00000000
-GPR16: 00000001 00000001 FFFFFFFF 007FFF00 00001032 C3F93000 C0210000
-00000000
-GPR24: C3C06012 00000045 C01E0000 C0BE1320 0000054E C01CE9E0 C01CEA08
-C3CA9A20
-Call backtrace:
-C0125528 C011AF0C C0006CD8 C0006D98 C0005C40 C00072C8 C00072E4
-C0003918 C01CF5B8 000035F0
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-panic: Aiee, killing interrupt handler!
-In interrupt handler - not syncing
- <0>Rebooting in 180 seconds..<4>MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
-MPC5xxx_FEC_IEVENT_RFIFO_ERROR
-mpc5xxx_fec_reinit
+FWIW, in my experience the hardware independent parts of the networking stack are
+very stable and the problem is almost always with the drivers, or with the IP
+configuration (e.g. two interfaces on the same subnet).
 
+Alex
 
-	Can anyone tell me what is the reason to face such
-an error? and how can we avoid this error? any pointers
-for overcoming it will be really helpfull as I'm stuck with
-this problem since long time.
-
-thanks and regards,
-
-Ramprasad H L
+David H. Lynch Jr. wrote:
+> I am trying to get a network driver working.
+> 
+> It sends - I can capture the output with Etherreal and it looks good.
+> It receives - I can dump the received packets when the come in and they 
+> look ok to me.
+> 
+> 
+> BUT,
+>     If I try to ping another host, first Linux sends and ARP broadcast, 
+> the appropriate client sends an ARP response.
+>     Etherreal is happy with both.
+>     My driver gets the response - The driver says the packet lenght is 
+> 64 bytes, which includes something like 14 bytes of padding at the end.
+>     But the actual packet looks perfect exactly like what etherreal says 
+> it should (and what I get when I capture a received ARP packet in 
+> another driver).
+>     At the end of the recive interrupt the skb is passed to Linux with 
+> the netif_rc(ndev) function. This returns SUCCESS.
+> 
+>     However, the paket never gets handed of to the ARP protocol - I put 
+> some debugging in there and I never see it, while if I switch to a 
+> different  NIC
+>     driver nearly the identical ARP packet gets processed by arp inside 
+> Linux.
+> 
+>     I have tried to chase this down, but I can't  follow what is going 
+> on inside of all the /net/core/dev.c etc.
+> 
+>     Has anyone seen something similar to this ?
+> 
+>     Does anyone have a clue where I can find some info  on trying to 
+> follow something through netif_rx to see where things are going off the 
+> rails ?
+> 
+> 
+> 
