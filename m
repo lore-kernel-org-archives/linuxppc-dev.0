@@ -1,20 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 01E8967B75
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 6092C67B86
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Sep 2006 01:06:09 +1000 (EST)
-Date: Tue, 5 Sep 2006 19:06:08 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: OT: Re: [U-Boot-Users] Status of OF in TQM8540 and linux-2.6.17.11
-Message-ID: <20060905190608.082331bc@vitb.ru.mvista.com>
-In-Reply-To: <44FD7B96.80405@anagramm.de>
-References: <20060905121957.CF13F353A15@atlas.denx.de>
-	<44FD7B96.80405@anagramm.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: u-boot-users@lists.sourceforge.net, ppcembed,
-	Mailing List <linuxppc-embedded@ozlabs.org>
+	Wed,  6 Sep 2006 01:39:28 +1000 (EST)
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [U-Boot-Users] OT: Re: Status of OF in TQM8540 and
+	linux-2.6.17.11
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 05 Sep 2006 19:06:08 +0400."
+	<20060905190608.082331bc@vitb.ru.mvista.com>
+Date: Tue, 05 Sep 2006 17:39:25 +0200
+Sender: wd@denx.de
+Message-Id: <20060905153925.F1384353A15@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,73 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 05 Sep 2006 15:28:54 +0200
-Clemens Koller <clemens.koller@anagramm.de> wrote:
+In message <20060905190608.082331bc@vitb.ru.mvista.com> you wrote:
+>
+> Clemens Koller <clemens.koller@anagramm.de> wrote:
+...
+> > According to TQC, the latest "working" kernel was a 2.6.15-git from your
+> > (denx) tree. I get the details from Mr. Becher@TQC and see how far I can get.
 
-> Hello, Wolfgang!
-> 
-> -> moving from u-boot-users to linuxppc-embedded
-> 
-> Wolfgang Denk wrote:
-> > In message <44FD5BD4.9090406@anagramm.de> you wrote:
-> > 
-> >>Now I try to boot a current linux kernel - the vanilla 2.6.17.11
-> >>with the default tqm8540 config but it doesn't show any sign of life
-> > 
-> > Please use the kernel from our repo instead; see
-> > http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
-> 
-> Okay, the compilation after a make TQM8540_defconfig fails:
-> 
-> clemens@ecam:~/git/linux-2.6-denx$ make uImage
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-ppc
->   CHK     include/linux/compile.h
->   CC      arch/ppc/syslib/mpc85xx_devices.o
-> In file included from arch/ppc/syslib/mpc85xx_devices.c:23:
-> include/asm/cpm2.h:1193:1: warning: "FCC2_MEM_OFFSET" redefined
-> include/asm/cpm2.h:1192:1: warning: this is the location of the previous definition
-> arch/ppc/syslib/mpc85xx_devices.c:99: error: `F1_RXCLK' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:99: error: `F1_TXCLK' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:99: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:99: error: (near initialization for `mpc85xx_fcc1_pdata.clk_route')
-> arch/ppc/syslib/mpc85xx_devices.c:100: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:100: error: (near initialization for `mpc85xx_fcc1_pdata.clk_trx')
-> arch/ppc/syslib/mpc85xx_devices.c:117: error: `F2_RXCLK' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:117: error: `F2_TXCLK' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:117: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:117: error: (near initialization for `mpc85xx_fcc2_pdata.clk_route')
-> arch/ppc/syslib/mpc85xx_devices.c:118: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:118: error: (near initialization for `mpc85xx_fcc2_pdata.clk_trx')
-> arch/ppc/syslib/mpc85xx_devices.c:135: error: `F3_RXCLK' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:135: error: `F3_TXCLK' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:135: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:135: error: (near initialization for `mpc85xx_fcc3_pdata.clk_route')
-> arch/ppc/syslib/mpc85xx_devices.c:136: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:136: error: (near initialization for `mpc85xx_fcc3_pdata.clk_trx')
-> arch/ppc/syslib/mpc85xx_devices.c:138: error: `FCC3_MEM_OFFSET' undeclared here (not in a function)
-> arch/ppc/syslib/mpc85xx_devices.c:138: error: initializer element is not constant
-> arch/ppc/syslib/mpc85xx_devices.c:138: error: (near initialization for `mpc85xx_fcc3_pdata.mem_offset')
-> make[1]: *** [arch/ppc/syslib/mpc85xx_devices.o] Error 1
-> make: *** [arch/ppc/syslib] Error 2
-> 
-> >>Are there any tips&tricks to consider regarding that point?
-> > 
-> > Yes, use a working kernel. Not all our patches have been accepted
-> > upstream, and we have some lag with re-submissions.
-> 
-> According to TQC, the latest "working" kernel was a 2.6.15-git from your
-> (denx) tree. I get the details from Mr. Becher@TQC and see how far I can get.
-> 
-> Okay, let's move over to linux-ppc-embedded. (xposting)
+[TQ provides obsolete information.]
 
-The upper defines need to reside in the board-specific code for tqm as well as for other boards
-utilizing such scheme (see platforms/85xx/mpc85xx_ads_common.h for instance).
 
-Fix for FCC3_MEM_OFFSET was part of my patch series (as a typo fix), I'll submit it separately since 
-it's a notable bugfix should be in the mainstream.
+> The upper defines need to reside in the board-specific code for tqm as well as for other boards
+> utilizing such scheme (see platforms/85xx/mpc85xx_ads_common.h for instance).
+
+Thanks for pointing out.
+
+Clemens, plese try again (commit id cd4ebbc9b95434977e5f182b9a22d7d1de0748ce)
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Sincerely, 
-Vitaly
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Where shall I begin, please your Majesty?" he asked. "Begin  at  the
+beginning,"  the  King said, gravely, "and go on till you come to the
+end: then stop."    - Alice's Adventures in Wonderland, Lewis Carroll
