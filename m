@@ -1,12 +1,12 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DF1E267B86
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:29:37 +1000 (EST)
-Date: Tue, 5 Sep 2006 12:28:53 -0500
+	by ozlabs.org (Postfix) with ESMTP id 864A967B9C
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:30:41 +1000 (EST)
+Date: Tue, 5 Sep 2006 12:29:56 -0500
 From: Olof Johansson <olof@lixom.net>
 To: paulus@samba.org, anton@samba.org
 Subject: [4/5] powerpc: PA Semi PWRficient platform support
-Message-ID: <20060905122853.4da8d0fe@localhost.localdomain>
+Message-ID: <20060905122956.2cebd36d@localhost.localdomain>
 In-Reply-To: <20060904175742.5472a6fa@localhost.localdomain>
 References: <20060904175742.5472a6fa@localhost.localdomain>
 Mime-Version: 1.0
