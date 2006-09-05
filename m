@@ -2,27 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A23D867B6F
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 07:19:52 +1000 (EST)
-Subject: Re: pci error recovery procedure
+	by ozlabs.org (Postfix) with ESMTP id 42F12679E0
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 07:32:04 +1000 (EST)
+Subject: Re: [4/5] powerpc: PA Semi PWRficient platform support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20060905185020.GD7139@austin.ibm.com>
-References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
-	<20060831175001.GE8704@austin.ibm.com>
-	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
-	<20060901212548.GS8704@austin.ibm.com>
-	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
-	<1157360592.22705.46.camel@localhost.localdomain>
-	<20060905185020.GD7139@austin.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20060905122853.4da8d0fe@localhost.localdomain>
+References: <20060904175742.5472a6fa@localhost.localdomain>
+	<20060905122853.4da8d0fe@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 06 Sep 2006 07:19:11 +1000
-Message-Id: <1157491152.22705.133.camel@localhost.localdomain>
+Date: Wed, 06 Sep 2006 07:31:49 +1000
+Message-Id: <1157491909.22705.143.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-	Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-	Rajesh Shah <rajesh.shah@intel.com>, linuxppc-dev@ozlabs.org,
-	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,20 +24,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-05 at 13:50 -0500, Linas Vepstas wrote:
-> On Mon, Sep 04, 2006 at 07:03:12PM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > > As you know, all functions of a device share the same bus number and 5 bit dev number.
-> > > They just have different 3 bit function number. We could deduce if functions are in the same
-> > > device (slot).
-> > 
-> > Until you have a P2P bridge ...
-> 
-> And this is not theoretical: for example, the matrox graphics cards:
-> 
-> 0000:c8:01.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (non-transparent mode) (rev 13)
-> 0000:c9:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G400 AGP (rev 85)
+Overall, looks good, some bits  tho:
 
-It's also very common with multiple ports network cards
+> +static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
+> +			      int offset, int len, u32 *val)
+> +{
+> +	struct pci_controller *hose;
+> +	unsigned long addr;
 
-Ben.
+ .../...
+
+You don't seem to encode support for extended config space (offsets >
+256). If it's PCIe, you should have it (flush the 4 top bits of the
+offste in the 4 top bits of the cfg address in general). In any case,
+you should check the passed-in offset and error out if it is above your
+max offset (256 or 4096 depending if you implement extended config space
+support) or the kernel might get confused.
+
+> +	of_prop = alloc_bootmem(sizeof(struct property) +
+> +				sizeof(hose->global_number));
+> +	if (of_prop) {
+> +		memset(of_prop, 0, sizeof(struct property));
+> +		of_prop->name = "linux,pci-domain";
+> +		of_prop->length = sizeof(hose->global_number);
+> +		of_prop->value = (unsigned char *)&of_prop[1];
+> +		memcpy(of_prop->value, &hose->global_number, sizeof(hose->global_number));
+> +		prom_add_property(dev, of_prop);
+> +	}
+
+Just kill that... nobody cares about that property.
+
+> +	if (device_is_compatible(dev, "pa-pxp"))
+> +		setup_pa_pxp(hose);
+
+And if not ? You have a non-initialized hose without config space access
+methods ? Hrm... 
+
+> +	printk(KERN_INFO "Found PA-PXP PCI host bridge. Firmware bus number: %d->%d\n",
+> +		hose->first_busno, hose->last_busno);
+> +
+> +	/* Interpret the "ranges" property */
+> +	/* This also maps the I/O region and sets isa_io/mem_base */
+> +	pci_process_bridge_OF_ranges(hose, dev, 1);
+> +	pci_setup_phb_io(hose, 1);
+> +
+> +	return 0;
+> +}
+> +
+> +
+> +void __init pas_pcibios_fixup(void)
+> +{
+> +	struct pci_dev *dev = NULL;
+> +
+> +	for_each_pci_dev(dev)
+> +		pci_read_irq_line(dev);
+> +}
+> +
+> +static void __init pas_fixup_phb_resources(void)
+> +{
+> +	struct pci_controller *hose, *tmp;
+> +
+> +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> +		unsigned long offset = (unsigned long)hose->io_base_virt - pci_io_base;
+> +		hose->io_resource.start += offset;
+> +		hose->io_resource.end += offset;
+> +		printk(KERN_INFO "PCI Host %d, io start: %lx; io end: %lx\n",
+> +		       hose->global_number,
+> +		       hose->io_resource.start, hose->io_resource.end);
+> +	}
+> +}
+
+There is no generic code for the above ? (I have to double check). If
+not, we shall fix that ;)
+
+.../...
+
+> +#ifdef CONFIG_SMP
+> +struct smp_ops_t pas_smp_ops = {
+> +	.probe		= smp_mpic_probe,
+> +	.message_pass	= smp_mpic_message_pass,
+> +	.kick_cpu	= smp_generic_kick_cpu,
+> +	.setup_cpu	= smp_mpic_setup_cpu,
+> +	.give_timebase	= smp_generic_give_timebase,
+> +	.take_timebase	= smp_generic_take_timebase,
+> +};
+
+You don't have a HW timebase sync facility ? Is this the board or the
+processor doesn't have a pin to freeze the timebase ? Either way, that
+is bad ! Time to use the cluebat !
+
+> +#endif /* CONFIG_SMP */
+> +
+> +void __init pas_setup_arch(void)
+> +{
+> +	/* init to some ~sane value until calibrate_delay() runs */
+> +	loops_per_jiffy = 50000000;
+
+That value still makes any sense with the new tb based delays ? I know
+we still have it here or there, I'm wondering tho...
