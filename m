@@ -1,19 +1,18 @@
-Return-Path: <yang.reeve@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.197])
-	by ozlabs.org (Postfix) with ESMTP id 7520867B58
+Return-Path: <Becky.Bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 1EDF967B62
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Sep 2006 08:22:30 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id i1so900177nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 05 Sep 2006 15:22:27 -0700 (PDT)
-Message-ID: <198592450609051522i572697f8nb252ea58e7f60ae@mail.gmail.com>
-Date: Tue, 5 Sep 2006 22:22:26 +0000
-From: "Reeve Yang" <yang.reeve@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: where can I find MPC8245 assembler reference?
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_120618_32341218.1157494946893"
+	Wed,  6 Sep 2006 08:30:15 +1000 (EST)
+In-Reply-To: <198592450609051522i572697f8nb252ea58e7f60ae@mail.gmail.com>
+References: <198592450609051522i572697f8nb252ea58e7f60ae@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <73C484E7-4A6A-4B13-8F96-0FEC71E0F5B4@freescale.com>
+From: Becky Bruce <Becky.Bruce@freescale.com>
+Subject: Re: where can I find MPC8245 assembler reference?
+Date: Tue, 5 Sep 2006 17:30:16 -0500
+To: Reeve Yang <yang.reeve@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_120618_32341218.1157494946893
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+MPC8245 refers to the integrated product (core + peripherals, all on  
+one chip).  The MPC8245 has a powerpc 603e core (also known as the  
+G2).  That's a classic 32-bit powerpc, so the assembler reference you  
+want is:
 
-Could anyone point me to online document for MPC8245 assembler reference? I
-couldn't find it anywhere but the command list in user manual. Thanks!
+http://www.freescale.com/files/product/doc/MPCFPE32B.pdf
 
-- Reeve
+Hope this helps,
+Becky
 
-------=_Part_120618_32341218.1157494946893
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Could anyone point me to online document for MPC8245 assembler
-reference? I couldn't find it anywhere but the command list in user
-manual. Thanks!<br>
-<br>
-- Reeve<br>
+On Sep 5, 2006, at 5:22 PM, Reeve Yang wrote:
 
-------=_Part_120618_32341218.1157494946893--
+> Could anyone point me to online document for MPC8245 assembler  
+> reference? I couldn't find it anywhere but the command list in user  
+> manual. Thanks!
+>
+> - Reeve
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
