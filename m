@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 42F12679E0
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 07:32:04 +1000 (EST)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 8CF5867A39
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 07:37:25 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [4/5] powerpc: PA Semi PWRficient platform support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20060905122853.4da8d0fe@localhost.localdomain>
+Date: Tue, 5 Sep 2006 23:37:10 +0200
 References: <20060904175742.5472a6fa@localhost.localdomain>
-	<20060905122853.4da8d0fe@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 06 Sep 2006 07:31:49 +1000
-Message-Id: <1157491909.22705.143.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+	<20060905122956.2cebd36d@localhost.localdomain>
+In-Reply-To: <20060905122956.2cebd36d@localhost.localdomain>
+MIME-Version: 1.0
+Message-Id: <200609052337.11557.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,101 +23,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Overall, looks good, some bits  tho:
+On Tuesday 05 September 2006 19:29, Olof Johansson wrote:
+> Base patch for PA6T and PA6T-1682M. This introduces the
+> arch/powerpc/platform/pasemi directory, together with basic
+> implementations for various setup.
+> 
+> Much of this was based on other platform code, i.e. Maple, etc.
+ 
+Very nice patch set, as expected ;-)
 
-> +static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
-> +			      int offset, int len, u32 *val)
+See below for the mandatory nitpicking.
+
+
+> Index: merge/arch/powerpc/Kconfig
+> ===================================================================
+> --- merge.orig/arch/powerpc/Kconfig
+> +++ merge/arch/powerpc/Kconfig
+> @@ -413,6 +409,17 @@ config PPC_MAPLE
+>            This option enables support for the Maple 970FX Evaluation Board.
+>  	  For more informations, refer to <http://www.970eval.com>
+>  
+> +config PPC_PASEMI
+> +	depends on PPC_MULTIPLATFORM && PPC64
+> +	bool "PA Semi SoC-based platforms"
+> +	default n
+> +	select MPIC
+> +	select PPC_UDBG_16550
+> +	select GENERIC_TBSYNC
+> +	help
+> +	  This option enables support for PA Semi's PWRficient line
+> +	  of SoC processors, including PA6T-1682M
+
+IIRC, the GENERIC_TBSYNC code is really inefficient. Don't you
+have any other way of implementing that?
+
+> +
+> +#undef DEBUG
+> +
+
+I know that this is done in other places as well, but it seems
+rather pointless, and it provides setting DEBUG from EXTRA_CFLAGS
+in the Makefile.
+
+
+> +static struct pci_ops pa_pxp_ops =
 > +{
-> +	struct pci_controller *hose;
-> +	unsigned long addr;
-
- .../...
-
-You don't seem to encode support for extended config space (offsets >
-256). If it's PCIe, you should have it (flush the 4 top bits of the
-offste in the 4 top bits of the cfg address in general). In any case,
-you should check the passed-in offset and error out if it is above your
-max offset (256 or 4096 depending if you implement extended config space
-support) or the kernel might get confused.
-
-> +	of_prop = alloc_bootmem(sizeof(struct property) +
-> +				sizeof(hose->global_number));
-> +	if (of_prop) {
-> +		memset(of_prop, 0, sizeof(struct property));
-> +		of_prop->name = "linux,pci-domain";
-> +		of_prop->length = sizeof(hose->global_number);
-> +		of_prop->value = (unsigned char *)&of_prop[1];
-> +		memcpy(of_prop->value, &hose->global_number, sizeof(hose->global_number));
-> +		prom_add_property(dev, of_prop);
-> +	}
-
-Just kill that... nobody cares about that property.
-
-> +	if (device_is_compatible(dev, "pa-pxp"))
-> +		setup_pa_pxp(hose);
-
-And if not ? You have a non-initialized hose without config space access
-methods ? Hrm... 
-
-> +	printk(KERN_INFO "Found PA-PXP PCI host bridge. Firmware bus number: %d->%d\n",
-> +		hose->first_busno, hose->last_busno);
-> +
-> +	/* Interpret the "ranges" property */
-> +	/* This also maps the I/O region and sets isa_io/mem_base */
-> +	pci_process_bridge_OF_ranges(hose, dev, 1);
-> +	pci_setup_phb_io(hose, 1);
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +void __init pas_pcibios_fixup(void)
-> +{
-> +	struct pci_dev *dev = NULL;
-> +
-> +	for_each_pci_dev(dev)
-> +		pci_read_irq_line(dev);
-> +}
-> +
-> +static void __init pas_fixup_phb_resources(void)
-> +{
-> +	struct pci_controller *hose, *tmp;
-> +
-> +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> +		unsigned long offset = (unsigned long)hose->io_base_virt - pci_io_base;
-> +		hose->io_resource.start += offset;
-> +		hose->io_resource.end += offset;
-> +		printk(KERN_INFO "PCI Host %d, io start: %lx; io end: %lx\n",
-> +		       hose->global_number,
-> +		       hose->io_resource.start, hose->io_resource.end);
-> +	}
-> +}
-
-There is no generic code for the above ? (I have to double check). If
-not, we shall fix that ;)
-
-.../...
-
-> +#ifdef CONFIG_SMP
-> +struct smp_ops_t pas_smp_ops = {
-> +	.probe		= smp_mpic_probe,
-> +	.message_pass	= smp_mpic_message_pass,
-> +	.kick_cpu	= smp_generic_kick_cpu,
-> +	.setup_cpu	= smp_mpic_setup_cpu,
-> +	.give_timebase	= smp_generic_give_timebase,
-> +	.take_timebase	= smp_generic_take_timebase,
+> +	pa_pxp_read_config,
+> +	pa_pxp_write_config
 > +};
 
-You don't have a HW timebase sync facility ? Is this the board or the
-processor doesn't have a pin to freeze the timebase ? Either way, that
-is bad ! Time to use the cluebat !
+spacing: '{' after '=', and ',' after the final member.
 
-> +#endif /* CONFIG_SMP */
 > +
-> +void __init pas_setup_arch(void)
+> +static void __init setup_pa_pxp(struct pci_controller* hose)
 > +{
-> +	/* init to some ~sane value until calibrate_delay() runs */
-> +	loops_per_jiffy = 50000000;
+> +	hose->ops = &pa_pxp_ops;
+> +	hose->cfg_data = ioremap(0xe0000000, 0x1000000);
+> +}
 
-That value still makes any sense with the new tb based delays ? I know
-we still have it here or there, I'm wondering tho...
+Shouldn't that be in the device tree?
+
+> +	bus_range = (int *) get_property(dev, "bus-range", &len);
+
+Unneeded cast
+
+> +	if (bus_range == NULL || len < 2 * sizeof(int)) {
+> +		printk(KERN_WARNING "Can't get bus-range for %s, assume bus 0\n",
+> +		dev->full_name);
+> +	}
+
+if (!bus_range || len < 2 * sizeof(int)) {
+
+> +
+> +	hose = pcibios_alloc_controller(dev);
+> +	if (hose == NULL)
+> +		return -ENOMEM;
+
+if (!hose)
+
+> +	if (root == NULL) {
+
+if (!root)
+> +#undef DEBUG
+
+remove
+
+> +extern int pas_set_rtc_time(struct rtc_time *tm);
+> +extern void pas_get_rtc_time(struct rtc_time *tm);
+> +extern unsigned long pas_get_boot_time(void);
+> +extern void pas_pci_init(void);
+> +extern void pas_pcibios_fixup(void);
+
+Extern declarations should never be in a source file, please
+move them to a header
+
+> +static void iommu_dev_setup_null(struct pci_dev *dev) { }
+> +static void iommu_bus_setup_null(struct pci_bus *bus) { }
+> +
+> +static void __init pas_init_early(void)
+> +{
+> +	/* No iommu code yet */
+> +	ppc_md.iommu_dev_setup = iommu_dev_setup_null;
+> +	ppc_md.iommu_bus_setup = iommu_bus_setup_null;
+> +	pci_direct_iommu_init();
+> +}
+> +
+> +/* No legacy IO on our parts */
+> +static int pas_check_legacy_ioport(unsigned int baseport)
+> +{
+> +	return -ENODEV;
+> +}
+
+Should we maybe change the default behavior so that you don't need
+to provide nops for these functions?
+
+> +
+> +static __init void pas_init_IRQ(void)
+> +{
+> +	struct device_node *np = NULL;
+> +	struct device_node *root, *mpic_node  = NULL;
+> +	unsigned long openpic_addr = 0;
+
+These three should not be initialized.
+
+
+> +	BUG_ON(mpic == NULL);
+
+BUG_ON(!mpic);
+
+> +
+> +#undef DEBUG
+
+remove
+
+> +void pas_get_rtc_time(struct rtc_time *tm)
+> +{
+> +}
+> +
+> +int pas_set_rtc_time(struct rtc_time *tm)
+> +{
+> +	return -ENODEV;
+> +}
+
+again, it probably makes sense to not have to provide these.
+
+	Arnd <><
