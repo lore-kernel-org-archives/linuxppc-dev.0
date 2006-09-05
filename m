@@ -1,23 +1,30 @@
-Return-Path: <yang.reeve@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.197])
-	by ozlabs.org (Postfix) with ESMTP id C556A67B88
+Return-Path: <wei.li4@elf.mcgill.ca>
+Received: from torrent.cc.mcgill.ca (torrent.CC.McGill.CA [132.206.27.49])
+	by ozlabs.org (Postfix) with ESMTP id C7AA767B8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Sep 2006 04:49:46 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id i1so862592nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 05 Sep 2006 11:49:45 -0700 (PDT)
-Message-ID: <198592450609051149h47423ebev9c94eb8aefc2a3fb@mail.gmail.com>
-Date: Tue, 5 Sep 2006 18:49:44 +0000
-From: "Reeve Yang" <yang.reeve@gmail.com>
-To: "Jon Scully" <jonscully@gmail.com>
-Subject: Re: MPC8245 reset register
-In-Reply-To: <53107f6e0609021647l1f1cd84du496e3cd7219b603@mail.gmail.com>
+	Wed,  6 Sep 2006 06:04:09 +1000 (EST)
+Received: from mailscan3.cc.mcgill.ca (mailscan3.CC.McGill.CA [132.216.77.250])
+	by torrent.cc.mcgill.ca (8.12.11/8.12.3) with ESMTP id k85K46YL024338
+	for <linuxppc-embedded@ozlabs.org>; Tue, 5 Sep 2006 16:04:07 -0400
+Received: from wgrappe2.cc.mcgill.ca (wgrappe2.CC.McGill.CA [132.216.46.251])
+	by mailscan3.cc.mcgill.ca (8.13.6/8.13.0) with ESMTP id
+	k85K3tm4003861
+	for <linuxppc-embedded@ozlabs.org>; Tue, 5 Sep 2006 16:03:55 -0400 (EDT)
+Received: from wgrappe2.cc.mcgill.ca (localhost.localdomain [127.0.0.1])
+	by wgrappe2.cc.mcgill.ca (8.13.7/8.13.4) with ESMTP id k85K3tvB001007
+	for <linuxppc-embedded@ozlabs.org>; Tue, 5 Sep 2006 16:03:55 -0400
+Received: (from apache@localhost)
+	by wgrappe2.cc.mcgill.ca (8.13.7/8.13.7/Submit) id k85K3tCX001004
+	for linuxppc-embedded@ozlabs.org; Tue, 5 Sep 2006 16:03:55 -0400
+Message-ID: <20060905160355.4f7qhwwwg80cs00s@webmail.mcgill.ca>
+Date: Tue, 05 Sep 2006 16:03:55 -0400
+From: wei.li4@elf.mcgill.ca
+To: linuxppc-embedded@ozlabs.org
+Subject: Wireless Linux(802.11) for Embedded PowerPC
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_117782_17220215.1157482184899"
-References: <198592450609021546x57c71e48r9aed561b61f6e8aa@mail.gmail.com>
-	<53107f6e0609021647l1f1cd84du496e3cd7219b603@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,59 +35,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_117782_17220215.1157482184899
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi All,
 
-Hi Jon,
+Where is the best access point for this topic? Did anyone work on this 
+with MPC8xx? Thanks.
 
-Could you elaborate it a bit? I wrote 0x1 to PI register, but CPU hangs
-without resetting. I'm kind of curious what's the proper way to reset the
-8245 CPU? For anyone who doesn't know MPC8245, which is 603e core.
-
-Thanks a lot.
-
-- Reeve
-
-On 9/2/06, Jon Scully <jonscully@gmail.com> wrote:
->
-> On 9/2/06, Reeve Yang <yang.reeve@gmail.com> wrote:
-> > Can anyone tell me which register should I use to do soft reset on
-> MPC8241/5
-> > CPU? I searched its manuall but only find EPIC to send SRESET exception
-> on
-> > offset 0x41090.
-> >
-> >  Thanks.
-> >
-> >  - Reeve
-> >
->
-> Use the reset instruction (RST in assembly).
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-------=_Part_117782_17220215.1157482184899
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi Jon, <br>
-<br>
-Could you elaborate it a bit? I wrote 0x1 to PI register, but CPU hangs
-without resetting. I'm kind of curious what's the proper way to reset
-the 8245 CPU? For anyone who doesn't know MPC8245, which is 603e core.<br>
-<br>
-Thanks a lot.<br>
-<br>
-- Reeve<br><br><div><span class="gmail_quote">On 9/2/06, <b class="gmail_sendername">Jon Scully</b> &lt;<a href="mailto:jonscully@gmail.com">jonscully@gmail.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-On 9/2/06, Reeve Yang &lt;<a href="mailto:yang.reeve@gmail.com">yang.reeve@gmail.com</a>&gt; wrote:<br>&gt; Can anyone tell me which register should I use to do soft reset on MPC8241/5<br>&gt; CPU? I searched its manuall but only find EPIC to send SRESET exception on
-<br>&gt; offset 0x41090.<br>&gt;<br>&gt;&nbsp;&nbsp;Thanks.<br>&gt;<br>&gt;&nbsp;&nbsp;- Reeve<br>&gt;<br><br>Use the reset instruction (RST in assembly).<br>_______________________________________________<br>Linuxppc-embedded mailing list<br>
-<a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div>
-<br>
-
-------=_Part_117782_17220215.1157482184899--
+Wei
