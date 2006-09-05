@@ -1,12 +1,12 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 555A267B54
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:27:39 +1000 (EST)
-Date: Tue, 5 Sep 2006 12:26:55 -0500
+	by ozlabs.org (Postfix) with ESMTP id CA7C667B52
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:28:16 +1000 (EST)
+Date: Tue, 5 Sep 2006 12:27:32 -0500
 From: Olof Johansson <olof@lixom.net>
 To: paulus@samba.org, anton@samba.org
-Subject: [1/5] powerpc: Reduce default cacheline size to 64 bytes
-Message-ID: <20060905122655.6c7bc7e8@localhost.localdomain>
+Subject: [2/5] powerpc: Divorce CPU_FTR_CTRL from CPU_FTR_PPCAS_ARCH_V2_BASE
+Message-ID: <20060905122732.169d0fde@localhost.localdomain>
 In-Reply-To: <20060904175742.5472a6fa@localhost.localdomain>
 References: <20060904175742.5472a6fa@localhost.localdomain>
 Mime-Version: 1.0
@@ -21,44 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Reduce default cacheline size on 64-bit powerpc from 128 bytes to 64.
-This is the architected minimum. In most cases we'll still end up using
-cache line information from the device tree, but defaults are used during
-early boot and doing a few dcbst/icbi's too many there won't do any harm.
+The performance monitor implementation (including CTRL register behaviour)
+is just included in PPC v2 as an example, it's not truly part of the base.
+
+It's actually a somewhat misleading feature, but I'll leave that be for
+now: The precense of the register is not what the feature bit is used
+for, but instead it's used to determine if it contains the runlatch
+bit for idle reporting of the performance monitor. For alternative
+implementations, the register might still exist but the bit might have
+different meaning (or no meaning at all).
+
+For now, split it off and don't include it in CPU_FTR_PPCAS_ARCH_V2_BASE.
 
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
-Index: merge/arch/powerpc/kernel/setup_64.c
+Index: merge/include/asm-powerpc/cputable.h
 ===================================================================
---- merge.orig/arch/powerpc/kernel/setup_64.c
-+++ merge/arch/powerpc/kernel/setup_64.c
-@@ -78,10 +78,10 @@ u64 ppc64_pft_size;
-  * before we've read this from the device tree.
-  */
- struct ppc64_caches ppc64_caches = {
--	.dline_size = 0x80,
--	.log_dline_size = 7,
--	.iline_size = 0x80,
--	.log_iline_size = 7
-+	.dline_size = 0x40,
-+	.log_dline_size = 6,
-+	.iline_size = 0x40,
-+	.log_iline_size = 6
- };
- EXPORT_SYMBOL_GPL(ppc64_caches);
+--- merge.orig/include/asm-powerpc/cputable.h
++++ merge/include/asm-powerpc/cputable.h
+@@ -148,7 +148,7 @@ extern void do_cpu_ftr_fixups(unsigned l
  
-Index: merge/arch/powerpc/kernel/head_64.S
-===================================================================
---- merge.orig/arch/powerpc/kernel/head_64.S
-+++ merge/arch/powerpc/kernel/head_64.S
-@@ -1748,7 +1748,7 @@ _STATIC(__after_prom_start)
- _GLOBAL(copy_and_flush)
- 	addi	r5,r5,-8
- 	addi	r6,r6,-8
--4:	li	r0,16			/* Use the least common		*/
-+4:	li	r0,8			/* Use the smallest common	*/
- 					/* denominator cache line	*/
- 					/* size.  This results in	*/
- 					/* extra cache line flushes	*/
+ #define CPU_FTR_PPCAS_ARCH_V2_BASE (CPU_FTR_SLB | \
+ 					CPU_FTR_TLBIEL | CPU_FTR_NOEXECUTE | \
+-					CPU_FTR_NODSISRALIGN | CPU_FTR_CTRL)
++					CPU_FTR_NODSISRALIGN)
+ 
+ /* iSeries doesn't support large pages */
+ #ifdef CONFIG_PPC_ISERIES
+@@ -313,24 +313,25 @@ extern void do_cpu_ftr_fixups(unsigned l
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
+ #define CPU_FTRS_POWER4	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA)
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
++	    CPU_FTR_MMCRA)
+ #define CPU_FTRS_PPC970	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
+ #define CPU_FTRS_POWER5	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR)
+ #define CPU_FTRS_POWER6 (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_REAL_LE)
+ #define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+-	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+-	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
++	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
+ #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
+ #endif
