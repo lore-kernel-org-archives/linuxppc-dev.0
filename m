@@ -1,12 +1,14 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 71E2567B52
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:26:59 +1000 (EST)
-Date: Tue, 5 Sep 2006 12:26:13 -0500
+	by ozlabs.org (Postfix) with ESMTP id 555A267B54
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:27:39 +1000 (EST)
+Date: Tue, 5 Sep 2006 12:26:55 -0500
 From: Olof Johansson <olof@lixom.net>
 To: paulus@samba.org, anton@samba.org
-Subject: [0/5] powerpc: PA Semi PWRficient patches
-Message-ID: <20060905122613.4337bbaf@localhost.localdomain>
+Subject: [1/5] powerpc: Reduce default cacheline size to 64 bytes
+Message-ID: <20060905122655.6c7bc7e8@localhost.localdomain>
+In-Reply-To: <20060904175742.5472a6fa@localhost.localdomain>
+References: <20060904175742.5472a6fa@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -19,18 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-The following series of patches introduces basic support for PA Semi's
-PA6T core, and the base platform support for PWRficient PA6T-1682M.
-
-It is split up in 5 separate patches:
-
-1. Reduce default cacheline size to 64 bytes
-2. Divorce CPU_FTR_CTRL from CPU_FTR_PPCAS_ARCH_V2_BASE
-3. Cpu table entry, PVR value
-4. Basic arch/powerpc/platforms/pasemi contents
-5. MAINTAINER entry
+Reduce default cacheline size on 64-bit powerpc from 128 bytes to 64.
+This is the architected minimum. In most cases we'll still end up using
+cache line information from the device tree, but defaults are used during
+early boot and doing a few dcbst/icbi's too many there won't do any harm.
 
 
--Olof
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+Index: merge/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- merge.orig/arch/powerpc/kernel/setup_64.c
++++ merge/arch/powerpc/kernel/setup_64.c
+@@ -78,10 +78,10 @@ u64 ppc64_pft_size;
+  * before we've read this from the device tree.
+  */
+ struct ppc64_caches ppc64_caches = {
+-	.dline_size = 0x80,
+-	.log_dline_size = 7,
+-	.iline_size = 0x80,
+-	.log_iline_size = 7
++	.dline_size = 0x40,
++	.log_dline_size = 6,
++	.iline_size = 0x40,
++	.log_iline_size = 6
+ };
+ EXPORT_SYMBOL_GPL(ppc64_caches);
+ 
+Index: merge/arch/powerpc/kernel/head_64.S
+===================================================================
+--- merge.orig/arch/powerpc/kernel/head_64.S
++++ merge/arch/powerpc/kernel/head_64.S
+@@ -1748,7 +1748,7 @@ _STATIC(__after_prom_start)
+ _GLOBAL(copy_and_flush)
+ 	addi	r5,r5,-8
+ 	addi	r6,r6,-8
+-4:	li	r0,16			/* Use the least common		*/
++4:	li	r0,8			/* Use the smallest common	*/
+ 					/* denominator cache line	*/
+ 					/* size.  This results in	*/
+ 					/* extra cache line flushes	*/
