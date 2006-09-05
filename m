@@ -1,17 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4A0E267BB3
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 03:31:39 +1000 (EST)
-Date: Tue, 5 Sep 2006 12:30:55 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org, anton@samba.org
-Subject: [5/5] powerpc: PA Semi PWRficient MAINTAINER entry
-Message-ID: <20060905123055.2aefb83e@localhost.localdomain>
-In-Reply-To: <20060904175742.5472a6fa@localhost.localdomain>
+Return-Path: <mikey@ozlabs.org>
+To: Olof Johansson <olof@lixom.net>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [3/5] powerpc: PA6T cputable entry, PVR value 
+In-reply-to: <20060905122808.36c0c88d@localhost.localdomain> 
 References: <20060904175742.5472a6fa@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	<20060905122808.36c0c88d@localhost.localdomain>
+Date: Tue, 05 Sep 2006 13:43:26 -0500
+Sender: mikey@ozlabs.org
+Message-Id: <20060905184342.872B967B95@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Maintainer entry for PWRficient
+>  #define PV_630p	0x0041
+>  #define PV_970MP	0x0044
+>  #define PV_BE		0x0070
+> +#define	PV_PA6T		0x0090
+> +
+>  
+>  /*
+>   * Number of entries in the SLB. If this ever changes we should handle
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Should be a space not a tab after the #define.  Also extra new line is
+not required.
 
-Index: merge/MAINTAINERS
-===================================================================
---- merge.orig/MAINTAINERS
-+++ merge/MAINTAINERS
-@@ -1777,6 +1777,13 @@ W:     http://www.penguinppc.org/
- L:     linuxppc-embedded@ozlabs.org
- S:     Maintained
- 
-+LINUX FOR POWERPC PA SEMI PWRFICIENT
-+P:	Olof Johansson
-+M:	olof@lixom.net
-+W:	http://www.pasemi.com/
-+L:	linuxppc-dev@ozlabs.org
-+S:	Supported
-+
- LLC (802.2)
- P:	Arnaldo Carvalho de Melo
- M:	acme@conectiva.com.
+Mikey "White space king" Neuling
