@@ -3,20 +3,18 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DAEE367BB3
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2006 14:53:24 +1000 (EST)
-Subject: Re: [PATCH] Unwire set/get_robust_list
+	by ozlabs.org (Postfix) with ESMTP id 7821D67B9C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Sep 2006 15:07:59 +1000 (EST)
+Subject: Re: [POWERPC] merge iSeries i/o operations with the rest
 From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17660.48525.873588.173047@cargo.ozlabs.ibm.com>
-References: <jeodtvfn4x.fsf@sykes.suse.de>
-	<1157409148.2473.209.camel@shinybook.infradead.org>
-	<17660.48525.873588.173047@cargo.ozlabs.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20060905120817.e52857ee.sfr@canb.auug.org.au>
+References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
 Content-Type: text/plain
-Date: Mon, 04 Sep 2006 21:53:14 -0700
-Message-Id: <1157431994.2413.6.camel@shinybook.infradead.org>
+Date: Mon, 04 Sep 2006 22:07:50 -0700
+Message-Id: <1157432871.2413.9.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-05 at 09:58 +1000, Paul Mackerras wrote:
-> Don't we need an access_ok() test in there?  Otherwise, looks fine to
-> me. 
+On Tue, 2006-09-05 at 12:08 +1000, Stephen Rothwell wrote:
+> The low level i/o operations are now handled in iSeires by taking a
+> trap when we access the (inaccessible) io memory region and calling
+> the Hypervisor from the trap code.  
 
-Oops, good point. Like this then...
+There was some discussion of the possibility of using the 'alternatives'
+mechanism to patch the I/O instructions at run-time when we find we've
+booted on iSeries -- just turning each one into a jump to a trampoline
+which does the appropriate hypervisor calls, thus avoiding the overhead
+of the trap each time.
 
-Do we actually need the memory clobber, btw? We're not using this for
-locking in kernel space.
-
-[PATCH] Implement PowerPC futex_atomic_cmpxchg_inatomic().
-
-The sys_[gs]et_robust_list() syscalls were wired up on PowerPC but 
-didn't work correctly because futex_atomic_cmpxchg_inatomic() wasn't
-implemented. Implement it, based on __cmpxchg_u32()
-
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-
-diff --git a/include/asm-powerpc/futex.h b/include/asm-powerpc/futex.h
-index f1b3c00..936422e 100644
---- a/include/asm-powerpc/futex.h
-+++ b/include/asm-powerpc/futex.h
-@@ -84,7 +84,33 @@ static inline int futex_atomic_op_inuser
- static inline int
- futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
- {
--	return -ENOSYS;
-+	int prev;
-+
-+	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
-+		return -EFAULT;
-+
-+        __asm__ __volatile__ (
-+        LWSYNC_ON_SMP
-+"1:     lwarx   %0,0,%2         # futex_atomic_cmpxchg_inatomic\n\
-+        cmpw    0,%0,%3\n\
-+        bne-    3f\n"
-+        PPC405_ERR77(0,%2)
-+"2:     stwcx.  %4,0,%2\n\
-+        bne-    1b\n"
-+        ISYNC_ON_SMP
-+"3:	.section .fixup,\"ax\"\n\
-+4:	li	%0,%5\n\
-+	b	3b\n\
-+	.previous\n\
-+	.section __ex_table,\"a\"\n\
-+	.align 3\n\
-+	" PPC_LONG "1b,4b,2b,4b\n\
-+	.previous" \
-+        : "=&r" (prev), "+m" (*uaddr)
-+        : "r" (uaddr), "r" (oldval), "r" (newval), "i" (-EFAULT)
-+        : "cc", "memory");
-+
-+        return prev;
- }
- 
- #endif /* __KERNEL__ */
+Was that approach not viable, or not noticeably less of a performance
+hit on iSeries?
 
 -- 
 dwmw2
