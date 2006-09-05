@@ -1,18 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4A58167B6D
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 09:19:47 +1000 (EST)
-Date: Wed, 6 Sep 2006 09:19:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [POWERPC] merge iSeries i/o operations with the rest
-Message-Id: <20060906091939.89da6e4b.sfr@canb.auug.org.au>
-In-Reply-To: <20060905164146.GA7139@austin.ibm.com>
-References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
-	<20060905164146.GA7139@austin.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9D43467B75
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 09:48:47 +1000 (EST)
+Date: Tue, 5 Sep 2006 18:47:34 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org, anton@samba.org
+Subject: [patch 3/5] [v2] powerpc: PA6T cputable entry, PVR value
+Message-ID: <20060905184734.670dd6da@localhost.localdomain>
+In-Reply-To: <20060905184316.4c1a460b@localhost.localdomain>
+References: <20060905184316.4c1a460b@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +21,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linas,
+Introduce PWRficient PA6T cputable entries and feature bits.
 
-On Tue, 5 Sep 2006 11:41:46 -0500 linas@austin.ibm.com (Linas Vepstas) wrote:
->
-> On Tue, Sep 05, 2006 at 12:08:17PM +1000, Stephen Rothwell wrote:
-> > @@ -273,25 +234,30 @@ #define iobarrier_w()  eieio()
-> > + *
-> > + * For some of these, we force the target/source register to be
-> > + * r0 to ease decoding on iSeries.
-> 
-> ???
-> Why?
 
-Because we were considering runtime patching of the i/o instruction on
-iSeries and it seemed it would be simpler.  I have a new patch (coming
-soon) the removes the forcing of r0.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-> > -	int ret;
-> > +	register unsigned int ret __asm__("r0");
-> 
-> Such as here .. why is this being forced ??
-
-See above.
-
-> > -	__asm__ __volatile__("lbz%U1%X1 %0,%1; twi 0,%0,0; isync"
-> > -			     : "=r" (ret) : "m" (*addr));
-> > +	__asm__ __volatile__("lbzx %0,0,%1; twi 0,%0,0; isync"
-> > +			     : "=r" (ret) : "r" (addr));
-> 
-> Why make this change? The old code allows the compiler to optimize
-> better than the new code.  One might argue that, in the grand scheme of
-> things, i/o is very slow, so a few cycles here doesn't matter much.
-> But still, I don't understand why this change is needed.
-
-Because the original could produce any of 4 (?) different instructions
-that we would have to emulate.   Interestingly the change actually made
-my pSeries kernel slightly smaller (though I don't know if it was more or
-less efficient).  But I will think a bit more about this.
-
-> > +static inline void memset_io(volatile void __iomem *addr, int c,
-> > +                                 unsigned long n)
-> > +{
-> > +	if (firmware_has_feature(FW_FEATURE_ISERIES))
-> > +		iSeries_memset_io(addr, c, n);
-> > +	else
-> > +		eeh_memset_io(addr, c, n);
-> > +}
-> 
-> !! I think it would be much better to have this be a compile-time
-> check rather than a run-time check. No only does it save cycles, 
-> but it makes the iSeries kernel smaller (by not needing eeh code 
-> in it) and the p-series code smaller (by not compiling iseries
-> code into it.
-
-On a kernel built for only iSeries, firmware_has_feature(FW_FEATURE_ISERIES)
-evaluates to a compile time 1 so the eeh code is not required as the
-compiler elides the call.  Similarly, on a kernel that does not include
-iSeries support at all, firmware_has_feature(FW_FEATURE_ISERIES)
-evaluates to a compiler time 0, so the iSeries code is not required. The
-only time this is a run time check is if you compile a MULTIPLATFORM
-kernel incluing iSeries support (which is currently impossible but is
-what we are aiming for as a possibility).
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Index: merge/arch/powerpc/kernel/cputable.c
+===================================================================
+--- merge.orig/arch/powerpc/kernel/cputable.c
++++ merge/arch/powerpc/kernel/cputable.c
+@@ -58,6 +58,9 @@ extern void __restore_cpu_ppc970(void);
+ #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
+ 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
+ 				 PPC_FEATURE_TRUE_LE)
++#define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
++				 PPC_FEATURE_TRUE_LE | \
++				 PPC_FEATURE_HAS_ALTIVEC_COMP)
+ #define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
+ 				 PPC_FEATURE_BOOKE)
+ 
+@@ -286,6 +289,17 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.platform		= "ppc-cell-be",
+ 	},
++	{	/* PA Semi PA6T */
++		.pvr_mask		= 0x7fff0000,
++		.pvr_value		= 0x00900000,
++		.cpu_name		= "PA6T",
++		.cpu_features		= CPU_FTRS_PA6T,
++		.cpu_user_features	= COMMON_USER_PA6T,
++		.icache_bsize		= 64,
++		.dcache_bsize		= 64,
++		.num_pmcs		= 6,
++		.platform		= "pa6t",
++	},
+ 	{	/* default match */
+ 		.pvr_mask		= 0x00000000,
+ 		.pvr_value		= 0x00000000,
+Index: merge/include/asm-powerpc/reg.h
+===================================================================
+--- merge.orig/include/asm-powerpc/reg.h
++++ merge/include/asm-powerpc/reg.h
+@@ -592,6 +592,7 @@
+ #define PV_630p	0x0041
+ #define PV_970MP	0x0044
+ #define PV_BE		0x0070
++#define PV_PA6T		0x0090
+ 
+ /*
+  * Number of entries in the SLB. If this ever changes we should handle
+Index: merge/include/asm-powerpc/cputable.h
+===================================================================
+--- merge.orig/include/asm-powerpc/cputable.h
++++ merge/include/asm-powerpc/cputable.h
+@@ -23,6 +23,7 @@
+ #define PPC_FEATURE_SMT			0x00004000
+ #define PPC_FEATURE_ICACHE_SNOOP	0x00002000
+ #define PPC_FEATURE_ARCH_2_05		0x00001000
++#define PPC_FEATURE_PA6T		0x00000800
+ 
+ #define PPC_FEATURE_TRUE_LE		0x00000002
+ #define PPC_FEATURE_PPC_LE		0x00000001
+@@ -332,6 +333,10 @@ extern void do_cpu_ftr_fixups(unsigned l
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
++#define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
++	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
++	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
+ #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
+ #endif
+@@ -340,7 +345,7 @@ extern void do_cpu_ftr_fixups(unsigned l
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+ 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+-	    CPU_FTRS_CELL | CPU_FTR_CI_LARGE_PAGE)
++	    CPU_FTRS_CELL | CPU_FTRS_PA6T)
+ #else
+ enum {
+ 	CPU_FTRS_POSSIBLE =
+@@ -379,7 +384,7 @@ enum {
+ #define CPU_FTRS_ALWAYS		\
+ 	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
+ 	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
+-	    CPU_FTRS_CELL & CPU_FTRS_POSSIBLE)
++	    CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
+ #else
+ enum {
+ 	CPU_FTRS_ALWAYS =
