@@ -1,20 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6092C67B86
+Return-Path: <alievsky@businessaccelerators.ca>
+Received: from web88303.mail.re4.yahoo.com (web88303.mail.re4.yahoo.com
+	[216.39.53.226]) by ozlabs.org (Postfix) with SMTP id B011F67B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Sep 2006 01:39:28 +1000 (EST)
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [U-Boot-Users] OT: Re: Status of OF in TQM8540 and
-	linux-2.6.17.11
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 05 Sep 2006 19:06:08 +0400."
-	<20060905190608.082331bc@vitb.ru.mvista.com>
-Date: Tue, 05 Sep 2006 17:39:25 +0200
-Sender: wd@denx.de
-Message-Id: <20060905153925.F1384353A15@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  6 Sep 2006 02:20:41 +1000 (EST)
+Message-ID: <20060905161400.87805.qmail@web88303.mail.re4.yahoo.com>
+Date: Tue, 5 Sep 2006 12:14:00 -0400 (EDT)
+From: Michael Alievsky <alievsky@businessaccelerators.ca>
+Subject: Yosemite board w/ppc440ep NETDEV WATCHDOG: eth0: transmit timed out
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Reply-To: alievsky@businessaccelerators.ca
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,30 +21,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20060905190608.082331bc@vitb.ru.mvista.com> you wrote:
->
-> Clemens Koller <clemens.koller@anagramm.de> wrote:
-...
-> > According to TQC, the latest "working" kernel was a 2.6.15-git from your
-> > (denx) tree. I get the details from Mr. Becher@TQC and see how far I can get.
+Hi Rocky,
 
-[TQ provides obsolete information.]
+We have experienced absolutely the same problem with the Yosemite board.
+The problem is releated to the simultanious recieve on both Ethernet ports.
 
+Did you get more information about the problem?
 
-> The upper defines need to reside in the board-specific code for tqm as well as for other boards
-> utilizing such scheme (see platforms/85xx/mpc85xx_ads_common.h for instance).
-
-Thanks for pointing out.
-
-Clemens, plese try again (commit id cd4ebbc9b95434977e5f182b9a22d7d1de0748ce)
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Where shall I begin, please your Majesty?" he asked. "Begin  at  the
-beginning,"  the  King said, gravely, "and go on till you come to the
-end: then stop."    - Alice's Adventures in Wonderland, Lewis Carroll
+Regards,
+Michael Alievsky
