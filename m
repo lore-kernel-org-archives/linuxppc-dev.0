@@ -1,24 +1,20 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
-	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8176C67BA6
+Return-Path: <hlrprasad@tataelxsi.co.in>
+Received: from mail.tataelxsi.co.in (mail.tataelxsi.co.in [203.200.1.48])
+	(using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
+	(Client CN "myname.my.domain",
+	Issuer "www.mirapoint.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EF54167B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Sep 2006 08:56:11 +1000 (EST)
-Received: from slip-12-65-222-48.mis.prserv.net ([12.65.222.48]:1141)
-	by mx.dlasys.net with esmtpa (Exim 4.62 #1 (Debian))
-	id 1GKMsm-0004Pt-IF by authid <dhlii> with plain_server
-	for <linuxppc-embedded@ozlabs.org>; Mon, 04 Sep 2006 18:25:36 -0400
-Message-ID: <44FCA93E.1000009@dlasys.net>
-Date: Mon, 04 Sep 2006 18:31:26 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Tue,  5 Sep 2006 16:35:35 +1000 (EST)
+From: Ram Prasad H L <hlrprasad@tataelxsi.co.in>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: MPC5200B - FEC Error
+Date: Tue, 5 Sep 2006 12:00:00 +0530
+Message-ID: <000201c6d0b4$b6d08f50$4129320a@telxsi.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: MAC driver issues
-References: <405ECA8A30557F439A723E52D50838F9D829C6@ZMY16EXM66.ds.mot.com>
-	<Pine.LNX.4.60.0609042336020.5921@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0609042336020.5921@poirot.grange>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Reply-To: Ram Prasad H L <hlrprasad@tataelxsi.co.in>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,48 +25,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am trying to get a network driver working.
+hi all,
+	this is Ramprasad, and we are using freescale's Lite5200B
+using MPC5200B as core, for one of our applications.
+The board is booted with u-boot-1.2.2 and linux kernel 2.4.25.
 
-It sends - I can capture the output with Etherreal and it looks good.
-It receives - I can dump the received packets when the come in and they 
-look ok to me.
+	I'm finding a very peculiar problem with the board when I
+run my application which extensively uses the FEC for receiving
+video and audio streams from network. The application runs fine for
+some time say 2-3 hrs and suddenly i'm getting the following error
+and the OS starts rebooting.
+
+The error log looks somewhat like this:
+
+NIP: C0124ECC XER: 00000000 LR: C0125028 SP: C01B6270 REGS: c01b61c0 TRAP:
+0300    Not tainted
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 000000F0, DSISR: 20000000
+TASK = c01b4470[0] 'swapper' Last syscall: 120
+last math c228a000 last altivec 00000000
+GPR00: 000000F0 C01B6270 C01B4470 00001032 00001032 00000006 C0C11034
+C3C61CC0
+GPR08: 0000003F 00000000 C01CE9F8 C01CEAD0 00000002 1012A714 03FBA000
+00000000
+GPR16: 00000001 00000001 FFFFFFFF 007FFF00 00001032 C3F93000 C0210000
+00000000
+GPR24: C3C06012 00000045 C01E0000 C0BE1320 0000054E C01CE9E0 C01CEA08
+C3CA9A20
+Call backtrace:
+C0125528 C011AF0C C0006CD8 C0006D98 C0005C40 C00072C8 C00072E4
+C0003918 C01CF5B8 000035F0
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+panic: Aiee, killing interrupt handler!
+In interrupt handler - not syncing
+ <0>Rebooting in 180 seconds..<4>MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+mpc5xxx_fec_reinit
 
 
-BUT,
-    If I try to ping another host, first Linux sends and ARP broadcast, 
-the appropriate client sends an ARP response.
-    Etherreal is happy with both.
-    My driver gets the response - The driver says the packet lenght is 
-64 bytes, which includes something like 14 bytes of padding at the end.
-    But the actual packet looks perfect exactly like what etherreal says 
-it should (and what I get when I capture a received ARP packet in 
-another driver).
-    At the end of the recive interrupt the skb is passed to Linux with 
-the netif_rc(ndev) function. This returns SUCCESS.
+	Can anyone tell me what is the reason to face such
+an error? and how can we avoid this error? any pointers
+for overcoming it will be really helpfull as I'm stuck with
+this problem since long time.
 
-    However, the paket never gets handed of to the ARP protocol - I put 
-some debugging in there and I never see it, while if I switch to a 
-different  NIC
-    driver nearly the identical ARP packet gets processed by arp inside 
-Linux.
+thanks and regards,
 
-    I have tried to chase this down, but I can't  follow what is going 
-on inside of all the /net/core/dev.c etc.
-
-    Has anyone seen something similar to this ?
-
-    Does anyone have a clue where I can find some info  on trying to 
-follow something through netif_rx to see where things are going off the 
-rails ?
-
-
-
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+Ramprasad H L
