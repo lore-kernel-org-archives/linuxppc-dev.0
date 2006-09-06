@@ -1,18 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 96D7A67B8A
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 09:48:50 +1000 (EST)
-Date: Tue, 5 Sep 2006 18:47:31 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org, anton@samba.org
-Subject: [patch 2/5] [v2] powerpc: Divorce CPU_FTR_CTRL from
-	CPU_FTR_PPCAS_ARCH_V2_BASE
-Message-ID: <20060905184731.6a8f3edf@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [patch 0/5] [v2] powerpc: PA Semi PWRficient patches
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Olof Johansson <olof@lixom.net>
 In-Reply-To: <20060905184316.4c1a460b@localhost.localdomain>
 References: <20060905184316.4c1a460b@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-8iHCqDd5sRXAhRIvl8zB"
+Date: Wed, 06 Sep 2006 10:17:48 +1000
+Message-Id: <1157501868.3661.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The performance monitor implementation (including CTRL register behaviour)
-is just included in PPC v2 as an example, it's not truly part of the base.
 
-It's actually a somewhat misleading feature, but I'll leave that be for
-now: The precense of the register is not what the feature bit is used
-for, but instead it's used to determine if it contains the runlatch
-bit for idle reporting of the performance monitor. For alternative
-implementations, the register might still exist but the bit might have
-different meaning (or no meaning at all).
+--=-8iHCqDd5sRXAhRIvl8zB
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-For now, split it off and don't include it in CPU_FTR_PPCAS_ARCH_V2_BASE.
+On Tue, 2006-09-05 at 18:43 -0500, Olof Johansson wrote:
+> Hi,
+>=20
+> The following series of patches introduces basic support for PA Semi's
+> PA6T core, and the base platform support for PWRficient PA6T-1682M.
 
+I have a spare 'o' and 'e' over here if you want 'em?
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+;)
 
-Index: merge/include/asm-powerpc/cputable.h
-===================================================================
---- merge.orig/include/asm-powerpc/cputable.h
-+++ merge/include/asm-powerpc/cputable.h
-@@ -148,7 +148,7 @@ extern void do_cpu_ftr_fixups(unsigned l
- 
- #define CPU_FTR_PPCAS_ARCH_V2_BASE (CPU_FTR_SLB | \
- 					CPU_FTR_TLBIEL | CPU_FTR_NOEXECUTE | \
--					CPU_FTR_NODSISRALIGN | CPU_FTR_CTRL)
-+					CPU_FTR_NODSISRALIGN)
- 
- /* iSeries doesn't support large pages */
- #ifdef CONFIG_PPC_ISERIES
-@@ -313,24 +313,25 @@ extern void do_cpu_ftr_fixups(unsigned l
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
- 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
- #define CPU_FTRS_POWER4	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA)
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_MMCRA)
- #define CPU_FTRS_PPC970	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
- #define CPU_FTRS_POWER5	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR)
- #define CPU_FTRS_POWER6 (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_REAL_LE)
- #define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
--	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
-+	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
- #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
- #endif
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-8iHCqDd5sRXAhRIvl8zB
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBE/hOsdSjSd0sB4dIRAiR5AJ9Wxq+ke9nE4fSRk3ng50U1abtReACdHiqp
+X3eLt/GBdhUl0uMP/wWHmQs=
+=0K7s
+-----END PGP SIGNATURE-----
+
+--=-8iHCqDd5sRXAhRIvl8zB--
