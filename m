@@ -1,16 +1,34 @@
-Return-Path: <minyard@acm.org>
-Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [204.127.200.83])
-	by ozlabs.org (Postfix) with ESMTP id 22AD067B78
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 00:06:17 +1000 (EST)
-Date: Wed, 6 Sep 2006 09:02:53 -0500
-From: Corey Minyard <minyard@acm.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Make function of pm_power_off consistent with x86
-Message-ID: <20060906140253.GA7006@localdomain>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 17F1967B79
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 00:11:33 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate5.uk.ibm.com (8.13.7/8.13.7) with ESMTP id k86EBTrW143882
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 14:11:29 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k86EDZKW1630218
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 15:13:35 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k86EBTpi010193
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 15:11:29 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [2.6.19 PATCH 0/7] ehea: IBM eHEA Ethernet Device Driver
+Date: Wed, 6 Sep 2006 15:29:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: jbarnett@motorola.com
-Reply-To: minyard@acm.org
+To: netdev <netdev@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200609061529.05632.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,48 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Allow the pm_power_off function variable in PPC to work as an override.
-This makes the function consistent with the other architectures and it
-allows generic poweroff operations (like those provided in IPMI
-systems) to work properly on PPC.
+this is the latest version of the IBM eHEA Ethernet Device Driver.
+We integrated the comment we got from Francois Romieu.
 
-Signed-off-by: Corey Minyard <minyard@acm.org>
-Cc: Joseph Barnett <jbarnett@motorola.com>
+Thanks,
+Jan-Bernd
 
-Index: linux-2.6.17/arch/ppc/kernel/setup.c
-===================================================================
---- linux-2.6.17.orig/arch/ppc/kernel/setup.c
-+++ linux-2.6.17/arch/ppc/kernel/setup.c
-@@ -128,11 +128,8 @@ void machine_restart(char *cmd)
- 	ppc_md.restart(cmd);
- }
- 
--void machine_power_off(void)
-+static void ppc_generic_power_off(void)
- {
--#ifdef CONFIG_NVRAM
--	nvram_sync();
--#endif
- 	ppc_md.power_off();
- }
- 
-@@ -144,7 +141,17 @@ void machine_halt(void)
- 	ppc_md.halt();
- }
- 
--void (*pm_power_off)(void) = machine_power_off;
-+void (*pm_power_off)(void) = ppc_generic_power_off;
-+
-+void machine_power_off(void)
-+{
-+#ifdef CONFIG_NVRAM
-+	nvram_sync();
-+#endif
-+	if (pm_power_off)
-+		pm_power_off();
-+	ppc_generic_power_off();
-+}
- 
- #ifdef CONFIG_TAU
- extern u32 cpu_temp(unsigned long cpu);
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>=20
+Changelog-by: =A0Jan-Bernd Themann <themann@de.ibm.com>
+
+Differences to patch set http://www.spinics.net/lists/netdev/msg13972.html
+
+Changelog:
+=2D replace dev_alloc_skb by netdev_alloc_skb
+=2D goto target naming rework
+=2D minor coding style issues
+
+
+ drivers/net/Kconfig             |    9=20
+ drivers/net/Makefile            |    1=20
+ drivers/net/ehea/Makefile       |    6=20
+ drivers/net/ehea/ehea.h         |  443 ++++++
+ drivers/net/ehea/ehea_ethtool.c |  294 ++++
+ drivers/net/ehea/ehea_hcall.h   |   51=20
+ drivers/net/ehea/ehea_hw.h      |  290 ++++
+ drivers/net/ehea/ehea_main.c    | 2686 +++++++++++++++++++++++++++++++++++=
++++++
+ drivers/net/ehea/ehea_phyp.c    |  705 ++++++++++
+ drivers/net/ehea/ehea_phyp.h    |  454 ++++++
+ drivers/net/ehea/ehea_qmr.c     |  604 ++++++++
+ drivers/net/ehea/ehea_qmr.h     |  362 +++++
+ 12 files changed, 5905 insertions(+)
