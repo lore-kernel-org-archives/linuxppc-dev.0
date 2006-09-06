@@ -1,25 +1,24 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6542C67BE7
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 01:22:27 +1000 (EST)
-Message-ID: <44FEE7A8.1050904@garzik.org>
-Date: Wed, 06 Sep 2006 11:22:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [2.6.19 PATCH 1/7] ehea: interface to network stack
-References: <200609041237.46528.ossthema@de.ibm.com>
-	<20060904201606.GA24386@electric-eye.fr.zoreil.com>
-	<200609042311.21202.arnd@arndb.de>
-In-Reply-To: <200609042311.21202.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>, Francois Romieu <romieu@fr.zoreil.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5537267B71
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 01:27:05 +1000 (EST)
+In-Reply-To: <20060906101034.404014f7@localhost.localdomain>
+References: <20060904175742.5472a6fa@localhost.localdomain>
+	<20060905122956.2cebd36d@localhost.localdomain>
+	<0C880511-D99D-4160-9EB1-A66B22B2D82F@kernel.crashing.org>
+	<20060906101034.404014f7@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E2C62E02-AB23-451F-8A82-718A13B675BE@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [4/5] powerpc: PA Semi PWRficient platform support
+Date: Wed, 6 Sep 2006 17:26:02 +0200
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> Am Monday 04 September 2006 22:16 schrieb Francois Romieu:
->>> +#include "ehea.h"
->>> +#include "ehea_qmr.h"
->>> +#include "ehea_phyp.h"
->> Afaik none of those is included in this patch nor in my 2.6.18-git tree.
-> 
-> 
-> They are in 5, 3 and 2, respectively
-> 
->> Happy bissect in sight.
-> 
-> The driver should get merged as a single commit anyway, even
-> if split diffs are posted for review. Even if it gets merged
-> like this, bisect will work since the Kconfig option is added
-> in the final patch.
+>> Very nice, I'll convert maple to do the same (unless someone beats
+>> me to it, heh).
+>
+> Maple isn't that different there. It just has to deal with multiple  
+> ISUs,
+> while we currently only have one.
 
-That's impossible, in the form they were submitted...
+Maple has only one as well, that's the point :-)
+It gets the ISU address from that awful platform-open-pic
+property currently, hardcoding it like you did for PA6T is
+just fine though.  It simplifies the code quite a bit and
+doesn't depend on this undocumented (and badly defined no
+matter what) device tree property.
+
+
+Segher
