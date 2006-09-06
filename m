@@ -1,24 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5537267B71
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 01:27:05 +1000 (EST)
-In-Reply-To: <20060906101034.404014f7@localhost.localdomain>
-References: <20060904175742.5472a6fa@localhost.localdomain>
-	<20060905122956.2cebd36d@localhost.localdomain>
-	<0C880511-D99D-4160-9EB1-A66B22B2D82F@kernel.crashing.org>
-	<20060906101034.404014f7@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E2C62E02-AB23-451F-8A82-718A13B675BE@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [4/5] powerpc: PA Semi PWRficient platform support
-Date: Wed, 6 Sep 2006 17:26:02 +0200
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 6 Sep 2006 11:14:02 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: common flatdevtree code
+Message-ID: <20060906181402.GB4129@mag.az.mvista.com>
+References: <20060831184020.GA13494@mag.az.mvista.com>
+	<17662.17895.852128.729679@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17662.17895.852128.729679@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Very nice, I'll convert maple to do the same (unless someone beats
->> me to it, heh).
->
-> Maple isn't that different there. It just has to deal with multiple  
-> ISUs,
-> while we currently only have one.
+On Wed, Sep 06, 2006 at 01:52:07PM +1000, Paul Mackerras wrote:
 
-Maple has only one as well, that's the point :-)
-It gets the ISU address from that awful platform-open-pic
-property currently, hardcoding it like you did for PA6T is
-just fine though.  It simplifies the code quite a bit and
-doesn't depend on this undocumented (and badly defined no
-matter what) device tree property.
+Hi Paul,
 
+> Mark A. Greer writes:
+> 
+> > I'm doing some fairly massive rework to my patches so it'll take
+> > another day or two (plus 4 day weekend for me).  In the meantime,
+> > this is what I've done to your code.  :)
+> 
+> Any further progress on this?  I need an ft library for the prep
+> bootwrapper changes I'm planning.
 
-Segher
+Yes, I'm preparing patches right now (need a few more hours though).
+
+> I don't like the approach of doing a malloc for the whole blob every
+> time you make a property larger though.  I'm going to be adding quite
+> a few nodes and properties, potentially, and with a simple-minded
+> malloc (such as you get in a bootwrapper) it's likely to chew through
+> a lot of memory unnecessarily.  I would rather be able to start with
+> an existing blob and pull it apart once, add stuff to it, then put it
+> back together, doing a small number of mallocs in the process.
+
+Yes, we definitely need a smarter approach.  I'll post the patches of
+what I have now and we can go from there.
+
+> > I still plan on changing it a bit to use ft_next in a few more routines
+> > (e.g., ft_dump_blob).  ft_next has a clumsy interface but I like the fact
+> 
+> The interface might look nicer if we had a structure for the tag,
+> name, value and length.  Then there would only be one parameter
+> instead of the four you have at the moment.
+
+That's a good idea.  I'll do that before posting the patches.
+
+Mark
