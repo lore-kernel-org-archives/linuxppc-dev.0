@@ -1,17 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] kdump : Support kernels having 64k page size.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-In-Reply-To: <44FE15B0.3030909@in.ibm.com>
-References: <44FE15B0.3030909@in.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-eBWmxWC3m8tdHB2JNG/2"
-Date: Wed, 06 Sep 2006 12:59:37 +1000
-Message-Id: <1157511577.3661.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17662.17895.852128.729679@cargo.ozlabs.ibm.com>
+Date: Wed, 6 Sep 2006 13:52:07 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: common flatdevtree code
+In-Reply-To: <20060831184020.GA13494@mag.az.mvista.com>
+References: <20060831184020.GA13494@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Mark A. Greer writes:
 
---=-eBWmxWC3m8tdHB2JNG/2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I'm doing some fairly massive rework to my patches so it'll take
+> another day or two (plus 4 day weekend for me).  In the meantime,
+> this is what I've done to your code.  :)
 
-On Wed, 2006-09-06 at 05:56 +0530, Sachin P. Sant wrote:
-> The following  kernel patch [ along with a patch to kexec tools posted=20
-> seperately ]
-> is required to generate proper core files using kdump on ppc64.
+Any further progress on this?  I need an ft library for the prep
+bootwrapper changes I'm planning.
 
-Hi Sachin,
+I don't like the approach of doing a malloc for the whole blob every
+time you make a property larger though.  I'm going to be adding quite
+a few nodes and properties, potentially, and with a simple-minded
+malloc (such as you get in a bootwrapper) it's likely to chew through
+a lot of memory unnecessarily.  I would rather be able to start with
+an existing blob and pull it apart once, add stuff to it, then put it
+back together, doing a small number of mallocs in the process.
 
-Can you provide some more explanation? It's not clear to me why this is
-necessary.
+> I still plan on changing it a bit to use ft_next in a few more routines
+> (e.g., ft_dump_blob).  ft_next has a clumsy interface but I like the fact
 
-thanks
+The interface might look nicer if we had a structure for the tag,
+name, value and length.  Then there would only be one parameter
+instead of the four you have at the moment.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-eBWmxWC3m8tdHB2JNG/2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBE/jmZdSjSd0sB4dIRAkwsAJ4qERUb7cGaMuBISZeYlP4eXVlkRwCcD570
-iMCtqlmEci9OulzeX17bvYk=
-=K7WK
------END PGP SIGNATURE-----
-
---=-eBWmxWC3m8tdHB2JNG/2--
+Paul.
