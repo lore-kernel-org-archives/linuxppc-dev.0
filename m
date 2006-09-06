@@ -1,39 +1,14 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 54B2067B8E
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 06:39:44 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k86KdeZ6026073
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 16:39:40 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k86Kdesb288812
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 16:39:40 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k86Kddau002643
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 16:39:40 -0400
-Date: Wed, 6 Sep 2006 15:39:39 -0500
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: pci error recovery procedure
-Message-ID: <20060906203939.GM7139@austin.ibm.com>
-References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
-	<20060831175001.GE8704@austin.ibm.com>
-	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
-	<20060901212548.GS8704@austin.ibm.com>
-	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
-	<20060905191739.GF7139@austin.ibm.com>
-	<1157508270.20092.426.camel@ymzhang-perf.sh.intel.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1157508270.20092.426.camel@ymzhang-perf.sh.intel.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org,
-	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-	Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-	Rajesh Shah <rajesh.shah@intel.com>
+Message-ID: <17663.20973.922238.823386@cargo.ozlabs.ibm.com>
+Date: Thu, 7 Sep 2006 08:55:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Josh Boyer <jdub@us.ibm.com>
+Subject: Re: [PATCH] PPC 4xx: Enable XMON on PPC 4xx boards
+In-Reply-To: <1157569083.6098.29.camel@zod.rchland.ibm.com>
+References: <1157569083.6098.29.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mporter@embeddedalley.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,95 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 06, 2006 at 10:04:31AM +0800, Zhang, Yanmin wrote:
-> On Wed, 2006-09-06 at 03:17, Linas Vepstas wrote:
-> > On Mon, Sep 04, 2006 at 01:47:30PM +0800, Zhang, Yanmin wrote:
-> > > > 
-> > > > Again, consider the multi-function cards. On pSeries, I can  only enable 
-> > > > DMA on a per-slot basis, not a per-function basis. So if one driver
-> > > > enables DMA before some other driver has reset appropriately, everything
-> > > > breaks.
-> > > Does here 'reset' mean hardware slot reset? 
-> > 
-> > I should have said: If one driver of a multi-function card enables DMA before 
-> > another driver has stabilized its harware, then everything breaks.
-> What's another driver's hardware? A function of the previous multi-function
-> card? Or a function of another device?
+Josh Boyer writes:
 
-Yes. Either. Both. Doesn't matter.  Enabling DMA is "granular" at a 
-different size scale than pci functions, and possibly even pci devices 
-or slots, dependeing on the architecture. Before DMA can be enabled, 
-*all* affected device drivers have to be approve, and have to be ready
-for it. 
+> -		excp->msr |= 0x400;
+> +		excp->msr |= MSR_SSTEP_ENABLE;
+> +#ifdef CONFIG_4xx
+> +		mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
+> +#endif
+>  	} else if (at_breakpoint(excp->nip)) {
+>  		xmon_trace[smp_processor_id()] = BRSTEP;
+> -		excp->msr |= 0x400;
+> +		excp->msr |= MSR_SSTEP_ENABLE;
+> +#ifdef CONFIG_4xx
+> +		mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
+> +#endif
 
-> > If we enabled both DMA and MMIO at the same time, there are many cases
-> > where the card will immediately trap again -- for example, if its
-> > DMA'ing to some crazy address. Thus, typically, one wants DMA disabled 
-> > until after the card reset.  Without the mmio_enabled() reset, there
-> > is no way of doing this.
->
-> Did you asume the card reset is executed by callback mmio_enabled?
+This would be neater with a little inline xmon_enable_sstep(excp)
+function...
 
-I am assuming that, when a driver receives the mmio_enabled() callback,
-it will perform some sort of register i/o.  For example, I am currently
-planning to modify the e1000 driver to do the following:
+Other than that, looks fine.
 
--- The error_occurred() callback returns PCI_ERS_RESULT_CAN_RECOVER
--- The arch enables mmio, and then calls the mmio_enabled() callback.
--- The mmio_enabled() callback in the driver takes a full dump of all 
-   of the regsters on the card.  It then returns PCI_ERS_RESULT_NEED_RESET
--- The arch performs the full electrical #RST of device. Recovery from
-   this point proceeds as before.
-
-> > Again, consider the multi-function cards. On pSeries, I can only enable 
-> > DMA on a per-slot basis, not a per-function basis. So if one driver
-> > enables DMA before some other driver has reset appropriately, everything
-> > breaks.
->
-> What does 'I' above stand for? The platform error recovery procedure
-
-Yes. The pSeries platform error recovery procedure can only enable DMA
-on a per-slot basis.
-
-> I guess it means platform, that is,
-> only platform enables DMA for the whole slot. 
-
-Yes.
-
-> But why does the last sentence
-> become driver enables DMA? 
-
-In your proposal, you were suggesting that MMIO and DMA be enabled with 
-one and the same routine, and I was attempting to explain why that can't
-work.
-
-> Could driver enable DMA for a function?
-
-No, not on pSeries hardware.
-
-> > > If mmio_enabled is not used currently, I think we could delete it firstly. Later on,
-> > > if a platform really need it, we could add it, so we could keep the simplied codes.
-> > 
-> > It would be very difficult to add it later. And it would be especially
-> > silly, given that someone would find this discussion in the mailing list 
-> > archives.
-> You stick to keep mmio_enabled which is not used currently, but if there will be
-> a new platform who uses a more fine-grained steps to recover pci/pci-e, would
-> you say 'it would be very difficut' and refuse add new callbacks?
-
-Yes. 
-
-> It doesn't prevent software from merging some steps. And, we want
-> to implement pci/pci-e error recovery for more platforms instead of just
-> pSeries.
-
-Yes. The API was designed so that it could be supported on every
-current and future platform we could think of. You haven't yet
-claimed that "pci-e can't be supported".  Based on what 
-I understand, changing the API wouldn't make the implementation 
-any easier. (It is very easy to call a callback, and then 
-examine its return value. Removing a few callbacks does not
-materially simplify the recovery mechanism. Managing these
-callbacks is *not* the hard part of implementing this thing.)
-
---linas
+Paul.
