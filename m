@@ -1,25 +1,25 @@
 Return-Path: <yanmin_zhang@linux.intel.com>
-Received: from orsmga101.jf.intel.com (mga06.intel.com [134.134.136.21])
-	by ozlabs.org (Postfix) with ESMTP id 211A967B97
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 11:37:18 +1000 (EST)
+Received: from fmsmga101.fm.intel.com (mga05.intel.com [192.55.52.89])
+	by ozlabs.org (Postfix) with ESMTP id 8CBC967B98
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 12:16:10 +1000 (EST)
 Subject: Re: pci error recovery procedure
 From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20060905185020.GD7139@austin.ibm.com>
+In-Reply-To: <20060905191739.GF7139@austin.ibm.com>
 References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
 	<20060831175001.GE8704@austin.ibm.com>
 	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
 	<20060901212548.GS8704@austin.ibm.com>
 	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
-	<1157360592.22705.46.camel@localhost.localdomain>
-	<20060905185020.GD7139@austin.ibm.com>
+	<20060905191739.GF7139@austin.ibm.com>
 Content-Type: text/plain
-Message-Id: <1157506521.20092.395.camel@ymzhang-perf.sh.intel.com>
+Message-Id: <1157508270.20092.426.camel@ymzhang-perf.sh.intel.com>
 Mime-Version: 1.0
-Date: Wed, 06 Sep 2006 09:35:21 +0800
-Cc: Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-	Rajesh Shah <rajesh.shah@intel.com>, linuxppc-dev@ozlabs.org,
-	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>
+Date: Wed, 06 Sep 2006 10:04:31 +0800
+Cc: linuxppc-dev@ozlabs.org,
+	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
+	Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+	Rajesh Shah <rajesh.shah@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,39 +29,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-09-06 at 02:50, Linas Vepstas wrote:
-> On Mon, Sep 04, 2006 at 07:03:12PM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > > As you know, all functions of a device share the same bus number and 5 bit dev number.
-> > > They just have different 3 bit function number. We could deduce if functions are in the same
-> > > device (slot).
-> > 
-> > Until you have a P2P bridge ...
+On Wed, 2006-09-06 at 03:17, Linas Vepstas wrote:
+> On Mon, Sep 04, 2006 at 01:47:30PM +0800, Zhang, Yanmin wrote:
+> > > 
+> > > Again, consider the multi-function cards. On pSeries, I can  only enable 
+> > > DMA on a per-slot basis, not a per-function basis. So if one driver
+> > > enables DMA before some other driver has reset appropriately, everything
+> > > breaks.
+> > Does here 'reset' mean hardware slot reset? 
 > 
-> And this is not theoretical: for example, the matrox graphics cards:
-> 
-> 0000:c8:01.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (non-transparent mode) (rev 13)
-> 0000:c9:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G400 AGP (rev 85)
-> 
-> Now, I could have sworn there was another device behind this bridge, 
-> some serial or joystick controller or something, although this
-> particular card doesn't seem to have it.
-Thanks. My comments above in this email is just to try to find a method
-to judge if 2 or more functions belongs to the same device. If it's
-not right, it still doesn't hurt the new API pci_error_handlers.
+> I should have said: If one driver of a multi-function card enables DMA before 
+> another driver has stabilized its harware, then everything breaks.
+What's another driver's hardware? A function of the previous multi-function
+card? Or a function of another device?
+
+Ok. now, I copy what you said before below for more discussion.
+> If we enabled both DMA and MMIO at the same time, there are mnay cases
+> where the card will immediately trap again -- for example, if its
+> DMA'ing to some crazy address. Thus, typically, one wants DMA disabled 
+> until after the card reset.  Withouth the mmio_enabled() reset, there
+> is no way of doing this.
+Did you asume the card reset is executed by callback mmio_enabled?
+
+
+> Again, consider the multi-function cards. On pSeries, I can  only enable 
+> DMA on a er-slot basis, not a per-function basis. So if one driver
+> enables DMA before some other driver has reset appropriately, everything
+> breaks.
+What does 'I' above stand for? The platform error recovery procedure
+or the error callbacks of drivers? I guess it means platform, that is,
+only platform enables DMA for the whole slot. But why does the last sentence
+become driver enables DMA? As you know, driver binds device function instead of
+slot. Could driver enable DMA for a function?
+
 
 > 
-> ------
-> It's not clear to me what hardware may show up in the future. 
-> For example, someone may build a 32x PCI-E card that will act 
-> as a bridge to a drawer with half-a-dozen ordinary PCI-X slots 
-> in it. This is perhaps a bit hypothetical, but changing the API 
-> will make it harder to implement eror recovery for such a system.
-I agree that it's difficult to predict the future. At least the new API
-could process the example.
-
-> FWIW, there is at least one pSeries system in the lab which has
-> several hundred PCI slots attached to it, although I've never 
-> done testing on it. Hmm. Maybe its time I did ... 
+> > Then, if the slot is always reset, there will be no the problem. 
 > 
-> --linas
+> But that assumes that a hardware #RST will always be done. The API
+> was designed to get away from this requirement.
+> 
+> > If mmio_enabled is not used currently, I think we could delete it firstly. Later on,
+> > if a platform really need it, we could add it, so we could keep the simplied codes.
+> 
+> It would be very difficult to add it later. And it would be especially
+> silly, given that someone would find this discussion in the mailing list 
+> archives.
+You stick to keep mmio_enabled which is not used currently, but if there will be
+a new platform who uses a more fine-grained steps to recover pci/pci-e, would
+you say 'it would be very difficut' and refuse add new callbacks?
+
+> 
+> > Thanks. Now I understand why you specified mmio_enabled and slot_reset. They are just
+> > to map to pSeries platform hardware operation steps. I know little about pSeries hardware,
+> 
+> The hardware was designed that way because the hardware engineers
+> thought that this is what the device driver writers would need. 
+> Thay are there to map to actual recovery steps that actual device
+> drivers might want to do.
+It doesn't prevent software from merging some steps. And, we want
+to implement pci/pci-e error recovery for more platforms instead of just
+pSeries.
+
+> 
+> > but is it possible to merge such hardware steps from software point of view?
+> 
+> The previous email explained why this would be a bad idea. 
+Obviously, such conclusion is too early.
+
+> 
+> > > The platform. By "electrical reset", I mean "dropping the #RST pin low
+> > > for 200mS". Only the platform can do this.
+> > Thanks for your explanation. I assume after the electrical reset, all device
+> > functions of the device slot will go back to the initial status before
+> > attaching their drivers.
+> 
+> Maybe. Depends on what yur BIOS does. On pSeries, I also need to
+> set up the adress BARs
+> 
+> > I found a problem of e1000 driver when testing its error handlers. After the NIC is resumed,
+> > its RX/TX packets numbers are crazy.
+> 
+> Hmm. There is a patch to prevent this from happening. I thought
+> it was applied a long time ago. e1000_update_stats() should include the
+> lines:
+> 
+>    if (pdev->error_state && pdev->error_state != pci_channel_io_normal)
+>       return;
+> 
+> which is enough to prevent crazy stats on my machine.
+Thanks a lot!
+
+Yanmin
