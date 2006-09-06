@@ -1,25 +1,17 @@
-Return-Path: <yanmin_zhang@linux.intel.com>
-Received: from fmsmga101.fm.intel.com (mga05.intel.com [192.55.52.89])
-	by ozlabs.org (Postfix) with ESMTP id 8CBC967B98
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 12:16:10 +1000 (EST)
-Subject: Re: pci error recovery procedure
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20060905191739.GF7139@austin.ibm.com>
-References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
-	<20060831175001.GE8704@austin.ibm.com>
-	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
-	<20060901212548.GS8704@austin.ibm.com>
-	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
-	<20060905191739.GF7139@austin.ibm.com>
-Content-Type: text/plain
-Message-Id: <1157508270.20092.426.camel@ymzhang-perf.sh.intel.com>
-Mime-Version: 1.0
-Date: Wed, 06 Sep 2006 10:04:31 +0800
-Cc: linuxppc-dev@ozlabs.org,
-	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-	Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-	Rajesh Shah <rajesh.shah@intel.com>
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
+	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 7EEEB67B98
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 12:34:57 +1000 (EST)
+In-Reply-To: <BAY121-F225DA006048FC317F8E97BDB300@phx.gbl>
+References: <BAY121-F225DA006048FC317F8E97BDB300@phx.gbl>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <64398AF8-B8B0-4FA4-8205-C5A8A00E1E49@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: On the transfer of data from the uart.c driver to the tty layer...
+Date: Tue, 5 Sep 2006 22:28:15 -0400
+To: "Alejandro C" <alexfestss@hotmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,95 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-09-06 at 03:17, Linas Vepstas wrote:
-> On Mon, Sep 04, 2006 at 01:47:30PM +0800, Zhang, Yanmin wrote:
-> > > 
-> > > Again, consider the multi-function cards. On pSeries, I can  only enable 
-> > > DMA on a per-slot basis, not a per-function basis. So if one driver
-> > > enables DMA before some other driver has reset appropriately, everything
-> > > breaks.
-> > Does here 'reset' mean hardware slot reset? 
-> 
-> I should have said: If one driver of a multi-function card enables DMA before 
-> another driver has stabilized its harware, then everything breaks.
-What's another driver's hardware? A function of the previous multi-function
-card? Or a function of another device?
 
-Ok. now, I copy what you said before below for more discussion.
-> If we enabled both DMA and MMIO at the same time, there are mnay cases
-> where the card will immediately trap again -- for example, if its
-> DMA'ing to some crazy address. Thus, typically, one wants DMA disabled 
-> until after the card reset.  Withouth the mmio_enabled() reset, there
-> is no way of doing this.
-Did you asume the card reset is executed by callback mmio_enabled?
+On Sep 5, 2006, at 10:56 AM, Alejandro C wrote:
 
+> I'm working on a the uart.c driver to add support for SCCs in HDLC  
+> mode.
 
-> Again, consider the multi-function cards. On pSeries, I can  only enable 
-> DMA on a er-slot basis, not a per-function basis. So if one driver
-> enables DMA before some other driver has reset appropriately, everything
-> breaks.
-What does 'I' above stand for? The platform error recovery procedure
-or the error callbacks of drivers? I guess it means platform, that is,
-only platform enables DMA for the whole slot. But why does the last sentence
-become driver enables DMA? As you know, driver binds device function instead of
-slot. Could driver enable DMA for a function?
+Write a driver that does HDLC, please don't "update"
+(complicate) the existing uart.c driver by adding
+these features.  The uart.c is a UART driver, not
+an SCC driver to be modified to your wishes.
+Add another, configurable driver to do this.
 
+> I've come across is that the receive buffer in the struct  
+> tty_struct, where
+> the tty layer collects the data from the driver
+> (tty_struct.tty_flip_buffer.char_buf), is only 1024 bytes
 
-> 
-> > Then, if the slot is always reset, there will be no the problem. 
-> 
-> But that assumes that a hardware #RST will always be done. The API
-> was designed to get away from this requirement.
-> 
-> > If mmio_enabled is not used currently, I think we could delete it firstly. Later on,
-> > if a platform really need it, we could add it, so we could keep the simplied codes.
-> 
-> It would be very difficult to add it later. And it would be especially
-> silly, given that someone would find this discussion in the mailing list 
-> archives.
-You stick to keep mmio_enabled which is not used currently, but if there will be
-a new platform who uses a more fine-grained steps to recover pci/pci-e, would
-you say 'it would be very difficut' and refuse add new callbacks?
+Write a driver specific to your requirements that
+has the proper sized buffers and management.
 
-> 
-> > Thanks. Now I understand why you specified mmio_enabled and slot_reset. They are just
-> > to map to pSeries platform hardware operation steps. I know little about pSeries hardware,
-> 
-> The hardware was designed that way because the hardware engineers
-> thought that this is what the device driver writers would need. 
-> Thay are there to map to actual recovery steps that actual device
-> drivers might want to do.
-It doesn't prevent software from merging some steps. And, we want
-to implement pci/pci-e error recovery for more platforms instead of just
-pSeries.
+> (2*TTY_FLIPBUF_SIZE). The easiest at this stage would be to make those
+> buffers larger, but I don't know what sort of impact this might  
+> have... Any
+> tips?
 
-> 
-> > but is it possible to merge such hardware steps from software point of view?
-> 
-> The previous email explained why this would be a bad idea. 
-Obviously, such conclusion is too early.
+Yes, don't do this.  Those buffers are allocated from
+a fairly small pool specific to the needs of the uart
+driver.  Making these larger may quickly cause the
+CPM drivers to run out of space.
 
-> 
-> > > The platform. By "electrical reset", I mean "dropping the #RST pin low
-> > > for 200mS". Only the platform can do this.
-> > Thanks for your explanation. I assume after the electrical reset, all device
-> > functions of the device slot will go back to the initial status before
-> > attaching their drivers.
-> 
-> Maybe. Depends on what yur BIOS does. On pSeries, I also need to
-> set up the adress BARs
-> 
-> > I found a problem of e1000 driver when testing its error handlers. After the NIC is resumed,
-> > its RX/TX packets numbers are crazy.
-> 
-> Hmm. There is a patch to prevent this from happening. I thought
-> it was applied a long time ago. e1000_update_stats() should include the
-> lines:
-> 
->    if (pdev->error_state && pdev->error_state != pci_channel_io_normal)
->       return;
-> 
-> which is enough to prevent crazy stats on my machine.
-Thanks a lot!
+> Any ideas on how to solve it in another fashion?
 
-Yanmin
+Write a driver specific to your requirements with the
+proper buffer management for these sizes.
+
+Thanks.
+
+	-- Dan
