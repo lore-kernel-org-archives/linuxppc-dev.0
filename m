@@ -1,17 +1,41 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3248667BC5
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 05:46:25 +1000 (EST)
-Date: Wed, 6 Sep 2006 14:35:57 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org, anton@samba.org
-Subject: [patch 3/5] [v3] powerpc: PA6T cputable entry, PVR value
-Message-ID: <20060906143557.43f79801@localhost.localdomain>
-In-Reply-To: <20060906143305.05b54abb@localhost.localdomain>
-References: <20060906143305.05b54abb@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <linas@austin.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BE78667BDC
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 06:02:07 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k86K24Tc025238
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 16:02:04 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k86K24qt224152
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 14:02:04 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k86K1wtt002890
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Sep 2006 14:02:03 -0600
+Date: Wed, 6 Sep 2006 15:01:55 -0500
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: pci error recovery procedure
+Message-ID: <20060906200155.GL7139@austin.ibm.com>
+References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
+	<20060831175001.GE8704@austin.ibm.com>
+	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
+	<20060901212548.GS8704@austin.ibm.com>
+	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
+	<1157360592.22705.46.camel@localhost.localdomain>
+	<1157423528.20092.365.camel@ymzhang-perf.sh.intel.com>
+	<20060905190115.GE7139@austin.ibm.com>
+	<1157506016.20092.386.camel@ymzhang-perf.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1157506016.20092.386.camel@ymzhang-perf.sh.intel.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+	Rajesh Shah <rajesh.shah@intel.com>, linuxppc-dev@ozlabs.org,
+	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,93 +45,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Introduce PWRficient PA6T cputable entries and feature bits.
+On Wed, Sep 06, 2006 at 09:26:56AM +0800, Zhang, Yanmin wrote:
+> > > The
+> > > error_detected of the drivers in the latest kernel who support err handlers
+> > > always returns PCI_ERS_RESULT_NEED_RESET. They are typical examples.
+> > 
+> > Just because the current drivers do it this way does not mean that this is
+> > the best way to do things.
+>
+> If it's not the best way, why did you choose to reset slot for e1000/e100/ipr
+> error handlers? They are typical widely-used devices. To make it easier to
+> add error handlers?
 
+I did it that way just to get going, get something working. I do not
+have hardware specs for any of these devices, and do not have much of 
+an idea of what they are capable of; the recovery code I wrote is of
+"brute force, hit it with a hammer"-nature.  Driver writers who 
+know thier hardware well, and are interested in a more refined 
+approach are encouraged to actualy use a more refined approach.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-Index: merge/arch/powerpc/kernel/cputable.c
-===================================================================
---- merge.orig/arch/powerpc/kernel/cputable.c
-+++ merge/arch/powerpc/kernel/cputable.c
-@@ -58,6 +58,9 @@ extern void __restore_cpu_ppc970(void);
- #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
- 				 PPC_FEATURE_TRUE_LE)
-+#define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
-+				 PPC_FEATURE_TRUE_LE | \
-+				 PPC_FEATURE_HAS_ALTIVEC_COMP)
- #define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
- 				 PPC_FEATURE_BOOKE)
- 
-@@ -286,6 +289,17 @@ struct cpu_spec	cpu_specs[] = {
- 		.dcache_bsize		= 128,
- 		.platform		= "ppc-cell-be",
- 	},
-+	{	/* PA Semi PA6T */
-+		.pvr_mask		= 0x7fff0000,
-+		.pvr_value		= 0x00900000,
-+		.cpu_name		= "PA6T",
-+		.cpu_features		= CPU_FTRS_PA6T,
-+		.cpu_user_features	= COMMON_USER_PA6T,
-+		.icache_bsize		= 64,
-+		.dcache_bsize		= 64,
-+		.num_pmcs		= 6,
-+		.platform		= "pa6t",
-+	},
- 	{	/* default match */
- 		.pvr_mask		= 0x00000000,
- 		.pvr_value		= 0x00000000,
-Index: merge/include/asm-powerpc/reg.h
-===================================================================
---- merge.orig/include/asm-powerpc/reg.h
-+++ merge/include/asm-powerpc/reg.h
-@@ -592,6 +592,7 @@
- #define PV_630p	0x0041
- #define PV_970MP	0x0044
- #define PV_BE		0x0070
-+#define PV_PA6T		0x0090
- 
- /*
-  * Number of entries in the SLB. If this ever changes we should handle
-Index: merge/include/asm-powerpc/cputable.h
-===================================================================
---- merge.orig/include/asm-powerpc/cputable.h
-+++ merge/include/asm-powerpc/cputable.h
-@@ -23,6 +23,7 @@
- #define PPC_FEATURE_SMT			0x00004000
- #define PPC_FEATURE_ICACHE_SNOOP	0x00002000
- #define PPC_FEATURE_ARCH_2_05		0x00001000
-+#define PPC_FEATURE_PA6T		0x00000800
- 
- #define PPC_FEATURE_TRUE_LE		0x00000002
- #define PPC_FEATURE_PPC_LE		0x00000001
-@@ -332,6 +333,10 @@ extern void do_cpu_ftr_fixups(unsigned l
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
-+#define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
-+	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
- #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
- #endif
-@@ -340,7 +345,7 @@ extern void do_cpu_ftr_fixups(unsigned l
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
- 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
--	    CPU_FTRS_CELL | CPU_FTR_CI_LARGE_PAGE)
-+	    CPU_FTRS_CELL | CPU_FTRS_PA6T)
- #else
- enum {
- 	CPU_FTRS_POSSIBLE =
-@@ -379,7 +384,7 @@ enum {
- #define CPU_FTRS_ALWAYS		\
- 	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
- 	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
--	    CPU_FTRS_CELL & CPU_FTRS_POSSIBLE)
-+	    CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
- #else
- enum {
- 	CPU_FTRS_ALWAYS =
+--linas
