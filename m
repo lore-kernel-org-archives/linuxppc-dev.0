@@ -1,20 +1,17 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49EC567B64
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id E85C867B22
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 00:22:14 +1000 (EST)
-Date: Wed, 6 Sep 2006 09:58:23 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Chun Chung Lo <cclo@astri.org>
-Subject: Re: Wireless Linux(802.11) for Embedded PowerPC
-Message-ID: <20060906135817.GB30051@tuxdriver.com>
-References: <A7B1E4DD46AA7046A4398F745240F29402737D64@ASPROEXG.astri.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A7B1E4DD46AA7046A4398F745240F29402737D64@ASPROEXG.astri.local>
-Cc: wei.li4@elf.mcgill.ca, linuxppc-embedded@ozlabs.org
+	Thu,  7 Sep 2006 04:11:49 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: MAC driver issue
+Date: Wed, 6 Sep 2006 11:11:14 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE487106404241@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "David H. Lynch Jr." <dhlii@dlasys.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,16 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 06, 2006 at 09:30:00AM +0800, Chun Chung Lo wrote:
+>=20
+> >     I have no doubt it is with the driver.  I am somewhat=20
+> fortunate in=20
+> > this instance that I have a nearly identical setup - this=20
+> is an FPGA=20
+> > based system
+> >     I can swap the FPGA firmware, get an almost identical=20
+> kernel with=20
+> > a slightly different NIC, and everything works - same=20
+> cables, same IP's,
+> >     Same switch, The only things different are the NIC and=20
+> its driver.=20
+> > Even the Linux kernels are identical - except the NIC driver.
+> >   =20
+> >     BUT so is the data received and passed on to the kernel=20
+> (outside=20
+> > random differences in the padding of the ARP packet)
 
-> 1. WLAN card driver: linux-wlan -- http://www.linux-wlan.org/
+Why is the ARP packet padding random?  I would think it would be fixed,
+since the ARP packet itself is a fixed length (for IPv4<->Ethernet ARPs)
+and the minimum Ethernet frame is 64 bytes...
 
-Is this project even still active?  The last update to the page was
-2.5 years ago (2/2004), and many of the links are broken...
 
-Do the prism drivers in the upstream kernel not work for you?
+> >     One works the other doesn't.
+> >=20
+>=20
+> Well ethernet device drivers contain multiple arp supporting=20
+> methods, e.g. header_cache, header_cache_update,=20
+> hard_header_parse, etc etc.
+> Generally driver writers don't need to concern themselves=20
+> about these as they are assigned to generic handlers by=20
+> ether_setup().  However, your problematic driver may do=20
+> something different.
+>=20
+> Given this problem appears to be driver specific rather than=20
+> PPC specific your best bet is to try and contact the author. =20
+> BTW, I don't think you've said which driver you are using, a=20
+> key piece of info....
+>=20
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+Might I suggest putting static ARP entries in the kernel (use the "arp"
+command from a prompt) and some other packet traffic - UDP perhaps.  See
+if the problem is specifically with the way your network driver handles
+ARP packets, or if it's a more fundamental problem of how the driver
+hands any type of Ethernet packet off to the upper kernel stack layers.
