@@ -1,17 +1,17 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 7EEEB67B98
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Sep 2006 12:34:57 +1000 (EST)
-In-Reply-To: <BAY121-F225DA006048FC317F8E97BDB300@phx.gbl>
-References: <BAY121-F225DA006048FC317F8E97BDB300@phx.gbl>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <64398AF8-B8B0-4FA4-8205-C5A8A00E1E49@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: On the transfer of data from the uart.c driver to the tty layer...
-Date: Tue, 5 Sep 2006 22:28:15 -0400
-To: "Alejandro C" <alexfestss@hotmail.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] kdump : Support kernels having 64k page size.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+In-Reply-To: <44FE15B0.3030909@in.ibm.com>
+References: <44FE15B0.3030909@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-eBWmxWC3m8tdHB2JNG/2"
+Date: Wed, 06 Sep 2006 12:59:37 +1000
+Message-Id: <1157511577.3661.7.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +22,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 5, 2006, at 10:56 AM, Alejandro C wrote:
+--=-eBWmxWC3m8tdHB2JNG/2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I'm working on a the uart.c driver to add support for SCCs in HDLC  
-> mode.
+On Wed, 2006-09-06 at 05:56 +0530, Sachin P. Sant wrote:
+> The following  kernel patch [ along with a patch to kexec tools posted=20
+> seperately ]
+> is required to generate proper core files using kdump on ppc64.
 
-Write a driver that does HDLC, please don't "update"
-(complicate) the existing uart.c driver by adding
-these features.  The uart.c is a UART driver, not
-an SCC driver to be modified to your wishes.
-Add another, configurable driver to do this.
+Hi Sachin,
 
-> I've come across is that the receive buffer in the struct  
-> tty_struct, where
-> the tty layer collects the data from the driver
-> (tty_struct.tty_flip_buffer.char_buf), is only 1024 bytes
+Can you provide some more explanation? It's not clear to me why this is
+necessary.
 
-Write a driver specific to your requirements that
-has the proper sized buffers and management.
+thanks
 
-> (2*TTY_FLIPBUF_SIZE). The easiest at this stage would be to make those
-> buffers larger, but I don't know what sort of impact this might  
-> have... Any
-> tips?
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Yes, don't do this.  Those buffers are allocated from
-a fairly small pool specific to the needs of the uart
-driver.  Making these larger may quickly cause the
-CPM drivers to run out of space.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-> Any ideas on how to solve it in another fashion?
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-Write a driver specific to your requirements with the
-proper buffer management for these sizes.
+--=-eBWmxWC3m8tdHB2JNG/2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Thanks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-	-- Dan
+iD8DBQBE/jmZdSjSd0sB4dIRAkwsAJ4qERUb7cGaMuBISZeYlP4eXVlkRwCcD570
+iMCtqlmEci9OulzeX17bvYk=
+=K7WK
+-----END PGP SIGNATURE-----
+
+--=-eBWmxWC3m8tdHB2JNG/2--
