@@ -1,18 +1,22 @@
-Return-Path: <Becky.Bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 1EDF967B62
+Return-Path: <jonscully@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 54E0367BD2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Sep 2006 08:30:15 +1000 (EST)
-In-Reply-To: <198592450609051522i572697f8nb252ea58e7f60ae@mail.gmail.com>
-References: <198592450609051522i572697f8nb252ea58e7f60ae@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <73C484E7-4A6A-4B13-8F96-0FEC71E0F5B4@freescale.com>
-From: Becky Bruce <Becky.Bruce@freescale.com>
-Subject: Re: where can I find MPC8245 assembler reference?
-Date: Tue, 5 Sep 2006 17:30:16 -0500
-To: Reeve Yang <yang.reeve@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  6 Sep 2006 10:06:56 +1000 (EST)
+Received: by nz-out-0102.google.com with SMTP id i1so910233nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 05 Sep 2006 17:06:55 -0700 (PDT)
+Message-ID: <53107f6e0609051706i67eac762y114ad03bf2065548@mail.gmail.com>
+Date: Tue, 5 Sep 2006 17:06:55 -0700
+From: "Jon Scully" <jonscully@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8245 reset register
+In-Reply-To: <198592450609051149h47423ebev9c94eb8aefc2a3fb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <198592450609021546x57c71e48r9aed561b61f6e8aa@mail.gmail.com>
+	<53107f6e0609021647l1f1cd84du496e3cd7219b603@mail.gmail.com>
+	<198592450609051149h47423ebev9c94eb8aefc2a3fb@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +27,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-MPC8245 refers to the integrated product (core + peripherals, all on  
-one chip).  The MPC8245 has a powerpc 603e core (also known as the  
-G2).  That's a classic 32-bit powerpc, so the assembler reference you  
-want is:
+On 9/5/06, Reeve Yang <yang.reeve@gmail.com> wrote:
+>  I'm kind of curious what's the proper way to reset the
+> 8245 CPU? For anyone who doesn't know MPC8245, which is 603e core.
 
-http://www.freescale.com/files/product/doc/MPCFPE32B.pdf
+You could starve the watchdog (assuming SWE=1 in SYPCR).  If you own
+the hardware design, you could add an addressable WO latch (FPGA) that
+asserts reset for the right number of clock cycles (what I would
+normally provide or ask for in a design -- but *only* during
+development).  Otherwise... If this is for development purposes,
+consider using JTAG (Boundary Scan) to control /SRESET.
 
-Hope this helps,
-Becky
-
-
-On Sep 5, 2006, at 5:22 PM, Reeve Yang wrote:
-
-> Could anyone point me to online document for MPC8245 assembler  
-> reference? I couldn't find it anywhere but the command list in user  
-> manual. Thanks!
->
-> - Reeve
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+(My reference to RST was supposed to be humorous -- as in, remember
+the good old days when you could do that in S/W?! ('RST 7' in Z80 &
+8085)  Sorry for my bad humor.)
