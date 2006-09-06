@@ -2,19 +2,19 @@ Return-Path: <linville@tuxdriver.com>
 Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CEB5467B64
+	by ozlabs.org (Postfix) with ESMTP id 49EC567B64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 00:22:12 +1000 (EST)
-Date: Wed, 6 Sep 2006 09:54:30 -0400
+	Thu,  7 Sep 2006 00:22:14 +1000 (EST)
+Date: Wed, 6 Sep 2006 09:58:23 -0400
 From: "John W. Linville" <linville@tuxdriver.com>
-To: wei.li4@elf.mcgill.ca
+To: Chun Chung Lo <cclo@astri.org>
 Subject: Re: Wireless Linux(802.11) for Embedded PowerPC
-Message-ID: <20060906135425.GA30051@tuxdriver.com>
-References: <20060905160355.4f7qhwwwg80cs00s@webmail.mcgill.ca>
+Message-ID: <20060906135817.GB30051@tuxdriver.com>
+References: <A7B1E4DD46AA7046A4398F745240F29402737D64@ASPROEXG.astri.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060905160355.4f7qhwwwg80cs00s@webmail.mcgill.ca>
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <A7B1E4DD46AA7046A4398F745240F29402737D64@ASPROEXG.astri.local>
+Cc: wei.li4@elf.mcgill.ca, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,13 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 05, 2006 at 04:03:55PM -0400, wei.li4@elf.mcgill.ca wrote:
+On Wed, Sep 06, 2006 at 09:30:00AM +0800, Chun Chung Lo wrote:
 
-> Where is the best access point for this topic? Did anyone work on this 
-> with MPC8xx? Thanks.
+> 1. WLAN card driver: linux-wlan -- http://www.linux-wlan.org/
 
-Probably netdev@vger.kernel.org.  Is there anything about your wireless
-needs that is specific to embedded work?
+Is this project even still active?  The last update to the page was
+2.5 years ago (2/2004), and many of the links are broken...
+
+Do the prism drivers in the upstream kernel not work for you?
 
 John
 -- 
