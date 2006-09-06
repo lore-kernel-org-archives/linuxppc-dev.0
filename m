@@ -1,13 +1,12 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9E50C67BBB
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 05:46:24 +1000 (EST)
-Date: Wed, 6 Sep 2006 14:35:19 -0500
+	by ozlabs.org (Postfix) with ESMTP id 3248667BC5
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 05:46:25 +1000 (EST)
+Date: Wed, 6 Sep 2006 14:35:57 -0500
 From: Olof Johansson <olof@lixom.net>
 To: paulus@samba.org, anton@samba.org
-Subject: [patch 2/5] [v3] powerpc: Divorce CPU_FTR_CTRL from
-	CPU_FTR_PPCAS_ARCH_V2_BASE
-Message-ID: <20060906143519.16d6fb78@localhost.localdomain>
+Subject: [patch 3/5] [v3] powerpc: PA6T cputable entry, PVR value
+Message-ID: <20060906143557.43f79801@localhost.localdomain>
 In-Reply-To: <20060906143305.05b54abb@localhost.localdomain>
 References: <20060906143305.05b54abb@localhost.localdomain>
 Mime-Version: 1.0
@@ -22,63 +21,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The performance monitor implementation (including CTRL register behaviour)
-is just included in PPC v2 as an example, it's not truly part of the base.
-
-It's actually a somewhat misleading feature, but I'll leave that be for
-now: The precense of the register is not what the feature bit is used
-for, but instead it's used to determine if it contains the runlatch
-bit for idle reporting of the performance monitor. For alternative
-implementations, the register might still exist but the bit might have
-different meaning (or no meaning at all).
-
-For now, split it off and don't include it in CPU_FTR_PPCAS_ARCH_V2_BASE.
+Introduce PWRficient PA6T cputable entries and feature bits.
 
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
+Index: merge/arch/powerpc/kernel/cputable.c
+===================================================================
+--- merge.orig/arch/powerpc/kernel/cputable.c
++++ merge/arch/powerpc/kernel/cputable.c
+@@ -58,6 +58,9 @@ extern void __restore_cpu_ppc970(void);
+ #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
+ 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
+ 				 PPC_FEATURE_TRUE_LE)
++#define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
++				 PPC_FEATURE_TRUE_LE | \
++				 PPC_FEATURE_HAS_ALTIVEC_COMP)
+ #define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
+ 				 PPC_FEATURE_BOOKE)
+ 
+@@ -286,6 +289,17 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.platform		= "ppc-cell-be",
+ 	},
++	{	/* PA Semi PA6T */
++		.pvr_mask		= 0x7fff0000,
++		.pvr_value		= 0x00900000,
++		.cpu_name		= "PA6T",
++		.cpu_features		= CPU_FTRS_PA6T,
++		.cpu_user_features	= COMMON_USER_PA6T,
++		.icache_bsize		= 64,
++		.dcache_bsize		= 64,
++		.num_pmcs		= 6,
++		.platform		= "pa6t",
++	},
+ 	{	/* default match */
+ 		.pvr_mask		= 0x00000000,
+ 		.pvr_value		= 0x00000000,
+Index: merge/include/asm-powerpc/reg.h
+===================================================================
+--- merge.orig/include/asm-powerpc/reg.h
++++ merge/include/asm-powerpc/reg.h
+@@ -592,6 +592,7 @@
+ #define PV_630p	0x0041
+ #define PV_970MP	0x0044
+ #define PV_BE		0x0070
++#define PV_PA6T		0x0090
+ 
+ /*
+  * Number of entries in the SLB. If this ever changes we should handle
 Index: merge/include/asm-powerpc/cputable.h
 ===================================================================
 --- merge.orig/include/asm-powerpc/cputable.h
 +++ merge/include/asm-powerpc/cputable.h
-@@ -148,7 +148,7 @@ extern void do_cpu_ftr_fixups(unsigned l
+@@ -23,6 +23,7 @@
+ #define PPC_FEATURE_SMT			0x00004000
+ #define PPC_FEATURE_ICACHE_SNOOP	0x00002000
+ #define PPC_FEATURE_ARCH_2_05		0x00001000
++#define PPC_FEATURE_PA6T		0x00000800
  
- #define CPU_FTR_PPCAS_ARCH_V2_BASE (CPU_FTR_SLB | \
- 					CPU_FTR_TLBIEL | CPU_FTR_NOEXECUTE | \
--					CPU_FTR_NODSISRALIGN | CPU_FTR_CTRL)
-+					CPU_FTR_NODSISRALIGN)
- 
- /* iSeries doesn't support large pages */
- #ifdef CONFIG_PPC_ISERIES
-@@ -313,24 +313,25 @@ extern void do_cpu_ftr_fixups(unsigned l
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
- 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
- #define CPU_FTRS_POWER4	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA)
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_MMCRA)
- #define CPU_FTRS_PPC970	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
- #define CPU_FTRS_POWER5	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR)
- #define CPU_FTRS_POWER6 (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_REAL_LE)
- #define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ #define PPC_FEATURE_TRUE_LE		0x00000002
+ #define PPC_FEATURE_PPC_LE		0x00000001
+@@ -332,6 +333,10 @@ extern void do_cpu_ftr_fixups(unsigned l
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
--	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
-+	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
+ 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
++#define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
++	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
++	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
  #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
  	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
  #endif
+@@ -340,7 +345,7 @@ extern void do_cpu_ftr_fixups(unsigned l
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+ 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+-	    CPU_FTRS_CELL | CPU_FTR_CI_LARGE_PAGE)
++	    CPU_FTRS_CELL | CPU_FTRS_PA6T)
+ #else
+ enum {
+ 	CPU_FTRS_POSSIBLE =
+@@ -379,7 +384,7 @@ enum {
+ #define CPU_FTRS_ALWAYS		\
+ 	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
+ 	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
+-	    CPU_FTRS_CELL & CPU_FTRS_POSSIBLE)
++	    CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
+ #else
+ enum {
+ 	CPU_FTRS_ALWAYS =
