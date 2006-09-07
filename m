@@ -1,12 +1,12 @@
 Return-Path: <olaf@ibook.aepfle.de>
-Received: from natblert.rzone.de (natblert.rzone.de [81.169.145.181])
-	by ozlabs.org (Postfix) with ESMTP id 0F2A767BB9
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 22:43:06 +1000 (EST)
-Date: Thu, 7 Sep 2006 14:42:56 +0200
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id EB2D367BD2
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 22:44:50 +1000 (EST)
+Date: Thu, 7 Sep 2006 14:44:45 +0200
 From: Olaf Hering <olaf@aepfle.de>
-To: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
-Subject: oops in snd-powermac due to snd-aoa
-Message-ID: <20060907124256.GA22928@aepfle.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] update prep_defconfig
+Message-ID: <20060907124445.GA23031@aepfle.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,376 +18,1398 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I was playing with snd-aoa, maybe the driver would work on a G4/466.
-mv /lib/modules/*/kernel/sound/ppc/snd-powermac.ko .
-reboot
-$insmod /lib/modules/*/kernel/sound/aoa/*/*.ko
-alsamixer finds nothing.
-mv snd-powermac.ko /lib/modules/*/kernel/sound/ppc/
-$insmod snd-powermac.ko -> oops
 
-Using PowerMac machine description
-Total memory = 256MB; using 512kB for hash table (at cff80000)
-Linux version 2.6.18-rc5-git6-2-default (geeko@buildhost) (gcc version 4.1.2 20060731 (prerelease) (SUSE Linux)) #1 Fri Sep 1 22:19:04 UTC 2006
-Found initrd at 0xc4100000:0xc433b000
-Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0x11
-Mapped at 0xfdfc0000
-Found a Keylargo mac-io controller, rev: 3, mapped at 0xfdf40000
-Processor NAP mode on idle enabled.
-PowerMac motherboard: PowerMac G4 Silver
-Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->0
-Found UniNorth PCI host bridge at 0x00000000f2000000. Firmware bus number: 0->0
-Found UniNorth PCI host bridge at 0x00000000f4000000. Firmware bus number: 0->0
-via-pmu: Server Mode is disabled
-PMU driver v2 initialized for Core99, firmware: 0c
-nvram: Checking bank 0...
-nvram: gen0=356, gen1=355
-nvram: Active bank is: 0
-nvram: OF partition at 0x210
-nvram: XP partition at 0x1220
-nvram: NR partition at 0x1320
-Top of RAM: 0x10000000, Total RAM: 0x10000000
-Memory hole size: 0MB
-On node 0 totalpages: 65536
-  DMA zone: 65536 pages, LIFO batch:15
-Built 1 zonelists.  Total pages: 65536
-Kernel command line: root=/dev/hda13  debug sysrq=1 video=aty128fb:1024x768@85 
-mpic: Setting up MPIC " MPIC 1   " version 1.2 at 80040000, max 4 CPUs
-mpic: ISU size: 64, shift: 6, mask: 3f
-mpic: Initializing for 64 sources
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-GMT Delta read from XPRAM: 120 minutes, DST: on
-time_init: decrementer frequency = 33.290001 MHz
-time_init: processor frequency   = 466.666665 MHz
-Console: colour dummy device 80x25
-pmac_zilog: i2c-modem detected, id: 1
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-High memory: 0k
-Memory: 251904k/262144k available (3584k kernel code, 9896k reserved, 524k data, 452k bss, 192k init)
-Calibrating delay loop... 66.30 BogoMIPS (lpj=132608)
-Security Framework v1.0.0 initialized
-Mount-cache hash table entries: 512
-device-tree: Duplicate name in /cpus/PowerPC,G4@0, renamed to "l2-cache#1"
-checking if image is initramfs... it is
-Freeing initrd memory: 2284k freed
-NET: Registered protocol family 16
-KeyWest i2c @0xf8001003 irq 42 /uni-n@f8000000/i2c@f8001000
- channel 0 bus <multibus>
- channel 1 bus <multibus>
-KeyWest i2c @0x80018000 irq 26 /pci@f2000000/mac-io@17/i2c@18000
- channel 0 bus <multibus>
-PMU i2c /pci@f2000000/mac-io@17/via-pmu@16000
- channel 1 bus <multibus>
- channel 2 bus <multibus>
-PCI: Probing PCI hardware
-PCI: Cannot allocate resource region 4 of device 0001:10:12.0
-PCI: Cannot allocate resource region 4 of device 0001:10:12.1
-PCI: Cannot allocate resource region 1 of device 0001:10:12.3
-PCI: Cannot allocate resource region 0 of device 0001:10:14.0
-usbcore: registered new driver usbfs
-usbcore: registered new driver hub
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 3, 32768 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-TCP: Hash tables configured (established 8192 bind 4096)
-TCP reno registered
-Thermal assist unit using timers, shrink_timer: 500 jiffies
-audit: initializing netlink socket (disabled)
-audit(1157631807.756:1): initialized
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-Initializing Cryptographic API
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-PCI: Enabling device 0000:00:10.0 (0086 -> 0087)
-aty128fb: Invalid ROM signature 1111 should  be 0xaa55
-aty128fb: BIOS not located, guessing timings.
-aty128fb: Rage128 PF PRO AGP [chip rev 0x1] 16M 128-bit SDR SGRAM (1:1)
-Console: switching to colour frame buffer device 128x48
-fb0: ATY Rage128 frame buffer device on Rage128 PF PRO AGP
-Generic RTC Driver v1.07
-Macintosh non-volatile memory driver v1.1
-pmac_zilog: 0.6 (Benjamin Herrenschmidt <benh@kernel.crashing.org>)
-ttyS0 at MMIO 0x80013020 (irq = 22) is a Z85c30 ESCC - Internal modem
-ttyS1 at MMIO 0x80013000 (irq = 50) is a Z85c30 ESCC - Serial port
-RAMDISK driver initialized: 16 RAM disks of 123456K size 1024 blocksize
-MacIO PCI driver attached to Keylargo chipset
-input: Macintosh mouse button emulation as /class/input/input0
-apm_emu: APM Emulation 0.5 initialized.
-adb: starting probe task...
-adb: finished probe task...
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-ide0: Found Apple KeyLargo ATA-4 controller, bus ID 2, irq 19
-Probing IDE interface ide0...
-hda: Maxtor 33073H3 B, ATA DISK drive
-hda: Enabling Ultra DMA 4
-ide0 at 0xd1022000-0xd1022007,0xd1022160 on irq 19
-ide1: Found Apple KeyLargo ATA-3 controller, bus ID 0, irq 20
-Probing IDE interface ide1...
-hdc: SONY CD-RW CRX140E, ATAPI CD/DVD-ROM drive
-hdd: IOMEGA ZIP 250 ATAPI, ATAPI FLOPPY drive
-hdc: Enabling MultiWord DMA 2
-ide1 at 0xd102e000-0xd102e007,0xd102e160 on irq 20
-ide2: Found Apple KeyLargo ATA-3 controller, bus ID 1, irq 21
-Probing IDE interface ide2...
-Probing IDE interface ide2...
-hda: max request size: 128KiB
-hda: 60032448 sectors (30736 MB) w/2048KiB Cache, CHS=59556/16/63, UDMA(66)
-hda: cache flushes not supported
- hda: [mac] hda1 hda2 hda3 hda4 hda5 hda6 hda7 hda8 hda9 hda10 hda11 hda12 hda13 hda14 hda15
-ohci_hcd: 2005 April 22 USB 1.1 'Open' Host Controller (OHCI) Driver (PCI)
-PCI: Enabling device 0001:10:18.0 (0000 -> 0002)
-ohci_hcd 0001:10:18.0: OHCI Host Controller
-ohci_hcd 0001:10:18.0: new USB bus registered, assigned bus number 1
-ohci_hcd 0001:10:18.0: irq 27, io mem 0x80083000
-usb usb1: new device found, idVendor=0000, idProduct=0000
-usb usb1: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb1: Product: OHCI Host Controller
-usb usb1: Manufacturer: Linux 2.6.18-rc5-git6-2-default ohci_hcd
-usb usb1: SerialNumber: 0001:10:18.0
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 2 ports detected
-PCI: Enabling device 0001:10:19.0 (0000 -> 0002)
-ohci_hcd 0001:10:19.0: OHCI Host Controller
-ohci_hcd 0001:10:19.0: new USB bus registered, assigned bus number 2
-ohci_hcd 0001:10:19.0: irq 28, io mem 0x80082000
-usb usb2: new device found, idVendor=0000, idProduct=0000
-usb usb2: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb2: Product: OHCI Host Controller
-usb usb2: Manufacturer: Linux 2.6.18-rc5-git6-2-default ohci_hcd
-usb usb2: SerialNumber: 0001:10:19.0
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 2 ports detected
-usb 1-1: new full speed USB device using ohci_hcd and address 2
-usb 1-1: new device found, idVendor=05ac, idProduct=1001
-usb 1-1: new device strings: Mfr=1, Product=2, SerialNumber=0
-usb 1-1: Product: Hub in Apple USB Keyboard
-usb 1-1: Manufacturer: Alps Electric
-usb 1-1: configuration #1 chosen from 1 choice
-hub 1-1:1.0: USB hub found
-hub 1-1:1.0: 3 ports detected
-usb 1-1.1: new low speed USB device using ohci_hcd and address 3
-usb 1-1.1: new device found, idVendor=05ac, idProduct=0202
-usb 1-1.1: new device strings: Mfr=1, Product=2, SerialNumber=0
-usb 1-1.1: Product: Apple USB Keyboard
-usb 1-1.1: Manufacturer: Alps Electric
-usb 1-1.1: configuration #1 chosen from 1 choice
-usb 1-1.2: new low speed USB device using ohci_hcd and address 4
-usb 1-1.2: new device found, idVendor=05ac, idProduct=0307
-usb 1-1.2: new device strings: Mfr=1, Product=2, SerialNumber=0
-usb 1-1.2: Product: Apple Optical USB Mouse
-usb 1-1.2: Manufacturer: Logitech
-usb 1-1.2: configuration #1 chosen from 1 choice
-usbcore: registered new driver hiddev
-input: Alps Electric Apple USB Keyboard as /class/input/input1
-input: USB HID v1.00 Keyboard [Alps Electric Apple USB Keyboard] on usb-0001:10:18.0-1.1
-input: Logitech Apple Optical USB Mouse as /class/input/input2
-input: USB HID v1.10 Mouse [Logitech Apple Optical USB Mouse] on usb-0001:10:18.0-1.2
-usbcore: registered new driver usbhid
-drivers/usb/input/hid-core.c: v2.6:USB HID core driver
-usbcore: registered new driver appletouch
-mice: PS/2 mouse device common for all mice
-PowerMac i2c bus pmu 2 registered
-PowerMac i2c bus pmu 1 registered
-PowerMac i2c bus mac-io 0 registered
-PowerMac i2c bus uni-n 1 registered
-PowerMac i2c bus uni-n 0 registered
-md: md driver 0.90.3 MAX_MD_DEVS=256, MD_SB_DISKS=27
-md: bitmap version 4.39
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-input: PMU as /class/input/input3
-Freeing unused kernel memory: 192k init
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on hda13, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-JBD: barrier-based sync failed on hda13 - disabling barriers
-ide-floppy driver 0.99.newide
-hdd: No disk in drive
-hdd: 0kB, 0/64/32 CHS, 4096 kBps, 512 sector size, 2941 rpm
-snd_aoa_soundbus: module not supported by Novell, setting U taint flag.
-snd_aoa_i2sbus: module not supported by Novell, setting U taint flag.
-hdc: ATAPI 32X CD-ROM CD-R/RW drive, 4096kB Cache, (U)DMA
-Uniform CD-ROM driver Revision: 3.20
-JBD: barrier-based sync failed on hda13 - disabling barriers
-ieee1394: Initialized config rom entry `ip1394'
-PCI: Enabling device 0001:10:12.3 (0090 -> 0093)
-Linux agpgart interface v0.101 (c) Dave Jones
-agpgart: Detected Apple UniNorth 1.5 chipset
-agpgart: configuring for size idx: 4
-agpgart: AGP aperture is 16M @ 0x0
-ohci1394: fw-host0: OHCI-1394 1.0 (PCI): IRQ=[52]  MMIO=[80084000-800847ff]  Max Packet=[2048]  IR/IT contexts=[8/8]
-sungem.c:v0.98 8/24/03 David S. Miller (davem@redhat.com)
-USB Universal Host Controller Interface driver v3.0
-PCI: Enabling device 0001:10:12.0 (0014 -> 0015)
-PCI: VIA IRQ fixup for 0001:10:12.0, from 52 to 4
-PHY ID: 206053, addr: 0
-uhci_hcd 0001:10:12.0: UHCI Host Controller
-uhci_hcd 0001:10:12.0: new USB bus registered, assigned bus number 3
-uhci_hcd 0001:10:12.0: irq 52, io base 0x00010000
-usb usb3: new device found, idVendor=0000, idProduct=0000
-usb usb3: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb3: Product: UHCI Host Controller
-usb usb3: Manufacturer: Linux 2.6.18-rc5-git6-2-default uhci_hcd
-usb usb3: SerialNumber: 0001:10:12.0
-usb usb3: configuration #1 chosen from 1 choice
-8139too Fast Ethernet driver 0.9.27
-eth0: Sun GEM (PCI) 10/100/1000BaseT Ethernet 00:30:65:f3:4c:ae 
-eth0: Found BCM5401 PHY
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 2 ports detected
-ohci1394: fw-host1: OHCI-1394 1.0 (PCI): IRQ=[40]  MMIO=[f5000000-f50007ff]  Max Packet=[2048]  IR/IT contexts=[8/8]
-PCI: Enabling device 0001:10:12.1 (0014 -> 0015)
-PCI: VIA IRQ fixup for 0001:10:12.1, from 52 to 4
-uhci_hcd 0001:10:12.1: UHCI Host Controller
-uhci_hcd 0001:10:12.1: new USB bus registered, assigned bus number 4
-uhci_hcd 0001:10:12.1: irq 52, io base 0x00010020
-usb usb4: new device found, idVendor=0000, idProduct=0000
-usb usb4: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb4: Product: UHCI Host Controller
-usb usb4: Manufacturer: Linux 2.6.18-rc5-git6-2-default uhci_hcd
-usb usb4: SerialNumber: 0001:10:12.1
-ieee1394: Host added: ID:BUS[0-00:1023]  GUID[0011060000006685]
-usb usb4: configuration #1 chosen from 1 choice
-hub 4-0:1.0: USB hub found
-hub 4-0:1.0: 2 ports detected
-PCI: Enabling device 0001:10:12.2 (0014 -> 0016)
-PCI: VIA IRQ fixup for 0001:10:12.2, from 52 to 4
-ehci_hcd 0001:10:12.2: EHCI Host Controller
-ehci_hcd 0001:10:12.2: new USB bus registered, assigned bus number 5
-ehci_hcd 0001:10:12.2: irq 52, io mem 0x80081000
-ehci_hcd 0001:10:12.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb5: new device found, idVendor=0000, idProduct=0000
-usb usb5: new device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb5: Product: EHCI Host Controller
-usb usb5: Manufacturer: Linux 2.6.18-rc5-git6-2-default ehci_hcd
-usb usb5: SerialNumber: 0001:10:12.2
-usb usb5: configuration #1 chosen from 1 choice
-hub 5-0:1.0: USB hub found
-hub 5-0:1.0: 4 ports detected
-PCI: Enabling device 0001:10:14.0 (0004 -> 0007)
-eth1: RealTek RTL8139 at 0xd21f8000, 00:50:fc:76:65:12, IRQ 54
-eth1:  Identified 8139 chip type 'RTL-8100B/8139D'
-ieee1394: Host added: ID:BUS[1-00:1023]  GUID[003065fffef34cae]
-eth0: Link is up at 100 Mbps, full-duplex.
-eth0 renamed to ethxx0
-eth1 renamed to eth0
-ethxx0 renamed to eth1
-Adding 131064k swap on /dev/hda12.  Priority:-1 extents:1 across:131064k
-device-mapper: ioctl: 4.7.0-ioctl (2006-06-24) initialised: dm-devel@redhat.com
-JBD: barrier-based sync failed on hda13 - disabling barriers
-hdd: No disk in drive
-loop: loaded (max 8 devices)
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with ordered data mode.
-AppArmor: AppArmor (version 2.0-19.43r6320) initialized
-audit(1157631835.404:2): AppArmor (version 2.0-19.43r6320) initialized
+Update PReP defconfig, disable some drivers for hardware that is not used on those systems
+enable SL82C105 IDE driver for Powerstack.
 
-eth0: link down
-eth1: Link is up at 100 Mbps, full-duplex.
-eth1: Pause is enabled (rxfifo: 10240 off: 7168 on: 5632)
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-ADDRCONF(NETDEV_UP): eth0: link is not ready
-IPv6 over IPv4 tunneling driver
-[drm] Initialized drm 1.0.1 20051102
-[drm] Initialized r128 2.5.0 20030725 on minor 0
-agpgart: Putting AGP V2 device at 0000:00:0b.0 into 1x mode
-agpgart: Putting AGP V2 device at 0000:00:10.0 into 1x mode
-audit(1157631873.282:3): audit_backlog_limit=256 old=64 by auid=4294967295
-audit(1157631873.542:4): audit_pid=3895 old=0 by auid=4294967295
-snd_aoa: module not supported by Novell, setting U taint flag.
-snd_aoa_codec_onyx: module not supported by Novell, setting U taint flag.
-snd_aoa_codec_tas: module not supported by Novell, setting U taint flag.
-snd-aoa-codec-tas: found 'deq' node
-snd-aoa-codec-tas: tas found, addr 0x34 on /pci@f2000000/mac-io@17/i2c@18000/deq
-snd_aoa_codec_toonie: module not supported by Novell, setting U taint flag.
-snd_aoa_fabric_layout: module not supported by Novell, setting U taint flag.
-ALSA sound/ppc/keywest.c:82: tumbler: cannot attach i2c client
-read_audio_gpio addr 67 ret 2 av 4
-headphone: 0, lineout: 0
-check_audio_gpio addr 70 ret 4 av 4
-check_audio_gpio addr 6f ret 7 av 4
-Unable to handle kernel paging request for data at address 0x00000002
-Faulting instruction address: 0xc0244af8
-Oops: Kernel access of bad area, sig: 11 [#1]
 
-Modules linked in: snd_powermac snd_aoa_fabric_layout snd_aoa_codec_toonie snd_aoa_codec_tas snd_aoa_codec_onyx snd_aoa snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device r128 drm ipv6 apparmor aamatch_pcre loop dm_mod 8139too mii ehci_hcd uhci_hcd uninorth_agp agpgart sungem sungem_phy ohci1394 ieee1394 ide_cd cdrom snd_aoa_i2sbus snd_aoa_soundbus ide_floppy snd_pcm snd_timer snd soundcore snd_page_alloc
-NIP: C0244AF8 LR: D219CC8C CTR: C0244AD8
-REGS: c6b69c40 TRAP: 0300   Tainted: G     U  (2.6.18-rc5-git6-2-default)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 22222244  XER: 20000000
-DAR: 00000002, DSISR: 40000000
-TASK = c291d930[4987] 'modprobe' THREAD: c6b68000
-GPR00: D219CC8C C6B69CF0 C291D930 00000000 00000001 00000068 00000000 00000001 
-GPR08: 00000002 00000000 00000070 C0244AD8 00000000 1002F308 0000000D D2191214 
-GPR16: 0000001C D218FBE4 C1000300 D218FBBC 00000163 D218FB94 00000000 0000001E 
-GPR24: D218F639 00000000 CD6D40AC CD6D4000 C66E30C0 0000000A D21A3F24 D219E714 
-NIP [C0244AF8] i2c_smbus_write_byte_data+0x20/0x44
-LR [D219CC8C] send_init_client+0x30/0x8c [snd_powermac]
-Call Trace:
-[C6B69CF0] [C005B2FC] setup_irq+0x1e4/0x22c (unreliable)
-[C6B69D30] [D219CC8C] send_init_client+0x30/0x8c [snd_powermac]
-[C6B69D50] [D213BDA8] snd_pmac_tumbler_post_init+0x28/0x6c [snd_powermac]
-[C6B69D60] [D213A1F4] snd_pmac_probe+0x19c/0x2f0 [snd_powermac]
-[C6B69D90] [C01F2788] platform_drv_probe+0x20/0x30
-[C6B69DA0] [C01F0AD0] driver_probe_device+0x8c/0xf4
-[C6B69DC0] [C01F0270] bus_for_each_drv+0x50/0x98
-[C6B69DF0] [C01F0BAC] device_attach+0x70/0xac
-[C6B69E10] [C01EFF24] bus_attach_device+0x24/0x44
-[C6B69E20] [C01EEC14] device_add+0x1ec/0x314
-[C6B69E50] [C01F2C00] platform_device_add+0x118/0x160
-[C6B69E70] [C01F2E78] platform_device_register_simple+0x4c/0x78
-[C6B69E90] [D213A038] alsa_card_pmac_init+0x38/0x58 [snd_powermac]
-[C6B69EA0] [C004EB14] sys_init_module+0x1368/0x14f8
-[C6B69F40] [C00125A4] ret_from_syscall+0x0/0x40
---- Exception: c01 at 0xff698a4
-    LR = 0x100039d0
-Instruction dump:
-80010044 38210040 7c0803a6 4e800020 9421ffc0 7c0802a6 7c691b78 7c872378 
-38c00000 39000002 90010044 98a10008 <a0a30002> a0890004 39210008 80630008 
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
+---
+ arch/ppc/configs/prep_defconfig |  585 +++++++++++++++++++++-------------------
+ 1 file changed, 319 insertions(+), 266 deletions(-)
+
+Index: linux-2.6.18-rc6/arch/ppc/configs/prep_defconfig
+===================================================================
+--- linux-2.6.18-rc6.orig/arch/ppc/configs/prep_defconfig
++++ linux-2.6.18-rc6/arch/ppc/configs/prep_defconfig
+@@ -1,56 +1,63 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.13-rc3
+-# Wed Jul 13 13:34:24 2005
++# Linux kernel version: 2.6.18-rc6
++# Wed Sep  6 15:09:32 2006
+ #
+ CONFIG_MMU=y
+ CONFIG_GENERIC_HARDIRQS=y
+ CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_GENERIC_HWEIGHT=y
+ CONFIG_GENERIC_CALIBRATE_DELAY=y
+-CONFIG_HAVE_DEC_LOCK=y
+ CONFIG_PPC=y
+ CONFIG_PPC32=y
+ CONFIG_GENERIC_NVRAM=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
+ CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
  
-Module                  Size  Used by
-snd_powermac           66448  1 
-snd_aoa_fabric_layout    13896  0 
-snd_aoa_codec_toonie     3332  0 
-snd_aoa_codec_tas      13728  0 
-snd_aoa_codec_onyx     15456  0 
-snd_aoa                20576  4 snd_aoa_fabric_layout,snd_aoa_codec_toonie,snd_aoa_codec_tas,snd_aoa_codec_onyx
-snd_pcm_oss            61216  0 
-snd_mixer_oss          21376  1 snd_pcm_oss
-snd_seq                67808  0 
-snd_seq_device         10028  1 snd_seq
-r128                   44772  3 
-drm                    80024  4 r128
-ipv6                  288972  20 
-apparmor               66520  0 
-aamatch_pcre           17256  1 apparmor
-loop                   20328  0 
-dm_mod                 65296  0 
-8139too                27936  0 
-mii                     6592  1 8139too
-ehci_hcd               35560  0 
-uhci_hcd               32428  0 
-uninorth_agp           10760  1 
-agpgart                36924  2 drm,uninorth_agp
-sungem                 34500  0 
-sungem_phy             10432  1 sungem
-ohci1394               39952  0 
-ieee1394              114224  1 ohci1394
-ide_cd                 47332  0 
-cdrom                  43452  1 ide_cd
-snd_aoa_i2sbus         23908  0 
-snd_aoa_soundbus        7812  2 snd_aoa_fabric_layout,snd_aoa_i2sbus
-ide_floppy             21728  0 
-snd_pcm                99140  3 snd_powermac,snd_pcm_oss,snd_aoa_i2sbus
-snd_timer              28260  2 snd_seq,snd_pcm
-snd                    72948  13 snd_powermac,snd_aoa_fabric_layout,snd_aoa_codec_toonie,snd_aoa_codec_tas,snd_aoa_codec_onyx,snd_aoa,snd_pcm_oss,snd_mixer_oss,snd_seq,snd_seq_device,snd_aoa_i2sbus,snd_pcm,snd_timer
-soundcore              11012  1 snd
-snd_page_alloc         11560  1 snd_pcm
+ #
+ # Code maturity level options
+ #
+ CONFIG_EXPERIMENTAL=y
+-CONFIG_CLEAN_COMPILE=y
+ CONFIG_BROKEN_ON_SMP=y
+ CONFIG_INIT_ENV_ARG_LIMIT=32
+ 
+ #
+ # General setup
+ #
+-CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION="-prep"
++CONFIG_LOCALVERSION_AUTO=y
+ CONFIG_SWAP=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ # CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
+ CONFIG_SYSCTL=y
+ # CONFIG_AUDIT is not set
+-CONFIG_HOTPLUG=y
+-CONFIG_KOBJECT_UEVENT=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
++# CONFIG_RELAY is not set
++CONFIG_INITRAMFS_SOURCE=""
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+ # CONFIG_EMBEDDED is not set
+ CONFIG_KALLSYMS=y
+ # CONFIG_KALLSYMS_ALL is not set
+ # CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_HOTPLUG=y
+ CONFIG_PRINTK=y
+ CONFIG_BUG=y
++CONFIG_ELF_CORE=y
+ CONFIG_BASE_FULL=y
++CONFIG_RT_MUTEXES=y
+ CONFIG_FUTEX=y
+ CONFIG_EPOLL=y
+ CONFIG_SHMEM=y
+-CONFIG_CC_ALIGN_FUNCTIONS=0
+-CONFIG_CC_ALIGN_LABELS=0
+-CONFIG_CC_ALIGN_LOOPS=0
+-CONFIG_CC_ALIGN_JUMPS=0
++CONFIG_SLAB=y
++CONFIG_VM_EVENT_COUNTERS=y
+ # CONFIG_TINY_SHMEM is not set
+ CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
+ 
+ #
+ # Loadable module support
+@@ -58,69 +65,68 @@ CONFIG_BASE_SMALL=0
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ # CONFIG_MODULE_FORCE_UNLOAD is not set
+-CONFIG_OBSOLETE_MODPARM=y
+ CONFIG_MODVERSIONS=y
+ # CONFIG_MODULE_SRCVERSION_ALL is not set
+ CONFIG_KMOD=y
+ 
+ #
++# Block layer
++#
++CONFIG_LBD=y
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++# CONFIG_DEFAULT_AS is not set
++# CONFIG_DEFAULT_DEADLINE is not set
++CONFIG_DEFAULT_CFQ=y
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="cfq"
++
++#
+ # Processor
+ #
+ CONFIG_6xx=y
+ # CONFIG_40x is not set
+ # CONFIG_44x is not set
+-# CONFIG_POWER3 is not set
+-# CONFIG_POWER4 is not set
+ # CONFIG_8xx is not set
+ # CONFIG_E200 is not set
+ # CONFIG_E500 is not set
+ CONFIG_PPC_FPU=y
+-CONFIG_ALTIVEC=y
+-CONFIG_TAU=y
+-# CONFIG_TAU_INT is not set
+-# CONFIG_TAU_AVERAGE is not set
++# CONFIG_ALTIVEC is not set
++# CONFIG_TAU is not set
+ # CONFIG_KEXEC is not set
+-CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_TABLE=y
+-# CONFIG_CPU_FREQ_DEBUG is not set
+-CONFIG_CPU_FREQ_STAT=m
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
+-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+-CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+-CONFIG_CPU_FREQ_GOV_USERSPACE=m
+-CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+-CONFIG_CPU_FREQ_PMAC=y
++# CONFIG_CPU_FREQ is not set
+ CONFIG_PPC601_SYNC_FIX=y
+-CONFIG_PM=y
++# CONFIG_WANT_EARLY_SERIAL is not set
+ CONFIG_PPC_STD_MMU=y
+ 
+ #
+ # Platform options
+ #
+-CONFIG_PPC_MULTIPLATFORM=y
++CONFIG_PPC_PREP=y
+ # CONFIG_APUS is not set
+ # CONFIG_KATANA is not set
+ # CONFIG_WILLOW is not set
+ # CONFIG_CPCI690 is not set
+-# CONFIG_PCORE is not set
+ # CONFIG_POWERPMC250 is not set
+ # CONFIG_CHESTNUT is not set
+ # CONFIG_SPRUCE is not set
+ # CONFIG_HDPU is not set
+ # CONFIG_EV64260 is not set
+ # CONFIG_LOPEC is not set
+-# CONFIG_MCPN765 is not set
+ # CONFIG_MVME5100 is not set
+ # CONFIG_PPLUS is not set
+ # CONFIG_PRPMC750 is not set
+ # CONFIG_PRPMC800 is not set
+ # CONFIG_SANDPOINT is not set
+ # CONFIG_RADSTONE_PPC7D is not set
+-# CONFIG_ADIR is not set
+-# CONFIG_K2 is not set
+ # CONFIG_PAL4 is not set
+ # CONFIG_GEMINI is not set
+ # CONFIG_EST8260 is not set
+@@ -132,10 +138,7 @@ CONFIG_PPC_MULTIPLATFORM=y
+ # CONFIG_PQ2FADS is not set
+ # CONFIG_LITE5200 is not set
+ # CONFIG_MPC834x_SYS is not set
+-CONFIG_PPC_CHRP=y
+-CONFIG_PPC_PMAC=y
+-CONFIG_PPC_PREP=y
+-CONFIG_PPC_OF=y
++# CONFIG_EV64360 is not set
+ CONFIG_PPCBUG_NVRAM=y
+ # CONFIG_SMP is not set
+ # CONFIG_HIGHMEM is not set
+@@ -152,12 +155,16 @@ CONFIG_FLATMEM_MANUAL=y
+ # CONFIG_SPARSEMEM_MANUAL is not set
+ CONFIG_FLATMEM=y
+ CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_RESOURCES_64BIT is not set
+ CONFIG_BINFMT_ELF=y
+ CONFIG_BINFMT_MISC=m
+-CONFIG_PROC_DEVICETREE=y
+ CONFIG_PREP_RESIDUAL=y
+ CONFIG_PROC_PREPRESIDUAL=y
+ # CONFIG_CMDLINE_BOOL is not set
++CONFIG_PM=y
++# CONFIG_PM_LEGACY is not set
+ # CONFIG_PM_DEBUG is not set
+ CONFIG_SOFTWARE_SUSPEND=y
+ CONFIG_PM_STD_PARTITION=""
+@@ -169,10 +176,10 @@ CONFIG_ISA_DMA_API=y
+ #
+ CONFIG_ISA=y
+ CONFIG_GENERIC_ISA_DMA=y
++CONFIG_PPC_I8259=y
++CONFIG_PPC_INDIRECT_PCI=y
+ CONFIG_PCI=y
+ CONFIG_PCI_DOMAINS=y
+-# CONFIG_PCI_LEGACY_PROC is not set
+-# CONFIG_PCI_NAMES is not set
+ # CONFIG_PCI_DEBUG is not set
+ 
+ #
+@@ -187,6 +194,11 @@ CONFIG_CARDBUS=y
+ # PC-card bridges
+ #
+ CONFIG_YENTA=m
++CONFIG_YENTA_O2=y
++CONFIG_YENTA_RICOH=y
++CONFIG_YENTA_TI=y
++CONFIG_YENTA_ENE_TUNE=y
++CONFIG_YENTA_TOSHIBA=y
+ CONFIG_PCMCIA_PROBE=y
+ CONFIG_PCCARD_NONSTATIC=m
+ 
+@@ -212,6 +224,7 @@ CONFIG_NET=y
+ #
+ # Networking options
+ #
++# CONFIG_NETDEBUG is not set
+ CONFIG_PACKET=y
+ # CONFIG_PACKET_MMAP is not set
+ CONFIG_UNIX=y
+@@ -229,9 +242,11 @@ CONFIG_SYN_COOKIES=y
+ # CONFIG_INET_AH is not set
+ # CONFIG_INET_ESP is not set
+ # CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
+ # CONFIG_INET_TUNNEL is not set
+-CONFIG_IP_TCPDIAG=y
+-# CONFIG_IP_TCPDIAG_IPV6 is not set
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_DIAG is not set
+ # CONFIG_TCP_CONG_ADVANCED is not set
+ CONFIG_TCP_CONG_BIC=y
+ 
+@@ -240,80 +255,77 @@ CONFIG_TCP_CONG_BIC=y
+ #
+ # CONFIG_IP_VS is not set
+ # CONFIG_IPV6 is not set
++# CONFIG_INET6_XFRM_TUNNEL is not set
++# CONFIG_INET6_TUNNEL is not set
++# CONFIG_NETWORK_SECMARK is not set
+ CONFIG_NETFILTER=y
+ # CONFIG_NETFILTER_DEBUG is not set
+ 
+ #
++# Core Netfilter Configuration
++#
++CONFIG_NETFILTER_NETLINK=m
++CONFIG_NETFILTER_NETLINK_QUEUE=m
++CONFIG_NETFILTER_NETLINK_LOG=m
++CONFIG_NETFILTER_XTABLES=m
++CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
++CONFIG_NETFILTER_XT_TARGET_MARK=m
++CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
++CONFIG_NETFILTER_XT_MATCH_COMMENT=m
++CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
++CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
++CONFIG_NETFILTER_XT_MATCH_DCCP=m
++CONFIG_NETFILTER_XT_MATCH_ESP=m
++CONFIG_NETFILTER_XT_MATCH_HELPER=m
++CONFIG_NETFILTER_XT_MATCH_LENGTH=m
++CONFIG_NETFILTER_XT_MATCH_LIMIT=m
++CONFIG_NETFILTER_XT_MATCH_MAC=m
++CONFIG_NETFILTER_XT_MATCH_MARK=m
++CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
++CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
++CONFIG_NETFILTER_XT_MATCH_QUOTA=m
++CONFIG_NETFILTER_XT_MATCH_REALM=m
++CONFIG_NETFILTER_XT_MATCH_SCTP=m
++CONFIG_NETFILTER_XT_MATCH_STATE=m
++CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
++CONFIG_NETFILTER_XT_MATCH_STRING=m
++CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
++
++#
+ # IP: Netfilter Configuration
+ #
+ CONFIG_IP_NF_CONNTRACK=m
+ # CONFIG_IP_NF_CT_ACCT is not set
+ CONFIG_IP_NF_CONNTRACK_MARK=y
++# CONFIG_IP_NF_CONNTRACK_EVENTS is not set
++# CONFIG_IP_NF_CONNTRACK_NETLINK is not set
+ # CONFIG_IP_NF_CT_PROTO_SCTP is not set
+ CONFIG_IP_NF_FTP=m
+ CONFIG_IP_NF_IRC=m
++# CONFIG_IP_NF_NETBIOS_NS is not set
+ CONFIG_IP_NF_TFTP=m
+ CONFIG_IP_NF_AMANDA=m
++# CONFIG_IP_NF_PPTP is not set
++# CONFIG_IP_NF_H323 is not set
++# CONFIG_IP_NF_SIP is not set
+ CONFIG_IP_NF_QUEUE=m
+-CONFIG_IP_NF_IPTABLES=m
+-CONFIG_IP_NF_MATCH_LIMIT=m
+-CONFIG_IP_NF_MATCH_IPRANGE=m
+-CONFIG_IP_NF_MATCH_MAC=m
+-CONFIG_IP_NF_MATCH_PKTTYPE=m
+-CONFIG_IP_NF_MATCH_MARK=m
+-CONFIG_IP_NF_MATCH_MULTIPORT=m
+-CONFIG_IP_NF_MATCH_TOS=m
+-CONFIG_IP_NF_MATCH_RECENT=m
+-CONFIG_IP_NF_MATCH_ECN=m
+-CONFIG_IP_NF_MATCH_DSCP=m
+-CONFIG_IP_NF_MATCH_AH_ESP=m
+-CONFIG_IP_NF_MATCH_LENGTH=m
+-CONFIG_IP_NF_MATCH_TTL=m
+-CONFIG_IP_NF_MATCH_TCPMSS=m
+-CONFIG_IP_NF_MATCH_HELPER=m
+-CONFIG_IP_NF_MATCH_STATE=m
+-CONFIG_IP_NF_MATCH_CONNTRACK=m
+-CONFIG_IP_NF_MATCH_OWNER=m
+-CONFIG_IP_NF_MATCH_ADDRTYPE=m
+-CONFIG_IP_NF_MATCH_REALM=m
+-CONFIG_IP_NF_MATCH_SCTP=m
+-CONFIG_IP_NF_MATCH_COMMENT=m
+-CONFIG_IP_NF_MATCH_CONNMARK=m
+-CONFIG_IP_NF_MATCH_HASHLIMIT=m
+-CONFIG_IP_NF_FILTER=m
+-CONFIG_IP_NF_TARGET_REJECT=m
+-CONFIG_IP_NF_TARGET_LOG=m
+-CONFIG_IP_NF_TARGET_ULOG=m
+-CONFIG_IP_NF_TARGET_TCPMSS=m
+-CONFIG_IP_NF_NAT=m
+-CONFIG_IP_NF_NAT_NEEDED=y
+-CONFIG_IP_NF_TARGET_MASQUERADE=m
+-CONFIG_IP_NF_TARGET_REDIRECT=m
+-CONFIG_IP_NF_TARGET_NETMAP=m
+-CONFIG_IP_NF_TARGET_SAME=m
+-CONFIG_IP_NF_NAT_SNMP_BASIC=m
+-CONFIG_IP_NF_NAT_IRC=m
+-CONFIG_IP_NF_NAT_FTP=m
+-CONFIG_IP_NF_NAT_TFTP=m
+-CONFIG_IP_NF_NAT_AMANDA=m
+-CONFIG_IP_NF_MANGLE=m
+-CONFIG_IP_NF_TARGET_TOS=m
+-CONFIG_IP_NF_TARGET_ECN=m
+-CONFIG_IP_NF_TARGET_DSCP=m
+-CONFIG_IP_NF_TARGET_MARK=m
+-CONFIG_IP_NF_TARGET_CLASSIFY=m
+-CONFIG_IP_NF_TARGET_CONNMARK=m
+-CONFIG_IP_NF_TARGET_CLUSTERIP=m
+-CONFIG_IP_NF_RAW=m
+-CONFIG_IP_NF_TARGET_NOTRACK=m
+-CONFIG_IP_NF_ARPTABLES=m
+-# CONFIG_IP_NF_ARPFILTER is not set
+-# CONFIG_IP_NF_ARP_MANGLE is not set
++# CONFIG_IP_NF_IPTABLES is not set
++# CONFIG_IP_NF_ARPTABLES is not set
++
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
+ 
+ #
+ # SCTP Configuration (EXPERIMENTAL)
+ #
+ # CONFIG_IP_SCTP is not set
++
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
+ # CONFIG_ATM is not set
+ # CONFIG_BRIDGE is not set
+ # CONFIG_VLAN_8021Q is not set
+@@ -326,6 +338,10 @@ CONFIG_IP_NF_ARPTABLES=m
+ # CONFIG_NET_DIVERT is not set
+ # CONFIG_ECONET is not set
+ # CONFIG_WAN_ROUTER is not set
++
++#
++# QoS and/or fair queueing
++#
+ # CONFIG_NET_SCHED is not set
+ CONFIG_NET_CLS_ROUTE=y
+ 
+@@ -333,13 +349,11 @@ CONFIG_NET_CLS_ROUTE=y
+ # Network testing
+ #
+ # CONFIG_NET_PKTGEN is not set
+-CONFIG_NETPOLL=y
+-# CONFIG_NETPOLL_RX is not set
+-# CONFIG_NETPOLL_TRAP is not set
+-CONFIG_NET_POLL_CONTROLLER=y
+ # CONFIG_HAMRADIO is not set
+ # CONFIG_IRDA is not set
+ # CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
++CONFIG_WIRELESS_EXT=y
+ 
+ #
+ # Device Drivers
+@@ -352,6 +366,12 @@ CONFIG_NET_POLL_CONTROLLER=y
+ CONFIG_PREVENT_FIRMWARE_BUILD=y
+ CONFIG_FW_LOADER=m
+ # CONFIG_DEBUG_DRIVER is not set
++# CONFIG_SYS_HYPERVISOR is not set
++
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
+ 
+ #
+ # Memory Technology Devices (MTD)
+@@ -367,6 +387,7 @@ CONFIG_PARPORT_SERIAL=m
+ CONFIG_PARPORT_PC_FIFO=y
+ CONFIG_PARPORT_PC_SUPERIO=y
+ # CONFIG_PARPORT_GSC is not set
++# CONFIG_PARPORT_AX88796 is not set
+ CONFIG_PARPORT_1284=y
+ 
+ #
+@@ -378,7 +399,6 @@ CONFIG_PARPORT_1284=y
+ # Block devices
+ #
+ CONFIG_BLK_DEV_FD=m
+-CONFIG_MAC_FLOPPY=m
+ # CONFIG_BLK_DEV_XD is not set
+ # CONFIG_PARIDE is not set
+ # CONFIG_BLK_CPQ_DA is not set
+@@ -394,18 +414,9 @@ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_COUNT=16
+ CONFIG_BLK_DEV_RAM_SIZE=4096
++CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_INITRAMFS_SOURCE=""
+-CONFIG_LBD=y
+ # CONFIG_CDROM_PKTCDVD is not set
+-
+-#
+-# IO Schedulers
+-#
+-CONFIG_IOSCHED_NOOP=y
+-CONFIG_IOSCHED_AS=y
+-CONFIG_IOSCHED_DEADLINE=y
+-CONFIG_IOSCHED_CFQ=y
+ # CONFIG_ATA_OVER_ETH is not set
+ 
+ #
+@@ -422,7 +433,7 @@ CONFIG_BLK_DEV_IDEDISK=y
+ # CONFIG_IDEDISK_MULTI_MODE is not set
+ CONFIG_BLK_DEV_IDECD=y
+ # CONFIG_BLK_DEV_IDETAPE is not set
+-CONFIG_BLK_DEV_IDEFLOPPY=y
++# CONFIG_BLK_DEV_IDEFLOPPY is not set
+ CONFIG_BLK_DEV_IDESCSI=y
+ # CONFIG_IDE_TASK_IOCTL is not set
+ 
+@@ -435,7 +446,7 @@ CONFIG_IDEPCI_SHARE_IRQ=y
+ # CONFIG_BLK_DEV_OFFBOARD is not set
+ CONFIG_BLK_DEV_GENERIC=y
+ # CONFIG_BLK_DEV_OPTI621 is not set
+-# CONFIG_BLK_DEV_SL82C105 is not set
++CONFIG_BLK_DEV_SL82C105=y
+ CONFIG_BLK_DEV_IDEDMA_PCI=y
+ # CONFIG_BLK_DEV_IDEDMA_FORCED is not set
+ CONFIG_IDEDMA_PCI_AUTO=y
+@@ -443,7 +454,7 @@ CONFIG_IDEDMA_PCI_AUTO=y
+ # CONFIG_BLK_DEV_AEC62XX is not set
+ # CONFIG_BLK_DEV_ALI15X3 is not set
+ # CONFIG_BLK_DEV_AMD74XX is not set
+-CONFIG_BLK_DEV_CMD64X=y
++# CONFIG_BLK_DEV_CMD64X is not set
+ # CONFIG_BLK_DEV_TRIFLEX is not set
+ # CONFIG_BLK_DEV_CY82C693 is not set
+ # CONFIG_BLK_DEV_CS5520 is not set
+@@ -455,17 +466,12 @@ CONFIG_BLK_DEV_CMD64X=y
+ # CONFIG_BLK_DEV_IT821X is not set
+ # CONFIG_BLK_DEV_NS87415 is not set
+ # CONFIG_BLK_DEV_PDC202XX_OLD is not set
+-CONFIG_BLK_DEV_PDC202XX_NEW=y
+-# CONFIG_PDC202XX_FORCE is not set
++# CONFIG_BLK_DEV_PDC202XX_NEW is not set
+ # CONFIG_BLK_DEV_SVWKS is not set
+ # CONFIG_BLK_DEV_SIIMAGE is not set
+ # CONFIG_BLK_DEV_SLC90E66 is not set
+ # CONFIG_BLK_DEV_TRM290 is not set
+ # CONFIG_BLK_DEV_VIA82CXXX is not set
+-CONFIG_BLK_DEV_IDE_PMAC=y
+-CONFIG_BLK_DEV_IDE_PMAC_ATA100FIRST=y
+-CONFIG_BLK_DEV_IDEDMA_PMAC=y
+-CONFIG_BLK_DEV_IDE_PMAC_BLINK=y
+ # CONFIG_IDE_ARM is not set
+ # CONFIG_IDE_CHIPSETS is not set
+ CONFIG_BLK_DEV_IDEDMA=y
+@@ -476,6 +482,7 @@ CONFIG_IDEDMA_AUTO=y
+ #
+ # SCSI device support
+ #
++# CONFIG_RAID_ATTRS is not set
+ CONFIG_SCSI=y
+ CONFIG_SCSI_PROC_FS=y
+ 
+@@ -503,10 +510,12 @@ CONFIG_SCSI_LOGGING=y
+ CONFIG_SCSI_SPI_ATTRS=y
+ # CONFIG_SCSI_FC_ATTRS is not set
+ # CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_ATTRS is not set
+ 
+ #
+ # SCSI low-level drivers
+ #
++# CONFIG_ISCSI_TCP is not set
+ # CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+ # CONFIG_SCSI_3W_9XXX is not set
+ # CONFIG_SCSI_7000FASST is not set
+@@ -514,19 +523,16 @@ CONFIG_SCSI_SPI_ATTRS=y
+ # CONFIG_SCSI_AHA152X is not set
+ # CONFIG_SCSI_AHA1542 is not set
+ # CONFIG_SCSI_AACRAID is not set
+-CONFIG_SCSI_AIC7XXX=m
+-CONFIG_AIC7XXX_CMDS_PER_DEVICE=253
+-CONFIG_AIC7XXX_RESET_DELAY_MS=15000
+-CONFIG_AIC7XXX_DEBUG_ENABLE=y
+-CONFIG_AIC7XXX_DEBUG_MASK=0
+-CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+-CONFIG_SCSI_AIC7XXX_OLD=m
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
+ # CONFIG_SCSI_AIC79XX is not set
+ # CONFIG_SCSI_DPT_I2O is not set
+ # CONFIG_SCSI_IN2000 is not set
+ # CONFIG_MEGARAID_NEWGEN is not set
+ # CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_MEGARAID_SAS is not set
+ # CONFIG_SCSI_SATA is not set
++# CONFIG_SCSI_HPTIOP is not set
+ # CONFIG_SCSI_BUSLOGIC is not set
+ # CONFIG_SCSI_DMX3191D is not set
+ # CONFIG_SCSI_DTC3280 is not set
+@@ -545,19 +551,13 @@ CONFIG_SCSI_SYM53C8XX_2=y
+ CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
+ CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+ CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+-# CONFIG_SCSI_SYM53C8XX_IOMAPPED is not set
++CONFIG_SCSI_SYM53C8XX_MMIO=y
+ # CONFIG_SCSI_IPR is not set
+ # CONFIG_SCSI_PAS16 is not set
+ # CONFIG_SCSI_PSI240I is not set
+ # CONFIG_SCSI_QLOGIC_FAS is not set
+-# CONFIG_SCSI_QLOGIC_FC is not set
+ # CONFIG_SCSI_QLOGIC_1280 is not set
+-CONFIG_SCSI_QLA2XXX=y
+-# CONFIG_SCSI_QLA21XX is not set
+-# CONFIG_SCSI_QLA22XX is not set
+-# CONFIG_SCSI_QLA2300 is not set
+-# CONFIG_SCSI_QLA2322 is not set
+-# CONFIG_SCSI_QLA6312 is not set
++# CONFIG_SCSI_QLA_FC is not set
+ # CONFIG_SCSI_LPFC is not set
+ # CONFIG_SCSI_SYM53C416 is not set
+ # CONFIG_SCSI_DC395x is not set
+@@ -566,10 +566,6 @@ CONFIG_SCSI_QLA2XXX=y
+ # CONFIG_SCSI_U14_34F is not set
+ # CONFIG_SCSI_NSP32 is not set
+ # CONFIG_SCSI_DEBUG is not set
+-CONFIG_SCSI_MESH=y
+-CONFIG_SCSI_MESH_SYNC_RATE=5
+-CONFIG_SCSI_MESH_RESET_DELAY_MS=4000
+-CONFIG_SCSI_MAC53C94=y
+ 
+ #
+ # Old CD-ROM drivers (not SCSI, not IDE)
+@@ -587,6 +583,7 @@ CONFIG_SCSI_MAC53C94=y
+ # CONFIG_FUSION is not set
+ # CONFIG_FUSION_SPI is not set
+ # CONFIG_FUSION_FC is not set
++# CONFIG_FUSION_SAS is not set
+ 
+ #
+ # IEEE 1394 (FireWire) support
+@@ -613,12 +610,9 @@ CONFIG_IEEE1394_OHCI1394=m
+ #
+ CONFIG_IEEE1394_VIDEO1394=m
+ CONFIG_IEEE1394_SBP2=m
+-# CONFIG_IEEE1394_SBP2_PHYS_DMA is not set
+ CONFIG_IEEE1394_ETH1394=m
+ CONFIG_IEEE1394_DV1394=m
+ CONFIG_IEEE1394_RAWIO=m
+-CONFIG_IEEE1394_CMP=m
+-CONFIG_IEEE1394_AMDTP=m
+ 
+ #
+ # I2O device support
+@@ -628,18 +622,7 @@ CONFIG_IEEE1394_AMDTP=m
+ #
+ # Macintosh device drivers
+ #
+-CONFIG_ADB=y
+-CONFIG_ADB_CUDA=y
+-CONFIG_ADB_PMU=y
+-CONFIG_PMAC_APM_EMU=y
+-CONFIG_PMAC_MEDIABAY=y
+-CONFIG_PMAC_BACKLIGHT=y
+-CONFIG_ADB_MACIO=y
+-CONFIG_INPUT_ADBHID=y
+-CONFIG_MAC_EMUMOUSEBTN=y
+-CONFIG_THERM_WINDTUNNEL=m
+-CONFIG_THERM_ADT746X=m
+-# CONFIG_ANSLCD is not set
++# CONFIG_WINDFARM is not set
+ 
+ #
+ # Network device support
+@@ -656,15 +639,18 @@ CONFIG_TUN=m
+ # CONFIG_ARCNET is not set
+ 
+ #
++# PHY device support
++#
++# CONFIG_PHYLIB is not set
++
++#
+ # Ethernet (10 or 100Mbit)
+ #
+ CONFIG_NET_ETHERNET=y
+ CONFIG_MII=y
+-CONFIG_MACE=y
+-# CONFIG_MACE_AAUI_PORT is not set
+-CONFIG_BMAC=y
+ # CONFIG_HAPPYMEAL is not set
+-CONFIG_SUNGEM=y
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
+ # CONFIG_NET_VENDOR_3COM is not set
+ # CONFIG_LANCE is not set
+ # CONFIG_NET_VENDOR_SMC is not set
+@@ -682,6 +668,7 @@ CONFIG_TULIP_MMIO=y
+ CONFIG_DE4X5=m
+ # CONFIG_WINBOND_840 is not set
+ # CONFIG_DM9102 is not set
++# CONFIG_ULI526X is not set
+ # CONFIG_PCMCIA_XIRCOM is not set
+ # CONFIG_PCMCIA_XIRTULIP is not set
+ # CONFIG_AT1700 is not set
+@@ -722,18 +709,21 @@ CONFIG_PCNET32=y
+ # CONFIG_HAMACHI is not set
+ # CONFIG_YELLOWFIN is not set
+ # CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
+ # CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
+ # CONFIG_SK98LIN is not set
+ # CONFIG_VIA_VELOCITY is not set
+ # CONFIG_TIGON3 is not set
+ # CONFIG_BNX2 is not set
+-# CONFIG_MV643XX_ETH is not set
+ 
+ #
+ # Ethernet (10000 Mbit)
+ #
++# CONFIG_CHELSIO_T1 is not set
+ # CONFIG_IXGB is not set
+ # CONFIG_S2IO is not set
++# CONFIG_MYRI10GE is not set
+ 
+ #
+ # Token Ring devices
+@@ -744,6 +734,7 @@ CONFIG_PCNET32=y
+ # Wireless LAN (non-hamradio)
+ #
+ CONFIG_NET_RADIO=y
++# CONFIG_NET_WIRELESS_RTNETLINK is not set
+ 
+ #
+ # Obsolete Wireless cards support (pre-802.11)
+@@ -755,11 +746,13 @@ CONFIG_NET_RADIO=y
+ #
+ # Wireless 802.11b ISA/PCI cards support
+ #
++# CONFIG_IPW2100 is not set
++# CONFIG_IPW2200 is not set
+ # CONFIG_AIRO is not set
+ CONFIG_HERMES=m
+-CONFIG_APPLE_AIRPORT=m
+ # CONFIG_PLX_HERMES is not set
+ # CONFIG_TMD_HERMES is not set
++# CONFIG_NORTEL_HERMES is not set
+ # CONFIG_PCI_HERMES is not set
+ # CONFIG_ATMEL is not set
+ 
+@@ -767,6 +760,8 @@ CONFIG_APPLE_AIRPORT=m
+ # Prism GT/Duette 802.11(a/b/g) PCI/Cardbus support
+ #
+ # CONFIG_PRISM54 is not set
++# CONFIG_USB_ZD1201 is not set
++# CONFIG_HOSTAP is not set
+ CONFIG_NET_WIRELESS=y
+ 
+ #
+@@ -783,11 +778,16 @@ CONFIG_PPP_ASYNC=y
+ # CONFIG_PPP_SYNC_TTY is not set
+ CONFIG_PPP_DEFLATE=y
+ CONFIG_PPP_BSDCOMP=m
++# CONFIG_PPP_MPPE is not set
+ CONFIG_PPPOE=m
+ # CONFIG_SLIP is not set
+ # CONFIG_NET_FC is not set
+ # CONFIG_SHAPER is not set
+ CONFIG_NETCONSOLE=m
++CONFIG_NETPOLL=y
++# CONFIG_NETPOLL_RX is not set
++# CONFIG_NETPOLL_TRAP is not set
++CONFIG_NET_POLL_CONTROLLER=y
+ 
+ #
+ # ISDN subsystem
+@@ -835,7 +835,7 @@ CONFIG_MOUSE_PS2=y
+ # CONFIG_INPUT_JOYSTICK is not set
+ # CONFIG_INPUT_TOUCHSCREEN is not set
+ CONFIG_INPUT_MISC=y
+-# CONFIG_INPUT_PCSPKR is not set
++CONFIG_INPUT_PCSPKR=m
+ CONFIG_INPUT_UINPUT=m
+ 
+ #
+@@ -856,6 +856,7 @@ CONFIG_SERIO_LIBPS2=y
+ CONFIG_VT=y
+ CONFIG_VT_CONSOLE=y
+ CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
+ # CONFIG_SERIAL_NONSTANDARD is not set
+ 
+ #
+@@ -863,7 +864,9 @@ CONFIG_HW_CONSOLE=y
+ #
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_PCI=y
+ CONFIG_SERIAL_8250_NR_UARTS=4
++CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+ # CONFIG_SERIAL_8250_EXTENDED is not set
+ 
+ #
+@@ -871,8 +874,6 @@ CONFIG_SERIAL_8250_NR_UARTS=4
+ #
+ CONFIG_SERIAL_CORE=y
+ CONFIG_SERIAL_CORE_CONSOLE=y
+-CONFIG_SERIAL_PMACZILOG=y
+-CONFIG_SERIAL_PMACZILOG_CONSOLE=y
+ # CONFIG_SERIAL_JSM is not set
+ CONFIG_UNIX98_PTYS=y
+ CONFIG_LEGACY_PTYS=y
+@@ -890,6 +891,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # Watchdog Cards
+ #
+ # CONFIG_WATCHDOG is not set
++# CONFIG_HW_RANDOM is not set
+ CONFIG_NVRAM=y
+ CONFIG_GEN_RTC=y
+ # CONFIG_GEN_RTC_X is not set
+@@ -900,21 +902,15 @@ CONFIG_GEN_RTC=y
+ #
+ # Ftape, the floppy tape device driver
+ #
+-CONFIG_AGP=m
+-CONFIG_AGP_UNINORTH=m
+-CONFIG_DRM=m
+-# CONFIG_DRM_TDFX is not set
+-CONFIG_DRM_R128=m
+-CONFIG_DRM_RADEON=m
+-# CONFIG_DRM_MGA is not set
+-# CONFIG_DRM_SIS is not set
+-# CONFIG_DRM_VIA is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
+ # CONFIG_RAW_DRIVER is not set
+ 
+ #
+ # TPM devices
+ #
+ # CONFIG_TCG_TPM is not set
++# CONFIG_TELCLOCK is not set
+ 
+ #
+ # I2C support
+@@ -938,19 +934,16 @@ CONFIG_I2C_ALGOBIT=y
+ # CONFIG_I2C_AMD756 is not set
+ # CONFIG_I2C_AMD8111 is not set
+ # CONFIG_I2C_ELEKTOR is not set
+-CONFIG_I2C_HYDRA=y
+ # CONFIG_I2C_I801 is not set
+ # CONFIG_I2C_I810 is not set
+ # CONFIG_I2C_PIIX4 is not set
+-# CONFIG_I2C_ISA is not set
+-CONFIG_I2C_KEYWEST=m
+ # CONFIG_I2C_MPC is not set
+ # CONFIG_I2C_NFORCE2 is not set
++# CONFIG_I2C_OCORES is not set
+ # CONFIG_I2C_PARPORT is not set
+ # CONFIG_I2C_PARPORT_LIGHT is not set
+ # CONFIG_I2C_PROSAVAGE is not set
+ # CONFIG_I2C_SAVAGE4 is not set
+-# CONFIG_SCx200_ACB is not set
+ # CONFIG_I2C_SIS5595 is not set
+ # CONFIG_I2C_SIS630 is not set
+ # CONFIG_I2C_SIS96X is not set
+@@ -959,7 +952,6 @@ CONFIG_I2C_KEYWEST=m
+ # CONFIG_I2C_VIAPRO is not set
+ # CONFIG_I2C_VOODOO3 is not set
+ # CONFIG_I2C_PCA_ISA is not set
+-# CONFIG_I2C_SENSOR is not set
+ 
+ #
+ # Miscellaneous I2C Chip support
+@@ -970,7 +962,6 @@ CONFIG_I2C_KEYWEST=m
+ # CONFIG_SENSORS_PCF8574 is not set
+ # CONFIG_SENSORS_PCA9539 is not set
+ # CONFIG_SENSORS_PCF8591 is not set
+-# CONFIG_SENSORS_RTC8564 is not set
+ # CONFIG_SENSORS_M41T00 is not set
+ # CONFIG_SENSORS_MAX6875 is not set
+ # CONFIG_I2C_DEBUG_CORE is not set
+@@ -979,14 +970,20 @@ CONFIG_I2C_KEYWEST=m
+ # CONFIG_I2C_DEBUG_CHIP is not set
+ 
+ #
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
+ # Dallas's 1-wire bus
+ #
+-# CONFIG_W1 is not set
+ 
+ #
+ # Hardware Monitoring support
+ #
+ # CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
+ 
+ #
+ # Misc devices
+@@ -996,38 +993,36 @@ CONFIG_I2C_KEYWEST=m
+ # Multimedia devices
+ #
+ # CONFIG_VIDEO_DEV is not set
++CONFIG_VIDEO_V4L2=y
+ 
+ #
+ # Digital Video Broadcasting Devices
+ #
+ # CONFIG_DVB is not set
++# CONFIG_USB_DABUSB is not set
+ 
+ #
+ # Graphics support
+ #
++# CONFIG_FIRMWARE_EDID is not set
+ CONFIG_FB=y
+ CONFIG_FB_CFB_FILLRECT=y
+ CONFIG_FB_CFB_COPYAREA=y
+ CONFIG_FB_CFB_IMAGEBLIT=y
+-CONFIG_FB_SOFT_CURSOR=y
+-CONFIG_FB_MACMODES=y
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
+ # CONFIG_FB_CIRRUS is not set
+ # CONFIG_FB_PM2 is not set
+ # CONFIG_FB_CYBER2000 is not set
+-CONFIG_FB_OF=y
+-CONFIG_FB_CONTROL=y
+-CONFIG_FB_PLATINUM=y
+-CONFIG_FB_VALKYRIE=y
+-CONFIG_FB_CT65550=y
++# CONFIG_FB_CT65550 is not set
+ # CONFIG_FB_ASILIANT is not set
+-CONFIG_FB_IMSTT=y
++# CONFIG_FB_IMSTT is not set
+ # CONFIG_FB_VGA16 is not set
++# CONFIG_FB_S1D13XXX is not set
+ # CONFIG_FB_NVIDIA is not set
+-CONFIG_FB_RIVA=y
+-CONFIG_FB_RIVA_I2C=y
+-# CONFIG_FB_RIVA_DEBUG is not set
++# CONFIG_FB_RIVA is not set
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_MILLENIUM=y
+ CONFIG_FB_MATROX_MYSTIQUE=y
+@@ -1035,34 +1030,27 @@ CONFIG_FB_MATROX_G=y
+ CONFIG_FB_MATROX_I2C=y
+ CONFIG_FB_MATROX_MAVEN=m
+ # CONFIG_FB_MATROX_MULTIHEAD is not set
+-# CONFIG_FB_RADEON_OLD is not set
+-CONFIG_FB_RADEON=y
+-CONFIG_FB_RADEON_I2C=y
+-# CONFIG_FB_RADEON_DEBUG is not set
+-CONFIG_FB_ATY128=y
+-CONFIG_FB_ATY=y
+-CONFIG_FB_ATY_CT=y
+-CONFIG_FB_ATY_GENERIC_LCD=y
+-CONFIG_FB_ATY_XL_INIT=y
+-CONFIG_FB_ATY_GX=y
++# CONFIG_FB_RADEON is not set
++# CONFIG_FB_ATY128 is not set
++# CONFIG_FB_ATY is not set
+ # CONFIG_FB_SAVAGE is not set
+ # CONFIG_FB_SIS is not set
+ # CONFIG_FB_NEOMAGIC is not set
+ # CONFIG_FB_KYRO is not set
+-CONFIG_FB_3DFX=y
+-# CONFIG_FB_3DFX_ACCEL is not set
++# CONFIG_FB_3DFX is not set
+ # CONFIG_FB_VOODOO1 is not set
+ # CONFIG_FB_TRIDENT is not set
+-# CONFIG_FB_S1D13XXX is not set
+ # CONFIG_FB_VIRTUAL is not set
+ 
+ #
+ # Console display driver support
+ #
+ CONFIG_VGA_CONSOLE=y
++# CONFIG_VGACON_SOFT_SCROLLBACK is not set
+ # CONFIG_MDA_CONSOLE is not set
+ CONFIG_DUMMY_CONSOLE=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
++# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+ # CONFIG_FONTS is not set
+ CONFIG_FONT_8x8=y
+ CONFIG_FONT_8x16=y
+@@ -1080,8 +1068,6 @@ CONFIG_LOGO_LINUX_CLUT224=y
+ # Sound
+ #
+ CONFIG_SOUND=m
+-CONFIG_DMASOUND_PMAC=m
+-CONFIG_DMASOUND=m
+ 
+ #
+ # Advanced Linux Sound Architecture
+@@ -1096,10 +1082,13 @@ CONFIG_SND_SEQUENCER=m
+ CONFIG_SND_OSSEMUL=y
+ CONFIG_SND_MIXER_OSS=m
+ CONFIG_SND_PCM_OSS=m
++CONFIG_SND_PCM_OSS_PLUGINS=y
+ CONFIG_SND_SEQUENCER_OSS=y
++# CONFIG_SND_DYNAMIC_MINORS is not set
++CONFIG_SND_SUPPORT_OLD_API=y
++CONFIG_SND_VERBOSE_PROCFS=y
+ # CONFIG_SND_VERBOSE_PRINTK is not set
+ # CONFIG_SND_DEBUG is not set
+-CONFIG_SND_GENERIC_PM=y
+ 
+ #
+ # Generic devices
+@@ -1116,7 +1105,9 @@ CONFIG_SND_OPL3_LIB=m
+ # ISA devices
+ #
+ CONFIG_SND_CS4231_LIB=m
++# CONFIG_SND_ADLIB is not set
+ # CONFIG_SND_AD1848 is not set
++# CONFIG_SND_CMI8330 is not set
+ # CONFIG_SND_CS4231 is not set
+ CONFIG_SND_CS4232=m
+ # CONFIG_SND_CS4236 is not set
+@@ -1125,23 +1116,24 @@ CONFIG_SND_CS4232=m
+ # CONFIG_SND_GUSCLASSIC is not set
+ # CONFIG_SND_GUSEXTREME is not set
+ # CONFIG_SND_GUSMAX is not set
+-# CONFIG_SND_INTERWAVE is not set
+-# CONFIG_SND_INTERWAVE_STB is not set
++# CONFIG_SND_OPL3SA2 is not set
+ # CONFIG_SND_OPTI92X_AD1848 is not set
+ # CONFIG_SND_OPTI92X_CS4231 is not set
+ # CONFIG_SND_OPTI93X is not set
++# CONFIG_SND_MIRO is not set
+ # CONFIG_SND_SB8 is not set
+ # CONFIG_SND_SB16 is not set
+ # CONFIG_SND_SBAWE is not set
+-# CONFIG_SND_WAVEFRONT is not set
+-# CONFIG_SND_CMI8330 is not set
+-# CONFIG_SND_OPL3SA2 is not set
+ # CONFIG_SND_SGALAXY is not set
+ # CONFIG_SND_SSCAPE is not set
++# CONFIG_SND_WAVEFRONT is not set
+ 
+ #
+ # PCI devices
+ #
++# CONFIG_SND_AD1889 is not set
++# CONFIG_SND_ALS300 is not set
++# CONFIG_SND_ALS4000 is not set
+ # CONFIG_SND_ALI5451 is not set
+ # CONFIG_SND_ATIIXP is not set
+ # CONFIG_SND_ATIIXP_MODEM is not set
+@@ -1150,43 +1142,61 @@ CONFIG_SND_CS4232=m
+ # CONFIG_SND_AU8830 is not set
+ # CONFIG_SND_AZT3328 is not set
+ # CONFIG_SND_BT87X is not set
+-# CONFIG_SND_CS46XX is not set
++# CONFIG_SND_CA0106 is not set
++# CONFIG_SND_CMIPCI is not set
+ # CONFIG_SND_CS4281 is not set
++# CONFIG_SND_CS46XX is not set
++# CONFIG_SND_DARLA20 is not set
++# CONFIG_SND_GINA20 is not set
++# CONFIG_SND_LAYLA20 is not set
++# CONFIG_SND_DARLA24 is not set
++# CONFIG_SND_GINA24 is not set
++# CONFIG_SND_LAYLA24 is not set
++# CONFIG_SND_MONA is not set
++# CONFIG_SND_MIA is not set
++# CONFIG_SND_ECHO3G is not set
++# CONFIG_SND_INDIGO is not set
++# CONFIG_SND_INDIGOIO is not set
++# CONFIG_SND_INDIGODJ is not set
+ # CONFIG_SND_EMU10K1 is not set
+ # CONFIG_SND_EMU10K1X is not set
+-# CONFIG_SND_CA0106 is not set
+-# CONFIG_SND_KORG1212 is not set
+-# CONFIG_SND_MIXART is not set
+-# CONFIG_SND_NM256 is not set
+-# CONFIG_SND_RME32 is not set
+-# CONFIG_SND_RME96 is not set
+-# CONFIG_SND_RME9652 is not set
+-# CONFIG_SND_HDSP is not set
+-# CONFIG_SND_HDSPM is not set
+-# CONFIG_SND_TRIDENT is not set
+-# CONFIG_SND_YMFPCI is not set
+-# CONFIG_SND_ALS4000 is not set
+-# CONFIG_SND_CMIPCI is not set
+ # CONFIG_SND_ENS1370 is not set
+ # CONFIG_SND_ENS1371 is not set
+ # CONFIG_SND_ES1938 is not set
+ # CONFIG_SND_ES1968 is not set
+-# CONFIG_SND_MAESTRO3 is not set
+ # CONFIG_SND_FM801 is not set
++# CONFIG_SND_HDA_INTEL is not set
++# CONFIG_SND_HDSP is not set
++# CONFIG_SND_HDSPM is not set
+ # CONFIG_SND_ICE1712 is not set
+ # CONFIG_SND_ICE1724 is not set
+ # CONFIG_SND_INTEL8X0 is not set
+ # CONFIG_SND_INTEL8X0M is not set
++# CONFIG_SND_KORG1212 is not set
++# CONFIG_SND_MAESTRO3 is not set
++# CONFIG_SND_MIXART is not set
++# CONFIG_SND_NM256 is not set
++# CONFIG_SND_PCXHR is not set
++# CONFIG_SND_RIPTIDE is not set
++# CONFIG_SND_RME32 is not set
++# CONFIG_SND_RME96 is not set
++# CONFIG_SND_RME9652 is not set
+ # CONFIG_SND_SONICVIBES is not set
++# CONFIG_SND_TRIDENT is not set
+ # CONFIG_SND_VIA82XX is not set
+ # CONFIG_SND_VIA82XX_MODEM is not set
+ # CONFIG_SND_VX222 is not set
+-# CONFIG_SND_HDA_INTEL is not set
++# CONFIG_SND_YMFPCI is not set
+ 
+ #
+ # ALSA PowerMac devices
+ #
+-CONFIG_SND_POWERMAC=m
++
++#
++# Apple Onboard Audio driver
++#
++# CONFIG_SND_AOA is not set
++# CONFIG_SND_AOA_SOUNDBUS is not set
+ 
+ #
+ # USB devices
+@@ -1204,6 +1214,7 @@ CONFIG_SND_USB_AUDIO=m
+ #
+ CONFIG_USB_ARCH_HAS_HCD=y
+ CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
+ CONFIG_USB=y
+ # CONFIG_USB_DEBUG is not set
+ 
+@@ -1222,6 +1233,7 @@ CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_EHCI_HCD=m
+ CONFIG_USB_EHCI_SPLIT_ISO=y
+ CONFIG_USB_EHCI_ROOT_HUB_TT=y
++# CONFIG_USB_EHCI_TT_NEWSCHED is not set
+ # CONFIG_USB_ISP116X_HCD is not set
+ CONFIG_USB_OHCI_HCD=y
+ # CONFIG_USB_OHCI_BIG_ENDIAN is not set
+@@ -1232,14 +1244,15 @@ CONFIG_USB_UHCI_HCD=m
+ #
+ # USB Device Class drivers
+ #
+-# CONFIG_USB_AUDIO is not set
+-# CONFIG_USB_BLUETOOTH_TTY is not set
+-# CONFIG_USB_MIDI is not set
+ CONFIG_USB_ACM=m
+ CONFIG_USB_PRINTER=m
+ 
+ #
+-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support' may also be needed; see USB_STORAGE Help for more information
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# may also be needed; see USB_STORAGE Help for more information
+ #
+ CONFIG_USB_STORAGE=m
+ # CONFIG_USB_STORAGE_DEBUG is not set
+@@ -1251,12 +1264,15 @@ CONFIG_USB_STORAGE_USBAT=y
+ CONFIG_USB_STORAGE_SDDR09=y
+ CONFIG_USB_STORAGE_SDDR55=y
+ CONFIG_USB_STORAGE_JUMPSHOT=y
++# CONFIG_USB_STORAGE_ALAUDA is not set
++# CONFIG_USB_LIBUSUAL is not set
+ 
+ #
+ # USB Input Devices
+ #
+ CONFIG_USB_HID=y
+ CONFIG_USB_HIDINPUT=y
++# CONFIG_USB_HIDINPUT_POWERBOOK is not set
+ # CONFIG_HID_FF is not set
+ CONFIG_USB_HIDDEV=y
+ # CONFIG_USB_AIPTEK is not set
+@@ -1264,12 +1280,13 @@ CONFIG_USB_HIDDEV=y
+ # CONFIG_USB_ACECAD is not set
+ # CONFIG_USB_KBTAB is not set
+ # CONFIG_USB_POWERMATE is not set
+-# CONFIG_USB_MTOUCH is not set
+-# CONFIG_USB_ITMTOUCH is not set
+-# CONFIG_USB_EGALAX is not set
++# CONFIG_USB_TOUCHSCREEN is not set
++# CONFIG_USB_YEALINK is not set
+ # CONFIG_USB_XPAD is not set
+ # CONFIG_USB_ATI_REMOTE is not set
++# CONFIG_USB_ATI_REMOTE2 is not set
+ # CONFIG_USB_KEYSPAN_REMOTE is not set
++# CONFIG_USB_APPLETOUCH is not set
+ 
+ #
+ # USB Imaging devices
+@@ -1278,15 +1295,6 @@ CONFIG_USB_HIDDEV=y
+ # CONFIG_USB_MICROTEK is not set
+ 
+ #
+-# USB Multimedia devices
+-#
+-# CONFIG_USB_DABUSB is not set
+-
+-#
+-# Video4Linux support is needed for USB Multimedia device support
+-#
+-
+-#
+ # USB Network Adapters
+ #
+ # CONFIG_USB_CATC is not set
+@@ -1294,7 +1302,6 @@ CONFIG_USB_HIDDEV=y
+ CONFIG_USB_PEGASUS=m
+ # CONFIG_USB_RTL8150 is not set
+ # CONFIG_USB_USBNET is not set
+-# CONFIG_USB_ZD1201 is not set
+ # CONFIG_USB_MON is not set
+ 
+ #
+@@ -1308,6 +1315,7 @@ CONFIG_USB_PEGASUS=m
+ CONFIG_USB_SERIAL=m
+ # CONFIG_USB_SERIAL_GENERIC is not set
+ # CONFIG_USB_SERIAL_AIRPRIME is not set
++# CONFIG_USB_SERIAL_ARK3116 is not set
+ # CONFIG_USB_SERIAL_BELKIN is not set
+ # CONFIG_USB_SERIAL_WHITEHEAT is not set
+ # CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set
+@@ -1315,6 +1323,7 @@ CONFIG_USB_SERIAL=m
+ # CONFIG_USB_SERIAL_CYPRESS_M8 is not set
+ # CONFIG_USB_SERIAL_EMPEG is not set
+ # CONFIG_USB_SERIAL_FTDI_SIO is not set
++# CONFIG_USB_SERIAL_FUNSOFT is not set
+ CONFIG_USB_SERIAL_VISOR=m
+ # CONFIG_USB_SERIAL_IPAQ is not set
+ # CONFIG_USB_SERIAL_IR is not set
+@@ -1339,9 +1348,11 @@ CONFIG_USB_SERIAL_KEYSPAN_USA49WLC=y
+ # CONFIG_USB_SERIAL_KLSI is not set
+ # CONFIG_USB_SERIAL_KOBIL_SCT is not set
+ # CONFIG_USB_SERIAL_MCT_U232 is not set
++# CONFIG_USB_SERIAL_NAVMAN is not set
+ # CONFIG_USB_SERIAL_PL2303 is not set
+ # CONFIG_USB_SERIAL_HP4X is not set
+ # CONFIG_USB_SERIAL_SAFE is not set
++# CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
+ # CONFIG_USB_SERIAL_TI is not set
+ # CONFIG_USB_SERIAL_CYBERJACK is not set
+ # CONFIG_USB_SERIAL_XIRCOM is not set
+@@ -1359,10 +1370,12 @@ CONFIG_USB_EZUSB=y
+ # CONFIG_USB_LEGOTOWER is not set
+ # CONFIG_USB_LCD is not set
+ # CONFIG_USB_LED is not set
++# CONFIG_USB_CYPRESS_CY7C63 is not set
+ # CONFIG_USB_CYTHERM is not set
+ # CONFIG_USB_PHIDGETKIT is not set
+ # CONFIG_USB_PHIDGETSERVO is not set
+ # CONFIG_USB_IDMOUSE is not set
++# CONFIG_USB_APPLEDISPLAY is not set
+ # CONFIG_USB_SISUSBVGA is not set
+ # CONFIG_USB_LD is not set
+ # CONFIG_USB_TEST is not set
+@@ -1382,12 +1395,43 @@ CONFIG_USB_EZUSB=y
+ # CONFIG_MMC is not set
+ 
+ #
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
+ # InfiniBand support
+ #
+ # CONFIG_INFINIBAND is not set
+ 
+ #
+-# SN Devices
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# DMA Engine support
++#
++# CONFIG_DMA_ENGINE is not set
++
++#
++# DMA Clients
++#
++
++#
++# DMA Devices
+ #
+ 
+ #
+@@ -1417,23 +1461,21 @@ CONFIG_JFS_SECURITY=y
+ # CONFIG_JFS_DEBUG is not set
+ # CONFIG_JFS_STATISTICS is not set
+ CONFIG_FS_POSIX_ACL=y
+-
+-#
+-# XFS support
+-#
+ CONFIG_XFS_FS=m
+-CONFIG_XFS_EXPORT=y
+-# CONFIG_XFS_RT is not set
+ # CONFIG_XFS_QUOTA is not set
+ CONFIG_XFS_SECURITY=y
+ CONFIG_XFS_POSIX_ACL=y
++# CONFIG_XFS_RT is not set
++# CONFIG_OCFS2_FS is not set
+ # CONFIG_MINIX_FS is not set
+ # CONFIG_ROMFS_FS is not set
+ CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
+ # CONFIG_QUOTA is not set
+ CONFIG_DNOTIFY=y
+ # CONFIG_AUTOFS_FS is not set
+ CONFIG_AUTOFS4_FS=m
++# CONFIG_FUSE_FS is not set
+ 
+ #
+ # CD-ROM/DVD Filesystems
+@@ -1460,13 +1502,10 @@ CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+ CONFIG_PROC_FS=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_SYSFS=y
+-CONFIG_DEVPTS_FS_XATTR=y
+-CONFIG_DEVPTS_FS_SECURITY=y
+ CONFIG_TMPFS=y
+-CONFIG_TMPFS_XATTR=y
+-CONFIG_TMPFS_SECURITY=y
+ # CONFIG_HUGETLB_PAGE is not set
+ CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
+ 
+ #
+ # Miscellaneous filesystems
+@@ -1485,6 +1524,7 @@ CONFIG_CRAMFS=m
+ # CONFIG_SYSV_FS is not set
+ CONFIG_UFS_FS=m
+ # CONFIG_UFS_FS_WRITE is not set
++# CONFIG_UFS_DEBUG is not set
+ 
+ #
+ # Network File Systems
+@@ -1513,6 +1553,7 @@ CONFIG_SUNRPC=y
+ # CONFIG_NCP_FS is not set
+ # CONFIG_CODA_FS is not set
+ # CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
+ 
+ #
+ # Partition Types
+@@ -1532,6 +1573,7 @@ CONFIG_MSDOS_PARTITION=y
+ # CONFIG_SGI_PARTITION is not set
+ # CONFIG_ULTRIX_PARTITION is not set
+ # CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
+ # CONFIG_EFI_PARTITION is not set
+ 
+ #
+@@ -1582,33 +1624,44 @@ CONFIG_NLS_UTF8=m
+ # Library routines
+ #
+ CONFIG_CRC_CCITT=y
++# CONFIG_CRC16 is not set
+ CONFIG_CRC32=y
+ # CONFIG_LIBCRC32C is not set
+ CONFIG_ZLIB_INFLATE=y
+ CONFIG_ZLIB_DEFLATE=y
+-
+-#
+-# Profiling support
+-#
++CONFIG_TEXTSEARCH=y
++CONFIG_TEXTSEARCH_KMP=m
++CONFIG_TEXTSEARCH_BM=m
++CONFIG_TEXTSEARCH_FSM=m
++CONFIG_PLIST=y
+ # CONFIG_PROFILING is not set
+ 
+ #
+ # Kernel hacking
+ #
+ # CONFIG_PRINTK_TIME is not set
+-CONFIG_DEBUG_KERNEL=y
+ CONFIG_MAGIC_SYSRQ=y
++# CONFIG_UNUSED_SYMBOLS is not set
++CONFIG_DEBUG_KERNEL=y
+ CONFIG_LOG_BUF_SHIFT=14
++CONFIG_DETECT_SOFTLOCKUP=y
+ # CONFIG_SCHEDSTATS is not set
+ # CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
+ # CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_RWSEMS is not set
+ # CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+ # CONFIG_DEBUG_KOBJECT is not set
+ # CONFIG_DEBUG_INFO is not set
+ # CONFIG_DEBUG_FS is not set
++# CONFIG_DEBUG_VM is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_RCU_TORTURE_TEST is not set
+ # CONFIG_XMON is not set
+ # CONFIG_BDI_SWITCH is not set
+-CONFIG_BOOTX_TEXT=y
+ 
+ #
+ # Security options
