@@ -1,17 +1,22 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 7 Sep 2006 11:27:17 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: common flatdevtree code
-Message-ID: <20060907182717.GC4398@mag.az.mvista.com>
-References: <20060831184020.GA13494@mag.az.mvista.com>
-	<17662.17895.852128.729679@cargo.ozlabs.ibm.com>
-	<20060907003625.GA15533@mag.az.mvista.com>
-	<1157615011.18137.14.camel@diesel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1157615011.18137.14.camel@diesel>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 03D8367B72
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Sep 2006 05:35:21 +1000 (EST)
+Message-ID: <4500743D.9000403@s5r6.in-berlin.de>
+Date: Thu, 07 Sep 2006 21:34:21 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Fwd: Re: ohci1394: steps to implement suspend/resume]
+References: <44FEDF5D.9060707@s5r6.in-berlin.de>
+	<1157590416.22705.269.camel@localhost.localdomain>
+In-Reply-To: <1157590416.22705.269.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
+	Bernhard Kaindl <bk@fsfe.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Hollis.
-
-On Thu, Sep 07, 2006 at 02:43:31AM -0500, Hollis Blanchard wrote:
-> Thanks Mark!
+Benjamin Herrenschmidt wrote:
+> On Wed, 2006-09-06 at 16:46 +0200, Stefan Richter wrote:
+[...]
+>> We already broke your platform code once by what was meant as a bugfix
+>> for non-PMacs. It'd be good to know enough to not repeat such mistakes...
 > 
-> On Wed, 2006-09-06 at 17:36 -0700, Mark A. Greer wrote:
-> > void *ft_find_device(const void *bphp, const char *srch_path)
-> 
-> How about "ft_find_node"?
+> The PowerMac code will stop the chip clocks. It should be used as the
+> last step of the suspend sequence and first step of the return sequence,
+> in _addition_ to your new code.
 
-Sure.
+Thanks for the help.
 
-> I renamed that and made a couple other small
-> changes. In particular:
-> - u8->int
+> Note also that the code you posted lacks calls to pci_set_power_state()...
 
-OK.
-
-> - exit and free -> ft_exit and ft_free (so they can be wrapped in
-> flatdevtree_env.h)
-
-Makes sense.
-
-> - moved those inlines out of flatdevtree.h, since they don't need to be
-> exported
-
-ft_parentize is also used in flatdevtree_misc.c so I think they
-should stay in flatdevtree.h.
-
-> I just put up a Mercurial tree. I didn't include your flatdevtree_misc.c
-> since it's kernel-specific, and I added a userspace flatdevtree_env.h.
-> 
-> To get the source:
-> hg clone http://unsanctioned.org/flatdevtree/hgweb.py flatdevtree
-
-Oh, cool.
-
-> I'd like to add some unit tests in the near future (e.g. comparing with
-> dtc output), but I wasted a couple hours screwing with a makefile
-> instead. :(
-> 
-> By the way, could you send a patch adding your copyright info?
-
-Yeah, I'm still cleaning up & testing a bit.  I should have them out
-today unless something comes up (well in addition to a scheduled hour
-long network outtage :( .
-
-Mark
+Pavel submitted a respective patch on 2006-09-05; I will integrate them
+both.
+-- 
+Stefan Richter
+-=====-=-==- =--= --===
+http://arcgraph.de/sr/
