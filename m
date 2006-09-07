@@ -3,15 +3,15 @@ Received: from mailgate1.uni-kl.de (mailgate1.uni-kl.de [131.246.120.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.uni-kl.de",
 	Issuer "RHRK-CA Classic - G01" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1E69D67BA1
+	by ozlabs.org (Postfix) with ESMTP id 0E86F67BA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 19:32:58 +1000 (EST)
+	Thu,  7 Sep 2006 19:33:00 +1000 (EST)
 Received: from [10.0.0.52] (fwbobda.informatik.uni-kl.de [131.246.167.20])
 	by mailgate1.uni-kl.de (8.13.4/8.13.4/Debian-3sarge3) with ESMTP id
-	k879QjY4031420
-	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Sep 2006 11:26:45 +0200
-Message-ID: <44FFE5D3.8000301@gmx.de>
-Date: Thu, 07 Sep 2006 11:26:43 +0200
+	k879QZ1O031319
+	for <linuxppc-embedded@ozlabs.org.>; Thu, 7 Sep 2006 11:26:35 +0200
+Message-ID: <44FFE5C9.2070203@gmx.de>
+Date: Thu, 07 Sep 2006 11:26:33 +0200
 From: Simon Jung <palasim@gmx.de>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
