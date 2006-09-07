@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0133367B75
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 10:52:11 +1000 (EST)
-Subject: Re: [PATCH] kdump : Support kernels having 64k page size.
+	by ozlabs.org (Postfix) with ESMTP id 1B36567B6E
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 10:53:55 +1000 (EST)
+Subject: Re: [Fwd: Re: ohci1394: steps to implement suspend/resume]
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Haren Myneni <haren@us.ibm.com>
-In-Reply-To: <44FE6700.8080504@us.ibm.com>
-References: <44FE15B0.3030909@in.ibm.com>
-	<1157511577.3661.7.camel@localhost.localdomain>
-	<44FE6700.8080504@us.ibm.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <44FEDF5D.9060707@s5r6.in-berlin.de>
+References: <44FEDF5D.9060707@s5r6.in-berlin.de>
 Content-Type: text/plain
-Date: Thu, 07 Sep 2006 10:51:44 +1000
-Message-Id: <1157590304.22705.267.camel@localhost.localdomain>
+Date: Thu, 07 Sep 2006 10:53:36 +1000
+Message-Id: <1157590416.22705.269.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "Sachin P. Sant" <sachinp@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
+	Bernhard Kaindl <bk@fsfe.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> At present we are doing the backup of 32K. Thus created one ELF PT_LOAD 
-> segment for this region.
-> But, in the case of 64K page size, second segments starts at 32K and the 
-> first one is not page aligned.  __ioremap() (crash_dump.c) getting 
-> failed if pfn = 0 which is the case for the second PT_LOAD segment.  We 
-> did not hit this issue for 4K page size because the the first page (32K 
-> backup) is copied to second kernel memory and thus referencing with the 
-> second kernel pfn.
+On Wed, 2006-09-06 at 16:46 +0200, Stefan Richter wrote:
+> Hello LinuxPPC-dev,
 > 
-> Here the fix is,  backup regions size is max(PAGE_SIZE,  32K)  so that 
-> at least one page will be part of backup ELF segment.  Drawback here is, 
-> we will end up 32K more for backup for 64K page size.
-
-You should always do 64k regardless of the page size. I think we have
-some ABI requirements here for ELF sections to be 64k aligned anyway
-no ?
-
-> It can also be fixed in copy_oldmem_page() (crash_dump.c), but first 
-> PT_LOAD segment is not page aligned:
+> we have now patches coming in to fix up the lack of generic suspend +
+> resume support in drivers/ieee1394/ohci1394. Attached is the latest and
+> by far most functional one by Bernhard Kaindl. A big question is how
+> this relates to the already existing PPC-PMAC platform code in
+> ohci1394's suspend and resume hooks.
 > 
-> if (pfn > 0)
->     vaddr = __ioremap(pfn << PAGE_SHIFT, PAGE_SIZE, 0);
-> else
->     vaddr = __va(pfn << PAGE_SHIFT);
+>  - Which functionalities does the existing platform code provide in
+>    detail?
+> 
+>  - Do we have to keep platform code and generic code separate? I.e.
+> #ifdef CONFIG_PPC_PMAC
+> 	...pmac_call_feature...
+> #else
+> 	...new generic code...
+> #endif
+> 
+>  - Or are parts of the until now missing, new generic code necessary
+>    for PMacs too? If yes, is the platform code treated to be the lowest
+>    level as far as the oreder of code is concerned?
+> 
+>  - Or would the platform code be obsolete?
+> 
+> We already broke your platform code once by what was meant as a bugfix
+> for non-PMacs. It'd be good to know enough to not repeat such mistakes...
+
+The PowerMac code will stop the chip clocks. It should be used as the
+last step of the suspend sequence and first step of the return sequence,
+in _addition_ to your new code. Note also that the code you posted lacks
+calls to pci_set_power_state()...
+
+Ben.
