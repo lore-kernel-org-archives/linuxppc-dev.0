@@ -1,19 +1,20 @@
-Return-Path: <aidan@nicta.com.au>
-Received: from muse.redundamoto.com
-	(c220-237-11-187.randw1.nsw.optusnet.com.au [220.237.11.187])
-	by ozlabs.org (Postfix) with ESMTP id 6D97D679FB
+Return-Path: <linville@tuxdriver.com>
+Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0533D67BC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 22:18:01 +1000 (EST)
-Message-ID: <450007B2.4010508@nicta.com.au>
-Date: Thu, 07 Sep 2006 21:51:14 +1000
-From: Aidan Williams <aidan@nicta.com.au>
-MIME-Version: 1.0
-To: Simon Jung <palasim@gmx.de>
-Subject: Re: uCLinux for PPC: Bug in autoconf.h creation
-References: <44FFE5C9.2070203@gmx.de>
-In-Reply-To: <44FFE5C9.2070203@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Thu,  7 Sep 2006 23:17:04 +1000 (EST)
+Date: Thu, 7 Sep 2006 09:16:35 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Chun Chung Lo <cclo@astri.org>
+Subject: Re: Wireless Linux(802.11) for Embedded PowerPC
+Message-ID: <20060907131630.GA784@tuxdriver.com>
+References: <A7B1E4DD46AA7046A4398F745240F29402737D68@ASPROEXG.astri.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A7B1E4DD46AA7046A4398F745240F29402737D68@ASPROEXG.astri.local>
+Cc: wei.li4@elf.mcgill.ca, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, Sep 07, 2006 at 09:23:08AM +0800, Chun Chung Lo wrote:
 
-I would suspect CRLF issues..
+> Also I cannot see any drivers existing in the upstream kernel are really
+> support the "Intersil Prism 2 WLAN" cards (my card is differ from those
+> Orinoco cards and Hermes cards, also the drivers are also differ a lot).
 
-Try running dos2unix on your
-  arch/ppc/platforms/xilinx_auto/auto-config.in
-and then defaulting all your settings with make menuconfig to regenerate your kernel .config and config headers.
+I think you may be mistaken.  The orinoco drivers in the upstream
+kernel seem to support all the same device IDs as are supported
+in the linux-wlan code.  If your card is missing, it is likely a
+simple matter of a missing device ID.  But, major code changes are
+probably not necessary.  (USB-based devices may be an exception....see
+http://www.nongnu.org/orinoco/ for experimental support.)
+ 
+> If you are going to use Intersil Prism 2 cards/chips, I would suggest
+> you to use the linux-wlan driver (but seems this driver does not support
+> AP mode yet...)
 
-- aidan
+Please don't encourage people to patronize dead projects when the
+upstream kernel should work for them.
 
+Thanks,
 
-Simon Jung wrote:
-> I am trying to build a uCLinux Distribution for PowerPC following the 
-> instructions on
-> 
-> http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/uclinux_powerpc/ 
-> <http://www.itee.uq.edu.au/%7Ejwilliams/mblaze-uclinux/uclinux_powerpc/>
-> 
-> "make menuconfig" works well  but the created file 
-> /linuxppx-2.4.x/include/linux/autoconf.h has errors:
-> 
-> The created "#defines" for integer and string types are mistyped the 
-> closing bracket / quote is written into a newline.
-> Example:
-> 
-> #define CONFIG_XILINX_PPC405_0_DISABLE_OPERAND_FORWARDING (1
-> )
-> #define CONFIG_XILINX_PPC405_0_DETERMINISTIMULT (0
-> )
-> #define CONFIG_XILINX_PPC405_0_MMU_ENABLE (1
-> )
-> #define CONFIG_XILINX_PPC405_0_DCR_RESYNC (0
-> )
-> #define CONFIG_XILINX_PPC405_0_INSTANCE "ppc405_0
-> "
-> #define CONFIG_XILINX_PPC405_0_HW_VER "2.00.c
-> "
-> #define CONFIG_XILINX_ON1_DMA_MASTER_0_INSTANCE "on1_dma_master_PPC
-> "
-> 
-> How can I correct the generation of  autoconf.h ?
-> 
-> Greetings,
-> Simon Jung
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
