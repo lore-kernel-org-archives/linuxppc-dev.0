@@ -1,27 +1,25 @@
-Return-Path: <n.balaji@gdatech.co.in>
-Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
-	by ozlabs.org (Postfix) with ESMTP id 23EB367B6F
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C7BF567B6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 18:20:34 +1000 (EST)
-Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id DF5008780A9
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 00:56:28 -0700 (PDT)
-Received: from gdatech.co.in ([192.168.0.3])
-	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
-	1.3.4.5154-maint13 $Rev: 5154 $) id r697005628D-00-2
-	for linuxppc-embedded@ozlabs.org; Thu, 07 Sep 2006 00:56:28 -0700
-Received: from mail.gdatech.co.in (unknown [192.168.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 79D5E8780A5
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 00:56:28 -0700 (PDT)
-Message-ID: <16599.202.144.30.226.1157616213.squirrel@mail.gdatech.co.in>
-Date: Thu, 7 Sep 2006 13:33:33 +0530 (IST)
-Subject: MPC8360E USB Host Controller Driver
-From: n.balaji@gdatech.co.in
-To: linuxppc-embedded@ozlabs.org
+	Thu,  7 Sep 2006 18:25:18 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k878PGpb024604
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Sep 2006 01:25:16 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k878PE8c015280
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Sep 2006 03:25:15 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: MPC8360E USB Host Controller Driver
+Date: Thu, 7 Sep 2006 16:25:47 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D14C78C@zch01exm20.fsl.freescale.net>
+In-Reply-To: <16599.202.144.30.226.1157616213.squirrel@mail.gdatech.co.in>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: <n.balaji@gdatech.co.in>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,15 +30,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
-   I am working in MPC8360E processor board. I want the PowerQUICC II's
-Pro  USB Host controller Driver. In the manual, they told that this
-controller does not belong to UHCI or OHCI standard.
 
-  I have doubt that whether Freescale has its own USB standard.
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.o
+> rg] On Behalf Of n.balaji@gdatech.co.in
+> Sent: Thursday, September 07, 2006 4:04 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: MPC8360E USB Host Controller Driver
+>=20
+> Hi All,
+>    I am working in MPC8360E processor board. I want the=20
+> PowerQUICC II's Pro  USB Host controller Driver. In the=20
+> manual, they told that this controller does not belong to=20
+> UHCI or OHCI standard.
 
-  Please give the link or patch for that driver.
+Yes, you can call it FHCI if you like. :)
+>=20
+>   I have doubt that whether Freescale has its own USB standard.
 
+The interface is stated clearly in the UM.
+>=20
+>   Please give the link or patch for that driver.
 
-Thanks,
-N.Balaji
+There is an 8360 host driver in Freescale LTIB BSP.  Please find it on
+www.freescale.com, if it has been released.
+
+- Leo
