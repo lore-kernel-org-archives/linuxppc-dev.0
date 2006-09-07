@@ -1,24 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C55B67B79
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 10:59:06 +1000 (EST)
-Subject: Re: [4/5] powerpc: PA Semi PWRficient platform support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <E2C62E02-AB23-451F-8A82-718A13B675BE@kernel.crashing.org>
-References: <20060904175742.5472a6fa@localhost.localdomain>
-	<20060905122956.2cebd36d@localhost.localdomain>
-	<0C880511-D99D-4160-9EB1-A66B22B2D82F@kernel.crashing.org>
-	<20060906101034.404014f7@localhost.localdomain>
-	<E2C62E02-AB23-451F-8A82-718A13B675BE@kernel.crashing.org>
+Return-Path: <yanmin_zhang@linux.intel.com>
+Received: from orsmga101.jf.intel.com (mga06.intel.com [134.134.136.21])
+	by ozlabs.org (Postfix) with ESMTP id 0765A67B6F
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 11:58:13 +1000 (EST)
+Subject: Re: pci error recovery procedure
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20060906200155.GL7139@austin.ibm.com>
+References: <1157008212.20092.36.camel@ymzhang-perf.sh.intel.com>
+	<20060831175001.GE8704@austin.ibm.com>
+	<1157081629.20092.167.camel@ymzhang-perf.sh.intel.com>
+	<20060901212548.GS8704@austin.ibm.com>
+	<1157348850.20092.304.camel@ymzhang-perf.sh.intel.com>
+	<1157360592.22705.46.camel@localhost.localdomain>
+	<1157423528.20092.365.camel@ymzhang-perf.sh.intel.com>
+	<20060905190115.GE7139@austin.ibm.com>
+	<1157506016.20092.386.camel@ymzhang-perf.sh.intel.com>
+	<20060906200155.GL7139@austin.ibm.com>
 Content-Type: text/plain
-Date: Thu, 07 Sep 2006 10:58:52 +1000
-Message-Id: <1157590732.22705.274.camel@localhost.localdomain>
+Message-Id: <1157594179.20092.451.camel@ymzhang-perf.sh.intel.com>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	anton@samba.org
+Date: Thu, 07 Sep 2006 09:56:19 +0800
+Cc: Yanmin Zhang <yanmin.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+	Rajesh Shah <rajesh.shah@intel.com>, linuxppc-dev@ozlabs.org,
+	linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-09-06 at 17:26 +0200, Segher Boessenkool wrote:
-> >> Very nice, I'll convert maple to do the same (unless someone beats
-> >> me to it, heh).
+On Thu, 2006-09-07 at 04:01, Linas Vepstas wrote:
+> On Wed, Sep 06, 2006 at 09:26:56AM +0800, Zhang, Yanmin wrote:
+> > > > The
+> > > > error_detected of the drivers in the latest kernel who support err handlers
+> > > > always returns PCI_ERS_RESULT_NEED_RESET. They are typical examples.
+> > > 
+> > > Just because the current drivers do it this way does not mean that this is
+> > > the best way to do things.
 > >
-> > Maple isn't that different there. It just has to deal with multiple  
-> > ISUs,
-> > while we currently only have one.
+> > If it's not the best way, why did you choose to reset slot for e1000/e100/ipr
+> > error handlers? They are typical widely-used devices. To make it easier to
+> > add error handlers?
 > 
-> Maple has only one as well, that's the point :-)
-> It gets the ISU address from that awful platform-open-pic
-> property currently, hardcoding it like you did for PA6T is
-> just fine though.  It simplifies the code quite a bit and
-> doesn't depend on this undocumented (and badly defined no
-> matter what) device tree property.
+> I did it that way just to get going, get something working. I do not
+> have hardware specs for any of these devices, and do not have much of 
+> an idea of what they are capable of;
+Yes, it's difficult to add fine-grained error handlers for guys who are not
+the driver developers.
 
-It's perfectly documented :)
+>  the recovery code I wrote is of
+> "brute force, hit it with a hammer"-nature.  Driver writers who 
+> know thier hardware well, and are interested in a more refined 
+> approach are encouraged to actualy use a more refined approach.
+I guess almost no driver developer is happy to spend lots of time to
+add refined steps. They would like to focus on normal process (for achievement
+feeling? :) ).
+In addition, if they use fine-grained steps in error handlers, all these
+steps might be rewritten when the device specs is upgraded. Fine-grained steps in
+error handlers are more difficut to debug.
 
-Ben.
+It's impossible for you to develop error handlers for all device drivers.
+
+The error handlers look a little like suspend/resume. Of course, it's more
+complicated. If we could keep it as simple as suspend/resume, it's more welcomed.
+
+pci error shouldn't happen frequently. And when it happens, I think mostly it's
+an endpoint device instead of bridge. When it happens, if we choose always
+reset slot, performance could be degraded, but not too much. I just deduce, and 
+didn't test it on a machine with hundreds of devices.
