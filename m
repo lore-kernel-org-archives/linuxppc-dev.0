@@ -2,26 +2,26 @@ Return-Path: <jdub@us.ibm.com>
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CB7D167BB6
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 22:32:33 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k87CWSCh021547
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 08:32:28 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k87CWSdh173380
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 06:32:28 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k87CWRTB000638
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 06:32:27 -0600
-Subject: [PATCH] [v2] PPC 4xx: Enable XMON on PPC 4xx boards
+	by ozlabs.org (Postfix) with ESMTP id 8144467B9C
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 22:34:58 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k87CYuMZ024998
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 08:34:56 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k87CYtog234534
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 06:34:55 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k87CYtUg007813
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 06:34:55 -0600
+Subject: [PATCH] PPC: Fix Kconfig whitespace warnings
 From: Josh Boyer <jdub@us.ibm.com>
-To: mporter@embeddedalley.com, paulus@samba.org
+To: paulus@samba.org
 Content-Type: text/plain
-Date: Thu, 07 Sep 2006 07:33:44 -0500
-Message-Id: <1157632424.6098.32.camel@zod.rchland.ibm.com>
+Date: Thu, 07 Sep 2006 07:36:24 -0500
+Message-Id: <1157632584.6098.35.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -33,110 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Fix the following whitespace warnings when compiling with ARCH=ppc
 
-The following patch allows XMON to run on the 4xx platform.  Tested on
-Walnut, Ebony, and Nova (440GX based) eval boards.  Patch is against
-2.6.18-rc6.
+arch/ppc/Kconfig:1207:warning: leading whitespace ignored
+arch/ppc/Kconfig:1226:warning: leading whitespace ignored
+arch/ppc/Kconfig:1231:warning: leading whitespace ignored
 
 Signed-off-by: Josh Boyer <jdub@us.ibm.com>
 
 ---
- arch/ppc/xmon/start.c |    6 ++++++
- arch/ppc/xmon/xmon.c  |   26 ++++++++++++++++++++------
- 2 files changed, 26 insertions(+), 6 deletions(-)
+ arch/ppc/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2.6.orig/arch/ppc/xmon/xmon.c
-+++ linux-2.6/arch/ppc/xmon/xmon.c
-@@ -153,6 +153,12 @@ static int xmon_trace[NR_CPUS];
- #define SSTEP	1		/* stepping because of 's' command */
- #define BRSTEP	2		/* stepping over breakpoint */
+--- linux-2.6.orig/arch/ppc/Kconfig
++++ linux-2.6/arch/ppc/Kconfig
+@@ -1204,7 +1204,7 @@ config PCI_DOMAINS
+ 	default PCI
  
-+#ifdef CONFIG_4xx
-+#define MSR_SSTEP_ENABLE 0x200
-+#else
-+#define MSR_SSTEP_ENABLE 0x400
-+#endif
-+
- static struct pt_regs *xmon_regs[NR_CPUS];
+ config MPC83xx_PCI2
+-	bool "  Supprt for 2nd PCI host controller"
++	bool "Supprt for 2nd PCI host controller"
+ 	depends on PCI && MPC834x
+ 	default y if MPC834x_SYS
  
- extern inline void sync(void)
-@@ -211,6 +217,14 @@ static void get_tb(unsigned *p)
- 	p[1] = lo;
- }
+@@ -1223,12 +1223,12 @@ config PCI_8260
+ 	default y
  
-+static inline void xmon_enable_sstep(struct pt_regs *regs)
-+{
-+	regs->msr |= MSR_SSTEP_ENABLE;
-+#ifdef CONFIG_4xx
-+	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
-+#endif
-+}
-+
- int xmon(struct pt_regs *excp)
- {
- 	struct pt_regs regs;
-@@ -254,10 +268,10 @@ int xmon(struct pt_regs *excp)
- 	cmd = cmds(excp);
- 	if (cmd == 's') {
- 		xmon_trace[smp_processor_id()] = SSTEP;
--		excp->msr |= 0x400;
-+		xmon_enable_sstep(excp);
- 	} else if (at_breakpoint(excp->nip)) {
- 		xmon_trace[smp_processor_id()] = BRSTEP;
--		excp->msr |= 0x400;
-+		xmon_enable_sstep(excp);
- 	} else {
- 		xmon_trace[smp_processor_id()] = 0;
- 		insert_bpts();
-@@ -298,7 +312,7 @@ xmon_bpt(struct pt_regs *regs)
- 		remove_bpts();
- 		excprint(regs);
- 		xmon_trace[smp_processor_id()] = BRSTEP;
--		regs->msr |= 0x400;
-+		xmon_enable_sstep(regs);
- 	} else {
- 		xmon(regs);
- 	}
-@@ -385,7 +399,7 @@ insert_bpts(void)
- 		}
- 		store_inst((void *) bp->address);
- 	}
--#if !defined(CONFIG_8xx)
-+#if ! (defined(CONFIG_8xx) || defined(CONFIG_4xx))
- 	if (dabr.enabled)
- 		set_dabr(dabr.address);
- 	if (iabr.enabled)
-@@ -400,7 +414,7 @@ remove_bpts(void)
- 	struct bpt *bp;
- 	unsigned instr;
+ config 8260_PCI9
+-	bool "  Enable workaround for MPC826x erratum PCI 9"
++	bool "Enable workaround for MPC826x erratum PCI 9"
+ 	depends on PCI_8260 && !ADS8272
+ 	default y
  
--#if !defined(CONFIG_8xx)
-+#if ! (defined(CONFIG_8xx) || defined(CONFIG_4xx))
- 	set_dabr(0);
- 	set_iabr(0);
- #endif
-@@ -677,7 +691,7 @@ bpt_cmds(void)
+ choice
+-	prompt "  IDMA channel for PCI 9 workaround"
++	prompt "IDMA channel for PCI 9 workaround"
+ 	depends on 8260_PCI9
  
- 	cmd = inchar();
- 	switch (cmd) {
--#if !defined(CONFIG_8xx)
-+#if ! (defined(CONFIG_8xx) || defined(CONFIG_4xx))
- 	case 'd':
- 		mode = 7;
- 		cmd = inchar();
---- linux-2.6.orig/arch/ppc/xmon/start.c
-+++ linux-2.6/arch/ppc/xmon/start.c
-@@ -73,6 +73,12 @@ xmon_map_scc(void)
- 	TXRDY = 0x20;
- 	RXRDY = 1;
- 	DLAB = 0x80;
-+#elif ( defined(CONFIG_440) || defined(CONFIG_440GX) )
-+	sccd = (volatile unsigned char *) ioremap64(0x0000000140000200ULL, 8);
-+	sccc = sccd + 5;
-+	TXRDY = 0x20;
-+	RXRDY = 1;
-+	DLAB = 0x80;
- #endif /* platform */
- 
- 	register_sysrq_key('x', &sysrq_xmon_op);
+ config 8260_PCI9_IDMA1
