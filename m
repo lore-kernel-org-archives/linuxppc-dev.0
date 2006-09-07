@@ -1,27 +1,29 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 5223267BA1
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outfbmx010.isp.belgacom.be (outfbmx010.isp.belgacom.be
+	[195.238.4.199]) by ozlabs.org (Postfix) with ESMTP id 3C6E467BC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 21:20:24 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k87Cdcr1017423
-	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Sep 2006 06:39:38 -0600 (MDT)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k87BKHjS006120
-	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Sep 2006 06:20:19 -0500 (CDT)
+	Thu,  7 Sep 2006 21:22:05 +1000 (EST)
+Received: from outmx021.isp.belgacom.be (outmx021.isp.belgacom.be
+	[195.238.4.202])
+	by outfbmx010.isp.belgacom.be (Postfix) with ESMTP id 6EAA239951
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  7 Sep 2006 13:22:02 +0200 (CEST)
+Received: from outmx021.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx021.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k87BLgYG006580
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Sep 2006 13:21:46 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8360E USB Host Controller Driver
+Date: Thu, 7 Sep 2006 13:24:30 +0200
+References: <4879B0C6C249214CBE7AB04453F84E4D14C78C@zch01exm20.fsl.freescale.net>
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D14C78C@zch01exm20.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: MPC8360E USB Host Controller Driver
-Date: Thu, 7 Sep 2006 19:20:50 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D14C7B2@zch01exm20.fsl.freescale.net>
-In-Reply-To: <DADA32856852FC458E0F96B664A6F55E011E2491@kom-mailsrv1.kontron-modular.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Claus Gindhart" <claus.gindhart@kontron.com>,
-	"Alex Zeffertt" <ajz@cambridgebroadband.com>
-Cc: n.balaji@gdatech.co.in, linuxppc-embedded@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200609071324.30930.laurent.pinchart@tbox.biz>
+Cc: n.balaji@gdatech.co.in
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,26 +34,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> >    I am working in MPC8360E processor board. I want the
+> > PowerQUICC II's Pro  USB Host controller Driver. In the
+> > manual, they told that this controller does not belong to
+> > UHCI or OHCI standard.
+>
+> Yes, you can call it FHCI if you like. :)
+>
+> >   I have doubt that whether Freescale has its own USB standard.
+>
+> The interface is stated clearly in the UM.
+>
+> >   Please give the link or patch for that driver.
+>
+> There is an 8360 host driver in Freescale LTIB BSP.  Please find it on
+> www.freescale.com, if it has been released.
 
-> i have a MPC8347E running with the Freescale E(F)HCI driver=20
-> and Kernel 2.6.17 (Freescale LTIB).
->=20
-> Because of this mail, i checked, if there are any periodical=20
-> interrupts, without real USB payload.
->=20
-> The result is: NO
->=20
-> If i attach a USB-mouse, i get 5 interrupts.
-> If i remove it again, 1 additional.
->=20
-> Nothing else, silence !
->=20
-> USB works well with USB 1.1 and 2.0 devices (This was not the=20
-> case with earlier Kernels, e.g. 2.6.13, because for the=20
-> switching between 1.1 and 2.0 you need a transaction=20
-> translator driver).
+Could you give a direct link ? I've been browsing around the Freescale website 
+for an hour, downloaded hundreds of megabytes of archives but haven't been 
+able to find the MPC8360E USB Linux driver.
 
-MPC834x USB is very different from the USB of CPM/QE.  It is an
-integrated EHCI controller.
+Laurent Pinchart
 
-- Leo
+PS: Am I the only one to get lost almost every time when I look for 
+information on www.freescale.com ?
