@@ -1,17 +1,19 @@
-Return-Path: <mporter@embeddedalley.com>
-Received: from matthew-porters-computer.local (cpe-088197.static.wadsnet.net
-	[65.114.88.197]) by ozlabs.org (Postfix) with ESMTP id BA04367B7F
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Sep 2006 03:20:12 +1000 (EST)
-Date: Thu, 7 Sep 2006 13:20:06 -0400
-From: Matt Porter <mporter@embeddedalley.com>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B3EC067B8F
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Sep 2006 03:26:16 +1000 (EST)
+Date: Thu, 7 Sep 2006 10:19:16 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Josh Boyer <jdub@us.ibm.com>
 Subject: Re: [PATCH] [v3] PPC 4xx: Enable XMON on PPC 4xx boards
-Message-ID: <20060907172006.GA498@matthew-porters-computer.local>
+Message-ID: <20060907171916.GB18929@gate.ebshome.net>
 References: <1157639720.6098.49.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1157639720.6098.49.camel@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: paulus@samba.org, mporter@embeddedalley.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +24,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thu, Sep 07, 2006 at 09:35:20AM -0500, Josh Boyer wrote:
-> The following patch allows XMON to run on the 4xx platform.  Tested on
-> Walnut, Ebony, and Nova (440GX based) eval boards.  440EP and 440SP boards
-> should work as well.  Patch is against 2.6.18-rc6.
-> 
-> Signed-off-by: Josh Boyer <jdub@us.ibm.com>
 
-ACK
+[snip]
 
-Thanks for pointing out that 440SP needed a different case as well.
+> --- linux-2.6.orig/arch/ppc/xmon/start.c
+> +++ linux-2.6/arch/ppc/xmon/start.c
+> @@ -73,6 +73,27 @@ xmon_map_scc(void)
+>  	TXRDY = 0x20;
+>  	RXRDY = 1;
+>  	DLAB = 0x80;
+> +#elif defined(CONFIG_440EP)
+> +	sccd = (volatile unsigned char *) ioremap(0xef600300, 8);
+> +	sccc = sccd + 5;
+> +	TXRDY = 0x20;
+> +	RXRDY = 1;
+> +	DLAB = 0x80;
+> +#elif defined(CONFIG_440SP)
+> +	sccd = (volatile unsigned char *) ioremap64(0x00000001f0000200ULL, 8);
+> +	sccc = sccd + 5;
+> +	TXRDY = 0x20;
+> +	RXRDY = 1;
+> +	DLAB = 0x80;
+> +#elif defined(CONFIG_44x)
+> +	/* This is the default for 44x platforms.  Any boards that have a
+> +	   different UART address need to be put in cases before this or the
+> +	   port will be mapped incorrectly */
+> +	sccd = (volatile unsigned char *) ioremap64(0x0000000140000200ULL, 8);
+> +	sccc = sccd + 5;
+> +	TXRDY = 0x20;
+> +	RXRDY = 1;
+> +	DLAB = 0x80;
 
--Matt
+There is only one line which is different, why did you put all other 
+under #ifdef?
+
+Also, all these hardcoded addresses are already available as defines, 
+why just not use them?
+
+-- 
+Eugene
