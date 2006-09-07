@@ -1,23 +1,19 @@
-Return-Path: <linuxppcleo@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.224])
-	by ozlabs.org (Postfix) with ESMTP id 92A6C67BAB
+Return-Path: <aidan@nicta.com.au>
+Received: from muse.redundamoto.com
+	(c220-237-11-187.randw1.nsw.optusnet.com.au [220.237.11.187])
+	by ozlabs.org (Postfix) with ESMTP id 6D97D679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 22:07:44 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id t14so202051wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 07 Sep 2006 05:07:41 -0700 (PDT)
-Message-ID: <a0bc9bf80609070507i411ac4a1t49bcf1bba84f4424@mail.gmail.com>
-Date: Thu, 7 Sep 2006 20:07:41 +0800
-From: "Li Yang" <LeoLi@freescale.com>
-Sender: linuxppcleo@gmail.com
-To: "Laurent Pinchart" <laurent.pinchart@tbox.biz>
-Subject: Re: MPC8360E USB Host Controller Driver
-In-Reply-To: <200609071324.30930.laurent.pinchart@tbox.biz>
+	Thu,  7 Sep 2006 22:18:01 +1000 (EST)
+Message-ID: <450007B2.4010508@nicta.com.au>
+Date: Thu, 07 Sep 2006 21:51:14 +1000
+From: Aidan Williams <aidan@nicta.com.au>
 MIME-Version: 1.0
+To: Simon Jung <palasim@gmx.de>
+Subject: Re: uCLinux for PPC: Bug in autoconf.h creation
+References: <44FFE5C9.2070203@gmx.de>
+In-Reply-To: <44FFE5C9.2070203@gmx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4879B0C6C249214CBE7AB04453F84E4D14C78C@zch01exm20.fsl.freescale.net>
-	<200609071324.30930.laurent.pinchart@tbox.biz>
-Cc: n.balaji@gdatech.co.in, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,28 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/7/06, Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
-> > >    I am working in MPC8360E processor board. I want the
-> > > PowerQUICC II's Pro  USB Host controller Driver. In the
-> > > manual, they told that this controller does not belong to
-> > > UHCI or OHCI standard.
-> >
-> > Yes, you can call it FHCI if you like. :)
-> >
-> > >   I have doubt that whether Freescale has its own USB standard.
-> >
-> > The interface is stated clearly in the UM.
-> >
-> > >   Please give the link or patch for that driver.
-> >
-> > There is an 8360 host driver in Freescale LTIB BSP.  Please find it on
-> > www.freescale.com, if it has been released.
->
-> Could you give a direct link ? I've been browsing around the Freescale website
-> for an hour, downloaded hundreds of megabytes of archives but haven't been
-> able to find the MPC8360E USB Linux driver.
 
-You can bookmark this link:
-http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=0127268688033202A5
+I would suspect CRLF issues..
 
-- Leo
+Try running dos2unix on your
+  arch/ppc/platforms/xilinx_auto/auto-config.in
+and then defaulting all your settings with make menuconfig to regenerate your kernel .config and config headers.
+
+- aidan
+
+
+Simon Jung wrote:
+> I am trying to build a uCLinux Distribution for PowerPC following the 
+> instructions on
+> 
+> http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/uclinux_powerpc/ 
+> <http://www.itee.uq.edu.au/%7Ejwilliams/mblaze-uclinux/uclinux_powerpc/>
+> 
+> "make menuconfig" works well  but the created file 
+> /linuxppx-2.4.x/include/linux/autoconf.h has errors:
+> 
+> The created "#defines" for integer and string types are mistyped the 
+> closing bracket / quote is written into a newline.
+> Example:
+> 
+> #define CONFIG_XILINX_PPC405_0_DISABLE_OPERAND_FORWARDING (1
+> )
+> #define CONFIG_XILINX_PPC405_0_DETERMINISTIMULT (0
+> )
+> #define CONFIG_XILINX_PPC405_0_MMU_ENABLE (1
+> )
+> #define CONFIG_XILINX_PPC405_0_DCR_RESYNC (0
+> )
+> #define CONFIG_XILINX_PPC405_0_INSTANCE "ppc405_0
+> "
+> #define CONFIG_XILINX_PPC405_0_HW_VER "2.00.c
+> "
+> #define CONFIG_XILINX_ON1_DMA_MASTER_0_INSTANCE "on1_dma_master_PPC
+> "
+> 
+> How can I correct the generation of  autoconf.h ?
+> 
+> Greetings,
+> Simon Jung
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
