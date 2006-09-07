@@ -1,22 +1,16 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 08C1967BC1
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 23:08:01 +1000 (EST)
-Subject: Re: [Alsa-devel] oops in snd-powermac due to snd-aoa
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5h3bb3ltcd.wl%tiwai@suse.de>
-References: <20060907124256.GA22928@aepfle.de>
-	<s5h64fzltyg.wl%tiwai@suse.de> <1157634124.2857.67.camel@ux156>
-	<s5h3bb3ltcd.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Thu, 07 Sep 2006 15:08:32 +0200
-Message-Id: <1157634512.2857.69.camel@ux156>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	alsa-devel@alsa-project.org
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from agrxsusmail.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id F27AA67BC0
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 23:15:18 +1000 (EST)
+Message-ID: <45001455.5000408@smiths-aerospace.com>
+Date: Thu, 07 Sep 2006 08:45:09 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+MIME-Version: 1.0
+CC: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] PPC: Fix Kconfig whitespace warnings
+References: <1157632584.6098.35.camel@zod.rchland.ibm.com>
+In-Reply-To: <1157632584.6098.35.camel@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,11 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-09-07 at 15:05 +0200, Takashi Iwai wrote:
+Josh Boyer wrote:
+> Fix the following whitespace warnings when compiling with ARCH=ppc
+> 
+> arch/ppc/Kconfig:1207:warning: leading whitespace ignored
+> arch/ppc/Kconfig:1226:warning: leading whitespace ignored
+> arch/ppc/Kconfig:1231:warning: leading whitespace ignored
+> 
+> Signed-off-by: Josh Boyer <jdub@us.ibm.com>
+> 
+> ---
+>  arch/ppc/Kconfig |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- linux-2.6.orig/arch/ppc/Kconfig
+> +++ linux-2.6/arch/ppc/Kconfig
+> @@ -1204,7 +1204,7 @@ config PCI_DOMAINS
+>  	default PCI
+>  
+>  config MPC83xx_PCI2
+> -	bool "  Supprt for 2nd PCI host controller"
+> +	bool "Supprt for 2nd PCI host controller"
+                   ^ Add an "o"?
 
-> Yes.  There is a bogus assumption in the invokation of i2c stuff
-> there.  Feel free to fix this issue if you're interested ;)
+[snip]
 
-I'd rather port the remaining things to aoa ;)
-
-johannes
+gvb
