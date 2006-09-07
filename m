@@ -1,29 +1,32 @@
 Return-Path: <jdub@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CDB1267C22
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 23:24:14 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k87DOB1X005359
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 09:24:11 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k87DOB7M347518
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 07:24:11 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k87DOB8O003835
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 07:24:11 -0600
-Subject: [PATCH] [v2] PPC: Fix Kconfig whitespace warnings
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6FEA767BEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Sep 2006 23:28:28 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k87DSPRU031938
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 09:28:25 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k87DSPPq272494
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 07:28:25 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k87DSPpj009111
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Sep 2006 07:28:25 -0600
+Subject: Re: [PATCH] [v2] PPC 4xx: Enable XMON on PPC 4xx boards
 From: Josh Boyer <jdub@us.ibm.com>
-To: paulus@samba.org
+To: Matt Porter <mporter@embeddedalley.com>
+In-Reply-To: <20060907132319.GA476@matthew-porters-computer.local>
+References: <1157632424.6098.32.camel@zod.rchland.ibm.com>
+	<20060907132319.GA476@matthew-porters-computer.local>
 Content-Type: text/plain
-Date: Thu, 07 Sep 2006 08:25:40 -0500
-Message-Id: <1157635540.6098.42.camel@zod.rchland.ibm.com>
+Date: Thu, 07 Sep 2006 08:29:53 -0500
+Message-Id: <1157635794.6098.45.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix the following whitespace warnings when compiling with ARCH=ppc
+On Thu, 2006-09-07 at 09:23 -0400, Matt Porter wrote:
+> 
+> These can be represented with CONFIG_44x. Though it doesn't work for
+> 440EP since it doesn't have the 36-bit memory map. It should be:
+> 
+> +#elif ( defined(CONFIG_44x) && !defined(CONFIG_440EP) )
+> +     sccd = (volatile unsigned char *) ioremap64(0x0000000140000200ULL, 8);
+> +     sccc = sccd + 5;
+> +     TXRDY = 0x20;
+> +     RXRDY = 1;
+> +     DLAB = 0x80;
 
-arch/ppc/Kconfig:1207:warning: leading whitespace ignored
-arch/ppc/Kconfig:1226:warning: leading whitespace ignored
-arch/ppc/Kconfig:1231:warning: leading whitespace ignored
+Right.  I don't have access to a 440EP board anymore, so I couldn't test
+it.
 
-Signed-off-by: Josh Boyer <jdub@us.ibm.com>
+> Adding in another case would enable 440EP as well:
+> 
+> +#elif ( defined(CONFIG_440EP) )
+> +     sccd = (volatile unsigned char *) ioremap(0xef600300, 8);
+> +     sccc = sccd + 5;
+> +     TXRDY = 0x20;
+> +     RXRDY = 1;
+> +     DLAB = 0x80;
 
----
- arch/ppc/Kconfig |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+That seems correct to me.  I'll add that and send out another version
+shortly.
 
---- linux-2.6.orig/arch/ppc/Kconfig
-+++ linux-2.6/arch/ppc/Kconfig
-@@ -1204,7 +1204,7 @@ config PCI_DOMAINS
- 	default PCI
- 
- config MPC83xx_PCI2
--	bool "  Supprt for 2nd PCI host controller"
-+	bool "Support for 2nd PCI host controller"
- 	depends on PCI && MPC834x
- 	default y if MPC834x_SYS
- 
-@@ -1223,12 +1223,12 @@ config PCI_8260
- 	default y
- 
- config 8260_PCI9
--	bool "  Enable workaround for MPC826x erratum PCI 9"
-+	bool "Enable workaround for MPC826x erratum PCI 9"
- 	depends on PCI_8260 && !ADS8272
- 	default y
- 
- choice
--	prompt "  IDMA channel for PCI 9 workaround"
-+	prompt "IDMA channel for PCI 9 workaround"
- 	depends on 8260_PCI9
- 
- config 8260_PCI9_IDMA1
+josh
