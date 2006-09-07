@@ -1,20 +1,21 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
+Return-Path: <AZeffertt@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0533D67BC1
+	by ozlabs.org (Postfix) with ESMTP id E7AA867BC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 23:17:04 +1000 (EST)
-Date: Thu, 7 Sep 2006 09:16:35 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Chun Chung Lo <cclo@astri.org>
-Subject: Re: Wireless Linux(802.11) for Embedded PowerPC
-Message-ID: <20060907131630.GA784@tuxdriver.com>
-References: <A7B1E4DD46AA7046A4398F745240F29402737D68@ASPROEXG.astri.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A7B1E4DD46AA7046A4398F745240F29402737D68@ASPROEXG.astri.local>
-Cc: wei.li4@elf.mcgill.ca, linuxppc-embedded@ozlabs.org
+	Fri,  8 Sep 2006 00:17:22 +1000 (EST)
+Message-ID: <450029E3.2030303@cambridgebroadband.com>
+Date: Thu, 07 Sep 2006 15:17:07 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+MIME-Version: 1.0
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Subject: Re: MPC8360E USB Host Controller Driver
+References: <4879B0C6C249214CBE7AB04453F84E4D14C7B2@zch01exm20.fsl.freescale.net>
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D14C7B2@zch01exm20.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: n.balaji@gdatech.co.in, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,29 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 07, 2006 at 09:23:08AM +0800, Chun Chung Lo wrote:
+Li Yang-r58472 wrote:
+>> i have a MPC8347E running with the Freescale E(F)HCI driver 
+>> and Kernel 2.6.17 (Freescale LTIB).
+>>
+>> Because of this mail, i checked, if there are any periodical 
+>> interrupts, without real USB payload.
+>>
+>> The result is: NO
+>>
+>> If i attach a USB-mouse, i get 5 interrupts.
+>> If i remove it again, 1 additional.
+>>
+>> Nothing else, silence !
+>>
+>> USB works well with USB 1.1 and 2.0 devices (This was not the 
+>> case with earlier Kernels, e.g. 2.6.13, because for the 
+>> switching between 1.1 and 2.0 you need a transaction 
+>> translator driver).
+> 
+> MPC834x USB is very different from the USB of CPM/QE.  It is an
+> integrated EHCI controller.
+> 
 
-> Also I cannot see any drivers existing in the upstream kernel are really
-> support the "Intersil Prism 2 WLAN" cards (my card is differ from those
-> Orinoco cards and Hermes cards, also the drivers are also differ a lot).
 
-I think you may be mistaken.  The orinoco drivers in the upstream
-kernel seem to support all the same device IDs as are supported
-in the linux-wlan code.  If your card is missing, it is likely a
-simple matter of a missing device ID.  But, major code changes are
-probably not necessary.  (USB-based devices may be an exception....see
-http://www.nongnu.org/orinoco/ for experimental support.)
- 
-> If you are going to use Intersil Prism 2 cards/chips, I would suggest
-> you to use the linux-wlan driver (but seems this driver does not support
-> AP mode yet...)
+So, the question is still open, does the QuiccEngine HCI (a.k.a. FHCI)
+generate loading on the PPC core when there is no traffic on the USB?
 
-Please don't encourage people to patronize dead projects when the
-upstream kernel should work for them.
-
-Thanks,
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+Alex
