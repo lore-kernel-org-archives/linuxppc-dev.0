@@ -1,17 +1,27 @@
-Return-Path: <cclo@astri.org>
-Received: from asiwss02.astri.org (mail2.astri.org [203.198.202.21])
-	by ozlabs.org (Postfix) with ESMTP id 9AC0267B72
+Return-Path: <n.balaji@gdatech.co.in>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id 23EB367B6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Sep 2006 11:21:35 +1000 (EST)
+	Thu,  7 Sep 2006 18:20:34 +1000 (EST)
+Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id DF5008780A9
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  7 Sep 2006 00:56:28 -0700 (PDT)
+Received: from gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
+	1.3.4.5154-maint13 $Rev: 5154 $) id r697005628D-00-2
+	for linuxppc-embedded@ozlabs.org; Thu, 07 Sep 2006 00:56:28 -0700
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 79D5E8780A5
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  7 Sep 2006 00:56:28 -0700 (PDT)
+Message-ID: <16599.202.144.30.226.1157616213.squirrel@mail.gdatech.co.in>
+Date: Thu, 7 Sep 2006 13:33:33 +0530 (IST)
+Subject: MPC8360E USB Host Controller Driver
+From: n.balaji@gdatech.co.in
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: RE: Wireless Linux(802.11) for Embedded PowerPC
-Date: Thu, 7 Sep 2006 09:23:08 +0800
-Message-ID: <A7B1E4DD46AA7046A4398F745240F29402737D68@ASPROEXG.astri.local>
-From: "Chun Chung Lo" <cclo@astri.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: wei.li4@elf.mcgill.ca, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,68 +32,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi All,
+   I am working in MPC8360E processor board. I want the PowerQUICC II's
+Pro  USB Host controller Driver. In the manual, they told that this
+controller does not belong to UHCI or OHCI standard.
 
-Hi,
+  I have doubt that whether Freescale has its own USB standard.
 
-This project is my university graduation project, so it is now stopped.
-(I just finished some ugly prototypes :)
-
-As I said before, I used ELDK for my project (since I am a student at
-that moment, I really do not know how to manually build/compile a GNU
-cross-platform toolchains), there is no WLAN drivers bundled inside the
-toolkit. Also my WLAN card is based on Intersil Prism 2 chipset, so my
-only choice is linux-wlan package. I do not know the project status, but
-the driver stability seems OK for me. (No crash occurred during I do so
-many ugly tests :)
-
-But the performance and the compatibilty is quite good (provided that
-the PCMCIA socket drirver is working properly) for a such small system
-(MPC860 @ 50MHz).
-
-Also I cannot see any drivers existing in the upstream kernel are really
-support the "Intersil Prism 2 WLAN" cards (my card is differ from those
-Orinoco cards and Hermes cards, also the drivers are also differ a lot).
+  Please give the link or patch for that driver.
 
 
-If you are going to use Intersil Prism 2 cards/chips, I would suggest
-you to use the linux-wlan driver (but seems this driver does not support
-AP mode yet...)
-
-Thanks.
-
-Best regards,
-Lo Chun Chung
-
------Original Message-----
-From: John W. Linville [mailto:linville@tuxdriver.com]=0D
-Sent: Wednesday, 06 September, 2006 9:58 PM
-To: Chun Chung Lo
-Cc: wei.li4@elf.mcgill.ca; linuxppc-embedded@ozlabs.org
-Subject: Re: Wireless Linux(802.11) for Embedded PowerPC
-
-
-On Wed, Sep 06, 2006 at 09:30:00AM +0800, Chun Chung Lo wrote:
-
-> 1. WLAN card driver: linux-wlan -- http://www.linux-wlan.org/
-
-Is this project even still active?  The last update to the page was 2.5
-years ago (2/2004), and many of the links are broken...
-
-Do the prism drivers in the upstream kernel not work for you?
-
-John
---=0D
-John W. Linville
-linville@tuxdriver.com
-
-This message (including any attachments) is for the named addressee(s)'s=
- use only. It may contain
-sensitive, confidential, private proprietary or legally privileged=
- information intended for a
-specific individual and purpose, and is protected by law. If you are not=
- the intended recipient,
-please immediately delete it and all copies of it from your system, destroy=
- any hard copies of it
-and notify the sender. Any use, disclosure, copying, or distribution of=
- this message and/or any
-attachments is strictly prohibited.
+Thanks,
+N.Balaji
