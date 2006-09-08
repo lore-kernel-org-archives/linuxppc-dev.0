@@ -1,23 +1,30 @@
-Return-Path: <AZeffertt@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D285E67B88
+Return-Path: <wei.li4@elf.mcgill.ca>
+Received: from drizzle.cc.mcgill.ca (drizzle.cc.mcgill.ca [132.206.27.48])
+	by ozlabs.org (Postfix) with ESMTP id 6BE9767B9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Sep 2006 18:27:13 +1000 (EST)
-Message-ID: <45012956.2010704@cambridgebroadband.com>
-Date: Fri, 08 Sep 2006 09:27:02 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Sat,  9 Sep 2006 01:16:48 +1000 (EST)
+Received: from mailscan1.cc.mcgill.ca (mailscan1.CC.McGill.CA [132.216.77.248])
+	by drizzle.cc.mcgill.ca (8.12.11/8.12.3) with ESMTP id k88FGj5g030774
+	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 11:16:47 -0400
+Received: from wgrappe2.cc.mcgill.ca (wgrappe2.CC.McGill.CA [132.216.46.251])
+	by mailscan1.cc.mcgill.ca (8.13.6/8.13.0) with ESMTP id
+	k88FGRMt014337
+	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 11:16:27 -0400 (EDT)
+Received: from wgrappe2.cc.mcgill.ca (localhost.localdomain [127.0.0.1])
+	by wgrappe2.cc.mcgill.ca (8.13.7/8.13.4) with ESMTP id k88FGQDd021067
+	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 11:16:26 -0400
+Received: (from apache@localhost)
+	by wgrappe2.cc.mcgill.ca (8.13.7/8.13.7/Submit) id k88FGQAS021064
+	for linuxppc-embedded@ozlabs.org; Fri, 8 Sep 2006 11:16:26 -0400
+Message-ID: <20060908111626.6gb5jqt9mo04o44o@webmail.mcgill.ca>
+Date: Fri, 08 Sep 2006 11:16:26 -0400
+From: wei.li4@elf.mcgill.ca
+To: linuxppc-embedded@ozlabs.org
+Subject: Compile Error Report
 MIME-Version: 1.0
-To: Li Yang <LeoLi@freescale.com>
-Subject: Re: MPC8360E USB Host Controller Driver
-References: <4879B0C6C249214CBE7AB04453F84E4D14C7B2@zch01exm20.fsl.freescale.net>	
-	<450029E3.2030303@cambridgebroadband.com>
-	<a0bc9bf80609071137o254edcc1s7bfd905c489cb604@mail.gmail.com>
-In-Reply-To: <a0bc9bf80609071137o254edcc1s7bfd905c489cb604@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: n.balaji@gdatech.co.in, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,43 +35,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Li Yang wrote:
-> On 9/7/06, Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
->> Li Yang-r58472 wrote:
->> >> i have a MPC8347E running with the Freescale E(F)HCI driver
->> >> and Kernel 2.6.17 (Freescale LTIB).
->> >>
->> >> Because of this mail, i checked, if there are any periodical
->> >> interrupts, without real USB payload.
->> >>
->> >> The result is: NO
->> >>
->> >> If i attach a USB-mouse, i get 5 interrupts.
->> >> If i remove it again, 1 additional.
->> >>
->> >> Nothing else, silence !
->> >>
->> >> USB works well with USB 1.1 and 2.0 devices (This was not the
->> >> case with earlier Kernels, e.g. 2.6.13, because for the
->> >> switching between 1.1 and 2.0 you need a transaction
->> >> translator driver).
->> >
->> > MPC834x USB is very different from the USB of CPM/QE.  It is an
->> > integrated EHCI controller.
->> >
->>
->>
->> So, the question is still open, does the QuiccEngine HCI (a.k.a. FHCI)
->> generate loading on the PPC core when there is no traffic on the USB?
-> 
-> Yes, but no.  If the bus is idle for some time, you can put the bus
-> into suspend state.  Then there will be no extra load to the core.
-> 
+Hi All,
 
-Is that what Freescale's linux driver does then?
+I am working on linux-2.6.18-rc2-g73a589b5.tar.bz2 for MPC875, the 
+cross-tools are from ELDK 4.0. After configuration and do 'make 
+zImage', I got these error:
 
-Can it detect new USB devices in suspend state?
+CC      arch/ppc/boot/simple/m8xx_tty.o
+arch/ppc/boot/simple/m8xx_tty.c:32: error: static declaration of 'cpmp' 
+follows non-static declaration
+include/asm/commproc.h:74: error: previous declaration of 'cpmp' was here
+make[2]: *** [arch/ppc/boot/simple/m8xx_tty.o] Error 1
 
-Regards,
+I also got these errors if I used these tools on Linux 2.6.13, but 
+there is no error if I use tools from ELDK 3.1.1, can anyone help me 
+figure it out? Thanks.
 
-Alex
+Wei
