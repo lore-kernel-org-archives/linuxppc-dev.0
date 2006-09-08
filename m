@@ -1,13 +1,13 @@
 Return-Path: <mgreer@mvista.com>
-Date: Thu, 7 Sep 2006 20:36:11 -0700
+Date: Thu, 7 Sep 2006 20:38:14 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 2/6] bootwrapper: Add in OF operations (and rename to of.c)
-Message-ID: <20060908033611.GB5203@mag.az.mvista.com>
-References: <20060719230318.GC3887@mag.az.mvista.com>
+Subject: Re: [PATCH 3/6] bootwrapper: Add flat device tree ops glue code
+Message-ID: <20060908033814.GC5203@mag.az.mvista.com>
+References: <20060719230544.GD3887@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060719230318.GC3887@mag.az.mvista.com>
+In-Reply-To: <20060719230544.GD3887@mag.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,543 +17,333 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the operations necessary for the bootwrapper to run on
-an OF platform.  This code used to be in prom.[ch] but was moved to of.c
-because its a more accurate name (IMHO).
+This patch adds the "glue" files that interface between the bootwrapper
+code and the shared code that is in flatdevtree.[ch].
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 --
 
- arch/powerpc/boot/prom.c     |  165 ------------------------
- arch/powerpc/boot/prom.h     |   41 ------
- b/arch/powerpc/boot/Makefile |    5 
- b/arch/powerpc/boot/of.c     |  286 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 290 insertions(+), 207 deletions(-)
+ Makefile           |    2 
+ flatdevtree_env.h  |   34 ++++++
+ flatdevtree_misc.c |  259 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 295 insertions(+)
 --
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index afc776f..c2bb541 100644
+index c2bb541..f1877ac 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -36,7 +36,10 @@ zliblinuxheader := zlib.h zconf.h zutil.
- $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
- #$(addprefix $(obj)/,main.o): $(addprefix $(obj)/,zlib.h)
- 
--src-boot := crt0.S string.S prom.c stdio.c main.c div64.S
-+src-boot := crt0.S string.S stdio.c main.c div64.S
-+ifeq ($(CONFIG_PPC_MULTIPLATFORM),y)
-+src-boot += of.c
-+endif
+@@ -39,6 +39,8 @@ #$(addprefix $(obj)/,main.o): $(addprefi
+ src-boot := crt0.S string.S stdio.c main.c div64.S
+ ifeq ($(CONFIG_PPC_MULTIPLATFORM),y)
+ src-boot += of.c
++else
++src-boot += flatdevtree_misc.c
+ endif
  src-boot += $(zlib)
  src-boot := $(addprefix $(obj)/, $(src-boot))
- obj-boot := $(addsuffix .o, $(basename $(src-boot)))
-diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
+diff --git a/arch/powerpc/boot/flatdevtree_env.h b/arch/powerpc/boot/flatdevtree_env.h
 new file mode 100644
-index 0000000..10fc108
+index 0000000..90e723b
 --- /dev/null
-+++ b/arch/powerpc/boot/of.c
-@@ -0,0 +1,286 @@
++++ b/arch/powerpc/boot/flatdevtree_env.h
+@@ -0,0 +1,34 @@
 +/*
-+ * Copyright (C) Paul Mackerras 1997.
++ * This file adds the header file glue so that the shared files
++ * flatdevicetree.[ch] can compile and work in the powerpc bootwrapper.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ *
++ * 2006 (c) MontaVista Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
 + */
++#ifndef _PPC_BOOT_FLATDEVTREE_ENV_H_
++#define _PPC_BOOT_FLATDEVTREE_ENV_H_
++
 +#include <stdarg.h>
 +#include <stddef.h>
 +#include "types.h"
++#include "page.h"
 +#include "string.h"
 +#include "stdio.h"
-+#include "page.h"
 +#include "ops.h"
 +
-+typedef void *ihandle;
-+typedef void *phandle;
++#define be16_to_cpu(x)		(x)
++#define cpu_to_be16(x)		(x)
++#define be32_to_cpu(x)		(x)
++#define cpu_to_be32(x)		(x)
++#define be64_to_cpu(x)		(x)
++#define cpu_to_be64(x)		(x)
 +
-+extern char _end[];
++#define ft_malloc(s)		malloc(s)
++#define ft_free(p,s)		free(p,s)
++#define ft_exit(x)		exit()
 +
-+/* Value picked to match that used by yaboot */
-+#define PROG_START	0x01400000	/* only used on 64-bit systems */
-+#define RAM_END		(512<<20)	/* Fixme: use OF */
-+#define	ONE_MB		0x100000
-+
-+int (*prom) (void *);
-+
-+
-+static unsigned long claim_base;
-+
-+static int call_prom(const char *service, int nargs, int nret, ...)
-+{
-+	int i;
-+	struct prom_args {
-+		const char *service;
-+		int nargs;
-+		int nret;
-+		unsigned int args[12];
-+	} args;
-+	va_list list;
-+
-+	args.service = service;
-+	args.nargs = nargs;
-+	args.nret = nret;
-+
-+	va_start(list, nret);
-+	for (i = 0; i < nargs; i++)
-+		args.args[i] = va_arg(list, unsigned int);
-+	va_end(list);
-+
-+	for (i = 0; i < nret; i++)
-+		args.args[nargs+i] = 0;
-+
-+	if (prom(&args) < 0)
-+		return -1;
-+
-+	return (nret > 0)? args.args[nargs]: 0;
-+}
-+
-+static int call_prom_ret(const char *service, int nargs, int nret,
-+		  unsigned int *rets, ...)
-+{
-+	int i;
-+	struct prom_args {
-+		const char *service;
-+		int nargs;
-+		int nret;
-+		unsigned int args[12];
-+	} args;
-+	va_list list;
-+
-+	args.service = service;
-+	args.nargs = nargs;
-+	args.nret = nret;
-+
-+	va_start(list, rets);
-+	for (i = 0; i < nargs; i++)
-+		args.args[i] = va_arg(list, unsigned int);
-+	va_end(list);
-+
-+	for (i = 0; i < nret; i++)
-+		args.args[nargs+i] = 0;
-+
-+	if (prom(&args) < 0)
-+		return -1;
-+
-+	if (rets != (void *) 0)
-+		for (i = 1; i < nret; ++i)
-+			rets[i-1] = args.args[nargs+i];
-+
-+	return (nret > 0)? args.args[nargs]: 0;
-+}
-+
++#endif /* _PPC_BOOT_FLATDEVTREE_ENV_H_ */
+diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
+new file mode 100644
+index 0000000..603d89d
+--- /dev/null
++++ b/arch/powerpc/boot/flatdevtree_misc.c
+@@ -0,0 +1,259 @@
 +/*
-+ * Older OF's require that when claiming a specific range of addresses,
-+ * we claim the physical space in the /memory node and the virtual
-+ * space in the chosen mmu node, and then do a map operation to
-+ * map virtual to physical.
++ * This file does the necessary interface mapping between the bootwrapper
++ * device tree operations and the interface provided by shared source
++ * files flatdevicetree.[ch].  It also provides the bootwrapper-required
++ * functionality that is not provided by flatdevicetree.c
++ *
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ * 	ft_translate_addr() and related routines came from
++ * 	<file:arch/powerpc/kernel/prom_parse.c> which has no author or
++ * 	copyright notice.
++ *
++ * 2006 (c) MontaVista Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
 + */
-+static int need_map = -1;
-+static ihandle chosen_mmu;
-+static phandle memory;
++#include "flatdevtree.h"
 +
-+/* returns true if s2 is a prefix of s1 */
-+static int string_match(const char *s1, const char *s2)
-+{
-+	for (; *s2; ++s2)
-+		if (*s1++ != *s2)
-+			return 0;
-+	return 1;
-+}
++#define MAX_ADDR_CELLS	4
++#define BAD_ADDR	((u64)-1)
 +
-+static int check_of_version(void)
-+{
-+	phandle oprom, chosen;
-+	char version[64];
++struct ft_bus {
++	u64	(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
++	int	(*translate)(u32 *addr, u64 offset, int na);
++};
 +
-+	oprom = finddevice("/openprom");
-+	if (oprom == (phandle) -1)
-+		return 0;
-+	if (getprop(oprom, "model", version, sizeof(version)) <= 0)
-+		return 0;
-+	version[sizeof(version)-1] = 0;
-+	printf("OF version = '%s'\r\n", version);
-+	if (!string_match(version, "Open Firmware, 1.")
-+	    && !string_match(version, "FirmWorks,3."))
-+		return 0;
-+	chosen = finddevice("/chosen");
-+	if (chosen == (phandle) -1) {
-+		chosen = finddevice("/chosen@0");
-+		if (chosen == (phandle) -1) {
-+			printf("no chosen\n");
-+			return 0;
-+		}
-+	}
-+	if (getprop(chosen, "mmu", &chosen_mmu, sizeof(chosen_mmu)) <= 0) {
-+		printf("no mmu\n");
-+		return 0;
-+	}
-+	memory = (ihandle) call_prom("open", 1, 1, "/memory");
-+	if (memory == (ihandle) -1) {
-+		memory = (ihandle) call_prom("open", 1, 1, "/memory@0");
-+		if (memory == (ihandle) -1) {
-+			printf("no memory node\n");
-+			return 0;
-+		}
-+	}
-+	printf("old OF detected\r\n");
-+	return 1;
-+}
-+
-+static void *claim(unsigned long virt, unsigned long size, unsigned long align)
-+{
-+	int ret;
-+	unsigned int result;
-+
-+	if (need_map < 0)
-+		need_map = check_of_version();
-+	if (align || !need_map)
-+		return (void *) call_prom("claim", 3, 1, virt, size, align);
-+
-+	ret = call_prom_ret("call-method", 5, 2, &result, "claim", memory,
-+			    align, size, virt);
-+	if (ret != 0 || result == -1)
-+		return (void *) -1;
-+	ret = call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
-+			    align, size, virt);
-+	/* 0x12 == coherent + read/write */
-+	ret = call_prom("call-method", 6, 1, "map", chosen_mmu,
-+			0x12, size, virt, virt);
-+	return (void *) virt;
-+}
-+
-+static void *of_try_claim(u32 size)
-+{
-+	unsigned long addr = 0;
-+	static u8 first_time = 1;
-+
-+	if (first_time) {
-+		claim_base = _ALIGN_UP((unsigned long)_end, ONE_MB);
-+#if defined(PROG_START)
-+		/*
-+		 * Maintain a "magic" minimum address. This keeps some older
-+		 * firmware platforms running.
-+		 */
-+		if (claim_base < PROG_START)
-+			claim_base = PROG_START;
-+#endif
-+		first_time = 0;
-+	}
-+
-+	for(; claim_base < RAM_END; claim_base += ONE_MB) {
-+#ifdef DEBUG
-+		printf("    trying: 0x%08lx\n\r", claim_base);
-+#endif
-+		addr = (unsigned long)claim(claim_base, size, 0);
-+		if ((void *)addr != (void *)-1)
-+			break;
-+	}
-+	if (addr == 0)
-+		return NULL;
-+	claim_base = PAGE_ALIGN(claim_base + size);
-+	return (void *)addr;
-+}
-+
-+static void of_exit(void)
-+{
-+	call_prom("exit", 0, 0);
-+}
-+
-+/*
-+ * OF device tree routines
-+ */
-+static void *of_finddevice(const char *name)
-+{
-+	return (phandle) call_prom("finddevice", 1, 1, name);
-+}
-+
-+static int of_getprop(const void *phandle, const char *name, void *buf,
-+		const int buflen)
-+{
-+	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
-+}
-+
-+static int of_setprop(const void *phandle, const char *name, const void *buf,
-+		const int buflen)
-+{
-+	return call_prom("setprop", 4, 1, phandle, name, buf, buflen);
-+}
-+
-+static void of_call_kernel(void *entry_addr, unsigned long a1, unsigned long a2,
-+		void *promptr, void *sp)
-+{
-+	void (*kernel_entry)(unsigned long a1, unsigned long a2, void *promptr,
-+			void *sp);
-+
-+	kernel_entry = entry_addr;
-+	kernel_entry(a1, a2, promptr, sp);
-+}
-+
-+/*
-+ * OF console routines
-+ */
-+static void *of_stdout_handle;
-+
-+static int of_console_open(void)
++static u32 ft_find_cells(char *path, char *prop)
 +{
 +	void *devp;
++	u32 num;
++	char p[MAX_PATH_LEN];
 +
-+	if (((devp = finddevice("/chosen")) != NULL)
-+			&& (getprop(devp, "stdout", &of_stdout_handle,
-+				sizeof(of_stdout_handle))
-+				== sizeof(of_stdout_handle)))
-+		return 0;
-+
-+	return -1;
++	strcpy(p, path);
++	do {
++		if ((devp = finddevice(p))
++				&& (getprop(devp, prop, &num, sizeof(num)) > 0))
++			return num;
++		ft_parentize(p, 0);
++	} while (strlen(p) > 0);
++	return 1; /* default of 1 */
 +}
 +
-+static void of_console_write(char *buf, int len)
++static u64 ft_read_addr(u32 *cell, int size)
 +{
-+	call_prom("write", 3, 1, of_stdout_handle, buf, len);
++	u64 r = 0;
++	while (size--)
++		r = (r << 32) | *(cell++);
++	return r;
 +}
 +
-+int platform_init(void *promptr)
++static u64 ft_bus_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
 +{
-+	platform_ops.fixups = NULL;
-+	platform_ops.malloc = of_try_claim;
-+	platform_ops.free = NULL;
-+	platform_ops.exit = of_exit;
++	u64 cp, s, da;
 +
-+	dt_ops.finddevice = of_finddevice;
-+	dt_ops.getprop = of_getprop;
-+	dt_ops.setprop = of_setprop;
-+	dt_ops.translate_addr = NULL;
-+	dt_ops.call_kernel = of_call_kernel;
++	cp = ft_read_addr(range, na);
++	s  = ft_read_addr(range + na + pna, ns);
++	da = ft_read_addr(addr, na);
 +
-+	console_ops.open = of_console_open;
-+	console_ops.write = of_console_write;
-+	console_ops.edit_cmdline = NULL;
-+	console_ops.close = NULL;
-+	console_ops.data = NULL;
++	if (da < cp || da >= (cp + s))
++		return BAD_ADDR;
++	return da - cp;
++}
 +
-+	prom = (int (*)(void *))promptr;
++static int ft_bus_default_translate(u32 *addr, u64 offset, int na)
++{
++	u64 a = ft_read_addr(addr, na);
++	memset(addr, 0, na * 4);
++	a += offset;
++	if (na > 1)
++		addr[na - 2] = a >> 32;
++	addr[na - 1] = a & 0xffffffffu;
++
 +	return 0;
 +}
-diff --git a/arch/powerpc/boot/prom.c b/arch/powerpc/boot/prom.c
-deleted file mode 100644
-index fa00577..0000000
---- a/arch/powerpc/boot/prom.c
-+++ /dev/null
-@@ -1,165 +0,0 @@
--/*
-- * Copyright (C) Paul Mackerras 1997.
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--#include <stdarg.h>
--#include <stddef.h>
--#include "string.h"
--#include "stdio.h"
--#include "prom.h"
--
--int (*prom)(void *);
--phandle chosen_handle;
--ihandle stdout;
--
--int call_prom(const char *service, int nargs, int nret, ...)
--{
--	int i;
--	struct prom_args {
--		const char *service;
--		int nargs;
--		int nret;
--		unsigned int args[12];
--	} args;
--	va_list list;
--
--	args.service = service;
--	args.nargs = nargs;
--	args.nret = nret;
--
--	va_start(list, nret);
--	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, unsigned int);
--	va_end(list);
--
--	for (i = 0; i < nret; i++)
--		args.args[nargs+i] = 0;
--
--	if (prom(&args) < 0)
--		return -1;
--
--	return (nret > 0)? args.args[nargs]: 0;
--}
--
--int call_prom_ret(const char *service, int nargs, int nret,
--		  unsigned int *rets, ...)
--{
--	int i;
--	struct prom_args {
--		const char *service;
--		int nargs;
--		int nret;
--		unsigned int args[12];
--	} args;
--	va_list list;
--
--	args.service = service;
--	args.nargs = nargs;
--	args.nret = nret;
--
--	va_start(list, rets);
--	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, unsigned int);
--	va_end(list);
--
--	for (i = 0; i < nret; i++)
--		args.args[nargs+i] = 0;
--
--	if (prom(&args) < 0)
--		return -1;
--
--	if (rets != (void *) 0)
--		for (i = 1; i < nret; ++i)
--			rets[i-1] = args.args[nargs+i];
--
--	return (nret > 0)? args.args[nargs]: 0;
--}
--
--int write(void *handle, void *ptr, int nb)
--{
--	return call_prom("write", 3, 1, handle, ptr, nb);
--}
--
--/*
-- * Older OF's require that when claiming a specific range of addresses,
-- * we claim the physical space in the /memory node and the virtual
-- * space in the chosen mmu node, and then do a map operation to
-- * map virtual to physical.
-- */
--static int need_map = -1;
--static ihandle chosen_mmu;
--static phandle memory;
--
--/* returns true if s2 is a prefix of s1 */
--static int string_match(const char *s1, const char *s2)
--{
--	for (; *s2; ++s2)
--		if (*s1++ != *s2)
--			return 0;
--	return 1;
--}
--
--static int check_of_version(void)
--{
--	phandle oprom, chosen;
--	char version[64];
--
--	oprom = finddevice("/openprom");
--	if (oprom == (phandle) -1)
--		return 0;
--	if (getprop(oprom, "model", version, sizeof(version)) <= 0)
--		return 0;
--	version[sizeof(version)-1] = 0;
--	printf("OF version = '%s'\r\n", version);
--	if (!string_match(version, "Open Firmware, 1.")
--	    && !string_match(version, "FirmWorks,3."))
--		return 0;
--	chosen = finddevice("/chosen");
--	if (chosen == (phandle) -1) {
--		chosen = finddevice("/chosen@0");
--		if (chosen == (phandle) -1) {
--			printf("no chosen\n");
--			return 0;
--		}
--	}
--	if (getprop(chosen, "mmu", &chosen_mmu, sizeof(chosen_mmu)) <= 0) {
--		printf("no mmu\n");
--		return 0;
--	}
--	memory = (ihandle) call_prom("open", 1, 1, "/memory");
--	if (memory == (ihandle) -1) {
--		memory = (ihandle) call_prom("open", 1, 1, "/memory@0");
--		if (memory == (ihandle) -1) {
--			printf("no memory node\n");
--			return 0;
--		}
--	}
--	printf("old OF detected\r\n");
--	return 1;
--}
--
--void *claim(unsigned long virt, unsigned long size, unsigned long align)
--{
--	int ret;
--	unsigned int result;
--
--	if (need_map < 0)
--		need_map = check_of_version();
--	if (align || !need_map)
--		return (void *) call_prom("claim", 3, 1, virt, size, align);
--	
--	ret = call_prom_ret("call-method", 5, 2, &result, "claim", memory,
--			    align, size, virt);
--	if (ret != 0 || result == -1)
--		return (void *) -1;
--	ret = call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
--			    align, size, virt);
--	/* 0x12 == coherent + read/write */
--	ret = call_prom("call-method", 6, 1, "map", chosen_mmu,
--			0x12, size, virt, virt);
--	return (void *) virt;
--}
-diff --git a/arch/powerpc/boot/prom.h b/arch/powerpc/boot/prom.h
-deleted file mode 100644
-index a57b184..0000000
---- a/arch/powerpc/boot/prom.h
-+++ /dev/null
-@@ -1,41 +0,0 @@
--#ifndef _PPC_BOOT_PROM_H_
--#define _PPC_BOOT_PROM_H_
--
--typedef void *phandle;
--typedef void *ihandle;
--
--extern int (*prom) (void *);
--extern phandle chosen_handle;
--extern ihandle stdout;
--
--int	call_prom(const char *service, int nargs, int nret, ...);
--int	call_prom_ret(const char *service, int nargs, int nret,
--		      unsigned int *rets, ...);
--
--extern int write(void *handle, void *ptr, int nb);
--extern void *claim(unsigned long virt, unsigned long size, unsigned long aln);
--
--static inline void exit(void)
--{
--	call_prom("exit", 0, 0);
--}
--
--static inline phandle finddevice(const char *name)
--{
--	return (phandle) call_prom("finddevice", 1, 1, name);
--}
--
--static inline int getprop(void *phandle, const char *name,
--			  void *buf, int buflen)
--{
--	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
--}
--
--
--static inline int setprop(void *phandle, const char *name,
--			  void *buf, int buflen)
--{
--	return call_prom("setprop", 4, 1, phandle, name, buf, buflen);
--}
--
--#endif				/* _PPC_BOOT_PROM_H_ */
++
++static u64 ft_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x03000000)
++		return BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = ft_read_addr(range + 1, na - 1);
++	s  = ft_read_addr(range + na + pna, ns);
++	da = ft_read_addr(addr + 1, na - 1);
++
++	if (da < cp || da >= (cp + s))
++		return BAD_ADDR;
++	return da - cp;
++}
++
++static int ft_bus_pci_translate(u32 *addr, u64 offset, int na)
++{
++	return ft_bus_default_translate(addr + 1, offset, na - 1);
++}
++
++static u64 ft_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x00000001)
++		return BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = ft_read_addr(range + 1, na - 1);
++	s  = ft_read_addr(range + na + pna, ns);
++	da = ft_read_addr(addr + 1, na - 1);
++
++	if (da < cp || da >= (cp + s))
++		return BAD_ADDR;
++	return da - cp;
++}
++
++static int ft_bus_isa_translate(u32 *addr, u64 offset, int na)
++{
++	return ft_bus_default_translate(addr + 1, offset, na - 1);
++}
++
++static void ft_match_bus(char *path, struct ft_bus *bus)
++{
++	void *devp;
++	char dtype[128]; /* XXXX */
++
++	if ((devp = finddevice(path)) && (getprop(devp, "device_type", dtype,
++					sizeof(dtype)) > 0)) {
++		if (!strcmp(dtype, "isa")) {
++			bus->map = ft_bus_isa_map;
++			bus->translate = ft_bus_isa_translate;
++		} else if (!strcmp(dtype, "pci")) {
++			bus->map = ft_bus_pci_map;
++			bus->translate = ft_bus_pci_translate;
++		} else {
++			bus->map = ft_bus_default_map;
++			bus->translate = ft_bus_default_translate;
++		}
++	}
++}
++
++static int ft_translate_one(char *path, struct ft_bus *bus, struct ft_bus *pbus,
++		u32 *addr, u32 na, u32 ns, u32 pna)
++{
++	void *devp;
++	u32 ranges[10 * (na + pna + ns)]; /* XXXX */
++	u32 *rp;
++	unsigned int rlen;
++	int rone;
++	u64 offset = BAD_ADDR;
++
++	if (!(devp = finddevice(path))
++			|| ((rlen = getprop(devp, "ranges", ranges,
++						sizeof(ranges))) < 0)
++			|| (rlen == 0)) {
++		offset = ft_read_addr(addr, na);
++		memset(addr, 0, pna * 4);
++		goto finish;
++	}
++
++	rlen /= 4;
++	rone = na + pna + ns;
++	rp = ranges;
++	for (; rlen >= rone; rlen -= rone, rp += rone) {
++		offset = bus->map(addr, rp, na, ns, pna);
++		if (offset != BAD_ADDR)
++			break;
++	}
++	if (offset == BAD_ADDR)
++		return 1;
++	memcpy(addr, rp + na, 4 * pna);
++
++finish:
++	/* Translate it into parent bus space */
++	return pbus->translate(addr, offset, pna);
++}
++
++/* 'addr' is modified */
++static u64 ft_translate_addr(const char *p, const u32 *in_addr,
++		const u32 addr_len)
++{
++	struct ft_bus	bus, pbus;
++	int na, ns, pna, pns;
++	u32 addr[MAX_ADDR_CELLS];
++	char path[MAX_PATH_LEN], ppath[MAX_PATH_LEN];
++
++	strcpy(ppath, p);
++	ft_parentize(ppath, 0);
++	ft_match_bus(ppath, &bus);
++	na = ft_find_cells(ppath, "#address-cells");
++	ns = ft_find_cells(ppath, "#size-cells");
++	memcpy(addr, in_addr, na * 4);
++
++	for (;;) {
++		strcpy(path, ppath);
++		ft_parentize(ppath, 0);
++
++		if (strlen(ppath) == 0)
++			return ft_read_addr(addr, na);
++
++		ft_match_bus(ppath, &pbus);
++		pna = ft_find_cells(ppath, "#address-cells");
++		pns = ft_find_cells(ppath, "#size-cells");
++
++		if (ft_translate_one(path, &bus, &pbus, addr, na, ns, pna))
++			exit();
++
++		na = pna;
++		ns = pns;
++		memcpy(&bus, &pbus, sizeof(struct ft_bus));
++	}
++}
++
++static void *dtb;
++
++static void *ft_finddevice(const char *name)
++{
++	return ft_find_node(dtb, name);
++}
++
++static int ft_getprop(const void *node, const char *propname, void *buf,
++		const int buflen)
++{
++	return ft_get_prop(dtb, node, propname, buf, buflen);
++}
++
++static int ft_setprop(const void *node, const char *propname, const void *buf,
++		const int buflen)
++{
++	return ft_set_prop(&dtb, node, propname, buf, buflen);
++}
++
++static void ft_call_kernel(void *entry_addr, unsigned long a1, unsigned long a2,
++		void *promptr, void *sp)
++{
++	void (*kernel_entry)(void *dt_blob, void *start_addr,
++			void *must_be_null);
++
++#ifdef DEBUG
++	printf("kernel:\n\r"
++		"        entry addr   = 0x%lx\n\r"
++		"        flattened dt = 0x%lx\n\r",
++		(unsigned long)entry_addr, dtb);
++#endif
++
++	kernel_entry = entry_addr;
++	kernel_entry(dtb, entry_addr, NULL);
++}
++
++void ft_init(void *dt_blob)
++{
++	dt_ops.finddevice = ft_finddevice;
++	dt_ops.getprop = ft_getprop;
++	dt_ops.setprop = ft_setprop;
++	dt_ops.translate_addr = ft_translate_addr;
++	dt_ops.call_kernel = ft_call_kernel;
++
++	dtb = dt_blob;
++}
