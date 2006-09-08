@@ -1,21 +1,23 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 7 Sep 2006 18:11:56 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: common flatdevtree code
-Message-ID: <20060908011156.GA10971@mag.az.mvista.com>
-References: <20060831184020.GA13494@mag.az.mvista.com>
-	<17662.17895.852128.729679@cargo.ozlabs.ibm.com>
-	<20060907003625.GA15533@mag.az.mvista.com>
-	<1157615011.18137.14.camel@diesel>
-	<20060907182717.GC4398@mag.az.mvista.com>
-	<1157667816.5220.30.camel@basalt.austin.ibm.com>
-	<20060908005630.GA9823@mag.az.mvista.com>
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-40-242-100.roch.qwest.net
+	[67.40.242.100])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2A53F67B92
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Sep 2006 11:11:54 +1000 (EST)
+Subject: Re: [PATCH] [v3] PPC 4xx: Enable XMON on PPC 4xx boards
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1157677403.22705.360.camel@localhost.localdomain>
+References: <1157639720.6098.49.camel@zod.rchland.ibm.com>
+	<20060907171916.GB18929@gate.ebshome.net>
+	<1157652525.6098.61.camel@zod.rchland.ibm.com>
+	<1157677403.22705.360.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 07 Sep 2006 20:10:54 -0500
+Message-Id: <1157677854.2721.39.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060908005630.GA9823@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Hollis Blanchard <hollisb@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, mporter@embeddedalley.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 07, 2006 at 05:56:31PM -0700, Mark A. Greer wrote:
-> Hollis, Paul,
+On Fri, 2006-09-08 at 11:03 +1000, Benjamin Herrenschmidt wrote:
+> > Blindly following the existing convention.  I agree it's ugly.  I'll fix
+> > it up shortly and send out another patch.  It'll also fix 440SPE, which
+> > also has a different UART address.
 > 
-> I made some more changes that I hope you approve of:
-> - Added a hdr to the file to try to make it clear that people should
->   not hack the local copy of the file.
-> - Fixed a booboo (typo) in my last patch
-> - Change the interface to ft_next() to pass a struct that contains the
->   pointers that it sets up.  Also moved the p_strings & version code
->   from the caller to ft_next().  Now, just pass in a NULL value to the
->   'p' param to start at the top of the tree.
-> - Cleaned up the callers to ft_next().  I think its much cleaner now.
+> It should all move to udbg anyway
 
-Forgot to add:
+udbg is arch/powerpc.  This is arch/ppc.  I have every intention of
+porting this to arch/powerpc when 4xx itself moves over and I'll gladly
+use udbg then.
 
-- Change malloc() call to ft_malloc() to be consistent with the changes
-  made to exit() -> ft_exit() and free -> ft_free().
+Until then, I'd still like to get this patch (v4) into the kernel since
+it's quite useful now.
 
-Mark
+josh
