@@ -1,30 +1,24 @@
-Return-Path: <wei.li4@elf.mcgill.ca>
-Received: from drizzle.cc.mcgill.ca (drizzle.cc.mcgill.ca [132.206.27.48])
-	by ozlabs.org (Postfix) with ESMTP id 6BE9767B9C
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	by ozlabs.org (Postfix) with ESMTP id 7A3A367B82
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Sep 2006 01:16:48 +1000 (EST)
-Received: from mailscan1.cc.mcgill.ca (mailscan1.CC.McGill.CA [132.216.77.248])
-	by drizzle.cc.mcgill.ca (8.12.11/8.12.3) with ESMTP id k88FGj5g030774
-	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 11:16:47 -0400
-Received: from wgrappe2.cc.mcgill.ca (wgrappe2.CC.McGill.CA [132.216.46.251])
-	by mailscan1.cc.mcgill.ca (8.13.6/8.13.0) with ESMTP id
-	k88FGRMt014337
-	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 11:16:27 -0400 (EDT)
-Received: from wgrappe2.cc.mcgill.ca (localhost.localdomain [127.0.0.1])
-	by wgrappe2.cc.mcgill.ca (8.13.7/8.13.4) with ESMTP id k88FGQDd021067
-	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 11:16:26 -0400
-Received: (from apache@localhost)
-	by wgrappe2.cc.mcgill.ca (8.13.7/8.13.7/Submit) id k88FGQAS021064
-	for linuxppc-embedded@ozlabs.org; Fri, 8 Sep 2006 11:16:26 -0400
-Message-ID: <20060908111626.6gb5jqt9mo04o44o@webmail.mcgill.ca>
-Date: Fri, 08 Sep 2006 11:16:26 -0400
-From: wei.li4@elf.mcgill.ca
-To: linuxppc-embedded@ozlabs.org
-Subject: Compile Error Report
+	Sat,  9 Sep 2006 01:31:05 +1000 (EST)
+Received: from sj-core-4.cisco.com (sj-core-4.cisco.com [171.68.223.138])
+	by sj-dkim-6.cisco.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k88FL7lp019554
+	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 08:21:07 -0700
+Received: from xbh-sjc-211.amer.cisco.com (xbh-sjc-211.cisco.com
+	[171.70.151.144])
+	by sj-core-4.cisco.com (8.12.10/8.12.6) with ESMTP id k88FL66i026150
+	for <linuxppc-embedded@ozlabs.org>; Fri, 8 Sep 2006 08:21:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format="flowed"
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6D35A.65B20A80"
+Subject: kprobe support for ppc 32 bit
+Date: Fri, 8 Sep 2006 08:21:03 -0700
+Message-ID: <F795765B112E7344AF36AA911279641502D19B9C@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,20 +29,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+This is a multi-part message in MIME format.
 
-I am working on linux-2.6.18-rc2-g73a589b5.tar.bz2 for MPC875, the 
-cross-tools are from ELDK 4.0. After configuration and do 'make 
-zImage', I got these error:
+------_=_NextPart_001_01C6D35A.65B20A80
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-CC      arch/ppc/boot/simple/m8xx_tty.o
-arch/ppc/boot/simple/m8xx_tty.c:32: error: static declaration of 'cpmp' 
-follows non-static declaration
-include/asm/commproc.h:74: error: previous declaration of 'cpmp' was here
-make[2]: *** [arch/ppc/boot/simple/m8xx_tty.o] Error 1
+My understanding is that the kprobe  is part of the standard linux 2.6
+source tree.
+I am not able to find any files related to the kprobe in ppc 32 bit
+architecture source tree
+, however, there are some related files for ppc 64 bit architecture
+source tree.
+directory.=20
+What am I missing?
+=20
+Many thanks in advance,
+Bizhan
 
-I also got these errors if I used these tools on Linux 2.6.13, but 
-there is no error if I use tools from ELDK 3.1.1, can anyone help me 
-figure it out? Thanks.
+------_=_NextPart_001_01C6D35A.65B20A80
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-Wei
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial size=3D2>My =
+understanding is=20
+that the&nbsp;kprobe&nbsp;&nbsp;is part of the standard linux 2.6 source =
+
+tree.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial size=3D2>I am =
+not able to=20
+find any files related to the kprobe in ppc 32 bit architecture source=20
+tree</FONT></SPAN></DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial size=3D2>, =
+however,=20
+</FONT></SPAN><SPAN class=3D717101615-08092006><FONT face=3DArial =
+size=3D2>there are=20
+some related files for ppc 64 bit architecture source =
+tree.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial =
+size=3D2>directory.=20
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial size=3D2>What =
+am I=20
+missing?</FONT></SPAN></DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial size=3D2>Many =
+thanks in=20
+advance,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D717101615-08092006><FONT face=3DArial=20
+size=3D2>Bizhan</FONT></SPAN></DIV></BODY></HTML>
+
+------_=_NextPart_001_01C6D35A.65B20A80--
