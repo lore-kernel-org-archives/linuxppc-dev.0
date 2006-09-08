@@ -1,13 +1,13 @@
 Return-Path: <mgreer@mvista.com>
-Date: Thu, 7 Sep 2006 20:38:14 -0700
+Date: Thu, 7 Sep 2006 20:39:11 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 3/6] bootwrapper: Add flat device tree ops glue code
-Message-ID: <20060908033814.GC5203@mag.az.mvista.com>
-References: <20060719230544.GD3887@mag.az.mvista.com>
+Subject: Re: [PATCH 4/6] bootwrapper: Add non-OF serial console support
+Message-ID: <20060908033911.GD5203@mag.az.mvista.com>
+References: <20060719231244.GE3887@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060719230544.GD3887@mag.az.mvista.com>
+In-Reply-To: <20060719231244.GE3887@mag.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,333 +17,440 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the "glue" files that interface between the bootwrapper
-code and the shared code that is in flatdevtree.[ch].
+This patch adds support for serial I/O to the bootwrapper.
+
+It is broken into 2 layers.  The first layer is generic serial
+operations that calls uart-specific routines to do the actual I/O.
+The second layer contains support for a 16550 compatible uart.
+
+The division allows support for other serial devices to be easily
+added in the future (e.g., the Marvell MPSC and the Freescale CPM).
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 --
 
- Makefile           |    2 
- flatdevtree_env.h  |   34 ++++++
- flatdevtree_misc.c |  259 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 295 insertions(+)
+ io.h      |   53 ++++++++++++++++++++
+ ns16550.c |   81 +++++++++++++++++++++++++++++++
+ serial.c  |  159 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ util.S    |  101 +++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 394 insertions(+)
 --
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index c2bb541..f1877ac 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -39,6 +39,8 @@ #$(addprefix $(obj)/,main.o): $(addprefi
- src-boot := crt0.S string.S stdio.c main.c div64.S
- ifeq ($(CONFIG_PPC_MULTIPLATFORM),y)
- src-boot += of.c
-+else
-+src-boot += flatdevtree_misc.c
- endif
- src-boot += $(zlib)
- src-boot := $(addprefix $(obj)/, $(src-boot))
-diff --git a/arch/powerpc/boot/flatdevtree_env.h b/arch/powerpc/boot/flatdevtree_env.h
+diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
 new file mode 100644
-index 0000000..90e723b
+index 0000000..32974ed
 --- /dev/null
-+++ b/arch/powerpc/boot/flatdevtree_env.h
-@@ -0,0 +1,34 @@
++++ b/arch/powerpc/boot/io.h
+@@ -0,0 +1,53 @@
++#ifndef _IO_H
++#define __IO_H
 +/*
-+ * This file adds the header file glue so that the shared files
-+ * flatdevicetree.[ch] can compile and work in the powerpc bootwrapper.
++ * Low-level I/O routines.
 + *
-+ * Author: Mark A. Greer <mgreer@mvista.com>
-+ *
-+ * 2006 (c) MontaVista Software, Inc.  This file is licensed under
-+ * the terms of the GNU General Public License version 2.  This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
++ * Copied from <file:include/asm-powerpc/io.h> (which has no copyright)
 + */
-+#ifndef _PPC_BOOT_FLATDEVTREE_ENV_H_
-+#define _PPC_BOOT_FLATDEVTREE_ENV_H_
++static inline int in_8(const volatile unsigned char *addr)
++{
++	int ret;
 +
++	__asm__ __volatile__("lbz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_8(volatile unsigned char *addr, int val)
++{
++	__asm__ __volatile__("stb%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
++static inline unsigned in_le32(const volatile unsigned *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lwbrx %0,0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "r" (addr), "m" (*addr));
++	return ret;
++}
++
++static inline unsigned in_be32(const volatile unsigned *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_le32(volatile unsigned *addr, int val)
++{
++	__asm__ __volatile__("stwbrx %1,0,%2; sync" : "=m" (*addr)
++			     : "r" (val), "r" (addr));
++}
++
++static inline void out_be32(volatile unsigned *addr, int val)
++{
++	__asm__ __volatile__("stw%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
++#endif /* _IO_H */
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+new file mode 100644
+index 0000000..06a6d32
+--- /dev/null
++++ b/arch/powerpc/boot/ns16550.c
+@@ -0,0 +1,81 @@
++/*
++ * 16550 serial console support.
++ *
++ * Original copied from <file:arch/ppc/boot/common/ns16550.c>
++ * (which had no copyright)
++ * Modifications: 2006 (c) MontaVista Software, Inc.
++ *
++ * Modified by: Mark A. Greer <mgreer@mvista.com>
++ */
 +#include <stdarg.h>
 +#include <stddef.h>
 +#include "types.h"
-+#include "page.h"
 +#include "string.h"
 +#include "stdio.h"
++#include "io.h"
 +#include "ops.h"
 +
-+#define be16_to_cpu(x)		(x)
-+#define cpu_to_be16(x)		(x)
-+#define be32_to_cpu(x)		(x)
-+#define cpu_to_be32(x)		(x)
-+#define be64_to_cpu(x)		(x)
-+#define cpu_to_be64(x)		(x)
++#define UART_DLL	0	/* Out: Divisor Latch Low */
++#define UART_DLM	1	/* Out: Divisor Latch High */
++#define UART_FCR	2	/* Out: FIFO Control Register */
++#define UART_LCR	3	/* Out: Line Control Register */
++#define UART_MCR	4	/* Out: Modem Control Register */
++#define UART_LSR	5	/* In:  Line Status Register */
++#define UART_LSR_THRE	0x20	/* Transmit-hold-register empty */
++#define UART_LSR_DR	0x01	/* Receiver data ready */
++#define UART_MSR	6	/* In:  Modem Status Register */
++#define UART_SCR	7	/* I/O: Scratch Register */
 +
-+#define ft_malloc(s)		malloc(s)
-+#define ft_free(p,s)		free(p,s)
-+#define ft_exit(x)		exit()
++static unsigned char *reg_base;
++static u8 reg_shift;
 +
-+#endif /* _PPC_BOOT_FLATDEVTREE_ENV_H_ */
-diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
++static int ns16550_open(void)
++{
++	out_8(reg_base + (UART_FCR << reg_shift), 0x06);
++	return 0;
++}
++
++static void ns16550_putc(unsigned char c)
++{
++	while ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_THRE) == 0);
++	out_8(reg_base, c);
++}
++
++static unsigned char ns16550_getc(void)
++{
++	while ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_DR) == 0);
++	return in_8(reg_base);
++}
++
++static u8 ns16550_tstc(void)
++{
++	return ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_DR) != 0);
++}
++
++int ns16550_console_probe_init(char *compat, void *devp, char *path,
++		struct serial_console_data *scdp)
++{
++	u64 addr;
++	u32 reg[2];
++
++	if (strcmp("ns16550", compat))
++		return 0; /* Not my device */
++
++	if (getprop(devp, "reg", reg, sizeof(reg)) != sizeof(reg))
++		return -1; /* dt must be horked so fail */
++
++	addr = dt_ops.translate_addr(path, reg, sizeof(reg));
++	reg_base = (unsigned char *)((u32)addr & 0xffffffffu);
++
++	if (getprop(devp, "reg_shift", &reg_shift, sizeof(reg_shift))
++			!= sizeof(reg_shift))
++		reg_shift = 0;
++
++	scdp->open = ns16550_open;
++	scdp->putc = ns16550_putc;
++	scdp->getc = ns16550_getc;
++	scdp->tstc = ns16550_tstc;
++	scdp->close = NULL;
++
++	return 1; /* My device and I initialized okay */
++}
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
 new file mode 100644
-index 0000000..603d89d
+index 0000000..368cce8
 --- /dev/null
-+++ b/arch/powerpc/boot/flatdevtree_misc.c
-@@ -0,0 +1,259 @@
++++ b/arch/powerpc/boot/serial.c
+@@ -0,0 +1,159 @@
 +/*
-+ * This file does the necessary interface mapping between the bootwrapper
-+ * device tree operations and the interface provided by shared source
-+ * files flatdevicetree.[ch].  It also provides the bootwrapper-required
-+ * functionality that is not provided by flatdevicetree.c
++ * Generic serial console support
 + *
 + * Author: Mark A. Greer <mgreer@mvista.com>
-+ * 	ft_translate_addr() and related routines came from
-+ * 	<file:arch/powerpc/kernel/prom_parse.c> which has no author or
-+ * 	copyright notice.
 + *
-+ * 2006 (c) MontaVista Software, Inc.  This file is licensed under
++ * Code in serial_edit_cmdline() copied from <file:arch/ppc/boot/simple/misc.c>
++ * and was written by Matt Porter <mporter@kernel.crashing.org>.
++ *
++ * 2001,2006 (c) MontaVista Software, Inc.  This file is licensed under
 + * the terms of the GNU General Public License version 2.  This program
 + * is licensed "as is" without any warranty of any kind, whether express
 + * or implied.
 + */
-+#include "flatdevtree.h"
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "io.h"
++#include "ops.h"
 +
-+#define MAX_ADDR_CELLS	4
-+#define BAD_ADDR	((u64)-1)
++extern void udelay(long delay);
 +
-+struct ft_bus {
-+	u64	(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
-+	int	(*translate)(u32 *addr, u64 offset, int na);
-+};
++static int serial_open(void)
++{
++	struct serial_console_data *scdp = console_ops.data;
++	return scdp->open();
++}
 +
-+static u32 ft_find_cells(char *path, char *prop)
++static void serial_write(char *buf, int len)
++{
++	struct serial_console_data *scdp = console_ops.data;
++
++	while (*buf != '\0')
++		scdp->putc(*buf++);
++}
++
++static void serial_edit_cmdline(char *buf, int len)
++{
++	int timer = 0, count;
++	char ch, *cp;
++	struct serial_console_data *scdp = console_ops.data;
++
++	cp = buf;
++	count = strlen(buf);
++	cp = &buf[count];
++	count++;
++
++	while (timer++ < 5*1000) {
++		if (scdp->tstc()) {
++			while (((ch = scdp->getc()) != '\n') && (ch != '\r')) {
++				/* Test for backspace/delete */
++				if ((ch == '\b') || (ch == '\177')) {
++					if (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				/* Test for ^x/^u (and wipe the line) */
++				} else if ((ch == '\030') || (ch == '\025')) {
++					while (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				} else if (count < len) {
++						*cp++ = ch;
++						count++;
++						scdp->putc(ch);
++				}
++			}
++			break;  /* Exit 'timer' loop */
++		}
++		udelay(1000);  /* 1 msec */
++	}
++	*cp = 0;
++}
++
++static void serial_close(void)
++{
++	struct serial_console_data *scdp = console_ops.data;
++
++	if (scdp->close)
++		scdp->close();
++}
++
++static int serial_get_stdout_info(void **devpp, char *path)
 +{
 +	void *devp;
-+	u32 num;
-+	char p[MAX_PATH_LEN];
++	char devtype[MAX_PROP_LEN];
 +
-+	strcpy(p, path);
-+	do {
-+		if ((devp = finddevice(p))
-+				&& (getprop(devp, prop, &num, sizeof(num)) > 0))
-+			return num;
-+		ft_parentize(p, 0);
-+	} while (strlen(p) > 0);
-+	return 1; /* default of 1 */
-+}
-+
-+static u64 ft_read_addr(u32 *cell, int size)
-+{
-+	u64 r = 0;
-+	while (size--)
-+		r = (r << 32) | *(cell++);
-+	return r;
-+}
-+
-+static u64 ft_bus_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	cp = ft_read_addr(range, na);
-+	s  = ft_read_addr(range + na + pna, ns);
-+	da = ft_read_addr(addr, na);
-+
-+	if (da < cp || da >= (cp + s))
-+		return BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int ft_bus_default_translate(u32 *addr, u64 offset, int na)
-+{
-+	u64 a = ft_read_addr(addr, na);
-+	memset(addr, 0, na * 4);
-+	a += offset;
-+	if (na > 1)
-+		addr[na - 2] = a >> 32;
-+	addr[na - 1] = a & 0xffffffffu;
-+
-+	return 0;
-+}
-+
-+static u64 ft_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	/* Check address type match */
-+	if ((addr[0] ^ range[0]) & 0x03000000)
-+		return BAD_ADDR;
-+
-+	/* Read address values, skipping high cell */
-+	cp = ft_read_addr(range + 1, na - 1);
-+	s  = ft_read_addr(range + na + pna, ns);
-+	da = ft_read_addr(addr + 1, na - 1);
-+
-+	if (da < cp || da >= (cp + s))
-+		return BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int ft_bus_pci_translate(u32 *addr, u64 offset, int na)
-+{
-+	return ft_bus_default_translate(addr + 1, offset, na - 1);
-+}
-+
-+static u64 ft_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	/* Check address type match */
-+	if ((addr[0] ^ range[0]) & 0x00000001)
-+		return BAD_ADDR;
-+
-+	/* Read address values, skipping high cell */
-+	cp = ft_read_addr(range + 1, na - 1);
-+	s  = ft_read_addr(range + na + pna, ns);
-+	da = ft_read_addr(addr + 1, na - 1);
-+
-+	if (da < cp || da >= (cp + s))
-+		return BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int ft_bus_isa_translate(u32 *addr, u64 offset, int na)
-+{
-+	return ft_bus_default_translate(addr + 1, offset, na - 1);
-+}
-+
-+static void ft_match_bus(char *path, struct ft_bus *bus)
-+{
-+	void *devp;
-+	char dtype[128]; /* XXXX */
-+
-+	if ((devp = finddevice(path)) && (getprop(devp, "device_type", dtype,
-+					sizeof(dtype)) > 0)) {
-+		if (!strcmp(dtype, "isa")) {
-+			bus->map = ft_bus_isa_map;
-+			bus->translate = ft_bus_isa_translate;
-+		} else if (!strcmp(dtype, "pci")) {
-+			bus->map = ft_bus_pci_map;
-+			bus->translate = ft_bus_pci_translate;
-+		} else {
-+			bus->map = ft_bus_default_map;
-+			bus->translate = ft_bus_default_translate;
++	devp = finddevice("/chosen");
++	if ((devp != NULL) && (getprop(devp, "linux,stdout-path", path,
++					MAX_PATH_LEN) > 0)) {
++		/* Check that device_type of stdout device is serial */
++		devp = finddevice(path);
++		if ((devp != NULL) && (getprop(devp, "device_type", devtype,
++						sizeof(devtype)) > 0)
++				&& !strcmp(devtype, "serial")) {
++			*devpp = devp;
++			/* *path param is set as well */
++			return 0;
 +		}
 +	}
++
++	return -1;
 +}
 +
-+static int ft_translate_one(char *path, struct ft_bus *bus, struct ft_bus *pbus,
-+		u32 *addr, u32 na, u32 ns, u32 pna)
++/* Add "weak" definition for each serial driver */
++int __attribute__ ((weak)) ns16550_console_probe_init(char *compat, void *devp,
++		char *path, struct serial_console_data *scdp)
++{
++	return 0; /* "not mine" */
++}
++
++static struct serial_console_data serial_cd;
++
++/* Node's "compatible" property determines which serial driver to use */
++int serial_console_init(void)
 +{
 +	void *devp;
-+	u32 ranges[10 * (na + pna + ns)]; /* XXXX */
-+	u32 *rp;
-+	unsigned int rlen;
-+	int rone;
-+	u64 offset = BAD_ADDR;
++	int rc;
++	char path[MAX_PATH_LEN], compat[MAX_PROP_LEN];
 +
-+	if (!(devp = finddevice(path))
-+			|| ((rlen = getprop(devp, "ranges", ranges,
-+						sizeof(ranges))) < 0)
-+			|| (rlen == 0)) {
-+		offset = ft_read_addr(addr, na);
-+		memset(addr, 0, pna * 4);
-+		goto finish;
++	if (serial_get_stdout_info(&devp, path))
++		goto fail;
++
++	if (getprop(devp, "compatible", compat, sizeof(compat)) < 0)
++		goto fail;
++
++	/* Call various serial driver probe routines.
++	 * DO NOT put the routine addresses into a table because they
++	 * will not be relocated.
++	 *
++	 * Probe routine return values:
++	 * 	-1: driver owns the device but init failed
++	 * 	 0: driver does not own the device
++	 * 	 1: driver owns the device and initialized it okay
++	 */
++	rc = ns16550_console_probe_init(compat, devp, path, &serial_cd);
++	/* Do something like:
++	 * if (rc == 0)
++	 *	rc = next_console_probe_init(compat, devp, path, &serial_cd);
++	 * if (rc == 0)
++	 *	...
++	 */
++
++	if (rc == 1) {
++		console_ops.open = serial_open;
++		console_ops.write = serial_write;
++		console_ops.edit_cmdline = serial_edit_cmdline;
++		console_ops.close = serial_close;
++		console_ops.data = &serial_cd;
++
++		return 0;
 +	}
-+
-+	rlen /= 4;
-+	rone = na + pna + ns;
-+	rp = ranges;
-+	for (; rlen >= rone; rlen -= rone, rp += rone) {
-+		offset = bus->map(addr, rp, na, ns, pna);
-+		if (offset != BAD_ADDR)
-+			break;
-+	}
-+	if (offset == BAD_ADDR)
-+		return 1;
-+	memcpy(addr, rp + na, 4 * pna);
-+
-+finish:
-+	/* Translate it into parent bus space */
-+	return pbus->translate(addr, offset, pna);
++fail:
++	return -1;
 +}
+diff --git a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
+new file mode 100644
+index 0000000..b8e1c23
+--- /dev/null
++++ b/arch/powerpc/boot/util.S
+@@ -0,0 +1,101 @@
++/*
++ * Copied from <file:arch/powerpc/kernel/misc_32.S>
++ *
++ * This file contains miscellaneous low-level functions.
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ * Largely rewritten by Cort Dougan (cort@cs.nmt.edu)
++ * and Paul Mackerras.
++ *
++ * kexec bits:
++ * Copyright (C) 2002-2003 Eric Biederman  <ebiederm@xmission.com>
++ * GameCube/ppc32 port Copyright (C) 2004 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++#include "ppc_asm.h"
 +
-+/* 'addr' is modified */
-+static u64 ft_translate_addr(const char *p, const u32 *in_addr,
-+		const u32 addr_len)
-+{
-+	struct ft_bus	bus, pbus;
-+	int na, ns, pna, pns;
-+	u32 addr[MAX_ADDR_CELLS];
-+	char path[MAX_PATH_LEN], ppath[MAX_PATH_LEN];
++#define SPRN_PVR        0x11F   /* Processor Version Register */
 +
-+	strcpy(ppath, p);
-+	ft_parentize(ppath, 0);
-+	ft_match_bus(ppath, &bus);
-+	na = ft_find_cells(ppath, "#address-cells");
-+	ns = ft_find_cells(ppath, "#size-cells");
-+	memcpy(addr, in_addr, na * 4);
++	.text
++/*
++ * complement mask on the msr then "or" some values on.
++ *     _nmask_and_or_msr(nmask, value_to_or)
++ */
++	.globl _nmask_and_or_msr
++_nmask_and_or_msr:
++	mfmsr	r0		/* Get current msr */
++	andc	r0,r0,r3	/* And off the bits set in r3 (first parm) */
++	or	r0,r0,r4	/* Or on the bits in r4 (second parm) */
++	SYNC			/* Some chip revs have problems here... */
++	mtmsr	r0		/* Update machine state */
++	isync
++	blr			/* Done */
 +
-+	for (;;) {
-+		strcpy(path, ppath);
-+		ft_parentize(ppath, 0);
++/* udelay (on non-601 processors) needs to know the period of the
++ * timebase in nanoseconds.  This used to be hardcoded to be 60ns
++ * (period of 66MHz/4).  Now a variable is used that is initialized to
++ * 60 for backward compatibility, but it can be overridden as necessary
++ * with code something like this:
++ *    extern unsigned long timebase_period_ns;
++ *    timebase_period_ns = 1000000000 / bd->bi_tbfreq;
++ */
++	.data
++	.globl timebase_period_ns
++timebase_period_ns:
++	.long	60
 +
-+		if (strlen(ppath) == 0)
-+			return ft_read_addr(addr, na);
++	.text
++/*
++ * Delay for a number of microseconds
++ */
++	.globl	udelay
++udelay:
++	mfspr	r4,SPRN_PVR
++	srwi	r4,r4,16
++	cmpwi	0,r4,1		/* 601 ? */
++	bne	.udelay_not_601
++00:	li	r0,86	/* Instructions / microsecond? */
++	mtctr	r0
++10:	addi	r0,r0,0 /* NOP */
++	bdnz	10b
++	subic.	r3,r3,1
++	bne	00b
++	blr
 +
-+		ft_match_bus(ppath, &pbus);
-+		pna = ft_find_cells(ppath, "#address-cells");
-+		pns = ft_find_cells(ppath, "#size-cells");
-+
-+		if (ft_translate_one(path, &bus, &pbus, addr, na, ns, pna))
-+			exit();
-+
-+		na = pna;
-+		ns = pns;
-+		memcpy(&bus, &pbus, sizeof(struct ft_bus));
-+	}
-+}
-+
-+static void *dtb;
-+
-+static void *ft_finddevice(const char *name)
-+{
-+	return ft_find_node(dtb, name);
-+}
-+
-+static int ft_getprop(const void *node, const char *propname, void *buf,
-+		const int buflen)
-+{
-+	return ft_get_prop(dtb, node, propname, buf, buflen);
-+}
-+
-+static int ft_setprop(const void *node, const char *propname, const void *buf,
-+		const int buflen)
-+{
-+	return ft_set_prop(&dtb, node, propname, buf, buflen);
-+}
-+
-+static void ft_call_kernel(void *entry_addr, unsigned long a1, unsigned long a2,
-+		void *promptr, void *sp)
-+{
-+	void (*kernel_entry)(void *dt_blob, void *start_addr,
-+			void *must_be_null);
-+
-+#ifdef DEBUG
-+	printf("kernel:\n\r"
-+		"        entry addr   = 0x%lx\n\r"
-+		"        flattened dt = 0x%lx\n\r",
-+		(unsigned long)entry_addr, dtb);
-+#endif
-+
-+	kernel_entry = entry_addr;
-+	kernel_entry(dtb, entry_addr, NULL);
-+}
-+
-+void ft_init(void *dt_blob)
-+{
-+	dt_ops.finddevice = ft_finddevice;
-+	dt_ops.getprop = ft_getprop;
-+	dt_ops.setprop = ft_setprop;
-+	dt_ops.translate_addr = ft_translate_addr;
-+	dt_ops.call_kernel = ft_call_kernel;
-+
-+	dtb = dt_blob;
-+}
++.udelay_not_601:
++	mulli	r4,r3,1000	/* nanoseconds */
++	/*  Change r4 to be the number of ticks using:
++	 *	(nanoseconds + (timebase_period_ns - 1 )) / timebase_period_ns
++	 *  timebase_period_ns defaults to 60 (16.6MHz) */
++	mflr	r5
++	bl	0f
++0:	mflr	r6
++	mtlr	r5
++	lis	r5,0b@ha
++	addi	r5,r5,0b@l
++	subf	r5,r5,r6	/* In case we're relocated */
++	addis	r5,r5,timebase_period_ns@ha
++	lwz	r5,timebase_period_ns@l(r5)
++	add	r4,r4,r5
++	addi	r4,r4,-1
++	divw	r4,r4,r5	/* BUS ticks */
++1:	mftbu	r5
++	mftb	r6
++	mftbu	r7
++	cmpw	0,r5,r7
++	bne	1b		/* Get [synced] base time */
++	addc	r9,r6,r4	/* Compute end time */
++	addze	r8,r5
++2:	mftbu	r5
++	cmpw	0,r5,r8
++	blt	2b
++	bgt	3f
++	mftb	r6
++	cmpw	0,r6,r9
++	blt	2b
++3:	blr
