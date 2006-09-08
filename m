@@ -1,19 +1,17 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 5C6FE67B92
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Sep 2006 06:16:08 +1000 (EST)
-Date: Fri, 8 Sep 2006 22:16:08 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: John Rigby <jcrigby@gmail.com>
-Subject: Re: powerpc power management
-In-Reply-To: <4b73d43f0609080718g743b9e6bje7202e5293c0abaa@mail.gmail.com>
-Message-ID: <Pine.LNX.4.60.0609082147200.4572@poirot.grange>
-References: <4b73d43f0609071905j26ab0317k144d78963e041cba@mail.gmail.com>
-	<450121E2.5050207@in.ibm.com>
-	<4b73d43f0609080718g743b9e6bje7202e5293c0abaa@mail.gmail.com>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
+	by ozlabs.org (Postfix) with ESMTP id AE94467A3A
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Sep 2006 07:27:18 +1000 (EST)
+Received: from ibook.aepfle.de (p5493D69B.dip.t-dialin.net [84.147.214.155])
+	by post.webmailer.de (8.13.6/8.13.6) with ESMTP id k88LR9Td026041
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Sep 2006 23:27:09 +0200 (MEST)
+Date: Fri, 8 Sep 2006 23:27:09 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: ADB keyboard not working in xmon
+Message-ID: <20060908212709.GA4027@aepfle.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi John
 
-On Fri, 8 Sep 2006, John Rigby wrote:
+What is the best way to let do_initcalls wait until the adb probing task
+has finished when xmon is enabled and system console is not on serial?
+The patch below leads to a dead keyboard without the delay,
+or without adb_sync as cmdline option and CONFIG_XMON_DEFAULT=n.
 
-> MPC5200 which has a 603 core.
-> 
-> On 9/8/06, Vaidyanathan S <svaidy@in.ibm.com> wrote:
-> > Hi John,
-> >
-> > John Rigby wrote:
-> > > I need to implement suspend to ram (sleep mode) on an embedded powerpc
-> > > processor.  I have googled generally and searched the lkml, this list
-> > > and the linux power management mailing list.  It seems after all this
-> > > searching that the only existing code is for the powermac in
-> > > drivers/macintosh/(variousfiles) and
-> > > arch/powerpc/platforms/powermac/(variousfiles).  Is this true or am I
-> > > missing something?
 
-I've been also playing with these ideas for a few weeks now, but before I 
-can start with that I have to port my board from arch/ppc to arch/powerpc, 
-which also means fdt support, new booting code, etc. But if I manage that, 
-I hope I'll get back to those ideas - if somebody doesn't do it before me, 
-which, actually, would be quite nice:-)
-
-Is your board already using ARCH=powerpc or ARCH=ppc? If the latter, I am 
-afraid, you'd need to port it under powerpc first. Don't think it makes 
-much sense doing new developments under arch/ppc now.
-
-As far as I understand, power-management code is also in flux, so, that 
-won't be easy either...
-
-If you do start working on str, I'll try to be useful at least with 
-testing:-)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -662,6 +662,8 @@ static void __init do_basic_setup(void)
+ #endif
+ 
+        do_initcalls();
++//     msleep(10 * 1000);
++       asm(".long 0x0\n");
+ }
+ 
+ static void do_pre_smp_initcalls(void)
+Index: linux-2.6/arch/powerpc/platforms/powermac/udbg_adb.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/udbg_adb.c
++++ linux-2.6/arch/powerpc/platforms/powermac/udbg_adb.c
+@@ -216,5 +216,11 @@ int udbg_adb_init(int force_btext)
+        if (input_type == input_adb_none)
+                return -ENODEV;
+ 
++#ifdef CONFIG_XMON_DEFAULT
++       {
++               extern int __adb_probe_sync;
++               __adb_probe_sync = 1;
++       }
++#endif
+        return 0;
+ }
