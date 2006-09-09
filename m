@@ -1,25 +1,15 @@
-Return-Path: <massimiliano.patriarca@eurotel.it>
-Received: from smtp02.kpnqwest.it (smtp02.kpnqwest.it [212.97.32.23])
-	by ozlabs.org (Postfix) with ESMTP id 4F4C067B9E
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s32.bay0.hotmail.com (bay0-omc3-s32.bay0.hotmail.com
+	[65.54.246.232]) by ozlabs.org (Postfix) with ESMTP id B0C8667B9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Sep 2006 20:39:22 +1000 (EST)
-Received: from mail.eurotel.it (unknown [212.97.63.130])
-	by smtp02.kpnqwest.it (Postfix) with ESMTP id AA4041059FC
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Sep 2006 12:18:40 +0200 (CEST)
-Received: from [192.168.0.16] (helo=as520.master.eurotel.it)
-	by lissone.master.eurotel.it with esmtp (Exim 4.43)
-	id 1GLzs2-0006Ds-5w
-	for linuxppc-embedded@ozlabs.org; Sat, 09 Sep 2006 12:15:30 +0200
-From: linux-ppc@eurotel.it
+	Sun, 10 Sep 2006 01:05:32 +1000 (EST)
+Message-ID: <BAY110-F23B67F808589990B24A5CDB2340@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: ML403 and Montavista 4.01
-MIME-Version: 1.0
-Message-ID: <OF5E1E5A03.1C7DB3DD-ONC12571E4.0037E7A6-C12571E4.003814F8@eurotel.it>
-Sender: Massimiliano.Patriarca@eurotel.it
-Date: Sat, 9 Sep 2006 12:12:34 +0200
-Content-Type: multipart/alternative;
-	boundary="=_alternative 003814F2C12571E4_="
+Subject: asm/*.h files missing for ppc arch.
+Date: Sat, 09 Sep 2006 15:05:27 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,19 +20,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Questo Š un messaggio multiparte in formato MIME.
---=_alternative 003814F2C12571E4_=
-Content-Type: text/plain; charset="US-ASCII"
+Dear all,
+Now I am trying to compile a driver module for my linux 2.6.16 kernel in 
+ML403 with CPU arch Powerpc 405. But when I include linux/module.h, and 
+then in module.h it includes linux/sched.h, and then in sched.h it includes 
+asm/param.h and asm/semaphore.h and asm/mmu.h......, the compiling errors 
+of "no such file or directory" appear. I found that there are NOT such 
+files in asm/ at all.(the asm/ is linked to asm-ppc/ for PPC405 arch) Where 
+are they then? I think when compiling modules, we must include 
+linux/module.h and then these asm/*.h files, right? Any implies are 
+appreciated. Thanks a lot for your telling.
 
-Hello, we started developing kernel with Montavista 4.01 to Xilinx ML403.
-Is there any info about upgrading ISE 8.1 Montavista 4 MLD/TCL and driver 
-files to enable automatic driver generation?
---=_alternative 003814F2C12571E4_=
-Content-Type: text/html; charset="US-ASCII"
+Regards
+Ming
 
-
-<br><font size=2 face="sans-serif">Hello, we started developing kernel
-with Montavista 4.01 to Xilinx ML403.</font>
-<br><font size=2 face="sans-serif">Is there any info about upgrading ISE
-8.1 Montavista 4 MLD/TCL and driver files to enable automatic driver generation?</font>
---=_alternative 003814F2C12571E4_=--
+_________________________________________________________________
+ÏíÓÃÊÀ½çÉÏ×î´óµÄµç×ÓÓÊ¼þÏµÍ³¡ª MSN Hotmail¡£  http://www.hotmail.com  
