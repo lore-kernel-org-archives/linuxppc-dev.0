@@ -1,15 +1,14 @@
-Return-Path: <SRS0+13f4d1f49aa27df1c292+1112+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Subject: Re: Cell - linux compatibility question
-From: David Woodhouse <dwmw2@infradead.org>
-To: Donald Chiarulli <don@cs.pitt.edu>
-In-Reply-To: <5619A22F-A50E-4FE1-B48B-B7AEE5481542@cs.pitt.edu>
-References: <5619A22F-A50E-4FE1-B48B-B7AEE5481542@cs.pitt.edu>
-Content-Type: text/plain
-Date: Sat, 09 Sep 2006 07:27:21 +0100
-Message-Id: <1157783241.3526.11.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc64-dev@ozlabs.org, cell_support@bsc.es,
-	Steve Levitan <steve@engr.pitt.edu>
+Return-Path: <josejx@gentoo.org>
+Received: from alnrmhc11.comcast.net (alnrmhc13.comcast.net [204.127.225.93])
+	by ozlabs.org (Postfix) with ESMTP id 242FB67B7E
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Sep 2006 06:53:43 +1000 (EST)
+Message-ID: <45032775.4080000@gentoo.org>
+Date: Sat, 09 Sep 2006 16:43:33 -0400
+From: Joseph Jezak <josejx@gentoo.org>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: highmem.h
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,14 +18,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-09-08 at 11:27 -0400, Donald Chiarulli wrote:
-> Do you know anyone who has experience with porting the Cell GNU  
-> toolchain to this platform?
+Hi everyone,
 
-We're hoping to get the Cell toolchain into Fedora Extras some time
-soon, so you won't need to do anything special to find and install it.
-In the meantime, it shouldn't be a problem -- I think it's normally
-built on Fedora anyway.
+I think highmem.h needs to be copied from include/asm-ppc to
+include/asm-powerpc.  For instance, if you include linux/skbuff.h,
+it includes linux/highmem.h.  If CONFIG_HIGHMEM is enabled (which is
+possible on PPC32), then linux/highmem.h includes asm/highmem.h
+which isn't currently included in include/asm-powerpc.
 
--- 
-dwmw2
+Am I overlooking something here?  For what it's worth, I noticed
+this while building the sheep module in MOL.
+
+-Joe
