@@ -1,17 +1,18 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s14.bay0.hotmail.com (bay0-omc2-s14.bay0.hotmail.com
-	[65.54.246.150]) by ozlabs.org (Postfix) with ESMTP id D05B567B5A
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 2D91E67B5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 10 Sep 2006 04:34:46 +1000 (EST)
-Message-ID: <BAY110-F378469920DE25DF7AB6C28B2340@phx.gbl>
-In-Reply-To: <1157823763.2670.2.camel@vader.jdub.homelinux.org>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: jwboyer@jdub.homelinux.org
-Subject: RE: asm/*.h files missing for ppc arch.
-Date: Sat, 09 Sep 2006 18:34:41 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 10 Sep 2006 05:22:00 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: asm/*.h files missing for ppc arch.
+Date: Sat, 9 Sep 2006 21:21:49 +0200
+References: <BAY110-F378469920DE25DF7AB6C28B2340@phx.gbl>
+In-Reply-To: <BAY110-F378469920DE25DF7AB6C28B2340@phx.gbl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200609092121.49915.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,31 +23,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Josh,
+Am Saturday 09 September 2006 20:34 schrieb Ming Liu:
+> default:
+> =A0 $(MAKE) -C $(KERNELDIR) M=3D$(PWD) modules
+> endif
 
->How are you compiling?  For 4xx, you still need to specify ARCH=ppc with
->the make command.  There is some makefile hackery that will then bring
->in header files from asm-powerpc as needed.
+It's usually easier if you add your module to your copy of the kernel
+sources and build it along with all the other modules.
 
-In fact, I just try to compile the hello example in the book Linux Device 
-Driver chapter 2. The Makefile is listed as:
-
-#Makefile
-ifneq ($(KERNELRELEASE),)
-  obj-m := hello.o
-else 
-  KERNELDIR ?= /home/mingliu/linux-2.6.16
-  PWD := $(shell pwd)
-
-default:
-  $(MAKE) -C $(KERNELDIR) M=$(PWD) modules
-endif
-
-Also, I have specified ARCH = ppc in my Linux kernel. But it seems that 
-there is still some problem. Thanks for your suggestion.
-
-Regards
-Ming
-
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+	Arnd <><
