@@ -1,20 +1,25 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B42B367B71
+Return-Path: <guinan@bluebutton.com>
+Received: from ns4.townisp.com (ns4a.townisp.com [216.195.0.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ns4.townisp.com", Issuer "ns4.townisp.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5D38067B58
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Sep 2006 21:57:13 +1000 (EST)
-Received: from vitb.ru.mvista.com ([10.150.0.9])
-	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k8BBvBi05205
-	for <linuxppc-embedded@ozlabs.org>; Mon, 11 Sep 2006 16:57:11 +0500
-Date: Mon, 11 Sep 2006 15:57:28 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Tue, 12 Sep 2006 01:51:36 +1000 (EST)
+Received: from gemini.home.net (dhcp-0-10-57-0-7-57.cpe.townisp.com
+	[64.30.85.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ns4.townisp.com (Postfix) with ESMTP id 887A729939
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Sep 2006 11:51:32 -0400 (EDT)
+Date: Mon, 11 Sep 2006 11:51:33 -0400 (EDT)
+From: Jamie Guinan <guinan@bluebutton.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: I2C on MPC8272...
-Message-ID: <20060911155728.7c1c441a@vitb.ru.mvista.com>
-In-Reply-To: <BE8B3EECA608414FB163FBA4576FCEBD432009@EXNY.us.corp.aacisd.com>
-References: <BE8B3EECA608414FB163FBA4576FCEBD432009@EXNY.us.corp.aacisd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Any PPC system with working USB 2.0 host
+Message-ID: <Pine.LNX.4.64.0609111140260.6892@gemini.home.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-To: Jamie Guinan <guinan@bluebutton.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +30,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 8 Sep 2006 13:00:58 -0400
-"Kuffner Cory" <CKuffner@LIO.AACISD.com> wrote:
 
-> Hello all,
->  
-> Does anyone know how to use the I2C module for the MPC8272??  We are attempting to enable it by following code written for a bareboard system and converting it into a kernel module (2.6.11 Kernel), but nothing happens on our SDA and SCL data lines.  The parameter ram is kind of tricky to set up, but I beleive we have everything pointing where it should.  To write to the IMM we are using the ioremap function with ioread and iowrite, we can write to the ports so I don't think there is an issue writing to memory, but I'm new to embedded linux.  Has anyone ever used the I2C controller in one of freescale's chips or just a good understanding of I2C modules in embedded linux??  I think all the chips have the same I2C interface....so it should be the same set up for MPC8250, 8255, 8260, etc.
->  
+Hi,
 
-I am recalling i2c functional on 8272, but no other details unfortunately. IIRC, i2c-mpc.c did the magic with some minor intervention.
+I'm trying to get ahold of a low-power, small form factor system with 
+support for USB 2.0 hi-speed host.  PPC would appear to be a good 
+solution for this.
 
-Barely, to access immr it is ioremapped early, and cpm2_immr-> holds i2c controller, pram and other pleasant stuff. And, I am recalling i2c on 8540 working fine right out of the box...
+I've tried 2 well-known embedded board vendors, and despite having USB 
+2.0 capable hardware, neither could provide a working solution.  The 
+"BSPs" from both vendors depend on out-of-tree patches, so I won't 
+bother this list with details.
 
--- 
-Sincerely, 
-Vitaly
+Does USB 2.0 host on the KuroBox in fact work, with hi-speed devices?  
+Any other boards that are known to work?
+
+-Jamie
