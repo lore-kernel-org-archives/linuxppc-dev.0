@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id 9387867B62
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Sep 2006 19:30:31 +1000 (EST)
+Received: from ibook.aepfle.de (p5493E152.dip.t-dialin.net [84.147.225.82])
+	by post.webmailer.de (8.13.6/8.13.6) with ESMTP id k8B9UREi020085
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Sep 2006 11:30:28 +0200 (MEST)
+Date: Mon, 11 Sep 2006 11:30:28 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: missing release_region in i8042_exit
+Message-ID: <20060911093028.GA23112@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17669.7544.599959.442534@cargo.ozlabs.ibm.com>
-Date: Mon, 11 Sep 2006 18:25:28 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kim Phillips <kim.phillips@freescale.com>,
-    linuxppc-dev@ozlabs.org
-Subject: Re: Perhaps git-update-server-info needs to be run on
-	.../paulus/powerpc.git?
-In-Reply-To: <17625.18896.977702.640753@cargo.ozlabs.ibm.com>
-References: <20060808193555.301bc229.kim.phillips@freescale.com>
-	<17625.18896.977702.640753@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras writes:
 
-> Kim Phillips writes:
-> 
-> > Linus' tree clones fine, paulus' doesn't:
-> 
-> Try now...
-> 
-> Paul.
+Does anyone know why 64bit kernels do not call release_region in
+i8042_platform_exit? Why is it allowed on 32bit kernels?
 
-Oops, mail system error, ignore me...
+drivers/input/serio/i8042-io.h
 
-Paul.
+     83 static inline void i8042_platform_exit(void)
+     84 {
+     85 #if !defined(__sh__) && !defined(__alpha__) && !defined(CONFIG_PPC64)
+     86         release_region(I8042_DATA_REG, 16);
+     87 #endif
+     88 }
