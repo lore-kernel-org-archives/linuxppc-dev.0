@@ -1,19 +1,26 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
-	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 3FAD467A3A
+Return-Path: <roubert@df.lth.se>
+Received: from df.lth.se (mail.df.lth.se [194.47.250.12])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3F7FA67A39
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Sep 2006 00:54:39 +1000 (EST)
-Subject: Re: How to find I2C address?
-From: Ben Warren <bwarren@qstreams.com>
-To: Sachin Rane <SRane@alphion.com>
-In-Reply-To: <8584FDC94AFF7640B17B8A89B23B19B34F655C@sbsserver.AlphionCorp.local>
-References: <8584FDC94AFF7640B17B8A89B23B19B34F655C@sbsserver.AlphionCorp.local>
-Content-Type: text/plain
-Date: Tue, 12 Sep 2006 10:44:58 -0400
-Message-Id: <1158072298.6944.32.camel@saruman.qstreams.net>
+	Wed, 13 Sep 2006 01:33:24 +1000 (EST)
+Received: from igloo.df.lth.se (localhost [127.0.0.1])
+	by df.lth.se (8.13.1/8.13.1) with ESMTP id k8CFXI15010256
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 12 Sep 2006 17:33:18 +0200 (CEST)
+Received: (from roubert@localhost)
+	by igloo.df.lth.se (8.13.1/8.13.1/Submit) id k8CFXHUc010246
+	for linuxppc-embedded@ozlabs.org; Tue, 12 Sep 2006 17:33:17 +0200 (CEST)
+Date: Tue, 12 Sep 2006 17:33:16 +0200
+From: Fredrik Roubert <roubert@df.lth.se>
+To: linuxppc-embedded@ozlabs.org
+Subject: How to move from /ppc/ to /powerpc/
+Message-ID: <20060912153316.GC16340@igloo.df.lth.se>
 Mime-Version: 1.0
-Cc: Murali Sampath <MSampath@alphion.com>, linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +31,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-12 at 10:13 -0400, Sachin Rane wrote:
-> Hi,
->  
-> I am using AMCC PPC440GX evaluation board.
-> I want to access serial EEPROM (AP31_U29) present on the board.
-> I couldn't find the I2C address for this chip in the board manuals.
->  
-> Could you tell me where I can find it?
->  
 
-These things typically have 1 to 3 address pins that are pulled up or
-down on the board, with a base address of 0x50.  In other words, it's
-probably between 0x50 and 0x57.  To be sure, download the datasheet from
-the chip vendor, and look on your board's schematics to see how the
-address pins are tied.
+--ReaqsoxgOBHFXBhH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There are various ways of probing the bus to get the info indirectly,
-but you should really be familiar with your hardware first.
+Hi!
 
-regards,
-Ben 
+I have a custom board on which I currently run Linux 2.6.18-rc6
+configured for MPC834x_SYS in the /ppc/ tree, which just a few minor
+changes. Now I'm interested to move to using the /powerpc/ source tree
+instead, but I can't figure out exactly what steps are necessary to do
+this.
+
+Does anyone run a MPC834x_SYS built with ARCH=3Dpowerpc?
+
+I boot the board with U-Boot (version 1.1.4, customized), and I assume
+that I need to add some stuff for this new device tree thing, but I
+can't figure out exactly what the kernel will expect.
+
+Does anyone have some pointers on how to do this?
+
+Cheers // Fredrik Roubert
+
+--=20
+Visserij 192  |  +32 473 344527 / +46 708 776974
+BE-9000 Gent  |  http://www.df.lth.se/~roubert/
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (SunOS)
+
+iQCVAwUBRQbTPMRKuLhQMn35AQKAMQP+MVWVppYNwWoHB2hx6OXIrjAKiqgJ83qO
+WOgvIpqFbz8Wq32iVfRibUiPBUVkM+Kp9PG39kF5v5Ck58C06NyBohJZcyi/XEha
+Fh9JpZzHgVCnQ5spJOwiORQnVvsaC9u2YgWlrOAZduwQckotWDSDrfuOJPuaGDmO
+gmUTx7p25I8=
+=zkGt
+-----END PGP SIGNATURE-----
+
+--ReaqsoxgOBHFXBhH--
