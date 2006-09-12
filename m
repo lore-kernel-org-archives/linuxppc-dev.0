@@ -1,17 +1,20 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 2438367A3F
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Sep 2006 01:54:11 +1000 (EST)
-Message-ID: <4506D7DE.9070800@ru.mvista.com>
-Date: Tue, 12 Sep 2006 19:53:02 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: "Peter N. Andreasen" <peterarbejde@gmail.com>
-Subject: Re: Linux on custom Xilinx board with PPC405 hangs on boot
-References: <36468a5c0609120706i6c7e32efke7d8901d9ce4ae9b@mail.gmail.com>
-In-Reply-To: <36468a5c0609120706i6c7e32efke7d8901d9ce4ae9b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <judith@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 84B18679F0
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Sep 2006 03:48:31 +1000 (EST)
+Date: Tue, 12 Sep 2006 10:48:14 -0700
+From: Judith Lebzelter <judith@osdl.org>
+To: Christian <evilninja@gmx.net>
+Subject: Re: 'make ARCH=ppc defconfig' failing for cross-compile
+Message-ID: <20060912174814.GA29226@shell0.pdx.osdl.net>
+References: <20060909000512.GF9335@shell0.pdx.osdl.net>
+	<Pine.LNX.4.64.0609100652160.16347@sheep.housecafe.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0609100652160.16347@sheep.housecafe.de>
+Cc: linuxppc-dev@ozlabs.org, Judith Lebzelter <judith@osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Peter N. Andreasen wrote:
-> I have an FPGA board which is based on the Xilinx ML300 board but 
-> without disk and display. It has 4MB flash, and 32MB SDRAM, and uses the 
-> uartlite serial port.
-> The RAM is located at 0x0000'0000 - 0x01FF'FFFF
-> I downloaded the kernel from Montavista, built a board support package 
-> in Xilinx Platform Studio, and managed to configure and build the kernel.
-> However when I transfer the resulting zImage.elf file to the board, the 
-> attached terminal only shows:
+On Tue, Sep 12, 2006 at 10:21:46AM -0700, Christian wrote:
+> On Fri, 8 Sep 2006, Judith Lebzelter wrote:
+> > I have been doing cross-compiles for ppc and powerpc on my i686 system.
+> > In order to do this I generate the .config file like this:
+> >
+> > make ARCH=ppc defconfig
+> > (or make ARCH=powerpc defconfig)
 > 
-> loaded at:     00040000 00D4140E
-> board data at: 00D41183 00D41105
-> relocated to:  0004258F 00043501
-> zimage at:     00048550 0074E751
-> initrd at:     00740800 00D420FF
-> avail ram:     00D40500 20000000
-> 
-> Linux/PPC load: root=/dev/ram rw console=/dev/ttyS0
-...
+> Seems like defconfig has been removed, because there are so many 
+> sub-platforms for ppc:
 
-"console=ttyS0" (not "/dev/ttyS0" BTW) is for 16x50 compatible UART.
-UartLite needs something like "console=ttl0".
+I build these in OSDL's cross compile build farm (PLM) as a code check.
+Our scripts are generalized to work for various architectures, so it is
+disappointing that 'defconfig' no longer works for ppc the way it does 
+in other achitectures.  Are there plans to make plain 'defconfig' work 
+again, at least in the new 'powerpc' directory?  (The 'ppc64_defconfig' 
+target looks good to me.:)
+
+> 
+> $ ls arch/ppc/configs/*defconfig | wc -l
+> 56
+> 
+> Just pick the defonfig for your platform, for my PReP that'd be:
+
+I will do this as a work-around.
+
+TFYR,
+Judith
+
+> 
+> $ make ARCH=ppc CROSS_COMPILE=powerpc-604-linux-gnu- prep_defconfig
+> 
+> 
+> HTH,
+> Christian.
+> -- 
+> BOFH excuse #383:
+> 
+> Your processor has taken a ride to Heaven's Gate on the UFO behind Hale-Bopp's comet.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
