@@ -1,19 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 1D9F467B32
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id BFF6267B22
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Sep 2006 02:12:01 +1000 (EST)
+	Wed, 13 Sep 2006 02:20:34 +1000 (EST)
+Date: Tue, 12 Sep 2006 20:20:49 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Fredrik Roubert <roubert@df.lth.se>
 Subject: Re: How to move from /ppc/ to /powerpc/
-From: Jon Loeliger <jdl@freescale.com>
-To: Fredrik Roubert <roubert@df.lth.se>,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20060912105830.3923d537.kim.phillips@freescale.com>
+Message-ID: <20060912202049.36bf1428@vitb.ru.mvista.com>
+In-Reply-To: <20060912153316.GC16340@igloo.df.lth.se>
 References: <20060912153316.GC16340@igloo.df.lth.se>
-	<20060912105830.3923d537.kim.phillips@freescale.com>
-Content-Type: text/plain
-Message-Id: <1158077030.27129.189.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Tue, 12 Sep 2006 11:03:50 -0500
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-12 at 10:58, Kim Phillips wrote:
+On Tue, 12 Sep 2006 17:33:16 +0200
+Fredrik Roubert <roubert@df.lth.se> wrote:
 
-> > I boot the board with U-Boot (version 1.1.4, customized), and I assume
-> > that I need to add some stuff for this new device tree thing, but I
-> > can't figure out exactly what the kernel will expect.
+> Hi!
 > 
-> the kernel expects a pointer to a device tree instead of a bd_t.
-> The 8349EMDS device tree source is now in linux/arch/powerpc/boot/dts.
-> You'll need the device tree compiler (dtc) from jdl.com to build
-> your flat device tree binary (dtb; what the kernel expects).
+> I have a custom board on which I currently run Linux 2.6.18-rc6
+> configured for MPC834x_SYS in the /ppc/ tree, which just a few minor
+> changes. Now I'm interested to move to using the /powerpc/ source tree
+> instead, but I can't figure out exactly what steps are necessary to do
+> this.
+> 
+> Does anyone run a MPC834x_SYS built with ARCH=powerpc?
+> 
+Actually it was the first ppc board actually moved over to powerpc.
 
-And you should read:
+> I boot the board with U-Boot (version 1.1.4, customized), and I assume
+> that I need to add some stuff for this new device tree thing, but I
+> can't figure out exactly what the kernel will expect.
+You'll need to replace u-boot with custom one that is able to deal with dts. There are 2 ways ATM - use bootm dts approach, which could load device tree from external source, and built-in that makes in compiled into u-boot.
 
-    linux-2.6/Documentation/powerpc/booting-without-of.txt
+Both patches against u-boot should be searched in u-boot mailing list archives. For 83xx both way work just fine.
 
-jdl
+
+-- 
+Sincerely, 
+Vitaly
