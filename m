@@ -1,18 +1,17 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id E3CD4679E7
+Return-Path: <SRane@alphion.com>
+Received: from alphion.com (unknown [66.147.184.82])
+	by ozlabs.org (Postfix) with ESMTP id 367E467A3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Sep 2006 22:58:16 +1000 (EST)
-Message-ID: <4506AF69.30905@ru.mvista.com>
-Date: Tue, 12 Sep 2006 17:00:25 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Wed, 13 Sep 2006 00:26:07 +1000 (EST)
 MIME-Version: 1.0
-To: Suzuki Takashi <setsu@emi.yamaha.co.jp>
-Subject: Re: SM501 Kernel display driver for v2.6.17
-References: <BDCC9646-9F98-4FFC-B0D8-A73E05B799A4@emi.yamaha.co.jp>
-In-Reply-To: <BDCC9646-9F98-4FFC-B0D8-A73E05B799A4@emi.yamaha.co.jp>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Linux-MIPS <linux-mips@linux-mips.org>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6D675.B078CE61"
+Subject: How to find I2C address?
+Date: Tue, 12 Sep 2006 10:13:58 -0400
+Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F655C@sbsserver.AlphionCorp.local>
+From: "Sachin Rane" <SRane@alphion.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: Murali Sampath <MSampath@alphion.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +22,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+This is a multi-part message in MIME format.
 
-Suzuki Takashi wrote:
-> I want to make Voyager GX PCI Demo Board Ver.A work on Yosemite board.
+------_=_NextPart_001_01C6D675.B078CE61
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> I know Silicon Motion have Linux Kernel_v2.6 Display driver:
-> http://www.siliconmotion.com.tw/en/en2/download2c.htm
+Hi,
+=20
+I am using AMCC PPC440GX evaluation board.
+I want to access serial EEPROM (AP31_U29) present on the board.
+I couldn't find the I2C address for this chip in the board manuals.
+=20
+Could you tell me where I can find it?
+=20
+=20
+Regards,
+SAchin Rane
+=20
 
-> But it's for v2.6.4 and it cannot be compiled with v2.6.17 working on
-> Yosemite board.
+------_=_NextPart_001_01C6D675.B078CE61
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> Does anybody have succeeded in making the board work with v2.6.17?
-> If there is a patch or source code available, let me know the location.
-
-    I know that Linux/MIPS project maintains the framebuffer driver in 
-drivers/video/smivgxfb.c. We used to backport it to 2.6.10 and it worked for 
-us... Here's the link to the latest source:
-
-http://www.linux-mips.org/git?p=linux.git;a=blob;h=c521069c905b4252109b8144478b4381c0ccdb7f;hb=db092db967ec0824db433c4adf3b58202fe610e2;f=drivers/video/smivgxfb.c
-
-> Thanks in advance,
-
-> -- T.Suzuki
-
-WBR, Sergei
+<HTML dir=3Dltr><HEAD>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>=0A=
+<BODY>=0A=
+<DIV><FONT face=3DArial color=3D#000000 size=3D2>Hi,</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>I am using AMCC PPC440GX evaluation =
+board.</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>I want to access serial EEPROM =
+(AP31_U29) present on the board.</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>I couldn't find the I2C address for =
+this chip in the board manuals.</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Could you tell me where I can find =
+it?</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>SAchin Rane</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>&nbsp;</FONT></DIV></BODY></HTML>
+------_=_NextPart_001_01C6D675.B078CE61--
