@@ -1,24 +1,15 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0DCC067B76
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Sep 2006 22:54:32 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Unwire set/get_robust_list
-References: <jeodtvfn4x.fsf@sykes.suse.de>
-	<1157409148.2473.209.camel@shinybook.infradead.org>
-	<je8xkzfbx2.fsf@sykes.suse.de>
-	<17671.15625.76850.349526@cargo.ozlabs.ibm.com>
-Date: Wed, 13 Sep 2006 14:54:15 +0200
-In-Reply-To: <17671.15625.76850.349526@cargo.ozlabs.ibm.com> (Paul Mackerras's
-	message of "Wed, 13 Sep 2006 09:04:41 +1000")
-Message-ID: <jed5a0exl4.fsf@sykes.suse.de>
+Return-Path: <arnd.bergmann@de.ibm.com>
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] automount support
+Date: Wed, 13 Sep 2006 19:35:17 +0200
+References: <OF55BAD2B1.35B36763-ON852571E8.00524F80-852571E8.005288A4@us.ibm.com>
+In-Reply-To: <OF55BAD2B1.35B36763-ON852571E8.00524F80-852571E8.005288A4@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200609131935.17746.arnd.bergmann@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Wednesday 13 September 2006 17:01, William Chung wrote:
+> I noticed that the stock cell kernel does not enable the autofs and=20
+> autofs4 modules. =A0The stock Fedora Core 5 kernel does have these module=
+s=20
+> enabled. =A0What is the reason for disabling automount support? =A0Would =
+there=20
+> be any issues to changing arch/powerpc/configs/cell_defconfig to enable=20
+> the autofs and autofs4 modules?
 
-> Could you test David's latest patch without the memory clobber?
+While there are no technical reasons against it, it increases build
+time on my development system, and I generally try to avoid
+adding modules that are not generally needed.
 
-Looks good (only tested on ppc64 kernel this time, but both 32 and 64 bit
-userland).
+The other defconfig files are inconsistent in this regard:
 
-Andreas.
+arch/powerpc/configs/cell_defconfig:# CONFIG_AUTOFS_FS is not set
+arch/powerpc/configs/cell_defconfig:# CONFIG_AUTOFS4_FS is not set
+arch/powerpc/configs/chrp32_defconfig:# CONFIG_AUTOFS_FS is not set
+arch/powerpc/configs/chrp32_defconfig:# CONFIG_AUTOFS4_FS is not set
+arch/powerpc/configs/g5_defconfig:CONFIG_AUTOFS_FS=3Dm
+arch/powerpc/configs/g5_defconfig:# CONFIG_AUTOFS4_FS is not set
+arch/powerpc/configs/iseries_defconfig:CONFIG_AUTOFS_FS=3Dm
+arch/powerpc/configs/iseries_defconfig:# CONFIG_AUTOFS4_FS is not set
+arch/powerpc/configs/maple_defconfig:# CONFIG_AUTOFS_FS is not set
+arch/powerpc/configs/maple_defconfig:# CONFIG_AUTOFS4_FS is not set
+arch/powerpc/configs/pmac32_defconfig:# CONFIG_AUTOFS_FS is not set
+arch/powerpc/configs/pmac32_defconfig:CONFIG_AUTOFS4_FS=3Dm
+arch/powerpc/configs/ppc64_defconfig:CONFIG_AUTOFS_FS=3Dy
+arch/powerpc/configs/ppc64_defconfig:# CONFIG_AUTOFS4_FS is not set
+arch/powerpc/configs/pseries_defconfig:# CONFIG_AUTOFS_FS is not set
+arch/powerpc/configs/pseries_defconfig:CONFIG_AUTOFS4_FS=3Dm
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I guess having one of them is pretty common, but not both.
+Which one do you prefer?
+
+	Arnd <><
