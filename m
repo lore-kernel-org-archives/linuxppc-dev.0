@@ -1,15 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4C6C067B78
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 04:33:49 +1000 (EST)
-Date: Wed, 13 Sep 2006 13:32:39 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: fix non-smp build
-Message-ID: <20060913133239.74a2389a@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd.bergmann@de.ibm.com>
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: William Chung <whchung@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] automount support
+Date: Wed, 13 Sep 2006 21:12:40 +0200
+References: <OFA201BCF4.3B7FA605-ON852571E8.0063942F-852571E8.00668E8E@us.ibm.com>
+In-Reply-To: <OFA201BCF4.3B7FA605-ON852571E8.0063942F-852571E8.00668E8E@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200609132112.41186.arnd.bergmann@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wednesday 13 September 2006 20:40, William Chung wrote:
+> autofs4 is supposedly backwardly compatible with autofs (v3), so I'd=20
+> prefer autofs4. =A0I hear that having only autofs4 as a module can requir=
+e=20
+> adding the line "alias autofs autofs4" to /etc/modprobe.conf to let=20
+> modutils look for autofs4 when the kernel needs autofs. =A0I'm not sure t=
+hat=20
+> this line is necessary though because I built a kernel with both autofs=20
+> and autofs4 enabled as modules and it looks like only autofs4 gets loaded=
+,=20
+> without any changes to my /etc/modprobe.conf file. =A0Hopefully, someone=
+=20
+> more experienced with autofs can give some guidance here.
 
-This only surfaces on CONFIG_SMP=n builds, it seems to get pulled in
-through another header file for SMP builds.
+Ok, I've enabled it now internally. I have just released 2.6.18-rc7-arnd13,
+which doesn't have it, but the next version will.
 
-(Introduced by the hvcall stats patch)
-
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-
-Index: linux-2.6/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/asm-offsets.c
-+++ linux-2.6/arch/powerpc/kernel/asm-offsets.c
-@@ -43,6 +43,7 @@
- #include <asm/cache.h>
- #include <asm/compat.h>
- #include <asm/mmu.h>
-+#include <asm/hvcall.h>
- #endif
- 
- #define DEFINE(sym, val) \
+	Arnd <><
