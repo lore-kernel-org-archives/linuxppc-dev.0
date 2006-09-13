@@ -1,19 +1,17 @@
-Return-Path: <msm@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6F28567B56
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 0F29767B78
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Sep 2006 03:07:57 +1000 (EST)
-Subject: Re: How to move from /ppc/ to /powerpc/
-From: Matthew McClintock <msm@freescale.com>
-To: Fredrik Roubert <roubert@df.lth.se>
-In-Reply-To: <20060913132817.GD18263@igloo.df.lth.se>
-References: <20060912153316.GC16340@igloo.df.lth.se>
-	<20060912105830.3923d537.kim.phillips@freescale.com>
-	<20060913132817.GD18263@igloo.df.lth.se>
-Content-Type: text/plain
-Date: Wed, 13 Sep 2006 12:07:40 -0500
-Message-Id: <1158167260.5352.6.camel@localhost>
-Mime-Version: 1.0
+	Thu, 14 Sep 2006 04:37:12 +1000 (EST)
+Message-ID: <45084EA3.5020708@anagramm.de>
+Date: Wed, 13 Sep 2006 20:32:03 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Jamie Guinan <guinan@bluebutton.com>
+Subject: Re: Any PPC system with working USB 2.0 host
+References: <Pine.LNX.4.64.0609111140260.6892@gemini.home.net>
+In-Reply-To: <Pine.LNX.4.64.0609111140260.6892@gemini.home.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,14 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-09-13 at 15:28 +0200, Fredrik Roubert wrote:
-> OK, I've adapted and applied those patches now. However, when I try to
-> boot with the dtd I generated above, then the kernel just hangs. For
-> now, I assume that is because of errors in the dtd and not in
-> u-boot ...
-> 
+Hi, Jamie,
 
-Could you supply us with the output form u-boot before starting the
-kernel?
+> I'm trying to get ahold of a low-power, small form factor system with 
+> support for USB 2.0 hi-speed host.  PPC would appear to be a good 
+> solution for this.
 
--Matthew
+We are in prototype status of our embedded framegrabber product which
+is based on a MPC8540/825MHz + GbE + Promise SATA (PDC20775) +
+Philips 4x USB2.0 (ISP1563) + SM501 Graphics + FPGA on Local Bus
+for 150MByte/sec DMAing into RAM in a 165mm x 125mm x 49mm box with
+160GB HDD + 6.5" TFT Display + LiIon-Batteries .
+
+It's based on the latest Linux stuff. The system is able to work as a
+standalone host, so you compile your stuff directly on that box..
+
+If you are interested, feel free to contact me off list.
+(Enough advertisement for now. ;-)
+
+Best greets,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
