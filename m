@@ -1,18 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc: allow PHBs anywhere in the
-	device tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200609130039.22193.arnd@arndb.de>
-References: <200609121952.04779.arnd.bergmann@de.ibm.com>
-	<17671.12953.147098.637600@cargo.ozlabs.ibm.com>
-	<200609130039.22193.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 13 Sep 2006 11:46:27 +1000
-Message-Id: <1158111987.3337.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 999ED67A39
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Sep 2006 18:56:33 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Unwire set/get_robust_list
+References: <jeodtvfn4x.fsf@sykes.suse.de>
+	<1157409148.2473.209.camel@shinybook.infradead.org>
+	<je8xkzfbx2.fsf@sykes.suse.de>
+	<17671.15625.76850.349526@cargo.ozlabs.ibm.com>
+Date: Wed, 13 Sep 2006 10:56:11 +0200
+In-Reply-To: <17671.15625.76850.349526@cargo.ozlabs.ibm.com> (Paul Mackerras's
+	message of "Wed, 13 Sep 2006 09:04:41 +1000")
+Message-ID: <je3bawgn6c.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul Mackerras <paulus@samba.org> writes:
 
-> For the cell blade, we have two bridge chips that are directly
-> connected to one of the CPUs each and are in separate address spaces.
-> Besides the PCI host bridges on them (between 1 and 3 per chip,
-> depending on the model), there are other devices on each bridge chip
-> that I would like to represent there as well. To make things
-> worse, they are behind logical bridges on the chip itself, something
-> like
-> 
-> /bridge@1/interrupt-controller
->          /plb5/pcie
->               /plb4/pci
->                    /ethernet
->                    /serial
-> /bridge@2/plb5/pcie
->               /plb4/pci
-> 
-> each of axon, plb5, plb4 and the pci buses has their own ranges
-> property to map addresses.
-> While we could probably put all the phbs at the root, i'd much
-> prefer having the real topology reflected in the device tree.
+> Andreas Schwab writes:
+>
+>> Thanks, sucessfully tested on 32bit (with the nptl testsuite of glibc).
+>> Will do some 64bit testing tomorrow.
+>
+> Did you do that testing?  What was the result?
 
-There's one more thing I think your patch isn't fixing and that will
-need fixing, is pci_process_OF_bridge_ranges() which currently parses
-the PHB's "ranges" property assuming that the addresses it gets for the
-"parent" bus are system bus physical addresses. It needs instead to get
-those translated all the way up the tree (which isn't hard btw).
+Yes, I did, successful.
 
-As soon as I'm over this TG3 data corruption problem, I'll finally
-finish setting up SIMICS here and will look into making that stuff work.
+> Could you test David's latest patch without the memory clobber?
 
-Ben.
+I'll do.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
