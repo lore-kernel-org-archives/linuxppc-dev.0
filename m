@@ -1,30 +1,27 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx005.isp.belgacom.be (outmx005.isp.belgacom.be
-	[195.238.4.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 61BE467B22
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D853D67B5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Sep 2006 19:35:46 +1000 (EST)
-Received: from outmx005.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx005.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k8D9ZelP011023
-	for <linuxppc-embedded@ozlabs.org>; Wed, 13 Sep 2006 11:35:40 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx005.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k8D9Zbof010999
-	for <linuxppc-embedded@ozlabs.org>; Wed, 13 Sep 2006 11:35:37 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: JTAG Flash programmer for MPC8248
-Date: Wed, 13 Sep 2006 11:38:45 +0200
+	Wed, 13 Sep 2006 19:43:32 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k8D9hUUC029697 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 13 Sep 2006 02:43:30 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k8D9hS39012569
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 13 Sep 2006 04:43:29 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200609131138.45308.laurent.pinchart@tbox.biz>
+	charset="us-ascii"
+Subject: RE: JTAG Flash programmer for MPC8248
+Date: Wed, 13 Sep 2006 17:43:26 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D263516B886@zch01exm21.fsl.freescale.net>
+In-Reply-To: <200609131138.45308.laurent.pinchart@tbox.biz>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Laurent Pinchart" <laurent.pinchart@tbox.biz>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,18 +32,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+> Hi everybody,
+>=20
+> I'm looking for a solution to program flash memory on a=20
+> MPC8248 board for production.
+>=20
+> I remember hearing about a JTAG flash programmer that used=20
+> boundary scan to control the flash signals, but can't find=20
+> any reference to it anymore.
 
-I'm looking for a solution to program flash memory on a MPC8248 board for 
-production.
+Look this
+http://www.intellitech.com/products/eclipseboundaryscanflash.asp
+See if this is what you need.
 
-I remember hearing about a JTAG flash programmer that used boundary scan to 
-control the flash signals, but can't find any reference to it anymore.
+I think this tool is not cheaper than BDI2000. and need 8248 BSDL.
 
-I know the BDI2000 is able to program the target flash memory, but I'm looking 
-for a less expensive solution (I don't need debugging capabilities, just a 
-plain flash programmer).
 
-Any help will be appreciated.
-
-Laurent Pinchart
+> I know the BDI2000 is able to program the target flash=20
+> memory, but I'm looking for a less expensive solution (I=20
+> don't need debugging capabilities, just a plain flash programmer).
+>=20
+> Any help will be appreciated.
+>=20
+> Laurent Pinchart
