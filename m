@@ -1,18 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17671.23111.41138.571176@cargo.ozlabs.ibm.com>
-Date: Wed, 13 Sep 2006 11:09:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: Perhaps git-update-server-info needs to be run on
-	.../paulus/powerpc.git?
-In-Reply-To: <20060911150549.0e08bbcd.kim.phillips@freescale.com>
-References: <20060808193555.301bc229.kim.phillips@freescale.com>
-	<17625.18896.977702.640753@cargo.ozlabs.ibm.com>
-	<17669.7544.599959.442534@cargo.ozlabs.ibm.com>
-	<20060911150549.0e08bbcd.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] powerpc: allow PHBs anywhere in the
+	device tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200609130039.22193.arnd@arndb.de>
+References: <200609121952.04779.arnd.bergmann@de.ibm.com>
+	<17671.12953.147098.637600@cargo.ozlabs.ibm.com>
+	<200609130039.22193.arnd@arndb.de>
+Content-Type: text/plain
+Date: Wed, 13 Sep 2006 11:46:27 +1000
+Message-Id: <1158111987.3337.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips writes:
 
-> funnily enough, I can't seem to clone your tree again today; I'm
-> using the http: protocol.
+> For the cell blade, we have two bridge chips that are directly
+> connected to one of the CPUs each and are in separate address spaces.
+> Besides the PCI host bridges on them (between 1 and 3 per chip,
+> depending on the model), there are other devices on each bridge chip
+> that I would like to represent there as well. To make things
+> worse, they are behind logical bridges on the chip itself, something
+> like
 > 
-> hopefully, the fix should only be a matter of:
+> /bridge@1/interrupt-controller
+>          /plb5/pcie
+>               /plb4/pci
+>                    /ethernet
+>                    /serial
+> /bridge@2/plb5/pcie
+>               /plb4/pci
 > 
-> chmod +x hooks/post-update
+> each of axon, plb5, plb4 and the pci buses has their own ranges
+> property to map addresses.
+> While we could probably put all the phbs at the root, i'd much
+> prefer having the real topology reflected in the device tree.
 
-Nope.  This patch (to git) from Junio Hamano seems to fix it, though.
+There's one more thing I think your patch isn't fixing and that will
+need fixing, is pci_process_OF_bridge_ranges() which currently parses
+the PHB's "ranges" property assuming that the addresses it gets for the
+"parent" bus are system bus physical addresses. It needs instead to get
+those translated all the way up the tree (which isn't hard btw).
 
-Paul.
+As soon as I'm over this TG3 data corruption problem, I'll finally
+finish setting up SIMICS here and will look into making that stuff work.
 
-diff --git a/http-fetch.c b/http-fetch.c
-index fac1760..d870390 100644
---- a/http-fetch.c
-+++ b/http-fetch.c
-@@ -559,7 +559,13 @@ static void process_alternates_response(
- 			char *target = NULL;
- 			char *path;
- 			if (data[i] == '/') {
--				serverlen = strchr(base + 8, '/') - base;
-+				/* This counts
-+				 * http://git.host/pub/scm/linux.git
-+				 * 1234567----here^
-+				 * so strcpy(dst, base, serverlen) will
-+				 * copy up to "...git.host/"
-+				 */
-+				serverlen = strchr(base + 7, '/') - base;
- 				okay = 1;
- 			} else if (!memcmp(data + i, "../", 3)) {
- 				i += 3;
-@@ -586,7 +592,7 @@ static void process_alternates_response(
- 			/* skip 'objects' at end */
- 			if (okay) {
- 				target = xmalloc(serverlen + posn - i - 6);
--				strlcpy(target, base, serverlen);
-+				memcpy(target, base, serverlen);
- 				strlcpy(target + serverlen, data + i, posn - i - 6);
- 				if (get_verbosely)
- 					fprintf(stderr,
+Ben.
