@@ -1,18 +1,29 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31181679E1
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 18:05:40 +1000 (EST)
-Subject: [PATCH] aoa: add locking to tas codec
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Takashi Iwai <tiwai@suse.de>
-Content-Type: text/plain
-Date: Thu, 14 Sep 2006 10:06:16 +0200
-Message-Id: <1158221176.2936.21.camel@ux156>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	alsa-devel <alsa-devel@alsa-project.org>
+Return-Path: <akostop@inaccessnetworks.com>
+Received: from inaccessnetworks.com (node3.inaccessnetworks.com
+	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id D714067B6D
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 23:30:53 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id k8EDUoQm000724
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 16:30:50 +0300
+Received: from inaccessnetworks.com ([127.0.0.1])
+	by localhost (host11.inaccessnetworks.com [127.0.0.1]) (amavisd-new,
+	port 10024) with LMTP id 00391-07 for <linuxppc-dev@ozlabs.org>;
+	Thu, 14 Sep 2006 16:30:50 +0300 (EEST)
+Received: from priv.inaccessnetworks.com (orion.priv.inaccessnetworks.com
+	[192.168.1.2])
+	by inaccessnetworks.com (8.13.6/8.13.5) with ESMTP id k8EDUi4j000712
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 16:30:44 +0300
+Received: from draco (draco.priv.inaccessnetworks.com [192.168.1.3])
+	by priv.inaccessnetworks.com (8.12.1/8.12.1) with ESMTP id
+	k8EDUi6p019979
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 16:30:44 +0300
+Date: Thu, 14 Sep 2006 16:30:44 +0300
+To: linuxppc-dev@ozlabs.org
+Subject: cpm_uart non-console problem with write on 2nd open..
+From: "Alexandros Kostopoulos" <akostop@inaccessnetworks.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-7
+MIME-Version: 1.0
+Message-ID: <op.tfvehinanhx3hy@draco>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,382 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Looks like I completely forgot to do this. This patch adds locking to
-the tas codec so two userspace programs can't hit the controls at the
-same time. Tested on my powerbook, but I obviously can't find any
-problems even without it since it doesn't do SMP.
+I'm experiencing a problem with the 2.6.13 cpm_uart driver. When opening=
+  =
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+the device for the second time after the driver was inserted, if only a =
+ =
 
---- a/sound/aoa/codecs/snd-aoa-codec-tas.c	2006-09-13 22:05:49.849647141 +0200
-+++ b/sound/aoa/codecs/snd-aoa-codec-tas.c	2006-09-13 22:06:16.859647141 +0200
-@@ -66,6 +66,8 @@
- #include <asm/prom.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
-+
- MODULE_AUTHOR("Johannes Berg <johannes@sipsolutions.net>");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("tas codec driver for snd-aoa");
-@@ -91,6 +93,10 @@ struct tas {
- 	u8			bass, treble;
- 	u8			acr;
- 	int			drc_range;
-+	/* protects hardware access against concurrency from
-+	 * userspace when hitting controls and during
-+	 * codec init/suspend/resume */
-+	struct mutex		mtx;
- };
- 
- static int tas_reset_init(struct tas *tas);
-@@ -231,8 +237,10 @@ static int tas_snd_vol_get(struct snd_kc
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = tas->cached_volume_l;
- 	ucontrol->value.integer.value[1] = tas->cached_volume_r;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -241,14 +249,18 @@ static int tas_snd_vol_put(struct snd_kc
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	if (tas->cached_volume_l == ucontrol->value.integer.value[0]
--	 && tas->cached_volume_r == ucontrol->value.integer.value[1])
-+	 && tas->cached_volume_r == ucontrol->value.integer.value[1]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->cached_volume_l = ucontrol->value.integer.value[0];
- 	tas->cached_volume_r = ucontrol->value.integer.value[1];
- 	if (tas->hw_enabled)
- 		tas_set_volume(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -276,8 +288,10 @@ static int tas_snd_mute_get(struct snd_k
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = !tas->mute_l;
- 	ucontrol->value.integer.value[1] = !tas->mute_r;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -286,14 +300,18 @@ static int tas_snd_mute_put(struct snd_k
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	if (tas->mute_l == !ucontrol->value.integer.value[0]
--	 && tas->mute_r == !ucontrol->value.integer.value[1])
-+	 && tas->mute_r == !ucontrol->value.integer.value[1]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->mute_l = !ucontrol->value.integer.value[0];
- 	tas->mute_r = !ucontrol->value.integer.value[1];
- 	if (tas->hw_enabled)
- 		tas_set_volume(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -322,8 +340,10 @@ static int tas_snd_mixer_get(struct snd_
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 	int idx = kcontrol->private_value;
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = tas->mixer_l[idx];
- 	ucontrol->value.integer.value[1] = tas->mixer_r[idx];
-+	mutex_unlock(&tas->mtx);
- 
- 	return 0;
- }
-@@ -334,15 +354,19 @@ static int tas_snd_mixer_put(struct snd_
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 	int idx = kcontrol->private_value;
- 
-+	mutex_lock(&tas->mtx);
- 	if (tas->mixer_l[idx] == ucontrol->value.integer.value[0]
--	 && tas->mixer_r[idx] == ucontrol->value.integer.value[1])
-+	 && tas->mixer_r[idx] == ucontrol->value.integer.value[1]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->mixer_l[idx] = ucontrol->value.integer.value[0];
- 	tas->mixer_r[idx] = ucontrol->value.integer.value[1];
- 
- 	if (tas->hw_enabled)
- 		tas_set_mixer(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -375,7 +399,9 @@ static int tas_snd_drc_range_get(struct 
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = tas->drc_range;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -384,12 +410,16 @@ static int tas_snd_drc_range_put(struct 
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
--	if (tas->drc_range == ucontrol->value.integer.value[0])
-+	mutex_lock(&tas->mtx);
-+	if (tas->drc_range == ucontrol->value.integer.value[0]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->drc_range = ucontrol->value.integer.value[0];
- 	if (tas->hw_enabled)
- 		tas3004_set_drc(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -417,7 +447,9 @@ static int tas_snd_drc_switch_get(struct
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = tas->drc_enabled;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -426,12 +458,16 @@ static int tas_snd_drc_switch_put(struct
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
--	if (tas->drc_enabled == ucontrol->value.integer.value[0])
-+	mutex_lock(&tas->mtx);
-+	if (tas->drc_enabled == ucontrol->value.integer.value[0]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->drc_enabled = ucontrol->value.integer.value[0];
- 	if (tas->hw_enabled)
- 		tas3004_set_drc(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -463,7 +499,9 @@ static int tas_snd_capture_source_get(st
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.enumerated.item[0] = !!(tas->acr & TAS_ACR_INPUT_B);
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -471,15 +509,21 @@ static int tas_snd_capture_source_put(st
- 	struct snd_ctl_elem_value *ucontrol)
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
--	int oldacr = tas->acr;
-+	int oldacr;
-+
-+	mutex_lock(&tas->mtx);
-+	oldacr = tas->acr;
- 
- 	tas->acr &= ~TAS_ACR_INPUT_B;
- 	if (ucontrol->value.enumerated.item[0])
- 		tas->acr |= TAS_ACR_INPUT_B;
--	if (oldacr == tas->acr)
-+	if (oldacr == tas->acr) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 	if (tas->hw_enabled)
- 		tas_write_reg(tas, TAS_REG_ACR, 1, &tas->acr);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -518,7 +562,9 @@ static int tas_snd_treble_get(struct snd
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = tas->treble;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -527,12 +573,16 @@ static int tas_snd_treble_put(struct snd
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
--	if (tas->treble == ucontrol->value.integer.value[0])
-+	mutex_lock(&tas->mtx);
-+	if (tas->treble == ucontrol->value.integer.value[0]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->treble = ucontrol->value.integer.value[0];
- 	if (tas->hw_enabled)
- 		tas_set_treble(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -560,7 +610,9 @@ static int tas_snd_bass_get(struct snd_k
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
-+	mutex_lock(&tas->mtx);
- 	ucontrol->value.integer.value[0] = tas->bass;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -569,12 +621,16 @@ static int tas_snd_bass_put(struct snd_k
- {
- 	struct tas *tas = snd_kcontrol_chip(kcontrol);
- 
--	if (tas->bass == ucontrol->value.integer.value[0])
-+	mutex_lock(&tas->mtx);
-+	if (tas->bass == ucontrol->value.integer.value[0]) {
-+		mutex_unlock(&tas->mtx);
- 		return 0;
-+	}
- 
- 	tas->bass = ucontrol->value.integer.value[0];
- 	if (tas->hw_enabled)
- 		tas_set_bass(tas);
-+	mutex_unlock(&tas->mtx);
- 	return 1;
- }
- 
-@@ -628,16 +684,16 @@ static int tas_reset_init(struct tas *ta
- 
- 	tmp = TAS_MCS_SCLK64 | TAS_MCS_SPORT_MODE_I2S | TAS_MCS_SPORT_WL_24BIT;
- 	if (tas_write_reg(tas, TAS_REG_MCS, 1, &tmp))
--		return -ENODEV;
-+		goto outerr;
- 
- 	tas->acr |= TAS_ACR_ANALOG_PDOWN | TAS_ACR_B_MONAUREAL |
- 		TAS_ACR_B_MON_SEL_RIGHT;
- 	if (tas_write_reg(tas, TAS_REG_ACR, 1, &tas->acr))
--		return -ENODEV;
-+		goto outerr;
- 
- 	tmp = 0;
- 	if (tas_write_reg(tas, TAS_REG_MCS2, 1, &tmp))
--		return -ENODEV;
-+		goto outerr;
- 
- 	tas3004_set_drc(tas);
- 
-@@ -649,9 +705,11 @@ static int tas_reset_init(struct tas *ta
- 
- 	tas->acr &= ~TAS_ACR_ANALOG_PDOWN;
- 	if (tas_write_reg(tas, TAS_REG_ACR, 1, &tas->acr))
--		return -ENODEV;
-+		goto outerr;
- 
- 	return 0;
-+ outerr:
-+	return -ENODEV;
- }
- 
- static int tas_switch_clock(struct codec_info_item *cii, enum clock_switch clock)
-@@ -666,11 +724,13 @@ static int tas_switch_clock(struct codec
- 		break;
- 	case CLOCK_SWITCH_SLAVE:
- 		/* Clocks are back, re-init the codec */
-+		mutex_lock(&tas->mtx);
- 		tas_reset_init(tas);
- 		tas_set_volume(tas);
- 		tas_set_mixer(tas);
- 		tas->hw_enabled = 1;
- 		tas->codec.gpio->methods->all_amps_restore(tas->codec.gpio);
-+		mutex_unlock(&tas->mtx);
- 		break;
- 	default:
- 		/* doesn't happen as of now */
-@@ -684,19 +744,23 @@ static int tas_switch_clock(struct codec
-  * our i2c device is suspended, and then take note of that! */
- static int tas_suspend(struct tas *tas)
- {
-+	mutex_lock(&tas->mtx);
- 	tas->hw_enabled = 0;
- 	tas->acr |= TAS_ACR_ANALOG_PDOWN;
- 	tas_write_reg(tas, TAS_REG_ACR, 1, &tas->acr);
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
- static int tas_resume(struct tas *tas)
- {
- 	/* reset codec */
-+	mutex_lock(&tas->mtx);
- 	tas_reset_init(tas);
- 	tas_set_volume(tas);
- 	tas_set_mixer(tas);
- 	tas->hw_enabled = 1;
-+	mutex_unlock(&tas->mtx);
- 	return 0;
- }
- 
-@@ -739,11 +803,14 @@ static int tas_init_codec(struct aoa_cod
- 		return -EINVAL;
- 	}
- 
-+	mutex_lock(&tas->mtx);
- 	if (tas_reset_init(tas)) {
- 		printk(KERN_ERR PFX "tas failed to initialise\n");
-+		mutex_unlock(&tas->mtx);
- 		return -ENXIO;
- 	}
- 	tas->hw_enabled = 1;
-+	mutex_unlock(&tas->mtx);
- 
- 	if (tas->codec.soundbus_dev->attach_codec(tas->codec.soundbus_dev,
- 						   aoa_get_card(),
-@@ -822,6 +889,7 @@ static int tas_create(struct i2c_adapter
- 	if (!tas)
- 		return -ENOMEM;
- 
-+	mutex_init(&tas->mtx);
- 	tas->i2c.driver = &tas_driver;
- 	tas->i2c.adapter = adapter;
- 	tas->i2c.addr = addr;
-@@ -850,6 +918,7 @@ static int tas_create(struct i2c_adapter
-  detach:
- 	i2c_detach_client(&tas->i2c);
-  fail:
-+	mutex_destroy(&tas->mtx);
- 	kfree(tas);
- 	return -EINVAL;
- }
-@@ -908,6 +977,7 @@ static int tas_i2c_detach(struct i2c_cli
- 	/* power down codec chip */
- 	tas_write_reg(tas, TAS_REG_ACR, 1, &tmp);
- 
-+	mutex_destroy(&tas->mtx);
- 	kfree(tas);
- 	return 0;
- }
+few bytes are sent for transmission and the device is then closed, the  =
+
+tx_empty routine called by shutdown returns 0 and the latter hangs in th=
+e  =
+
+while loop with the call to cpm_uart_tx_empty. No bytes are actually  =
+
+transmitted from the uart.
+
+I found out that the difference between the first and subsequent open  =
+
+calls is that during the first time (and until the first shutdown) the  =
+
+transmitter is enabled in GSMRL. From this point on, the transmitter is =
+ =
+
+initially disabled on startup. Thus, if only a few bytes are queued for =
+ =
+
+transmission before shutdown and a TX interrupt is not triggered, the  =
+
+bytes are never sent, and thus the shutdown function hangs on the  =
+
+cpm_uart_tx_empty loop.
+
+The fix that works for me is the following:
+
+Index: drivers/serial/cpm_uart/cpm_uart_core.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- drivers/serial/cpm_uart/cpm_uart_core.c     (revision 106)
++++ drivers/serial/cpm_uart/cpm_uart_core.c     (working copy)
+
+@@ -394,7 +394,7 @@ static int cpm_uart_startup(struct uart_
+                 pinfo->smcp->smc_smcmr |=3D SMCMR_REN;
+         } else {
+                 pinfo->sccp->scc_sccm |=3D UART_SCCM_RX;
+-        pinfo->sccp->scc_gsmrl |=3D (SCC_GSMRL_ENR);
++        pinfo->sccp->scc_gsmrl |=3D (SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+
+         }
+
+Any comments would be greatly appreciated
+
+thank you
+
+Alex
