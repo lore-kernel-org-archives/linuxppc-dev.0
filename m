@@ -1,18 +1,19 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
+Return-Path: <torvalds@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 46434679FD
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Sep 2006 01:20:54 +1000 (EST)
-Message-ID: <45097273.8070103@am.sony.com>
-Date: Thu, 14 Sep 2006 08:17:07 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C65ED67A3E
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Sep 2006 05:14:19 +1000 (EST)
+Date: Thu, 14 Sep 2006 12:14:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@osdl.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+In-Reply-To: <17671.64971.450232.870486@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0609141208510.4388@g5.osdl.org>
+References: <17671.64971.450232.870486@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [PATCH] powerpc: minor fix of numa message
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a very minor fix that effects no current system.  The NUMA startup
-message values for 'Top of RAM' and 'Memory hole size' were reported
-incorrectly if more than one lmb region was added.
 
-A comment in the lmb code states that lmb_analyze() must be called before
-lmb_phys_mem_size().
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+On Wed, 13 Sep 2006, Paul Mackerras wrote:
+> 
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
----
+Hmm. I'm not at all sure this pull caused the problem, and it may have 
+started long before, but right now I have problems printing on my G5 
+machine. 
 
-Index: cell--common--4/arch/powerpc/mm/numa.c
-===================================================================
---- cell--common--4.orig/arch/powerpc/mm/numa.c
-+++ cell--common--4/arch/powerpc/mm/numa.c
-@@ -483,10 +483,14 @@
- 
- static void __init setup_nonnuma(void)
- {
--	unsigned long top_of_ram = lmb_end_of_DRAM();
--	unsigned long total_ram = lmb_phys_mem_size();
-+	unsigned long top_of_ram;
-+	unsigned long total_ram;
- 	unsigned int i;
- 
-+	lmb_analyze();
-+	top_of_ram = lmb_end_of_DRAM();
-+	total_ram = lmb_phys_mem_size();
-+
- 	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
- 	       top_of_ram, total_ram);
- 	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+I'll get around to trying to bisect it at some point, but before I even 
+start, I should probably check if anybody recognizes this immediately.
+
+I blamed cupsd at first, because the problem ends up being that it just 
+hangs in running state, and I just assumed it was broken user space as 
+usual. But straceing the dang thing shows something strange, like this:
+
+	...
+	time(NULL)                              = 1024 <0.000009>
+	select(1024, [7 8 9 10 11 12 13 14], [], NULL, {1, 0}) = 0 (Timeout) <0.000006>
+	time(NULL)                              = 1024 <0.000006>
+	select(1024, [7 8 9 10 11 12 13 14], [], NULL, {1, 0}) = 0 (Timeout) <0.000004>
+	time(NULL)                              = 1024 <0.000007>
+	select(1024, [7 8 9 10 11 12 13 14], [], NULL, {1, 0}) = 0 (Timeout) <0.000006>
+	time(NULL)                              = 1024 <0.000007>
+	select(1024, [7 8 9 10 11 12 13 14], [], NULL, {1, 0}) = 0 (Timeout) <0.000005>
+	...
+
+which actually looks like something is broken (it says timeout in 5 
+microseconds, even though the timeout structure is shown as being one 
+second).
+
+Now, it's entirely possible that the _broken_ thing is actually strrace 
+itself (that return value from "time()" looks a bit strange too), and that 
+it's some tracing problem with rinning 32-bit programs on a 64-bit kernel.
+
+But I thought I'd ask if somebody recognizes this before I start wasting 
+any more time on it..
+
+		Linus
