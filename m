@@ -1,19 +1,26 @@
-Return-Path: <stonepine@126.com>
-Received: from m5-142.126.com (m5-142.126.com [202.108.5.142])
-	by ozlabs.org (Postfix) with SMTP id 0D8A467B98
+Return-Path: <Tom.Ziomek@motorola.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 315B167B5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Sep 2006 04:24:58 +1000 (EST)
-Message-ID: <450996FB.5050408@126.com>
-Date: Fri, 15 Sep 2006 01:52:59 +0800
-From: stonepine <stonepine@126.com>
+	Fri, 15 Sep 2006 08:02:30 +1000 (EST)
+Received: from il06exr02.mot.com (il06exr02.mot.com [129.188.137.132])
+	by motgate8.mot.com (8.12.11/Motorola) with ESMTP id k8EM2R5x020933
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Sep 2006 15:02:28 -0700 (MST)
+Received: from de01exm60.ds.mot.com (de01exm60.am.mot.com [10.176.8.105])
+	by il06exr02.mot.com (8.13.1/8.13.0) with ESMTP id k8EM2R6d029919
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Sep 2006 17:02:27 -0500 (CDT)
+Date: Thu, 14 Sep 2006 17:02:24 -0500 (Central Daylight Time)
+From: T Ziomek <ctz001@email.mot.com>
+To: Keith J Outwater <kjoutwater@raytheon.com>, john.bonesio@xilinx.com
+Subject: RE: Ethernet driver for Linux kernel 2.6 running on ML403
+In-Reply-To: <OF1385C39A.BEB9B9E6-ON072571E9.005DAC98-072571E9.0060ABAE@mck.us.ray.com>
+Message-ID: <Pine.WNT.4.61.0609141647450.2448@holyoke.labs.mot.com>
+References: <OF1385C39A.BEB9B9E6-ON072571E9.005DAC98-072571E9.0060ABAE@mck.us.ray.com>
 MIME-Version: 1.0
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: 11-16-05 2.6.14 on AMCC Yosemite boar d(PCI-IDE card boot error)
-References: <45077EA4.000010.14180@bj126app9.126.com>
-	<450865ED.4080000@bmrtech.com> <4508A606.90505@ovro.caltech.edu>
-In-Reply-To: <4508A606.90505@ovro.caltech.edu>
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,47 +31,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dave,
-The problem was addressed with your help, and I do really appreciate your help.
-
-
-David Hawkins wrote:
-
->Stephen Yee wrote:
->  
->
->>Hi All,
+>> << The Xilinx approach of overwriting the source tree just feels wrong,
+>> and
+>> no one seems to want to do it that way.>>
 >>
->>I have tested and debuged the ELDK's kernel 2.6.14 with PDC20269 PCI-IDE
->>card, the system paniced when it run the 'ide_pci_setup_ports' funcation
->>[drivers/ide/setup_pci.c], the attached files included the entry log
->>messages, and ksysoops messages when the kernel paniced, and my kernel
->>configuration file and BDI2000 configuration file.
->>
->>would you please give some advice about this issue?
->>    
->>
+>> I am in the group that has control over how this is done. What would you
+>> propose be done different? Keep in mind that we are trying to support a
+>> process where someone builds a hardware design and the later changes it
+>> with new peripherals or perhaps makes minor tweaks. We want to make the
+>> updating of the Linux kernel to reflect these hardware changes easy for
+>> people.
 >
->When I was testing this board, I received a machine check
->in earlier kernels due to;
->
->  The kernel header for the Yosemite board has an error that
->  incorrectly sets the base address for PCI I/O space. The define
->  for the 36-bit PCI I/O base address in the file
->  arch/ppc/platforms/4xx/yosemite.h needs to be set to
->
->#define YOSEMITE_PCI_IO_BASE 0x00000000e8000000ULL
->
->Check your kernel source, perhaps that is the issue.
->
->Stephan at Denx found and fixed this a while back (over 6 months
->ago). So when in doubt, use the latest-and-greatest kernel, eg.,
->use git and access the Denx repo.
->
->Dave
->
->
->
->
->  
->
+> A noble goal, and clearly the right thing to do from a user-success point
+> of view, but do the hardware peripherals (i.e. the IP cores) change that
+> much?
+
+Driver-per-version (i.e. separate drivers for 'xilinx_emac_1_00_b', 1_00_c,
+etc.) is the most obvious but unlikely to be accepted, and it would lead to
+lots of duplicated code.  How about having a single driver that supports
+all versions of xilinx_emac, and adding the specific IP version info in the
+kernel config?  So we would have, for example, CONFIG_XILINX_ENET_1_00_C,
+or whatever, in addition to or in place of CONFIG_XILINX_ENET.  The neces-
+sary adjustments would generally be made via conditionally compiled code in
+the driver source, or in the driver's Makefile when the version differences
+are larger in scope.
+
+>From what I've seen this is pretty consistent with The Kernel Way...  And
+it'd force the kernel builder to be aware of what IP version(s) are in
+their hardware.
+
+Tom
+-- 
+   /"\  ASCII Ribbon Campaign   |
+   \ /                          |   Email to user 'CTZ001'
+    X        Against HTML       |             at 'email.mot.com'
+   / \     in e-mail & news     |
