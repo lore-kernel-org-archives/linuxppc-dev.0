@@ -1,25 +1,37 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
-	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1DE5A67B7A
+Return-Path: <kjoutwater@raytheon.com>
+Received: from tus-mailout1.raytheon.com (tus-mailout1.raytheon.com
+	[199.46.245.198])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tus-mailout1.raytheon.com",
+	Issuer "Entrust.net Secure Server Certification Authority" (not
+	verified)) by ozlabs.org (Postfix) with ESMTP id B68C467B77
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Sep 2006 09:05:22 +1000 (EST)
-Message-ID: <4509DF7A.2020009@dlasys.net>
-Date: Thu, 14 Sep 2006 19:02:18 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Fri, 15 Sep 2006 09:08:46 +1000 (EST)
+Received: from dmoutt00.directory.ray.com (dmoutt00.directory.ray.com
+	[147.25.154.125])
+	by tus-mailout1.raytheon.com (Switch-3.2.4/Switch-3.2.4) with ESMTP id
+	k8EN8cvK022853
+	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Sep 2006 23:08:39 GMT
+Received: from dmsmtpt00.directory.ray.com (dmsmtpt00.directory.ray.com
+	[147.25.154.118])
+	by dmoutt00.directory.ray.com (Switch-3.1.7/Switch-3.1.7) with ESMTP id
+	k8EN8gPq017979
+	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Sep 2006 23:08:43 GMT
+Received: from tu2-msg04.rsc.raytheon.com (tu2-msg04.RSC.RAYTHEON.COM
+	[147.24.232.105])
+	by dmsmtpt00.directory.ray.com (8.12.11/8.12.11) with ESMTP id
+	k8EN8f6Q007419
+	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Sep 2006 23:08:41 GMT
+In-Reply-To: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EA6FA@XSJ-EXCHVS1.xlnx.xilinx.com>
 MIME-Version: 1.0
-To: Michael Galassi <mgalassi@c-cor.com>
-Subject: Re: Ethernet driver for Linux kernel 2.6 running on ML403
-References: <mailman.241.1158193867.2423.linuxppc-embedded@ozlabs.org>
-	<002501c6d79e$cca7ee40$800101df@monstertop>
-	<528646bc0609131852s41a8bc4ev44b84d68f51b1d2d@mail.gmail.com>
-	<45093A94.2080407@dlasys.net>
-	<200609141353.k8EDrkPN065101@penguin.ncube.com>
-In-Reply-To: <200609141353.k8EDrkPN065101@penguin.ncube.com>
-Content-Type: multipart/alternative;
-	boundary="------------090805070606010300080908"
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: Ethernet driver for Linux kernel 2.6 running on ML403
+From: Keith J Outwater <kjoutwater@raytheon.com>
+Message-ID: <OF810D9D6F.E86CECF8-ON072571E9.007E8B00-072571E9.007F1AEC@mck.us.ray.com>
+Date: Thu, 14 Sep 2006 16:08:37 -0700
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,152 +42,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090805070606010300080908
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+"John Bonesio" <john.bonesio@xilinx.com> wrote on 09/14/2006 10:52:16 AM:
+<snip>
+> 
+> I don't think that there are any "version" registers in the Xilinx 
+> IP cores that a driver could check to determine compatibility.  That
+> would be very cheap to implement in hardware and you could then
+> develop more universal drivers.
+> 
+> [John]
+> We've examined doing this in the past, and gotten some push back due to
+> the use of bram or other resources. Conceptually, it's a great idea, I
+> just don't know if this is likely to happen any time soon.
+> 
 
-Michael Galassi wrote:
->
-> It is also worth noting that as released in MVL pro 4.0.1 it only
-> supports hard_temac 1.00.a and plb_temac 2.00.a, both of which are
-> tagged as deprecated in the current version (8.2.01i) of Xilinx's
-> EDK. The current version of {plb,hard}_temac (3.00.a) goes to great
-> lengths to break compatibility with older versions.  This will
-> presumably be fixed next month when it is rumored that wonderful new
-> things will come from Xilinx.  In the mean-time it is possible, though
-> neither simple, nor fun, to create Virtex4 designs with the older IP.
->   
-    Fortunately, I have little to do with the firmware.
-    Unfortunately, after the firmware is in the product, I am the guy 
-who has to make the drivers work.
+John,
+I thinking in terms of something like a 32 bit register
+(i.e. like a processor's PVR register) that has a hard-coded magic number
+which a driver can read and decode to determine driver compatibility.
+That does not sound resource-intensive given the size FPGAs we are talking
+about.  Probably don't even need 32 bits.
 
-    I am also not straight - though I am somewhat clearer, on exactly 
-what any given flavor of TEMAC is.
-
-    As best as I can tell, the V4 FX chipsets contain some dedicated 
-hardware that forms the basis for the TEMAC.
-    (or possibly several TEMAC's depending on how it is built).
-   
-    Separately Xilinx provides a plethora of wrapper logic, that allows 
-you to implement  a slew of different incarnations.
-    All similar yet different at the same time. Ranging from the Local 
-Link TEMAC which is the simplest to the
-    PLB SG DMA driven TEMAC which is probably the most complex.
-
-    Then there is an assortment of PDF's from Xilinx, none of which 
-quite match whatever you might have.
-
-    And at the risk of Goring somebodies Ox, the MV/EDK based drivers 
-may/may not have the attribute of
-    being portable accross multiple OS's, but they seem to pretty much 
-deliberately violate almost every style
-    quideline for Linux drivers. Linux is written in C, not preprocessor 
-Macros.
-
-    For anyone at MV I have ticked off - Sorry, I am sure it is 
-brilliantly written preprocessor Macros.
-   
-   
-   
-
-
-
-
-> -michael
->   
-
-
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-
-
---------------090805070606010300080908
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Michael Galassi wrote:
-<blockquote cite="mid200609141353.k8EDrkPN065101@penguin.ncube.com"
- type="cite">
-  <pre wrap=""><!---->
-It is also worth noting that as released in MVL pro 4.0.1 it only
-supports hard_temac 1.00.a and plb_temac 2.00.a, both of which are
-tagged as deprecated in the current version (8.2.01i) of Xilinx's
-EDK. The current version of {plb,hard}_temac (3.00.a) goes to great
-lengths to break compatibility with older versions.  This will
-presumably be fixed next month when it is rumored that wonderful new
-things will come from Xilinx.  In the mean-time it is possible, though
-neither simple, nor fun, to create Virtex4 designs with the older IP.
-  </pre>
-</blockquote>
-&nbsp;&nbsp;&nbsp; Fortunately, I have little to do with the firmware. <br>
-&nbsp;&nbsp;&nbsp; Unfortunately, after the firmware is in the product, I am the guy
-who has to make the drivers work.<br>
-<br>
-&nbsp;&nbsp;&nbsp; I am also not straight - though I am somewhat clearer, on exactly
-what any given flavor of TEMAC is.<br>
-<br>
-&nbsp;&nbsp;&nbsp; As best as I can tell, the V4 FX chipsets contain some dedicated
-hardware that forms the basis for the TEMAC.<br>
-&nbsp;&nbsp;&nbsp; (or possibly several TEMAC's depending on how it is built).<br>
-&nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; Separately Xilinx provides a plethora of wrapper logic, that allows
-you to implement&nbsp; a slew of different incarnations.<br>
-&nbsp;&nbsp;&nbsp; All similar yet different at the same time. Ranging from the Local
-Link TEMAC which is the simplest to the <br>
-&nbsp;&nbsp;&nbsp; PLB SG DMA driven TEMAC which is probably the most complex.<br>
-<br>
-&nbsp;&nbsp;&nbsp; Then there is an assortment of PDF's from Xilinx, none of which
-quite match whatever you might have.<br>
-<br>
-&nbsp;&nbsp;&nbsp; And at the risk of Goring somebodies Ox, the MV/EDK based drivers
-may/may not have the attribute of <br>
-&nbsp;&nbsp;&nbsp; being portable accross multiple OS's, but they seem to pretty much
-deliberately violate almost every style <br>
-&nbsp;&nbsp;&nbsp; quideline for Linux drivers. Linux is written in C, not
-preprocessor Macros.<br>
-<br>
-&nbsp;&nbsp;&nbsp; For anyone at MV I have ticked off - Sorry, I am sure it is
-brilliantly written preprocessor Macros.<br>
-&nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; <br>
-<br>
-<br>
-<br>
-<br>
-<blockquote cite="mid200609141353.k8EDrkPN065101@penguin.ncube.com"
- type="cite">
-  <pre wrap="">
--michael
-  </pre>
-</blockquote>
-<br>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-</pre>
-</body>
-</html>
-
---------------090805070606010300080908--
+Keith
