@@ -1,19 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: 'make ARCH=ppc defconfig' failing for cross-compile
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Judith Lebzelter <judith@osdl.org>
-In-Reply-To: <20060912174814.GA29226@shell0.pdx.osdl.net>
-References: <20060909000512.GF9335@shell0.pdx.osdl.net>
-	<Pine.LNX.4.64.0609100652160.16347@sheep.housecafe.de>
-	<20060912174814.GA29226@shell0.pdx.osdl.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Rr29u0llyPRJQJvo0ruZ"
-Date: Thu, 14 Sep 2006 13:12:01 +1000
-Message-Id: <1158203522.7305.14.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D197067B78
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Sep 2006 15:00:42 +1000 (EST)
+Date: Thu, 14 Sep 2006 15:00:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] iseries: eliminate a couple of warnings
+Message-Id: <20060914150036.b182c139.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Copy and paste bug in io.h
 
---=-Rr29u0llyPRJQJvo0ruZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/io.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-On Tue, 2006-09-12 at 10:48 -0700, Judith Lebzelter wrote:
-> On Tue, Sep 12, 2006 at 10:21:46AM -0700, Christian wrote:
-> > On Fri, 8 Sep 2006, Judith Lebzelter wrote:
-> > > I have been doing cross-compiles for ppc and powerpc on my i686 syste=
-m.
-> > > In order to do this I generate the .config file like this:
-> > >
-> > > make ARCH=3Dppc defconfig
-> > > (or make ARCH=3Dpowerpc defconfig)
-> >=20
-> > Seems like defconfig has been removed, because there are so many=20
-> > sub-platforms for ppc:
->=20
-> I build these in OSDL's cross compile build farm (PLM) as a code check.
-> Our scripts are generalized to work for various architectures, so it is
-> disappointing that 'defconfig' no longer works for ppc the way it does=20
-> in other achitectures.  Are there plans to make plain 'defconfig' work=20
-> again, at least in the new 'powerpc' directory?  (The 'ppc64_defconfig'=20
-> target looks good to me.:)
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Perhaps you need to rework the scripts to cope for the fact that there
-are different platforms under the architecture? There will never be a
-defconfig for powerpc that builds all the code for all platforms, so to
-get full test coverage you'll need to build more than one config anyway.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-Rr29u0llyPRJQJvo0ruZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBFCMiBdSjSd0sB4dIRApHwAKCvxe/k6RDZ8caA4TLG3xoM18pMzACgtabO
-1QMuq8q5XjDr0CdiHJqH1XM=
-=EbPj
------END PGP SIGNATURE-----
-
---=-Rr29u0llyPRJQJvo0ruZ--
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index 212428d..e235025 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -74,8 +74,8 @@ #define outl(data,addr)		writel(data,((v
+  * for older code.
+  */
+ #define insb(port, buf, ns)	_insb((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
+-#define insw(port, buf, ns)	_insw_ns((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
+-#define insl(port, buf, nl)	_insl_ns((u8 __iomem *)((port)+pci_io_base), (buf), (nl))
++#define insw(port, buf, ns)	_insw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
++#define insl(port, buf, nl)	_insl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
+ #define insw_ns(port, buf, ns)	_insw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
+ #define insl_ns(port, buf, nl)	_insl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
+ #else
+-- 
+1.4.1.1
