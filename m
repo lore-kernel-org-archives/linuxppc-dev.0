@@ -1,24 +1,24 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D182167B5F
+Return-Path: <shawnxjin@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id A8B9E67B58
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Sep 2006 06:39:54 +1000 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1GOKAb-0008Cc-1J
-	for linuxppc-embedded@ozlabs.org; Fri, 15 Sep 2006 13:20:17 -0700
-Message-ID: <6332541.post@talk.nabble.com>
-Date: Fri, 15 Sep 2006 13:20:17 -0700 (PDT)
-From: jbahr <jbahr@set-software-services.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: JTAG Flash programmer for MPC8248
-In-Reply-To: <1628E43D99629C46988BE46087A3FBB96F60ED@ep-01.EmbeddedPlanet.local>
+	Sat, 16 Sep 2006 09:06:18 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id t32so4171931pyc
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 15 Sep 2006 16:06:15 -0700 (PDT)
+Message-ID: <c3d0340b0609151606i2d01b963h4c7cd6a182d8c80@mail.gmail.com>
+Date: Fri, 15 Sep 2006 16:06:14 -0700
+From: "Shawn Jin" <shawnxjin@gmail.com>
+To: "Matt Porter" <mporter@embeddedalley.com>
+Subject: Re: ARCH=ppc or ARCH=powerpc
+In-Reply-To: <20060824132338.GA27468@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <200609131138.45308.laurent.pinchart@tbox.biz>
-	<995B09A8299C2C44B59866F6391D263516B886@zch01exm21.fsl.freescale.net>
-	<1628E43D99629C46988BE46087A3FBB96F60ED@ep-01.EmbeddedPlanet.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20060824123841.4756.qmail@web36601.mail.mud.yahoo.com>
+	<1156423796.5640.23.camel@zod.rchland.ibm.com>
+	<1156424295.19482.11.camel@localhost>
+	<20060824132338.GA27468@gate.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,32 +29,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Matt,
 
-We've used the Macraigor Wiggler on an 8548 board.  It's MUCH slower than the
-BDI, but it does work.  We've also tried their Raven and USB products (about
-$750) but they didn't work or were no faster than the Wriggler.
+> The goal is to have the new 4xx arch/powerpc support not break 4xx
+> arch/ppc support. So as boards are merged and verified working,
+> we'll remove the equivalent support from arch/ppc...
+>
+> Some boards/chips may just die if no maintainer step up to port
+> them over...but all the important stuff should get an interested
+> party once we get the initial 4xx support in arch/powerpc working.
 
-J
+When can we expect this done? I have a 440 based SoC project ongoing
+and am thinking when I should start moving to arch/powerpc.
 
-
-
-Steven Blakeslee wrote:
-> 
->> 
->> I know the BDI2000 is able to program the target flash 
->> memory, but I'm looking for a less expensive solution (I 
->> don't need debugging capabilities, just a plain flash programmer).
->> 
-> 
-> Macraigor is cost effective.
-> http://www.macraigor.com/
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/JTAG-Flash-programmer-for-MPC8248-tf2264010.html#a6332541
-Sent from the linuxppc-embedded forum at Nabble.com.
+THanks,
+-Shawn.
