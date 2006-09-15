@@ -1,21 +1,17 @@
-Return-Path: <torvalds@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0852E67B76
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Sep 2006 09:36:22 +1000 (EST)
-Date: Thu, 14 Sep 2006 16:36:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git 'merge' branch
-In-Reply-To: <17673.56806.552948.748504@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0609141633310.4388@g5.osdl.org>
-References: <17671.64971.450232.870486@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0609141208510.4388@g5.osdl.org>
-	<17673.56806.552948.748504@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: minor fix of numa message
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45097273.8070103@am.sony.com>
+References: <45097273.8070103@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-LL46h287Qf7iwgZXk548"
+Date: Fri, 15 Sep 2006 11:04:26 +1000
+Message-Id: <1158282267.10020.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +22,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+--=-LL46h287Qf7iwgZXk548
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 15 Sep 2006, Paul Mackerras wrote:
-> 
-> Curious.  It doesn't look familiar.  I have had problems printing from
-> my G5 in the past few weeks, but I attributed it to something being
-> broken in debian unstable, and right now, running current git,
-> printing is working again for me.
+On Thu, 2006-09-14 at 08:17 -0700, Geoff Levand wrote:
+> This is a very minor fix that effects no current system.  The NUMA startu=
+p
+> message values for 'Top of RAM' and 'Memory hole size' were reported
+> incorrectly if more than one lmb region was added.
+>=20
+> A comment in the lmb code states that lmb_analyze() must be called before
+> lmb_phys_mem_size().
 
-Ok, maybe the debian brokenness exists in FC5 too, and a "yum upgrade" 
-broke it for me rather than any kernel work. I guess I'll just have to try 
-different kernels and see if the kernel matters at all. The strace output 
-just made me assume that maybe the kernel _does_ do something wrong.
+But we've already called it in early_init_devtree()?
 
-> I just tried stracing the X server (I don't have a cupsd running) and
-> the selects look reasonable, e.g.:
-> 
-> select(256, [1 3 4 5 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
-> 26 27 28 29 30 32 33], NULL, NULL, {0, 484000}) = 1 (in [33], left {0,
-> 460000}) <0.026111>
-> 
-> Is your cupsd a 32-bit or a 64-bit binary?
+cheers
 
-My cupsd is 32-bit (but so is my X server, so I'd assuge strace has the 
-same breakage). Strace looks ok when I trace "firefox", though (which is 
-using "poll()", not select). So..
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-		Linus
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-LL46h287Qf7iwgZXk548
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBFCfwadSjSd0sB4dIRAp6yAKCFnFsifvkrG3sNI4/rC8AUPe1aZgCfRMHN
+zBNHBLIOZ0e+nI3AnrX6nSg=
+=OWbd
+-----END PGP SIGNATURE-----
+
+--=-LL46h287Qf7iwgZXk548--
