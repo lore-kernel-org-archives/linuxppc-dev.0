@@ -1,17 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: minor fix of numa message
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <45097273.8070103@am.sony.com>
-References: <45097273.8070103@am.sony.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-LL46h287Qf7iwgZXk548"
-Date: Fri, 15 Sep 2006 11:04:26 +1000
-Message-Id: <1158282267.10020.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17674.32333.958250.868794@cargo.ozlabs.ibm.com>
+Date: Fri, 15 Sep 2006 20:19:57 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
+In-Reply-To: <20060908033508.GA5203@mag.az.mvista.com>
+References: <20060719230014.GB3887@mag.az.mvista.com>
+	<20060908033508.GA5203@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Mark A. Greer writes:
 
---=-LL46h287Qf7iwgZXk548
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Abstract the operations used in the bootwrapper.  The operations
+> have been divided up into platform operations (platform_ops),
+> device tree operations (dt_ops), and console operations (console_ops).
 
-On Thu, 2006-09-14 at 08:17 -0700, Geoff Levand wrote:
-> This is a very minor fix that effects no current system.  The NUMA startu=
-p
-> message values for 'Top of RAM' and 'Memory hole size' were reported
-> incorrectly if more than one lmb region was added.
->=20
-> A comment in the lmb code states that lmb_analyze() must be called before
-> lmb_phys_mem_size().
+Is there any particular reason why the call_kernel() method is in the
+dt_ops?  That doesn't seem like a very natural place for it.  Is it
+just so the dt_ops can say whether to pass NULL or the prom entry
+point in r5?
 
-But we've already called it in early_init_devtree()?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-LL46h287Qf7iwgZXk548
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBFCfwadSjSd0sB4dIRAp6yAKCFnFsifvkrG3sNI4/rC8AUPe1aZgCfRMHN
-zBNHBLIOZ0e+nI3AnrX6nSg=
-=OWbd
------END PGP SIGNATURE-----
-
---=-LL46h287Qf7iwgZXk548--
+Paul.
