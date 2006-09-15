@@ -1,20 +1,30 @@
-Return-Path: <john.bonesio@xilinx.com>
-Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 867C667B6A
+Return-Path: <wei.li4@elf.mcgill.ca>
+Received: from drizzle.cc.mcgill.ca (drizzle.cc.mcgill.ca [132.206.27.48])
+	by ozlabs.org (Postfix) with ESMTP id B6A5E67B5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Sep 2006 05:40:25 +1000 (EST)
+	Sat, 16 Sep 2006 05:51:51 +1000 (EST)
+Received: from mailscan1.cc.mcgill.ca (mailscan1.CC.McGill.CA [132.216.77.248])
+	by drizzle.cc.mcgill.ca (8.12.11/8.12.3) with ESMTP id k8FJpnmu010158
+	for <linuxppc-embedded@ozlabs.org>; Fri, 15 Sep 2006 15:51:49 -0400
+Received: from wgrappe1.cc.mcgill.ca (wgrappe1.CC.McGill.CA [132.216.46.250])
+	by mailscan1.cc.mcgill.ca (8.13.6/8.13.0) with ESMTP id
+	k8FJpeMi027221 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 15 Sep 2006 15:51:40 -0400 (EDT)
+Received: from wgrappe1.cc.mcgill.ca (localhost.localdomain [127.0.0.1])
+	by wgrappe1.cc.mcgill.ca (8.13.7/8.13.4) with ESMTP id k8FJpdAP015120
+	for <linuxppc-embedded@ozlabs.org>; Fri, 15 Sep 2006 15:51:39 -0400
+Received: (from apache@localhost)
+	by wgrappe1.cc.mcgill.ca (8.13.7/8.13.7/Submit) id k8FJpdSj015117
+	for linuxppc-embedded@ozlabs.org; Fri, 15 Sep 2006 15:51:39 -0400
+Message-ID: <20060915155139.3u0q0lb5s0g0ww0s@webmail.mcgill.ca>
+Date: Fri, 15 Sep 2006 15:51:39 -0400
+From: wei.li4@elf.mcgill.ca
+To: linuxppc-embedded@ozlabs.org
+Subject: Kernel Blocked
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Ethernet driver for Linux kernel 2.6 running on ML403
-Date: Fri, 15 Sep 2006 12:13:55 -0700
-Message-ID: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EAC01@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: "John Bonesio" <john.bonesio@xilinx.com>
-To: "Keith J Outwater" <kjoutwater@raytheon.com>,
-	<linuxppc-embedded@ozlabs.org>
+	charset=ISO-8859-1;
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,54 +35,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Keith,
+Hi All,
 
-I know that on the surface it seems like a simple thing. Some of our
-parts are big, yet some are small. We are always getting pressure to
-make our IP as small as possible.
+First, if anyone wants to use linux 2.6.18-rc2-g73a589b5 with ppc, he 
+should patch inflate.c from linux 2.6.18-rc7 to fix Uncompressing 
+failure problem. But new problem is: when relocate and gunzip functions 
+are finished, and 'Now booting the kernel' is shown, the system is 
+halted. My bootloader is working fine with linux 2.6.13, could anyone 
+tell me what the next function executes and how to check this kind of 
+problem, thanks.
 
-Though, this may be something we can revisit again, for now this
-information just isn't going to be available.
-
-Perhaps the problem can be solved in a different way.
-
-- John
-
------Original Message-----
-From: linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org] On
-Behalf Of Keith J Outwater
-Sent: Thursday, September 14, 2006 5:09 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: Ethernet driver for Linux kernel 2.6 running on ML403
-
-"John Bonesio" <john.bonesio@xilinx.com> wrote on 09/14/2006 10:52:16
-AM:
-<snip>
->=20
-> I don't think that there are any "version" registers in the Xilinx=20
-> IP cores that a driver could check to determine compatibility.  That
-> would be very cheap to implement in hardware and you could then
-> develop more universal drivers.
->=20
-> [John]
-> We've examined doing this in the past, and gotten some push back due
-to
-> the use of bram or other resources. Conceptually, it's a great idea, I
-> just don't know if this is likely to happen any time soon.
->=20
-
-John,
-I thinking in terms of something like a 32 bit register
-(i.e. like a processor's PVR register) that has a hard-coded magic
-number
-which a driver can read and decode to determine driver compatibility.
-That does not sound resource-intensive given the size FPGAs we are
-talking
-about.  Probably don't even need 32 bits.
-
-Keith
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Wei
