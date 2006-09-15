@@ -1,18 +1,24 @@
-Return-Path: <prakash@ipinfusion.com>
-Received: from gateway.ipinfusion.com (mail.ipinfusion.com [65.223.109.2])
-	by ozlabs.org (Postfix) with ESMTP id F1B7967B5D
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D182167B5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Sep 2006 06:32:50 +1000 (EST)
-Received: from [10.10.0.196] ([10.10.0.196])
-	by gateway.ipinfusion.com (8.11.6/8.11.6) with ESMTP id k8FJrUc30033
-	for <linuxppc-embedded@ozlabs.org>; Fri, 15 Sep 2006 12:53:30 -0700
-Message-ID: <450B058B.6060806@ipinfusion.com>
-Date: Fri, 15 Sep 2006 12:56:59 -0700
-From: Prakash Jain <prakash@ipinfusion.com>
+	Sat, 16 Sep 2006 06:39:54 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1GOKAb-0008Cc-1J
+	for linuxppc-embedded@ozlabs.org; Fri, 15 Sep 2006 13:20:17 -0700
+Message-ID: <6332541.post@talk.nabble.com>
+Date: Fri, 15 Sep 2006 13:20:17 -0700 (PDT)
+From: jbahr <jbahr@set-software-services.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: JTAG Flash programmer for MPC8248
+In-Reply-To: <1628E43D99629C46988BE46087A3FBB96F60ED@ep-01.EmbeddedPlanet.local>
 MIME-Version: 1.0
-To: Linux PPC List <linuxppc-embedded@ozlabs.org>
-Subject: Kernel module insertion issue with kernel 2.6.15
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+References: <200609131138.45308.laurent.pinchart@tbox.biz>
+	<995B09A8299C2C44B59866F6391D263516B886@zch01exm21.fsl.freescale.net>
+	<1628E43D99629C46988BE46087A3FBB96F60ED@ep-01.EmbeddedPlanet.local>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +29,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I am relatively new to this list/area, not sure if this is right forum 
-for my query (please point me to right list in that case).
 
-I am porting my software from 2.4 kernel to 2.6.15 on a board similar to 
-ppc 82xx  sandpoint architecture. I am able to make the board functional 
-except the following issue. One of my kernel module (inserted thru 
-insmod) takes almost 6-7 minutes to load with 2.6 kernel while it used 
-to take only few seconds with 2.4 kernel. Yet, after the long wait 
-module is inserted correctly with 2.6 kernel as board software works 
-fine after that. When I halt the processor (using BDI2000) during the 
-long wait, it always halts in function get_plt_size() in kernel's 
-arch/ppc/kernel/module.c. Single stepping does not take to any error or 
-suspicious place. Looks like it is going thru the long for() loop in the 
-function. Only suspicion I got is while compiling the module, it 
-generates tons of undefined symbols. I ignored them as it was a third 
-party software and module inserts correctly at the end.
+We've used the Macraigor Wiggler on an 8548 board.  It's MUCH slower than the
+BDI, but it does work.  We've also tried their Raven and USB products (about
+$750) but they didn't work or were no faster than the Wriggler.
 
-Can someone give few pointers on what could be the reasons and where to 
-look to resolve this? Will appreciate your time,
-Thanks,
-Prakash
+J
+
+
+
+Steven Blakeslee wrote:
+> 
+>> 
+>> I know the BDI2000 is able to program the target flash 
+>> memory, but I'm looking for a less expensive solution (I 
+>> don't need debugging capabilities, just a plain flash programmer).
+>> 
+> 
+> Macraigor is cost effective.
+> http://www.macraigor.com/
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+
+-- 
+View this message in context: http://www.nabble.com/JTAG-Flash-programmer-for-MPC8248-tf2264010.html#a6332541
+Sent from the linuxppc-embedded forum at Nabble.com.
