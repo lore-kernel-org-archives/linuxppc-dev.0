@@ -1,14 +1,16 @@
 Return-Path: <SRane@alphion.com>
 Received: from alphion.com (unknown [66.147.184.82])
-	by ozlabs.org (Postfix) with ESMTP id 8C5EE67B6E
+	by ozlabs.org (Postfix) with ESMTP id BC0B067B6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Sep 2006 18:23:55 +1000 (EST)
+	Sat, 16 Sep 2006 18:30:20 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6D969.72239761"
-Subject: Board Bootup and message log 
-Date: Sat, 16 Sep 2006 04:19:12 -0400
-Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F6568@sbsserver.AlphionCorp.local>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6D96A.58014FD1"
+Subject: I2C adapter device file problem
+Date: Sat, 16 Sep 2006 04:29:31 -0400
+Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F656A@sbsserver.AlphionCorp.local>
 References: <8584FDC94AFF7640B17B8A89B23B19B34F6564@sbsserver.AlphionCorp.local>
+	<8584FDC94AFF7640B17B8A89B23B19B34F6568@sbsserver.AlphionCorp.local>
+	<8584FDC94AFF7640B17B8A89B23B19B34F6569@sbsserver.AlphionCorp.local>
 From: "Sachin Rane" <SRane@alphion.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,12 +25,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6D969.72239761
+------_=_NextPart_001_01C6D96A.58014FD1
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_002_01C6D969.72239761"
+	boundary="----_=_NextPart_002_01C6D96A.58014FD1"
 
 
-------_=_NextPart_002_01C6D969.72239761
+------_=_NextPart_002_01C6D96A.58014FD1
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -37,11 +39,13 @@ Hi,
 =20
 I want to access 'EEPROM' I2C device present on AMCC PPC440GX Evaluation =
 bard.
+
 I have loaded following drivers:
 1. i2c-core.ko
 2. i2c-dev.ko
 3. eeprom.ko
 4. i2c-ibm_iic.ko
+=20
 The entry in the 'sysfs' got created for drivers and devices.
 -------------------------------------------------------------------------=
 ---------------
@@ -71,7 +75,7 @@ Thanks and Regards,
 Sachin Rane
 
 
-------_=_NextPart_002_01C6D969.72239761
+------_=_NextPart_002_01C6D96A.58014FD1
 Content-Type: text/html;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -80,16 +84,22 @@ Content-Transfer-Encoding: quoted-printable
 <META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
 <META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>=0A=
 <BODY>=0A=
-<DIV id=3DidOWAReplyText88324 dir=3Dltr>=0A=
+<DIV id=3DidOWAReplyText20842 dir=3Dltr>=0A=
 <DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>Hi,</FONT></DIV>=0A=
+size=3D2>Hi,</FONT></DIV></DIV>=0A=
+<DIV dir=3Dltr>=0A=
+<DIV dir=3Dltr>=0A=
+<DIV id=3DidOWAReplyText88324 dir=3Dltr>=0A=
 <DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
 size=3D2></FONT>&nbsp;</DIV>=0A=
 <DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>I want to =
 access 'EEPROM' I2C device present on AMCC PPC440GX =
-Evaluation&nbsp;bard.<BR>I have loaded following drivers:<BR>1. =
-i2c-core.ko<BR>2. i2c-dev.ko<BR>3. eeprom.ko<BR>4. =
-i2c-ibm_iic.ko</FONT></DIV>=0A=
+Evaluation&nbsp;bard.</FONT></DIV><FONT face=3DArial color=3D#000000 =
+size=3D2></FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>=0A=
+<DIV dir=3Dltr><BR>I have loaded following drivers:<BR>1. =
+i2c-core.ko<BR>2. i2c-dev.ko<BR>3. eeprom.ko<BR>4. i2c-ibm_iic.ko</DIV>=0A=
+<DIV dir=3Dltr></FONT>&nbsp;</DIV>=0A=
 <DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>The entry in =
 the 'sysfs' got created for drivers and =
 devices.<BR>-------------------------------------------------------------=
@@ -123,10 +133,10 @@ attached the board boot up and 'demsg' log file.</FONT></DIV>=0A=
 <DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
 size=3D2></FONT>&nbsp;</DIV>=0A=
 <DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Thanks and =
-Regards,<BR>Sachin Rane<BR></FONT></DIV></DIV></BODY></HTML>
-------_=_NextPart_002_01C6D969.72239761--
+Regards,<BR>Sachin Rane<BR></FONT></DIV></DIV></DIV></DIV></BODY></HTML>
+------_=_NextPart_002_01C6D96A.58014FD1--
 
-------_=_NextPart_001_01C6D969.72239761
+------_=_NextPart_001_01C6D96A.58014FD1
 Content-Type: text/plain;
 	name="bootup_log_i2cDrivers.txt"
 Content-Transfer-Encoding: base64
@@ -285,7 +295,7 @@ aTJjX2libV9paWMgICAgICAgICAgICAgNzQzMiAgMA0KZWVwcm9tICAgICAgICAgICAgICAgICAg
 NjczNiAgMA0KaTJjX2RldiAgICAgICAgICAgICAgICAxMDExNiAgMA0KaTJjX2NvcmUgICAgICAg
 ICAgICAgICAyMjM4NCAgMyBpMmNfaWJtX2lpYyxlZXByb20saTJjX2Rldg==
 
-------_=_NextPart_001_01C6D969.72239761
+------_=_NextPart_001_01C6D96A.58014FD1
 Content-Type: text/plain;
 	name="dmesg_log_i2cDrivers.txt"
 Content-Transfer-Encoding: base64
@@ -396,4 +406,4 @@ ciBpMmMtMTogZm91bmQgbm9ybWFsIGVudHJ5IGZvciBhZGFwdGVyIDEsIGFkZHIgMHg1Nw0KaTJj
 X2FkYXB0ZXIgaTJjLTE6IG1hc3Rlcl94ZmVyWzBdIFcsIGFkZHI9MHg1NywgbGVuPTANCmlibS1p
 aWMxOiB1c2luZyBzdGFuZGFyZCAoMTAwIGtIeikgbW9kZQ==
 
-------_=_NextPart_001_01C6D969.72239761--
+------_=_NextPart_001_01C6D96A.58014FD1--
