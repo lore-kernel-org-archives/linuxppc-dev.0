@@ -1,31 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A13E67B66
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Sep 2006 09:59:03 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8FNx0QE006584
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Sep 2006 19:59:00 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8FNx0He356828
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Sep 2006 17:59:00 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8FNwxmF024747
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Sep 2006 17:59:00 -0600
-Date: Fri, 15 Sep 2006 18:58:59 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/4]: PowerPC: EEH: support MMIO enable recovery step
-Message-ID: <20060915235859.GU29167@austin.ibm.com>
-References: <20060915235025.GQ29167@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060915235025.GQ29167@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, anton@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 45B3667B6C
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Sep 2006 10:56:26 +1000 (EST)
+Subject: Re: Discontiguous Memory
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: jbahr <jbahr@set-software-services.com>
+In-Reply-To: <6332580.post@talk.nabble.com>
+References: <6332580.post@talk.nabble.com>
+Content-Type: text/plain
+Date: Sat, 16 Sep 2006 10:56:19 +1000
+Message-Id: <1158368179.14473.203.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,146 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2006-09-15 at 13:22 -0700, jbahr wrote:
+> We have a client building a PPC8548-based product who insists that we
+> allocate DRAM real address space in two large chunks at 0-2GB and 4-6GB in
+> the 36-bit address space.  It doesn't look like U-Boot's bd_info structure
+> allows for that, and it doesn't look like the Linux init routines (which
+> accesses the passed table) knows how to handle discontiguous memory either
+> (as opposed to X86 Linux, which can accept an E820 table). 
+> 
+> It looks like Linux cleans out the TLB's pretty quickly, so it wouldn't know
+> the VA-to-RA mapping.   
+> 
+> I've seen papers on some PPC Linuxes that handle large discontiguous real
+> DRAM memory spaces, but it doesn't look like the Linux in ELDK does.  Is
+> that correct? 
+> 
+> This is just the start of a headache between the architects and we poor
+> implementers.  It's not clear to us that, even with ATMU support, how normal
+> drivers are going to know how to create real addresses for buffers and such
+> to use when programming DMA controllers or external PCI devices. 
+> 
+> Are this really a problem or is there kernel provision for the PPC for
+> discontiguous real memory DRAM space?
+> 
+> Any comments would be VERY appreciated. 
 
-Update to te PowerPC PCI error recovery code.
+There is no support for any of this in the current PowerPC 32 bits
+kernel. It's possible to add it, though, but it's not alrady there.
+There are two main issues:
 
-Add code to enable MMIO if a device driver reports 
-that it is capable of recovering on its own. One
-anticipated use of this having a device driver 
-enable MMIO so that it can take a register dump, 
-which might then be followed by the device driver 
-requesting a full reset.
+ - One is to enable support for sparse memory maps and add the necessary
+support to the low mm code. Not terribly hard (see how it's done for 64
+bits)
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+ - A more annoying one is support for DMA since a lot of devices cannot
+DMA above 32 bits. A lot of 'sane' platforms that provide more memory
+than can be DMA'ed in 32 bits also provide an IOMMU that does page
+translation of incoming DMAs. This isn't your case however, thus you
+would have to implement some of the alternate solutions used on x86_64
+(Intel 64 bits platforms also lack an iommu). This essentially consist
+of defining a ZONE_DMA32 and possibly also using swiotlb to do bounce
+buffering for drivers that don't deal with ZONE_DMA32 yet.
 
-----
- arch/powerpc/platforms/pseries/eeh_driver.c |   81 ++++++++++++++++++++++------
- 1 file changed, 64 insertions(+), 17 deletions(-)
-
-Index: linux-2.6.18-rc7-git1/arch/powerpc/platforms/pseries/eeh_driver.c
-===================================================================
---- linux-2.6.18-rc7-git1.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-09-14 15:17:15.000000000 -0500
-+++ linux-2.6.18-rc7-git1/arch/powerpc/platforms/pseries/eeh_driver.c	2006-09-14 17:54:15.000000000 -0500
-@@ -100,14 +100,38 @@ static void eeh_report_error(struct pci_
- 		PCI_DN(dn)->eeh_mode |= EEH_MODE_IRQ_DISABLED;
- 		disable_irq_nosync(dev->irq);
- 	}
--	if (!driver->err_handler)
--		return;
--	if (!driver->err_handler->error_detected)
-+	if (!driver->err_handler ||
-+	    !driver->err_handler->error_detected)
- 		return;
- 
- 	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
- 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
--	if (*res == PCI_ERS_RESULT_NEED_RESET) return;
-+	if (*res == PCI_ERS_RESULT_DISCONNECT &&
-+	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
-+}
-+
-+/**
-+ * eeh_report_mmio_enabled - tell drivers that MMIO has been enabled
-+ *
-+ * Report an EEH error to each device driver, collect up and
-+ * merge the device driver responses. Cumulative response
-+ * passed back in "userdata".
-+ */
-+
-+static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
-+{
-+	enum pci_ers_result rc, *res = userdata;
-+	struct pci_driver *driver = dev->driver;
-+
-+	// dev->error_state = pci_channel_mmio_enabled;
-+
-+	if (!driver ||
-+	    !driver->err_handler ||
-+	    !driver->err_handler->mmio_enabled)
-+		return;
-+
-+	rc = driver->err_handler->mmio_enabled (dev);
-+	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
- 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
- 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- }
-@@ -118,6 +142,7 @@ static void eeh_report_error(struct pci_
- 
- static void eeh_report_reset(struct pci_dev *dev, void *userdata)
- {
-+	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver = dev->driver;
- 	struct device_node *dn = pci_device_to_OF_node(dev);
- 
-@@ -128,12 +153,14 @@ static void eeh_report_reset(struct pci_
- 		PCI_DN(dn)->eeh_mode &= ~EEH_MODE_IRQ_DISABLED;
- 		enable_irq(dev->irq);
- 	}
--	if (!driver->err_handler)
--		return;
--	if (!driver->err_handler->slot_reset)
-+	if (!driver->err_handler ||
-+	    !driver->err_handler->slot_reset)
- 		return;
- 
--	driver->err_handler->slot_reset(dev);
-+	rc = driver->err_handler->slot_reset(dev);
-+	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
-+	if (*res == PCI_ERS_RESULT_DISCONNECT &&
-+	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- }
- 
- /**
-@@ -362,23 +389,43 @@ struct pci_dn * handle_eeh_events (struc
- 			goto hard_fail;
- 	}
- 
--	/* If any device called out for a reset, then reset the slot */
--	if (result == PCI_ERS_RESULT_NEED_RESET) {
--		rc = eeh_reset_device(frozen_pdn, NULL);
--		if (rc)
--			goto hard_fail;
--		pci_walk_bus(frozen_bus, eeh_report_reset, NULL);
-+	/* If all devices reported they can proceed, then re-enable MMIO */
-+	if (result == PCI_ERS_RESULT_CAN_RECOVER) {
-+		rc = rtas_pci_enable(frozen_pdn, EEH_THAW_MMIO);
-+
-+		if (rc) {
-+			result = PCI_ERS_RESULT_NEED_RESET;
-+		} else {
-+			result = PCI_ERS_RESULT_NONE;
-+			pci_walk_bus(frozen_bus, eeh_report_mmio_enabled, &result);
-+		}
- 	}
- 
--	/* If all devices reported they can proceed, the re-enable PIO */
-+	/* If all devices reported they can proceed, then re-enable DMA */
- 	if (result == PCI_ERS_RESULT_CAN_RECOVER) {
--		/* XXX Not supported; we brute-force reset the device */
-+		rc = rtas_pci_enable(frozen_pdn, EEH_THAW_DMA);
-+
-+		if (rc)
-+			result = PCI_ERS_RESULT_NEED_RESET;
-+	}
-+
-+	/* If any device has a hard failure, then shut off everything. */
-+	if (result == PCI_ERS_RESULT_DISCONNECT)
-+		goto hard_fail;
-+
-+	/* If any device called out for a reset, then reset the slot */
-+	if (result == PCI_ERS_RESULT_NEED_RESET) {
- 		rc = eeh_reset_device(frozen_pdn, NULL);
- 		if (rc)
- 			goto hard_fail;
--		pci_walk_bus(frozen_bus, eeh_report_reset, NULL);
-+		result = PCI_ERS_RESULT_NONE;
-+		pci_walk_bus(frozen_bus, eeh_report_reset, &result);
- 	}
- 
-+	/* All devices should claim they have recovered by now. */
-+	if (result != PCI_ERS_RESULT_RECOVERED)
-+		goto hard_fail;
-+
- 	/* Tell all device drivers that they can resume operations */
- 	pci_walk_bus(frozen_bus, eeh_report_resume, NULL);
- 
+Ben.
