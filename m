@@ -1,17 +1,19 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
-	by ozlabs.org (Postfix) with ESMTP id 7568B67B7A
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Sep 2006 19:56:05 +1000 (EST)
-Date: Sat, 16 Sep 2006 11:56:03 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [Alsa-devel] oops in snd-powermac due to snd-aoa
-Message-ID: <20060916095603.GA5447@aepfle.de>
-References: <20060907124256.GA22928@aepfle.de> <s5h64fzltyg.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <s5h64fzltyg.wl%tiwai@suse.de>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id E8448679E0
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2006 02:16:02 +1000 (EST)
+In-Reply-To: <20060916183607.94d6facc.sfr@canb.auug.org.au>
+References: <20060915213751.128e85f3@localhost.localdomain>
+	<20060915173912.7984.40164.stgit@localhost.localdomain>
+	<20060916183607.94d6facc.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <FF0EF221-284E-4E0A-8576-EFC7E1CE0DE4@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 3/7] POWERPC: Move generic cpm2 stuff to powerpc
+Date: Sat, 16 Sep 2006 12:09:34 -0400
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 07, Takashi Iwai wrote:
 
-> At Thu, 7 Sep 2006 14:42:56 +0200,
-> Olaf Hering wrote:
-> > 
-> > I was playing with snd-aoa, maybe the driver would work on a G4/466.
-> > mv /lib/modules/*/kernel/sound/ppc/snd-powermac.ko .
-> > reboot
-> > $insmod /lib/modules/*/kernel/sound/aoa/*/*.ko
-> > alsamixer finds nothing.
-> > mv snd-powermac.ko /lib/modules/*/kernel/sound/ppc/
-> > $insmod snd-powermac.ko -> oops
-> > 
-> > Using PowerMac machine description
-> (snip)
-> > ALSA sound/ppc/keywest.c:82: tumbler: cannot attach i2c client
-> > read_audio_gpio addr 67 ret 2 av 4
-> > headphone: 0, lineout: 0
-> > check_audio_gpio addr 70 ret 4 av 4
-> > check_audio_gpio addr 6f ret 7 av 4
-> > Unable to handle kernel paging request for data at address 0x00000002
-> 
-> Does the patch below work?
+On Sep 16, 2006, at 4:36 AM, Stephen Rothwell wrote:
 
-Yes, no oops, but also no sound without reboot. Thats ok.
+>
+>> +	if (brg < 4) {
+>> +		bp = (uint *)&cpm2_immr->im_brgc1;
+>> +	}
+>> +	else {
+>
+> Normally:
+> 	if (brg < 4)
+> 		bp = (uint *)&cpm2_immr->im_brgc1;
+> 	else {
 
-...
-ALSA sound/ppc/keywest.c:82: tumbler: cannot attach i2c client
-read_audio_gpio addr 67 ret 2 av 4
-headphone: 0, lineout: 0
-check_audio_gpio addr 70 ret 4 av 4
-check_audio_gpio addr 6f ret 7 av 4
-date:~ # 
-date:~ # alsamixer 
+Sorry, I'm going to nit-pick right back.  This isn't
+"normal", it's just your preference.  :-)
 
-alsamixer: function snd_ctl_open failed for default: No such device
-...
+When the "else" part contains braces, the "if"
+part should as well.  If this get modified and
+nested some day in the future, this can cause
+a very subtle coding error.
+
+No one should ever be criticized for using too
+many braces, provided it is artistically pleasing.
+
+"Normally," the if-else without braces is only
+used when there are single statements on
+both paths of the logic.  The only exception
+is the else-if that emulates a case statement
+(when other exceptions also apply, see K&R).
+
+Thanks.
+
+	-- Dan
