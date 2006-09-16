@@ -1,17 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17675.30508.252375.59449@cargo.ozlabs.ibm.com>
-Date: Sat, 16 Sep 2006 14:01:48 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
-In-Reply-To: <20060915180129.GE1884@mag.az.mvista.com>
-References: <20060719230014.GB3887@mag.az.mvista.com>
-	<20060908033508.GA5203@mag.az.mvista.com>
-	<17674.32333.958250.868794@cargo.ozlabs.ibm.com>
-	<20060915180129.GE1884@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4DC4F67B67
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Sep 2006 18:20:13 +1000 (EST)
+Date: Sat, 16 Sep 2006 18:20:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: [PATCH 1/7] POWERPC: Add cpm2 stuff support to the fsl_soc.c
+Message-Id: <20060916182022.5ef8c0fe.sfr@canb.auug.org.au>
+In-Reply-To: <20060915173857.7984.36024.stgit@localhost.localdomain>
+References: <20060915213751.128e85f3@localhost.localdomain>
+	<20060915173857.7984.36024.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer writes:
+Hi Vitaly,
 
-> Yes.  Whether you pass the NULL or not hinges on whether its flat tree
-> or not so I made it a dt_op.  What are you thinking?
+Just a few nits ...
 
-There's basically only two cases: if we have a builtin flat tree, we
-pass that and NULL in r5; if we don't, and we have OF, we pass NULL in
-r3 and the OF entry point in r5.  I think that could be handled in
-main.c.
+On Fri, 15 Sep 2006 21:38:57 +0400 Vitaly Bordug <vbordug@ru.mvista.com> wrote:
+>
+> +#ifdef CONFIG_CPM2
+> +#include <asm/cpm2.h>
+> +#endif
 
-We also lost the "enforce minimum address only for 64-bit" thing in
-the translation, too.
+We normally don't do conditional includes, the include file should
+protect its contents (if that is necessary - it usually isn't).
 
-I believe that just patch 1/6 on its own won't give us a working
-zImage, so we'll have to split up the changes differently when it
-comes time to check this stuff in to git.
+> +		unsigned int *prop = (unsigned int*)get_property(node, "brg-frequency", &size);
 
-Paul.
+get_property returns "const void *" so no cast is necessary, but prop
+should be declated "const unsigned int *".
+
+> +		unsigned int *prop = (unsigned int*)get_property(node, "current-speed", &size);
+
+Ditto.
+
+> +static const char *fcc_regs = "fcc_regs";
+> +static const char *fcc_regs_c = "fcc_regs_c";
+> +static const char *fcc_pram = "fcc_pram";
+
+I think that these could be declared as const char [].
+
+> +		model = (char *)get_property(np, "model", NULL);
+> +		mac_addr = (void *)get_property(np, "mac-address", NULL);
+> +		ph = (phandle *) get_property(np, "phy-handle", NULL);
+> +		phy_addr = (u32 *) get_property(phy, "reg", NULL);
+> +		id = (u32 *) get_property(np, "device-id", NULL);
+
+Same comments about const and void * with respect to get_property.  There
+are more ...
+
+> +static const char *scc_regs = "regs";
+> +static const char *scc_pram = "pram";
+
+const char [] ?
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
