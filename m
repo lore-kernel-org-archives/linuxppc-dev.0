@@ -1,19 +1,21 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
-	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id E8448679E0
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2006 02:16:02 +1000 (EST)
-In-Reply-To: <20060916183607.94d6facc.sfr@canb.auug.org.au>
-References: <20060915213751.128e85f3@localhost.localdomain>
-	<20060915173912.7984.40164.stgit@localhost.localdomain>
-	<20060916183607.94d6facc.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FF0EF221-284E-4E0A-8576-EFC7E1CE0DE4@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 3/7] POWERPC: Move generic cpm2 stuff to powerpc
-Date: Sat, 16 Sep 2006 12:09:34 -0400
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-res-R.bigfish.com (outbound-res.frontbridge.com
+	[63.161.60.49])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 66E8A679E7
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2006 03:35:39 +1000 (EST)
+Message-ID: <450C35E5.4040605@am.sony.com>
+Date: Sat, 16 Sep 2006 10:35:33 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc: minor fix of numa message
+References: <45097273.8070103@am.sony.com>
+	<1158282267.10020.2.camel@localhost.localdomain>
+In-Reply-To: <1158282267.10020.2.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Michael Ellerman wrote:
+> On Thu, 2006-09-14 at 08:17 -0700, Geoff Levand wrote:
+>> This is a very minor fix that effects no current system.  The NUMA startup
+>> message values for 'Top of RAM' and 'Memory hole size' were reported
+>> incorrectly if more than one lmb region was added.
+>> 
+>> A comment in the lmb code states that lmb_analyze() must be called before
+>> lmb_phys_mem_size().
+> 
+> But we've already called it in early_init_devtree()?
 
-On Sep 16, 2006, at 4:36 AM, Stephen Rothwell wrote:
+Yes, of course you are correct.  Updated patch follows.
 
->
->> +	if (brg < 4) {
->> +		bp = (uint *)&cpm2_immr->im_brgc1;
->> +	}
->> +	else {
->
-> Normally:
-> 	if (brg < 4)
-> 		bp = (uint *)&cpm2_immr->im_brgc1;
-> 	else {
+-Geoff
 
-Sorry, I'm going to nit-pick right back.  This isn't
-"normal", it's just your preference.  :-)
 
-When the "else" part contains braces, the "if"
-part should as well.  If this get modified and
-nested some day in the future, this can cause
-a very subtle coding error.
+This is a very minor comment change to the powerpc lbm code reflect current
+usage.
 
-No one should ever be criticized for using too
-many braces, provided it is artistically pleasing.
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-"Normally," the if-else without braces is only
-used when there are single statements on
-both paths of the logic.  The only exception
-is the else-if that emulates a case statement
-(when other exceptions also apply, see K&R).
+---
 
-Thanks.
-
-	-- Dan
+Index: cell--common--4/arch/powerpc/mm/lmb.c
+===================================================================
+--- cell--common--4.orig/arch/powerpc/mm/lmb.c
++++ cell--common--4/arch/powerpc/mm/lmb.c
+@@ -285,7 +285,9 @@
+ 	return base;
+ }
+ 
+-/* You must call lmb_analyze() before this. */
++/* You must call lmb_analyze() sometime before this, typcally just after
++ * adding regions.
++ */
+ unsigned long __init lmb_phys_mem_size(void)
+ {
+ 	return lmb.memory.size;
