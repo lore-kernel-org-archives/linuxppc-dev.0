@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 45B3667B6C
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Sep 2006 10:56:26 +1000 (EST)
-Subject: Re: Discontiguous Memory
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: jbahr <jbahr@set-software-services.com>
-In-Reply-To: <6332580.post@talk.nabble.com>
-References: <6332580.post@talk.nabble.com>
-Content-Type: text/plain
-Date: Sat, 16 Sep 2006 10:56:19 +1000
-Message-Id: <1158368179.14473.203.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17675.30508.252375.59449@cargo.ozlabs.ibm.com>
+Date: Sat, 16 Sep 2006 14:01:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/6] bootwrapper: arch/powerpc/boot code reorg
+In-Reply-To: <20060915180129.GE1884@mag.az.mvista.com>
+References: <20060719230014.GB3887@mag.az.mvista.com>
+	<20060908033508.GA5203@mag.az.mvista.com>
+	<17674.32333.958250.868794@cargo.ozlabs.ibm.com>
+	<20060915180129.GE1884@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-09-15 at 13:22 -0700, jbahr wrote:
-> We have a client building a PPC8548-based product who insists that we
-> allocate DRAM real address space in two large chunks at 0-2GB and 4-6GB in
-> the 36-bit address space.  It doesn't look like U-Boot's bd_info structure
-> allows for that, and it doesn't look like the Linux init routines (which
-> accesses the passed table) knows how to handle discontiguous memory either
-> (as opposed to X86 Linux, which can accept an E820 table). 
-> 
-> It looks like Linux cleans out the TLB's pretty quickly, so it wouldn't know
-> the VA-to-RA mapping.   
-> 
-> I've seen papers on some PPC Linuxes that handle large discontiguous real
-> DRAM memory spaces, but it doesn't look like the Linux in ELDK does.  Is
-> that correct? 
-> 
-> This is just the start of a headache between the architects and we poor
-> implementers.  It's not clear to us that, even with ATMU support, how normal
-> drivers are going to know how to create real addresses for buffers and such
-> to use when programming DMA controllers or external PCI devices. 
-> 
-> Are this really a problem or is there kernel provision for the PPC for
-> discontiguous real memory DRAM space?
-> 
-> Any comments would be VERY appreciated. 
+Mark A. Greer writes:
 
-There is no support for any of this in the current PowerPC 32 bits
-kernel. It's possible to add it, though, but it's not alrady there.
-There are two main issues:
+> Yes.  Whether you pass the NULL or not hinges on whether its flat tree
+> or not so I made it a dt_op.  What are you thinking?
 
- - One is to enable support for sparse memory maps and add the necessary
-support to the low mm code. Not terribly hard (see how it's done for 64
-bits)
+There's basically only two cases: if we have a builtin flat tree, we
+pass that and NULL in r5; if we don't, and we have OF, we pass NULL in
+r3 and the OF entry point in r5.  I think that could be handled in
+main.c.
 
- - A more annoying one is support for DMA since a lot of devices cannot
-DMA above 32 bits. A lot of 'sane' platforms that provide more memory
-than can be DMA'ed in 32 bits also provide an IOMMU that does page
-translation of incoming DMAs. This isn't your case however, thus you
-would have to implement some of the alternate solutions used on x86_64
-(Intel 64 bits platforms also lack an iommu). This essentially consist
-of defining a ZONE_DMA32 and possibly also using swiotlb to do bounce
-buffering for drivers that don't deal with ZONE_DMA32 yet.
+We also lost the "enforce minimum address only for 64-bit" thing in
+the translation, too.
 
-Ben.
+I believe that just patch 1/6 on its own won't give us a working
+zImage, so we'll have to split up the changes differently when it
+comes time to check this stuff in to git.
+
+Paul.
