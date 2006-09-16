@@ -1,21 +1,21 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-res-R.bigfish.com (outbound-res.frontbridge.com
-	[63.161.60.49])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 66E8A679E7
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2006 03:35:39 +1000 (EST)
-Message-ID: <450C35E5.4040605@am.sony.com>
-Date: Sat, 16 Sep 2006 10:35:33 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] powerpc: minor fix of numa message
-References: <45097273.8070103@am.sony.com>
-	<1158282267.10020.2.camel@localhost.localdomain>
-In-Reply-To: <1158282267.10020.2.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B086C67B8D
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Sep 2006 08:51:06 +1000 (EST)
+Subject: Re: Discontiguous Memory
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200609161151.41294.arnd@arndb.de>
+References: <6332580.post@talk.nabble.com>
+	<1158368179.14473.203.camel@localhost.localdomain>
+	<200609161151.41294.arnd@arndb.de>
+Content-Type: text/plain
+Date: Sun, 17 Sep 2006 08:50:47 +1000
+Message-Id: <1158447047.14473.230.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, jbahr <jbahr@set-software-services.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Thu, 2006-09-14 at 08:17 -0700, Geoff Levand wrote:
->> This is a very minor fix that effects no current system.  The NUMA startup
->> message values for 'Top of RAM' and 'Memory hole size' were reported
->> incorrectly if more than one lmb region was added.
->> 
->> A comment in the lmb code states that lmb_analyze() must be called before
->> lmb_phys_mem_size().
+On Sat, 2006-09-16 at 11:51 +0200, Arnd Bergmann wrote:
+> Am Saturday 16 September 2006 02:56 schrieb Benjamin Herrenschmidt:
+> >  - A more annoying one is support for DMA since a lot of devices cannot
+> > DMA above 32 bits. A lot of 'sane' platforms that provide more memory
+> > than can be DMA'ed in 32 bits also provide an IOMMU that does page
+> > translation of incoming DMAs. This isn't your case however, thus you
+> > would have to implement some of the alternate solutions used on x86_64
+> > (Intel 64 bits platforms also lack an iommu). This essentially consist
+> > of defining a ZONE_DMA32 and possibly also using swiotlb to do bounce
+> > buffering for drivers that don't deal with ZONE_DMA32 yet.
 > 
-> But we've already called it in early_init_devtree()?
+> On 32 bit platforms, you normally have ZONE_NORMAL for up to 4G and
+> ZONE_HIGHMEM beyond, so you don't need an extra ZONE_DMA32.
 
-Yes, of course you are correct.  Updated patch follows.
+No, in fact, it's even worse :) Your example works only on platforms
+that can do 4G/4G split. On ppc32, currently, we don't (though we could
+with some freescale BookE and their new instructions to load/store cross
+AS), thus we have a 3G/1G split, which limits ZONE_NORMAL to about
+768Mb.
 
--Geoff
+So ZONE_HIGHEMEM is actually most of your memory. But you -can- DMA from
+highmem and can't have memory be both HIGHMEM and ZONE_DMA32 (though I
+suppose devices requesting ZONE_DMA32 will hit ZONE_NORMAL). It's a
+mess...
 
-
-This is a very minor comment change to the powerpc lbm code reflect current
-usage.
-
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-
----
-
-Index: cell--common--4/arch/powerpc/mm/lmb.c
-===================================================================
---- cell--common--4.orig/arch/powerpc/mm/lmb.c
-+++ cell--common--4/arch/powerpc/mm/lmb.c
-@@ -285,7 +285,9 @@
- 	return base;
- }
- 
--/* You must call lmb_analyze() before this. */
-+/* You must call lmb_analyze() sometime before this, typcally just after
-+ * adding regions.
-+ */
- unsigned long __init lmb_phys_mem_size(void)
- {
- 	return lmb.memory.size;
+Ben.
