@@ -1,18 +1,15 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
-	[24.152.213.223]) by ozlabs.org (Postfix) with ESMTP id 31F4567B78
+Return-Path: <junijoseph@yahoo.co.in>
+Received: from web8407.mail.in.yahoo.com (web8407.mail.in.yahoo.com
+	[202.43.219.155]) by ozlabs.org (Postfix) with SMTP id 56D1767B63
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Sep 2006 23:30:29 +1000 (EST)
-Message-ID: <450D4AC2.2090503@dlasys.net>
-Date: Sun, 17 Sep 2006 09:16:50 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Mon, 18 Sep 2006 09:08:05 +1000 (EST)
+Message-ID: <20060917230124.51672.qmail@web8407.mail.in.yahoo.com>
+Date: Mon, 18 Sep 2006 00:01:24 +0100 (BST)
+From: agnel juni <junijoseph@yahoo.co.in>
+Subject: 440SPe - Linux 2.6 xilinx System ACE driver 
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: wei.li4@elf.mcgill.ca
-Subject: Re: Kernel Blocked
-References: <20060915155139.3u0q0lb5s0g0ww0s@webmail.mcgill.ca>
-In-Reply-To: <20060915155139.3u0q0lb5s0g0ww0s@webmail.mcgill.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-1151876025-1158534084=:46221"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,48 +20,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    I have a Xilinx ppc405 working out of the 2.6.18-rc7 linux-2.6 git 
-tree - with patches for my board.
-   
-    I beleive you are either just at the end of the code in 
-arch/ppc/boot/simple - which is mostly the initial load/decompress.
-    Or just started the code in arch/ppc/kernel/head_4xx.S
+--0-1151876025-1158534084=:46221
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-    You ought to be able to grep "Now booting" to establish a last know 
-good point.
-    There is also a pretty good call tree in comments of 
-arch/ppc/platforms/4xx/xilinx_ml403.c.
-    While small parts are ml403 specific, much of it is generic.
-    However, if you have not gotten into arch/ppc/kernel/head_4xx.S then 
-you are not at the begining yet.
-   
+Hello all
 
+We are working on a 440SPe based custom board.We are trying to port the Xilinx Ssytem ACe driver onto this platform, since we need to have access to the Compact Flash to load the File system.
 
-wei.li4@elf.mcgill.ca wrote:
-> Hi All,
->
-> First, if anyone wants to use linux 2.6.18-rc2-g73a589b5 with ppc, he 
-> should patch inflate.c from linux 2.6.18-rc7 to fix Uncompressing 
-> failure problem. But new problem is: when relocate and gunzip functions 
-> are finished, and 'Now booting the kernel' is shown, the system is 
-> halted. My bootloader is working fine with linux 2.6.13, could anyone 
-> tell me what the next function executes and how to check this kind of 
-> problem, thanks.
->
-> Wei
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
+We validated the hardware by reading the Compact Flash through the System ACE controller from u-boot.But we find difficulties from the kernel.
+
+We applied the system ACE driver patch onto linux-2.6.16-2.
+
+We tried in both polling and interrupt mode.
+
+Following are the main changes we did in the driver:
+
+1. System ACE controller base address configuration (xparameters_ml300.h, adapter.c)
+2. Endianess (xsysace_l.c)
+3. IRQ (xparameters_ml300.h)
 
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+With these changes we are able to read/write to the compact flash controller.
+But we see difficulties while reading the compact flash.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+'Fdisk' command lists the partition details  first time we run the command. While issuing the Issuing the command second time, it exits to the command prompt without displaying the partitions.
+
+
+Also we coudn't succeed in mounting the system.
+
+Could someone give us some pointers to debug in this issue.
+
+
+Thanks
+Junita
+
+ 				
+---------------------------------
+ Find out what India is talking about on  - Yahoo! Answers India 
+ Send FREE SMS to your friend's mobile from Yahoo! Messenger Version 8. Get it NOW
+--0-1151876025-1158534084=:46221
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hello all<br><br>We are working on a 440SPe based custom board.We are trying to port the Xilinx Ssytem ACe driver onto this platform, since we need to have access to the Compact Flash to load the File system.<br><br>We validated the hardware by reading the Compact Flash through the System ACE controller from u-boot.But we find difficulties from the kernel.<br><br>We applied the system ACE driver patch onto linux-2.6.16-2.<br><br>We tried in both polling and interrupt mode.<br><br>Following are the main changes we did in the driver:<br><br>1. System ACE controller base address configuration (xparameters_ml300.h, adapter.c)<br>2. Endianess (xsysace_l.c)<br>3. IRQ (xparameters_ml300.h)<br><br><br>With these changes we are able to read/write to the compact flash controller.<br>But we see difficulties while reading the compact flash.<br><br>'Fdisk' command lists the partition details&nbsp; first time we run the command. While issuing the Issuing the command second time, it exits
+ to the command prompt without displaying the partitions.<br><br><br>Also we coudn't succeed in mounting the system.<br><br>Could someone give us some pointers to debug in this issue.<br><br><br>Thanks<br>Junita<br><p>&#32;
+	
+
+	
+		<hr size=1></hr> 
+Find out what India is talking about on  - <a href="http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/">Yahoo! Answers India</a> <BR> 
+Send FREE SMS to your friend's mobile from Yahoo! Messenger Version 8. <a href="http://us.rd.yahoo.com/mail/in/messengertagline/*http://in.messenger.yahoo.com">Get it NOW</a>
+--0-1151876025-1158534084=:46221--
