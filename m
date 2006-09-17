@@ -1,24 +1,18 @@
-Return-Path: <Phillip.Knaack@motorola.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id 27C7A67B69
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
+	[24.152.213.223]) by ozlabs.org (Postfix) with ESMTP id 31F4567B78
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Sep 2006 14:38:44 +1000 (EST)
-Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
-	by motgate8.mot.com (8.12.11/Motorola) with ESMTP id k8H4cg3v018675
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Sep 2006 21:38:42 -0700 (MST)
-Received: from de01exm71.ds.mot.com (de01exm71.am.mot.com [10.176.8.27])
-	by il06exr04.mot.com (8.13.1/8.13.0) with ESMTP id k8H4cg76016938
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Sep 2006 23:38:42 -0500 (CDT)
+	Sun, 17 Sep 2006 23:30:29 +1000 (EST)
+Message-ID: <450D4AC2.2090503@dlasys.net>
+Date: Sun, 17 Sep 2006 09:16:50 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Unicast DHCP OFFER?
-Date: Sun, 17 Sep 2006 00:38:41 -0400
-Message-ID: <69BAB3EF0F351C408644243926DF3A5101369BEA@de01exm71.ds.mot.com>
-From: "Knaack Phillip-PKNAACK1" <Phillip.Knaack@motorola.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: wei.li4@elf.mcgill.ca
+Subject: Re: Kernel Blocked
+References: <20060915155139.3u0q0lb5s0g0ww0s@webmail.mcgill.ca>
+In-Reply-To: <20060915155139.3u0q0lb5s0g0ww0s@webmail.mcgill.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,43 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greetings!
+    I have a Xilinx ppc405 working out of the 2.6.18-rc7 linux-2.6 git 
+tree - with patches for my board.
+   
+    I beleive you are either just at the end of the code in 
+arch/ppc/boot/simple - which is mostly the initial load/decompress.
+    Or just started the code in arch/ppc/kernel/head_4xx.S
 
-You should all ignore this message. I found that someone here had
-modified the netif_rx code in a really stupid way.  I now see how it
-works.
+    You ought to be able to grep "Now booting" to establish a last know 
+good point.
+    There is also a pretty good call tree in comments of 
+arch/ppc/platforms/4xx/xilinx_ml403.c.
+    While small parts are ml403 specific, much of it is generic.
+    However, if you have not gotten into arch/ppc/kernel/head_4xx.S then 
+you are not at the begining yet.
+   
 
--Phil K
 
------Original Message-----
-From: Knaack Phillip-PKNAACK1=20
-Sent: Saturday, September 16, 2006 5:02 PM
-To: 'linuxppc-embedded@ozlabs.org'
-Subject: Unicast DHCP OFFER?
+wei.li4@elf.mcgill.ca wrote:
+> Hi All,
+>
+> First, if anyone wants to use linux 2.6.18-rc2-g73a589b5 with ppc, he 
+> should patch inflate.c from linux 2.6.18-rc7 to fix Uncompressing 
+> failure problem. But new problem is: when relocate and gunzip functions 
+> are finished, and 'Now booting the kernel' is shown, the system is 
+> halted. My bootloader is working fine with linux 2.6.13, could anyone 
+> tell me what the next function executes and how to check this kind of 
+> problem, thanks.
+>
+> Wei
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>   
 
-Greetings!
 
-This isn't really a powerpc question, more of a general Linux question,
-although I'm working on an embedded powerpc target board.  It's a stupid
-question about DHCP.
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-My target is running udhcpc over a wireless (not wi-fi) interface to a
-remote radio which is running a dhcp relay agent. I see the DHCP
-discover sent out, and I see (at the driver level) the DHCP offer coming
-back.  However, the offer is being sent unicast directly to my (new) IP
-address, which I don't know yet.  As a result, the ip stack is dropping
-the packet because of "no route".  So I ask myself, how can I receive a
-UDP packet addressed directly to me if I don't yet know my own address?
-It defies logic.
-And the odd part is, it works with another version of this card on
-Windows, though I wouldn't be surprised if they just hacked it up to
-"just work" anyway.
-
-Because of the nature of this wireless connection, it really needs to be
-unicast.  I'm thinking of recognizing a UDP/DHCP packet in the radio
-driver and hacking the iphdr source addr to be a broadcast, so the raw
-socket in udhcpc will receive it, but this shouldn't be necessary.
-
-So-- how is a unicast dhcp offer supposed to work?
-
--Phil K
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
