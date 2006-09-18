@@ -1,19 +1,20 @@
-Return-Path: <SRane@alphion.com>
-Received: from alphion.com (unknown [66.147.184.82])
-	by ozlabs.org (Postfix) with ESMTP id 9BB2367A3E
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id BDB5467B58
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Sep 2006 15:20:28 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6DAE2.23E77619"
-Subject: I2C adapter device file problem
-Date: Mon, 18 Sep 2006 01:19:51 -0400
-Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F656C@sbsserver.AlphionCorp.local>
+	Mon, 18 Sep 2006 17:24:06 +1000 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Board Bootup and message log
+Date: Mon, 18 Sep 2006 09:18:56 +0200
 References: <8584FDC94AFF7640B17B8A89B23B19B34F6564@sbsserver.AlphionCorp.local>
 	<8584FDC94AFF7640B17B8A89B23B19B34F6568@sbsserver.AlphionCorp.local>
-	<8584FDC94AFF7640B17B8A89B23B19B34F6569@sbsserver.AlphionCorp.local>
-	<8584FDC94AFF7640B17B8A89B23B19B34F656A@sbsserver.AlphionCorp.local>
-From: "Sachin Rane" <SRane@alphion.com>
-To: <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <8584FDC94AFF7640B17B8A89B23B19B34F6568@sbsserver.AlphionCorp.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200609180918.56987.matthias.fuchs@esd-electronics.com>
+Cc: Sachin Rane <SRane@alphion.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,389 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C6DAE2.23E77619
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_002_01C6DAE2.23E77619"
-
-
-------_=_NextPart_002_01C6DAE2.23E77619
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-=20
-I want to access 'EEPROM' I2C device present on AMCC PPC440GX Evaluation =
+On Saturday 16 September 2006 10:19, Sachin Rane wrote:
+> Hi,
+>  
+> I want to access 'EEPROM' I2C device present on AMCC PPC440GX Evaluation 
 bard.
+> I have loaded following drivers:
+> 1. i2c-core.ko
+> 2. i2c-dev.ko
+> 3. eeprom.ko
+> 4. i2c-ibm_iic.ko
+> The entry in the 'sysfs' got created for drivers and devices.
 
-I have loaded following drivers:
-1. i2c-core.ko
-2. i2c-dev.ko
-3. eeprom.ko
-4. i2c-ibm_iic.ko
-=20
-The entry in the 'sysfs' got created for drivers and devices.
--------------------------------------------------------------------------=
----------------
--bash-2.05b# cd  /sys/bus/i2c/devices
--bash-2.05b# ls -la *
-lrwxrwxrwx  1 root root 0 Apr  6 06:42 0-0050 -> =
-../../../devices/platform/i2c-0/0-0050
-lrwxrwxrwx  1 root root 0 Apr  6 06:42 0-0053 -> =
-../../../devices/platform/i2c-0/0-0053
-lrwxrwxrwx  1 root root 0 Apr  6 06:42 0-0054 -> =
-../../../devices/platform/i2c-0/0-0054
--bash-2.05b# cat ../../../devices/platform/i2c-0/0-0050/name
-eeprom
--------------------------------------------------------------------------=
----------------
-As per the documentation =
-(/usr/src/linux/Documentation/i2c/dev-interface),
-I2C adapter files gets created under "/dev/i2c-X"are with with major =
-device number 89.
-=20
-But in my case, the device file is not getting created under '/dev/'.
-=20
-Am I missing anything while loading the driver?
-I have attached the board boot up and 'demsg' log file.
-=20
-Thanks and Regards,
-Sachin Rane
+> As per the documentation (/usr/src/linux/Documentation/i2c/dev-interface),
+> I2C adapter files gets created under "/dev/i2c-X"are with with major device 
+number 89.
+>  
+> But in my case, the device file is not getting created under '/dev/'.
+If you do not have some magic daemons running on your board that will do the 
+work you have to create the /dev entries by hand.
 
+Please do not post the same message multiple times. Also attachments are often 
+not very welcome on mailing lists.
 
-------_=_NextPart_002_01C6DAE2.23E77619
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<HTML dir=3Dltr><HEAD>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText51901 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>Hi,</FONT></DIV></DIV>=0A=
-<DIV dir=3Dltr>=0A=
-<DIV dir=3Dltr>=0A=
-<DIV dir=3Dltr>=0A=
-<DIV id=3DidOWAReplyText88324 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>I want to =
-access 'EEPROM' I2C device present on AMCC PPC440GX =
-Evaluation&nbsp;bard.</FONT></DIV><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>=0A=
-<DIV dir=3Dltr><BR>I have loaded following drivers:<BR>1. =
-i2c-core.ko<BR>2. i2c-dev.ko<BR>3. eeprom.ko<BR>4. i2c-ibm_iic.ko</DIV>=0A=
-<DIV dir=3Dltr></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>The entry in =
-the 'sysfs' got created for drivers and =
-devices.<BR>-------------------------------------------------------------=
----------------------------<BR>-bash-2.05b# cd&nbsp; =
-/sys/bus/i2c/devices<BR>-bash-2.05b# ls -la *<BR>lrwxrwxrwx&nbsp; 1 root =
-root 0 Apr&nbsp; 6 06:42 0-0050 -&gt; =
-../../../devices/platform/i2c-0/0-0050<BR>lrwxrwxrwx&nbsp; 1 root root 0 =
-Apr&nbsp; 6 06:42 0-0053 -&gt; =
-../../../devices/platform/i2c-0/0-0053<BR>lrwxrwxrwx&nbsp; 1 root root 0 =
-Apr&nbsp; 6 06:42 0-0054 -&gt; =
-../../../devices/platform/i2c-0/0-0054</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>-bash-2.05b# =
-cat ../../../devices/platform/i2c-0/0-0050/name<BR>eeprom</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>----------------------------------------------------------------=
-------------------------</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>As per the =
-documentation (/usr/src/linux/Documentation/i2c/dev-interface),<BR>I2C =
-adapter files gets created under "/dev/i2c-X"are with with major device =
-number 89.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>But in my =
-case, the device file is not getting created under '/dev/'.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Am I missing =
-anything while loading the driver?</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>I have =
-attached the board boot up and 'demsg' log file.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Thanks and =
-Regards,<BR>Sachin =
-Rane<BR></FONT></DIV></DIV></DIV></DIV></DIV></BODY></HTML>
-------_=_NextPart_002_01C6DAE2.23E77619--
-
-------_=_NextPart_001_01C6DAE2.23E77619
-Content-Type: text/plain;
-	name="bootup_log_i2cDrivers.txt"
-Content-Transfer-Encoding: base64
-Content-Description: bootup_log_i2cDrivers.txt
-Content-Disposition: attachment;
-	filename="bootup_log_i2cDrivers.txt"
-
-VS1Cb290IDEuMS40IChBdWcgIDcgMjAwNiAtIDIwOjM2OjQwKQ0KDQpDUFU6ICAgQU1DQyBQb3dl
-clBDIDQ0MEdYIFJldi4gRiBhdCA1MzMuMzMzIE1IeiAoUExCPTEzMywgT1BCPTY2LCBFQkM9NjYg
-TUh6KQ0KICAgICAgIEkyQyBib290IEVFUFJPTSBlbmFibGVkDQogICAgICAgSW50ZXJuYWwgUENJ
-IGFyYml0ZXIgZW5hYmxlZA0KICAgICAgIDMyIGtCIEktQ2FjaGUgMzIga0IgRC1DYWNoZQ0KQm9h
-cmQ6IE9jb3RlYSAtIEFNQ0MgUFBDNDQwR1ggRXZhbHVhdGlvbiBCb2FyZA0KSTJDOiAgIHJlYWR5
-DQpEUkFNOiAgMjU2IE1CDQpGTEFTSDogIDUgTUINClBDSTogICBCdXMgRGV2IFZlbklkIERldklk
-IENsYXNzIEludA0KSW46ICAgIHNlcmlhbA0KT3V0OiAgIHNlcmlhbA0KRXJyOiAgIHNlcmlhbA0K
-TmV0OiAgIHBwY180eHhfZXRoMCwgcHBjXzR4eF9ldGgxLCBwcGNfNHh4X2V0aDIsIHBwY180eHhf
-ZXRoMw0KU2FjaGluICIgKioqKioqKioqKioqKioqKlJlYWQgUmVhZE1lSW5zdHJ1Y3Rpb25zOiBV
-Ym9vdCBFbnZpcm9ubWVudCBWYXJpYWJsZSBDb25maWd1cmF0aW9uICoqKioqKioqKioqKioiDQpI
-aXQgYW55IGtleSB0byBzdG9wIGF1dG9ib290OiAgMA0KIyMgQm9vdGluZyBpbWFnZSBhdCBmZmMw
-MDAwMCAuLi4NCiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi42LjE2LjENCiAgIENyZWF0ZWQ6ICAg
-ICAgMjAwNi0wOC0wMiAgMTk6NTE6MjYgVVRDDQogICBJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGlu
-dXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQpDQogICBEYXRhIFNpemU6ICAgIDkzMTgx
-OCBCeXRlcyA9IDkxMCBrQg0KICAgTG9hZCBBZGRyZXNzOiAwMDAwMDAwMA0KICAgRW50cnkgUG9p
-bnQ6ICAwMDAwMDAwMA0KICAgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSw0KICAgVW5jb21wcmVz
-c2luZyBLZXJuZWwgSW1hZ2UgLi4uIE9LDQpMaW51eCB2ZXJzaW9uIDIuNi4xNi4xIChyb290QGxp
-bnV4KSAoZ2NjIHZlcnNpb24gMy40LjEgMjAwNDA3MTQgKFRpbWVTeXMgMy40LjEtNykpICMzIFRo
-dSBBdWcgMyAwMToyMToyMSBJU1QgMjAwNg0KSUJNIE9jb3RlYSBwb3J0IChNb250YVZpc3RhIFNv
-ZnR3YXJlLCBJbmMuIDxzb3VyY2VAbXZpc3RhLmNvbT4pDQpCdWlsdCAxIHpvbmVsaXN0cw0KS2Vy
-bmVsIGNvbW1hbmQgbGluZTogcm9vdD0vZGV2L25mcyBydyBuZnNyb290PTE5Mi4xNjguMC4yOi9v
-cHQvdGltZXN5cy9saW51eC82LjEvcHBjNDQwLXN0ZC9yZnMgaXA9MTkyLjE2OC4wLjU0OjE5Mi4x
-NjguMC4yOjE5Mi4xNjguMC4xOjI1NS4yNTUuMjU1LjA6b2NvdGVhOmV0aA0KMDo6b2ZmIGNvbnNv
-bGU9dHR5UzAsMTE1MjAwDQpQSUQgaGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4IChvcmRlcjogMTEs
-IDMyNzY4IGJ5dGVzKQ0KRGVudHJ5IGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNjU1MzYgKG9y
-ZGVyOiA2LCAyNjIxNDQgYnl0ZXMpDQpJbm9kZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDMy
-NzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVzKQ0KTWVtb3J5OiAyNTc2NjRrIGF2YWlsYWJsZSAo
-MTQyMGsga2VybmVsIGNvZGUsIDQ2MGsgZGF0YSwgMTEyayBpbml0LCAwayBoaWdobWVtKQ0KTW91
-bnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA1MTINCk5FVDogUmVnaXN0ZXJlZCBwcm90b2Nv
-bCBmYW1pbHkgMTYNClBDSTogUHJvYmluZyBQQ0kgaGFyZHdhcmUNCmlvIHNjaGVkdWxlciBub29w
-IHJlZ2lzdGVyZWQNCmlvIHNjaGVkdWxlciBhbnRpY2lwYXRvcnkgcmVnaXN0ZXJlZCAoZGVmYXVs
-dCkNCmlvIHNjaGVkdWxlciBkZWFkbGluZSByZWdpc3RlcmVkDQppbyBzY2hlZHVsZXIgY2ZxIHJl
-Z2lzdGVyZWQNClNlcmlhbDogODI1MC8xNjU1MCBkcml2ZXIgJFJldmlzaW9uOiAxLjkwICQgNCBw
-b3J0cywgSVJRIHNoYXJpbmcgZW5hYmxlZA0Kc2VyaWFsODI1MDogdHR5UzAgYXQgTU1JTyAweDAg
-KGlycSA9IDApIGlzIGEgMTY1NTBBDQpzZXJpYWw4MjUwOiB0dHlTMSBhdCBNTUlPIDB4MCAoaXJx
-ID0gMSkgaXMgYSAxNjU1MEENClBQQyA0eHggT0NQIEVNQUMgZHJpdmVyLCB2ZXJzaW9uIDMuNTQN
-Cm1hbDA6IGluaXRpYWxpemVkLCA0IFRYIGNoYW5uZWxzLCA0IFJYIGNoYW5uZWxzDQp6bWlpMDog
-YnJpZGdlIGluIFNNSUkgbW9kZQ0KZXRoMDogZW1hYzAsIE1BQyAwMDowMTo3MzowMTpkZTpjOA0K
-ZXRoMDogZm91bmQgR2VuZXJpYyBNSUkgUEhZICgweDAxKQ0KZXRoMTogZW1hYzEsIE1BQyAwMDow
-MTo3MzowMTpkZTpjOQ0KZXRoMTogZm91bmQgR2VuZXJpYyBNSUkgUEhZICgweDAyKQ0KcmdtaWkw
-OiBpbnB1dCAwIGluIFJHTUlJIG1vZGUNCmV0aDI6IGVtYWMyLCBNQUMgMDA6MDE6NzM6MDE6ZGU6
-Y2ENCmV0aDI6IGZvdW5kIENJUzgyMDEgR2lnYWJpdCBFdGhlcm5ldCBQSFkgKDB4MTApDQpyZ21p
-aTA6IGlucHV0IDEgaW4gUkdNSUkgbW9kZQ0KZXRoMzogZW1hYzMsIE1BQyAwMDowMTo3MzowMTpk
-ZTpjYg0KZXRoMzogZm91bmQgQ0lTODIwMSBHaWdhYml0IEV0aGVybmV0IFBIWSAoMHgxOCkNCm1p
-Y2U6IFBTLzIgbW91c2UgZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1pY2UNCk5FVDogUmVnaXN0ZXJl
-ZCBwcm90b2NvbCBmYW1pbHkgMg0KSVAgcm91dGUgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA0
-MDk2IChvcmRlcjogMiwgMTYzODQgYnl0ZXMpDQpUQ1AgZXN0YWJsaXNoZWQgaGFzaCB0YWJsZSBl
-bnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQ0KVENQIGJpbmQgaGFzaCB0YWJs
-ZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQ0KVENQOiBIYXNoIHRhYmxl
-cyBjb25maWd1cmVkIChlc3RhYmxpc2hlZCAxNjM4NCBiaW5kIDE2Mzg0KQ0KVENQIHJlbm8gcmVn
-aXN0ZXJlZA0KVENQIGJpYyByZWdpc3RlcmVkDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFt
-aWx5IDENCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTcNCmV0aDA6IGxpbmsgaXMg
-ZG93bg0KSVAtQ29uZmlnOiBDb21wbGV0ZToNCiAgICAgIGRldmljZT1ldGgwLCBhZGRyPTE5Mi4x
-NjguMC41NCwgbWFzaz0yNTUuMjU1LjI1NS4wLCBndz0xOTIuMTY4LjAuMSwNCiAgICAgaG9zdD1v
-Y290ZWEsIGRvbWFpbj0sIG5pcy1kb21haW49KG5vbmUpLA0KICAgICBib290c2VydmVyPTE5Mi4x
-NjguMC4yLCByb290c2VydmVyPTE5Mi4xNjguMC4yLCByb290cGF0aD0NCkxvb2tpbmcgdXAgcG9y
-dCBvZiBSUEMgMTAwMDAzLzIgb24gMTkyLjE2OC4wLjINCmV0aDA6IGxpbmsgaXMgdXAsIDEwMCBG
-RFgsIHBhdXNlIGVuYWJsZWQNCkxvb2tpbmcgdXAgcG9ydCBvZiBSUEMgMTAwMDA1LzEgb24gMTky
-LjE2OC4wLjINClZGUzogTW91bnRlZCByb290IChuZnMgZmlsZXN5c3RlbSkuDQpGcmVlaW5nIHVu
-dXNlZCBrZXJuZWwgbWVtb3J5OiAxMTJrIGluaXQNCklOSVQ6IHZlcnNpb24gMi44NCBib290aW5n
-DQoNCiAgICAgICAgICAgICAgICBXZWxjb21lIHRvIERpc3RyaWJ1dGlvbiBidWlsdCB1c2luZyBM
-aW51eExpbmsgYnkgVGltZVN5cyAoNi4xKQ0KDQptb3VudGluZy4uLiByYW1mcyBhdCAvZGV2DQpD
-cmVhdGluZyBpbml0aWFsIHVkZXYgZGV2aWNlIG5vZGVzOg0KbWFraW5nIGV4dHJhIG5vZGVzDQp1
-ZGV2IHN0YXJ0dXAgaXMgZmluaXNoZWQhDQpJbml0aWFsaXppbmcgaGFyZHdhcmUuLi4gIHN0b3Jh
-Z2UgbmV0d29yayBhdWRpbyBkb25lWyAgT0sgIF0NCnJhaWRhdXRvcnVuOiBmYWlsZWQgdG8gb3Bl
-biAvZGV2L21kMDogNg0KQ29uZmlndXJpbmcga2VybmVsIHBhcmFtZXRlcnM6ICBbICBPSyAgXQ0K
-Q2Fubm90IGFjY2VzcyB0aGUgSGFyZHdhcmUgQ2xvY2sgdmlhIGFueSBrbm93biBtZXRob2QuDQpV
-c2UgdGhlIC0tZGVidWcgb3B0aW9uIHRvIHNlZSB0aGUgZGV0YWlscyBvZiBvdXIgc2VhcmNoIGZv
-ciBhbiBhY2Nlc3MgbWV0aG9kLg0KU2V0dGluZyBjbG9jayA6IE1vbiBBcHIgIDYgMDg6MTk6MDYg
-VVRDIDIwMTUgWyAgT0sgIF0NClNldHRpbmcgaG9zdG5hbWUgdGltZXN5cy1ic3A6ICBbICBPSyAg
-XQ0KWW91ciBzeXN0ZW0gYXBwZWFycyB0byBoYXZlIHNodXQgZG93biB1bmNsZWFubHkNClByZXNz
-IFkgd2l0aGluIDEgc2Vjb25kcyB0byBmb3JjZSBmaWxlIHN5c3RlbSBpbnRlZ3JpdHkgY2hlY2su
-Li4NClJlbW91bnRpbmcgcm9vdCBmaWxlc3lzdGVtIGluIHJlYWQtd3JpdGUgbW9kZTogIFsgIE9L
-ICBdDQpDaGVja2luZyBmaWxlc3lzdGVtcw0KQ2hlY2tpbmcgYWxsIGZpbGUgc3lzdGVtcy4NClsg
-IE9LICBdDQpjaG93bjogY2hhbmdpbmcgb3duZXJzaGlwIG9mIGAvdG1wLy5JQ0UtdW5peCc6IE9w
-ZXJhdGlvbiBub3QgcGVybWl0dGVkDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgRW5hYmxpbmcgc3dhcCBzcGFjZTog
-IFsgIE9LICBdDQpJTklUOiBFbnRlcmluZyBydW5sZXZlbDogMw0KRW50ZXJpbmcgbm9uLWludGVy
-YWN0aXZlIHN0YXJ0dXANClNldHRpbmcgbmV0d29yayBwYXJhbWV0ZXJzOiAgWyAgT0sgIF0NCkJy
-aW5naW5nIHVwIGxvb3BiYWNrIGludGVyZmFjZTogIFsgIE9LICBdDQpCcmluZ2luZyB1cCBpbnRl
-cmZhY2UgZXRoMDogIFsgIE9LICBdDQpTdGFydGluZyBzeXN0ZW0gbG9nZ2VyOiBbICBPSyAgXQ0K
-U3RhcnRpbmcga2VybmVsIGxvZ2dlcjogWyAgT0sgIF0NClN0YXJ0aW5nIHBvcnRtYXA6IFsgIE9L
-ICBdDQpTdGFydGluZyBORlMgc3RhdGQ6IFsgIE9LICBdDQpTdGFydGluZyB4aW5ldGQ6IFsgIE9L
-ICBdDQpTdGFydGluZyBjcm9uZDogWyAgT0sgIF0NClN0YXJ0aW5nIGF0ZDogWyAgT0sgIF0NClN0
-YXJ0aW5nIHN5c3RlbSBtZXNzYWdlIGJ1czogWyAgT0sgIF0NClN0YXJ0aW5nIHRoZSBBbHBoaW9u
-IERlbW8gQXBwDQpTdGFydGluZyBhbHBoaW9uZGVtbw0KKioqKioqKioqKioqKiBBbHBoaW9uIERl
-bW8gIEFQUCBTdGFydGVkICoqKioqKioqKioqKioqKioqKioqKg0KKioqKioqKioqKioqKiBUaGlz
-IGlzIGEgc2FtcGxlIERlbW8gdG8gc3RhcnQgYW5kIHN0b3AgYXBwcyAqKioqKioqKg0KRG9uZQ0K
-DQpEaXN0cmlidXRpb24gYnVpbHQgdXNpbmcgTGludXhMaW5rIGJ5IFRpbWVTeXMgKDYuMSkNCktl
-cm5lbCAyLjYuMTYuMSBmb3IgcHBjDQoNCnRpbWVzeXMtYnNwIGxvZ2luOiByb290DQpMYXN0IGxv
-Z2luOiBNb24gQXByICA2IDA2OjMzOjQ4IG9uIHR0eVMwDQotYmFzaC0yLjA1YiMgbHNtb2QNCk1v
-ZHVsZSAgICAgICAgICAgICAgICAgIFNpemUgIFVzZWQgYnkNCi1iYXNoLTIuMDViIyAqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKkFmdGVyIEwgQWxwaGlvbiBXYWtlIGFmdGVy
-IGEgbWludXRlIC4uLi4uDQoNCi1iYXNoOiAqKioqKioqKioqKioqKioqKioqKjogY29tbWFuZCBu
-b3QgZm91bmQNCi1iYXNoLTIuMDViIw0KLWJhc2gtMi4wNWIjDQotYmFzaC0yLjA1YiMgcHMgLWF4
-IHwgZ3JlcCBhbHBoaW9uDQpXYXJuaW5nOiBiYWQgcHMgc3ludGF4LCBwZXJoYXBzIGEgYm9ndXMg
-Jy0nPyBTZWUgaHR0cDovL3Byb2Nwcy5zZi5uZXQvZmFxLmh0bWwNCiAgMzUyID8gICAgICAgIFMg
-ICAgICAwOjAwIC9ob21lL0FscGhpb25BcHBzLy9hbHBoaW9uZGVtbw0KICAzODMgdHR5UzAgICAg
-UisgICAgIDA6MDAgZ3JlcCBhbHBoaW9uDQotYmFzaC0yLjA1YiMga2lsbCAtOSAzNTINCi1iYXNo
-LTIuMDViIyAqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqIG91dHB1dCBvZiBs
-c21vZCAqKioqKioqKioqKioqDQotYmFzaDogKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKjogY29tbWFuZCBub3QgZm91bmQNCi1iYXNoLTIuMDViIyAqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqIG91dHB1dCBvZiBsc21vZCAqKioqKioqKioqKioqDQotYmFz
-aC0yLjA1YiMNCi1iYXNoLTIuMDViIw0KLWJhc2gtMi4wNWIjIGxzbW9kDQpNb2R1bGUgICAgICAg
-ICAgICAgICAgICBTaXplICBVc2VkIGJ5DQotYmFzaC0yLjA1YiMNCi1iYXNoLTIuMDViIw0KLWJh
-c2gtMi4wNWIjDQotYmFzaC0yLjA1YiMNCi1iYXNoLTIuMDViIw0KLWJhc2gtMi4wNWIjICoqKioq
-KioqKioqKipJbnNlcnRpbmcgdGhlIE1vZHVsZXMgKioqKioqKioqKioqKg0KLWJhc2g6ICoqKioq
-KioqKioqKipJbnNlcnRpbmc6IGNvbW1hbmQgbm90IGZvdW5kDQotYmFzaC0yLjA1YiMNCi1iYXNo
-LTIuMDViIyBpbnNtb2QgaTJjLWRldi5rbw0KaW5zbW9kOiBjYW4ndCByZWFkICdpMmMtZGV2Lmtv
-JzogTm8gc3VjaCBmaWxlIG9yIGRpcmVjdG9yeQ0KLWJhc2gtMi4wNWIjIGNkIC9saWIvbW9kdWxl
-cy8yLjYuMTYuMS9rZXJuZWwvZHJpdmVycy9pMmMvDQotYmFzaC0yLjA1YiMgaW5zbW9kIGkyYy1k
-ZXYua28NCmkyY19kZXY6IFVua25vd24gc3ltYm9sIGkyY19jaGVja19hZGRyDQppMmNfZGV2OiBV
-bmtub3duIHN5bWJvbCBpMmNfZ2V0X2FkYXB0ZXINCmkyY19kZXY6IFVua25vd24gc3ltYm9sIGky
-Y19jb250cm9sDQppMmNfZGV2OiBVbmtub3duIHN5bWJvbCBpMmNfbWFzdGVyX3JlY3YNCmkyY19k
-ZXY6IFVua25vd24gc3ltYm9sIGkyY19zbWJ1c194ZmVyDQppMmNfZGV2OiBVbmtub3duIHN5bWJv
-bCBpMmNfcmVnaXN0ZXJfZHJpdmVyDQppMmNfZGV2OiBVbmtub3duIHN5bWJvbCBpMmNfcHV0X2Fk
-YXB0ZXINCmkyY19kZXY6IFVua25vd24gc3ltYm9sIGkyY190cmFuc2Zlcg0KaTJjX2RldjogVW5r
-bm93biBzeW1ib2wgaTJjX2RlbF9kcml2ZXINCmkyY19kZXY6IFVua25vd24gc3ltYm9sIGkyY19t
-YXN0ZXJfc2VuZA0KaW5zbW9kOiBlcnJvciBpbnNlcnRpbmcgJ2kyYy1kZXYua28nOiAtMSBVbmtu
-b3duIHN5bWJvbCBpbiBtb2R1bGUNCi1iYXNoLTIuMDViIyBpbnNtb2QgaTJjLWNvcmUua28NCi1i
-YXNoLTIuMDViIyBsc21vZA0KTW9kdWxlICAgICAgICAgICAgICAgICAgU2l6ZSAgVXNlZCBieQ0K
-aTJjX2NvcmUgICAgICAgICAgICAgICAyMjM4NCAgMA0KLWJhc2gtMi4wNWIjIGluc21vZCBpMmMt
-ZGV2LmtvDQotYmFzaC0yLjA1YiMgbHNtb2QNCk1vZHVsZSAgICAgICAgICAgICAgICAgIFNpemUg
-IFVzZWQgYnkNCmkyY19kZXYgICAgICAgICAgICAgICAgMTAxMTYgIDANCmkyY19jb3JlICAgICAg
-ICAgICAgICAgMjIzODQgIDEgaTJjX2Rldg0KLWJhc2gtMi4wNWIjIGxzDQphbGdvcyAgYnVzc2Vz
-ICBjaGlwcyAgaTJjLWNvcmUua28gIGkyYy1kZXYua28NCi1iYXNoLTIuMDViIyBjZCBjaGlwcy8N
-Ci1iYXNoLTIuMDViIyBpbnNtb2QNCmluc21vZCAgICAgICAgICAgICAgICAgaW5zbW9kLnN0YXRp
-YyAgICAgICAgICBpbnNtb2Rfa3N5bW9vcHNfY2xlYW4NCi1iYXNoLTIuMDViIyBpbnNtb2QgZWVw
-cm9tLmtvDQotYmFzaC0yLjA1YiMgbHNtb2QNCk1vZHVsZSAgICAgICAgICAgICAgICAgIFNpemUg
-IFVzZWQgYnkNCmVlcHJvbSAgICAgICAgICAgICAgICAgIDY3MzYgIDANCmkyY19kZXYgICAgICAg
-ICAgICAgICAgMTAxMTYgIDANCmkyY19jb3JlICAgICAgICAgICAgICAgMjIzODQgIDIgZWVwcm9t
-LGkyY19kZXYNCi1iYXNoLTIuMDViIyBscw0KZHMxMzM3LmtvICBlZXByb20ua28gIG1heDY4NzUu
-a28gIHBjZjg1NzQua28gIHJ0Yzg1NjQua28NCmRzMTM3NC5rbyAgbTQxdDAwLmtvICBwY2E5NTM5
-LmtvICBwY2Y4NTkxLmtvICB4MTIwNS5rbw0KLWJhc2gtMi4wNWIjIGNkIC4uDQotYmFzaC0yLjA1
-YiMgbHMNCmFsZ29zICBidXNzZXMgIGNoaXBzICBpMmMtY29yZS5rbyAgaTJjLWRldi5rbw0KLWJh
-c2gtMi4wNWIjIGNkIGJ1c3Nlcy8NCi1iYXNoLTIuMDViIyBscw0KaTJjLWFsaTE1MzUua28gICAg
-ICAgaTJjLWk4MDEua28gICAgICAgICAgIGkyYy1wY2EtaXNhLmtvICAgIGkyYy1zaXM5Nngua28N
-CmkyYy1hbGkxNTYzLmtvICAgICAgIGkyYy1pODEwLmtvICAgICAgICAgICBpMmMtcGlpeDQua28g
-ICAgICBpMmMtc3R1Yi5rbw0KaTJjLWFsaTE1eDMua28gICAgICAgaTJjLWlibV9paWMua28gICAg
-ICAgIGkyYy1wcm9zYXZhZ2Uua28gIGkyYy12aWEua28NCmkyYy1hbWQ3NTYtczQ4ODIua28gIGky
-Yy1tcGMua28gICAgICAgICAgICBpMmMtc2F2YWdlNC5rbyAgICBpMmMtdmlhcHJvLmtvDQppMmMt
-YW1kNzU2LmtvICAgICAgICBpMmMtbmZvcmNlMi5rbyAgICAgICAgaTJjLXNpczU1OTUua28gICAg
-aTJjLXZvb2RvbzMua28NCmkyYy1hbWQ4MTExLmtvICAgICAgIGkyYy1wYXJwb3J0LWxpZ2h0Lmtv
-ICBpMmMtc2lzNjMwLmtvICAgICBzY3gyMDBfYWNiLmtvDQotYmFzaC0yLjA1YiMgaW5zbW9kIDJj
-LWlibV9paWMua28NCmluc21vZDogY2FuJ3QgcmVhZCAnMmMtaWJtX2lpYy5rbyc6IE5vIHN1Y2gg
-ZmlsZSBvciBkaXJlY3RvcnkNCi1iYXNoLTIuMDViIyBpbnNtb2QgaTJjLWlibV9paWMua28NCi1i
-YXNoLTIuMDViIyBsc21vZA0KTW9kdWxlICAgICAgICAgICAgICAgICAgU2l6ZSAgVXNlZCBieQ0K
-aTJjX2libV9paWMgICAgICAgICAgICAgNzQzMiAgMA0KZWVwcm9tICAgICAgICAgICAgICAgICAg
-NjczNiAgMA0KaTJjX2RldiAgICAgICAgICAgICAgICAxMDExNiAgMA0KaTJjX2NvcmUgICAgICAg
-ICAgICAgICAyMjM4NCAgMyBpMmNfaWJtX2lpYyxlZXByb20saTJjX2Rldg==
-
-------_=_NextPart_001_01C6DAE2.23E77619
-Content-Type: text/plain;
-	name="dmesg_log_i2cDrivers.txt"
-Content-Transfer-Encoding: base64
-Content-Description: dmesg_log_i2cDrivers.txt
-Content-Disposition: attachment;
-	filename="dmesg_log_i2cDrivers.txt"
-
-LWJhc2gtMi4wNWIjIGRtZXNnDQpMaW51eCB2ZXJzaW9uIDIuNi4xNi4xIChyb290QGxpbnV4KSAo
-Z2NjIHZlcnNpb24gMy40LjEgMjAwNDA3MTQgKFRpbWVTeXMgMy40LjEtNykpICMzIFRodSBBdWcg
-MyAwMToyMToyMSBJU1QgMjAwNg0KSUJNIE9jb3RlYSBwb3J0IChNb250YVZpc3RhIFNvZnR3YXJl
-LCBJbmMuIDxzb3VyY2VAbXZpc3RhLmNvbT4pDQpPbiBub2RlIDAgdG90YWxwYWdlczogNjU1MzYN
-CiAgRE1BIHpvbmU6IDY1NTM2IHBhZ2VzLCBMSUZPIGJhdGNoOjE1DQogIERNQTMyIHpvbmU6IDAg
-cGFnZXMsIExJRk8gYmF0Y2g6MA0KICBOb3JtYWwgem9uZTogMCBwYWdlcywgTElGTyBiYXRjaDow
-DQogIEhpZ2hNZW0gem9uZTogMCBwYWdlcywgTElGTyBiYXRjaDowDQpCdWlsdCAxIHpvbmVsaXN0
-cw0KS2VybmVsIGNvbW1hbmQgbGluZTogcm9vdD0vZGV2L25mcyBydyBuZnNyb290PTE5Mi4xNjgu
-MC4yOi9vcHQvdGltZXN5cy9saW51eC82LjEvcHBjNDQwLXN0ZC9yZnMgaXA9MTkyLjE2OC4wLjU0
-OjE5Mi4xNjguMC4yOjE5Mi4xNjguMC4xOjI1NS4yNTUuMjU1LjA6b2NvdGVhOmV0aA0KMDo6b2Zm
-IGNvbnNvbGU9dHR5UzAsMTE1MjAwDQpQSUQgaGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4IChvcmRl
-cjogMTEsIDMyNzY4IGJ5dGVzKQ0KRGVudHJ5IGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNjU1
-MzYgKG9yZGVyOiA2LCAyNjIxNDQgYnl0ZXMpDQpJbm9kZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJp
-ZXM6IDMyNzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVzKQ0KTWVtb3J5OiAyNTc2NjRrIGF2YWls
-YWJsZSAoMTQyMGsga2VybmVsIGNvZGUsIDQ2MGsgZGF0YSwgMTEyayBpbml0LCAwayBoaWdobWVt
-KQ0KQ2FsaWJyYXRpbmcgZGVsYXkgbG9vcC4uLiA3OTguNzIgQm9nb01JUFMgKGxwaj0xNTk3NDQw
-KQ0KTW91bnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA1MTINCk5FVDogUmVnaXN0ZXJlZCBw
-cm90b2NvbCBmYW1pbHkgMTYNClBDSTogUHJvYmluZyBQQ0kgaGFyZHdhcmUNCmlvIHNjaGVkdWxl
-ciBub29wIHJlZ2lzdGVyZWQNCmlvIHNjaGVkdWxlciBhbnRpY2lwYXRvcnkgcmVnaXN0ZXJlZCAo
-ZGVmYXVsdCkNCmlvIHNjaGVkdWxlciBkZWFkbGluZSByZWdpc3RlcmVkDQppbyBzY2hlZHVsZXIg
-Y2ZxIHJlZ2lzdGVyZWQNClNlcmlhbDogODI1MC8xNjU1MCBkcml2ZXIgJFJldmlzaW9uOiAxLjkw
-ICQgNCBwb3J0cywgSVJRIHNoYXJpbmcgZW5hYmxlZA0Kc2VyaWFsODI1MDogdHR5UzAgYXQgTU1J
-TyAweDAgKGlycSA9IDApIGlzIGEgMTY1NTBBDQpzZXJpYWw4MjUwOiB0dHlTMSBhdCBNTUlPIDB4
-MCAoaXJxID0gMSkgaXMgYSAxNjU1MEENClBQQyA0eHggT0NQIEVNQUMgZHJpdmVyLCB2ZXJzaW9u
-IDMuNTQNCm1hbDA6IGluaXRpYWxpemVkLCA0IFRYIGNoYW5uZWxzLCA0IFJYIGNoYW5uZWxzDQp6
-bWlpMDogYnJpZGdlIGluIFNNSUkgbW9kZQ0KZXRoMDogZW1hYzAsIE1BQyAwMDowMTo3MzowMTpk
-ZTpjOA0KZXRoMDogZm91bmQgR2VuZXJpYyBNSUkgUEhZICgweDAxKQ0KZXRoMTogZW1hYzEsIE1B
-QyAwMDowMTo3MzowMTpkZTpjOQ0KZXRoMTogZm91bmQgR2VuZXJpYyBNSUkgUEhZICgweDAyKQ0K
-cmdtaWkwOiBpbnB1dCAwIGluIFJHTUlJIG1vZGUNCmV0aDI6IGVtYWMyLCBNQUMgMDA6MDE6NzM6
-MDE6ZGU6Y2ENCmV0aDI6IGZvdW5kIENJUzgyMDEgR2lnYWJpdCBFdGhlcm5ldCBQSFkgKDB4MTAp
-DQpyZ21paTA6IGlucHV0IDEgaW4gUkdNSUkgbW9kZQ0KZXRoMzogZW1hYzMsIE1BQyAwMDowMTo3
-MzowMTpkZTpjYg0KZXRoMzogZm91bmQgQ0lTODIwMSBHaWdhYml0IEV0aGVybmV0IFBIWSAoMHgx
-OCkNCm1pY2U6IFBTLzIgbW91c2UgZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1pY2UNCk5FVDogUmVn
-aXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMg0KSVAgcm91dGUgY2FjaGUgaGFzaCB0YWJsZSBlbnRy
-aWVzOiA0MDk2IChvcmRlcjogMiwgMTYzODQgYnl0ZXMpDQpUQ1AgZXN0YWJsaXNoZWQgaGFzaCB0
-YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQ0KVENQIGJpbmQgaGFz
-aCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQ0KVENQOiBIYXNo
-IHRhYmxlcyBjb25maWd1cmVkIChlc3RhYmxpc2hlZCAxNjM4NCBiaW5kIDE2Mzg0KQ0KVENQIHJl
-bm8gcmVnaXN0ZXJlZA0KVENQIGJpYyByZWdpc3RlcmVkDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9j
-b2wgZmFtaWx5IDENCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTcNCmV0aDA6IGxp
-bmsgaXMgZG93bg0KSVAtQ29uZmlnOiBDb21wbGV0ZToNCiAgICAgIGRldmljZT1ldGgwLCBhZGRy
-PTE5Mi4xNjguMC41NCwgbWFzaz0yNTUuMjU1LjI1NS4wLCBndz0xOTIuMTY4LjAuMSwNCiAgICAg
-aG9zdD1vY290ZWEsIGRvbWFpbj0sIG5pcy1kb21haW49KG5vbmUpLA0KICAgICBib290c2VydmVy
-PTE5Mi4xNjguMC4yLCByb290c2VydmVyPTE5Mi4xNjguMC4yLCByb290cGF0aD0NCkxvb2tpbmcg
-dXAgcG9ydCBvZiBSUEMgMTAwMDAzLzIgb24gMTkyLjE2OC4wLjINCmV0aDA6IGxpbmsgaXMgdXAs
-IDEwMCBGRFgsIHBhdXNlIGVuYWJsZWQNCkxvb2tpbmcgdXAgcG9ydCBvZiBSUEMgMTAwMDA1LzEg
-b24gMTkyLjE2OC4wLjINClZGUzogTW91bnRlZCByb290IChuZnMgZmlsZXN5c3RlbSkuDQpGcmVl
-aW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAxMTJrIGluaXQNCmkyY19kZXY6IFVua25vd24gc3lt
-Ym9sIGkyY19jaGVja19hZGRyDQppMmNfZGV2OiBVbmtub3duIHN5bWJvbCBpMmNfZ2V0X2FkYXB0
-ZXINCmkyY19kZXY6IFVua25vd24gc3ltYm9sIGkyY19jb250cm9sDQppMmNfZGV2OiBVbmtub3du
-IHN5bWJvbCBpMmNfbWFzdGVyX3JlY3YNCmkyY19kZXY6IFVua25vd24gc3ltYm9sIGkyY19zbWJ1
-c194ZmVyDQppMmNfZGV2OiBVbmtub3duIHN5bWJvbCBpMmNfcmVnaXN0ZXJfZHJpdmVyDQppMmNf
-ZGV2OiBVbmtub3duIHN5bWJvbCBpMmNfcHV0X2FkYXB0ZXINCmkyY19kZXY6IFVua25vd24gc3lt
-Ym9sIGkyY190cmFuc2Zlcg0KaTJjX2RldjogVW5rbm93biBzeW1ib2wgaTJjX2RlbF9kcml2ZXIN
-CmkyY19kZXY6IFVua25vd24gc3ltYm9sIGkyY19tYXN0ZXJfc2VuZA0KaTJjIC9kZXYgZW50cmll
-cyBkcml2ZXINCmkyYy1jb3JlOiBkcml2ZXIgW2Rldl9kcml2ZXJdIHJlZ2lzdGVyZWQNCmkyYy1j
-b3JlOiBkcml2ZXIgW2VlcHJvbV0gcmVnaXN0ZXJlZA0KSUJNIElJQyBkcml2ZXIgdjIuMQ0KaTJj
-X2FkYXB0ZXIgaTJjLTA6IGFkYXB0ZXIgW0lCTSBJSUNdIHJlZ2lzdGVyZWQNCmkyYy1kZXY6IGFk
-YXB0ZXIgW0lCTSBJSUNdIHJlZ2lzdGVyZWQgYXMgbWlub3IgMA0KaTJjX2FkYXB0ZXIgaTJjLTA6
-IGZvdW5kIG5vcm1hbCBlbnRyeSBmb3IgYWRhcHRlciAwLCBhZGRyIDB4NTANCmkyY19hZGFwdGVy
-IGkyYy0wOiBtYXN0ZXJfeGZlclswXSBXLCBhZGRyPTB4NTAsIGxlbj0wDQppMmNfYWRhcHRlciBp
-MmMtMDogbWFzdGVyX3hmZXJbMF0gVywgYWRkcj0weDUwLCBsZW49MA0KaTJjX2FkYXB0ZXIgaTJj
-LTA6IGNsaWVudCBbZWVwcm9tXSByZWdpc3RlcmVkIHdpdGggYnVzIGlkIDAtMDA1MA0KaTJjX2Fk
-YXB0ZXIgaTJjLTA6IGZvdW5kIG5vcm1hbCBlbnRyeSBmb3IgYWRhcHRlciAwLCBhZGRyIDB4NTEN
-CmkyY19hZGFwdGVyIGkyYy0wOiBtYXN0ZXJfeGZlclswXSBXLCBhZGRyPTB4NTEsIGxlbj0wDQpp
-MmNfYWRhcHRlciBpMmMtMDogZm91bmQgbm9ybWFsIGVudHJ5IGZvciBhZGFwdGVyIDAsIGFkZHIg
-MHg1Mg0KaTJjX2FkYXB0ZXIgaTJjLTA6IG1hc3Rlcl94ZmVyWzBdIFcsIGFkZHI9MHg1MiwgbGVu
-PTANCmkyY19hZGFwdGVyIGkyYy0wOiBmb3VuZCBub3JtYWwgZW50cnkgZm9yIGFkYXB0ZXIgMCwg
-YWRkciAweDUzDQppMmNfYWRhcHRlciBpMmMtMDogbWFzdGVyX3hmZXJbMF0gVywgYWRkcj0weDUz
-LCBsZW49MA0KaTJjX2FkYXB0ZXIgaTJjLTA6IG1hc3Rlcl94ZmVyWzBdIFcsIGFkZHI9MHg1Mywg
-bGVuPTANCmkyY19hZGFwdGVyIGkyYy0wOiBjbGllbnQgW2VlcHJvbV0gcmVnaXN0ZXJlZCB3aXRo
-IGJ1cyBpZCAwLTAwNTMNCmkyY19hZGFwdGVyIGkyYy0wOiBmb3VuZCBub3JtYWwgZW50cnkgZm9y
-IGFkYXB0ZXIgMCwgYWRkciAweDU0DQppMmNfYWRhcHRlciBpMmMtMDogbWFzdGVyX3hmZXJbMF0g
-VywgYWRkcj0weDU0LCBsZW49MA0KaTJjX2FkYXB0ZXIgaTJjLTA6IG1hc3Rlcl94ZmVyWzBdIFcs
-IGFkZHI9MHg1NCwgbGVuPTANCmkyY19hZGFwdGVyIGkyYy0wOiBjbGllbnQgW2VlcHJvbV0gcmVn
-aXN0ZXJlZCB3aXRoIGJ1cyBpZCAwLTAwNTQNCmkyY19hZGFwdGVyIGkyYy0wOiBmb3VuZCBub3Jt
-YWwgZW50cnkgZm9yIGFkYXB0ZXIgMCwgYWRkciAweDU1DQppMmNfYWRhcHRlciBpMmMtMDogbWFz
-dGVyX3hmZXJbMF0gVywgYWRkcj0weDU1LCBsZW49MA0KaTJjX2FkYXB0ZXIgaTJjLTA6IGZvdW5k
-IG5vcm1hbCBlbnRyeSBmb3IgYWRhcHRlciAwLCBhZGRyIDB4NTYNCmkyY19hZGFwdGVyIGkyYy0w
-OiBtYXN0ZXJfeGZlclswXSBXLCBhZGRyPTB4NTYsIGxlbj0wDQppMmNfYWRhcHRlciBpMmMtMDog
-Zm91bmQgbm9ybWFsIGVudHJ5IGZvciBhZGFwdGVyIDAsIGFkZHIgMHg1Nw0KaTJjX2FkYXB0ZXIg
-aTJjLTA6IG1hc3Rlcl94ZmVyWzBdIFcsIGFkZHI9MHg1NywgbGVuPTANCmlibS1paWMwOiB1c2lu
-ZyBzdGFuZGFyZCAoMTAwIGtIeikgbW9kZQ0KaTJjX2FkYXB0ZXIgaTJjLTE6IGFkYXB0ZXIgW0lC
-TSBJSUNdIHJlZ2lzdGVyZWQNCmkyYy1kZXY6IGFkYXB0ZXIgW0lCTSBJSUNdIHJlZ2lzdGVyZWQg
-YXMgbWlub3IgMQ0KaTJjX2FkYXB0ZXIgaTJjLTE6IGZvdW5kIG5vcm1hbCBlbnRyeSBmb3IgYWRh
-cHRlciAxLCBhZGRyIDB4NTANCmkyY19hZGFwdGVyIGkyYy0xOiBtYXN0ZXJfeGZlclswXSBXLCBh
-ZGRyPTB4NTAsIGxlbj0wDQppMmNfYWRhcHRlciBpMmMtMTogZm91bmQgbm9ybWFsIGVudHJ5IGZv
-ciBhZGFwdGVyIDEsIGFkZHIgMHg1MQ0KaTJjX2FkYXB0ZXIgaTJjLTE6IG1hc3Rlcl94ZmVyWzBd
-IFcsIGFkZHI9MHg1MSwgbGVuPTANCmkyY19hZGFwdGVyIGkyYy0xOiBmb3VuZCBub3JtYWwgZW50
-cnkgZm9yIGFkYXB0ZXIgMSwgYWRkciAweDUyDQppMmNfYWRhcHRlciBpMmMtMTogbWFzdGVyX3hm
-ZXJbMF0gVywgYWRkcj0weDUyLCBsZW49MA0KaTJjX2FkYXB0ZXIgaTJjLTE6IGZvdW5kIG5vcm1h
-bCBlbnRyeSBmb3IgYWRhcHRlciAxLCBhZGRyIDB4NTMNCmkyY19hZGFwdGVyIGkyYy0xOiBtYXN0
-ZXJfeGZlclswXSBXLCBhZGRyPTB4NTMsIGxlbj0wDQppMmNfYWRhcHRlciBpMmMtMTogZm91bmQg
-bm9ybWFsIGVudHJ5IGZvciBhZGFwdGVyIDEsIGFkZHIgMHg1NA0KaTJjX2FkYXB0ZXIgaTJjLTE6
-IG1hc3Rlcl94ZmVyWzBdIFcsIGFkZHI9MHg1NCwgbGVuPTANCmkyY19hZGFwdGVyIGkyYy0xOiBm
-b3VuZCBub3JtYWwgZW50cnkgZm9yIGFkYXB0ZXIgMSwgYWRkciAweDU1DQppMmNfYWRhcHRlciBp
-MmMtMTogbWFzdGVyX3hmZXJbMF0gVywgYWRkcj0weDU1LCBsZW49MA0KaTJjX2FkYXB0ZXIgaTJj
-LTE6IGZvdW5kIG5vcm1hbCBlbnRyeSBmb3IgYWRhcHRlciAxLCBhZGRyIDB4NTYNCmkyY19hZGFw
-dGVyIGkyYy0xOiBtYXN0ZXJfeGZlclswXSBXLCBhZGRyPTB4NTYsIGxlbj0wDQppMmNfYWRhcHRl
-ciBpMmMtMTogZm91bmQgbm9ybWFsIGVudHJ5IGZvciBhZGFwdGVyIDEsIGFkZHIgMHg1Nw0KaTJj
-X2FkYXB0ZXIgaTJjLTE6IG1hc3Rlcl94ZmVyWzBdIFcsIGFkZHI9MHg1NywgbGVuPTANCmlibS1p
-aWMxOiB1c2luZyBzdGFuZGFyZCAoMTAwIGtIeikgbW9kZQ==
-
-------_=_NextPart_001_01C6DAE2.23E77619--
+Matthias
