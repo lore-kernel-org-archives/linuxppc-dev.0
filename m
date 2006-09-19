@@ -2,28 +2,34 @@ Return-Path: <linas@austin.ibm.com>
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 943BE67B5A
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:30:24 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8JJULMe009080
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 15:30:21 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8JJULUi206758
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 13:30:21 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8JJUKO9008703
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 13:30:21 -0600
-Date: Tue, 19 Sep 2006 14:30:20 -0500
-To: paulus@samba.org
-Subject: [PATCH]: powerpc: clarify use of twi/isync in io macros
-Message-ID: <20060919193020.GN29167@austin.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 5BC1D67B53
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:44:34 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8JJiVO5025003
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 15:44:31 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8JJiVwg245712
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 13:44:31 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8JJiUxx004949
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 13:44:31 -0600
+Date: Tue, 19 Sep 2006 14:44:25 -0500
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Fw: [PATCH] Remove powerpc specific parts of 3c509 driver
+Message-ID: <20060919194425.GO29167@austin.ibm.com>
+References: <20060919145433.8fc7d478.sfr@canb.auug.org.au>
+	<20060919184243.GL29167@austin.ibm.com>
+	<45103C62.4080003@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45103C62.4080003@genesi-usa.com>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: akpm@osdl.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	netdev@vger.kernel.org, jgarzik@pobox.com,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,37 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Sep 19, 2006 at 08:52:18PM +0200, Matt Sealey wrote:
+[...]
+> 
+> Linas Vepstas wrote:
+> >On Tue, Sep 19, 2006 at 02:54:33PM +1000, Stephen Rothwell wrote:
+> >>On powerpc and ppc, insl_ns and insl are identical as are outsl_ns and
+> >>outsl, so remove the conditional use of insl_ns and outsl_ns.
+> >
+> >The rest of this patch might indeed be correct, but the above comment 
+> >bothers me. The "ns" versions of routines are supposed to be
+> >non-byte-swapped versions of the insl/outsl routines (which would
 
-Paul, please apply.
+Never mind. Silly me don't know my history. 
 
-Clarify why twi appears in the i/o macros.
+asm-powerpc/io.h clearly states
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>
+ * The *_ns versions below don't do byte-swapping.
+ * Neither do the standard versions now, these are just here
+ * for older code.
 
-----
- include/asm-powerpc/io.h |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+Seems that the byteswapping machanism was changed a while ago, 
+and no longer handled in this way any more.
 
-Index: linux-2.6.18-rc7-git1/include/asm-powerpc/io.h
-===================================================================
---- linux-2.6.18-rc7-git1.orig/include/asm-powerpc/io.h	2006-09-14 13:38:48.000000000 -0500
-+++ linux-2.6.18-rc7-git1/include/asm-powerpc/io.h	2006-09-19 14:26:26.000000000 -0500
-@@ -278,6 +278,17 @@ static inline void iosync(void)
-  * These routines do not perform EEH-related I/O address translation,
-  * and should not be used directly by device drivers.  Use inb/readb
-  * instead.
-+ *
-+ * Read operations have additional twi & isync to make sure the read
-+ * is actually performed (i.e. the data has come back) before we start
-+ * executing any following instructions.
-+ *
-+ * A data-dependent branch followed by an isync ensures that no
-+ * instructions after the isync in program order will be
-+ * (speculatively) executed, so the load that the twi depends
-+ * on has to complete before anything else is executed; in
-+ * particular, it's a barrier to keep MMIO reads ordered before
-+ * main-storage accesses.
-  */
- static inline int in_8(const volatile unsigned char __iomem *addr)
- {
+--linas
