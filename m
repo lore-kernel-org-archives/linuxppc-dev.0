@@ -1,16 +1,17 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id E1D6F67B81
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 22:43:23 +1000 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20060919222351.d27a1a06.sfr@canb.auug.org.au> 
-References: <20060919222351.d27a1a06.sfr@canb.auug.org.au> 
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [POWERPC] convert string i/o operations to C 
-Date: Tue, 19 Sep 2006 13:42:58 +0100
-Message-ID: <28673.1158669778@warthog.cambridge.redhat.com>
-Sender: dhowells@redhat.com
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B7D7C67B6C
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 00:55:06 +1000 (EST)
+Date: Tue, 19 Sep 2006 18:55:17 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Amy Fong <amy.fong@windriver.com>
+Subject: Re: [PATCH] fix error in cpm2
+Message-ID: <20060919185517.34ecea4a@vitb.ru.mvista.com>
+In-Reply-To: <20060919030625.GA24944@lucciola.windriver.com>
+References: <20060919030625.GA24944@lucciola.windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Mon, 18 Sep 2006 23:06:25 -0400
+Amy Fong <amy.fong@windriver.com> wrote:
 
-> +void _insb(volatile u8 __iomem *port, void *buf, int ns)
-> +{
-> +	asm volatile("sync");
-> +	if (ns <= 0)
-> +		return;
+> The following patch fixes a typo in cpm2.h resulting in a compile error.
+> 
+> Signed-off-by: Amy Fong <amy.fong@windriver.com>
+> 
+> Index: linux-2.6.18-rc6/include/asm-ppc/cpm2.h
+> ===================================================================
+> --- linux-2.6.18-rc6.orig/include/asm-ppc/cpm2.h
+> +++ linux-2.6.18-rc6/include/asm-ppc/cpm2.h
+> @@ -1186,7 +1186,7 @@
+>  #define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
+>  #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
+>  #define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
+> -#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
+> +#define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
+>  
+>  #endif /* __CPM2__ */
+>  #endif /* __KERNEL__ */
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+Well, I have this hunk in
 
-What is "ns" meant to do?  It seems to degrade the _insb() op to just a sync,
-but is that correct?
+[PATCH 3/7] POWERPC: Move generic cpm2 stuff to powerpc
+already...
 
-David
+Paul, does it make sense to extract and re-send this specific fix?
+I think it will be OK for this to appear next major merge...
+-- 
+Sincerely, 
+Vitaly
