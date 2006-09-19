@@ -1,21 +1,16 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id F0A5567B64
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Sep 2006 20:13:25 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1GPcbS-00032X-QM
-	for linuxppc-embedded@ozlabs.org; Tue, 19 Sep 2006 12:13:22 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Ethernet driver for Linux kernel 2.6 running on ML403
-References: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EA645@XSJ-EXCHVS1.xlnx.xilinx.com>
-Date: Tue, 19 Sep 2006 12:13:22 +0200
-In-Reply-To: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EA645@XSJ-EXCHVS1.xlnx.xilinx.com>
-	(John Bonesio's message of "Thu, 14 Sep 2006 18:40:53 +0200")
-Message-ID: <87d59syxj1.fsf@sleipner.barco.com>
+Return-Path: <jonandia@aotek.es>
+Message-ID: <450FDCFD.9040102@fagorautomation.es>
+Date: Tue, 19 Sep 2006 14:05:17 +0200
+From: Josu Onandia <jonandia@fagorautomation.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Syed Amer Gilani <amg@systec.de>
+Subject: Re: Measure Interrupt Latency on MPC5200B
+References: <ac3922a00609140500j79e33fb3lfecbefc151ce3b41@mail.gmail.com>
+In-Reply-To: <ac3922a00609140500j79e33fb3lfecbefc151ce3b41@mail.gmail.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,30 +21,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "JB" == John Bonesio <john.bonesio@xilinx.com> writes:
+Syed Amer Gilani wrote:
 
-Hi,
+>We have a MPC5200B(ppc) Board from Phytec, running with a 2.6 Linux
+>Kernel. For Documentation purposes and testings how patches to the
+>Kernel affects real time capabilities we want to measure the Interrupt
+>Latency.
+>I only found tools for other arches or patches for far to old kernels.
+>Does somebody know a way for a 2.6 kernel on ppc? I already thought of
+>generating a signal on an Output of the Board and measure it with a
+>Oscilloscope but i don't find that method satisfying.
+>
+>Thank you in advance,
+>Syed Amer Gilani
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
+Hi. I'm sorry for my own latency, but I've been very busy.
 
-JB> << The Xilinx approach of overwriting the source tree just feels
-JB> wrong, and no one seems to want to do it that way.>>
+I'm measuring interrup latency in an MPC5200B, too, but with Linux 2.4.
 
-JB> I am in the group that has control over how this is done. What
-JB> would you propose be done different? Keep in mind that we are
-JB> trying to support a process where someone builds a hardware design
-JB> and the later changes it with new peripherals or perhaps makes
-JB> minor tweaks. We want to make the updating of the Linux kernel to
-JB> reflect these hardware changes easy for people.
+With this processor you can use the TB registers to measure a lapse of time.
 
-Don't patch the kernel sources from EDK, but instead get the drivers
-integrated in the mainline kernel. Either do config options for the
-various IP versions or use runtime detection.
+I use a GPT timer to generate a periodic interrupt. From the interrupt 
+routine I read the TBL and compare it with the expected value.
 
-We're doing Linux development for several platforms and using a single
-kernel tree for it all is absolute critical to my sanity..
+I do this using RTAI, because I need real-time response to interrupts, 
+but I suppose that with little effort you can port it to standard Linux.
 
-The EDK drivers are nice as examples of how to use the IP cores, but
-the defined and documented interface should be the IP, not the EDK
-drivers.
+If you want more details, or my actual source code, email me.
 
--- 
-Bye, Peter Korsgaard
+Josu Onandia
