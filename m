@@ -1,17 +1,31 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B7D7C67B6C
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 00:55:06 +1000 (EST)
-Date: Tue, 19 Sep 2006 18:55:17 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Amy Fong <amy.fong@windriver.com>
-Subject: Re: [PATCH] fix error in cpm2
-Message-ID: <20060919185517.34ecea4a@vitb.ru.mvista.com>
-In-Reply-To: <20060919030625.GA24944@lucciola.windriver.com>
-References: <20060919030625.GA24944@lucciola.windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9AAD467A39
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 04:29:57 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8JITswo007765
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 14:29:54 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8JITsGn258620
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 12:29:54 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8JITsGe004824
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 12:29:54 -0600
+Date: Tue, 19 Sep 2006 13:29:53 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [POWERPC] convert string i/o operations to C
+Message-ID: <20060919182953.GK29167@austin.ibm.com>
+References: <20060919222351.d27a1a06.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060919222351.d27a1a06.sfr@canb.auug.org.au>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +35,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 18 Sep 2006 23:06:25 -0400
-Amy Fong <amy.fong@windriver.com> wrote:
+On Tue, Sep 19, 2006 at 10:23:51PM +1000, Stephen Rothwell wrote:
 
-> The following patch fixes a typo in cpm2.h resulting in a compile error.
-> 
-> Signed-off-by: Amy Fong <amy.fong@windriver.com>
-> 
-> Index: linux-2.6.18-rc6/include/asm-ppc/cpm2.h
-> ===================================================================
-> --- linux-2.6.18-rc6.orig/include/asm-ppc/cpm2.h
-> +++ linux-2.6.18-rc6/include/asm-ppc/cpm2.h
-> @@ -1186,7 +1186,7 @@
->  #define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
->  #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
->  #define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
-> -#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
-> +#define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
->  
->  #endif /* __CPM2__ */
->  #endif /* __KERNEL__ */
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-Well, I have this hunk in
+Perhaps this:
 
-[PATCH 3/7] POWERPC: Move generic cpm2 stuff to powerpc
-already...
+> +void _insb(volatile u8 __iomem *port, void *buf, int ns)
+> +{
+> +	asm volatile("sync");
+> +	if (ns <= 0)
+> +		return;
+> +	asm volatile(
 
-Paul, does it make sense to extract and re-send this specific fix?
-I think it will be OK for this to appear next major merge...
--- 
-Sincerely, 
-Vitaly
+should be this: 
+
+> +void _insb(volatile u8 __iomem *port, void *buf, int ns)
+> +{
+> +	if (ns <= 0)
+> +		return;
+> +	asm volatile("sync");
+> +	asm volatile(
+
+to assuage David Howell's concern.  Not that ns should be negative
+in the first place ... but what the hey.
+
+Re Davids other comment: "ns" stands for "no  byte-swap", and 
+"s" stands for "string" so "insl_ns" is input string of longs, 
+no byte swap.
+
+Here's a question:
+
+> +	asm volatile(
+> +		"mtctr	%2\n"
+> +		"subi	%1,%1,1\n"
+> +		"0:	lbz	%2,0(%0)\n"
+> +		"eieio\n"
+> +		"stbu	%2,1(%1)\n"
+> +		"bdnz	0b\n"
+> +		"twi	0,%2,0\n"
+
+What does this twi do? According to my powerpc docs, this would be a
+no-op.  Does this have some magic synchronizing powers on certain
+implementations? If so, there should be at least a comment card added
+about why the twi is there. (This special ability of twi might be
+well-known to some, but still, this is not immediately obvious,
+and not immedately documented in e.g. the PEM.)
+
+--linas
