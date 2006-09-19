@@ -1,32 +1,23 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C293167B54
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:04:29 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8JJ4QI2028568
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 15:04:26 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8JJ4QgR284796
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 15:04:26 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8JJ4Pmk000536
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 15:04:26 -0400
-Date: Tue, 19 Sep 2006 14:04:25 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [POWERPC] convert string i/o operations to C
-Message-ID: <20060919190425.GM29167@austin.ibm.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2BFF767B59
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:06:18 +1000 (EST)
+In-Reply-To: <20060919182953.GK29167@austin.ibm.com>
 References: <20060919222351.d27a1a06.sfr@canb.auug.org.au>
 	<20060919182953.GK29167@austin.ibm.com>
-	<20060919135259.303706d3.kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060919135259.303706d3.kim.phillips@freescale.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <77C8C668-35CF-48A9-8E5F-352E496E25D4@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [POWERPC] convert string i/o operations to C
+Date: Tue, 19 Sep 2006 21:06:02 +0200
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,33 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 19, 2006 at 01:52:59PM -0500, Kim Phillips wrote:
-> On Tue, 19 Sep 2006 13:29:53 -0500
-> linas@austin.ibm.com (Linas Vepstas) wrote:
-> 
-> > 
-> > What does this twi do? According to my powerpc docs, this would be a
-> > no-op.  Does this have some magic synchronizing powers on certain
-> > implementations? If so, there should be at least a comment card added
-> > about why the twi is there. (This special ability of twi might be
-> > well-known to some, but still, this is not immediately obvious,
-> > and not immedately documented in e.g. the PEM.)
-> 
-> include/asm-p[ower]pc/io.h sheds some light on the matter:
-> 
->  * With the sequence below (twi; isync; nop), we have found that
->  * the machine check occurs on one of the three instructions on
->  * all PPC implementations tested so far.  The twi and isync are
->  * needed on the 601 (in fact twi; sync works too), the isync and
->  * nop are needed on 604[e|r], and any of twi, sync or isync will
->  * work on 603[e], 750, 74xx.
->  * The twi creates an explicit data dependency on the returned
->  * value which seems to be needed to make the 601 wait for the
->  * load to finish.
+> What does this twi do? According to my powerpc docs, this would be a
+> no-op.  Does this have some magic synchronizing powers on certain
+> implementations?
+
+On all implementations; it's in the PowerPC architecture.
+
+A data-dependent branch followed by an isync ensures that no
+instructions after the isync in program order will be
+(speculatively) executed, so the load that the twi depends
+on has to complete before anything else is executed; in
+particular, it's a barrier to keep MMIO reads ordered before
+main-storage accesses.
+
+Note that twi alone is not enough; it needs an isync as well.
+Any other data-dependent branch instead of twi would do fine
+as well.
 
 
-Thanks.  I notice that this commentary appears in asm-ppc/io.h
-but not in asm-powerpc/io.h -- Perhaps a patch is in order ...
-I'm creating such a patch now ...
-
---linas
+Segher
