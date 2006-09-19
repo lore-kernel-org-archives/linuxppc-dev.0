@@ -1,22 +1,29 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+Return-Path: <linas@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 597E6679E9
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:20:41 +1000 (EST)
-Message-ID: <45104304.3000205@genesi-usa.com>
-Date: Tue, 19 Sep 2006 21:20:36 +0200
-From: Matt Sealey <matt@genesi-usa.com>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 943BE67B5A
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:30:24 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8JJULMe009080
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 15:30:21 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8JJULUi206758
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 13:30:21 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8JJUKO9008703
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 13:30:21 -0600
+Date: Tue, 19 Sep 2006 14:30:20 -0500
+To: paulus@samba.org
+Subject: [PATCH]: powerpc: clarify use of twi/isync in io macros
+Message-ID: <20060919193020.GN29167@austin.ibm.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [POWERPC] convert string i/o operations to C
-References: <20060919222351.d27a1a06.sfr@canb.auug.org.au>	<20060919182953.GK29167@austin.ibm.com>
-	<20060919135259.303706d3.kim.phillips@freescale.com>
-	<45103DF0.9050409@genesi-usa.com>
-	<9E674786-9AF3-4322-B642-7BAA58462B74@kernel.crashing.org>
-In-Reply-To: <9E674786-9AF3-4322-B642-7BAA58462B74@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +34,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+Paul, please apply.
 
-Segher Boessenkool wrote:
->> For a generic "powerpc" kernel it can be understood, but when you
->> consider that on 970/POWER4 and above they use lwsync instead of sync
-> 
-> lwsync (sync 1) doesn't (architecturally) do anything to order MMIO
-> accesses, so you're misunderstanding something.
+Clarify why twi appears in the i/o macros.
 
-See below :D
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>
 
->> (google for them and see the mailing list posts :), just to breathe back
->> some performance in spinlocks and so on, surely this can be rejigged so
->> that processors don't do more work than necessary..? Even a noop takes
->> time doesn't it?
-> 
-> No-ops don't matter for performance, compared to the cost of the I/O
-> itself.  It would help to avoid heavier-than-necessary synchronisation
-> instructions if not needed on some certain CPU (or on non-SMP kernels,
-> etc.)
+----
+ include/asm-powerpc/io.h |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-But it couldn't hurt, right? There has to be an application note per-CPU 
-on the correct sequence of operations for such an access (I seem to have 
-collected a directory full for firmware development), it seems a little 
-odd to pick and choose one instruction over another for one thing, and 
-then say you need to do it to support the 601 of all things, and run 
-this code against the G3/G4/G5 which perhaps doesn't care or is more 
-intelligent about it (or is guaranteed to have a more intelligent host 
-bridge at least).
-
-Maybe I'm talking crap, please say so :D
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Index: linux-2.6.18-rc7-git1/include/asm-powerpc/io.h
+===================================================================
+--- linux-2.6.18-rc7-git1.orig/include/asm-powerpc/io.h	2006-09-14 13:38:48.000000000 -0500
++++ linux-2.6.18-rc7-git1/include/asm-powerpc/io.h	2006-09-19 14:26:26.000000000 -0500
+@@ -278,6 +278,17 @@ static inline void iosync(void)
+  * These routines do not perform EEH-related I/O address translation,
+  * and should not be used directly by device drivers.  Use inb/readb
+  * instead.
++ *
++ * Read operations have additional twi & isync to make sure the read
++ * is actually performed (i.e. the data has come back) before we start
++ * executing any following instructions.
++ *
++ * A data-dependent branch followed by an isync ensures that no
++ * instructions after the isync in program order will be
++ * (speculatively) executed, so the load that the twi depends
++ * on has to complete before anything else is executed; in
++ * particular, it's a barrier to keep MMIO reads ordered before
++ * main-storage accesses.
+  */
+ static inline int in_8(const volatile unsigned char __iomem *addr)
+ {
