@@ -1,15 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17679.29206.548556.979379@cargo.ozlabs.ibm.com>
-Date: Tue, 19 Sep 2006 14:29:10 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
-In-Reply-To: <1158639740.32015.114.camel@localhost.localdomain>
-References: <17679.25131.721027.405431@cargo.ozlabs.ibm.com>
-	<1158639740.32015.114.camel@localhost.localdomain>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3393C67B63
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 14:56:50 +1000 (EST)
+Received: from localhost (bh02i525f01.au.ibm.com [202.81.18.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by smtps.tip.net.au (Postfix) with ESMTP id 068743684CF
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 14:56:49 +1000 (EST)
+Date: Tue, 19 Sep 2006 14:54:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Fw: [PATCH] Remove powerpc specific parts of 3c509 driver
+Message-Id: <20060919145433.8fc7d478.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,115 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman writes:
+This patch has been sent to netdev and is needed to build 3c509 after my following patch (that removes some io accessor functions).
 
-> Where do I get ops.h?
+Begin forwarded message:
 
-Oops... here it is.
+Date: Tue, 19 Sep 2006 11:54:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: netdev@vger.kernel.org
+Cc: akpm@osdl.org, jgarzik@pobox.com
+Subject: [PATCH] Remove powerpc specific parts of 3c509 driver
 
-Paul.
 
-diff --git /dev/null b/arch/powerpc/boot/ops.h
---- /dev/null	2006-09-18 11:33:23.687982711 +1000
-+++ b/arch/powerpc/boot/ops.h	2006-09-19 14:09:38.000000000 +1000
-@@ -0,0 +1,100 @@
-+/*
-+ * Global definition of all the bootwrapper operations.
-+ *
-+ * Author: Mark A. Greer <mgreer@mvista.com>
-+ *
-+ * 2006 (c) MontaVista Software, Inc.  This file is licensed under
-+ * the terms of the GNU General Public License version 2.  This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+#ifndef _PPC_BOOT_OPS_H_
-+#define _PPC_BOOT_OPS_H_
-+
-+#include "types.h"
-+
-+#define	COMMAND_LINE_SIZE	512
-+#define	MAX_PATH_LEN		256
-+#define	MAX_PROP_LEN		256 /* What should this be? */
-+
-+/* Platform specific operations */
-+struct platform_ops {
-+	void	(*fixups)(void);
-+	void *	(*malloc)(u32 size);
-+	void	(*free)(void *ptr, u32 size);
-+	void	(*exit)(void);
-+};
-+extern struct platform_ops platform_ops;
-+
-+/* Device Tree operations */
-+struct dt_ops {
-+	void *	(*finddevice)(const char *name);
-+	int	(*getprop)(const void *node, const char *name, void *buf,
-+			const int buflen);
-+	int	(*setprop)(const void *node, const char *name,
-+			const void *buf, const int buflen);
-+	u64	(*translate_addr)(const char *path, const u32 *in_addr,
-+			const u32 addr_len);
-+	void	(*call_kernel)(void *entry_addr, unsigned long a1,
-+			unsigned long a2, void *promptr, void *sp);
-+};
-+extern struct dt_ops dt_ops;
-+
-+/* Console operations */
-+struct console_ops {
-+	int	(*open)(void);
-+	void	(*write)(char *buf, int len);
-+	void	(*edit_cmdline)(char *buf, int len);
-+	void	(*close)(void);
-+	void	*data;
-+};
-+extern struct console_ops console_ops;
-+
-+/* Serial console operations */
-+struct serial_console_data {
-+	int		(*open)(void);
-+	void		(*putc)(unsigned char c);
-+	unsigned char	(*getc)(void);
-+	u8		(*tstc)(void);
-+	void		(*close)(void);
-+};
-+
-+extern int platform_init(void *promptr);
-+extern void simple_alloc_init(void);
-+extern void ft_init(void *dt_blob);
-+extern int serial_console_init(void);
-+
-+static inline void *finddevice(const char *name)
-+{
-+	return (dt_ops.finddevice) ? dt_ops.finddevice(name) : NULL;
-+}
-+
-+static inline int getprop(void *devp, const char *name, void *buf, int buflen)
-+{
-+	return (dt_ops.getprop) ? dt_ops.getprop(devp, name, buf, buflen) : -1;
-+}
-+
-+static inline int setprop(void *devp, const char *name, void *buf, int buflen)
-+{
-+	return (dt_ops.setprop) ? dt_ops.setprop(devp, name, buf, buflen) : -1;
-+}
-+
-+static inline void *malloc(u32 size)
-+{
-+	return (platform_ops.malloc) ? platform_ops.malloc(size) : NULL;
-+}
-+
-+static inline void free(void *ptr, u32 size)
-+{
-+	if (platform_ops.free)
-+		platform_ops.free(ptr, size);
-+}
-+
-+static inline void exit(void)
-+{
-+	if (platform_ops.exit)
-+		platform_ops.exit();
-+	for(;;);
-+}
-+
-+#endif /* _PPC_BOOT_OPS_H_ */
+On powerpc and ppc, insl_ns and insl are identical as are outsl_ns and
+outsl, so remove the conditional use of insl_ns and outsl_ns.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/3c509.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
+
+This is in anticipation of removing the insl_ns and outsl_ns definitions
+which are powerpc sepcific patches.
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/drivers/net/3c509.c b/drivers/net/3c509.c
+index cbdae54..add6381 100644
+--- a/drivers/net/3c509.c
++++ b/drivers/net/3c509.c
+@@ -879,11 +879,7 @@ #endif
+ 	outw(skb->len, ioaddr + TX_FIFO);
+ 	outw(0x00, ioaddr + TX_FIFO);
+ 	/* ... and the packet rounded to a doubleword. */
+-#ifdef  __powerpc__
+-	outsl_ns(ioaddr + TX_FIFO, skb->data, (skb->len + 3) >> 2);
+-#else
+ 	outsl(ioaddr + TX_FIFO, skb->data, (skb->len + 3) >> 2);
+-#endif
+ 
+ 	dev->trans_start = jiffies;
+ 	if (inw(ioaddr + TX_FREE) > 1536)
+@@ -1103,13 +1099,8 @@ el3_rx(struct net_device *dev)
+ 				skb_reserve(skb, 2);     /* Align IP on 16 byte */
+ 
+ 				/* 'skb->data' points to the start of sk_buff data area. */
+-#ifdef  __powerpc__
+-				insl_ns(ioaddr+RX_FIFO, skb_put(skb,pkt_len),
+-							   (pkt_len + 3) >> 2);
+-#else
+ 				insl(ioaddr + RX_FIFO, skb_put(skb,pkt_len),
+ 					 (pkt_len + 3) >> 2);
+-#endif
+ 
+ 				outw(RxDiscard, ioaddr + EL3_CMD); /* Pop top Rx packet. */
+ 				skb->protocol = eth_type_trans(skb,dev);
+-- 
+1.4.2.1
