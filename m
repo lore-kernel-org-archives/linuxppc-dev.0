@@ -1,25 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
+Received: from mail-in-01.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EDA0367B5C
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:47:49 +1000 (EST)
-In-Reply-To: <45104304.3000205@genesi-usa.com>
-References: <20060919222351.d27a1a06.sfr@canb.auug.org.au>	<20060919182953.GK29167@austin.ibm.com>
-	<20060919135259.303706d3.kim.phillips@freescale.com>
-	<45103DF0.9050409@genesi-usa.com>
-	<9E674786-9AF3-4322-B642-7BAA58462B74@kernel.crashing.org>
-	<45104304.3000205@genesi-usa.com>
+	by ozlabs.org (Postfix) with ESMTP id 119EA67A2E
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 05:57:19 +1000 (EST)
+In-Reply-To: <20060919193020.GN29167@austin.ibm.com>
+References: <20060919193020.GN29167@austin.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <93D19BAC-3F4A-43C4-8624-DDE747A12466@kernel.crashing.org>
+Message-Id: <72674737-8325-48FA-B04F-C4ADCA2E2BF9@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [POWERPC] convert string i/o operations to C
-Date: Tue, 19 Sep 2006 21:47:30 +0200
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH]: powerpc: clarify use of twi/isync in io macros
+Date: Tue, 19 Sep 2006 21:57:11 +0200
+To: linas@austin.ibm.com (Linas Vepstas)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,28 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> But it couldn't hurt, right? There has to be an application note  
-> per-CPU on the correct sequence of operations for such an access (I  
-> seem to have collected a directory full for firmware development),
+> + *
+> + * Read operations have additional twi & isync to make sure the read
+> + * is actually performed (i.e. the data has come back) before we  
+> start
+> + * executing any following instructions.
+> + *
+> + * A data-dependent branch followed by an isync ensures that no
+> + * instructions after the isync in program order will be
+> + * (speculatively) executed
 
-The architecture describes the rules already, not many CPUs
-have "faster"/"better" sequences.
+..."before the isync has completed, and it won't complete until
+the branch is resolved;"...
 
-> it seems a little odd to pick and choose one instruction over  
-> another for one thing, and then say you need to do it to support  
-> the 601 of all things, and run this code against the G3/G4/G5 which  
-> perhaps doesn't care or is more intelligent about it (or is  
-> guaranteed to have a more intelligent host bridge at least).
+> so the load that the twi depends
+> + * on has to complete before anything else is executed; in
+> + * particular, it's a barrier to keep MMIO reads ordered before
+> + * main-storage accesses.
+>   */
 
-The comment you're referring to is old; it doesn't talk about
-synchronisation requirements, but focuses on having the CPU
-trap on exactly these instructions when an access causes a
-(asynchronous) machine check.  Asynchronous exceptions don't
-necessarily return the instruction pointer where the real
-failure was, so it's no surprise different CPUs have a different
-idea about it.  It's pretty safe to assume (but not guaranteed)
-that it will always be somewhere between the load and the insn
-after the isync, inclusive, though.
+You shouldn't post my test and put your signed-off on it, esp.
+if I forgot to type half a sentence :-)  Here, have one though:
+
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+
 
 
 Segher
