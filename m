@@ -1,26 +1,24 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id C866867B59
+Return-Path: <brian.rutledge@uk.flextronics.com>
+Received: from ducmta01.flextronics.com (ducmta01.flextronics.com
+	[217.79.214.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ducmta01.flextronics.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id DA2EA67B22
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Sep 2006 17:49:01 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1GPaLi-0001tc-6Y
-	for linuxppc-embedded@ozlabs.org; Tue, 19 Sep 2006 09:48:58 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Ethernet driver for Linux kernel 2.6 running on ML403
-References: <mailman.241.1158193867.2423.linuxppc-embedded@ozlabs.org>
-	<002501c6d79e$cca7ee40$800101df@monstertop>
-	<528646bc0609131852s41a8bc4ev44b84d68f51b1d2d@mail.gmail.com>
-	<45093A94.2080407@dlasys.net>
-	<200609141353.k8EDrkPN065101@penguin.ncube.com>
-	<528646bc0609140734j2f7b008fy815f221677c5ac74@mail.gmail.com>
-Date: Tue, 19 Sep 2006 09:48:58 +0200
-In-Reply-To: <528646bc0609140734j2f7b008fy815f221677c5ac74@mail.gmail.com>
-	(Grant Likely's message of "Thu, 14 Sep 2006 16:34:22 +0200")
-Message-ID: <87hcz4z47p.fsf@sleipner.barco.com>
+	Tue, 19 Sep 2006 20:12:04 +1000 (EST)
+Received: from euduc502.europe.ad.flextronics.com
+	(euduc502.europe.ad.flextronics.com [10.219.244.17])
+	by ducmta01.flextronics.com (Symantec Mail Security) with ESMTP id
+	CD6C1539 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 19 Sep 2006 11:42:19 +0200 (CEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6DBCF.E6657616"
+Subject: booting monta vista 2.6
+Date: Tue, 19 Sep 2006 11:42:18 +0200
+Message-ID: <D62BA2DDF7501846974F6752E0456E730110BD88@EUDUCEX1.europe.ad.flextronics.com>
+From: "Brian Rutledge" <brian.rutledge@uk.flextronics.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,36 +29,138 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "GL" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-Hi,
+This is a multi-part message in MIME format.
 
-GL> So what direction do we (as the community) want to go for
-GL> supporting Xilinx IP in the Linux kernel?
+------_=_NextPart_001_01C6DBCF.E6657616
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-GL> IIRC, Xilinx intends to get drivers submitted into mainline.
-GL> (Based on their cross-platform driver support code).  It is
-GL> unknown which and how many drivers for different IP versions will
-GL> be submitted.
+Hi =0D=0A
+=0D=0A
+I have an Embedded Planet 852T board with the planet core bootloader and=0D=
+=0A
+trying to boot monta vista 2.6.=0D=0A
+=0D=0A
+The code starts up and enters the function load_kernel() however it is=0D=
+=0A
+not passed board information in the load_kernel() parameter *bp.=0D=0A
+=0D=0A
+ =0D=0A
+=0D=0A
+Is there some way to set this via .config or some other means by which=0D=
+=0A
+this can be picked up. =0D=0A
+=0D=0A
+ =0D=0A
+=0D=0A
+Thanks Brian=0D=0A
+=0D=0A
+=0D=0A
+Legal Disclaimer:=0A
+The information contained in this message may be privileged and confident=
+ial. It is intended to be read only by the individual or entity to whom i=
+t is addressed or by their designee. If the reader of this message is not=
+ the intended recipient, you are on notice that any distribution of this =
+message, in any form, is strictly prohibited. If you have received this m=
+essage in error, please immediately notify the sender and delete or destr=
+oy any copy of this message=0D=0A
 
-Yes, that's also what I hear from the Xilinx guys - But action speaks
-louder than words. It's not like the V2P is new technology anymore.
+------_=_NextPart_001_01C6DBCF.E6657616
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-GL> However, the xilinx driver code is verbose and does not match well
-GL> with the rest of the Linux code base.
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:=
+schemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html=
+40">=0D=0A
+=0D=0A
+<head>=0D=0A
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-asci=
+i">=0D=0A
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">=0D=
+=0A
+<style>=0D=0A
+<!--=0D=0A
+ /* Style Definitions */=0D=0A
+ p.MsoNormal, li.MsoNormal, div.MsoNormal=0D=0A
+	{margin:0cm;=0D=0A
+	margin-bottom:.0001pt;=0D=0A
+	font-size:12.0pt;=0D=0A
+	font-family:"Times New Roman";}=0D=0A
+a:link, span.MsoHyperlink=0D=0A
+	{color:blue;=0D=0A
+	text-decoration:underline;}=0D=0A
+a:visited, span.MsoHyperlinkFollowed=0D=0A
+	{color:purple;=0D=0A
+	text-decoration:underline;}=0D=0A
+span.EmailStyle17=0D=0A
+	{mso-style-type:personal-compose;=0D=0A
+	font-family:Arial;=0D=0A
+	color:windowtext;}=0D=0A
+@page Section1=0D=0A
+	{size:612.0pt 792.0pt;=0D=0A
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}=0D=0A
+div.Section1=0D=0A
+	{page:Section1;}=0D=0A
+-->=0D=0A
+</style>=0D=0A
+=0D=0A
+</head>=0D=0A
+=0D=0A
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>=0D=0A
+=0D=0A
+<div class=3DSection1>=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'>Hi <o:p></o:p></span></font></p>=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'>I have an Embedded Planet 852T board with the p=
+lanet=0D=0A
+core bootloader and trying to boot monta vista 2.6.<o:p></o:p></span></fo=
+nt></p>=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'>The code starts up and enters the function=0D=0A
+load_kernel() however it is not passed board information in the load_kern=
+el()=0D=0A
+parameter *bp.<o:p></o:p></span></font></p>=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'>Is there some way to set this via .config or so=
+me=0D=0A
+other means by which this can be picked up. <o:p></o:p></span></font></p>=
+=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>=0D=0A
+=0D=0A
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
+=3D'font-size:=0D=0A
+10.0pt;font-family:Arial'>Thanks Brian<o:p></o:p></span></font></p>=0D=0A
+=0D=0A
+</div>=0D=0A
+=0D=0A
+Legal Disclaimer:=0A
+The information contained in this message may be privileged and confident=
+ial. It is intended to be read only by the individual or entity to whom i=
+t is addressed or by their designee. If the reader of this message is not=
+ the intended recipient, you are on notice that any distribution of this =
+message, in any form, is strictly prohibited. If you have received this m=
+essage in error, please immediately notify the sender and delete or destr=
+oy any copy of this message</body>=0D=0A
+=0D=0A
+</html>=0D=0A
 
-Yeah, the Xilinx stuff/flow definately doesn't fit the kernel.
-
-GL> If we reject the Xilinx driver code, then we either have to do
-GL> without Xilinx support in mainline, or we need to write new
-GL> drivers that address the above issues (support multiple IP
-GL> versions, etc).  The Xilinx support in mainline right now does not
-GL> use any Xilinx code.  (Xilinx PIC and UART).
-
-I think the best option is to simply forget about the Xilinx code,
-see the FPGAs as any other PPC system and write normal device drivers
-for it. Your platform bus stuff and my (to-be-mainlined) uartlite
-driver is a first step in this direction..
-
--- 
-Bye, Peter Korsgaard
+------_=_NextPart_001_01C6DBCF.E6657616--
