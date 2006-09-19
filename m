@@ -2,19 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CDE4D67B6A
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 09:14:57 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 84BB767B7E
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 09:17:36 +1000 (EST)
 Subject: Re: [POWERPC] convert string i/o operations to C
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <45103DF0.9050409@genesi-usa.com>
+In-Reply-To: <45104304.3000205@genesi-usa.com>
 References: <20060919222351.d27a1a06.sfr@canb.auug.org.au>
 	<20060919182953.GK29167@austin.ibm.com>
 	<20060919135259.303706d3.kim.phillips@freescale.com>
 	<45103DF0.9050409@genesi-usa.com>
+	<9E674786-9AF3-4322-B642-7BAA58462B74@kernel.crashing.org>
+	<45104304.3000205@genesi-usa.com>
 Content-Type: text/plain
-Date: Wed, 20 Sep 2006 09:14:36 +1000
-Message-Id: <1158707676.6002.174.camel@localhost.localdomain>
+Date: Wed, 20 Sep 2006 09:17:15 +1000
+Message-Id: <1158707835.6002.177.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,22 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-19 at 20:58 +0200, Matt Sealey wrote:
-> Shouldn't this stuff be optimized out depending on what processor you're 
-> ACTUALLY running?
+
+> But it couldn't hurt, right? There has to be an application note per-CPU 
+> on the correct sequence of operations for such an access (I seem to have 
+> collected a directory full for firmware development), it seems a little 
+> odd to pick and choose one instruction over another for one thing, and 
+> then say you need to do it to support the 601 of all things, and run 
+> this code against the G3/G4/G5 which perhaps doesn't care or is more 
+> intelligent about it (or is guaranteed to have a more intelligent host 
+> bridge at least).
 > 
-> For a generic "powerpc" kernel it can be understood, but when you 
-> consider that on 970/POWER4 and above they use lwsync instead of sync
-> (google for them and see the mailing list posts :), just to breathe back 
-> some performance in spinlocks and so on, surely this can be rejigged so 
-> that processors don't do more work than necessary..? Even a noop takes 
-> time doesn't it?
+> Maybe I'm talking crap, please say so :D
 
-The architecture is precise enough there. It should be twi,isync. The
-goal of the isync is to make sure no subsequent instruction can execute
-until the previous conditional branch has been fully resolved, which
-implies loading the dependent data. An isync is the only instruction in
-this specific case that is guaranteed to provide what we need by the
-architecture.
+No, your basic idea is valid. One of the thing we are tackling doing is
+to add to our cpu feature "nop'ing out" mecanism something closer to
+what x86 does nowadays which is to have alternate sequence of
+instructions depending on the CPU.
 
-Ben
+I just think however that the MMIO loads aren't a very high priority
+spot for such an optimisation :) Spinlocks are more interesting and we
+are looking into doing something like x86 where you don't need to build
+a UP kernel, the SMP kernel will automatically replace the spinlocks
+with simple preempt_disable/enable at boot if running on only one CPU.
+We could do similar things with some barriers etc...
+
+Ben.
