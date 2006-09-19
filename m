@@ -1,18 +1,22 @@
-Return-Path: <jonandia@aotek.es>
-Message-ID: <450FE61C.6050006@fagorautomation.es>
-Date: Tue, 19 Sep 2006 14:44:12 +0200
-From: Josu Onandia <jonandia@fagorautomation.es>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 348CB67B5E
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 20 Sep 2006 00:16:12 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so459940ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 19 Sep 2006 07:16:11 -0700 (PDT)
+Message-ID: <528646bc0609190716q4a18f769g43ef2446b0844a27@mail.gmail.com>
+Date: Tue, 19 Sep 2006 08:16:10 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "John Bonesio" <john.bonesio@xilinx.com>
+Subject: Re: Ethernet driver for Linux kernel 2.6 running on ML403
+In-Reply-To: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EAC01@XSJ-EXCHVS1.xlnx.xilinx.com>
 MIME-Version: 1.0
-To: Esben Nielsen <nielsen.esben@gogglemail.com>
-Subject: Re: Measure Interrupt Latency on MPC5200B
-References: <ac3922a00609140500j79e33fb3lfecbefc151ce3b41@mail.gmail.com><45
-	0FDCFD.9040102@fagorautomation.es>
-	<Pine.LNX.4.64.0609191414090.10784@frodo.shire>
-In-Reply-To: <Pine.LNX.4.64.0609191414090.10784@frodo.shire>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EAC01@XSJ-EXCHVS1.xlnx.xilinx.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,64 +27,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Esben Nielsen wrote:
+[edited for context]
 
-> On Tue, 19 Sep 2006, Josu Onandia wrote:
+On 9/15/06, John Bonesio <john.bonesio@xilinx.com> wrote:
+> On Thursday, September 14, 2006 5:09 PM, Keith J Outwater wrote:
+> > I thinking in terms of something like a 32 bit register (i.e. like a
+> > processor's PVR register) that has a hard-coded magic number
+> > which a driver can read and decode to determine driver compatibility.
+> > That does not sound resource-intensive given the size FPGAs we are
+> > talking about.  Probably don't even need 32 bits.
 >
->> Syed Amer Gilani wrote:
->>
->>> We have a MPC5200B(ppc) Board from Phytec, running with a 2.6 Linux
->>> Kernel. For Documentation purposes and testings how patches to the
->>> Kernel affects real time capabilities we want to measure the Interrupt
->>> Latency.
->>> I only found tools for other arches or patches for far to old kernels.
->>> Does somebody know a way for a 2.6 kernel on ppc? I already thought of
->>> generating a signal on an Output of the Board and measure it with a
->>> Oscilloscope but i don't find that method satisfying.
->>>
->>> Thank you in advance,
->>> Syed Amer Gilani
->>> _______________________________________________
->>> Linuxppc-embedded mailing list
->>> Linuxppc-embedded@ozlabs.org
->>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>
->>>
->> Hi. I'm sorry for my own latency, but I've been very busy.
->>
->> I'm measuring interrup latency in an MPC5200B, too, but with Linux 2.4.
->>
->> With this processor you can use the TB registers to measure a lapse 
->> of time.
->>
->> I use a GPT timer to generate a periodic interrupt. From the interrupt
->> routine I read the TBL and compare it with the expected value.
->>
->> I do this using RTAI, because I need real-time response to interrupts,
->> but I suppose that with little effort you can port it to standard Linux.
->>
->> If you want more details, or my actual source code, email me.
->>
->> Josu Onandia
->>
->>
+> I know that on the surface it seems like a simple thing. Some of our
+> parts are big, yet some are small. We are always getting pressure to
+> make our IP as small as possible.
 >
-> What are your results under the normal kernel and under RTAI?
-> Have anyone tried with -rt kernels? What are the results?
->
-> I work for a company using MPC5200 with VxWorks. It could be fun to 
-> compare numbers...
->
-> Esben
+> Though, this may be something we can revisit again, for now this
+> information just isn't going to be available.
 
-This is a Lite5200B running at 462MHz, kernel 2.4.25 and RTAI 24.1.11, 
-from Denx.
+Then its probably just a matter of whoever configures the kernel needs
+to know what version of IP is being used.  ie. always have the
+fallback of compile time specification of IP version. Could be done
+manually, or by putting the info into the dts.  We probably need a
+tool to generate a dts from the .mhs or xparameters.h file anyway.
 
-I haven't tried under normal kernel. With RTAI I have 1,5usec from the 
-actual interrupt until RTAI call my ISR function. This adds the 
-processor latency plus the RTAI dispatcher overhead. With heavy IO load, 
-ethernet and disk, the maximum is 8usec.
+Cheers,
+g.
 
-I'd really like to see your results, to compare with a real RTOS.
-
-Josu
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
