@@ -1,29 +1,26 @@
-Return-Path: <jack_zhao@usish.com>
-Received: from ms.usish.com (unknown [61.152.162.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 890A967B54
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id C866867B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Sep 2006 14:37:07 +1000 (EST)
-Received: from outbound.usish.com (outbound.usish.com [192.168.40.103])
-	by ms.usish.com (8.12.11/8.12.11) with ESMTP id k8J3eUpI020611
-	for <linuxppc-embedded@ozlabs.org>; Tue, 19 Sep 2006 11:40:30 +0800
-Received: from outbound.usish.com (outbound.usish.com [127.0.0.1])
-	by outbound.usish.com (8.12.11/8.12.11) with ESMTP id k8J3gpkZ022857
-	for <linuxppc-embedded@ozlabs.org>; Tue, 19 Sep 2006 11:42:51 +0800
-Received: from IT0010708 (it-0010708.usish.com.cn [192.168.57.113])
-	(authenticated bits=0)
-	by outbound.usish.com (8.12.11/8.12.11) with ESMTP id k8J3gpDA022852
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Tue, 19 Sep 2006 11:42:51 +0800
-From: "jack zhao" <jack_zhao@usish.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: events/0 issue
-Date: Tue, 19 Sep 2006 11:48:12 +0800
-Message-ID: <006401c6db9e$6e13e0b0$7139a8c0@usish.com.cn>
+	Tue, 19 Sep 2006 17:49:01 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1GPaLi-0001tc-6Y
+	for linuxppc-embedded@ozlabs.org; Tue, 19 Sep 2006 09:48:58 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Ethernet driver for Linux kernel 2.6 running on ML403
+References: <mailman.241.1158193867.2423.linuxppc-embedded@ozlabs.org>
+	<002501c6d79e$cca7ee40$800101df@monstertop>
+	<528646bc0609131852s41a8bc4ev44b84d68f51b1d2d@mail.gmail.com>
+	<45093A94.2080407@dlasys.net>
+	<200609141353.k8EDrkPN065101@penguin.ncube.com>
+	<528646bc0609140734j2f7b008fy815f221677c5ac74@mail.gmail.com>
+Date: Tue, 19 Sep 2006 09:48:58 +0200
+In-Reply-To: <528646bc0609140734j2f7b008fy815f221677c5ac74@mail.gmail.com>
+	(Grant Likely's message of "Thu, 14 Sep 2006 16:34:22 +0200")
+Message-ID: <87hcz4z47p.fsf@sleipner.barco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,15 +31,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, 
-	I encounter one problem when using PPC8347 system. I am using
-gigafar driver in linux kernel 2.6.13.4 version, but when I make the driver
-working, I start the samba function, and copy copy file from Windows PC to
-PPC system, when copy action starts, the events/0 occupy 40% CPU usage,
-while I using another system it is also linux 2.6.13, when copying file to
-system, events only occupy 1%, most of CPU loading are in network. Could
-some one tell me where is the optimization for that? Thanks.
+>>>>> "GL" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-Best Wishes
-Jack Zhao
-USI SH R&D Center 86-021-58966996-1122
+Hi,
+
+GL> So what direction do we (as the community) want to go for
+GL> supporting Xilinx IP in the Linux kernel?
+
+GL> IIRC, Xilinx intends to get drivers submitted into mainline.
+GL> (Based on their cross-platform driver support code).  It is
+GL> unknown which and how many drivers for different IP versions will
+GL> be submitted.
+
+Yes, that's also what I hear from the Xilinx guys - But action speaks
+louder than words. It's not like the V2P is new technology anymore.
+
+GL> However, the xilinx driver code is verbose and does not match well
+GL> with the rest of the Linux code base.
+
+Yeah, the Xilinx stuff/flow definately doesn't fit the kernel.
+
+GL> If we reject the Xilinx driver code, then we either have to do
+GL> without Xilinx support in mainline, or we need to write new
+GL> drivers that address the above issues (support multiple IP
+GL> versions, etc).  The Xilinx support in mainline right now does not
+GL> use any Xilinx code.  (Xilinx PIC and UART).
+
+I think the best option is to simply forget about the Xilinx code,
+see the FPGAs as any other PPC system and write normal device drivers
+for it. Your platform bus stuff and my (to-be-mainlined) uartlite
+driver is a first step in this direction..
+
+-- 
+Bye, Peter Korsgaard
