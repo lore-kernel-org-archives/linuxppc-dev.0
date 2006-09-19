@@ -1,24 +1,21 @@
-Return-Path: <brian.rutledge@uk.flextronics.com>
-Received: from ducmta01.flextronics.com (ducmta01.flextronics.com
-	[217.79.214.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ducmta01.flextronics.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id DA2EA67B22
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id F0A5567B64
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Sep 2006 20:12:04 +1000 (EST)
-Received: from euduc502.europe.ad.flextronics.com
-	(euduc502.europe.ad.flextronics.com [10.219.244.17])
-	by ducmta01.flextronics.com (Symantec Mail Security) with ESMTP id
-	CD6C1539 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Sep 2006 11:42:19 +0200 (CEST)
+	Tue, 19 Sep 2006 20:13:25 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1GPcbS-00032X-QM
+	for linuxppc-embedded@ozlabs.org; Tue, 19 Sep 2006 12:13:22 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Ethernet driver for Linux kernel 2.6 running on ML403
+References: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EA645@XSJ-EXCHVS1.xlnx.xilinx.com>
+Date: Tue, 19 Sep 2006 12:13:22 +0200
+In-Reply-To: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC021EA645@XSJ-EXCHVS1.xlnx.xilinx.com>
+	(John Bonesio's message of "Thu, 14 Sep 2006 18:40:53 +0200")
+Message-ID: <87d59syxj1.fsf@sleipner.barco.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6DBCF.E6657616"
-Subject: booting monta vista 2.6
-Date: Tue, 19 Sep 2006 11:42:18 +0200
-Message-ID: <D62BA2DDF7501846974F6752E0456E730110BD88@EUDUCEX1.europe.ad.flextronics.com>
-From: "Brian Rutledge" <brian.rutledge@uk.flextronics.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,138 +26,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>>>>> "JB" == John Bonesio <john.bonesio@xilinx.com> writes:
 
-This is a multi-part message in MIME format.
+Hi,
 
-------_=_NextPart_001_01C6DBCF.E6657616
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+JB> << The Xilinx approach of overwriting the source tree just feels
+JB> wrong, and no one seems to want to do it that way.>>
 
-Hi =0D=0A
-=0D=0A
-I have an Embedded Planet 852T board with the planet core bootloader and=0D=
-=0A
-trying to boot monta vista 2.6.=0D=0A
-=0D=0A
-The code starts up and enters the function load_kernel() however it is=0D=
-=0A
-not passed board information in the load_kernel() parameter *bp.=0D=0A
-=0D=0A
- =0D=0A
-=0D=0A
-Is there some way to set this via .config or some other means by which=0D=
-=0A
-this can be picked up. =0D=0A
-=0D=0A
- =0D=0A
-=0D=0A
-Thanks Brian=0D=0A
-=0D=0A
-=0D=0A
-Legal Disclaimer:=0A
-The information contained in this message may be privileged and confident=
-ial. It is intended to be read only by the individual or entity to whom i=
-t is addressed or by their designee. If the reader of this message is not=
- the intended recipient, you are on notice that any distribution of this =
-message, in any form, is strictly prohibited. If you have received this m=
-essage in error, please immediately notify the sender and delete or destr=
-oy any copy of this message=0D=0A
+JB> I am in the group that has control over how this is done. What
+JB> would you propose be done different? Keep in mind that we are
+JB> trying to support a process where someone builds a hardware design
+JB> and the later changes it with new peripherals or perhaps makes
+JB> minor tweaks. We want to make the updating of the Linux kernel to
+JB> reflect these hardware changes easy for people.
 
-------_=_NextPart_001_01C6DBCF.E6657616
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Don't patch the kernel sources from EDK, but instead get the drivers
+integrated in the mainline kernel. Either do config options for the
+various IP versions or use runtime detection.
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:=
-schemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html=
-40">=0D=0A
-=0D=0A
-<head>=0D=0A
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-asci=
-i">=0D=0A
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">=0D=
-=0A
-<style>=0D=0A
-<!--=0D=0A
- /* Style Definitions */=0D=0A
- p.MsoNormal, li.MsoNormal, div.MsoNormal=0D=0A
-	{margin:0cm;=0D=0A
-	margin-bottom:.0001pt;=0D=0A
-	font-size:12.0pt;=0D=0A
-	font-family:"Times New Roman";}=0D=0A
-a:link, span.MsoHyperlink=0D=0A
-	{color:blue;=0D=0A
-	text-decoration:underline;}=0D=0A
-a:visited, span.MsoHyperlinkFollowed=0D=0A
-	{color:purple;=0D=0A
-	text-decoration:underline;}=0D=0A
-span.EmailStyle17=0D=0A
-	{mso-style-type:personal-compose;=0D=0A
-	font-family:Arial;=0D=0A
-	color:windowtext;}=0D=0A
-@page Section1=0D=0A
-	{size:612.0pt 792.0pt;=0D=0A
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}=0D=0A
-div.Section1=0D=0A
-	{page:Section1;}=0D=0A
--->=0D=0A
-</style>=0D=0A
-=0D=0A
-</head>=0D=0A
-=0D=0A
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>=0D=0A
-=0D=0A
-<div class=3DSection1>=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'>Hi <o:p></o:p></span></font></p>=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'>I have an Embedded Planet 852T board with the p=
-lanet=0D=0A
-core bootloader and trying to boot monta vista 2.6.<o:p></o:p></span></fo=
-nt></p>=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'>The code starts up and enters the function=0D=0A
-load_kernel() however it is not passed board information in the load_kern=
-el()=0D=0A
-parameter *bp.<o:p></o:p></span></font></p>=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'>Is there some way to set this via .config or so=
-me=0D=0A
-other means by which this can be picked up. <o:p></o:p></span></font></p>=
-=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>=0D=0A
-=0D=0A
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB style=
-=3D'font-size:=0D=0A
-10.0pt;font-family:Arial'>Thanks Brian<o:p></o:p></span></font></p>=0D=0A
-=0D=0A
-</div>=0D=0A
-=0D=0A
-Legal Disclaimer:=0A
-The information contained in this message may be privileged and confident=
-ial. It is intended to be read only by the individual or entity to whom i=
-t is addressed or by their designee. If the reader of this message is not=
- the intended recipient, you are on notice that any distribution of this =
-message, in any form, is strictly prohibited. If you have received this m=
-essage in error, please immediately notify the sender and delete or destr=
-oy any copy of this message</body>=0D=0A
-=0D=0A
-</html>=0D=0A
+We're doing Linux development for several platforms and using a single
+kernel tree for it all is absolute critical to my sanity..
 
-------_=_NextPart_001_01C6DBCF.E6657616--
+The EDK drivers are nice as examples of how to use the IP cores, but
+the defined and documented interface should be the IP, not the EDK
+drivers.
+
+-- 
+Bye, Peter Korsgaard
