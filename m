@@ -1,32 +1,20 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C0D2A67B77
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 02:01:24 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8KG1I4I031383
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 12:01:18 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8KG1Idl268222
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 12:01:18 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8KG1HqV009439
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 12:01:17 -0400
-Subject: Re: [POWERPC] merge iSeries i/o operations with the rest
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20060920221558.1322b8b4.sfr@canb.auug.org.au>
-References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
-	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
-	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 20 Sep 2006 11:01:36 -0500
-Message-Id: <1158768096.19375.6.camel@basalt.austin.ibm.com>
+Return-Path: <flar@cynthia.pants.nu>
+Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
+	[216.102.214.42]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8B12E67A39
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 04:07:43 +1000 (EST)
+Date: Tue, 19 Sep 2006 22:36:56 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Subject: Re: [PATCH] adbhid: make KEY_SYSRQ configurable on ADB based machines
+Message-ID: <20060920053656.GA28326@cynthia.pants.nu>
+References: <20060808154937.GC3363@cathedrallabs.org>
+	<20060920134459.GC23803@cathedrallabs.org>
 Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060920134459.GC23803@cathedrallabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,14 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-09-20 at 22:15 +1000, Stephen Rothwell wrote:
-> +       if (firmware_has_feature(FW_FEATURE_ISERIES)) {
-> +               BUG();
-> +               return;
-> +       }
+On Wed, Sep 20, 2006 at 10:44:59AM -0300, Aristeu Sergio Rozanski Filho wrote:
+> > This patch adds a sysfs entry on /sys/class/adb/keyboard0/sysrq_key to
+> > configure which key will be mapped to KEY_SYSRQ. This is needed to make
+> > sysrq usable on machines which doesn't have current sysrq key. This
+> > patch and the previous two ones has been tested for some days in my
+> > machine without problems.
+> any comments on this one?
 
-Shouldn't all these be BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES))?
+The only thing I see is that each ADB keyboard device will have an entry
+in sysfs to change the sysrq key, but they will all set the same global.
+It's a little misleading, but I don't think it's a major issue. And
+before anyone asks, I have in fact had multiple ADB keyboards attached
+to a single machine. It was useful for multi-player games.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+	Brad Boyer
+	flar@allandria.com
