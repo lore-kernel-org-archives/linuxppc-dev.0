@@ -1,19 +1,38 @@
-Return-Path: <manoj.shar@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.199])
-	by ozlabs.org (Postfix) with ESMTP id 67D5A67B6E
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 11:16:08 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id i1so22653nzh
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 18:16:06 -0700 (PDT)
-Message-ID: <d6dada100609191816q75d1455cobeb1e0bd21dab8a8@mail.gmail.com>
-Date: Tue, 19 Sep 2006 18:16:06 -0700
-From: "Manoj Sharma" <manoj.shar@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Hang with isync
-In-Reply-To: <d6dada100609181828j1804f4f5ic0d1dd8a225980c@mail.gmail.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B4CDF67B6E
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 11:17:54 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8K1HudU009833
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 21:17:56 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8K1HpYd266084
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 21:17:51 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8K1Ho1j014797
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Sep 2006 21:17:51 -0400
+Date: Tue, 19 Sep 2006 20:17:50 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Remove powerpc specific parts of 3c509 driver
+Message-ID: <20060920011750.GS29167@austin.ibm.com>
+References: <20060919145433.8fc7d478.sfr@canb.auug.org.au>
+	<20060919184243.GL29167@austin.ibm.com>
+	<45103C62.4080003@genesi-usa.com>
+	<1158708269.6002.186.camel@localhost.localdomain>
+	<488875E7-CCBC-47E1-A273-A2D037A997B2@kernel.crashing.org>
+	<1158711935.6002.226.camel@localhost.localdomain>
+	<9F6F4A8E-C780-4358-97AA-570B33C0598F@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_166402_9291112.1158714966210"
-References: <d6dada100609181828j1804f4f5ic0d1dd8a225980c@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9F6F4A8E-C780-4358-97AA-570B33C0598F@kernel.crashing.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: akpm@osdl.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+	jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_166402_9291112.1158714966210
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
->
-> Hi,
->
-> We use linux kernel 2.4.20 on ppc405 and the system hangs once in a while
-> when isync gets called in this function:
->
-> _GLOBAL(_nmask_and_or_msr)
->     mfmsr   r0      /* Get current msr */
->     andc    r0,r0,r3    /* And off the bits set in r3 (first parm) */
->     or  r0,r0,r4    /* Or on the bits in r4 (second parm) */
->     sync            /* Some chip revs have problems here... */
->     isync
->     mtmsr   r0      /* Update machine state */
->     isync
->     blr         /* Done */
->
->  2.5 onwards, I find that "sync; isync" has been replaced by a macro SYNC
-> (defined only for 601). I don't find it in any changelog and reason for the
-> change.
->
-> Can someone give some information on this change?
->
-> Appreciate any help.
-> Manoj
->
-> <linuxppc-dev@ozlabs.org>
->
+Hi,
 
-------=_Part_166402_9291112.1158714966210
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I am alarmed and embarassed that sloppy comments on my part has turned
+onto a long conversation.
 
-<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div>Hi,<br><br>We use linux kernel 2.4.20 on ppc405 and the system hangs once in a while when isync gets called in this function:
-<br><br>_GLOBAL(_nmask_and_or_msr)<br>&nbsp;&nbsp;&nbsp; mfmsr&nbsp;&nbsp; r0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Get current msr */<br>&nbsp;&nbsp;&nbsp; andc&nbsp;&nbsp;&nbsp; r0,r0,r3&nbsp;&nbsp;&nbsp; /* And off the bits set in r3 (first parm) */
-<br>&nbsp;&nbsp;&nbsp; or&nbsp; r0,r0,r4&nbsp;&nbsp;&nbsp; /* Or on the bits in r4 (second parm) */<br>&nbsp;&nbsp;&nbsp; sync&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Some chip revs have problems here... */<br>&nbsp;&nbsp;&nbsp; isync<br>&nbsp;&nbsp;&nbsp; mtmsr&nbsp;&nbsp; r0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Update machine state */<br>&nbsp;&nbsp;&nbsp; isync<br>&nbsp;&nbsp;&nbsp; blr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Done */
-<br><br>&nbsp;2.5 onwards, I find that &quot;sync; isync&quot; has been replaced by a macro SYNC (defined only for 601). I don't find it in any changelog and reason for the change.<br><br>Can someone give some information on this change? 
-<br><br>Appreciate any help.<br></div><div><span class="sg">Manoj<br><br><a href="mailto:linuxppc-dev@ozlabs.org" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)"></a>
+On Wed, Sep 20, 2006 at 02:58:39AM +0200, Segher Boessenkool wrote:
+> >> Sure, PCI busses are little-endian.  But is readX()/writeX() for PCI
+> >> only?  I sure hope not.
+> >
+> > It's defined for PCI and possibly ISA memory. You can use it for other
+> > things if you whish to, but "other things" are arch specific in any
+> > case.
+> 
+> Huh?  You're saying that only PCI and ISA are standardised busses?
 
-</span></div></blockquote></div><br>
+Well, I'm having trouble thinking of other busses that have as strong 
+a sense of the "address-data" style I/O as PCI. Busses like scsi and 
+ide are primarily "command-data" or "data-data" in style.  Only the
+address-data style busses need readl/writel-style routines.
 
-------=_Part_166402_9291112.1158714966210--
+I can't prove, but suspect that the "adress-data" style of access is 
+why PCI is wired up "close to" the CPU.  What other bsses are there 
+that are direct-attached to the CPU? I can't think of much ...
+
+The sbus on sparc ... hypertransport from AMD ... but hypertransport is 
+more or less invisible to the kernel.  ... some recent attempts to 
+supplant the system bus with infiniband, but I get the impression that 
+this will be strangely engineered, and semi-invisible to the kernel as
+well. The actual infiniband protocols are ipv6-like+rdma and so fall
+into a "data-data" programming style.
+
+> > Different bus -> different accessor.
+> 
+> Then please rename readX()/writeX() to pci_readX()/pci_writeX().
+
+Well, I don't get the impression that there will be othre busses for
+which this is an issue the way it is on pci.
+
+--linas
