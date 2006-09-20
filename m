@@ -1,29 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Received: from mail-in-01.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37FBC679E7
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 06:06:50 +1000 (EST)
-In-Reply-To: <451096FE.1000104@pobox.com>
-References: <20060919145433.8fc7d478.sfr@canb.auug.org.au>
-	<20060919184243.GL29167@austin.ibm.com>
-	<45103C62.4080003@genesi-usa.com>
-	<1158708269.6002.186.camel@localhost.localdomain>
-	<488875E7-CCBC-47E1-A273-A2D037A997B2@kernel.crashing.org>
-	<45109203.6060606@pobox.com>
-	<1192ED41-329C-4CB0-AD87-B3BF62EC4337@kernel.crashing.org>
-	<451096FE.1000104@pobox.com>
+	by ozlabs.org (Postfix) with ESMTP id 62B5567B6D
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 06:23:24 +1000 (EST)
+In-Reply-To: <1158721828.3043.13.camel@vader.jdub.homelinux.org>
+References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+	<20060920012042.GA28489@mag.az.mvista.com>
+	<1158721828.3043.13.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <82BFB659-DCB3-477C-B53D-4D8C55BAADB7@kernel.crashing.org>
+Message-Id: <A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Remove powerpc specific parts of 3c509 driver
-Date: Wed, 20 Sep 2006 22:06:32 +0200
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: akpm@osdl.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Date: Wed, 20 Sep 2006 22:23:09 +0200
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> Sure, PCI busses are little-endian.  But is readX()/writeX() for  
->>>> PCI
->>>> only?
->>>
->>> Yes.
->>>
->>> For other buses, use foo_writel(), etc.
->> Can this please be documented then?  Never heard this before...
->
-> You have come late to the party.
+> It was pointed out on IRC that the "address" property is defined in  
+> the
+> OF spec for specifying virtual address mappings.  This is exactly what
+> we need in that it allows the zImage wrapper to use the fw defined  
+> UART
+> mapping, but the kernel still gets the real physical address later on.
+> And other things that don't use zImage wrappers, like u-boot, can  
+> simply
+> ignore the "address" property defined within the UART node.
 
-WHat do you mean here?  Could you please explain?
+The "address" property has several problems.  An obvious one is that the
+name is too generic.  A nastier one is that once you start making new  
+MMU
+mappings, you have to keep *all* old mappings, or blow away the mapping
+for this "address" as well (you don't know the size of the mapping).   
+And
+a third problem is that it can only encode 32-bit virtual addresses.
 
-> This has been the case for many, many years.
+Now, if it's only used for the very-early-debug UART console on machines
+that cannot accesses physical addresses directly, in things like a boot-
+wrapper that cannot be bothered to set up a MMU mapping themselves (and
+there might be good reasons not to), and only when there is no client
+interface (i.e., it uses the flat tree only); then it might be a  
+reasonable
+approach.  All alternatives I can think of have their own nasty  
+problems.
 
-No, it was never documented AFAICS.
-
-> And there is no point in a massive rename to pci_writel(), either.
-
-That would be really inconvenient, sure.  It's also inconvenient
-that all the nice short names are PCI-only.
+So please comment the nastiness with a big "HACK HACK HACK" comment and
+make sure it only ever gets used on systems where nothing better is
+available, and all should be fine.
 
 
 Segher
