@@ -1,11 +1,34 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A881C67BB2
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 09:57:20 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8KNvHZU029192
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 19:57:17 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8KNvHpH273254
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 17:57:17 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8KNvGLO001754
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 17:57:16 -0600
+Date: Wed, 20 Sep 2006 18:57:16 -0500
+To: "Peter N. Andreasen" <peterarbejde@gmail.com>
+Subject: Re: Linux on custom Xilinx board with PPC405 hangs on boot
+Message-ID: <20060920235716.GV29167@austin.ibm.com>
+References: <36468a5c0609120706i6c7e32efke7d8901d9ce4ae9b@mail.gmail.com>
+	<4506D7DE.9070800@ru.mvista.com>
+	<36468a5c0609140713pb42f3f8n3578151b50a488f@mail.gmail.com>
+	<36468a5c0609200216n753d69b0hdf8ff2cb53714f90@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17681.53490.705075.155580@cargo.ozlabs.ibm.com>
-Date: Thu, 21 Sep 2006 09:38:26 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: First cut of "wrapper" program
+In-Reply-To: <36468a5c0609200216n753d69b0hdf8ff2cb53714f90@mail.gmail.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,233 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is a prototype of a "wrapper" program which will take a kernel,
-and optionally an initrd image and/or a device tree blob, and create a
-bootable zImage.  My idea is that the Makefile in arch/powerpc/boot
-will construct the files that this needs, then run it one or more
-times to create whatever images are needed.
+On Wed, Sep 20, 2006 at 11:16:53AM +0200, Peter N. Andreasen wrote:
+> I have a custom Xilinx FPGA board which is similar to ML300 but uses
+> Uartllite and does not have disk or display.
+> When I start the Linux kernel I end up with an exception during the probe
+> for Flash - I think.
 
-The type of zImage that is created is selected with the -p flag.  This
-also specifies an extra object file to be linked in that will contain
-the platform_init() function.  So for the xyzzy platform, we would
-arrange for an xyzzy.o to be made in arch/powerpc/boot, and for the
-wrapper to be invoked with "-p xyzzy".
+Well, its not just "an exception" its a machine check.
 
-Currently the wrapper uses the strip, objcopy and ld programs, which
-need to be the powerpc cross-utilities if you are cross-building.  You
-can use the -C flag to specify a prefix for these programs if
-necessary.
+> (after get_mtd_chip_driver) drivers/mtd/chips/chipreg.c: do_map_probe
+> (start) drivers/mtd/chips/gen_probe.c: mtd_do_chip_probe
+> (start) drivers/mtd/chips/gen_probe.c: genprobe_ident_chips
+> Instruction machine check in kernel mode.
+> Oops: machine check, sig: 7
+> NIP: C00A2960 XER: 40000000 LR: C009CBD8 SP: C04D9D90 REGS: c04d9ce0 TRAP:
+> 0200    Not tainted
+> MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
 
-It also uses several files which it gets from a data directory, which
-is by default ./arch/powerpc/boot, but which can be changed with the
--D flag.  The files it needs from there are:
+Machine checks happen when some hunk of hardware is wired to the 
+machine-check pin of the cpu chip, and that bit of hardware decides to
+raise the wire.  I'd say the first step is to figure ou what hardware
+is wired up this way, and what would make it unhappy enough to assert a
+machine check.
 
-	a platform-specific object file (of.o for OF-based platforms)
-	crt0.o
-	empty.o
-	wrapper.a
-	zImage.lds
-	zImage.coff.lds
-	addnote
-	hack-coff
+SRR1 has bits that state what caused he machine check. -- e.g partity
+error on data or address bus, "transfer error", or MC signal.
 
-Although this will start out in arch/powerpc/boot, my idea is that it
-is a stand-alone thing that could be pulled out and built and used
-quite independently of the kernel source tree.  For this reason I
-really want to avoid using CONFIG_* symbols in the code.
-
-Comments?
-
-Paul.
-
-#!/bin/sh
-
-# Copyright (C) 2006 Paul Mackerras, IBM Corporation <paulus@samba.org>
-# This program may be used under the terms of version 2 of the GNU
-# General Public License.
-
-# This script takes a kernel binary and optionally an initrd image
-# and/or a device-tree blob, and creates a bootable zImage for a
-# given platform.
-
-# Options:
-# -o zImage	specify output file
-# -p platform	specify platform (links in $platform.o)
-# -i initrd	specify initrd file
-# -d devtree	specify device-tree blob
-# -s tree.dts	specify device-tree source file (needs dts installed)
-# -c		cache $kernel.strip.gz (use if present & newer, else make)
-# -C prefix	specify command prefix for cross-building tools
-#		(strip, objcopy, ld)
-# -D dir	specify directory containing data files used by script
-#		(default ./arch/powerpc/boot)
-# -W dir	specify working directory for temporary files (default .)
-
-# defaults
-kernel=
-ofile=zImage
-platform=of
-initrd=
-dtb=
-dts=
-cacheit=
-
-# cross-compilation prefix
-CROSS=
-
-# directory for object and other files used by this script
-object=arch/powerpc/boot
-
-# directory for working files
-tmpdir=.
-
-usage() {
-    echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
-    echo '       [-d devtree] [-s tree.dts] [-c] [-C cross-prefix]' >&2
-    echo '       [-D datadir] [-W workingdir] [vmlinux]' >&2
-    exit 1
-}
-
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-    -o)
-	shift
-	[ "$#" -gt 0 ] || usage
-	ofile="$1"
-	;;
-    -p)
-	shift
-	[ "$#" -gt 0 ] || usage
-	platform="$1"
-	;;
-    -i)
-	shift
-	[ "$#" -gt 0 ] || usage
-	initrd="$1"
-	;;
-    -d)
-	shift
-	[ "$#" -gt 0 ] || usage
-	dtb="$1"
-	;;
-    -s)
-	shift
-	[ "$#" -gt 0 ] || usage
-	dts="$1"
-	;;
-    -c)
-	cacheit=y
-	;;
-    -C)
-	shift
-	[ "$#" -gt 0 ] || usage
-	CROSS="$1"
-	;;
-    -D)
-	shift
-	[ "$#" -gt 0 ] || usage
-	object="$1"
-	;;
-    -W)
-	shift
-	[ "$#" -gt 0 ] || usage
-	tmpdir="$1"
-	;;
-    -?)
-	usage
-	;;
-    *)
-	[ -z "$kernel" ] || usage
-	kernel="$1"
-	;;
-    esac
-    shift
-done
-
-if [ -n "$dts" ]; then
-    if [ -z "$dtb" ]; then
-	dtb="$platform.dtb"
-    fi
-    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
-fi
-
-if [ -z "$kernel" ]; then
-    kernel=vmlinux
-fi
-
-platformo=$object/"$platform".o
-lds=$object/zImage.lds
-
-case "$platform" in
-pmac|pseries)
-    platformo=$object/of.o
-    ;;
-pmaccoff)
-    platformo=$object/of.o
-    lds=$object/zImage.coff.lds
-    ;;
-miboot)
-    # this is quite different...
-    tmpvm=$tmpdir/vmlinux.bin.$$
-    ${CROSS}objcopy -O binary "$kernel" $tmpvm
-    gzip -f -9 $tmpvm
-    tmpir=
-    if [ -n "$initrd" ]; then
-	tmpir=--add-section=initrd="$initrd"
-    fi
-    ${CROSS}objcopy -O aixcoff-rs6000 -R .stab -R .stabstr -R .comment \
-	--add-section=image=$tmpvm.gz $tmpir \
-	$object/empty.o "$ofile"
-    rm $tmpvm.gz
-    exit 0
-esac
-	
-tmp=$tmpdir/zImage.$$.o
-cp $object/empty.o $tmp
-
-addsec() {
-    ${CROSS}objcopy $1 \
-	--add-section=.kernel:$3="$2" \
-	--set-section-flags=.kernel:$3=contents,alloc,load,readonly,data
-}
-
-if [ -n "$cacheit" ]; then
-    vmz="$tmpdir/`basename \"$kernel\"`.strip"
-    if [ ! -f "$vmz.gz" -o "$vmz.gz" -ot "$kernel" ]; then
-	cp "$kernel" "$vmz"
-	${CROSS}strip "$vmz"
-	gzip -f -9 "$vmz"
-    fi
-    addsec $tmp "$vmz.gz" vmlinux.strip
-else
-    tmpvmz=$tmpdir/vmlinux.$$
-    cp "$kernel" $tmpvmz
-    ${CROSS}strip $tmpvmz
-    gzip -f -9 $tmpvmz
-    addsec $tmp $tmpvmz.gz vmlinux.strip
-    rm $tmpvmz.gz
-fi
-
-if [ -n "$initrd" ]; then
-    addsec $tmp "$initrd" initrd
-fi
-
-if [ -n "$dtb" ]; then
-    addsec $tmp "$dtb" dtb
-fi
-
-${CROSS}ld -m elf32ppc -T $lds -o "$ofile" \
-	$object/crt0.o $platformo $tmp $object/wrapper.a
-
-rm $tmp
-
-# post-processing needed for some platforms
-case "$platform" in
-pseries)
-    $object/addnote "$ofile"
-    ;;
-pmaccoff)
-    ${CROSS}objcopy -O aixcoff-rs6000 --set-start 0x500000 "$ofile"
-    $object/hack-coff "$ofile"
-    ;;
-esac
+--linas
