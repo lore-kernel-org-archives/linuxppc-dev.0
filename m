@@ -1,33 +1,20 @@
-Return-Path: <jdub@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from wvmler3.mail.xerox.com (wvmler3.mail.xerox.com [13.8.138.218])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 90D8067B66
+	(Client CN "wvmler3.mail.xerox.com",
+	Issuer "wvmler3.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8B2C767B73
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Sep 2006 02:28:35 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e32.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8KGSXCb021909
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Sep 2006 12:28:33 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8KGSX55182800
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Sep 2006 10:28:33 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8KGSWfb018576
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Sep 2006 10:28:32 -0600
-Subject: Re: how an application program utilizes the driver.
-From: Josh Boyer <jdub@us.ibm.com>
-To: David Hawkins <dwh@ovro.caltech.edu>
-In-Reply-To: <451168F6.3030701@ovro.caltech.edu>
-References: <BAY110-F240E99BA0EDF765EC09402B2230@phx.gbl>
-	<451168F6.3030701@ovro.caltech.edu>
-Content-Type: text/plain
-Date: Wed, 20 Sep 2006 11:30:55 -0500
-Message-Id: <1158769855.3121.39.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 21 Sep 2006 03:08:10 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Couldn't find reference for i2c_smbus functinos
+Date: Wed, 20 Sep 2006 17:27:17 +0100
+Message-ID: <35786B99AB3FDC45A821572461791973D76E67@gbrwgceumf01.eu.xerox.net>
+In-Reply-To: <8584FDC94AFF7640B17B8A89B23B19B34F6576@sbsserver.AlphionCorp.local>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "Sachin Rane" <SRane@alphion.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,12 +25,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-09-20 at 09:14 -0700, David Hawkins wrote:
-> 
-> You really should read through Linux Device Drivers by Rubini,
+> You can do SMBus level transactions (see documentation file
+smbus-protocol
+> for details) through the following functions:
+>   __s32 i2c_smbus_write_quick(int file, __u8 value);
+> ...
+> Am I missing any information about the location of the above
+functions?
 
-Which is available here:
+Try reading
+http://www.lm-sensors.org/browser/i2c/trunk/doc/dev-interface
+and other material on the lm-sensors site
 
-http://lwn.net/Kernel/LDD3/
+> Do I need to implement the above functions?
 
-josh
+No.
