@@ -1,19 +1,20 @@
-Return-Path: <Phil.Mathews@innocon.com>
-Received: from mail.innocon.com (mail.innocon.com [12.109.49.15])
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3D0B567B59
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0789B67B66
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Sep 2006 01:56:31 +1000 (EST)
+	Thu, 21 Sep 2006 02:15:23 +1000 (EST)
+Message-ID: <451168F6.3030701@ovro.caltech.edu>
+Date: Wed, 20 Sep 2006 09:14:46 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6DCCD.54DC233F"
-Subject: Unable to mount jffs2
-Date: Wed, 20 Sep 2006 11:55:12 -0400
-Message-ID: <3E8081396F6B524BA2854E7FA3F16438042EB1F4@mail.innocon.com>
-References: <20060914005216.72C23353C57@atlas.denx.de>
-From: "Mathews, Phil" <Phil.Mathews@innocon.com>
-To: "Wolfgang Denk" <wd@denx.de>,
-	<shyi@bmrtech.com>
+To: Ming Liu <eemingliu@hotmail.com>
+Subject: Re: how an application program utilizes the driver.
+References: <BAY110-F240E99BA0EDF765EC09402B2230@phx.gbl>
+In-Reply-To: <BAY110-F240E99BA0EDF765EC09402B2230@phx.gbl>
+Content-Type: text/plain; charset=GB2312
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,137 +26,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi Ming,
 
-------_=_NextPart_001_01C6DCCD.54DC233F
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_002_01C6DCCD.54DC233F"
+> My situation is: I want to write a driver for my custom device.(In the 
+> driver there are some functions defined to read or write my device.) Then 
+> in my application program, I use these defined functions to operate my 
+> hardware device. I think this is a normal process to operate the hardware 
+> with driver+app, right? 
+
+Right, but you've missed a few critical points.
+
+For your custom device, you'll create a driver that implements
+*kernel space* functions my_driver_open(), read(), write(), close()
+etc. You'll install that module and create an appropriate
+device node, eg. /dev/my_driver.
+
+In your *user-space* application code, you'll open that device
+
+int main(argc, argv) ...
+
+  int fd = open("/dev/my_driver" ...)
 
 
-------_=_NextPart_002_01C6DCCD.54DC233F
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+and then write to your device ...
 
-See attachment
+  int write(fd, buffer, len);
 
---  Phil Mathews =20
-    Innovative Concepts, Inc.=20
-    8200 Greensboro Dr., Suite 700=20
-    McLean, VA 22102=20
-    703-893-2007 x478=20
-    phil.mathews@innocon.com   =20
+or read from your device ...
 
+  int read(fd, buffer, len);
 
-------_=_NextPart_002_01C6DCCD.54DC233F
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+The user-space calls open, read, write eventually call down into
+your driver space code. The driver and application are not
+linked, they communicate via the /dev interface.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>Unable to mount jffs2</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+You really should read through Linux Device Drivers by Rubini,
+or check out a tutorial such as
 
-<P><FONT SIZE=3D2>See attachment<BR>
-<BR>
---&nbsp; Phil Mathews&nbsp;<BR>
-&nbsp;&nbsp;&nbsp; Innovative Concepts, Inc.<BR>
-&nbsp;&nbsp;&nbsp; 8200 Greensboro Dr., Suite 700<BR>
-&nbsp;&nbsp;&nbsp; McLean, VA 22102<BR>
-&nbsp;&nbsp;&nbsp; 703-893-2007 x478<BR>
-&nbsp;&nbsp;&nbsp; phil.mathews@innocon.com&nbsp;&nbsp;&nbsp;<BR>
-<BR>
-</FONT>
-</P>
+http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
+http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
+http://www.ovro.caltech.edu/~dwh/correlator/index.html
 
-</BODY>
-</HTML>
-------_=_NextPart_002_01C6DCCD.54DC233F--
-
-------_=_NextPart_001_01C6DCCD.54DC233F
-Content-Type: application/octet-stream;
-	name="error"
-Content-Transfer-Encoding: base64
-Content-Description: error
-Content-Disposition: attachment;
-	filename="error"
-
-SSBhbSB1bmFibGUgdG8gbW91bnQgYSBqZmZzMiBmaWxlc3lzdGVtIG9uIGEgMi42LjE1IGtlcm5l
-bCBidWlsZCBmcm9tIEVMREsuCkl0IGFwcGVhcnMgdGhlIHRoZSBlcmFzZSBibG9jayBzaXplICgw
-eDQwMDAwKSBkb2VzIG5vdCBnZXQgdHJhbnNmZXJyZWQgdG8gdGhlIHRhcmdldCBNUEM4MjcyQURT
-LiAgTG9va2luZyBhdCB0aGUgcmVzdWx0cyBiZWxvdywgdGhlIHRhcmdldCBNVEQgZHJpdmVyIGlz
-IGFzc3VtaW5nIGEgMHgyMDAwMCBlcmFzZSBibG9jayBzaXplLgoKQ29tbWFuZHMgdG8gYnVpbGQg
-amZmczIgZmlsZXN5c3RlbSBvbiBQQzoKCi9vcHQvZnJlZXNjYWxlL2x0aWIvdXNyL2Jpbi9ta2Zz
-LmpmZnMyIC1kIGJpbiAtbyAvbmZzcm9vdC9iaW4gLWIgLXEgLXYgLWUgMHg0MDAwMAoKe05vdGUg
-LSB1c2luZyAvaG9tZS9tYXRoZXdzL2VsZGsvdXNyL2Jpbi9ta2ZzLmpmZnMyIGRpZG4ndCBtYWtl
-IGEgZGlmZmVyZW5jZX0KCgpSZWxldmFudCBwb3J0aW9ucyBvZiAuY29uZmlnOgo9PT09PT09PT09
-PT09PTg8PT09PT09PT09PT09PT04PD09PT09PT09PT09PT09CiMKIyBNZW1vcnkgVGVjaG5vbG9n
-eSBEZXZpY2VzIChNVEQpCiMKQ09ORklHX01URD15CkNPTkZJR19NVERfREVCVUc9eQpDT05GSUdf
-TVREX0RFQlVHX1ZFUkJPU0U9MwpDT05GSUdfTVREX0NPTkNBVD15CkNPTkZJR19NVERfUEFSVElU
-SU9OUz15CiMgQ09ORklHX01URF9SRURCT09UX1BBUlRTIGlzIG5vdCBzZXQKQ09ORklHX01URF9D
-TURMSU5FX1BBUlRTPXkKCiMKIyBVc2VyIE1vZHVsZXMgQW5kIFRyYW5zbGF0aW9uIExheWVycwoj
-CkNPTkZJR19NVERfQ0hBUj15CkNPTkZJR19NVERfQkxPQ0s9eQojIENPTkZJR19GVEwgaXMgbm90
-IHNldAojIENPTkZJR19ORlRMIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5GVEwgaXMgbm90IHNldAoj
-IENPTkZJR19SRkRfRlRMIGlzIG5vdCBzZXQKCiMKIyBSQU0vUk9NL0ZsYXNoIGNoaXAgZHJpdmVy
-cwojCkNPTkZJR19NVERfQ0ZJPXkKIyBDT05GSUdfTVREX0pFREVDUFJPQkUgaXMgbm90IHNldApD
-T05GSUdfTVREX0dFTl9QUk9CRT15CkNPTkZJR19NVERfQ0ZJX0FEVl9PUFRJT05TPXkKQ09ORklH
-X01URF9DRklfTk9TV0FQPXkKIyBDT05GSUdfTVREX0NGSV9CRV9CWVRFX1NXQVAgaXMgbm90IHNl
-dAojIENPTkZJR19NVERfQ0ZJX0xFX0JZVEVfU1dBUCBpcyBub3Qgc2V0CkNPTkZJR19NVERfQ0ZJ
-X0dFT01FVFJZPXkKIyBDT05GSUdfTVREX01BUF9CQU5LX1dJRFRIXzEgaXMgbm90IHNldAojIENP
-TkZJR19NVERfTUFQX0JBTktfV0lEVEhfMiBpcyBub3Qgc2V0CkNPTkZJR19NVERfTUFQX0JBTktf
-V0lEVEhfND15CiMgQ09ORklHX01URF9NQVBfQkFOS19XSURUSF84IGlzIG5vdCBzZXQKIyBDT05G
-SUdfTVREX01BUF9CQU5LX1dJRFRIXzE2IGlzIG5vdCBzZXQKIyBDT05GSUdfTVREX01BUF9CQU5L
-X1dJRFRIXzMyIGlzIG5vdCBzZXQKIyBDT05GSUdfTVREX0NGSV9JMSBpcyBub3Qgc2V0CiMgQ09O
-RklHX01URF9DRklfSTIgaXMgbm90IHNldApDT05GSUdfTVREX0NGSV9JND15CiMgQ09ORklHX01U
-RF9DRklfSTggaXMgbm90IHNldAojIENPTkZJR19NVERfT1RQIGlzIG5vdCBzZXQKQ09ORklHX01U
-RF9DRklfSU5URUxFWFQ9eQpDT05GSUdfTVREX0NGSV9BTURTVEQ9eQpDT05GSUdfTVREX0NGSV9B
-TURTVERfUkVUUlk9MgpDT05GSUdfTVREX0NGSV9TVEFBPXkKQ09ORklHX01URF9DRklfVVRJTD15
-CkNPTkZJR19NVERfUkFNPXkKQ09ORklHX01URF9ST009eQojIENPTkZJR19NVERfQUJTRU5UIGlz
-IG5vdCBzZXQKCiMKIyBNYXBwaW5nIGRyaXZlcnMgZm9yIGNoaXAgYWNjZXNzCiMKQ09ORklHX01U
-RF9DT01QTEVYX01BUFBJTkdTPXkKQ09ORklHX01URF9QSFlTTUFQPXkKQ09ORklHX01URF9QSFlT
-TUFQX1NUQVJUPTB4ZmUwMDAwMDAKQ09ORklHX01URF9QSFlTTUFQX0xFTj0weDIwMDAwMDAKQ09O
-RklHX01URF9QSFlTTUFQX0JBTktXSURUSD00CiMgQ09ORklHX01URF9QTTgyWCBpcyBub3Qgc2V0
-CiMgQ09ORklHX01URF9QQ0kgaXMgbm90IHNldAojIENPTkZJR19NVERfUExBVFJBTSBpcyBub3Qg
-c2V0Cj09PT09PT09PT09PT09ODw9PT09PT09PT09PT09PTg8PT09PT09PT09PT09PT0KCkF0dGVt
-cHRzIHRvIG1vdW50IGpmZnMyIGZzIG9uIHRhcmdldDoKCiMgaGV4ZHVtcCAtbiAxMDI0IC9kZXYv
-bXRkYmxvY2syIHwgbW9yZQowMDAwMDAwIDE5ODUgMjAwNSAwMDAwIDAwMTggNjVmYSBmZDQ1IDAw
-MDAgMDAwMAowMDAwMDEwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMTk4NSBlMDAxIDAwMDAgMDAyYgow
-MDAwMDIwIDNlNDIgMjQyNyAwMDAwIDAwMDEgMDAwMCAwMDAwIDAwMDAgMDAwMgowMDAwMDMwIDQ1
-MTAgNGI5NCAwMzA0IDAwMDAgZmMxYyBmZDM5IGQzYWUgYTQ1YQowMDAwMDQwIDc0NmQgNzBmZiAx
-OTg1IGUwMDIgMDAwMCAwMDQ0IGE0ZWYgMjIzZQowMDAwMDUwIDAwMDAgMDAwMiAwMDAwIDAwMDEg
-MDAwMCA0MWVkIDdkMTAgMDA2NAowMDAwMDYwIDAwMDAgMDAwMCA0NTEwIDRiOTQgNDUxMCA0Yjk0
-IDQ1MTAgNGI5NAowMDAwMDcwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAw
-MAowMDAwMDgwIDAwMDAgMDAwMCA2OWY0IGM4ZWEgZmZmZiBmZmZmIGZmZmYgZmZmZgowMDAwMDkw
-IGZmZmYgZmZmZiBmZmZmIGZmZmYgZmZmZiBmZmZmIGZmZmYgZmZmZgoqCjAwMDA0MDAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICMgbW91bnQgLW8gcmVtb3VudCxydyAvZGV2L3JhbTAgLwojIG1rZGlyIC9tbnQKIyBt
-b3VudCAtdCBqZmZzMiAvZGV2L210ZGJsb2NrMiAvbW50CiMgRXJhc2UgYXQgMHgwMDE2MDAwMCBm
-YWlsZWQgaW1tZWRpYXRlbHk6IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CkVyYXNlIGF0
-IDB4MDAxNDAwMDAgZmFpbGVkIGltbWVkaWF0ZWx5OiAtRVJPRlMuIElzIHRoZSBzZWN0b3IgbG9j
-a2VkPwpFcmFzZSBhdCAweDAwMTIwMDAwIGZhaWxlZCBpbW1lZGlhdGVseTogLUVST0ZTLiBJcyB0
-aGUgc2VjdG9yIGxvY2tlZD8KRXJhc2UgYXQgMHgwMDEwMDAwMCBmYWlsZWQgaW1tZWRpYXRlbHk6
-IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CkVyYXNlIGF0IDB4MDAwZTAwMDAgZmFpbGVk
-IGltbWVkaWF0ZWx5OiAtRVJPRlMuIElzIHRoZSBzZWN0b3IgbG9ja2VkPwpFcmFzZSBhdCAweDAw
-MGMwMDAwIGZhaWxlZCBpbW1lZGlhdGVseTogLUVST0ZTLiBJcyB0aGUgc2VjdG9yIGxvY2tlZD8K
-RXJhc2UgYXQgMHgwMDBhMDAwMCBmYWlsZWQgaW1tZWRpYXRlbHk6IC1FUk9GUy4gSXMgdGhlIHNl
-Y3RvciBsb2NrZWQ/CkVyYXNlIGF0IDB4MDAwODAwMDAgZmFpbGVkIGltbWVkaWF0ZWx5OiAtRVJP
-RlMuIElzIHRoZSBzZWN0b3IgbG9ja2VkPwpFcmFzZSBhdCAweDAwMDYwMDAwIGZhaWxlZCBpbW1l
-ZGlhdGVseTogLUVST0ZTLiBJcyB0aGUgc2VjdG9yIGxvY2tlZD8KRXJhc2UgYXQgMHgwMDA0MDAw
-MCBmYWlsZWQgaW1tZWRpYXRlbHk6IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CkVyYXNl
-IGF0IDB4MDAwMjAwMDAgZmFpbGVkIGltbWVkaWF0ZWx5OiAtRVJPRlMuIElzIHRoZSBzZWN0b3Ig
-bG9ja2VkPwpFcmFzZSBhdCAweDAwMWEwMDAwIGZhaWxlZCBpbW1lZGlhdGVseTogLUVST0ZTLiBJ
-cyB0aGUgc2VjdG9yIGxvY2tlZD8KRXJhc2UgYXQgMHgwMDE4MDAwMCBmYWlsZWQgaW1tZWRpYXRl
-bHk6IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CmRmCkZpbGVzeXN0ZW0gICAgICAgICAg
-IDFrLWJsb2NrcyAgICAgIFVzZWQgQXZhaWxhYmxlIFVzZSUgTW91bnRlZCBvbgovZGV2L3JhbTAg
-ICAgICAgICAgICAgICAgIDQwMzcgICAgICAzMTMzICAgICAgIDkwNCAgNzglIC8KL2Rldi9tdGRi
-bG9jazIgICAgICAgICAgICAxNzkyICAgICAgMTc5MiAgICAgICAgIDAgMTAwJSAvbW50Cgo=
-
-------_=_NextPart_001_01C6DCCD.54DC233F--
+Regards,
+Dave
