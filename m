@@ -1,17 +1,20 @@
-Return-Path: <SRane@alphion.com>
-Received: from alphion.com (unknown [66.147.184.82])
-	by ozlabs.org (Postfix) with ESMTP id B9238679FD
+Return-Path: <Phil.Mathews@innocon.com>
+Received: from mail.innocon.com (mail.innocon.com [12.109.49.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3D0B567B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Sep 2006 01:08:30 +1000 (EST)
+	Thu, 21 Sep 2006 01:56:31 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6DCC6.A1127019"
-Subject: Couldn't find reference for i2c_smbus functinos
-Date: Wed, 20 Sep 2006 11:07:52 -0400
-Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F6576@sbsserver.AlphionCorp.local>
-References: <8584FDC94AFF7640B17B8A89B23B19B34F6573@sbsserver.AlphionCorp.local>
-From: "Sachin Rane" <SRane@alphion.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6DCCD.54DC233F"
+Subject: Unable to mount jffs2
+Date: Wed, 20 Sep 2006 11:55:12 -0400
+Message-ID: <3E8081396F6B524BA2854E7FA3F16438042EB1F4@mail.innocon.com>
+References: <20060914005216.72C23353C57@atlas.denx.de>
+From: "Mathews, Phil" <Phil.Mathews@innocon.com>
+To: "Wolfgang Denk" <wd@denx.de>,
+	<shyi@bmrtech.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,93 +27,135 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6DCC6.A1127019
+------_=_NextPart_001_01C6DCCD.54DC233F
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_002_01C6DCCD.54DC233F"
+
+
+------_=_NextPart_002_01C6DCCD.54DC233F
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-=20
-Following text is from "/usr/local/linux/Doumentation/dev-interface":
--------------------------------------------------------------------------=
----------------------------------------------------------
-You can do SMBus level transactions (see documentation file =
-smbus-protocol
-for details) through the following functions:
-  __s32 i2c_smbus_write_quick(int file, __u8 value);
-  __s32 i2c_smbus_read_byte(int file);
-  __s32 i2c_smbus_write_byte(int file, __u8 value);
-  __s32 i2c_smbus_read_byte_data(int file, __u8 command);
-  __s32 i2c_smbus_write_byte_data(int file, __u8 command, __u8 value);
-  __s32 i2c_smbus_read_word_data(int file, __u8 command);
-  __s32 i2c_smbus_write_word_data(int file, __u8 command, __u16 value);
-  __s32 i2c_smbus_process_call(int file, __u8 command, __u16 value);
-  __s32 i2c_smbus_read_block_data(int file, __u8 command, __u8 *values);
-  __s32 i2c_smbus_write_block_data(int file, __u8 command, __u8 length,
-                                   __u8 *values);
--------------------------------------------------------------------------=
---------------
-=20
-I searched in the 2.6.13 version of Timesys and Suse linux, but I didn't =
-find definition or declaration in file '/usr/include/linux/i2c-dev.h' =
-and '/usr/include/linux/i2c.h'.
-=20
-Am I missing any information about the location of the above functions?
-Do I need to implement the above functions?
-=20
-Thanks and Regards,
-Sachin Rane
-=20
+See attachment
 
-------_=_NextPart_001_01C6DCC6.A1127019
+--  Phil Mathews =20
+    Innovative Concepts, Inc.=20
+    8200 Greensboro Dr., Suite 700=20
+    McLean, VA 22102=20
+    703-893-2007 x478=20
+    phil.mathews@innocon.com   =20
+
+
+------_=_NextPart_002_01C6DCCD.54DC233F
 Content-Type: text/html;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-<HTML dir=3Dltr><HEAD>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText30054 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>Hi,</FONT></DIV></DIV>=0A=
-<DIV dir=3Dltr>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Following text is from =
-"/usr/local/linux/Doumentation/dev-interface":</FONT></DIV>=0A=
-<DIV><FONT face=3DArial =
-size=3D2>----------------------------------------------------------------=
-------------------------------------------------------------------</FONT>=
-</DIV>=0A=
-<DIV>You can do SMBus level transactions (see documentation file =
-smbus-protocol<BR>for details) through the following =
-functions:<BR>&nbsp; __s32 i2c_smbus_write_quick(int file, __u8 =
-value);<BR>&nbsp; __s32 i2c_smbus_read_byte(int file);<BR>&nbsp; __s32 =
-i2c_smbus_write_byte(int file, __u8 value);<BR>&nbsp; __s32 =
-i2c_smbus_read_byte_data(int file, __u8 command);<BR>&nbsp; __s32 =
-i2c_smbus_write_byte_data(int file, __u8 command, __u8 value);<BR>&nbsp; =
-__s32 i2c_smbus_read_word_data(int file, __u8 command);<BR>&nbsp; __s32 =
-i2c_smbus_write_word_data(int file, __u8 command, __u16 =
-value);<BR>&nbsp; __s32 i2c_smbus_process_call(int file, __u8 command, =
-__u16 value);<BR>&nbsp; __s32 i2c_smbus_read_block_data(int file, __u8 =
-command, __u8 *values);<BR>&nbsp; __s32 i2c_smbus_write_block_data(int =
-file, __u8 command, __u8 =
-length,<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-__u8 *values);</DIV>=0A=
-<DIV>--------------------------------------------------------------------=
--------------------</DIV>=0A=
-<DIV>&nbsp;</DIV>=0A=
-<DIV>I searched in the 2.6.13 version of Timesys and Suse linux, but I =
-didn't find definition or declaration in file =
-'/usr/include/linux/i2c-dev.h' and '/usr/include/linux/i2c.h'.</DIV>=0A=
-<DIV>&nbsp;</DIV>=0A=
-<DIV>Am I missing any information about the location of the above =
-functions?</DIV>=0A=
-<DIV>Do I need to implement the above functions?</DIV>=0A=
-<DIV>&nbsp;</DIV>=0A=
-<DIV>Thanks and Regards,</DIV>=0A=
-<DIV>Sachin Rane</DIV>=0A=
-<DIV>&nbsp;</DIV></DIV></BODY></HTML>
-------_=_NextPart_001_01C6DCC6.A1127019--
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>Unable to mount jffs2</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>See attachment<BR>
+<BR>
+--&nbsp; Phil Mathews&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; Innovative Concepts, Inc.<BR>
+&nbsp;&nbsp;&nbsp; 8200 Greensboro Dr., Suite 700<BR>
+&nbsp;&nbsp;&nbsp; McLean, VA 22102<BR>
+&nbsp;&nbsp;&nbsp; 703-893-2007 x478<BR>
+&nbsp;&nbsp;&nbsp; phil.mathews@innocon.com&nbsp;&nbsp;&nbsp;<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_002_01C6DCCD.54DC233F--
+
+------_=_NextPart_001_01C6DCCD.54DC233F
+Content-Type: application/octet-stream;
+	name="error"
+Content-Transfer-Encoding: base64
+Content-Description: error
+Content-Disposition: attachment;
+	filename="error"
+
+SSBhbSB1bmFibGUgdG8gbW91bnQgYSBqZmZzMiBmaWxlc3lzdGVtIG9uIGEgMi42LjE1IGtlcm5l
+bCBidWlsZCBmcm9tIEVMREsuCkl0IGFwcGVhcnMgdGhlIHRoZSBlcmFzZSBibG9jayBzaXplICgw
+eDQwMDAwKSBkb2VzIG5vdCBnZXQgdHJhbnNmZXJyZWQgdG8gdGhlIHRhcmdldCBNUEM4MjcyQURT
+LiAgTG9va2luZyBhdCB0aGUgcmVzdWx0cyBiZWxvdywgdGhlIHRhcmdldCBNVEQgZHJpdmVyIGlz
+IGFzc3VtaW5nIGEgMHgyMDAwMCBlcmFzZSBibG9jayBzaXplLgoKQ29tbWFuZHMgdG8gYnVpbGQg
+amZmczIgZmlsZXN5c3RlbSBvbiBQQzoKCi9vcHQvZnJlZXNjYWxlL2x0aWIvdXNyL2Jpbi9ta2Zz
+LmpmZnMyIC1kIGJpbiAtbyAvbmZzcm9vdC9iaW4gLWIgLXEgLXYgLWUgMHg0MDAwMAoKe05vdGUg
+LSB1c2luZyAvaG9tZS9tYXRoZXdzL2VsZGsvdXNyL2Jpbi9ta2ZzLmpmZnMyIGRpZG4ndCBtYWtl
+IGEgZGlmZmVyZW5jZX0KCgpSZWxldmFudCBwb3J0aW9ucyBvZiAuY29uZmlnOgo9PT09PT09PT09
+PT09PTg8PT09PT09PT09PT09PT04PD09PT09PT09PT09PT09CiMKIyBNZW1vcnkgVGVjaG5vbG9n
+eSBEZXZpY2VzIChNVEQpCiMKQ09ORklHX01URD15CkNPTkZJR19NVERfREVCVUc9eQpDT05GSUdf
+TVREX0RFQlVHX1ZFUkJPU0U9MwpDT05GSUdfTVREX0NPTkNBVD15CkNPTkZJR19NVERfUEFSVElU
+SU9OUz15CiMgQ09ORklHX01URF9SRURCT09UX1BBUlRTIGlzIG5vdCBzZXQKQ09ORklHX01URF9D
+TURMSU5FX1BBUlRTPXkKCiMKIyBVc2VyIE1vZHVsZXMgQW5kIFRyYW5zbGF0aW9uIExheWVycwoj
+CkNPTkZJR19NVERfQ0hBUj15CkNPTkZJR19NVERfQkxPQ0s9eQojIENPTkZJR19GVEwgaXMgbm90
+IHNldAojIENPTkZJR19ORlRMIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5GVEwgaXMgbm90IHNldAoj
+IENPTkZJR19SRkRfRlRMIGlzIG5vdCBzZXQKCiMKIyBSQU0vUk9NL0ZsYXNoIGNoaXAgZHJpdmVy
+cwojCkNPTkZJR19NVERfQ0ZJPXkKIyBDT05GSUdfTVREX0pFREVDUFJPQkUgaXMgbm90IHNldApD
+T05GSUdfTVREX0dFTl9QUk9CRT15CkNPTkZJR19NVERfQ0ZJX0FEVl9PUFRJT05TPXkKQ09ORklH
+X01URF9DRklfTk9TV0FQPXkKIyBDT05GSUdfTVREX0NGSV9CRV9CWVRFX1NXQVAgaXMgbm90IHNl
+dAojIENPTkZJR19NVERfQ0ZJX0xFX0JZVEVfU1dBUCBpcyBub3Qgc2V0CkNPTkZJR19NVERfQ0ZJ
+X0dFT01FVFJZPXkKIyBDT05GSUdfTVREX01BUF9CQU5LX1dJRFRIXzEgaXMgbm90IHNldAojIENP
+TkZJR19NVERfTUFQX0JBTktfV0lEVEhfMiBpcyBub3Qgc2V0CkNPTkZJR19NVERfTUFQX0JBTktf
+V0lEVEhfND15CiMgQ09ORklHX01URF9NQVBfQkFOS19XSURUSF84IGlzIG5vdCBzZXQKIyBDT05G
+SUdfTVREX01BUF9CQU5LX1dJRFRIXzE2IGlzIG5vdCBzZXQKIyBDT05GSUdfTVREX01BUF9CQU5L
+X1dJRFRIXzMyIGlzIG5vdCBzZXQKIyBDT05GSUdfTVREX0NGSV9JMSBpcyBub3Qgc2V0CiMgQ09O
+RklHX01URF9DRklfSTIgaXMgbm90IHNldApDT05GSUdfTVREX0NGSV9JND15CiMgQ09ORklHX01U
+RF9DRklfSTggaXMgbm90IHNldAojIENPTkZJR19NVERfT1RQIGlzIG5vdCBzZXQKQ09ORklHX01U
+RF9DRklfSU5URUxFWFQ9eQpDT05GSUdfTVREX0NGSV9BTURTVEQ9eQpDT05GSUdfTVREX0NGSV9B
+TURTVERfUkVUUlk9MgpDT05GSUdfTVREX0NGSV9TVEFBPXkKQ09ORklHX01URF9DRklfVVRJTD15
+CkNPTkZJR19NVERfUkFNPXkKQ09ORklHX01URF9ST009eQojIENPTkZJR19NVERfQUJTRU5UIGlz
+IG5vdCBzZXQKCiMKIyBNYXBwaW5nIGRyaXZlcnMgZm9yIGNoaXAgYWNjZXNzCiMKQ09ORklHX01U
+RF9DT01QTEVYX01BUFBJTkdTPXkKQ09ORklHX01URF9QSFlTTUFQPXkKQ09ORklHX01URF9QSFlT
+TUFQX1NUQVJUPTB4ZmUwMDAwMDAKQ09ORklHX01URF9QSFlTTUFQX0xFTj0weDIwMDAwMDAKQ09O
+RklHX01URF9QSFlTTUFQX0JBTktXSURUSD00CiMgQ09ORklHX01URF9QTTgyWCBpcyBub3Qgc2V0
+CiMgQ09ORklHX01URF9QQ0kgaXMgbm90IHNldAojIENPTkZJR19NVERfUExBVFJBTSBpcyBub3Qg
+c2V0Cj09PT09PT09PT09PT09ODw9PT09PT09PT09PT09PTg8PT09PT09PT09PT09PT0KCkF0dGVt
+cHRzIHRvIG1vdW50IGpmZnMyIGZzIG9uIHRhcmdldDoKCiMgaGV4ZHVtcCAtbiAxMDI0IC9kZXYv
+bXRkYmxvY2syIHwgbW9yZQowMDAwMDAwIDE5ODUgMjAwNSAwMDAwIDAwMTggNjVmYSBmZDQ1IDAw
+MDAgMDAwMAowMDAwMDEwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMTk4NSBlMDAxIDAwMDAgMDAyYgow
+MDAwMDIwIDNlNDIgMjQyNyAwMDAwIDAwMDEgMDAwMCAwMDAwIDAwMDAgMDAwMgowMDAwMDMwIDQ1
+MTAgNGI5NCAwMzA0IDAwMDAgZmMxYyBmZDM5IGQzYWUgYTQ1YQowMDAwMDQwIDc0NmQgNzBmZiAx
+OTg1IGUwMDIgMDAwMCAwMDQ0IGE0ZWYgMjIzZQowMDAwMDUwIDAwMDAgMDAwMiAwMDAwIDAwMDEg
+MDAwMCA0MWVkIDdkMTAgMDA2NAowMDAwMDYwIDAwMDAgMDAwMCA0NTEwIDRiOTQgNDUxMCA0Yjk0
+IDQ1MTAgNGI5NAowMDAwMDcwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAw
+MAowMDAwMDgwIDAwMDAgMDAwMCA2OWY0IGM4ZWEgZmZmZiBmZmZmIGZmZmYgZmZmZgowMDAwMDkw
+IGZmZmYgZmZmZiBmZmZmIGZmZmYgZmZmZiBmZmZmIGZmZmYgZmZmZgoqCjAwMDA0MDAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICMgbW91bnQgLW8gcmVtb3VudCxydyAvZGV2L3JhbTAgLwojIG1rZGlyIC9tbnQKIyBt
+b3VudCAtdCBqZmZzMiAvZGV2L210ZGJsb2NrMiAvbW50CiMgRXJhc2UgYXQgMHgwMDE2MDAwMCBm
+YWlsZWQgaW1tZWRpYXRlbHk6IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CkVyYXNlIGF0
+IDB4MDAxNDAwMDAgZmFpbGVkIGltbWVkaWF0ZWx5OiAtRVJPRlMuIElzIHRoZSBzZWN0b3IgbG9j
+a2VkPwpFcmFzZSBhdCAweDAwMTIwMDAwIGZhaWxlZCBpbW1lZGlhdGVseTogLUVST0ZTLiBJcyB0
+aGUgc2VjdG9yIGxvY2tlZD8KRXJhc2UgYXQgMHgwMDEwMDAwMCBmYWlsZWQgaW1tZWRpYXRlbHk6
+IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CkVyYXNlIGF0IDB4MDAwZTAwMDAgZmFpbGVk
+IGltbWVkaWF0ZWx5OiAtRVJPRlMuIElzIHRoZSBzZWN0b3IgbG9ja2VkPwpFcmFzZSBhdCAweDAw
+MGMwMDAwIGZhaWxlZCBpbW1lZGlhdGVseTogLUVST0ZTLiBJcyB0aGUgc2VjdG9yIGxvY2tlZD8K
+RXJhc2UgYXQgMHgwMDBhMDAwMCBmYWlsZWQgaW1tZWRpYXRlbHk6IC1FUk9GUy4gSXMgdGhlIHNl
+Y3RvciBsb2NrZWQ/CkVyYXNlIGF0IDB4MDAwODAwMDAgZmFpbGVkIGltbWVkaWF0ZWx5OiAtRVJP
+RlMuIElzIHRoZSBzZWN0b3IgbG9ja2VkPwpFcmFzZSBhdCAweDAwMDYwMDAwIGZhaWxlZCBpbW1l
+ZGlhdGVseTogLUVST0ZTLiBJcyB0aGUgc2VjdG9yIGxvY2tlZD8KRXJhc2UgYXQgMHgwMDA0MDAw
+MCBmYWlsZWQgaW1tZWRpYXRlbHk6IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CkVyYXNl
+IGF0IDB4MDAwMjAwMDAgZmFpbGVkIGltbWVkaWF0ZWx5OiAtRVJPRlMuIElzIHRoZSBzZWN0b3Ig
+bG9ja2VkPwpFcmFzZSBhdCAweDAwMWEwMDAwIGZhaWxlZCBpbW1lZGlhdGVseTogLUVST0ZTLiBJ
+cyB0aGUgc2VjdG9yIGxvY2tlZD8KRXJhc2UgYXQgMHgwMDE4MDAwMCBmYWlsZWQgaW1tZWRpYXRl
+bHk6IC1FUk9GUy4gSXMgdGhlIHNlY3RvciBsb2NrZWQ/CmRmCkZpbGVzeXN0ZW0gICAgICAgICAg
+IDFrLWJsb2NrcyAgICAgIFVzZWQgQXZhaWxhYmxlIFVzZSUgTW91bnRlZCBvbgovZGV2L3JhbTAg
+ICAgICAgICAgICAgICAgIDQwMzcgICAgICAzMTMzICAgICAgIDkwNCAgNzglIC8KL2Rldi9tdGRi
+bG9jazIgICAgICAgICAgICAxNzkyICAgICAgMTc5MiAgICAgICAgIDAgMTAwJSAvbW50Cgo=
+
+------_=_NextPart_001_01C6DCCD.54DC233F--
