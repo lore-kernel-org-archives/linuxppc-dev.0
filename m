@@ -1,17 +1,17 @@
-Return-Path: <kelsey@codemonkey.net>
-Received: from z.codemonkey.net (z.codemonkey.net [64.142.120.45])
-	by ozlabs.org (Postfix) with ESMTP id 2DAA4679FB
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.9])
+	by ozlabs.org (Postfix) with ESMTP id B542967A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Sep 2006 16:44:17 +1000 (EST)
-Date: Wed, 20 Sep 2006 00:20:04 -0600
-From: Kelsey Dawes <kelsey@codemonkey.net>
-To: Steven Hein <ssh@sgi.com>
-Subject: Re: JTAG debugger for MPC82xx/MPC83xx
-Message-ID: <20060920062004.GS29707@nimrod.unx.ca>
-References: <4510664B.2020304@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4510664B.2020304@sgi.com>
+	Wed, 20 Sep 2006 22:38:29 +1000 (EST)
+Subject: Re: linux-2.6 system ACE driver - need help
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: agnel juni <junijoseph@yahoo.co.in>
+In-Reply-To: <20060919224349.25812.qmail@web8408.mail.in.yahoo.com>
+References: <20060919224349.25812.qmail@web8408.mail.in.yahoo.com>
+Content-Type: text/plain
+Date: Wed, 20 Sep 2006 08:38:45 -0400
+Message-Id: <1158755925.8564.19.camel@sumo-jaa>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,32 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 19, 2006 at 04:51:07PM -0500, Steven Hein wrote:
-> Hi,
+On Tue, 2006-09-19 at 23:43 +0100, agnel juni wrote:
 
-Hi,
+> First, I would like to know if the driver tested in interrupt mode.
 
-<SNIP>
+Does it work for you in polling mode?  If not, you probably have a
+problem with the way you are accessing the system ace - cache,
+endianess, byte alignment, etc.  If it does work in polling, the usual
+suspects are interrupt masking errors or some low level problems with
+your IRQ signals.  Since you know the size of a sector and the size of
+the sysace buffers, how many interrupts do you get per sector read?  Do
+you see extras or not enough?
 
-> We will definitely want one with a network connection,
-> and will will run the debugger software from a Linux host.
-> Ideally, we would also like one that provides a library
-> to allow us to write apps to function the debugger.
+> We are able to mount the CF, but it is very inconsistent.
+
+Dump the sector data to the screen that you are reading from the CF.
+Especially look at the results from the initial identify command to
+verify that they make sense, and because that is the easiest to check.
+
+> Same is the case with fdisk command. When it fails,we get errors which you could see in the screen-dump below.
+> Are we missing to apply the right patch? Please let us know your
+> inputs to go forward.
+> Looking forwards for your reply.
+
 > 
-> Can anyone comment on what JTAG debugger they are using,
-> and how have your experiences been?   Are there any other
-> good options besides the ones mentioned above.
-> I'd appreciate any input.
-> 
-> Thanks!
-> Steve
+> # mount -t msdos /dev/xsysace /root/cf
 
-We've been using the BDI-2000 from abatron on an 8248 board.  It's done 
-everything we've needed to do so far.  
+Shouldn't this be /dev/xsysace1?  You want to mount a partition not the
+entire block device.
 
-It has a serial interface, but we use the ethernet port.
-Remote debug works well, and other usual tasks also - flash programming, etc. 
 
-Can't comment about developing apps for the debugger, sorry.
-
--kelsey
+-- 
+Jeff Angielski
+The PTR Group
