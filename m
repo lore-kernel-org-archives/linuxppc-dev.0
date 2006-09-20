@@ -1,26 +1,17 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2945467B59
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 11:19:06 +1000 (EST)
-Message-ID: <451096FE.1000104@pobox.com>
-Date: Tue, 19 Sep 2006 21:18:54 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Remove powerpc specific parts of 3c509 driver
-References: <20060919145433.8fc7d478.sfr@canb.auug.org.au>
-	<20060919184243.GL29167@austin.ibm.com>
-	<45103C62.4080003@genesi-usa.com>
-	<1158708269.6002.186.camel@localhost.localdomain>
-	<488875E7-CCBC-47E1-A273-A2D037A997B2@kernel.crashing.org>
-	<45109203.6060606@pobox.com>
-	<1192ED41-329C-4CB0-AD87-B3BF62EC4337@kernel.crashing.org>
-In-Reply-To: <1192ED41-329C-4CB0-AD87-B3BF62EC4337@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: akpm@osdl.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 7411067B79
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 11:19:57 +1000 (EST)
+Date: Tue, 19 Sep 2006 18:20:42 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Message-ID: <20060920012042.GA28489@mag.az.mvista.com>
+References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,19 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>> Sure, PCI busses are little-endian.  But is readX()/writeX() for PCI
->>> only?
->>
->> Yes.
->>
->> For other buses, use foo_writel(), etc.
-> 
-> Can this please be documented then?  Never heard this before...
+Paul,
 
-You have come late to the party.  This has been the case for many, many 
-years.
+Regarding our earlier conversation about ft_translate_addr and
+ft_parentize.  I just realized that on IRC today Matt Porter pointed
+out that using the "reg" property in ns16550.c is wrong.  We--several
+of us on #mklinux--decided that the "address" property is the correct
+thing to use because we should really be using a virtual address from
+the fw (bootwrapper has no ioremap).  So, unless someone objects,
+we'll all add the "address" property to our uart device nodes in our
+fdt's (if they can be used as the console).
 
-And there is no point in a massive rename to pci_writel(), either.
+A couple consequences, if that happens:
+- It removes the requirement for ft_translate_addr (and
+  dt_ops.translate_addr) in the bootwrapper.  That cleans up
+  flatdevtree_misc.c a lot.
+- Since ft_find_node/device will be the only caller of ft_parentize
+  now, that may change your plans for ft_parentize.
 
-	Jeff
+Do you have any objections to using "address" property instead of "reg"?
+
+Mark
