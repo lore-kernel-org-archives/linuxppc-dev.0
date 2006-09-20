@@ -1,20 +1,32 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+Return-Path: <jdub@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0789B67B66
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 90D8067B66
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Sep 2006 02:15:23 +1000 (EST)
-Message-ID: <451168F6.3030701@ovro.caltech.edu>
-Date: Wed, 20 Sep 2006 09:14:46 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Ming Liu <eemingliu@hotmail.com>
+	Thu, 21 Sep 2006 02:28:35 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e32.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8KGSXCb021909
+	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Sep 2006 12:28:33 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8KGSX55182800
+	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Sep 2006 10:28:33 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8KGSWfb018576
+	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Sep 2006 10:28:32 -0600
 Subject: Re: how an application program utilizes the driver.
+From: Josh Boyer <jdub@us.ibm.com>
+To: David Hawkins <dwh@ovro.caltech.edu>
+In-Reply-To: <451168F6.3030701@ovro.caltech.edu>
 References: <BAY110-F240E99BA0EDF765EC09402B2230@phx.gbl>
-In-Reply-To: <BAY110-F240E99BA0EDF765EC09402B2230@phx.gbl>
-Content-Type: text/plain; charset=GB2312
+	<451168F6.3030701@ovro.caltech.edu>
+Content-Type: text/plain
+Date: Wed, 20 Sep 2006 11:30:55 -0500
+Message-Id: <1158769855.3121.39.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,46 +38,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ming,
+On Wed, 2006-09-20 at 09:14 -0700, David Hawkins wrote:
+> 
+> You really should read through Linux Device Drivers by Rubini,
 
-> My situation is: I want to write a driver for my custom device.(In the 
-> driver there are some functions defined to read or write my device.) Then 
-> in my application program, I use these defined functions to operate my 
-> hardware device. I think this is a normal process to operate the hardware 
-> with driver+app, right? 
+Which is available here:
 
-Right, but you've missed a few critical points.
+http://lwn.net/Kernel/LDD3/
 
-For your custom device, you'll create a driver that implements
-*kernel space* functions my_driver_open(), read(), write(), close()
-etc. You'll install that module and create an appropriate
-device node, eg. /dev/my_driver.
-
-In your *user-space* application code, you'll open that device
-
-int main(argc, argv) ...
-
-  int fd = open("/dev/my_driver" ...)
-
-
-and then write to your device ...
-
-  int write(fd, buffer, len);
-
-or read from your device ...
-
-  int read(fd, buffer, len);
-
-The user-space calls open, read, write eventually call down into
-your driver space code. The driver and application are not
-linked, they communicate via the /dev interface.
-
-You really should read through Linux Device Drivers by Rubini,
-or check out a tutorial such as
-
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
-http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
-http://www.ovro.caltech.edu/~dwh/correlator/index.html
-
-Regards,
-Dave
+josh
