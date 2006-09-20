@@ -1,21 +1,18 @@
-Return-Path: <peterarbejde@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.204])
-	by ozlabs.org (Postfix) with ESMTP id AB3D567A2E
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 19:16:56 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id i1so57611nzh
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 02:16:53 -0700 (PDT)
-Message-ID: <36468a5c0609200216n753d69b0hdf8ff2cb53714f90@mail.gmail.com>
-Date: Wed, 20 Sep 2006 11:16:53 +0200
-From: "Peter N. Andreasen" <peterarbejde@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Linux on custom Xilinx board with PPC405 hangs on boot
-In-Reply-To: <36468a5c0609140713pb42f3f8n3578151b50a488f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_260123_24536547.1158743813308"
-References: <36468a5c0609120706i6c7e32efke7d8901d9ce4ae9b@mail.gmail.com>
-	<4506D7DE.9070800@ru.mvista.com>
-	<36468a5c0609140713pb42f3f8n3578151b50a488f@mail.gmail.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id CC9FB67A39
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 22:16:01 +1000 (EST)
+Date: Wed, 20 Sep 2006 22:15:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] merge iSeries i/o operations with the rest
+Message-Id: <20060920221558.1322b8b4.sfr@canb.auug.org.au>
+In-Reply-To: <20060918153853.f4332d2a.sfr@canb.auug.org.au>
+References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
+	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,138 +22,846 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_260123_24536547.1158743813308
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This patch changes the io operations so that they are out of line if
+CONFIG_PPC_ISERIES is set and includes a firmware feature check in
+that case.
 
-I have a custom Xilinx FPGA board which is similar to ML300 but uses
-Uartllite and does not have disk or display.
-When I start the Linux kernel I end up with an exception during the probe
-for Flash - I think.
-I have added a bunch of printk lines in order to see what is happening but I
-am a little stuck at the moment.
-The Flash chip is an AM29LV320D 4Mbyte in 16-bit access mode, and it sits on
-address 0xFF80'0000
-This is what I get on my terminal. I would be happy to hear your advice.
-Peter
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/io.c                 |   26 +++
+ arch/powerpc/platforms/iseries/pci.c     |  304 +++++++++++++++++++++++++-----
+ include/asm-powerpc/io.h                 |  148 ++++++++-------
+ include/asm-powerpc/iseries/iseries_io.h |   60 ------
+ 4 files changed, 355 insertions(+), 183 deletions(-)
 
+This version depends on the other i/o patches I have sent recently.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-
-loaded at:     00400000 004CF1E0
-board data at: 004CC138 004CC150
-relocated to:  004052F4 0040530C
-zimage at:     00405801 00472CFB
-initrd at:     00473000 004CB2FF
-avail ram:     004D0000 02000000
-
-Linux/PPC load: root=/dev/ram rw console=ttl0
-Uncompressing Linux...done.
-Now booting the kernel
-
-id mach(): done
-MMU:enter
-MMU:hw init
-MMU:mapin
-MMU:mapin_ram done
-MMU:setio
-MMU:exit
-
-Linux version 2.4.26 (pna@glazedevel) (gcc version 3.4.1) #50 Wed Sep 20
-11:06:12 CEST 2006
-setup_arch: enter
-setup_arch: bootmem
-Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (
-source@mvista.com)
-arch: exit
-On node 0 totalpages: 8192
-zone(0): 8192 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/ram rw console=ttl0
-(start) init/main.c: parse_options
-(end) parse_options
-(start) arch/ppc/mm/pgtable.c: __ioremap
-(end) arch/ppc/mm/pgtable.c: __ioremap
-Xilinx INTC #0 at 0x81200000 mapped to 0xFDFFF000
-(start) arch/ppc/mm/pgtable.c: __ioremap
-(end) arch/ppc/mm/pgtable.c: __ioremap
-Calibrating delay loop... 287.53 BogoMIPS
-Memory: 30924k available (776k kernel code, 276k data, 44k init, 0k highmem)
-Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
-Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
-Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-POSIX conformance testing by UNIFIX
-(start) init/main.c: init
-(start) init/main.c: do_basic_setup
-
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-(start) init/main.c: do_initcalls
-Starting kswapd
-devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
-devfs: boot_options: 0x1
-JFFS version 1.0, (C) 1999, 2000  Axis Communications AB
-JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis Communications
-AB.
-Generic RTC Driver v1.07
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-(start) drivers/mtd/maps/physmap.c: init_physmap
-physmap flash device: 4000000 at ff800000
-(start) arch/ppc/mm/pgtable.c: __ioremap
-(end) arch/ppc/mm/pgtable.c: __ioremap
-(start) drivers/mtd/chips/chipreg.c: do_map_probe
-(start) drivers/mtd/chips/chipreg.c: get_mtd_chip_driver
-(end) drivers/mtd/chips/chipreg.c: get_mtd_chip_driver
-(after get_mtd_chip_driver) drivers/mtd/chips/chipreg.c: do_map_probe
-(start) drivers/mtd/chips/gen_probe.c: mtd_do_chip_probe
-(start) drivers/mtd/chips/gen_probe.c: genprobe_ident_chips
-Instruction machine check in kernel mode.
-Oops: machine check, sig: 7
-NIP: C00A2960 XER: 40000000 LR: C009CBD8 SP: C04D9D90 REGS: c04d9ce0 TRAP:
-0200    Not tainted
-MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c04d8000[1] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-GPR00: C00A2958 C04D9D90 C04D8000 C00DC1C8 000000F0 00400000 C04D9DD0
-C00DB387
-GPR08: 00000002 C307D000 C0176360 00000001 C00F0000 000057E0 80001040
-80000820
-GPR16: 00001020 00000840 10021000 08040800 C00D0000 C00EAC18 C00D0000
-00000000
-GPR24: C00C0000 00000001 C04D9DD0 C04D9E10 C04D9E10 00400000 C04D9DD0
-C00DC1C8
-Call backtrace:
-C009CE80 C00A26D0 C009D3A0 C009C750 C00E9BB0 C00024F4 C0005ED4
-Kernel panic: Attempted to kill init!
- <0>Rebooting in 180 seconds..
-
-------=_Part_260123_24536547.1158743813308
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-I have a custom Xilinx FPGA board which is similar to ML300 but uses Uartllite and does not have disk or display.<br>When I start the Linux kernel I end up with an exception during the probe for Flash - I think. <br>I have added a bunch of printk lines in order to see what is happening but I am a little stuck at the moment. 
-<br>The Flash chip is an AM29LV320D 4Mbyte in 16-bit access mode, and it sits on address 0xFF80'0000<br>This is what I get on my terminal. I would be happy to hear your advice.<br>Peter<br><br><br><br>loaded at:&nbsp;&nbsp;&nbsp;&nbsp; 00400000 004CF1E0
-<br>board data at: 004CC138 004CC150<br>relocated to:&nbsp; 004052F4 0040530C<br>zimage at:&nbsp;&nbsp;&nbsp;&nbsp; 00405801 00472CFB<br>initrd at:&nbsp;&nbsp;&nbsp;&nbsp; 00473000 004CB2FF<br>avail ram:&nbsp;&nbsp;&nbsp;&nbsp; 004D0000 02000000<br><br>Linux/PPC load: root=/dev/ram rw console=ttl0
-<br>Uncompressing Linux...done.<br>Now booting the kernel<br><br>id mach(): done<br>MMU:enter<br>MMU:hw init<br>MMU:mapin<br>MMU:mapin_ram done<br>MMU:setio<br>MMU:exit<br><br>Linux version 2.4.26 (pna@glazedevel) (gcc version 
-3.4.1) #50 Wed Sep 20 11:06:12 CEST 2006<br>setup_arch: enter<br>setup_arch: bootmem<br>Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (<a href="mailto:source@mvista.com">source@mvista.com</a>)<br>arch: exit
-<br>On node 0 totalpages: 8192<br>zone(0): 8192 pages.<br>zone(1): 0 pages.<br>zone(2): 0 pages.<br>Kernel command line: root=/dev/ram rw console=ttl0<br>(start) init/main.c: parse_options<br>(end) parse_options<br>(start) arch/ppc/mm/pgtable.c: __ioremap
-<br>(end) arch/ppc/mm/pgtable.c: __ioremap<br>Xilinx INTC #0 at 0x81200000 mapped to 0xFDFFF000<br>(start) arch/ppc/mm/pgtable.c: __ioremap<br>(end) arch/ppc/mm/pgtable.c: __ioremap<br>Calibrating delay loop... 287.53 BogoMIPS
-<br>Memory: 30924k available (776k kernel code, 276k data, 44k init, 0k highmem)<br>Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)<br>Inode cache hash table entries: 2048 (order: 2, 16384 bytes)<br>Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-<br>Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)<br>Page-cache hash table entries: 8192 (order: 3, 32768 bytes)<br>POSIX conformance testing by UNIFIX<br>(start) init/main.c: init<br>(start) init/main.c: do_basic_setup
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>Linux NET4.0 for Linux 2.4<br>Based upon Swansea University Computer Society NET3.039<br>Initializing RT netlink socket<br>(start) init/main.c: do_initcalls<br>Starting kswapd<br>devfs: v1.12c (20020818) Richard Gooch (
-<a href="mailto:rgooch@atnf.csiro.au">rgooch@atnf.csiro.au</a>)<br>devfs: boot_options: 0x1<br>JFFS version 1.0, (C) 1999, 2000&nbsp; Axis Communications AB<br>JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis Communications AB.
-<br>Generic RTC Driver v1.07<br>RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize<br>loop: loaded (max 8 devices)<br>(start) drivers/mtd/maps/physmap.c: init_physmap<br>physmap flash device: 4000000 at ff800000
-<br>(start) arch/ppc/mm/pgtable.c: __ioremap<br>(end) arch/ppc/mm/pgtable.c: __ioremap<br>(start) drivers/mtd/chips/chipreg.c: do_map_probe<br>(start) drivers/mtd/chips/chipreg.c: get_mtd_chip_driver<br>(end) drivers/mtd/chips/chipreg.c: get_mtd_chip_driver
-<br>(after get_mtd_chip_driver) drivers/mtd/chips/chipreg.c: do_map_probe<br>(start) drivers/mtd/chips/gen_probe.c: mtd_do_chip_probe<br>(start) drivers/mtd/chips/gen_probe.c: genprobe_ident_chips<br>Instruction machine check in kernel mode.
-<br>Oops: machine check, sig: 7<br>NIP: C00A2960 XER: 40000000 LR: C009CBD8 SP: C04D9D90 REGS: c04d9ce0 TRAP: 0200&nbsp;&nbsp;&nbsp; Not tainted<br>MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11<br>TASK = c04d8000[1] 'swapper' Last syscall: 120 
-<br>last math 00000000 last altivec 00000000<br>GPR00: C00A2958 C04D9D90 C04D8000 C00DC1C8 000000F0 00400000 C04D9DD0 C00DB387 <br>GPR08: 00000002 C307D000 C0176360 00000001 C00F0000 000057E0 80001040 80000820 <br>GPR16: 00001020 00000840 10021000 08040800 C00D0000 C00EAC18 C00D0000 00000000 
-<br>GPR24: C00C0000 00000001 C04D9DD0 C04D9E10 C04D9E10 00400000 C04D9DD0 C00DC1C8 <br>Call backtrace: <br>C009CE80 C00A26D0 C009D3A0 C009C750 C00E9BB0 C00024F4 C0005ED4 <br>Kernel panic: Attempted to kill init!<br>&nbsp;&lt;0&gt;Rebooting in 180 seconds..
-<br><br>
-
-------=_Part_260123_24536547.1158743813308--
+diff --git a/arch/powerpc/kernel/io.c b/arch/powerpc/kernel/io.c
+index 80a3209..7836995 100644
+--- a/arch/powerpc/kernel/io.c
++++ b/arch/powerpc/kernel/io.c
+@@ -22,12 +22,18 @@ #include <linux/compiler.h>
+ #include <linux/module.h>
+ 
+ #include <asm/io.h>
++#include <asm/firmware.h>
++#include <asm/bug.h>
+ 
+ void _insb(volatile u8 __iomem *port, void *buf, long count)
+ {
+ 	u8 *tbuf = buf;
+ 	u8 tmp;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return;
++	}
+ 	if (unlikely(count <= 0))
+ 		return;
+ 	asm volatile("sync");
+@@ -44,6 +50,10 @@ void _outsb(volatile u8 __iomem *port, c
+ {
+ 	const u8 *tbuf = buf;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return;
++	}
+ 	if (unlikely(count <= 0))
+ 		return;
+ 	asm volatile("sync");
+@@ -59,6 +69,10 @@ void _insw_ns(volatile u16 __iomem *port
+ 	u16 *tbuf = buf;
+ 	u16 tmp;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return;
++	}
+ 	if (unlikely(count <= 0))
+ 		return;
+ 	asm volatile("sync");
+@@ -75,6 +89,10 @@ void _outsw_ns(volatile u16 __iomem *por
+ {
+ 	const u16 *tbuf = buf;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return;
++	}
+ 	if (unlikely(count <= 0))
+ 		return;
+ 	asm volatile("sync");
+@@ -90,6 +108,10 @@ void _insl_ns(volatile u32 __iomem *port
+ 	u32 *tbuf = buf;
+ 	u32 tmp;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return;
++	}
+ 	if (unlikely(count <= 0))
+ 		return;
+ 	asm volatile("sync");
+@@ -106,6 +128,10 @@ void _outsl_ns(volatile u32 __iomem *por
+ {
+ 	const u32 *tbuf = buf;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return;
++	}
+ 	if (unlikely(count <= 0))
+ 		return;
+ 	asm volatile("sync");
+diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
+index f4d427a..9646ee1 100644
+--- a/arch/powerpc/platforms/iseries/pci.c
++++ b/arch/powerpc/platforms/iseries/pci.c
+@@ -34,6 +34,7 @@ #include <asm/machdep.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/iommu.h>
+ #include <asm/abs_addr.h>
++#include <asm/firmware.h>
+ 
+ #include <asm/iseries/hv_call_xm.h>
+ #include <asm/iseries/mf.h>
+@@ -270,46 +271,6 @@ void pcibios_fixup_resources(struct pci_
+ }
+ 
+ /*
+- * I/0 Memory copy MUST use mmio commands on iSeries
+- * To do; For performance, include the hv call directly
+- */
+-void iSeries_memset_io(volatile void __iomem *dest, char c, size_t Count)
+-{
+-	u8 ByteValue = c;
+-	long NumberOfBytes = Count;
+-
+-	while (NumberOfBytes > 0) {
+-		iSeries_Write_Byte(ByteValue, dest++);
+-		-- NumberOfBytes;
+-	}
+-}
+-EXPORT_SYMBOL(iSeries_memset_io);
+-
+-void iSeries_memcpy_toio(volatile void __iomem *dest, void *source, size_t count)
+-{
+-	char *src = source;
+-	long NumberOfBytes = count;
+-
+-	while (NumberOfBytes > 0) {
+-		iSeries_Write_Byte(*src++, dest++);
+-		-- NumberOfBytes;
+-	}
+-}
+-EXPORT_SYMBOL(iSeries_memcpy_toio);
+-
+-void iSeries_memcpy_fromio(void *dest, const volatile void __iomem *src, size_t count)
+-{
+-	char *dst = dest;
+-	long NumberOfBytes = count;
+-
+-	while (NumberOfBytes > 0) {
+-		*dst++ = iSeries_Read_Byte(src++);
+-		-- NumberOfBytes;
+-	}
+-}
+-EXPORT_SYMBOL(iSeries_memcpy_fromio);
+-
+-/*
+  * Look down the chain to find the matching Device Device
+  */
+ static struct device_node *find_Device_Node(int bus, int devfn)
+@@ -491,7 +452,7 @@ static inline struct device_node *xlate_
+  * iSeries_Read_Word = Read Word  (16 bit)
+  * iSeries_Read_Long = Read Long  (32 bit)
+  */
+-u8 iSeries_Read_Byte(const volatile void __iomem *IoAddress)
++static u8 iSeries_Read_Byte(const volatile void __iomem *IoAddress)
+ {
+ 	u64 BarOffset;
+ 	u64 dsa;
+@@ -518,9 +479,8 @@ u8 iSeries_Read_Byte(const volatile void
+ 
+ 	return (u8)ret.value;
+ }
+-EXPORT_SYMBOL(iSeries_Read_Byte);
+ 
+-u16 iSeries_Read_Word(const volatile void __iomem *IoAddress)
++static u16 iSeries_Read_Word(const volatile void __iomem *IoAddress)
+ {
+ 	u64 BarOffset;
+ 	u64 dsa;
+@@ -548,9 +508,8 @@ u16 iSeries_Read_Word(const volatile voi
+ 
+ 	return swab16((u16)ret.value);
+ }
+-EXPORT_SYMBOL(iSeries_Read_Word);
+ 
+-u32 iSeries_Read_Long(const volatile void __iomem *IoAddress)
++static u32 iSeries_Read_Long(const volatile void __iomem *IoAddress)
+ {
+ 	u64 BarOffset;
+ 	u64 dsa;
+@@ -578,7 +537,6 @@ u32 iSeries_Read_Long(const volatile voi
+ 
+ 	return swab32((u32)ret.value);
+ }
+-EXPORT_SYMBOL(iSeries_Read_Long);
+ 
+ /*
+  * Write MM I/O Instructions for the iSeries
+@@ -587,7 +545,7 @@ EXPORT_SYMBOL(iSeries_Read_Long);
+  * iSeries_Write_Word = Write Word(16 bit)
+  * iSeries_Write_Long = Write Long(32 bit)
+  */
+-void iSeries_Write_Byte(u8 data, volatile void __iomem *IoAddress)
++static void iSeries_Write_Byte(u8 data, volatile void __iomem *IoAddress)
+ {
+ 	u64 BarOffset;
+ 	u64 dsa;
+@@ -612,9 +570,8 @@ void iSeries_Write_Byte(u8 data, volatil
+ 		rc = HvCall4(HvCallPciBarStore8, dsa, BarOffset, data, 0);
+ 	} while (CheckReturnCode("WWB", DevNode, &retry, rc) != 0);
+ }
+-EXPORT_SYMBOL(iSeries_Write_Byte);
+ 
+-void iSeries_Write_Word(u16 data, volatile void __iomem *IoAddress)
++static void iSeries_Write_Word(u16 data, volatile void __iomem *IoAddress)
+ {
+ 	u64 BarOffset;
+ 	u64 dsa;
+@@ -639,9 +596,8 @@ void iSeries_Write_Word(u16 data, volati
+ 		rc = HvCall4(HvCallPciBarStore16, dsa, BarOffset, swab16(data), 0);
+ 	} while (CheckReturnCode("WWW", DevNode, &retry, rc) != 0);
+ }
+-EXPORT_SYMBOL(iSeries_Write_Word);
+ 
+-void iSeries_Write_Long(u32 data, volatile void __iomem *IoAddress)
++static void iSeries_Write_Long(u32 data, volatile void __iomem *IoAddress)
+ {
+ 	u64 BarOffset;
+ 	u64 dsa;
+@@ -666,4 +622,248 @@ void iSeries_Write_Long(u32 data, volati
+ 		rc = HvCall4(HvCallPciBarStore32, dsa, BarOffset, swab32(data), 0);
+ 	} while (CheckReturnCode("WWL", DevNode, &retry, rc) != 0);
+ }
+-EXPORT_SYMBOL(iSeries_Write_Long);
++
++extern unsigned char __raw_readb(const volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return *(volatile unsigned char __force *)addr;
++}
++EXPORT_SYMBOL(__raw_readb);
++
++extern unsigned short __raw_readw(const volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return *(volatile unsigned short __force *)addr;
++}
++EXPORT_SYMBOL(__raw_readw);
++
++extern unsigned int __raw_readl(const volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return *(volatile unsigned int __force *)addr;
++}
++EXPORT_SYMBOL(__raw_readl);
++
++extern unsigned long __raw_readq(const volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return *(volatile unsigned long __force *)addr;
++}
++EXPORT_SYMBOL(__raw_readq);
++
++extern void __raw_writeb(unsigned char v, volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		*(volatile unsigned char __force *)addr = v;
++}
++EXPORT_SYMBOL(__raw_writeb);
++
++extern void __raw_writew(unsigned short v, volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		*(volatile unsigned short __force *)addr = v;
++}
++EXPORT_SYMBOL(__raw_writew);
++
++extern void __raw_writel(unsigned int v, volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		*(volatile unsigned int __force *)addr = v;
++}
++EXPORT_SYMBOL(__raw_writel);
++
++extern void __raw_writeq(unsigned long v, volatile void __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		*(volatile unsigned long __force *)addr = v;
++}
++EXPORT_SYMBOL(__raw_writeq);
++
++int in_8(const volatile unsigned char __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return iSeries_Read_Byte(addr);
++	return __in_8(addr);
++}
++EXPORT_SYMBOL(in_8);
++
++void out_8(volatile unsigned char __iomem *addr, int val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		iSeries_Write_Byte(val, addr);
++	else
++		__out_8(addr, val);
++}
++EXPORT_SYMBOL(out_8);
++
++int in_le16(const volatile unsigned short __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return iSeries_Read_Word(addr);
++	return __in_le16(addr);
++}
++EXPORT_SYMBOL(in_le16);
++
++int in_be16(const volatile unsigned short __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return __in_be16(addr);
++}
++EXPORT_SYMBOL(in_be16);
++
++void out_le16(volatile unsigned short __iomem *addr, int val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		iSeries_Write_Word(val, addr);
++	else
++		__out_le16(addr, val);
++}
++EXPORT_SYMBOL(out_le16);
++
++void out_be16(volatile unsigned short __iomem *addr, int val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		__out_be16(addr, val);
++}
++EXPORT_SYMBOL(out_be16);
++
++unsigned in_le32(const volatile unsigned __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return iSeries_Read_Long(addr);
++	return __in_le32(addr);
++}
++EXPORT_SYMBOL(in_le32);
++
++unsigned in_be32(const volatile unsigned __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return __in_be32(addr);
++}
++EXPORT_SYMBOL(in_be32);
++
++void out_le32(volatile unsigned __iomem *addr, int val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		iSeries_Write_Long(val, addr);
++	else
++		__out_le32(addr, val);
++}
++EXPORT_SYMBOL(out_le32);
++
++void out_be32(volatile unsigned __iomem *addr, int val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		__out_be32(addr, val);
++}
++EXPORT_SYMBOL(out_be32);
++
++unsigned long in_le64(const volatile unsigned long __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return __in_le64(addr);
++}
++EXPORT_SYMBOL(in_le64);
++
++unsigned long in_be64(const volatile unsigned long __iomem *addr)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		BUG();
++		return 0;
++	}
++	return __in_be64(addr);
++}
++EXPORT_SYMBOL(in_be64);
++
++void out_le64(volatile unsigned long __iomem *addr, unsigned long val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		__out_le64(addr, val);
++}
++EXPORT_SYMBOL(out_le64);
++
++void out_be64(volatile unsigned long __iomem *addr, unsigned long val)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		BUG();
++	else
++		__out_be64(addr, val);
++}
++EXPORT_SYMBOL(out_be64);
++
++void memset_io(volatile void __iomem *addr, int c, unsigned long n)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		volatile char __iomem *d = addr;
++
++		while (n-- > 0) {
++			iSeries_Write_Byte(c, d++);
++		}
++	} else
++		eeh_memset_io(addr, c, n);
++}
++EXPORT_SYMBOL(memset_io);
++
++void memcpy_fromio(void *dest, const volatile void __iomem *src,
++                                 unsigned long n)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		char *d = dest;
++		const volatile char __iomem *s = src;
++
++		while (n-- > 0) {
++			*d++ = iSeries_Read_Byte(s++);
++		}
++	} else
++		eeh_memcpy_fromio(dest, src, n);
++}
++EXPORT_SYMBOL(memcpy_fromio);
++
++void memcpy_toio(volatile void __iomem *dest, const void *src, unsigned long n)
++{
++	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
++		const char *s = src;
++		volatile char __iomem *d = dest;
++
++		while (n-- > 0) {
++			iSeries_Write_Byte(*s++, d++);
++		}
++	} else
++		eeh_memcpy_toio(dest, src, n);
++}
++EXPORT_SYMBOL(memcpy_toio);
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index 174fb89..46bae1c 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -20,9 +20,6 @@ #include <linux/compiler.h>
+ #include <asm/page.h>
+ #include <asm/byteorder.h>
+ #include <asm/paca.h>
+-#ifdef CONFIG_PPC_ISERIES 
+-#include <asm/iseries/iseries_io.h>
+-#endif  
+ #include <asm/synch.h>
+ #include <asm/delay.h>
+ 
+@@ -37,41 +34,53 @@ extern unsigned long isa_io_base;
+ extern unsigned long pci_io_base;
+ 
+ #ifdef CONFIG_PPC_ISERIES
+-/* __raw_* accessors aren't supported on iSeries */
+-#define __raw_readb(addr)	{ BUG(); 0; }
+-#define __raw_readw(addr)       { BUG(); 0; }
+-#define __raw_readl(addr)       { BUG(); 0; }
+-#define __raw_readq(addr)       { BUG(); 0; }
+-#define __raw_writeb(v, addr)   { BUG(); 0; }
+-#define __raw_writew(v, addr)   { BUG(); 0; }
+-#define __raw_writel(v, addr)   { BUG(); 0; }
+-#define __raw_writeq(v, addr)   { BUG(); 0; }
+-#define readb(addr)		iSeries_Read_Byte(addr)
+-#define readw(addr)		iSeries_Read_Word(addr)
+-#define readl(addr)		iSeries_Read_Long(addr)
+-#define writeb(data, addr)	iSeries_Write_Byte((data),(addr))
+-#define writew(data, addr)	iSeries_Write_Word((data),(addr))
+-#define writel(data, addr)	iSeries_Write_Long((data),(addr))
+-#define memset_io(a,b,c)	iSeries_memset_io((a),(b),(c))
+-#define memcpy_fromio(a,b,c)	iSeries_memcpy_fromio((a), (b), (c))
+-#define memcpy_toio(a,b,c)	iSeries_memcpy_toio((a), (b), (c))
+-
+-#define inb(addr)		readb(((void __iomem *)(long)(addr)))
+-#define inw(addr)		readw(((void __iomem *)(long)(addr)))
+-#define inl(addr)		readl(((void __iomem *)(long)(addr)))
+-#define outb(data,addr)		writeb(data,((void __iomem *)(long)(addr)))
+-#define outw(data,addr)		writew(data,((void __iomem *)(long)(addr)))
+-#define outl(data,addr)		writel(data,((void __iomem *)(long)(addr)))
+-/*
+- * The *_ns versions below don't do byte-swapping.
+- * Neither do the standard versions now, these are just here
+- * for older code.
+- */
+-#define insb(port, buf, ns)	_insb((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
+-#define insw(port, buf, ns)	_insw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
+-#define insl(port, buf, nl)	_insl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
+ 
+-#else
++extern int in_8(const volatile unsigned char __iomem *addr);
++extern void out_8(volatile unsigned char __iomem *addr, int val);
++extern int in_le16(const volatile unsigned short __iomem *addr);
++extern int in_be16(const volatile unsigned short __iomem *addr);
++extern void out_le16(volatile unsigned short __iomem *addr, int val);
++extern void out_be16(volatile unsigned short __iomem *addr, int val);
++extern unsigned in_le32(const volatile unsigned __iomem *addr);
++extern unsigned in_be32(const volatile unsigned __iomem *addr);
++extern void out_le32(volatile unsigned __iomem *addr, int val);
++extern void out_be32(volatile unsigned __iomem *addr, int val);
++extern unsigned long in_le64(const volatile unsigned long __iomem *addr);
++extern unsigned long in_be64(const volatile unsigned long __iomem *addr);
++extern void out_le64(volatile unsigned long __iomem *addr, unsigned long val);
++extern void out_be64(volatile unsigned long __iomem *addr, unsigned long val);
++
++extern unsigned char __raw_readb(const volatile void __iomem *addr);
++extern unsigned short __raw_readw(const volatile void __iomem *addr);
++extern unsigned int __raw_readl(const volatile void __iomem *addr);
++extern unsigned long __raw_readq(const volatile void __iomem *addr);
++extern void __raw_writeb(unsigned char v, volatile void __iomem *addr);
++extern void __raw_writew(unsigned short v, volatile void __iomem *addr);
++extern void __raw_writel(unsigned int v, volatile void __iomem *addr);
++extern void __raw_writeq(unsigned long v, volatile void __iomem *addr);
++
++extern void memset_io(volatile void __iomem *addr, int c, unsigned long n);
++extern void memcpy_fromio(void *dest, const volatile void __iomem *src,
++                                 unsigned long n);
++extern void memcpy_toio(volatile void __iomem *dest, const void *src,
++                                 unsigned long n);
++
++#else /* CONFIG_PPC_ISERIES */
++
++#define in_8(addr)		__in_8((addr))
++#define out_8(addr, val)	__out_8((addr), (val))
++#define in_le16(addr)		__in_le16((addr))
++#define in_be16(addr)		__in_be16((addr))
++#define out_le16(addr, val)	__out_le16((addr), (val))
++#define out_be16(addr, val)	__out_be16((addr), (val))
++#define in_le32(addr)		__in_le32((addr))
++#define in_be32(addr)		__in_be32((addr))
++#define out_le32(addr, val)	__out_le32((addr), (val))
++#define out_be32(addr, val)	__out_be32((addr), (val))
++#define in_le64(addr)		__in_le64((addr))
++#define in_be64(addr)		__in_be64((addr))
++#define out_le64(addr, val)	__out_le64((addr), (val))
++#define out_be64(addr, val)	__out_be64((addr), (val))
+ 
+ static inline unsigned char __raw_readb(const volatile void __iomem *addr)
+ {
+@@ -105,23 +114,11 @@ static inline void __raw_writeq(unsigned
+ {
+ 	*(volatile unsigned long __force *)addr = v;
+ }
+-#define readb(addr)		eeh_readb(addr)
+-#define readw(addr)		eeh_readw(addr)
+-#define readl(addr)		eeh_readl(addr)
+-#define readq(addr)		eeh_readq(addr)
+-#define writeb(data, addr)	eeh_writeb((data), (addr))
+-#define writew(data, addr)	eeh_writew((data), (addr))
+-#define writel(data, addr)	eeh_writel((data), (addr))
+-#define writeq(data, addr)	eeh_writeq((data), (addr))
+ #define memset_io(a,b,c)	eeh_memset_io((a),(b),(c))
+ #define memcpy_fromio(a,b,c)	eeh_memcpy_fromio((a),(b),(c))
+ #define memcpy_toio(a,b,c)	eeh_memcpy_toio((a),(b),(c))
+-#define inb(port)		eeh_inb((unsigned long)port)
+-#define outb(val, port)		eeh_outb(val, (unsigned long)port)
+-#define inw(port)		eeh_inw((unsigned long)port)
+-#define outw(val, port)		eeh_outw(val, (unsigned long)port)
+-#define inl(port)		eeh_inl((unsigned long)port)
+-#define outl(val, port)		eeh_outl(val, (unsigned long)port)
++
++#endif /* CONFIG_PPC_ISERIES */
+ 
+ /*
+  * The insw/outsw/insl/outsl macros don't do byte-swapping.
+@@ -132,12 +129,25 @@ #define insb(port, buf, ns)	eeh_insb((po
+ #define insw(port, buf, ns)	eeh_insw_ns((port), (buf), (ns))
+ #define insl(port, buf, nl)	eeh_insl_ns((port), (buf), (nl))
+ 
+-#endif
+-
+ #define outsb(port, buf, ns)  _outsb((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
+ #define outsw(port, buf, ns)  _outsw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
+ #define outsl(port, buf, nl)  _outsl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
+ 
++#define readb(addr)		eeh_readb(addr)
++#define readw(addr)		eeh_readw(addr)
++#define readl(addr)		eeh_readl(addr)
++#define readq(addr)		eeh_readq(addr)
++#define writeb(data, addr)	eeh_writeb((data), (addr))
++#define writew(data, addr)	eeh_writew((data), (addr))
++#define writel(data, addr)	eeh_writel((data), (addr))
++#define writeq(data, addr)	eeh_writeq((data), (addr))
++#define inb(port)		eeh_inb((unsigned long)port)
++#define outb(val, port)		eeh_outb(val, (unsigned long)port)
++#define inw(port)		eeh_inw((unsigned long)port)
++#define outw(val, port)		eeh_outw(val, (unsigned long)port)
++#define inl(port)		eeh_inl((unsigned long)port)
++#define outl(val, port)		eeh_outl(val, (unsigned long)port)
++
+ #define readb_relaxed(addr) readb(addr)
+ #define readw_relaxed(addr) readw(addr)
+ #define readl_relaxed(addr) readl(addr)
+@@ -258,7 +268,7 @@ #define iobarrier_w()  eieio()
+  * and should not be used directly by device drivers.  Use inb/readb
+  * instead.
+  */
+-static inline int in_8(const volatile unsigned char __iomem *addr)
++static inline int __in_8(const volatile unsigned char __iomem *addr)
+ {
+ 	int ret;
+ 
+@@ -267,14 +277,14 @@ static inline int in_8(const volatile un
+ 	return ret;
+ }
+ 
+-static inline void out_8(volatile unsigned char __iomem *addr, int val)
++static inline void __out_8(volatile unsigned char __iomem *addr, int val)
+ {
+ 	__asm__ __volatile__("sync; stb%U0%X0 %1,%0"
+ 			     : "=m" (*addr) : "r" (val));
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-static inline int in_le16(const volatile unsigned short __iomem *addr)
++static inline int __in_le16(const volatile unsigned short __iomem *addr)
+ {
+ 	int ret;
+ 
+@@ -283,7 +293,7 @@ static inline int in_le16(const volatile
+ 	return ret;
+ }
+ 
+-static inline int in_be16(const volatile unsigned short __iomem *addr)
++static inline int __in_be16(const volatile unsigned short __iomem *addr)
+ {
+ 	int ret;
+ 
+@@ -292,21 +302,21 @@ static inline int in_be16(const volatile
+ 	return ret;
+ }
+ 
+-static inline void out_le16(volatile unsigned short __iomem *addr, int val)
++static inline void __out_le16(volatile unsigned short __iomem *addr, int val)
+ {
+ 	__asm__ __volatile__("sync; sthbrx %1,0,%2"
+ 			     : "=m" (*addr) : "r" (val), "r" (addr));
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-static inline void out_be16(volatile unsigned short __iomem *addr, int val)
++static inline void __out_be16(volatile unsigned short __iomem *addr, int val)
+ {
+ 	__asm__ __volatile__("sync; sth%U0%X0 %1,%0"
+ 			     : "=m" (*addr) : "r" (val));
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-static inline unsigned in_le32(const volatile unsigned __iomem *addr)
++static inline unsigned __in_le32(const volatile unsigned __iomem *addr)
+ {
+ 	unsigned ret;
+ 
+@@ -315,7 +325,7 @@ static inline unsigned in_le32(const vol
+ 	return ret;
+ }
+ 
+-static inline unsigned in_be32(const volatile unsigned __iomem *addr)
++static inline unsigned __in_be32(const volatile unsigned __iomem *addr)
+ {
+ 	unsigned ret;
+ 
+@@ -324,21 +334,21 @@ static inline unsigned in_be32(const vol
+ 	return ret;
+ }
+ 
+-static inline void out_le32(volatile unsigned __iomem *addr, int val)
++static inline void __out_le32(volatile unsigned __iomem *addr, int val)
+ {
+ 	__asm__ __volatile__("sync; stwbrx %1,0,%2" : "=m" (*addr)
+ 			     : "r" (val), "r" (addr));
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-static inline void out_be32(volatile unsigned __iomem *addr, int val)
++static inline void __out_be32(volatile unsigned __iomem *addr, int val)
+ {
+ 	__asm__ __volatile__("sync; stw%U0%X0 %1,%0"
+ 			     : "=m" (*addr) : "r" (val));
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-static inline unsigned long in_le64(const volatile unsigned long __iomem *addr)
++static inline unsigned long __in_le64(const volatile unsigned long __iomem *addr)
+ {
+ 	unsigned long tmp, ret;
+ 
+@@ -358,7 +368,7 @@ static inline unsigned long in_le64(cons
+ 	return ret;
+ }
+ 
+-static inline unsigned long in_be64(const volatile unsigned long __iomem *addr)
++static inline unsigned long __in_be64(const volatile unsigned long __iomem *addr)
+ {
+ 	unsigned long ret;
+ 
+@@ -367,7 +377,7 @@ static inline unsigned long in_be64(cons
+ 	return ret;
+ }
+ 
+-static inline void out_le64(volatile unsigned long __iomem *addr, unsigned long val)
++static inline void __out_le64(volatile unsigned long __iomem *addr, unsigned long val)
+ {
+ 	unsigned long tmp;
+ 
+@@ -385,15 +395,13 @@ static inline void out_le64(volatile uns
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-static inline void out_be64(volatile unsigned long __iomem *addr, unsigned long val)
++static inline void __out_be64(volatile unsigned long __iomem *addr, unsigned long val)
+ {
+ 	__asm__ __volatile__("sync; std%U0%X0 %1,%0" : "=m" (*addr) : "r" (val));
+ 	get_paca()->io_sync = 1;
+ }
+ 
+-#ifndef CONFIG_PPC_ISERIES 
+ #include <asm/eeh.h>
+-#endif
+ 
+ /**
+  *	check_signature		-	find BIOS signatures
+@@ -409,7 +417,6 @@ static inline int check_signature(const 
+ 	const unsigned char *signature, int length)
+ {
+ 	int retval = 0;
+-#ifndef CONFIG_PPC_ISERIES 
+ 	do {
+ 		if (readb(io_addr) != *signature)
+ 			goto out;
+@@ -419,7 +426,6 @@ #ifndef CONFIG_PPC_ISERIES 
+ 	} while (length);
+ 	retval = 1;
+ out:
+-#endif
+ 	return retval;
+ }
+ 
+diff --git a/include/asm-powerpc/iseries/iseries_io.h b/include/asm-powerpc/iseries/iseries_io.h
+deleted file mode 100644
+index f29009b..0000000
+--- a/include/asm-powerpc/iseries/iseries_io.h
++++ /dev/null
+@@ -1,60 +0,0 @@
+-#ifndef _ASM_POWERPC_ISERIES_ISERIES_IO_H
+-#define _ASM_POWERPC_ISERIES_ISERIES_IO_H
+-
+-
+-#ifdef CONFIG_PPC_ISERIES
+-#include <linux/types.h>
+-/*
+- * Created by Allan Trautman on Thu Dec 28 2000.
+- *
+- * Remaps the io.h for the iSeries Io
+- * Copyright (C) 2000  Allan H Trautman, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the:
+- * Free Software Foundation, Inc.,
+- * 59 Temple Place, Suite 330,
+- * Boston, MA  02111-1307  USA
+- *
+- * Change Activity:
+- *   Created December 28, 2000
+- * End Change Activity
+- */
+-
+-#ifdef CONFIG_PCI
+-extern u8   iSeries_Read_Byte(const volatile void __iomem * IoAddress);
+-extern u16  iSeries_Read_Word(const volatile void __iomem * IoAddress);
+-extern u32  iSeries_Read_Long(const volatile void __iomem * IoAddress);
+-extern void iSeries_Write_Byte(u8  IoData, volatile void __iomem * IoAddress);
+-extern void iSeries_Write_Word(u16 IoData, volatile void __iomem * IoAddress);
+-extern void iSeries_Write_Long(u32 IoData, volatile void __iomem * IoAddress);
+-
+-extern void iSeries_memset_io(volatile void __iomem *dest, char x, size_t n);
+-extern void iSeries_memcpy_toio(volatile void __iomem *dest, void *source,
+-		size_t n);
+-extern void iSeries_memcpy_fromio(void *dest,
+-		const volatile void __iomem *source, size_t n);
+-#else
+-static inline u8 iSeries_Read_Byte(const volatile void __iomem *IoAddress)
+-{
+-	return 0xff;
+-}
+-
+-static inline void iSeries_Write_Byte(u8 IoData,
+-		volatile void __iomem *IoAddress)
+-{
+-}
+-#endif	/* CONFIG_PCI */
+-
+-#endif /* CONFIG_PPC_ISERIES */
+-#endif /* _ASM_POWERPC_ISERIES_ISERIES_IO_H */
+-- 
+1.4.2.1
