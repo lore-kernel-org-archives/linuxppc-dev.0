@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3495567B83
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 07:35:22 +1000 (EST)
-Subject: Re: Hang with isync
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Manoj Sharma <manoj.shar@gmail.com>
-In-Reply-To: <d6dada100609191816q75d1455cobeb1e0bd21dab8a8@mail.gmail.com>
-References: <d6dada100609181828j1804f4f5ic0d1dd8a225980c@mail.gmail.com>
-	<d6dada100609191816q75d1455cobeb1e0bd21dab8a8@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 21 Sep 2006 07:35:11 +1000
-Message-Id: <1158788111.6002.310.camel@localhost.localdomain>
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 1062F67B69
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 07:56:52 +1000 (EST)
+Date: Wed, 20 Sep 2006 14:57:38 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Message-ID: <20060920215738.GC24809@mag.az.mvista.com>
+References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+	<20060920012042.GA28489@mag.az.mvista.com>
+	<1158721828.3043.13.camel@vader.jdub.homelinux.org>
+	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
+	<1158787957.6002.307.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1158787957.6002.307.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-19 at 18:16 -0700, Manoj Sharma wrote:
->         Hi,
->         
->         We use linux kernel 2.4.20 on ppc405 and the system hangs once
->         in a while when isync gets called in this function: 
->         
->         _GLOBAL(_nmask_and_or_msr)
->             mfmsr   r0      /* Get current msr */
->             andc    r0,r0,r3    /* And off the bits set in r3 (first
->         parm) */ 
->             or  r0,r0,r4    /* Or on the bits in r4 (second parm) */
->             sync            /* Some chip revs have problems here... */
->             isync
->             mtmsr   r0      /* Update machine state */
->             isync
->             blr         /* Done */ 
->         
->          2.5 onwards, I find that "sync; isync" has been replaced by a
->         macro SYNC (defined only for 601). I don't find it in any
->         changelog and reason for the change.
->         
->         Can someone give some information on this change? 
+On Thu, Sep 21, 2006 at 07:32:37AM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > So please comment the nastiness with a big "HACK HACK HACK" comment and
+> > make sure it only ever gets used on systems where nothing better is
+> > available, and all should be fine.
+> 
+> An option is to call it something like fw,address to avoid confusion and
+> make it somewhat clearer that it's really a firmware address useable
+> within the context of the firmware...
 
-Regardless of the change... on 2.4, _nmask_and_or_msr() was used for a
-number of things. We would need to know where it was called from with
-what values as arguments to have an idea of what's going wrong. It's
-probably not dying on the isync, but rather on the following mtmsr due
-to a problem with the values passed in....
+Okay.  We did talk about that but then we realized that "address"
+was for vaddrs.  We thought of other names like "bootwrapper-vaddr"
+etc. but "fw,address" or "fw,vaddr" are probably better--they show that
+the vaddr was setup by the fw.
 
-Ben.
+Comments?
+
+Mark
