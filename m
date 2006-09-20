@@ -1,32 +1,29 @@
-Return-Path: <aris@cathedrallabs.org>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 07B2467BE0
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 23:45:06 +1000 (EST)
-Received: from int-mx1.corp.redhat.com (int-mx1.corp.redhat.com
-	[172.16.52.254])
-	by mx1.redhat.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k8KDj5BX021895
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 09:45:05 -0400
-Received: from mail.boston.redhat.com (mail.boston.redhat.com [172.16.76.12])
-	by int-mx1.corp.redhat.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k8KDj5bh004152
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 09:45:05 -0400
-Received: from localhost.localdomain (vpn-51-24.sfbay.redhat.com [10.14.51.24]
-	(may be forged))
-	by mail.boston.redhat.com (8.12.8/8.12.8) with ESMTP id k8KDj2hR015267
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 09:45:03 -0400
-Received: from aris by localhost.localdomain with local (Exim 4.63)
-	(envelope-from <aris@cathedrallabs.org>) id 1GQ2Nn-0000uj-Gx
-	for linuxppc-dev@ozlabs.org; Wed, 20 Sep 2006 10:44:59 -0300
-Date: Wed, 20 Sep 2006 10:44:59 -0300
-From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] adbhid: make KEY_SYSRQ configurable on ADB based machines
-Message-ID: <20060920134459.GC23803@cathedrallabs.org>
-References: <20060808154937.GC3363@cathedrallabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060808154937.GC3363@cathedrallabs.org>
+Return-Path: <jdub@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5D60467BAF
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 00:09:41 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e32.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8KE9cPW017925
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 10:09:38 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8KE9cHZ344154
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 08:09:38 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8KE9bV5030095
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 08:09:38 -0600
+Subject: [PATCH] 40x: Fix debug status register defines
+From: Josh Boyer <jdub@us.ibm.com>
+To: paulus@samba.org, mporter@embeddedalley.com
+Content-Type: text/plain
+Date: Wed, 20 Sep 2006 09:11:59 -0500
+Message-Id: <1158761519.3121.35.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,118 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch adds a sysfs entry on /sys/class/adb/keyboard0/sysrq_key to
-> configure which key will be mapped to KEY_SYSRQ. This is needed to make
-> sysrq usable on machines which doesn't have current sysrq key. This
-> patch and the previous two ones has been tested for some days in my
-> machine without problems.
-any comments on this one?
+This patch fixes some debug register defines on PPC 40x that were incorrect.
 
-> Signed-off-by: Aristeu S. Rozanski F. <aris@cathedrallabs.org>
-> Acked-by: Michael Hanselmann <linux-kernel@hansmi.ch>
-> 
-> Index: ppc-2.6/drivers/macintosh/adbhid.c
-> ===================================================================
-> --- ppc-2.6.orig/drivers/macintosh/adbhid.c	2006-08-04 09:45:43.000000000 -0300
-> +++ ppc-2.6/drivers/macintosh/adbhid.c	2006-08-04 09:52:06.000000000 -0300
-> @@ -61,6 +61,47 @@
->  	.notifier_call	= adb_message_handler,
->  };
->  
-> +/* SYSRQ support */
-> +#ifdef CONFIG_MAGIC_SYSRQ
-> +static int adbhid_sysrq_key = 0x69;
-> +
-> +static ssize_t adbhid_show_sysrq_key(struct class_device *dev, char *buf)
-> +{
-> +	return sprintf(buf, "%#x\n", adbhid_sysrq_key);
-> +}
-> +static ssize_t adbhid_store_sysrq_key(struct class_device *dev,
-> +				      const char *buf, size_t n)
-> +{
-> +	int val;
-> +
-> +	val = simple_strtol(buf, NULL, 10);
-> +	if (val > 255)
-> +		return -EINVAL;
-> +	adbhid_sysrq_key = val;
-> +
-> +	return n;
-> +}
-> +
-> +static CLASS_DEVICE_ATTR(sysrq_key, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,
-> +			 adbhid_show_sysrq_key, adbhid_store_sysrq_key);
-> +static inline int adbhid_key_is_sysrq(int keycode)
-> +{
-> +	if (unlikely(keycode == adbhid_sysrq_key))
-> +		return KEY_SYSRQ;
-> +	return 0;
-> +}
-> +
-> +static inline void adbhid_register_sysrq_attr(struct class_device *dev)
-> +{
-> +	class_device_create_file(dev, &class_device_attr_sysrq_key);
-> +}
-> +#define adbhid_set_sysrq(x) set_bit(KEY_SYSRQ, (x))
-> +#else	/* !CONFIG_MAGIC_SYSRQ */
-> +#define adbhid_key_is_sysrq(x) (0)
-> +#define adbhid_register_sysrq_attr(x) do { } while(0)
-> +#define adbhid_set_sysrq(x) do { } while(0)
-> +#endif	/* CONFIG_MAGIC_SYSRQ */
-> +
->  /* Some special keys */
->  #define ADB_KEY_DEL		0x33
->  #define ADB_KEY_CMD		0x37
-> @@ -176,7 +217,7 @@
->  	/* 0x66 */ KEY_HANJA,		/* 123 */
->  	/* 0x67 */ KEY_F11,		/*  87 */
->  	/* 0x68 */ KEY_HANGEUL,		/* 122 */
-> -	/* 0x69 */ KEY_SYSRQ,		/*  99 */
-> +	/* 0x69 */ 0,
->  	/* 0x6a */ 0,
->  	/* 0x6b */ KEY_SCROLLLOCK,	/*  70 */
->  	/* 0x6c */ 0,
-> @@ -275,7 +316,7 @@
->  adbhid_input_keycode(int id, int keycode, int repeat, struct pt_regs *regs)
->  {
->  	struct adbhid *ahid = adbhid[id];
-> -	int up_flag, key;
-> +	int up_flag, key = 0;
->  
->  	up_flag = (keycode & 0x80);
->  	keycode &= 0x7f;
-> @@ -336,7 +377,9 @@
->  #endif /* CONFIG_PPC_PMAC */
->  	}
->  
-> -	key = adbhid[id]->keycode[keycode];
-> +	key = adbhid_key_is_sysrq(keycode);
-> +	if (!key)
-> +		key = adbhid[id]->keycode[keycode];
->  	if (key) {
->  		input_regs(adbhid[id]->input, regs);
->  		input_report_key(adbhid[id]->input, key, !up_flag);
-> @@ -759,6 +802,7 @@
->  		for (i = 0; i < 128; i++)
->  			if (hid->keycode[i])
->  				set_bit(hid->keycode[i], input_dev->keybit);
-> +		adbhid_set_sysrq(input_dev->keybit);
->  
->  		input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_LED) | BIT(EV_REP);
->  		input_dev->ledbit[0] = BIT(LED_SCROLLL) | BIT(LED_CAPSL) | BIT(LED_NUML);
-> @@ -901,6 +945,8 @@
->  		adb_get_infos(id, &default_id, &cur_handler_id);
->  		reg |= adbhid_input_reregister(id, default_id, org_handler_id,
->  					       cur_handler_id, 0);
-> +
-> +		adbhid_register_sysrq_attr(keyboard_ids.device[i]);
->  	}
->  
->  	for (i = 0; i < buttons_ids.nids; i++) {
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Signed-off-by: Josh Boyer <jdub@us.ibm.com>
 
--- 
-Aristeu
+---
+ include/asm-ppc/reg_booke.h |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+--- linux-2.6.orig/include/asm-ppc/reg_booke.h
++++ linux-2.6/include/asm-ppc/reg_booke.h
+@@ -300,14 +300,14 @@ do {						\
+ #define DBSR_IC		0x80000000	/* Instruction Completion */
+ #define DBSR_BT		0x40000000	/* Branch taken */
+ #define DBSR_TIE	0x10000000	/* Trap Instruction debug Event */
+-#define DBSR_IAC1	0x00800000	/* Instruction Address Compare 1 Event */
+-#define DBSR_IAC2	0x00400000	/* Instruction Address Compare 2 Event */
+-#define DBSR_IAC3	0x00200000	/* Instruction Address Compare 3 Event */
+-#define DBSR_IAC4	0x00100000	/* Instruction Address Compare 4 Event */
+-#define DBSR_DAC1R	0x00080000	/* Data Address Compare 1 Read Event */
+-#define DBSR_DAC1W	0x00040000	/* Data Address Compare 1 Write Event */
+-#define DBSR_DAC2R	0x00020000	/* Data Address Compare 2 Read Event */
+-#define DBSR_DAC2W	0x00010000	/* Data Address Compare 2 Write Event */
++#define DBSR_IAC1	0x04000000	/* Instruction Address Compare 1 Event */
++#define DBSR_IAC2	0x02000000	/* Instruction Address Compare 2 Event */
++#define DBSR_IAC3	0x00080000	/* Instruction Address Compare 3 Event */
++#define DBSR_IAC4	0x00040000	/* Instruction Address Compare 4 Event */
++#define DBSR_DAC1R	0x01000000	/* Data Address Compare 1 Read Event */
++#define DBSR_DAC1W	0x00800000	/* Data Address Compare 1 Write Event */
++#define DBSR_DAC2R	0x00400000	/* Data Address Compare 2 Read Event */
++#define DBSR_DAC2W	0x00200000	/* Data Address Compare 2 Write Event */
+ #endif
+ 
+ /* Bit definitions related to the ESR. */
