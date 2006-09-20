@@ -1,17 +1,15 @@
-Return-Path: <SRane@alphion.com>
-Received: from alphion.com (unknown [66.147.184.82])
-	by ozlabs.org (Postfix) with ESMTP id 5D67C67A39
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s38.bay0.hotmail.com (bay0-omc3-s38.bay0.hotmail.com
+	[65.54.246.238]) by ozlabs.org (Postfix) with ESMTP id F1FC867B71
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Sep 2006 22:51:12 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6DCB3.72C43109"
-Subject: I2C: Getting Compiation Error for application program
-Date: Wed, 20 Sep 2006 08:51:10 -0400
-Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F6571@sbsserver.AlphionCorp.local>
-From: "Sachin Rane" <SRane@alphion.com>
-To: <linux-users-list@lists.timesys.com>
-Cc: i2c@lm-sensors.org, linuxppc-embedded@ozlabs.org
+	Wed, 20 Sep 2006 23:48:31 +1000 (EST)
+Message-ID: <BAY110-F240E99BA0EDF765EC09402B2230@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: how an application program utilizes the driver.
+Date: Wed, 20 Sep 2006 13:48:25 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,115 +20,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Dear all,
+Maybe this question sounds stupid for most software engineers. But I really 
+have much confusion on this topic. So I have to ask for explanation.
 
-------_=_NextPart_001_01C6DCB3.72C43109
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+My situation is: I want to write a driver for my custom device.(In the 
+driver there are some functions defined to read or write my device.) Then 
+in my application program, I use these defined functions to operate my 
+hardware device. I think this is a normal process to operate the hardware 
+with driver+app, right? 
 
-Hi,
-=20
-I am trying to compile simple program (appended), but getting lots of =
-compilation error.
-I am using Timesys Linux 2.6.13 for ppc440 evaluation board.=20
-=20
-Command used for compilation:
-$> gcc eeprom-client.c -o eeprom-client.o
-=20
-Could you help me to find out the reason behind getting the errors?
-=20
-Regards,
-Sachin Rane
-=20
-=20
-8< ------------------------eeprom-client.c =
--------------------------------------------------------------------------=
-------------
-=20
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
+My driver is defined in drv_hello.c. I have compiled it into a module 
+drv_hello.ko and it could be insmoded or rmmoded correctly. It looks like:
 
-int main()
-{
-     int file;
-     int adapter_nr =3D 0; /* probably dynamically determined */
-     char filename[20];
-     int addr =3D 0xA1; /* The I2C address */
+//drv_hello.c
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+MODULE_LICENSE("Dual BSD/GPL");
 
-    sprintf(filename,"/dev/i2c-%d",adapter_nr);
-    if ((file =3D open(filename,O_RDWR)) < 0)
-   {
-       exit(1);
-    }
-  =20
-    if (ioctl(file,I2C_SLAVE,addr) < 0)
-   {
-      exit(1);
-   }
-   else
-  {
-      printf("\n Able to bind the adapter");
-   }
-   return 0;
+void show_hello(){
+    printk("hello.\n");
 }
 
-8< =
--------------------------------------------------------------------------=
-------------------------------------
+static int hello_init(void){
+    printk(KERN_ALERT "module starts.\n");
+    return 0;
+}
 
-------_=_NextPart_001_01C6DCB3.72C43109
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+static void hello_exit(void){
+    printk(KERN_ALERT "module exits.\n");
+}
 
-<HTML dir=3Dltr><HEAD>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV><FONT face=3DArial color=3D#000000 size=3D2>Hi,</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>I am trying to compile&nbsp;simple =
-program (appended), but getting lots of compilation error.</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>I am using Timesys Linux 2.6.13 for =
-ppc440 evaluation board.&nbsp;</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Command used for =
-compilation:</FONT></DIV>=0A=
-<DIV>$&gt;&nbsp;gcc eeprom-client.c -o eeprom-client.o</DIV>=0A=
-<DIV>&nbsp;</DIV>=0A=
-<DIV>Could you help me to find out the reason behind getting the =
-errors?</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Sachin Rane</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>8&lt; ------------------------<FONT =
-face=3D"Times New Roman" size=3D3>eeprom-client.c</FONT> =
--------------------------------------------------------------------------=
-------------</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV>#include &lt;linux/i2c.h&gt;<BR>#include =
-&lt;linux/i2c-dev.h&gt;<BR><BR>int main()<BR>{</DIV>=0A=
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp; int file;<BR>&nbsp;&nbsp;&nbsp;&nbsp; int =
-adapter_nr =3D 0; /* probably dynamically determined */<BR>&nbsp; =
-&nbsp;&nbsp; char filename[20];</DIV>=0A=
-<DIV>&nbsp;&nbsp;&nbsp; &nbsp;int addr =3D 0xA1; /* The I2C address =
-*/<BR></DIV>=0A=
-<DIV>&nbsp;&nbsp;&nbsp; =
-sprintf(filename,"/dev/i2c-%d",adapter_nr);<BR>&nbsp; &nbsp; if ((file =
-=3D open(filename,O_RDWR)) &lt; 0)<BR>&nbsp;&nbsp; =
-{<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit(1);<BR>&nbsp;&nbsp;&nbsp; =
-}</DIV>=0A=
-<DIV>&nbsp;&nbsp; </DIV>=0A=
-<DIV>&nbsp;&nbsp;&nbsp; if (ioctl(file,I2C_SLAVE,addr) &lt; =
-0)<BR>&nbsp;&nbsp; {<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-exit(1);<BR>&nbsp;&nbsp; }</DIV>=0A=
-<DIV>&nbsp;&nbsp; else<BR>&nbsp; {<BR>&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;printf("\n Able to bind the adapter");<BR>&nbsp;&nbsp; =
-}<BR>&nbsp;&nbsp; return 0;<BR>}<BR></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>8&lt; =
--------------------------------------------------------------------------=
-------------------------------------</FONT></DIV></BODY></HTML>
-------_=_NextPart_001_01C6DCB3.72C43109--
+module_init(hello_init);
+module_exit(hello_exit);
+
+EXPORT_SYMBOL(show_hello);
+
+
+
+In my application program app_hello.c, I use the function show_hello to 
+achieve the simple task: print "hello" on the console. Here is my app 
+program:
+
+//app_hello.c
+extern void show_hello();
+
+int main(int argc, char** argv)
+{
+    show_hello();
+
+    return 0;
+}
+
+Then, here comes my problem: I don't know how to compile my application 
+program and then it could dynamically refer to the function show_hello() 
+defined in the memory area of the driver module. How can I tell the 
+compiler and linker that the app program is expected to be linked with the 
+driver module dynamically? If possible, please give me a detailed 
+explanation. 
+
+Waiting for your suggestion. Thanks for your help.
+
+Regards
+Ming
+
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
