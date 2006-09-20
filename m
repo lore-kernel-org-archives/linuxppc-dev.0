@@ -1,18 +1,17 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.9])
-	by ozlabs.org (Postfix) with ESMTP id B542967A3F
+Return-Path: <SRane@alphion.com>
+Received: from alphion.com (unknown [66.147.184.82])
+	by ozlabs.org (Postfix) with ESMTP id 5D67C67A39
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Sep 2006 22:38:29 +1000 (EST)
-Subject: Re: linux-2.6 system ACE driver - need help
-From: Jeff Angielski <jeff@theptrgroup.com>
-To: agnel juni <junijoseph@yahoo.co.in>
-In-Reply-To: <20060919224349.25812.qmail@web8408.mail.in.yahoo.com>
-References: <20060919224349.25812.qmail@web8408.mail.in.yahoo.com>
-Content-Type: text/plain
-Date: Wed, 20 Sep 2006 08:38:45 -0400
-Message-Id: <1158755925.8564.19.camel@sumo-jaa>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 20 Sep 2006 22:51:12 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6DCB3.72C43109"
+Subject: I2C: Getting Compiation Error for application program
+Date: Wed, 20 Sep 2006 08:51:10 -0400
+Message-ID: <8584FDC94AFF7640B17B8A89B23B19B34F6571@sbsserver.AlphionCorp.local>
+From: "Sachin Rane" <SRane@alphion.com>
+To: <linux-users-list@lists.timesys.com>
+Cc: i2c@lm-sensors.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,36 +22,115 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-09-19 at 23:43 +0100, agnel juni wrote:
+This is a multi-part message in MIME format.
 
-> First, I would like to know if the driver tested in interrupt mode.
+------_=_NextPart_001_01C6DCB3.72C43109
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Does it work for you in polling mode?  If not, you probably have a
-problem with the way you are accessing the system ace - cache,
-endianess, byte alignment, etc.  If it does work in polling, the usual
-suspects are interrupt masking errors or some low level problems with
-your IRQ signals.  Since you know the size of a sector and the size of
-the sysace buffers, how many interrupts do you get per sector read?  Do
-you see extras or not enough?
+Hi,
+=20
+I am trying to compile simple program (appended), but getting lots of =
+compilation error.
+I am using Timesys Linux 2.6.13 for ppc440 evaluation board.=20
+=20
+Command used for compilation:
+$> gcc eeprom-client.c -o eeprom-client.o
+=20
+Could you help me to find out the reason behind getting the errors?
+=20
+Regards,
+Sachin Rane
+=20
+=20
+8< ------------------------eeprom-client.c =
+-------------------------------------------------------------------------=
+------------
+=20
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
 
-> We are able to mount the CF, but it is very inconsistent.
+int main()
+{
+     int file;
+     int adapter_nr =3D 0; /* probably dynamically determined */
+     char filename[20];
+     int addr =3D 0xA1; /* The I2C address */
 
-Dump the sector data to the screen that you are reading from the CF.
-Especially look at the results from the initial identify command to
-verify that they make sense, and because that is the easiest to check.
+    sprintf(filename,"/dev/i2c-%d",adapter_nr);
+    if ((file =3D open(filename,O_RDWR)) < 0)
+   {
+       exit(1);
+    }
+  =20
+    if (ioctl(file,I2C_SLAVE,addr) < 0)
+   {
+      exit(1);
+   }
+   else
+  {
+      printf("\n Able to bind the adapter");
+   }
+   return 0;
+}
 
-> Same is the case with fdisk command. When it fails,we get errors which you could see in the screen-dump below.
-> Are we missing to apply the right patch? Please let us know your
-> inputs to go forward.
-> Looking forwards for your reply.
+8< =
+-------------------------------------------------------------------------=
+------------------------------------
 
-> 
-> # mount -t msdos /dev/xsysace /root/cf
+------_=_NextPart_001_01C6DCB3.72C43109
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Shouldn't this be /dev/xsysace1?  You want to mount a partition not the
-entire block device.
-
-
--- 
-Jeff Angielski
-The PTR Group
+<HTML dir=3Dltr><HEAD>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>=0A=
+<BODY>=0A=
+<DIV><FONT face=3DArial color=3D#000000 size=3D2>Hi,</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>I am trying to compile&nbsp;simple =
+program (appended), but getting lots of compilation error.</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>I am using Timesys Linux 2.6.13 for =
+ppc440 evaluation board.&nbsp;</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Command used for =
+compilation:</FONT></DIV>=0A=
+<DIV>$&gt;&nbsp;gcc eeprom-client.c -o eeprom-client.o</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>Could you help me to find out the reason behind getting the =
+errors?</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Sachin Rane</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>8&lt; ------------------------<FONT =
+face=3D"Times New Roman" size=3D3>eeprom-client.c</FONT> =
+-------------------------------------------------------------------------=
+------------</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV>#include &lt;linux/i2c.h&gt;<BR>#include =
+&lt;linux/i2c-dev.h&gt;<BR><BR>int main()<BR>{</DIV>=0A=
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp; int file;<BR>&nbsp;&nbsp;&nbsp;&nbsp; int =
+adapter_nr =3D 0; /* probably dynamically determined */<BR>&nbsp; =
+&nbsp;&nbsp; char filename[20];</DIV>=0A=
+<DIV>&nbsp;&nbsp;&nbsp; &nbsp;int addr =3D 0xA1; /* The I2C address =
+*/<BR></DIV>=0A=
+<DIV>&nbsp;&nbsp;&nbsp; =
+sprintf(filename,"/dev/i2c-%d",adapter_nr);<BR>&nbsp; &nbsp; if ((file =
+=3D open(filename,O_RDWR)) &lt; 0)<BR>&nbsp;&nbsp; =
+{<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit(1);<BR>&nbsp;&nbsp;&nbsp; =
+}</DIV>=0A=
+<DIV>&nbsp;&nbsp; </DIV>=0A=
+<DIV>&nbsp;&nbsp;&nbsp; if (ioctl(file,I2C_SLAVE,addr) &lt; =
+0)<BR>&nbsp;&nbsp; {<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+exit(1);<BR>&nbsp;&nbsp; }</DIV>=0A=
+<DIV>&nbsp;&nbsp; else<BR>&nbsp; {<BR>&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;printf("\n Able to bind the adapter");<BR>&nbsp;&nbsp; =
+}<BR>&nbsp;&nbsp; return 0;<BR>}<BR></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>8&lt; =
+-------------------------------------------------------------------------=
+------------------------------------</FONT></DIV></BODY></HTML>
+------_=_NextPart_001_01C6DCB3.72C43109--
