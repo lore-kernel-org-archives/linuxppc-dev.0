@@ -1,19 +1,30 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id A824F67BB8
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 08:55:25 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k8LJVdZg012608
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 13:31:39 -0600 (MDT)
-Date: Thu, 21 Sep 2006 13:11:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Include <asm/mmu.h> in arch/powerpc/sysdev/fsl_soc.h for
-	phys_addr_t.
-Message-ID: <20060921181152.GA32314@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BC13E67BC7
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 09:13:19 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8LNDG3Q026839
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 19:13:16 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8LNDF1b266626
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 17:13:15 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8LNDFxe023605
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 17:13:15 -0600
+Date: Thu, 21 Sep 2006 18:13:14 -0500
+To: matthew@wil.cx
+Subject: [PATCH]: PCI Error Recovery: Symbios SCSI device driver
+Message-ID: <20060921231314.GW29167@austin.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +34,222 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch causes fsl_soc.h to import the definition of phys_addr_t
-itself, rather than relying on its includer to do so.
 
-Signed-off-by: Scott Wood <scott@freescale.com>
----
- arch/powerpc/sysdev/fsl_soc.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Matthew, 
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index c433d3f..5a3dd48 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -2,6 +2,8 @@ #ifndef __PPC_FSL_SOC_H
- #define __PPC_FSL_SOC_H
- #ifdef __KERNEL__
+I hope this looks like a good patch.  Please review, apply and 
+forward upstream.
+
+--linas
+
+Various PCI bus errors can be signaled by newer PCI controllers.  
+This patch adds the PCI error recovery callbacks to the Symbios 
+SCSI device driver.  The patch has been tested, and appears to 
+work well.
+
+Signed-off-by: Linas Vepstas <linas@ausin.ibm.com>
+
+----
+ drivers/scsi/sym53c8xx_2/sym_glue.c |   97 ++++++++++++++++++++++++++++++++++++
+ drivers/scsi/sym53c8xx_2/sym_glue.h |    4 +
+ drivers/scsi/sym53c8xx_2/sym_hipd.c |   10 +++
+ 3 files changed, 111 insertions(+)
+
+Index: linux-2.6.18-rc7-git1/drivers/scsi/sym53c8xx_2/sym_glue.c
+===================================================================
+--- linux-2.6.18-rc7-git1.orig/drivers/scsi/sym53c8xx_2/sym_glue.c	2006-09-21 17:32:54.000000000 -0500
++++ linux-2.6.18-rc7-git1/drivers/scsi/sym53c8xx_2/sym_glue.c	2006-09-21 17:35:37.000000000 -0500
+@@ -659,6 +659,11 @@ static irqreturn_t sym53c8xx_intr(int ir
  
-+#include <asm/mmu.h>
+ 	if (DEBUG_FLAGS & DEBUG_TINY) printf_debug ("[");
+ 
++	/* Avoid spinloop trying to handle interrupts on frozen device */
++	if ((np->s.device->error_state != pci_channel_io_normal) &&
++	    (np->s.device->error_state != 0))
++		return IRQ_HANDLED;
 +
- extern phys_addr_t get_immrbase(void);
+ 	spin_lock_irqsave(np->s.host->host_lock, flags);
+ 	sym_interrupt(np);
+ 	spin_unlock_irqrestore(np->s.host->host_lock, flags);
+@@ -726,6 +731,19 @@ static int sym_eh_handler(int op, char *
  
- #endif
--- 
-1.4.2.1
+ 	dev_warn(&cmd->device->sdev_gendev, "%s operation started.\n", opname);
+ 
++	/* We may be in an error condition because the PCI bus
++	 * went down. In this case, we need to wait until the
++	 * PCI bus is reset, the card is reset, and only then
++	 * proceed with the scsi error recovery.  There's no
++	 * point in hurrying; take a leisurely wait.
++	 */
++#define WAIT_FOR_PCI_RECOVERY	35
++	if ((np->s.device->error_state != pci_channel_io_normal) &&
++	    (np->s.device->error_state != 0) &&
++		 (0 == wait_for_completion_timeout(&np->s.io_reset_wait,
++		                                 WAIT_FOR_PCI_RECOVERY*HZ)))
++			return SCSI_FAILED;
++
+ 	spin_lock_irq(host->host_lock);
+ 	/* This one is queued in some place -> to wait for completion */
+ 	FOR_EACH_QUEUED_ELEMENT(&np->busy_ccbq, qp) {
+@@ -1510,6 +1528,7 @@ static struct Scsi_Host * __devinit sym_
+ 	np->maxoffs	= dev->chip.offset_max;
+ 	np->maxburst	= dev->chip.burst_max;
+ 	np->myaddr	= dev->host_id;
++	init_completion(&np->s.io_reset_wait);
+ 
+ 	/*
+ 	 *  Edit its name.
+@@ -1948,6 +1967,77 @@ static void __devexit sym2_remove(struct
+ 	attach_count--;
+ }
+ 
++/**
++ * sym2_io_error_detected() -- called when PCI error is detected
++ * @pdev: pointer to PCI device
++ * @state: current state of the PCI slot
++ */
++static pci_ers_result_t sym2_io_error_detected (struct pci_dev *pdev,
++                                         enum pci_channel_state state)
++{
++	struct sym_hcb *np = pci_get_drvdata(pdev);
++
++	/* If slot is permanently frozen, turn everything off */
++	if (state == pci_channel_io_perm_failure) {
++		sym2_remove(pdev);
++		return PCI_ERS_RESULT_DISCONNECT;
++	}
++
++	init_completion(&np->s.io_reset_wait);
++	disable_irq(pdev->irq);
++	pci_disable_device(pdev);
++
++	/* Request a slot slot reset. */
++	return PCI_ERS_RESULT_NEED_RESET;
++}
++
++/**
++ * sym2_io_slot_reset() -- called when the pci bus has been reset.
++ * @pdev: pointer to PCI device
++ *
++ * Restart the card from scratch.
++ */
++static pci_ers_result_t sym2_io_slot_reset (struct pci_dev *pdev)
++{
++	struct sym_hcb *np = pci_get_drvdata(pdev);
++
++	printk (KERN_INFO "%s: recovering from a PCI slot reset\n",
++	    sym_name(np));
++
++	if (pci_enable_device(pdev))
++		printk (KERN_ERR "%s: device setup failed most egregiously\n",
++			    sym_name(np));
++
++	pci_set_master(pdev);
++	enable_irq (pdev->irq);
++
++	/* Perform host reset only on one instance of the card */
++	if (0 == PCI_FUNC (pdev->devfn)) {
++		if (sym_reset_scsi_bus(np, 0)) {
++		   printk(KERN_ERR "%s: Unable to reset scsi host controller\n",
++					          sym_name(np));
++			return PCI_ERS_RESULT_DISCONNECT;
++		}
++		sym_start_up (np, 1);
++	}
++
++	return PCI_ERS_RESULT_RECOVERED;
++}
++
++/**
++ * sym2_io_resume() -- resume normal ops after PCI reset
++ * @pdev: pointer to PCI device
++ *
++ * Called when the error recovery driver tells us that its
++ * OK to resume normal operation. Use completion to allow
++ * halted scsi ops to resume.
++ */
++static void sym2_io_resume (struct pci_dev *pdev)
++{
++	struct sym_hcb *np = pci_get_drvdata(pdev);
++	complete_all(&np->s.io_reset_wait);
++}
++
+ static void sym2_get_signalling(struct Scsi_Host *shost)
+ {
+ 	struct sym_hcb *np = sym_get_hcb(shost);
+@@ -2110,11 +2200,18 @@ static struct pci_device_id sym2_id_tabl
+ 
+ MODULE_DEVICE_TABLE(pci, sym2_id_table);
+ 
++static struct pci_error_handlers sym2_err_handler = {
++	.error_detected = sym2_io_error_detected,
++	.slot_reset = sym2_io_slot_reset,
++	.resume = sym2_io_resume,
++};
++
+ static struct pci_driver sym2_driver = {
+ 	.name		= NAME53C8XX,
+ 	.id_table	= sym2_id_table,
+ 	.probe		= sym2_probe,
+ 	.remove		= __devexit_p(sym2_remove),
++	.err_handler = &sym2_err_handler,
+ };
+ 
+ static int __init sym2_init(void)
+Index: linux-2.6.18-rc7-git1/drivers/scsi/sym53c8xx_2/sym_glue.h
+===================================================================
+--- linux-2.6.18-rc7-git1.orig/drivers/scsi/sym53c8xx_2/sym_glue.h	2006-09-21 17:32:54.000000000 -0500
++++ linux-2.6.18-rc7-git1/drivers/scsi/sym53c8xx_2/sym_glue.h	2006-09-21 17:35:37.000000000 -0500
+@@ -40,6 +40,7 @@
+ #ifndef SYM_GLUE_H
+ #define SYM_GLUE_H
+ 
++#include <linux/completion.h>
+ #include <linux/delay.h>
+ #include <linux/ioport.h>
+ #include <linux/pci.h>
+@@ -179,6 +180,9 @@ struct sym_shcb {
+ 	char		chip_name[8];
+ 	struct pci_dev	*device;
+ 
++	/* Waiter for clearing of frozen PCI bus */
++	struct completion io_reset_wait;
++
+ 	struct Scsi_Host *host;
+ 
+ 	void __iomem *	ioaddr;		/* MMIO kernel io address	*/
+Index: linux-2.6.18-rc7-git1/drivers/scsi/sym53c8xx_2/sym_hipd.c
+===================================================================
+--- linux-2.6.18-rc7-git1.orig/drivers/scsi/sym53c8xx_2/sym_hipd.c	2006-09-21 17:32:54.000000000 -0500
++++ linux-2.6.18-rc7-git1/drivers/scsi/sym53c8xx_2/sym_hipd.c	2006-09-21 17:35:37.000000000 -0500
+@@ -2761,6 +2761,7 @@ void sym_interrupt (struct sym_hcb *np)
+ 	u_char	istat, istatc;
+ 	u_char	dstat;
+ 	u_short	sist;
++	u_int    icnt;
+ 
+ 	/*
+ 	 *  interrupt on the fly ?
+@@ -2802,6 +2803,7 @@ void sym_interrupt (struct sym_hcb *np)
+ 	sist	= 0;
+ 	dstat	= 0;
+ 	istatc	= istat;
++	icnt = 0;
+ 	do {
+ 		if (istatc & SIP)
+ 			sist  |= INW(np, nc_sist);
+@@ -2809,6 +2811,14 @@ void sym_interrupt (struct sym_hcb *np)
+ 			dstat |= INB(np, nc_dstat);
+ 		istatc = INB(np, nc_istat);
+ 		istat |= istatc;
++
++		/* Prevent deadlock waiting on a condition that may never clear. */
++		icnt ++;
++		if (100 < icnt) {
++			if ((np->s.device->error_state != pci_channel_io_normal)
++			   && (np->s.device->error_state != 0))
++				return;
++		}
+ 	} while (istatc & (SIP|DIP));
+ 
+ 	if (DEBUG_FLAGS & DEBUG_TINY)
