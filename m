@@ -1,21 +1,15 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5436A67C5C
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 04:31:29 +1000 (EST)
-Message-ID: <4512D3F4.60405@am.sony.com>
-Date: Thu, 21 Sep 2006 11:03:32 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC/PATCH] Create a "wrapper" script and use it in
-	arch/powerpc/boot
-References: <17682.28743.743974.786724@cargo.ozlabs.ibm.com>
-In-Reply-To: <17682.28743.743974.786724@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 7859B67B7C
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 05:25:44 +1000 (EST)
+Date: Thu, 21 Sep 2006 14:25:34 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] maple u3 ht - reject inappropriate config space access
+Message-ID: <20060921192534.GE630@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Another point to note is that this renames the images: the one for
-> pSeries is called zImage.pseries rather than zImage, and the one for
-> powermacs is now zImage.pmac rather than zImage.vmode.
+When there is a PCI-X mode 2 capable device behind the HT<->PCI-X
+bridge, the pci core decides that the device has the extended 4K
+config space, even though the bus is not operating in mode 2.  This is
+because the u3_ht pci ops silently accept offsets greater than 255 but
+use only the 8 least significant bits, which means reading at offset
+0x100 gets the data at offset 0x0, and causes confusion for lspci.
 
+Reject accesses to configuration space offsets greater than 255.
 
-zImage.vmode was my name, and I never liked it...
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-
-> +if [ -n "$dts" ]; then
-> +    if [ -z "$dtb" ]; then
-> +	dtb="$platform.dtb"
-> +    fi
-> +    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
-
-I'm wondering if this would be better to have built by the
-upper level makefile and have quiet_cmd_dtc and cmd_dtc.
-Its just a thought.  Did you consider it?
-
--Geoff
+--- linux-2.6.git.orig/arch/powerpc/platforms/maple/pci.c
++++ linux-2.6.git/arch/powerpc/platforms/maple/pci.c
+@@ -211,6 +211,9 @@ static int u3_ht_read_config(struct pci_
+ 	if (hose == NULL)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
++	if (offset > 0xff)
++		return PCIBIOS_BAD_REGISTER_NUMBER;
++
+ 	addr = u3_ht_cfg_access(hose, bus->number, devfn, offset);
+ 	if (!addr)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+@@ -243,6 +246,9 @@ static int u3_ht_write_config(struct pci
+ 	if (hose == NULL)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
++	if (offset > 0xff)
++		return PCIBIOS_BAD_REGISTER_NUMBER;
++
+ 	addr = u3_ht_cfg_access(hose, bus->number, devfn, offset);
+ 	if (!addr)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
