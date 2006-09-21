@@ -1,26 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 44E6E67BDC
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 10:07:23 +1000 (EST)
-In-Reply-To: <20060920215738.GC24809@mag.az.mvista.com>
-References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
-	<20060920012042.GA28489@mag.az.mvista.com>
-	<1158721828.3043.13.camel@vader.jdub.homelinux.org>
-	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
-	<1158787957.6002.307.camel@localhost.localdomain>
-	<20060920215738.GC24809@mag.az.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
-Date: Thu, 21 Sep 2006 02:07:05 +0200
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [POWERPC] merge iSeries i/o operations with the rest
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20060921100315.89d74f6f.sfr@canb.auug.org.au>
+References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
+	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
+	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
+	<1158768096.19375.6.camel@basalt.austin.ibm.com>
+	<20060921100315.89d74f6f.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-y8zCUYgLA1WihWQ52Koy"
+Date: Thu, 21 Sep 2006 10:20:41 +1000
+Message-Id: <1158798041.7062.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	Hollis Blanchard <hollisb@us.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> So please comment the nastiness with a big "HACK HACK HACK"  
->>> comment and
->>> make sure it only ever gets used on systems where nothing better is
->>> available, and all should be fine.
->>
->> An option is to call it something like fw,address to avoid  
->> confusion and
->> make it somewhat clearer that it's really a firmware address useable
->> within the context of the firmware...
->
-> Okay.  We did talk about that but then we realized that "address"
-> was for vaddrs.  We thought of other names like "bootwrapper-vaddr"
-> etc. but "fw,address" or "fw,vaddr" are probably better--they show  
-> that
-> the vaddr was setup by the fw.
 
-If you use a different name than "address", you're not bound to its
-semantics either.  And as those semantics have some problems, please
-do change-em.  How about:
+--=-y8zCUYgLA1WihWQ52Koy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The "reg-virtual-address" property contains the same regions as the
-"reg" property, in the same order; each entry is #address-cells from
-the root node 32-bit integers wide(*); the entry describes a
-contiguous area of virtual memory of the same size as the
-corresponding "reg" entry, mapping that area, or 0 if the area isn't
-mapped.
+On Thu, 2006-09-21 at 10:03 +1000, Stephen Rothwell wrote:
+> Hi Hollis,
+>=20
+> On Wed, 20 Sep 2006 11:01:36 -0500 Hollis Blanchard <hollisb@us.ibm.com> =
+wrote:
+> >
+> > On Wed, 2006-09-20 at 22:15 +1000, Stephen Rothwell wrote:
+> > > +       if (firmware_has_feature(FW_FEATURE_ISERIES)) {
+> > > +               BUG();
+> > > +               return;
+> > > +       }
+> >=20
+> > Shouldn't all these be BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES))=
+?
+>=20
+> In this case, the return helps because the compiler will not generate the
+> following code in iSeries only builds.  If we could tell the compiler
+> that BUG() and BUG_ON() won't return, then BUG_ON() would be better.
 
-Any holes in this definition?
+Just put a return in the BUG_ON() macro ;D
 
+cheers
 
-Segher
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-(*)  This isn't strictly correct, but OF doesn't describe the size of
-virtual addresses anywhere.  In practice, it's the same as the size
-of physical addresses always.  Oh, and the name "virtual" isn't correct
-in PowerPC-speak anyway, heh.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-y8zCUYgLA1WihWQ52Koy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBFEdrZdSjSd0sB4dIRAjeCAJ4jiuxuy14+RK/hIMSD+vMe0ESJhQCfWjdD
+fjQBOiojTaFfEvdgF+EqNog=
+=lSoI
+-----END PGP SIGNATURE-----
+
+--=-y8zCUYgLA1WihWQ52Koy--
