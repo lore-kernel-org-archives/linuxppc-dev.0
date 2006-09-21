@@ -1,16 +1,29 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc3-s35.bay0.hotmail.com (bay0-omc3-s35.bay0.hotmail.com
-	[65.54.246.235]) by ozlabs.org (Postfix) with ESMTP id 8359967BC2
+Return-Path: <urwithsudheer@gmail.com>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id 7D12B67BD3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Sep 2006 18:13:49 +1000 (EST)
-Message-ID: <BAY110-F22CD47F1D256D56E8BEEF5B2200@phx.gbl>
-In-Reply-To: <451168F6.3030701@ovro.caltech.edu>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: dwh@ovro.caltech.edu, jdub@us.ibm.com
-Subject: Re: how an application program utilizes the driver.
-Date: Thu, 21 Sep 2006 08:13:43 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+	Thu, 21 Sep 2006 18:47:49 +1000 (EST)
+Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id B0D988780B7
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Sep 2006 01:47:37 -0700 (PDT)
+Received: from gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
+	1.3.4.5154-maint13 $Rev: 5154 $) id r69l014737D-00-2
+	for linuxppc-embedded@ozlabs.org; Thu, 21 Sep 2006 01:47:37 -0700
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 8C29E878093
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Sep 2006 01:47:37 -0700 (PDT)
+Message-ID: <451251A9.9080504@gmail.com>
+Date: Thu, 21 Sep 2006 14:17:37 +0530
+From: sudheer <urwithsudheer@gmail.com>
+MIME-Version: 1.0
+To: Steven Kaiser <skaiser.uci@gmail.com>
+Subject: Re: MPC5200b kernel module memory mapping
+References: <000001c6dd12$417d7a50$6e4ec880@volt>
+In-Reply-To: <000001c6dd12$417d7a50$6e4ec880@volt>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,80 +35,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Dave and Josh,
-Thanks so much for your suggestion first.
+Hi Stevenson Kaiser,
 
-Yes, it looks that I am really a beginner and there are so many points I 
-cannot understand well. So I will follow your suggestions and go through 
-those material first...
-
-In fact, I am reading LDD3 now. However, it seems that the book is mainly 
-focused on the driver part and there is not some chapter to tell how apps 
-work with drivers. So after a rough glance, I still have much confusion. :(
-
-I will read more to understand this topic. Thanks for your help again.
+Steven Kaiser wrote:
+> #define MPC5xxx_MM_IPBI		(MPC5xxx_MBAR + 0x0054)
+>
+> void *ioaddr = NULL;
+>
+>
+> 	// map our physical address into kernal virtual address space
+> 	// do I need this call?
+> 	ioaddr = ioremap(MALab_MM_START,MALab_MM_SIZE);
+>
+>   
+Try typecasting.        ioaddr = (u16 *)ioremap (start, size );
 
 Regards
-Ming
+Sudheer
 
-
->From: David Hawkins <dwh@ovro.caltech.edu>
->To: Ming Liu <eemingliu@hotmail.com>
->CC: linuxppc-embedded@ozlabs.org
->Subject: Re: how an application program utilizes the driver.
->Date: Wed, 20 Sep 2006 09:14:46 -0700
+> return 0;
+> }
 >
->Hi Ming,
+> Later (in a ioctrl routine), I will try and write something to the first
+> location in my address range.  I tried these three ways:
 >
-> > My situation is: I want to write a driver for my custom device.(In the
-> > driver there are some functions defined to read or write my device.) 
-Then
-> > in my application program, I use these defined functions to operate my
-> > hardware device. I think this is a normal process to operate the 
-hardware
-> > with driver+app, right?
+> 	*(volatile u16 *)MALab_MM_START = 0x5555;
+> 	outw(0x5555,MALab_MM_START);
+> 	outw(0x5555,ioaddr);
 >
->Right, but you've missed a few critical points.
+> Any and all of the these calls crash the kernel so horrendously I have to
+> reboot.  Sometimes I have to delete and mknod a new /dev entry.
 >
->For your custom device, you'll create a driver that implements
->*kernel space* functions my_driver_open(), read(), write(), close()
->etc. You'll install that module and create an appropriate
->device node, eg. /dev/my_driver.
+> I have tried the io memory map technique instead of the above io port map
+> technique, using request_mem_region(), with the same crashing results upon
+> any writew() call or direct variants.  I tried things without the ioremap()
+> call--  I get a segmentation fault in these cases.
 >
->In your *user-space* application code, you'll open that device
+> The request_region() or request_mem_region() seems to work ok.  I can cat
+> /proc/iomem or /proc/ioports and see my range in there.  I am pretty sure I
+> am setting up the LocalBus chip select registers ok.
 >
->int main(argc, argv) ...
+> Yet obviously I am doing something profoundly stupid.  Is my error obvious?
+> Can someone enlighten me in my darkness?
 >
->   int fd = open("/dev/my_driver" ...)
->
->
->and then write to your device ...
->
->   int write(fd, buffer, len);
->
->or read from your device ...
->
->   int read(fd, buffer, len);
->
->The user-space calls open, read, write eventually call down into
->your driver space code. The driver and application are not
->linked, they communicate via the /dev interface.
->
->You really should read through Linux Device Drivers by Rubini,
->or check out a tutorial such as
->
->http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
->http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
->http://www.ovro.caltech.edu/~dwh/correlator/index.html
->
->Regards,
->Dave
+> Steven Kaiser
+> Chemistry Electronics Facility
+> University of California, Irvine
+> 2347 Natural Sciences 2
+> Irvine, CA  92697-2025
+> (949)824-7520
 >
 >
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >
->
->
->
-
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+>   
