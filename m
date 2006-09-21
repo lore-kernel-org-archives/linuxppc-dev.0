@@ -1,38 +1,22 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EDC4B68383
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 22:18:57 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8LCIqZP026791
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 08:18:52 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8LCIqdc264132
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 06:18:52 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8LCIpuB019558
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 06:18:51 -0600
-In-Reply-To: <20060921145522.366a3b03.sfr@canb.auug.org.au>
-References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
-	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
-	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
-	<1158768096.19375.6.camel@basalt.austin.ibm.com>
-	<20060921100315.89d74f6f.sfr@canb.auug.org.au>
-	<1158798041.7062.4.camel@localhost.localdomain>
-	<20060921145522.366a3b03.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <135B477D-5DF8-48E9-94FD-A114A4526177@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: Re: [POWERPC] mark BUG() as noreturn
-Date: Thu, 21 Sep 2006 08:18:47 -0400
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C986267D88
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 22:19:05 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k8LCVpth023937
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 05:31:51 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k8LCJ164013734
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 07:19:02 -0500 (CDT)
+Message-ID: <45128359.9060508@freescale.com>
+Date: Thu, 21 Sep 2006 20:19:37 +0800
+From: Li Yang <leoli@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 9/11] Add ucc_geth driver data structure
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,20 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sep 21, 2006, at 12:55 AM, Stephen Rothwell wrote:
+Signed-off-by: Shlomi Gridish <gridish@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
-> From an idea from Michael Ellerman.
->
-> We finish the BUG() macro with a call to a function marked with  
-> attribute
-> "noreturn" so that the compiler will know that BUG() and BUG_ON()
-> (with a constant, non-zero argument) will not return.
+---
+ include/linux/fsl_devices.h |   39 ++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 38 insertions(+), 1 deletions(-)
 
-But BUG() _can_ return, if I have a probe, xmon or kgdb configured it  
-is possible  to play with the state of the world and try to continue/ 
-recover, (xmon "x" command).  IMHO, this is a powerful debugging  
-scenario.
-
-Why are we concerned with the performance of this anyway?
-
--JX
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 16fbe59..a16d82f 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -83,7 +83,6 @@ struct fsl_i2c_platform_data {
+ #define FSL_I2C_DEV_SEPARATE_DFSRR	0x00000001
+ #define FSL_I2C_DEV_CLOCK_5200		0x00000002
+ 
+-
+ enum fsl_usb2_operating_modes {
+ 	FSL_USB2_MPH_HOST,
+ 	FSL_USB2_DR_HOST,
+@@ -121,5 +120,43 @@ struct fsl_spi_platform_data {
+ 	u32	sysclk;
+ };
+ 
++/* Ethernet interface (phy management and speed)
++*/
++typedef enum enet_interface {
++	ENET_10_MII,		/* 10 Base T,   MII interface */
++	ENET_10_RMII,		/* 10 Base T,  RMII interface */
++	ENET_10_RGMII,		/* 10 Base T, RGMII interface */
++	ENET_100_MII,		/* 100 Base T,   MII interface */
++	ENET_100_RMII,		/* 100 Base T,  RMII interface */
++	ENET_100_RGMII,		/* 100 Base T, RGMII interface */
++	ENET_1000_GMII,		/* 1000 Base T,  GMII interface */
++	ENET_1000_RGMII,	/* 1000 Base T, RGMII interface */
++	ENET_1000_TBI,		/* 1000 Base T,   TBI interface */
++	ENET_1000_RTBI		/* 1000 Base T,  RTBI interface */
++} enet_interface_e;
++
++struct ucc_geth_platform_data {
++	/* device specific information */
++	u32 device_flags;
++	u32 phy_reg_addr;
++
++	/* board specific information */
++	u32 board_flags;
++	u8 rx_clock;
++	u8 tx_clock;
++	u32 phy_id;
++	enet_interface_e phy_interface;
++	u32 phy_interrupt;
++	u8 mac_addr[6];
++};
++
++/* Flags related to UCC Gigabit Ethernet device features */
++#define FSL_UGETH_DEV_HAS_GIGABIT		0x00000001
++#define FSL_UGETH_DEV_HAS_COALESCE		0x00000002
++#define FSL_UGETH_DEV_HAS_RMON			0x00000004
++
++/* Flags in ucc_geth_platform_data */
++#define FSL_UGETH_BRD_HAS_PHY_INTR		0x00000001	/* if not set use a timer */
++
+ #endif				/* _FSL_DEVICE_H_ */
+ #endif				/* __KERNEL__ */
