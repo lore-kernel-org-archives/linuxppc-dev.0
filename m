@@ -1,12 +1,18 @@
-Return-Path: <mikey@ozlabs.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Fastboot mailing list <fastboot@lists.osdl.org>, linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Subject: [PATCH] kexec: remove memory reserve patching for powerpc device tree
-Date: Thu, 21 Sep 2006 11:10:30 +1000
-Sender: mikey@ozlabs.org
-Message-Id: <20060921011031.4BFEA67BCE@ozlabs.org>
-Reply-To: Michael Neuling <mikey@neuling.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] kexec: remove memory reserve patching for powerpc
+	device tree
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20060921011031.4BFEA67BCE@ozlabs.org>
+References: <20060921011031.4BFEA67BCE@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-V6Nct7dCyHqJV2GU0bYv"
+Date: Thu, 21 Sep 2006 11:59:04 +1000
+Message-Id: <1158803944.7062.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Fastboot mailing list <fastboot@lists.osdl.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,69 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This code no longer needed with Jimi's auto reserve of device tree blob
-kernel patch now in 2.6.18.    
 
-This patch will break Linux if you're kexecing to a kernel which doesn't
-have this patch (ie. earlier than 2.6.17).  Required kernel patch is
-this one:   
-http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4d1f3f25d9c303d1ce63b42cc94c54ac0ab2e950
+--=-V6Nct7dCyHqJV2GU0bYv
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-This should be save to include now 2.6.18 has been released.  
+On Thu, 2006-09-21 at 11:10 +1000, Michael Neuling wrote:
+> This code no longer needed with Jimi's auto reserve of device tree blob
+> kernel patch now in 2.6.18.   =20
+>=20
+> This patch will break Linux if you're kexecing to a kernel which doesn't
+> have this patch (ie. earlier than 2.6.17).  Required kernel patch is
+> this one:  =20
+> http://git.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=
+=3Dcommit;h=3D4d1f3f25d9c303d1ce63b42cc94c54ac0ab2e950
+>=20
 
- kexec/arch/ppc64/fs2dt.c           |    2 --
- kexec/arch/ppc64/kexec-elf-ppc64.c |   19 -------------------
- 2 files changed, 21 deletions(-)
+Although it'd be nice to get rid of that code, I'm not sure we want to
+go breaking this. This will mean RHEL5 and SLES10 users can't use
+upstream kexec-tools :/
 
-Index: kexec-tools-1.101/kexec/arch/ppc64/fs2dt.c
-===================================================================
---- kexec-tools-1.101.orig/kexec/arch/ppc64/fs2dt.c
-+++ kexec-tools-1.101/kexec/arch/ppc64/fs2dt.c
-@@ -445,8 +445,6 @@ int create_flatten_tree(struct kexec_inf
- 	bb->version = 2;
- 	bb->last_comp_version = 2;
- 
--	reserve(me, bb->totalsize); /* patched later in kexec_load */
--
- 	buf = (unsigned char *) malloc(bb->totalsize);
- 	*bufp = buf;
- 	memcpy(buf, bb, bb->off_mem_rsvmap);
-Index: kexec-tools-1.101/kexec/arch/ppc64/kexec-elf-ppc64.c
-===================================================================
---- kexec-tools-1.101.orig/kexec/arch/ppc64/kexec-elf-ppc64.c
-+++ kexec-tools-1.101/kexec/arch/ppc64/kexec-elf-ppc64.c
-@@ -81,8 +81,6 @@ int elf_ppc64_load(int argc, char **argv
- 	off_t seg_size = 0;
- 	struct mem_phdr *phdr;
- 	size_t size;
--	unsigned long long *rsvmap_ptr;
--	struct bootblock *bb_ptr;
- 	unsigned int nr_segments, i;
- 	int result, opt;
- 	unsigned long my_kernel, my_dt_offset;
-@@ -249,23 +247,6 @@ int elf_ppc64_load(int argc, char **argv
- 				0, 0, max_addr, -1);
- 	}
- 
--	/* patch reserve map address for flattened device-tree
--	 * find last entry (both 0) in the reserve mem list.  Assume DT
--	 * entry is before this one
--	 */
--	bb_ptr = (struct bootblock *)(
--		(unsigned char *)info->segment[(info->nr_segments)-1].buf);
--	rsvmap_ptr = (unsigned long long *)(
--		(unsigned char *)info->segment[(info->nr_segments)-1].buf +
--		bb_ptr->off_mem_rsvmap);
--	while (*rsvmap_ptr || *(rsvmap_ptr+1))
--		rsvmap_ptr += 2;
--	rsvmap_ptr -= 2;
--	*rsvmap_ptr = (unsigned long long)(
--		info->segment[(info->nr_segments)-1].mem);
--	rsvmap_ptr++;
--	*rsvmap_ptr = (unsigned long long)bb_ptr->totalsize;
--
- 	nr_segments = info->nr_segments;
- 
- 	/* Set kernel */
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-V6Nct7dCyHqJV2GU0bYv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBFEfHodSjSd0sB4dIRAjY/AKCida4nGgRohDOVHr/R8roPNghgvwCeJeUa
+FavxG3gEmQPGNhp6KqIYGvw=
+=hBZW
+-----END PGP SIGNATURE-----
+
+--=-V6Nct7dCyHqJV2GU0bYv--
