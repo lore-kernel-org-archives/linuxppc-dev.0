@@ -1,22 +1,38 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7125C67E80
+Return-Path: <jimix@watson.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EDC4B68383
 	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 22:18:57 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k8LCIu8k008811
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 05:18:56 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k8LCIsKc000501
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 07:18:55 -0500 (CDT)
-Message-ID: <45128352.6030009@freescale.com>
-Date: Thu, 21 Sep 2006 20:19:30 +0800
-From: Li Yang <leoli@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 8/11] qe_lib: Fix rheap alignment problem
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8LCIqZP026791
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 08:18:52 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8LCIqdc264132
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 06:18:52 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8LCIpuB019558
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 06:18:51 -0600
+In-Reply-To: <20060921145522.366a3b03.sfr@canb.auug.org.au>
+References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
+	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
+	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
+	<1158768096.19375.6.camel@basalt.austin.ibm.com>
+	<20060921100315.89d74f6f.sfr@canb.auug.org.au>
+	<1158798041.7062.4.camel@localhost.localdomain>
+	<20060921145522.366a3b03.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <135B477D-5DF8-48E9-94FD-A114A4526177@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [POWERPC] mark BUG() as noreturn
+Date: Thu, 21 Sep 2006 08:18:47 -0400
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,100 +42,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Honor alignment parameter in the rheap allocator.  This is
-needed by qe_lib.
-Remove compile warning.
+On Sep 21, 2006, at 12:55 AM, Stephen Rothwell wrote:
 
-Signed-off-by: Pantelis Antoniou <pantelis@embeddedalley.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
+> From an idea from Michael Ellerman.
+>
+> We finish the BUG() macro with a call to a function marked with  
+> attribute
+> "noreturn" so that the compiler will know that BUG() and BUG_ON()
+> (with a constant, non-zero argument) will not return.
 
----
- arch/powerpc/lib/Makefile |    1 +
- arch/powerpc/lib/rheap.c  |   24 ++++++++++++++++++++----
- include/asm-ppc/rheap.h   |    4 ++++
- 3 files changed, 25 insertions(+), 4 deletions(-)
+But BUG() _can_ return, if I have a probe, xmon or kgdb configured it  
+is possible  to play with the state of the world and try to continue/ 
+recover, (xmon "x" command).  IMHO, this is a powerful debugging  
+scenario.
 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index ff70964..fe61c92 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -14,6 +14,7 @@ endif
- obj-$(CONFIG_PPC64)	+= checksum_64.o copypage_64.o copyuser_64.o \
- 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
- 			   strcase.o
-+obj-$(CONFIG_QUICC_ENGINE) += rheap.o
- obj-$(CONFIG_PPC_ISERIES) += e2a.o
- obj-$(CONFIG_XMON)	+= sstep.o
- 
-diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
-index 31e5118..57bf991 100644
---- a/arch/powerpc/lib/rheap.c
-+++ b/arch/powerpc/lib/rheap.c
-@@ -423,17 +423,21 @@ void *rh_detach_region(rh_info_t * info,
- 	return (void *)s;
- }
- 
--void *rh_alloc(rh_info_t * info, int size, const char *owner)
-+void *rh_alloc_align(rh_info_t * info, int size, int alignment, const char *owner)
- {
- 	struct list_head *l;
- 	rh_block_t *blk;
- 	rh_block_t *newblk;
- 	void *start;
- 
--	/* Validate size */
--	if (size <= 0)
-+	/* Validate size, (must be power of two) */
-+	if (size <= 0 || (alignment & (alignment - 1)) != 0)
- 		return ERR_PTR(-EINVAL);
- 
-+	/* given alignment larger that default rheap alignment */
-+	if (alignment > info->alignment)
-+		size += alignment - 1;
-+
- 	/* Align to configured alignment */
- 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
- 
-@@ -476,15 +480,27 @@ void *rh_alloc(rh_info_t * info, int siz
- 
- 	attach_taken_block(info, newblk);
- 
-+	/* for larger alignment return fixed up pointer  */
-+	/* this is no problem with the deallocator since */
-+	/* we scan for pointers that lie in the blocks   */
-+	if (alignment > info->alignment)
-+		start = (void *)(((unsigned long)start + alignment - 1) &
-+				~(alignment - 1));
-+
- 	return start;
- }
- 
-+void *rh_alloc(rh_info_t * info, int size, const char *owner)
-+{
-+	return rh_alloc_align(info, size, info->alignment, owner);
-+}
-+
- /* allocate at precisely the given address */
- void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
- {
- 	struct list_head *l;
- 	rh_block_t *blk, *newblk1, *newblk2;
--	unsigned long s, e, m, bs, be;
-+	unsigned long s, e, m, bs = 0, be = 0;
- 
- 	/* Validate size */
- 	if (size <= 0)
-diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
-index e6ca1f6..65b9322 100644
---- a/include/asm-ppc/rheap.h
-+++ b/include/asm-ppc/rheap.h
-@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
- /* Detach a free region */
- extern void *rh_detach_region(rh_info_t * info, void *start, int size);
- 
-+/* Allocate the given size from the remote heap (with alignment) */
-+extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
-+		const char *owner);
-+
- /* Allocate the given size from the remote heap */
- extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
+Why are we concerned with the performance of this anyway?
+
+-JX
