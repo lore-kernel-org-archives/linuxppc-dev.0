@@ -1,25 +1,12 @@
-Return-Path: <manoj.shar@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.204])
-	by ozlabs.org (Postfix) with ESMTP id C0DB967BC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 10:59:29 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id i1so213567nzh
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Sep 2006 17:59:28 -0700 (PDT)
-Message-ID: <d6dada100609201759r5dd047d7y2b60684d9c4feaa8@mail.gmail.com>
-Date: Wed, 20 Sep 2006 17:59:28 -0700
-From: "Manoj Sharma" <manoj.shar@gmail.com>
-To: "Linas Vepstas" <linas@austin.ibm.com>
-Subject: Re: Hang with isync
-In-Reply-To: <20060920230406.GU29167@austin.ibm.com>
+Return-Path: <mikey@ozlabs.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Fastboot mailing list <fastboot@lists.osdl.org>, linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_174217_654106.1158800368481"
-References: <d6dada100609181828j1804f4f5ic0d1dd8a225980c@mail.gmail.com>
-	<d6dada100609191816q75d1455cobeb1e0bd21dab8a8@mail.gmail.com>
-	<1158788111.6002.310.camel@localhost.localdomain>
-	<d6dada100609201531oefd71ch8557067bbf77484e@mail.gmail.com>
-	<1158791893.6002.327.camel@localhost.localdomain>
-	<20060920230406.GU29167@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] kexec: remove memory reserve patching for powerpc device tree
+Date: Thu, 21 Sep 2006 11:10:30 +1000
+Sender: mikey@ozlabs.org
+Message-Id: <20060921011031.4BFEA67BCE@ozlabs.org>
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,69 +16,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_174217_654106.1158800368481
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This code no longer needed with Jimi's auto reserve of device tree blob
+kernel patch now in 2.6.18.    
 
-No MSR is 00029030 and user mode bit is not set here.
+This patch will break Linux if you're kexecing to a kernel which doesn't
+have this patch (ie. earlier than 2.6.17).  Required kernel patch is
+this one:   
+http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4d1f3f25d9c303d1ce63b42cc94c54ac0ab2e950
 
-I had missed it in the prev mail:
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+This should be save to include now 2.6.18 has been released.  
 
-=05NIP: C0005DA4 XER: 20000000 LR: C0004FE4 SP: C01F3000=05 REGS: c01eff30 =
-TRAP:
-1020    Not tainted
-MSR: 00029030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK =3D c01f1080[0] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-=05PLB0: bear=3D 0x08000000 acr=3D   0xbb000000 besr=3D  0x00000000
+ kexec/arch/ppc64/fs2dt.c           |    2 --
+ kexec/arch/ppc64/kexec-elf-ppc64.c |   19 -------------------
+ 2 files changed, 21 deletions(-)
 
-
-On 9/20/06, Linas Vepstas <linas@austin.ibm.com> wrote:
->
-> On Thu, Sep 21, 2006 at 08:38:13AM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2006-09-20 at 15:31 -0700, Manoj Sharma wrote:
-> > > This is the stack trace.
-> > >
-> > > Registers:
-> > > GPR00: 00069030
->
-> This is the MSR and it has the user-mode bit set, which is surely wrong.
-> This is not how one gets to user space.
->
-> 00048000
->
-> The MSR had this or'ed into it, which is setting the user-mode bit.
-> Surely that's wrong.
->
-> --linas
->
-
-------=_Part_174217_654106.1158800368481
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<br>No MSR is 00029030 and user mode bit is not set here.<br><br>I had miss=
-ed it in the prev mail:<br><br>=05NIP: C0005DA4 XER: 20000000 LR: C0004FE4 =
-SP: C01F3000=05 REGS: c01eff30 TRAP: 1020&nbsp;&nbsp;&nbsp; Not tainted<br>=
-MSR: 00029030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-<br>TASK =3D c01f1080[0] 'swapper' Last syscall: 120<br>last math 00000000 =
-last altivec 00000000<br>=05PLB0: bear=3D 0x08000000 acr=3D&nbsp;&nbsp; 0xb=
-b000000 besr=3D&nbsp; 0x00000000<br><br><br><div><span class=3D"gmail_quote=
-">On 9/20/06, <b class=3D"gmail_sendername">
-Linas Vepstas</b> &lt;<a href=3D"mailto:linas@austin.ibm.com">linas@austin.=
-ibm.com</a>&gt; wrote:</span><blockquote class=3D"gmail_quote" style=3D"bor=
-der-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-=
-left: 1ex;">
-On Thu, Sep 21, 2006 at 08:38:13AM +1000, Benjamin Herrenschmidt wrote:<br>=
-&gt; On Wed, 2006-09-20 at 15:31 -0700, Manoj Sharma wrote:<br>&gt; &gt; Th=
-is is the stack trace.<br>&gt; &gt;<br>&gt; &gt; Registers:<br>&gt; &gt; GP=
-R00: 00069030
-<br><br>This is the MSR and it has the user-mode bit set, which is surely w=
-rong.<br>This is not how one gets to user space.<br><br>00048000<br><br>The=
- MSR had this or'ed into it, which is setting the user-mode bit.<br>Surely =
-that's wrong.
-<br><br>--linas<br></blockquote></div><br>
-
-------=_Part_174217_654106.1158800368481--
+Index: kexec-tools-1.101/kexec/arch/ppc64/fs2dt.c
+===================================================================
+--- kexec-tools-1.101.orig/kexec/arch/ppc64/fs2dt.c
++++ kexec-tools-1.101/kexec/arch/ppc64/fs2dt.c
+@@ -445,8 +445,6 @@ int create_flatten_tree(struct kexec_inf
+ 	bb->version = 2;
+ 	bb->last_comp_version = 2;
+ 
+-	reserve(me, bb->totalsize); /* patched later in kexec_load */
+-
+ 	buf = (unsigned char *) malloc(bb->totalsize);
+ 	*bufp = buf;
+ 	memcpy(buf, bb, bb->off_mem_rsvmap);
+Index: kexec-tools-1.101/kexec/arch/ppc64/kexec-elf-ppc64.c
+===================================================================
+--- kexec-tools-1.101.orig/kexec/arch/ppc64/kexec-elf-ppc64.c
++++ kexec-tools-1.101/kexec/arch/ppc64/kexec-elf-ppc64.c
+@@ -81,8 +81,6 @@ int elf_ppc64_load(int argc, char **argv
+ 	off_t seg_size = 0;
+ 	struct mem_phdr *phdr;
+ 	size_t size;
+-	unsigned long long *rsvmap_ptr;
+-	struct bootblock *bb_ptr;
+ 	unsigned int nr_segments, i;
+ 	int result, opt;
+ 	unsigned long my_kernel, my_dt_offset;
+@@ -249,23 +247,6 @@ int elf_ppc64_load(int argc, char **argv
+ 				0, 0, max_addr, -1);
+ 	}
+ 
+-	/* patch reserve map address for flattened device-tree
+-	 * find last entry (both 0) in the reserve mem list.  Assume DT
+-	 * entry is before this one
+-	 */
+-	bb_ptr = (struct bootblock *)(
+-		(unsigned char *)info->segment[(info->nr_segments)-1].buf);
+-	rsvmap_ptr = (unsigned long long *)(
+-		(unsigned char *)info->segment[(info->nr_segments)-1].buf +
+-		bb_ptr->off_mem_rsvmap);
+-	while (*rsvmap_ptr || *(rsvmap_ptr+1))
+-		rsvmap_ptr += 2;
+-	rsvmap_ptr -= 2;
+-	*rsvmap_ptr = (unsigned long long)(
+-		info->segment[(info->nr_segments)-1].mem);
+-	rsvmap_ptr++;
+-	*rsvmap_ptr = (unsigned long long)bb_ptr->totalsize;
+-
+ 	nr_segments = info->nr_segments;
+ 
+ 	/* Set kernel */
