@@ -1,20 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C1E3667BC1
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 10:03:16 +1000 (EST)
-Date: Thu, 21 Sep 2006 10:03:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [POWERPC] merge iSeries i/o operations with the rest
-Message-Id: <20060921100315.89d74f6f.sfr@canb.auug.org.au>
-In-Reply-To: <1158768096.19375.6.camel@basalt.austin.ibm.com>
-References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
-	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
-	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
-	<1158768096.19375.6.camel@basalt.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 44E6E67BDC
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 10:07:23 +1000 (EST)
+In-Reply-To: <20060920215738.GC24809@mag.az.mvista.com>
+References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+	<20060920012042.GA28489@mag.az.mvista.com>
+	<1158721828.3043.13.camel@vader.jdub.homelinux.org>
+	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
+	<1158787957.6002.307.camel@localhost.localdomain>
+	<20060920215738.GC24809@mag.az.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Date: Thu, 21 Sep 2006 02:07:05 +0200
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Hollis,
-
-On Wed, 20 Sep 2006 11:01:36 -0500 Hollis Blanchard <hollisb@us.ibm.com> wrote:
+>>> So please comment the nastiness with a big "HACK HACK HACK"  
+>>> comment and
+>>> make sure it only ever gets used on systems where nothing better is
+>>> available, and all should be fine.
+>>
+>> An option is to call it something like fw,address to avoid  
+>> confusion and
+>> make it somewhat clearer that it's really a firmware address useable
+>> within the context of the firmware...
 >
-> On Wed, 2006-09-20 at 22:15 +1000, Stephen Rothwell wrote:
-> > +       if (firmware_has_feature(FW_FEATURE_ISERIES)) {
-> > +               BUG();
-> > +               return;
-> > +       }
-> 
-> Shouldn't all these be BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES))?
+> Okay.  We did talk about that but then we realized that "address"
+> was for vaddrs.  We thought of other names like "bootwrapper-vaddr"
+> etc. but "fw,address" or "fw,vaddr" are probably better--they show  
+> that
+> the vaddr was setup by the fw.
 
-In this case, the return helps because the compiler will not generate the
-following code in iSeries only builds.  If we could tell the compiler
-that BUG() and BUG_ON() won't return, then BUG_ON() would be better.
+If you use a different name than "address", you're not bound to its
+semantics either.  And as those semantics have some problems, please
+do change-em.  How about:
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The "reg-virtual-address" property contains the same regions as the
+"reg" property, in the same order; each entry is #address-cells from
+the root node 32-bit integers wide(*); the entry describes a
+contiguous area of virtual memory of the same size as the
+corresponding "reg" entry, mapping that area, or 0 if the area isn't
+mapped.
+
+Any holes in this definition?
+
+
+Segher
+
+(*)  This isn't strictly correct, but OF doesn't describe the size of
+virtual addresses anywhere.  In practice, it's the same as the size
+of physical addresses always.  Oh, and the name "virtual" isn't correct
+in PowerPC-speak anyway, heh.
