@@ -1,17 +1,28 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 54B5267BB2
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 01:23:26 +1000 (EST)
-Date: Thu, 21 Sep 2006 19:21:37 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH 4/11] qe_lib: Add QE I/O ports API
-Message-ID: <20060921192137.5c6af005@vitb.ru.mvista.com>
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9399B44EF@tmnt04.transmode.se>
-References: <F6AD7E21CDF4E145A44F61F43EE6D9399B44EF@tmnt04.transmode.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 363FF67B9A
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 01:31:30 +1000 (EST)
+In-Reply-To: <20060921133707.GA29137@gate.crashing.org>
+References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+	<20060920012042.GA28489@mag.az.mvista.com>
+	<1158721828.3043.13.camel@vader.jdub.homelinux.org>
+	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
+	<1158787957.6002.307.camel@localhost.localdomain>
+	<20060920215738.GC24809@mag.az.mvista.com>
+	<C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>
+	<20060921133707.GA29137@gate.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Date: Thu, 21 Sep 2006 17:31:18 +0200
+To: Matt Porter <mporter@embeddedalley.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 21 Sep 2006 16:52:14 +0200
-"Joakim Tjernlund" <joakim.tjernlund@transmode.se> wrote:
+> On PPC44x (and other PowerPC processors) the number of address cells
+> to represent a virtual address and a physical address differ due the
+> 36-bits of physical address space.
 
-> Hi Leo
-> 
-> As you know I working with your earlier patches, trying to adopt them
-> for
-> 8321. Everthing works but ethernet on UCC2 and UCC4, ethernet on UCC3
-> works though.
-> 
-> Anyhow I found some minor changes I had to do to match 8321 that is
-> generic 83xx code.
-> Below is the first:
-> > ---
-> >  arch/powerpc/sysdev/qe_lib/qe_io.c |  272 
-> > +#define NUM_OF_PAR_IOS  7
-> 
-> NUM_OF_PAR_IOS is 4 on 8321
-> 
-> > +static int qe_irq_ports[NUM_OF_PAR_IOS][NUM_OF_PINS] = {
-> > +	/* 0-7 */          /* 8-15 */      /* 16 - 23 */     /* 
-> > 24 - 31 */
-> > +	{0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 
-> > 0,0,0,0,0,1,1,0},
-> > +	{0,0,0,1,0,1,0,0, 0,0,0,0,1,1,0,0, 0,0,0,0,0,0,0,0, 
-> > 0,0,1,1,0,0,0,0},
-> > +	{0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 
-> > 0,0,0,1,1,1,0,0},
-> > +	{0,0,0,0,0,0,0,0, 0,0,0,0,1,1,0,0, 1,1,0,0,0,0,0,0, 
-> > 0,0,1,1,0,0,0,0},
-> > +	{0,0,0,0,0,0,0,0, 0,0,0,0,1,1,0,0, 0,0,0,0,0,0,0,0, 
-> > 1,1,1,1,0,0,0,1},
-> > +	{0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,1,0,0,0, 
-> > 0,0,0,0,0,0,0,0},
-> > +	{0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 
-> > 0,0,0,0,0,0,0,1}
-> > +};
-> 
-> qe_irq_ports is diffrent on 8321 not only the number of rows.
-> 
-> These needs to configuruable based on CPU model and/or type of board.
+The number of virtual address cells is always 1.  A cell isn't always
+32-bits though.  Want more confusion?  Lots of properties are called
+"<something>-cells" etc., but those names are historical; the proper
+name for the things encoded in properties is "32-bit integers".
+
+> Regardless of the name of the
+> new property, it should be defined to allow a different number of
+> address cells to represent an address in virtual address space.
+
+How about you check whether the "64-bit" property exists in the CPU
+nodes?
+
+>> (*)  This isn't strictly correct, but OF doesn't describe the size of
+>> virtual addresses anywhere.  In practice, it's the same as the size
+>> of physical addresses always.  Oh, and the name "virtual" isn't  
+>> correct
+>> in PowerPC-speak anyway, heh.
 >
+> Actually, in practice, it's not always the same size as a physical
+> address. We have 36-bit physical addressing systems in the real world.
 
-Well, eventually this stuff aims to serve not 83xx/qe, but for cpm(1,2)-equipped stuff
-too. Apparently, we'll have to do something wise to afford that...
+Darn, and you have #address-cells = 2 in the root node?  It's allowed,
+sure.
 
-OTOH, this is good as a starting point I guess.
+> FWIW, I'd be happy with this property name or fw,address. When we
+> discussed this on IRC the thought was to conform to what already
+> existed for this purpose in the OF spec. Since the address prop sounds
+> like it will confuse some people I think it makes sense to add a
+> new property (might as well just throw out the spec :P).
 
--- 
-Sincerely, 
-Vitaly
+But if you do make something new, you'll have to make it better
+than what you're replacing, or what's the point :-)
+
+
+Segher
