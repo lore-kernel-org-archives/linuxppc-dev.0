@@ -1,19 +1,23 @@
-Return-Path: <resty@necii.com>
-Received: from mailout1.dl.nec.com (mailout1.dl.nec.com [143.101.113.5])
-	by ozlabs.org (Postfix) with ESMTP id 986B767A3D
+Return-Path: <Tony_Hardie@net.com>
+Received: from mx03.net.com (mx03.net.com [134.56.3.133])
+	by ozlabs.org (Postfix) with ESMTP id 1143A67B6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Sep 2006 01:06:37 +1000 (EST)
-Received: from neciiexch.necii.com ([143.101.35.2])
-	by mailout1.dl.nec.com (8.13.6/8.13.6) with ESMTP id k8MEM4F8018570
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Sep 2006 09:22:04 -0500 (CDT)
+	Sat, 23 Sep 2006 04:01:42 +1000 (EST)
+Received: from mx02-int.net.com (mx02-int.net.com [134.56.112.14])
+	by mx03.net.com (Switch-3.1.8/Switch-3.1.7) with ESMTP id
+	k8MHe4Qb023983 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 22 Sep 2006 10:40:05 -0700 (PDT)
+Received: from fmt-ex01.net.com (fmt-ex01.net.com [134.56.112.251])
+	by mx02-int.net.com (Switch-3.1.3/Switch-3.1.0) with ESMTP id
+	k8MHUpba022610 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 22 Sep 2006 10:39:28 -0700 (PDT)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6DE51.F68A5B08"
-Subject: mpc885 PCMCIA question
-Date: Fri, 22 Sep 2006 10:18:23 -0400
-Message-ID: <4983C1368CA3974780728134FFF691578F5485@neciiexch.necii.com>
-From: "Ryan Esty" <resty@necii.com>
+	boundary="----_=_NextPart_001_01C6DE6D.918D2F0A"
+Subject: kernel opps during PCI read
+Date: Fri, 22 Sep 2006 10:35:58 -0700
+Message-ID: <CE711B0E5D7A1A4096A808997E00832901B32FEE@fmt-ex01.net.com>
+From: "Tony Hardie" <Tony_Hardie@net.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,192 +31,413 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6DE51.F68A5B08
+------_=_NextPart_001_01C6DE6D.918D2F0A
 Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: base64
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-SSB3YXMgd29uZGVyaW5nIGlmIGFueW9uZSBvbiB0aGlzIGxpc3QgaGFzIGhhZCBhbnkgZXhwZXJp
-ZW5jZSB3aXRoIHJ1bm5pbmcgUENNQ0lBIG9uIGEgcmVjZW50IGtlcm5lbCB3aXRoIGEgbXBjODg1
-YWRzIGJvYXJkPyAgV2UgaGF2ZSBiZWVuIHVzaW5nIDIuNi4xOC1yYzYgYW5kIGhhdmVuJ3QgYmVl
-biBoYXZpbmcgYSBsb3Qgb2YgbHVjayB3aXRoIGdldHRpbmcgUENNQ0lBIHRvIGZ1bmN0aW9uLiAg
-V2UgY2FuIHVzZSBwY2NhcmRjdGwgZnJvbSBwY21jaWF1dGlscyBhbmQgc2VlIG91ciBjb21wYWN0
-IGZsYXNoIHRoZXJlIGJ1dCB0aGUgYmxvY2sgZGV2aWNlIGRvZXNuJ3Qgc2hvdyB1cCBpbiAvcHJv
-Yy9kZXZpY2VzIGFuZCB3ZSBjYW4ndCBtb3VudCB0aGUgZGV2aWNlLiAgSXQgbG9va3MgbGlrZSB0
-aGVyZSBpcyBhIHByb2JsZW0gYmV0d2VlbiBpZGUtY3MgYW5kIHBjbWNpYSBiZWNhdXNlIG9mIHdo
-YXQgcGNjYXJkY3RybCBpbmZvIHR1cm5zIHVwLiAgV2UgYWxzbyBoYXZlIGEgMi40IGtlcm5lbCBm
-cm9tIEFyYWJlbGxhIHRoYXQgd29ya3Mgc28gd2Uga25vdyBpdCBpc24ndCBhIGhhcmR3YXJlIHBy
-b2JsZW0uICBEb2VzIGFueW9uZSBoYXZlIGFueSBzdWdnZXN0aW9ucyBvbiB3aGF0IG90aGVyIHRo
-aW5ncyB3ZSBzaG91bGQgbG9vayBpbnRvPyAgQmVsb3cgaXMgdGhlIGtlcm5lbCBib290IHVwIHdp
-dGggcGNtY2lhIGlkZSByZWxhdmVuY2UgYW5kIHBjY2FyZGN0bCwgL3Byb2MvZGV2aWNlcyBhbmQg
-ZHVtcF9jaXMuICBXZSBjb21waWxlZCBldmVyeXRoaW5nIGludG8gdGhlIGtlcm5lbCBzbyB0aGVy
-ZSBhcmUgbm8gbW9kdWxlcyBmb3IgaWRlLWNzIG9yIGFueSBvZiB0aGUgcGNtY2lhIGNvZGUuICBT
-b3JyeSBpZiB0aGlzIGlzIHRvbyBQQ01DSUEgc3BlY2lmaWMgSSB3YXMgZ29pbmcgdG8gcG9zdCBv
-biBsaXN0cy5pbmZyYWRlYWQub3JnIGJ1dCB0aGUgbGlzdCBzZWVtcyB0byBiZSBkb3duLiAgQW55
-IGhlbHAgd291bGQgYmUgYXBwcmVjaWF0ZWQuDQoNCiMjI2tlcm5lbCBib290IHNlcXVlbmNlDQpV
-bmlmb3JtIE11bHRpLVBsYXRmb3JtIEUtSURFIGRyaXZlciBSZXZpc2lvbjogNy4wMGFscGhhMg0K
-aWRlOiBBc3N1bWluZyA1ME1IeiBzeXN0ZW0gYnVzIHNwZWVkIGZvciBQSU8gbW9kZXM7IG92ZXJy
-aWRlIHdpdGggaWRlYnVzPXh4DQpQQ01DSUEgc2xvdCBBOiBwaHlzIG1lbSBlMDAwMDAwMC4uLmVj
-MDAwMDAwIChzaXplIDBjMDAwMDAwKQ0KQ2FyZCBJRDogU1RJIEZsYXNoIDcuMi4wDQogRml4ZWQg
-RGlzayBDYXJkDQogSURFIGludGVyZmFjZQ0KIFtzaWxpY29uXSBbdW5pcXVlXSBbc2luZ2xlXSBb
-c2xlZXBdIFtzdGFuZGJ5XSBbaWRsZV0gW2xvdyBwb3dlcl0NCmlkZS1mbG9wcHkgZHJpdmVyIDAu
-OTkubmV3aWRlDQptOHh4X3BjbWNpYTogVmVyc2lvbiAwLjA2LCBBdWcgMjAwNQ0KbTh4eF9wY21j
-aWE6IE1QQzg4NUFEUyB1c2luZyBTTE9UX0Egd2l0aCBJUlEgMTMuDQpbc25pcC4uLl0NCnBjY2Fy
-ZDogUENNQ0lBIGNhcmQgaW5zZXJ0ZWQgaW50byBzbG90IDANCnBjbWNpYTogcmVnaXN0ZXJpbmcg
-bmV3IGRldmljZSBwY21jaWEwLjANCg0KIyMjcGNjYXJkY3RsIGluZm8NClBST0RJRF8xPSJTVEki
-DQpQUk9ESURfMj0iRmxhc2ggNy4yLjAiDQpQUk9ESURfMz0iIg0KUFJPRElEXzQ9IiINCk1BTkZJ
-RD0wMTRkLDAxMDANCkZVTkNJRD00DQoNCiMjI3BjY2FyZGN0bCBscw0KU29ja2V0IDAgQnJpZGdl
-OiAgICAgICAgW204eHgtcGNtY2lhXSAgIChidXMgSUQ6IG04eHgtcGNtY2lhLjApDQpTb2NrZXQg
-MCBEZXZpY2UgMDogICAgICBbLS0gbm8gZHJpdmVyIC0tXSAgICAgICAoYnVzIElEOiAwLjApDQoN
-CiMjIy9wcm9jL2RldmljZXMNCkNoYXJhY3RlciBkZXZpY2VzOg0KICAxIG1lbQ0KICA1IC9kZXYv
-dHR5DQogIDUgL2Rldi9jb25zb2xlDQogIDUgL2Rldi9wdG14DQogMTAgbWlzYw0KMTI4IHB0bQ0K
-MTM2IHB0cw0KMjA0IHR0eUNQTQ0KMjQ5IGRzeHNyYW0NCjI1MCBkc3hjcHUNCjI1MSBkc3hkc3AN
-CjI1MiBkc3h3ZA0KMjU0IHJ0Yw0KDQpCbG9jayBkZXZpY2VzOg0KICAxIHJhbWRpc2sNCg0KIyMj
-ZHVtcF9jaXMNClNvY2tldCAwDQpvZmZzZXQgMHgwMiwgdHVwbGUgMHgwMSwgbGluayAweDAzDQog
-IGQ5IDAxIGZmDQpkZXZfaW5mbw0KICBmbl9zcGVjaWZpYyAyNTBucywgMmtiDQoNCm9mZnNldCAw
-eDA3LCB0dXBsZSAweDFjLCBsaW5rIDB4MDQNCiAgMDMgZDkgMDEgZmYNCmludmFsaWQgdHVwbGUN
-Cm9mZnNldCAweDBkLCB0dXBsZSAweDE4LCBsaW5rIDB4MDINCiAgZGYgMDENCmNvbW1vbl9qZWRl
-YyAweGRmIDB4MDENCg0Kb2Zmc2V0IDB4MTEsIHR1cGxlIDB4MjAsIGxpbmsgMHgwNA0KICA0ZCAw
-MSAwMCAwMQ0KbWFuZmlkIDB4MDE0ZCwgMHgwMTAwDQoNCm9mZnNldCAweDE3LCB0dXBsZSAweDE1
-LCBsaW5rIDB4MTMNCiAgMDQgMDEgNTMgNTQgNDkgMDAgNDYgNmMgNjEgNzMgNjggMjAgMzcgMmUg
-MzIgMmUNCiAgMzAgMDAgZmYNCnZlcnNfMSA0LjEsICJTVEkiLCAiRmxhc2ggNy4yLjAiDQoNCm9m
-ZnNldCAweDJjLCB0dXBsZSAweDIxLCBsaW5rIDB4MDINCiAgMDQgMDENCmZ1bmNpZCBmaXhlZF9k
-aXNrIFtwb3N0XQ0KDQpvZmZzZXQgMHgzMCwgdHVwbGUgMHgyMiwgbGluayAweDAyDQogIDAxIDAx
-DQpkaXNrX2ludGVyZmFjZSBbaWRlXQ0KDQpvZmZzZXQgMHgzNCwgdHVwbGUgMHgyMiwgbGluayAw
-eDAzDQogIDAyIDBjIDBmDQpkaXNrX2ZlYXR1cmVzIFtzaWxpY29uXSBbdW5pcXVlXSBbc2luZ2xl
-XQ0KICBbc2xlZXBdIFtzdGFuZGJ5XSBbaWRsZV0gW2xvdyBwb3dlcl0NCg0Kb2Zmc2V0IDB4Mzks
-IHR1cGxlIDB4MWEsIGxpbmsgMHgwNQ0KICAwMSAwMyAwMCAwMiAwZg0KY29uZmlnIGJhc2UgMHgw
-MjAwIG1hc2sgMHgwMDBmIGxhc3RfaW5kZXggMHgwMw0KDQpvZmZzZXQgMHg0MCwgdHVwbGUgMHgx
-YiwgbGluayAweDA4DQogIGMwIGMwIGExIDAxIDU1IDA4IDAwIDIwDQpjZnRhYmxlX2VudHJ5IDB4
-MDAgW2RlZmF1bHRdDQogW3JkeWJzeV0gW213YWl0XSBbcHdyZG93bl0NCiAgVmNjIFZub20gNVYN
-CiAgbWVtb3J5IDB4MDAwMC0weDA3ZmYgQCAweDAwMDANCg0Kb2Zmc2V0IDB4NGEsIHR1cGxlIDB4
-MWIsIGxpbmsgMHgwNg0KICAwMCAwMSAyMSBiNSAxZSA0ZA0KY2Z0YWJsZV9lbnRyeSAweDAwDQog
-IFZjYyBWbm9tIDMzMDBtViBJcGVhayA0NW1BDQoNCm9mZnNldCAweDUyLCB0dXBsZSAweDFiLCBs
-aW5rIDB4MGENCiAgYzEgNDEgOTkgMDEgNTUgNjQgZjAgZmYgZmYgMjANCmNmdGFibGVfZW50cnkg
-MHgwMSBbZGVmYXVsdF0NCiBbcmR5YnN5XSBbcHdyZG93bl0NCiAgVmNjIFZub20gNVYNCiAgaW8g
-MHgwMDAwLTB4MDAwZiBbbGluZXM9NF0gWzhiaXRdIFsxNmJpdF0NCiAgaXJxIG1hc2sgMHhmZmZm
-IFtsZXZlbF0gW3B1bHNlXSBbc2hhcmVkXQ0KDQpvZmZzZXQgMHg1ZSwgdHVwbGUgMHgxYiwgbGlu
-ayAweDA2DQogIDAxIDAxIDIxIGI1IDFlIDRkDQpjZnRhYmxlX2VudHJ5IDB4MDENCiAgVmNjIFZu
-b20gMzMwMG1WIElwZWFrIDQ1bUENCg0Kb2Zmc2V0IDB4NjYsIHR1cGxlIDB4MWIsIGxpbmsgMHgw
-Zg0KICBjMiA0MSA5OSAwMSA1NSBlYSA2MSBmMCAwMSAwNyBmNiAwMyAwMSBlZSAyMA0KY2Z0YWJs
-ZV9lbnRyeSAweDAyIFtkZWZhdWx0XQ0KIFtyZHlic3ldIFtwd3Jkb3duXQ0KICBWY2MgVm5vbSA1
-Vg0KICBpbyAweDAxZjAtMHgwMWY3LCAweDAzZjYtMHgwM2Y3IFtsaW5lcz0xMF0gWzhiaXRdIFsx
-NmJpdF0gW3JhbmdlXQ0KICBpcnEgMTQgW2xldmVsXSBbcHVsc2VdIFtzaGFyZWRdDQoNCm9mZnNl
-dCAweDc3LCB0dXBsZSAweDFiLCBsaW5rIDB4MDYNCiAgMDIgMDEgMjEgYjUgMWUgNGQNCmNmdGFi
-bGVfZW50cnkgMHgwMg0KICBWY2MgVm5vbSAzMzAwbVYgSXBlYWsgNDVtQQ0KDQpvZmZzZXQgMHg3
-ZiwgdHVwbGUgMHgxYiwgbGluayAweDBmDQogIGMzIDQxIDk5IDAxIDU1IGVhIDYxIDcwIDAxIDA3
-IDc2IDAzIDAxIGVlIDIwDQpjZnRhYmxlX2VudHJ5IDB4MDMgW2RlZmF1bHRdDQogW3JkeWJzeV0g
-W3B3cmRvd25dDQogIFZjYyBWbm9tIDVWDQogIGlvIDB4MDE3MC0weDAxNzcsIDB4MDM3Ni0weDAz
-NzcgW2xpbmVzPTEwXSBbOGJpdF0gWzE2Yml0XSBbcmFuZ2VdDQogIGlycSAxNCBbbGV2ZWxdIFtw
-dWxzZV0gW3NoYXJlZF0NCg0Kb2Zmc2V0IDB4OTAsIHR1cGxlIDB4MWIsIGxpbmsgMHgwNg0KICAw
-MyAwMSAyMSBiNSAxZSA0ZA0KY2Z0YWJsZV9lbnRyeSAweDAzDQogIFZjYyBWbm9tIDMzMDBtViBJ
-cGVhayA0NW1BDQoNCm9mZnNldCAweDk4LCB0dXBsZSAweDE0LCBsaW5rIDB4MDANCm5vX2xvbmdf
-bGluaw0K
+Hiya, I'm running into the following issue running on our custom PPC8270
+(PQ2FADS style) system.
 
-------_=_NextPart_001_01C6DE51.F68A5B08
+It only seems to happen when we load the system just a little (more PCI
+interrupts and transactions).
+
+=20
+
+Any ideas?
+
+=20
+
+=20
+
+/ # [  456.440195] Machine check in kernel mode.
+
+[  456.442646] Caused by (from SRR1=3D41030): Transfer error ack signal
+
+[  456.448828] Oops: machine check, sig: 7 [#1]
+
+[  456.453088] PREEMPT
+
+[  456.455269] NIP: C00119CC LR: C0011914 CTR: C0011334
+
+[  456.460233] REGS: c01fbd40 TRAP: 0200   Tainted: P       (2.6.17.3)
+
+[  456.466493] MSR: 00041030 <ME,IR,DR>  CR: 22002082  XER: 20000000
+
+[  456.472589] TASK =3D c01b5f20[0] 'swapper' THREAD: c01fa000
+
+[  456.477809] GPR00: 00000000 C01FBDF0 C01B5F20 00000000 FFFFFF7F
+00000003 00000001 C01FBE18
+
+[  456.486164] GPR08: 00000000 F0010904 00000000 F0010907 00000000
+100934F0 07FFF000 00000001
+
+[  456.494520] GPR16: 00800000 07FFE964 FFFFFFFF 00000000 07FFC6BC
+007FFF00 FF800040 07FA7770
+
+[  456.502876] GPR24: C0210000 C01FBE58 00000001 000000CF C01FBE18
+000000A0 C024A000 C03AAA00
+
+[  456.511406] NIP [C00119CC] indirect_read_config+0x100/0x14c
+
+[  456.516977] LR [C0011914] indirect_read_config+0x48/0x14c
+
+[  456.522373] Call Trace:
+
+[  456.524812] [C01FBDF0] [C01FA028] init_thread_union+0x28/0x2000
+(unreliable)
+
+[  456.531862] [C01FBE10] [C00E2FB0] pci_bus_read_config_byte+0x60/0xa8
+
+[  456.538216] [C01FBE50] [C909373C] OnInterrupt+0x40/0x178 [bridge]
+
+[  456.544309] [C01FBE70] [C003EA54] handle_IRQ_event+0x64/0xb8
+
+[  456.549966] [C01FBE90] [C003EBE0] __do_IRQ+0x138/0x1c0
+
+[  456.555102] [C01FBEC0] [C0009D04] do_IRQ+0x44/0x88
+
+[  456.559889] [C01FBEE0] [C0004914] ret_from_except+0x0/0x14
+
+[  456.565372] [C01FBFA0] [C000C9B8] cpu_idle+0xe0/0xf8
+
+[  456.570334] [C01FBFB0] [C0003A64] rest_init+0x3c/0x4c
+
+[  456.575382] [C01FBFC0] [C01FC6C4] start_kernel+0x1d0/0x228
+
+[  456.580865] [C01FBFF0] [000032C0] 0x32c0
+
+[  456.584781] Instruction dump:
+
+[  456.587741] bb410008 38210020 7c0803a6 4e800020 887f004c 813e0010
+5460063e 7c004a78
+
+[  456.595487] 3120ffff 7d490110 4bffff70 7c0928ae <0c000000> 4c00012c
+901c0000 38600000
+
+ [  456.615184] Kernel panic - not syncing: Aiee, killing interrupt
+handler!
+
+=20
+
+Cheers
+
+Tony
+
+=20
+
+Tony Hardie B.Sc
+VX Software Architect
+Net.com
+6900 Paseo Padre Parkway
+Fremont
+CA, 94555
+Ph: 510-574-2386
+Mob: 510-449-4339
+
+=20
+
+
+------_=_NextPart_001_01C6DE6D.918D2F0A
 Content-Type: text/html;
-	charset="utf-8"
-Content-Transfer-Encoding: base64
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDMuMi8vRU4iPg0KPEhUTUw+
-DQo8SEVBRD4NCjxNRVRBIEhUVFAtRVFVSVY9IkNvbnRlbnQtVHlwZSIgQ09OVEVOVD0idGV4dC9o
-dG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjxNRVRBIE5BTUU9IkdlbmVyYXRvciIgQ09OVEVOVD0iTVMg
-RXhjaGFuZ2UgU2VydmVyIHZlcnNpb24gNi41Ljc2NTAuMjgiPg0KPFRJVExFPm1wYzg4NSBQQ01D
-SUEgcXVlc3Rpb248L1RJVExFPg0KPC9IRUFEPg0KPEJPRFk+DQo8IS0tIENvbnZlcnRlZCBmcm9t
-IHRleHQvcGxhaW4gZm9ybWF0IC0tPg0KDQo8UD48Rk9OVCBTSVpFPTI+SSB3YXMgd29uZGVyaW5n
-IGlmIGFueW9uZSBvbiB0aGlzIGxpc3QgaGFzIGhhZCBhbnkgZXhwZXJpZW5jZSB3aXRoIHJ1bm5p
-bmcgUENNQ0lBIG9uIGEgcmVjZW50IGtlcm5lbCB3aXRoIGEgbXBjODg1YWRzIGJvYXJkPyZuYnNw
-OyBXZSBoYXZlIGJlZW4gdXNpbmcgMi42LjE4LXJjNiBhbmQgaGF2ZW4ndCBiZWVuIGhhdmluZyBh
-IGxvdCBvZiBsdWNrIHdpdGggZ2V0dGluZyBQQ01DSUEgdG8gZnVuY3Rpb24uJm5ic3A7IFdlIGNh
-biB1c2UgcGNjYXJkY3RsIGZyb20gcGNtY2lhdXRpbHMgYW5kIHNlZSBvdXIgY29tcGFjdCBmbGFz
-aCB0aGVyZSBidXQgdGhlIGJsb2NrIGRldmljZSBkb2Vzbid0IHNob3cgdXAgaW4gL3Byb2MvZGV2
-aWNlcyBhbmQgd2UgY2FuJ3QgbW91bnQgdGhlIGRldmljZS4mbmJzcDsgSXQgbG9va3MgbGlrZSB0
-aGVyZSBpcyBhIHByb2JsZW0gYmV0d2VlbiBpZGUtY3MgYW5kIHBjbWNpYSBiZWNhdXNlIG9mIHdo
-YXQgcGNjYXJkY3RybCBpbmZvIHR1cm5zIHVwLiZuYnNwOyBXZSBhbHNvIGhhdmUgYSAyLjQga2Vy
-bmVsIGZyb20gQXJhYmVsbGEgdGhhdCB3b3JrcyBzbyB3ZSBrbm93IGl0IGlzbid0IGEgaGFyZHdh
-cmUgcHJvYmxlbS4mbmJzcDsgRG9lcyBhbnlvbmUgaGF2ZSBhbnkgc3VnZ2VzdGlvbnMgb24gd2hh
-dCBvdGhlciB0aGluZ3Mgd2Ugc2hvdWxkIGxvb2sgaW50bz8mbmJzcDsgQmVsb3cgaXMgdGhlIGtl
-cm5lbCBib290IHVwIHdpdGggcGNtY2lhIGlkZSByZWxhdmVuY2UgYW5kIHBjY2FyZGN0bCwgL3By
-b2MvZGV2aWNlcyBhbmQgZHVtcF9jaXMuJm5ic3A7IFdlIGNvbXBpbGVkIGV2ZXJ5dGhpbmcgaW50
-byB0aGUga2VybmVsIHNvIHRoZXJlIGFyZSBubyBtb2R1bGVzIGZvciBpZGUtY3Mgb3IgYW55IG9m
-IHRoZSBwY21jaWEgY29kZS4mbmJzcDsgU29ycnkgaWYgdGhpcyBpcyB0b28gUENNQ0lBIHNwZWNp
-ZmljIEkgd2FzIGdvaW5nIHRvIHBvc3Qgb24gbGlzdHMuaW5mcmFkZWFkLm9yZyBidXQgdGhlIGxp
-c3Qgc2VlbXMgdG8gYmUgZG93bi4mbmJzcDsgQW55IGhlbHAgd291bGQgYmUgYXBwcmVjaWF0ZWQu
-PEJSPg0KPEJSPg0KIyMja2VybmVsIGJvb3Qgc2VxdWVuY2U8QlI+DQpVbmlmb3JtIE11bHRpLVBs
-YXRmb3JtIEUtSURFIGRyaXZlciBSZXZpc2lvbjogNy4wMGFscGhhMjxCUj4NCmlkZTogQXNzdW1p
-bmcgNTBNSHogc3lzdGVtIGJ1cyBzcGVlZCBmb3IgUElPIG1vZGVzOyBvdmVycmlkZSB3aXRoIGlk
-ZWJ1cz14eDxCUj4NClBDTUNJQSBzbG90IEE6IHBoeXMgbWVtIGUwMDAwMDAwLi4uZWMwMDAwMDAg
-KHNpemUgMGMwMDAwMDApPEJSPg0KQ2FyZCBJRDogU1RJIEZsYXNoIDcuMi4wPEJSPg0KJm5ic3A7
-Rml4ZWQgRGlzayBDYXJkPEJSPg0KJm5ic3A7SURFIGludGVyZmFjZTxCUj4NCiZuYnNwO1tzaWxp
-Y29uXSBbdW5pcXVlXSBbc2luZ2xlXSBbc2xlZXBdIFtzdGFuZGJ5XSBbaWRsZV0gW2xvdyBwb3dl
-cl08QlI+DQppZGUtZmxvcHB5IGRyaXZlciAwLjk5Lm5ld2lkZTxCUj4NCm04eHhfcGNtY2lhOiBW
-ZXJzaW9uIDAuMDYsIEF1ZyAyMDA1PEJSPg0KbTh4eF9wY21jaWE6IE1QQzg4NUFEUyB1c2luZyBT
-TE9UX0Egd2l0aCBJUlEgMTMuPEJSPg0KW3NuaXAuLi5dPEJSPg0KcGNjYXJkOiBQQ01DSUEgY2Fy
-ZCBpbnNlcnRlZCBpbnRvIHNsb3QgMDxCUj4NCnBjbWNpYTogcmVnaXN0ZXJpbmcgbmV3IGRldmlj
-ZSBwY21jaWEwLjA8QlI+DQo8QlI+DQojIyNwY2NhcmRjdGwgaW5mbzxCUj4NClBST0RJRF8xPSZx
-dW90O1NUSSZxdW90OzxCUj4NClBST0RJRF8yPSZxdW90O0ZsYXNoIDcuMi4wJnF1b3Q7PEJSPg0K
-UFJPRElEXzM9JnF1b3Q7JnF1b3Q7PEJSPg0KUFJPRElEXzQ9JnF1b3Q7JnF1b3Q7PEJSPg0KTUFO
-RklEPTAxNGQsMDEwMDxCUj4NCkZVTkNJRD00PEJSPg0KPEJSPg0KIyMjcGNjYXJkY3RsIGxzPEJS
-Pg0KU29ja2V0IDAgQnJpZGdlOiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyBbbTh4eC1wY21jaWFdJm5ic3A7Jm5ic3A7IChidXMgSUQ6IG04eHgtcGNtY2lhLjApPEJS
-Pg0KU29ja2V0IDAgRGV2aWNlIDA6Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IFstLSBu
-byBkcml2ZXIgLS1dJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IChidXMgSUQ6
-IDAuMCk8QlI+DQo8QlI+DQojIyMvcHJvYy9kZXZpY2VzPEJSPg0KQ2hhcmFjdGVyIGRldmljZXM6
-PEJSPg0KJm5ic3A7IDEgbWVtPEJSPg0KJm5ic3A7IDUgL2Rldi90dHk8QlI+DQombmJzcDsgNSAv
-ZGV2L2NvbnNvbGU8QlI+DQombmJzcDsgNSAvZGV2L3B0bXg8QlI+DQombmJzcDsxMCBtaXNjPEJS
-Pg0KMTI4IHB0bTxCUj4NCjEzNiBwdHM8QlI+DQoyMDQgdHR5Q1BNPEJSPg0KMjQ5IGRzeHNyYW08
-QlI+DQoyNTAgZHN4Y3B1PEJSPg0KMjUxIGRzeGRzcDxCUj4NCjI1MiBkc3h3ZDxCUj4NCjI1NCBy
-dGM8QlI+DQo8QlI+DQpCbG9jayBkZXZpY2VzOjxCUj4NCiZuYnNwOyAxIHJhbWRpc2s8QlI+DQo8
-QlI+DQojIyNkdW1wX2NpczxCUj4NClNvY2tldCAwPEJSPg0Kb2Zmc2V0IDB4MDIsIHR1cGxlIDB4
-MDEsIGxpbmsgMHgwMzxCUj4NCiZuYnNwOyBkOSAwMSBmZjxCUj4NCmRldl9pbmZvPEJSPg0KJm5i
-c3A7IGZuX3NwZWNpZmljIDI1MG5zLCAya2I8QlI+DQo8QlI+DQpvZmZzZXQgMHgwNywgdHVwbGUg
-MHgxYywgbGluayAweDA0PEJSPg0KJm5ic3A7IDAzIGQ5IDAxIGZmPEJSPg0KaW52YWxpZCB0dXBs
-ZTxCUj4NCm9mZnNldCAweDBkLCB0dXBsZSAweDE4LCBsaW5rIDB4MDI8QlI+DQombmJzcDsgZGYg
-MDE8QlI+DQpjb21tb25famVkZWMgMHhkZiAweDAxPEJSPg0KPEJSPg0Kb2Zmc2V0IDB4MTEsIHR1
-cGxlIDB4MjAsIGxpbmsgMHgwNDxCUj4NCiZuYnNwOyA0ZCAwMSAwMCAwMTxCUj4NCm1hbmZpZCAw
-eDAxNGQsIDB4MDEwMDxCUj4NCjxCUj4NCm9mZnNldCAweDE3LCB0dXBsZSAweDE1LCBsaW5rIDB4
-MTM8QlI+DQombmJzcDsgMDQgMDEgNTMgNTQgNDkgMDAgNDYgNmMgNjEgNzMgNjggMjAgMzcgMmUg
-MzIgMmU8QlI+DQombmJzcDsgMzAgMDAgZmY8QlI+DQp2ZXJzXzEgNC4xLCAmcXVvdDtTVEkmcXVv
-dDssICZxdW90O0ZsYXNoIDcuMi4wJnF1b3Q7PEJSPg0KPEJSPg0Kb2Zmc2V0IDB4MmMsIHR1cGxl
-IDB4MjEsIGxpbmsgMHgwMjxCUj4NCiZuYnNwOyAwNCAwMTxCUj4NCmZ1bmNpZCBmaXhlZF9kaXNr
-IFtwb3N0XTxCUj4NCjxCUj4NCm9mZnNldCAweDMwLCB0dXBsZSAweDIyLCBsaW5rIDB4MDI8QlI+
-DQombmJzcDsgMDEgMDE8QlI+DQpkaXNrX2ludGVyZmFjZSBbaWRlXTxCUj4NCjxCUj4NCm9mZnNl
-dCAweDM0LCB0dXBsZSAweDIyLCBsaW5rIDB4MDM8QlI+DQombmJzcDsgMDIgMGMgMGY8QlI+DQpk
-aXNrX2ZlYXR1cmVzIFtzaWxpY29uXSBbdW5pcXVlXSBbc2luZ2xlXTxCUj4NCiZuYnNwOyBbc2xl
-ZXBdIFtzdGFuZGJ5XSBbaWRsZV0gW2xvdyBwb3dlcl08QlI+DQo8QlI+DQpvZmZzZXQgMHgzOSwg
-dHVwbGUgMHgxYSwgbGluayAweDA1PEJSPg0KJm5ic3A7IDAxIDAzIDAwIDAyIDBmPEJSPg0KY29u
-ZmlnIGJhc2UgMHgwMjAwIG1hc2sgMHgwMDBmIGxhc3RfaW5kZXggMHgwMzxCUj4NCjxCUj4NCm9m
-ZnNldCAweDQwLCB0dXBsZSAweDFiLCBsaW5rIDB4MDg8QlI+DQombmJzcDsgYzAgYzAgYTEgMDEg
-NTUgMDggMDAgMjA8QlI+DQpjZnRhYmxlX2VudHJ5IDB4MDAgW2RlZmF1bHRdPEJSPg0KJm5ic3A7
-W3JkeWJzeV0gW213YWl0XSBbcHdyZG93bl08QlI+DQombmJzcDsgVmNjIFZub20gNVY8QlI+DQom
-bmJzcDsgbWVtb3J5IDB4MDAwMC0weDA3ZmYgQCAweDAwMDA8QlI+DQo8QlI+DQpvZmZzZXQgMHg0
-YSwgdHVwbGUgMHgxYiwgbGluayAweDA2PEJSPg0KJm5ic3A7IDAwIDAxIDIxIGI1IDFlIDRkPEJS
-Pg0KY2Z0YWJsZV9lbnRyeSAweDAwPEJSPg0KJm5ic3A7IFZjYyBWbm9tIDMzMDBtViBJcGVhayA0
-NW1BPEJSPg0KPEJSPg0Kb2Zmc2V0IDB4NTIsIHR1cGxlIDB4MWIsIGxpbmsgMHgwYTxCUj4NCiZu
-YnNwOyBjMSA0MSA5OSAwMSA1NSA2NCBmMCBmZiBmZiAyMDxCUj4NCmNmdGFibGVfZW50cnkgMHgw
-MSBbZGVmYXVsdF08QlI+DQombmJzcDtbcmR5YnN5XSBbcHdyZG93bl08QlI+DQombmJzcDsgVmNj
-IFZub20gNVY8QlI+DQombmJzcDsgaW8gMHgwMDAwLTB4MDAwZiBbbGluZXM9NF0gWzhiaXRdIFsx
-NmJpdF08QlI+DQombmJzcDsgaXJxIG1hc2sgMHhmZmZmIFtsZXZlbF0gW3B1bHNlXSBbc2hhcmVk
-XTxCUj4NCjxCUj4NCm9mZnNldCAweDVlLCB0dXBsZSAweDFiLCBsaW5rIDB4MDY8QlI+DQombmJz
-cDsgMDEgMDEgMjEgYjUgMWUgNGQ8QlI+DQpjZnRhYmxlX2VudHJ5IDB4MDE8QlI+DQombmJzcDsg
-VmNjIFZub20gMzMwMG1WIElwZWFrIDQ1bUE8QlI+DQo8QlI+DQpvZmZzZXQgMHg2NiwgdHVwbGUg
-MHgxYiwgbGluayAweDBmPEJSPg0KJm5ic3A7IGMyIDQxIDk5IDAxIDU1IGVhIDYxIGYwIDAxIDA3
-IGY2IDAzIDAxIGVlIDIwPEJSPg0KY2Z0YWJsZV9lbnRyeSAweDAyIFtkZWZhdWx0XTxCUj4NCiZu
-YnNwO1tyZHlic3ldIFtwd3Jkb3duXTxCUj4NCiZuYnNwOyBWY2MgVm5vbSA1VjxCUj4NCiZuYnNw
-OyBpbyAweDAxZjAtMHgwMWY3LCAweDAzZjYtMHgwM2Y3IFtsaW5lcz0xMF0gWzhiaXRdIFsxNmJp
-dF0gW3JhbmdlXTxCUj4NCiZuYnNwOyBpcnEgMTQgW2xldmVsXSBbcHVsc2VdIFtzaGFyZWRdPEJS
-Pg0KPEJSPg0Kb2Zmc2V0IDB4NzcsIHR1cGxlIDB4MWIsIGxpbmsgMHgwNjxCUj4NCiZuYnNwOyAw
-MiAwMSAyMSBiNSAxZSA0ZDxCUj4NCmNmdGFibGVfZW50cnkgMHgwMjxCUj4NCiZuYnNwOyBWY2Mg
-Vm5vbSAzMzAwbVYgSXBlYWsgNDVtQTxCUj4NCjxCUj4NCm9mZnNldCAweDdmLCB0dXBsZSAweDFi
-LCBsaW5rIDB4MGY8QlI+DQombmJzcDsgYzMgNDEgOTkgMDEgNTUgZWEgNjEgNzAgMDEgMDcgNzYg
-MDMgMDEgZWUgMjA8QlI+DQpjZnRhYmxlX2VudHJ5IDB4MDMgW2RlZmF1bHRdPEJSPg0KJm5ic3A7
-W3JkeWJzeV0gW3B3cmRvd25dPEJSPg0KJm5ic3A7IFZjYyBWbm9tIDVWPEJSPg0KJm5ic3A7IGlv
-IDB4MDE3MC0weDAxNzcsIDB4MDM3Ni0weDAzNzcgW2xpbmVzPTEwXSBbOGJpdF0gWzE2Yml0XSBb
-cmFuZ2VdPEJSPg0KJm5ic3A7IGlycSAxNCBbbGV2ZWxdIFtwdWxzZV0gW3NoYXJlZF08QlI+DQo8
-QlI+DQpvZmZzZXQgMHg5MCwgdHVwbGUgMHgxYiwgbGluayAweDA2PEJSPg0KJm5ic3A7IDAzIDAx
-IDIxIGI1IDFlIDRkPEJSPg0KY2Z0YWJsZV9lbnRyeSAweDAzPEJSPg0KJm5ic3A7IFZjYyBWbm9t
-IDMzMDBtViBJcGVhayA0NW1BPEJSPg0KPEJSPg0Kb2Zmc2V0IDB4OTgsIHR1cGxlIDB4MTQsIGxp
-bmsgMHgwMDxCUj4NCm5vX2xvbmdfbGluazwvRk9OVD4NCjwvUD4NCg0KPC9CT0RZPg0KPC9IVE1M
-Pg==
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40"
+xmlns:ns0=3D"urn:schemas-microsoft-com:office:smarttags">
 
-------_=_NextPart_001_01C6DE51.F68A5B08--
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"City"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"place"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"Street"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"address"/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hiya, I&#8217;m running into the following issue =
+running on
+our custom PPC8270 (PQ2FADS style) system.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>It only seems to happen when we load the system just =
+a
+little (more PCI interrupts and =
+transactions).<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Any ideas?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>/ # [&nbsp; 456.440195] Machine check in kernel =
+mode.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.442646] Caused by (from SRR1=3D41030): =
+Transfer error
+ack signal<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.448828] Oops: machine check, sig: 7 =
+[#1]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.453088] =
+PREEMPT<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.455269] NIP: C00119CC LR: C0011914 CTR: =
+C0011334<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.460233] REGS: c01fbd40 TRAP: =
+0200&nbsp;&nbsp; Tainted: P&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;(2.6.17.3)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.466493] MSR: 00041030 =
+&lt;ME,IR,DR&gt;&nbsp; CR: 22002082&nbsp;
+XER: 20000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.472589] TASK =3D c01b5f20[0] 'swapper' =
+THREAD: c01fa000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.477809] GPR00: 00000000 C01FBDF0 C01B5F20 =
+00000000
+FFFFFF7F 00000003 00000001 C01FBE18<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.486164] GPR08: 00000000 F0010904 00000000 =
+F0010907
+00000000 100934F0 07FFF000 00000001<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.494520] GPR16: 00800000 07FFE964 FFFFFFFF =
+00000000
+07FFC6BC 007FFF00 FF800040 07FA7770<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.502876] GPR24: C0210000 C01FBE58 00000001 =
+000000CF
+C01FBE18 000000A0 C024A000 C03AAA00<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.511406] NIP [C00119CC]
+indirect_read_config+0x100/0x14c<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.516977] LR [C0011914] =
+indirect_read_config+0x48/0x14c<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.522373] Call =
+Trace:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.524812] [C01FBDF0] [C01FA028]
+init_thread_union+0x28/0x2000 (unreliable)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.531862] [C01FBE10] [C00E2FB0]
+pci_bus_read_config_byte+0x60/0xa8<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.538216] [C01FBE50] [C909373C] =
+OnInterrupt+0x40/0x178
+[bridge]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.544309] [C01FBE70] [C003EA54]
+handle_IRQ_event+0x64/0xb8<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.549966] [C01FBE90] [C003EBE0] =
+__do_IRQ+0x138/0x1c0<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.555102] [C01FBEC0] [C0009D04] =
+do_IRQ+0x44/0x88<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.559889] [C01FBEE0] [C0004914]
+ret_from_except+0x0/0x14<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.565372] [C01FBFA0] [C000C9B8] =
+cpu_idle+0xe0/0xf8<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.570334] [C01FBFB0] [C0003A64] =
+rest_init+0x3c/0x4c<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.575382] [C01FBFC0] [C01FC6C4]
+start_kernel+0x1d0/0x228<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.580865] [C01FBFF0] [000032C0] =
+0x32c0<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.584781] Instruction =
+dump:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.587741] bb410008 38210020 7c0803a6 =
+4e800020 887f004c
+813e0010 5460063e 7c004a78<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 456.595487] 3120ffff 7d490110 4bffff70 =
+7c0928ae &lt;0c000000&gt;
+4c00012c 901c0000 38600000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;[&nbsp; 456.615184] Kernel panic - not syncing: =
+Aiee, killing
+interrupt handler!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Cheers<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Tony<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal =
+style=3D'mso-margin-top-alt:auto;mso-margin-bottom-alt:auto'><font
+size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'>Tony Hardie
+B.Sc<br>
+VX Software Architect<br>
+Net.com<br>
+<st1:Street w:st=3D"on"><st1:address w:st=3D"on">6900 Paseo Padre =
+Parkway</st1:address></st1:Street><br>
+<st1:place w:st=3D"on"><st1:City =
+w:st=3D"on">Fremont</st1:City></st1:place><br>
+<ns0:country-region w:insAuthor=3D"Tony Hardie" =
+w:insDate=3D"2006-09-22T10:32:00Z"
+ w:endInsAuthor=3D"Tony Hardie" =
+w:endInsDate=3D"2006-09-22T10:32:00Z"><ns0:place
+  w:insAuthor=3D"Tony Hardie" w:insDate=3D"2006-09-22T10:32:00Z"
+  w:endInsAuthor=3D"Tony Hardie" =
+w:endInsDate=3D"2006-09-22T10:32:00Z">CA, =
+94555</ns0:place></ns0:country-region><br>
+Ph: 510-574-2386<br>
+Mob: 510-449-4339</span></font><o:p></o:p></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C6DE6D.918D2F0A--
