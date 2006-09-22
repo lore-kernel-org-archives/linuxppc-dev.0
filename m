@@ -1,22 +1,18 @@
-Return-Path: <mikem@beardog.cca.cpqcorp.net>
-Received: from palrel13.hp.com (palrel13.hp.com [156.153.255.238])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "palrel13.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 8BCAF67B8D
+Return-Path: <sr@denx.de>
+Received: from natblert.rzone.de (natblert.rzone.de [81.169.145.181])
+	by ozlabs.org (Postfix) with ESMTP id 4A58167B1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Sep 2006 07:53:27 +1000 (EST)
-Received: from beardog.cca.cpqcorp.net (beardog.cca.cpqcorp.net
-	[16.101.176.144])
-	by palrel13.hp.com (Postfix) with ESMTP id 61F4136B64
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Sep 2006 14:35:31 -0700 (PDT)
-Date: Thu, 21 Sep 2006 16:35:21 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+	Fri, 22 Sep 2006 15:16:54 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: compile errors 
-Message-ID: <20060921213521.GA19725@beardog.cca.cpqcorp.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Linux not booting consistantly
+Date: Fri, 22 Sep 2006 06:50:20 +0200
+References: <20060922010445.20750.qmail@web33408.mail.mud.yahoo.com>
+In-Reply-To: <20060922010445.20750.qmail@web33408.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200609220650.20992.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,33 +23,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I tried searching for my error without any luck.
+Hi Jeff,
 
-I'm new to PPC and embedded linux so please bear with me. I'm trying to cross-compile
-on an x86 host for a PPC 440SP target. I downloaded and installed the ELDK from 
-Wolfgang Denk's website. I execute:
+On Friday 22 September 2006 03:04, Jeff Stevens wrote:
+> ## Booting image at 00200000 ...
+>    Image Name:   Linux-2.6.15
+>    Image Type:   PowerPC Linux Kernel Image (gzip
+> compressed)
+>    Data Size:    1067371 Bytes =  1 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+>
+>   Could this be a memory issue (i.e. bad memory
+> configuration)?  Though, if it were a memory issue,
+> wouldn't the kernel fail to uncompress successfully?
 
-	make ARCH=ppc CROSS_COMPILE=ppc_45xx- menuconfig
+No, not necessarily. U-Boot normally hasn't D-cache enabled on 440 platforms, 
+so while uncompressing the kernel no bursts are generated to the SDRAM. And 
+with the bursts the "real fun" begins. ;-)
 
-and configure, save, and exit. To try and build the kernel I execute:
+So, yes: I also think you have a memory problem.
 
-	make ARCH=ppc CROSS_COMPILE=ppc_45xx-
+> Does anyone have any ideas why it would work about
+> once every 10 - 20 resets?
 
-it cranks along for a minute before erroring out with:
+Did you try to analyze where it crashes?
 
-  ppc_4xx-gcc -m32 -Wp,-MD,arch/powerpc/kernel/.process.o.d  -nostdinc -isystem /home/embedded/denx/usr/bin/../lib/gcc/powerpc-linux/4.0.0/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -ffreestanding -Os     -fomit-frame-pointer -g -Iarch/ppc -msoft-float -pipe -ffixed-r2 -mmultiple  -mno-altivec -mstring -Wa,-m405 -Wdeclaration-after-statement -Wno-pointer-sign    -DKBUILD_BASENAME=process -DKBUILD_MODNAME=process -c -o arch/powerpc/kernel/.tmp_process.o arch/powerpc/kernel/process.c
-arch/powerpc/kernel/process.c: In function 'set_dabr':
-arch/powerpc/kernel/process.c:228: error: 'struct machdep_calls' has no member named 'set_dabr'
-arch/powerpc/kernel/process.c:229: error: 'struct machdep_calls' has no member named 'set_dabr'
-make[1]: *** [arch/powerpc/kernel/process.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
+http://www.denx.de/wiki/view/DULG/LinuxPostMortemAnalysis
 
-Any suggestions on what's wrong? I've had the same error on the 2.6.15 kernel provided
-with the ELDK as well as kernel.org 2.6.10 and 2.6.16.29. My path points to the
-denx directories first and ${CROSS_COMPILE}=ppc_4xx-.
-
-Any help is greatly appreciated.
-
-Thanks,
-mikem
+Best regards,
+Stefan
