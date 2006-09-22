@@ -1,25 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [POWERPC] mark BUG() as noreturn
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jimi Xenidis <jimix@watson.ibm.com>
-In-Reply-To: <135B477D-5DF8-48E9-94FD-A114A4526177@watson.ibm.com>
-References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
-	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
-	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
-	<1158768096.19375.6.camel@basalt.austin.ibm.com>
-	<20060921100315.89d74f6f.sfr@canb.auug.org.au>
-	<1158798041.7062.4.camel@localhost.localdomain>
-	<20060921145522.366a3b03.sfr@canb.auug.org.au>
-	<135B477D-5DF8-48E9-94FD-A114A4526177@watson.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-h1jieasavAye7lqXzOlN"
-Date: Fri, 22 Sep 2006 10:54:05 +1000
-Message-Id: <1158886446.8109.2.camel@localhost.localdomain>
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 4C10E67BD3
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 11:23:23 +1000 (EST)
+Date: Thu, 21 Sep 2006 18:24:08 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Message-ID: <20060922012408.GA13820@mag.az.mvista.com>
+References: <17680.30367.157642.674242@cargo.ozlabs.ibm.com>
+	<20060920012042.GA28489@mag.az.mvista.com>
+	<1158721828.3043.13.camel@vader.jdub.homelinux.org>
+	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
+	<1158787957.6002.307.camel@localhost.localdomain>
+	<20060920215738.GC24809@mag.az.mvista.com>
+	<C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>
+	<20060921133707.GA29137@gate.crashing.org>
+	<1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org,
-	Hollis Blanchard <hollisb@us.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Matt Porter <mporter@embeddedalley.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,59 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Sep 21, 2006 at 05:31:18PM +0200, Segher Boessenkool wrote:
+> >Regardless of the name of the
+> >new property, it should be defined to allow a different number of
+> >address cells to represent an address in virtual address space.
+> 
+> How about you check whether the "64-bit" property exists in the CPU
+> nodes?
 
---=-h1jieasavAye7lqXzOlN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That seemed like the right thing until I realized, its still specifying
+the physical size, not the virtual size.
 
-On Thu, 2006-09-21 at 08:18 -0400, Jimi Xenidis wrote:
-> On Sep 21, 2006, at 12:55 AM, Stephen Rothwell wrote:
->=20
-> > From an idea from Michael Ellerman.
-> >
-> > We finish the BUG() macro with a call to a function marked with =20
-> > attribute
-> > "noreturn" so that the compiler will know that BUG() and BUG_ON()
-> > (with a constant, non-zero argument) will not return.
->=20
-> But BUG() _can_ return, if I have a probe, xmon or kgdb configured it =20
-> is possible  to play with the state of the world and try to continue/=20
-> recover, (xmon "x" command).  IMHO, this is a powerful debugging =20
-> scenario.
+I don't think we can avoid making a new xxx-cells property for the virt
+addr size.  Ben suggested adding #virt-address-cells to the root node.
 
-Hmm, ok I hadn't thought of that. Personally I've never tried to recover
-from a BUG(), do people really do that much?
+I like the name but prefer putting it directly under "/cpus" because
+the virt addr size is really determined by the cpu.  It doesn't matter
+that much to me, though.
 
-> Why are we concerned with the performance of this anyway?
+Comments?
 
-Not so much the performance, more that it gives the compiler more
-information about what's happening and allows it to elide code in some
-circumstances - but it's not _that_ important.
-
-Having it configurable might be an option, dunno.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-h1jieasavAye7lqXzOlN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBFEzQtdSjSd0sB4dIRAgpxAKC9pbKXB1NXuCv9eXDhqeX8kaFurgCcDaSk
-4nKgYjBJQwhbvYyzDP4w/qo=
-=2fmp
------END PGP SIGNATURE-----
-
---=-h1jieasavAye7lqXzOlN--
+Mark
