@@ -1,18 +1,12 @@
-Return-Path: <SRS0+e8fc20ab33191259865d+1125+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD4C267B66
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 18:24:00 +1000 (EST)
-Subject: [PATCH] Fix audit syscall success/failure reporting on PowerPC
-From: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 22 Sep 2006 18:26:37 +1000
+From: Anton Blanchard <anton@samba.org>
 To: paulus@samba.org
-Content-Type: text/plain
-Date: Fri, 22 Sep 2006 09:23:53 +0100
-Message-Id: <1158913433.24527.650.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk
+Subject: [PATCH] Always call cede in pseries dedicated idle loop
+Message-ID: <20060922082636.GC22420@krispykreme>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +16,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Due to my stupidity, we were checking for the wrong bit in CCR when
-attempting to determine whether a syscall succeeded or not. Remedy the
-symptom, if not the cause.
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+The smt_snooze_delay logic changed a bit when the idle loops were
+consolidated. A value of 0 used to mean we always polled, now it means
+we always sleep. Instead of restoring the old behaviour, lets put a
+reasonable default in smt_snooze_delay. This means we spin for a bit (in
+case an external interrupt comes in) and then sleep.
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index dea75d7..cf1d1bc 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -553,7 +553,7 @@ #ifdef CONFIG_PPC32
- #endif
+Also the pseries dedicated idle loop currently does not cede both
+threads in an SMT pair. The hypervisor wants us to call in so it can
+power manage, so lets do that.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 31867a7..00231ac 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -456,8 +456,8 @@ static int __init pSeries_probe(void)
+ 	return 1;
+ }
  
- 	if (unlikely(current->audit_context))
--		audit_syscall_exit((regs->ccr&0x1000)?AUDITSC_FAILURE:AUDITSC_SUCCESS,
-+		audit_syscall_exit((regs->ccr&0x10000000)?AUDITSC_FAILURE:AUDITSC_SUCCESS,
- 				   regs->result);
+-
+-DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
++/* Time in microseconds we delay before sleeping in the idle loop */
++DECLARE_PER_CPU(unsigned long, smt_snooze_delay) = { 100 };
  
- 	if ((test_thread_flag(TIF_SYSCALL_TRACE)
-
--- 
-dwmw2
+ static void pseries_dedicated_idle_sleep(void)
+ { 
+@@ -498,24 +498,7 @@ static void pseries_dedicated_idle_sleep
+ 			goto out;
+ 	}
+ 
+-	/*
+-	 * If not SMT, cede processor.  If CPU is running SMT
+-	 * cede if the other thread is not idle, so that it can
+-	 * go single-threaded.  If the other thread is idle,
+-	 * we ask the hypervisor if it has pending work it
+-	 * wants to do and cede if it does.  Otherwise we keep
+-	 * polling in order to reduce interrupt latency.
+-	 *
+-	 * Doing the cede when the other thread is active will
+-	 * result in this thread going dormant, meaning the other
+-	 * thread gets to run in single-threaded (ST) mode, which
+-	 * is slightly faster than SMT mode with this thread at
+-	 * very low priority.  The cede enables interrupts, which
+-	 * doesn't matter here.
+-	 */
+-	if (!cpu_has_feature(CPU_FTR_SMT) || !lppaca[cpu ^ 1].idle
+-	    || poll_pending() == H_PENDING)
+-		cede_processor();
++	cede_processor();
+ 
+ out:
+ 	HMT_medium();
