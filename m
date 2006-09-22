@@ -1,25 +1,16 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8916467B83
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 12:36:55 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k8M2asHV026444
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 19:36:54 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k8M2apGD019020
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Sep 2006 21:36:53 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 2/11] qe_lib: Add common files
-Date: Fri, 22 Sep 2006 10:37:27 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D19D2F8@zch01exm20.fsl.freescale.net>
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9399B44FE@tmnt04.transmode.se>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 0788E67BA1
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 12:37:15 +1000 (EST)
+Date: Fri, 22 Sep 2006 06:37:00 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull upstream branch of linux-2.6-PQ.git...
+Message-ID: <20060922063700.79251139@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_YBxgkMpmd/C4Nv/A=GMZkLO";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +20,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> Sent: Thursday, September 21, 2006 11:22 PM
-> To: Li Yang-r58472; linuxppc-dev@ozlabs.org
-> Subject: RE: [PATCH 2/11] qe_lib: Add common files
->=20
-> > diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
-> > +#define QE_MURAM_DATAONLY_BASE	((uint)0x0)
-> > +#define QE_MURAM_NOSPACE		((uint)0x7fffffff)
-> > +#define QE_MURAM_DATAONLY_SIZE	((uint)(48 * 1024) -
-> > QE_MURAM_DATAONLY_BASE)
->=20
-> QE_MURAM_DATAONLY_SIZE is 16*1024 on 8321
->=20
-> Also, you have line wrapping that has mangled all long lines in all
-> patches.
+--Sig_YBxgkMpmd/C4Nv/A=GMZkLO
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-No, not for this time.  Maybe your mail client wrapped them.
+Paul,
 
-- Leo
+Refined 8560 series can be found in=20
+
+git://git.kernel.org/pub/scm/linux/kernel/git/vitb/linux-2.6-PQ.git, upstre=
+am branch.
+
+ arch/powerpc/boot/dts/mpc8560ads.dts       |  310 ++++++++++
+ arch/powerpc/configs/mpc8560_ads_defconfig |  854 ++++++++++++++++++++++++=
++++++
+ arch/powerpc/lib/Makefile                  |    5=20
+ arch/powerpc/platforms/85xx/Kconfig        |   21=20
+ arch/powerpc/platforms/85xx/Makefile       |    1=20
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c  |  218 +++++--
+ arch/powerpc/platforms/85xx/mpc85xx_ads.h  |   61 ++
+ arch/powerpc/sysdev/Makefile               |    5=20
+ arch/powerpc/sysdev/cpm2_common.c          |  319 ++++++++++
+ arch/powerpc/sysdev/cpm2_pic.c             |  290 +++++++++
+ arch/powerpc/sysdev/cpm2_pic.h             |   10=20
+ arch/powerpc/sysdev/fsl_soc.c              |  285 +++++++++
+ arch/powerpc/sysdev/fsl_soc.h              |    2=20
+ arch/ppc/platforms/mpc8272ads_setup.c      |    8=20
+ arch/ppc/platforms/mpc866ads_setup.c       |    8=20
+ arch/ppc/platforms/mpc885ads_setup.c       |   10=20
+ drivers/net/fs_enet/fs_enet-main.c         |    5=20
+ drivers/serial/cpm_uart/cpm_uart_core.c    |   24=20
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c    |  143 +++-
+ drivers/serial/cpm_uart/cpm_uart_cpm2.h    |    2=20
+ include/asm-powerpc/fs_pd.h                |   45 +
+ include/asm-powerpc/mpc85xx.h              |   53 +
+ include/asm-ppc/cpm2.h                     |   63 ++
+ include/asm-ppc/fs_pd.h                    |   36 +
+ include/linux/fs_enet_pd.h                 |   47 +
+ include/linux/fs_uart_pd.h                 |   14=20
+ 26 files changed, 2674 insertions(+), 165 deletions(-)
+
+Vitaly Bordug:
+      POWERPC: Add cpm2 stuff support to the fsl_soc.c
+      cpm_uart: make it possible to utilize from powerpc
+      POWERPC: Move generic cpm2 stuff to powerpc
+      POWERPC: Add support for the mpc8560 eval board
+      POWERPC: Get rid of remapping the whole immr
+      POWERPC: overhaul with cpm2_map mechanism
+      POWERPC: Bring the fs_no calculation to the relevant SoC enumeration
+
+--
+Sincerely, Vitaly
+
+--Sig_YBxgkMpmd/C4Nv/A=GMZkLO
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFE0xMuOg9JvQhSEsRAoOaAJsEmOjGi3THo7CdOC4X1bHbZCJfhgCeMu9O
+Nzj91O81/V4TsTw4gf+y5/M=
+=km+Z
+-----END PGP SIGNATURE-----
+
+--Sig_YBxgkMpmd/C4Nv/A=GMZkLO--
