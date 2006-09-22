@@ -1,12 +1,13 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 91E6C67B73
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 06:39:25 +1000 (EST)
-Date: Fri, 22 Sep 2006 13:40:13 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5626067BBB
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 06:43:38 +1000 (EST)
+Message-ID: <45144AFB.7030309@ru.mvista.com>
+Date: Sat, 23 Sep 2006 00:43:39 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: "Mark A. Greer" <mgreer@mvista.com>
 Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
-Message-ID: <20060922204013.GA29524@mag.az.mvista.com>
 References: <A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
 	<1158787957.6002.307.camel@localhost.localdomain>
 	<20060920215738.GC24809@mag.az.mvista.com>
@@ -17,9 +18,9 @@ References: <A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>
 	<9F654F4A-B344-4374-8BDC-77FB0DDAFDCC@kernel.crashing.org>
 	<20060922185923.GB25738@mag.az.mvista.com>
 	<45143B2B.7060501@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45143B2B.7060501@ru.mvista.com>
+	<20060922204013.GA29524@mag.az.mvista.com>
+In-Reply-To: <20060922204013.GA29524@mag.az.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: Matt Porter <mporter@embeddedalley.com>, Paul Mackerras <paulus@samba.org>,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -31,16 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 22, 2006 at 11:36:11PM +0400, Sergei Shtylyov wrote:
+Hello.
 
-> >3) The number of cells in the "size" portion of the tuple is indicated
-> >by the nearest #size-cells as you go up the tree.  Just like the "reg"
-> >property.
-> 
->    Well, is there need for duplication of size if "reg" prop must be 
->    present anyway?
+Mark A. Greer wrote:
 
-We're not adding another #size-cells, we're using the same one that
-"reg" uses.  No duplication, just reuse.
+>>>3) The number of cells in the "size" portion of the tuple is indicated
+>>>by the nearest #size-cells as you go up the tree.  Just like the "reg"
+>>>property.
 
-Mark
+>>   Well, is there need for duplication of size if "reg" prop must be 
+>>   present anyway?
+
+> We're not adding another #size-cells, we're using the same one that
+> "reg" uses.  No duplication, just reuse.
+
+    I mean size could have been gotten from "reg" prop.
+
+> Mark
+
+WBR, Sergei
