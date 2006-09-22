@@ -1,14 +1,40 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 22 Sep 2006 20:30:14 +1000
-From: Anton Blanchard <anton@samba.org>
-To: paulus@samba.org
-Subject: [PATCH] Always call cede in pseries dedicated idle loop
-Message-ID: <20060922103014.GE22420@krispykreme>
-References: <20060922082636.GC22420@krispykreme>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060922082636.GC22420@krispykreme>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jimix@watson.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9789267A3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 20:58:44 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8MAwaAx002247
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 06:58:36 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8MAwaZ6170284
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 06:58:36 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8MAwZ0t021540
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 06:58:36 -0400
+In-Reply-To: <1158886446.8109.2.camel@localhost.localdomain>
+References: <20060905120817.e52857ee.sfr@canb.auug.org.au>
+	<20060918153853.f4332d2a.sfr@canb.auug.org.au>
+	<20060920221558.1322b8b4.sfr@canb.auug.org.au>
+	<1158768096.19375.6.camel@basalt.austin.ibm.com>
+	<20060921100315.89d74f6f.sfr@canb.auug.org.au>
+	<1158798041.7062.4.camel@localhost.localdomain>
+	<20060921145522.366a3b03.sfr@canb.auug.org.au>
+	<135B477D-5DF8-48E9-94FD-A114A4526177@watson.ibm.com>
+	<1158886446.8109.2.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=pgp-sha1; boundary="Apple-Mail-1-226878498"
+Message-Id: <6CFA644D-5C8A-4047-A7CC-F11B457E3E1D@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [POWERPC] mark BUG() as noreturn
+Date: Fri, 22 Sep 2006 06:58:24 -0400
+To: michael@ellerman.id.au
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org,
+	Hollis Blanchard <hollisb@us.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,86 +44,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-1-226878498
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
 
-Not sure what I was thinking, heres something that actually builds.
 
---
+On Sep 21, 2006, at 8:54 PM, Michael Ellerman wrote:
 
-The smt_snooze_delay logic changed a bit when the idle loops were
-consolidated. A value of 0 used to mean we always polled, now it means
-we always sleep. Instead of restoring the old behaviour, lets put a
-reasonable default in smt_snooze_delay. This means we spin for a bit (in
-case an external interrupt comes in) and then sleep.
+> On Thu, 2006-09-21 at 08:18 -0400, Jimi Xenidis wrote:
+>> On Sep 21, 2006, at 12:55 AM, Stephen Rothwell wrote:
+>>
+>>> From an idea from Michael Ellerman.
+>>>
+>>> We finish the BUG() macro with a call to a function marked with
+>>> attribute
+>>> "noreturn" so that the compiler will know that BUG() and BUG_ON()
+>>> (with a constant, non-zero argument) will not return.
+>>
+>> But BUG() _can_ return, if I have a probe, xmon or kgdb configured it
+>> is possible  to play with the state of the world and try to continue/
+>> recover, (xmon "x" command).  IMHO, this is a powerful debugging
+>> scenario.
+>
+> Hmm, ok I hadn't thought of that. Personally I've never tried to  
+> recover
+> from a BUG(), do people really do that much?
+Oh, do it once and your hooked :)
 
-Also the pseries dedicated idle loop currently does not cede both
-threads in an SMT pair. The hypervisor wants us to call in so it can
-power manage, so lets do that.
+>
+>> Why are we concerned with the performance of this anyway?
+>
+> Not so much the performance, more that it gives the compiler more
+> information about what's happening and allows it to elide code in some
+> circumstances - but it's not _that_ important.
+>
+> Having it configurable might be an option, dunno.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+I would not object to making depend on CONFIG_DEBUG_KERNEL
 
-Index: build/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- build.orig/arch/powerpc/platforms/pseries/setup.c	2006-09-22 19:04:56.000000000 +1000
-+++ build/arch/powerpc/platforms/pseries/setup.c	2006-09-22 20:21:01.000000000 +1000
-@@ -477,7 +477,6 @@ static void pseries_dedicated_idle_sleep
- { 
- 	unsigned int cpu = smp_processor_id();
- 	unsigned long start_snooze;
--	unsigned long *smt_snooze_delay = &__get_cpu_var(smt_snooze_delay);
- 
- 	/*
- 	 * Indicate to the HV that we are idle. Now would be
-@@ -490,9 +489,9 @@ static void pseries_dedicated_idle_sleep
- 	 * has been checked recently.  If we should poll for a little
- 	 * while, do so.
- 	 */
--	if (*smt_snooze_delay) {
-+	if (__get_cpu_var(smt_snooze_delay)) {
- 		start_snooze = get_tb() +
--			*smt_snooze_delay * tb_ticks_per_usec;
-+			__get_cpu_var(smt_snooze_delay) * tb_ticks_per_usec;
- 		local_irq_enable();
- 		set_thread_flag(TIF_POLLING_NRFLAG);
- 
-@@ -512,24 +511,7 @@ static void pseries_dedicated_idle_sleep
- 			goto out;
- 	}
- 
--	/*
--	 * If not SMT, cede processor.  If CPU is running SMT
--	 * cede if the other thread is not idle, so that it can
--	 * go single-threaded.  If the other thread is idle,
--	 * we ask the hypervisor if it has pending work it
--	 * wants to do and cede if it does.  Otherwise we keep
--	 * polling in order to reduce interrupt latency.
--	 *
--	 * Doing the cede when the other thread is active will
--	 * result in this thread going dormant, meaning the other
--	 * thread gets to run in single-threaded (ST) mode, which
--	 * is slightly faster than SMT mode with this thread at
--	 * very low priority.  The cede enables interrupts, which
--	 * doesn't matter here.
--	 */
--	if (!cpu_has_feature(CPU_FTR_SMT) || !lppaca[cpu ^ 1].idle
--	    || poll_pending() == H_PENDING)
--		cede_processor();
-+	cede_processor();
- 
- out:
- 	HMT_medium();
-Index: build/arch/powerpc/kernel/sysfs.c
-===================================================================
---- build.orig/arch/powerpc/kernel/sysfs.c	2006-09-22 20:19:43.000000000 +1000
-+++ build/arch/powerpc/kernel/sysfs.c	2006-09-22 20:20:17.000000000 +1000
-@@ -25,8 +25,8 @@ static DEFINE_PER_CPU(struct cpu, cpu_de
- /* SMT stuff */
- 
- #ifdef CONFIG_PPC_MULTIPLATFORM
--/* default to snooze disabled */
--DEFINE_PER_CPU(unsigned long, smt_snooze_delay);
-+/* Time in microseconds we delay before sleeping in the idle loop */
-+DEFINE_PER_CPU(unsigned long, smt_snooze_delay) = { 100 };
- 
- static ssize_t store_smt_snooze_delay(struct sys_device *dev, const char *buf,
- 				      size_t count)
+--Apple-Mail-1-226878498
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+
+iD8DBQFFE8Hbd/h5j14PFR4RAh0wAKDJoOGtPGBNgt7S8k/M3D3CdxTlmQCfd/KY
+DCkS6zK2PTFYOROV2XV3ycs=
+=egyH
+-----END PGP SIGNATURE-----
+
+--Apple-Mail-1-226878498--
