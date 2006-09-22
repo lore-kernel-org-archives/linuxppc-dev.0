@@ -1,20 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id CB47A67B58
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 01:27:54 +1000 (EST)
-To: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-Subject: Re: [PATCH 2.6.19-rc1] ehca firmware interface based on Anton
-	Blanchard's new hvcall interface
-References: <200609221720.24191.hnguyen@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 22 Sep 2006 08:27:49 -0700
-In-Reply-To: <200609221720.24191.hnguyen@de.ibm.com> (Hoang-Nam Nguyen's
-	message of "Fri, 22 Sep 2006 17:20:23 +0200")
-Message-ID: <ada7izvhqfe.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: pmac@au1.ibm.com, linux-kernel@vger.kernel.org, openib-general@openib.org,
-	openfabrics-ewg@openib.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A07567B72
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 03:20:16 +1000 (EST)
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: [PATCH] POWERPC: mpc82xx merge: board-specific/platform
+	stuff(resend)
+In-Reply-To: Your message of "Fri, 22 Sep 2006 17:50:57 +0400."
+	<20060922135057.2859.29388.stgit@localhost.localdomain>
+References: <20060922135057.2859.29388.stgit@localhost.localdomain> 
+Date: Fri, 22 Sep 2006 12:20:10 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1GQoh8-00055h-Av@jdl.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > - shca->ib_device.node_type           = RDMA_NODE_IB_CA;
- > + shca->ib_device.node_type           = IB_NODE_CA;
+So, like, the other day Vitaly Bordug mumbled:
+> 
+> This intruduces 82xx family in arch/powerpc/platforms,
+> and has all the board-specific code to represent regression-less
+> transaction from ppc. The functionality is apparently the same, including
+> PCI controller.
+> 
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
-Did you test this at all?  I can't see how this would build against my
-for-2.6.19 tree...
+Excellent!  Thanks!
 
-Please resend a patch that you know is working.
 
- - R.
+> +++ b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
+
+> +/*
+> + * Called very early, device-tree isn't unflattened
+> + */
+> +static int __init mpc82xx_ads_probe(void)
+> +{
+> +	/* We always match for now, eventually we should look at
+> +	 * the flat dev tree to ensure this is the board we are
+> +	 * supposed to run on
+> +	 */
+> +	return 1;
+> +}
+
+Please implement this routine fully.  Something down this line:
+
+    {
+        unsigned long root = of_get_flat_dt_root();
+
+        if (of_flat_dt_is_compatible(root, "mpc82xx"))
+            return 1;        /* Looks good */
+
+        return 0;
+    }
+
+
+And with that, ACK me:
+
+    Acked-by: Jon Loeliger <jdl@freescale.com>
+
+Thanks,
+jdl
