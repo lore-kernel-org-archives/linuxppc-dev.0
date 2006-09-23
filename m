@@ -1,22 +1,21 @@
-Return-Path: <shenbagaraj@esds.in>
-Received: from server9.one-dom9.com (server9.one-dom9.com [69.20.58.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "one-dom9.com",
-	Issuer "Equifax Secure Global eBusiness CA-1" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 507F267B82
+Return-Path: <skaiser.uci@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.226])
+	by ozlabs.org (Postfix) with ESMTP id 621B067BC0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Sep 2006 14:40:53 +1000 (EST)
-Message-ID: <001201c6df33$e7eaf8e0$0b01a8c0@shenbagaraj>
-From: "shenbagaraj" <shenbagaraj@esds.in>
-To: "Yang, Steve" <steve.yang@windriver.com>
-References: <D9055C0A0A86BD4E89AD96A89EA767DB8D34CD@ALA-MAIL03.corp.ad.wrs.com>
-Subject: Re: bsp for Linux kernel 2.6 
-Date: Sat, 23 Sep 2006 10:15:42 -0700
+	Sun, 24 Sep 2006 06:46:43 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id t14so1297248wxc
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Sep 2006 13:46:41 -0700 (PDT)
+From: "Steven Kaiser" <skaiser.uci@gmail.com>
+To: =?iso-8859-1?Q?'Markus_Klotzb=FCcher'?= <mk@creamnet.de>
+Subject: RE: MPC5200b kernel module memory mapping
+Date: Sat, 23 Sep 2006 13:46:36 -0700
+Message-ID: <000601c6df51$5d6edf10$6e4ec880@volt>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <87slilxf92.fsf@creamnet.de>
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: shenbagaraj <shenbagaraj@esds.in>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,45 +26,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Steve,
-Thank you for information,I need the older version of windriver which
-support 2.6.11.11 kernel with some patch to build in open source
-kernel.Where do i get those patch.
+Markus:
 
-regards,
-shenbagaraj.
+> > sure I am setting up the LocalBus chip select registers ok.
+> 
+> I would guess this is not the case. What kind of device is this?
 
------ Original Message ----- 
-From: "Yang, Steve" <steve.yang@windriver.com>
-To: "shenbagaraj" <shenbagaraj@esds.in>
-Cc: <linuxppc-embedded@ozlabs.org>
-Sent: Friday, September 22, 2006 5:57 AM
-Subject: RE: bsp for Linux kernel 2.6
+It is a Freescale MPC5200b:
+http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5200B
+
+You are correct.  I was so concerned about the linux driver stuff (
+request_region(), ioremap(), etc ), that I was locked into endless studies
+on that and see now I clearly overlooked some simple chip setting up.  Doh!
+Thanks for reorienting my focus--
+
+int init_module(void) { ...
+
+	// reserve a page of memory for our hardware /proc/iomem
+	if ( check_region(MALab_MM_START,MALab_MM_SIZE) ) {
+		printk (KERN_ALERT "LED init_module: memory already in
+use\n");
+		return -EBUSY;
+	}
+	request_region(MALab_MM_START,MALab_MM_SIZE,LED_DEVICE_NAME);
+
+	// enable LocalBus chip select CS2 to hit on our address range
+	*(volatile u32 *)MPC5xxx_MM_IPBI &= ~0x00040000;
+	*(volatile u16 *)(MPC5xxx_MM_CS2_START + 2) = MALab_MM_START >> 16;
+	*(volatile u16 *)(MPC5xxx_MM_CS2_STOP + 2) = MALab_MM_END >> 16;
+	*(volatile u32 *)MPC5xxx_MM_IPBI |= 0x00040000;
+
+	// LocalBus Chip Select 2,3 Configuration Register
+	*(volatile u32 *)(MPC5xxx_MBAR + 0x0308) = 0x03031110;
+	*(volatile u32 *)(MPC5xxx_MBAR + 0x030c) = 0x03031110;
+	// LocalBus Chip Select Control Register
+	*(volatile u32 *)(MPC5xxx_MBAR + 0x0318) |= 0x01000000;
+
+	// map our physical address into kernal virtual address space
+	ioaddr = ioremap(MALab_MM_START,MALab_MM_SIZE);
+	printk(KERN_ALERT "ioaddr: 0x%08x\n", (u32)ioaddr);
 
 
-Shen,
-
-Wind River Linux 1.3 has BSP support for this board. The kernel version
-is 2.6.14.
-
-Regards,
-Steve Yang
-
------Original Message-----
-From: linuxppc-embedded-bounces+syang=windriver.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+syang=windriver.com@ozlabs.org] On
-Behalf Of shenbagaraj
-Sent: Thursday, September 21, 2006 5:07 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: bsp for Linux kernel 2.6
-
-Hi,
-I ma working on Windriver powerquicc board 8260.where do i get the
-required patches for linux 2.6.11.11.
-regards,
-shen
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+and later, any of these calls work:
