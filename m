@@ -2,16 +2,16 @@ Return-Path: <viro@ftp.linux.org.uk>
 Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB85E67BAD
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 10:25:21 +1000 (EST)
-Date: Sat, 23 Sep 2006 01:25:18 +0100
+	by ozlabs.org (Postfix) with ESMTP id AF0F667B8D
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 10:37:45 +1000 (EST)
+Received: from viro by ZenIV.linux.org.uk with local (Exim 4.52 #1 (Red Hat
+	Linux)) id 1GQvWX-0002e2-Pd
+	for linuxppc-dev@ozlabs.org; Sat, 23 Sep 2006 01:37:41 +0100
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc math-emu needs -fno-builtin-fabs for math.c and fabs.c
+Message-Id: <E1GQvWX-0002e2-Pd@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] asm/backlight.h is ppc-only
-Message-ID: <20060923002518.GZ29920@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: Sat, 23 Sep 2006 01:37:41 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+
+... since they deal with internal function with that name.
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/macintosh/adbhid.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/math-emu/Makefile |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
-index c69d23b..efd51e0 100644
---- a/drivers/macintosh/adbhid.c
-+++ b/drivers/macintosh/adbhid.c
-@@ -45,8 +45,8 @@ #include <linux/cuda.h>
- #include <linux/pmu.h>
- 
- #include <asm/machdep.h>
--#include <asm/backlight.h>
- #ifdef CONFIG_PPC_PMAC
-+#include <asm/backlight.h>
- #include <asm/pmac_feature.h>
- #endif
- 
+diff --git a/arch/powerpc/math-emu/Makefile b/arch/powerpc/math-emu/Makefile
+index 754143e..29bc912 100644
+--- a/arch/powerpc/math-emu/Makefile
++++ b/arch/powerpc/math-emu/Makefile
+@@ -11,3 +11,6 @@ obj-$(CONFIG_MATH_EMULATION)	+= fabs.o f
+ 					mcrfs.o mffs.o mtfsb0.o mtfsb1.o \
+ 					mtfsf.o mtfsfi.o stfiwx.o stfs.o \
+ 					udivmodti4.o
++
++CFLAGS_fabs.o = -fno-builtin-fabs
++CFLAGS_math.o = -fno-builtin-fabs
 -- 
 1.4.2.GIT
