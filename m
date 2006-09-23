@@ -2,14 +2,14 @@ Return-Path: <viro@ftp.linux.org.uk>
 Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0F44067BBE
+	by ozlabs.org (Postfix) with ESMTP id 0538D67BBB
 	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 10:37:46 +1000 (EST)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.52 #1 (Red Hat
-	Linux)) id 1GQvWX-0002eA-Pm
+	Linux)) id 1GQvWX-0002e8-Pj
 	for linuxppc-dev@ozlabs.org; Sat, 23 Sep 2006 01:37:41 +0100
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] cell spufs iomem annotations
-Message-Id: <E1GQvWX-0002eA-Pm@ZenIV.linux.org.uk>
+Subject: [PATCH] powerpc oprofile __user annotations
+Message-Id: <E1GQvWX-0002e8-Pj@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
 Date: Sat, 23 Sep 2006 01:37:41 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,53 +24,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/powerpc/platforms/cell/spu_base.c     |    4 ++--
- arch/powerpc/platforms/cell/spufs/hw_ops.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/oprofile/backtrace.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index d06042d..20f74e7 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -538,7 +538,7 @@ static void __iomem * __init map_spe_pro
+diff --git a/arch/powerpc/oprofile/backtrace.c b/arch/powerpc/oprofile/backtrace.c
+index 75f57bc..b4278cf 100644
+--- a/arch/powerpc/oprofile/backtrace.c
++++ b/arch/powerpc/oprofile/backtrace.c
+@@ -11,6 +11,7 @@ #include <linux/oprofile.h>
+ #include <linux/sched.h>
+ #include <asm/processor.h>
+ #include <asm/uaccess.h>
++#include <asm/compat.h>
  
- 	void *p;
- 	int proplen;
--	void* ret = NULL;
-+	void __iomem *ret = NULL;
- 	int err = 0;
+ #define STACK_SP(STACK)		*(STACK)
  
- 	p = get_property(n, name, &proplen);
-@@ -562,7 +562,7 @@ static void spu_unmap(struct spu *spu)
- 	iounmap(spu->priv2);
- 	iounmap(spu->priv1);
- 	iounmap(spu->problem);
--	iounmap((u8 __iomem *)spu->local_store);
-+	iounmap((__force u8 __iomem *)spu->local_store);
- }
- 
- /* This function shall be abstracted for HV platforms */
-diff --git a/arch/powerpc/platforms/cell/spufs/hw_ops.c b/arch/powerpc/platforms/cell/spufs/hw_ops.c
-index c8670f5..efc452e 100644
---- a/arch/powerpc/platforms/cell/spufs/hw_ops.c
-+++ b/arch/powerpc/platforms/cell/spufs/hw_ops.c
-@@ -234,7 +234,7 @@ static void spu_hw_runcntl_stop(struct s
- 
- static int spu_hw_set_mfc_query(struct spu_context * ctx, u32 mask, u32 mode)
+@@ -26,8 +27,9 @@ #endif
+ static unsigned int user_getsp32(unsigned int sp, int is_first)
  {
--	struct spu_problem *prob = ctx->spu->problem;
-+	struct spu_problem __iomem *prob = ctx->spu->problem;
- 	int ret;
+ 	unsigned int stack_frame[2];
++	void __user *p = compat_ptr(sp);
  
- 	spin_lock_irq(&ctx->spu->register_lock);
-@@ -263,7 +263,7 @@ static int spu_hw_send_mfc_command(struc
- 					struct mfc_dma_command *cmd)
+-	if (!access_ok(VERIFY_READ, sp, sizeof(stack_frame)))
++	if (!access_ok(VERIFY_READ, p, sizeof(stack_frame)))
+ 		return 0;
+ 
+ 	/*
+@@ -35,8 +37,7 @@ static unsigned int user_getsp32(unsigne
+ 	 * which means that we've done all that we can do from
+ 	 * interrupt context.
+ 	 */
+-	if (__copy_from_user_inatomic(stack_frame, (void *)(long)sp,
+-					sizeof(stack_frame)))
++	if (__copy_from_user_inatomic(stack_frame, p, sizeof(stack_frame)))
+ 		return 0;
+ 
+ 	if (!is_first)
+@@ -54,10 +55,10 @@ static unsigned long user_getsp64(unsign
  {
- 	u32 status;
--	struct spu_problem *prob = ctx->spu->problem;
-+	struct spu_problem __iomem *prob = ctx->spu->problem;
+ 	unsigned long stack_frame[3];
  
- 	spin_lock_irq(&ctx->spu->register_lock);
- 	out_be32(&prob->mfc_lsa_W, cmd->lsa);
+-	if (!access_ok(VERIFY_READ, sp, sizeof(stack_frame)))
++	if (!access_ok(VERIFY_READ, (void __user *)sp, sizeof(stack_frame)))
+ 		return 0;
+ 
+-	if (__copy_from_user_inatomic(stack_frame, (void *)sp,
++	if (__copy_from_user_inatomic(stack_frame, (void __user *)sp,
+ 					sizeof(stack_frame)))
+ 		return 0;
+ 
 -- 
 1.4.2.GIT
