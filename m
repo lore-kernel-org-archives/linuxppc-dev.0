@@ -1,21 +1,34 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id CE1BC67BAA
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Sep 2006 01:48:09 +1000 (EST)
-Message-ID: <45155738.9030404@ru.mvista.com>
-Date: Sat, 23 Sep 2006 19:48:08 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <HNGUYEN@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C40B567B9B
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Sep 2006 06:43:46 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id k8NKhevr048502
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 20:43:40 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k8NKjXoP1892588
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 22:45:33 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k8NKhd0U023084
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 22:43:40 +0200
+In-Reply-To: <adahcyzfkd0.fsf@cisco.com>
+Subject: Re: [PATCH 2.6.19-rc1] ehca firmware interface based on Anton
+	Blanchard's new hvcall interface
+To: Roland Dreier <rdreier@cisco.com>
+Message-ID: <OFFF711B0A.758C0571-ONC12571F2.0070BAD2-C12571F2.0071ED80@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Sat, 23 Sep 2006 22:45:28 +0200
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
-References: <20060920012042.GA28489@mag.az.mvista.com>	<1158721828.3043.13.camel@vader.jdub.homelinux.org>	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>	<1158787957.6002.307.camel@localhost.localdomain>	<20060920215738.GC24809@mag.az.mvista.com>	<C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>	<20060921133707.GA29137@gate.crashing.org>	<1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>	<20060922012408.GA13820@mag.az.mvista.com>	<9F654F4A-B344-4374-8BDC-77FB0DDAFDCC@kernel.crashing.org>
-	<20060922185923.GB25738@mag.az.mvista.com>
-	<45143B2B.7060501@ru.mvista.com>
-	<91D1965E-2377-4ADB-B6F9-2B5A1549D75B@kernel.crashing.org>
-In-Reply-To: <91D1965E-2377-4ADB-B6F9-2B5A1549D75B@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Matt Porter <mporter@embeddedalley.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: pmac@au1.ibm.com, linux-kernel@vger.kernel.org, openib-general@openib.org,
+	openfabrics-ewg@openib.org, linuxppc-dev@ozlabs.org,
+	"Christoph.Raisch/Germany/IBM" <Christoph.Raisch/Germany/IBM@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +38,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
-
-Segher Boessenkool wrote:
->>    Well, is there need for duplication of size if "reg" prop must  be 
->> present anyway?
-
-> No, not really.  But this way, "reg" can be absent, actually.
-
-    Is this a joke? :-)
-    Or you're supposing that UART is only usable to the bootwrapper? Or you're 
-going to add support for this new prop to the main kernel as well?
-
-> Segher
-
-WBR, Sergei
+Hi Roland,
+> Anyway both Paul and I merged with Linus today, so the hcall cleanup
+> and ehca are both upstream.  It would be great if you could do a quick
+> check to make sure that ehca works in Linus's current git tree.
+I compiled Linus's git tree and did some basic tests successfully
+with ehca (ipoib, userspace, netpipe tcp/ib).
+Thanks!
+Nam Nguyen
