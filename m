@@ -1,25 +1,24 @@
-Return-Path: <rdunlap@xenotime.net>
-Received: from xenotime.net (xenotime.net [66.160.160.81])
-	by ozlabs.org (Postfix) with SMTP id 0FF5A67BC9
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 10:56:24 +1000 (EST)
-Received: from midway.site ([71.117.233.155]) by xenotime.net for
-	<linuxppc-dev@ozlabs.org>; Fri, 22 Sep 2006 17:56:22 -0700
-Date: Fri, 22 Sep 2006 17:57:33 -0700
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [PATCH]: PCI Error Recovery: Symbios SCSI device driver
-Message-Id: <20060922175733.522c9e0b.rdunlap@xenotime.net>
-In-Reply-To: <20060922235017.GD14213@austin.ibm.com>
-References: <20060921231314.GW29167@austin.ibm.com>
-	<20060922220629.GA4600@dreamland.darkstar.lan>
-	<20060922233235.GB14213@austin.ibm.com>
-	<20060922163929.bb870ee1.rdunlap@xenotime.net>
-	<20060922235017.GD14213@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	Luca <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4819E67BC9
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Sep 2006 11:02:45 +1000 (EST)
+In-Reply-To: <45143B2B.7060501@ru.mvista.com>
+References: <20060920012042.GA28489@mag.az.mvista.com>	<1158721828.3043.13.camel@vader.jdub.homelinux.org>	<A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>	<1158787957.6002.307.camel@localhost.localdomain>	<20060920215738.GC24809@mag.az.mvista.com>	<C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>	<20060921133707.GA29137@gate.crashing.org>	<1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>	<20060922012408.GA13820@mag.az.mvista.com>	<9F654F4A-B344-4374-8BDC-77FB0DDAFDCC@kernel.crashing.org>
+	<20060922185923.GB25738@mag.az.mvista.com>
+	<45143B2B.7060501@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <91D1965E-2377-4ADB-B6F9-2B5A1549D75B@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
+Date: Sat, 23 Sep 2006 02:57:51 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Matt Porter <mporter@embeddedalley.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 22 Sep 2006 18:50:17 -0500 Linas Vepstas wrote:
+>    Well, is there need for duplication of size if "reg" prop must  
+> be present anyway?
 
-> On Fri, Sep 22, 2006 at 04:39:29PM -0700, Randy.Dunlap wrote:
-> > On Fri, 22 Sep 2006 18:32:35 -0500 Linas Vepstas wrote:
-> > 
-> > > On Sat, Sep 23, 2006 at 12:06:29AM +0200, Luca wrote:
-> > > > 
-> > > > Space after function name? You put in other places too, it's not
-> > > > consistent with the rest of the patch.
-> > > 
-> > > Oops. I was also coding on a different project recently, with a
-> > > different style.  I'll send a revised patch in a moment.
-> > 
-> > Please change if()'s to use
-> > 
-> > 	if (var == constant)
-> > instead of
-> > 	if (constant == var)
-> 
-> Yuck! Horrid coding style! No rational excuse for coding like that.
-> Advice taken under protest; new patch shortly.
+No, not really.  But this way, "reg" can be absent, actually.
 
-Just after my email, I saw this :)
-http://marc.theaimsgroup.com/?l=linux-mm-commits&m=115896769322020&w=2
 
----
-~Randy
+Segher
