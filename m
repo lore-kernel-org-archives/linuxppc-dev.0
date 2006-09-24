@@ -1,17 +1,19 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
-	by ozlabs.org (Postfix) with ESMTP id 51CFD67A33
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Sep 2006 16:41:20 +1000 (EST)
-Received: from ibook.aepfle.de (p5493CA40.dip.t-dialin.net [84.147.202.64])
-	by post.webmailer.de (8.13.6/8.13.6) with ESMTP id k8O6fCRX029632
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Sep 2006 08:41:13 +0200 (MEST)
-Date: Sun, 24 Sep 2006 08:40:08 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: AC power not detected if no battery present
-Message-ID: <20060924064008.GA7925@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6ED8C679E1
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Sep 2006 17:11:43 +1000 (EST)
+Subject: Re: AC power not detected if no battery present
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20060924064008.GA7925@aepfle.de>
+References: <20060924064008.GA7925@aepfle.de>
+Content-Type: text/plain
+Date: Sun, 24 Sep 2006 17:11:28 +1000
+Message-Id: <1159081888.5924.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,7 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2006-09-24 at 08:40 +0200, Olaf Hering wrote:
+> PMU_PWR_AC_PRESENT in pmu_power_flags is never set if booted without
+> battery. This leads to 'AC Power' == 0 in /proc/pmu/info.
+> How can this be fixed properly?
 
-PMU_PWR_AC_PRESENT in pmu_power_flags is never set if booted without
-battery. This leads to 'AC Power' == 0 in /proc/pmu/info.
-How can this be fixed properly?
+Maybe simply buy forcing it when there is no battery ? I fail to see how
+the machine could be up without battery _and_ without AC :)
+
+Ben.
