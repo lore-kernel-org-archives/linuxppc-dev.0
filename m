@@ -1,27 +1,13 @@
-Return-Path: <j.revathy@gdatech.co.in>
-Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
-	by ozlabs.org (Postfix) with ESMTP id 6A63A67A2E
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Sep 2006 16:20:57 +1000 (EST)
-Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 493658780B8
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Sep 2006 22:51:08 -0700 (PDT)
-Received: from gdatech.co.in ([192.168.0.3])
-	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
-	1.3.4.5154-maint13 $Rev: 5154 $) id r69o225108D-00-2
-	for linuxppc-embedded@ozlabs.org; Sun, 24 Sep 2006 22:51:08 -0700
-Received: from mail.gdatech.co.in (unknown [192.168.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 1F43B8780B6
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Sep 2006 22:51:08 -0700 (PDT)
-Message-ID: <45176E60.6030406@gdatech.co.in>
-Date: Mon, 25 Sep 2006 11:21:28 +0530
-From: revathy <j.revathy@gdatech.co.in>
+Return-Path: <Tord.Andersson@combitech.se>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Trouble booting Kernel 2.6.12 on powerpc 8540
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Lite5200 NFS mount issue
+Date: Mon, 25 Sep 2006 08:54:15 +0200
+Message-ID: <18CE82D3EF6EA84F9A1A79D6051A0900285010@CORPAPPL020.corp.saab.se>
+From: "Andersson Tord " <Tord.Andersson@combitech.se>
+To: "Edward Jubenville" <edjubenville@adelphia.net>,
+	<Linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,12 +19,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Hi,
-   First time iam porting linux kernel 2.6.12 on MPC8540(PIC) board.In
-platform code  i have set the CCSRBAR  to 0xff70 0000 which is the
-default value for 8540. it gets hanged at "Uncompressing kernel image...ok".Iam
-using u-boot-1.1.2.
 
-Should i edit anything in .config file?
+Thanks for your reply! However, I don't think we have a network or
+switch related issue here,=20
+as the problem is also found when using a crossed ethernet-cable between
+the host and the target.
 
-Thanks and Regards
-Revathy
+Best regards,
+
+Tord
+
+
+>=20
+> You may not be having a board problem or a kernel problem.  I=20
+> had exactly the same problem with an almost identical=20
+> configuration as you.  Using Etherreal at various points in=20
+> my network, I found that an Ethernet switch in the=20
+> communication path was dropping packets before the board ever=20
+> saw them.  I solved it the same way that you did (with=20
+> rsize/wsize), and it has worked fine ever since.
+>=20
+> See my post on 7/26/2006, subject "Re: Slow boot with NFS,=20
+> server not responding".
+>=20
+> Ed Jubenville
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org=20
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
