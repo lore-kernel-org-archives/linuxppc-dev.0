@@ -1,25 +1,16 @@
-Return-Path: <msm@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id F3B8D67BC4
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id C6A4A67B9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Sep 2006 04:59:35 +1000 (EST)
-Subject: Re: How to move from /ppc/ to /powerpc/
-From: Matthew McClintock <msm@freescale.com>
-To: Fredrik Roubert <roubert@df.lth.se>
-In-Reply-To: <20060925174101.GC21204@igloo.df.lth.se>
-References: <20060912153316.GC16340@igloo.df.lth.se>
-	<20060912105830.3923d537.kim.phillips@freescale.com>
-	<20060913132817.GD18263@igloo.df.lth.se>
-	<20060921160808.GB4828@igloo.df.lth.se>
-	<1159202991.5485.0.camel@localhost>
-	<20060925171754.GB21204@igloo.df.lth.se>
-	<1159204851.5485.6.camel@localhost>
-	<20060925174101.GC21204@igloo.df.lth.se>
-Content-Type: text/plain
-Date: Mon, 25 Sep 2006 13:59:23 -0500
-Message-Id: <1159210763.5485.10.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 26 Sep 2006 05:29:04 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6E0D8.DB54A6E8"
+Subject: Console Stops on NFS root startup
+Date: Mon, 25 Sep 2006 15:29:01 -0400
+Message-ID: <3C02138692C13C4BB675FE7EA24095291C46E6@bluefin.Soneticom.local>
+From: "Clint Thomas" <cthomas@Soneticom.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,30 +21,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-09-25 at 19:41 +0200, Fredrik Roubert wrote:
+This is a multi-part message in MIME format.
 
-> Now I'm back to the state of last Thursday (except for getting rid of
-> the unnecessary chosen node and getting bootargs passed nicely), which
-> means that the serial console initially works, but stops working after
-> the call to console_init() in start_kernel().
+------_=_NextPart_001_01C6E0D8.DB54A6E8
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Do you have all the other OF related defines in your u-boot config
-file? 
+Hey guys,
 
-#define OF_CPU                  "PowerPC,8540@0"
-#define OF_SOC                  "soc8540@e0000000"
-#define OF_TBCLK                (bd->bi_busfreq / 8)
-#define OF_STDOUT_PATH          "/soc8540@e0000000/serial@4500"
+I have a dev board based loosely off the MPC8540ADS that I am trying to
+boot over NFS. After setting up the proper kernel configuration and
+sharing the root filesystem over NFS, I boot up the board. Everything
+loads up fine, and it even says it mounts the root filesystem, however
+this is the output I get.
 
-Maybe you are not properly setting up entries in the flat device tree
-passed to the kernel. So when the kernel takes over and re-initializes
-the serial port the speed is all messed up.
+IP-Config: Complete:
+      device=3Deth0, addr=3D204.215.226.251, mask=3D255.255.255.0,
+gw=3D204.215.226.50,
+     host=3D204.215.226.251, domain=3D, nis-domain=3D(none),
+     bootserver=3D204.215.226.250, rootserver=3D204.215.226.250, =
+rootpath=3D
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 204.215.226.250
+Looking up port of RPC 100005/1 on 204.215.226.250
+VFS: Mounted root (nfs filesystem).
+Mounted devfs on /dev
+Freeing unused kernel memory: 236k init
+=20
+At this point, the serial console no longer displays or accepts input
+from the keyboard. The system does not appear to hang, because when I
+try to ping it from another point on the network, it responds. It seems
+like either init is not executing at this point, or if the console is
+being changed to another device. I wanted to know if anybody has had
+this problem before. I tried building BusyBox as a static-linked binary,
+which has not resolved the issue. I have also tried multiple root file
+system builds, which has also not yielded a solution. Thanks for any
+assistance with this.
+=20
+Clinton Thomas
+=20
 
-Can you verify the flat device tree passed to the kernel is correct?
-Specifically these properties:
+------_=_NextPart_001_01C6E0D8.DB54A6E8
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-                timebase-frequency = <0>;       // from bootloader
-                bus-frequency = <0>;            // from bootloader
-                clock-frequency = <0>;          // from bootloader
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D694302419-25092006><FONT face=3DArial size=3D2>Hey =
+guys,<BR><BR>I=20
+have a dev board based loosely off the MPC8540ADS that I am trying to =
+boot over=20
+NFS. After setting up the proper kernel configuration and sharing the =
+root=20
+filesystem over NFS, I boot up the board. Everything loads up fine, and =
+it even=20
+says it mounts the root filesystem, however this is the output I=20
+get.<BR><BR><EM>IP-Config: Complete:<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+device=3Deth0, addr=3D204.215.226.251, mask=3D255.255.255.0,=20
+gw=3D204.215.226.50,<BR>&nbsp;&nbsp;&nbsp;&nbsp; host=3D204.215.226.251, =
+domain=3D,=20
+nis-domain=3D(none),<BR>&nbsp;&nbsp;&nbsp;&nbsp; =
+bootserver=3D204.215.226.250,=20
+rootserver=3D204.215.226.250, rootpath=3D<BR>NET4: Unix domain sockets =
+1.0/SMP for=20
+Linux NET4.0.<BR>Looking up port of RPC 100003/2 on =
+204.215.226.250<BR>Looking=20
+up port of RPC 100005/1 on 204.215.226.250<BR>VFS: Mounted root (nfs=20
+filesystem).<BR>Mounted devfs on /dev<BR>Freeing unused kernel memory: =
+236k=20
+init</EM></FONT></SPAN></DIV>
+<DIV><SPAN class=3D694302419-25092006><EM><FONT face=3DArial=20
+size=3D2></FONT></EM></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D694302419-25092006><FONT face=3DArial size=3D2>At =
+this point, the=20
+serial console no longer displays or accepts input from the keyboard. =
+The system=20
+does not appear to hang, because when I try to ping it from another =
+point on the=20
+network, it responds. It seems like either init is not executing at this =
+point,=20
+or if the console is being changed to another device. I wanted to know =
+if=20
+anybody has had this problem before. I tried building BusyBox as a =
+static-linked=20
+binary, which has not resolved the issue. I have also tried multiple =
+root file=20
+system builds, which has also not yielded a solution. Thanks for any =
+assistance=20
+with this.</FONT></SPAN></DIV>
+<DIV>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton =
+Thomas</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
 
--Matthew
+------_=_NextPart_001_01C6E0D8.DB54A6E8--
