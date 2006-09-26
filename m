@@ -1,13 +1,17 @@
-Return-Path: <dpelton@ciena.com>
+Return-Path: <tmk@cmcltd.com>
+Received: from cmcdns1.cmcltd.com (navint.cmcltd.com [59.160.161.31])
+	by ozlabs.org (Postfix) with ESMTP id 57D6467B7F
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Sep 2006 01:45:39 +1000 (EST)
+From: Mohan Krishna T <tmk@cmcltd.com>
+To: 'Grant Likely' <grant.likely@secretlab.ca>
+Subject: =?UTF-8?Q?RE=3A_Unable_to_boot_linux_on_Xilinx_ML403_board?=
+Date: Tue, 26 Sep 2006 21:14:43 +0530
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: fs_enet - support for SCC on CPM2?
-Date: Tue, 26 Sep 2006 11:22:30 -0400
-Message-ID: <3B9518857C91E345AA1806A6F53C0EB7019F342B@onmxm01.ciena.com>
-From: "Pelton, Dave" <dpelton@ciena.com>
-To: "Matt Hevern" <matt.hevern@nec.com.au>
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <528646bc0609260638t16dae54ct266548030e21ffd1@mail.gmail.com>
+Message-ID: <smtp_45194964_13E8_0002.eml@>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,28 +22,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Matt Hevern
-<snip>
->=20
-> I am trying to compile for an freescale 82xx (CPM2) series=20
-> processor, with ethernet on an SCC. (kernel 2.6.x)  From what=20
-> i can see, in the file drivers/net/fs_enet/fs_enet-main.c,
-> the config option "CONFIG_FS_ENET_HAS_SCC"  pulls in=20
-> "fs_scc_ops" which are defined in=20
-> drivers/net/fs_enet/mac-scc.c, but this file  does not seem=20
-> to have support for 82xx series, failing with various compile errors:
-<snip>
-> It seems like these errors are mostly due to the driver being tailored
-for 8xx series.
-<snip>
+The zImage.initrd.elf is of size 3.4MB. I am getting hanged only when I am
+using DMA for Ethernet. Booting is going fine when I am using FIFO Mode.
 
-I had the same problem trying to use fs_enet for 82xx SCC Ethernet and
-came to the same conclusion.  The FCC could not be used instead of the
-SCC because of pin limitations in the hardware design.  I ended up using
-the "old" SCC Ethernet driver by disabling CONFIG_FS_ENET_HAS_SCC and
-enabling CONFIG_SCC_ENET (Under CPM2 options in kernel config).  This
-does not use the new platform bus structure, and arch/ppc/8260_io/enet.c
-may require some board specific tweaks, but it does work.
 
-- David Pelton.
+Thanks
+Mohan Krishna
+
+-----Original Message-----
+From: glikely=40gmail.com =5Bmailto:glikely=40gmail.com=5D On Behalf Of =
+Grant Likely
+Sent: Tuesday, September 26, 2006 7:09 PM
+To: Mohan Krishna T
+Cc: Peter Ryser; linuxppc-embedded=40ozlabs.org
+Subject: Re: Unable to boot linux on Xilinx ML403 board
+
+On 9/26/06, Mohan Krishna T <tmk=40cmcltd.com> wrote:
+> I have tried the option you have suggested but couldn't boot successfully.
+I
+> tried to debug where exactly the kernel is getting hanged. I could found
+> that its hanging in gunzip() function call. It is never coming out of loop
+> that decompress the ramdisk image.
+
+How large is you zImage.embedded?
+
+--=20
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely=40secretlab.ca
+(403) 399-0195
+
+
+
+DISCLAIMER
+
+=E2=80=9CThe information contained in this e-mail message and/or =
+attachments to it may contain confidential or privileged information. If =
+you are not the intended recipient, any dissemination, use, review, =
+distribution, printing or copying of the information contained in this =
+e-mail message and/or attachments to it are strictly prohibited. If you =
+have received this communication in error, please notify us by reply =
+e-mail or telephone and immediately and permanently delete the message and =
+any attachments. Thank you=22=
