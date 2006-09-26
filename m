@@ -1,16 +1,11 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id C44E267B64
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Sep 2006 06:36:47 +1000 (EST)
+Return-Path: <matt.hevern@nec.com.au>
+Message-ID: <45188E24.1090009@nec.com.au>
+Date: Tue, 26 Sep 2006 12:19:16 +1000
+From: Matt Hevern <matt.hevern@nec.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: ucmpdi2 and cmpdi2
-Date: Mon, 25 Sep 2006 15:36:46 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DF91@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Linuxppc-embedded@ozlabs.org
+Subject: fs_enet - support for SCC on CPM2?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,79 +16,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Hi all,
 
-I have a function that does a switch statement on a long long or
-unsinged long long and get teh follwing compiler warnings when making a
-module:
+I am trying to compile for an freescale 82xx (CPM2) series processor, 
+with ethernet on an SCC. (kernel 2.6.x)
+ From what i can see, in the file drivers/net/fs_enet/fs_enet-main.c, 
+the config option "CONFIG_FS_ENET_HAS_SCC"  pulls in "fs_scc_ops" which 
+are defined in
+drivers/net/fs_enet/mac-scc.c, but this file  does not seem to have 
+support for 82xx series, failing with various compile errors:
+------errors
+drivers/net/fs_enet/mac-scc.c: In function `scc_cr_cmd':
+drivers/net/fs_enet/mac-scc.c:94: error: `cpm8xx_t' undeclared (first 
+use in this function)
+drivers/net/fs_enet/mac-scc.c:94: error: (Each undeclared identifier is 
+reported only once
+drivers/net/fs_enet/mac-scc.c:94: error: for each function it appears in.)
+drivers/net/fs_enet/mac-scc.c:94: error: `immap_t' undeclared (first use 
+in this function)
+...etc
+------end-errors
 
-WARNING: "__ucmpdi2"
-[/home/runet/source/hardware_1.1/cpu1/src/drivers/test_bug.ko]
-undefined!
-WARNING: "__cmpdi2"
-[/home/runet/source/hardware_1.1/cpu1/src/drivers/test_bug.ko]
-undefined!
+It seems like these errors are mostly due to the driver being tailored 
+for 8xx series.
 
-And of course it fails to load.
+Are there any patches/fixes for "fs_enet" for ethernet on SCC for 82xx 
+series?  - or other options?
 
-The weird thingis that it works if I instead of using a long long, use a
-[u]int64_t.
-Is this a compiler error or something else?
+Thanks in advance.
 
-gcc version: powerpc-604-linux-gnu-gcc (GCC) 3.4.3
-target CPU: Freescale 826x.
-
-Here is my module source:
-#ifndef __KERNEL__
-#  define __KERNEL__
-#endif
-#ifndef MODULE
-#  define MODULE
-#endif
-#include <linux/config.h>
-#include <linux/module.h>
-
-#include <linux/kernel.h>   /* printk() */
-#include <linux/types.h>    /* size_t */
-#include <linux/ctype.h>
-
-void TestFunc(char val)
-{
-    long long   t1;
-    unsigned long long   t2;
-   =20
-    t1 =3D 0x100;
-    t2 =3D 0x200;
-
-    switch(t1)
-    {
-        case 0x01:=20
-            printk("c1\n");
-        break;  =20
-        default:
-            printk("def1\n");
-        break;
-    }
-
-    switch(t2)
-    {
-        case 0x02:=20
-            printk("c2\n");
-        break;  =20
-        default:
-            printk("def2\n");
-        break;
-    }
-}
-
-static int __init tmp_init_module(void)
-{
-    return 0;
-}
-
-static void __exit tmp_cleanup_module(void)
-{
-}
-
-module_init(tmp_init_module);
-module_exit(tmp_cleanup_module);
+Matt
