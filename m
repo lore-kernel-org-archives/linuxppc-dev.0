@@ -1,15 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F179767B59
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 13:42:44 +1000 (EST)
-Date: Tue, 26 Sep 2006 13:36:51 +1000
+	by ozlabs.org (Postfix) with ESMTP id BD90E67B5F
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 13:42:45 +1000 (EST)
+Date: Tue, 26 Sep 2006 13:37:56 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 3/7] [POWERPC] modify PCI code for a merged kernel
-Message-Id: <20060926133651.897ad602.sfr@canb.auug.org.au>
-In-Reply-To: <20060926133548.43afd711.sfr@canb.auug.org.au>
+Subject: [PATCH 4/7] [POWERPC] fix ioremap for a combined kernel
+Message-Id: <20060926133756.071a981f.sfr@canb.auug.org.au>
+In-Reply-To: <20060926133651.897ad602.sfr@canb.auug.org.au>
 References: <20060926133413.8ca8142e.sfr@canb.auug.org.au>
 	<20060926133548.43afd711.sfr@canb.auug.org.au>
+	<20060926133651.897ad602.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -24,150 +25,79 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/pci_64.c         |   58 ++++++++++++++++++----------------
- arch/powerpc/platforms/iseries/pci.c |    4 --
- 2 files changed, 30 insertions(+), 32 deletions(-)
+ arch/powerpc/mm/pgtable_64.c |   29 +++++++----------------------
+ 1 files changed, 7 insertions(+), 22 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index c1b1e14..78d3c0f 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -30,6 +30,7 @@ #include <asm/pci-bridge.h>
- #include <asm/byteorder.h>
- #include <asm/machdep.h>
- #include <asm/ppc-pci.h>
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index b1da031..ac64f4a 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -63,32 +63,13 @@ #include <asm/system.h>
+ #include <asm/iommu.h>
+ #include <asm/abs_addr.h>
+ #include <asm/vdso.h>
 +#include <asm/firmware.h>
  
- #ifdef DEBUG
- #include <asm/udbg.h>
-@@ -209,7 +210,6 @@ void pcibios_free_controller(struct pci_
- 		kfree(phb);
- }
+ #include "mmu_decl.h"
  
--#ifndef CONFIG_PPC_ISERIES
- void __devinit pcibios_claim_one_bus(struct pci_bus *b)
+ unsigned long ioremap_bot = IMALLOC_BASE;
+ static unsigned long phbs_io_bot = PHBS_IO_BASE;
+ 
+-#ifdef CONFIG_PPC_ISERIES
+-
+-void __iomem *ioremap(unsigned long addr, unsigned long size)
+-{
+-	return (void __iomem *)addr;
+-}
+-
+-extern void __iomem *__ioremap(unsigned long addr, unsigned long size,
+-		       unsigned long flags)
+-{
+-	return (void __iomem *)addr;
+-}
+-
+-void iounmap(volatile void __iomem *addr)
+-{
+-	return;
+-}
+-
+-#else
+-
+ /*
+  * map_io_page currently only called by __ioremap
+  * map_io_page adds an entry to the ioremap page table
+@@ -161,6 +142,9 @@ void __iomem * __ioremap(unsigned long a
+ 	unsigned long pa, ea;
+ 	void __iomem *ret;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return (void __iomem *)addr;
++
+ 	/*
+ 	 * Choose an address to map it to.
+ 	 * Once the imalloc system is running, we use it.
+@@ -255,6 +239,9 @@ void iounmap(volatile void __iomem *toke
  {
- 	struct pci_dev *dev;
-@@ -238,10 +238,12 @@ static void __init pcibios_claim_of_setu
- {
- 	struct pci_bus *b;
+ 	void *addr;
  
 +	if (firmware_has_feature(FW_FEATURE_ISERIES))
 +		return;
 +
- 	list_for_each_entry(b, &pci_root_buses, node)
- 		pcibios_claim_one_bus(b);
- }
--#endif
- 
- #ifdef CONFIG_PPC_MULTIPLATFORM
- static u32 get_int_prop(struct device_node *np, const char *name, u32 def)
-@@ -554,9 +556,8 @@ static int __init pcibios_init(void)
- 	 */
- 	ppc_md.phys_mem_access_prot = pci_phys_mem_access_prot;
- 
--#ifdef CONFIG_PPC_ISERIES
--	iSeries_pcibios_init(); 
--#endif
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		iSeries_pcibios_init();
- 
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware\n");
- 
-@@ -566,15 +567,15 @@ #endif
- 		pci_bus_add_devices(hose->bus);
- 	}
- 
--#ifndef CONFIG_PPC_ISERIES
--	if (pci_probe_only)
--		pcibios_claim_of_setup();
--	else
--		/* FIXME: `else' will be removed when
--		   pci_assign_unassigned_resources() is able to work
--		   correctly with [partially] allocated PCI tree. */
--		pci_assign_unassigned_resources();
--#endif /* !CONFIG_PPC_ISERIES */
-+	if (!firmware_has_feature(FW_FEATURE_ISERIES)) {
-+		if (pci_probe_only)
-+			pcibios_claim_of_setup();
-+		else
-+			/* FIXME: `else' will be removed when
-+			   pci_assign_unassigned_resources() is able to work
-+			   correctly with [partially] allocated PCI tree. */
-+			pci_assign_unassigned_resources();
-+	}
- 
- 	/* Call machine dependent final fixup */
- 	if (ppc_md.pcibios_fixup)
-@@ -586,8 +587,9 @@ #endif /* !CONFIG_PPC_ISERIES */
- 		printk(KERN_DEBUG "ISA bridge at %s\n", pci_name(ppc64_isabridge_dev));
- 
- #ifdef CONFIG_PPC_MULTIPLATFORM
--	/* map in PCI I/O space */
--	phbs_remap_io();
-+	if (!firmware_has_feature(FW_FEATURE_ISERIES))
-+		/* map in PCI I/O space */
-+		phbs_remap_io();
- #endif
- 
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
-@@ -637,13 +639,13 @@ int pcibios_enable_device(struct pci_dev
-  */
- int pci_domain_nr(struct pci_bus *bus)
- {
--#ifdef CONFIG_PPC_ISERIES
--	return 0;
--#else
--	struct pci_controller *hose = pci_bus_to_host(bus);
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		return 0;
-+	else {
-+		struct pci_controller *hose = pci_bus_to_host(bus);
- 
--	return hose->global_number;
--#endif
-+		return hose->global_number;
-+	}
+ 	if (!mem_init_done)
+ 		return;
+ 	
+@@ -315,8 +302,6 @@ int iounmap_explicit(volatile void __iom
+ 	return 0;
  }
  
- EXPORT_SYMBOL(pci_domain_nr);
-@@ -651,12 +653,12 @@ EXPORT_SYMBOL(pci_domain_nr);
- /* Decide whether to display the domain number in /proc */
- int pci_proc_domain(struct pci_bus *bus)
- {
--#ifdef CONFIG_PPC_ISERIES
--	return 0;
--#else
--	struct pci_controller *hose = pci_bus_to_host(bus);
--	return hose->buid;
 -#endif
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		return 0;
-+	else {
-+		struct pci_controller *hose = pci_bus_to_host(bus);
-+		return hose->buid;
-+	}
- }
- 
- /*
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 3eb1206..e904b36 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -262,10 +262,6 @@ void __init iSeries_pci_final_fixup(void
- 	mf_display_src(0xC9000200);
- }
- 
--void pcibios_fixup_bus(struct pci_bus *PciBus)
--{
--}
 -
- void pcibios_fixup_resources(struct pci_dev *pdev)
- {
- }
+ EXPORT_SYMBOL(ioremap);
+ EXPORT_SYMBOL(__ioremap);
+ EXPORT_SYMBOL(iounmap);
 -- 
 1.4.2.1
