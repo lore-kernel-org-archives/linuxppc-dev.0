@@ -1,23 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 4316067BC2
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Sep 2006 02:52:57 +1000 (EST)
-Message-ID: <45195AE5.3030100@freescale.com>
-Date: Tue, 26 Sep 2006 11:52:53 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <carlos@kenati.com>
+Message-ID: <45196562.50409@kenati.com>
+Date: Tue, 26 Sep 2006 10:37:38 -0700
+From: Carlos Munoz <carlos@kenati.com>
 MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Subject: Re: local_irq_save not masking interrupts
-References: <995B09A8299C2C44B59866F6391D263516C42D@zch01exm21.fsl.freescale.net>
-	<451900B0.7010006@cambridgebroadband.com>
-	<45194F1F.7030003@freescale.com>
-	<45195296.8000405@cambridgebroadband.com>
-	<451954D8.3050909@freescale.com>
-	<45195882.1090003@cambridgebroadband.com>
-In-Reply-To: <45195882.1090003@cambridgebroadband.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: Iwan Koenig <iwankoenig@yahoo.de>
+Subject: Re: Asterisk on Embedded Linux
+References: <20060926064451.71706.qmail@web26012.mail.ukl.yahoo.com>
+In-Reply-To: <20060926064451.71706.qmail@web26012.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,22 +19,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex Zeffertt wrote:
-> It follows from what you are saying that kmalloc(,GFP_KERNEL)
-> MUST NOT occur anywhere in the call chain during a critical section.
-> 
-> This must catch others out too.  Surely kmalloc/cache_grow should
-> return NULL rather than enable interrupts.
+Iwan Koenig wrote:
 
-The local_irq_enable() is intended to reverse a previous 
-local_irq_save() done in the allocator (with the assumption that if 
-GFP_WAIT is specified, the flags saved had IRQs enabled), not to handle 
-the case where IRQs were disabled by kmalloc's caller.  Returning NULL 
-would mean that slabs can never grow with GFP_KERNEL.
+>Does anyone known how to compile Asterisk for a
+>powerpc-processor?
+>I have tryed:
+>./configure --target=powerpc-linux
+>--host=powerpc-604-linux-gnu --prefix=/opt/packages
+>And it gives following error:
+> /root/pwlib/include/ptlib.h... configure: error:
+>cannot check for file existence when cross compiling
+>
+>Ok! I see that it is trying to find the PWLIB-Library.
+>Also, i have tryed to compile the pwlib.
+>But it didn't work :(. For PWLIB i need the OpenLDAP,
+>and when i have compiled the OpenLDAP, than needs
+>PWLIB other packages.......
+>Also, have anyone ideas, how to compile Asterisk für a
+>powerpc-processor with another way?
+>
+>Thanks!!!!
+>
+>  
+>
+I'm not sure if our experience applies to you since we use asterisk as a 
+TA instead of a PBX in our embedded gateways. We ran into a lot of 
+problems when trying to cross-compile a trimmed down version of 
+asterisk. Basically, we only needed the sip stack, fxs support, and some 
+codecs. It was a big effort, but we are currently successfully 
+cross-compiling asterisk for several platforms. We had to change 
+Makefiles, source code, etc.
 
- > In fact, shouldn't it be
-> a BUG() if kmalloc(,GFP_KERNEL) is called with IRQs disabled?
+I would start by removing the references to PWLIB and anything I don't 
+need from the makefiles and #ifdefing code that uses it until I get it 
+to compile. Then start testing it and adding features as needed.
 
-Yes.
+This is the command line we use to compile asterisk (just to give you 
+and idea. It won't work with your sources. We don't run configure):
 
--Scott
+make CC=powerpc-uclibc-gcc CONFIG_TA=y OPTIMIZE="-mcpu=603e -Os" 
+HOSTCC=gcc all
+
+
+Carlos
