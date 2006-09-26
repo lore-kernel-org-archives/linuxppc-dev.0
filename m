@@ -1,33 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BAA5667B6C
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 15:21:34 +1000 (EST)
-In-Reply-To: <4B6C3D97-1872-447A-AEE3-011E0A34298A@kernel.crashing.org>
-References: <20060920215738.GC24809@mag.az.mvista.com>
-	<C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>
-	<20060921133707.GA29137@gate.crashing.org>
-	<1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>
-	<20060922012408.GA13820@mag.az.mvista.com>
-	<9F654F4A-B344-4374-8BDC-77FB0DDAFDCC@kernel.crashing.org>
-	<20060922185923.GB25738@mag.az.mvista.com>
-	<74E4B2E4-B59C-4998-B9FC-A77245C6AF6B@kernel.crashing.org>
-	<20060923081836.GA25298@mag.az.mvista.com>
-	<D47FC822-2AB1-459A-B2EC-50A99552DC9A@kernel.crashing.org>
-	<20060925175307.GC4971@mag.az.mvista.com>
-	<4B6C3D97-1872-447A-AEE3-011E0A34298A@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <600DC8BB-EBC3-4DC9-8B5C-68A99A004EBA@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
-Date: Tue, 26 Sep 2006 01:44:47 +0200
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Matt Porter <mporter@embeddedalley.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Lazy interrupt disabling for 64-bit machines
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17688.45762.294594.33723@cargo.ozlabs.ibm.com>
+References: <17688.45762.294594.33723@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ZOj9iXSvuom/TchrTVGx"
+Date: Tue, 26 Sep 2006 15:30:41 +1000
+Message-Id: <1159248641.5256.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,16 +21,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> All I'm try to say is that "fw,address" is just like the "reg"
->>>> property
->>>> except that it holds the effective addr not the physical addr and
->>>> the
->>>> size of the address is determined by the existence of "/cpus/64- 
->>>> bit"
->>>> not #address-cells.  That's all.
 
-Oh and use "/cpus/<some-cpu>/64-bit", not a property directly in
-the "/cpus" node.
+--=-ZOj9iXSvuom/TchrTVGx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2006-09-26 at 14:55 +1000, Paul Mackerras wrote:
+> This implements a lazy strategy for disabling interrupts.  This means
+> that local_irq_disable() et al. just clear the 'interrupts are
+> enabled' flag in the paca.  If an interrupt comes along, the interrupt
+> entry code notices that interrupts are supposed to be disabled, and
+> clears the EE bit in SRR1, clears the 'interrupts are hard-enabled'
+> flag in the paca, and returns.  This means that interrupts only
+> actually get disabled in the processor when an interrupt comes along.
+
+I saw this once testing kdump, although I haven't hit it again
+(3 retries).
+
+Badness in _local_bh_enable at /home/michael/src/auto/git/kernel/softirq.c:=
+120
+Call Trace:
+[C000000009F83B60] [C00000000200F810] .show_stack+0x6c/0x1a0 (unreliable)
+[C000000009F83C00] [C0000000020219F0] .program_check_exception+0x19c/0x5d0
+[C000000009F83CA0] [C0000000020043D0] program_check_common+0xd0/0x100
+--- Exception: 700 at ._local_bh_enable+0x34/0x78
+    LR =3D .call_do_softirq+0x14/0x24
+[C0000000028FF8B0] [C00000000200C4A8] .do_softirq+0x6c/0xb0
+[C0000000028FF940] [C00000000204E550] .irq_exit+0x4c/0x64
+[C0000000028FF9C0] [C00000000201FC94] .timer_interrupt+0x3c0/0x3fc
+[C0000000028FFA90] [C00000000200354C] decrementer_common+0xcc/0x100
+--- Exception: 901 at .__delay+0x8/0x24
+    LR =3D .__cpu_up+0x118/0x214
+[C0000000028FFD80] [C000000002024C80] .__cpu_up+0xfc/0x214 (unreliable)
+[C0000000028FFE10] [C00000000206987C] .cpu_up+0xd4/0x164
+[C0000000028FFEC0] [C0000000020093A0] .init+0xd4/0x39c
+[C0000000028FFF90] [C000000002022F0C] .kernel_thread+0x4c/0x68
 
 
-Segher
+Looks like it's hitting the in_irq() warning:
+
+void _local_bh_enable(void)
+{
+        WARN_ON_ONCE(in_irq());
+        WARN_ON_ONCE(!irqs_disabled());
+	...
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ZOj9iXSvuom/TchrTVGx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBFGLsAdSjSd0sB4dIRAmw4AJ9DjxOr96JjPegGNlOCn1KvinKklwCdGw4Z
+cM3qcM0XRe475OelqRGAXwg=
+=JpLX
+-----END PGP SIGNATURE-----
+
+--=-ZOj9iXSvuom/TchrTVGx--
