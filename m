@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 723D267B77
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 13:13:29 +1000 (EST)
-Subject: Re: [PATCH] Add powerpc get/set_rtc_time interface to new generic
-	rtc class
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20060925215531.3e43be36.kim.phillips@freescale.com>
-References: <20060925215531.3e43be36.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Tue, 26 Sep 2006 13:13:17 +1000
-Message-Id: <1159240397.5462.11.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8048967B59
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 13:42:42 +1000 (EST)
+Date: Tue, 26 Sep 2006 13:34:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 1/7] [POWERPC] iSeries: set FW_FEATURE_ISERIES earlier
+Message-Id: <20060926133413.8ca8142e.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,78 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-09-25 at 21:55 -0500, Kim Phillips wrote:
-> Add powerpc get/set_rtc_time interface to new generic rtc class. This
-> abstracts rtc chip specific code from the platform code for rtc-over-i2c
-> platforms.  Specific RTC chip support is now configured under
-> Device Drivers -> Real Time Clock. Setting time of day from the RTC
-> on startup is also configurable.
-> 
-> Currently, the only default config in powerpc arch is the 8349 itx.
-> Other platforms wanting to consolidate code may also use this.
-> 
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+This will help in the combined kernel as some really early things depend
+on being able to check this.
 
-I think we should only get that in if we also adapt the various platform
-RTC code to be in drivers/rtc ... right now, enabling that option will
-just break everybody.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/iseries/setup.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> ---
->  arch/powerpc/kernel/time.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 44 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 7a3c3f7..a231b6d 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -1048,6 +1048,50 @@ void __init time_init(void)
->  	set_dec(tb_ticks_per_jiffy);
->  }
->  
-> +#ifdef CONFIG_RTC_CLASS
-> +int set_rtc_class_time(struct rtc_time *tm)
-> +{
-> +	int err;
-> +	struct class_device *class_dev =
-> +		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
-> +
-> +	if (class_dev == NULL)
-> +		return -ENODEV;
-> +
-> +	err = rtc_set_time(class_dev, tm);
-> +
-> +	rtc_class_close(class_dev);
-> +
-> +	return 0;
-> +}
-> +
-> +void get_rtc_class_time(struct rtc_time *tm)
-> +{
-> +	int err;
-> +	struct class_device *class_dev =
-> +		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
-> +
-> +	if (class_dev == NULL)
-> +		return;
-> +
-> +	err = rtc_read_time(class_dev, tm);
-> +
-> +	rtc_class_close(class_dev);
-> +
-> +	return;
-> +}
-> +
-> +static int __init rtc_class_hookup(void)
-> +{
-> +	ppc_md.get_rtc_time = get_rtc_class_time;
-> +	ppc_md.set_rtc_time = set_rtc_class_time;
-> +
-> +	return 0;
-> +}
-> +
-> +late_initcall(rtc_class_hookup);
-> +#endif /* CONFIG_RTC_CLASS */
-> +
->  
->  #define FEBRUARY	2
->  #define	STARTOFTIME	1970
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
+index 7f19530..7cb6b5f 100644
+--- a/arch/powerpc/platforms/iseries/setup.c
++++ b/arch/powerpc/platforms/iseries/setup.c
+@@ -655,9 +655,6 @@ static int __init iseries_probe(void)
+ 	if (!of_flat_dt_is_compatible(root, "IBM,iSeries"))
+ 		return 0;
+ 
+-	powerpc_firmware_features |= FW_FEATURE_ISERIES;
+-	powerpc_firmware_features |= FW_FEATURE_LPAR;
+-
+ 	hpte_init_iSeries();
+ 
+ 	return 1;
+@@ -687,6 +684,9 @@ void * __init iSeries_early_setup(void)
+ {
+ 	unsigned long phys_mem_size;
+ 
++	powerpc_firmware_features |= FW_FEATURE_ISERIES;
++	powerpc_firmware_features |= FW_FEATURE_LPAR;
++
+ 	iSeries_fixup_klimit();
+ 
+ 	/*
+-- 
+1.4.2.1
