@@ -1,33 +1,13 @@
-Return-Path: <jdub@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3029267B6D
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Sep 2006 01:23:51 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8QFNmU8000734
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Sep 2006 11:23:48 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k8QFNl0T320362
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Sep 2006 09:23:48 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k8QFNcSo030238
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Sep 2006 09:23:38 -0600
-Received: from zod.rchland.ibm.com (zod.rchland.ibm.com [9.10.86.225])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k8QFNcCx030161
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Sep 2006 09:23:38 -0600
-Subject: TFTP timeouts with EmbeddedPlanet 405 board
-From: Josh Boyer <jdub@us.ibm.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 26 Sep 2006 10:26:30 -0500
-Message-Id: <1159284390.31597.14.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
+Return-Path: <dpelton@ciena.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: fs_enet - support for SCC on CPM2?
+Date: Tue, 26 Sep 2006 11:22:30 -0400
+Message-ID: <3B9518857C91E345AA1806A6F53C0EB7019F342B@onmxm01.ciena.com>
+From: "Pelton, Dave" <dpelton@ciena.com>
+To: "Matt Hevern" <matt.hevern@nec.com.au>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,13 +18,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+> -----Original Message-----
+> From: Matt Hevern
+<snip>
+>=20
+> I am trying to compile for an freescale 82xx (CPM2) series=20
+> processor, with ethernet on an SCC. (kernel 2.6.x)  From what=20
+> i can see, in the file drivers/net/fs_enet/fs_enet-main.c,
+> the config option "CONFIG_FS_ENET_HAS_SCC"  pulls in=20
+> "fs_scc_ops" which are defined in=20
+> drivers/net/fs_enet/mac-scc.c, but this file  does not seem=20
+> to have support for 82xx series, failing with various compile errors:
+<snip>
+> It seems like these errors are mostly due to the driver being tailored
+for 8xx series.
+<snip>
 
-I've recently inherited an EmbeddedPlanet 405 Iceplanet eval board and
-I'm having trouble getting the bootloader to tftp a kernel.  Basically,
-pings work, the file appears to be getting correctly served, however the
-tftp transfer always times out.
+I had the same problem trying to use fs_enet for 82xx SCC Ethernet and
+came to the same conclusion.  The FCC could not be used instead of the
+SCC because of pin limitations in the hardware design.  I ended up using
+the "old" SCC Ethernet driver by disabling CONFIG_FS_ENET_HAS_SCC and
+enabling CONFIG_SCC_ENET (Under CPM2 options in kernel config).  This
+does not use the new platform bus structure, and arch/ppc/8260_io/enet.c
+may require some board specific tweaks, but it does work.
 
-Has anyone else seen this?
-
-josh
+- David Pelton.
