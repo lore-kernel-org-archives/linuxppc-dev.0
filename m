@@ -1,26 +1,22 @@
-Return-Path: <massimiliano.patriarca@eurotel.it>
-Received: from smtp01.kpnqwest.it (smtp01.kpnqwest.it [212.97.32.22])
-	by ozlabs.org (Postfix) with ESMTP id 008A767BC5
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id E46C067B6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Sep 2006 21:21:28 +1000 (EST)
-Received: from mail.eurotel.it (212-97-63-130.dcpool.ip.kpnqwest.it
-	[212.97.63.130])
-	by smtp01.kpnqwest.it (Postfix) with ESMTP id 74FB3305C3
+	Tue, 26 Sep 2006 23:38:58 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so577550ugc
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Sep 2006 13:21:23 +0200 (CEST)
-Received: from [192.168.0.16] (helo=as520.master.eurotel.it)
-	by lissone.master.eurotel.it with esmtp (Exim 4.43)
-	id 1GSAwz-0007Gz-DX
-	for linuxppc-embedded@ozlabs.org; Tue, 26 Sep 2006 13:18:09 +0200
-From: linux-ppc@eurotel.it
-To: linuxppc-embedded@ozlabs.org
-Subject: CAN driver for Xilinx FX12 ML403
+	Tue, 26 Sep 2006 06:38:56 -0700 (PDT)
+Message-ID: <528646bc0609260638t16dae54ct266548030e21ffd1@mail.gmail.com>
+Date: Tue, 26 Sep 2006 07:38:55 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mohan Krishna T" <tmk@cmcltd.com>
+Subject: Re: Unable to boot linux on Xilinx ML403 board
+In-Reply-To: <7340827822720465792@unknownmsgid>
 MIME-Version: 1.0
-Message-ID: <OFF8A9D2C8.7390479C-ONC12571F5.003DA7C8-C12571F5.003DD444@eurotel.it>
-Sender: Massimiliano.Patriarca@eurotel.it
-Date: Tue, 26 Sep 2006 13:15:20 +0200
-Content-Type: multipart/alternative;
-	boundary="=_alternative 003DD441C12571F5_="
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <451800D9.5010702@xilinx.com> <7340827822720465792@unknownmsgid>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,22 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Questo Š un messaggio multiparte in formato MIME.
---=_alternative 003DD441C12571F5_=
-Content-Type: text/plain; charset="US-ASCII"
+On 9/26/06, Mohan Krishna T <tmk@cmcltd.com> wrote:
+> I have tried the option you have suggested but couldn't boot successfully. I
+> tried to debug where exactly the kernel is getting hanged. I could found
+> that its hanging in gunzip() function call. It is never coming out of loop
+> that decompress the ramdisk image.
 
-Hello,
-Does anybody using some kind of CAN driver working ona Xilinx board like 
-ML403 ?
-Thank you
-Massimiliano
---=_alternative 003DD441C12571F5_=
-Content-Type: text/html; charset="US-ASCII"
+How large is you zImage.embedded?
 
-
-<br><font size=2 face="sans-serif">Hello,</font>
-<br><font size=2 face="sans-serif">Does anybody using some kind of CAN
-driver working ona Xilinx board like ML403 ?</font>
-<br><font size=2 face="sans-serif">Thank you</font>
-<br><font size=2 face="sans-serif">Massimiliano</font>
---=_alternative 003DD441C12571F5_=--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
