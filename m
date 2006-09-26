@@ -1,24 +1,20 @@
-Return-Path: <Tony.Li@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 69D6467B6A
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 19:57:47 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k8Q9veXD012771
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 02:57:40 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k8Q9vcaG025775
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 04:57:39 -0500 (CDT)
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 1076367B7C
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 20:31:15 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 26 Sep 2006 12:31:04 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Lazy interrupt disabling for 64-bit machines
+Message-ID: <20060926103104.GA19065@iram.es>
+References: <17688.45762.294594.33723@cargo.ozlabs.ibm.com>
+	<20060926011055.32d533e7@pb15>
+	<1159261926.5462.54.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [RFC][PATCH] QE device tree node definition
-Date: Tue, 26 Sep 2006 17:57:37 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D263516C429@zch01exm21.fsl.freescale.net>
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D19D680@zch01exm20.fsl.freescale.net>
-From: "Li Tony-r64360" <Tony.Li@freescale.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>, <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1159261926.5462.54.camel@localhost.localdomain>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,43 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+On Tue, Sep 26, 2006 at 07:12:06PM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > I like it. Got any benchmarks that show a difference?
+> > 
+> > At first glance I found it a bit hard to follow, since the old+new
+> > terminology is a bit complicated. There's softe, proc_enabled and
+> > hard_enabled. A s/proc_enabled/soft_enabled/g (and similar for
+> > asm-offsets) might make it a little more intuitive, since you're
+> > touching most uses of it already?
+> 
+> Now think about using -ffixed=crN ... reserve a CR field and use that
+> for per-cpu flags like that :)
+> 
 
-> -----Original Message-----
-> From: Li Yang-r58472=20
-> Sent: Tuesday, September 26, 2006 2:24 PM
-> To: Li Tony-r64360; linuxppc-dev@ozlabs.org
-> Subject: RE: [RFC][PATCH] QE device tree node definition
->=20
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
-> >=20
-> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
-> On Behalf=20
-> > Of Li Tony-r64360
-> > Sent: Tuesday, September 26, 2006 10:40 AM
-> > To: linuxppc-dev@ozlabs.org
-> > Subject: RE: [RFC][PATCH] QE device tree node definition
-> >=20
-> >=20
-> > 1) Where is the QE embedded interrupt controller ?
-> > I think the interrupt-parent of the QE function should point to it.
->=20
-> QEIC is not necessarily to be defined specifically rather=20
-> than using generic interrupt controller spec.
-> >=20
-> > 2) For the UCC, It is better to make rx-clock and tx-clock=20
-> as required=20
-> > properties.
-> >  Almost all functions need this properties
->=20
-> Almost is NOT enough to make them required properties for all=20
-> UCC functions.  There are some devices uses TSA as clock source.
+Actually cr5 is never used by GCC on any PPC. Look at the source
+code in config/rs6000.h, it is marked fixed and never allocated
+as far as I understand.
 
-If using TSA, the xx-clock property can use some specific macro to
-represent it.
-All the UCC need a general clock whether from clocks or TSA.=20
-
->=20
-> - Leo
->=20
+	Regards,
+	Gabriel "an unused register is a wasted register"
