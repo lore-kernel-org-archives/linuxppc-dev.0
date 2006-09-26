@@ -2,24 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C201067CBC
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 12:55:42 +1000 (EST)
-Subject: Re: [PATCH 2.6.19-rc1] ehea firmware interface based on Anton
-	Blanchard's new hvcall interface
+	by ozlabs.org (Postfix) with ESMTP id 723D267B77
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 13:13:29 +1000 (EST)
+Subject: Re: [PATCH] Add powerpc get/set_rtc_time interface to new generic
+	rtc class
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <45186F25.9000700@garzik.org>
-References: <200609251550.01514.ossthema@de.ibm.com>
-	<45186F25.9000700@garzik.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20060925215531.3e43be36.kim.phillips@freescale.com>
+References: <20060925215531.3e43be36.kim.phillips@freescale.com>
 Content-Type: text/plain
-Date: Tue, 26 Sep 2006 12:53:51 +1000
-Message-Id: <1159239231.5462.8.camel@localhost.localdomain>
+Date: Tue, 26 Sep 2006 13:13:17 +1000
+Message-Id: <1159240397.5462.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, pmac@au1.ibm.com,
-	netdev <netdev@vger.kernel.org>, Jan-Bernd Themann <themann@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-09-25 at 20:07 -0400, Jeff Garzik wrote:
-> patch does not apply.
+On Mon, 2006-09-25 at 21:55 -0500, Kim Phillips wrote:
+> Add powerpc get/set_rtc_time interface to new generic rtc class. This
+> abstracts rtc chip specific code from the platform code for rtc-over-i2c
+> platforms.  Specific RTC chip support is now configured under
+> Device Drivers -> Real Time Clock. Setting time of day from the RTC
+> on startup is also configurable.
 > 
-> also, it would seem like varargs would be appropriate here.
+> Currently, the only default config in powerpc arch is the 8349 itx.
+> Other platforms wanting to consolidate code may also use this.
+> 
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
-Not really... these are hypervisor calls, their calling convention is
-not varargs, thus we would need some conversion layer if using them,
-with possible performance loss (it's also hard to do right as we are
-passing args by registers, not stack).
+I think we should only get that in if we also adapt the various platform
+RTC code to be in drivers/rtc ... right now, enabling that option will
+just break everybody.
 
-Ben.
+> ---
+>  arch/powerpc/kernel/time.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 44 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 7a3c3f7..a231b6d 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -1048,6 +1048,50 @@ void __init time_init(void)
+>  	set_dec(tb_ticks_per_jiffy);
+>  }
+>  
+> +#ifdef CONFIG_RTC_CLASS
+> +int set_rtc_class_time(struct rtc_time *tm)
+> +{
+> +	int err;
+> +	struct class_device *class_dev =
+> +		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+> +
+> +	if (class_dev == NULL)
+> +		return -ENODEV;
+> +
+> +	err = rtc_set_time(class_dev, tm);
+> +
+> +	rtc_class_close(class_dev);
+> +
+> +	return 0;
+> +}
+> +
+> +void get_rtc_class_time(struct rtc_time *tm)
+> +{
+> +	int err;
+> +	struct class_device *class_dev =
+> +		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+> +
+> +	if (class_dev == NULL)
+> +		return;
+> +
+> +	err = rtc_read_time(class_dev, tm);
+> +
+> +	rtc_class_close(class_dev);
+> +
+> +	return;
+> +}
+> +
+> +static int __init rtc_class_hookup(void)
+> +{
+> +	ppc_md.get_rtc_time = get_rtc_class_time;
+> +	ppc_md.set_rtc_time = set_rtc_class_time;
+> +
+> +	return 0;
+> +}
+> +
+> +late_initcall(rtc_class_hookup);
+> +#endif /* CONFIG_RTC_CLASS */
+> +
+>  
+>  #define FEBRUARY	2
+>  #define	STARTOFTIME	1970
