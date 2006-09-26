@@ -1,19 +1,31 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 45DEE67B6D
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Sep 2006 01:43:56 +1000 (EST)
-Date: Tue, 26 Sep 2006 10:43:13 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Lazy interrupt disabling for 64-bit machines
-Message-ID: <20060926104313.06653807@pb15>
-In-Reply-To: <1159261926.5462.54.camel@localhost.localdomain>
-References: <17688.45762.294594.33723@cargo.ozlabs.ibm.com>
-	<20060926011055.32d533e7@pb15>
-	<1159261926.5462.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5661167BCC
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Sep 2006 02:24:32 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8QGOT7Y009160
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 12:24:29 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8QGOKiL065474
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 10:24:21 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8QGOKwa000748
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Sep 2006 10:24:20 -0600
+Message-ID: <45195432.2090108@austin.ibm.com>
+Date: Tue, 26 Sep 2006 11:24:18 -0500
+From: jschopp <jschopp@austin.ibm.com>
+MIME-Version: 1.0
+To: ingvar@linpro.no
+Subject: Re: DLPAR fails on SLES9
+References: <83wt7qkiz1.fsf@uname.e.linpro.no>
+In-Reply-To: <83wt7qkiz1.fsf@uname.e.linpro.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +35,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 Sep 2006 19:12:06 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> Is it possible to update the HMC, for example to 5.x.something without
+> updating (read boot) the managed systems as well?
 
-> 
-> > I like it. Got any benchmarks that show a difference?
-> > 
-> > At first glance I found it a bit hard to follow, since the old+new
-> > terminology is a bit complicated. There's softe, proc_enabled and
-> > hard_enabled. A s/proc_enabled/soft_enabled/g (and similar for
-> > asm-offsets) might make it a little more intuitive, since you're
-> > touching most uses of it already?
-> 
-> Now think about using -ffixed=crN ... reserve a CR field and use that
-> for per-cpu flags like that :)
-
-You can also get away from doing the mfspr(SPRN_DEC) in
-local_irq_enable() by changing the polarity of hard_enabled to
-hard_disabled, and have different values for why it was disabled. Saves
-an mfspr which can be costly, but adds one instruction (li (n>>8) or
-so) in the exception entry path. Not which way that tradeoff will
-swing, without benchmarking to show benefit it's just added complexity.
-
-That can be done with a fixed cr too, it just uses two bits instead of
-one. There are fewer to take from there though.
-
-
--Olof
+Yes, you should be able to update the HMC independently.  Though having up to date 
+firmware on your managed system is also a good idea when you can afford the downtime (reboot).
