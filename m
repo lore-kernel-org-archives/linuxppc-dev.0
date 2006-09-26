@@ -1,11 +1,16 @@
-Return-Path: <matt.hevern@nec.com.au>
-Message-ID: <45188E24.1090009@nec.com.au>
-Date: Tue, 26 Sep 2006 12:19:16 +1000
-From: Matt Hevern <matt.hevern@nec.com.au>
+Return-Path: <tmk@cmcltd.com>
+Received: from cmcdns1.cmcltd.com (navint.cmcltd.com [59.160.161.31])
+	by ozlabs.org (Postfix) with ESMTP id 9A3C267B9E
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Sep 2006 16:15:05 +1000 (EST)
+From: Mohan Krishna T <tmk@cmcltd.com>
+To: 'Peter Ryser' <peter.ryser@xilinx.com>, <linuxppc-embedded@ozlabs.org>
+Subject: =?UTF-8?Q?RE=3A_Unable_to_boot_linux_on_Xilinx_ML403_board?=
+Date: Tue, 26 Sep 2006 11:44:26 +0530
 MIME-Version: 1.0
-To: Linuxppc-embedded@ozlabs.org
-Subject: fs_enet - support for SCC on CPM2?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <451800D9.5010702@xilinx.com>
+Message-ID: <smtp_4518C3AA_7052_0002.eml@>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,33 +21,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+I have tried the option you have suggested but couldn't boot successfully. I
+tried to debug where exactly the kernel is getting hanged. I could found
+that its hanging in gunzip() function call. It is never coming out of loop
+that decompress the ramdisk image.=20
 
-I am trying to compile for an freescale 82xx (CPM2) series processor, 
-with ethernet on an SCC. (kernel 2.6.x)
- From what i can see, in the file drivers/net/fs_enet/fs_enet-main.c, 
-the config option "CONFIG_FS_ENET_HAS_SCC"  pulls in "fs_scc_ops" which 
-are defined in
-drivers/net/fs_enet/mac-scc.c, but this file  does not seem to have 
-support for 82xx series, failing with various compile errors:
-------errors
-drivers/net/fs_enet/mac-scc.c: In function `scc_cr_cmd':
-drivers/net/fs_enet/mac-scc.c:94: error: `cpm8xx_t' undeclared (first 
-use in this function)
-drivers/net/fs_enet/mac-scc.c:94: error: (Each undeclared identifier is 
-reported only once
-drivers/net/fs_enet/mac-scc.c:94: error: for each function it appears in.)
-drivers/net/fs_enet/mac-scc.c:94: error: `immap_t' undeclared (first use 
-in this function)
-...etc
-------end-errors
+Any suggestions?=20
 
-It seems like these errors are mostly due to the driver being tailored 
-for 8xx series.
+Thanks in advance...
 
-Are there any patches/fixes for "fs_enet" for ethernet on SCC for 82xx 
-series?  - or other options?
+Regards
+Mohan Krishna T
 
-Thanks in advance.
 
-Matt
+-----Original Message-----
+From: linuxppc-embedded-bounces+tmk=3Dcmcltd.com=40ozlabs.org
+=5Bmailto:linuxppc-embedded-bounces+tmk=3Dcmcltd.com=40ozlabs.org=5D On =
+Behalf Of
+Peter Ryser
+Sent: Monday, September 25, 2006 9:46 PM
+To: linuxppc-embedded=40ozlabs.org
+Subject: Re: Unable to boot linux on Xilinx ML403 board
+
+
+>avail ram:     00770000 08000000
+> =20
+>
+
+The ML403 only has 64 MB of RAM, ie. 0x04000000. For a start you can=20
+change the amount of memory Linux thinks it has available by adding
+    mem=3D0x4000000
+to the kernel command line like
+    Linux/PPC load: console=3Dtty1 console=3DttyS0,9600 ip=3Doff =
+root=3D/dev/ram=20
+rw mem=3D0x4000000
+
+Later, you want to change xparameters*.h in arch/ppc/platforms/xilinx_ocp
+
+- Peter
+
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded=40ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+
+DISCLAIMER
+
+=E2=80=9CThe information contained in this e-mail message and/or =
+attachments to it may contain confidential or privileged information. If =
+you are not the intended recipient, any dissemination, use, review, =
+distribution, printing or copying of the information contained in this =
+e-mail message and/or attachments to it are strictly prohibited. If you =
+have received this communication in error, please notify us by reply =
+e-mail or telephone and immediately and permanently delete the message and =
+any attachments. Thank you=22=
