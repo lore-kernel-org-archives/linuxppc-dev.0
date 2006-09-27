@@ -1,23 +1,22 @@
-Return-Path: <hollisb@us.ibm.com>
-Subject: Re: common flatdevtree code
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17690.64482.319084.61866@cargo.ozlabs.ibm.com>
-References: <20060831184020.GA13494@mag.az.mvista.com>
-	<17662.17895.852128.729679@cargo.ozlabs.ibm.com>
-	<20060907003625.GA15533@mag.az.mvista.com>
-	<1157615011.18137.14.camel@diesel>
-	<20060907182717.GC4398@mag.az.mvista.com>
-	<1157667816.5220.30.camel@basalt.austin.ibm.com>
-	<20060908005630.GA9823@mag.az.mvista.com>
-	<17665.28367.380866.565218@cargo.ozlabs.ibm.com>
-	<20060919194527.GD11361@mag.az.mvista.com>
-	<17690.64482.319084.61866@cargo.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ED1C867B61
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 09:12:05 +1000 (EST)
+Subject: Re: iommu hypervisor hypothetical
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: John Rose <johnrose@austin.ibm.com>
+In-Reply-To: <1159381557.19103.17.camel@sinatra.austin.ibm.com>
+References: <1159375671.19103.3.camel@sinatra.austin.ibm.com>
+	<20060927120723.678eee22@localhost.localdomain>
+	<1159381557.19103.17.camel@sinatra.austin.ibm.com>
 Content-Type: text/plain
-Date: Wed, 27 Sep 2006 17:55:43 -0500
-Message-Id: <1159397743.7584.63.camel@basalt.austin.ibm.com>
+Date: Thu, 28 Sep 2006 09:11:42 +1000
+Message-Id: <1159398703.18293.104.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: Olof Johansson <olof@lixom.net>, External List <linuxppc-dev@ozlabs.org>,
+	Santiago Leon <saleon@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-09-28 at 08:32 +1000, Paul Mackerras wrote:
-> Here's the latest version of my version of the flatdevtree code...
+On Wed, 2006-09-27 at 13:25 -0500, John Rose wrote:
+> > So just change the prototype of tce_build
+> > to return success/failure, and handle it accordingly in iommu_alloc
+> > (DMA_ERROR_CODE). The error should move on up the stack from there.
 > 
-> I talked to David Gibson about this and he pointed out that there is a
-> problem with using a void * to identify nodes (i.e. returned from
-> ft_find_device and passed to ft_set_prop etc.).  The problem is that
-> if we reallocate the space for the tree, then any void * handles that
-> the user of the library has are then invalid.  Perhaps we have to use
-> offsets from the beginning of the struct region instead - the offset
-> for a node will be stable across changes of the node or any of its
-> descendents, at least.
+> I'm thinking of functions like dma_map_single(), which returns the
+> unsigned type dma_addr_t.  Suppose H_HCE_PUT fails, and this gets
+> propagated up to the device driver through DMA_ERROR_CODE.  The PAPR
+> currently defines 2 ways in which this could fail, and we're considering
+> at least one more.  One error code doesn't seem sufficient.
 
-That is a non-obvious requirement and therefore a poor API.
+That's a design issue with the linux API that has been around for some
+time. At first, there was no possible error return from dma_map_single()
+in fact :( DMA_ERROR_CODE was added, and I see no way to do something
+better from that function...
 
-Using offsets instead of pointers barely helps. All pointers break if
-you need to realloc space for the tree. Almost all offsets break in the
-exact same way (except for the ancestors of a particular node).
-
-This may be a good reason to go back to the
-	ft_set_prop("/node/property", value, len);
-interface, instead of
-	n = ft_find_node("/node");
-	ft_set_prop(n, "property", value, len);
-
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+> > Or did I misunderstand your question in the first place? It's sort of
+> > sparse on details. :-)
+> 
+> You know how it goes :)  I guess my question is whether passing specific
+> failure conditions up the call chain is permissible/feasible, and
+> whether the prototypes for the various device driver DMA utilities are
+> set in stone.
+> 
+> Thanks-
+> John
