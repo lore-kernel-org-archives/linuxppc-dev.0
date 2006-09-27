@@ -1,19 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 39F3967BBD
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Sep 2006 23:33:11 +1000 (EST)
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D19D866@zch01exm20.fsl.freescale.net>
-References: <4879B0C6C249214CBE7AB04453F84E4D19D866@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C62AC4D8-39E5-44D0-88A3-E8D8042FC828@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
-Date: Wed, 27 Sep 2006 08:33:33 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 0ACF967B6F
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Sep 2006 23:55:02 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 10/11] Add MPC8360EMDS board support
+Date: Wed, 27 Sep 2006 15:54:56 +0200
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D9399B4A7F@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Li Yang-r58472" <LeoLi@freescale.com>,
+	"Vitaly Bordug" <vbordug@ru.mvista.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,66 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +memory {
->>>> +               device_type = "memory";
->>>> +               linux,phandle = <300>;
->>>> +               reg = <00000000 4000000 f4500000 00000020>;
->>>> +       };
->>>> the second pair is about bcsr and its size.
->>>>
->>>> Just in case this may help (and wondering if I'm not violating
->>> something :) )
->>>
->>> Well, this can make it work.  But I would prefer to use a new node
->>> because the BCSR is by no means a memory type of device.  I have
-> made my
->>> change to use node like this:
->>>
->>>         bcsr@f8000000 {
->>>                 device_type = "board-control";
->>>                 reg = <f8000000 8000>;
->>>         };
->>>
->>
->> I though about that approach, but saw somewhere a reference that we
-> should not summon
->> new node types without utter necessity, and utilized memory because
-> bcsr is
->> memory-mapped stuff. I can hardly imagine bcsr as a device (which
-> would require
->> respective spec inclusion btw).
->
-> Well I didn't see such a guideline.  However BCSR is truly a device  
-> like
-> any other peripherals on board.  Usually it is an FPGA on local bus to
-> control the board.
-
-Agree that a new node is better, calling it memory isn't right.   
-However, I'm not sure this really needs a node in the device tree.  
-The BCSR isn't really the same from board to board last time I  
-checked.  I'd be interested in Paul's thinking about why it should be  
-in the tree.
-
->> hence let's open a discussion what others think about that. The
-> problem seems common
->> (and for some boards
->> is called somewhat else apparently), but at this point we should come
-> to some
->> conclusion, document it, and use it.
->
-> Agreed.  As we are adding more devices to the device tree, we should
-> also have a guideline clearly stated for adding new nodes.
->
+ >=20
 > I'm adding MURAM as a new node under QE bus.  Please comment.
 >                 muram@10000 {
->                         device_type = "memory";
->                         ranges = <0 00010000 0000c000>;
->
+>                         device_type =3D "memory";
+>                         ranges =3D <0 00010000 0000c000>;
+>=20
 >                         data-only@0{
->                                 reg = <0 c000>;
+>                                 reg =3D <0 c000>;
 >                         };
 >                 };
 
-What was the need for this?
-
-- kumar
+while you are at it, I think you should add support for the ASSIGN PAGE
+command that can relocate
+the parameter RAM used by UCC, SPI etc. As it is now the third(8400) and
+fourth(100) value
+in reg below is ignored.
+	ucc@2000 {
+		device_type =3D "network";
+		compatible =3D "ucc_geth";
+		model =3D "UCC";
+		device-id =3D <1>;
+		reg =3D <2000 200 8400 100>;
+MPC832x only has 16KB of parameter RAM and needs to move this to lower
+addresses.=20
