@@ -1,18 +1,16 @@
-Return-Path: <nielsen.esben@gogglemail.com>
-Received: from mx01.stofanet.dk (mx01.stofanet.dk [212.10.10.11])
-	by ozlabs.org (Postfix) with ESMTP id C14E167BFD
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 9D1E267B71
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Sep 2006 02:52:37 +1000 (EST)
-Date: Wed, 27 Sep 2006 18:52:13 +0200 (CEST)
-From: Esben Nielsen <nielsen.esben@gogglemail.com>
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Subject: Re: local_irq_save not masking interrupts
-In-Reply-To: <4518FA21.8050801@cambridgebroadband.com>
-Message-ID: <Pine.LNX.4.64.0609271802460.9792@frodo.shire>
-References: <4518FA21.8050801@cambridgebroadband.com>
+	Thu, 28 Sep 2006 06:34:02 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Allocalting > 4M
+Date: Wed, 27 Sep 2006 15:34:00 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DF9C@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +21,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 Sep 2006, Alex Zeffertt wrote:
+We have an embedded board with 1G of memory.
 
-> Hi list,
->
-> I'm having a strange problem with interrupts.  My platform is the
-> MPC832xEMDS and the BSP I'm using (from Freescale) uses Linux-2.6.11.
->
-> In the code below I enter a critical section with local_irq_save(),
-> call request_irq() (from mpc832xemds_phy_interrupt_enable) 4 times,
-> then exit the critical section using local_irq_restore.
->
->     /* Enable interrupts from PHYs */
->     local_irq_save(flags);
->     for (i = 0; i < driver_data->num_phys; i++) {
->         struct atm_dev *dev = driver_data->dev_data[i]->dev;
->         printk("%s/%d\n",__FUNCTION__,__LINE__);
->         RETURN_ON_ERROR(mpc832xemds_phy_interrupt_enable(dev));
->     }
->     local_irq_restore(flags);
->
-
-This is a pure side-comment:
-
-Please, don't use local_irq_save() for a critical region. Use
-spin_lock_irqsave(), for 3 reasons:
-1) SMP.
-2) Preempt-realtime is like SMP not happy about using local_irq_save().
-3) Read-ability: It is more clear what data is protected when there is a 
-named lock object in the code.
-
-You might not care about 1) and 2) but 3) should matter for you. And 
-remember: When CONFIG_SMP is not set spin_lock_irqsave() will just 
-become a local_irq_save().
-
-Esben
+Is there any way, short of using mem=3D on kernel command line and
+reserving memory, to allocate more than 4M of contigous physical memory?
+We're trying to allocalte a 8M buffer for use in some DMA transfers for
+a bank of DSP's.
+We were using get_Free_pages to allocate the meory before we made the
+buffer bigger. It seems that get_free_pages cannot allocate more than
+2^10 pages (4M on ppc)
+I also tried alloc_bootmem, but it fails also.
