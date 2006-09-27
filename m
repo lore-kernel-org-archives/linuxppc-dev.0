@@ -1,13 +1,18 @@
-Return-Path: <stelios@stelioscellar.com>
-From: "Stelios Koroneos" <stelios@stelioscellar.com>
-To: "Iwan Koenig" <iwankoenig@yahoo.de>, <Linuxppc-embedded@ozlabs.org>
-Subject: RE: Asterisk on Embedded Linux
-Date: Wed, 27 Sep 2006 19:01:37 +0300
-Message-ID: <HOECLKEKOHLAMMGDLLBHGEKJHLAA.stelios@stelioscellar.com>
+Return-Path: <nielsen.esben@gogglemail.com>
+Received: from mx01.stofanet.dk (mx01.stofanet.dk [212.10.10.11])
+	by ozlabs.org (Postfix) with ESMTP id C14E167BFD
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 28 Sep 2006 02:52:37 +1000 (EST)
+Date: Wed, 27 Sep 2006 18:52:13 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@gogglemail.com>
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Subject: Re: local_irq_save not masking interrupts
+In-Reply-To: <4518FA21.8050801@cambridgebroadband.com>
+Message-ID: <Pine.LNX.4.64.0609271802460.9792@frodo.shire>
+References: <4518FA21.8050801@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20060926064451.71706.qmail@web26012.mail.ukl.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,14 +23,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> Does anyone known how to compile Asterisk for a
-> powerpc-processor?
+On Tue, 26 Sep 2006, Alex Zeffertt wrote:
 
-Asterisk + bristuff (for isdn support) for uclibc does crosscompile (and
-run) but needs patching in several places (make files and asterisk itself).
-We got the zaptel drivers to cross-compile also but it seems there are
-endianess issues with the drivers we now try to iron out.
+> Hi list,
+>
+> I'm having a strange problem with interrupts.  My platform is the
+> MPC832xEMDS and the BSP I'm using (from Freescale) uses Linux-2.6.11.
+>
+> In the code below I enter a critical section with local_irq_save(),
+> call request_irq() (from mpc832xemds_phy_interrupt_enable) 4 times,
+> then exit the critical section using local_irq_restore.
+>
+>     /* Enable interrupts from PHYs */
+>     local_irq_save(flags);
+>     for (i = 0; i < driver_data->num_phys; i++) {
+>         struct atm_dev *dev = driver_data->dev_data[i]->dev;
+>         printk("%s/%d\n",__FUNCTION__,__LINE__);
+>         RETURN_ON_ERROR(mpc832xemds_phy_interrupt_enable(dev));
+>     }
+>     local_irq_restore(flags);
+>
 
-The main "difference" is that we have used OpenEmbedded as our build system
-in order to get going.
+This is a pure side-comment:
+
+Please, don't use local_irq_save() for a critical region. Use
+spin_lock_irqsave(), for 3 reasons:
+1) SMP.
+2) Preempt-realtime is like SMP not happy about using local_irq_save().
+3) Read-ability: It is more clear what data is protected when there is a 
+named lock object in the code.
+
+You might not care about 1) and 2) but 3) should matter for you. And 
+remember: When CONFIG_SMP is not set spin_lock_irqsave() will just 
+become a local_irq_save().
+
+Esben
