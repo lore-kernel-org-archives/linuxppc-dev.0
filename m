@@ -1,20 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2684467B6C
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Sep 2006 14:34:24 +1000 (EST)
-In-Reply-To: <20060926174651.032a474e.kim.phillips@freescale.com>
-References: <20060926174651.032a474e.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B35FD5A1-2C71-41E2-A014-A2C8D37F10C2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] enable generic rtc hook for the MPC8349 mITX
-Date: Tue, 26 Sep 2006 23:34:43 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: linuxppc-dev@ozlabs.org,
+ cbe-oss-dev@ozlabs.org
+Subject: RFC/slightly offtopic: Automatic patchwork status updates
+Date: Wed, 27 Sep 2006 15:28:48 +1000
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200609271528.49260.jk@ozlabs.org>
+Cc: Troy Rollo <troy@corvu.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Sep 26, 2006, at 5:46 PM, Kim Phillips wrote:
+For some time now, we've been running patchwork on the linuxppc and 
+cbe-oss-dev lists. For those who haven't seen it, it collects and 
+tracks patches posted to the lists, and shows them here:
 
-> enable generic rtc hook for the MPC8349 mITX.
->
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
->
-> ---
->  arch/powerpc/platforms/83xx/mpc834x_itx.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/ 
-> powerpc/platforms/83xx/mpc834x_itx.c
-> index 969fbb6..8c676d7 100644
-> --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> @@ -109,6 +109,10 @@ static int __init mpc834x_itx_probe(void
->  	return 1;
->  }
->
-> +#ifdef CONFIG_RTC_CLASS
-> +late_initcall(rtc_class_hookup);
-> +#endif
+  http://patchwork.ozlabs.org/linuxppc
+and
+  http://patchwork.ozlabs.org/cbe-oss-dev
 
-Any reason we can't just do this in setup_arch?
+However, the patch 'state' (eg, accepted, rejected, debug only, changes 
+requested) doesn't get updated very often, as it can be an unnecessary 
+burden on the maintainers.
 
-- k
+All this information is available from the actual upstream tree itself, 
+so essentially patchwork *should* be able to just mirror the state.
 
-> +
->  define_machine(mpc834x_itx) {
->  	.name			= "MPC834x ITX",
->  	.probe			= mpc834x_itx_probe,
-> -- 
-> 1.4.2.1
+So, I'd like to get a bit of discussion on how we can get this (or at 
+least most of it!) done automatically. For instance, can we come up 
+with a scheme that can detect if a patch has made it into paulus' tree 
+with some reasonable error rate?
+
+If we can get something sketched up, I'll implement & integrate into 
+patchwork. Seeing as this is an own-time project for me though, there 
+will probably be a little latency in the process ;)
+
+Cheers,
+
+
+Jeremy
+
+PS. do we need to create a separate patchwork list and move discussion 
+there?
