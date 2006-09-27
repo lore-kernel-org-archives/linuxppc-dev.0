@@ -1,14 +1,19 @@
-Return-Path: <carlos@kenati.com>
-Message-ID: <45196562.50409@kenati.com>
-Date: Tue, 26 Sep 2006 10:37:38 -0700
-From: Carlos Munoz <carlos@kenati.com>
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 9063667B1A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Sep 2006 20:29:24 +1000 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Need help to write I2C EEPROM device driver
+Date: Wed, 27 Sep 2006 12:21:54 +0200
+References: <8584FDC94AFF7640B17B8A89B23B19B34F658F@sbsserver.AlphionCorp.local>
+In-Reply-To: <8584FDC94AFF7640B17B8A89B23B19B34F658F@sbsserver.AlphionCorp.local>
 MIME-Version: 1.0
-To: Iwan Koenig <iwankoenig@yahoo.de>
-Subject: Re: Asterisk on Embedded Linux
-References: <20060926064451.71706.qmail@web26012.mail.ukl.yahoo.com>
-In-Reply-To: <20060926064451.71706.qmail@web26012.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200609271221.54878.matthias.fuchs@esd-electronics.com>
+Cc: Sachin Rane <SRane@alphion.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,46 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Iwan Koenig wrote:
+Hi Sachin,
 
->Does anyone known how to compile Asterisk for a
->powerpc-processor?
->I have tryed:
->./configure --target=powerpc-linux
->--host=powerpc-604-linux-gnu --prefix=/opt/packages
->And it gives following error:
-> /root/pwlib/include/ptlib.h... configure: error:
->cannot check for file existence when cross compiling
->
->Ok! I see that it is trying to find the PWLIB-Library.
->Also, i have tryed to compile the pwlib.
->But it didn't work :(. For PWLIB i need the OpenLDAP,
->and when i have compiled the OpenLDAP, than needs
->PWLIB other packages.......
->Also, have anyone ideas, how to compile Asterisk für a
->powerpc-processor with another way?
->
->Thanks!!!!
->
+there is already a driver for this part in the kernel 
+(drivers/i2c/chips/eeprom.c). 
+
+BTW: to do some simple reads and writes to an I2C EEPROM it is very simple to 
+access the EEPROM via read/write/ioctl through /dev/i2c-<x>. No driver - only 
+userland code.
+
+Matthias
+
+
+On Tuesday 26 September 2006 16:34, Sachin Rane wrote:
+> Hi,
 >  
->
-I'm not sure if our experience applies to you since we use asterisk as a 
-TA instead of a PBX in our embedded gateways. We ran into a lot of 
-problems when trying to cross-compile a trimmed down version of 
-asterisk. Basically, we only needed the sip stack, fxs support, and some 
-codecs. It was a big effort, but we are currently successfully 
-cross-compiling asterisk for several platforms. We had to change 
-Makefiles, source code, etc.
-
-I would start by removing the references to PWLIB and anything I don't 
-need from the makefiles and #ifdefing code that uses it until I get it 
-to compile. Then start testing it and adding features as needed.
-
-This is the command line we use to compile asterisk (just to give you 
-and idea. It won't work with your sources. We don't run configure):
-
-make CC=powerpc-uclibc-gcc CONFIG_TA=y OPTIMIZE="-mcpu=603e -Os" 
-HOSTCC=gcc all
-
-
-Carlos
+> I am looking for an information to write a device driver to access EEPROM IC 
+M24C02-WBN6.
+> The EEPROM IC M24C02-WBN is present on the 'ppc440' evaluation board for 
+boot strap purpose.
