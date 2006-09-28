@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linux-kernel@vger.kernel.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 29 Sep 2006 07:53:39 +1000
-Subject: [RFC/PATCH 4/7] Allow for non-Intel MSI implementations
+Date: Fri, 29 Sep 2006 07:53:41 +1000
+Subject: [RFC/PATCH 5/7] Enable MSI on Powerpc
 In-Reply-To: <1159480412.269240.988552559176.qpush@concordia>
-Message-Id: <20060928215341.0AEDF67C5A@ozlabs.org>
+Message-Id: <20060928215342.446D067BEC@ozlabs.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,23 +15,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Allow PCI_MSI to build on Powerpc.
+
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- drivers/pci/Makefile |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/Makefile |    4 ++++
+ drivers/pci/Kconfig          |    2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-Index: to-merge/drivers/pci/Makefile
+Index: to-merge/arch/powerpc/kernel/Makefile
 ===================================================================
---- to-merge.orig/drivers/pci/Makefile
-+++ to-merge/drivers/pci/Makefile
-@@ -27,7 +27,8 @@ obj-$(CONFIG_PPC64) += setup-bus.o
- obj-$(CONFIG_MIPS) += setup-bus.o setup-irq.o
- obj-$(CONFIG_X86_VISWS) += setup-irq.o
- 
--msiobj-y := msi.o msi-apic.o
-+msiobj-$(CONFIG_X86) := msi.o msi-apic.o
-+msiobj-$(CONFIG_IA64) := msi.o msi-apic.o
- msiobj-$(CONFIG_IA64_GENERIC) += msi-altix.o
- msiobj-$(CONFIG_IA64_SGI_SN2) += msi-altix.o
- obj-$(CONFIG_PCI_MSI) += $(msiobj-y)
+--- to-merge.orig/arch/powerpc/kernel/Makefile
++++ to-merge/arch/powerpc/kernel/Makefile
+@@ -67,6 +67,10 @@ pci64-$(CONFIG_PPC64)		+= pci_64.o pci_d
+ 				   pci_direct_iommu.o iomap.o
+ pci32-$(CONFIG_PPC32)		:= pci_32.o
+ obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
++
++msiobj-y			:= msi.o
++obj-$(CONFIG_PCI_MSI)		+= $(msiobj-y)
++
+ kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
+ kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
+Index: to-merge/drivers/pci/Kconfig
+===================================================================
+--- to-merge.orig/drivers/pci/Kconfig
++++ to-merge/drivers/pci/Kconfig
+@@ -4,7 +4,7 @@
+ config PCI_MSI
+ 	bool "Message Signaled Interrupts (MSI and MSI-X)"
+ 	depends on PCI
+-	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64
++	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64 || PPC
+ 	help
+ 	   This allows device drivers to enable MSI (Message Signaled
+ 	   Interrupts).  Message Signaled Interrupts enable a device to
