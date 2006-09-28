@@ -1,16 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 0CFB1679E0
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 14:58:01 +1000 (EST)
-Date: Wed, 27 Sep 2006 23:57:17 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org, galak@kernel.crashing.org, Vitaly Bordug
-	<vbordug@ru.mvista.com>
-Subject: [PATCH] ppc: fix build break
-Message-ID: <20060927235717.40cbd0e7@pb15>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 4/4] Enable MSI on Powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jake Moilanen <moilanen@austin.ibm.com>
+In-Reply-To: <1159386365.5542.115.camel@goblue>
+References: <20060818081331.E6F7267B5D@ozlabs.org>
+	<1159386365.5542.115.camel@goblue>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-hC2wLZrqhcMHzSaBeLIx"
+Date: Thu, 28 Sep 2006 16:07:20 +1000
+Message-Id: <1159423641.12398.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,28 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix build break for some of the ARCH=ppc defconfigs
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+--=-hC2wLZrqhcMHzSaBeLIx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, 2006-09-27 at 14:46 -0500, Jake Moilanen wrote:
+> On Fri, 2006-08-18 at 18:13 +1000, Michael Ellerman wrote:
+> > Allow PCI_MSI to build on POWERPC.
+> >=20
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >=20
+> >  drivers/pci/Kconfig |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >=20
+> > Index: git/drivers/pci/Kconfig
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- git.orig/drivers/pci/Kconfig
+> > +++ git/drivers/pci/Kconfig
+> > @@ -4,7 +4,7 @@
+> >  config PCI_MSI
+> >  	bool "Message Signaled Interrupts (MSI and MSI-X)"
+> >  	depends on PCI
+> > -	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64
+> > +	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64 || POWERPC
+>=20
+> Shouldn't this be PPC?
 
----
+Maybe. If we use PPC then MSI will get built for arch/ppc as well which
+won't work - so I think we should have a POWERPC symbol, I sent that as
+a separate patch a while back but it seems to have hit the floor.
 
-This was introduced by:
+cheers
 
-[PATCH] ppc32: board-specific part of fs_enet update
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Index: linux-2.6/include/asm-ppc/cpm2.h
-===================================================================
---- linux-2.6.orig/include/asm-ppc/cpm2.h
-+++ linux-2.6/include/asm-ppc/cpm2.h
-@@ -1186,7 +1186,7 @@ typedef struct im_idma {
- #define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
- #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
- #define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
--#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
-+#define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
- 
- #endif /* __CPM2__ */
- #endif /* __KERNEL__ */
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-hC2wLZrqhcMHzSaBeLIx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBFG2aYdSjSd0sB4dIRAkHNAKCgOJJXwqVwoHYtmfrtnNPMLamXUACgpdY+
+Tm9BYyvTVPKoWX2KR7xxIhM=
+=Qzte
+-----END PGP SIGNATURE-----
+
+--=-hC2wLZrqhcMHzSaBeLIx--
