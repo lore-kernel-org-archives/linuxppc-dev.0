@@ -1,23 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B991567B8D
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 04:50:27 +1000 (EST)
-In-Reply-To: <20060928204345.4e23789e@vitb.ru.mvista.com>
-References: <451B8584.1070403@freescale.com>
-	<9672B4B6-1DC0-48D6-99BA-7160421CB24C@kernel.crashing.org>
-	<20060928204345.4e23789e@vitb.ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B51556B9-EEB4-4BF6-8F71-FE2A0167B431@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 8/12] qe_lib: Fix rheap alignment problem
-Date: Thu, 28 Sep 2006 13:50:53 -0500
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Li Yang <leoli@freescale.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 28 Sep 2006 12:34:43 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: common flatdevtree code
+Message-ID: <20060928193443.GA993@mag.az.mvista.com>
+References: <20060907003625.GA15533@mag.az.mvista.com>
+	<1157615011.18137.14.camel@diesel>
+	<20060907182717.GC4398@mag.az.mvista.com>
+	<1157667816.5220.30.camel@basalt.austin.ibm.com>
+	<20060908005630.GA9823@mag.az.mvista.com>
+	<17665.28367.380866.565218@cargo.ozlabs.ibm.com>
+	<20060919194527.GD11361@mag.az.mvista.com>
+	<17690.64482.319084.61866@cargo.ozlabs.ibm.com>
+	<6897081F-DDAC-462A-8D4D-EE613231CA4B@kernel.crashing.org>
+	<1159401139.7584.82.camel@basalt.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1159401139.7584.82.camel@basalt.austin.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Sep 27, 2006 at 06:52:19PM -0500, Hollis Blanchard wrote:
+> On Thu, 2006-09-28 at 01:41 +0200, Segher Boessenkool wrote:
+> > > I talked to David Gibson about this and he pointed out that there is a
+> > > problem with using a void * to identify nodes (i.e. returned from
+> > > ft_find_device and passed to ft_set_prop etc.).  The problem is that
+> > > if we reallocate the space for the tree, then any void * handles that
+> > > the user of the library has are then invalid.  Perhaps we have to use
+> > > offsets from the beginning of the struct region instead - the offset
+> > > for a node will be stable across changes of the node or any of its
+> > > descendents, at least.
+> > 
+> > Or unpack the tree before you operate on it.  You can pack it
+> > again later if you need to pass it as a flat tree again (or the
+> > bootwrapper could implement a real OF client interface, which
+> > is useful for many more things!)
+> > 
+> > A flat contiguous blob of bytes is convenient to pass around,
+> > but not such a great data structure for basically anything else ;-)
+> 
+> I agree; I think this data structure's design is explicitly static, and
+> now we're trying to dynamically edit it.
+> 
+> We essentially need to do unpack/pack now whenever the size of the
+> structure changes (e.g. changing a property size, adding or removing
+> anything). Making that explicit (and one-time) might be a good idea:
+>         tree = ft_unpack(blob);
+>         n = ft_find_node(tree, "/node");
+>         ft_set_prop(n, "property", value, len);
+>         ...
+>         blob = ft_pack(tree);
 
-On Sep 28, 2006, at 11:43 AM, Vitaly Bordug wrote:
+FWIW, this makes a lot of sense to me.
 
-> On Thu, 28 Sep 2006 09:10:18 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->>
->> On Sep 28, 2006, at 3:19 AM, Li Yang wrote:
->>
->>> Honor alignment parameter in the rheap allocator.  This is
->>> needed by qe_lib.
->>> Remove compile warning.
->>>
->>> Signed-off-by: Pantelis Antoniou <pantelis@embeddedalley.com>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>
->
-> OK, I can state rheap is still consistent in 8560 cpm2.
-> It even makes sense to apply this instantly because it's a notable  
-> bugfix.. Kumar?
-
-Good, I wanted to pull this out of QE patch set and since it fixes a  
-bug even better.
-
-Acked by me.
-
-- kumar
+Mark
