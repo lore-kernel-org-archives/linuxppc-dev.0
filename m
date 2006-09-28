@@ -1,21 +1,21 @@
 Return-Path: <LeoLi@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C72B967C2B
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:18:46 +1000 (EST)
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id AF91167C02
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:18:49 +1000 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k8S8Veju006308
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:31:40 -0700 (MST)
+	k8S8Vh9o006313
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:31:43 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k8S8IHrW009860
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:18:43 -0500 (CDT)
-Message-ID: <451B8581.1040303@freescale.com>
-Date: Thu, 28 Sep 2006 16:19:13 +0800
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k8S8IHrY009860
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:18:47 -0500 (CDT)
+Message-ID: <451B8584.1070403@freescale.com>
+Date: Thu, 28 Sep 2006 16:19:16 +0800
 From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
 To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 7/12] qe_lib: Add QE SoC support
+Subject: [PATCH 8/12] qe_lib: Fix rheap alignment problem
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,192 +27,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Honor alignment parameter in the rheap allocator.  This is
+needed by qe_lib.
+Remove compile warning.
+
+Signed-off-by: Pantelis Antoniou <pantelis@embeddedalley.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
 ---
- arch/powerpc/sysdev/qe_lib/qe.c |  176 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 176 insertions(+), 0 deletions(-)
+ arch/powerpc/lib/Makefile |    1 +
+ arch/powerpc/lib/rheap.c  |   24 ++++++++++++++++++++----
+ include/asm-ppc/rheap.h   |    4 ++++
+ 3 files changed, 25 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-new file mode 100644
-index 0000000..df3e826
---- /dev/null
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -0,0 +1,176 @@
-+/*
-+ * Copyright (C) 2006 Freescale Semicondutor, Inc. All rights reserved.
-+ *
-+ * Author: Li Yang <LeoLi@freescale.com>
-+ *
-+ * Description:
-+ * FSL QE SOC setup.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index ff70964..fe61c92 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -14,6 +14,7 @@ endif
+ obj-$(CONFIG_PPC64)	+= checksum_64.o copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+ 			   strcase.o
++obj-$(CONFIG_QUICC_ENGINE) += rheap.o
+ obj-$(CONFIG_PPC_ISERIES) += e2a.o
+ obj-$(CONFIG_XMON)	+= sstep.o
+ 
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index 31e5118..57bf991 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -423,17 +423,21 @@ void *rh_detach_region(rh_info_t * info,
+ 	return (void *)s;
+ }
+ 
+-void *rh_alloc(rh_info_t * info, int size, const char *owner)
++void *rh_alloc_align(rh_info_t * info, int size, int alignment, const char *owner)
+ {
+ 	struct list_head *l;
+ 	rh_block_t *blk;
+ 	rh_block_t *newblk;
+ 	void *start;
+ 
+-	/* Validate size */
+-	if (size <= 0)
++	/* Validate size, (must be power of two) */
++	if (size <= 0 || (alignment & (alignment - 1)) != 0)
+ 		return ERR_PTR(-EINVAL);
+ 
++	/* given alignment larger that default rheap alignment */
++	if (alignment > info->alignment)
++		size += alignment - 1;
 +
-+#include <linux/config.h>
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/major.h>
-+#include <linux/delay.h>
-+#include <linux/irq.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <linux/fsl_devices.h>
+ 	/* Align to configured alignment */
+ 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
+ 
+@@ -476,15 +480,27 @@ void *rh_alloc(rh_info_t * info, int siz
+ 
+ 	attach_taken_block(info, newblk);
+ 
++	/* for larger alignment return fixed up pointer  */
++	/* this is no problem with the deallocator since */
++	/* we scan for pointers that lie in the blocks   */
++	if (alignment > info->alignment)
++		start = (void *)(((unsigned long)start + alignment - 1) &
++				~(alignment - 1));
 +
-+#include <asm/system.h>
-+#include <asm/atomic.h>
-+#include <asm/io.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <sysdev/fsl_soc.h>
-+#include <mm/mmu_decl.h>
-+
-+static phys_addr_t qebase = -1;
-+
-+phys_addr_t get_qe_base(void)
+ 	return start;
+ }
+ 
++void *rh_alloc(rh_info_t * info, int size, const char *owner)
 +{
-+	struct device_node *qe;
-+
-+	if (qebase != -1)
-+		return qebase;
-+
-+	qe = of_find_node_by_type(NULL, "qe");
-+	if (qe) {
-+		unsigned int size;
-+		void *prop = get_property(qe, "reg", &size);
-+		qebase = of_translate_address(qe, prop);
-+		of_node_put(qe);
-+	};
-+
-+	return qebase;
++	return rh_alloc_align(info, size, info->alignment, owner);
 +}
 +
-+EXPORT_SYMBOL(get_qe_base);
+ /* allocate at precisely the given address */
+ void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
+ {
+ 	struct list_head *l;
+ 	rh_block_t *blk, *newblk1, *newblk2;
+-	unsigned long s, e, m, bs, be;
++	unsigned long s, e, m, bs = 0, be = 0;
+ 
+ 	/* Validate size */
+ 	if (size <= 0)
+diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
+index e6ca1f6..65b9322 100644
+--- a/include/asm-ppc/rheap.h
++++ b/include/asm-ppc/rheap.h
+@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
+ /* Detach a free region */
+ extern void *rh_detach_region(rh_info_t * info, void *start, int size);
+ 
++/* Allocate the given size from the remote heap (with alignment) */
++extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
++		const char *owner);
 +
-+static int __init ucc_geth_of_init(void)
-+{
-+	struct device_node *np;
-+	unsigned int i, ucc_num;
-+	struct platform_device *ugeth_dev;
-+	struct resource res;
-+	int ret;
-+
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "network", "ucc_geth")) != NULL;
-+	     i++) {
-+		struct resource r[2];
-+		struct device_node *phy, *mdio;
-+		struct ucc_geth_platform_data ugeth_data;
-+		unsigned int *id;
-+		char *model;
-+		void *mac_addr;
-+		phandle *ph;
-+
-+		memset(r, 0, sizeof(r));
-+		memset(&ugeth_data, 0, sizeof(ugeth_data));
-+
-+		ret = of_address_to_resource(np, 0, &r[0]);
-+		if (ret)
-+			goto err;
-+
-+		ugeth_data.phy_reg_addr = r[0].start;
-+		r[1].start = r[1].end = irq_of_parse_and_map(np, 0);
-+		r[1].flags = IORESOURCE_IRQ;
-+
-+		model = get_property(np, "model", NULL);
-+		ucc_num = *((u32 *) get_property(np, "device-id", NULL));
-+		if ((strstr(model, "UCC") == NULL) || 
-+				(ucc_num < 1) || (ucc_num > 8)) {
-+			ret = -ENODEV;
-+			goto err;
-+		}
-+		
-+		ugeth_dev =
-+		    platform_device_register_simple("ucc_geth", ucc_num - 1,
-+				    &r[0], 2);
-+
-+		if (IS_ERR(ugeth_dev)) {
-+			ret = PTR_ERR(ugeth_dev);
-+			goto err;
-+		}
-+
-+		mac_addr = get_property(np, "mac-address", NULL);
-+		
-+		memcpy(ugeth_data.mac_addr, mac_addr, 6);
-+
-+		ugeth_data.rx_clock = *((u32 *) get_property(np, "rx-clock",
-+					NULL));
-+		ugeth_data.tx_clock = *((u32 *) get_property(np, "tx-clock",
-+					NULL));
-+
-+		ph = (phandle *) get_property(np, "phy-handle", NULL);
-+		phy = of_find_node_by_phandle(*ph);
-+
-+		if (phy == NULL) {
-+			ret = -ENODEV;
-+			goto unreg;
-+		}
-+
-+		mdio = of_get_parent(phy);
-+
-+		id = (u32 *) get_property(phy, "reg", NULL);
-+		ret = of_address_to_resource(mdio, 0, &res);
-+		if (ret) {
-+			of_node_put(phy);
-+			of_node_put(mdio);
-+			goto unreg;
-+		}
-+		
-+		ugeth_data.phy_id = *id;
-+
-+		ugeth_data.phy_interrupt = irq_of_parse_and_map(phy, 0);; 
-+		ugeth_data.phy_interface = *((u32 *) get_property(phy,
-+					"interface", NULL));
-+
-+		/* FIXME: Work around for early chip rev.               */
-+		/* There's a bug in initial chip rev(s) in the RGMII ac */
-+		/* timing.						*/
-+		/* The following compensates by writing to the reserved */
-+		/* QE Port Output Hold Registers (CPOH1?).              */	
-+		if ((ugeth_data.phy_interface == ENET_1000_RGMII) || 
-+				(ugeth_data.phy_interface == ENET_100_RGMII) ||
-+				(ugeth_data.phy_interface == ENET_10_RGMII)) {
-+			u32 *tmp_reg = (u32 *) ioremap(get_immrbase() 
-+					+ 0x14A8, 0x4);
-+			u32 tmp_val = in_be32(tmp_reg);
-+			if (ucc_num == 1)
-+				out_be32(tmp_reg, tmp_val | 0x00003000);
-+			else if (ucc_num == 2)
-+				out_be32(tmp_reg, tmp_val | 0x0c000000);
-+			iounmap(tmp_reg);
-+		}
-+		
-+		if (ugeth_data.phy_interrupt != 0)
-+			ugeth_data.board_flags |= FSL_UGETH_BRD_HAS_PHY_INTR;
-+
-+		of_node_put(phy);
-+		of_node_put(mdio);
-+
-+		ret = platform_device_add_data(ugeth_dev, &ugeth_data,
-+				sizeof(struct ucc_geth_platform_data));
-+		if (ret)
-+			goto unreg;
-+	}
-+
-+	return 0;
-+
-+unreg:
-+	platform_device_unregister(ugeth_dev);
-+err:
-+	return ret;
-+}
-+
-+arch_initcall(ucc_geth_of_init);
+ /* Allocate the given size from the remote heap */
+ extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
