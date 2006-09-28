@@ -1,20 +1,21 @@
-Return-Path: <linuxppcleo@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
-	by ozlabs.org (Postfix) with ESMTP id 45190679E9
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 02:09:24 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 50so203495wri
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 09:09:15 -0700 (PDT)
-Message-ID: <a0bc9bf80609280909r13e9ea31ldf0630969416cbff@mail.gmail.com>
-Date: Fri, 29 Sep 2006 00:09:14 +0800
-From: "Li Yang" <LeoLi@freescale.com>
-Sender: linuxppcleo@gmail.com
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/12] Add support for QE and 8360EMDS board -v2
-In-Reply-To: <7178D84E-0290-4D3E-905E-C26C9908F40E@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DEC2D67B8B
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 02:36:40 +1000 (EST)
+In-Reply-To: <a0bc9bf80609280909r13e9ea31ldf0630969416cbff@mail.gmail.com>
 References: <451B8553.30107@freescale.com>
 	<7178D84E-0290-4D3E-905E-C26C9908F40E@kernel.crashing.org>
+	<a0bc9bf80609280909r13e9ea31ldf0630969416cbff@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <98C2C73A-F57B-49A6-9727-D76A1AE9746C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/12] Add support for QE and 8360EMDS board -v2
+Date: Thu, 28 Sep 2006 11:37:10 -0500
+To: "Li Yang" <LeoLi@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,30 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/28/06, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Sep 28, 2006, at 3:18 AM, Li Yang wrote:
->
-> > Paul,
-> >
-> > The series of patches add generic QE infrastructure called
-> > qe_lib, and MPC8360EMDS board support.  Qe_lib is used by
-> > QE device drivers such as ucc_geth driver.
-> >
-> > This version updates QE interrupt controller to use new irq
-> > mapping mechanism, addresses all the comments received with
-> > last submission and includes some style fixes.
-> >
-> > v2 change: Change to use device tree for BCSR and MURAM;
-> > Remove I/O port interrupt handling code as it is not generic
-> > enough.
->
-> Before accepting any of this code, I'd like to see what the drivers
-> look like that are using it.  Its hard to make significant comments w/
-> o seeing what the consumers of all the 'lib' code look like.
 
-Current in-tree user of the lib is driver/net/ucc_geth.c.  There is
-also QE ATM driver which is included in Alex's 8360sar project.  QE
-USB host/client drivers are in Freescale LTIB BSP.
+On Sep 28, 2006, at 11:09 AM, Li Yang wrote:
 
-- Leo
+> On 9/28/06, Kumar Gala <galak@kernel.crashing.org> wrote:
+>>
+>> On Sep 28, 2006, at 3:18 AM, Li Yang wrote:
+>>
+>> > Paul,
+>> >
+>> > The series of patches add generic QE infrastructure called
+>> > qe_lib, and MPC8360EMDS board support.  Qe_lib is used by
+>> > QE device drivers such as ucc_geth driver.
+>> >
+>> > This version updates QE interrupt controller to use new irq
+>> > mapping mechanism, addresses all the comments received with
+>> > last submission and includes some style fixes.
+>> >
+>> > v2 change: Change to use device tree for BCSR and MURAM;
+>> > Remove I/O port interrupt handling code as it is not generic
+>> > enough.
+>>
+>> Before accepting any of this code, I'd like to see what the drivers
+>> look like that are using it.  Its hard to make significant  
+>> comments w/
+>> o seeing what the consumers of all the 'lib' code look like.
+>
+> Current in-tree user of the lib is driver/net/ucc_geth.c.  There is
+> also QE ATM driver which is included in Alex's 8360sar project.  QE
+> USB host/client drivers are in Freescale LTIB BSP.
+
+is there a serial driver?
+
+- k
