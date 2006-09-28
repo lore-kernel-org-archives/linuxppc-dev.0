@@ -1,19 +1,18 @@
-Return-Path: <chuckmeade@mindspring.com>
-Received: from txslsmtp2.vzwmail.net (txslsmtp2.vzwmail.net [66.174.85.156])
-	by ozlabs.org (Postfix) with ESMTP id 3168567B89
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 23:51:42 +1000 (EST)
-From: "Chuck Meade" <chuckmeade@mindspring.com>
-To: "Li Yang" <leoli@freescale.com>, <paulus@samba.org>,
-	<galak@kernel.crashing.org>,
-	"Chuck Meade \(mindspring\)" <chuckmeade@mindspring.com>
-Subject: RE: [PATCH 1/12] qe_lib: Add QE Kconfig
-Date: Thu, 28 Sep 2006 09:38:08 -0400
-Message-ID: <IIEEICKJLNEPBBDJICNGKEAEMEAA.chuckmeade@mindspring.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <451B8562.4040904@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 006F467BC9
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 00:01:09 +1000 (EST)
+Date: Thu, 28 Sep 2006 18:01:26 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: fix build break
+Message-ID: <20060928180126.0e5cdac0@vitb.ru.mvista.com>
+In-Reply-To: <437E571F-79E3-4A2D-ADD1-83953022B053@kernel.crashing.org>
+References: <20060927235717.40cbd0e7@pb15>
+	<437E571F-79E3-4A2D-ADD1-83953022B053@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+On Thu, 28 Sep 2006 08:41:57 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
 > 
-> ---
->  arch/powerpc/Kconfig |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
+> On Sep 27, 2006, at 11:57 PM, Olof Johansson wrote:
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 694b0c6..c907792 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -355,6 +355,16 @@ config APUS
->  	  <http://linux-apus.sourceforge.net/>.
->  endchoice
->  
-> +config QUICC_ENGINE
-> +	bool
-> +	depends on MPC836x
+> > Fix build break for some of the ARCH=ppc defconfigs
+> >
+> > Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> This breakage exists in 2.6.18 as well?  If so would be good to send  
+> this patch to -stable if its not already there.
+> 
 
-The QUICC Engine is on chips other than MPC836x, such as the MPC832x:
-http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC8323E
+This was addressed in my series, then by Amy Wang, and below :)
+Hence I expect it to appear in powerpc.git very shortly, but for -stable it makes sense.
 
-Why do you want it to depend on MPC836x?
-Or do you just plan to change this dependency once 832x support is in
-the source tree?
 
-Chuck
+Thanks,
+-Vitaly
 
-> +	default y
-> +	help
-> +	  The QE(QUICC Engine) is a new generation of coprocessor on 
-> +	  Freescale embedded CPUs(like CPM  in older chips).  Selecting
-> +	  this option means that you wish to build a kernel for a machine
-> +	  with QE coprocessor on it.
-> +
->  config PPC_PSERIES
->  	depends on PPC_MULTIPLATFORM && PPC64
->  	bool "IBM pSeries & new (POWER5-based) iSeries"
-> @@ -1047,6 +1057,8 @@ # XXX source "arch/ppc/8xx_io/Kconfig"
->  
->  # XXX source "arch/ppc/8260_io/Kconfig"
->  
-> +source "arch/powerpc/sysdev/qe_lib/Kconfig"
-> +
->  source "arch/powerpc/platforms/iseries/Kconfig"
->  
->  source "lib/Kconfig"
+
+> - k
+> 
+> >
+> > ---
+> >
+> > This was introduced by:
+> >
+> > [PATCH] ppc32: board-specific part of fs_enet update
+> >
+> >
+> > Index: linux-2.6/include/asm-ppc/cpm2.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/asm-ppc/cpm2.h
+> > +++ linux-2.6/include/asm-ppc/cpm2.h
+> > @@ -1186,7 +1186,7 @@ typedef struct im_idma {
+> >  #define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
+> >  #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
+> >  #define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
+> > -#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
+> > +#define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
+> >
+> >  #endif /* __CPM2__ */
+> >  #endif /* __KERNEL__ */
+> 
+> 
+
+
+-- 
+Sincerely, 
+Vitaly
