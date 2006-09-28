@@ -1,25 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <1159401139.7584.82.camel@basalt.austin.ibm.com>
-References: <20060831184020.GA13494@mag.az.mvista.com>
-	<17662.17895.852128.729679@cargo.ozlabs.ibm.com>
-	<20060907003625.GA15533@mag.az.mvista.com>
-	<1157615011.18137.14.camel@diesel>
-	<20060907182717.GC4398@mag.az.mvista.com>
-	<1157667816.5220.30.camel@basalt.austin.ibm.com>
-	<20060908005630.GA9823@mag.az.mvista.com>
-	<17665.28367.380866.565218@cargo.ozlabs.ibm.com>
-	<20060919194527.GD11361@mag.az.mvista.com>
-	<17690.64482.319084.61866@cargo.ozlabs.ibm.com>
-	<6897081F-DDAC-462A-8D4D-EE613231CA4B@kernel.crashing.org>
-	<1159401139.7584.82.camel@basalt.austin.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FCEE727C-650A-41F1-85D3-270BFDF7B205@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: common flatdevtree code
-Date: Thu, 28 Sep 2006 02:51:52 +0200
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id AB8A667B67
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 14:43:43 +1000 (EST)
+Date: Wed, 27 Sep 2006 23:43:04 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] enable generic rtc hook for the MPC8349 mITX
+Message-Id: <20060927234304.0cf4d22d.kim.phillips@freescale.com>
+In-Reply-To: <20060927155853.GB2385@smtp.west.cox.net>
+References: <20060926174651.032a474e.kim.phillips@freescale.com>
+	<B35FD5A1-2C71-41E2-A014-A2C8D37F10C2@kernel.crashing.org>
+	<20060927155853.GB2385@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Or unpack the tree before you operate on it.  You can pack it
->> again later if you need to pass it as a flat tree again (or the
->> bootwrapper could implement a real OF client interface, which
->> is useful for many more things!)
->>
->> A flat contiguous blob of bytes is convenient to pass around,
->> but not such a great data structure for basically anything else ;-)
->
-> I agree; I think this data structure's design is explicitly static,  
-> and
-> now we're trying to dynamically edit it.
->
-> We essentially need to do unpack/pack now whenever the size of the
-> structure changes (e.g. changing a property size, adding or removing
-> anything). Making that explicit (and one-time) might be a good idea:
->         tree = ft_unpack(blob);
->         n = ft_find_node(tree, "/node");
->         ft_set_prop(n, "property", value, len);
->         ...
->         blob = ft_pack(tree);
+On Wed, 27 Sep 2006 08:58:53 -0700
+Tom Rini <trini@kernel.crashing.org> wrote:
 
-And then everything but ft_{un,}pack() don't actually operate on
-a flat tree anymore; so change the prefix?  How about using of_
-instead :-)
+> On Tue, Sep 26, 2006 at 11:34:43PM -0500, Kumar Gala wrote:
+> > On Sep 26, 2006, at 5:46 PM, Kim Phillips wrote:
+> [snip]
+> > > diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/ 
+> > > powerpc/platforms/83xx/mpc834x_itx.c
+> > > index 969fbb6..8c676d7 100644
+> > > --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> > > +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> > > @@ -109,6 +109,10 @@ static int __init mpc834x_itx_probe(void
+> > >  	return 1;
+> > >  }
+> > >
+> > > +#ifdef CONFIG_RTC_CLASS
+> > > +late_initcall(rtc_class_hookup);
+> > > +#endif
+> > 
+> > Any reason we can't just do this in setup_arch?
+> 
+> I think because of rtc-over-i2c and similar where we need the whole rest
+> of the system 'up' before we can try and use the RTC (which might not be
+> the case for this specific board, but for consistency it looks like a
+> good thing to always do it like this).
+> 
+this is indeed the case, as with the static assignment of the ppc_md rtc_time functions in define_machine.  In the early assignment case, the kernel oopses early in rtc_class_open().
 
-[Do you see where this is going? :-) ]
+During testing I noticed hwclock get/set operations worked even without hooking up with the ppc_md rtc_time functions.  Turns out this rtc_class provides access to the RTC to the whole kernel and userspace:
 
+http://lkml.org/lkml/2005/12/20/220
 
-Segher
+so, both of these patches are really unnecessary, unless there's a genuine consumer in arch/powerpc that I can't find (I'm assuming get_boot_time() isn't one of them since it gets called way too early in the rtc-over-i2c based platform case).
+
+So we should just configure RTC_CLASS and the specific chip and we're done. :)
+
+Kim
