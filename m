@@ -1,18 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH 4/4] Enable MSI on Powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jake Moilanen <moilanen@austin.ibm.com>
-In-Reply-To: <1159386365.5542.115.camel@goblue>
-References: <20060818081331.E6F7267B5D@ozlabs.org>
-	<1159386365.5542.115.camel@goblue>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-hC2wLZrqhcMHzSaBeLIx"
-Date: Thu, 28 Sep 2006 16:07:20 +1000
-Message-Id: <1159423641.12398.14.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 248A967B6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 16:11:57 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k8S6Bub7020741
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Sep 2006 23:11:56 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k8S6BrPa009078
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:11:55 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 10/11] Add MPC8360EMDS board support
+Date: Thu, 28 Sep 2006 14:12:30 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D19D90F@zch01exm20.fsl.freescale.net>
+In-Reply-To: <C62AC4D8-39E5-44D0-88A3-E8D8042FC828@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +29,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-hC2wLZrqhcMHzSaBeLIx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2006-09-27 at 14:46 -0500, Jake Moilanen wrote:
-> On Fri, 2006-08-18 at 18:13 +1000, Michael Ellerman wrote:
-> > Allow PCI_MSI to build on POWERPC.
-> >=20
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> >=20
-> >  drivers/pci/Kconfig |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >=20
-> > Index: git/drivers/pci/Kconfig
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- git.orig/drivers/pci/Kconfig
-> > +++ git/drivers/pci/Kconfig
-> > @@ -4,7 +4,7 @@
-> >  config PCI_MSI
-> >  	bool "Message Signaled Interrupts (MSI and MSI-X)"
-> >  	depends on PCI
-> > -	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64
-> > +	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64 || POWERPC
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Wednesday, September 27, 2006 9:34 PM
+> To: Li Yang-r58472
+> Cc: Vitaly Bordug; linuxppc-dev@ozlabs.org; Paul Mackerras
+> Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
 >=20
-> Shouldn't this be PPC?
+> >>>> +memory {
+> >>>> +               device_type =3D "memory";
+> >>>> +               linux,phandle =3D <300>;
+> >>>> +               reg =3D <00000000 4000000 f4500000 00000020>;
+> >>>> +       };
+> >>>> the second pair is about bcsr and its size.
+> >>>>
+> >>>> Just in case this may help (and wondering if I'm not violating
+> >>> something :) )
+> >>>
+> >>> Well, this can make it work.  But I would prefer to use a new node
+> >>> because the BCSR is by no means a memory type of device.  I have
+> > made my
+> >>> change to use node like this:
+> >>>
+> >>>         bcsr@f8000000 {
+> >>>                 device_type =3D "board-control";
+> >>>                 reg =3D <f8000000 8000>;
+> >>>         };
+> >>>
+> >>
+> >> I though about that approach, but saw somewhere a reference that we
+> > should not summon
+> >> new node types without utter necessity, and utilized memory because
+> > bcsr is
+> >> memory-mapped stuff. I can hardly imagine bcsr as a device (which
+> > would require
+> >> respective spec inclusion btw).
+> >
+> > Well I didn't see such a guideline.  However BCSR is truly a device
+> > like
+> > any other peripherals on board.  Usually it is an FPGA on local bus
+to
+> > control the board.
+>=20
+> Agree that a new node is better, calling it memory isn't right.
+> However, I'm not sure this really needs a node in the device tree.
+> The BCSR isn't really the same from board to board last time I
+> checked.  I'd be interested in Paul's thinking about why it should be
+> in the tree.
+>=20
+> >> hence let's open a discussion what others think about that. The
+> > problem seems common
+> >> (and for some boards
+> >> is called somewhat else apparently), but at this point we should
+come
+> > to some
+> >> conclusion, document it, and use it.
+> >
+> > Agreed.  As we are adding more devices to the device tree, we should
+> > also have a guideline clearly stated for adding new nodes.
+> >
+> > I'm adding MURAM as a new node under QE bus.  Please comment.
+> >                 muram@10000 {
+> >                         device_type =3D "memory";
+> >                         ranges =3D <0 00010000 0000c000>;
+> >
+> >                         data-only@0{
+> >                                 reg =3D <0 c000>;
+> >                         };
+> >                 };
+>=20
+> What was the need for this?
 
-Maybe. If we use PPC then MSI will get built for arch/ppc as well which
-won't work - so I think we should have a POWERPC symbol, I sent that as
-a separate patch a while back but it seems to have hit the floor.
 
-cheers
+Data-only defines MURAM area which can be allocated for data and
+parameter ram.  Some MURAM space can be occupied by microcode or
+microcode patch, and should be excluded from allocation.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-hC2wLZrqhcMHzSaBeLIx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBFG2aYdSjSd0sB4dIRAkHNAKCgOJJXwqVwoHYtmfrtnNPMLamXUACgpdY+
-Tm9BYyvTVPKoWX2KR7xxIhM=
-=Qzte
------END PGP SIGNATURE-----
-
---=-hC2wLZrqhcMHzSaBeLIx--
+- Leo
