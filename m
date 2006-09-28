@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linux-kernel@vger.kernel.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 29 Sep 2006 07:53:34 +1000
-Subject: [RFC/PATCH 1/7] Rip out the existing powerpc msi stubs
+Date: Fri, 29 Sep 2006 07:53:35 +1000
+Subject: [RFC/PATCH 2/7] Make some MSIX defines generic
 In-Reply-To: <1159480412.269240.988552559176.qpush@concordia>
-Message-Id: <20060928215335.D576367BFB@ozlabs.org>
+Message-Id: <20060928215337.A17D767C5B@ozlabs.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,67 +15,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rip out the existing powerpc msi stubs.
+Make some MSIX defines generic
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/irq.c     |   28 ----------------------------
- include/asm-powerpc/machdep.h |    5 -----
- 2 files changed, 33 deletions(-)
+ drivers/pci/msi.h        |    8 --------
+ include/linux/pci_regs.h |    8 ++++++++
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-Index: to-merge/arch/powerpc/kernel/irq.c
+Index: to-merge/drivers/pci/msi.h
 ===================================================================
---- to-merge.orig/arch/powerpc/kernel/irq.c
-+++ to-merge/arch/powerpc/kernel/irq.c
-@@ -820,34 +820,6 @@ arch_initcall(irq_late_init);
+--- to-merge.orig/drivers/pci/msi.h
++++ to-merge/drivers/pci/msi.h
+@@ -8,14 +8,6 @@
  
- #endif /* CONFIG_PPC_MERGE */
+ #include <asm/msi.h>
  
--#ifdef CONFIG_PCI_MSI
--int pci_enable_msi(struct pci_dev * pdev)
--{
--	if (ppc_md.enable_msi)
--		return ppc_md.enable_msi(pdev);
--	else
--		return -1;
--}
--EXPORT_SYMBOL(pci_enable_msi);
+-/*
+- * MSI-X Address Register
+- */
+-#define PCI_MSIX_FLAGS_QSIZE		0x7FF
+-#define PCI_MSIX_FLAGS_ENABLE		(1 << 15)
+-#define PCI_MSIX_FLAGS_BIRMASK		(7 << 0)
+-#define PCI_MSIX_FLAGS_BITMASK		(1 << 0)
 -
--void pci_disable_msi(struct pci_dev * pdev)
--{
--	if (ppc_md.disable_msi)
--		ppc_md.disable_msi(pdev);
--}
--EXPORT_SYMBOL(pci_disable_msi);
--
--void pci_scan_msi_device(struct pci_dev *dev) {}
--int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec) {return -1;}
--void pci_disable_msix(struct pci_dev *dev) {}
--void msi_remove_pci_irq_vectors(struct pci_dev *dev) {}
--void disable_msi_mode(struct pci_dev *dev, int pos, int type) {}
--void pci_no_msi(void) {}
--EXPORT_SYMBOL(pci_enable_msix);
--EXPORT_SYMBOL(pci_disable_msix);
--
--#endif
--
- #ifdef CONFIG_PPC64
- static int __init setup_noirqdistrib(char *str)
- {
-Index: to-merge/include/asm-powerpc/machdep.h
+ #define PCI_MSIX_ENTRY_SIZE			16
+ #define  PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET	0
+ #define  PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET	4
+Index: to-merge/include/linux/pci_regs.h
 ===================================================================
---- to-merge.orig/include/asm-powerpc/machdep.h
-+++ to-merge/include/asm-powerpc/machdep.h
-@@ -239,11 +239,6 @@ struct machdep_calls {
- 	 */
- 	void (*machine_kexec)(struct kimage *image);
- #endif /* CONFIG_KEXEC */
--
--#ifdef CONFIG_PCI_MSI
--	int (*enable_msi)(struct pci_dev *pdev);
--	void (*disable_msi)(struct pci_dev *pdev);
--#endif /* CONFIG_PCI_MSI */
- };
+--- to-merge.orig/include/linux/pci_regs.h
++++ to-merge/include/linux/pci_regs.h
+@@ -287,6 +287,14 @@
+ #define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
+ #define PCI_MSI_MASK_BIT	16	/* Mask bits register */
  
- extern void power4_idle(void);
++/* MSI-X registers */
++#define PCI_MSIX_FLAGS		2	/* Various flags */
++#define  PCI_MSIX_FLAGS_ENABLE	0x8000	/* MSI-X feature enabled */
++#define  PCI_MSIX_FLAGS_FNMASK	0x4000	/* Mask entire function */
++#define  PCI_MSIX_FLAGS_QSIZE	0x07FF	/* Number of MSI-X available */
++#define  PCI_MSIX_FLAGS_BIRMASK	0x0007	/* BIR */
++#define  PCI_MSIX_FLAGS_BITMASK	0x0001	/* ??? */
++
+ /* CompactPCI Hotswap Register */
+ 
+ #define PCI_CHSWP_CSR		2	/* Control and Status Register */
