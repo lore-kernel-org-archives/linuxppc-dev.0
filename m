@@ -1,21 +1,21 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2538C67B93
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:18:16 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k8S8IFOY012239
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:18:15 -0700 (MST)
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A906E67C06
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:18:23 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k8S8VGc2006228
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:31:16 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k8S8IB04011880
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:18:12 -0500 (CDT)
-Message-ID: <451B8567.2070209@freescale.com>
-Date: Thu, 28 Sep 2006 16:18:47 +0800
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k8S8IHrO009860
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:18:18 -0500 (CDT)
+Message-ID: <451B856E.4010600@freescale.com>
+Date: Thu, 28 Sep 2006 16:18:54 +0800
 From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
 To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 2/12] qe_lib: Add common files
+Subject: [PATCH 3/12] qe_lib: Add QE interrupt controller driver
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,453 +27,695 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Shlomi Gridish <gridish@freescale.com>
+The QEIC is updated to use genirq and Ben's interrupt mapping.
+
 Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Shlomi Gridish <gridish@freescale.com>
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com> 
 
 ---
- arch/powerpc/sysdev/Makefile           |    1 
- arch/powerpc/sysdev/qe_lib/Kconfig     |   29 ++
- arch/powerpc/sysdev/qe_lib/Makefile    |    8 +
- arch/powerpc/sysdev/qe_lib/qe_common.c |  362 ++++++++++++++++++++++++
- include/asm-powerpc/qe.h               |  487 ++++++++++++++++++++++++++++++++
- 5 files changed, 887 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/qe_lib/qe_ic.c |  554 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/qe_lib/qe_ic.h |  105 +++++++
+ include/asm-powerpc/qe_ic.h        |   87 ++++++
+ 3 files changed, 746 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index e5e999e..c6e5b31 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_PPC_TODC)		+= todc.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
-+obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
-diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
 new file mode 100644
-index 0000000..28487e4
+index 0000000..9fb95e9
 --- /dev/null
-+++ b/arch/powerpc/sysdev/qe_lib/Kconfig
-@@ -0,0 +1,29 @@
-+#
-+# QE Communication options
-+#
-+
-+menu "QE Options"
-+	depends on QUICC_ENGINE
-+
-+config UCC_SLOW
-+	bool "UCC Slow Protocols Support"
-+	default n
-+	select UCC
-+	help
-+	  This option provides qe_lib support to UCC slow
-+	  protocols: UART, BISYNC, QMC
-+
-+config UCC_FAST
-+	bool "UCC Fast Protocols Support"
-+	default n
-+	select UCC
-+	help
-+	  This option provides qe_lib support to UCC fast
-+	  protocols: HDLC, Ethernet, ATM, transparent
-+
-+config UCC
-+	bool
-+	default y if UCC_FAST || UCC_SLOW
-+
-+endmenu
-+
-diff --git a/arch/powerpc/sysdev/qe_lib/Makefile b/arch/powerpc/sysdev/qe_lib/Makefile
-new file mode 100644
-index 0000000..9a54a81
---- /dev/null
-+++ b/arch/powerpc/sysdev/qe_lib/Makefile
-@@ -0,0 +1,8 @@
-+#
-+# Makefile for the linux ppc-specific parts of QE
-+#
-+obj-$(CONFIG_QUICC_ENGINE)+= qe_common.o qe.o qe_ic.o qe_io.o
-+
-+obj-$(CONFIG_UCC)	+= ucc.o
-+obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-+obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o ucc_slow.o
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c b/arch/powerpc/sysdev/qe_lib/qe_common.c
-new file mode 100644
-index 0000000..0f59049
---- /dev/null
-+++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
-@@ -0,0 +1,362 @@
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+@@ -0,0 +1,554 @@
 +/*
-+ * Copyright (C) 2006 Freescale Semicondutor, Inc. All rights reserved.
++ * Copyright (C) 2006 Freescale Semicondutor, Inc.  All rights reserved.
 + *
-+ * Author: Shlomi Gridish <gridish@freescale.com>
-+ * Based on cpm2_common.c from Dan Malek (dmalek@jlc.net)
-+ * Maintainer: Li Yang <leoli@freescale.com>
++ * Author: Li Yang <leoli@freescale.com>
++ * Based on code from Shlomi Gridish <gridish@freescale.com>
 + *
 + * Description:
-+ * General Purpose functions for the global management of the
-+ * QUICC Engine (QE).
++ * QUICC ENGINE Interrupt Controller
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
 + */
-+#include <linux/errno.h>
-+#include <linux/sched.h>
++
 +#include <linux/kernel.h>
-+#include <linux/param.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/interrupt.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/slab.h>
++#include <linux/stddef.h>
++#include <linux/sched.h>
++#include <linux/signal.h>
++#include <linux/sysdev.h>
++#include <linux/device.h>
 +#include <linux/bootmem.h>
-+#include <linux/module.h>
-+#include <linux/delay.h>
-+#include <linux/ioport.h>
++#include <linux/spinlock.h>
 +#include <asm/irq.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/immap_qe.h>
-+#include <asm/qe.h>
++#include <asm/io.h>
 +#include <asm/prom.h>
-+#include <asm/rheap.h>
++#include <asm/qe_ic.h>
 +
-+/* QE snum state
-+*/
-+typedef enum qe_snum_state {
-+	QE_SNUM_STATE_USED,	/* used */
-+	QE_SNUM_STATE_FREE	/* free */
-+} qe_snum_state_e;
++#include "qe_ic.h"
 +
-+/* QE snum
-+*/
-+typedef struct qe_snum {
-+	u8 num;			/* snum  */
-+	qe_snum_state_e state;	/* state */
-+} qe_snum_t;
++static DEFINE_SPINLOCK(qe_ic_lock);
 +
-+/* We allocate this here because it is used almost exclusively for
-+ * the communication processor devices.
-+ */
-+EXPORT_SYMBOL(qe_immr);
-+qe_map_t *qe_immr = NULL;
-+static qe_snum_t snums[QE_NUM_OF_SNUM];	/* Dynamically allocated SNUMs  */
++static struct qe_ic_info qe_ic_info[] = {
++	[1] = {
++	       .mask = 0x00008000,
++	       .mask_reg = QEIC_CIMR,
++	       .pri_code = 0,
++	       .pri_reg = QEIC_CIPWCC,
++	       },
++	[2] = {
++	       .mask = 0x00004000,
++	       .mask_reg = QEIC_CIMR,
++	       .pri_code = 1,
++	       .pri_reg = QEIC_CIPWCC,
++	       },
++	[3] = {
++	       .mask = 0x00002000,
++	       .mask_reg = QEIC_CIMR,
++	       .pri_code = 2,
++	       .pri_reg = QEIC_CIPWCC,
++	       },
++	[10] = {
++		.mask = 0x00000040,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 1,
++		.pri_reg = QEIC_CIPZCC,
++		},
++	[11] = {
++		.mask = 0x00000020,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 2,
++		.pri_reg = QEIC_CIPZCC,
++		},
++	[12] = {
++		.mask = 0x00000010,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 3,
++		.pri_reg = QEIC_CIPZCC,
++		},
++	[13] = {
++		.mask = 0x00000008,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 4,
++		.pri_reg = QEIC_CIPZCC,
++		},
++	[14] = {
++		.mask = 0x00000004,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 5,
++		.pri_reg = QEIC_CIPZCC,
++		},
++	[15] = {
++		.mask = 0x00000002,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 6,
++		.pri_reg = QEIC_CIPZCC,
++		},
++	[20] = {
++		.mask = 0x10000000,
++		.mask_reg = QEIC_CRIMR,
++		.pri_code = 3,
++		.pri_reg = QEIC_CIPRTA,
++		},
++	[25] = {
++		.mask = 0x00800000,
++		.mask_reg = QEIC_CRIMR,
++		.pri_code = 0,
++		.pri_reg = QEIC_CIPRTB,
++		},
++	[26] = {
++		.mask = 0x00400000,
++		.mask_reg = QEIC_CRIMR,
++		.pri_code = 1,
++		.pri_reg = QEIC_CIPRTB,
++		},
++	[27] = {
++		.mask = 0x00200000,
++		.mask_reg = QEIC_CRIMR,
++		.pri_code = 2,
++		.pri_reg = QEIC_CIPRTB,
++		},
++	[28] = {
++		.mask = 0x00100000,
++		.mask_reg = QEIC_CRIMR,
++		.pri_code = 3,
++		.pri_reg = QEIC_CIPRTB,
++		},
++	[32] = {
++		.mask = 0x80000000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 0,
++		.pri_reg = QEIC_CIPXCC,
++		},
++	[33] = {
++		.mask = 0x40000000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 1,
++		.pri_reg = QEIC_CIPXCC,
++		},
++	[34] = {
++		.mask = 0x20000000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 2,
++		.pri_reg = QEIC_CIPXCC,
++		},
++	[35] = {
++		.mask = 0x10000000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 3,
++		.pri_reg = QEIC_CIPXCC,
++		},
++	[36] = {
++		.mask = 0x08000000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 4,
++		.pri_reg = QEIC_CIPXCC,
++		},
++	[40] = {
++		.mask = 0x00800000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 0,
++		.pri_reg = QEIC_CIPYCC,
++		},
++	[41] = {
++		.mask = 0x00400000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 1,
++		.pri_reg = QEIC_CIPYCC,
++		},
++	[42] = {
++		.mask = 0x00200000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 2,
++		.pri_reg = QEIC_CIPYCC,
++		},
++	[43] = {
++		.mask = 0x00100000,
++		.mask_reg = QEIC_CIMR,
++		.pri_code = 3,
++		.pri_reg = QEIC_CIPYCC,
++		},
++};
 +
-+static void qe_snums_init(void);
-+static void qe_muram_init(void);
-+static int qe_sdma_init(void);
-+
-+static DEFINE_SPINLOCK(qe_lock);
-+
-+void qe_reset(void)
++static inline u32 qe_ic_read(volatile u32 __iomem * base, unsigned int reg)
 +{
-+	if (qe_immr == NULL)
-+		qe_immr = (qe_map_t *) ioremap(get_qe_base(), QE_IMMAP_SIZE);
-+
-+	qe_snums_init();
-+
-+	qe_issue_cmd(QE_RESET, QE_CR_SUBBLOCK_INVALID,
-+		     (u8) QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	/* Reclaim the MURAM memory for our use. */
-+	qe_muram_init();
-+
-+	if (qe_sdma_init())
-+		panic("sdma init failed!");
++	return in_be32(base + (reg >> 2));
 +}
 +
-+EXPORT_SYMBOL(qe_issue_cmd);
-+int qe_issue_cmd(uint cmd, uint device, u8 mcn_protocol, u32 cmd_input)
++static inline void qe_ic_write(volatile u32 __iomem * base, unsigned int reg,
++			       u32 value)
 +{
-+	unsigned long flags;
-+	u32 cecr;
-+	u8 mcn_shift = 0, dev_shift = 0;
++	out_be32(base + (reg >> 2), value);
++}
 +
-+	spin_lock_irqsave(&qe_lock, flags);
-+	if (cmd == QE_RESET) {
-+		out_be32(&qe_immr->cp.cecr, (u32) (cmd | QE_CR_FLG));
++static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
++{
++	return irq_desc[virq].chip_data;
++}
++
++#define virq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
++
++static void qe_ic_unmask_irq(unsigned int virq)
++{
++	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
++	unsigned int src = virq_to_hw(virq);
++	unsigned long flags;
++	u32 temp;
++
++	spin_lock_irqsave(&qe_ic_lock, flags);
++
++	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
++	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
++		    temp | qe_ic_info[src].mask);
++
++	spin_unlock_irqrestore(&qe_ic_lock, flags);
++}
++
++static void qe_ic_mask_irq(unsigned int virq)
++{
++	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
++	unsigned int src = virq_to_hw(virq);
++	unsigned long flags;
++	u32 temp;
++
++	spin_lock_irqsave(&qe_ic_lock, flags);
++
++	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
++	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
++		    temp & ~qe_ic_info[src].mask);
++
++	spin_unlock_irqrestore(&qe_ic_lock, flags);
++}
++
++static void qe_ic_mask_irq_and_ack(unsigned int virq)
++{
++	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
++	unsigned int src = virq_to_hw(virq);
++	unsigned long flags;
++	u32 temp;
++
++	spin_lock_irqsave(&qe_ic_lock, flags);
++
++	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
++	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
++		    temp & ~qe_ic_info[src].mask);
++
++	/* There is nothing to do for ack here, ack is handled in ISR */
++
++	spin_unlock_irqrestore(&qe_ic_lock, flags);
++}
++
++static struct irq_chip qe_ic_irq_chip = {
++	.typename = " QEIC  ",
++	.unmask = qe_ic_unmask_irq,
++	.mask = qe_ic_mask_irq,
++	.mask_ack = qe_ic_mask_irq_and_ack,
++};
++
++static int qe_ic_host_match(struct irq_host *h, struct device_node *node)
++{
++	struct qe_ic *qe_ic = h->host_data;
++
++	/* Exact match, unless qe_ic node is NULL */
++	return qe_ic->of_node == NULL || qe_ic->of_node == node;
++}
++
++static int qe_ic_host_map(struct irq_host *h, unsigned int virq,
++			  irq_hw_number_t hw)
++{
++	struct qe_ic *qe_ic = h->host_data;
++	struct irq_chip *chip;
++
++	if (qe_ic_info[hw].mask == 0) {
++		printk(KERN_ERR "Can't map reserved IRQ \n");
++		return -EINVAL;
++	}
++	/* Default chip */
++	chip = &qe_ic->hc_irq;
++
++	set_irq_chip_data(virq, qe_ic);
++	get_irq_desc(virq)->status |= IRQ_LEVEL;
++
++	set_irq_chip_and_handler(virq, chip, handle_level_irq);
++
++	return 0;
++}
++
++static int qe_ic_host_xlate(struct irq_host *h, struct device_node *ct,
++			    u32 * intspec, unsigned int intsize,
++			    irq_hw_number_t * out_hwirq,
++			    unsigned int *out_flags)
++{
++	*out_hwirq = intspec[0];
++	if (intsize > 1)
++		*out_flags = intspec[1];
++	else
++		*out_flags = IRQ_TYPE_NONE;
++	return 0;
++}
++
++static struct irq_host_ops qe_ic_host_ops = {
++	.match = qe_ic_host_match,
++	.map = qe_ic_host_map,
++	.xlate = qe_ic_host_xlate,
++};
++
++/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
++unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic, struct pt_regs *regs)
++{
++	int irq;
++
++	BUG_ON(qe_ic == NULL);
++
++	/* get the interrupt source vector. */
++	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
++
++	if (irq == 0)
++		return NO_IRQ;
++
++	return irq_linear_revmap(qe_ic->irqhost, irq);
++}
++
++/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
++unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic, struct pt_regs *regs)
++{
++	int irq;
++
++	BUG_ON(qe_ic == NULL);
++
++	/* get the interrupt source vector. */
++	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
++
++	if (irq == 0)
++		return NO_IRQ;
++
++	return irq_linear_revmap(qe_ic->irqhost, irq);
++}
++
++/* FIXME: We mask all the QE Low interrupts while handling.  We should
++ * let other interrupt come in, but BAD interrupts are generated */
++void fastcall qe_ic_cascade_low(unsigned int irq, struct irq_desc *desc,
++				struct pt_regs *regs)
++{
++	struct qe_ic *qe_ic = desc->handler_data;
++	struct irq_chip *chip = irq_desc[irq].chip;
++
++	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic, regs);
++
++	chip->mask_ack(irq);
++	if (cascade_irq != NO_IRQ)
++		generic_handle_irq(cascade_irq, regs);
++	chip->unmask(irq);
++}
++
++/* FIXME: We mask all the QE High interrupts while handling.  We should
++ * let other interrupt come in, but BAD interrupts are generated */
++void fastcall qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc,
++				 struct pt_regs *regs)
++{
++	struct qe_ic *qe_ic = desc->handler_data;
++	struct irq_chip *chip = irq_desc[irq].chip;
++
++	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic, regs);
++
++	chip->mask_ack(irq);
++	if (cascade_irq != NO_IRQ)
++		generic_handle_irq(cascade_irq, regs);
++	chip->unmask(irq);
++}
++
++void __init qe_ic_init(struct device_node *node, unsigned int flags)
++{
++	struct qe_ic *qe_ic;
++	struct resource res;
++	u32 temp = 0, ret, high_active = 0;
++
++	qe_ic = alloc_bootmem(sizeof(struct qe_ic));
++	if (qe_ic == NULL)
++		return;
++
++	memset(qe_ic, 0, sizeof(struct qe_ic));
++	qe_ic->of_node = node ? of_node_get(node) : NULL;
++
++	qe_ic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR,
++					NR_QE_IC_INTS, &qe_ic_host_ops, 0);
++	if (qe_ic->irqhost == NULL) {
++		of_node_put(node);
++		return;
++	}
++
++	ret = of_address_to_resource(node, 0, &res);
++	if (ret)
++		return;
++
++	qe_ic->regs = ioremap(res.start, res.end - res.start + 1);
++
++	qe_ic->irqhost->host_data = qe_ic;
++	qe_ic->hc_irq = qe_ic_irq_chip;
++
++	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
++	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
++
++	if (qe_ic->virq_low == NO_IRQ) {
++		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
++		return;
++	}
++
++	/* default priority scheme is grouped. If spread mode is    */
++	/* required, configure cicr accordingly.                    */
++	if (flags & QE_IC_SPREADMODE_GRP_W)
++		temp |= CICR_GWCC;
++	if (flags & QE_IC_SPREADMODE_GRP_X)
++		temp |= CICR_GXCC;
++	if (flags & QE_IC_SPREADMODE_GRP_Y)
++		temp |= CICR_GYCC;
++	if (flags & QE_IC_SPREADMODE_GRP_Z)
++		temp |= CICR_GZCC;
++	if (flags & QE_IC_SPREADMODE_GRP_RISCA)
++		temp |= CICR_GRTA;
++	if (flags & QE_IC_SPREADMODE_GRP_RISCB)
++		temp |= CICR_GRTB;
++
++	/* choose destination signal for highest priority interrupt */
++	if (flags & QE_IC_HIGH_SIGNAL) {
++		temp |= (SIGNAL_HIGH << CICR_HPIT_SHIFT);
++		high_active = 1;
++	}
++
++	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
++
++	set_irq_data(qe_ic->virq_low, qe_ic);
++	set_irq_chained_handler(qe_ic->virq_low, qe_ic_cascade_low);
++
++	if (qe_ic->virq_high != NO_IRQ) {
++		set_irq_data(qe_ic->virq_high, qe_ic);
++		set_irq_chained_handler(qe_ic->virq_high, qe_ic_cascade_high);
++	}
++
++	printk("QEIC (%d IRQ sources) at %p\n", NR_QE_IC_INTS, qe_ic->regs);
++}
++
++void qe_ic_set_highest_priority(unsigned int virq, int high)
++{
++	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
++	unsigned int src = virq_to_hw(virq);
++	u32 temp = 0;
++
++	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
++
++	temp &= ~CICR_HP_MASK;
++	temp |= src << CICR_HP_SHIFT;
++
++	temp &= ~CICR_HPIT_MASK;
++	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << CICR_HPIT_SHIFT;
++
++	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
++}
++
++/* Set Priority level within its group, from 1 to 8 */
++int qe_ic_set_priority(unsigned int virq, unsigned int priority)
++{
++	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
++	unsigned int src = virq_to_hw(virq);
++	u32 temp;
++
++	if (priority > 8 || priority == 0)
++		return -EINVAL;
++	if (src > 127)
++		return -EINVAL;
++	if (qe_ic_info[src].pri_reg == 0)
++		return -EINVAL;
++
++	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].pri_reg);
++
++	if (priority < 4) {
++		temp &= ~(0x7 << (32 - priority * 3));
++		temp |= qe_ic_info[src].pri_code << (32 - priority * 3);
 +	} else {
-+		if (cmd == QE_ASSIGN_PAGE) {
-+			/* Here device is the SNUM, not sub-block */
-+			dev_shift = QE_CR_SNUM_SHIFT;
-+		} else if (cmd == QE_ASSIGN_RISC) {
-+			/* Here device is the SNUM, and mcnProtocol is
-+			 * e_QeCmdRiscAssignment value */
-+			dev_shift = QE_CR_SNUM_SHIFT;
-+			mcn_shift = QE_CR_MCN_RISC_ASSIGN_SHIFT;
-+		} else {
-+			if (device == QE_CR_SUBBLOCK_USB)
-+				mcn_shift = QE_CR_MCN_USB_SHIFT;
-+			else
-+				mcn_shift = QE_CR_MCN_NORMAL_SHIFT;
-+		}
-+
-+		out_be32(&qe_immr->cp.cecdr,
-+			 immrbar_virt_to_phys((void *)cmd_input));
-+		out_be32(&qe_immr->cp.cecr,
-+			 (cmd | QE_CR_FLG | ((u32) device << dev_shift) | (u32)
-+			  mcn_protocol << mcn_shift));
++		temp &= ~(0x7 << (24 - priority * 3));
++		temp |= qe_ic_info[src].pri_code << (24 - priority * 3);
 +	}
 +
-+	/* wait for the QE_CR_FLG to clear */
-+	do {
-+		cecr = in_be32(&qe_immr->cp.cecr);
-+	} while (cecr & QE_CR_FLG);
-+	spin_unlock_irqrestore(&qe_lock, flags);
++	qe_ic_write(qe_ic->regs, qe_ic_info[src].pri_reg, temp);
 +
 +	return 0;
 +}
 +
-+/* Set a baud rate generator. This needs lots of work. There are
-+ * 16 BRGs, which can be connected to the QE channels or output
-+ * as clocks. The BRGs are in two different block of internal
-+ * memory mapped space.
-+ * The baud rate clock is the system clock divided by something.
-+ * It was set up long ago during the initial boot phase and is
-+ * is given to us.
-+ * Baud rate clocks are zero-based in the driver code (as that maps
-+ * to port numbers). Documentation uses 1-based numbering.
-+ */
-+static unsigned int brg_clk = 0;
-+
-+unsigned int get_brg_clk(void)
++/* Set a QE priority to use high irq, only priority 1~2 can use high irq */
++int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
 +{
-+	struct device_node *qe;
-+	if (brg_clk)
-+		return brg_clk;
++	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
++	unsigned int src = virq_to_hw(virq);
++	u32 temp, control_reg = QEIC_CICNR, shift = 0;
 +
-+	qe = of_find_node_by_type(NULL, "qe");
-+	if (qe) {
-+		unsigned int size;
-+		u32 *prop = (u32 *) get_property(qe, "brg-frequency", &size);
-+		brg_clk = *prop;
-+		of_node_put(qe);
-+	};
-+	return brg_clk;
-+}
++	if (priority > 2 || priority == 0)
++		return -EINVAL;
 +
-+/* This function is used by UARTS, or anything else that uses a 16x
-+ * oversampled clock.
-+ */
-+void qe_setbrg(uint brg, uint rate)
-+{
-+	volatile uint *bp;
-+	u32 divisor;
-+	int div16 = 0;
-+
-+	bp = (uint *) & qe_immr->brg.brgc1;
-+	bp += brg;
-+
-+	divisor = (get_brg_clk() / rate);
-+	if (divisor > QE_BRGC_DIVISOR_MAX + 1) {
-+		div16 = 1;
-+		divisor /= 16;
++	switch (qe_ic_info[src].pri_reg) {
++	case (QEIC_CIPZCC):
++		shift = CICNR_ZCC1T_SHIFT;
++		break;
++	case (QEIC_CIPWCC):
++		shift = CICNR_WCC1T_SHIFT;
++		break;
++	case (QEIC_CIPYCC):
++		shift = CICNR_YCC1T_SHIFT;
++		break;
++	case (QEIC_CIPXCC):
++		shift = CICNR_XCC1T_SHIFT;
++		break;
++	case (QEIC_CIPRTA):
++		shift = CRICR_RTA1T_SHIFT;
++		control_reg = QEIC_CRICR;
++		break;
++	case (QEIC_CIPRTB):
++		shift = CRICR_RTB1T_SHIFT;
++		control_reg = QEIC_CRICR;
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
-+	*bp = ((divisor - 1) << QE_BRGC_DIVISOR_SHIFT) | QE_BRGC_ENABLE;
-+	if (div16)
-+		*bp |= QE_BRGC_DIV16;
++	shift += (2 - priority) * 2;
++	temp = qe_ic_read(qe_ic->regs, control_reg);
++	temp &= ~(SIGNAL_MASK << shift);
++	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << shift;
++	qe_ic_write(qe_ic->regs, control_reg, temp);
++
++	return 0;
 +}
 +
-+static void qe_snums_init(void)
++static struct sysdev_class qe_ic_sysclass = {
++	set_kset_name("qe_ic"),
++};
++
++static struct sys_device device_qe_ic = {
++	.id = 0,
++	.cls = &qe_ic_sysclass,
++};
++
++static int __init init_qe_ic_sysfs(void)
 +{
-+	int i;
++	int rc;
 +
-+	/* Initialize the SNUMs array. */
-+	for (i = 0; i < QE_NUM_OF_SNUM; i++)
-+		snums[i].state = QE_SNUM_STATE_FREE;
++	printk(KERN_DEBUG "Registering qe_ic with sysfs...\n");
 +
-+	/* Initialize SNUMs (thread serial numbers) according to QE
-+	 * spec chapter 4, SNUM table */
-+	i = 0;
-+	snums[i++].num = 0x04;
-+	snums[i++].num = 0x05;
-+	snums[i++].num = 0x0C;
-+	snums[i++].num = 0x0D;
-+	snums[i++].num = 0x14;
-+	snums[i++].num = 0x15;
-+	snums[i++].num = 0x1C;
-+	snums[i++].num = 0x1D;
-+	snums[i++].num = 0x24;
-+	snums[i++].num = 0x25;
-+	snums[i++].num = 0x2C;
-+	snums[i++].num = 0x2D;
-+	snums[i++].num = 0x34;
-+	snums[i++].num = 0x35;
-+	snums[i++].num = 0x88;
-+	snums[i++].num = 0x89;
-+	snums[i++].num = 0x98;
-+	snums[i++].num = 0x99;
-+	snums[i++].num = 0xA8;
-+	snums[i++].num = 0xA9;
-+	snums[i++].num = 0xB8;
-+	snums[i++].num = 0xB9;
-+	snums[i++].num = 0xC8;
-+	snums[i++].num = 0xC9;
-+	snums[i++].num = 0xD8;
-+	snums[i++].num = 0xD9;
-+	snums[i++].num = 0xE8;
-+	snums[i++].num = 0xE9;
-+}
-+
-+int qe_get_snum(void)
-+{
-+	unsigned long flags;
-+	int snum = -EBUSY;
-+	int i;
-+
-+	spin_lock_irqsave(&qe_lock, flags);
-+	for (i = 0; i < QE_NUM_OF_SNUM; i++) {
-+		if (snums[i].state == QE_SNUM_STATE_FREE) {
-+			snums[i].state = QE_SNUM_STATE_USED;
-+			snum = snums[i].num;
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&qe_lock, flags);
-+
-+	return snum;
-+}
-+
-+EXPORT_SYMBOL(qe_get_snum);
-+
-+void qe_put_snum(u8 snum)
-+{
-+	int i;
-+
-+	for (i = 0; i < QE_NUM_OF_SNUM; i++) {
-+		if (snums[i].num == snum) {
-+			snums[i].state = QE_SNUM_STATE_FREE;
-+			break;
-+		}
-+	}
-+}
-+
-+EXPORT_SYMBOL(qe_put_snum);
-+
-+static int qe_sdma_init(void)
-+{
-+	sdma_t *sdma = &qe_immr->sdma;
-+	uint sdma_buf_offset;
-+
-+	if (!sdma)
++	rc = sysdev_class_register(&qe_ic_sysclass);
++	if (rc) {
++		printk(KERN_ERR "Failed registering qe_ic sys class\n");
 +		return -ENODEV;
-+
-+	/* allocate 2 internal temporary buffers (512 bytes size each) for
-+	 * the SDMA */
-+	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
-+	if (IS_MURAM_ERR(sdma_buf_offset))
-+		return -ENOMEM;
-+
-+	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
-+	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
-+					QE_SDMR_CEN_SHIFT)));
-+
++	}
++	rc = sysdev_register(&device_qe_ic);
++	if (rc) {
++		printk(KERN_ERR "Failed registering qe_ic sys device\n");
++		return -ENODEV;
++	}
 +	return 0;
 +}
++
++subsys_initcall(init_qe_ic_sysfs);
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.h b/arch/powerpc/sysdev/qe_lib/qe_ic.h
+new file mode 100644
+index 0000000..33612c8
+--- /dev/null
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.h
+@@ -0,0 +1,105 @@
++/*
++ * Copyright (C) 2006 Freescale Semicondutor, Inc. All rights reserved.
++ *
++ * Author: Li Yang <leoli@freescale.com>
++ * Based on code from Shlomi Gridish <gridish@freescale.com>
++ *
++ * Description:
++ * QUICC ENGINE Interrupt Controller Header
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#ifndef __QE_IC_H__
++#define __QE_IC_H__
++
++#include <asm/qe_ic.h>
++
++#define NR_QE_IC_INTS		128
++
++/* QE IC registers offset */
++#define QEIC_CICR		0x00
++#define QEIC_CIVEC		0x04
++#define QEIC_CRIPNR		0x08
++#define QEIC_CIPNR		0x0c
++#define QEIC_CIPXCC		0x10
++#define QEIC_CIPYCC		0x14
++#define QEIC_CIPWCC		0x18
++#define QEIC_CIPZCC		0x1c
++#define QEIC_CIMR		0x20
++#define QEIC_CRIMR		0x24
++#define QEIC_CICNR		0x28
++#define QEIC_CIPRTA		0x30
++#define QEIC_CIPRTB		0x34
++#define QEIC_CRICR		0x3c
++#define QEIC_CHIVEC		0x60
++
++/* Interrupt priority registers */
++#define CIPCC_SHIFT_PRI0	29
++#define CIPCC_SHIFT_PRI1	26
++#define CIPCC_SHIFT_PRI2	23
++#define CIPCC_SHIFT_PRI3	20
++#define CIPCC_SHIFT_PRI4	13
++#define CIPCC_SHIFT_PRI5	10
++#define CIPCC_SHIFT_PRI6	7
++#define CIPCC_SHIFT_PRI7	4
++
++/* CICR priority modes */
++#define CICR_GWCC		0x00040000
++#define CICR_GXCC		0x00020000
++#define CICR_GYCC		0x00010000
++#define CICR_GZCC		0x00080000
++#define CICR_GRTA		0x00200000
++#define CICR_GRTB		0x00400000
++#define CICR_HPIT_SHIFT		8
++#define CICR_HPIT_MASK		0x00000300
++#define CICR_HP_SHIFT		24
++#define CICR_HP_MASK		0x3f000000
++
++/* CICNR */
++#define CICNR_WCC1T_SHIFT	20
++#define CICNR_ZCC1T_SHIFT	28
++#define CICNR_YCC1T_SHIFT	12
++#define CICNR_XCC1T_SHIFT	4
++
++/* CRICR */
++#define CRICR_RTA1T_SHIFT	20
++#define CRICR_RTB1T_SHIFT	28
++
++/* Signal indicator */
++#define SIGNAL_MASK		3
++#define SIGNAL_HIGH		2
++#define SIGNAL_LOW		0
++
++struct qe_ic {
++	/* Control registers offset */
++	volatile u32 __iomem *regs;
++
++	/* The remapper for this QEIC */
++	struct irq_host *irqhost;
++
++	/* The "linux" controller struct */
++	struct irq_chip hc_irq;
++
++	/* The device node of the interrupt controller */
++	struct device_node *of_node;
++
++	/* VIRQ numbers of QE high/low irqs */
++	unsigned int virq_high;
++	unsigned int virq_low;
++};
 +
 +/*
-+ * muram_alloc / muram_free bits.
++ * QE interrupt controller internal structure
 + */
-+static DEFINE_SPINLOCK(qe_muram_lock);
++struct qe_ic_info {
++	u32 mask;	/* location of this source at the QIMR register. */
++	u32 mask_reg;	/* Mask register offset */
++	u8 pri_code;	/* for grouped interrupts sources - the interrupt
++			   code as appears at the group priority register. */
++	u32 pri_reg;		/* Group priority register offset */
++};
 +
-+/* 16 blocks should be enough to satisfy all requests
-+ * until the memory subsystem goes up... */
-+static rh_block_t qe_boot_muram_rh_block[16];
-+static rh_info_t qe_muram_info;
-+
-+static void qe_muram_init(void)
-+{
-+	struct device_node *np;
-+	u32 address;
-+	u64 size;
-+	unsigned int flags;
-+
-+	/* initialize the info header */
-+	rh_init(&qe_muram_info, 1,
-+		sizeof(qe_boot_muram_rh_block) /
-+		sizeof(qe_boot_muram_rh_block[0]), qe_boot_muram_rh_block);
-+	
-+	/* Attach the usable muram area */
-+	/* XXX: This is a subset of the available muram. It
-+	 * varies with the processor and the microcode patches activated.
-+	 */
-+	if ((np = of_find_node_by_name(NULL, "data-only")) != NULL) {
-+		address = *of_get_address(np, 0, &size, &flags);
-+		of_node_put(np);
-+		rh_attach_region(&qe_muram_info,
-+			(void *)address, (int)size);
-+	}
-+}
-+
-+/* This function returns an index into the MURAM area.
-+ */
-+uint qe_muram_alloc(uint size, uint align)
-+{
-+	void *start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	start = rh_alloc_align(&qe_muram_info, size, align, "QE");
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return (uint) start;
-+}
-+
-+EXPORT_SYMBOL(qe_muram_alloc);
-+
-+int qe_muram_free(uint offset)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	ret = rh_free(&qe_muram_info, (void *)offset);
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return ret;
-+}
-+
-+EXPORT_SYMBOL(qe_muram_free);
-+
-+/* not sure if this is ever needed */
-+uint qe_muram_alloc_fixed(uint offset, uint size)
-+{
-+	void *start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	start =
-+	    rh_alloc_fixed(&qe_muram_info, (void *)offset, size, "commproc");
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return (uint) start;
-+}
-+
-+EXPORT_SYMBOL(qe_muram_alloc_fixed);
-+
-+void qe_muram_dump(void)
-+{
-+	rh_dump(&qe_muram_info);
-+}
-+
-+EXPORT_SYMBOL(qe_muram_dump);
-+
-+void *qe_muram_addr(uint offset)
-+{
-+	return (void *)&qe_immr->muram[offset];
-+}
-+
-+EXPORT_SYMBOL(qe_muram_addr);
-diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
++#endif				/* __QE_IC_H__ */
+diff --git a/include/asm-powerpc/qe_ic.h b/include/asm-powerpc/qe_ic.h
 new file mode 100644
-index 0000000..0dfa5de
+index 0000000..294ee19
 --- /dev/null
-+++ b/include/asm-powerpc/qe.h
-@@ -0,0 +1,487 @@
++++ b/include/asm-powerpc/qe_ic.h
+@@ -0,0 +1,87 @@
 +/*
 + * Copyright (C) 2006 Freescale Semicondutor, Inc. All rights reserved.
 + *
@@ -481,7 +723,7 @@ index 0000000..0dfa5de
 + * Maintainer: Li Yang <leoli@freescale.com>
 + *
 + * Description:
-+ * QUICC Engine (QE) external definitions and structure.
++ * QE IC external definitions and structure.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -489,475 +731,75 @@ index 0000000..0dfa5de
 + * option) any later version.
 + */
 +#ifdef __KERNEL__
-+#ifndef __QE_H__
-+#define __QE_H__
++#ifndef __ASM_QE_IC_H__
++#define __ASM_QE_IC_H__
 +
-+#include <asm/immap_qe.h>
++#include <linux/irq.h>
 +
-+static inline long IS_MURAM_ERR(const uint offset)
-+{
-+	return (uint) offset > (uint) - 1000L;
-+}
++#define _IO_BASE        isa_io_base
++#define _ISA_MEM_BASE   isa_mem_base
++#ifdef CONFIG_PCI
++#define PCI_DRAM_OFFSET pci_dram_offset
++#else
++#define PCI_DRAM_OFFSET 0
++#endif
 +
-+#define QE_NUM_OF_SNUM  28
-+#define QE_NUM_OF_BRGS  16
-+#define QE_NUM_OF_PORTS 1024
++#define NUM_OF_QE_IC_GROUPS    6
 +
-+/* Memory partitions
-+*/
-+#define MEM_PART_SYSTEM     0
-+#define MEM_PART_SECONDARY  1
-+#define MEM_PART_MURAM      2
++/* Flags when we init the QE IC */
++#define QE_IC_SPREADMODE_GRP_W                   0x00000001
++#define QE_IC_SPREADMODE_GRP_X                   0x00000002
++#define QE_IC_SPREADMODE_GRP_Y                   0x00000004
++#define QE_IC_SPREADMODE_GRP_Z                   0x00000008
++#define QE_IC_SPREADMODE_GRP_RISCA               0x00000010
++#define QE_IC_SPREADMODE_GRP_RISCB               0x00000020
 +
-+/* Export the base address of the communication processor registers
-+ * and dual port ram.
++#define QE_IC_LOW_SIGNAL                         0x00000100
++#define QE_IC_HIGH_SIGNAL                        0x00000200
++
++#define QE_IC_GRP_W_PRI0_DEST_SIGNAL_HIGH        0x00001000
++#define QE_IC_GRP_W_PRI1_DEST_SIGNAL_HIGH        0x00002000
++#define QE_IC_GRP_X_PRI0_DEST_SIGNAL_HIGH        0x00004000
++#define QE_IC_GRP_X_PRI1_DEST_SIGNAL_HIGH        0x00008000
++#define QE_IC_GRP_Y_PRI0_DEST_SIGNAL_HIGH        0x00010000
++#define QE_IC_GRP_Y_PRI1_DEST_SIGNAL_HIGH        0x00020000
++#define QE_IC_GRP_Z_PRI0_DEST_SIGNAL_HIGH        0x00040000
++#define QE_IC_GRP_Z_PRI1_DEST_SIGNAL_HIGH        0x00080000
++#define QE_IC_GRP_RISCA_PRI0_DEST_SIGNAL_HIGH    0x00100000
++#define QE_IC_GRP_RISCA_PRI1_DEST_SIGNAL_HIGH    0x00200000
++#define QE_IC_GRP_RISCB_PRI0_DEST_SIGNAL_HIGH    0x00400000
++#define QE_IC_GRP_RISCB_PRI1_DEST_SIGNAL_HIGH    0x00800000
++#define QE_IC_GRP_W_DEST_SIGNAL_SHIFT            (12)
++
++/*
++ * QE interrupt sources groups
 + */
-+int qe_issue_cmd(uint cmd, uint device, u8 mcn_protocol, u32 cmd_input);
-+void qe_setbrg(uint brg, uint rate);
-+int qe_get_snum(void);
-+void qe_put_snum(u8 snum);
-+uint qe_muram_alloc(uint size, uint align);
-+int qe_muram_free(uint offset);
-+uint qe_muram_alloc_fixed(uint offset, uint size);
-+void qe_muram_dump(void);
-+void *qe_muram_addr(uint offset);
-+/* Buffer descriptors.
-+*/
-+typedef struct qe_bd {
-+	u16 status;
-+	u16 length;
-+	u32 buf;
-+} __attribute__ ((packed)) qe_bd_t;
++enum qe_ic_grp_id {
++	QE_IC_GRP_W = 0,	/* QE interrupt controller group W      */
++	QE_IC_GRP_X,		/* QE interrupt controller group X      */
++	QE_IC_GRP_Y,		/* QE interrupt controller group Y      */
++	QE_IC_GRP_Z,		/* QE interrupt controller group Z      */
++	QE_IC_GRP_RISCA,	/* QE interrupt controller RISC group A */
++	QE_IC_GRP_RISCB		/* QE interrupt controller RISC group B */
++};
 +
-+#define QE_SIZEOF_BD       sizeof(qe_bd_t)
++/*********************************************/
++/******   QE IC API routines             *****/
++/*********************************************/
++void qe_ic_init(struct device_node *node, unsigned int flags);
 +
-+#define BD_STATUS_MASK                      0xffff0000
-+#define BD_LENGTH_MASK                      0x0000ffff
-+
-+#define BD_BUFFER_ARG(bd)                   ((qe_bd_t *)bd)->buf
-+#define BD_BUFFER_CLEAR(bd)                 out_be32(&(BD_BUFFER_ARG(bd)), 0);
-+#define BD_BUFFER(bd)                       in_be32(&(BD_BUFFER_ARG(bd)))
-+#define BD_STATUS_AND_LENGTH_SET(bd, val)   out_be32((u32*)bd, val)
-+#define BD_STATUS_AND_LENGTH(bd)            in_be32((u32*)bd)
-+#define BD_BUFFER_SET(bd, buffer)           out_be32(&(BD_BUFFER_ARG(bd)), \
-+	(u32)(buffer))
-+/* Macro for retrieving the following BD.
-+   example:
-+   next = BD_GET_NEXT( currBd, bdStatus, bdBase, SIZEOF_MY_BD, T_W ) */
-+#define BD_GET_NEXT( curr_bd, bd_status, bd_base, bd_len, last_bd ) \
-+        ( (!((bd_status) & (last_bd))) ? ((curr_bd)+(bd_len)) : (bd_base) )
-+
-+/* Alignments
-+*/
-+#define QE_INTR_TABLE_ALIGN                16	/* ??? */
-+#define QE_ALIGNMENT_OF_BD                 8
-+#define QE_ALIGNMENT_OF_PRAM               64
-+
-+/* RISC allocation
-+*/
-+typedef enum qe_risc_allocation {
-+	QE_RISC_ALLOCATION_RISC1 = 1,	/* RISC 1 */
-+	QE_RISC_ALLOCATION_RISC2 = 2,	/* RISC 2 */
-+	QE_RISC_ALLOCATION_RISC1_AND_RISC2 = 3	/* Dynamically choose RISC 1 or
-+						   RISC 2 */
-+} qe_risc_allocation_e;
-+
-+/* QE extended filtering Table Lookup Key Size
-+*/
-+typedef enum qe_fltr_tbl_lookup_key_size {
-+	QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES
-+		= 0x3f,		/* LookupKey parsed by the Generate LookupKey 
-+				   CMD is truncated to 8  bytes */
-+	QE_FLTR_TABLE_LOOKUP_KEY_SIZE_16_BYTES
-+		= 0x5f,		/* LookupKey parsed by the Generate LookupKey 
-+				   CMD is truncated to 16 bytes */
-+} qe_fltr_tbl_lookup_key_size_e;
-+
-+/* QE FLTR extended filtering Largest External Table Lookup Key Size
-+*/
-+typedef enum qe_fltr_largest_external_tbl_lookup_key_size_ {
-+	QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_NONE
-+		= 0x0,/* not used */
-+	QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_8_BYTES
-+		= QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES,	/* 8  bytes */
-+	QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_16_BYTES
-+		= QE_FLTR_TABLE_LOOKUP_KEY_SIZE_16_BYTES	/* 16 bytes */
-+} qe_fltr_largest_external_tbl_lookup_key_size_e;
-+
-+/* structure representing QE parameter RAM
-+*/
-+typedef struct qe_timer_tables {
-+	u16 tm_base;		/* QE timer table base adr */
-+	u16 tm_ptr;		/* QE timer table pointer  */
-+	u16 r_tmr;		/* QE timer mode register  */
-+	u16 r_tmv;		/* QE timer valid register */
-+	u32 tm_cmd;		/* QE timer cmd register   */
-+	u32 tm_cnt;		/* QE timer internal cnt   */
-+} __attribute__ ((packed)) qe_timer_tables_t;
-+
-+#define QE_FLTR_TAD_SIZE                8
-+
-+/* QE extended filtering Termination Action Descriptor (TAD)
-+*/
-+typedef struct qe_fltr_tad {
-+	u8 serialized[QE_FLTR_TAD_SIZE];
-+} __attribute__ ((packed)) qe_fltr_tad_t;
-+
-+/* Communication Direction.
-+*/
-+typedef enum comm_dir {
-+	COMM_DIR_NONE = 0,
-+	COMM_DIR_RX = 1,
-+	COMM_DIR_TX = 2,
-+	COMM_DIR_RX_AND_TX = 3
-+} comm_dir_e;
-+
-+/* Clocks and GRG's
-+*/
-+typedef enum qe_clock {
-+	QE_CLK_NONE = 0
-+	    , QE_BRG1		/* Baud Rate Generator  1 */
-+	    , QE_BRG2		/* Baud Rate Generator  2 */
-+	    , QE_BRG3		/* Baud Rate Generator  3 */
-+	    , QE_BRG4		/* Baud Rate Generator  4 */
-+	    , QE_BRG5		/* Baud Rate Generator  5 */
-+	    , QE_BRG6		/* Baud Rate Generator  6 */
-+	    , QE_BRG7		/* Baud Rate Generator  7 */
-+	    , QE_BRG8		/* Baud Rate Generator  8 */
-+	    , QE_BRG9		/* Baud Rate Generator  9 */
-+	    , QE_BRG10		/* Baud Rate Generator 10 */
-+	    , QE_BRG11		/* Baud Rate Generator 11 */
-+	    , QE_BRG12		/* Baud Rate Generator 12 */
-+	    , QE_BRG13		/* Baud Rate Generator 13 */
-+	    , QE_BRG14		/* Baud Rate Generator 14 */
-+	    , QE_BRG15		/* Baud Rate Generator 15 */
-+	    , QE_BRG16		/* Baud Rate Generator 16 */
-+	    , QE_CLK1		/* Clock  1               */
-+	    , QE_CLK2		/* Clock  2               */
-+	    , QE_CLK3		/* Clock  3               */
-+	    , QE_CLK4		/* Clock  4               */
-+	    , QE_CLK5		/* Clock  5               */
-+	    , QE_CLK6		/* Clock  6               */
-+	    , QE_CLK7		/* Clock  7               */
-+	    , QE_CLK8		/* Clock  8               */
-+	    , QE_CLK9		/* Clock  9               */
-+	    , QE_CLK10		/* Clock 10               */
-+	    , QE_CLK11		/* Clock 11               */
-+	    , QE_CLK12		/* Clock 12               */
-+	    , QE_CLK13		/* Clock 13               */
-+	    , QE_CLK14		/* Clock 14               */
-+	    , QE_CLK15		/* Clock 15               */
-+	    , QE_CLK16		/* Clock 16               */
-+	    , QE_CLK17		/* Clock 17               */
-+	    , QE_CLK18		/* Clock 18               */
-+	    , QE_CLK19		/* Clock 19               */
-+	    , QE_CLK20		/* Clock 20               */
-+	    , QE_CLK21		/* Clock 21               */
-+	    , QE_CLK22		/* Clock 22               */
-+	    , QE_CLK23		/* Clock 23               */
-+	    , QE_CLK24		/* Clock 24               */
-+	    , QE_CLK_DUMMY
-+} qe_clock_e;
-+
-+/* QE CMXUCR Registers.
-+ * There are two UCCs represented in each of the four CMXUCR registers.
-+ * These values are for the UCC in the LSBs
++/* qe_ic_modify_highest_priority
++ * Optional, used to change default. This routine defines a single interrupt
++ * source to be highest priority. It may be called at any stage, thus enabling
++ * dynamic change of the highest priority interrupt.
++ * In default, Highest priority is XCC1 highest priority interrupt source.
++ *
++ *     virq: Interrupt source number
++ *     high: Use high signal?
 + */
-+#define QE_CMXUCR_MII_ENET_MNG              0x00007000
-+#define QE_CMXUCR_MII_ENET_MNG_SHIFT        12
-+#define QE_CMXUCR_GRANT                     0x00008000
-+#define QE_CMXUCR_TSA                       0x00004000
-+#define QE_CMXUCR_BKPT                      0x00000100
-+#define QE_CMXUCR_TX_CLK_SRC_MASK           0x0000000F
++void qe_ic_set_highest_priority(unsigned int virq, int high);
++int qe_ic_set_priority(unsigned int virq, unsigned int priority);
++int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high);
 +
-+/* QE CMXGCR Registers.
-+*/
-+#define QE_CMXGCR_MII_ENET_MNG              0x00007000
-+#define QE_CMXGCR_MII_ENET_MNG_SHIFT        12
-+#define QE_CMXGCR_USBCS                     0x0000000f
-+
-+/* QE CECR Commands.
-+*/
-+#define QE_CR_FLG                   0x00010000
-+#define QE_RESET                    0x80000000
-+#define QE_INIT_TX_RX               0x00000000
-+#define QE_INIT_RX                  0x00000001
-+#define QE_INIT_TX                  0x00000002
-+#define QE_ENTER_HUNT_MODE          0x00000003
-+#define QE_STOP_TX                  0x00000004
-+#define QE_GRACEFUL_STOP_TX         0x00000005
-+#define QE_RESTART_TX               0x00000006
-+#define QE_CLOSE_RX_BD              0x00000007
-+#define QE_SWITCH_COMMAND           0x00000007
-+#define QE_SET_GROUP_ADDRESS        0x00000008
-+#define QE_START_IDMA               0x00000009
-+#define QE_MCC_STOP_RX              0x00000009
-+#define QE_ATM_TRANSMIT             0x0000000a
-+#define QE_HPAC_CLEAR_ALL           0x0000000b
-+#define QE_GRACEFUL_STOP_RX         0x0000001a
-+#define QE_RESTART_RX               0x0000001b
-+#define QE_HPAC_SET_PRIORITY        0x0000010b
-+#define QE_HPAC_STOP_TX             0x0000020b
-+#define QE_HPAC_STOP_RX             0x0000030b
-+#define QE_HPAC_GRACEFUL_STOP_TX    0x0000040b
-+#define QE_HPAC_GRACEFUL_STOP_RX    0x0000050b
-+#define QE_HPAC_START_TX            0x0000060b
-+#define QE_HPAC_START_RX            0x0000070b
-+#define QE_USB_STOP_TX              0x0000000a
-+#define QE_USB_RESTART_TX           0x0000000b
-+#define QE_QMC_STOP_TX              0x0000000c
-+#define QE_QMC_STOP_RX              0x0000000d
-+#define QE_SS7_SU_FIL_RESET         0x0000000e
-+/* jonathbr added from here down for 83xx */
-+#define QE_RESET_BCS                0x0000000a
-+#define QE_MCC_INIT_TX_RX_16        0x00000003
-+#define QE_MCC_STOP_TX              0x00000004
-+#define QE_MCC_INIT_TX_1            0x00000005
-+#define QE_MCC_INIT_RX_1            0x00000006
-+#define QE_MCC_RESET                0x00000007
-+#define QE_SET_TIMER                0x00000008
-+#define QE_RANDOM_NUMBER            0x0000000c
-+#define QE_ATM_MULTI_THREAD_INIT    0x00000011
-+#define QE_ASSIGN_PAGE              0x00000012
-+#define QE_ADD_REMOVE_HASH_ENTRY    0x00000013
-+#define QE_START_FLOW_CONTROL       0x00000014
-+#define QE_STOP_FLOW_CONTROL        0x00000015
-+#define QE_ASSIGN_PAGE_TO_DEVICE    0x00000016
-+
-+#define QE_ASSIGN_RISC		    0x00000010
-+#define QE_CR_MCN_NORMAL_SHIFT      6
-+#define QE_CR_MCN_USB_SHIFT         4
-+#define QE_CR_MCN_RISC_ASSIGN_SHIFT 8
-+#define QE_CR_SNUM_SHIFT            17
-+
-+/* QE CECR Sub Block - sub block of QE command.
-+*/
-+#define QE_CR_SUBBLOCK_INVALID      0x00000000
-+#define QE_CR_SUBBLOCK_USB          0x03200000
-+#define QE_CR_SUBBLOCK_UCCFAST1     0x02000000
-+#define QE_CR_SUBBLOCK_UCCFAST2     0x02200000
-+#define QE_CR_SUBBLOCK_UCCFAST3     0x02400000
-+#define QE_CR_SUBBLOCK_UCCFAST4     0x02600000
-+#define QE_CR_SUBBLOCK_UCCFAST5     0x02800000
-+#define QE_CR_SUBBLOCK_UCCFAST6     0x02a00000
-+#define QE_CR_SUBBLOCK_UCCFAST7     0x02c00000
-+#define QE_CR_SUBBLOCK_UCCFAST8     0x02e00000
-+#define QE_CR_SUBBLOCK_UCCSLOW1     0x00000000
-+#define QE_CR_SUBBLOCK_UCCSLOW2     0x00200000
-+#define QE_CR_SUBBLOCK_UCCSLOW3     0x00400000
-+#define QE_CR_SUBBLOCK_UCCSLOW4     0x00600000
-+#define QE_CR_SUBBLOCK_UCCSLOW5     0x00800000
-+#define QE_CR_SUBBLOCK_UCCSLOW6     0x00a00000
-+#define QE_CR_SUBBLOCK_UCCSLOW7     0x00c00000
-+#define QE_CR_SUBBLOCK_UCCSLOW8     0x00e00000
-+#define QE_CR_SUBBLOCK_MCC1         0x03800000
-+#define QE_CR_SUBBLOCK_MCC2         0x03a00000
-+#define QE_CR_SUBBLOCK_MCC3         0x03000000
-+#define QE_CR_SUBBLOCK_IDMA1        0x02800000
-+#define QE_CR_SUBBLOCK_IDMA2        0x02a00000
-+#define QE_CR_SUBBLOCK_IDMA3        0x02c00000
-+#define QE_CR_SUBBLOCK_IDMA4        0x02e00000
-+#define QE_CR_SUBBLOCK_HPAC         0x01e00000
-+#define QE_CR_SUBBLOCK_SPI1         0x01400000
-+#define QE_CR_SUBBLOCK_SPI2         0x01600000
-+#define QE_CR_SUBBLOCK_RAND         0x01c00000
-+#define QE_CR_SUBBLOCK_TIMER        0x01e00000
-+#define QE_CR_SUBBLOCK_GENERAL      0x03c00000
-+
-+/* QE CECR Protocol - For non-MCC, specifies mode for QE CECR command.
-+*/
-+#define QE_CR_PROTOCOL_UNSPECIFIED       0x00	/* For all other protocols */
-+#define QE_CR_PROTOCOL_HDLC_TRANSPARENT  0x00
-+#define QE_CR_PROTOCOL_ATM_POS           0x0A
-+#define QE_CR_PROTOCOL_ETHERNET          0x0C
-+#define QE_CR_PROTOCOL_L2_SWITCH         0x0D
-+
-+/* BMR byte order
-+*/
-+#define QE_BMR_BYTE_ORDER_BO_PPC  0x08	/* powerpc little endian */
-+#define QE_BMR_BYTE_ORDER_BO_MOT  0x10	/* motorola big endian   */
-+#define QE_BMR_BYTE_ORDER_BO_MAX  0x18
-+
-+/* BRG configuration register
-+*/
-+#define QE_BRGC_ENABLE          0x00010000
-+#define QE_BRGC_DIVISOR_SHIFT   1
-+#define QE_BRGC_DIVISOR_MAX     0xFFF
-+#define QE_BRGC_DIV16           1
-+/* QE Timers registers */
-+#define QE_GTCFR1_PCAS      0x80
-+#define QE_GTCFR1_STP2      0x20
-+#define QE_GTCFR1_RST2      0x10
-+#define QE_GTCFR1_GM2       0x08
-+#define QE_GTCFR1_GM1       0x04
-+#define QE_GTCFR1_STP1      0x02
-+#define QE_GTCFR1_RST1      0x01
-+
-+/* SDMA registers */
-+#define QE_SDSR_BER1            0x02000000
-+#define QE_SDSR_BER2            0x01000000
-+
-+#define QE_SDMR_GLB_1_MSK       0x80000000
-+#define QE_SDMR_ADR_SEL         0x20000000
-+#define QE_SDMR_BER1_MSK        0x02000000
-+#define QE_SDMR_BER2_MSK        0x01000000
-+#define QE_SDMR_EB1_MSK         0x00800000
-+#define QE_SDMR_ER1_MSK         0x00080000
-+#define QE_SDMR_ER2_MSK         0x00040000
-+#define QE_SDMR_CEN_MASK        0x0000E000
-+#define QE_SDMR_SBER_1          0x00000200
-+#define QE_SDMR_SBER_2          0x00000200
-+#define QE_SDMR_EB1_PR_MASK     0x000000C0
-+#define QE_SDMR_ER1_PR          0x00000008
-+
-+#define QE_SDMR_CEN_SHIFT       13
-+#define QE_SDMR_EB1_PR_SHIFT    6
-+
-+#define QE_SDTM_MSNUM_SHIFT     24
-+
-+#define QE_SDEBCR_BA_MASK       0x01FFFFFF
-+
-+/* UPC
-+*/
-+#define UPGCR_PROTOCOL      0x80000000	/* protocol ul2 or pl2 */
-+#define UPGCR_TMS           0x40000000	/* Transmit master/slave mode */
-+#define UPGCR_RMS           0x20000000	/* Receive master/slave mode */
-+#define UPGCR_ADDR          0x10000000	/* Master MPHY Addr multiplexing */
-+#define UPGCR_DIAG          0x01000000	/* Diagnostic mode */
-+
-+/* UCC
-+*/
-+#define UCC_GUEMR_MODE_MASK_RX  0x02
-+#define UCC_GUEMR_MODE_MASK_TX  0x01
-+#define UCC_GUEMR_MODE_FAST_RX  0x02
-+#define UCC_GUEMR_MODE_FAST_TX  0x01
-+#define UCC_GUEMR_MODE_SLOW_RX  0x00
-+#define UCC_GUEMR_MODE_SLOW_TX  0x00
-+#define UCC_GUEMR_SET_RESERVED3 0x10	/* Bit 3 in the guemr is reserved but 
-+					   must be set 1 */
-+
-+/* structure representing UCC SLOW parameter RAM
-+*/
-+typedef struct ucc_slow_pram {
-+	u16 rbase;		/* RX BD base address       */
-+	u16 tbase;		/* TX BD base address       */
-+	u8 rfcr;		/* Rx function code         */
-+	u8 tfcr;		/* Tx function code         */
-+	u16 mrblr;		/* Rx buffer length         */
-+	u32 rstate;		/* Rx internal state        */
-+	u32 rptr;		/* Rx internal data pointer */
-+	u16 rbptr;		/* rb BD Pointer            */
-+	u16 rcount;		/* Rx internal byte count   */
-+	u32 rtemp;		/* Rx temp                  */
-+	u32 tstate;		/* Tx internal state        */
-+	u32 tptr;		/* Tx internal data pointer */
-+	u16 tbptr;		/* Tx BD pointer            */
-+	u16 tcount;		/* Tx byte count            */
-+	u32 ttemp;		/* Tx temp                  */
-+	u32 rcrc;		/* temp receive CRC         */
-+	u32 tcrc;		/* temp transmit CRC        */
-+} __attribute__ ((packed)) ucc_slow_pram_t;
-+
-+/* General UCC SLOW Mode Register (GUMRH & GUMRL)
-+*/
-+#define UCC_SLOW_GUMR_H_CRC16         0x00004000
-+#define UCC_SLOW_GUMR_H_CRC16CCITT    0x00000000
-+#define UCC_SLOW_GUMR_H_CRC32CCITT    0x00008000
-+#define UCC_SLOW_GUMR_H_REVD          0x00002000
-+#define UCC_SLOW_GUMR_H_TRX           0x00001000
-+#define UCC_SLOW_GUMR_H_TTX           0x00000800
-+#define UCC_SLOW_GUMR_H_CDP           0x00000400
-+#define UCC_SLOW_GUMR_H_CTSP          0x00000200
-+#define UCC_SLOW_GUMR_H_CDS           0x00000100
-+#define UCC_SLOW_GUMR_H_CTSS          0x00000080
-+#define UCC_SLOW_GUMR_H_TFL           0x00000040
-+#define UCC_SLOW_GUMR_H_RFW           0x00000020
-+#define UCC_SLOW_GUMR_H_TXSY          0x00000010
-+#define UCC_SLOW_GUMR_H_4SYNC         0x00000004
-+#define UCC_SLOW_GUMR_H_8SYNC         0x00000008
-+#define UCC_SLOW_GUMR_H_16SYNC        0x0000000c
-+#define UCC_SLOW_GUMR_H_RTSM          0x00000002
-+#define UCC_SLOW_GUMR_H_RSYN          0x00000001
-+
-+#define UCC_SLOW_GUMR_L_TCI           0x10000000
-+#define UCC_SLOW_GUMR_L_RINV          0x02000000
-+#define UCC_SLOW_GUMR_L_TINV          0x01000000
-+#define UCC_SLOW_GUMR_L_TEND          0x00020000
-+#define UCC_SLOW_GUMR_L_ENR           0x00000020
-+#define UCC_SLOW_GUMR_L_ENT           0x00000010
-+
-+/* General UCC FAST Mode Register
-+*/
-+#define UCC_FAST_GUMR_TCI             0x20000000
-+#define UCC_FAST_GUMR_TRX             0x10000000
-+#define UCC_FAST_GUMR_TTX             0x08000000
-+#define UCC_FAST_GUMR_CDP             0x04000000
-+#define UCC_FAST_GUMR_CTSP            0x02000000
-+#define UCC_FAST_GUMR_CDS             0x01000000
-+#define UCC_FAST_GUMR_CTSS            0x00800000
-+#define UCC_FAST_GUMR_TXSY            0x00020000
-+#define UCC_FAST_GUMR_RSYN            0x00010000
-+#define UCC_FAST_GUMR_RTSM            0x00002000
-+#define UCC_FAST_GUMR_REVD            0x00000400
-+#define UCC_FAST_GUMR_ENR             0x00000020
-+#define UCC_FAST_GUMR_ENT             0x00000010
-+
-+/* Slow UCC Event Register (UCCE)
-+*/
-+#define UCC_SLOW_UCCE_GLR       0x1000
-+#define UCC_SLOW_UCCE_GLT       0x0800
-+#define UCC_SLOW_UCCE_DCC       0x0400
-+#define UCC_SLOW_UCCE_FLG       0x0200
-+#define UCC_SLOW_UCCE_AB        0x0200
-+#define UCC_SLOW_UCCE_IDLE      0x0100
-+#define UCC_SLOW_UCCE_GRA       0x0080
-+#define UCC_SLOW_UCCE_TXE       0x0010
-+#define UCC_SLOW_UCCE_RXF       0x0008
-+#define UCC_SLOW_UCCE_CCR       0x0008
-+#define UCC_SLOW_UCCE_RCH       0x0008
-+#define UCC_SLOW_UCCE_BSY       0x0004
-+#define UCC_SLOW_UCCE_TXB       0x0002
-+#define UCC_SLOW_UCCE_TX        0x0002
-+#define UCC_SLOW_UCCE_RX        0x0001
-+#define UCC_SLOW_UCCE_GOV       0x0001
-+#define UCC_SLOW_UCCE_GUN       0x0002
-+#define UCC_SLOW_UCCE_GINT      0x0004
-+#define UCC_SLOW_UCCE_IQOV      0x0008
-+
-+#define UCC_SLOW_UCCE_HDLC_SET  (UCC_SLOW_UCCE_TXE|UCC_SLOW_UCCE_BSY| \
-+		UCC_SLOW_UCCE_GRA|UCC_SLOW_UCCE_TXB|UCC_SLOW_UCCE_RXF| \
-+		UCC_SLOW_UCCE_DCC|UCC_SLOW_UCCE_GLT|UCC_SLOW_UCCE_GLR)
-+#define UCC_SLOW_UCCE_ENET_SET  (UCC_SLOW_UCCE_TXE|UCC_SLOW_UCCE_BSY| \
-+		UCC_SLOW_UCCE_GRA|UCC_SLOW_UCCE_TXB|UCC_SLOW_UCCE_RXF)
-+#define UCC_SLOW_UCCE_TRANS_SET (UCC_SLOW_UCCE_TXE|UCC_SLOW_UCCE_BSY| \
-+		UCC_SLOW_UCCE_GRA|UCC_SLOW_UCCE_TX |UCC_SLOW_UCCE_RX | \
-+		UCC_SLOW_UCCE_DCC|UCC_SLOW_UCCE_GLT|UCC_SLOW_UCCE_GLR)
-+#define UCC_SLOW_UCCE_UART_SET  (UCC_SLOW_UCCE_BSY|UCC_SLOW_UCCE_GRA| \
-+		UCC_SLOW_UCCE_TXB|UCC_SLOW_UCCE_TX |UCC_SLOW_UCCE_RX | \
-+		UCC_SLOW_UCCE_GLT|UCC_SLOW_UCCE_GLR)
-+#define UCC_SLOW_UCCE_QMC_SET   (UCC_SLOW_UCCE_IQOV|UCC_SLOW_UCCE_GINT| \
-+		UCC_SLOW_UCCE_GUN|UCC_SLOW_UCCE_GOV)
-+
-+#define UCC_SLOW_UCCE_OTHER     (UCC_SLOW_UCCE_TXE|UCC_SLOW_UCCE_BSY| \
-+		UCC_SLOW_UCCE_GRA|UCC_SLOW_UCCE_DCC|UCC_SLOW_UCCE_GLT| \
-+		UCC_SLOW_UCCE_GLR)
-+
-+#define UCC_SLOW_INTR_TX        UCC_SLOW_UCCE_TXB
-+#define UCC_SLOW_INTR_RX        (UCC_SLOW_UCCE_RXF | UCC_SLOW_UCCE_RX)
-+#define UCC_SLOW_INTR           (UCC_SLOW_INTR_TX  | UCC_SLOW_INTR_RX)
-+
-+/* Transmit On Demand (UTORD)
-+*/
-+#define UCC_SLOW_TOD            0x8000
-+#define UCC_FAST_TOD            0x8000
-+
-+/* Function code masks.
-+*/
-+#define FC_GBL                             0x20
-+#define FC_DTB_LCL                         0x02
-+#define UCC_FAST_FUNCTION_CODE_GBL         0x20
-+#define UCC_FAST_FUNCTION_CODE_DTB_LCL     0x02
-+#define UCC_FAST_FUNCTION_CODE_BDB_LCL     0x01
-+
-+#endif				/* __QE_H__ */
++#endif				/* __ASM_QE_IC_H__ */
 +#endif				/* __KERNEL__ */
