@@ -1,20 +1,24 @@
-Return-Path: <christophe.alayrac@univ-orleans.fr>
-Received: from ka.univ-orleans.fr (ka.univ-orleans.fr [193.49.83.5])
-	by ozlabs.org (Postfix) with ESMTP id 70B4D67B99
+Return-Path: <benedikt@horos.benedikt-wildenhain.de>
+Received: from ngc224.gerwinski.de (ngc224.gerwinski.de [213.133.98.203])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CDB4C67BC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Sep 2006 02:10:28 +1000 (EST)
-Received: from [194.254.8.167] (localhost [127.0.0.1])
-	by ka.univ-orleans.fr (Postfix) with ESMTP id 263BD12AD4C
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Sep 2006 18:10:23 +0200 (CEST)
-Subject: ML403 UBOOT,  I2C and Linux boot problem
-From: alayrac <christophe.alayrac@univ-orleans.fr>
+	Fri, 29 Sep 2006 02:49:24 +1000 (EST)
+Received: from [84.60.56.89] (helo=localhost)
+	by ngc224.gerwinski.de with esmtpsa (Exim 4.50 #1 (Debian))
+	id 1GSyPh-0000yu-K8
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Sep 2006 18:07:14 +0200
+Received: from benedikt by localhost with local (Exim 4.50) id 1GSyP8-0004dh-0d
+	for linuxppc-embedded@ozlabs.org; Thu, 28 Sep 2006 18:06:30 +0200
+Date: Thu, 28 Sep 2006 18:06:26 +0200
+From: Benedikt Wildenhain <benedikt@benedikt-wildenhain.de>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 28 Sep 2006 18:10:30 +0200
-Message-Id: <1159459831.5737.3.camel@Serge-Linux>
+Subject: Running Linux on Avnet's FX12 Evaluation Board
+Message-ID: <20060928160624.GA13955@horos>
 Mime-Version: 1.0
-Reply-To: christophe.alayrac@univ-orleans.fr
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,47 +29,102 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I succeed to start u-boot on my ML403 board.
 
-To do so I've dowloaded the ml403_emb_ref_ppc_81.zip from xilinx website
-as well as u-boot.zip (from ml410 documentation on xilinx web site).
+--VbJkn9YxBvnuCH5J
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-1) First you I've modifie the xparameters.h file in
-u-boot/board/xilnx/ml403 directory to match hardware design of
-ml403_emb...81 design.
-(The memory mapping is different)
+Hello,
 
-I now have u-boot working on ML403 but the IIC EEPROM can't be
-accessed.
+I am trying to run a Linuxppc 2.4 kernel (20051021) on an IBM Powerpc
+405, I have compiled it according to the instructions on
+http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/uclinux_powerpc/#linuxp=
+pc-2,
+I load it into the ram using the Xilinx Microprocessor Debug (XMD)
+Engine and try to run it, but it seems to have some trouble with the
+memory:
 
-imd command (imd 50 10.2 10 )return error message, iprobe hang up and
-saveenv did not save anything into I2C memory.
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.30-pre1 (benedikt@horos) (gcc version 3.4.1) #41 =C4=B5a=
+=EF=BF=BD- Sep 28 01:03:33 CEST 2006
+Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (source@mvista=
+=2Ecom)
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line:
+Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000
+Calibrating delay loop... 598.01 BogoMIPS
+Memory: 30968k <4>Oops: kernel access of bad area, sig: 11
+NIP: FFFFFFFC XER: 20000010 LR: FFFFFFFE SP: C0126580 REGS: c01264d0 TRAP: =
+0400    Not tainted
+MSR: 00001030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK =3D c01248d0[0] 'swapper' Last syscall: 0
+last math 00000000 last altivec 00000000
+GPR00: FFFFFFFE C0126580 C01248D0 C01248D0 00000000 00000001 C01249D0 00000=
+048
+GPR08: 00000048 00000000 00000000 00000017 C0140000 FFFFFFFF FFFFFFFF FFFFF=
+FFF
+GPR16: FFFFFFFF FFFFFFFF FFFFFFFF C012770C 00001032 00126600 C0000000 C013E=
+1D0
+GPR24: C013E8CC C0140000 C012770C C0140000 000001E6 00000001 00000000 C0124=
+8D0
+Call backtrace:
+FFFFFFFE C001D664 C00044F4 C0002C80 00000000 C009582C C00958B4
+C00138F0 C0013B94 C0013DDC C0136374 C0134374 C0002328
+Kernel panic: Aiee, killing interrupt handler!
+In interrupt handler - not syncing
+ <0>Rebooting in 180 seconds..
+loaded at:     00400000 004F01E0
+board data at: 004ED138 004ED150
+relocated to:  00405310 00405328
+zimage at:     004058D5 004EC21E
+avail ram:     004F1000 02000000
 
-Does any one as any experience on that issue?
+Do I have to set any memory positions or something like that manually?
+I also tried to compile the Kernel with XMON support, but this also
+failed:
 
-Note :To use I2C one should define either CONFIG_HARD_I2C or
-CONFIG_SOFT_I2C, but Xilinx as writen function (i2c_read...) in
-iic_addapter.c without using this macro.
-Is it the right way?
+/space/benedikt/crosstool/gcc-3.4.1-glibc-2.3.3/powerpc-405-linux-gnu/bin/p=
+owerpc-405-linux-gnu-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic =
+arch/ppc/kernel/head_4xx.o init/main.o init/version.o init/do_mounts.o \
+        --start-group \
+        arch/ppc/kernel/kernel.o arch/ppc/platforms/platform.o arch/ppc/mm/=
+mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/=
+math-emu/math-emu.o arch/ppc/xmon/x.o \
+         drivers/char/char.o drivers/block/block.o drivers/misc/misc.o driv=
+ers/net/net.o drivers/mtd/mtdlink.o drivers/macintosh/macintosh.o drivers/m=
+edia/media.o \
+        net/network.o \
+        /space/benedikt/tfc/uclinux/linuxppc-2.4/lib/lib.a \
+        --end-group \
+        -o vmlinux
+arch/ppc/xmon/x.o(.text+0x64): In function `xmon_map_scc':
+/space/benedikt/tfc/uclinux/linuxppc-2.4/arch/ppc/xmon/start.c:218: undefin=
+ed reference to `__sysrq_put_key_op'
+make: *** [vmlinux] Error 1
 
-2) If I manually load kernel uImage in memory (fatload ace 0 400000
-linux/uboot.uImage) and then boot the kernel (bootm 400000) then the
-process stop after 
-Uncompressing Kernel Image ... Ok
+--=20
+GPG-Key 1024D/E32C4F4B | www.gnupg.org | http://enigmail.mozdev.org
+Fingerprint =3D 9C03 86B5 CA59 F7A3 D976  AD2C 02D6 ED21 E32C 4F4B
+Mit freundlichen Gruessen | Kun afablaj salutoj (www.esperanto.org)
+May the tux be with you.  :wq 73
 
-Note: The kernel has been compiled with a command line to boot via NFS.
-This image works properly if associated to bitsream in the ace file.
-The kernel 2.4.26 has been patched for u-boot and recompiled with same
-config (using mkimage to generate uImage)
+--VbJkn9YxBvnuCH5J
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Any suggestion?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-3) The board did not start at powerup with that uboot ace file, the done
-light did not go on, I need to press sysace rst button to start
-properly.
+iD8DBQFFG/L/AtbtIeMsT0sRAluxAJ0cAMm6KNZ4U3jfrM7CPOiVyO7EqwCeOMqE
+gdzjOJ/D6auaL79gT7yHzPA=
+=7SnJ
+-----END PGP SIGNATURE-----
 
-Does any one face that cold start prolblem?
-
-Thank in advance for any help
-
-Chris
+--VbJkn9YxBvnuCH5J--
