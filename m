@@ -1,12 +1,12 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id A5E2767BC5
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 07:02:30 +1000 (EST)
-Date: Thu, 28 Sep 2006 16:02:26 -0500
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id CD44B67C2F
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 07:02:33 +1000 (EST)
+Date: Thu, 28 Sep 2006 16:02:11 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH 2/2] add mpc83xx.h to powerpc include proper
-Message-Id: <20060928160226.4dca5b8c.kim.phillips@freescale.com>
+Subject: [RFC][PATCH 1/2] remove mpc83xx support from arch/ppc
+Message-Id: <20060928160211.5b652932.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,87 +18,3423 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-add mpc83xx.h to powerpc include proper, rm defines in board header files replaced by the dt.  This completes 83xx transition to ARCH=powerpc.
+remove 83xx support from arch/ppc.  Tested multiple arch/defconfig build combinations ok.  AFAICT, everything 83xx works in arch/powerpc, and new derivatives are being added only to arch/powerpc, so it's better not to keep this around.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
 ---
- arch/powerpc/platforms/83xx/mpc834x_itx.h |    5 -----
- arch/powerpc/platforms/83xx/mpc834x_sys.h |    7 +------
- include/asm-powerpc/mpc83xx.h             |   30 +++++++++++++++++++++++++++++
- 3 files changed, 31 insertions(+), 11 deletions(-)
+ arch/ppc/Kconfig                       |   48 --
+ arch/ppc/Makefile                      |    1 
+ arch/ppc/configs/mpc834x_sys_defconfig |  844 --------------------------------
+ arch/ppc/kernel/ppc_ksyms.c            |    3 
+ arch/ppc/kernel/setup.c                |    5 
+ arch/ppc/mm/mmu_context.c              |    2 
+ arch/ppc/mm/ppc_mmu.c                  |    2 
+ arch/ppc/platforms/83xx/Makefile       |    4 
+ arch/ppc/platforms/83xx/mpc834x_sys.c  |  346 -------------
+ arch/ppc/platforms/83xx/mpc834x_sys.h  |   54 --
+ arch/ppc/syslib/Makefile               |    5 
+ arch/ppc/syslib/ipic.c                 |  646 ------------------------
+ arch/ppc/syslib/ipic.h                 |   47 --
+ arch/ppc/syslib/mpc83xx_devices.c      |  251 ----------
+ arch/ppc/syslib/mpc83xx_sys.c          |  122 -----
+ arch/ppc/syslib/ppc83xx_pci.h          |  151 ------
+ arch/ppc/syslib/ppc83xx_setup.c        |  411 ----------------
+ arch/ppc/syslib/ppc83xx_setup.h        |   55 --
+ include/asm-ppc/io.h                   |    2 
+ include/asm-ppc/mpc83xx.h              |  115 ----
+ include/asm-ppc/ppc_sys.h              |    2 
+ include/asm-ppc/ppcboot.h              |    5 
+ include/asm-ppc/serial.h               |    2 
+ 23 files changed, 17 insertions(+), 3106 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.h b/arch/powerpc/platforms/83xx/mpc834x_itx.h
-index 174ca4e..88932d2 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.h
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.h
-@@ -15,9 +15,4 @@
- #ifndef __MACH_MPC83XX_ITX_H__
- #define __MACH_MPC83XX_ITX_H__
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index 8fa10cf..fe67885 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -61,18 +61,18 @@ choice
+ 	default 6xx
  
+ config 6xx
+-	bool "6xx/7xx/74xx/52xx/82xx/83xx"
++	bool "6xx/7xx/74xx/52xx/82xx"
+ 	select PPC_FPU
+ 	help
+ 	  There are four types of PowerPC chips supported.  The more common
+ 	  types (601, 603, 604, 740, 750, 7400), the older Freescale
+ 	  (formerly Motorola) embedded versions (821, 823, 850, 855, 860,
+-	  52xx, 82xx, 83xx), the IBM embedded versions (403 and 405) and
++	  52xx, 82xx), the IBM embedded versions (403 and 405) and
+ 	  the Book E embedded processors from IBM (44x) and Freescale (85xx).
+-	  For support for 64-bit processors, set ARCH=powerpc.
++	  For support for 64-bit processors or 83xx, set ARCH=powerpc.
+ 	  Unless you are building a kernel for one of the embedded processor
+ 	  systems, choose 6xx.
+-	  Also note that because the 52xx, 82xx, & 83xx family have a 603e
++	  Also note that because the 52xx & 82xx family have a 603e
+ 	  core, specific support for that chipset is asked later on.
+ 
+ config 40x
+@@ -124,7 +124,7 @@ config PHYS_64BIT
+ config ALTIVEC
+ 	bool "AltiVec Support"
+ 	depends on 6xx
+-	depends on !8260 && !83xx
++	depends on !8260
+ 	---help---
+ 	  This option enables kernel support for the Altivec extensions to the
+ 	  PowerPC processor. The kernel currently supports saving and restoring
+@@ -155,7 +155,7 @@ config SPE
+ 
+ config TAU
+ 	bool "Thermal Management Support"
+-	depends on 6xx && !8260 && !83xx
++	depends on 6xx && !8260
+ 	help
+ 	  G3 and G4 processors have an on-chip temperature sensor called the
+ 	  'Thermal Assist Unit (TAU)', which, in theory, can measure the on-die
+@@ -716,16 +716,6 @@ config LITE5200B
+ 	  Support for the LITE5200B dev board for the MPC5200 from Freescale.
+ 	  This is the new board with 2 PCI slots.
+ 
+-config MPC834x_SYS
+-	bool "Freescale MPC834x SYS"
+-	help
+-	  This option enables support for the MPC 834x SYS evaluation board.
+-
+-	  Be aware that PCI buses can only function when SYS board is plugged
+-	  into the PIB (Platform IO Board) board from Freescale which provide
+-	  3 PCI slots.  The PIBs PCI initialization is the bootloader's
+-	  responsiblilty.
+-
+ config EV64360
+ 	bool "Marvell-EV64360BP"
+ 	help
+@@ -769,18 +759,6 @@ config 8272
+ 	  The MPC8272 CPM has a different internal dpram setup than other CPM2
+ 	  devices
+ 
+-config 83xx
+-	bool
+-	default y if MPC834x_SYS
+-
+-config MPC834x
+-	bool
+-	default y if MPC834x_SYS
+-
+-config PPC_83xx
+-	bool
+-	default y if 83xx
+-
+ config CPM1
+ 	bool
+ 	depends on 8xx
+@@ -805,8 +783,7 @@ config PPC_GEN550
+ 	bool
+ 	depends on SANDPOINT || SPRUCE || PPLUS || \
+ 		PRPMC750 || PRPMC800 || LOPEC || \
+-		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D || \
+-		83xx
++		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D
+ 	default y
+ 
+ config FORCE
+@@ -1172,7 +1149,7 @@ config PPC_I8259
+ config PPC_INDIRECT_PCI
+ 	bool
+ 	depends on PCI
+-	default y if 40x || 44x || 85xx || 83xx || PPC_PREP
++	default y if 40x || 44x || 85xx || PPC_PREP
+ 	default n
+ 
+ config EISA
+@@ -1189,8 +1166,8 @@ config MCA
+ 	bool
+ 
+ config PCI
+-	bool "PCI support" if 40x || CPM2 || 83xx || 85xx || PPC_MPC52xx
+-	default y if !40x && !CPM2 && !8xx && !APUS && !83xx && !85xx
++	bool "PCI support" if 40x || CPM2 || 85xx || PPC_MPC52xx
++	default y if !40x && !CPM2 && !8xx && !APUS && !85xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+ 	help
+@@ -1203,11 +1180,6 @@ config PCI_DOMAINS
+ 	bool
+ 	default PCI
+ 
+-config MPC83xx_PCI2
+-	bool "Support for 2nd PCI host controller"
+-	depends on PCI && MPC834x
+-	default y if MPC834x_SYS
+-
+ config PCI_QSPAN
+ 	bool "QSpan PCI"
+ 	depends on !4xx && !CPM2 && 8xx
+diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
+index 0db66dc..4764799 100644
+--- a/arch/ppc/Makefile
++++ b/arch/ppc/Makefile
+@@ -65,7 +65,6 @@ core-y				+= arch/ppc/kernel/ arch/power
+ 				   arch/ppc/syslib/ arch/powerpc/sysdev/ \
+ 				   arch/powerpc/lib/
+ core-$(CONFIG_4xx)		+= arch/ppc/platforms/4xx/
+-core-$(CONFIG_83xx)		+= arch/ppc/platforms/83xx/
+ core-$(CONFIG_85xx)		+= arch/ppc/platforms/85xx/
+ core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
+ core-$(CONFIG_XMON)		+= arch/ppc/xmon/
+diff --git a/arch/ppc/configs/mpc834x_sys_defconfig b/arch/ppc/configs/mpc834x_sys_defconfig
+deleted file mode 100644
+index b96a6d6..0000000
+--- a/arch/ppc/configs/mpc834x_sys_defconfig
++++ /dev/null
+@@ -1,844 +0,0 @@
+-#
+-# Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.14
+-# Mon Nov  7 15:38:29 2005
+-#
+-CONFIG_MMU=y
+-CONFIG_GENERIC_HARDIRQS=y
+-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+-CONFIG_GENERIC_CALIBRATE_DELAY=y
+-CONFIG_PPC=y
+-CONFIG_PPC32=y
+-CONFIG_GENERIC_NVRAM=y
+-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+-
+-#
+-# Code maturity level options
+-#
+-CONFIG_EXPERIMENTAL=y
+-CONFIG_CLEAN_COMPILE=y
+-CONFIG_BROKEN_ON_SMP=y
+-CONFIG_INIT_ENV_ARG_LIMIT=32
+-
+-#
+-# General setup
+-#
+-CONFIG_LOCALVERSION=""
+-CONFIG_LOCALVERSION_AUTO=y
+-CONFIG_SWAP=y
+-CONFIG_SYSVIPC=y
+-# CONFIG_POSIX_MQUEUE is not set
+-# CONFIG_BSD_PROCESS_ACCT is not set
+-CONFIG_SYSCTL=y
+-# CONFIG_AUDIT is not set
+-# CONFIG_HOTPLUG is not set
+-CONFIG_KOBJECT_UEVENT=y
+-# CONFIG_IKCONFIG is not set
+-CONFIG_INITRAMFS_SOURCE=""
+-CONFIG_EMBEDDED=y
+-# CONFIG_KALLSYMS is not set
+-CONFIG_PRINTK=y
+-CONFIG_BUG=y
+-CONFIG_BASE_FULL=y
+-CONFIG_FUTEX=y
+-# CONFIG_EPOLL is not set
+-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+-CONFIG_SHMEM=y
+-CONFIG_CC_ALIGN_FUNCTIONS=0
+-CONFIG_CC_ALIGN_LABELS=0
+-CONFIG_CC_ALIGN_LOOPS=0
+-CONFIG_CC_ALIGN_JUMPS=0
+-# CONFIG_TINY_SHMEM is not set
+-CONFIG_BASE_SMALL=0
+-
+-#
+-# Loadable module support
+-#
+-# CONFIG_MODULES is not set
+-
+-#
+-# Processor
+-#
+-CONFIG_6xx=y
+-# CONFIG_40x is not set
+-# CONFIG_44x is not set
+-# CONFIG_POWER3 is not set
+-# CONFIG_POWER4 is not set
+-# CONFIG_8xx is not set
+-# CONFIG_E200 is not set
+-# CONFIG_E500 is not set
+-CONFIG_PPC_FPU=y
+-# CONFIG_KEXEC is not set
+-# CONFIG_CPU_FREQ is not set
+-# CONFIG_WANT_EARLY_SERIAL is not set
+-CONFIG_PPC_GEN550=y
+-CONFIG_PPC_STD_MMU=y
+-
+-#
+-# Platform options
+-#
+-# CONFIG_PPC_MULTIPLATFORM is not set
+-# CONFIG_APUS is not set
+-# CONFIG_KATANA is not set
+-# CONFIG_WILLOW is not set
+-# CONFIG_CPCI690 is not set
+-# CONFIG_POWERPMC250 is not set
+-# CONFIG_CHESTNUT is not set
+-# CONFIG_SPRUCE is not set
+-# CONFIG_HDPU is not set
+-# CONFIG_EV64260 is not set
+-# CONFIG_LOPEC is not set
+-# CONFIG_MVME5100 is not set
+-# CONFIG_PPLUS is not set
+-# CONFIG_PRPMC750 is not set
+-# CONFIG_PRPMC800 is not set
+-# CONFIG_SANDPOINT is not set
+-# CONFIG_RADSTONE_PPC7D is not set
+-# CONFIG_PAL4 is not set
+-# CONFIG_GEMINI is not set
+-# CONFIG_EST8260 is not set
+-# CONFIG_SBC82xx is not set
+-# CONFIG_SBS8260 is not set
+-# CONFIG_RPX8260 is not set
+-# CONFIG_TQM8260 is not set
+-# CONFIG_ADS8272 is not set
+-# CONFIG_PQ2FADS is not set
+-# CONFIG_LITE5200 is not set
+-CONFIG_MPC834x_SYS=y
+-# CONFIG_EV64360 is not set
+-CONFIG_83xx=y
+-CONFIG_MPC834x=y
+-# CONFIG_SMP is not set
+-# CONFIG_HIGHMEM is not set
+-# CONFIG_HZ_100 is not set
+-CONFIG_HZ_250=y
+-# CONFIG_HZ_1000 is not set
+-CONFIG_HZ=250
+-CONFIG_PREEMPT_NONE=y
+-# CONFIG_PREEMPT_VOLUNTARY is not set
+-# CONFIG_PREEMPT is not set
+-CONFIG_SELECT_MEMORY_MODEL=y
+-CONFIG_FLATMEM_MANUAL=y
+-# CONFIG_DISCONTIGMEM_MANUAL is not set
+-# CONFIG_SPARSEMEM_MANUAL is not set
+-CONFIG_FLATMEM=y
+-CONFIG_FLAT_NODE_MEM_MAP=y
+-# CONFIG_SPARSEMEM_STATIC is not set
+-CONFIG_SPLIT_PTLOCK_CPUS=4
+-CONFIG_BINFMT_ELF=y
+-# CONFIG_BINFMT_MISC is not set
+-# CONFIG_CMDLINE_BOOL is not set
+-# CONFIG_PM is not set
+-# CONFIG_SOFTWARE_SUSPEND is not set
+-CONFIG_SECCOMP=y
+-CONFIG_ISA_DMA_API=y
+-
+-#
+-# Bus options
+-#
+-CONFIG_GENERIC_ISA_DMA=y
+-# CONFIG_PPC_I8259 is not set
+-CONFIG_PPC_INDIRECT_PCI=y
+-CONFIG_PCI=y
+-CONFIG_PCI_DOMAINS=y
+-# CONFIG_MPC83xx_PCI2 is not set
+-CONFIG_PCI_LEGACY_PROC=y
+-
+-#
+-# PCCARD (PCMCIA/CardBus) support
+-#
+-# CONFIG_PCCARD is not set
+-
+-#
+-# Advanced setup
+-#
+-# CONFIG_ADVANCED_OPTIONS is not set
+-
+-#
+-# Default settings for advanced configuration options are used
+-#
+-CONFIG_HIGHMEM_START=0xfe000000
+-CONFIG_LOWMEM_SIZE=0x30000000
+-CONFIG_KERNEL_START=0xc0000000
+-CONFIG_TASK_SIZE=0x80000000
+-CONFIG_BOOT_LOAD=0x00800000
+-
+-#
+-# Networking
+-#
+-CONFIG_NET=y
+-
+-#
+-# Networking options
+-#
+-CONFIG_PACKET=y
+-# CONFIG_PACKET_MMAP is not set
+-CONFIG_UNIX=y
+-# CONFIG_NET_KEY is not set
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-# CONFIG_IP_ADVANCED_ROUTER is not set
+-CONFIG_IP_FIB_HASH=y
+-CONFIG_IP_PNP=y
+-CONFIG_IP_PNP_DHCP=y
+-CONFIG_IP_PNP_BOOTP=y
+-# CONFIG_IP_PNP_RARP is not set
+-# CONFIG_NET_IPIP is not set
+-# CONFIG_NET_IPGRE is not set
+-# CONFIG_IP_MROUTE is not set
+-# CONFIG_ARPD is not set
+-CONFIG_SYN_COOKIES=y
+-# CONFIG_INET_AH is not set
+-# CONFIG_INET_ESP is not set
+-# CONFIG_INET_IPCOMP is not set
+-# CONFIG_INET_TUNNEL is not set
+-CONFIG_INET_DIAG=y
+-CONFIG_INET_TCP_DIAG=y
+-# CONFIG_TCP_CONG_ADVANCED is not set
+-CONFIG_TCP_CONG_BIC=y
+-# CONFIG_IPV6 is not set
+-# CONFIG_NETFILTER is not set
+-
+-#
+-# DCCP Configuration (EXPERIMENTAL)
+-#
+-# CONFIG_IP_DCCP is not set
+-
+-#
+-# SCTP Configuration (EXPERIMENTAL)
+-#
+-# CONFIG_IP_SCTP is not set
+-# CONFIG_ATM is not set
+-# CONFIG_BRIDGE is not set
+-# CONFIG_VLAN_8021Q is not set
+-# CONFIG_DECNET is not set
+-# CONFIG_LLC2 is not set
+-# CONFIG_IPX is not set
+-# CONFIG_ATALK is not set
+-# CONFIG_X25 is not set
+-# CONFIG_LAPB is not set
+-# CONFIG_NET_DIVERT is not set
+-# CONFIG_ECONET is not set
+-# CONFIG_WAN_ROUTER is not set
+-# CONFIG_NET_SCHED is not set
+-# CONFIG_NET_CLS_ROUTE is not set
+-
+-#
+-# Network testing
+-#
+-# CONFIG_NET_PKTGEN is not set
+-# CONFIG_HAMRADIO is not set
+-# CONFIG_IRDA is not set
+-# CONFIG_BT is not set
+-# CONFIG_IEEE80211 is not set
+-
+-#
+-# Device Drivers
+-#
+-
+-#
+-# Generic Driver Options
+-#
+-CONFIG_STANDALONE=y
+-CONFIG_PREVENT_FIRMWARE_BUILD=y
+-# CONFIG_FW_LOADER is not set
+-
+-#
+-# Connector - unified userspace <-> kernelspace linker
+-#
+-# CONFIG_CONNECTOR is not set
+-
+-#
+-# Memory Technology Devices (MTD)
+-#
+-# CONFIG_MTD is not set
+-
+-#
+-# Parallel port support
+-#
+-# CONFIG_PARPORT is not set
+-
+-#
+-# Plug and Play support
+-#
+-
+-#
+-# Block devices
+-#
+-# CONFIG_BLK_DEV_FD is not set
+-# CONFIG_BLK_CPQ_DA is not set
+-# CONFIG_BLK_CPQ_CISS_DA is not set
+-# CONFIG_BLK_DEV_DAC960 is not set
+-# CONFIG_BLK_DEV_UMEM is not set
+-# CONFIG_BLK_DEV_COW_COMMON is not set
+-CONFIG_BLK_DEV_LOOP=y
+-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+-# CONFIG_BLK_DEV_NBD is not set
+-# CONFIG_BLK_DEV_SX8 is not set
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_COUNT=16
+-CONFIG_BLK_DEV_RAM_SIZE=32768
+-CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_LBD is not set
+-# CONFIG_CDROM_PKTCDVD is not set
+-
+-#
+-# IO Schedulers
+-#
+-CONFIG_IOSCHED_NOOP=y
+-CONFIG_IOSCHED_AS=y
+-CONFIG_IOSCHED_DEADLINE=y
+-CONFIG_IOSCHED_CFQ=y
+-CONFIG_DEFAULT_AS=y
+-# CONFIG_DEFAULT_DEADLINE is not set
+-# CONFIG_DEFAULT_CFQ is not set
+-# CONFIG_DEFAULT_NOOP is not set
+-CONFIG_DEFAULT_IOSCHED="anticipatory"
+-# CONFIG_ATA_OVER_ETH is not set
+-
+-#
+-# ATA/ATAPI/MFM/RLL support
+-#
+-# CONFIG_IDE is not set
+-
+-#
+-# SCSI device support
+-#
+-# CONFIG_RAID_ATTRS is not set
+-# CONFIG_SCSI is not set
+-
+-#
+-# Multi-device support (RAID and LVM)
+-#
+-# CONFIG_MD is not set
+-
+-#
+-# Fusion MPT device support
+-#
+-# CONFIG_FUSION is not set
+-
+-#
+-# IEEE 1394 (FireWire) support
+-#
+-# CONFIG_IEEE1394 is not set
+-
+-#
+-# I2O device support
+-#
+-# CONFIG_I2O is not set
+-
+-#
+-# Macintosh device drivers
+-#
+-
+-#
+-# Network device support
+-#
+-CONFIG_NETDEVICES=y
+-# CONFIG_DUMMY is not set
+-# CONFIG_BONDING is not set
+-# CONFIG_EQUALIZER is not set
+-# CONFIG_TUN is not set
+-
+-#
+-# ARCnet devices
+-#
+-# CONFIG_ARCNET is not set
+-
+-#
+-# PHY device support
+-#
+-CONFIG_PHYLIB=y
+-
+-#
+-# MII PHY device drivers
+-#
+-CONFIG_MARVELL_PHY=y
+-# CONFIG_DAVICOM_PHY is not set
+-# CONFIG_QSEMI_PHY is not set
+-# CONFIG_LXT_PHY is not set
+-# CONFIG_CICADA_PHY is not set
+-
+-#
+-# Ethernet (10 or 100Mbit)
+-#
+-CONFIG_NET_ETHERNET=y
+-CONFIG_MII=y
+-# CONFIG_HAPPYMEAL is not set
+-# CONFIG_SUNGEM is not set
+-# CONFIG_CASSINI is not set
+-# CONFIG_NET_VENDOR_3COM is not set
+-
+-#
+-# Tulip family network device support
+-#
+-# CONFIG_NET_TULIP is not set
+-# CONFIG_HP100 is not set
+-CONFIG_NET_PCI=y
+-# CONFIG_PCNET32 is not set
+-# CONFIG_AMD8111_ETH is not set
+-# CONFIG_ADAPTEC_STARFIRE is not set
+-# CONFIG_B44 is not set
+-# CONFIG_FORCEDETH is not set
+-# CONFIG_DGRS is not set
+-# CONFIG_EEPRO100 is not set
+-CONFIG_E100=y
+-# CONFIG_FEALNX is not set
+-# CONFIG_NATSEMI is not set
+-# CONFIG_NE2K_PCI is not set
+-# CONFIG_8139CP is not set
+-# CONFIG_8139TOO is not set
+-# CONFIG_SIS900 is not set
+-# CONFIG_EPIC100 is not set
+-# CONFIG_SUNDANCE is not set
+-# CONFIG_TLAN is not set
+-# CONFIG_VIA_RHINE is not set
+-
+-#
+-# Ethernet (1000 Mbit)
+-#
+-# CONFIG_ACENIC is not set
+-# CONFIG_DL2K is not set
+-CONFIG_E1000=y
+-# CONFIG_E1000_NAPI is not set
+-# CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
+-# CONFIG_NS83820 is not set
+-# CONFIG_HAMACHI is not set
+-# CONFIG_YELLOWFIN is not set
+-# CONFIG_R8169 is not set
+-# CONFIG_SIS190 is not set
+-# CONFIG_SKGE is not set
+-# CONFIG_SK98LIN is not set
+-# CONFIG_VIA_VELOCITY is not set
+-# CONFIG_TIGON3 is not set
+-# CONFIG_BNX2 is not set
+-CONFIG_GIANFAR=y
+-# CONFIG_GFAR_NAPI is not set
+-
+-#
+-# Ethernet (10000 Mbit)
+-#
+-# CONFIG_CHELSIO_T1 is not set
+-# CONFIG_IXGB is not set
+-# CONFIG_S2IO is not set
+-
+-#
+-# Token Ring devices
+-#
+-# CONFIG_TR is not set
+-
+-#
+-# Wireless LAN (non-hamradio)
+-#
+-# CONFIG_NET_RADIO is not set
+-
+-#
+-# Wan interfaces
+-#
+-# CONFIG_WAN is not set
+-# CONFIG_FDDI is not set
+-# CONFIG_HIPPI is not set
+-# CONFIG_PPP is not set
+-# CONFIG_SLIP is not set
+-# CONFIG_SHAPER is not set
+-# CONFIG_NETCONSOLE is not set
+-# CONFIG_NETPOLL is not set
+-# CONFIG_NET_POLL_CONTROLLER is not set
+-
+-#
+-# ISDN subsystem
+-#
+-# CONFIG_ISDN is not set
+-
+-#
+-# Telephony Support
+-#
+-# CONFIG_PHONE is not set
+-
+-#
+-# Input device support
+-#
+-CONFIG_INPUT=y
+-
+-#
+-# Userland interfaces
+-#
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_JOYDEV is not set
+-# CONFIG_INPUT_TSDEV is not set
+-# CONFIG_INPUT_EVDEV is not set
+-# CONFIG_INPUT_EVBUG is not set
+-
+-#
+-# Input Device Drivers
+-#
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-# CONFIG_INPUT_JOYSTICK is not set
+-# CONFIG_INPUT_TOUCHSCREEN is not set
+-# CONFIG_INPUT_MISC is not set
+-
+-#
+-# Hardware I/O ports
+-#
+-# CONFIG_SERIO is not set
+-# CONFIG_GAMEPORT is not set
+-
+-#
+-# Character devices
+-#
+-# CONFIG_VT is not set
+-# CONFIG_SERIAL_NONSTANDARD is not set
+-
+-#
+-# Serial drivers
+-#
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_NR_UARTS=4
+-# CONFIG_SERIAL_8250_EXTENDED is not set
+-
+-#
+-# Non-8250 serial port support
+-#
+-CONFIG_SERIAL_CORE=y
+-CONFIG_SERIAL_CORE_CONSOLE=y
+-# CONFIG_SERIAL_JSM is not set
+-CONFIG_UNIX98_PTYS=y
+-CONFIG_LEGACY_PTYS=y
+-CONFIG_LEGACY_PTY_COUNT=256
+-
+-#
+-# IPMI
+-#
+-# CONFIG_IPMI_HANDLER is not set
+-
+-#
+-# Watchdog Cards
+-#
+-# CONFIG_WATCHDOG is not set
+-# CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
+-# CONFIG_DTLK is not set
+-# CONFIG_R3964 is not set
+-# CONFIG_APPLICOM is not set
+-
+-#
+-# Ftape, the floppy tape device driver
+-#
+-# CONFIG_AGP is not set
+-# CONFIG_DRM is not set
+-# CONFIG_RAW_DRIVER is not set
+-
+-#
+-# TPM devices
+-#
+-# CONFIG_TCG_TPM is not set
+-# CONFIG_TELCLOCK is not set
+-
+-#
+-# I2C support
+-#
+-CONFIG_I2C=y
+-CONFIG_I2C_CHARDEV=y
+-
+-#
+-# I2C Algorithms
+-#
+-# CONFIG_I2C_ALGOBIT is not set
+-# CONFIG_I2C_ALGOPCF is not set
+-# CONFIG_I2C_ALGOPCA is not set
+-
+-#
+-# I2C Hardware Bus support
+-#
+-# CONFIG_I2C_ALI1535 is not set
+-# CONFIG_I2C_ALI1563 is not set
+-# CONFIG_I2C_ALI15X3 is not set
+-# CONFIG_I2C_AMD756 is not set
+-# CONFIG_I2C_AMD8111 is not set
+-# CONFIG_I2C_I801 is not set
+-# CONFIG_I2C_I810 is not set
+-# CONFIG_I2C_PIIX4 is not set
+-CONFIG_I2C_MPC=y
+-# CONFIG_I2C_NFORCE2 is not set
+-# CONFIG_I2C_PARPORT_LIGHT is not set
+-# CONFIG_I2C_PROSAVAGE is not set
+-# CONFIG_I2C_SAVAGE4 is not set
+-# CONFIG_SCx200_ACB is not set
+-# CONFIG_I2C_SIS5595 is not set
+-# CONFIG_I2C_SIS630 is not set
+-# CONFIG_I2C_SIS96X is not set
+-# CONFIG_I2C_VIA is not set
+-# CONFIG_I2C_VIAPRO is not set
+-# CONFIG_I2C_VOODOO3 is not set
+-# CONFIG_I2C_PCA_ISA is not set
+-
+-#
+-# Miscellaneous I2C Chip support
+-#
+-# CONFIG_SENSORS_DS1337 is not set
+-# CONFIG_SENSORS_DS1374 is not set
+-# CONFIG_SENSORS_EEPROM is not set
+-# CONFIG_SENSORS_PCF8574 is not set
+-# CONFIG_SENSORS_PCA9539 is not set
+-# CONFIG_SENSORS_PCF8591 is not set
+-# CONFIG_SENSORS_RTC8564 is not set
+-# CONFIG_SENSORS_M41T00 is not set
+-# CONFIG_SENSORS_MAX6875 is not set
+-# CONFIG_RTC_X1205_I2C is not set
+-# CONFIG_I2C_DEBUG_CORE is not set
+-# CONFIG_I2C_DEBUG_ALGO is not set
+-# CONFIG_I2C_DEBUG_BUS is not set
+-# CONFIG_I2C_DEBUG_CHIP is not set
+-
+-#
+-# Dallas's 1-wire bus
+-#
+-# CONFIG_W1 is not set
+-
+-#
+-# Hardware Monitoring support
+-#
+-CONFIG_HWMON=y
+-# CONFIG_HWMON_VID is not set
+-# CONFIG_SENSORS_ADM1021 is not set
+-# CONFIG_SENSORS_ADM1025 is not set
+-# CONFIG_SENSORS_ADM1026 is not set
+-# CONFIG_SENSORS_ADM1031 is not set
+-# CONFIG_SENSORS_ADM9240 is not set
+-# CONFIG_SENSORS_ASB100 is not set
+-# CONFIG_SENSORS_ATXP1 is not set
+-# CONFIG_SENSORS_DS1621 is not set
+-# CONFIG_SENSORS_FSCHER is not set
+-# CONFIG_SENSORS_FSCPOS is not set
+-# CONFIG_SENSORS_GL518SM is not set
+-# CONFIG_SENSORS_GL520SM is not set
+-# CONFIG_SENSORS_IT87 is not set
+-# CONFIG_SENSORS_LM63 is not set
+-# CONFIG_SENSORS_LM75 is not set
+-# CONFIG_SENSORS_LM77 is not set
+-# CONFIG_SENSORS_LM78 is not set
+-# CONFIG_SENSORS_LM80 is not set
+-# CONFIG_SENSORS_LM83 is not set
+-# CONFIG_SENSORS_LM85 is not set
+-# CONFIG_SENSORS_LM87 is not set
+-# CONFIG_SENSORS_LM90 is not set
+-# CONFIG_SENSORS_LM92 is not set
+-# CONFIG_SENSORS_MAX1619 is not set
+-# CONFIG_SENSORS_PC87360 is not set
+-# CONFIG_SENSORS_SIS5595 is not set
+-# CONFIG_SENSORS_SMSC47M1 is not set
+-# CONFIG_SENSORS_SMSC47B397 is not set
+-# CONFIG_SENSORS_VIA686A is not set
+-# CONFIG_SENSORS_W83781D is not set
+-# CONFIG_SENSORS_W83792D is not set
+-# CONFIG_SENSORS_W83L785TS is not set
+-# CONFIG_SENSORS_W83627HF is not set
+-# CONFIG_SENSORS_W83627EHF is not set
+-# CONFIG_HWMON_DEBUG_CHIP is not set
+-
+-#
+-# Misc devices
+-#
+-
+-#
+-# Multimedia Capabilities Port drivers
+-#
+-
+-#
+-# Multimedia devices
+-#
+-# CONFIG_VIDEO_DEV is not set
+-
+-#
+-# Digital Video Broadcasting Devices
+-#
+-# CONFIG_DVB is not set
+-
+-#
+-# Graphics support
+-#
+-# CONFIG_FB is not set
+-
+-#
+-# Sound
+-#
+-# CONFIG_SOUND is not set
+-
+-#
+-# USB support
+-#
+-CONFIG_USB_ARCH_HAS_HCD=y
+-CONFIG_USB_ARCH_HAS_OHCI=y
+-# CONFIG_USB is not set
+-
+-#
+-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+-#
+-
+-#
+-# USB Gadget Support
+-#
+-# CONFIG_USB_GADGET is not set
+-
+-#
+-# MMC/SD Card support
+-#
+-# CONFIG_MMC is not set
+-
+-#
+-# InfiniBand support
+-#
+-# CONFIG_INFINIBAND is not set
+-
+-#
+-# SN Devices
+-#
+-
+-#
+-# File systems
+-#
+-CONFIG_EXT2_FS=y
+-# CONFIG_EXT2_FS_XATTR is not set
+-# CONFIG_EXT2_FS_XIP is not set
+-CONFIG_EXT3_FS=y
+-CONFIG_EXT3_FS_XATTR=y
+-# CONFIG_EXT3_FS_POSIX_ACL is not set
+-# CONFIG_EXT3_FS_SECURITY is not set
+-CONFIG_JBD=y
+-# CONFIG_JBD_DEBUG is not set
+-CONFIG_FS_MBCACHE=y
+-# CONFIG_REISERFS_FS is not set
+-# CONFIG_JFS_FS is not set
+-# CONFIG_FS_POSIX_ACL is not set
+-# CONFIG_XFS_FS is not set
+-# CONFIG_MINIX_FS is not set
+-# CONFIG_ROMFS_FS is not set
+-CONFIG_INOTIFY=y
+-# CONFIG_QUOTA is not set
+-CONFIG_DNOTIFY=y
+-# CONFIG_AUTOFS_FS is not set
+-# CONFIG_AUTOFS4_FS is not set
+-# CONFIG_FUSE_FS is not set
+-
+-#
+-# CD-ROM/DVD Filesystems
+-#
+-# CONFIG_ISO9660_FS is not set
+-# CONFIG_UDF_FS is not set
+-
+-#
+-# DOS/FAT/NT Filesystems
+-#
+-# CONFIG_MSDOS_FS is not set
+-# CONFIG_VFAT_FS is not set
+-# CONFIG_NTFS_FS is not set
+-
+-#
+-# Pseudo filesystems
+-#
+-CONFIG_PROC_FS=y
+-CONFIG_PROC_KCORE=y
+-CONFIG_SYSFS=y
+-CONFIG_TMPFS=y
+-# CONFIG_HUGETLB_PAGE is not set
+-CONFIG_RAMFS=y
+-# CONFIG_RELAYFS_FS is not set
+-
+-#
+-# Miscellaneous filesystems
+-#
+-# CONFIG_ADFS_FS is not set
+-# CONFIG_AFFS_FS is not set
+-# CONFIG_HFS_FS is not set
+-# CONFIG_HFSPLUS_FS is not set
+-# CONFIG_BEFS_FS is not set
+-# CONFIG_BFS_FS is not set
+-# CONFIG_EFS_FS is not set
+-# CONFIG_CRAMFS is not set
+-# CONFIG_VXFS_FS is not set
+-# CONFIG_HPFS_FS is not set
+-# CONFIG_QNX4FS_FS is not set
+-# CONFIG_SYSV_FS is not set
+-# CONFIG_UFS_FS is not set
+-
+-#
+-# Network File Systems
+-#
+-CONFIG_NFS_FS=y
+-# CONFIG_NFS_V3 is not set
+-# CONFIG_NFS_V4 is not set
+-# CONFIG_NFS_DIRECTIO is not set
+-# CONFIG_NFSD is not set
+-CONFIG_ROOT_NFS=y
+-CONFIG_LOCKD=y
+-CONFIG_NFS_COMMON=y
+-CONFIG_SUNRPC=y
+-# CONFIG_RPCSEC_GSS_KRB5 is not set
+-# CONFIG_RPCSEC_GSS_SPKM3 is not set
+-# CONFIG_SMB_FS is not set
+-# CONFIG_CIFS is not set
+-# CONFIG_NCP_FS is not set
+-# CONFIG_CODA_FS is not set
+-# CONFIG_AFS_FS is not set
+-# CONFIG_9P_FS is not set
+-
+-#
+-# Partition Types
+-#
+-CONFIG_PARTITION_ADVANCED=y
+-# CONFIG_ACORN_PARTITION is not set
+-# CONFIG_OSF_PARTITION is not set
+-# CONFIG_AMIGA_PARTITION is not set
+-# CONFIG_ATARI_PARTITION is not set
+-# CONFIG_MAC_PARTITION is not set
+-# CONFIG_MSDOS_PARTITION is not set
+-# CONFIG_LDM_PARTITION is not set
+-# CONFIG_SGI_PARTITION is not set
+-# CONFIG_ULTRIX_PARTITION is not set
+-# CONFIG_SUN_PARTITION is not set
+-# CONFIG_EFI_PARTITION is not set
+-
+-#
+-# Native Language Support
+-#
+-# CONFIG_NLS is not set
+-
+-#
+-# Library routines
+-#
+-# CONFIG_CRC_CCITT is not set
+-# CONFIG_CRC16 is not set
+-CONFIG_CRC32=y
+-# CONFIG_LIBCRC32C is not set
+-
+-#
+-# Profiling support
+-#
+-# CONFIG_PROFILING is not set
+-
+-#
+-# Kernel hacking
+-#
+-# CONFIG_PRINTK_TIME is not set
+-# CONFIG_DEBUG_KERNEL is not set
+-CONFIG_LOG_BUF_SHIFT=14
+-# CONFIG_SERIAL_TEXT_DEBUG is not set
+-
+-#
+-# Security options
+-#
+-# CONFIG_KEYS is not set
+-# CONFIG_SECURITY is not set
+-
+-#
+-# Cryptographic options
+-#
+-# CONFIG_CRYPTO is not set
+-
+-#
+-# Hardware crypto devices
+-#
+diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
+index c8b65ca..575c902 100644
+--- a/arch/ppc/kernel/ppc_ksyms.c
++++ b/arch/ppc/kernel/ppc_ksyms.c
+@@ -251,8 +251,7 @@ #ifdef  CONFIG_8xx
+ EXPORT_SYMBOL(cpm_install_handler);
+ EXPORT_SYMBOL(cpm_free_handler);
+ #endif /* CONFIG_8xx */
+-#if defined(CONFIG_8xx) || defined(CONFIG_40x) || defined(CONFIG_85xx) ||\
+-	defined(CONFIG_83xx)
++#if defined(CONFIG_8xx) || defined(CONFIG_40x) || defined(CONFIG_85xx)
+ EXPORT_SYMBOL(__res);
+ #endif
+ 
+diff --git a/arch/ppc/kernel/setup.c b/arch/ppc/kernel/setup.c
+index 5458ac5..2e76e8f 100644
+--- a/arch/ppc/kernel/setup.c
++++ b/arch/ppc/kernel/setup.c
+@@ -39,9 +39,8 @@ #include <asm/nvram.h>
+ #include <asm/xmon.h>
+ #include <asm/ocp.h>
+ 
+-#define USES_PPC_SYS (defined(CONFIG_85xx) || defined(CONFIG_83xx) || \
+-		      defined(CONFIG_MPC10X_BRIDGE) || defined(CONFIG_8260) || \
+-		      defined(CONFIG_PPC_MPC52xx))
++#define USES_PPC_SYS (defined(CONFIG_85xx) || defined(CONFIG_MPC10X_BRIDGE) \
++                   || defined(CONFIG_8260) || defined(CONFIG_PPC_MPC52xx))
+ 
+ #if USES_PPC_SYS
+ #include <asm/ppc_sys.h>
+diff --git a/arch/ppc/mm/mmu_context.c b/arch/ppc/mm/mmu_context.c
+index 85afa7f..dacf45c 100644
+--- a/arch/ppc/mm/mmu_context.c
++++ b/arch/ppc/mm/mmu_context.c
+@@ -2,7 +2,7 @@
+  * This file contains the routines for handling the MMU on those
+  * PowerPC implementations where the MMU substantially follows the
+  * architecture specification.  This includes the 6xx, 7xx, 7xxx,
+- * 8260, and 83xx implementations but excludes the 8xx and 4xx.
++ * and 8260 implementations but excludes the 8xx and 4xx.
+  *  -- paulus
+  *
+  *  Derived from arch/ppc/mm/init.c:
+diff --git a/arch/ppc/mm/ppc_mmu.c b/arch/ppc/mm/ppc_mmu.c
+index 973f1e6..0c1dc15 100644
+--- a/arch/ppc/mm/ppc_mmu.c
++++ b/arch/ppc/mm/ppc_mmu.c
+@@ -2,7 +2,7 @@
+  * This file contains the routines for handling the MMU on those
+  * PowerPC implementations where the MMU substantially follows the
+  * architecture specification.  This includes the 6xx, 7xx, 7xxx,
+- * 8260, and 83xx implementations but excludes the 8xx and 4xx.
++ * and 8260 implementations but excludes the 8xx and 4xx.
+  *  -- paulus
+  *
+  *  Derived from arch/ppc/mm/init.c:
+diff --git a/arch/ppc/platforms/83xx/Makefile b/arch/ppc/platforms/83xx/Makefile
+deleted file mode 100644
+index eb55341..0000000
+--- a/arch/ppc/platforms/83xx/Makefile
++++ /dev/null
+@@ -1,4 +0,0 @@
+-#
+-# Makefile for the PowerPC 83xx linux kernel.
+-#
+-obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+deleted file mode 100644
+index 3397f0d..0000000
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.c
++++ /dev/null
+@@ -1,346 +0,0 @@
+-/*
+- * MPC834x SYS board specific routines
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/stddef.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/errno.h>
+-#include <linux/reboot.h>
+-#include <linux/pci.h>
+-#include <linux/kdev_t.h>
+-#include <linux/major.h>
+-#include <linux/console.h>
+-#include <linux/delay.h>
+-#include <linux/seq_file.h>
+-#include <linux/root_dev.h>
+-#include <linux/serial.h>
+-#include <linux/tty.h>	/* for linux/serial_core.h */
+-#include <linux/serial_core.h>
+-#include <linux/initrd.h>
+-#include <linux/module.h>
+-#include <linux/fsl_devices.h>
+-
+-#include <asm/system.h>
+-#include <asm/pgtable.h>
+-#include <asm/page.h>
+-#include <asm/atomic.h>
+-#include <asm/time.h>
+-#include <asm/io.h>
+-#include <asm/machdep.h>
+-#include <asm/ipic.h>
+-#include <asm/bootinfo.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/mpc83xx.h>
+-#include <asm/irq.h>
+-#include <asm/kgdb.h>
+-#include <asm/ppc_sys.h>
+-#include <mm/mmu_decl.h>
+-
+-#include <syslib/ppc83xx_setup.h>
+-
+-#ifndef CONFIG_PCI
+-unsigned long isa_io_base = 0;
+-unsigned long isa_mem_base = 0;
+-#endif
+-
+-extern unsigned long total_memory;	/* in mm/init */
+-
+-unsigned char __res[sizeof (bd_t)];
+-
+-#ifdef CONFIG_PCI
+-int
+-mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+-{
+-	static char pci_irq_table[][4] =
+-	    /*
+-	     *      PCI IDSEL/INTPIN->INTLINE
+-	     *       A      B      C      D
+-	     */
+-	{
+-		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x11 */
+-		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x12 */
+-		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x13 */
+-		{0, 0, 0, 0},
+-		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x15 */
+-		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x16 */
+-		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x17 */
+-		{PIRQB, PIRQC, PIRQD, PIRQA},	/* idsel 0x18 */
+-		{0, 0, 0, 0},			/* idsel 0x19 */
+-		{0, 0, 0, 0},			/* idsel 0x20 */
+-	};
+-
+-	const long min_idsel = 0x11, max_idsel = 0x20, irqs_per_slot = 4;
+-	return PCI_IRQ_TABLE_LOOKUP;
+-}
+-
+-int
+-mpc83xx_exclude_device(u_char bus, u_char devfn)
+-{
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-#endif /* CONFIG_PCI */
+-
+-/* ************************************************************************
+- *
+- * Setup the architecture
+- *
+- */
+-static void __init
+-mpc834x_sys_setup_arch(void)
+-{
+-	bd_t *binfo = (bd_t *) __res;
+-	unsigned int freq;
+-	struct gianfar_platform_data *pdata;
+-	struct gianfar_mdio_data *mdata;
+-
+-	/* get the core frequency */
+-	freq = binfo->bi_intfreq;
+-
+-	/* Set loops_per_jiffy to a half-way reasonable value,
+-	   for use until calibrate_delay gets called. */
+-	loops_per_jiffy = freq / HZ;
+-
+-#ifdef CONFIG_PCI
+-	/* setup PCI host bridges */
+-	mpc83xx_setup_hose();
+-#endif
+-	mpc83xx_early_serial_map();
+-
+-	/* setup the board related info for the MDIO bus */
+-	mdata = (struct gianfar_mdio_data *) ppc_sys_get_pdata(MPC83xx_MDIO);
+-
+-	mdata->irq[0] = MPC83xx_IRQ_EXT1;
+-	mdata->irq[1] = MPC83xx_IRQ_EXT2;
+-	mdata->irq[2] = -1;
+-	mdata->irq[31] = -1;
+-
+-	/* setup the board related information for the enet controllers */
+-	pdata = (struct gianfar_platform_data *) ppc_sys_get_pdata(MPC83xx_TSEC1);
+-	if (pdata) {
+-		pdata->board_flags = FSL_GIANFAR_BRD_HAS_PHY_INTR;
+-		pdata->bus_id = 0;
+-		pdata->phy_id = 0;
+-		memcpy(pdata->mac_addr, binfo->bi_enetaddr, 6);
+-	}
+-
+-	pdata = (struct gianfar_platform_data *) ppc_sys_get_pdata(MPC83xx_TSEC2);
+-	if (pdata) {
+-		pdata->board_flags = FSL_GIANFAR_BRD_HAS_PHY_INTR;
+-		pdata->bus_id = 0;
+-		pdata->phy_id = 1;
+-		memcpy(pdata->mac_addr, binfo->bi_enet1addr, 6);
+-	}
+-
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	if (initrd_start)
+-		ROOT_DEV = Root_RAM0;
+-	else
+-#endif
+-#ifdef  CONFIG_ROOT_NFS
+-		ROOT_DEV = Root_NFS;
+-#else
+-		ROOT_DEV = Root_HDA1;
+-#endif
+-}
+-
+-static void __init
+-mpc834x_sys_map_io(void)
+-{
+-	/* we steal the lowest ioremap addr for virt space */
+-	io_block_mapping(VIRT_IMMRBAR, immrbar, 1024*1024, _PAGE_IO);
+-}
+-
+-int
+-mpc834x_sys_show_cpuinfo(struct seq_file *m)
+-{
+-	uint pvid, svid, phid1;
+-	bd_t *binfo = (bd_t *) __res;
+-	unsigned int freq;
+-
+-	/* get the core frequency */
+-	freq = binfo->bi_intfreq;
+-
+-	pvid = mfspr(SPRN_PVR);
+-	svid = mfspr(SPRN_SVR);
+-
+-	seq_printf(m, "Vendor\t\t: Freescale Inc.\n");
+-	seq_printf(m, "Machine\t\t: mpc%s sys\n", cur_ppc_sys_spec->ppc_sys_name);
+-	seq_printf(m, "core clock\t: %d MHz\n"
+-			"bus  clock\t: %d MHz\n",
+-			(int)(binfo->bi_intfreq / 1000000),
+-			(int)(binfo->bi_busfreq / 1000000));
+-	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
+-	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+-
+-	/* Display cpu Pll setting */
+-	phid1 = mfspr(SPRN_HID1);
+-	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", (int)(binfo->bi_memsize / (1024 * 1024)));
+-
+-	return 0;
+-}
+-
+-
+-void __init
+-mpc834x_sys_init_IRQ(void)
+-{
+-	bd_t *binfo = (bd_t *) __res;
+-
+-	u8 senses[8] = {
+-		0,			/* EXT 0 */
+-		IRQ_SENSE_LEVEL,	/* EXT 1 */
+-		IRQ_SENSE_LEVEL,	/* EXT 2 */
+-		0,			/* EXT 3 */
+-#ifdef CONFIG_PCI
+-		IRQ_SENSE_LEVEL,	/* EXT 4 */
+-		IRQ_SENSE_LEVEL,	/* EXT 5 */
+-		IRQ_SENSE_LEVEL,	/* EXT 6 */
+-		IRQ_SENSE_LEVEL,	/* EXT 7 */
+-#else
+-		0,			/* EXT 4 */
+-		0,			/* EXT 5 */
+-		0,			/* EXT 6 */
+-		0,			/* EXT 7 */
+-#endif
+-	};
+-
+-	ipic_init(binfo->bi_immr_base + 0x00700, 0, MPC83xx_IPIC_IRQ_OFFSET, senses, 8);
+-
+-	/* Initialize the default interrupt mapping priorities,
+-	 * in case the boot rom changed something on us.
+-	 */
+-	ipic_set_default_priority();
+-}
+-
+-#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+-extern ulong	ds1374_get_rtc_time(void);
+-extern int	ds1374_set_rtc_time(ulong);
+-
+-static int __init
+-mpc834x_rtc_hookup(void)
+-{
+-	struct timespec	tv;
+-
+-	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+-	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+-
+-	tv.tv_nsec = 0;
+-	tv.tv_sec = (ppc_md.get_rtc_time)();
+-	do_settimeofday(&tv);
+-
+-	return 0;
+-}
+-late_initcall(mpc834x_rtc_hookup);
+-#endif
+-static __inline__ void
+-mpc834x_sys_set_bat(void)
+-{
+-	/* we steal the lowest ioremap addr for virt space */
+-	mb();
+-	mtspr(SPRN_DBAT1U, VIRT_IMMRBAR | 0x1e);
+-	mtspr(SPRN_DBAT1L, immrbar | 0x2a);
+-	mb();
+-}
+-
+-void __init
+-platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+-	      unsigned long r6, unsigned long r7)
+-{
+-	bd_t *binfo = (bd_t *) __res;
+-
+-	/* parse_bootinfo must always be called first */
+-	parse_bootinfo(find_bootinfo());
+-
+-	/*
+-	 * If we were passed in a board information, copy it into the
+-	 * residual data area.
+-	 */
+-	if (r3) {
+-		memcpy((void *) __res, (void *) (r3 + KERNELBASE),
+-		       sizeof (bd_t));
+-	}
+-
+-#if defined(CONFIG_BLK_DEV_INITRD)
+-	/*
+-	 * If the init RAM disk has been configured in, and there's a valid
+-	 * starting address for it, set it up.
+-	 */
+-	if (r4) {
+-		initrd_start = r4 + KERNELBASE;
+-		initrd_end = r5 + KERNELBASE;
+-	}
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+-	/* Copy the kernel command line arguments to a safe place. */
+-	if (r6) {
+-		*(char *) (r7 + KERNELBASE) = 0;
+-		strcpy(cmd_line, (char *) (r6 + KERNELBASE));
+-	}
+-
+-	immrbar = binfo->bi_immr_base;
+-
+-	mpc834x_sys_set_bat();
+-
+-#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
+-	{
+-		struct uart_port p;
+-
+-		memset(&p, 0, sizeof (p));
+-		p.iotype = UPIO_MEM;
+-		p.membase = (unsigned char __iomem *)(VIRT_IMMRBAR + 0x4500);
+-		p.uartclk = binfo->bi_busfreq;
+-
+-		gen550_init(0, &p);
+-
+-		memset(&p, 0, sizeof (p));
+-		p.iotype = UPIO_MEM;
+-		p.membase = (unsigned char __iomem *)(VIRT_IMMRBAR + 0x4600);
+-		p.uartclk = binfo->bi_busfreq;
+-
+-		gen550_init(1, &p);
+-	}
+-#endif
+-
+-	identify_ppc_sys_by_id(mfspr(SPRN_SVR));
+-
+-	/* setup the PowerPC module struct */
+-	ppc_md.setup_arch = mpc834x_sys_setup_arch;
+-	ppc_md.show_cpuinfo = mpc834x_sys_show_cpuinfo;
+-
+-	ppc_md.init_IRQ = mpc834x_sys_init_IRQ;
+-	ppc_md.get_irq = ipic_get_irq;
+-
+-	ppc_md.restart = mpc83xx_restart;
+-	ppc_md.power_off = mpc83xx_power_off;
+-	ppc_md.halt = mpc83xx_halt;
+-
+-	ppc_md.find_end_of_memory = mpc83xx_find_end_of_memory;
+-	ppc_md.setup_io_mappings  = mpc834x_sys_map_io;
+-
+-	ppc_md.time_init = mpc83xx_time_init;
+-	ppc_md.set_rtc_time = NULL;
+-	ppc_md.get_rtc_time = NULL;
+-	ppc_md.calibrate_decr = mpc83xx_calibrate_decr;
+-
+-	ppc_md.early_serial_map = mpc83xx_early_serial_map;
+-#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
+-	ppc_md.progress = gen550_progress;
+-#endif	/* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
+-
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc834x_sys_init(): exit", 0);
+-
+-	return;
+-}
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h b/arch/ppc/platforms/83xx/mpc834x_sys.h
+deleted file mode 100644
+index d2e06c9..0000000
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.h
++++ /dev/null
+@@ -1,54 +0,0 @@
+-/*
+- * MPC834X SYS common board definitions
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor, Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- */
+-
+-#ifndef __MACH_MPC83XX_SYS_H__
+-#define __MACH_MPC83XX_SYS_H__
+-
+-#include <linux/init.h>
+-#include <syslib/ppc83xx_setup.h>
+-#include <asm/ppcboot.h>
+-
+-#define VIRT_IMMRBAR		((uint)0xfe000000)
+-
+-#define BCSR_PHYS_ADDR		((uint)0xf8000000)
+-#define BCSR_SIZE		((uint)(32 * 1024))
+-
+-#define BCSR_MISC_REG2_OFF	0x07
+-#define BCSR_MISC_REG2_PORESET	0x01
+-
+-#define BCSR_MISC_REG3_OFF	0x08
+-#define BCSR_MISC_REG3_CNFLOCK	0x80
+-
 -#define PIRQA	MPC83xx_IRQ_EXT4
 -#define PIRQB	MPC83xx_IRQ_EXT5
 -#define PIRQC	MPC83xx_IRQ_EXT6
 -#define PIRQD	MPC83xx_IRQ_EXT7
 -
- #endif				/* __MACH_MPC83XX_ITX_H__ */
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.h b/arch/powerpc/platforms/83xx/mpc834x_sys.h
-index fedecb7..8ec5f2f 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_sys.h
-+++ b/arch/powerpc/platforms/83xx/mpc834x_sys.h
-@@ -1,5 +1,5 @@
- /*
-- * arch/powerppc/platforms/83xx/mpc834x_sys.h
-+ * arch/powerpc/platforms/83xx/mpc834x_sys.h
-  *
-  * MPC834X SYS common board definitions
-  *
-@@ -15,9 +15,4 @@
- #ifndef __MACH_MPC83XX_SYS_H__
- #define __MACH_MPC83XX_SYS_H__
- 
--#define PIRQA	MPC83xx_IRQ_EXT4
--#define PIRQB	MPC83xx_IRQ_EXT5
--#define PIRQC	MPC83xx_IRQ_EXT6
--#define PIRQD	MPC83xx_IRQ_EXT7
+-#define MPC83xx_PCI1_LOWER_IO	0x00000000
+-#define MPC83xx_PCI1_UPPER_IO	0x00ffffff
+-#define MPC83xx_PCI1_LOWER_MEM	0x80000000
+-#define MPC83xx_PCI1_UPPER_MEM	0x9fffffff
+-#define MPC83xx_PCI1_IO_BASE	0xe2000000
+-#define MPC83xx_PCI1_MEM_OFFSET	0x00000000
+-#define MPC83xx_PCI1_IO_SIZE	0x01000000
 -
- #endif				/* __MACH_MPC83XX_SYS_H__ */
-diff --git a/include/asm-powerpc/mpc83xx.h b/include/asm-powerpc/mpc83xx.h
-new file mode 100644
-index 0000000..5773cba
---- /dev/null
-+++ b/include/asm-powerpc/mpc83xx.h
-@@ -0,0 +1,30 @@
-+/*
-+ * include/asm-powerpc/mpc83xx.h
-+ *
-+ * MPC83xx definitions
-+ *
-+ * Maintainer: Kumar Gala <galak@kernel.crashing.org>
-+ *
-+ * Copyright 2005 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifdef __KERNEL__
-+#ifndef __ASM_MPC83xx_H__
-+#define __ASM_MPC83xx_H__
-+
-+#include <asm/mmu.h>
-+
-+#ifdef CONFIG_83xx
-+
-+#ifdef CONFIG_MPC834x_SYS
-+#include <platforms/83xx/mpc834x_sys.h>
-+#endif
-+
-+#endif /* CONFIG_83xx */
-+#endif /* __ASM_MPC83xx_H__ */
-+#endif /* __KERNEL__ */
+-#define MPC83xx_PCI2_LOWER_IO	0x00000000
+-#define MPC83xx_PCI2_UPPER_IO	0x00ffffff
+-#define MPC83xx_PCI2_LOWER_MEM	0xa0000000
+-#define MPC83xx_PCI2_UPPER_MEM	0xbfffffff
+-#define MPC83xx_PCI2_IO_BASE	0xe3000000
+-#define MPC83xx_PCI2_MEM_OFFSET	0x00000000
+-#define MPC83xx_PCI2_IO_SIZE	0x01000000
+-
+-#endif                /* __MACH_MPC83XX_SYS_H__ */
+diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
+index dca23f2..5932d9e 100644
+--- a/arch/ppc/syslib/Makefile
++++ b/arch/ppc/syslib/Makefile
+@@ -92,11 +92,6 @@ ifeq ($(CONFIG_85xx),y)
+ obj-$(CONFIG_PCI)		+= pci_auto.o
+ endif
+ obj-$(CONFIG_RAPIDIO)		+= ppc85xx_rio.o
+-obj-$(CONFIG_83xx)		+= ppc83xx_setup.o ppc_sys.o \
+-					mpc83xx_sys.o mpc83xx_devices.o ipic.o
+-ifeq ($(CONFIG_83xx),y)
+-obj-$(CONFIG_PCI)		+= pci_auto.o
+-endif
+ obj-$(CONFIG_MPC8548_CDS)	+= todc_time.o
+ obj-$(CONFIG_MPC8555_CDS)	+= todc_time.o
+ obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_setup.o mpc52xx_pic.o \
+diff --git a/arch/ppc/syslib/ipic.c b/arch/ppc/syslib/ipic.c
+deleted file mode 100644
+index 46801f5..0000000
+--- a/arch/ppc/syslib/ipic.c
++++ /dev/null
+@@ -1,646 +0,0 @@
+-/*
+- * include/asm-ppc/ipic.c
+- *
+- * IPIC routines implementations.
+- *
+- * Copyright 2005 Freescale Semiconductor, Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/errno.h>
+-#include <linux/reboot.h>
+-#include <linux/slab.h>
+-#include <linux/stddef.h>
+-#include <linux/sched.h>
+-#include <linux/signal.h>
+-#include <linux/sysdev.h>
+-#include <asm/irq.h>
+-#include <asm/io.h>
+-#include <asm/ipic.h>
+-#include <asm/mpc83xx.h>
+-
+-#include "ipic.h"
+-
+-static struct ipic p_ipic;
+-static struct ipic * primary_ipic;
+-
+-static struct ipic_info ipic_info[] = {
+-	[9] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_D,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 24,
+-		.prio_mask = 0,
+-	},
+-	[10] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_D,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 25,
+-		.prio_mask = 1,
+-	},
+-	[11] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_D,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 26,
+-		.prio_mask = 2,
+-	},
+-	[14] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_D,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 29,
+-		.prio_mask = 5,
+-	},
+-	[15] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_D,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 30,
+-		.prio_mask = 6,
+-	},
+-	[16] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_D,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 31,
+-		.prio_mask = 7,
+-	},
+-	[17] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 1,
+-		.prio_mask = 5,
+-	},
+-	[18] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 2,
+-		.prio_mask = 6,
+-	},
+-	[19] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 3,
+-		.prio_mask = 7,
+-	},
+-	[20] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 4,
+-		.prio_mask = 4,
+-	},
+-	[21] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 5,
+-		.prio_mask = 5,
+-	},
+-	[22] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 6,
+-		.prio_mask = 6,
+-	},
+-	[23] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 7,
+-		.prio_mask = 7,
+-	},
+-	[32] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 0,
+-		.prio_mask = 0,
+-	},
+-	[33] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 1,
+-		.prio_mask = 1,
+-	},
+-	[34] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 2,
+-		.prio_mask = 2,
+-	},
+-	[35] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 3,
+-		.prio_mask = 3,
+-	},
+-	[36] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 4,
+-		.prio_mask = 4,
+-	},
+-	[37] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 5,
+-		.prio_mask = 5,
+-	},
+-	[38] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 6,
+-		.prio_mask = 6,
+-	},
+-	[39] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_H,
+-		.prio	= IPIC_SIPRR_A,
+-		.force	= IPIC_SIFCR_H,
+-		.bit	= 7,
+-		.prio_mask = 7,
+-	},
+-	[48] = {
+-		.pend	= IPIC_SEPNR,
+-		.mask	= IPIC_SEMSR,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SEFCR,
+-		.bit	= 0,
+-		.prio_mask = 4,
+-	},
+-	[64] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 0,
+-		.prio_mask = 0,
+-	},
+-	[65] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 1,
+-		.prio_mask = 1,
+-	},
+-	[66] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 2,
+-		.prio_mask = 2,
+-	},
+-	[67] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_A,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 3,
+-		.prio_mask = 3,
+-	},
+-	[68] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 4,
+-		.prio_mask = 0,
+-	},
+-	[69] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 5,
+-		.prio_mask = 1,
+-	},
+-	[70] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 6,
+-		.prio_mask = 2,
+-	},
+-	[71] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= IPIC_SMPRR_B,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 7,
+-		.prio_mask = 3,
+-	},
+-	[72] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 8,
+-	},
+-	[73] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 9,
+-	},
+-	[74] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 10,
+-	},
+-	[75] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 11,
+-	},
+-	[76] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 12,
+-	},
+-	[77] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 13,
+-	},
+-	[78] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 14,
+-	},
+-	[79] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 15,
+-	},
+-	[80] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 16,
+-	},
+-	[84] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 20,
+-	},
+-	[85] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 21,
+-	},
+-	[90] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 26,
+-	},
+-	[91] = {
+-		.pend	= IPIC_SIPNR_H,
+-		.mask	= IPIC_SIMSR_L,
+-		.prio	= 0,
+-		.force	= IPIC_SIFCR_L,
+-		.bit	= 27,
+-	},
+-};
+-
+-static inline u32 ipic_read(volatile u32 __iomem *base, unsigned int reg)
+-{
+-	return in_be32(base + (reg >> 2));
+-}
+-
+-static inline void ipic_write(volatile u32 __iomem *base, unsigned int reg, u32 value)
+-{
+-	out_be32(base + (reg >> 2), value);
+-}
+-
+-static inline struct ipic * ipic_from_irq(unsigned int irq)
+-{
+-	return primary_ipic;
+-}
+-
+-static void ipic_enable_irq(unsigned int irq)
+-{
+-	struct ipic *ipic = ipic_from_irq(irq);
+-	unsigned int src = irq - ipic->irq_offset;
+-	u32 temp;
+-
+-	temp = ipic_read(ipic->regs, ipic_info[src].mask);
+-	temp |= (1 << (31 - ipic_info[src].bit));
+-	ipic_write(ipic->regs, ipic_info[src].mask, temp);
+-}
+-
+-static void ipic_disable_irq(unsigned int irq)
+-{
+-	struct ipic *ipic = ipic_from_irq(irq);
+-	unsigned int src = irq - ipic->irq_offset;
+-	u32 temp;
+-
+-	temp = ipic_read(ipic->regs, ipic_info[src].mask);
+-	temp &= ~(1 << (31 - ipic_info[src].bit));
+-	ipic_write(ipic->regs, ipic_info[src].mask, temp);
+-}
+-
+-static void ipic_disable_irq_and_ack(unsigned int irq)
+-{
+-	struct ipic *ipic = ipic_from_irq(irq);
+-	unsigned int src = irq - ipic->irq_offset;
+-	u32 temp;
+-
+-	ipic_disable_irq(irq);
+-
+-	temp = ipic_read(ipic->regs, ipic_info[src].pend);
+-	temp |= (1 << (31 - ipic_info[src].bit));
+-	ipic_write(ipic->regs, ipic_info[src].pend, temp);
+-}
+-
+-static void ipic_end_irq(unsigned int irq)
+-{
+-	if (!(irq_desc[irq].status & (IRQ_DISABLED|IRQ_INPROGRESS)))
+-		ipic_enable_irq(irq);
+-}
+-
+-struct hw_interrupt_type ipic = {
+-	.typename = " IPIC  ",
+-	.enable = ipic_enable_irq,
+-	.disable = ipic_disable_irq,
+-	.ack = ipic_disable_irq_and_ack,
+-	.end = ipic_end_irq,
+-};
+-
+-void __init ipic_init(phys_addr_t phys_addr,
+-		unsigned int flags,
+-		unsigned int irq_offset,
+-		unsigned char *senses,
+-		unsigned int senses_count)
+-{
+-	u32 i, temp = 0;
+-
+-	primary_ipic = &p_ipic;
+-	primary_ipic->regs = ioremap(phys_addr, MPC83xx_IPIC_SIZE);
+-
+-	primary_ipic->irq_offset = irq_offset;
+-
+-	ipic_write(primary_ipic->regs, IPIC_SICNR, 0x0);
+-
+-	/* default priority scheme is grouped. If spread mode is required
+-	 * configure SICFR accordingly */
+-	if (flags & IPIC_SPREADMODE_GRP_A)
+-		temp |= SICFR_IPSA;
+-	if (flags & IPIC_SPREADMODE_GRP_D)
+-		temp |= SICFR_IPSD;
+-	if (flags & IPIC_SPREADMODE_MIX_A)
+-		temp |= SICFR_MPSA;
+-	if (flags & IPIC_SPREADMODE_MIX_B)
+-		temp |= SICFR_MPSB;
+-
+-	ipic_write(primary_ipic->regs, IPIC_SICNR, temp);
+-
+-	/* handle MCP route */
+-	temp = 0;
+-	if (flags & IPIC_DISABLE_MCP_OUT)
+-		temp = SERCR_MCPR;
+-	ipic_write(primary_ipic->regs, IPIC_SERCR, temp);
+-
+-	/* handle routing of IRQ0 to MCP */
+-	temp = ipic_read(primary_ipic->regs, IPIC_SEMSR);
+-
+-	if (flags & IPIC_IRQ0_MCP)
+-		temp |= SEMSR_SIRQ0;
+-	else
+-		temp &= ~SEMSR_SIRQ0;
+-
+-	ipic_write(primary_ipic->regs, IPIC_SEMSR, temp);
+-
+-	for (i = 0 ; i < NR_IPIC_INTS ; i++) {
+-		irq_desc[i+irq_offset].chip = &ipic;
+-		irq_desc[i+irq_offset].status = IRQ_LEVEL;
+-	}
+-
+-	temp = 0;
+-	for (i = 0 ; i < senses_count ; i++) {
+-		if ((senses[i] & IRQ_SENSE_MASK) == IRQ_SENSE_EDGE) {
+-			temp |= 1 << (15 - i);
+-			if (i != 0)
+-				irq_desc[i + irq_offset + MPC83xx_IRQ_EXT1 - 1].status = 0;
+-			else
+-				irq_desc[irq_offset + MPC83xx_IRQ_EXT0].status = 0;
+-		}
+-	}
+-	ipic_write(primary_ipic->regs, IPIC_SECNR, temp);
+-
+-	printk ("IPIC (%d IRQ sources, %d External IRQs) at %p\n", NR_IPIC_INTS,
+-			senses_count, primary_ipic->regs);
+-}
+-
+-int ipic_set_priority(unsigned int irq, unsigned int priority)
+-{
+-	struct ipic *ipic = ipic_from_irq(irq);
+-	unsigned int src = irq - ipic->irq_offset;
+-	u32 temp;
+-
+-	if (priority > 7)
+-		return -EINVAL;
+-	if (src > 127)
+-		return -EINVAL;
+-	if (ipic_info[src].prio == 0)
+-		return -EINVAL;
+-
+-	temp = ipic_read(ipic->regs, ipic_info[src].prio);
+-
+-	if (priority < 4) {
+-		temp &= ~(0x7 << (20 + (3 - priority) * 3));
+-		temp |= ipic_info[src].prio_mask << (20 + (3 - priority) * 3);
+-	} else {
+-		temp &= ~(0x7 << (4 + (7 - priority) * 3));
+-		temp |= ipic_info[src].prio_mask << (4 + (7 - priority) * 3);
+-	}
+-
+-	ipic_write(ipic->regs, ipic_info[src].prio, temp);
+-
+-	return 0;
+-}
+-
+-void ipic_set_highest_priority(unsigned int irq)
+-{
+-	struct ipic *ipic = ipic_from_irq(irq);
+-	unsigned int src = irq - ipic->irq_offset;
+-	u32 temp;
+-
+-	temp = ipic_read(ipic->regs, IPIC_SICFR);
+-
+-	/* clear and set HPI */
+-	temp &= 0x7f000000;
+-	temp |= (src & 0x7f) << 24;
+-
+-	ipic_write(ipic->regs, IPIC_SICFR, temp);
+-}
+-
+-void ipic_set_default_priority(void)
+-{
+-	ipic_set_priority(MPC83xx_IRQ_TSEC1_TX, 0);
+-	ipic_set_priority(MPC83xx_IRQ_TSEC1_RX, 1);
+-	ipic_set_priority(MPC83xx_IRQ_TSEC1_ERROR, 2);
+-	ipic_set_priority(MPC83xx_IRQ_TSEC2_TX, 3);
+-	ipic_set_priority(MPC83xx_IRQ_TSEC2_RX, 4);
+-	ipic_set_priority(MPC83xx_IRQ_TSEC2_ERROR, 5);
+-	ipic_set_priority(MPC83xx_IRQ_USB2_DR, 6);
+-	ipic_set_priority(MPC83xx_IRQ_USB2_MPH, 7);
+-
+-	ipic_set_priority(MPC83xx_IRQ_UART1, 0);
+-	ipic_set_priority(MPC83xx_IRQ_UART2, 1);
+-	ipic_set_priority(MPC83xx_IRQ_SEC2, 2);
+-	ipic_set_priority(MPC83xx_IRQ_IIC1, 5);
+-	ipic_set_priority(MPC83xx_IRQ_IIC2, 6);
+-	ipic_set_priority(MPC83xx_IRQ_SPI, 7);
+-	ipic_set_priority(MPC83xx_IRQ_RTC_SEC, 0);
+-	ipic_set_priority(MPC83xx_IRQ_PIT, 1);
+-	ipic_set_priority(MPC83xx_IRQ_PCI1, 2);
+-	ipic_set_priority(MPC83xx_IRQ_PCI2, 3);
+-	ipic_set_priority(MPC83xx_IRQ_EXT0, 4);
+-	ipic_set_priority(MPC83xx_IRQ_EXT1, 5);
+-	ipic_set_priority(MPC83xx_IRQ_EXT2, 6);
+-	ipic_set_priority(MPC83xx_IRQ_EXT3, 7);
+-	ipic_set_priority(MPC83xx_IRQ_RTC_ALR, 0);
+-	ipic_set_priority(MPC83xx_IRQ_MU, 1);
+-	ipic_set_priority(MPC83xx_IRQ_SBA, 2);
+-	ipic_set_priority(MPC83xx_IRQ_DMA, 3);
+-	ipic_set_priority(MPC83xx_IRQ_EXT4, 4);
+-	ipic_set_priority(MPC83xx_IRQ_EXT5, 5);
+-	ipic_set_priority(MPC83xx_IRQ_EXT6, 6);
+-	ipic_set_priority(MPC83xx_IRQ_EXT7, 7);
+-}
+-
+-void ipic_enable_mcp(enum ipic_mcp_irq mcp_irq)
+-{
+-	struct ipic *ipic = primary_ipic;
+-	u32 temp;
+-
+-	temp = ipic_read(ipic->regs, IPIC_SERMR);
+-	temp |= (1 << (31 - mcp_irq));
+-	ipic_write(ipic->regs, IPIC_SERMR, temp);
+-}
+-
+-void ipic_disable_mcp(enum ipic_mcp_irq mcp_irq)
+-{
+-	struct ipic *ipic = primary_ipic;
+-	u32 temp;
+-
+-	temp = ipic_read(ipic->regs, IPIC_SERMR);
+-	temp &= (1 << (31 - mcp_irq));
+-	ipic_write(ipic->regs, IPIC_SERMR, temp);
+-}
+-
+-u32 ipic_get_mcp_status(void)
+-{
+-	return ipic_read(primary_ipic->regs, IPIC_SERMR);
+-}
+-
+-void ipic_clear_mcp_status(u32 mask)
+-{
+-	ipic_write(primary_ipic->regs, IPIC_SERMR, mask);
+-}
+-
+-/* Return an interrupt vector or -1 if no interrupt is pending. */
+-int ipic_get_irq(struct pt_regs *regs)
+-{
+-	int irq;
+-
+-	irq = ipic_read(primary_ipic->regs, IPIC_SIVCR) & 0x7f;
+-
+-	if (irq == 0)    /* 0 --> no irq is pending */
+-		irq = -1;
+-
+-	return irq;
+-}
+-
+-static struct sysdev_class ipic_sysclass = {
+-	set_kset_name("ipic"),
+-};
+-
+-static struct sys_device device_ipic = {
+-	.id		= 0,
+-	.cls		= &ipic_sysclass,
+-};
+-
+-static int __init init_ipic_sysfs(void)
+-{
+-	int rc;
+-
+-	if (!primary_ipic->regs)
+-		return -ENODEV;
+-	printk(KERN_DEBUG "Registering ipic with sysfs...\n");
+-
+-	rc = sysdev_class_register(&ipic_sysclass);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering ipic sys class\n");
+-		return -ENODEV;
+-	}
+-	rc = sysdev_register(&device_ipic);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering ipic sys device\n");
+-		return -ENODEV;
+-	}
+-	return 0;
+-}
+-
+-subsys_initcall(init_ipic_sysfs);
+diff --git a/arch/ppc/syslib/ipic.h b/arch/ppc/syslib/ipic.h
+deleted file mode 100644
+index a60c9d1..0000000
+--- a/arch/ppc/syslib/ipic.h
++++ /dev/null
+@@ -1,47 +0,0 @@
+-/*
+- * IPIC private definitions and structure.
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor, Inc
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-#ifndef __IPIC_H__
+-#define __IPIC_H__
+-
+-#include <asm/ipic.h>
+-
+-#define MPC83xx_IPIC_SIZE	(0x00100)
+-
+-/* System Global Interrupt Configuration Register */
+-#define	SICFR_IPSA	0x00010000
+-#define	SICFR_IPSD	0x00080000
+-#define	SICFR_MPSA	0x00200000
+-#define	SICFR_MPSB	0x00400000
+-
+-/* System External Interrupt Mask Register */
+-#define	SEMSR_SIRQ0	0x00008000
+-
+-/* System Error Control Register */
+-#define SERCR_MCPR	0x00000001
+-
+-struct ipic {
+-	volatile u32 __iomem	*regs;
+-	unsigned int		irq_offset;
+-};
+-
+-struct ipic_info {
+-	u8	pend;		/* pending register offset from base */
+-	u8	mask;		/* mask register offset from base */
+-	u8	prio;		/* priority register offset from base */
+-	u8	force;		/* force register offset from base */
+-	u8	bit;		/* register bit position (as per doc)
+-				   bit mask = 1 << (31 - bit) */
+-	u8	prio_mask;	/* priority mask value */
+-};
+-
+-#endif /* __IPIC_H__ */
+diff --git a/arch/ppc/syslib/mpc83xx_devices.c b/arch/ppc/syslib/mpc83xx_devices.c
+deleted file mode 100644
+index 5c4932c..0000000
+--- a/arch/ppc/syslib/mpc83xx_devices.c
++++ /dev/null
+@@ -1,251 +0,0 @@
+-/*
+- * MPC83xx Device descriptions
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/device.h>
+-#include <linux/serial_8250.h>
+-#include <linux/fsl_devices.h>
+-#include <asm/mpc83xx.h>
+-#include <asm/irq.h>
+-#include <asm/ppc_sys.h>
+-#include <asm/machdep.h>
+-
+-/* We use offsets for IORESOURCE_MEM since we do not know at compile time
+- * what IMMRBAR is, will get fixed up by mach_mpc83xx_fixup
+- */
+-
+-struct gianfar_mdio_data mpc83xx_mdio_pdata = {
+-};
+-
+-static struct gianfar_platform_data mpc83xx_tsec1_pdata = {
+-	.device_flags = FSL_GIANFAR_DEV_HAS_GIGABIT |
+-	    FSL_GIANFAR_DEV_HAS_COALESCE | FSL_GIANFAR_DEV_HAS_RMON |
+-	    FSL_GIANFAR_DEV_HAS_MULTI_INTR,
+-};
+-
+-static struct gianfar_platform_data mpc83xx_tsec2_pdata = {
+-	.device_flags = FSL_GIANFAR_DEV_HAS_GIGABIT |
+-	    FSL_GIANFAR_DEV_HAS_COALESCE | FSL_GIANFAR_DEV_HAS_RMON |
+-	    FSL_GIANFAR_DEV_HAS_MULTI_INTR,
+-};
+-
+-static struct fsl_i2c_platform_data mpc83xx_fsl_i2c1_pdata = {
+-	.device_flags = FSL_I2C_DEV_SEPARATE_DFSRR,
+-};
+-
+-static struct fsl_i2c_platform_data mpc83xx_fsl_i2c2_pdata = {
+-	.device_flags = FSL_I2C_DEV_SEPARATE_DFSRR,
+-};
+-
+-static struct plat_serial8250_port serial_platform_data[] = {
+-	[0] = {
+-		.mapbase	= 0x4500,
+-		.irq		= MPC83xx_IRQ_UART1,
+-		.iotype		= UPIO_MEM,
+-		.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST,
+-	},
+-	[1] = {
+-		.mapbase	= 0x4600,
+-		.irq		= MPC83xx_IRQ_UART2,
+-		.iotype		= UPIO_MEM,
+-		.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST,
+-	},
+-	{ },
+-};
+-
+-struct platform_device ppc_sys_platform_devices[] = {
+-	[MPC83xx_TSEC1] = {
+-		.name = "fsl-gianfar",
+-		.id	= 1,
+-		.dev.platform_data = &mpc83xx_tsec1_pdata,
+-		.num_resources	 = 4,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x24000,
+-				.end	= 0x24fff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.name	= "tx",
+-				.start	= MPC83xx_IRQ_TSEC1_TX,
+-				.end	= MPC83xx_IRQ_TSEC1_TX,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-			{
+-				.name	= "rx",
+-				.start	= MPC83xx_IRQ_TSEC1_RX,
+-				.end	= MPC83xx_IRQ_TSEC1_RX,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-			{
+-				.name	= "error",
+-				.start	= MPC83xx_IRQ_TSEC1_ERROR,
+-				.end	= MPC83xx_IRQ_TSEC1_ERROR,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_TSEC2] = {
+-		.name = "fsl-gianfar",
+-		.id	= 2,
+-		.dev.platform_data = &mpc83xx_tsec2_pdata,
+-		.num_resources	 = 4,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x25000,
+-				.end	= 0x25fff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.name	= "tx",
+-				.start	= MPC83xx_IRQ_TSEC2_TX,
+-				.end	= MPC83xx_IRQ_TSEC2_TX,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-			{
+-				.name	= "rx",
+-				.start	= MPC83xx_IRQ_TSEC2_RX,
+-				.end	= MPC83xx_IRQ_TSEC2_RX,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-			{
+-				.name	= "error",
+-				.start	= MPC83xx_IRQ_TSEC2_ERROR,
+-				.end	= MPC83xx_IRQ_TSEC2_ERROR,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_IIC1] = {
+-		.name = "fsl-i2c",
+-		.id	= 1,
+-		.dev.platform_data = &mpc83xx_fsl_i2c1_pdata,
+-		.num_resources	 = 2,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x3000,
+-				.end	= 0x30ff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.start	= MPC83xx_IRQ_IIC1,
+-				.end	= MPC83xx_IRQ_IIC1,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_IIC2] = {
+-		.name = "fsl-i2c",
+-		.id	= 2,
+-		.dev.platform_data = &mpc83xx_fsl_i2c2_pdata,
+-		.num_resources	 = 2,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x3100,
+-				.end	= 0x31ff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.start	= MPC83xx_IRQ_IIC2,
+-				.end	= MPC83xx_IRQ_IIC2,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_DUART] = {
+-		.name = "serial8250",
+-		.id	= PLAT8250_DEV_PLATFORM,
+-		.dev.platform_data = serial_platform_data,
+-	},
+-	[MPC83xx_SEC2] = {
+-		.name = "fsl-sec2",
+-		.id	= 1,
+-		.num_resources	 = 2,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x30000,
+-				.end	= 0x3ffff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.start	= MPC83xx_IRQ_SEC2,
+-				.end	= MPC83xx_IRQ_SEC2,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_USB2_DR] = {
+-		.name = "fsl-ehci",
+-		.id	= 1,
+-		.num_resources	 = 2,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x23000,
+-				.end	= 0x23fff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.start	= MPC83xx_IRQ_USB2_DR,
+-				.end	= MPC83xx_IRQ_USB2_DR,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_USB2_MPH] = {
+-		.name = "fsl-ehci",
+-		.id	= 2,
+-		.num_resources	 = 2,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x22000,
+-				.end	= 0x22fff,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-			{
+-				.start	= MPC83xx_IRQ_USB2_MPH,
+-				.end	= MPC83xx_IRQ_USB2_MPH,
+-				.flags	= IORESOURCE_IRQ,
+-			},
+-		},
+-	},
+-	[MPC83xx_MDIO] = {
+-		.name = "fsl-gianfar_mdio",
+-		.id = 0,
+-		.dev.platform_data = &mpc83xx_mdio_pdata,
+-		.num_resources = 1,
+-		.resource = (struct resource[]) {
+-			{
+-				.start	= 0x24520,
+-				.end	= 0x2453f,
+-				.flags	= IORESOURCE_MEM,
+-			},
+-		},
+-	},
+-};
+-
+-static int __init mach_mpc83xx_fixup(struct platform_device *pdev)
+-{
+-	ppc_sys_fixup_mem_resource(pdev, immrbar);
+-	return 0;
+-}
+-
+-static int __init mach_mpc83xx_init(void)
+-{
+-	if (ppc_md.progress)
+-		ppc_md.progress("mach_mpc83xx_init:enter", 0);
+-	ppc_sys_device_fixup = mach_mpc83xx_fixup;
+-	return 0;
+-}
+-
+-postcore_initcall(mach_mpc83xx_init);
+diff --git a/arch/ppc/syslib/mpc83xx_sys.c b/arch/ppc/syslib/mpc83xx_sys.c
+deleted file mode 100644
+index 0498ae7..0000000
+--- a/arch/ppc/syslib/mpc83xx_sys.c
++++ /dev/null
+@@ -1,122 +0,0 @@
+-/*
+- * MPC83xx System descriptions
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/device.h>
+-#include <asm/ppc_sys.h>
+-
+-struct ppc_sys_spec *cur_ppc_sys_spec;
+-struct ppc_sys_spec ppc_sys_specs[] = {
+-	{
+-		.ppc_sys_name	= "8349E",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80500000,
+-		.num_devices	= 9,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART, MPC83xx_SEC2,
+-			MPC83xx_USB2_DR, MPC83xx_USB2_MPH, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8349",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80510000,
+-		.num_devices	= 8,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART,
+-			MPC83xx_USB2_DR, MPC83xx_USB2_MPH, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8347E",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80520000,
+-		.num_devices	= 9,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART, MPC83xx_SEC2,
+-			MPC83xx_USB2_DR, MPC83xx_USB2_MPH, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8347",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80530000,
+-		.num_devices	= 8,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART,
+-			MPC83xx_USB2_DR, MPC83xx_USB2_MPH, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8347E",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80540000,
+-		.num_devices	= 9,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART, MPC83xx_SEC2,
+-			MPC83xx_USB2_DR, MPC83xx_USB2_MPH, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8347",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80550000,
+-		.num_devices	= 8,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART,
+-			MPC83xx_USB2_DR, MPC83xx_USB2_MPH, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8343E",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80560000,
+-		.num_devices	= 8,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART, MPC83xx_SEC2,
+-			MPC83xx_USB2_DR, MPC83xx_MDIO
+-		},
+-	},
+-	{
+-		.ppc_sys_name	= "8343",
+-		.mask 		= 0xFFFF0000,
+-		.value 		= 0x80570000,
+-		.num_devices	= 7,
+-		.device_list	= (enum ppc_sys_devices[])
+-		{
+-			MPC83xx_TSEC1, MPC83xx_TSEC2, MPC83xx_IIC1,
+-			MPC83xx_IIC2, MPC83xx_DUART,
+-			MPC83xx_USB2_DR, MPC83xx_MDIO
+-		},
+-	},
+-	{	/* default match */
+-		.ppc_sys_name	= "",
+-		.mask 		= 0x00000000,
+-		.value 		= 0x00000000,
+-	},
+-};
+diff --git a/arch/ppc/syslib/ppc83xx_pci.h b/arch/ppc/syslib/ppc83xx_pci.h
+deleted file mode 100644
+index ec69164..0000000
+--- a/arch/ppc/syslib/ppc83xx_pci.h
++++ /dev/null
+@@ -1,151 +0,0 @@
+-/* Created by Tony Li <tony.li@freescale.com>
+- * Copyright (c) 2005 freescale semiconductor
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the  GNU General Public License along
+- * with this program; if not, write  to the Free Software Foundation, Inc.,
+- * 675 Mass Ave, Cambridge, MA 02139, USA.
+- */
+-
+-#ifndef __PPC_SYSLIB_PPC83XX_PCI_H
+-#define __PPC_SYSLIB_PPC83XX_PCI_H
+-
+-typedef struct immr_clk {
+-	u32 spmr; /* system PLL mode Register  */
+-	u32 occr; /* output clock control Register  */
+-	u32 sccr; /* system clock control Register  */
+-	u8 res0[0xF4];
+-} immr_clk_t;
+-
+-/*
+- * Sequencer
+- */
+-typedef struct immr_ios {
+-	u32	potar0;
+-	u8	res0[4];
+-	u32	pobar0;
+-	u8	res1[4];
+-	u32	pocmr0;
+-	u8	res2[4];
+-	u32	potar1;
+-	u8	res3[4];
+-	u32	pobar1;
+-	u8	res4[4];
+-	u32	pocmr1;
+-	u8	res5[4];
+-	u32	potar2;
+-	u8	res6[4];
+-	u32	pobar2;
+-	u8	res7[4];
+-	u32	pocmr2;
+-	u8	res8[4];
+-	u32	potar3;
+-	u8	res9[4];
+-	u32	pobar3;
+-	u8	res10[4];
+-	u32	pocmr3;
+-	u8	res11[4];
+-	u32	potar4;
+-	u8	res12[4];
+-	u32	pobar4;
+-	u8	res13[4];
+-	u32	pocmr4;
+-	u8	res14[4];
+-	u32	potar5;
+-	u8	res15[4];
+-	u32	pobar5;
+-	u8	res16[4];
+-	u32	pocmr5;
+-	u8	res17[4];
+-	u8	res18[0x60];
+-	u32	pmcr;
+-	u8	res19[4];
+-	u32	dtcr;
+-	u8	res20[4];
+-} immr_ios_t;
+-#define POTAR_TA_MASK	0x000fffff
+-#define POBAR_BA_MASK	0x000fffff
+-#define POCMR_EN	0x80000000
+-#define POCMR_IO	0x40000000 /* 0--memory space 1--I/O space */
+-#define POCMR_SE	0x20000000 /* streaming enable */
+-#define POCMR_DST	0x10000000 /* 0--PCI1 1--PCI2 */
+-#define POCMR_CM_MASK	0x000fffff
+-
+-/*
+- * PCI Controller Control and Status Registers
+- */
+-typedef struct immr_pcictrl {
+-	u32	esr;
+-	u32	ecdr;
+-	u32	eer;
+-	u32	eatcr;
+-	u32	eacr;
+-	u32	eeacr;
+-	u32	edlcr;
+-	u32	edhcr;
+-	u32	gcr;
+-	u32	ecr;
+-	u32	gsr;
+-	u8	res0[12];
+-	u32	pitar2;
+-	u8	res1[4];
+-	u32	pibar2;
+-	u32	piebar2;
+-	u32	piwar2;
+-	u8	res2[4];
+-	u32	pitar1;
+-	u8	res3[4];
+-	u32	pibar1;
+-	u32	piebar1;
+-	u32	piwar1;
+-	u8	res4[4];
+-	u32	pitar0;
+-	u8	res5[4];
+-	u32	pibar0;
+-	u8	res6[4];
+-	u32	piwar0;
+-	u8	res7[132];
+-} immr_pcictrl_t;
+-#define PITAR_TA_MASK	0x000fffff
+-#define PIBAR_MASK	0xffffffff
+-#define PIEBAR_EBA_MASK	0x000fffff
+-#define PIWAR_EN	0x80000000
+-#define PIWAR_PF	0x20000000
+-#define PIWAR_RTT_MASK	0x000f0000
+-#define PIWAR_RTT_NO_SNOOP	0x00040000
+-#define PIWAR_RTT_SNOOP	0x00050000
+-#define PIWAR_WTT_MASK	0x0000f000
+-#define PIWAR_WTT_NO_SNOOP	0x00004000
+-#define PIWAR_WTT_SNOOP	0x00005000
+-#define PIWAR_IWS_MASK	0x0000003F
+-#define PIWAR_IWS_4K	0x0000000B
+-#define PIWAR_IWS_8K	0x0000000C
+-#define PIWAR_IWS_16K	0x0000000D
+-#define PIWAR_IWS_32K	0x0000000E
+-#define PIWAR_IWS_64K	0x0000000F
+-#define PIWAR_IWS_128K	0x00000010
+-#define PIWAR_IWS_256K	0x00000011
+-#define PIWAR_IWS_512K	0x00000012
+-#define PIWAR_IWS_1M	0x00000013
+-#define PIWAR_IWS_2M	0x00000014
+-#define PIWAR_IWS_4M	0x00000015
+-#define PIWAR_IWS_8M	0x00000016
+-#define PIWAR_IWS_16M	0x00000017
+-#define PIWAR_IWS_32M	0x00000018
+-#define PIWAR_IWS_64M	0x00000019
+-#define PIWAR_IWS_128M	0x0000001A
+-#define PIWAR_IWS_256M	0x0000001B
+-#define PIWAR_IWS_512M	0x0000001C
+-#define PIWAR_IWS_1G	0x0000001D
+-#define PIWAR_IWS_2G	0x0000001E
+-
+-#endif /* __PPC_SYSLIB_PPC83XX_PCI_H */
+diff --git a/arch/ppc/syslib/ppc83xx_setup.c b/arch/ppc/syslib/ppc83xx_setup.c
+deleted file mode 100644
+index ec466db..0000000
+--- a/arch/ppc/syslib/ppc83xx_setup.c
++++ /dev/null
+@@ -1,411 +0,0 @@
+-/*
+- * MPC83XX common board code
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the  GNU General Public License along
+- * with this program; if not, write  to the Free Software Foundation, Inc.,
+- * 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * Added PCI support -- Tony Li <tony.li@freescale.com>
+- */
+-
+-#include <linux/types.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/pci.h>
+-#include <linux/serial.h>
+-#include <linux/tty.h>	/* for linux/serial_core.h */
+-#include <linux/serial_core.h>
+-#include <linux/serial_8250.h>
+-
+-#include <asm/time.h>
+-#include <asm/mpc83xx.h>
+-#include <asm/mmu.h>
+-#include <asm/ppc_sys.h>
+-#include <asm/kgdb.h>
+-#include <asm/delay.h>
+-#include <asm/machdep.h>
+-
+-#include <syslib/ppc83xx_setup.h>
+-#if defined(CONFIG_PCI)
+-#include <asm/delay.h>
+-#include <syslib/ppc83xx_pci.h>
+-#endif
+-
+-phys_addr_t immrbar;
+-
+-/* Return the amount of memory */
+-unsigned long __init
+-mpc83xx_find_end_of_memory(void)
+-{
+-        bd_t *binfo;
+-
+-        binfo = (bd_t *) __res;
+-
+-        return binfo->bi_memsize;
+-}
+-
+-long __init
+-mpc83xx_time_init(void)
+-{
+-#define SPCR_OFFS   0x00000110
+-#define SPCR_TBEN   0x00400000
+-
+-	bd_t *binfo = (bd_t *)__res;
+-	u32 *spcr = ioremap(binfo->bi_immr_base + SPCR_OFFS, 4);
+-
+-	*spcr |= SPCR_TBEN;
+-
+-	iounmap(spcr);
+-
+-	return 0;
+-}
+-
+-/* The decrementer counts at the system (internal) clock freq divided by 4 */
+-void __init
+-mpc83xx_calibrate_decr(void)
+-{
+-        bd_t *binfo = (bd_t *) __res;
+-        unsigned int freq, divisor;
+-
+-	freq = binfo->bi_busfreq;
+-	divisor = 4;
+-	tb_ticks_per_jiffy = freq / HZ / divisor;
+-	tb_to_us = mulhwu_scale_factor(freq / divisor, 1000000);
+-}
+-
+-#ifdef CONFIG_SERIAL_8250
+-void __init
+-mpc83xx_early_serial_map(void)
+-{
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-	struct uart_port serial_req;
+-#endif
+-	struct plat_serial8250_port *pdata;
+-	bd_t *binfo = (bd_t *) __res;
+-	pdata = (struct plat_serial8250_port *) ppc_sys_get_pdata(MPC83xx_DUART);
+-
+-	/* Setup serial port access */
+-	pdata[0].uartclk = binfo->bi_busfreq;
+-	pdata[0].mapbase += binfo->bi_immr_base;
+-	pdata[0].membase = ioremap(pdata[0].mapbase, 0x100);
+-
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-	memset(&serial_req, 0, sizeof (serial_req));
+-	serial_req.iotype = UPIO_MEM;
+-	serial_req.mapbase = pdata[0].mapbase;
+-	serial_req.membase = pdata[0].membase;
+-	serial_req.regshift = 0;
+-
+-	gen550_init(0, &serial_req);
+-#endif
+-
+-	pdata[1].uartclk = binfo->bi_busfreq;
+-	pdata[1].mapbase += binfo->bi_immr_base;
+-	pdata[1].membase = ioremap(pdata[1].mapbase, 0x100);
+-
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+-	/* Assume gen550_init() doesn't modify serial_req */
+-	serial_req.mapbase = pdata[1].mapbase;
+-	serial_req.membase = pdata[1].membase;
+-
+-	gen550_init(1, &serial_req);
+-#endif
+-}
+-#endif
+-
+-void
+-mpc83xx_restart(char *cmd)
+-{
+-	volatile unsigned char __iomem *reg;
+-	unsigned char tmp;
+-
+-	reg = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
+-
+-	local_irq_disable();
+-
+-	/*
+-	 * Unlock the BCSR bits so a PRST will update the contents.
+-	 * Otherwise the reset asserts but doesn't clear.
+-	 */
+-	tmp = in_8(reg + BCSR_MISC_REG3_OFF);
+-	tmp |= BCSR_MISC_REG3_CNFLOCK; /* low true, high false */
+-	out_8(reg + BCSR_MISC_REG3_OFF, tmp);
+-
+-	/*
+-	 * Trigger a reset via a low->high transition of the
+-	 * PORESET bit.
+-	 */
+-	tmp = in_8(reg + BCSR_MISC_REG2_OFF);
+-	tmp &= ~BCSR_MISC_REG2_PORESET;
+-	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
+-
+-	udelay(1);
+-
+-	tmp |= BCSR_MISC_REG2_PORESET;
+-	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
+-
+-	for(;;);
+-}
+-
+-void
+-mpc83xx_power_off(void)
+-{
+-	local_irq_disable();
+-	for(;;);
+-}
+-
+-void
+-mpc83xx_halt(void)
+-{
+-	local_irq_disable();
+-	for(;;);
+-}
+-
+-#if defined(CONFIG_PCI)
+-void __init
+-mpc83xx_setup_pci1(struct pci_controller *hose)
+-{
+-	u16 reg16;
+-	volatile immr_pcictrl_t * pci_ctrl;
+-	volatile immr_ios_t * ios;
+-	bd_t *binfo = (bd_t *) __res;
+-
+-	pci_ctrl = ioremap(binfo->bi_immr_base + 0x8500, sizeof(immr_pcictrl_t));
+-	ios = ioremap(binfo->bi_immr_base + 0x8400, sizeof(immr_ios_t));
+-
+-	/*
+-	 * Configure PCI Outbound Translation Windows
+-	 */
+-	ios->potar0 = (MPC83xx_PCI1_LOWER_MEM >> 12) & POTAR_TA_MASK;
+-	ios->pobar0 = (MPC83xx_PCI1_LOWER_MEM >> 12) & POBAR_BA_MASK;
+-	ios->pocmr0 = POCMR_EN |
+-		(((0xffffffff - (MPC83xx_PCI1_UPPER_MEM -
+-				MPC83xx_PCI1_LOWER_MEM)) >> 12) & POCMR_CM_MASK);
+-
+-	/* mapped to PCI1 IO space */
+-	ios->potar1 = (MPC83xx_PCI1_LOWER_IO >> 12) & POTAR_TA_MASK;
+-	ios->pobar1 = (MPC83xx_PCI1_IO_BASE >> 12) & POBAR_BA_MASK;
+-	ios->pocmr1 = POCMR_EN | POCMR_IO |
+-		(((0xffffffff - (MPC83xx_PCI1_UPPER_IO -
+-				MPC83xx_PCI1_LOWER_IO)) >> 12) & POCMR_CM_MASK);
+-
+-	/*
+-	 * Configure PCI Inbound Translation Windows
+-	 */
+-	pci_ctrl->pitar1 = 0x0;
+-	pci_ctrl->pibar1 = 0x0;
+-	pci_ctrl->piebar1 = 0x0;
+-	pci_ctrl->piwar1 = PIWAR_EN | PIWAR_PF | PIWAR_RTT_SNOOP | PIWAR_WTT_SNOOP | PIWAR_IWS_2G;
+-
+-	/*
+-	 * Release PCI RST signal
+-	 */
+-	pci_ctrl->gcr = 0;
+-	udelay(2000);
+-	pci_ctrl->gcr = 1;
+-	udelay(2000);
+-
+-	reg16 = 0xff;
+-	early_read_config_word(hose, hose->first_busno, 0, PCI_COMMAND, &reg16);
+-	reg16 |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY;
+-	early_write_config_word(hose, hose->first_busno, 0, PCI_COMMAND, reg16);
+-
+-	/*
+-	 * Clear non-reserved bits in status register.
+-	 */
+-	early_write_config_word(hose, hose->first_busno, 0, PCI_STATUS, 0xffff);
+-	early_write_config_byte(hose, hose->first_busno, 0, PCI_LATENCY_TIMER, 0x80);
+-
+-	iounmap(pci_ctrl);
+-	iounmap(ios);
+-}
+-
+-void __init
+-mpc83xx_setup_pci2(struct pci_controller *hose)
+-{
+-	u16 reg16;
+-	volatile immr_pcictrl_t * pci_ctrl;
+-	volatile immr_ios_t * ios;
+-	bd_t *binfo = (bd_t *) __res;
+-
+-	pci_ctrl = ioremap(binfo->bi_immr_base + 0x8600, sizeof(immr_pcictrl_t));
+-	ios = ioremap(binfo->bi_immr_base + 0x8400, sizeof(immr_ios_t));
+-
+-	/*
+-	 * Configure PCI Outbound Translation Windows
+-	 */
+-	ios->potar3 = (MPC83xx_PCI2_LOWER_MEM >> 12) & POTAR_TA_MASK;
+-	ios->pobar3 = (MPC83xx_PCI2_LOWER_MEM >> 12) & POBAR_BA_MASK;
+-	ios->pocmr3 = POCMR_EN | POCMR_DST |
+-		(((0xffffffff - (MPC83xx_PCI2_UPPER_MEM -
+-				MPC83xx_PCI2_LOWER_MEM)) >> 12) & POCMR_CM_MASK);
+-
+-	/* mapped to PCI2 IO space */
+-	ios->potar4 = (MPC83xx_PCI2_LOWER_IO >> 12) & POTAR_TA_MASK;
+-	ios->pobar4 = (MPC83xx_PCI2_IO_BASE >> 12) & POBAR_BA_MASK;
+-	ios->pocmr4 = POCMR_EN | POCMR_DST | POCMR_IO |
+-		(((0xffffffff - (MPC83xx_PCI2_UPPER_IO -
+-				MPC83xx_PCI2_LOWER_IO)) >> 12) & POCMR_CM_MASK);
+-
+-	/*
+-	 * Configure PCI Inbound Translation Windows
+-	 */
+-	pci_ctrl->pitar1 = 0x0;
+-	pci_ctrl->pibar1 = 0x0;
+-	pci_ctrl->piebar1 = 0x0;
+-	pci_ctrl->piwar1 = PIWAR_EN | PIWAR_PF | PIWAR_RTT_SNOOP | PIWAR_WTT_SNOOP | PIWAR_IWS_2G;
+-
+-	/*
+-	 * Release PCI RST signal
+-	 */
+-	pci_ctrl->gcr = 0;
+-	udelay(2000);
+-	pci_ctrl->gcr = 1;
+-	udelay(2000);
+-
+-	reg16 = 0xff;
+-	early_read_config_word(hose, hose->first_busno, 0, PCI_COMMAND, &reg16);
+-	reg16 |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY;
+-	early_write_config_word(hose, hose->first_busno, 0, PCI_COMMAND, reg16);
+-
+-	/*
+-	 * Clear non-reserved bits in status register.
+-	 */
+-	early_write_config_word(hose, hose->first_busno, 0, PCI_STATUS, 0xffff);
+-	early_write_config_byte(hose, hose->first_busno, 0, PCI_LATENCY_TIMER, 0x80);
+-
+-	iounmap(pci_ctrl);
+-	iounmap(ios);
+-}
+-
+-/*
+- * PCI buses can be enabled only if SYS board combinates with PIB
+- * (Platform IO Board) board which provide 3 PCI slots. There is 2 PCI buses
+- * and 3 PCI slots, so people must configure the routes between them before
+- * enable PCI bus. This routes are under the control of PCA9555PW device which
+- * can be accessed via I2C bus 2 and are configured by firmware. Refer to
+- * Freescale to get more information about firmware configuration.
+- */
+-
+-extern int mpc83xx_exclude_device(u_char bus, u_char devfn);
+-extern int mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel,
+-		unsigned char pin);
+-void __init
+-mpc83xx_setup_hose(void)
+-{
+-	u32 val32;
+-	volatile immr_clk_t * clk;
+-	struct pci_controller * hose1;
+-#ifdef CONFIG_MPC83xx_PCI2
+-	struct pci_controller * hose2;
+-#endif
+-	bd_t * binfo = (bd_t *)__res;
+-
+-	clk = ioremap(binfo->bi_immr_base + 0xA00,
+-			sizeof(immr_clk_t));
+-
+-	/*
+-	 * Configure PCI controller and PCI_CLK_OUTPUT both in 66M mode
+-	 */
+-	val32 = clk->occr;
+-	udelay(2000);
+-	clk->occr = 0xff000000;
+-	udelay(2000);
+-
+-	iounmap(clk);
+-
+-	hose1 = pcibios_alloc_controller();
+-	if(!hose1)
+-		return;
+-
+-	ppc_md.pci_swizzle = common_swizzle;
+-	ppc_md.pci_map_irq = mpc83xx_map_irq;
+-
+-	hose1->bus_offset = 0;
+-	hose1->first_busno = 0;
+-	hose1->last_busno = 0xff;
+-
+-	setup_indirect_pci(hose1, binfo->bi_immr_base + PCI1_CFG_ADDR_OFFSET,
+-			binfo->bi_immr_base + PCI1_CFG_DATA_OFFSET);
+-	hose1->set_cfg_type = 1;
+-
+-	mpc83xx_setup_pci1(hose1);
+-
+-	hose1->pci_mem_offset = MPC83xx_PCI1_MEM_OFFSET;
+-	hose1->mem_space.start = MPC83xx_PCI1_LOWER_MEM;
+-	hose1->mem_space.end = MPC83xx_PCI1_UPPER_MEM;
+-
+-	hose1->io_base_phys = MPC83xx_PCI1_IO_BASE;
+-	hose1->io_space.start = MPC83xx_PCI1_LOWER_IO;
+-	hose1->io_space.end = MPC83xx_PCI1_UPPER_IO;
+-#ifdef CONFIG_MPC83xx_PCI2
+-	isa_io_base = (unsigned long)ioremap(MPC83xx_PCI1_IO_BASE,
+-			MPC83xx_PCI1_IO_SIZE + MPC83xx_PCI2_IO_SIZE);
+-#else
+-	isa_io_base = (unsigned long)ioremap(MPC83xx_PCI1_IO_BASE,
+-			MPC83xx_PCI1_IO_SIZE);
+-#endif /* CONFIG_MPC83xx_PCI2 */
+-	hose1->io_base_virt = (void *)isa_io_base;
+-	/* setup resources */
+-	pci_init_resource(&hose1->io_resource,
+-			MPC83xx_PCI1_LOWER_IO,
+-			MPC83xx_PCI1_UPPER_IO,
+-			IORESOURCE_IO, "PCI host bridge 1");
+-	pci_init_resource(&hose1->mem_resources[0],
+-			MPC83xx_PCI1_LOWER_MEM,
+-			MPC83xx_PCI1_UPPER_MEM,
+-			IORESOURCE_MEM, "PCI host bridge 1");
+-
+-	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+-	hose1->last_busno = pciauto_bus_scan(hose1, hose1->first_busno);
+-
+-#ifdef CONFIG_MPC83xx_PCI2
+-	hose2 = pcibios_alloc_controller();
+-	if(!hose2)
+-		return;
+-
+-	hose2->bus_offset = hose1->last_busno + 1;
+-	hose2->first_busno = hose1->last_busno + 1;
+-	hose2->last_busno = 0xff;
+-	setup_indirect_pci(hose2, binfo->bi_immr_base + PCI2_CFG_ADDR_OFFSET,
+-			binfo->bi_immr_base + PCI2_CFG_DATA_OFFSET);
+-	hose2->set_cfg_type = 1;
+-
+-	mpc83xx_setup_pci2(hose2);
+-
+-	hose2->pci_mem_offset = MPC83xx_PCI2_MEM_OFFSET;
+-	hose2->mem_space.start = MPC83xx_PCI2_LOWER_MEM;
+-	hose2->mem_space.end = MPC83xx_PCI2_UPPER_MEM;
+-
+-	hose2->io_base_phys = MPC83xx_PCI2_IO_BASE;
+-	hose2->io_space.start = MPC83xx_PCI2_LOWER_IO;
+-	hose2->io_space.end = MPC83xx_PCI2_UPPER_IO;
+-	hose2->io_base_virt = (void *)(isa_io_base + MPC83xx_PCI1_IO_SIZE);
+-	/* setup resources */
+-	pci_init_resource(&hose2->io_resource,
+-			MPC83xx_PCI2_LOWER_IO,
+-			MPC83xx_PCI2_UPPER_IO,
+-			IORESOURCE_IO, "PCI host bridge 2");
+-	pci_init_resource(&hose2->mem_resources[0],
+-			MPC83xx_PCI2_LOWER_MEM,
+-			MPC83xx_PCI2_UPPER_MEM,
+-			IORESOURCE_MEM, "PCI host bridge 2");
+-
+-	hose2->last_busno = pciauto_bus_scan(hose2, hose2->first_busno);
+-#endif /* CONFIG_MPC83xx_PCI2 */
+-}
+-#endif /*CONFIG_PCI*/
+diff --git a/arch/ppc/syslib/ppc83xx_setup.h b/arch/ppc/syslib/ppc83xx_setup.h
+deleted file mode 100644
+index b918a2d..0000000
+--- a/arch/ppc/syslib/ppc83xx_setup.h
++++ /dev/null
+@@ -1,55 +0,0 @@
+-/*
+- * MPC83XX common board definitions
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the  GNU General Public License along
+- * with this program; if not, write  to the Free Software Foundation, Inc.,
+- * 675 Mass Ave, Cambridge, MA 02139, USA.
+- */
+-
+-#ifndef __PPC_SYSLIB_PPC83XX_SETUP_H
+-#define __PPC_SYSLIB_PPC83XX_SETUP_H
+-
+-#include <linux/init.h>
+-
+-extern unsigned long mpc83xx_find_end_of_memory(void) __init;
+-extern long mpc83xx_time_init(void) __init;
+-extern void mpc83xx_calibrate_decr(void) __init;
+-extern void mpc83xx_early_serial_map(void) __init;
+-extern void mpc83xx_restart(char *cmd);
+-extern void mpc83xx_power_off(void);
+-extern void mpc83xx_halt(void);
+-extern void mpc83xx_setup_hose(void) __init;
+-
+-/* PCI config */
+-#define PCI1_CFG_ADDR_OFFSET (0x8300)
+-#define PCI1_CFG_DATA_OFFSET (0x8304)
+-
+-#define PCI2_CFG_ADDR_OFFSET (0x8380)
+-#define PCI2_CFG_DATA_OFFSET (0x8384)
+-
+-/* Serial Config */
+-#ifdef CONFIG_SERIAL_MANY_PORTS
+-#define RS_TABLE_SIZE  64
+-#else
+-#define RS_TABLE_SIZE  2
+-#endif
+-
+-#ifndef BASE_BAUD
+-#define BASE_BAUD 115200
+-#endif
+-
+-#endif /* __PPC_SYSLIB_PPC83XX_SETUP_H */
+diff --git a/include/asm-ppc/io.h b/include/asm-ppc/io.h
+index 3d9a9e6..26cc14b 100644
+--- a/include/asm-ppc/io.h
++++ b/include/asm-ppc/io.h
+@@ -32,8 +32,6 @@ #elif defined(CONFIG_8xx)
+ #include <asm/mpc8xx.h>
+ #elif defined(CONFIG_8260)
+ #include <asm/mpc8260.h>
+-#elif defined(CONFIG_83xx)
+-#include <asm/mpc83xx.h>
+ #elif defined(CONFIG_85xx)
+ #include <asm/mpc85xx.h>
+ #elif defined(CONFIG_APUS)
+diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
+deleted file mode 100644
+index 02ed2c3..0000000
+--- a/include/asm-ppc/mpc83xx.h
++++ /dev/null
+@@ -1,115 +0,0 @@
+-/*
+- * include/asm-ppc/mpc83xx.h
+- *
+- * MPC83xx definitions
+- *
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+- *
+- * Copyright 2005 Freescale Semiconductor, Inc
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#ifdef __KERNEL__
+-#ifndef __ASM_MPC83xx_H__
+-#define __ASM_MPC83xx_H__
+-
+-#include <asm/mmu.h>
+-
+-#ifdef CONFIG_83xx
+-
+-#ifdef CONFIG_MPC834x_SYS
+-#include <platforms/83xx/mpc834x_sys.h>
+-#endif
+-
+-#define _IO_BASE        isa_io_base
+-#define _ISA_MEM_BASE   isa_mem_base
+-#ifdef CONFIG_PCI
+-#define PCI_DRAM_OFFSET pci_dram_offset
+-#else
+-#define PCI_DRAM_OFFSET 0
+-#endif
+-
+-/*
+- * The "residual" board information structure the boot loader passes
+- * into the kernel.
+- */
+-extern unsigned char __res[];
+-
+-/* Internal IRQs on MPC83xx OpenPIC */
+-/* Not all of these exist on all MPC83xx implementations */
+-
+-#ifndef MPC83xx_IPIC_IRQ_OFFSET
+-#define MPC83xx_IPIC_IRQ_OFFSET	0
+-#endif
+-
+-#define NR_IPIC_INTS 128
+-
+-#define MPC83xx_IRQ_UART1	( 9 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_UART2	(10 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_SEC2	(11 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_IIC1	(14 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_IIC2	(15 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_SPI		(16 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT1	(17 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT2	(18 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT3	(19 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT4	(20 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT5	(21 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT6	(22 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT7	(23 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC1_TX	(32 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC1_RX	(33 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC1_ERROR	(34 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC2_TX	(35 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC2_RX	(36 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC2_ERROR	(37 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_USB2_DR	(38 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_USB2_MPH	(39 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT0	(48 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_RTC_SEC	(64 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PIT		(65 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PCI1	(66 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PCI2	(67 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_RTC_ALR	(68 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_MU		(69 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_SBA		(70 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_DMA		(71 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM4	(72 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM8	(73 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GPIO1	(74 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GPIO2	(75 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_DDR		(76 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_LBC		(77 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM2	(78 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM6	(79 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PMC		(80 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM3	(84 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM7	(85 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM1	(90 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM5	(91 + MPC83xx_IPIC_IRQ_OFFSET)
+-
+-#define MPC83xx_CCSRBAR_SIZE	(1024*1024)
+-
+-/* Let modules/drivers get at immrbar (physical) */
+-extern phys_addr_t immrbar;
+-
+-enum ppc_sys_devices {
+-	MPC83xx_TSEC1,
+-	MPC83xx_TSEC2,
+-	MPC83xx_IIC1,
+-	MPC83xx_IIC2,
+-	MPC83xx_DUART,
+-	MPC83xx_SEC2,
+-	MPC83xx_USB2_DR,
+-	MPC83xx_USB2_MPH,
+-	MPC83xx_MDIO,
+-	NUM_PPC_SYS_DEVS,
+-};
+-
+-#endif /* CONFIG_83xx */
+-#endif /* __ASM_MPC83xx_H__ */
+-#endif /* __KERNEL__ */
+diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
+index 40f197a..faf10d5 100644
+--- a/include/asm-ppc/ppc_sys.h
++++ b/include/asm-ppc/ppc_sys.h
+@@ -23,8 +23,6 @@ #include <linux/types.h>
+ 
+ #if defined(CONFIG_8260)
+ #include <asm/mpc8260.h>
+-#elif defined(CONFIG_83xx)
+-#include <asm/mpc83xx.h>
+ #elif defined(CONFIG_85xx)
+ #include <asm/mpc85xx.h>
+ #elif defined(CONFIG_8xx)
+diff --git a/include/asm-ppc/ppcboot.h b/include/asm-ppc/ppcboot.h
+index 6b7b63f..18d04e8 100644
+--- a/include/asm-ppc/ppcboot.h
++++ b/include/asm-ppc/ppcboot.h
+@@ -38,8 +38,7 @@ typedef struct bd_info {
+ 	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
+ 	unsigned long	bi_sramstart;	/* start of SRAM memory */
+ 	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
+-#if defined(CONFIG_8xx) || defined(CONFIG_CPM2) || defined(CONFIG_85xx) ||\
+-	defined(CONFIG_83xx)
++#if defined(CONFIG_8xx) || defined(CONFIG_CPM2) || defined(CONFIG_85xx)
+ 	unsigned long	bi_immr_base;	/* base of IMMR register */
+ #endif
+ #if defined(CONFIG_PPC_MPC52xx)
+@@ -74,7 +73,7 @@ #if defined(CONFIG_HYMOD)
+ 	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
+ #endif
+ #if defined(CONFIG_EVB64260) || defined(CONFIG_405EP) || defined(CONFIG_44x) || \
+-	defined(CONFIG_85xx) ||	defined(CONFIG_83xx)
++	defined(CONFIG_85xx)
+ 	/* second onboard ethernet port */
+ 	unsigned char	bi_enet1addr[6];
+ #endif
+diff --git a/include/asm-ppc/serial.h b/include/asm-ppc/serial.h
+index 8a59f88..54fa1f1 100644
+--- a/include/asm-ppc/serial.h
++++ b/include/asm-ppc/serial.h
+@@ -31,8 +31,6 @@ #elif defined(CONFIG_SPRUCE)
+ #include <platforms/spruce.h>
+ #elif defined(CONFIG_4xx)
+ #include <asm/ibm4xx.h>
+-#elif defined(CONFIG_83xx)
+-#include <asm/mpc83xx.h>
+ #elif defined(CONFIG_85xx)
+ #include <asm/mpc85xx.h>
+ #elif defined(CONFIG_RADSTONE_PPC7D)
 -- 
 1.4.2.1
