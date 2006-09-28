@@ -1,23 +1,35 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F3BF967C35
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:19:10 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k8S8W1XL006405
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:32:01 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k8S8IHrg009860
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:19:04 -0500 (CDT)
-Message-ID: <451B8595.5000202@freescale.com>
-Date: Thu, 28 Sep 2006 16:19:33 +0800
-From: Li Yang <leoli@freescale.com>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0D1BF679E2
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 21:30:08 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id k8SBU20F047248
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 11:30:02 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id k8SBW2d03018908
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 13:32:03 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id k8SBU2Nj023816
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 13:30:02 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 2.6.19-rc1] ehea firmware interface changes (hvcall interface)
+Date: Thu, 28 Sep 2006 12:44:18 +0200
 MIME-Version: 1.0
-To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 12/12] QE device tree node definition
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200609281244.18536.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>, pmac@au1.ibm.com,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,281 +39,764 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is OF device tree node spec used in QE/8360 support patches.
+Hi Jeff,
 
-Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+this eHEA patch covers required changes related to Anton's new hvcall interface.
 
+Thanks,
+Jan-Bernd
+
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 ---
- Documentation/powerpc/booting-without-of.txt |  257 ++++++++++++++++++++++++++
- 1 files changed, 257 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 5c0ba23..9fd44da 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1441,6 +1441,262 @@ platforms are moved over to use the flat
-                descriptor-types-mask = <012b0ebf>;
-        };
+diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
+index 4a85aca..0b51a8c 100644
+--- a/drivers/net/ehea/ehea_phyp.c
++++ b/drivers/net/ehea/ehea_phyp.c
+@@ -44,71 +44,99 @@ #define H_ALL_RES_TYPE_EQ        3
+ #define H_ALL_RES_TYPE_MR        5
+ #define H_ALL_RES_TYPE_MW        6
  
-+   h) Board Control and Status (BCSR)
-+   
-+   Required properties:
-+
-+    - device_type : Should be "board-control"
-+    - reg : Offset and length of the register set for the device
-+
-+    Example:
-+
-+	bcsr@f8000000 {
-+		device_type = "board-control";
-+		reg = <f8000000 8000>;
-+	};
-+
-+   i) Freescale QUICC Engine module (QE)
-+   This represents qe module that is installed on PowerQUICC II Pro.
-+   Hopefully it will merge backward compatibility with CPM/CPM2.
-+   Basically, it is a bus of devices, that could act more or less
-+   as a complete entity (UCC, USB etc ). All of them should be siblings on
-+   the "root" qe node, using the common properties from there.
-+   The description below applies to the the qe of MPC8360 and
-+   more nodes and properties would be extended in the future.
-+
-+   i) Root QE device
-+
-+   Required properties:
-+   - device_type : should be "qe";
-+   - model : precise model of the QE, Can be "QE", "CPM", or "CPM2"
-+   - reg : offset and length of the device registers.
-+   - bus-frequency : the clock frequency for QUICC Engine.
-+  
-+   Recommended properties
-+   - brg-frequency : the internal clock source frequency for baud-rate
-+     generators in Hz.
-+
-+   Example:
-+	qe@e0100000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "qe";
-+		model = "QE";
-+		ranges = <0 e0100000 00100000>;
-+		reg = <e0100000 480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <179A7B00>;
-+	}
-+
-+
-+   ii) SPI (Serial Peripheral Interface)
-+
-+   Required properties:
-+   - device_type : should be "spi".
-+   - compatible : should be "fsl_spi".
-+   - mode : the spi operation mode, it can be "cpu" or "qe".
-+   - reg : offset to the register set and its length.
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+
-+   Example:
-+	spi@4c0 {
-+		device_type = "spi";
-+		compatible = "fsl_spi";
-+		reg = <4c0 40>;
-+		interrupts = <82 0>;
-+		interrupt-parent = <700>;
-+		mode = "cpu";
-+	};
-+
-+
-+   iii) USB (Universal Serial Bus Controller)
-+
-+   Required properties:
-+   - device_type : should be "usb".
-+   - compatible : could be "qe_udc" or "fhci-hcd".
-+   - mode : the could be "host" or "slave".
-+   - reg : there will be two tuples of "address size".  The first tuple is
-+     offset and length of the device registers respectively; the second is
-+     offset and length of the device parameter RAM respectively.
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+
-+   Example(slave):
-+	usb@6c0 {
-+		device_type = "usb";
-+		compatible = "qe_udc";
-+		reg = <6c0 40 8B00 100>;
-+		interrupts = <8b 0>;
-+		interrupt-parent = <700>;
-+		mode = "slave";
-+	};
-+
-+
-+   iv) UCC (Unified Communications Controllers)
-+
-+   Required properties:
-+   - device_type : should be "network", "hldc", "uart", "transparent"
-+    "bisync" or "atm".
-+   - compatible : could be "ucc_geth" or "fsl_atm" and so on.
-+   - model : should be "UCC".
-+   - device-id : the ucc number(1-8), corresponding to UCCx in UM.
-+   - reg : there will be two tuples of "address size".  The first tuple is
-+     offset and length of the device registers respectively; the second is
-+     offset and length of the device parameter RAM respectively.
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+   - pio-handle : The phandle for the Parallel I/O port configuration.
-+   - rx-clock : represents the UCC receive clock source.
-+     0x00 : clock source is disabled;
-+     0x1~0x10 : clock source is BRG1~BRG16 respectively;
-+     0x11~0x28: clock source is QE_CLK1~QE_CLK24 respectively.
-+   - tx-clock: represents the UCC transmit clock source;
-+     0x00 : clock source is disabled;
-+     0x1~0x10 : clock source is BRG1~BRG16 respectively;
-+     0x11~0x28: clock source is QE_CLK1~QE_CLK24 respectively.
-+
-+   Required properties for network device_type:
-+   - mac-address : list of bytes representing the ethernet address.
-+   - phy-handle : The phandle for the PHY connected to this controller.
-+
-+   Example:
-+	ucc@2000 {
-+		device_type = "network";
-+		compatible = "ucc_geth";
-+		model = "UCC";
-+		device-id = <1>;
-+		reg = <2000 200 8400 100>;
-+		interrupts = <a0 0>;
-+		interrupt-parent = <700>;
-+		mac-address = [ 00 04 9f 00 23 23 ];
-+		rx-clock = "none";
-+		tx-clock = "clk9";
-+		phy-handle = <212000>;
-+		pio-handle = <140001>;
-+	};
-+
-+
-+   v) Parallel I/O Ports
-+
-+   This node configures Parallel I/O ports for CPUs with QE support.
-+   The node should reside in the "soc" node of the tree.  For each
-+   device that using parallel I/O ports, a child node should be created.
-+   See the definition of the Pin configuration nodes below for more
-+   information.
-+
-+   Required properties:
-+   - device_type : should be "par_io".
-+   - reg : offset to the register set and its length.
-+   - num-ports : number of Parallel I/O ports
-+
-+   Example:
-+	par_io@1400 {
-+		reg = <1400 100>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		device_type = "par_io";
-+		num-ports = <7>;
-+		ucc_pin@01 {
-+			......
-+		};
-+
-+
-+   vi) Pin configuration nodes
-+
-+   Required properties:
-+   - linux,phandle : phandle of this node; likely referenced by a QE
-+     device.
-+   - pio-map : array of pin configurations.  Each pin is defined by 6
-+     integers.  The six numbers are respectively: port, pin, dir,
-+     open_drain, assignment, has_irq.
-+     - port : port number of the pin; 0-6 represent port A-G in UM.
-+     - pin : pin number in the port.
-+     - dir : direction of the pin, should encode as follows:
-+
-+	0 = The pin is disabled
-+	1 = The pin is an output
-+	2 = The pin is an input
-+	3 = The pin is I/O
-+
-+     - open_drain : indicates the pin is normal or wired-OR:
-+
-+	0 = The pin is actively driven as an output
-+	1 = The pin is an open-drain driver. As an output, the pin is
-+	    driven active-low, otherwise it is three-stated.
-+
-+     - assignment : function number of the pin according to the Pin Assignment
-+       tables in User Manual.  Each pin can have up to 4 possible functions in
-+       QE and two options for CPM.
-+     - has_irq : indicates if the pin is used as source of exteral
-+       interrupts.
-+
-+   Example:
-+	ucc_pin@01 {
-+		linux,phandle = <140001>;
-+		pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+			0  3  1  0  1  0 	/* TxD0 */
-+			0  4  1  0  1  0 	/* TxD1 */
-+			0  5  1  0  1  0 	/* TxD2 */
-+			0  6  1  0  1  0 	/* TxD3 */
-+			1  6  1  0  3  0 	/* TxD4 */
-+			1  7  1  0  1  0 	/* TxD5 */
-+			1  9  1  0  2  0 	/* TxD6 */
-+			1  a  1  0  2  0 	/* TxD7 */
-+			0  9  2  0  1  0 	/* RxD0 */
-+			0  a  2  0  1  0 	/* RxD1 */
-+			0  b  2  0  1  0 	/* RxD2 */
-+			0  c  2  0  1  0 	/* RxD3 */
-+			0  d  2  0  1  0 	/* RxD4 */
-+			1  1  2  0  2  0 	/* RxD5 */
-+			1  0  2  0  2  0 	/* RxD6 */
-+			1  4  2  0  2  0 	/* RxD7 */
-+			0  7  1  0  1  0 	/* TX_EN */
-+			0  8  1  0  1  0 	/* TX_ER */
-+			0  f  2  0  1  0 	/* RX_DV */
-+			0  10 2  0  1  0 	/* RX_ER */
-+			0  0  2  0  1  0 	/* RX_CLK */
-+			2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
-+			2  8  2  0  1  0>;	/* GTX125 - CLK9 */
-+	};
-+
-+   vii) Multi-User RAM (MURAM)
-+
-+   Required properties:
-+   - device_type : should be "muram".
-+   - mode : the could be "host" or "slave".
-+   - ranges : Should be defined as specified in 1) to describe the
-+      translation of MURAM addresses.
-+   - data-only : sub-node which defines the address area under MURAM
-+      bus that can be allocated as data/parameter
-+
-+   Example:
-+
-+	muram@10000 {
-+		device_type = "muram";
-+		ranges = <0 00010000 0000c000>;
-+
-+		data-only@0{
-+			reg = <0 c000>;
-+		};
-+	};
+-static long ehea_hcall_9arg_9ret(unsigned long opcode,
+-         			 unsigned long arg1, unsigned long arg2,
+-         			 unsigned long arg3, unsigned long arg4,
+-         			 unsigned long arg5, unsigned long arg6,
+-         			 unsigned long arg7, unsigned long arg8,
+-         			 unsigned long arg9, unsigned long *out1,
+-         			 unsigned long *out2,unsigned long *out3,
+-         			 unsigned long *out4,unsigned long *out5,
+-         			 unsigned long *out6,unsigned long *out7,
+-         			 unsigned long *out8,unsigned long *out9)
++static long ehea_plpar_hcall_norets(unsigned long opcode,
++				    unsigned long arg1,
++				    unsigned long arg2,
++				    unsigned long arg3,
++				    unsigned long arg4,
++				    unsigned long arg5,
++				    unsigned long arg6,
++				    unsigned long arg7)
+ {
+-	long hret;
++	long ret;
+ 	int i, sleep_msecs;
  
-    More devices will be defined as this spec matures.
+ 	for (i = 0; i < 5; i++) {
+-		hret = plpar_hcall_9arg_9ret(opcode,arg1, arg2, arg3, arg4,
+-					     arg5, arg6, arg7, arg8, arg9, out1,
+-					     out2, out3, out4, out5, out6, out7,
+-					     out8, out9);
+-		if (H_IS_LONG_BUSY(hret)) {
+-			sleep_msecs = get_longbusy_msecs(hret);
++		ret = plpar_hcall_norets(opcode, arg1, arg2, arg3, arg4,
++					 arg5, arg6, arg7);
++
++		if (H_IS_LONG_BUSY(ret)) {
++			sleep_msecs = get_longbusy_msecs(ret);
+ 			msleep_interruptible(sleep_msecs);
+ 			continue;
+ 		}
  
+-		if (hret < H_SUCCESS)
+-			ehea_error("op=%lx hret=%lx "
+-				   "i1=%lx i2=%lx i3=%lx i4=%lx i5=%lx i6=%lx "
+-				   "i7=%lx i8=%lx i9=%lx "
+-				   "o1=%lx o2=%lx o3=%lx o4=%lx o5=%lx o6=%lx "
+-				   "o7=%lx o8=%lx o9=%lx",
+-				   opcode, hret, arg1, arg2, arg3, arg4, arg5,
+-				   arg6, arg7, arg8, arg9, *out1, *out2, *out3,
+-				   *out4, *out5, *out6, *out7, *out8, *out9);
+-		return hret;
++		if (ret < H_SUCCESS)
++			ehea_error("opcode=%lx ret=%lx"
++				   " arg1=%lx arg2=%lx arg3=%lx arg4=%lx"
++				   " arg5=%lx arg6=%lx arg7=%lx ",
++				   opcode, ret,
++				   arg1, arg2, arg3, arg4, arg5,
++				   arg6, arg7);
++
++		return ret;
+ 	}
++
+ 	return H_BUSY;
+ }
+ 
+-u64 ehea_h_query_ehea_qp(const u64 adapter_handle, const u8 qp_category,
+-			 const u64 qp_handle, const u64 sel_mask, void *cb_addr)
++static long ehea_plpar_hcall9(unsigned long opcode,
++			      unsigned long *outs, /* array of 9 outputs */
++			      unsigned long arg1,
++			      unsigned long arg2,
++			      unsigned long arg3,
++			      unsigned long arg4,
++			      unsigned long arg5,
++			      unsigned long arg6,
++			      unsigned long arg7,
++			      unsigned long arg8,
++			      unsigned long arg9)
+ {
+-	u64 dummy;
++	long ret;
++	int i, sleep_msecs;
+ 
+-	if ((((u64)cb_addr) & (PAGE_SIZE - 1)) != 0) {
+-		ehea_error("not on pageboundary");
+-		return H_PARAMETER;
++	for (i = 0; i < 5; i++) {
++		ret = plpar_hcall9(opcode, outs,
++				   arg1, arg2, arg3, arg4, arg5,
++				   arg6, arg7, arg8, arg9);
++
++		if (H_IS_LONG_BUSY(ret)) {
++			sleep_msecs = get_longbusy_msecs(ret);
++			msleep_interruptible(sleep_msecs);
++			continue;
++		}
++
++		if (ret < H_SUCCESS)
++			ehea_error("opcode=%lx ret=%lx"
++				   " arg1=%lx arg2=%lx arg3=%lx arg4=%lx"
++				   " arg5=%lx arg6=%lx arg7=%lx arg8=%lx"
++				   " arg9=%lx"
++				   " out1=%lx out2=%lx out3=%lx out4=%lx"
++				   " out5=%lx out6=%lx out7=%lx out8=%lx"
++				   " out9=%lx",
++				   opcode, ret,
++				   arg1, arg2, arg3, arg4, arg5,
++				   arg6, arg7, arg8, arg9,
++				   outs[0], outs[1], outs[2], outs[3],
++				   outs[4], outs[5], outs[6], outs[7],
++				   outs[8]);
++
++		return ret;
+ 	}
+ 
+-	return ehea_hcall_9arg_9ret(H_QUERY_HEA_QP,
+-				    adapter_handle,	        /* R4 */
+-				    qp_category,	        /* R5 */
+-				    qp_handle,	                /* R6 */
+-				    sel_mask,	                /* R7 */
+-				    virt_to_abs(cb_addr),	/* R8 */
+-				    0, 0, 0, 0,	                /* R9-R12 */
+-				    &dummy,                     /* R4 */
+-				    &dummy,                     /* R5 */
+-				    &dummy,	                /* R6 */
+-				    &dummy,	                /* R7 */
+-				    &dummy,	                /* R8 */
+-				    &dummy,	                /* R9 */
+-				    &dummy,	                /* R10 */
+-				    &dummy,	                /* R11 */
+-				    &dummy);	                /* R12 */
++	return H_BUSY;
++}
++
++u64 ehea_h_query_ehea_qp(const u64 adapter_handle, const u8 qp_category,
++			 const u64 qp_handle, const u64 sel_mask, void *cb_addr)
++{
++	return ehea_plpar_hcall_norets(H_QUERY_HEA_QP,
++				       adapter_handle,	        /* R4 */
++				       qp_category,	        /* R5 */
++				       qp_handle,               /* R6 */
++				       sel_mask,                /* R7 */
++				       virt_to_abs(cb_addr),	/* R8 */
++				       0, 0);
+ }
+ 
+ /* input param R5 */
+@@ -180,6 +208,7 @@ u64 ehea_h_alloc_resource_qp(const u64 a
+ 			     u64 *qp_handle, struct h_epas *h_epas)
+ {
+ 	u64 hret;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
+ 
+ 	u64 allocate_controls =
+ 	    EHEA_BMASK_SET(H_ALL_RES_QP_EQPO, init_attr->low_lat_rq1 ? 1 : 0)
+@@ -219,45 +248,29 @@ u64 ehea_h_alloc_resource_qp(const u64 a
+ 	    EHEA_BMASK_SET(H_ALL_RES_QP_TH_RQ2, init_attr->rq2_threshold)
+ 	    | EHEA_BMASK_SET(H_ALL_RES_QP_TH_RQ3, init_attr->rq3_threshold);
+ 
+-	u64 r5_out = 0;
+-	u64 r6_out = 0;
+-	u64 r7_out = 0;
+-	u64 r8_out = 0;
+-	u64 r9_out = 0;
+-	u64 g_la_user_out = 0;
+-	u64 r11_out = 0;
+-	u64 r12_out = 0;
+-
+-	hret = ehea_hcall_9arg_9ret(H_ALLOC_HEA_RESOURCE,
+-				    adapter_handle,		/* R4 */
+-				    allocate_controls,		/* R5 */
+-				    init_attr->send_cq_handle,	/* R6 */
+-				    init_attr->recv_cq_handle,	/* R7 */
+-				    init_attr->aff_eq_handle,	/* R8 */
+-				    r9_reg,			/* R9 */
+-				    max_r10_reg,		/* R10 */
+-				    r11_in,			/* R11 */
+-				    threshold,			/* R12 */
+-				    qp_handle,			/* R4 */
+-				    &r5_out,			/* R5 */
+-				    &r6_out,			/* R6 */
+-				    &r7_out,			/* R7 */
+-				    &r8_out,			/* R8 */
+-				    &r9_out,			/* R9 */
+-				    &g_la_user_out,		/* R10 */
+-				    &r11_out,			/* R11 */
+-				    &r12_out);			/* R12 */
+-
+-	init_attr->qp_nr = (u32)r5_out;
++	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
++				 outs,
++				 adapter_handle,		/* R4 */
++				 allocate_controls,		/* R5 */
++				 init_attr->send_cq_handle,	/* R6 */
++				 init_attr->recv_cq_handle,	/* R7 */
++				 init_attr->aff_eq_handle,	/* R8 */
++				 r9_reg,			/* R9 */
++				 max_r10_reg,			/* R10 */
++				 r11_in,			/* R11 */
++				 threshold);			/* R12 */
++
++	*qp_handle = outs[0];
++	init_attr->qp_nr = (u32)outs[1];
+ 
+ 	init_attr->act_nr_send_wqes =
+-	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_SWQE, r6_out);
++	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_SWQE, outs[2]);
+ 	init_attr->act_nr_rwqes_rq1 =
+-	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_R1WQE, r6_out);
++	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_R1WQE, outs[2]);
+ 	init_attr->act_nr_rwqes_rq2 =
+-	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_R2WQE, r6_out);
++	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_R2WQE, outs[2]);
+ 	init_attr->act_nr_rwqes_rq3 =
+-	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_R3WQE, r6_out);
++	    (u16)EHEA_BMASK_GET(H_ALL_RES_QP_ACT_R3WQE, outs[2]);
+ 
+ 	init_attr->act_wqe_size_enc_sq = init_attr->wqe_size_enc_sq;
+ 	init_attr->act_wqe_size_enc_rq1 = init_attr->wqe_size_enc_rq1;
+@@ -265,25 +278,25 @@ u64 ehea_h_alloc_resource_qp(const u64 a
+ 	init_attr->act_wqe_size_enc_rq3 = init_attr->wqe_size_enc_rq3;
+ 
+ 	init_attr->nr_sq_pages =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_SQ, r8_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_SQ, outs[4]);
+ 	init_attr->nr_rq1_pages =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_RQ1, r8_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_RQ1, outs[4]);
+ 	init_attr->nr_rq2_pages =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_RQ2, r9_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_RQ2, outs[5]);
+ 	init_attr->nr_rq3_pages =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_RQ3, r9_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_SIZE_RQ3, outs[5]);
+ 
+ 	init_attr->liobn_sq =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_SQ, r11_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_SQ, outs[7]);
+ 	init_attr->liobn_rq1 =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_RQ1, r11_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_RQ1, outs[7]);
+ 	init_attr->liobn_rq2 =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_RQ2, r12_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_RQ2, outs[8]);
+ 	init_attr->liobn_rq3 =
+-	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_RQ3, r12_out);
++	    (u32)EHEA_BMASK_GET(H_ALL_RES_QP_LIOBN_RQ3, outs[8]);
+ 
+ 	if (!hret)
+-		hcp_epas_ctor(h_epas, g_la_user_out, g_la_user_out);
++		hcp_epas_ctor(h_epas, outs[6], outs[6]);
+ 
+ 	return hret;
+ }
+@@ -292,31 +305,24 @@ u64 ehea_h_alloc_resource_cq(const u64 a
+ 			     struct ehea_cq_attr *cq_attr,
+ 			     u64 *cq_handle, struct h_epas *epas)
+ {
+-	u64 hret, dummy, act_nr_of_cqes_out, act_pages_out;
+-	u64 g_la_privileged_out, g_la_user_out;
+-
+-	hret = ehea_hcall_9arg_9ret(H_ALLOC_HEA_RESOURCE,
+-				    adapter_handle,		/* R4 */
+-				    H_ALL_RES_TYPE_CQ,		/* R5 */
+-				    cq_attr->eq_handle,		/* R6 */
+-				    cq_attr->cq_token,		/* R7 */
+-				    cq_attr->max_nr_of_cqes,	/* R8 */
+-				    0, 0, 0, 0,			/* R9-R12 */
+-				    cq_handle,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &act_nr_of_cqes_out,	/* R7 */
+-				    &act_pages_out,		/* R8 */
+-				    &g_la_privileged_out,	/* R9 */
+-				    &g_la_user_out,		/* R10 */
+-				    &dummy,	                /* R11 */
+-				    &dummy);	                /* R12 */
+-
+-	cq_attr->act_nr_of_cqes = act_nr_of_cqes_out;
+-	cq_attr->nr_pages = act_pages_out;
++	u64 hret;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
++
++	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
++				 outs,
++				 adapter_handle,		/* R4 */
++				 H_ALL_RES_TYPE_CQ,		/* R5 */
++				 cq_attr->eq_handle,		/* R6 */
++				 cq_attr->cq_token,		/* R7 */
++				 cq_attr->max_nr_of_cqes,	/* R8 */
++				 0, 0, 0, 0);			/* R9-R12 */
++
++	*cq_handle = outs[0];
++	cq_attr->act_nr_of_cqes = outs[3];
++	cq_attr->nr_pages = outs[4];
+ 
+ 	if (!hret)
+-		hcp_epas_ctor(epas, g_la_privileged_out, g_la_user_out);
++		hcp_epas_ctor(epas, outs[5], outs[6]);
+ 
+ 	return hret;
+ }
+@@ -361,9 +367,8 @@ #define H_ALL_RES_EQ_ACT_EQ_IST_4    EHE
+ u64 ehea_h_alloc_resource_eq(const u64 adapter_handle,
+ 			     struct ehea_eq_attr *eq_attr, u64 *eq_handle)
+ {
+-	u64 hret, dummy, eq_liobn, allocate_controls;
+-	u64 ist1_out, ist2_out, ist3_out, ist4_out;
+-	u64 act_nr_of_eqes_out, act_pages_out;
++	u64 hret, allocate_controls;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
+ 
+ 	/* resource type */
+ 	allocate_controls =
+@@ -372,27 +377,20 @@ u64 ehea_h_alloc_resource_eq(const u64 a
+ 	    | EHEA_BMASK_SET(H_ALL_RES_EQ_INH_EQE_GEN, !eq_attr->eqe_gen)
+ 	    | EHEA_BMASK_SET(H_ALL_RES_EQ_NON_NEQ_ISN, 1);
+ 
+-	hret = ehea_hcall_9arg_9ret(H_ALLOC_HEA_RESOURCE,
+-				    adapter_handle,		/* R4 */
+-				    allocate_controls,		/* R5 */
+-				    eq_attr->max_nr_of_eqes,	/* R6 */
+-				    0, 0, 0, 0, 0, 0,		/* R7-R10 */
+-				    eq_handle,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &eq_liobn,			/* R6 */
+-				    &act_nr_of_eqes_out,	/* R7 */
+-				    &act_pages_out,		/* R8 */
+-				    &ist1_out,			/* R9 */
+-				    &ist2_out,			/* R10 */
+-				    &ist3_out,			/* R11 */
+-				    &ist4_out);			/* R12 */
+-
+-	eq_attr->act_nr_of_eqes = act_nr_of_eqes_out;
+-	eq_attr->nr_pages = act_pages_out;
+-	eq_attr->ist1 = ist1_out;
+-	eq_attr->ist2 = ist2_out;
+-	eq_attr->ist3 = ist3_out;
+-	eq_attr->ist4 = ist4_out;
++	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
++				 outs,
++				 adapter_handle,		/* R4 */
++				 allocate_controls,		/* R5 */
++				 eq_attr->max_nr_of_eqes,	/* R6 */
++				 0, 0, 0, 0, 0, 0);		/* R7-R10 */
++
++	*eq_handle = outs[0];
++	eq_attr->act_nr_of_eqes = outs[3];
++	eq_attr->nr_pages = outs[4];
++	eq_attr->ist1 = outs[5];
++	eq_attr->ist2 = outs[6];
++	eq_attr->ist3 = outs[7];
++	eq_attr->ist4 = outs[8];
+ 
+ 	return hret;
+ }
+@@ -402,31 +400,22 @@ u64 ehea_h_modify_ehea_qp(const u64 adap
+ 			  void *cb_addr, u64 *inv_attr_id, u64 *proc_mask,
+ 			  u16 *out_swr, u16 *out_rwr)
+ {
+-	u64 hret, dummy, act_out_swr, act_out_rwr;
+-
+-	if ((((u64)cb_addr) & (PAGE_SIZE - 1)) != 0) {
+-		ehea_error("not on page boundary");
+-		return H_PARAMETER;
+-	}
+-
+-	hret = ehea_hcall_9arg_9ret(H_MODIFY_HEA_QP,
+-				    adapter_handle,		/* R4 */
+-				    (u64) cat,			/* R5 */
+-				    qp_handle,			/* R6 */
+-				    sel_mask,			/* R7 */
+-				    virt_to_abs(cb_addr),	/* R8 */
+-				    0, 0, 0, 0,			/* R9-R12 */
+-				    inv_attr_id,		/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &act_out_swr,		/* R7 */
+-				    &act_out_rwr,		/* R8 */
+-				    proc_mask,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,			/* R11 */
+-				    &dummy);			/* R12 */
+-	*out_swr = act_out_swr;
+-	*out_rwr = act_out_rwr;
++	u64 hret;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
++
++	hret = ehea_plpar_hcall9(H_MODIFY_HEA_QP,
++				 outs,
++				 adapter_handle,		/* R4 */
++				 (u64) cat,			/* R5 */
++				 qp_handle,			/* R6 */
++				 sel_mask,			/* R7 */
++				 virt_to_abs(cb_addr),		/* R8 */
++				 0, 0, 0, 0);			/* R9-R12 */
++
++	*inv_attr_id = outs[0];
++	*out_swr = outs[3];
++	*out_rwr = outs[4];
++	*proc_mask = outs[5];
+ 
+ 	return hret;
+ }
+@@ -435,122 +424,81 @@ u64 ehea_h_register_rpage(const u64 adap
+ 			  const u8 queue_type, const u64 resource_handle,
+ 			  const u64 log_pageaddr, u64 count)
+ {
+-	u64 dummy, reg_control;
++	u64  reg_control;
+ 
+ 	reg_control = EHEA_BMASK_SET(H_REG_RPAGE_PAGE_SIZE, pagesize)
+ 		    | EHEA_BMASK_SET(H_REG_RPAGE_QT, queue_type);
+ 
+-	return ehea_hcall_9arg_9ret(H_REGISTER_HEA_RPAGES,
+-				    adapter_handle,		/* R4 */
+-				    reg_control,		/* R5 */
+-				    resource_handle,		/* R6 */
+-				    log_pageaddr,		/* R7 */
+-				    count,			/* R8 */
+-				    0, 0, 0, 0,			/* R9-R12 */
+-				    &dummy,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &dummy,			/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,	                /* R11 */
+-				    &dummy);	                /* R12 */
++	return ehea_plpar_hcall_norets(H_REGISTER_HEA_RPAGES,
++				       adapter_handle,		/* R4 */
++				       reg_control,		/* R5 */
++				       resource_handle,		/* R6 */
++				       log_pageaddr,		/* R7 */
++				       count,			/* R8 */
++				       0, 0);			/* R9-R10 */
+ }
+ 
+ u64 ehea_h_register_smr(const u64 adapter_handle, const u64 orig_mr_handle,
+ 			const u64 vaddr_in, const u32 access_ctrl, const u32 pd,
+ 			struct ehea_mr *mr)
+ {
+-	u64 hret, dummy, lkey_out;
+-
+-	hret = ehea_hcall_9arg_9ret(H_REGISTER_SMR,
+-				    adapter_handle       ,          /* R4 */
+-				    orig_mr_handle,                 /* R5 */
+-				    vaddr_in,                       /* R6 */
+-				    (((u64)access_ctrl) << 32ULL),  /* R7 */
+-				    pd,                             /* R8 */
+-				    0, 0, 0, 0,			    /* R9-R12 */
+-				    &mr->handle,                    /* R4 */
+-				    &dummy,                         /* R5 */
+-				    &lkey_out,                      /* R6 */
+-				    &dummy,                         /* R7 */
+-				    &dummy,                         /* R8 */
+-				    &dummy,                         /* R9 */
+-				    &dummy,                         /* R10 */
+-				    &dummy,                         /* R11 */
+-				    &dummy);                        /* R12 */
+-	mr->lkey = (u32)lkey_out;
++	u64 hret;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
++
++	hret = ehea_plpar_hcall9(H_REGISTER_SMR,
++				 outs,
++				 adapter_handle       ,        	 /* R4 */
++				 orig_mr_handle,                 /* R5 */
++				 vaddr_in,                       /* R6 */
++				 (((u64)access_ctrl) << 32ULL),  /* R7 */
++				 pd,                             /* R8 */
++				 0, 0, 0, 0);	   		 /* R9-R12 */
++
++	mr->handle = outs[0];
++	mr->lkey = (u32)outs[2];
+ 
+ 	return hret;
+ }
+ 
+ u64 ehea_h_disable_and_get_hea(const u64 adapter_handle, const u64 qp_handle)
+ {
+-	u64 hret, dummy, ladr_next_sq_wqe_out;
+-	u64 ladr_next_rq1_wqe_out, ladr_next_rq2_wqe_out, ladr_next_rq3_wqe_out;
+-
+-	hret = ehea_hcall_9arg_9ret(H_DISABLE_AND_GET_HEA,
+-				    adapter_handle,		/* R4 */
+-				    H_DISABLE_GET_EHEA_WQE_P,	/* R5 */
+-				    qp_handle,			/* R6 */
+-				    0, 0, 0, 0, 0, 0,		/* R7-R12 */
+-				    &ladr_next_sq_wqe_out,	/* R4 */
+-				    &ladr_next_rq1_wqe_out,	/* R5 */
+-				    &ladr_next_rq2_wqe_out,	/* R6 */
+-				    &ladr_next_rq3_wqe_out,	/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,                     /* R11 */
+-				    &dummy);                    /* R12 */
+-	return hret;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
++
++	return ehea_plpar_hcall9(H_DISABLE_AND_GET_HEA,
++       				 outs,
++				 adapter_handle,		/* R4 */
++				 H_DISABLE_GET_EHEA_WQE_P,	/* R5 */
++				 qp_handle,			/* R6 */
++				 0, 0, 0, 0, 0, 0);             /* R7-R12 */
+ }
+ 
+ u64 ehea_h_free_resource(const u64 adapter_handle, const u64 res_handle)
+ {
+-	u64 dummy;
+-
+-	return ehea_hcall_9arg_9ret(H_FREE_RESOURCE,
+-				    adapter_handle,	   /* R4 */
+-				    res_handle,            /* R5 */
+-				    0, 0, 0, 0, 0, 0, 0,   /* R6-R12 */
+-				    &dummy,                /* R4 */
+-				    &dummy,                /* R5 */
+-				    &dummy,                /* R6 */
+-				    &dummy,                /* R7 */
+-				    &dummy,                /* R8 */
+-				    &dummy,                /* R9 */
+-				    &dummy,		   /* R10 */
+-				    &dummy,                /* R11 */
+-				    &dummy);               /* R12 */
++	return ehea_plpar_hcall_norets(H_FREE_RESOURCE,
++				       adapter_handle,	   /* R4 */
++				       res_handle,         /* R5 */
++				       0, 0, 0, 0, 0);     /* R6-R10 */
+ }
+ 
+ u64 ehea_h_alloc_resource_mr(const u64 adapter_handle, const u64 vaddr,
+ 			     const u64 length, const u32 access_ctrl,
+ 			     const u32 pd, u64 *mr_handle, u32 *lkey)
+ {
+-	u64 hret, dummy, lkey_out;
+-
+-	hret = ehea_hcall_9arg_9ret(H_ALLOC_HEA_RESOURCE,
+-				    adapter_handle,		   /* R4 */
+-				    5,				   /* R5 */
+-				    vaddr,			   /* R6 */
+-				    length,			   /* R7 */
+-				    (((u64) access_ctrl) << 32ULL),/* R8 */
+-				    pd,				   /* R9 */
+-				    0, 0, 0,			   /* R10-R12 */
+-				    mr_handle,			   /* R4 */
+-				    &dummy,			   /* R5 */
+-				    &lkey_out,			   /* R6 */
+-				    &dummy,			   /* R7 */
+-				    &dummy,			   /* R8 */
+-				    &dummy,			   /* R9 */
+-				    &dummy,			   /* R10 */
+-				    &dummy,                        /* R11 */
+-				    &dummy);                       /* R12 */
+-	*lkey = (u32) lkey_out;
+-
++	u64 hret;
++ 	u64 outs[PLPAR_HCALL9_BUFSIZE];
++
++	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
++				 outs,
++				 adapter_handle,		   /* R4 */
++				 5,				   /* R5 */
++				 vaddr,			           /* R6 */
++				 length,			   /* R7 */
++				 (((u64) access_ctrl) << 32ULL),   /* R8 */
++				 pd,				   /* R9 */
++				 0, 0, 0);			   /* R10-R12 */
++
++	*mr_handle = outs[0];
++	*lkey = (u32)outs[2];
+ 	return hret;
+ }
+ 
+@@ -570,23 +518,14 @@ u64 ehea_h_register_rpage_mr(const u64 a
+ 
+ u64 ehea_h_query_ehea(const u64 adapter_handle, void *cb_addr)
+ {
+-	u64 hret, dummy, cb_logaddr;
++	u64 hret, cb_logaddr;
+ 
+ 	cb_logaddr = virt_to_abs(cb_addr);
+ 
+-	hret = ehea_hcall_9arg_9ret(H_QUERY_HEA,
+-				    adapter_handle,		/* R4 */
+-				    cb_logaddr,			/* R5 */
+-				    0, 0, 0, 0, 0, 0, 0,	/* R6-R12 */
+-				    &dummy,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &dummy,			/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,             	/* R11 */
+-				    &dummy);            	/* R12 */
++	hret = ehea_plpar_hcall_norets(H_QUERY_HEA,
++				       adapter_handle,		/* R4 */
++				       cb_logaddr,		/* R5 */
++				       0, 0, 0, 0, 0);		/* R6-R10 */
+ #ifdef DEBUG
+ 	ehea_dmp(cb_addr, sizeof(struct hcp_query_ehea), "hcp_query_ehea");
+ #endif
+@@ -597,36 +536,28 @@ u64 ehea_h_query_ehea_port(const u64 ada
+ 			   const u8 cb_cat, const u64 select_mask,
+ 			   void *cb_addr)
+ {
+-	u64 port_info, dummy;
++	u64 port_info;
+ 	u64 cb_logaddr = virt_to_abs(cb_addr);
+ 	u64 arr_index = 0;
+ 
+ 	port_info = EHEA_BMASK_SET(H_MEHEAPORT_CAT, cb_cat)
+ 		  | EHEA_BMASK_SET(H_MEHEAPORT_PN, port_num);
+ 
+-	return ehea_hcall_9arg_9ret(H_QUERY_HEA_PORT,
+-				    adapter_handle,		/* R4 */
+-				    port_info,			/* R5 */
+-				    select_mask,		/* R6 */
+-				    arr_index,			/* R7 */
+-				    cb_logaddr,			/* R8 */
+-				    0, 0, 0, 0,			/* R9-R12 */
+-				    &dummy,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &dummy,			/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,                     /* R11 */
+-				    &dummy);                    /* R12 */
++	return ehea_plpar_hcall_norets(H_QUERY_HEA_PORT,
++				       adapter_handle,		/* R4 */
++				       port_info,		/* R5 */
++				       select_mask,		/* R6 */
++				       arr_index,		/* R7 */
++				       cb_logaddr,		/* R8 */
++				       0, 0);			/* R9-R10 */
+ }
+ 
+ u64 ehea_h_modify_ehea_port(const u64 adapter_handle, const u16 port_num,
+ 			    const u8 cb_cat, const u64 select_mask,
+ 			    void *cb_addr)
+ {
+-	u64 port_info, dummy, inv_attr_ident, proc_mask;
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
++	u64 port_info;
+ 	u64 arr_index = 0;
+ 	u64 cb_logaddr = virt_to_abs(cb_addr);
+ 
+@@ -635,29 +566,21 @@ u64 ehea_h_modify_ehea_port(const u64 ad
+ #ifdef DEBUG
+ 	ehea_dump(cb_addr, sizeof(struct hcp_ehea_port_cb0), "Before HCALL");
+ #endif
+-	return ehea_hcall_9arg_9ret(H_MODIFY_HEA_PORT,
+-				    adapter_handle,		/* R4 */
+-				    port_info,			/* R5 */
+-				    select_mask,		/* R6 */
+-				    arr_index,			/* R7 */
+-				    cb_logaddr,			/* R8 */
+-				    0, 0, 0, 0,			/* R9-R12 */
+-				    &inv_attr_ident,		/* R4 */
+-				    &proc_mask,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &dummy,			/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,                     /* R11 */
+-				    &dummy);                    /* R12 */
++	return ehea_plpar_hcall9(H_MODIFY_HEA_PORT,
++				 outs,
++				 adapter_handle,		/* R4 */
++				 port_info,			/* R5 */
++				 select_mask,			/* R6 */
++				 arr_index,			/* R7 */
++				 cb_logaddr,			/* R8 */
++				 0, 0, 0, 0);			/* R9-R12 */
+ }
+ 
+ u64 ehea_h_reg_dereg_bcmc(const u64 adapter_handle, const u16 port_num,
+ 			  const u8 reg_type, const u64 mc_mac_addr,
+ 			  const u16 vlan_id, const u32 hcall_id)
+ {
+-	u64 r5_port_num, r6_reg_type, r7_mc_mac_addr, r8_vlan_id, dummy;
++	u64 r5_port_num, r6_reg_type, r7_mc_mac_addr, r8_vlan_id;
+ 	u64 mac_addr = mc_mac_addr >> 16;
+ 
+ 	r5_port_num = EHEA_BMASK_SET(H_REGBCMC_PN, port_num);
+@@ -665,41 +588,21 @@ u64 ehea_h_reg_dereg_bcmc(const u64 adap
+ 	r7_mc_mac_addr = EHEA_BMASK_SET(H_REGBCMC_MACADDR, mac_addr);
+ 	r8_vlan_id = EHEA_BMASK_SET(H_REGBCMC_VLANID, vlan_id);
+ 
+-	return ehea_hcall_9arg_9ret(hcall_id,
+-				    adapter_handle,		/* R4 */
+-				    r5_port_num,		/* R5 */
+-				    r6_reg_type,		/* R6 */
+-				    r7_mc_mac_addr,		/* R7 */
+-				    r8_vlan_id,			/* R8 */
+-				    0, 0, 0, 0,			/* R9-R12 */
+-				    &dummy,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &dummy,			/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,                     /* R11 */
+-				    &dummy);                    /* R12 */
++	return ehea_plpar_hcall_norets(hcall_id,
++				       adapter_handle,		/* R4 */
++				       r5_port_num,		/* R5 */
++				       r6_reg_type,		/* R6 */
++				       r7_mc_mac_addr,		/* R7 */
++				       r8_vlan_id,		/* R8 */
++				       0, 0);			/* R9-R12 */
+ }
+ 
+ u64 ehea_h_reset_events(const u64 adapter_handle, const u64 neq_handle,
+ 			const u64 event_mask)
+ {
+-	u64 dummy;
+-
+-	return ehea_hcall_9arg_9ret(H_RESET_EVENTS,
+-				    adapter_handle,		/* R4 */
+-				    neq_handle,			/* R5 */
+-				    event_mask,			/* R6 */
+-				    0, 0, 0, 0, 0, 0,		/* R7-R12 */
+-				    &dummy,			/* R4 */
+-				    &dummy,			/* R5 */
+-				    &dummy,			/* R6 */
+-				    &dummy,			/* R7 */
+-				    &dummy,			/* R8 */
+-				    &dummy,			/* R9 */
+-				    &dummy,			/* R10 */
+-				    &dummy,                     /* R11 */
+-				    &dummy);                    /* R12 */
++	return ehea_plpar_hcall_norets(H_RESET_EVENTS,
++				       adapter_handle,		/* R4 */
++				       neq_handle,		/* R5 */
++				       event_mask,		/* R6 */
++				       0, 0, 0, 0);		/* R7-R12 */
+ }
