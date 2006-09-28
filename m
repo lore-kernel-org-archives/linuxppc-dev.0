@@ -1,19 +1,19 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9D7ED67B8B
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 02:40:59 +1000 (EST)
-Date: Thu, 28 Sep 2006 20:41:05 +0400
+	by ozlabs.org (Postfix) with ESMTP id 74DC667B8B
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 02:43:28 +1000 (EST)
+Date: Thu, 28 Sep 2006 20:43:45 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "Li Yang" <LeoLi@freescale.com>
-Subject: Re: [PATCH 0/12] Add support for QE and 8360EMDS board -v2
-Message-ID: <20060928204105.67f670aa@vitb.ru.mvista.com>
-In-Reply-To: <a0bc9bf80609280909r13e9ea31ldf0630969416cbff@mail.gmail.com>
-References: <451B8553.30107@freescale.com>
-	<7178D84E-0290-4D3E-905E-C26C9908F40E@kernel.crashing.org>
-	<a0bc9bf80609280909r13e9ea31ldf0630969416cbff@mail.gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 8/12] qe_lib: Fix rheap alignment problem
+Message-ID: <20060928204345.4e23789e@vitb.ru.mvista.com>
+In-Reply-To: <9672B4B6-1DC0-48D6-99BA-7160421CB24C@kernel.crashing.org>
+References: <451B8584.1070403@freescale.com>
+	<9672B4B6-1DC0-48D6-99BA-7160421CB24C@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Li Yang <leoli@freescale.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 29 Sep 2006 00:09:14 +0800
-"Li Yang" <LeoLi@freescale.com> wrote:
+On Thu, 28 Sep 2006 09:10:18 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> On 9/28/06, Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> > On Sep 28, 2006, at 3:18 AM, Li Yang wrote:
-> >
-> > > Paul,
-> > >
-> > > The series of patches add generic QE infrastructure called
-> > > qe_lib, and MPC8360EMDS board support.  Qe_lib is used by
-> > > QE device drivers such as ucc_geth driver.
-> > >
-> > > This version updates QE interrupt controller to use new irq
-> > > mapping mechanism, addresses all the comments received with
-> > > last submission and includes some style fixes.
-> > >
-> > > v2 change: Change to use device tree for BCSR and MURAM;
-> > > Remove I/O port interrupt handling code as it is not generic
-> > > enough.
-> >
-> > Before accepting any of this code, I'd like to see what the drivers
-> > look like that are using it.  Its hard to make significant comments w/
-> > o seeing what the consumers of all the 'lib' code look like.
 > 
-> Current in-tree user of the lib is driver/net/ucc_geth.c.  There is
-> also QE ATM driver which is included in Alex's 8360sar project.  QE
-> USB host/client drivers are in Freescale LTIB BSP.
+> On Sep 28, 2006, at 3:19 AM, Li Yang wrote:
+> 
+> > Honor alignment parameter in the rheap allocator.  This is
+> > needed by qe_lib.
+> > Remove compile warning.
+> >
+> > Signed-off-by: Pantelis Antoniou <pantelis@embeddedalley.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
 > 
 
-The point is we are following the way a bit opposite then normal - 
-usually a bunch of similar stuff is wrapped into a library,
-and here we've made a library and trying to fit all the upcoming into.
-
-I'd suggest to look at it as "add new soc family" approach, not more.
-OTOH, I am expecting it to become sort of versatile lib some time later...
-
-Kumar, 
-
-no serial driver I'm aware of..
+OK, I can state rheap is still consistent in 8560 cpm2.
+It even makes sense to apply this instantly because it's a notable bugfix.. Kumar?
 
 -- 
 Sincerely, 
