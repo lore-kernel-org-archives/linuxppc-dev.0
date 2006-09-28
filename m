@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linux-kernel@vger.kernel.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 29 Sep 2006 07:53:42 +1000
-Subject: [RFC/PATCH 6/7] RTAS MSI implementation
+Date: Fri, 29 Sep 2006 07:53:46 +1000
+Subject: [RFC/PATCH 7/7] Preliminary MPIC MSI backend
 In-Reply-To: <1159480412.269240.988552559176.qpush@concordia>
-Message-Id: <20060928215346.CE92067C6D@ozlabs.org>
+Message-Id: <20060928215349.45C0667C47@ozlabs.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,34 +15,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Powerpc MSI support via RTAS. Based on Jake's code.
+A pretty hackish MPIC backend, just enough to flesh out the design.
+Based on code from Segher.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
  arch/powerpc/kernel/Makefile   |    1 
- arch/powerpc/kernel/msi-rtas.c |  246 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 247 insertions(+)
+ arch/powerpc/kernel/msi-mpic.c |   90 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)
 
 Index: to-merge/arch/powerpc/kernel/Makefile
 ===================================================================
 --- to-merge.orig/arch/powerpc/kernel/Makefile
 +++ to-merge/arch/powerpc/kernel/Makefile
-@@ -69,6 +69,7 @@ pci32-$(CONFIG_PPC32)		:= pci_32.o
- obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
+@@ -70,6 +70,7 @@ obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32
  
  msiobj-y			:= msi.o
-+msiobj-$(CONFIG_PPC_PSERIES)	+= msi-rtas.o
+ msiobj-$(CONFIG_PPC_PSERIES)	+= msi-rtas.o
++msiobj-$(CONFIG_PPC_PMAC)	+= msi-mpic.o
  obj-$(CONFIG_PCI_MSI)		+= $(msiobj-y)
  
  kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
-Index: to-merge/arch/powerpc/kernel/msi-rtas.c
+Index: to-merge/arch/powerpc/kernel/msi-mpic.c
 ===================================================================
 --- /dev/null
-+++ to-merge/arch/powerpc/kernel/msi-rtas.c
-@@ -0,0 +1,246 @@
++++ to-merge/arch/powerpc/kernel/msi-mpic.c
+@@ -0,0 +1,90 @@
 +/*
-+ * Copyright (C) 2006 Jake Moilanen <moilanen@austin.ibm.com>, IBM Corp.
++ * Copyright (C) 2006 Segher Boessenkool, IBM Corp.
 + * Copyright (C) 2006 Michael Ellerman, IBM Corp.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -56,234 +57,78 @@ Index: to-merge/arch/powerpc/kernel/msi-rtas.c
 +
 +#include <linux/irq.h>
 +#include <asm/msi.h>
-+#include <asm/rtas.h>
 +#include <asm/hw_irq.h>
 +#include <asm/ppc-pci.h>
 +
-+static int query_token, change_token;
-+
-+#define RTAS_QUERY_MSI_FN	0
-+#define RTAS_CHANGE_MSI_FN	1
-+#define RTAS_RESET_MSI_FN	2
-+
-+
-+/* RTAS Helpers */
-+
-+static int rtas_change_msi(struct pci_dn *pdn, u32 function, u32 num_irqs)
++static int msi_mpic_check(struct pci_dev *pdev, int num,
++			struct msix_entry *entries, int type)
 +{
-+	u32 addr, seq_num, rtas_ret[2];
-+	unsigned long buid;
-+	int rc;
-+
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+
-+	seq_num = 1;
-+	do {
-+		rc = rtas_call(change_token, 6, 3, rtas_ret, addr,
-+				BUID_HI(buid), BUID_LO(buid),
-+				function, num_irqs, seq_num);
-+
-+		seq_num = rtas_ret[1];
-+	} while (rtas_busy_delay(rc));
-+
-+	if (rc) {
-+		printk(KERN_WARNING "Error[%d]: getting the number of"
-+			" MSI interrupts for %s\n", rc, pci_name(pdn->pcidev));
-+		return rc;
-+	}
-+
-+	return rtas_ret[0];
-+}
-+
-+static int rtas_query_irq_number(struct pci_dn *pdn, int offset)
-+{
-+	u32 addr, rtas_ret[2];
-+	unsigned long buid;
-+	int rc;
-+
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+
-+	do {
-+		rc = rtas_call(query_token, 4, 3, rtas_ret, addr,
-+			       BUID_HI(buid), BUID_LO(buid), offset);
-+	} while (rtas_busy_delay(rc));
-+
-+	if (rc) {
-+		printk(KERN_WARNING "Error[%d]: Querying irq source number "
-+				"for %s\n", rc, pci_name(pdn->pcidev));
-+		return rc;
-+	}
-+
-+	return rtas_ret[0];
-+}
-+
-+/*
-+ * The spec gives firmware the option to enable either MSI or MSI-X,
-+ * this doesn't wash with the Linux API. For the time beinging, we
-+ * kludge around that by checking ourselves the right type is enabled.
-+ */
-+static int check_msi_type(struct pci_dev *pdev, int type)
-+{
-+	int pos, msi_enabled, msix_enabled;
-+	u16 reg;
-+
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+	if (!pos)
-+		return -1;
-+
-+	pci_read_config_word(pdev, pos + PCI_MSI_FLAGS, &reg);
-+
-+	msi_enabled = msix_enabled = 0;
-+
-+	if (reg & PCI_MSI_FLAGS_ENABLE)
-+		msi_enabled = 1;
-+
-+	if (reg & PCI_MSIX_FLAGS_ENABLE)
-+		msix_enabled = 1;
-+
-+	if (type == PCI_CAP_ID_MSI && (msix_enabled || !msi_enabled)) {
-+		pr_debug("check_msi_type: Expected MSI but got %s.\n",
-+			msix_enabled ? "MSI-X" : "none");
-+		return -1;
-+	}
-+
-+	if (type == PCI_CAP_ID_MSIX && (msi_enabled || !msix_enabled)) {
-+		pr_debug("check_msi_type: Expected MSI-X but got %s.\n",
-+			msi_enabled ? "MSI" : "none");
-+		return -1;
-+	}
++	/* The irq allocator needs more work to support MSI-X/multi-MSI */
++	if (type == PCI_CAP_ID_MSIX || num != 1)
++		return 1;
 +
 +	return 0;
 +}
 +
-+static void msi_rtas_free(struct pci_dev *pdev, int num,
++static void msi_mpic_free(struct pci_dev *pdev, int num,
 +			struct msix_entry *entries, int type)
 +{
-+	struct device_node *dn;
-+	struct pci_dn *pdn;
-+	int i;
-+
-+	dn = pci_device_to_OF_node(pdev);
-+	if (!dn) {
-+		pr_debug("msi_rtas_free: No OF device node for %s\n",
-+				pci_name(pdev));
-+		return;
-+	}
-+
-+	pdn = PCI_DN(dn);
-+	if (!pdn) {
-+		pr_debug("msi_rtas_free: No PCI DN for %s\n",
-+				pci_name(pdev));
-+		return;
-+	}
-+
-+	for (i = 0; i < num; i++) {
++	for (i = 0; i < num; i++)
 +		irq_dispose_mapping(entries[i].vector);
-+	}
-+
-+	/* XXX can we do anything sane if this fails? */
-+	rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, 0);
 +}
 +
-+static int msi_rtas_check(struct pci_dev *pdev, int num,
++static int msi_mpic_alloc(struct pci_dev *pdev, int num,
 +			struct msix_entry *entries, int type)
 +{
-+	struct device_node *dn;
-+	int i;
++	irq_hw_number_t hwirq;
++	unsigned int virq;
 +
-+	dn = pci_device_to_OF_node(pdev);
++	/* We need a smarter allocator for MSI-X/multi-MSI */
++	hwirq = irq_map[pdev->irq].hwirq;
++	hwirq += 100;
 +
-+	if (!of_find_property(dn, "ibm,req#msi", NULL)) {
-+		pr_debug("msi_rtas_check: No ibm,req#msi for %s\n",
-+				pci_name(pdev));
++	virq = irq_create_mapping(NULL, hwirq);
++	if (virq == NO_IRQ) {
++		pr_debug("msi_mpic_alloc: Failed mapping hwirq %d\n", hwirq);
 +		return -1;
 +	}
 +
-+	/*
-+	 * Firmware gives us no control over which entries are allocated
-+	 * for MSI-X, it seems to assume we want 0 - n. For now just insist
-+	 * that the entries array entry members are 0 - n.
-+	 */
-+	for (i = 0; i < num; i++) {
-+		if (entries[i].entry != i) {
-+			pr_debug("msi_rtas_check: entries[i].entry != i\n");
-+			return -1;
-+		}
-+	}
++	set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
++	entries[i].vector = virq;
 +
 +	return 0;
 +}
 +
-+static int msi_rtas_alloc(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
++static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
++		struct msix_entry *entry, struct msi_msg *msg, int type)
 +{
-+	struct pci_dn *pdn;
-+	int hwirq, virq, i;
-+
-+	pdn = PCI_DN(pci_device_to_OF_node(pdev));
-+
-+	/*
-+	 * In the case of an error it's not clear whether the device is left
-+	 * with MSI enabled or not, I think we should explicitly disable.
-+	 */
-+	if (rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, num) != num)
-+		goto out_free;
-+
-+	if (check_msi_type(pdev, type))
-+		goto out_free;
-+
-+	for (i = 0; i < num; i++) {
-+		hwirq = rtas_query_irq_number(pdn, i);
-+		if (hwirq < 0)
-+			goto out_free;
-+
-+		virq = irq_create_mapping(NULL, hwirq);
-+
-+		if (virq == NO_IRQ) {
-+			pr_debug("msi_rtas_alloc: Failed mapping hwirq %d\n",
-+				hwirq);
-+			goto out_free;
-+		}
-+
-+		entries[i].vector = virq;
-+	}
++	msg->address_lo = 0xfee00000;	/* XXX What is this value? */
++	msg->address_hi = 0;
++	msg->data = pdev->irq | 0x8000;
 +
 +	return 0;
-+
-+ out_free:
-+	msi_rtas_free(pdev, num, entries, type);
-+	return -1;
 +}
 +
-+static struct ppc_msi_ops rtas_msi_ops = {
-+	.check = msi_rtas_check,
-+	.alloc = msi_rtas_alloc,
-+	.free  = msi_rtas_free
++static struct ppc_msi_ops mpic_msi_ops = {
++	.check = msi_mpic_check,
++	.alloc = msi_mpic_alloc,
++	.free = msi_mpic_free
++	.enable = msi_raw_enable,
++	.disable = msi_raw_disable,
++	.setup_msi_msg = msi_mpic_setup_msi_msg,
 +};
 +
-+static struct ppc_msi_ops *rtas_get_msi_ops(struct pci_dev *pdev)
++static struct ppc_msi_ops *mpic_get_msi_ops(struct pci_dev *pdev)
 +{
-+	return &rtas_msi_ops;
++	return &mpic_msi_ops;
 +}
 +
-+static int msi_rtas_init(void)
++static int msi_mpic_init(void)
 +{
-+	query_token  = rtas_token("ibm,query-interrupt-source-number");
-+	change_token = rtas_token("ibm,change-msi");
-+
-+	if ((query_token == RTAS_UNKNOWN_SERVICE) ||
-+			(change_token == RTAS_UNKNOWN_SERVICE)) {
-+		pr_debug("rtas_msi_init: Couldn't find RTAS tokens, no "
-+				"MSI support available.\n");
-+		return 0;
-+	}
-+
-+	pr_debug("rtas_msi_init: Registering RTAS MSI ops.\n");
-+
-+	ppc_md.get_msi_ops = rtas_get_msi_ops;
++	/* XXX Do this in mpic_init ? */
++	pr_debug("mpic_msi_init: Registering MPIC MSI ops.\n");
++	ppc_md.get_msi_ops = mpic_get_msi_ops;
 +
 +	return 0;
 +}
-+__initcall(msi_rtas_init);
++__initcall(msi_mpic_init);
