@@ -1,21 +1,21 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 3C2C367C95
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:18:42 +1000 (EST)
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C72B967C2B
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 18:18:46 +1000 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k8S9cdVd015636
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:38:39 -0600 (MDT)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k8S8Veju006308
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 01:31:40 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k8S8IHrU009860
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:18:36 -0500 (CDT)
-Message-ID: <451B857D.4050709@freescale.com>
-Date: Thu, 28 Sep 2006 16:19:09 +0800
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k8S8IHrW009860
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 03:18:43 -0500 (CDT)
+Message-ID: <451B8581.1040303@freescale.com>
+Date: Thu, 28 Sep 2006 16:19:13 +0800
 From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
 To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH 6/12] qe_lib: Add QE memory map definition
+Subject: [PATCH 7/12] qe_lib: Add QE SoC support
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,521 +27,192 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Shlomi Gridish <gridish@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
 ---
- include/asm-powerpc/immap_qe.h |  504 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 504 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/qe_lib/qe.c |  176 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 176 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
 new file mode 100644
-index 0000000..43ea7bb
+index 0000000..df3e826
 --- /dev/null
-+++ b/include/asm-powerpc/immap_qe.h
-@@ -0,0 +1,504 @@
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -0,0 +1,176 @@
 +/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
++ * Copyright (C) 2006 Freescale Semicondutor, Inc. All rights reserved.
 + *
-+ * Author: Shlomi Gridish <gridish@freescale.com>
-+ * Maintainer: Li Yang <leoli@freescale.com>
++ * Author: Li Yang <LeoLi@freescale.com>
 + *
 + * Description:
-+ * QUICC Engine (QE) Internal Memory Map.
-+ * The Internal Memory Map for devices with QE on them. This
-+ * is the superset of all QE devices (8360, etc.).
++ * FSL QE SOC setup.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
 + */
-+#ifdef __KERNEL__
-+#ifndef __IMMAP_QE_H__
-+#define __IMMAP_QE_H__
 +
++#include <linux/config.h>
++#include <linux/stddef.h>
 +#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/major.h>
++#include <linux/delay.h>
++#include <linux/irq.h>
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/platform_device.h>
++#include <linux/fsl_devices.h>
 +
-+#define QE_IMMAP_SIZE	(1024 * 1024)	/* 1MB from 1MB+IMMR */
++#include <asm/system.h>
++#include <asm/atomic.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <sysdev/fsl_soc.h>
++#include <mm/mmu_decl.h>
 +
-+/* QE I-RAM
-+*/
-+typedef struct qe_iram {
-+	u32 iadd;		/* I-RAM Address Register */
-+	u32 idata;		/* I-RAM Data Register    */
-+	u8 res0[0x78];
-+} __attribute__ ((packed)) qe_iram_t;
++static phys_addr_t qebase = -1;
 +
-+/* QE Interrupt Controller
-+*/
-+typedef struct qe_ic_regs {
-+	u32 qicr;
-+	u32 qivec;
-+	u32 qripnr;
-+	u32 qipnr;
-+	u32 qipxcc;
-+	u32 qipycc;
-+	u32 qipwcc;
-+	u32 qipzcc;
-+	u32 qimr;
-+	u32 qrimr;
-+	u32 qicnr;
-+	u8 res0[0x4];
-+	u32 qiprta;
-+	u32 qiprtb;
-+	u8 res1[0x4];
-+	u32 qricr;
-+	u8 res2[0x20];
-+	u32 qhivec;
-+	u8 res3[0x1C];
-+} __attribute__ ((packed)) qe_ic_t;
++phys_addr_t get_qe_base(void)
++{
++	struct device_node *qe;
 +
-+/* Communications Processor
-+*/
-+typedef struct cp_qe {
-+	u32 cecr;		/* QE command register */
-+	u32 ceccr;		/* QE controller configuration register */
-+	u32 cecdr;		/* QE command data register */
-+	u8 res0[0xA];
-+	u16 ceter;		/* QE timer event register */
-+	u8 res1[0x2];
-+	u16 cetmr;		/* QE timers mask register */
-+	u32 cetscr;		/* QE time-stamp timer control register */
-+	u32 cetsr1;		/* QE time-stamp register 1 */
-+	u32 cetsr2;		/* QE time-stamp register 2 */
-+	u8 res2[0x8];
-+	u32 cevter;		/* QE virtual tasks event register */
-+	u32 cevtmr;		/* QE virtual tasks mask register */
-+	u16 cercr;		/* QE RAM control register */
-+	u8 res3[0x2];
-+	u8 res4[0x24];
-+	u16 ceexe1;		/* QE external request 1 event register */
-+	u8 res5[0x2];
-+	u16 ceexm1;		/* QE external request 1 mask register */
-+	u8 res6[0x2];
-+	u16 ceexe2;		/* QE external request 2 event register */
-+	u8 res7[0x2];
-+	u16 ceexm2;		/* QE external request 2 mask register */
-+	u8 res8[0x2];
-+	u16 ceexe3;		/* QE external request 3 event register */
-+	u8 res9[0x2];
-+	u16 ceexm3;		/* QE external request 3 mask register */
-+	u8 res10[0x2];
-+	u16 ceexe4;		/* QE external request 4 event register */
-+	u8 res11[0x2];
-+	u16 ceexm4;		/* QE external request 4 mask register */
-+	u8 res12[0x2];
-+	u8 res13[0x280];
-+} __attribute__ ((packed)) cp_qe_t;
++	if (qebase != -1)
++		return qebase;
 +
-+/* QE Multiplexer
-+*/
-+typedef struct qe_mux {
-+	u32 cmxgcr;		/* CMX general clock route register    */
-+	u32 cmxsi1cr_l;		/* CMX SI1 clock route low register    */
-+	u32 cmxsi1cr_h;		/* CMX SI1 clock route high register   */
-+	u32 cmxsi1syr;		/* CMX SI1 SYNC route register         */
-+	u32 cmxucr1;		/* CMX UCC1, UCC3 clock route register */
-+	u32 cmxucr2;		/* CMX UCC5, UCC7 clock route register */
-+	u32 cmxucr3;		/* CMX UCC2, UCC4 clock route register */
-+	u32 cmxucr4;		/* CMX UCC6, UCC8 clock route register */
-+	u32 cmxupcr;		/* CMX UPC clock route register        */
-+	u8 res0[0x1C];
-+} __attribute__ ((packed)) qe_mux_t;
-+
-+/* QE Timers
-+*/
-+typedef struct qe_timers {
-+	u8 gtcfr1;		/* Timer 1 and Timer 2 global configuration 
-+				   register */
-+	u8 res0[0x3];
-+	u8 gtcfr2;		/* Timer 3 and timer 4 global configuration
-+				   register */
-+	u8 res1[0xB];
-+	u16 gtmdr1;		/* Timer 1 mode register */
-+	u16 gtmdr2;		/* Timer 2 mode register */
-+	u16 gtrfr1;		/* Timer 1 reference register */
-+	u16 gtrfr2;		/* Timer 2 reference register */
-+	u16 gtcpr1;		/* Timer 1 capture register */
-+	u16 gtcpr2;		/* Timer 2 capture register */
-+	u16 gtcnr1;		/* Timer 1 counter */
-+	u16 gtcnr2;		/* Timer 2 counter */
-+	u16 gtmdr3;		/* Timer 3 mode register */
-+	u16 gtmdr4;		/* Timer 4 mode register */
-+	u16 gtrfr3;		/* Timer 3 reference register */
-+	u16 gtrfr4;		/* Timer 4 reference register */
-+	u16 gtcpr3;		/* Timer 3 capture register */
-+	u16 gtcpr4;		/* Timer 4 capture register */
-+	u16 gtcnr3;		/* Timer 3 counter */
-+	u16 gtcnr4;		/* Timer 4 counter */
-+	u16 gtevr1;		/* Timer 1 event register */
-+	u16 gtevr2;		/* Timer 2 event register */
-+	u16 gtevr3;		/* Timer 3 event register */
-+	u16 gtevr4;		/* Timer 4 event register */
-+	u16 gtps;		/* Timer 1 prescale register */
-+	u8 res2[0x46];
-+} __attribute__ ((packed)) qe_timers_t;
-+
-+/* BRG
-+*/
-+typedef struct qe_brg {
-+	u32 brgc1;		/* BRG1 configuration register  */
-+	u32 brgc2;		/* BRG2 configuration register  */
-+	u32 brgc3;		/* BRG3 configuration register  */
-+	u32 brgc4;		/* BRG4 configuration register  */
-+	u32 brgc5;		/* BRG5 configuration register  */
-+	u32 brgc6;		/* BRG6 configuration register  */
-+	u32 brgc7;		/* BRG7 configuration register  */
-+	u32 brgc8;		/* BRG8 configuration register  */
-+	u32 brgc9;		/* BRG9 configuration register  */
-+	u32 brgc10;		/* BRG10 configuration register */
-+	u32 brgc11;		/* BRG11 configuration register */
-+	u32 brgc12;		/* BRG12 configuration register */
-+	u32 brgc13;		/* BRG13 configuration register */
-+	u32 brgc14;		/* BRG14 configuration register */
-+	u32 brgc15;		/* BRG15 configuration register */
-+	u32 brgc16;		/* BRG16 configuration register */
-+	u8 res0[0x40];
-+} __attribute__ ((packed)) qe_brg_t;
-+
-+/* SPI
-+*/
-+typedef struct spi {
-+	u8 res0[0x20];
-+	u32 spmode;		/* SPI mode register */
-+	u8 res1[0x2];
-+	u8 spie;		/* SPI event register */
-+	u8 res2[0x1];
-+	u8 res3[0x2];
-+	u8 spim;		/* SPI mask register */
-+	u8 res4[0x1];
-+	u8 res5[0x1];
-+	u8 spcom;		/* SPI command register  */
-+	u8 res6[0x2];
-+	u32 spitd;		/* SPI transmit data register (cpu mode) */
-+	u32 spird;		/* SPI receive data register (cpu mode) */
-+	u8 res7[0x8];
-+} __attribute__ ((packed)) spi_t;
-+
-+/* SI
-+*/
-+typedef struct si1 {
-+	u16 siamr1;		/* SI1 TDMA mode register */
-+	u16 sibmr1;		/* SI1 TDMB mode register */
-+	u16 sicmr1;		/* SI1 TDMC mode register */
-+	u16 sidmr1;		/* SI1 TDMD mode register */
-+	u8 siglmr1_h;		/* SI1 global mode register high */
-+	u8 res0[0x1];
-+	u8 sicmdr1_h;		/* SI1 command register high */
-+	u8 res2[0x1];
-+	u8 sistr1_h;		/* SI1 status register high */
-+	u8 res3[0x1];
-+	u16 sirsr1_h;		/* SI1 RAM shadow address register high */
-+	u8 sitarc1;		/* SI1 RAM counter Tx TDMA */
-+	u8 sitbrc1;		/* SI1 RAM counter Tx TDMB */
-+	u8 sitcrc1;		/* SI1 RAM counter Tx TDMC */
-+	u8 sitdrc1;		/* SI1 RAM counter Tx TDMD */
-+	u8 sirarc1;		/* SI1 RAM counter Rx TDMA */
-+	u8 sirbrc1;		/* SI1 RAM counter Rx TDMB */
-+	u8 sircrc1;		/* SI1 RAM counter Rx TDMC */
-+	u8 sirdrc1;		/* SI1 RAM counter Rx TDMD */
-+	u8 res4[0x8];
-+	u16 siemr1;		/* SI1 TDME mode register 16 bits */
-+	u16 sifmr1;		/* SI1 TDMF mode register 16 bits */
-+	u16 sigmr1;		/* SI1 TDMG mode register 16 bits */
-+	u16 sihmr1;		/* SI1 TDMH mode register 16 bits */
-+	u8 siglmg1_l;		/* SI1 global mode register low 8 bits */
-+	u8 res5[0x1];
-+	u8 sicmdr1_l;		/* SI1 command register low 8 bits */
-+	u8 res6[0x1];
-+	u8 sistr1_l;		/* SI1 status register low 8 bits */
-+	u8 res7[0x1];
-+	u16 sirsr1_l;		/* SI1 RAM shadow address register low 16 
-+				   bits */
-+	u8 siterc1;		/* SI1 RAM counter Tx TDME 8 bits */
-+	u8 sitfrc1;		/* SI1 RAM counter Tx TDMF 8 bits */
-+	u8 sitgrc1;		/* SI1 RAM counter Tx TDMG 8 bits */
-+	u8 sithrc1;		/* SI1 RAM counter Tx TDMH 8 bits */
-+	u8 sirerc1;		/* SI1 RAM counter Rx TDME 8 bits */
-+	u8 sirfrc1;		/* SI1 RAM counter Rx TDMF 8 bits */
-+	u8 sirgrc1;		/* SI1 RAM counter Rx TDMG 8 bits */
-+	u8 sirhrc1;		/* SI1 RAM counter Rx TDMH 8 bits */
-+	u8 res8[0x8];
-+	u32 siml1;		/* SI1 multiframe limit register */
-+	u8 siedm1;		/* SI1 extended diagnostic mode register */
-+	u8 res9[0xBB];
-+} __attribute__ ((packed)) si1_t;
-+
-+/* SI Routing Tables
-+*/
-+typedef struct sir {
-+	u8 tx[0x400];
-+	u8 rx[0x400];
-+	u8 res0[0x800];
-+} __attribute__ ((packed)) sir_t;
-+
-+/* USB Controller.
-+*/
-+typedef struct usb_ctlr {
-+	u8 usb_usmod;
-+	u8 usb_usadr;
-+	u8 usb_uscom;
-+	u8 res1[1];
-+	u16 usb_usep1;
-+	u16 usb_usep2;
-+	u16 usb_usep3;
-+	u16 usb_usep4;
-+	u8 res2[4];
-+	u16 usb_usber;
-+	u8 res3[2];
-+	u16 usb_usbmr;
-+	u8 res4[1];
-+	u8 usb_usbs;
-+	u16 usb_ussft;
-+	u8 res5[2];
-+	u16 usb_usfrn;
-+	u8 res6[0x22];
-+} __attribute__ ((packed)) usb_t;
-+
-+/* MCC
-+*/
-+typedef struct mcc {
-+	u32 mcce;		/* MCC event register */
-+	u32 mccm;		/* MCC mask register */
-+	u32 mccf;		/* MCC configuration register */
-+	u32 merl;		/* MCC emergency request level register */
-+	u8 res0[0xF0];
-+} __attribute__ ((packed)) mcc_t;
-+
-+/* QE UCC Slow
-+*/
-+typedef struct ucc_slow {
-+	u32 gumr_l;		/* UCCx general mode register (low) */
-+	u32 gumr_h;		/* UCCx general mode register (high) */
-+	u16 upsmr;		/* UCCx protocol-specific mode register */
-+	u8 res0[0x2];
-+	u16 utodr;		/* UCCx transmit on demand register */
-+	u16 udsr;		/* UCCx data synchronization register */
-+	u16 ucce;		/* UCCx event register */
-+	u8 res1[0x2];
-+	u16 uccm;		/* UCCx mask register */
-+	u8 res2[0x1];
-+	u8 uccs;		/* UCCx status register */
-+	u8 res3[0x24];
-+	u16 utpt;
-+	u8 guemr;		/* UCC general extended mode register */
-+	u8 res4[0x200 - 0x091];
-+} __attribute__ ((packed)) ucc_slow_t;
-+
-+/* QE UCC Fast
-+*/
-+typedef struct ucc_fast {
-+	u32 gumr;		/* UCCx general mode register */
-+	u32 upsmr;		/* UCCx protocol-specific mode register  */
-+	u16 utodr;		/* UCCx transmit on demand register  */
-+	u8 res0[0x2];
-+	u16 udsr;		/* UCCx data synchronization register  */
-+	u8 res1[0x2];
-+	u32 ucce;		/* UCCx event register */
-+	u32 uccm;		/* UCCx mask register.  */
-+	u8 uccs;		/* UCCx status register */
-+	u8 res2[0x7];
-+	u32 urfb;		/* UCC receive FIFO base */
-+	u16 urfs;		/* UCC receive FIFO size */
-+	u8 res3[0x2];
-+	u16 urfet;		/* UCC receive FIFO emergency threshold */
-+	u16 urfset;		/* UCC receive FIFO special emergency 
-+				   threshold */
-+	u32 utfb;		/* UCC transmit FIFO base */
-+	u16 utfs;		/* UCC transmit FIFO size */
-+	u8 res4[0x2];
-+	u16 utfet;		/* UCC transmit FIFO emergency threshold */
-+	u8 res5[0x2];
-+	u16 utftt;		/* UCC transmit FIFO transmit threshold */
-+	u8 res6[0x2];
-+	u16 utpt;		/* UCC transmit polling timer */
-+	u8 res7[0x2];
-+	u32 urtry;		/* UCC retry counter register */
-+	u8 res8[0x4C];
-+	u8 guemr;		/* UCC general extended mode register */
-+	u8 res9[0x100 - 0x091];
-+} __attribute__ ((packed)) ucc_fast_t;
-+
-+/* QE UCC
-+*/
-+typedef struct ucc_common {
-+	u8 res1[0x90];
-+	u8 guemr;
-+	u8 res2[0x200 - 0x091];
-+} __attribute__ ((packed)) ucc_common_t;
-+
-+typedef struct ucc {
-+	union {
-+		ucc_slow_t slow;
-+		ucc_fast_t fast;
-+		ucc_common_t common;
++	qe = of_find_node_by_type(NULL, "qe");
++	if (qe) {
++		unsigned int size;
++		void *prop = get_property(qe, "reg", &size);
++		qebase = of_translate_address(qe, prop);
++		of_node_put(qe);
 +	};
-+} __attribute__ ((packed)) ucc_t;
 +
-+/* MultiPHY UTOPIA POS Controllers (UPC)
-+*/
-+typedef struct upc {
-+	u32 upgcr;		/* UTOPIA/POS general configuration register  */
-+	u32 uplpa;		/* UTOPIA/POS last PHY address */
-+	u32 uphec;		/* ATM HEC register */
-+	u32 upuc;		/* UTOPIA/POS UCC configuration */
-+	u32 updc1;		/* UTOPIA/POS device 1 configuration */
-+	u32 updc2;		/* UTOPIA/POS device 2 configuration  */
-+	u32 updc3;		/* UTOPIA/POS device 3 configuration */
-+	u32 updc4;		/* UTOPIA/POS device 4 configuration  */
-+	u32 upstpa;		/* UTOPIA/POS STPA threshold  */
-+	u8 res0[0xC];
-+	u32 updrs1_h;		/* UTOPIA/POS device 1 rate select  */
-+	u32 updrs1_l;		/* UTOPIA/POS device 1 rate select  */
-+	u32 updrs2_h;		/* UTOPIA/POS device 2 rate select  */
-+	u32 updrs2_l;		/* UTOPIA/POS device 2 rate select */
-+	u32 updrs3_h;		/* UTOPIA/POS device 3 rate select */
-+	u32 updrs3_l;		/* UTOPIA/POS device 3 rate select */
-+	u32 updrs4_h;		/* UTOPIA/POS device 4 rate select */
-+	u32 updrs4_l;		/* UTOPIA/POS device 4 rate select */
-+	u32 updrp1;		/* UTOPIA/POS device 1 receive priority low  */
-+	u32 updrp2;		/* UTOPIA/POS device 2 receive priority low  */
-+	u32 updrp3;		/* UTOPIA/POS device 3 receive priority low  */
-+	u32 updrp4;		/* UTOPIA/POS device 4 receive priority low  */
-+	u32 upde1;		/* UTOPIA/POS device 1 event */
-+	u32 upde2;		/* UTOPIA/POS device 2 event */
-+	u32 upde3;		/* UTOPIA/POS device 3 event */
-+	u32 upde4;		/* UTOPIA/POS device 4 event */
-+	u16 uprp1;
-+	u16 uprp2;
-+	u16 uprp3;
-+	u16 uprp4;
-+	u8 res1[0x8];
-+	u16 uptirr1_0;		/* Device 1 transmit internal rate 0 */
-+	u16 uptirr1_1;		/* Device 1 transmit internal rate 1 */
-+	u16 uptirr1_2;		/* Device 1 transmit internal rate 2 */
-+	u16 uptirr1_3;		/* Device 1 transmit internal rate 3 */
-+	u16 uptirr2_0;		/* Device 2 transmit internal rate 0 */
-+	u16 uptirr2_1;		/* Device 2 transmit internal rate 1 */
-+	u16 uptirr2_2;		/* Device 2 transmit internal rate 2 */
-+	u16 uptirr2_3;		/* Device 2 transmit internal rate 3 */
-+	u16 uptirr3_0;		/* Device 3 transmit internal rate 0 */
-+	u16 uptirr3_1;		/* Device 3 transmit internal rate 1 */
-+	u16 uptirr3_2;		/* Device 3 transmit internal rate 2 */
-+	u16 uptirr3_3;		/* Device 3 transmit internal rate 3 */
-+	u16 uptirr4_0;		/* Device 4 transmit internal rate 0 */
-+	u16 uptirr4_1;		/* Device 4 transmit internal rate 1 */
-+	u16 uptirr4_2;		/* Device 4 transmit internal rate 2 */
-+	u16 uptirr4_3;		/* Device 4 transmit internal rate 3 */
-+	u32 uper1;		/* Device 1 port enable register */
-+	u32 uper2;		/* Device 2 port enable register */
-+	u32 uper3;		/* Device 3 port enable register */
-+	u32 uper4;		/* Device 4 port enable register */
-+	u8 res2[0x150];
-+} __attribute__ ((packed)) upc_t;
-+
-+/* SDMA
-+*/
-+typedef struct sdma {
-+	u32 sdsr;		/* Serial DMA status register */
-+	u32 sdmr;		/* Serial DMA mode register */
-+	u32 sdtr1;		/* SDMA system bus threshold register */
-+	u32 sdtr2;		/* SDMA secondary bus threshold register */
-+	u32 sdhy1;		/* SDMA system bus hysteresis register */
-+	u32 sdhy2;		/* SDMA secondary bus hysteresis register */
-+	u32 sdta1;		/* SDMA system bus address register */
-+	u32 sdta2;		/* SDMA secondary bus address register */
-+	u32 sdtm1;		/* SDMA system bus MSNUM register */
-+	u32 sdtm2;		/* SDMA secondary bus MSNUM register */
-+	u8 res0[0x10];
-+	u32 sdaqr;		/* SDMA address bus qualify register */
-+	u32 sdaqmr;		/* SDMA address bus qualify mask register */
-+	u8 res1[0x4];
-+	u32 sdebcr;		/* SDMA CAM entries base register */
-+	u8 res2[0x38];
-+} __attribute__ ((packed)) sdma_t;
-+
-+/* Debug Space
-+*/
-+typedef struct dbg {
-+	u32 bpdcr;		/* Breakpoint debug command register */
-+	u32 bpdsr;		/* Breakpoint debug status register */
-+	u32 bpdmr;		/* Breakpoint debug mask register */
-+	u32 bprmrr0;		/* Breakpoint request mode risc register 0 */
-+	u32 bprmrr1;		/* Breakpoint request mode risc register 1 */
-+	u8 res0[0x8];
-+	u32 bprmtr0;		/* Breakpoint request mode trb register 0 */
-+	u32 bprmtr1;		/* Breakpoint request mode trb register 1 */
-+	u8 res1[0x8];
-+	u32 bprmir;		/* Breakpoint request mode immediate register */
-+	u32 bprmsr;		/* Breakpoint request mode serial register */
-+	u32 bpemr;		/* Breakpoint exit mode register */
-+	u8 res2[0x48];
-+} __attribute__ ((packed)) dbg_t;
-+
-+/* RISC Special Registers (Trap and Breakpoint)
-+*/
-+typedef struct rsp {
-+	u8 fixme[0x100];
-+} __attribute__ ((packed)) rsp_t;
-+
-+typedef struct qe_immap {
-+	qe_iram_t iram;		/* I-RAM */
-+	qe_ic_t ic;		/* Interrupt Controller */
-+	cp_qe_t cp;		/* Communications Processor */
-+	qe_mux_t qmx;		/* QE Multiplexer */
-+	qe_timers_t qet;	/* QE Timers */
-+	spi_t spi[0x2];		/* spi  */
-+	mcc_t mcc;		/* mcc */
-+	qe_brg_t brg;		/* brg */
-+	usb_t usb;		/* USB */
-+	si1_t si1;		/* SI */
-+	u8 res11[0x800];
-+	sir_t sir;		/* SI Routing Tables  */
-+	ucc_t ucc1;		/* ucc1 */
-+	ucc_t ucc3;		/* ucc3 */
-+	ucc_t ucc5;		/* ucc5 */
-+	ucc_t ucc7;		/* ucc7 */
-+	u8 res12[0x600];
-+	upc_t upc1;		/* MultiPHY UTOPIA POS Controller 1 */
-+	ucc_t ucc2;		/* ucc2 */
-+	ucc_t ucc4;		/* ucc4 */
-+	ucc_t ucc6;		/* ucc6 */
-+	ucc_t ucc8;		/* ucc8 */
-+	u8 res13[0x600];
-+	upc_t upc2;		/* MultiPHY UTOPIA POS Controller 2 */
-+	sdma_t sdma;		/* SDMA */
-+	dbg_t dbg;		/* Debug Space */
-+	rsp_t rsp[0x2];		/* RISC Special Registers (Trap and Breakpoint)
-+				 */
-+	u8 res14[0x300];
-+	u8 res15[0x3A00];
-+	u8 res16[0x8000];	/* 0x108000 -  0x110000 */
-+	u8 muram[0xC000];	/* 0x110000 -  0x11C000 Multi-user RAM */
-+	u8 res17[0x24000];	/* 0x11C000 -  0x140000 */
-+	u8 res18[0xC0000];	/* 0x140000 -  0x200000 */
-+} __attribute__ ((packed)) qe_map_t;
-+
-+extern qe_map_t *qe_immr;
-+extern phys_addr_t get_qe_base(void);
-+
-+static inline unsigned long immrbar_virt_to_phys(volatile void * address)
-+{
-+	if ( ((uint)address >= (uint)qe_immr) &&
-+			((uint)address < ((uint)qe_immr + QE_IMMAP_SIZE)) )
-+		return (unsigned long)(address - (uint)qe_immr +
-+				(uint)get_qe_base());
-+	return (unsigned long)virt_to_phys(address);
-+}
-+                                                                                                
-+static inline void * immrbar_phys_to_virt(unsigned long address)
-+{
-+	if ( (address >= (uint)get_qe_base()) &&
-+			(address < ((uint)get_qe_base() + QE_IMMAP_SIZE)) )
-+		return (void *)(address - (uint)get_qe_base() + (uint)qe_immr);
-+	return (void *)phys_to_virt(address);
++	return qebase;
 +}
 +
-+#endif				/* __IMMAP_QE_H__ */
-+#endif				/* __KERNEL__ */
++EXPORT_SYMBOL(get_qe_base);
++
++static int __init ucc_geth_of_init(void)
++{
++	struct device_node *np;
++	unsigned int i, ucc_num;
++	struct platform_device *ugeth_dev;
++	struct resource res;
++	int ret;
++
++	for (np = NULL, i = 0;
++	     (np = of_find_compatible_node(np, "network", "ucc_geth")) != NULL;
++	     i++) {
++		struct resource r[2];
++		struct device_node *phy, *mdio;
++		struct ucc_geth_platform_data ugeth_data;
++		unsigned int *id;
++		char *model;
++		void *mac_addr;
++		phandle *ph;
++
++		memset(r, 0, sizeof(r));
++		memset(&ugeth_data, 0, sizeof(ugeth_data));
++
++		ret = of_address_to_resource(np, 0, &r[0]);
++		if (ret)
++			goto err;
++
++		ugeth_data.phy_reg_addr = r[0].start;
++		r[1].start = r[1].end = irq_of_parse_and_map(np, 0);
++		r[1].flags = IORESOURCE_IRQ;
++
++		model = get_property(np, "model", NULL);
++		ucc_num = *((u32 *) get_property(np, "device-id", NULL));
++		if ((strstr(model, "UCC") == NULL) || 
++				(ucc_num < 1) || (ucc_num > 8)) {
++			ret = -ENODEV;
++			goto err;
++		}
++		
++		ugeth_dev =
++		    platform_device_register_simple("ucc_geth", ucc_num - 1,
++				    &r[0], 2);
++
++		if (IS_ERR(ugeth_dev)) {
++			ret = PTR_ERR(ugeth_dev);
++			goto err;
++		}
++
++		mac_addr = get_property(np, "mac-address", NULL);
++		
++		memcpy(ugeth_data.mac_addr, mac_addr, 6);
++
++		ugeth_data.rx_clock = *((u32 *) get_property(np, "rx-clock",
++					NULL));
++		ugeth_data.tx_clock = *((u32 *) get_property(np, "tx-clock",
++					NULL));
++
++		ph = (phandle *) get_property(np, "phy-handle", NULL);
++		phy = of_find_node_by_phandle(*ph);
++
++		if (phy == NULL) {
++			ret = -ENODEV;
++			goto unreg;
++		}
++
++		mdio = of_get_parent(phy);
++
++		id = (u32 *) get_property(phy, "reg", NULL);
++		ret = of_address_to_resource(mdio, 0, &res);
++		if (ret) {
++			of_node_put(phy);
++			of_node_put(mdio);
++			goto unreg;
++		}
++		
++		ugeth_data.phy_id = *id;
++
++		ugeth_data.phy_interrupt = irq_of_parse_and_map(phy, 0);; 
++		ugeth_data.phy_interface = *((u32 *) get_property(phy,
++					"interface", NULL));
++
++		/* FIXME: Work around for early chip rev.               */
++		/* There's a bug in initial chip rev(s) in the RGMII ac */
++		/* timing.						*/
++		/* The following compensates by writing to the reserved */
++		/* QE Port Output Hold Registers (CPOH1?).              */	
++		if ((ugeth_data.phy_interface == ENET_1000_RGMII) || 
++				(ugeth_data.phy_interface == ENET_100_RGMII) ||
++				(ugeth_data.phy_interface == ENET_10_RGMII)) {
++			u32 *tmp_reg = (u32 *) ioremap(get_immrbase() 
++					+ 0x14A8, 0x4);
++			u32 tmp_val = in_be32(tmp_reg);
++			if (ucc_num == 1)
++				out_be32(tmp_reg, tmp_val | 0x00003000);
++			else if (ucc_num == 2)
++				out_be32(tmp_reg, tmp_val | 0x0c000000);
++			iounmap(tmp_reg);
++		}
++		
++		if (ugeth_data.phy_interrupt != 0)
++			ugeth_data.board_flags |= FSL_UGETH_BRD_HAS_PHY_INTR;
++
++		of_node_put(phy);
++		of_node_put(mdio);
++
++		ret = platform_device_add_data(ugeth_dev, &ugeth_data,
++				sizeof(struct ucc_geth_platform_data));
++		if (ret)
++			goto unreg;
++	}
++
++	return 0;
++
++unreg:
++	platform_device_unregister(ugeth_dev);
++err:
++	return ret;
++}
++
++arch_initcall(ucc_geth_of_init);
