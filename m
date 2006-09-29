@@ -1,23 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 7336167BCB
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 06:15:47 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k8TLZjeK013265
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 15:35:45 -0600 (MDT)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k8TKFj4o011806
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 15:15:45 -0500 (CDT)
-Message-ID: <451D7EF1.70704@freescale.com>
-Date: Fri, 29 Sep 2006 15:15:45 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: no map ! Using irq line 0 from PCI config
-References: <451C365B.8090300@freescale.com>
-In-Reply-To: <451C365B.8090300@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 4BDC767BCD
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 06:21:21 +1000 (EST)
+Date: Fri, 29 Sep 2006 15:20:40 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: SATA: "unknown partition table" error, fdisk can't fix, works
+	in	2.6.13
+Message-ID: <20060929152040.6b7c4e3c@localhost.localdomain>
+In-Reply-To: <451D7DE8.8020504@freescale.com>
+References: <451D7DE8.8020504@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,11 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> I'm having a problem with a SATA PCI device on an 8349E board.  The SATA driver is timing out when trying to query the drive.  I believe this is happening because interrupts aren't being routed correctly.
+On Fri, 29 Sep 2006 15:11:20 -0500 Timur Tabi <timur@freescale.com> wrote:
 
-Never mind ... my interrupt-map node was completely wrong.
+> I have a SATA drive attached to a PowerPC 8349E board, using the SIL 3114 controller.  I'm running the latest code from Paul Mackerras (PowerPC maintainer) (2.6.18-blabla).
+> 
+> I'm experiencing a number of I/O errors with the SATA drive.  fdisk can see the partition table, but when I issue the "w" command, I get this output:
+> 
+> The odd thing is that this works in 2.6.13, so something is broken.  I don't know if it's a bug in the sata_sil driver, or a configuration issue.  Can anyone help?
+> 
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Do you use MSDOS or MAC partition (or other) type? Make sure you have
+the one you use in the config.
+
+It looks like the arch/powerpc/configs/mpc83* defconfigs enable neither.
+
+
+-Olof
