@@ -1,20 +1,32 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id 7927067BD3
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 09:25:43 +1000 (EST)
-Date: Fri, 29 Sep 2006 16:25:41 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 2/2] enable generic rtc hook for the MPC8349 mITX
-Message-ID: <20060929232541.GN2385@smtp.west.cox.net>
-References: <20060926174651.032a474e.kim.phillips@freescale.com>
-	<B35FD5A1-2C71-41E2-A014-A2C8D37F10C2@kernel.crashing.org>
-	<20060927155853.GB2385@smtp.west.cox.net>
-	<20060927234304.0cf4d22d.kim.phillips@freescale.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5B59467B6F
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 09:26:31 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k8TNQQ6k026259
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 19:26:26 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k8TNQQP3250068
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 19:26:26 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k8TNQPnA012383
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 19:26:26 -0400
+Date: Fri, 29 Sep 2006 18:26:25 -0500
+To: jeff@garzik.org, akpm@osdl.org
+Subject: [PATCH 5/6]: powerpc/cell spidernet ethtool -i version number
+Message-ID: <20060929232625.GM6433@austin.ibm.com>
+References: <20060929230552.GG6433@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060927234304.0cf4d22d.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20060929230552.GG6433@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
+	linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +36,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 27, 2006 at 11:43:04PM -0500, Kim Phillips wrote:
-> On Wed, 27 Sep 2006 08:58:53 -0700
-> Tom Rini <trini@kernel.crashing.org> wrote:
-> 
-> > On Tue, Sep 26, 2006 at 11:34:43PM -0500, Kumar Gala wrote:
-> > > On Sep 26, 2006, at 5:46 PM, Kim Phillips wrote:
-> > [snip]
-> > > > diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/ 
-> > > > powerpc/platforms/83xx/mpc834x_itx.c
-> > > > index 969fbb6..8c676d7 100644
-> > > > --- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> > > > +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-> > > > @@ -109,6 +109,10 @@ static int __init mpc834x_itx_probe(void
-> > > >  	return 1;
-> > > >  }
-> > > >
-> > > > +#ifdef CONFIG_RTC_CLASS
-> > > > +late_initcall(rtc_class_hookup);
-> > > > +#endif
-> > > 
-> > > Any reason we can't just do this in setup_arch?
-> > 
-> > I think because of rtc-over-i2c and similar where we need the whole rest
-> > of the system 'up' before we can try and use the RTC (which might not be
-> > the case for this specific board, but for consistency it looks like a
-> > good thing to always do it like this).
-> > 
-> this is indeed the case, as with the static assignment of the ppc_md rtc_time functions in define_machine.  In the early assignment case, the kernel oopses early in rtc_class_open().
-> 
-> During testing I noticed hwclock get/set operations worked even without hooking up with the ppc_md rtc_time functions.  Turns out this rtc_class provides access to the RTC to the whole kernel and userspace:
-> 
-> http://lkml.org/lkml/2005/12/20/220
-> 
-> so, both of these patches are really unnecessary, unless there's a genuine consumer in arch/powerpc that I can't find (I'm assuming get_boot_time() isn't one of them since it gets called way too early in the rtc-over-i2c based platform case).
-> 
-> So we should just configure RTC_CLASS and the specific chip and we're done. :)
 
-Does this mean we can then rip out some existing code, so long as
-there's associated cleanup / rtc class support additions?
+Jim, as the official maintainer, you should explicitly ack this patch.
+--linas
 
--- 
-Tom Rini
+This patch moves transmit queue cleanup code out of the 
+interrupt context, and into the NAPI polling routine.
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: James K Lewis <jklewis@us.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+
+----
+
+ drivers/net/spider_net.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.18-mm2/drivers/net/spider_net.c
+===================================================================
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net.c	2006-09-29 17:01:39.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net.c	2006-09-29 17:39:06.000000000 -0500
+@@ -887,9 +887,10 @@ out:
+  * spider_net_cleanup_tx_ring - cleans up the TX ring
+  * @card: card structure
+  *
+- * spider_net_cleanup_tx_ring is called by the tx_timer (as we don't use
+- * interrupts to cleanup our TX ring) and returns sent packets to the stack
+- * by freeing them
++ * spider_net_cleanup_tx_ring is called by either the tx_timer
++ * or from the NAPI polling routine.
++ * This routine releases resources associted with transmitted
++ * packets, including updating the queue tail pointer.
+  */
+ static void
+ spider_net_cleanup_tx_ring(struct spider_net_card *card)
+@@ -1093,6 +1094,7 @@ spider_net_poll(struct net_device *netde
+ 	int packets_to_do, packets_done = 0;
+ 	int no_more_packets = 0;
+ 
++	spider_net_cleanup_tx_ring(card);
+ 	packets_to_do = min(*budget, netdev->quota);
+ 
+ 	while (packets_to_do) {
+@@ -1505,10 +1507,8 @@ spider_net_interrupt(int irq, void *ptr,
+ 		spider_net_rx_irq_off(card);
+ 		netif_rx_schedule(netdev);
+ 	}
+-	if (status_reg & SPIDER_NET_TXINT ) {
+-		spider_net_cleanup_tx_ring(card);
+-		netif_wake_queue(netdev);
+-	}
++	if (status_reg & SPIDER_NET_TXINT)
++		netif_rx_schedule(netdev);
+ 
+ 	if (status_reg & SPIDER_NET_ERRINT )
+ 		spider_net_handle_error_irq(card, status_reg);
