@@ -1,31 +1,19 @@
-Return-Path: <li.xu@ge.com>
-Received: from ext-nj2ut-7.online-age.net (ext-nj2ut-7.online-age.net
-	[64.14.54.237])
+Return-Path: <akhilesh@innomedia.soft.net>
+Received: from gateway.innomedia.soft.net (unknown [220.227.188.61])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6949567B59
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE04267B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Sep 2006 14:54:42 +1000 (EST)
-Received: from int-nj2ut-1.online-age.net (int-nj2ut-1.online-age.net
-	[3.159.237.70])
-	by ext-nj2ut-7.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id k8T4jO9F002069
-	for <linuxppc-embedded@ozlabs.org>; Fri, 29 Sep 2006 00:45:24 -0400
-Received: from cinmlef02.e2k.ad.ge.com (int-nj2ut-1.online-age.net
-	[3.159.237.70])
-	by int-nj2ut-1.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id k8T4jNH7031032
-	for <linuxppc-embedded@ozlabs.org>; Fri, 29 Sep 2006 00:45:24 -0400
+	Fri, 29 Sep 2006 14:59:33 +1000 (EST)
+Message-ID: <00e001c6e383$ac197bd0$0a12a8c0@innomedia>
+From: "Akhilesh Soni" <akhilesh@innomedia.soft.net>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: <linuxppc-embedded-request@ozlabs.org>
+Subject: LSP for MPC8247
+Date: Fri, 29 Sep 2006 10:26:49 +0530
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: About cache
-Date: Fri, 29 Sep 2006 12:45:18 +0800
-Message-ID: <84681EC46E2C6347953892915BA5DAB104A982EE@SHAMLVEM01.e2k.ad.ge.com>
-References: <00a901c6e366$1d3e4f70$a309a8c0@enorm>
-From: "Xu, Li \(GE, Research\)" <li.xu@ge.com>
-To: "enorm" <enorm@126.com>, <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00DD_01C6E3B1.C5C38700"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,14 +24,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-WW91IGhhdmUgdG8gZG8gc28uDQpUaGF0IHdpbGwgcHJldmVudCBDUFUgZnJvbSBmZXRjaGluZyBk
-YXRhIG9yIGluc3RydWN0aW9ucyBmcm9tIGktY2FjaGUgYW5kIGQtY2FjaGUNCmF0IHRoZSBpbml0
-aWFsaXphdGlvbiB0aW1lIHNpbmNlIHRoZSBjYWNoZSBpcyBub3QgaW5pdGlhbGl6ZWQgeWV0Lg0K
-DQoJLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0gDQoJRnJvbTogbGludXhwcGMtZW1iZWRkZWQt
-Ym91bmNlcytsaS54dT1nZS5jb21Ab3psYWJzLm9yZyBvbiBiZWhhbGYgb2YgZW5vcm0gDQoJU2Vu
-dDogRnJpIDkvMjkvMjAwNiA5OjI1IEFNIA0KCVRvOiBsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMu
-b3JnIA0KCUNjOiANCglTdWJqZWN0OiBBYm91dCBjYWNoZQ0KCQ0KCQ0KDQoJSGksDQoJDQoJSSBm
-b3VuZCBpbiBtcGM4NXh4IHN0YXJ0LnMsIGJlZm9yZSBkb2luZyBhbnkgaW5pdGlhbGl6YXRpb24g
-aXQgZGlzYWJsZWQNCgkgaS1jYWNoZSAmIGQtY2FjaGUuIE11c3Qgd2UgZG8gc28/IElmIHdlIGRv
-bid0IGRpc2FibGUgdGhlbSB3aGF0IHdpbGwgaXQNCgkgY2F1c2U/DQoJDQoJQmVzdCBSZWdhcmRz
-DQoJRW5vcm0NCgkNCgkNCgkNCgkNCg0K
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_00DD_01C6E3B1.C5C38700
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+Is there any open soure LSP for freescale MPC8247 available.=20
+
+I've an LSP for MPC8245 and I need for MPC8247. How much effort would be =
+required to change from 8245 to 8247. Is somebody already done this ?
+
+Any pointer or suggestions would be highly appreciated.
+
+Regards,
+Akhilesh
+
+------=_NextPart_000_00DD_01C6E3B1.C5C38700
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2600.0" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Is there any open soure LSP for =
+freescale MPC8247=20
+available. </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I've an LSP for MPC8245 and I need for =
+MPC8247. How=20
+much effort would be required to change from 8245 to 8247. Is somebody =
+already=20
+done this ?</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Any pointer or suggestions would be =
+highly=20
+appreciated.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Akhilesh</FONT></DIV></BODY></HTML>
+
+------=_NextPart_000_00DD_01C6E3B1.C5C38700--
