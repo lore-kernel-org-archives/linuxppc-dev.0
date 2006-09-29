@@ -1,14 +1,14 @@
 Return-Path: <arnd@arndb.de>
 From: Arnd Bergmann <arnd@arndb.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Cell interrupt rework (final)
-Date: Fri, 29 Sep 2006 09:51:06 +0200
-References: <1159506029.15792.18.camel@localhost.localdomain>
-In-Reply-To: <1159506029.15792.18.camel@localhost.localdomain>
+Subject: Re: [PATCH] powerpc: cell spu problem state mapping updates
+Date: Fri, 29 Sep 2006 09:52:01 +0200
+References: <1159506605.15792.24.camel@localhost.localdomain>
+In-Reply-To: <1159506605.15792.24.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200609290951.07215.arnd@arndb.de>
+Message-Id: <200609290952.02365.arnd@arndb.de>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
 	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
@@ -21,23 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 29 September 2006 07:00, Benjamin Herrenschmidt wrote:
-> This patch reworks the cell iic interrupt handling so that:
->=20
-> =A0- Node ID is back in the interrupt number (only one IRQ host is created
-> for all nodes). This allows interrupts from sources on another node to
-> be routed non-locally. This will allow possibly one day to fix maxcpus=3D1
-> or 2 and still get interrupts from devices on BE 1. (A bit more fixing
-> is needed for that) and it will allow us to implement actual affinity
-> control of external interrupts.
->=20
-> =A0- Added handling of the IO exceptions interrupts (badly named, but I
-> re-used the name initially used by STI). Those are the interrupts
-> exposed by IIC_ISR and IIC_IRR, such as the IOC translation exception,
-> performance monitor, etc... Those get their special numbers in the IRQ
-> number space and are internally implemented as a cascade on unit 0xe,
-> class 1 of each node.
->=20
+On Friday 29 September 2006 07:10, Benjamin Herrenschmidt wrote:
+> This patch adds a new "psmap" file to spufs that allows mmap of all of
+> the problem state mapping of SPEs. It is compatible with 64k pages. In
+> addition, it removes mmap ability of individual files when using 64k
+> pages, with the exception of signal1 and signal2 which will both map the
+> entire 64k page holding both registers. It also removes
+> CONFIG_SPUFS_MMAP as there is no point in not building mmap support in
+> spufs.
+> 
+> It goes along a separate patch to libspe implementing usage of that new
+> file to access problem state registers.
+> 
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
