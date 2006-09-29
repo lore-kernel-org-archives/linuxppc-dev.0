@@ -1,11 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-To: <linux-kernel@vger.kernel.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 29 Sep 2006 10:16:56 +1000
-Subject: [PATCH] Preliminary MPIC MSI backend
-In-Reply-To: <1159486661.25820.1.camel@localhost.localdomain>
-Message-Id: <20060929001657.6EFE667B8F@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3248A67BC7
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 13:21:09 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k8T3L8TN007547
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 20:21:08 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k8T3L56p007124
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Sep 2006 22:21:07 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 0/12] Add support for QE and 8360EMDS board -v2
+Date: Fri, 29 Sep 2006 11:21:44 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D19D9FB@zch01exm20.fsl.freescale.net>
+In-Reply-To: <98C2C73A-F57B-49A6-9727-D76A1AE9746C@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,122 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A pretty hackish MPIC backend, just enough to flesh out the design.
-Based on code from Segher.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Friday, September 29, 2006 12:37 AM
+> To: Li Yang-r58472
+> Cc: linuxppc-dev@ozlabs.org; paulus@samba.org
+> Subject: Re: [PATCH 0/12] Add support for QE and 8360EMDS board -v2
+>=20
+>=20
+> On Sep 28, 2006, at 11:09 AM, Li Yang wrote:
+>=20
+> > On 9/28/06, Kumar Gala <galak@kernel.crashing.org> wrote:
+> >>
+> >> On Sep 28, 2006, at 3:18 AM, Li Yang wrote:
+> >>
+> >> > Paul,
+> >> >
+> >> > The series of patches add generic QE infrastructure called
+> >> > qe_lib, and MPC8360EMDS board support.  Qe_lib is used by
+> >> > QE device drivers such as ucc_geth driver.
+> >> >
+> >> > This version updates QE interrupt controller to use new irq
+> >> > mapping mechanism, addresses all the comments received with
+> >> > last submission and includes some style fixes.
+> >> >
+> >> > v2 change: Change to use device tree for BCSR and MURAM;
+> >> > Remove I/O port interrupt handling code as it is not generic
+> >> > enough.
+> >>
+> >> Before accepting any of this code, I'd like to see what the drivers
+> >> look like that are using it.  Its hard to make significant
+> >> comments w/
+> >> o seeing what the consumers of all the 'lib' code look like.
+> >
+> > Current in-tree user of the lib is driver/net/ucc_geth.c.  There is
+> > also QE ATM driver which is included in Alex's 8360sar project.  QE
+> > USB host/client drivers are in Freescale LTIB BSP.
+>=20
+> is there a serial driver?
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+No.  It is not very necessary to have serial support for QE, as there is
+separate DUART SoC.  We can use 8250 serial driver for that.
 
- arch/powerpc/kernel/Makefile   |    1 
- arch/powerpc/kernel/msi-mpic.c |   92 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 93 insertions(+)
-
-Index: to-merge/arch/powerpc/kernel/Makefile
-===================================================================
---- to-merge.orig/arch/powerpc/kernel/Makefile
-+++ to-merge/arch/powerpc/kernel/Makefile
-@@ -70,6 +70,7 @@ obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32
- 
- msiobj-y			:= msi.o
- msiobj-$(CONFIG_PPC_PSERIES)	+= msi-rtas.o
-+msiobj-$(CONFIG_PPC_PMAC)	+= msi-mpic.o
- obj-$(CONFIG_PCI_MSI)		+= $(msiobj-y)
- 
- kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
-Index: to-merge/arch/powerpc/kernel/msi-mpic.c
-===================================================================
---- /dev/null
-+++ to-merge/arch/powerpc/kernel/msi-mpic.c
-@@ -0,0 +1,92 @@
-+/*
-+ * Copyright (C) 2006 Segher Boessenkool, IBM Corp.
-+ * Copyright (C) 2006 Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the
-+ * License.
-+ *
-+ */
-+
-+#define DEBUG 1
-+
-+#include <linux/irq.h>
-+#include <asm/msi.h>
-+#include <asm/hw_irq.h>
-+#include <asm/ppc-pci.h>
-+
-+static int msi_mpic_check(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	/* The irq allocator needs more work to support MSI-X/multi-MSI */
-+	if (type == PCI_CAP_ID_MSIX || num != 1)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static void msi_mpic_free(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	int i;
-+
-+	for (i = 0; i < num; i++)
-+		irq_dispose_mapping(entries[i].vector);
-+}
-+
-+static int msi_mpic_alloc(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	irq_hw_number_t hwirq;
-+	unsigned int virq;
-+
-+	/* We need a smarter allocator for MSI-X/multi-MSI */
-+	hwirq = irq_map[pdev->irq].hwirq;
-+	hwirq += 100;
-+
-+	virq = irq_create_mapping(NULL, hwirq);
-+	if (virq == NO_IRQ) {
-+		pr_debug("msi_mpic_alloc: Failed mapping hwirq %lu\n", hwirq);
-+		return -1;
-+	}
-+
-+	set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
-+	entries[0].vector = virq;
-+
-+	return 0;
-+}
-+
-+static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
-+		struct msix_entry *entry, struct msi_msg *msg, int type)
-+{
-+	msg->address_lo = 0xfee00000;	/* XXX What is this value? */
-+	msg->address_hi = 0;
-+	msg->data = pdev->irq | 0x8000;
-+
-+	return 0;
-+}
-+
-+static struct ppc_msi_ops mpic_msi_ops = {
-+	.check = msi_mpic_check,
-+	.alloc = msi_mpic_alloc,
-+	.free = msi_mpic_free,
-+	.enable = msi_raw_enable,
-+	.disable = msi_raw_disable,
-+	.setup_msi_msg = msi_mpic_setup_msi_msg,
-+};
-+
-+static struct ppc_msi_ops *mpic_get_msi_ops(struct pci_dev *pdev)
-+{
-+	return &mpic_msi_ops;
-+}
-+
-+static int msi_mpic_init(void)
-+{
-+	/* XXX Do this in mpic_init ? */
-+	pr_debug("mpic_msi_init: Registering MPIC MSI ops.\n");
-+	ppc_md.get_msi_ops = mpic_get_msi_ops;
-+
-+	return 0;
-+}
-+__initcall(msi_mpic_init);
+- Leo
