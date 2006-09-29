@@ -1,13 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: cell spu problem state mapping updates
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Fri, 29 Sep 2006 15:10:05 +1000
-Message-Id: <1159506605.15792.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 79B6967BC3
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 17:46:22 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k8T7kLFj023905
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 00:46:21 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k8T7kIFq013843
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Sep 2006 02:46:20 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 11/12] Add MPC8360EMDS default dts file
+Date: Fri, 29 Sep 2006 15:46:57 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D19DA6D@zch01exm20.fsl.freescale.net>
+In-Reply-To: <20060928173816.168d4cc2@vitb.ru.mvista.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,374 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a new "psmap" file to spufs that allows mmap of all of
-the problem state mapping of SPEs. It is compatible with 64k pages. In
-addition, it removes mmap ability of individual files when using 64k
-pages, with the exception of signal1 and signal2 which will both map the
-entire 64k page holding both registers. It also removes
-CONFIG_SPUFS_MMAP as there is no point in not building mmap support in
-spufs.
+> -----Original Message-----
+> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]
+> Sent: Thursday, September 28, 2006 9:38 PM
+> To: Li Yang-r58472
+> Cc: paulus@samba.org; galak@kernel.crashing.org;
+linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 11/12] Add MPC8360EMDS default dts file
+>=20
+> On Thu, 28 Sep 2006 16:19:30 +0800
+> Li Yang <leoli@freescale.com> wrote:
+>=20
+> > +		muram@10000 {
+> > +			device_type =3D "muram";
+> > +			ranges =3D <0 00010000 0000c000>;
+> > +
+> > +			data-only@0{
+> > +				reg =3D <0 c000>;
+> > +			};
+> > +		};
+> > +
+>=20
+> Why not to have reg property, showing the allocation ranges? data-only
+seems
+> redundant as a node...
 
-It goes along a separate patch to libspe implementing usage of that new
-file to access problem state registers.
+The reason why I added this node is to put the address under "muram"
+bus.  If I put the reg in muram node, the address will be offset to QE
+base.  But what the driver needs is the offset to MURAM base.  IMHO,
+this approach is clearer logically.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Arnd: Unless I screwed up, this should be the same as the previous one I
-sent you, with the addition of the changelog you requested and the
-removal of the typo on WARRANTY.
-
-Paul: If Arnd agrees, add that to your merge queue.
-
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2006-09-29 15:04:30.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2006-09-29 15:04:46.000000000 +1000
-@@ -36,6 +36,8 @@
- 
- #include "spufs.h"
- 
-+#define SPUFS_MMAP_4K (PAGE_SIZE == 0x1000)
-+
- 
- static int
- spufs_mem_open(struct inode *inode, struct file *file)
-@@ -88,7 +90,6 @@ spufs_mem_write(struct file *file, const
- 	return ret;
- }
- 
--#ifdef CONFIG_SPUFS_MMAP
- static struct page *
- spufs_mem_mmap_nopage(struct vm_area_struct *vma,
- 		      unsigned long address, int *type)
-@@ -133,22 +134,19 @@ spufs_mem_mmap(struct file *file, struct
- 	vma->vm_ops = &spufs_mem_mmap_vmops;
- 	return 0;
- }
--#endif
- 
- static struct file_operations spufs_mem_fops = {
- 	.open	 = spufs_mem_open,
- 	.read    = spufs_mem_read,
- 	.write   = spufs_mem_write,
- 	.llseek  = generic_file_llseek,
--#ifdef CONFIG_SPUFS_MMAP
- 	.mmap    = spufs_mem_mmap,
--#endif
- };
- 
--#ifdef CONFIG_SPUFS_MMAP
- static struct page *spufs_ps_nopage(struct vm_area_struct *vma,
- 				    unsigned long address,
--				    int *type, unsigned long ps_offs)
-+				    int *type, unsigned long ps_offs,
-+				    unsigned long ps_size)
- {
- 	struct page *page = NOPAGE_SIGBUS;
- 	int fault_type = VM_FAULT_SIGBUS;
-@@ -158,7 +156,7 @@ static struct page *spufs_ps_nopage(stru
- 	int ret;
- 
- 	offset += vma->vm_pgoff << PAGE_SHIFT;
--	if (offset >= 0x4000)
-+	if (offset >= ps_size)
- 		goto out;
- 
- 	ret = spu_acquire_runnable(ctx);
-@@ -179,10 +177,11 @@ static struct page *spufs_ps_nopage(stru
- 	return page;
- }
- 
-+#if SPUFS_MMAP_4K
- static struct page *spufs_cntl_mmap_nopage(struct vm_area_struct *vma,
- 					   unsigned long address, int *type)
- {
--	return spufs_ps_nopage(vma, address, type, 0x4000);
-+	return spufs_ps_nopage(vma, address, type, 0x4000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_cntl_mmap_vmops = {
-@@ -191,17 +190,12 @@ static struct vm_operations_struct spufs
- 
- /*
-  * mmap support for problem state control area [0x4000 - 0x4fff].
-- * Mapping this area requires that the application have CAP_SYS_RAWIO,
-- * as these registers require special care when read/writing.
-  */
- static int spufs_cntl_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	if (!capable(CAP_SYS_RAWIO))
--		return -EPERM;
--
- 	vma->vm_flags |= VM_RESERVED;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
-@@ -209,7 +203,9 @@ static int spufs_cntl_mmap(struct file *
- 	vma->vm_ops = &spufs_cntl_mmap_vmops;
- 	return 0;
- }
--#endif
-+#else /* SPUFS_MMAP_4K */
-+#define spufs_cntl_mmap NULL
-+#endif /* !SPUFS_MMAP_4K */
- 
- static int spufs_cntl_open(struct inode *inode, struct file *file)
- {
-@@ -242,9 +238,7 @@ static struct file_operations spufs_cntl
- 	.open = spufs_cntl_open,
- 	.read = spufs_cntl_read,
- 	.write = spufs_cntl_write,
--#ifdef CONFIG_SPUFS_MMAP
- 	.mmap = spufs_cntl_mmap,
--#endif
- };
- 
- static int
-@@ -657,11 +651,19 @@ static ssize_t spufs_signal1_write(struc
- 	return 4;
- }
- 
--#ifdef CONFIG_SPUFS_MMAP
- static struct page *spufs_signal1_mmap_nopage(struct vm_area_struct *vma,
- 					      unsigned long address, int *type)
- {
--	return spufs_ps_nopage(vma, address, type, 0x14000);
-+#if PAGE_SIZE == 0x1000
-+	return spufs_ps_nopage(vma, address, type, 0x14000, 0x1000);
-+#elif PAGE_SIZE == 0x10000
-+	/* For 64k pages, both signal1 and signal2 can be used to mmap the whole
-+	 * signal 1 and 2 area
-+	 */
-+	return spufs_ps_nopage(vma, address, type, 0x10000, 0x10000);
-+#else
-+#error unsupported page size
-+#endif
- }
- 
- static struct vm_operations_struct spufs_signal1_mmap_vmops = {
-@@ -680,15 +682,12 @@ static int spufs_signal1_mmap(struct fil
- 	vma->vm_ops = &spufs_signal1_mmap_vmops;
- 	return 0;
- }
--#endif
- 
- static struct file_operations spufs_signal1_fops = {
- 	.open = spufs_signal1_open,
- 	.read = spufs_signal1_read,
- 	.write = spufs_signal1_write,
--#ifdef CONFIG_SPUFS_MMAP
- 	.mmap = spufs_signal1_mmap,
--#endif
- };
- 
- static int spufs_signal2_open(struct inode *inode, struct file *file)
-@@ -743,11 +742,20 @@ static ssize_t spufs_signal2_write(struc
- 	return 4;
- }
- 
--#ifdef CONFIG_SPUFS_MMAP
-+#if SPUFS_MMAP_4K
- static struct page *spufs_signal2_mmap_nopage(struct vm_area_struct *vma,
- 					      unsigned long address, int *type)
- {
--	return spufs_ps_nopage(vma, address, type, 0x1c000);
-+#if PAGE_SIZE == 0x1000
-+	return spufs_ps_nopage(vma, address, type, 0x1c000, 0x1000);
-+#elif PAGE_SIZE == 0x10000
-+	/* For 64k pages, both signal1 and signal2 can be used to mmap the whole
-+	 * signal 1 and 2 area
-+	 */
-+	return spufs_ps_nopage(vma, address, type, 0x10000, 0x10000);
-+#else
-+#error unsupported page size
-+#endif
- }
- 
- static struct vm_operations_struct spufs_signal2_mmap_vmops = {
-@@ -767,15 +775,15 @@ static int spufs_signal2_mmap(struct fil
- 	vma->vm_ops = &spufs_signal2_mmap_vmops;
- 	return 0;
- }
--#endif
-+#else /* SPUFS_MMAP_4K */
-+#define spufs_signal2_mmap NULL
-+#endif /* !SPUFS_MMAP_4K */
- 
- static struct file_operations spufs_signal2_fops = {
- 	.open = spufs_signal2_open,
- 	.read = spufs_signal2_read,
- 	.write = spufs_signal2_write,
--#ifdef CONFIG_SPUFS_MMAP
- 	.mmap = spufs_signal2_mmap,
--#endif
- };
- 
- static void spufs_signal1_type_set(void *data, u64 val)
-@@ -824,11 +832,11 @@ static u64 spufs_signal2_type_get(void *
- DEFINE_SIMPLE_ATTRIBUTE(spufs_signal2_type, spufs_signal2_type_get,
- 					spufs_signal2_type_set, "%llu");
- 
--#ifdef CONFIG_SPUFS_MMAP
-+#if SPUFS_MMAP_4K
- static struct page *spufs_mss_mmap_nopage(struct vm_area_struct *vma,
- 					   unsigned long address, int *type)
- {
--	return spufs_ps_nopage(vma, address, type, 0x0000);
-+	return spufs_ps_nopage(vma, address, type, 0x0000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_mss_mmap_vmops = {
-@@ -837,17 +845,12 @@ static struct vm_operations_struct spufs
- 
- /*
-  * mmap support for problem state MFC DMA area [0x0000 - 0x0fff].
-- * Mapping this area requires that the application have CAP_SYS_RAWIO,
-- * as these registers require special care when read/writing.
-  */
- static int spufs_mss_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	if (!capable(CAP_SYS_RAWIO))
--		return -EPERM;
--
- 	vma->vm_flags |= VM_RESERVED;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
-@@ -855,7 +858,9 @@ static int spufs_mss_mmap(struct file *f
- 	vma->vm_ops = &spufs_mss_mmap_vmops;
- 	return 0;
- }
--#endif
-+#else /* SPUFS_MMAP_4K */
-+#define spufs_mss_mmap NULL
-+#endif /* !SPUFS_MMAP_4K */
- 
- static int spufs_mss_open(struct inode *inode, struct file *file)
- {
-@@ -867,17 +872,54 @@ static int spufs_mss_open(struct inode *
- 
- static struct file_operations spufs_mss_fops = {
- 	.open	 = spufs_mss_open,
--#ifdef CONFIG_SPUFS_MMAP
- 	.mmap	 = spufs_mss_mmap,
--#endif
-+};
-+
-+static struct page *spufs_psmap_mmap_nopage(struct vm_area_struct *vma,
-+					   unsigned long address, int *type)
-+{
-+	return spufs_ps_nopage(vma, address, type, 0x0000, 0x20000);
-+}
-+
-+static struct vm_operations_struct spufs_psmap_mmap_vmops = {
-+	.nopage = spufs_psmap_mmap_nopage,
-+};
-+
-+/*
-+ * mmap support for full problem state area [0x00000 - 0x1ffff].
-+ */
-+static int spufs_psmap_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	if (!(vma->vm_flags & VM_SHARED))
-+		return -EINVAL;
-+
-+	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
-+				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
-+
-+	vma->vm_ops = &spufs_psmap_mmap_vmops;
-+	return 0;
-+}
-+
-+static int spufs_psmap_open(struct inode *inode, struct file *file)
-+{
-+	struct spufs_inode_info *i = SPUFS_I(inode);
-+
-+	file->private_data = i->i_ctx;
-+	return nonseekable_open(inode, file);
-+}
-+
-+static struct file_operations spufs_psmap_fops = {
-+	.open	 = spufs_psmap_open,
-+	.mmap	 = spufs_psmap_mmap,
- };
- 
- 
--#ifdef CONFIG_SPUFS_MMAP
-+#if SPUFS_MMAP_4K
- static struct page *spufs_mfc_mmap_nopage(struct vm_area_struct *vma,
- 					   unsigned long address, int *type)
- {
--	return spufs_ps_nopage(vma, address, type, 0x3000);
-+	return spufs_ps_nopage(vma, address, type, 0x3000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_mfc_mmap_vmops = {
-@@ -886,17 +928,12 @@ static struct vm_operations_struct spufs
- 
- /*
-  * mmap support for problem state MFC DMA area [0x0000 - 0x0fff].
-- * Mapping this area requires that the application have CAP_SYS_RAWIO,
-- * as these registers require special care when read/writing.
-  */
- static int spufs_mfc_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	if (!capable(CAP_SYS_RAWIO))
--		return -EPERM;
--
- 	vma->vm_flags |= VM_RESERVED;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
-@@ -904,7 +941,9 @@ static int spufs_mfc_mmap(struct file *f
- 	vma->vm_ops = &spufs_mfc_mmap_vmops;
- 	return 0;
- }
--#endif
-+#else /* SPUFS_MMAP_4K */
-+#define spufs_mfc_mmap NULL
-+#endif /* !SPUFS_MMAP_4K */
- 
- static int spufs_mfc_open(struct inode *inode, struct file *file)
- {
-@@ -1194,9 +1233,7 @@ static struct file_operations spufs_mfc_
- 	.flush	 = spufs_mfc_flush,
- 	.fsync	 = spufs_mfc_fsync,
- 	.fasync	 = spufs_mfc_fasync,
--#ifdef CONFIG_SPUFS_MMAP
- 	.mmap	 = spufs_mfc_mmap,
--#endif
- };
- 
- static void spufs_npc_set(void *data, u64 val)
-@@ -1368,5 +1405,6 @@ struct tree_descr spufs_dir_contents[] =
- 	{ "event_mask", &spufs_event_mask_ops, 0666, },
- 	{ "srr0", &spufs_srr0_ops, 0666, },
- 	{ "phys-id", &spufs_id_ops, 0666, },
-+	{ "psmap", &spufs_psmap_fops, 0666, },
- 	{},
- };
-Index: linux-cell/arch/powerpc/platforms/cell/Kconfig
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/Kconfig	2006-09-29 15:04:30.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/Kconfig	2006-09-29 15:04:46.000000000 +1000
-@@ -16,11 +16,6 @@ config SPU_BASE
- 	bool
- 	default n
- 
--config SPUFS_MMAP
--	bool
--	depends on SPU_FS && SPARSEMEM
--	default y
--
- config CBE_RAS
- 	bool "RAS features for bare metal Cell BE"
- 	default y
+- Leo
