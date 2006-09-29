@@ -1,19 +1,16 @@
-Return-Path: <jean-baptiste.maneyrol@teamlog.com>
-Received: from me-ml2.teamlog.fr (smtp-grenoble1.teamlog.com [194.2.68.40])
-	by ozlabs.org (Postfix) with ESMTP id B1FD8679F0
+Return-Path: <jaap.dejong@nedap.com>
+Received: from smtp2.nedap.com (smtp2.nedap.com [213.160.213.92])
+	by ozlabs.org (Postfix) with ESMTP id 1B39267BDF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Sep 2006 18:15:59 +1000 (EST)
-Received: from teamlog.com
-	by grenoble.teamlog.com (x.x.x/x.x.x) with ESMTP        
-	id k8T7jvr3028205
-	for <linuxppc-embedded@ozlabs.org>; Fri, 29 Sep 2006 09:46:00 +0200
-Subject: [PATCH] IBM GPIO driver for PowerPC 4xx is back from the dead
-From: Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@teamlog.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 29 Sep 2006 09:46:04 +0200
-Message-Id: <1159515965.5613.4.camel@jb-portable>
-Mime-Version: 1.0
+	Fri, 29 Sep 2006 18:29:37 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Running Linux on Avnet's FX12 Evaluation Board
+Date: Fri, 29 Sep 2006 10:17:29 +0200
+Message-ID: <6915D0AE8B9047438F320B466AE30FDD9BA5A4@nvs0003.nedap.local>
+From: "Jaap de Jong" <jaap.dejong@nedap.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +21,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Here is a patch for linux 2.6.18 that makes come back the old ibm gpio
-driver from 2.6.10.
+Hi,
 
-It is mainly useful for compatibility with old linux 2.4 from Montavista
-I think, because direct memory access seems the new way to go.
+I had to declare the ddr_sdram as plb_ddr instead of opb_ddr...
 
-Signed-off-by: Jean-Baptiste Maneyrol
-<jean-baptiste.maneyrol@teamlog.com>
+Jaap
 
 
-Jean-Baptiste Maneyrol
-Teamlog - France
+-----Original Message-----
+Hello,
+
+I am trying to run a Linuxppc 2.4 kernel (20051021) on an IBM Powerpc
+405, I have compiled it according to the instructions on
+http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/uclinux_powerpc/#lin
+uxppc-2,
+I load it into the ram using the Xilinx Microprocessor Debug (XMD)
+Engine and try to run it, but it seems to have some trouble with the
+memory:
