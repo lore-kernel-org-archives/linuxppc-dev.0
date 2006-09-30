@@ -1,159 +1,96 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 428ED67BD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 22:05:24 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9VB5LLK023473
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 06:05:21 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9VB5L4M363162
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 04:05:21 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9VB5KtF004452
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 04:05:20 -0700
-Date: Tue, 31 Oct 2006 16:35:15 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [RFC] Fix for interrupt distribution
-Message-ID: <20061031110515.GB7884@in.ibm.com>
-References: <20061030180446.GA24307@in.ibm.com>
-	<20061030181751.GI17168@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061030181751.GI17168@localdomain>
-Cc: linuxppc-dev@ozlabs.org, fastboot@lists.osdl.org, anton@samba.org
-Reply-To: mohan@in.ibm.com
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <jsteve17@yahoo.com>
+Received: from web33410.mail.mud.yahoo.com (web33410.mail.mud.yahoo.com
+	[68.142.206.142]) by ozlabs.org (Postfix) with SMTP id 09752679E9
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  1 Oct 2006 01:20:50 +1000 (EST)
+Message-ID: <20060930152048.81004.qmail@web33410.mail.mud.yahoo.com>
+Date: Sat, 30 Sep 2006 08:20:48 -0700 (PDT)
+From: Jeff Stevens <jsteve17@yahoo.com>
+Subject: Re: Linux not booting consistantly
+To: Stefan Roese <sr@denx.de>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <200609220650.20992.sr@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 30, 2006 at 12:17:51PM -0600, Nathan Lynch wrote:
-> Mohan Kumar M wrote:
-> > Hello,
-> > 
-> > When kdump kernel is booted with the parameter "maxcpus=1" on a threaded
-> > CPU, we faced some interrupt routing problems.
-> > 
-> > In the xics initialization code, "reg" property in each cpu node
-> > (device-tree/cpus/PowerPC,POWER5@x) is used to match the current boot
-> > cpu id and based on that "default_server" and "default_distrib_server"
-> > are calculated. This condition will always meet when OF chooses CPU0 as
-> > boot cpu or crash happenes on any cpu whose id is any physical cpu id.
-> > 
-> > The "reg" property in cpu node gives the id of the cpu and this cpu node
-> > is created only for physical cpus (not for logical/threaded cpus). The
-> > code compares the "reg" value to the current boot cpu id and if it
-> > matches then only it reads "ibm,ppc-interrupt-gserver#s" and assigns the
-> > last value of it (which is usually 0xff) to default_distrib_server. So
-> > when a crash occurs on CPU 3, it will not be able to match the condition
-> > and thus default_distrib_server is left as zero only. This makes all
-> > interrupts routed to cpu 0 but cpu 0 is not up because of "maxcpus=1"
-> > parameter.
-> > 
-> > To overcome this, I have just added one more condition to check the
-> > above condition. I have attached the patch also. Patch is generated over
-> > 2.6.19-rc3.
-> > 
-> > One more idea will be instead of using "reg" property in each cpu node,
-> > can we use "ibm,ppc-interrupt-gserver#s" to determine the distribution
-> > server? "ibm,ppc-interrupt-gserver#s" format is (please correct
-> > if I am wrong) 
-> > 	phys_cpu_id distrib_server logical_cpu_id distrib_server
-> 
-> Firmware has no notion of Linux's logical cpu numbering.
-> 
->
+I have been working with the hardware guys trying to
+find any issues with the memory, and we haven't seen
+anything yet, and we have talked to AMCC, and they
+said  they couldn't see anything wrong with the
+hardware.  I did do a post-mordum dump of the log
+buffer, and this is what I get:
 
-I have created a patch based on "ibm,ppc-interrupt-gserver#s" property.
+001e40c4: 3c353e4c 696e7578 20766572 73696f6e   
+<5>Linux version
+001e40d4: 20322e36 2e313520 28726f6f 74406c6f    
+2.6.15 (root@lo
+001e40e4: 63616c68 6f73742e 6c6f6361 6c646f6d   
+calhost.localdom
+001e40f4: 61696e29 20286763 63207665 7273696f    ain)
+(gcc versio
+001e4104: 6e20342e 302e3020 2844454e 5820454c    n
+4.0.0 (DENX EL
+001e4114: 444b2034 2e302034 2e302e30 29292023    DK
+4.0 4.0.0)) #
+001e4124: 38205475 65205365 70203236 2031373a    8 Tue
+Sep 26 17:
+001e4134: 34393a31 33204544 54203230 30360a3c    49:13
+EDT 2006.<
+001e4144: 343e4a4a 533a2057 41532048 4552454a   
+4>JJS: WAS HEREJ
+001e4154: 4a53324a 4a53334a 4a53335f 314a4a53   
+JS2JJS3JJS3_1JJS
+001e4164: 345f4a4a 53345f31 5f4a4a53 345f325f   
+4_JJS4_1_JJS4_2_
+001e4174: 4a4a5334 5f335f4a 4a53345f 00000000   
+JJS4_3_JJS4_....
+001e4184: 00000000 00000000    ........
 
-Attached patch uses "ibm,ppc-interrupt-gserver#s" property to match the
-boot cpu id with available cpu ids. The property
-"ibm,ppc-interrupt-gserver#" is encoded as a list of server# and
-gserver#s pairs. The first integer specifies a single processor server#
-as presented in "ibm,ppc-interrupt-server#s" property and followed by
-distribution server. So if a match is found, corresponding server# is
-taken as default server and the corresponding gserver# is taken as
-default distribution server.
+I placed a few printks in arch/ppc/kernel/start.c and
+found that it crashed right after do_init_bootmem(),
+right after placing the first character of "_JJS4_1".
 
-In a Dual core SMT enabled system, "ibm,ppc-interrupt-gserver#s" for
-PowerPC,POWER5@2 will be:
+        printk("JJS3");
+        parse_early_param();
+        printk("JJS3_1");
+        for (i = 0; i < 1000000; i++)
+        {
+                if (i > 999999)
+                {
+                        break;
+                }
+        }
 
-        00000002 000000ff 00000003 000000ff
-         ^ cpu id
-                  ^ distribution server
-                              ^ cpu id
-                                       ^ distribution server
-
-Tested on a POWER5 box.
-
-Patch is generated over 2.6.19-rc3
+        printk("JJS4");
+        /* set up the bootmem stuff with available
+memory */
+        do_init_bootmem();
+        printk("_JJS4_1");
+        if ( ppc_md.progress )
+ppc_md.progress("setup_arch: bootmem", 0x3eab);
+        printk("_JJS4_2");
 
 
-Allow any cpu to become boot cpu.
+When it does decide to work, most of the time it gets
+through the whole kernel and everything runs fine,
+though I have seen it hang after probing for PCI
+devices a couple of times.  This looks like it is a
+memory issue, but I don't know what else to try.  Does
+anyone have any ideas?  I would appreciate any input.
 
-Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
----
- arch/powerpc/platforms/pseries/xics.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+Thanks,
+   Jeff Stevens 
 
-Index: linux-2.6.19-rc3/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-2.6.19-rc3.orig/arch/powerpc/platforms/pseries/xics.c
-+++ linux-2.6.19-rc3/arch/powerpc/platforms/pseries/xics.c
-@@ -658,7 +658,7 @@ static void __init xics_setup_8259_casca
- 
- void __init xics_init_IRQ(void)
- {
--	int i;
-+	int i, j;
- 	struct device_node *np;
- 	u32 ilen, indx = 0;
- 	const u32 *ireg;
-@@ -686,23 +686,23 @@ void __init xics_init_IRQ(void)
- 	for (np = of_find_node_by_type(NULL, "cpu");
- 	     np;
- 	     np = of_find_node_by_type(np, "cpu")) {
--		ireg = get_property(np, "reg", &ilen);
--		if (ireg && ireg[0] == get_hard_smp_processor_id(boot_cpuid)) {
--			ireg = get_property(np,
--					"ibm,ppc-interrupt-gserver#s", &ilen);
--			i = ilen / sizeof(int);
--			if (ireg && i > 0) {
--				default_server = ireg[0];
--				/* take last element */
--				default_distrib_server = ireg[i-1];
--			}
--			ireg = get_property(np,
-+		ireg = get_property(np, "ibm,ppc-interrupt-gserver#s", &ilen);
-+		i = ilen / sizeof(int);
-+		for (j = 0; ireg[j] && j < i; j+=2) {
-+			if (ireg[j] == get_hard_smp_processor_id(boot_cpuid)) {
-+				if ( j + 1 < i) {
-+					default_server = ireg[j];
-+					default_distrib_server = ireg[j+1];
-+				}
-+				ireg = get_property(np,
- 					"ibm,interrupt-server#-size", NULL);
--			if (ireg)
--				interrupt_server_size = *ireg;
--			break;
-+				if (ireg)
-+					interrupt_server_size = *ireg;
-+				goto out;
-+			}
- 		}
- 	}
-+out:
- 	of_node_put(np);
- 
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
