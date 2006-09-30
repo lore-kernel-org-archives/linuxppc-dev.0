@@ -1,24 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
+Received: from mail-in-01.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 288C367A33
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 18:37:10 +1000 (EST)
-In-Reply-To: <451C3641.60107@ru.mvista.com>
-References: <A6FD3E5E-94EF-4E12-A0FB-8700F0DF8151@kernel.crashing.org>	<1158787957.6002.307.camel@localhost.localdomain>	<20060920215738.GC24809@mag.az.mvista.com>	<C2AFCB31-CFC2-4B0E-ADAE-380A612D1053@kernel.crashing.org>	<20060921133707.GA29137@gate.crashing.org>	<1CA5168F-9ECA-4AA2-92AE-F86579245855@kernel.crashing.org>	<20060922012408.GA13820@mag.az.mvista.com>	<9F654F4A-B344-4374-8BDC-77FB0DDAFDCC@kernel.crashing.org>	<20060922185923.GB25738@mag.az.mvista.com>	<74E4B2E4-B59C-4998-B9FC-A77245C6AF6B@kernel.crashing.org>	<20060923081836.GA25298@mag.az.mvista.com>
-	<D47FC822-2AB1-459A-B2EC-50A99552DC9A@kernel.crashing.org>
-	<451C3641.60107@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id 46A7A67A33
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 18:43:27 +1000 (EST)
+In-Reply-To: <20060929001657.6EFE667B8F@ozlabs.org>
+References: <20060929001657.6EFE667B8F@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <01DF3484-F136-4715-A308-8C7BA996F713@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <65FA7A1D-5D74-4ABA-9985-2DB78ABC8685@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Start arch/powerpc/boot code reorganization
-Date: Sat, 30 Sep 2006 10:36:52 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Matt Porter <mporter@embeddedalley.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Preliminary MPIC MSI backend
+Date: Sat, 30 Sep 2006 10:43:20 +0200
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->    I looked into the OF 64-bit extensions spec, and "cell" is 64- 
-> bit there.
+> A pretty hackish MPIC backend, just enough to flesh out the design.
+> Based on code from Segher.
 
-Like I said before, a "cell" in OF has nothing to do with the items
-in the device tree.
+It's pretty alright, and very hackish ;-)  I'll sign off on it,
+but some comments...
 
-> So, "address" should look valid. I don't know whether PPC64 boxes  
-> support 64-bit OF, or only 32-bit, however, the kernel
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Most OF's on 64-bit machines are 64 bit.  The only defined client
-interface for PowerPC is 32 bit though.  And, again, the format
-of the device tree is independent of machine word size or other
-environmental factors.
+> +static int msi_mpic_check(struct pci_dev *pdev, int num,
+> +			struct msix_entry *entries, int type)
+> +{
+> +	/* The irq allocator needs more work to support MSI-X/multi-MSI */
+> +	if (type == PCI_CAP_ID_MSIX || num != 1)
+> +		return 1;
 
-> doesn't seem to deal with 64-bit ones correctly, so I'm assuming  
-> that 32-bit OF is at least available...
->    Anyway, I'm still missing the point of not using "address" which  
-> is clearly intended for such case.
+I never tested any MSI-X, so maybe keep MSI-X disabled completely
+for now?
 
-It also has many many problems and therefore should preferably
-not be used.
+> +static int msi_mpic_alloc(struct pci_dev *pdev, int num,
+> +			struct msix_entry *entries, int type)
+> +{
+> +	irq_hw_number_t hwirq;
+> +	unsigned int virq;
+> +
+> +	/* We need a smarter allocator for MSI-X/multi-MSI */
+> +	hwirq = irq_map[pdev->irq].hwirq;
+> +	hwirq += 100;
+
+Yep, that's the main problem with this code.  A sanity check to
+make sure the number isn't >= 120 would be good, too.
+
+> +	set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
+
+I also had some code to show MSI IRQs as "MSI" instead of "EDGE"
+in /proc/interrupts, maybe you want to add a generic version of
+that?  Or maybe you have, and I judt didn't see it.
+
+> +static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
+> +		struct msix_entry *entry, struct msi_msg *msg, int type)
+> +{
+> +	msg->address_lo = 0xfee00000;	/* XXX What is this value? */
+> +	msg->address_hi = 0;
+> +	msg->data = pdev->irq | 0x8000;
+
+Lose the | 0x8000 part, that was an old experiment to work around
+U3/U4 MPIC brokenness (and it didn't work).
+
+> +static int msi_mpic_init(void)
+> +{
+> +	/* XXX Do this in mpic_init ? */
+> +	pr_debug("mpic_msi_init: Registering MPIC MSI ops.\n");
+> +	ppc_md.get_msi_ops = mpic_get_msi_ops;
+
+It's best to do this in the platform code I think.
 
 
 Segher
