@@ -1,13 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17693.48421.91877.327347@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Sep 2006 10:41:09 +1000
+Message-ID: <17693.48925.252514.674193@cargo.ozlabs.ibm.com>
+Date: Sat, 30 Sep 2006 10:49:33 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] move drivers/macintosh variables to BSS
-In-Reply-To: <20060926201554.GA886@aepfle.de>
-References: <20060926201554.GA886@aepfle.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
+In-Reply-To: <C62AC4D8-39E5-44D0-88A3-E8D8042FC828@kernel.crashing.org>
+References: <4879B0C6C249214CBE7AB04453F84E4D19D866@zch01exm20.fsl.freescale.net>
+	<C62AC4D8-39E5-44D0-88A3-E8D8042FC828@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,30 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering writes:
+Kumar Gala writes:
 
-> --- linux-2.6.18.orig/drivers/macintosh/ans-lcd.c
-> +++ linux-2.6.18/drivers/macintosh/ans-lcd.c
-> @@ -21,8 +21,8 @@
->  #define ANSLCD_CTRL_IX 0x00
->  #define ANSLCD_DATA_IX 0x10
->  
-> -static unsigned long anslcd_short_delay = 80;
-> -static unsigned long anslcd_long_delay = 3280;
-> +static unsigned long anslcd_short_delay;
-> +static unsigned long anslcd_long_delay;
->  static volatile unsigned char __iomem *anslcd_ptr;
->  
->  #undef DEBUG
-> @@ -164,6 +164,8 @@ anslcd_init(void)
->  	printk(KERN_DEBUG "LCD: init\n");
->  #endif
->  
-> +	anslcd_short_delay = 80;
-> +	anslcd_long_delay = 3280;
+> However, I'm not sure this really needs a node in the device tree.  
+> The BCSR isn't really the same from board to board last time I  
+> checked.  I'd be interested in Paul's thinking about why it should be  
+> in the tree.
 
-What's the point of this?  I can understand removing redundant "= 0"
-initializers, but why fatten the code by 3 instructions just to remove
-1 word from the data section?
+I just have a general preference for putting device addresses in the
+device tree, because it increases the chance that you can reuse code
+for multiple boards.  If the BCSR is always completely unique on every
+board then there isn't so much of an argument for it, I agree.
 
 Paul.
