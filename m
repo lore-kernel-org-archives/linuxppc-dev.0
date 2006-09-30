@@ -1,12 +1,12 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0CA1C67B22
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 09:33:14 +1000 (EST)
-Date: Sat, 30 Sep 2006 18:33:11 -0500
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 3B3C367C32
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 09:33:26 +1000 (EST)
+Date: Sat, 30 Sep 2006 18:33:23 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/15] Update for ucc_geth driver
-Message-Id: <20060930183311.1d50638c.kim.phillips@freescale.com>
+Subject: [PATCH 2/15] Fix rheap alignment problem
+Message-Id: <20060930183323.6d42400a.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,81 +18,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Update the ucc_geth driver according to qe_lib changes.
-Fix l3qt bug.
+Fix rheap alignment problem
 
+Honor alignment parameter in the rheap allocator.  This is
+needed by qe_lib.
+Remove compile warning.
+
+Signed-off-by: Pantelis Antoniou <pantelis@embeddedalley.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
+Acked-by: Kumar Galak <galak@kernel.crashing.org>
 ---
- drivers/net/Kconfig        |    2 +-
- drivers/net/ucc_geth.c     |    6 +++---
- drivers/net/ucc_geth_phy.c |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/lib/Makefile |    1 +
+ arch/powerpc/lib/rheap.c  |   24 ++++++++++++++++++++----
+ include/asm-ppc/rheap.h   |    4 ++++
+ 3 files changed, 25 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 6315477..74db2c1 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2285,7 +2285,7 @@ config UGETH_TX_ON_DEMOND
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 8030f62..a0360ae 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -14,6 +14,7 @@ endif
+ obj-$(CONFIG_PPC64)	+= checksum_64.o copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+ 			   strcase.o
++obj-$(CONFIG_QUICC_ENGINE) += rheap.o
+ obj-$(CONFIG_XMON)	+= sstep.o
  
- config UGETH_HAS_GIGA
- 	bool
--	depends on UCC_GETH && MPC836x
-+	depends on UCC_GETH && PPC_MPC836x
+ ifeq ($(CONFIG_PPC64),y)
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index 31e5118..57bf991 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -423,17 +423,21 @@ void *rh_detach_region(rh_info_t * info,
+ 	return (void *)s;
+ }
  
- config MV643XX_ETH
- 	tristate "MV-643XX Ethernet support"
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 700ebd7..625a9ab 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -1722,7 +1722,7 @@ static void adjust_link(struct net_devic
- 		if (mii_info->speed != ugeth->oldspeed) {
- 			switch (mii_info->speed) {
- 			case 1000:
--#ifdef CONFIG_MPC836x
-+#ifdef CONFIG_PPC_MPC836x
- /* FIXME: This code is for 100Mbs BUG fixing,
- remove this when it is fixed!!! */
- 				if (ugeth->ug_info->enet_interface ==
-@@ -1768,7 +1768,7 @@ #endif				/* CONFIG_MPC8360 */
- 				break;
- 			case 100:
- 			case 10:
--#ifdef CONFIG_MPC836x
-+#ifdef CONFIG_PPC_MPC836x
- /* FIXME: This code is for 100Mbs BUG fixing,
- remove this lines when it will be fixed!!! */
- 				ugeth->ug_info->enet_interface = ENET_100_RGMII;
-@@ -3300,7 +3300,7 @@ static int ucc_geth_startup(ucc_geth_pri
- 		l3qt = 0;
- 		for (i = 0; i < 8; i++)
- 			l3qt |= (ug_info->l3qt[j + i] << (28 - 4 * i));
--		out_be32(&ugeth->p_rx_glbl_pram->l3qt[j], l3qt);
-+		out_be32(&ugeth->p_rx_glbl_pram->l3qt[j/8], l3qt);
- 	}
+-void *rh_alloc(rh_info_t * info, int size, const char *owner)
++void *rh_alloc_align(rh_info_t * info, int size, int alignment, const char *owner)
+ {
+ 	struct list_head *l;
+ 	rh_block_t *blk;
+ 	rh_block_t *newblk;
+ 	void *start;
  
- 	/* vlantype */
-diff --git a/drivers/net/ucc_geth_phy.c b/drivers/net/ucc_geth_phy.c
-index f91028c..cc4fffb 100644
---- a/drivers/net/ucc_geth_phy.c
-+++ b/drivers/net/ucc_geth_phy.c
-@@ -638,7 +638,7 @@ static int dm9161_ack_interrupt(struct u
- /* FIXME: This lines are for BUG fixing in the mpc8325.
- Remove this from here when it's fixed */
- 	if (bcsr_regs == NULL)
--		bcsr_regs = (u8 *) ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+		bcsr_regs = get_bcsr();
- 	bcsr_regs[14] |= 0x40;
- 	ugphy_vdbg("%s: IN", __FUNCTION__);
+-	/* Validate size */
+-	if (size <= 0)
++	/* Validate size, (must be power of two) */
++	if (size <= 0 || (alignment & (alignment - 1)) != 0)
+ 		return ERR_PTR(-EINVAL);
  
-@@ -654,7 +654,7 @@ static int dm9161_config_intr(struct uge
- /* FIXME: This lines are for BUG fixing in the mpc8325.
- Remove this from here when it's fixed */
- 	if (bcsr_regs == NULL) {
--		bcsr_regs = (u8 *) ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+		bcsr_regs = get_bcsr();
- 		bcsr_regs[14] &= ~0x40;
- 	}
- 	ugphy_vdbg("%s: IN", __FUNCTION__);
++	/* given alignment larger that default rheap alignment */
++	if (alignment > info->alignment)
++		size += alignment - 1;
++
+ 	/* Align to configured alignment */
+ 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
+ 
+@@ -476,15 +480,27 @@ void *rh_alloc(rh_info_t * info, int siz
+ 
+ 	attach_taken_block(info, newblk);
+ 
++	/* for larger alignment return fixed up pointer  */
++	/* this is no problem with the deallocator since */
++	/* we scan for pointers that lie in the blocks   */
++	if (alignment > info->alignment)
++		start = (void *)(((unsigned long)start + alignment - 1) &
++				~(alignment - 1));
++
+ 	return start;
+ }
+ 
++void *rh_alloc(rh_info_t * info, int size, const char *owner)
++{
++	return rh_alloc_align(info, size, info->alignment, owner);
++}
++
+ /* allocate at precisely the given address */
+ void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
+ {
+ 	struct list_head *l;
+ 	rh_block_t *blk, *newblk1, *newblk2;
+-	unsigned long s, e, m, bs, be;
++	unsigned long s, e, m, bs = 0, be = 0;
+ 
+ 	/* Validate size */
+ 	if (size <= 0)
+diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
+index e6ca1f6..65b9322 100644
+--- a/include/asm-ppc/rheap.h
++++ b/include/asm-ppc/rheap.h
+@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
+ /* Detach a free region */
+ extern void *rh_detach_region(rh_info_t * info, void *start, int size);
+ 
++/* Allocate the given size from the remote heap (with alignment) */
++extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
++		const char *owner);
++
+ /* Allocate the given size from the remote heap */
+ extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
+ 
 -- 
 1.4.2.1
