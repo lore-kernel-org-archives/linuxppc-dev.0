@@ -1,12 +1,12 @@
 Return-Path: <kim.phillips@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 5894267BE4
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 09:36:03 +1000 (EST)
-Date: Sat, 30 Sep 2006 18:35:45 -0500
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id E932C67C35
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 09:36:05 +1000 (EST)
+Date: Sat, 30 Sep 2006 18:35:58 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 11/15] Add QE device tree node definition
-Message-Id: <20060930183545.15b2ca13.kim.phillips@freescale.com>
+Subject: [PATCH 12/15] Change ucc_geth driver to use of_device
+Message-Id: <20060930183558.0419dc7e.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,280 +18,267 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add QE device tree node definition
+Change ucc_geth driver to use of_device
 
-Here is OF device tree node spec used in QE/8360 support patches.
+This patch change ucc_geth driver to use of_device from
+platform_device.  It also fix a bug that bcsr_regs gets
+accidentally unmapped.  Remove trailing space.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+Sign-off-by: Li Yang <leoli@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |  252 ++++++++++++++++++++++++++
- 1 files changed, 252 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/qe_lib/Makefile    |    2 -
+ arch/powerpc/sysdev/qe_lib/qe_common.c |   22 ++++++
+ drivers/net/ucc_geth.c                 |  119 +++++++++++++++++++++++---------
+ 3 files changed, 110 insertions(+), 33 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 5c0ba23..b57e7da 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1441,6 +1441,258 @@ platforms are moved over to use the flat
-                descriptor-types-mask = <012b0ebf>;
-        };
+diff --git a/arch/powerpc/sysdev/qe_lib/Makefile b/arch/powerpc/sysdev/qe_lib/Makefile
+index 9a54a81..316a63c 100644
+--- a/arch/powerpc/sysdev/qe_lib/Makefile
++++ b/arch/powerpc/sysdev/qe_lib/Makefile
+@@ -1,7 +1,7 @@
+ #
+ # Makefile for the linux ppc-specific parts of QE
+ #
+-obj-$(CONFIG_QUICC_ENGINE)+= qe_common.o qe.o qe_ic.o qe_io.o
++obj-$(CONFIG_QUICC_ENGINE)+= qe_common.o qe_ic.o qe_io.o
  
-+   h) Board Control and Status (BCSR)
+ obj-$(CONFIG_UCC)	+= ucc.o
+ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c b/arch/powerpc/sysdev/qe_lib/qe_common.c
+index 0cde73c..5c3381f 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_common.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
+@@ -60,6 +60,28 @@ static int qe_sdma_init(void);
+ 
+ static DEFINE_SPINLOCK(qe_lock);
+ 
++static phys_addr_t qebase = -1;
 +
-+   Required properties:
++phys_addr_t get_qe_base(void)
++{
++	struct device_node *qe;
 +
-+    - device_type : Should be "board-control"
-+    - reg : Offset and length of the register set for the device
++	if (qebase != -1)
++		return qebase;
 +
-+    Example:
-+
-+	bcsr@f8000000 {
-+		device_type = "board-control";
-+		reg = <f8000000 8000>;
++	qe = of_find_node_by_type(NULL, "qe");
++	if (qe) {
++		unsigned int size;
++		void *prop = get_property(qe, "reg", &size);
++		qebase = of_translate_address(qe, prop);
++		of_node_put(qe);
 +	};
 +
-+   i) Freescale QUICC Engine module (QE)
-+   This represents qe module that is installed on PowerQUICC II Pro.
-+   Hopefully it will merge backward compatibility with CPM/CPM2.
-+   Basically, it is a bus of devices, that could act more or less
-+   as a complete entity (UCC, USB etc ). All of them should be siblings on
-+   the "root" qe node, using the common properties from there.
-+   The description below applies to the the qe of MPC8360 and
-+   more nodes and properties would be extended in the future.
++	return qebase;
++}
 +
-+   i) Root QE device
++EXPORT_SYMBOL(get_qe_base);
 +
-+   Required properties:
-+   - device_type : should be "qe";
-+   - model : precise model of the QE, Can be "QE", "CPM", or "CPM2"
-+   - reg : offset and length of the device registers.
-+   - bus-frequency : the clock frequency for QUICC Engine.
+ void qe_reset(void)
+ {
+ 	if (qe_immr == NULL)
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 625a9ab..ef6cc2a 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -2,14 +2,11 @@
+  * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
+  *
+  * Author: Shlomi Gridish <gridish@freescale.com>
++ *	   Li Yang <leoli@freescale.com>
+  *
+  * Description:
+  * QE UCC Gigabit Ethernet Driver
+  *
+- * Changelog:
+- * Jul 6, 2006 Li Yang <LeoLi@freescale.com>
+- * - Rearrange code and style fixes
+- *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+@@ -31,9 +28,9 @@ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/ethtool.h>
+-#include <linux/platform_device.h>
+ #include <linux/mii.h>
+ 
++#include <asm/of_device.h>
+ #include <asm/uaccess.h>
+ #include <asm/irq.h>
+ #include <asm/io.h>
+@@ -4131,30 +4128,47 @@ static int ucc_geth_close(struct net_dev
+ 
+ const struct ethtool_ops ucc_geth_ethtool_ops = { };
+ 
+-static int ucc_geth_probe(struct device *device)
++static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
+ {
+-	struct platform_device *pdev = to_platform_device(device);
+-	struct ucc_geth_platform_data *ugeth_pdata;
++	struct device *device = &ofdev->dev;
++	struct device_node *np = ofdev->node;
+ 	struct net_device *dev = NULL;
+ 	struct ucc_geth_private *ugeth = NULL;
+ 	struct ucc_geth_info *ug_info;
+-	int err;
++	struct resource res;
++	struct device_node *phy;
++	int err, ucc_num, phy_interface;
+ 	static int mii_mng_configured = 0;
++	phandle *ph;
+ 
+ 	ugeth_vdbg("%s: IN", __FUNCTION__);
+ 
+-	ugeth_pdata = (struct ucc_geth_platform_data *)pdev->dev.platform_data;
++	ucc_num = *((int *) get_property(np, "device-id", NULL)) - 1;
++	if ((ucc_num < 0) || (ucc_num > 7))
++		return -ENODEV;
 +
-+   Recommended properties
-+   - brg-frequency : the internal clock source frequency for baud-rate
-+     generators in Hz.
++	ug_info = &ugeth_info[ucc_num];
++	ug_info->uf_info.ucc_num = ucc_num;
++	ug_info->uf_info.rx_clock = *((uint *) get_property(np, "rx-clock", NULL));
++	ug_info->uf_info.tx_clock = *((uint *) get_property(np, "tx-clock", NULL));
++	err = of_address_to_resource(np, 0, &res);
++	if (err)
++		return -EINVAL;
 +
-+   Example:
-+	qe@e0100000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "qe";
-+		model = "QE";
-+		ranges = <0 e0100000 00100000>;
-+		reg = <e0100000 480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <179A7B00>;
++	ug_info->uf_info.regs = res.start;
++	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
++
++	ph = (phandle *) get_property(np, "phy-handle", NULL);
++	phy = of_find_node_by_phandle(*ph);
+ 
+-	ug_info = &ugeth_info[pdev->id];
+-	ug_info->uf_info.ucc_num = pdev->id;
+-	ug_info->uf_info.rx_clock = ugeth_pdata->rx_clock;
+-	ug_info->uf_info.tx_clock = ugeth_pdata->tx_clock;
+-	ug_info->uf_info.regs = ugeth_pdata->phy_reg_addr;
+-	ug_info->uf_info.irq = platform_get_irq(pdev, 0);
+-	ug_info->phy_address = ugeth_pdata->phy_id;
+-	ug_info->enet_interface = ugeth_pdata->phy_interface;
+-	ug_info->board_flags = ugeth_pdata->board_flags;
+-	ug_info->phy_interrupt = ugeth_pdata->phy_interrupt;
++	if (phy == NULL)
++		return -ENODEV;
++
++	ug_info->phy_address = *(u8 *) get_property(phy, "reg", NULL);
++	ug_info->enet_interface = *((uint *) get_property(phy, "interface", NULL));
++	ug_info->phy_interrupt = irq_of_parse_and_map(phy, 0);
++	ug_info->board_flags = (ug_info->phy_interrupt == NO_IRQ)?
++			0:FSL_UGETH_BRD_HAS_PHY_INTR;
+ 
+ 	printk(KERN_INFO "ucc_geth: UCC%1d at 0x%8x (irq = %d) \n",
+ 		ug_info->uf_info.ucc_num + 1, ug_info->uf_info.regs,
+@@ -4162,12 +4176,43 @@ static int ucc_geth_probe(struct device 
+ 
+ 	if (ug_info == NULL) {
+ 		ugeth_err("%s: [%d] Missing additional data!", __FUNCTION__,
+-			  pdev->id);
++			  ucc_num);
+ 		return -ENODEV;
+ 	}
+ 
++	/* FIXME: Work around for early chip rev.               */
++	/* There's a bug in initial chip rev(s) in the RGMII ac */
++	/* timing.						*/
++	/* The following compensates by writing to the reserved */
++	/* QE Port Output Hold Registers (CPOH1?).              */
++	phy_interface = *((int *) get_property(phy, "interface", NULL));
++	if ((phy_interface == ENET_1000_RGMII) ||
++			(phy_interface == ENET_100_RGMII) ||
++			(phy_interface == ENET_10_RGMII)) {
++		struct device_node *soc;
++		phys_addr_t immrbase = -1;
++		u32 *tmp_reg;
++		u32 tmp_val;
++
++		soc = of_find_node_by_type(NULL, "soc");
++		if (soc) {
++			unsigned int size;
++			void *prop = get_property(soc, "reg", &size);
++			immrbase = of_translate_address(soc, prop);
++			of_node_put(soc);
++		};
++
++		tmp_reg = (u32 *) ioremap(immrbase + 0x14A8, 0x4);
++		tmp_val = in_be32(tmp_reg);
++		if (ucc_num == 1)
++			out_be32(tmp_reg, tmp_val | 0x00003000);
++		else if (ucc_num == 2)
++			out_be32(tmp_reg, tmp_val | 0x0c000000);
++		iounmap(tmp_reg);
 +	}
-+
-+
-+   ii) SPI (Serial Peripheral Interface)
-+
-+   Required properties:
-+   - device_type : should be "spi".
-+   - compatible : should be "fsl_spi".
-+   - mode : the spi operation mode, it can be "cpu" or "qe".
-+   - reg : Offset and length of the register set for the device
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+
-+   Example:
-+	spi@4c0 {
-+		device_type = "spi";
-+		compatible = "fsl_spi";
-+		reg = <4c0 40>;
-+		interrupts = <82 0>;
-+		interrupt-parent = <700>;
-+		mode = "cpu";
-+	};
-+
-+
-+   iii) USB (Universal Serial Bus Controller)
-+
-+   Required properties:
-+   - device_type : should be "usb".
-+   - compatible : could be "qe_udc" or "fhci-hcd".
-+   - mode : the could be "host" or "slave".
-+   - reg : Offset and length of the register set for the device
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+
-+   Example(slave):
-+	usb@6c0 {
-+		device_type = "usb";
-+		compatible = "qe_udc";
-+		reg = <6c0 40>;
-+		interrupts = <8b 0>;
-+		interrupt-parent = <700>;
-+		mode = "slave";
-+	};
-+
-+
-+   iv) UCC (Unified Communications Controllers)
-+
-+   Required properties:
-+   - device_type : should be "network", "hldc", "uart", "transparent"
-+    "bisync" or "atm".
-+   - compatible : could be "ucc_geth" or "fsl_atm" and so on.
-+   - model : should be "UCC".
-+   - device-id : the ucc number(1-8), corresponding to UCCx in UM.
-+   - reg : Offset and length of the register set for the device
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+   - pio-handle : The phandle for the Parallel I/O port configuration.
-+   - rx-clock : represents the UCC receive clock source.
-+     0x00 : clock source is disabled;
-+     0x1~0x10 : clock source is BRG1~BRG16 respectively;
-+     0x11~0x28: clock source is QE_CLK1~QE_CLK24 respectively.
-+   - tx-clock: represents the UCC transmit clock source;
-+     0x00 : clock source is disabled;
-+     0x1~0x10 : clock source is BRG1~BRG16 respectively;
-+     0x11~0x28: clock source is QE_CLK1~QE_CLK24 respectively.
-+
-+   Required properties for network device_type:
-+   - mac-address : list of bytes representing the ethernet address.
-+   - phy-handle : The phandle for the PHY connected to this controller.
-+
-+   Example:
-+	ucc@2000 {
-+		device_type = "network";
-+		compatible = "ucc_geth";
-+		model = "UCC";
-+		device-id = <1>;
-+		reg = <2000 200>;
-+		interrupts = <a0 0>;
-+		interrupt-parent = <700>;
-+		mac-address = [ 00 04 9f 00 23 23 ];
-+		rx-clock = "none";
-+		tx-clock = "clk9";
-+		phy-handle = <212000>;
-+		pio-handle = <140001>;
-+	};
-+
-+
-+   v) Parallel I/O Ports
-+
-+   This node configures Parallel I/O ports for CPUs with QE support.
-+   The node should reside in the "soc" node of the tree.  For each
-+   device that using parallel I/O ports, a child node should be created.
-+   See the definition of the Pin configuration nodes below for more
-+   information.
-+
-+   Required properties:
-+   - device_type : should be "par_io".
-+   - reg : offset to the register set and its length.
-+   - num-ports : number of Parallel I/O ports
-+
-+   Example:
-+	par_io@1400 {
-+		reg = <1400 100>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		device_type = "par_io";
-+		num-ports = <7>;
-+		ucc_pin@01 {
-+			......
-+		};
-+
-+
-+   vi) Pin configuration nodes
-+
-+   Required properties:
-+   - linux,phandle : phandle of this node; likely referenced by a QE
-+     device.
-+   - pio-map : array of pin configurations.  Each pin is defined by 6
-+     integers.  The six numbers are respectively: port, pin, dir,
-+     open_drain, assignment, has_irq.
-+     - port : port number of the pin; 0-6 represent port A-G in UM.
-+     - pin : pin number in the port.
-+     - dir : direction of the pin, should encode as follows:
-+
-+	0 = The pin is disabled
-+	1 = The pin is an output
-+	2 = The pin is an input
-+	3 = The pin is I/O
-+
-+     - open_drain : indicates the pin is normal or wired-OR:
-+
-+	0 = The pin is actively driven as an output
-+	1 = The pin is an open-drain driver. As an output, the pin is
-+	    driven active-low, otherwise it is three-stated.
-+
-+     - assignment : function number of the pin according to the Pin Assignment
-+       tables in User Manual.  Each pin can have up to 4 possible functions in
-+       QE and two options for CPM.
-+     - has_irq : indicates if the pin is used as source of exteral
-+       interrupts.
-+
-+   Example:
-+	ucc_pin@01 {
-+		linux,phandle = <140001>;
-+		pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+			0  3  1  0  1  0 	/* TxD0 */
-+			0  4  1  0  1  0 	/* TxD1 */
-+			0  5  1  0  1  0 	/* TxD2 */
-+			0  6  1  0  1  0 	/* TxD3 */
-+			1  6  1  0  3  0 	/* TxD4 */
-+			1  7  1  0  1  0 	/* TxD5 */
-+			1  9  1  0  2  0 	/* TxD6 */
-+			1  a  1  0  2  0 	/* TxD7 */
-+			0  9  2  0  1  0 	/* RxD0 */
-+			0  a  2  0  1  0 	/* RxD1 */
-+			0  b  2  0  1  0 	/* RxD2 */
-+			0  c  2  0  1  0 	/* RxD3 */
-+			0  d  2  0  1  0 	/* RxD4 */
-+			1  1  2  0  2  0 	/* RxD5 */
-+			1  0  2  0  2  0 	/* RxD6 */
-+			1  4  2  0  2  0 	/* RxD7 */
-+			0  7  1  0  1  0 	/* TX_EN */
-+			0  8  1  0  1  0 	/* TX_ER */
-+			0  f  2  0  1  0 	/* RX_DV */
-+			0  10 2  0  1  0 	/* RX_ER */
-+			0  0  2  0  1  0 	/* RX_CLK */
-+			2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
-+			2  8  2  0  1  0>;	/* GTX125 - CLK9 */
-+	};
-+
-+   vii) Multi-User RAM (MURAM)
-+
-+   Required properties:
-+   - device_type : should be "muram".
-+   - mode : the could be "host" or "slave".
-+   - ranges : Should be defined as specified in 1) to describe the
-+      translation of MURAM addresses.
-+   - data-only : sub-node which defines the address area under MURAM
-+      bus that can be allocated as data/parameter
-+
-+   Example:
-+
-+	muram@10000 {
-+		device_type = "muram";
-+		ranges = <0 00010000 0000c000>;
-+
-+		data-only@0{
-+			reg = <0 c000>;
-+		};
-+	};
++	
+ 	if (!mii_mng_configured) {
+-		ucc_set_qe_mux_mii_mng(ug_info->uf_info.ucc_num);
++		ucc_set_qe_mux_mii_mng(ucc_num);
+ 		mii_mng_configured = 1;
+ 	}
  
-    More devices will be defined as this spec matures.
+@@ -4214,13 +4259,14 @@ #endif				/* CONFIG_UGETH_NAPI */
  
+ 	ugeth->ug_info = ug_info;
+ 	ugeth->dev = dev;
+-	memcpy(dev->dev_addr, ugeth_pdata->mac_addr, 6);
++	memcpy(dev->dev_addr, get_property(np, "mac-address", NULL), 6);
+ 
+ 	return 0;
+ }
+ 
+-static int ucc_geth_remove(struct device *device)
++static int ucc_geth_remove(struct of_device* ofdev)
+ {
++	struct device *device = &ofdev->dev;
+ 	struct net_device *dev = dev_get_drvdata(device);
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+@@ -4231,28 +4277,37 @@ static int ucc_geth_remove(struct device
+ 	return 0;
+ }
+ 
+-/* Structure for a device driver */
+-static struct device_driver ucc_geth_driver = {
+-	.name = DRV_NAME,
+-	.bus = &platform_bus_type,
+-	.probe = ucc_geth_probe,
+-	.remove = ucc_geth_remove,
++static struct of_device_id ucc_geth_match[] = {
++	{ 
++		.compatible = "ucc_geth",
++	},
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, ucc_geth_match);
++
++static struct of_platform_driver ucc_geth_driver = {
++	.name		= DRV_NAME,
++	.match_table	= ucc_geth_match,
++	.probe		= ucc_geth_probe,
++	.remove		= ucc_geth_remove,
+ };
+ 
+ static int __init ucc_geth_init(void)
+ {
+ 	int i;
++
+ 	printk(KERN_INFO "ucc_geth: " DRV_DESC "\n");
+ 	for (i = 0; i < 8; i++)
+ 		memcpy(&(ugeth_info[i]), &ugeth_primary_info,
+ 		       sizeof(ugeth_primary_info));
+ 
+-	return driver_register(&ucc_geth_driver);
++	return of_register_driver(&ucc_geth_driver);
+ }
+ 
+ static void __exit ucc_geth_exit(void)
+ {
+-	driver_unregister(&ucc_geth_driver);
++	of_unregister_driver(&ucc_geth_driver);
+ }
+ 
+ module_init(ucc_geth_init);
 -- 
 1.4.2.1
