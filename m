@@ -1,14 +1,9 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17693.48925.252514.674193@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Sep 2006 10:49:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
-In-Reply-To: <C62AC4D8-39E5-44D0-88A3-E8D8042FC828@kernel.crashing.org>
-References: <4879B0C6C249214CBE7AB04453F84E4D19D866@zch01exm20.fsl.freescale.net>
-	<C62AC4D8-39E5-44D0-88A3-E8D8042FC828@kernel.crashing.org>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Sat, 30 Sep 2006 11:54:09 +1000
+Subject: [PATCH] Fix boot wrapper invocation if CROSS_COMPILE contains spaces
+Message-Id: <20060930015412.0EA3A67B6D@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,16 +14,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+My CROSS_COMPILE is "ccache /opt/compilers/blah", which confuses
+the boot wrapper script. Quote CROSS_COMPILE and CROSS32_COMPILE
+so they can safely contain spaces.
 
-> However, I'm not sure this really needs a node in the device tree.  
-> The BCSR isn't really the same from board to board last time I  
-> checked.  I'd be interested in Paul's thinking about why it should be  
-> in the tree.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-I just have a general preference for putting device addresses in the
-device tree, because it increases the chance that you can reuse code
-for multiple boards.  If the BCSR is always completely unique on every
-board then there isn't so much of an argument for it, I agree.
+ arch/powerpc/boot/Makefile |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Paul.
+Index: to-merge/arch/powerpc/boot/Makefile
+===================================================================
+--- to-merge.orig/arch/powerpc/boot/Makefile
++++ to-merge/arch/powerpc/boot/Makefile
+@@ -105,10 +105,10 @@ wrapperbits	:= $(extra-y) $(addprefix $(
+ # Bits for building various flavours of zImage
+ 
+ ifneq ($(CROSS32_COMPILE),)
+-CROSSWRAP := -C $(CROSS32_COMPILE)
++CROSSWRAP := -C "$(CROSS32_COMPILE)"
+ else
+ ifneq ($(CROSS_COMPILE),)
+-CROSSWRAP := -C $(CROSS_COMPILE)
++CROSSWRAP := -C "$(CROSS_COMPILE)"
+ endif
+ endif
+ 
