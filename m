@@ -1,22 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 46A7A67A33
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 18:43:27 +1000 (EST)
-In-Reply-To: <20060929001657.6EFE667B8F@ozlabs.org>
-References: <20060929001657.6EFE667B8F@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <65FA7A1D-5D74-4ABA-9985-2DB78ABC8685@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Preliminary MPIC MSI backend
-Date: Sat, 30 Sep 2006 10:43:20 +0200
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 31F5767B1A
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Sep 2006 20:31:16 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/6]: powerpc/cell spidernet low watermark patch.
+Date: Sat, 30 Sep 2006 12:30:59 +0200
+References: <20060929230552.GG6433@austin.ibm.com>
+	<20060929231730.GJ6433@austin.ibm.com>
+In-Reply-To: <20060929231730.GJ6433@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200609301230.59776.arnd@arndb.de>
+Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org,
+	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,61 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> A pretty hackish MPIC backend, just enough to flesh out the design.
-> Based on code from Segher.
+Am Saturday 30 September 2006 01:17 schrieb Linas Vepstas:
+> Implement basic low-watermark support for the transmit queue.
+> Hardware low-watermarks allow a properly configured kernel
+> to continously stream data to a device and not have to handle
+> any interrupts at all in doing so. Correct zero-interrupt
+> operation can be actually observed for this driver, when the
+> socket buffer is made large enough.
 
-It's pretty alright, and very hackish ;-)  I'll sign off on it,
-but some comments...
-
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-
-> +static int msi_mpic_check(struct pci_dev *pdev, int num,
-> +			struct msix_entry *entries, int type)
-> +{
-> +	/* The irq allocator needs more work to support MSI-X/multi-MSI */
-> +	if (type == PCI_CAP_ID_MSIX || num != 1)
-> +		return 1;
-
-I never tested any MSI-X, so maybe keep MSI-X disabled completely
-for now?
-
-> +static int msi_mpic_alloc(struct pci_dev *pdev, int num,
-> +			struct msix_entry *entries, int type)
-> +{
-> +	irq_hw_number_t hwirq;
-> +	unsigned int virq;
-> +
-> +	/* We need a smarter allocator for MSI-X/multi-MSI */
-> +	hwirq = irq_map[pdev->irq].hwirq;
-> +	hwirq += 100;
-
-Yep, that's the main problem with this code.  A sanity check to
-make sure the number isn't >= 120 would be good, too.
-
-> +	set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
-
-I also had some code to show MSI IRQs as "MSI" instead of "EDGE"
-in /proc/interrupts, maybe you want to add a generic version of
-that?  Or maybe you have, and I judt didn't see it.
-
-> +static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
-> +		struct msix_entry *entry, struct msi_msg *msg, int type)
-> +{
-> +	msg->address_lo = 0xfee00000;	/* XXX What is this value? */
-> +	msg->address_hi = 0;
-> +	msg->data = pdev->irq | 0x8000;
-
-Lose the | 0x8000 part, that was an old experiment to work around
-U3/U4 MPIC brokenness (and it didn't work).
-
-> +static int msi_mpic_init(void)
-> +{
-> +	/* XXX Do this in mpic_init ? */
-> +	pr_debug("mpic_msi_init: Registering MPIC MSI ops.\n");
-> +	ppc_md.get_msi_ops = mpic_get_msi_ops;
-
-It's best to do this in the platform code I think.
-
-
-Segher
+Acked-by: Arnd Bergmann <arnd@arndb.de>
