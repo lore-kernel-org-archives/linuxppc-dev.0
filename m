@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA95967C04
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 14:47:40 +1000 (EST)
-In-Reply-To: <20060930215500.5ae1cec8.kim.phillips@freescale.com>
-References: <20060930215500.5ae1cec8.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <00FB0505-D071-4FBA-9BCA-2E6E0B734A5A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add support for the e300c2 core
-Date: Sat, 30 Sep 2006 23:48:17 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dabnsh@ix.netcom.com>
+Received: from elasmtp-spurfowl.atl.sa.earthlink.net
+	(elasmtp-spurfowl.atl.sa.earthlink.net [209.86.89.66])
+	by ozlabs.org (Postfix) with ESMTP id 64F9567BE6
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 13:22:55 +1000 (EST)
+Received: from [72.131.50.248] (helo=DAVID)
+	by elasmtp-spurfowl.atl.sa.earthlink.net with asmtp (Exim 4.34)
+	id 1GTroq-0001tb-LY
+	for linuxppc-dev@ozlabs.org; Sat, 30 Sep 2006 23:16:44 -0400
+From: "David A. Brown" <dabnsh@ix.netcom.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Support for 36-bit physical addresses on 8641?
+Date: Sat, 30 Sep 2006 22:16:42 -0500
+Message-ID: <008a01c6e508$04e28150$6500a8c0@DAVID>
+Reply-To: dabnsh@ix.netcom.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,70 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All,
 
-On Sep 30, 2006, at 9:55 PM, Kim Phillips wrote:
+Does anybody know if there is any development effort being expended on
+support for 36-bit physical addressing on the 8641?  If so, who is leading
+the project?
 
-> Add support for the Freescale e300c2 core found in the MPC832x  
-> processor line.
->
-> As far as the kernel is concerned, the e300c2 core is identical to  
-> the e300c1 found in the mpc834x, except that it's had its floating  
-> point unit chopped off.
->
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> ---
->  arch/powerpc/kernel/cputable.c |   18 +++++++++++++++---
->  1 files changed, 15 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/ 
-> cputable.c
-> index 190a57e..ce13830 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -63,6 +63,7 @@ #define COMMON_USER_PA6T	(COMMON_USER_PP
->  				 PPC_FEATURE_HAS_ALTIVEC_COMP)
->  #define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
->  				 PPC_FEATURE_BOOKE)
-> +#define COMMON_USER_E300	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU)
-
-Lets just drop COMMON_USER_E300 and explicitly set this like we do on  
-8xx.
-
->  /* We only set the spe features if the kernel was compiled with
->   * spe support
-> @@ -763,12 +764,23 @@ #if CLASSIC_PPC
->  		.cpu_setup		= __setup_cpu_603,
->  		.platform		= "ppc603",
->  	},
-> -	{	/* e300 (a 603e core, plus some) on 83xx */
-> +	{	/* e300c1 (a 603e core, plus some) on 83xx */
->  		.pvr_mask		= 0x7fff0000,
->  		.pvr_value		= 0x00830000,
-> -		.cpu_name		= "e300",
-> +		.cpu_name		= "e300c1",
->  		.cpu_features		= CPU_FTRS_E300,
-> -		.cpu_user_features	= COMMON_USER,
-> +		.cpu_user_features	= COMMON_USER_E300 | PPC_FEATURE_HAS_FPU,
-
-This seems point less, why not just leave this as COMMON_USER for e300c1
-
-> +		.icache_bsize		= 32,
-> +		.dcache_bsize		= 32,
-> +		.cpu_setup		= __setup_cpu_603,
-> +		.platform		= "ppc603",
-> +	},
-> +	{	/* e300c2 (an e300c1 core, plus some, minus FPU) on 83xx */
-> +		.pvr_mask		= 0x7fff0000,
-> +		.pvr_value		= 0x00840000,
-> +		.cpu_name		= "e300c2",
-> +		.cpu_features		= CPU_FTRS_E300,
-> +		.cpu_user_features	= COMMON_USER_E300,
-
-Why don't we just set .cpu_user_features = PPC_FEATURE_32 |  
-PPC_FEATURE_HAS_MMU like we do on 8xx.
-
->  		.icache_bsize		= 32,
->  		.dcache_bsize		= 32,
->  		.cpu_setup		= __setup_cpu_603,
-
-- kumar
+Thanks,
+David Brown
