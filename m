@@ -1,18 +1,17 @@
-Return-Path: <dabnsh@ix.netcom.com>
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net
-	(elasmtp-spurfowl.atl.sa.earthlink.net [209.86.89.66])
-	by ozlabs.org (Postfix) with ESMTP id 64F9567BE6
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 13:22:55 +1000 (EST)
-Received: from [72.131.50.248] (helo=DAVID)
-	by elasmtp-spurfowl.atl.sa.earthlink.net with asmtp (Exim 4.34)
-	id 1GTroq-0001tb-LY
-	for linuxppc-dev@ozlabs.org; Sat, 30 Sep 2006 23:16:44 -0400
-From: "David A. Brown" <dabnsh@ix.netcom.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Support for 36-bit physical addresses on 8641?
-Date: Sat, 30 Sep 2006 22:16:42 -0500
-Message-ID: <008a01c6e508$04e28150$6500a8c0@DAVID>
-Reply-To: dabnsh@ix.netcom.com
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 3D13867B52
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Oct 2006 21:03:00 +1000 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Kim Phillips'" <kim.phillips@freescale.com>,
+	<linuxppc-dev@ozlabs.org>
+Subject: RE: [PATCH 2/2] Add support for MPC832x MDS evaluation board
+Date: Sun, 1 Oct 2006 13:00:51 +0200
+Message-ID: <027001c6e548$dbf65dc0$1267a8c0@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20060930215509.2989794a.kim.phillips@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,11 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All,
+> -----Original Message-----
+> From: 
+> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
+abs.org] On Behalf Of Kim Phillips
+> Sent: den 1 oktober 2006 04:55
+> To: linuxppc-dev@ozlabs.org
+> Subject: [PATCH 2/2] Add support for MPC832x MDS evaluation board
+> 
+> Add support for MPC832x MDS evaluation board.
+> 
+> This patch depends on the 8360+QE patches by Leo Li.
 
-Does anybody know if there is any development effort being expended on
-support for 36-bit physical addressing on the 8641?  If so, who is leading
-the project?
+Thank you, I have been struggling with adapting Leo's earlier 8360 patches
+on top of 2.6.17 but could not get UCC2 and UCC4(only UCC3 worked) to work
+as network i/f's.
+Hopefully I will get some time next week to try this out on our MPC832x MDS evaluation board and/or our custom board.
 
-Thanks,
-David Brown
+I hope you will be able to address the of_device conversation problem
+you mentioned until then.
+
+ Jocke
