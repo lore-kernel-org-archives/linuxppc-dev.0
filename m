@@ -1,20 +1,13 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id B014F67B9F
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Oct 2006 11:50:02 +1000 (EST)
-Date: Sun, 1 Oct 2006 18:51:03 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] enable generic rtc hook for the MPC8349 mITX
-Message-ID: <20061002015103.GB8866@mag.az.mvista.com>
-References: <20060926174651.032a474e.kim.phillips@freescale.com>
-	<B35FD5A1-2C71-41E2-A014-A2C8D37F10C2@kernel.crashing.org>
-	<20060927155853.GB2385@smtp.west.cox.net>
-	<20060927234304.0cf4d22d.kim.phillips@freescale.com>
-	<20060929232541.GN2385@smtp.west.cox.net>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060929232541.GN2385@smtp.west.cox.net>
+Message-ID: <17696.49584.252608.249426@cargo.ozlabs.ibm.com>
+Date: Mon, 2 Oct 2006 17:37:20 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 3/15] qe_lib: Add common files
+In-Reply-To: <20060930183333.0ec7fe0f.kim.phillips@freescale.com>
+References: <20060930183333.0ec7fe0f.kim.phillips@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,10 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 29, 2006 at 04:25:41PM -0700, Tom Rini wrote:
-> Does this mean we can then rip out some existing code, so long as
-> there's associated cleanup / rtc class support additions?
+Kim Phillips writes:
 
-Long term, the todc stuff should disappear.
+> qe_lib: Add common files
 
-Mark
+> diff --git a/arch/powerpc/sysdev/qe_lib/Makefile b/arch/powerpc/sysdev/qe_lib/Makefile
+> new file mode 100644
+> index 0000000..9a54a81
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/qe_lib/Makefile
+> @@ -0,0 +1,8 @@
+> +#
+> +# Makefile for the linux ppc-specific parts of QE
+> +#
+> +obj-$(CONFIG_QUICC_ENGINE)+= qe_common.o qe.o qe_ic.o qe_io.o
+
+But qe.c, qe_ic.c and qe_io.c don't exist as of this patch, so the
+kernel won't build.
+
+Also I notice that qe_common.c gets added by this patch and then
+modified by subsequent patches.  Why don't we just add the final
+version instead?
+
+It looks to me like most of this series needs to be committed as one
+commit so that git bisect still works.  Please re-send the patches
+(except the rheap fix) as a series where the kernel will build and run
+after each patch in the series.
+
+Also, when you are sending on a patch that someone else created,
+please make the first non-blank line of the message say "From: "
+followed by the author's name and email address, so we get the
+attribution right in the git repository.
+
+Paul.
