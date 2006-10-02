@@ -1,17 +1,17 @@
 Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id F0AD967C43
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:22:43 +1000 (EST)
-Date: Tue, 3 Oct 2006 03:22:41 +0200
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id E33BE67C31
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:44:30 +1000 (EST)
+Date: Tue, 3 Oct 2006 01:44:28 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Judith Lebzelter <judith@osdl.org>
-Subject: [2.6 patch] mark virt_to_bus/bus_to_virt as __deprecated on i386
-Message-ID: <20061003012241.GF3278@stusta.de>
+Subject: Re: Undefined '.bus_to_virt',
+	'.virt_to_bus' causes compile error on Powerpc 64-bit
+Message-ID: <20061002234428.GE3278@stusta.de>
 References: <20061002214954.GD665@shell0.pdx.osdl.net>
-	<20061002234428.GE3278@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061002234428.GE3278@stusta.de>
+In-Reply-To: <20061002214954.GD665@shell0.pdx.osdl.net>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,80 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 03, 2006 at 01:44:28AM +0200, Adrian Bunk wrote:
-> On Mon, Oct 02, 2006 at 02:49:54PM -0700, Judith Lebzelter wrote:
-> 
-> > Hello:
-> 
-> Hi Judith,
-> 
-> > For the automated cross-compile builds at OSDL, powerpc 64-bit 
-> > 'allmodconfig' is failing.  The warnings/errors below appear in 
-> > the 'modpost' stage of kernel compiles for 2.6.18 and -mm2 kernels.
-> 
-> known for ages - the drivers need fixing.
-> 
-> You might want to convince Andrew accepting my patch to make 
-> virt_to_bus/bus_to_virt give compile warnings on i386 for making
-> people more aware of this problem...
->...
+On Mon, Oct 02, 2006 at 02:49:54PM -0700, Judith Lebzelter wrote:
 
-In case anyone is interested, the patch is below.
+> Hello:
+
+Hi Judith,
+
+> For the automated cross-compile builds at OSDL, powerpc 64-bit 
+> 'allmodconfig' is failing.  The warnings/errors below appear in 
+> the 'modpost' stage of kernel compiles for 2.6.18 and -mm2 kernels.
+
+known for ages - the drivers need fixing.
+
+You might want to convince Andrew accepting my patch to make 
+virt_to_bus/bus_to_virt give compile warnings on i386 for making
+people more aware of this problem...
+
+> Thanks;
+> Judith Lebzelter
+> OSDL
+> 
+> -----------
+> 
+>   Building modules, stage 2.
+>   MODPOST 1658 modules
+> WARNING: Can't handle masks in drivers/ata/ahci:FFFF05
+> WARNING: ".virt_to_bus" [sound/oss/sscape.ko] undefined!
+> WARNING: ".virt_to_bus" [sound/oss/sound.ko] undefined!
+> WARNING: ".bus_to_virt" [sound/oss/cs46xx.ko] undefined!
+> WARNING: ".virt_to_bus" [sound/oss/cs46xx.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/scsi/tmscsim.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/scsi/BusLogic.ko] undefined!
+> WARNING: ".virt_to_bus" [drivers/net/wan/lmc/lmc.ko] undefined!
+> WARNING: ".virt_to_bus" [drivers/message/i2o/i2o_config.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/block/cpqarray.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/atm/zatm.ko] undefined!
+> WARNING: ".virt_to_bus" [drivers/atm/zatm.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/atm/horizon.ko] undefined!
+> WARNING: ".virt_to_bus" [drivers/atm/firestream.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/atm/firestream.ko] undefined!
+> WARNING: ".bus_to_virt" [drivers/atm/ambassador.ko] undefined!
+> WARNING: ".virt_to_bus" [drivers/atm/ambassador.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
 
 cu
 Adrian
 
+-- 
 
-<--  snip  -->
-
-
-virt_to_bus/bus_to_virt are long deprecated, mark them as __deprecated 
-on i386.
-
-Without such warnings people will never update their code and fix 
-the errors in PPC64 builds.
-
-And yes, some of the drivers affected are maintained.
-
-This also catches accidential additions of users for these functions 
-like a usage of bus_to_virt() in the infiniband code that was added in 
-2.6.17-rc1 (already removed).
-
-This patch increases the number of warnings shown during builds, but it 
-seems worth including it at least in -mm for making people aware of this 
-issue.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
-This patch was already sent on:
-- 7 Jul 2006
-- 26 Jun 2006
-- 27 Apr 2006
-- 19 Apr 2006
-- 6 Jan 2006
-- 13 Dec 2005
-- 23 Nov 2005
-- 18 Nov 2005
-- 12 Nov 2005
-
---- linux-2.6.14-mm2-full/include/asm-i386/io.h.old	2005-11-12 01:44:38.000000000 +0100
-+++ linux-2.6.14-mm2-full/include/asm-i386/io.h	2005-11-12 01:45:58.000000000 +0100
-@@ -144,8 +144,14 @@
-  *
-  * Allow them on x86 for legacy drivers, though.
-  */
--#define virt_to_bus virt_to_phys
--#define bus_to_virt phys_to_virt
-+static inline unsigned long __deprecated virt_to_bus(volatile void * address)
-+{
-+	return __pa(address);
-+}
-+static inline void * __deprecated bus_to_virt(unsigned long address)
-+{
-+	return __va(address);
-+}
- 
- /*
-  * readX/writeX() are used to access memory mapped devices. On some
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
