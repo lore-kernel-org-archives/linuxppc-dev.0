@@ -1,34 +1,32 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CF9D367BDF
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 03:24:20 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k92HOHmF003144
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:24:17 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k92HN1aD053016
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 11:23:01 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k92HN0E2006478
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 11:23:00 -0600
-Date: Mon, 2 Oct 2006 12:23:00 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/6]: powerpc/cell spidernet ethernet patches
-Message-ID: <20061002172300.GD4546@austin.ibm.com>
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 272AC67BCB
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 03:47:26 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k92HlNq9018203
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:47:23 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k92HlNZv282242
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:47:23 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k92HlMcH011473
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:47:23 -0400
+Date: Mon, 2 Oct 2006 12:47:22 -0500
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 6/6]: powerpc/cell spidernet refine locking
+Message-ID: <20061002174722.GE4546@austin.ibm.com>
 References: <20060929230552.GG6433@austin.ibm.com>
-	<200609301240.03464.arnd@arndb.de>
-	<20061002162749.GB4546@austin.ibm.com>
-	<200610021850.41062.arnd@arndb.de>
+	<20060929232911.GN6433@austin.ibm.com>
+	<20060929194752.2194f94f.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200610021850.41062.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060929194752.2194f94f.akpm@osdl.org>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org,
+Cc: jeff@garzik.org, Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
 	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -40,29 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 02, 2006 at 06:50:39PM +0200, Arnd Bergmann wrote:
-> On Monday 02 October 2006 18:27, Linas Vepstas wrote:
-> > > 
-> > > I'm not sure if I have missed a patch in here, but I
-> > > don't see anything reintroducing the 'netif_stop_queue'
-> > > that is missing from the transmit path.
-> > > 
-> > > Do you have a extra patch for that?
-> > 
-> > Unfinished.  There are several ways in which the current 
-> > spider-net driver doesn't do things the way Greg KH's, etal 
-> > book on device drivers recommends. I was planning on combing 
-> > through these this week.
+On Fri, Sep 29, 2006 at 07:47:52PM -0700, Andrew Morton wrote:
+> On Fri, 29 Sep 2006 18:29:11 -0500
+> linas@austin.ibm.com (Linas Vepstas) wrote:
 > 
-> Ok, that's good. However, removing the netif_stop_queue
-> was an obvious oversight that happened during the cleanup
-> last year.
+> > The transmit side of the spider ethernet driver currently
+> > places locks around some very large chunks of code. This
+> > results in a fair amount of lock contention is some cases. 
+> > This patch makes the locks much more fine-grained, protecting
+> > only the cirtical sections. One lock is used to protect 
+> > three locations: the queue head and tail pointers, and the 
+> > queue low-watermark location.
 > 
-> Putting that one line back in should be a really safe fix for
-> the problem of overly high system load we sometimes see.
+> You have spider_net_set_low_watermark() walking the tx_chain outside
+> tx_chain.lock.  Are you sure about that?
 
-Hmm. I have a patch from 5 weeks ago that seems to insert a bunch 
-of these. I'm not sure why it hadn't been mailed before, I'll 
-test and post as soon as I can.
+Yes. Its making an approximate count of the queue length, and I figured
+that if its approximate to begin with, an unlocked version should be
+just fine.
 
 --linas
