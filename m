@@ -1,33 +1,35 @@
-Return-Path: <hnguyen@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2785C67BDD
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 03:12:28 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id k92HCMxQ174486
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 17:12:22 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id k92HESgD3268736
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 19:14:28 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id k92HCLXr009431
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 19:12:21 +0200
-From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-To: rolandd@cisco.com
-Subject: [PATCH 2.6.19-rc1] ehca: fix ehca_probe if module loaded after
-	ib_ipoib
-Date: Mon, 2 Oct 2006 19:08:52 +0200
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 840BD67BDF
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 03:14:42 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k92HEm0w021641
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:14:48 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k92HEdsA283568
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:14:39 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k92HEcKH029340
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Oct 2006 13:14:39 -0400
+Date: Mon, 2 Oct 2006 12:14:38 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 4/6]: powerpc/cell spidernet ethtool -i version number
+	info.
+Message-ID: <20061002171438.GC4546@austin.ibm.com>
+References: <20060929230552.GG6433@austin.ibm.com>
+	<20060929232139.GL6433@austin.ibm.com>
+	<200609301233.45871.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200610021908.52695.hnguyen@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	openib-general@openib.org, openfabrics-ewg@openib.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200609301233.45871.arnd@arndb.de>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org,
+	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,159 +39,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Roland!
-Below is a patch of ehca, which fixes a bug (crash) that occured when ib_ehca
-is loaded after ib_ipoib. This patch initializes struct ehca_shca with
-struct device*, then creates internal resources and finally registers the
-ehca IB device. And that is the proper sequence to do.
-In addition to that this patch contains a very small format improvement 
-in our tracing function.
-Thanks!
-Nam Nguyen
+On Sat, Sep 30, 2006 at 12:33:45PM +0200, Arnd Bergmann wrote:
+> Am Saturday 30 September 2006 01:21 schrieb Linas Vepstas:
+> >
+> >  static int __init spider_net_init(void)
+> >  {
+> > +       printk("spidernet Version %s.\n",VERSION);
+> > +
+> 
+> This is missing a printk level and a space character. 
+
+Revised patch below.
+
+> More importantly,
+> you should not print the presence of the driver to the syslog, but
+> the presence of a device driven by it.
+
+Most device drivers seem to print version numbers in the module_init 
+routines (i.e. right before calling pci_register_driver), rather than 
+in the probe routines; so this patch follows this convention.
+
+--linas
+
+This patch adds version information as reported by
+ethtool -i to the Spidernet driver.
+
+From: James K Lewis <jklewis@us.ibm.com>
+Signed-off-by: James K Lewis <jklewis@us.ibm.com>
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
 
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
+----
+ drivers/net/spider_net.c         |    3 +++
+ drivers/net/spider_net.h         |    2 ++
+ drivers/net/spider_net_ethtool.c |    2 +-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
-
- ehca_main.c  |   36 +++++++++++++++++++-----------------
- ehca_tools.h |    2 +-
- 2 files changed, 20 insertions(+), 18 deletions(-)
-
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index 2380994..024d511 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -49,7 +49,7 @@ #include "hcp_if.h"
- MODULE_LICENSE("Dual BSD/GPL");
- MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
- MODULE_DESCRIPTION("IBM eServer HCA InfiniBand Device Driver");
--MODULE_VERSION("SVNEHCA_0016");
-+MODULE_VERSION("SVNEHCA_0017");
+Index: linux-2.6.18-mm2/drivers/net/spider_net.c
+===================================================================
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net.c	2006-09-29 16:44:17.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net.c	2006-10-02 12:00:15.000000000 -0500
+@@ -55,6 +55,7 @@ MODULE_AUTHOR("Utz Bacher <utz.bacher@de
+ 	      "<Jens.Osterkamp@de.ibm.com>");
+ MODULE_DESCRIPTION("Spider Southbridge Gigabit Ethernet driver");
+ MODULE_LICENSE("GPL");
++MODULE_VERSION(VERSION);
  
- int ehca_open_aqp1     = 0;
- int ehca_debug_level   = 0;
-@@ -239,7 +239,7 @@ init_node_guid1:
-  return ret;
- }
- 
--int ehca_register_device(struct ehca_shca *shca)
-+int ehca_init_device(struct ehca_shca *shca)
+ static int rx_descriptors = SPIDER_NET_RX_DESCRIPTORS_DEFAULT;
+ static int tx_descriptors = SPIDER_NET_TX_DESCRIPTORS_DEFAULT;
+@@ -2303,6 +2304,8 @@ static struct pci_driver spider_net_driv
+  */
+ static int __init spider_net_init(void)
  {
-  int ret;
++	printk(KERN_INFO "Spidernet version %s.\n", VERSION);
++
+ 	if (rx_descriptors < SPIDER_NET_RX_DESCRIPTORS_MIN) {
+ 		rx_descriptors = SPIDER_NET_RX_DESCRIPTORS_MIN;
+ 		pr_info("adjusting rx descriptors to %i.\n", rx_descriptors);
+Index: linux-2.6.18-mm2/drivers/net/spider_net.h
+===================================================================
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net.h	2006-09-29 16:44:17.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net.h	2006-10-02 11:57:32.000000000 -0500
+@@ -24,6 +24,8 @@
+ #ifndef _SPIDER_NET_H
+ #define _SPIDER_NET_H
  
-@@ -317,11 +317,6 @@ int ehca_register_device(struct ehca_shc
-  /* shca->ib_device.process_mad     = ehca_process_mad;     */
-  shca->ib_device.mmap      = ehca_mmap;
++#define VERSION "1.1 A"
++
+ #include "sungem_phy.h"
  
-- ret = ib_register_device(&shca->ib_device);
-- if (ret)
--  ehca_err(&shca->ib_device,
--    "ib_register_device() failed ret=%x", ret);
--
-  return ret;
+ extern int spider_net_stop(struct net_device *netdev);
+Index: linux-2.6.18-mm2/drivers/net/spider_net_ethtool.c
+===================================================================
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net_ethtool.c	2006-09-29 16:33:43.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net_ethtool.c	2006-09-29 16:44:18.000000000 -0500
+@@ -76,7 +76,7 @@ spider_net_ethtool_get_drvinfo(struct ne
+ 	/* clear and fill out info */
+ 	memset(drvinfo, 0, sizeof(struct ethtool_drvinfo));
+ 	strncpy(drvinfo->driver, spider_net_driver_name, 32);
+-	strncpy(drvinfo->version, "0.1", 32);
++	strncpy(drvinfo->version, VERSION, 32);
+ 	strcpy(drvinfo->fw_version, "no information");
+ 	strncpy(drvinfo->bus_info, pci_name(card->pdev), 32);
  }
- 
-@@ -561,9 +556,9 @@ static int __devinit ehca_probe(struct i
-   goto probe1;
-  }
- 
-- ret = ehca_register_device(shca);
-+ ret = ehca_init_device(shca);
-  if (ret) {
--  ehca_gen_err("Cannot register Infiniband device");
-+  ehca_gen_err("Cannot init ehca  device struct");
-   goto probe1;
-  }
- 
-@@ -571,7 +566,7 @@ static int __devinit ehca_probe(struct i
-  ret = ehca_create_eq(shca, &shca->eq, EHCA_EQ, 2048);
-  if (ret) {
-   ehca_err(&shca->ib_device, "Cannot create EQ.");
--  goto probe2;
-+  goto probe1;
-  }
- 
-  ret = ehca_create_eq(shca, &shca->neq, EHCA_NEQ, 513);
-@@ -600,6 +595,13 @@ static int __devinit ehca_probe(struct i
-   goto probe5;
-  }
- 
-+ ret = ib_register_device(&shca->ib_device);
-+ if (ret) {
-+  ehca_err(&shca->ib_device,
-+    "ib_register_device() failed ret=%x", ret);
-+  goto probe6;
-+ }
-+
-  /* create AQP1 for port 1 */
-  if (ehca_open_aqp1 == 1) {
-   shca->sport[0].port_state = IB_PORT_DOWN;
-@@ -607,7 +609,7 @@ static int __devinit ehca_probe(struct i
-   if (ret) {
-    ehca_err(&shca->ib_device,
-      "Cannot create AQP1 for port 1.");
--   goto probe6;
-+   goto probe7;
-   }
-  }
- 
-@@ -618,7 +620,7 @@ static int __devinit ehca_probe(struct i
-   if (ret) {
-    ehca_err(&shca->ib_device,
-      "Cannot create AQP1 for port 2.");
--   goto probe7;
-+   goto probe8;
-   }
-  }
- 
-@@ -630,12 +632,15 @@ static int __devinit ehca_probe(struct i
- 
-  return 0;
- 
--probe7:
-+probe8:
-  ret = ehca_destroy_aqp1(&shca->sport[0]);
-  if (ret)
-   ehca_err(&shca->ib_device,
-     "Cannot destroy AQP1 for port 1. ret=%x", ret);
- 
-+probe7:
-+ ib_unregister_device(&shca->ib_device);
-+
- probe6:
-  ret = ehca_dereg_internal_maxmr(shca);
-  if (ret)
-@@ -660,9 +665,6 @@ probe3:
-   ehca_err(&shca->ib_device,
-     "Cannot destroy EQ. ret=%x", ret);
- 
--probe2:
-- ib_unregister_device(&shca->ib_device);
--
- probe1:
-  ib_dealloc_device(&shca->ib_device);
- 
-@@ -750,7 +752,7 @@ int __init ehca_module_init(void)
-  int ret;
- 
-  printk(KERN_INFO "eHCA Infiniband Device Driver "
--                  "(Rel.: SVNEHCA_0016)\n");
-+                  "(Rel.: SVNEHCA_0017)\n");
-  idr_init(&ehca_qp_idr);
-  idr_init(&ehca_cq_idr);
-  spin_lock_init(&ehca_qp_idr_lock);
-diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
-index 9f56bb8..809da3e 100644
---- a/drivers/infiniband/hw/ehca/ehca_tools.h
-+++ b/drivers/infiniband/hw/ehca/ehca_tools.h
-@@ -117,7 +117,7 @@ #define ehca_dmp(adr, len, format, args.
-   unsigned int l = (unsigned int)(len); \
-   unsigned char *deb = (unsigned char*)(adr); \
-   for (x = 0; x < l; x += 16) { \
--   printk("EHCA_DMP:%s" format \
-+   printk("EHCA_DMP:%s " format \
-           " adr=%p ofs=%04x %016lx %016lx\n", \
-           __FUNCTION__, ##args, deb, x, \
-           *((u64 *)&deb[0]), *((u64 *)&deb[8])); \
