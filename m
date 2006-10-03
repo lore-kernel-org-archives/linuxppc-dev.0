@@ -1,19 +1,15 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from marmot.shef.ac.uk (marmot.shef.ac.uk [143.167.1.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 822B167BDC
+Return-Path: <pradeepsampath@yahoo.com>
+Received: from web83213.mail.mud.yahoo.com (web83213.mail.mud.yahoo.com
+	[216.252.101.69]) by ozlabs.org (Postfix) with SMTP id E1B5567C01
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Oct 2006 20:08:27 +1000 (EST)
-Message-ID: <4520E511.7080706@gmail.com>
-Date: Mon, 02 Oct 2006 11:08:17 +0100
-From: Ameet Patil <ammubhai@gmail.com>
+	Tue,  3 Oct 2006 16:42:28 +1000 (EST)
+Message-ID: <20061003064227.58091.qmail@web83213.mail.mud.yahoo.com>
+Date: Mon, 2 Oct 2006 23:42:27 -0700 (PDT)
+From: Pradeep Sampath <pradeepsampath@yahoo.com>
+Subject: booting 2.6 kernel on ML403
+To: Ameet Patil <ammubhai@gmail.com>, Ming Liu <eemingliu@hotmail.com>
 MIME-Version: 1.0
-To: agnel juni <junijoseph@yahoo.co.in>
-Subject: Re: linux-2.6 system ACE driver - need help
-References: <20060921235929.70623.qmail@web8410.mail.in.yahoo.com>
-In-Reply-To: <20060921235929.70623.qmail@web8410.mail.in.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative; boundary="0-532025741-1159857747=:58084"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,189 +21,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-agnel juni wrote:
-> Jeff,
->
-> I forgot to mention onething.
->
-> The System ACE Base Address register is a 64-bit address.
->
-> So we have done ioremap64, like
-> ioremap64(0x4E0000000ULL, remap_size);
->
-> Could this be a cause for the segmentation fault we are seeing ????
->
-> Screen-dump from one  of our trials.
->
-> # mount -t msdos /dev/xsysace1 /mnt/sysace/
-> swap_dup: Bad swap file entry 7c0ff1f0
-> VM: killing process exe
-> swap_free: Bad swap file entry 6c0ff019
-> swap_free: Bad swap file entry c80ff1ef
-> swap_free: Bad swap file entry a80ff1f3
-> swap_free: Bad swap file entry d00ff1ef
->
-> thanks
-> Junita
->
->
->
-> */agnel juni <junijoseph@yahoo.co.in>/* wrote:
->
->     Hi Jeff,
->
->     Thanks for your reply.
->
->     > Does it work for you in polling mode? If not, you probably have a
->     problem with the way you are accessing the system ace - cache,
->     endianess, byte alignment, etc. If it does work in polling, the usual
->     suspects are interrupt masking errors or some low level problems with
->     your IRQ signals. Since you know the size of a sector and the size of
->     the sysace buffers, how many interrupts do you get per sector read? Do
->     you see extras or not enough?
->
->     I heard from Ameet Patil that this driver is not tested in
->     poilling mode and it failed when we tried also.
->     Thats when we moved to interrupt mode.
->
->     I did check for the endianess...byte alignment etc.It looks ok to me.
->
->     I am using a 64 MB flash. And the sector sice is 512K.When the
->     kernel boots up I see 128 interrupts getting registered. (I think
->     its from alloc_disk(16) function in adapter.c )
->
->     Seems like the driver has issues with completing the request.
->
->     We are having issues while mouting the device. It is erratic, that
->     sometimes we are able to mount/list files, copy files.
->
->     But sometimes the kernel crashes and gives a Ooops message like :
->
->     /*********************************************************/
->
->     # ls /mnt/Oops: kernel access of bad area, sig: 11 [#1]
->     NIP: C00556B8 LR: C00557E4 CTR: 00000000
->     REGS: dfec1e08 TRAP: 0300   Not tainted  (2.6.16.2)
->     MSR: 00021000 <ME>  CR: 22128828  XER: 00000000
->     DAR: 30303030, DSISR: 00800000
->     TASK = dff6c030[4] 'events/0' THREAD: dfec0000
->     GPR00: 00100100 DFEC1EB8 DFF6C030 C0258C60 DFF7BE10 00000018
->     DF4E9000 C0256D60
->     GPR08: 30303030 00200200 DF4E9154 30303030 22128888 00100400
->     1FFB9700 00000000
->     GPR16: 00000001 FFFFFFFF 00000000 007FFF00 1FFB3604 1FF63CE0
->     1FFCEF78 C01F0000
->     GPR24: C0240000 00100100 C0240000 00000000 DFF7BE10 00000018
->     00000000 C0258C60
->     NIP [C00556B8] free_block+0xa8/0x148
->     LR [C00557E4] drain_array_locked+0x8c/0xd8
->     Call Trace:
->     [DFEC1EB8] [DFCA9490] 0xdfca9490 (unreliable)
->     [DFEC1ED8] [C00557E4] drain_array_locked+0x8c/0xd8
->     [DFEC1EF0] [C0056F80] cache_reap+0x74/0x18c
->     [DFEC1F28] [C002B578] run_workqueue+0x9c/0x110
->     [DFEC1F48] [C002B6E4] worker_thread+0xf8/0x13c
->     [DFEC1FC0] [C002F6F0] kthread+0xf4/0x130
->     [DFEC1FF0] [C000413C] kernel_thread+0x44/0x60
->     Instruction dump:
->     7cfbfa14 3c000010 80e70014 3d2a4000 60000100 5529c9f4 7d295a14
->     80c9001c
->     3d200020 61290200 81060004 81660000 <91680000> 910b0004 3966001c
->     90060000
->     BUG: events/0/4, lock held at task exit time!
->      [c01f5d60] {cache_chain_mutex}
->     .. held by:          events/0:    4 [dff6c030, 110]
->     ... acquired at:               cache_reap+0x1c/0x18c
->     /*******************************************************************/
->
->
->     We are able to do this after modiifying the file
->     xsysace_compactflash.c and xsysace_intr.c  to reset the
->     controller( It was commented out by applying the patch).
->
->     The data in the CF looks sane.
->
->     Please advise.
->
->     Thanks for your help.
->
->
->     Thanks
->     Junita
->
->         .
->
->         Does it work for you in polling mode? If not, you probably have a
->         problem with the way you are accessing the system ace - cache,
->         endianess, byte alignment, etc. If it does work in polling,
->         the usual
->         suspects are interrupt masking errors or some low level
->         problems with
->         your IRQ signals. Since you know the size of a sector and the
->         size of
->         the sysace buffers, how many interrupts do you get per sector
->         read? Do
->         you see extras or not enough?
->
->
->
->
->
->         > We are able to mount the CF, but it is very inconsistent.
->
->         Dump the sector data to the screen that you are reading from
->         the CF.
->         Especially look at the results from the initial identify
->         command to
->         verify that they make sense, and because that is the easiest
->         to check.
->
->         > Same is the case with fdisk command. When it fails,we get
->         errors which you could see in the screen-dump below.
->         > Are we missing to apply the right patch? Please let us know your
->         > inputs to go forward.
->         > Looking forwards for your reply.
->
->         >
->         > # mount -t msdos /dev/xsysace /root/cf
->
->         Shouldn't this be /dev/xsysace1? You want to mount a partition
->         not the
->         entire block device.
->
->
->         -- 
->         Jeff Angielski
->         The PTR Group
->
->
->     ------------------------------------------------------------------------
->     Find out what India is talking about on - Yahoo! Answers India
->     <http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/>
->
->     Send FREE SMS to your friend's mobile from Yahoo! Messenger
->     Version 8. Get it NOW
->     <http://us.rd.yahoo.com/mail/in/messengertagline/*http://in.messenger.yahoo.com>_______________________________________________
->     Linuxppc-embedded mailing list
->     Linuxppc-embedded@ozlabs.org
->     https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
-> ------------------------------------------------------------------------
-> Find out what India is talking about on - Yahoo! Answers India 
-> <http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/>
-> Send FREE SMS to your friend's mobile from Yahoo! Messenger Version 8. 
-> Get it NOW 
-> <http://us.rd.yahoo.com/mail/in/messengertagline/*http://in.messenger.yahoo.com> 
->
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-Sorry Junita,
-  I am busy with something else at the moment... hard deadline! Haven't 
-checked my code yet to give you any feedback. Sorry!
+--0-532025741-1159857747=:58084
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
--Ameet
+Hello Ameet/Ming!
+   
+  I am running linux kernel 2.6 on a ML403. Your posts on the list was extremely helpful and saved a lot of time. But i have ran into a number of issues and need your help. I have described both the scenarios.
+   
+  Problem 1:
+  I followed the steps described in http://www.linux.get2knowmore.com/2006/06/30/quick-guide-linux-26-on-xilinx-virtex-ii-pro-boards-part-i/
+  After the kernel boots towards the end i get a failure - unknown-block(0,0)
+
+  [    3.012128] VFS: Cannot open root device "sda2" or unknown-block(0,0)
+[    3.088465] Please append a correct "root=" boot option
+[    3.150933] Kernel panic - not syncing: VFS: Unable to mount root fs on unkno
+wn-block(0,0)
+[    3.249891]  <0>Rebooting in 180 seconds..
+   
+  On the linux partition of my CF card i created the following block device files
+  # mknod -m 660 console c 5 1
+# mknod -m 660 sda b 254 0
+# mknod -m 660 sda1 b 254 1
+# mknod -m 660 sda2 b 254 2
+# mknod -m 660 sda3 b 254 3
+  mkdir tts
+# mknod -m 660 0 b 4 64
+
+
+  But the result was same as above. 
+  What should be my default bootloader kernel arguments?
+  console=ttyS0,9600 root=/dev/sda2
+  or 
+  console=ttyS0,9600 root=/dev/xsa2
+  or
+  console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw
+   
+  I am confused. How do we determine the device name of the CF card?
+   
+  I have 2 partitions on my CF card - Partition1 is DOS FAT16 partition, Partition2 is Linux with ext3 filesystem.
+
+  
+ 
+  Here is the full log of the serial terminal:
+Linux/PPC load: console=ttyS0,9600 root=/dev/sda2
+Uncompressing Linux...done.
+Now booting the kernel
+[    0.000000] Linux version 2.6.17.1 (psampath@psampath-test) (gcc version 3.4.
+1) #3 Mon Oct 2 14:43:23 PDT 2006
+[    0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
+[    0.000000] Built 1 zonelists
+[    0.000000] Kernel command line: console=ttyS0,9600 root=/dev/sda2
+[    0.000000] Xilinx INTC #0 at 0xD1000FC0 mapped to 0xFDFFEFC0
+[    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
+[    0.000166] Console: colour dummy device 80x25
+[    0.000650] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+[    0.001465] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.014853] Memory: 62524k available (1736k kernel code, 552k data, 84k init,
+ 0k highmem)
+[    0.104274] Security Framework v1.0.0 initialized
+[    0.104471] Mount-cache hash table entries: 512
+[    0.110096] NET: Registered protocol family 16
+[    0.118276] NET: Registered protocol family 2
+[    0.152515] IP route cache hash table entries: 512 (order: -1, 2048 bytes)
+[    0.153502] TCP established hash table entries: 2048 (order: 1, 8192 bytes)
+[    0.153689] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.153787] TCP: Hash tables configured (established 2048 bind 1024)
+[    0.153814] TCP reno registered
+[    0.161503] VFS: Disk quotas dquot_6.5.1
+[    0.161747] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+[    0.162380] Initializing Cryptographic API
+[    0.162433] io scheduler noop registered
+[    0.162534] io scheduler anticipatory registered (default)
+[    0.162630] io scheduler deadline registered
+[    0.162764] io scheduler cfq registered
+[    0.773694] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing
+enabled
+[    0.782331] serial8250.0: ttyS0 at MMIO 0xa0001003 (irq = 9) is a 16450
+[    2.663867] RAMDISK driver initialized: 16 RAM disks of 300000K size 1024 blo
+cksize
+[    2.758159] i8042.c: No controller found.
+[    2.806550] mice: PS/2 mouse device common for all mice
+[    2.869032] TCP bic registered
+[    2.904787] NET: Registered protocol family 8
+[    2.956790] NET: Registered protocol family 20
+[    3.012128] VFS: Cannot open root device "sda2" or unknown-block(0,0)
+[    3.088465] Please append a correct "root=" boot option
+[    3.150933] Kernel panic - not syncing: VFS: Unable to mount root fs on unkno
+wn-block(0,0)
+[    3.249891]  <0>Rebooting in 180 seconds..
+   
+  Problem 2:
+  - Untar the kernel 2.6.17.1
+  - Applied the 5 TEMAC patches
+  - Applied Ameet's Sysace patch 
+  - copied the xparameters_ml403.h to the arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h generated by EDK
+   
+  - After including the network driver and sysace driver in "make menuconfig" and generating the zImage and booting the board the kernel hangs.
+   
+  loaded at:     00400000 0051613C
+board data at: 00514124 0051413C
+relocated to:  004050E8 00405100
+zimage at:     00405881 005137E8
+avail ram:     00517000 10000000
+  Linux/PPC load: console=ttyS0,9600 root=/dev/sda2
+Uncompressing Linux...done.
+Now booting the kernel
+
+  I suspect the xparameter addresses are incorrect. Which parameter should i modify in the xparameters_ml403.h?
+   
+  Kindly send a reply at your earliest. 
+  Thanks!
+  Pradeep
+
+
+--0-532025741-1159857747=:58084
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<DIV>Hello Ameet/Ming!</DIV>  <DIV>&nbsp;</DIV>  <DIV>I am running linux kernel 2.6 on a ML403. Your posts on the list was extremely helpful and saved a lot of time. But i have ran into a number of issues and need your help. I have described both the scenarios.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Problem 1:</DIV>  <DIV>I followed the steps described in <A href="http://www.linux.get2knowmore.com/2006/06/30/quick-guide-linux-26-on-xilinx-virtex-ii-pro-boards-part-i/">http://www.linux.get2knowmore.com/2006/06/30/quick-guide-linux-26-on-xilinx-virtex-ii-pro-boards-part-i/</A></DIV>  <DIV>After the kernel boots towards the end i get a failure - unknown-block(0,0)<BR></DIV>  <DIV>[&nbsp;&nbsp;&nbsp; 3.012128] VFS: Cannot open root device "sda2" or unknown-block(0,0)<BR>[&nbsp;&nbsp;&nbsp; 3.088465] Please append a correct "root=" boot option<BR>[&nbsp;&nbsp;&nbsp; 3.150933] Kernel panic - not syncing: VFS: Unable to mount root fs on unkno<BR>wn-block(0,0)<BR>[&nbsp;&nbsp;&nbsp;
+ 3.249891]&nbsp; &lt;0&gt;Rebooting in 180 seconds..</DIV>  <DIV>&nbsp;</DIV>  <DIV>On the linux partition of my CF card i created the following block device files</DIV>  <DIV># mknod -m 660 console c 5 1<BR># mknod -m 660&nbsp;sda b 254 0<BR># mknod -m 660 sda1 b 254 1<BR># mknod -m 660 sda2 b 254 2<BR># mknod -m 660 sda3 b 254 3</DIV>  <DIV>mkdir tts<BR># mknod -m 660 0 b 4 64<BR><BR></DIV>  <DIV>But the result was same as above. </DIV>  <DIV>What should be my default bootloader kernel arguments?</DIV>  <DIV>console=ttyS0,9600 root=/dev/sda2</DIV>  <DIV>or </DIV>  <DIV>console=ttyS0,9600 root=/dev/xsa2</DIV>  <DIV>or</DIV>  <DIV>console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw</DIV>  <DIV>&nbsp;</DIV>  <DIV>I am confused. How do we determine the device name of the CF card?</DIV>  <DIV>&nbsp;</DIV>  <DIV>I have 2 partitions on my CF card -&nbsp;Partition1 is&nbsp;DOS FAT16 partition, Partition2 is Linux with ext3 filesystem.<BR></DIV>  <DIV><BR>&nbsp;</DIV>  <DIV>Here
+ is the full log of the serial terminal:<BR>Linux/PPC load: console=ttyS0,9600 root=/dev/sda2<BR>Uncompressing Linux...done.<BR>Now booting the kernel<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Linux version 2.6.17.1 (<A href="mailto:psampath@psampath-test">psampath@psampath-test</A>) (gcc version 3.4.<BR>1) #3 Mon Oct 2 14:43:23 PDT 2006<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Xilinx ML403 Reference System (Virtex-4 FX)<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Built 1 zonelists<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Kernel command line: console=ttyS0,9600 root=/dev/sda2<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Xilinx INTC #0 at 0xD1000FC0 mapped to 0xFDFFEFC0<BR>[&nbsp;&nbsp;&nbsp; 0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.000166] Console: colour dummy device 80x25<BR>[&nbsp;&nbsp;&nbsp; 0.000650] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.001465] Inode-cache hash table entries: 4096 (order: 2, 16384
+ bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.014853] Memory: 62524k available (1736k kernel code, 552k data, 84k init,<BR>&nbsp;0k highmem)<BR>[&nbsp;&nbsp;&nbsp; 0.104274] Security Framework v1.0.0 initialized<BR>[&nbsp;&nbsp;&nbsp; 0.104471] Mount-cache hash table entries: 512<BR>[&nbsp;&nbsp;&nbsp; 0.110096] NET: Registered protocol family 16<BR>[&nbsp;&nbsp;&nbsp; 0.118276] NET: Registered protocol family 2<BR>[&nbsp;&nbsp;&nbsp; 0.152515] IP route cache hash table entries: 512 (order: -1, 2048 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.153502] TCP established hash table entries: 2048 (order: 1, 8192 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.153689] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.153787] TCP: Hash tables configured (established 2048 bind 1024)<BR>[&nbsp;&nbsp;&nbsp; 0.153814] TCP reno registered<BR>[&nbsp;&nbsp;&nbsp; 0.161503] VFS: Disk quotas dquot_6.5.1<BR>[&nbsp;&nbsp;&nbsp; 0.161747] Dquot-cache hash table entries: 1024 (order 0, 4096
+ bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.162380] Initializing Cryptographic API<BR>[&nbsp;&nbsp;&nbsp; 0.162433] io scheduler noop registered<BR>[&nbsp;&nbsp;&nbsp; 0.162534] io scheduler anticipatory registered (default)<BR>[&nbsp;&nbsp;&nbsp; 0.162630] io scheduler deadline registered<BR>[&nbsp;&nbsp;&nbsp; 0.162764] io scheduler cfq registered<BR>[&nbsp;&nbsp;&nbsp; 0.773694] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing<BR>enabled<BR>[&nbsp;&nbsp;&nbsp; 0.782331] serial8250.0: ttyS0 at MMIO 0xa0001003 (irq = 9) is a 16450<BR>[&nbsp;&nbsp;&nbsp; 2.663867] RAMDISK driver initialized: 16 RAM disks of 300000K size 1024 blo<BR>cksize<BR>[&nbsp;&nbsp;&nbsp; 2.758159] i8042.c: No controller found.<BR>[&nbsp;&nbsp;&nbsp; 2.806550] mice: PS/2 mouse device common for all mice<BR>[&nbsp;&nbsp;&nbsp; 2.869032] TCP bic registered<BR>[&nbsp;&nbsp;&nbsp; 2.904787] NET: Registered protocol family 8<BR>[&nbsp;&nbsp;&nbsp; 2.956790] NET: Registered protocol family
+ 20<BR>[&nbsp;&nbsp;&nbsp; 3.012128] VFS: Cannot open root device "sda2" or unknown-block(0,0)<BR>[&nbsp;&nbsp;&nbsp; 3.088465] Please append a correct "root=" boot option<BR>[&nbsp;&nbsp;&nbsp; 3.150933] Kernel panic - not syncing: VFS: Unable to mount root fs on unkno<BR>wn-block(0,0)<BR>[&nbsp;&nbsp;&nbsp; 3.249891]&nbsp; &lt;0&gt;Rebooting in 180 seconds..</DIV>  <DIV>&nbsp;</DIV>  <DIV>Problem 2:</DIV>  <DIV>- Untar the kernel 2.6.17.1</DIV>  <DIV>- Applied the 5 TEMAC patches</DIV>  <DIV>- Applied Ameet's Sysace patch </DIV>  <DIV>- copied the xparameters_ml403.h to the arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h generated by EDK</DIV>  <DIV>&nbsp;</DIV>  <DIV>- After including the network driver and sysace driver in "make menuconfig" and generating the zImage and booting the board the kernel hangs.</DIV>  <DIV>&nbsp;</DIV>  <DIV>loaded at:&nbsp;&nbsp;&nbsp;&nbsp; 00400000 0051613C<BR>board data at: 00514124 0051413C<BR>relocated to:&nbsp; 004050E8
+ 00405100<BR>zimage at:&nbsp;&nbsp;&nbsp;&nbsp; 00405881 005137E8<BR>avail ram:&nbsp;&nbsp;&nbsp;&nbsp; 00517000 10000000</DIV>  <DIV>Linux/PPC load: console=ttyS0,9600 root=/dev/sda2<BR>Uncompressing Linux...done.<BR>Now booting the kernel<BR></DIV>  <DIV>I suspect the xparameter addresses are incorrect. Which parameter should i modify in the xparameters_ml403.h?</DIV>  <DIV>&nbsp;</DIV>  <DIV>Kindly send a reply at&nbsp;your earliest. </DIV>  <DIV>Thanks!</DIV>  <DIV>Pradeep<BR></DIV>
+--0-532025741-1159857747=:58084--
