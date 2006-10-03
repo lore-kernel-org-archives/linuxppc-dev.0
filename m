@@ -1,26 +1,19 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
-	by ozlabs.org (Postfix) with ESMTP id 6F98567C03
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 02:47:49 +1000 (EST)
-Date: Tue, 3 Oct 2006 18:46:05 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: [PATCH] mv643xx_eth_pcidev : implement hotplug by matching the
-	Discovery II/III northbridge pci id (Was: +
-	mv643xx_eth_pcidev-implements-hotplug-for-the-marvell-gige-functionality-by-probing-the-northbridge-pci-id.patch
-	added to -mm tree)
-Message-ID: <20061003164605.GA27962@aepfle.de>
-References: <200510250811.j9P8B7db002405@shell0.pdx.osdl.net>
-	<20060919151611.GA15580@powerlinux.fr>
-	<20060919093410.e454e465.akpm@osdl.org>
-	<20061003123303.GB23670@powerlinux.fr>
-	<20061003142355.GA26207@aepfle.de>
-	<20061003162905.GA1006@powerlinux.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20061003162905.GA1006@powerlinux.fr>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Sven Luther <sl@bplan-gmbh.de>, Jeff Garzik <jeff@garzik.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B531467C0F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 02:58:33 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <724D42AC-3DBA-4B32-8E4A-914441251470@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: RFC: qe lib code location?
+Date: Tue, 3 Oct 2006 11:34:11 -0500
+To: Kim Phillips <Kim.Phillips@freescale.com>,
+ Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,9 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 03, Sven Luther wrote:
+I was wondering what peoples thought were on having the qe lib code  
+live in drivers/qe instead of sysdev/qe_lib (with the exception of  
+the interrupt controller code)
 
-> Does this also account for all those distributions out there who have pure
-> udev based installers ? 
+Yes, one can argue the cpm code should live in drivers/cpm by this  
+logic, but lets considered them grandfathered for now.
 
-Maybe udev does just a 'modprobe $MODALIAS', I dont know.
+- kumar
