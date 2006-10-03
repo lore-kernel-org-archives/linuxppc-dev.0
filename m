@@ -1,20 +1,24 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-71-127.roch.qwest.net [67.41.71.127])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4279E67BD4
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 20:46:54 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Generic DCR access
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
+	by ozlabs.org (Postfix) with ESMTP id C1B0867BF7
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 21:05:24 +1000 (EST)
+Subject: Re: [2.6 patch] mark virt_to_bus/bus_to_virt as __deprecated on i386
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1159855478.5482.46.camel@localhost.localdomain>
-References: <1159855478.5482.46.camel@localhost.localdomain>
+In-Reply-To: <1159850260.5482.34.camel@localhost.localdomain>
+References: <20061002214954.GD665@shell0.pdx.osdl.net>
+	<20061002234428.GE3278@stusta.de>  <20061003012241.GF3278@stusta.de>
+	<1159840091.2349.0.camel@entropy>
+	<1159850260.5482.34.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 03 Oct 2006 05:45:58 -0500
-Message-Id: <1159872359.29427.2.camel@vader.jdub.homelinux.org>
+Date: Tue, 03 Oct 2006 12:29:35 +0100
+Message-Id: <1159874975.17553.17.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Nicholas Miell <nmiell@comcast.net>,
+	Judith Lebzelter <judith@osdl.org>, linux-kernel@vger.kernel.org,
+	Adrian Bunk <bunk@stusta.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-10-03 at 16:04 +1000, Benjamin Herrenschmidt wrote:
-> This defines new "generic" access functions for DCRs that can be used
-> both on platforms with hardware DCR support (4xx processors) and
-> platforms where the DCRs are memory mapped. The 4xx versions are
-> implemented inline. The memory mapped versions will be implemented
-> separately as platforms support for them gets added.
+Ar Maw, 2006-10-03 am 14:37 +1000, ysgrifennodd Benjamin Herrenschmidt:
+> > Won't this also cause warnings for valid arch-specific usage (i.e. in
+> > linux/arch/{i386,x86_64})?
 > 
-> From: Shaun Wetzstein <shaun@us.ibm.com>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Index: linux-cell/include/asm-powerpc/dcr.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-cell/include/asm-powerpc/dcr.h	2006-09-22 13:25:58.000000000 +1000
-> @@ -0,0 +1,56 @@
-> +/*
-> + *   Copyright (c) International Business Machines Corp., 2006
-> + *
-> + *   This program is free software;  you can redistribute it and/or modify
-> + *   it under the terms of the GNU General Public License as published by
-> + *   the Free Software Foundation; either version 2 of the License, or
-> + *   (at your option) any later version.
-> + *
-> + *   This program is distributed in the hope that it will be useful,
-> + *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
-> + *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-> + *   the GNU General Public License for more details.
-> + *
-> + *   You should have received a copy of the GNU General Public License
-> + *   along with this program;  if not, write to the Free Software
-> + *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-> + */
-> +
-> +#ifndef _ASM_POWERPC_DCR_H
-> +#define _ASM_POWERPC_DCR_H
-> +#ifdef __KERNEL__
-> +
-> +#include <asm/of_device.h>
-> +
-> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+> I wouldn't cause that usage valid :)
 
-I think this should be #if defined(CONFIG_40x) ||  defined(CONFIG_44x).
-Or even just #ifdef CONFIG_4xx.  CONFIG_BOOKE also gets set for things
-like e500, but those don't have DCRs.
+Actually a lot of the older legitimate users (DRM/AGP) have been cleaned
+up so it might be worth doing now after all.
 
-josh
+Ok I take back the NAK having looked deeper. We appear to have made
+sufficient progress along the way.
+
+Acked-by: Alan Cox <alan@redhat.com>
