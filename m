@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E21FD67B5B
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:07:02 +1000 (EST)
-Subject: Re: Undefined '.bus_to_virt', '.virt_to_bus' causes compile error
-	on Powerpc 64-bit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Judith Lebzelter <judith@osdl.org>
-In-Reply-To: <20061002214954.GD665@shell0.pdx.osdl.net>
-References: <20061002214954.GD665@shell0.pdx.osdl.net>
-Content-Type: text/plain
-Date: Tue, 03 Oct 2006 11:05:39 +1000
-Message-Id: <1159837539.5482.15.camel@localhost.localdomain>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B0B8967C06
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:09:51 +1000 (EST)
+Date: Mon, 2 Oct 2006 20:08:59 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/7] Add QE device tree node definition
+Message-Id: <20061002200859.5243ae8d.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +19,280 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-10-02 at 14:49 -0700, Judith Lebzelter wrote:
-> Hello:
-> 
-> For the automated cross-compile builds at OSDL, powerpc 64-bit 
-> 'allmodconfig' is failing.  The warnings/errors below appear in 
-> the 'modpost' stage of kernel compiles for 2.6.18 and -mm2 kernels.
+From: Li Yang <leoli@freescale.com>
 
-All those drivers are bogus and need to be updated. They should be
-marked CONFIG_BROKEN
+OF device tree node spec used in QE/8360 support patches.
 
-Ben.
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |  252 ++++++++++++++++++++++++++
+ 1 files changed, 252 insertions(+), 0 deletions(-)
 
-> Thanks;
-> Judith Lebzelter
-> OSDL
-> 
-> -----------
-> 
->   Building modules, stage 2.
->   MODPOST 1658 modules
-> WARNING: Can't handle masks in drivers/ata/ahci:FFFF05
-> WARNING: ".virt_to_bus" [sound/oss/sscape.ko] undefined!
-> WARNING: ".virt_to_bus" [sound/oss/sound.ko] undefined!
-> WARNING: ".bus_to_virt" [sound/oss/cs46xx.ko] undefined!
-> WARNING: ".virt_to_bus" [sound/oss/cs46xx.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/scsi/tmscsim.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/scsi/BusLogic.ko] undefined!
-> WARNING: ".virt_to_bus" [drivers/net/wan/lmc/lmc.ko] undefined!
-> WARNING: ".virt_to_bus" [drivers/message/i2o/i2o_config.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/block/cpqarray.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/atm/zatm.ko] undefined!
-> WARNING: ".virt_to_bus" [drivers/atm/zatm.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/atm/horizon.ko] undefined!
-> WARNING: ".virt_to_bus" [drivers/atm/firestream.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/atm/firestream.ko] undefined!
-> WARNING: ".bus_to_virt" [drivers/atm/ambassador.ko] undefined!
-> WARNING: ".virt_to_bus" [drivers/atm/ambassador.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 5c0ba23..b57e7da 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1441,6 +1441,258 @@ platforms are moved over to use the flat
+                descriptor-types-mask = <012b0ebf>;
+        };
+ 
++   h) Board Control and Status (BCSR)
++
++   Required properties:
++
++    - device_type : Should be "board-control"
++    - reg : Offset and length of the register set for the device
++
++    Example:
++
++	bcsr@f8000000 {
++		device_type = "board-control";
++		reg = <f8000000 8000>;
++	};
++
++   i) Freescale QUICC Engine module (QE)
++   This represents qe module that is installed on PowerQUICC II Pro.
++   Hopefully it will merge backward compatibility with CPM/CPM2.
++   Basically, it is a bus of devices, that could act more or less
++   as a complete entity (UCC, USB etc ). All of them should be siblings on
++   the "root" qe node, using the common properties from there.
++   The description below applies to the the qe of MPC8360 and
++   more nodes and properties would be extended in the future.
++
++   i) Root QE device
++
++   Required properties:
++   - device_type : should be "qe";
++   - model : precise model of the QE, Can be "QE", "CPM", or "CPM2"
++   - reg : offset and length of the device registers.
++   - bus-frequency : the clock frequency for QUICC Engine.
++
++   Recommended properties
++   - brg-frequency : the internal clock source frequency for baud-rate
++     generators in Hz.
++
++   Example:
++	qe@e0100000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "qe";
++		model = "QE";
++		ranges = <0 e0100000 00100000>;
++		reg = <e0100000 480>;
++		brg-frequency = <0>;
++		bus-frequency = <179A7B00>;
++	}
++
++
++   ii) SPI (Serial Peripheral Interface)
++
++   Required properties:
++   - device_type : should be "spi".
++   - compatible : should be "fsl_spi".
++   - mode : the spi operation mode, it can be "cpu" or "qe".
++   - reg : Offset and length of the register set for the device
++   - interrupts : <a b> where a is the interrupt number and b is a
++     field that represents an encoding of the sense and level
++     information for the interrupt.  This should be encoded based on
++     the information in section 2) depending on the type of interrupt
++     controller you have.
++   - interrupt-parent : the phandle for the interrupt controller that
++     services interrupts for this device.
++
++   Example:
++	spi@4c0 {
++		device_type = "spi";
++		compatible = "fsl_spi";
++		reg = <4c0 40>;
++		interrupts = <82 0>;
++		interrupt-parent = <700>;
++		mode = "cpu";
++	};
++
++
++   iii) USB (Universal Serial Bus Controller)
++
++   Required properties:
++   - device_type : should be "usb".
++   - compatible : could be "qe_udc" or "fhci-hcd".
++   - mode : the could be "host" or "slave".
++   - reg : Offset and length of the register set for the device
++   - interrupts : <a b> where a is the interrupt number and b is a
++     field that represents an encoding of the sense and level
++     information for the interrupt.  This should be encoded based on
++     the information in section 2) depending on the type of interrupt
++     controller you have.
++   - interrupt-parent : the phandle for the interrupt controller that
++     services interrupts for this device.
++
++   Example(slave):
++	usb@6c0 {
++		device_type = "usb";
++		compatible = "qe_udc";
++		reg = <6c0 40>;
++		interrupts = <8b 0>;
++		interrupt-parent = <700>;
++		mode = "slave";
++	};
++
++
++   iv) UCC (Unified Communications Controllers)
++
++   Required properties:
++   - device_type : should be "network", "hldc", "uart", "transparent"
++    "bisync" or "atm".
++   - compatible : could be "ucc_geth" or "fsl_atm" and so on.
++   - model : should be "UCC".
++   - device-id : the ucc number(1-8), corresponding to UCCx in UM.
++   - reg : Offset and length of the register set for the device
++   - interrupts : <a b> where a is the interrupt number and b is a
++     field that represents an encoding of the sense and level
++     information for the interrupt.  This should be encoded based on
++     the information in section 2) depending on the type of interrupt
++     controller you have.
++   - interrupt-parent : the phandle for the interrupt controller that
++     services interrupts for this device.
++   - pio-handle : The phandle for the Parallel I/O port configuration.
++   - rx-clock : represents the UCC receive clock source.
++     0x00 : clock source is disabled;
++     0x1~0x10 : clock source is BRG1~BRG16 respectively;
++     0x11~0x28: clock source is QE_CLK1~QE_CLK24 respectively.
++   - tx-clock: represents the UCC transmit clock source;
++     0x00 : clock source is disabled;
++     0x1~0x10 : clock source is BRG1~BRG16 respectively;
++     0x11~0x28: clock source is QE_CLK1~QE_CLK24 respectively.
++
++   Required properties for network device_type:
++   - mac-address : list of bytes representing the ethernet address.
++   - phy-handle : The phandle for the PHY connected to this controller.
++
++   Example:
++	ucc@2000 {
++		device_type = "network";
++		compatible = "ucc_geth";
++		model = "UCC";
++		device-id = <1>;
++		reg = <2000 200>;
++		interrupts = <a0 0>;
++		interrupt-parent = <700>;
++		mac-address = [ 00 04 9f 00 23 23 ];
++		rx-clock = "none";
++		tx-clock = "clk9";
++		phy-handle = <212000>;
++		pio-handle = <140001>;
++	};
++
++
++   v) Parallel I/O Ports
++
++   This node configures Parallel I/O ports for CPUs with QE support.
++   The node should reside in the "soc" node of the tree.  For each
++   device that using parallel I/O ports, a child node should be created.
++   See the definition of the Pin configuration nodes below for more
++   information.
++
++   Required properties:
++   - device_type : should be "par_io".
++   - reg : offset to the register set and its length.
++   - num-ports : number of Parallel I/O ports
++
++   Example:
++	par_io@1400 {
++		reg = <1400 100>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		device_type = "par_io";
++		num-ports = <7>;
++		ucc_pin@01 {
++			......
++		};
++
++
++   vi) Pin configuration nodes
++
++   Required properties:
++   - linux,phandle : phandle of this node; likely referenced by a QE
++     device.
++   - pio-map : array of pin configurations.  Each pin is defined by 6
++     integers.  The six numbers are respectively: port, pin, dir,
++     open_drain, assignment, has_irq.
++     - port : port number of the pin; 0-6 represent port A-G in UM.
++     - pin : pin number in the port.
++     - dir : direction of the pin, should encode as follows:
++
++	0 = The pin is disabled
++	1 = The pin is an output
++	2 = The pin is an input
++	3 = The pin is I/O
++
++     - open_drain : indicates the pin is normal or wired-OR:
++
++	0 = The pin is actively driven as an output
++	1 = The pin is an open-drain driver. As an output, the pin is
++	    driven active-low, otherwise it is three-stated.
++
++     - assignment : function number of the pin according to the Pin Assignment
++       tables in User Manual.  Each pin can have up to 4 possible functions in
++       QE and two options for CPM.
++     - has_irq : indicates if the pin is used as source of exteral
++       interrupts.
++
++   Example:
++	ucc_pin@01 {
++		linux,phandle = <140001>;
++		pio-map = <
++		/* port  pin  dir  open_drain  assignment  has_irq */
++			0  3  1  0  1  0 	/* TxD0 */
++			0  4  1  0  1  0 	/* TxD1 */
++			0  5  1  0  1  0 	/* TxD2 */
++			0  6  1  0  1  0 	/* TxD3 */
++			1  6  1  0  3  0 	/* TxD4 */
++			1  7  1  0  1  0 	/* TxD5 */
++			1  9  1  0  2  0 	/* TxD6 */
++			1  a  1  0  2  0 	/* TxD7 */
++			0  9  2  0  1  0 	/* RxD0 */
++			0  a  2  0  1  0 	/* RxD1 */
++			0  b  2  0  1  0 	/* RxD2 */
++			0  c  2  0  1  0 	/* RxD3 */
++			0  d  2  0  1  0 	/* RxD4 */
++			1  1  2  0  2  0 	/* RxD5 */
++			1  0  2  0  2  0 	/* RxD6 */
++			1  4  2  0  2  0 	/* RxD7 */
++			0  7  1  0  1  0 	/* TX_EN */
++			0  8  1  0  1  0 	/* TX_ER */
++			0  f  2  0  1  0 	/* RX_DV */
++			0  10 2  0  1  0 	/* RX_ER */
++			0  0  2  0  1  0 	/* RX_CLK */
++			2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
++			2  8  2  0  1  0>;	/* GTX125 - CLK9 */
++	};
++
++   vii) Multi-User RAM (MURAM)
++
++   Required properties:
++   - device_type : should be "muram".
++   - mode : the could be "host" or "slave".
++   - ranges : Should be defined as specified in 1) to describe the
++      translation of MURAM addresses.
++   - data-only : sub-node which defines the address area under MURAM
++      bus that can be allocated as data/parameter
++
++   Example:
++
++	muram@10000 {
++		device_type = "muram";
++		ranges = <0 00010000 0000c000>;
++
++		data-only@0{
++			reg = <0 c000>;
++		};
++	};
+ 
+    More devices will be defined as this spec matures.
+ 
+-- 
+1.4.2.1
