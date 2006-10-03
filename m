@@ -1,18 +1,17 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E7ABA67C3B
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 04:02:50 +1000 (EST)
-Date: Tue, 3 Oct 2006 13:02:45 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] Add MPC8360EMDS board support
-Message-Id: <20061003130245.58267c54.kim.phillips@freescale.com>
-In-Reply-To: <41AC40EF-31AC-42FE-9C1A-9B80233D2E64@kernel.crashing.org>
-References: <20061002200946.1f411bcc.kim.phillips@freescale.com>
-	<41AC40EF-31AC-42FE-9C1A-9B80233D2E64@kernel.crashing.org>
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 78CFE67C30
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 04:17:07 +1000 (EST)
+Date: Tue, 3 Oct 2006 11:18:12 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: todc must die!
+Message-ID: <20061003181812.GA28128@mag.az.mvista.com>
+References: <20061003065744.GC29689@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061003065744.GC29689@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 Oct 2006 22:19:14 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
-> [snip]
+On Tue, Oct 03, 2006 at 04:57:44PM +1000, David Gibson wrote:
+> Paulus, please apply to your powerpc git tree.
 > 
-
-> > +static u8 *bcsr_regs = NULL;
-> > +
-> > +u8 *get_bcsr(void)
-> > +{
-> > +	return bcsr_regs;
-> > +}
+> powerpc: Remove todc code from ARCH=powerpc
 > 
-> Is get_bcsr() needed since you removed its use from ucc_geth?  (if  
-> not, let's remove it and the header as well).
-> 
+> Apparently we've copied the todc drivers, for various RTCs used in
+> embedded machines from ARCH=ppc to ARCH=powerpc, despite the fact that
+> it's never used in the latter.  This patch removes it.
 
-it will be once we figure out a better way of handling it from usb and ethernet phy code. I had just removed it due to Paul's comment (bcsr bits are being manipulated in the wrong place (ucc_geth)).
+Well, its used, its just that the patches that add users are backed up
+waiting for the outcome of flatdevtree changes.
 
-Kim
+> If we ever need these drivers (which we probably shouldn't now the RTC
+> class stuff is in), we can transfer them one by one from ARCH=ppc,
+> removing from the hideous abomination which is the todc
+> "infrastructure".
+
+Yes, the new RTC infrastructure should be used instead.  Copying over
+the todc stuff to powerpc was a stop-gap measure whose time has probably
+come.
+
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Acked-by: Mark A. Greer <mgreer@mvista.com>
