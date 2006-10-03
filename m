@@ -1,15 +1,26 @@
-Return-Path: <dwalker@dwalker1.mvista.com>
-Received: from dwalker1.mvista.com (gateway-1237.mvista.com [63.81.120.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51E4C679FD
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 01:56:40 +1000 (EST)
-Message-Id: <20061003155358.756788000@dwalker1.mvista.com>
-Date: Tue, 03 Oct 2006 08:53:58 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: mingo@elte.hu
-Subject: [PATCH -rt] powerpc update
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
+	by ozlabs.org (Postfix) with ESMTP id 6F98567C03
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 02:47:49 +1000 (EST)
+Date: Tue, 3 Oct 2006 18:46:05 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: [PATCH] mv643xx_eth_pcidev : implement hotplug by matching the
+	Discovery II/III northbridge pci id (Was: +
+	mv643xx_eth_pcidev-implements-hotplug-for-the-marvell-gige-functionality-by-probing-the-northbridge-pci-id.patch
+	added to -mm tree)
+Message-ID: <20061003164605.GA27962@aepfle.de>
+References: <200510250811.j9P8B7db002405@shell0.pdx.osdl.net>
+	<20060919151611.GA15580@powerlinux.fr>
+	<20060919093410.e454e465.akpm@osdl.org>
+	<20061003123303.GB23670@powerlinux.fr>
+	<20061003142355.GA26207@aepfle.de>
+	<20061003162905.GA1006@powerlinux.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061003162905.GA1006@powerlinux.fr>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Sven Luther <sl@bplan-gmbh.de>, Jeff Garzik <jeff@garzik.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,191 +30,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This updates arch/powerpc/ so that it boots PREEMPT_RT on a Apple 
-G4 PowerBook. It should also get other powerpc boards functional to
-some extent. 
+On Tue, Oct 03, Sven Luther wrote:
 
-Pay close attention to the fasteoi interrupt threading. I added usage 
-of mask/unmask instead of using level handling, which worked well on PPC.
+> Does this also account for all those distributions out there who have pure
+> udev based installers ? 
 
-There is still a todo to update highmems kmap_atomic() for realtime. 
-So don't turn on highmem. 
-
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
-
----
- arch/powerpc/Kconfig.debug         |    4 ++++
- arch/powerpc/kernel/idle.c         |    2 +-
- drivers/macintosh/adb.c            |   13 +++++++------
- drivers/net/sungem.c               |    4 +---
- include/asm-powerpc/hw_irq.h       |    2 +-
- include/asm-powerpc/pmac_feature.h |    2 +-
- kernel/irq/chip.c                  |   17 +++++++++++------
- 7 files changed, 26 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.18/arch/powerpc/Kconfig.debug
-===================================================================
---- linux-2.6.18.orig/arch/powerpc/Kconfig.debug
-+++ linux-2.6.18/arch/powerpc/Kconfig.debug
-@@ -2,6 +2,10 @@ menu "Kernel hacking"
- 
- source "lib/Kconfig.debug"
- 
-+config TRACE_IRQFLAGS_SUPPORT
-+	bool
-+	default y
-+
- config DEBUG_STACKOVERFLOW
- 	bool "Check for stack overflows"
- 	depends on DEBUG_KERNEL && PPC64
-Index: linux-2.6.18/arch/powerpc/kernel/idle.c
-===================================================================
---- linux-2.6.18.orig/arch/powerpc/kernel/idle.c
-+++ linux-2.6.18/arch/powerpc/kernel/idle.c
-@@ -82,7 +82,7 @@ void cpu_idle(void)
- 		ppc64_runlatch_on();
- 		if (cpu_should_die())
- 			cpu_die();
--		preempt_enable_no_resched();
-+		__preempt_enable_no_resched();
- 		schedule();
- 		preempt_disable();
- 	}
-Index: linux-2.6.18/drivers/macintosh/adb.c
-===================================================================
---- linux-2.6.18.orig/drivers/macintosh/adb.c
-+++ linux-2.6.18/drivers/macintosh/adb.c
-@@ -256,6 +256,8 @@ adb_probe_task(void *x)
- 	sigprocmask(SIG_BLOCK, &blocked, NULL);
- 	flush_signals(current);
- 
-+	down(&adb_probe_mutex);
-+
- 	printk(KERN_INFO "adb: starting probe task...\n");
- 	do_adb_reset_bus();
- 	printk(KERN_INFO "adb: finished probe task...\n");
-@@ -282,7 +284,9 @@ adb_reset_bus(void)
- 		return 0;
- 	}
- 
--	down(&adb_probe_mutex);
-+	if (adb_got_sleep)
-+		return 0;
-+
- 	schedule_work(&adb_reset_work);
- 	return 0;
- }
-@@ -347,23 +351,21 @@ adb_notify_sleep(struct pmu_sleep_notifi
- 	
- 	switch (when) {
- 	case PBOOK_SLEEP_REQUEST:
-+		/* Signal to discontiue probing  */
- 		adb_got_sleep = 1;
--		/* We need to get a lock on the probe thread */
--		down(&adb_probe_mutex);
- 		/* Stop autopoll */
- 		if (adb_controller->autopoll)
- 			adb_controller->autopoll(0);
- 		ret = blocking_notifier_call_chain(&adb_client_list,
- 				ADB_MSG_POWERDOWN, NULL);
- 		if (ret & NOTIFY_STOP_MASK) {
--			up(&adb_probe_mutex);
-+			adb_got_sleep = 0;
- 			return PBOOK_SLEEP_REFUSE;
- 		}
- 		break;
- 	case PBOOK_SLEEP_REJECT:
- 		if (adb_got_sleep) {
- 			adb_got_sleep = 0;
--			up(&adb_probe_mutex);
- 			adb_reset_bus();
- 		}
- 		break;
-@@ -372,7 +374,6 @@ adb_notify_sleep(struct pmu_sleep_notifi
- 		break;
- 	case PBOOK_WAKE:
- 		adb_got_sleep = 0;
--		up(&adb_probe_mutex);
- 		adb_reset_bus();
- 		break;
- 	}
-Index: linux-2.6.18/drivers/net/sungem.c
-===================================================================
---- linux-2.6.18.orig/drivers/net/sungem.c
-+++ linux-2.6.18/drivers/net/sungem.c
-@@ -1037,10 +1037,8 @@ static int gem_start_xmit(struct sk_buff
- 			(csum_stuff_off << 21));
- 	}
- 
--	local_irq_save(flags);
--	if (!spin_trylock(&gp->tx_lock)) {
-+	if (!spin_trylock_irqsave(&gp->tx_lock, flags)) {
- 		/* Tell upper layer to requeue */
--		local_irq_restore(flags);
- 		return NETDEV_TX_LOCKED;
- 	}
- 	/* We raced with gem_do_stop() */
-Index: linux-2.6.18/include/asm-powerpc/hw_irq.h
-===================================================================
---- linux-2.6.18.orig/include/asm-powerpc/hw_irq.h
-+++ linux-2.6.18/include/asm-powerpc/hw_irq.h
-@@ -85,7 +85,7 @@ static inline void raw_local_irq_save_pt
- 
- #endif /* CONFIG_PPC_ISERIES */
- 
--#include <linux/trace_irqflags.h>
-+#include <linux/irqflags.h>
- 
- #define mask_irq(irq)						\
- 	({							\
-Index: linux-2.6.18/include/asm-powerpc/pmac_feature.h
-===================================================================
---- linux-2.6.18.orig/include/asm-powerpc/pmac_feature.h
-+++ linux-2.6.18/include/asm-powerpc/pmac_feature.h
-@@ -378,7 +378,7 @@ extern struct macio_chip* macio_find(str
-  * Those are exported by pmac feature for internal use by arch code
-  * only like the platform function callbacks, do not use directly in drivers
-  */
--extern spinlock_t feature_lock;
-+extern raw_spinlock_t feature_lock;
- extern struct device_node *uninorth_node;
- extern u32 __iomem *uninorth_base;
- 
-Index: linux-2.6.18/kernel/irq/chip.c
-===================================================================
---- linux-2.6.18.orig/kernel/irq/chip.c
-+++ linux-2.6.18/kernel/irq/chip.c
-@@ -386,13 +386,19 @@ handle_fasteoi_irq(unsigned int irq, str
- 	}
- 
- 	desc->status |= IRQ_INPROGRESS;
--	/*
--	 * fasteoi should not be used for threaded IRQ handlers!
--	 */
-+
- 	if (redirect_hardirq(desc)) {
--		WARN_ON_ONCE(1);
--		goto out_unlock;
-+		if (desc->chip->mask)
-+			desc->chip->mask(irq);
-+		else
-+			/*
-+			 * Threading on eoi chips w/o a mask/unmask is not
-+			 * likely to work well.
-+			 */
-+			WARN_ON_ONCE(1);
-+		goto out;
- 	}
-+
- 	desc->status &= ~IRQ_PENDING;
- 	spin_unlock(&desc->lock);
- 
-@@ -404,7 +410,6 @@ handle_fasteoi_irq(unsigned int irq, str
- 	desc->status &= ~IRQ_INPROGRESS;
- out:
- 	desc->chip->eoi(irq);
--out_unlock:
- 	spin_unlock(&desc->lock);
- }
- 
---
+Maybe udev does just a 'modprobe $MODALIAS', I dont know.
