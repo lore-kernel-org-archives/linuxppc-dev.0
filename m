@@ -1,12 +1,12 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9B45C67C08
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:11:26 +1000 (EST)
-Date: Mon, 2 Oct 2006 20:10:10 -0500
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 919D667C07
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:11:27 +1000 (EST)
+Date: Mon, 2 Oct 2006 20:10:30 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/7] Add MPC8360EMDS default dts file
-Message-Id: <20061002201010.4d78d34f.kim.phillips@freescale.com>
+Subject: [PATCH 7/7] add support for the mpc832x mds board
+Message-Id: <20061002201030.235af84a.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: Paul Mackerras <paulus@samba.org>
@@ -19,27 +19,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Li Yang <leoli@freescale.com>
+Add support for MPC832x MDS evaluation board.
 
-Add MPC8360EMDS default dts file
+This patch depends on the 8360+QE lib patches by Leo.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
+The MPC832x processors (MPC8323E, MPC8323, MPC8321E, MPC8321) sport the e300c2 core plus a QUICC Engine (QE).  This patch adds support for the 832x MDS evaluation board.
+
+The 832x MDS dts and defconfig files are pending more tests.
+
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/boot/dts/mpc8360emds.dts |  375 +++++++++++++++++++++++++++++++++
- 1 files changed, 375 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8360emds.dts b/arch/powerpc/boot/dts/mpc8360emds.dts
+---
+ arch/powerpc/Kconfig                      |    2 
+ arch/powerpc/platforms/83xx/Kconfig       |   13 ++
+ arch/powerpc/platforms/83xx/Makefile      |    1 
+ arch/powerpc/platforms/83xx/mpc832x_mds.c |  215 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/mpc832x_mds.h |   19 +++
+ 5 files changed, 249 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e1dbe7f..e8446b8 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -357,7 +357,7 @@ endchoice
+ 
+ config QUICC_ENGINE
+ 	bool
+-	depends on PPC_MPC836x
++	depends on PPC_MPC836x || PPC_MPC832x
+ 	default y
+ 	help
+ 	  The QUICC Engine (QE) is a new generation of communications
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 83dfded..7edb6b4 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -5,6 +5,13 @@ choice
+ 	prompt "Machine Type"
+ 	default MPC834x_SYS
+ 
++config MPC832x_MDS
++	bool "Freescale MPC832x MDS"
++	select DEFAULT_UIMAGE
++	select QUICC_ENGINE
++	help
++	  This option enables support for the MPC832x MDS evaluation board.
++
+ config MPC834x_SYS
+ 	bool "Freescale MPC834x SYS"
+ 	select DEFAULT_UIMAGE
+@@ -34,6 +41,12 @@ config MPC8360E_PB
+ 
+ endchoice
+ 
++config PPC_MPC832x
++	bool
++	select PPC_UDBG_16550
++	select PPC_INDIRECT_PCI
++	default y if MPC832x_MDS
++
+ config MPC834x
+ 	bool
+ 	select PPC_UDBG_16550
+diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
+index 0da2d0d..5cf1ac0 100644
+--- a/arch/powerpc/platforms/83xx/Makefile
++++ b/arch/powerpc/platforms/83xx/Makefile
+@@ -3,6 +3,7 @@ # Makefile for the PowerPC 83xx linux ke
+ #
+ obj-y				:= misc.o
+ obj-$(CONFIG_PCI)		+= pci.o
++obj-$(CONFIG_MPC832x_MDS)	+= mpc832x_mds.o
+ obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o
+ obj-$(CONFIG_MPC834x_ITX)	+= mpc834x_itx.o
+ obj-$(CONFIG_MPC8360E_PB)	+= mpc8360e_pb.o
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
 new file mode 100644
-index 0000000..9022192
+index 0000000..54dea9d
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8360emds.dts
-@@ -0,0 +1,375 @@
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -0,0 +1,215 @@
 +/*
-+ * MPC8360E EMDS Device Tree Source
++ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
 + *
-+ * Copyright 2006 Freescale Semiconductor Inc.
++ * Description:
++ * MPC832xE MDS board specific routines.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -47,369 +111,233 @@ index 0000000..9022192
 + * option) any later version.
 + */
 +
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/major.h>
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
++#include <linux/root_dev.h>
++#include <linux/initrd.h>
++
++#include <asm/system.h>
++#include <asm/atomic.h>
++#include <asm/time.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/ipic.h>
++#include <asm/bootinfo.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <sysdev/fsl_soc.h>
++#include <asm/qe.h>
++#include <asm/qe_ic.h>
++
++#include "mpc83xx.h"
++#include "mpc832x_mds.h"
++
++#undef DEBUG
++#ifdef DEBUG
++#define DBG(fmt...) udbg_printf(fmt)
++#else
++#define DBG(fmt...)
++#endif
++
++#ifndef CONFIG_PCI
++unsigned long isa_io_base = 0;
++unsigned long isa_mem_base = 0;
++#endif
++
++static u8 *bcsr_regs = NULL;
++
++u8 *get_bcsr(void)
++{
++	return bcsr_regs;
++}
++
++/* ************************************************************************
++ *
++ * Setup the architecture
++ *
++ */
++static void __init mpc832x_sys_setup_arch(void)
++{
++	struct device_node *np;
++
++	if (ppc_md.progress)
++		ppc_md.progress("mpc832x_sys_setup_arch()", 0);
++
++	np = of_find_node_by_type(NULL, "cpu");
++	if (np != 0) {
++		unsigned int *fp =
++		    (int *)get_property(np, "clock-frequency", NULL);
++		if (fp != 0)
++			loops_per_jiffy = *fp / HZ;
++		else
++			loops_per_jiffy = 50000000 / HZ;
++		of_node_put(np);
++	}
++
++	/* Map BCSR area */
++	np = of_find_node_by_name(NULL, "bcsr");
++	if (np != 0) {
++		struct resource res;
++
++		of_address_to_resource(np, 0, &res);
++		bcsr_regs = ioremap(res.start, res.end - res.start +1);
++		of_node_put(np);
++	}
++
++#ifdef CONFIG_PCI
++	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
++		add_bridge(np);
++
++	ppc_md.pci_swizzle = common_swizzle;
++	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
++#endif
++
++#ifdef CONFIG_QUICC_ENGINE
++	qe_reset();
++
++	if ((np = of_find_node_by_name(np, "par_io")) != NULL) {
++		par_io_init(np);
++		of_node_put(np);
++
++		for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
++			par_io_of_config(np);
++	}
++
++	if ((np = of_find_compatible_node(NULL, "network", "ucc_geth"))
++			!= NULL){
++		/* Reset the Ethernet PHY */
++		bcsr_regs[9] &= ~0x20;
++		udelay(1000);
++		bcsr_regs[9] |= 0x20;
++		iounmap(bcsr_regs);
++		of_node_put(np);
++	}
++
++#endif				/* CONFIG_QUICC_ENGINE */
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	if (initrd_start)
++		ROOT_DEV = Root_RAM0;
++	else
++#endif
++#ifdef  CONFIG_ROOT_NFS
++		ROOT_DEV = Root_NFS;
++#else
++		ROOT_DEV = Root_HDA1;
++#endif
++}
++
++void __init mpc832x_sys_init_IRQ(void)
++{
++
++	struct device_node *np;
++
++	np = of_find_node_by_type(NULL, "ipic");
++	if (!np)
++		return;
++
++	ipic_init(np, 0);
++
++	/* Initialize the default interrupt mapping priorities,
++	 * in case the boot rom changed something on us.
++	 */
++	ipic_set_default_priority();
++	of_node_put(np);
++
++#ifdef CONFIG_QUICC_ENGINE
++	np = of_find_node_by_type(NULL, "qeic");
++	if (!np)
++		return;
++
++	qe_ic_init(np, 0);
++	of_node_put(np);
++#endif				/* CONFIG_QUICC_ENGINE */
++}
++
++#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
++extern ulong ds1374_get_rtc_time(void);
++extern int ds1374_set_rtc_time(ulong);
++
++static int __init mpc832x_rtc_hookup(void)
++{
++	struct timespec tv;
++
++	ppc_md.get_rtc_time = ds1374_get_rtc_time;
++	ppc_md.set_rtc_time = ds1374_set_rtc_time;
++
++	tv.tv_nsec = 0;
++	tv.tv_sec = (ppc_md.get_rtc_time) ();
++	do_settimeofday(&tv);
++
++	return 0;
++}
++
++late_initcall(mpc832x_rtc_hookup);
++#endif
 +
 +/*
-+/memreserve/	00000000 1000000;
-+*/
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init mpc832x_sys_probe(void)
++{
++	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
++					  "model", NULL);
 +
-+/ {
-+	model = "MPC8360EPB";
-+	compatible = "MPC83xx";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	linux,phandle = <100>;
++	if (model == NULL)
++		return 0;
++	if (strcmp(model, "MPC8323EMDS"))
++		return 0;
 +
-+	cpus {
-+		#cpus = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		linux,phandle = <200>;
++	DBG("%s found\n", model);
 +
-+		PowerPC,8360@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <20>;	// 32 bytes
-+			i-cache-line-size = <20>;	// 32 bytes
-+			d-cache-size = <8000>;		// L1, 32K
-+			i-cache-size = <8000>;		// L1, 32K
-+			timebase-frequency = <3EF1480>;
-+			bus-frequency = <FBC5200>;
-+			clock-frequency = <1F78A400>;
-+			32-bit;
-+			linux,phandle = <201>;
-+			linux,boot-cpu;
-+		};
-+	};
++	return 1;
++}
 +
-+	memory {
-+		device_type = "memory";
-+		linux,phandle = <300>;
-+		reg = <00000000 10000000>;
-+	};
-+
-+	bcsr@f8000000 {
-+		device_type = "board-control";
-+		reg = <f8000000 8000>;
-+	};
-+
-+	soc8360@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "soc";
-+		ranges = <0 e0000000 00100000>;
-+		reg = <e0000000 00000200>;
-+		bus-frequency = <FBC5200>;
-+
-+		wdt@200 {
-+			device_type = "watchdog";
-+			compatible = "mpc83xx_wdt";
-+			reg = <200 100>;
-+		};
-+
-+		i2c@3000 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3000 100>;
-+			interrupts = <e 8>;
-+			interrupt-parent = <700>;
-+			dfsrr;
-+		};
-+
-+		i2c@3100 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3100 100>;
-+			interrupts = <f 8>;
-+			interrupt-parent = <700>;
-+			dfsrr;
-+		};
-+
-+		serial@4500 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4500 100>;
-+			clock-frequency = <FBC5200>;
-+			interrupts = <9 8>;
-+			interrupt-parent = <700>;
-+		};
-+
-+		serial@4600 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4600 100>;
-+			clock-frequency = <FBC5200>;
-+			interrupts = <a 8>;
-+			interrupt-parent = <700>;
-+		};
-+
-+		crypto@30000 {
-+			device_type = "crypto";
-+			model = "SEC2";
-+			compatible = "talitos";
-+			reg = <30000 10000>;
-+			interrupts = <b 8>;
-+			interrupt-parent = <700>;
-+			num-channels = <4>;
-+			channel-fifo-len = <18>;
-+			exec-units-mask = <0000007e>;
-+			/* desc mask is for rev1.x, we need runtime fixup for >=2.x */
-+			descriptor-types-mask = <01010ebf>;
-+		};
-+
-+		pci@8500 {
-+			linux,phandle = <8500>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+
-+					/* IDSEL 0x11 AD17 */
-+					 8800 0 0 1 700 14 8
-+					 8800 0 0 2 700 15 8
-+					 8800 0 0 3 700 16 8
-+					 8800 0 0 4 700 17 8
-+
-+					/* IDSEL 0x12 AD18 */
-+					 9000 0 0 1 700 16 8
-+					 9000 0 0 2 700 17 8
-+					 9000 0 0 3 700 14 8
-+					 9000 0 0 4 700 15 8
-+
-+					/* IDSEL 0x13 AD19 */
-+					 9800 0 0 1 700 17 8
-+					 9800 0 0 2 700 14 8
-+					 9800 0 0 3 700 15 8
-+					 9800 0 0 4 700 16 8
-+
-+					/* IDSEL 0x15 AD21*/
-+					 a800 0 0 1 700 14 8
-+					 a800 0 0 2 700 15 8
-+					 a800 0 0 3 700 16 8
-+					 a800 0 0 4 700 17 8
-+
-+					/* IDSEL 0x16 AD22*/
-+					 b000 0 0 1 700 17 8
-+					 b000 0 0 2 700 14 8
-+					 b000 0 0 3 700 15 8
-+					 b000 0 0 4 700 16 8
-+
-+					/* IDSEL 0x17 AD23*/
-+					 b800 0 0 1 700 16 8
-+					 b800 0 0 2 700 17 8
-+					 b800 0 0 3 700 14 8
-+					 b800 0 0 4 700 15 8
-+
-+					/* IDSEL 0x18 AD24*/
-+					 c000 0 0 1 700 15 8
-+					 c000 0 0 2 700 16 8
-+					 c000 0 0 3 700 17 8
-+					 c000 0 0 4 700 14 8>;
-+			interrupt-parent = <700>;
-+			interrupts = <42 8>;
-+			bus-range = <0 0>;
-+			ranges = <02000000 0 a0000000 a0000000 0 10000000
-+				  42000000 0 80000000 80000000 0 10000000
-+				  01000000 0 00000000 e2000000 0 00100000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8500 100>;
-+			compatible = "83xx";
-+			device_type = "pci";
-+		};
-+
-+		pic@700 {
-+			linux,phandle = <700>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <700 100>;
-+			built-in;
-+			device_type = "ipic";
-+		};
-+
-+		par_io@1400 {
-+			reg = <1400 100>;
-+			device_type = "par_io";
-+			num-ports = <7>;
-+
-+			ucc_pin@01 {
-+				linux,phandle = <140001>;
-+				pio-map = <
-+			/* port  pin  dir  open_drain  assignment  has_irq */
-+					0  3  1  0  1  0 	/* TxD0 */
-+					0  4  1  0  1  0 	/* TxD1 */
-+					0  5  1  0  1  0 	/* TxD2 */
-+					0  6  1  0  1  0 	/* TxD3 */
-+					1  6  1  0  3  0 	/* TxD4 */
-+					1  7  1  0  1  0 	/* TxD5 */
-+					1  9  1  0  2  0 	/* TxD6 */
-+					1  a  1  0  2  0 	/* TxD7 */
-+					0  9  2  0  1  0 	/* RxD0 */
-+					0  a  2  0  1  0 	/* RxD1 */
-+					0  b  2  0  1  0 	/* RxD2 */
-+					0  c  2  0  1  0 	/* RxD3 */
-+					0  d  2  0  1  0 	/* RxD4 */
-+					1  1  2  0  2  0 	/* RxD5 */
-+					1  0  2  0  2  0 	/* RxD6 */
-+					1  4  2  0  2  0 	/* RxD7 */
-+					0  7  1  0  1  0 	/* TX_EN */
-+					0  8  1  0  1  0 	/* TX_ER */
-+					0  f  2  0  1  0 	/* RX_DV */
-+					0  10 2  0  1  0 	/* RX_ER */
-+					0  0  2  0  1  0 	/* RX_CLK */
-+					2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
-+					2  8  2  0  1  0>;	/* GTX125 - CLK9 */
-+			};
-+			ucc_pin@02 {
-+				linux,phandle = <140002>;
-+				pio-map = <
-+			/* port  pin  dir  open_drain  assignment  has_irq */
-+					0  11 1  0  1  0   /* TxD0 */
-+					0  12 1  0  1  0   /* TxD1 */
-+					0  13 1  0  1  0   /* TxD2 */
-+					0  14 1  0  1  0   /* TxD3 */
-+					1  2  1  0  1  0   /* TxD4 */
-+					1  3  1  0  2  0   /* TxD5 */
-+					1  5  1  0  3  0   /* TxD6 */
-+					1  8  1  0  3  0   /* TxD7 */
-+					0  17 2  0  1  0   /* RxD0 */
-+					0  18 2  0  1  0   /* RxD1 */
-+					0  19 2  0  1  0   /* RxD2 */
-+					0  1a 2  0  1  0   /* RxD3 */
-+					0  1b 2  0  1  0   /* RxD4 */
-+					1  c  2  0  2  0   /* RxD5 */
-+					1  d  2  0  3  0   /* RxD6 */
-+					1  b  2  0  2  0   /* RxD7 */
-+					0  15 1  0  1  0   /* TX_EN */
-+					0  16 1  0  1  0   /* TX_ER */
-+					0  1d 2  0  1  0   /* RX_DV */
-+					0  1e 2  0  1  0   /* RX_ER */
-+					0  1f 2  0  1  0   /* RX_CLK */
-+					2  2  1  0  2  0   /* GTX_CLK - CLK10 */
-+					2  3  2  0  1  0   /* GTX125 - CLK4 */
-+					0  1  3  0  2  0   /* MDIO */
-+					0  2  1  0  1  0>; /* MDC */
-+			};
-+
-+		};
-+	};
-+
-+	qe@e0100000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "qe";
-+		model = "QE";
-+		ranges = <0 e0100000 00100000>;
-+		reg = <e0100000 480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <179A7B00>;
-+
-+		muram@10000 {
-+			device_type = "muram";
-+			ranges = <0 00010000 0000c000>;
-+
-+			data-only@0{
-+				reg = <0 c000>;
-+			};
-+		};
-+
-+		spi@4c0 {
-+			device_type = "spi";
-+			compatible = "fsl_spi";
-+			reg = <4c0 40>;
-+			interrupts = <2>;
-+			interrupt-parent = <80>;
-+			mode = "cpu";
-+		};
-+
-+		spi@500 {
-+			device_type = "spi";
-+			compatible = "fsl_spi";
-+			reg = <500 40>;
-+			interrupts = <1>;
-+			interrupt-parent = <80>;
-+			mode = "cpu";
-+		};
-+
-+		usb@6c0 {
-+			device_type = "usb";
-+			compatible = "qe_udc";
-+			reg = <6c0 40 8B00 100>;
-+			interrupts = <b>;
-+			interrupt-parent = <80>;
-+			mode = "slave";
-+		};
-+
-+		ucc@2000 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			model = "UCC";
-+			device-id = <1>;
-+			reg = <2000 200>;
-+			interrupts = <20>;
-+			interrupt-parent = <80>;
-+			mac-address = [ 00 04 9f 00 23 23 ];
-+			rx-clock = <0>;
-+			tx-clock = <19>;
-+			phy-handle = <212000>;
-+			pio-handle = <140001>;
-+		};
-+
-+		ucc@3000 {
-+			device_type = "network";
-+			compatible = "ucc_geth";
-+			model = "UCC";
-+			device-id = <2>;
-+			reg = <3000 200>;
-+			interrupts = <21>;
-+			interrupt-parent = <80>;
-+			mac-address = [ 00 11 22 33 44 55 ];
-+			rx-clock = <0>;
-+			tx-clock = <14>;
-+			phy-handle = <212001>;
-+			pio-handle = <140002>;
-+		};
-+
-+		mdio@2120 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2120 18>;
-+			device_type = "mdio";
-+			compatible = "ucc_geth_phy";
-+
-+			ethernet-phy@00 {
-+				linux,phandle = <212000>;
-+				interrupt-parent = <700>;
-+				interrupts = <11 2>;
-+				reg = <0>;
-+				device_type = "ethernet-phy";
-+				interface = <6>; //ENET_1000_GMII
-+			};
-+			ethernet-phy@01 {
-+				linux,phandle = <212001>;
-+				interrupt-parent = <700>;
-+				interrupts = <12 2>;
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+				interface = <6>;
-+			};
-+		};
-+
-+		qeic@80 {
-+			linux,phandle = <80>;
-+			interrupt-controller;
-+			device_type = "qeic";
-+			#address-cells = <0>;
-+			#interrupt-cells = <1>;
-+			reg = <80 80>;
-+			built-in;
-+			big-endian;
-+			interrupts = <20 8 21 8>; //high:32 low:33
-+			interrupt-parent = <700>;
-+		};
-+
-+	};
++define_machine(mpc832x_mds) {
++	.name 		= "MPC832x MDS",
++	.probe 		= mpc832x_sys_probe,
++	.setup_arch 	= mpc832x_sys_setup_arch,
++	.init_IRQ 	= mpc832x_sys_init_IRQ,
++	.get_irq 	= ipic_get_irq,
++	.restart 	= mpc83xx_restart,
++	.time_init 	= mpc83xx_time_init,
++	.calibrate_decr	= generic_calibrate_decr,
++	.progress 	= udbg_progress,
 +};
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.h b/arch/powerpc/platforms/83xx/mpc832x_mds.h
+new file mode 100644
+index 0000000..a495889
+--- /dev/null
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.h
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
++ *
++ * Description:
++ * MPC832x MDS board specific header.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ */
++
++#ifndef __MACH_MPC832x_MDS_H__
++#define __MACH_MPC832x_MDS_H__
++
++extern u8 *get_bcsr(void);
++
++#endif				/* __MACH_MPC832x_MDS_H__ */
 -- 
-1.4.2.1
+1.4.2.3
