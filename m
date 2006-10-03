@@ -3,16 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B08F67C01
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 13:18:38 +1000 (EST)
-In-Reply-To: <20061002200946.1f411bcc.kim.phillips@freescale.com>
-References: <20061002200946.1f411bcc.kim.phillips@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 7E45367C07
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 13:20:46 +1000 (EST)
+In-Reply-To: <20061002201030.235af84a.kim.phillips@freescale.com>
+References: <20061002201030.235af84a.kim.phillips@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <41AC40EF-31AC-42FE-9C1A-9B80233D2E64@kernel.crashing.org>
+Message-Id: <66E6A78A-B885-417F-A7CA-BE8CD1493EA8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] Add MPC8360EMDS board support
-Date: Mon, 2 Oct 2006 22:19:14 -0500
+Subject: Re: [PATCH 7/7] add support for the mpc832x mds board
+Date: Mon, 2 Oct 2006 22:19:55 -0500
 To: Kim Phillips <kim.phillips@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,27 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[snip]
 
-> diff --git a/arch/powerpc/platforms/83xx/mpc8360e_pb.c b/arch/ 
-> powerpc/platforms/83xx/mpc8360e_pb.c
+On Oct 2, 2006, at 8:10 PM, Kim Phillips wrote:
+
+> Add support for MPC832x MDS evaluation board.
+>
+> This patch depends on the 8360+QE lib patches by Leo.
+>
+> The MPC832x processors (MPC8323E, MPC8323, MPC8321E, MPC8321) sport  
+> the e300c2 core plus a QUICC Engine (QE).  This patch adds support  
+> for the 832x MDS evaluation board.
+>
+> The 832x MDS dts and defconfig files are pending more tests.
+>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+>
+> ---
+>  arch/powerpc/Kconfig                      |    2
+>  arch/powerpc/platforms/83xx/Kconfig       |   13 ++
+>  arch/powerpc/platforms/83xx/Makefile      |    1
+>  arch/powerpc/platforms/83xx/mpc832x_mds.c |  215 ++++++++++++++++++ 
+> +++++++++++
+>  arch/powerpc/platforms/83xx/mpc832x_mds.h |   19 +++
+>  5 files changed, 249 insertions(+), 1 deletions(-)
+
+
+> diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/ 
+> powerpc/platforms/83xx/mpc832x_mds.c
 > new file mode 100644
-> index 0000000..4f9fd65
+> index 0000000..54dea9d
 > --- /dev/null
-> +++ b/arch/powerpc/platforms/83xx/mpc8360e_pb.c
-> @@ -0,0 +1,220 @@
+> +++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> @@ -0,0 +1,215 @@
 > +/*
 > + * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights  
 > reserved.
 > + *
-> + * Author: Li Yang <LeoLi@freescale.com>
-> + *	   Yin Olivia <Hong-hua.Yin@freescale.com>
-> + *
 > + * Description:
-> + * MPC8360E MDS PB board specific routines.
-> + *
-> + * Changelog:
-> + * Jun 21, 2006	Initial version
+> + * MPC832xE MDS board specific routines.
 > + *
 > + * This program is free software; you can redistribute  it and/or  
 > modify it
@@ -84,7 +101,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > +#include <asm/qe_ic.h>
 > +
 > +#include "mpc83xx.h"
-> +#include "mpc8360e_pb.h"
+> +#include "mpc832x_mds.h"
 > +
 > +#undef DEBUG
 > +#ifdef DEBUG
@@ -104,11 +121,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > +{
 > +	return bcsr_regs;
 > +}
+> +
 
 Is get_bcsr() needed since you removed its use from ucc_geth?  (if  
 not, let's remove it and the header as well).
 
-> +
 > +/*  
 > ********************************************************************** 
 > **
@@ -116,12 +133,12 @@ not, let's remove it and the header as well).
 > + * Setup the architecture
 > + *
 > + */
-> +static void __init mpc8360_sys_setup_arch(void)
+> +static void __init mpc832x_sys_setup_arch(void)
 > +{
 > +	struct device_node *np;
 > +
 > +	if (ppc_md.progress)
-> +		ppc_md.progress("mpc8360_sys_setup_arch()", 0);
+> +		ppc_md.progress("mpc832x_sys_setup_arch()", 0);
 > +
 > +	np = of_find_node_by_type(NULL, "cpu");
 > +	if (np != 0) {
@@ -187,7 +204,7 @@ not, let's remove it and the header as well).
 > +#endif
 > +}
 > +
-> +void __init mpc8360_sys_init_IRQ(void)
+> +void __init mpc832x_sys_init_IRQ(void)
 > +{
 > +
 > +	struct device_node *np;
@@ -218,7 +235,7 @@ not, let's remove it and the header as well).
 > +extern ulong ds1374_get_rtc_time(void);
 > +extern int ds1374_set_rtc_time(ulong);
 > +
-> +static int __init mpc8360_rtc_hookup(void)
+> +static int __init mpc832x_rtc_hookup(void)
 > +{
 > +	struct timespec tv;
 > +
@@ -232,56 +249,51 @@ not, let's remove it and the header as well).
 > +	return 0;
 > +}
 > +
-> +late_initcall(mpc8360_rtc_hookup);
+> +late_initcall(mpc832x_rtc_hookup);
 > +#endif
 > +
 > +/*
 > + * Called very early, MMU is off, device-tree isn't unflattened
 > + */
-> +static int __init mpc8360_sys_probe(void)
+> +static int __init mpc832x_sys_probe(void)
 > +{
 > +	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
 > +					  "model", NULL);
+> +
 > +	if (model == NULL)
 > +		return 0;
-> +	if (strcmp(model, "MPC8360EPB"))
+> +	if (strcmp(model, "MPC8323EMDS"))
 > +		return 0;
 > +
-> +	DBG("MPC8360EMDS-PB found\n");
+> +	DBG("%s found\n", model);
 > +
 > +	return 1;
 > +}
 > +
-> +define_machine(mpc8360_sys) {
-> +	.name 		= "MPC8360E PB",
-> +	.probe 		= mpc8360_sys_probe,
-> +	.setup_arch 	= mpc8360_sys_setup_arch,
-> +	.init_IRQ 	= mpc8360_sys_init_IRQ,
+> +define_machine(mpc832x_mds) {
+> +	.name 		= "MPC832x MDS",
+> +	.probe 		= mpc832x_sys_probe,
+> +	.setup_arch 	= mpc832x_sys_setup_arch,
+> +	.init_IRQ 	= mpc832x_sys_init_IRQ,
 > +	.get_irq 	= ipic_get_irq,
 > +	.restart 	= mpc83xx_restart,
 > +	.time_init 	= mpc83xx_time_init,
 > +	.calibrate_decr	= generic_calibrate_decr,
 > +	.progress 	= udbg_progress,
 > +};
-> diff --git a/arch/powerpc/platforms/83xx/mpc8360e_pb.h b/arch/ 
-> powerpc/platforms/83xx/mpc8360e_pb.h
+> diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.h b/arch/ 
+> powerpc/platforms/83xx/mpc832x_mds.h
 > new file mode 100644
-> index 0000000..02a05d9
+> index 0000000..a495889
 > --- /dev/null
-> +++ b/arch/powerpc/platforms/83xx/mpc8360e_pb.h
-> @@ -0,0 +1,25 @@
+> +++ b/arch/powerpc/platforms/83xx/mpc832x_mds.h
+> @@ -0,0 +1,19 @@
 > +/*
 > + * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights  
 > reserved.
 > + *
-> + * Author: Li Yang <LeoLi@freescale.com>
-> + *	   Yin Olivia <Hong-hua.Yin@freescale.com>
-> + *
 > + * Description:
-> + * MPC8360E MDS PB board specific header.
-> + *
-> + * Changelog:
-> + * Jun 21, 2006	Initial version
+> + * MPC832x MDS board specific header.
 > + *
 > + * This program is free software; you can redistribute  it and/or  
 > modify it
@@ -293,11 +305,11 @@ not, let's remove it and the header as well).
 > + *
 > + */
 > +
-> +#ifndef __MACH_MPC8360E_PB_H__
-> +#define __MACH_MPC8360E_PB_H__
+> +#ifndef __MACH_MPC832x_MDS_H__
+> +#define __MACH_MPC832x_MDS_H__
 > +
 > +extern u8 *get_bcsr(void);
 > +
-> +#endif				/* __MACH_MPC8360E_PB_H__ */
+> +#endif				/* __MACH_MPC832x_MDS_H__ */
 > -- 
-> 1.4.2.1
+> 1.4.2.3
