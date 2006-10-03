@@ -1,23 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8FA6C67C2C
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 04:20:16 +1000 (EST)
-In-Reply-To: <20061003130245.58267c54.kim.phillips@freescale.com>
-References: <20061002200946.1f411bcc.kim.phillips@freescale.com>
-	<41AC40EF-31AC-42FE-9C1A-9B80233D2E64@kernel.crashing.org>
-	<20061003130245.58267c54.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <86FE84DE-D709-4CFF-A910-09971F7D82B8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] Add MPC8360EMDS board support
-Date: Tue, 3 Oct 2006 13:20:35 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 807CD67C2B
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 04:30:27 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k93IUL39006476
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Oct 2006 11:30:22 -0700 (MST)
+Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k93IUKLH029881
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Oct 2006 13:30:21 -0500 (CDT)
+Subject: Re: [RFC][PATCH 1/2] remove mpc83xx support from arch/ppc
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <229C6ACA-4728-408B-9360-54249996E821@kernel.crashing.org>
+References: <20060928160211.5b652932.kim.phillips@freescale.com>
+	<229C6ACA-4728-408B-9360-54249996E821@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1159899616.14294.127.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Tue, 03 Oct 2006 13:20:17 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-09-28 at 16:34, Kumar Gala wrote:
+> On Sep 28, 2006, at 4:02 PM, Kim Phillips wrote:
+> 
+> > remove 83xx support from arch/ppc.  Tested multiple arch/defconfig  
+> > build combinations ok.  AFAICT, everything 83xx works in arch/ 
+> > powerpc, and new derivatives are being added only to arch/powerpc,  
+> > so it's better not to keep this around.
+> 
+> NACK!! we need the cuImage stuff working and in the tree before I'm  
+> ok with this.  We have to be able to boot from a non-flat-dev aware u- 
+> boot before I'll be ok with removing 83xx from arch/ppc.
+> 
+> - kumar
 
-On Oct 3, 2006, at 1:02 PM, Kim Phillips wrote:
+Any idea when those patches are going to be in?
 
-> On Mon, 2 Oct 2006 22:19:14 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->> [snip]
->>
->
->>> +static u8 *bcsr_regs = NULL;
->>> +
->>> +u8 *get_bcsr(void)
->>> +{
->>> +	return bcsr_regs;
->>> +}
->>
->> Is get_bcsr() needed since you removed its use from ucc_geth?  (if
->> not, let's remove it and the header as well).
->>
->
-> it will be once we figure out a better way of handling it from usb  
-> and ethernet phy code. I had just removed it due to Paul's comment  
-> (bcsr bits are being manipulated in the wrong place (ucc_geth)).
-
-ok, but nothing is using it in the tree anymore.
-
-Clearly, the phy support for ucc_geth needs to move over to using the  
-phylib and I think Andy was looking at how to provide board level  
-hooks to the phylib.
-
-- k
+Thanks,
+jdl
