@@ -1,14 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id F0AD967C43
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 11:22:43 +1000 (EST)
+Date: Tue, 3 Oct 2006 03:22:41 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Judith Lebzelter <judith@osdl.org>
+Subject: [2.6 patch] mark virt_to_bus/bus_to_virt as __deprecated on i386
+Message-ID: <20061003012241.GF3278@stusta.de>
+References: <20061002214954.GD665@shell0.pdx.osdl.net>
+	<20061002234428.GE3278@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17697.47589.788457.877617@cargo.ozlabs.ibm.com>
-Date: Tue, 3 Oct 2006 11:16:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Judith Lebzelter <judith@osdl.org>
-Subject: Re: Undefined '.bus_to_virt',
-	'.virt_to_bus' causes compile error on Powerpc 64-bit
-In-Reply-To: <20061002214954.GD665@shell0.pdx.osdl.net>
-References: <20061002214954.GD665@shell0.pdx.osdl.net>
+In-Reply-To: <20061002234428.GE3278@stusta.de>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,20 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Judith,
+On Tue, Oct 03, 2006 at 01:44:28AM +0200, Adrian Bunk wrote:
+> On Mon, Oct 02, 2006 at 02:49:54PM -0700, Judith Lebzelter wrote:
+> 
+> > Hello:
+> 
+> Hi Judith,
+> 
+> > For the automated cross-compile builds at OSDL, powerpc 64-bit 
+> > 'allmodconfig' is failing.  The warnings/errors below appear in 
+> > the 'modpost' stage of kernel compiles for 2.6.18 and -mm2 kernels.
+> 
+> known for ages - the drivers need fixing.
+> 
+> You might want to convince Andrew accepting my patch to make 
+> virt_to_bus/bus_to_virt give compile warnings on i386 for making
+> people more aware of this problem...
+>...
 
-> For the automated cross-compile builds at OSDL, powerpc 64-bit 
-> 'allmodconfig' is failing.  The warnings/errors below appear in 
-> the 'modpost' stage of kernel compiles for 2.6.18 and -mm2 kernels.
+In case anyone is interested, the patch is below.
 
-virt_to_bus and bus_to_virt are old interfaces that have been
-deprecated for, oh, at least 5 years now, and can't be implemented
-sanely on machines with an IOMMU - which includes all 64-bit powerpc
-machines.
+cu
+Adrian
 
-Unless someone pops up and volunteers to fix those old drivers, which
-is unlikely, the only solution is to fix the Kconfig files to prevent
-them from being selected on platforms that don't have virt_to_bus and
-bus_to_virt.
 
-Paul.
+<--  snip  -->
+
+
+virt_to_bus/bus_to_virt are long deprecated, mark them as __deprecated 
+on i386.
+
+Without such warnings people will never update their code and fix 
+the errors in PPC64 builds.
+
+And yes, some of the drivers affected are maintained.
+
+This also catches accidential additions of users for these functions 
+like a usage of bus_to_virt() in the infiniband code that was added in 
+2.6.17-rc1 (already removed).
+
+This patch increases the number of warnings shown during builds, but it 
+seems worth including it at least in -mm for making people aware of this 
+issue.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+This patch was already sent on:
+- 7 Jul 2006
+- 26 Jun 2006
+- 27 Apr 2006
+- 19 Apr 2006
+- 6 Jan 2006
+- 13 Dec 2005
+- 23 Nov 2005
+- 18 Nov 2005
+- 12 Nov 2005
+
+--- linux-2.6.14-mm2-full/include/asm-i386/io.h.old	2005-11-12 01:44:38.000000000 +0100
++++ linux-2.6.14-mm2-full/include/asm-i386/io.h	2005-11-12 01:45:58.000000000 +0100
+@@ -144,8 +144,14 @@
+  *
+  * Allow them on x86 for legacy drivers, though.
+  */
+-#define virt_to_bus virt_to_phys
+-#define bus_to_virt phys_to_virt
++static inline unsigned long __deprecated virt_to_bus(volatile void * address)
++{
++	return __pa(address);
++}
++static inline void * __deprecated bus_to_virt(unsigned long address)
++{
++	return __va(address);
++}
+ 
+ /*
+  * readX/writeX() are used to access memory mapped devices. On some
