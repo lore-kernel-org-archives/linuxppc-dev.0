@@ -1,18 +1,21 @@
-Return-Path: <dan@embeddededge.com>
-Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
-	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id 7EF91679E0
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 03:36:50 +1000 (EST)
-In-Reply-To: <724D42AC-3DBA-4B32-8E4A-914441251470@kernel.crashing.org>
-References: <724D42AC-3DBA-4B32-8E4A-914441251470@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <713AF674-0689-4F20-9896-70696969ED24@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: RFC: qe lib code location?
-Date: Tue, 3 Oct 2006 13:30:20 -0400
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Kim Phillips <Kim.Phillips@freescale.com>, Li Yang <leoli@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 72C0867C23
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 03:48:23 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k93J8Pxw011398
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Oct 2006 13:08:25 -0600 (MDT)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k93HmGne009534
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Oct 2006 12:48:17 -0500 (CDT)
+Message-ID: <4522A260.8000801@freescale.com>
+Date: Tue, 03 Oct 2006 12:48:16 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add DOS partition support to mpc834x_itx_defconfig
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+(resending because the signed-off line was missing)
 
-On Oct 3, 2006, at 12:34 PM, Kumar Gala wrote:
+The default configuration file for the MPC8349E-mITX reference board,
+mpc834x_itx_defconfig, did not include support for DOS partition table types.
+This support is necessary because the hard drive that comes with the ITX
+is formatted with this partition table type.  Without this config option,
+the drive cannot be mounted.
 
-> I was wondering what peoples thought were on having the qe lib code
-> live in drivers/qe instead of sysdev/qe_lib (with the exception of
-> the interrupt controller code)
+Signed-off-by: Timur Tabi <timur@freescale.com>
 
-My personal reason for choosing one place or the other
-is based upon usefulness to architectures other than PowerPC,
-or general kernel APIs that may change.  If something is
-useful to architectures other than PowerPC, clearly it
-should go there.  If the software has dependencies on
-general kernel APIs (networking is a good example), I like
-to put is there in hopes that someone changing the APIs
-will at least make an attempt to keep this code up to
-date as well.
+---
+  arch/powerpc/configs/mpc834x_itx_defconfig |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
 
-I think it neither of these apply (and I don't think the VM
-interfaces are a good argument because they generally
-affect the architecture ports anyway), then I think it
-should stay in a more architecture specific place.
-
-
-> Yes, one can argue the cpm code should live in drivers/cpm by this
-> logic, but lets considered them grandfathered for now.
-
-I would say that based on my opinion above the cpm
-stuff should stay  in sysdev, too.  These are not only
-powerpc specific, but even Freescale embedded powerpc
-specific.  I don't think that code belongs in drivers.
-
-Thanks.
-
-	-- Dan
+diff --git a/arch/powerpc/configs/mpc834x_itx_defconfig b/arch/powerpc/configs/mpc834x_itx_defconfig
+index cd3535e..0561b73 100644
+--- a/arch/powerpc/configs/mpc834x_itx_defconfig
++++ b/arch/powerpc/configs/mpc834x_itx_defconfig
+@@ -1248,7 +1248,7 @@ # CONFIG_OSF_PARTITION is not set
+  # CONFIG_AMIGA_PARTITION is not set
+  # CONFIG_ATARI_PARTITION is not set
+  # CONFIG_MAC_PARTITION is not set
+-# CONFIG_MSDOS_PARTITION is not set
++CONFIG_MSDOS_PARTITION=y
+  # CONFIG_LDM_PARTITION is not set
+  # CONFIG_SGI_PARTITION is not set
+  # CONFIG_ULTRIX_PARTITION is not set
+-- 
+1.4.2.1
