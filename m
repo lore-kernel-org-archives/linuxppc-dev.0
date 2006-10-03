@@ -1,23 +1,17 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C220067C2D
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 14:44:07 +1000 (EST)
-Date: Mon, 2 Oct 2006 21:44:00 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [2.6 patch] mark virt_to_bus/bus_to_virt as __deprecated on i386
-Message-Id: <20061002214400.0a83b743.akpm@osdl.org>
-In-Reply-To: <1159850245.5482.32.camel@localhost.localdomain>
-References: <20061002214954.GD665@shell0.pdx.osdl.net>
-	<20061002234428.GE3278@stusta.de> <20061003012241.GF3278@stusta.de>
-	<1159850245.5482.32.camel@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8EE0A67C37
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 14:48:12 +1000 (EST)
+Subject: [PATCH] powerpc: get default bauds rate in udbg_scc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 03 Oct 2006 14:47:58 +1000
+Message-Id: <1159850878.5482.38.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
-	Judith Lebzelter <judith@osdl.org>,
-	Kernel list <linux-kernel@vger.kernel.org>, Linux
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 03 Oct 2006 14:37:25 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On powermac, when open firmware is set to use the SCC for console, this
+causes the low level udbg early console to read back the speed and
+re-use it instead of hard coding 57600 bps. This doesn't (yet) pass the
+detected speed all the way to pmac_zilog though.
 
-> > > You might want to convince Andrew accepting my patch to make 
-> > > virt_to_bus/bus_to_virt give compile warnings on i386 for making
-> > > people more aware of this problem...
-> > >...
-> 
-> Andrew, is there any reason not to take that patch ?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-It generates lots of warnings from drivers which nobody does any work on.
-
-Net result: lots of new warnings, no fixed bugs.
+Index: linux-work/arch/powerpc/platforms/powermac/udbg_scc.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/udbg_scc.c	2006-07-03 12:01:14.000000000 +1000
++++ linux-work/arch/powerpc/platforms/powermac/udbg_scc.c	2006-08-31 13:19:38.000000000 +1000
+@@ -111,8 +111,6 @@ void udbg_scc_init(int force_scc)
+ 	pmac_call_feature(PMAC_FTR_SCC_ENABLE, ch,
+ 			  PMAC_SCC_ASYNC | PMAC_SCC_FLAG_XMON, 1);
+ 
+-
+-	/* Setup for 57600 8N1 */
+ 	if (ch == ch_a)
+ 		addr += 0x20;
+ 	sccc = ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
+@@ -125,9 +123,21 @@ void udbg_scc_init(int force_scc)
+ 		x = in_8(sccc);
+ 	out_8(sccc, 0x09);		/* reset A or B side */
+ 	out_8(sccc, 0xc0);
++
++	/* If SCC was the OF output port, read the BRG value, else
++	 * Setup for 57600 8N1
++	 */
++	if (ch_def != NULL) {
++		out_8(sccc, 13);
++		scc_inittab[1] = in_8(sccc);
++		out_8(sccc, 12);
++		scc_inittab[3] = in_8(sccc);
++	}
++
+ 	for (i = 0; i < sizeof(scc_inittab); ++i)
+ 		out_8(sccc, scc_inittab[i]);
+ 
++
+ 	udbg_putc = udbg_scc_putc;
+ 	udbg_getc = udbg_scc_getc;
+ 	udbg_getc_poll = udbg_scc_getc_poll;
