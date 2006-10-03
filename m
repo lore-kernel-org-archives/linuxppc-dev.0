@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 03 Oct 2006 14:12:07 +1000
-Subject: [PATCH 1/2] Cleanup include/asm-powerpc/xmon.h
-Message-Id: <1159848727.955823.82109451606.qpush@concordia>
+Date: Tue, 03 Oct 2006 14:12:08 +1000
+Subject: [PATCH 2/2] Fix xmon=off and cleanup xmon initialisation
+In-Reply-To: <1159848727.955823.82109451606.qpush@concordia>
+Message-Id: <20061003041209.2D34967C2A@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,67 +15,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For some reason we have two prototypes for xmon_init(), remove the
-one in system.h.
+My patch to make the early xmon logic work with earlier early param
+parsing (480f6f35a149802a94ad5c1a2673ed6ec8d2c158) breaks xmon=off.
 
-No one calls xmon() anymore, debugger() is preferable, so we don't
-need the prototype. And similarly no one calls xmon_printf().
+No one does this obviously as xmon rocks, but it should really work
+as documented.
 
-Also update the include guards on xmon.h to match the standard
-format, add copyright and license, and add comments to #endifs.
+While fixing that it struck me that we could move the xmon param
+handling into xmon.c, and also consolidate the
+xmon_init()/do_early_xmon logic into xmon_setup(). This means
+xmon=early drops into xmon a little earlier on 32-bit, but it
+seems to work just fine.
 
-Built for pseries_defconfig and pmac32_defconfig.
+Tested on PSERIES and CLASSIC32.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- include/asm-powerpc/system.h |    4 ----
- include/asm-powerpc/xmon.h   |   22 ++++++++++++++--------
- 2 files changed, 14 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/setup-common.c |   25 -------------------------
+ arch/powerpc/kernel/setup_32.c     |    8 ++------
+ arch/powerpc/kernel/setup_64.c     |   12 ++++--------
+ arch/powerpc/xmon/xmon.c           |   33 +++++++++++++++++++++++++++++++++
+ include/asm-powerpc/xmon.h         |    6 +++++-
+ 5 files changed, 44 insertions(+), 40 deletions(-)
 
-Index: to-merge/include/asm-powerpc/system.h
+Index: to-merge/arch/powerpc/kernel/setup-common.c
 ===================================================================
---- to-merge.orig/include/asm-powerpc/system.h
-+++ to-merge/include/asm-powerpc/system.h
-@@ -91,10 +91,6 @@ DEBUGGER_BOILERPLATE(debugger_iabr_match
- DEBUGGER_BOILERPLATE(debugger_dabr_match)
- DEBUGGER_BOILERPLATE(debugger_fault_handler)
+--- to-merge.orig/arch/powerpc/kernel/setup-common.c
++++ to-merge/arch/powerpc/kernel/setup-common.c
+@@ -442,31 +442,6 @@ void __init smp_setup_cpu_maps(void)
+ }
+ #endif /* CONFIG_SMP */
  
+-int __initdata do_early_xmon;
 -#ifdef CONFIG_XMON
--extern void xmon_init(int enable);
+-extern int xmon_no_auto_backtrace;
+-
+-static int __init early_xmon(char *p)
+-{
+-	/* ensure xmon is enabled */
+-	if (p) {
+-		if (strncmp(p, "on", 2) == 0)
+-			xmon_init(1);
+-		if (strncmp(p, "off", 3) == 0)
+-			xmon_init(0);
+-		if (strncmp(p, "nobt", 4) == 0)
+-			xmon_no_auto_backtrace = 1;
+-		if (strncmp(p, "early", 5) != 0)
+-			return 0;
+-	}
+-	xmon_init(1);
+-	do_early_xmon = 1;
+-
+-	return 0;
+-}
+-early_param("xmon", early_xmon);
 -#endif
 -
- #else
- static inline int debugger(struct pt_regs *regs) { return 0; }
- static inline int debugger_ipi(struct pt_regs *regs) { return 0; }
+ static __init int add_pcspkr(void)
+ {
+ 	struct device_node *np;
+Index: to-merge/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/setup_32.c
++++ to-merge/arch/powerpc/kernel/setup_32.c
+@@ -242,12 +242,11 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	smp_setup_cpu_maps();
+ 
+-#ifdef CONFIG_XMON_DEFAULT
+-	xmon_init(1);
+-#endif
+ 	/* Register early console */
+ 	register_early_udbg_console();
+ 
++	xmon_setup();
++
+ #if defined(CONFIG_KGDB)
+ 	if (ppc_md.kgdb_map_scc)
+ 		ppc_md.kgdb_map_scc();
+@@ -284,9 +283,6 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+ 
+-	if (do_early_xmon)
+-		debugger(NULL);
+-
+ 	/* set up the bootmem stuff with available memory */
+ 	do_init_bootmem();
+ 	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
+Index: to-merge/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/setup_64.c
++++ to-merge/arch/powerpc/kernel/setup_64.c
+@@ -396,18 +396,14 @@ void __init setup_system(void)
+ 	find_legacy_serial_ports();
+ 
+ 	/*
+-	 * Initialize xmon
+-	 */
+-#ifdef CONFIG_XMON_DEFAULT
+-	xmon_init(1);
+-#endif
+-	/*
+ 	 * Register early console
+ 	 */
+ 	register_early_udbg_console();
+ 
+-	if (do_early_xmon)
+-		debugger(NULL);
++	/*
++	 * Initialize xmon
++	 */
++	xmon_setup();
+ 
+ 	check_smt_enabled();
+ 	smp_setup_cpu_maps();
+Index: to-merge/arch/powerpc/xmon/xmon.c
+===================================================================
+--- to-merge.orig/arch/powerpc/xmon/xmon.c
++++ to-merge/arch/powerpc/xmon/xmon.c
+@@ -2,6 +2,8 @@
+  * Routines providing a simple monitor for use on the PowerMac.
+  *
+  * Copyright (C) 1996-2005 Paul Mackerras.
++ * Copyright (C) 2001 PPC64 Team, IBM Corp
++ * Copyrignt (C) 2006 Michael Ellerman, IBM Corp
+  *
+  *      This program is free software; you can redistribute it and/or
+  *      modify it under the terms of the GNU General Public License
+@@ -2597,3 +2599,34 @@ static int __init setup_xmon_sysrq(void)
+ }
+ __initcall(setup_xmon_sysrq);
+ #endif /* CONFIG_MAGIC_SYSRQ */
++
++int __initdata xmon_early, xmon_off;
++
++static int __init early_parse_xmon(char *p)
++{
++	if (!p || strncmp(p, "early", 5) == 0) {
++		/* just "xmon" is equivalent to "xmon=early" */
++		xmon_init(1);
++		xmon_early = 1;
++	} else if (strncmp(p, "on", 2) == 0)
++		xmon_init(1);
++	else if (strncmp(p, "off", 3) == 0)
++		xmon_off = 1;
++	else if (strncmp(p, "nobt", 4) == 0)
++		xmon_no_auto_backtrace = 1;
++	else
++		return 1;
++
++	return 0;
++}
++early_param("xmon", early_parse_xmon);
++
++void __init xmon_setup(void)
++{
++#ifdef CONFIG_XMON_DEFAULT
++	if (!xmon_off)
++		xmon_init(1);
++#endif
++	if (xmon_early)
++		debugger(NULL);
++}
 Index: to-merge/include/asm-powerpc/xmon.h
 ===================================================================
 --- to-merge.orig/include/asm-powerpc/xmon.h
 +++ to-merge/include/asm-powerpc/xmon.h
-@@ -1,12 +1,18 @@
--#ifndef __PPC_XMON_H
--#define __PPC_XMON_H
--#ifdef __KERNEL__
-+#ifndef __ASM_POWERPC_XMON_H
-+#define __ASM_POWERPC_XMON_H
-+
-+/*
-+ * Copyrignt (C) 2006 IBM Corp
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
+@@ -12,7 +12,11 @@
  
--struct pt_regs;
-+#ifdef __KERNEL__
+ #ifdef __KERNEL__
  
--extern int xmon(struct pt_regs *excp);
--extern void xmon_printf(const char *fmt, ...);
- extern void xmon_init(int);
+-extern void xmon_init(int);
++#ifdef CONFIG_XMON
++extern void xmon_setup(void);
++#else
++static inline void xmon_setup(void) { };
++#endif
  
--#endif
--#endif
-+#endif /* __KERNEL __ */
-+#endif /* __ASM_POWERPC_XMON_H */
+ #endif /* __KERNEL __ */
+ #endif /* __ASM_POWERPC_XMON_H */
