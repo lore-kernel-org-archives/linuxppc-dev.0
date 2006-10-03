@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC05267C3D
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 14:52:14 +1000 (EST)
-Subject: Re: [PATCH] Fix a printk in pseries_mpic_init_IRQ
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <20061003044846.5187D67C49@ozlabs.org>
-References: <20061003044846.5187D67C49@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 03 Oct 2006 14:50:33 +1000
-Message-Id: <1159851033.5482.42.camel@localhost.localdomain>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 81D9367C01
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Oct 2006 14:55:34 +1000 (EST)
+Date: Mon, 2 Oct 2006 21:55:27 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [2.6 patch] mark virt_to_bus/bus_to_virt as __deprecated on i386
+Message-Id: <20061002215527.096a8762.akpm@osdl.org>
+In-Reply-To: <1159850979.5482.40.camel@localhost.localdomain>
+References: <20061002214954.GD665@shell0.pdx.osdl.net>
+	<20061002234428.GE3278@stusta.de> <20061003012241.GF3278@stusta.de>
+	<1159850245.5482.32.camel@localhost.localdomain>
+	<20061002214400.0a83b743.akpm@osdl.org>
+	<1159850979.5482.40.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Adrian Bunk <bunk@stusta.de>, linuxppc-dev@ozlabs.org,
+	Judith Lebzelter <judith@osdl.org>,
+	Kernel list <linux-kernel@vger.kernel.org>, Linux
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-10-03 at 14:48 +1000, Michael Ellerman wrote:
-> This should probably say "mpic" to save confusion.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+On Tue, 03 Oct 2006 14:49:39 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> On Mon, 2006-10-02 at 21:44 -0700, Andrew Morton wrote:
+> > On Tue, 03 Oct 2006 14:37:25 +1000
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > > > You might want to convince Andrew accepting my patch to make 
+> > > > > virt_to_bus/bus_to_virt give compile warnings on i386 for making
+> > > > > people more aware of this problem...
+> > > > >...
+> > > 
+> > > Andrew, is there any reason not to take that patch ?
+> > 
+> > It generates lots of warnings from drivers which nobody does any work on.
+> > 
+> > Net result: lots of new warnings, no fixed bugs.
+> 
+> Are you sure the warnings won't cause somebody like Al to go through
+> them all and fix them ?
 
-> ---
+The drivers simply don't link on some architectures, due to missing
+virt_to_bus/bus_to_virt.    They aren't hard to find.
+
+> At least they should be marked either CONFIG_BROKEN or X86 only (or
+> whatever arch they are supposed to be used on).
 > 
->  arch/powerpc/platforms/pseries/setup.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: to-merge/arch/powerpc/platforms/pseries/setup.c
-> ===================================================================
-> --- to-merge.orig/arch/powerpc/platforms/pseries/setup.c
-> +++ to-merge/arch/powerpc/platforms/pseries/setup.c
-> @@ -180,7 +180,7 @@ static void __init pseries_mpic_init_IRQ
->  
->  	cascade_irq = irq_of_parse_and_map(cascade, 0);
->  	if (cascade == NO_IRQ) {
-> -		printk(KERN_ERR "xics: failed to map cascade interrupt");
-> +		printk(KERN_ERR "mpic: failed to map cascade interrupt");
->  		return;
->  	}
->  
+
+Something like that would make sense.  I guess a new config option.
