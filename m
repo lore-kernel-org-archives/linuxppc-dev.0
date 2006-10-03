@@ -1,16 +1,17 @@
-Return-Path: <daniel.schnell@marel.com>
-Received: from mail.marel.com (mail.marel.com [213.213.131.31])
-	by ozlabs.org (Postfix) with ESMTP id CCE0F67B56
+Return-Path: <pradeepsampath@yahoo.com>
+Received: from web83210.mail.mud.yahoo.com (web83210.mail.mud.yahoo.com
+	[216.252.101.66]) by ozlabs.org (Postfix) with SMTP id 0A7E767CB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Oct 2006 02:31:40 +1000 (EST)
+	Wed,  4 Oct 2006 07:46:42 +1000 (EST)
+Message-ID: <20061003214641.48214.qmail@web83210.mail.mud.yahoo.com>
+Date: Tue, 3 Oct 2006 14:46:41 -0700 (PDT)
+From: Pradeep Sampath <pradeepsampath@yahoo.com>
+Subject: Re: booting 2.6 kernel on ML403
+To: Ameet Patil <ammubhai@gmail.com>
+In-Reply-To: <45221E5A.6040800@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6E707.B592B6E4"
-Subject: Disable data cache on mpc5200
-Date: Tue, 3 Oct 2006 16:19:31 -0000
-Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB012DEDD2@is-hdq-exchange.marel.net>
-From: "Daniel Schnell" <daniel.schnell@marel.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative; boundary="0-1337209284-1159912001=:47295"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,126 +22,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+--0-1337209284-1159912001=:47295
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-------_=_NextPart_001_01C6E707.B592B6E4
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Hi Ameet,
+  Thanks for the instant reply. I changed root parameter to xsa as you suggested root=/dev/xsa2. But i still get the same failure.
+   
+  [    3.093694] TCP bic registered
+[    3.129458] NET: Registered protocol family 8
+[    3.181412] NET: Registered protocol family 20
+[    3.236744] VFS: Cannot open root device "xsa2" or unknown-block(0,0)
+[    3.313092] Please append a correct "root=" boot option
+[    3.375552] Kernel panic - not syncing: VFS: Unable to mount root fs on unkno
+wn-block(0,0)
+[    3.474504]  <0>Rebooting in 180 seconds..
+  
+ 
+  On the CF i created the following block and character device files
+  # mknod -m 660 console c 5 1
+# mknod -m 660 xsa b 254 0
+# mknod -m 660 xsa1 b 254 1
+# mknod -m 660 xsa2 b 254 2
+# mknod -m 660 xsa3 b 254 3
+mkdir tts
+# mknod -m 660 0 c 4 64
 
-Hi,
-=20
-we have troubles with our 256 MBytes DDR SDRAM on our mpc5200B custom
-board.
-=20
-On this processor we have four chips, 64 MBytes each connected via
-chipselects CS0 & CS1.
-When running a specific memory test under u-boot the CS1 connected RAM
-seems also to work fine (memcpy, memcmp, etc.). But U-Boot disables the
-data cache as it partly boot-strapped from there. So it will not use the
-DDR burst mode.
-=20
-Now when booting our 2.4.25 Denx originated Linux Kernel (which we
-fetched via git a few weeks ago) the data cache is on and we get into
-trouble when booting Linux (either signal 11 or signal 4 at different
-places, highly timing dependant). If we setup only the RAM connected via
-CS0, we don't have any troubles. So I do not suspect Linux to be the
-cause of the trouble.
-=20
-It would be helpful to see if this trouble is related to the DDR burst
-mode. Is there any possibility to modify the Linux Kernel not to use the
-data cache of the mpc5200 or to disable it, so we do not use the burst
-mode ?
-=20
-A maybe stupid question: the CS1 can be at the same time a GPIO,
-depending on the mpc5200B setup. Could there be the possibility that the
-Linux kernel sets it up differently inside some driver initialization
-routine, so the setup which has been done inside U-Boot will be altered
-afterwards ?
-=20
-=20
-Best regards,
-=20
-Daniel.
+> Problem 2:
+> - Untar the kernel 2.6.17.1
+> - Applied the 5 TEMAC patches
+> - Applied Ameet's Sysace patch
+which patch did you apply? For TEMAC... apply the following patch: 
+http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2-after-TEMAC.patch
 
-------_=_NextPart_001_01C6E707.B592B6E4
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+  Yes, i have applied *only* after-TEMAC.patch. But looks like it blows away the configuration and results in kernel hang.
+   
+  Any further suggestions on where i should look at.
+   
+  regards.
+  Pradeep
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2>Hi,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial =
-size=3D2>we&nbsp;have=20
-troubles with&nbsp;our 256 MBytes DDR SDRAM on&nbsp;our mpc5200B custom=20
-board.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial size=3D2>On =
-this processor we=20
-have four&nbsp;chips, 64 MBytes each connected via chipselects CS0 &amp; =
+--0-1337209284-1159912001=:47295
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-CS1.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006></SPAN><SPAN =
-class=3D081535315-03102006><FONT=20
-face=3DArial size=3D2>When running a specific memory test under u-boot =
-the CS1=20
-connected RAM seems also to work fine (memcpy, memcmp, etc.). But U-Boot =
-
-disables the data cache as it partly boot-strapped from there. So it =
-will not=20
-use the DDR burst mode.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial size=3D2>Now =
-when booting our=20
-2.4.25 Denx originated Linux Kernel (which we fetched via git a few =
-weeks ago)=20
-the data cache is on and we get into trouble when booting Linux (either =
-signal=20
-11 or signal 4&nbsp;at different places, highly timing dependant). =
-If&nbsp;we=20
-setup only the RAM connected via CS0, we don't have any troubles. So I =
-do not=20
-suspect Linux to be the cause of the trouble.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial size=3D2>It =
-would be helpful=20
-to see if this trouble is related to the DDR burst mode. Is there any=20
-possibility to modify the Linux Kernel not to use the data cache of the =
-mpc5200=20
-or to&nbsp;disable it, so we do not use the burst=20
-mode&nbsp;?</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006></SPAN><SPAN =
-class=3D081535315-03102006><FONT=20
-face=3DArial size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial size=3D2>A =
-maybe stupid=20
-question: the CS1 can be at the same time a GPIO, depending on the =
-mpc5200B=20
-setup. Could there be the possibility that the Linux kernel sets it up=20
-differently inside&nbsp;some driver initialization routine, so the setup =
-which=20
-has been done inside U-Boot will be altered afterwards =
-?</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial size=3D2>Best=20
-regards,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D081535315-03102006><FONT face=3DArial=20
-size=3D2>Daniel.</FONT></SPAN></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C6E707.B592B6E4--
+<DIV>Hi Ameet,</DIV>  <DIV>Thanks for the instant reply. I changed root parameter to xsa as you suggested root=/dev/xsa2. But i still get the same failure.</DIV>  <DIV>&nbsp;</DIV>  <DIV>[&nbsp;&nbsp;&nbsp; 3.093694] TCP bic registered<BR>[&nbsp;&nbsp;&nbsp; 3.129458] NET: Registered protocol family 8<BR>[&nbsp;&nbsp;&nbsp; 3.181412] NET: Registered protocol family 20<BR>[&nbsp;&nbsp;&nbsp; 3.236744] VFS: Cannot open root device "xsa2" or unknown-block(0,0)<BR>[&nbsp;&nbsp;&nbsp; 3.313092] Please append a correct "root=" boot option<BR>[&nbsp;&nbsp;&nbsp; 3.375552] Kernel panic - not syncing: VFS: Unable to mount root fs on unkno<BR>wn-block(0,0)<BR>[&nbsp;&nbsp;&nbsp; 3.474504]&nbsp; &lt;0&gt;Rebooting in 180 seconds..</DIV>  <DIV><BR>&nbsp;</DIV>  <DIV>On the CF i created the following block and character device files</DIV>  <DIV># mknod -m 660 console c 5 1<BR># mknod -m 660&nbsp;xsa b 254 0<BR># mknod -m 660 xsa1 b 254 1<BR># mknod -m 660 xsa2 b 254 2<BR># mknod -m 660
+ xsa3 b 254 3<BR>mkdir tts<BR># mknod -m 660 0&nbsp;c 4 64<BR><BR><?xml:namespace prefix = mailto /><mailto:psampath@psampath-test>&gt; Problem 2:<BR>&gt; - Untar the kernel 2.6.17.1<BR>&gt; - Applied the 5 TEMAC patches<BR>&gt; - Applied Ameet's Sysace patch<BR>which patch did you apply? For TEMAC... apply the following patch: <BR><A href="http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2-after-TEMAC.patch">http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17.1-sysace-1.2-after-TEMAC.patch</A><BR></mailto:psampath@psampath-test></DIV>  <DIV><mailto:psampath@psampath-test>Yes, i have applied *only* after-TEMAC.patch. But looks like it blows away the configuration and results in kernel hang.</mailto:psampath@psampath-test></DIV>  <DIV><mailto:psampath@psampath-test></mailto:psampath@psampath-test>&nbsp;</DIV>  <DIV><mailto:psampath@psampath-test>Any further suggestions on where i should look
+ at.</mailto:psampath@psampath-test></DIV>  <DIV><mailto:psampath@psampath-test></mailto:psampath@psampath-test>&nbsp;</DIV>  <DIV><mailto:psampath@psampath-test>regards.</mailto:psampath@psampath-test></DIV>  <DIV><mailto:psampath@psampath-test>Pradeep</mailto:psampath@psampath-test></DIV><mailto:psampath@psampath-test></mailto:psampath@psampath-test>
+--0-1337209284-1159912001=:47295--
