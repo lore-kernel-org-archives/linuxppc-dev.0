@@ -1,12 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20061004161502.008787000@arndb.de>
-References: <20061004152610.151599000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-Date: Wed, 04 Oct 2006 17:26:17 +0200
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 07/14] spufs: make mailbox functions handle multiple elements
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 30C2068014
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 02:32:25 +1000 (EST)
+Message-ID: <4523E214.5060404@freescale.com>
+Date: Wed, 04 Oct 2006 11:32:20 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] Add of_platform_device_scan().
+References: <20061003225659.GA11955@ld0162-tx32.am.freescale.net>
+	<200610040118.09416.arnd@arndb.de>
+In-Reply-To: <200610040118.09416.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,252 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since libspe2 will provide a function that can read/write
-multiple mailbox elements at once, the kernel should handle
-that efficiently.
+Arnd Bergmann wrote:
+> I think it would be much more helpful to have working probing of all
+> SOC buses during bootup.
 
-read/write on the three mailbox files can now access the
-spe context multiple times to operate on any number of
-mailbox data elements.
+I agree; I avoided doing that for now because I was uneasy about 
+duplicating device nodes for SOC devices covered under the non-OF 
+platform bus via code in sysdev/fsl_soc.c.  It probably won't cause any 
+real problems unless a single device matches drivers on both buses (in 
+which case the of_device driver would probably be calling 
+of_platform_device_scan() anyway), but still...
 
-If the spu application keeps writing to its outbound
-mailbox, the read call will pick up all the data in a
-single system call.
+What I'd really like (long-term, of course) is if platform_device and 
+of_device were merged, with device tree support (or at least a means of 
+passing on properties that *could* come from a device tree without 
+special glue code that knows about each property) in arch-neutral code; 
+the mechanism for discovering devices ideally shouldn't depend on the 
+CPU's instruction set.
 
-Unfortunately, if the user passes an invalid pointer,
-we may lose a mailbox element on read, since we can't
-put it back. This probably impossible to solve, if the
-user also accesses the mailbox through direct register
-access.
+> +	for (child = NULL; (child = of_get_next_child(root, child)); ) {
+> +		if (strcmp(child->type, "spider") == 0) {
+> +			ret = of_soc_device_create(child, NULL);
+> +			if (ret)
+> +				goto out3;
+> +		}
+> +	}
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Why only spider?
 
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-@@ -354,27 +354,54 @@ static int spufs_pipe_open(struct inode 
- 	return nonseekable_open(inode, file);
- }
- 
-+/*
-+ * Read as many bytes from the mailbox as possible, until
-+ * one of the conditions becomes true:
-+ *
-+ * - no more data available in the mailbox
-+ * - end of the user provided buffer
-+ * - end of the mapped area
-+ */
- static ssize_t spufs_mbox_read(struct file *file, char __user *buf,
- 			size_t len, loff_t *pos)
- {
- 	struct spu_context *ctx = file->private_data;
--	u32 mbox_data;
--	int ret;
-+	u32 mbox_data, __user *udata;
-+	ssize_t count;
- 
- 	if (len < 4)
- 		return -EINVAL;
- 
-+	if (!access_ok(VERIFY_WRITE, buf, len))
-+		return -EFAULT;
-+
-+	udata = (void __user *)buf;
-+
- 	spu_acquire(ctx);
--	ret = ctx->ops->mbox_read(ctx, &mbox_data);
-+	for (count = 0; count <= len; count += 4, udata++) {
-+		int ret;
-+		ret = ctx->ops->mbox_read(ctx, &mbox_data);
-+		if (ret == 0)
-+			break;
-+
-+		/*
-+		 * at the end of the mapped area, we can fault
-+		 * but still need to return the data we have
-+		 * read successfully so far.
-+		 */
-+		ret = __put_user(mbox_data, udata);
-+		if (ret) {
-+			if (!count)
-+				count = -EFAULT;
-+			break;
-+		}
-+	}
- 	spu_release(ctx);
- 
--	if (!ret)
--		return -EAGAIN;
--
--	if (copy_to_user(buf, &mbox_data, sizeof mbox_data))
--		return -EFAULT;
-+	if (!count)
-+		count = -EAGAIN;
- 
--	return 4;
-+	return count;
- }
- 
- static struct file_operations spufs_mbox_fops = {
-@@ -430,36 +457,70 @@ void spufs_ibox_callback(struct spu *spu
- 	kill_fasync(&ctx->ibox_fasync, SIGIO, POLLIN);
- }
- 
-+/*
-+ * Read as many bytes from the interrupt mailbox as possible, until
-+ * one of the conditions becomes true:
-+ *
-+ * - no more data available in the mailbox
-+ * - end of the user provided buffer
-+ * - end of the mapped area
-+ *
-+ * If the file is opened without O_NONBLOCK, we wait here until
-+ * any data is available, but return when we have been able to
-+ * read something.
-+ */
- static ssize_t spufs_ibox_read(struct file *file, char __user *buf,
- 			size_t len, loff_t *pos)
- {
- 	struct spu_context *ctx = file->private_data;
--	u32 ibox_data;
--	ssize_t ret;
-+	u32 ibox_data, __user *udata;
-+	ssize_t count;
- 
- 	if (len < 4)
- 		return -EINVAL;
- 
-+	if (!access_ok(VERIFY_WRITE, buf, len))
-+		return -EFAULT;
-+
-+	udata = (void __user *)buf;
-+
- 	spu_acquire(ctx);
- 
--	ret = 0;
-+	/* wait only for the first element */
-+	count = 0;
- 	if (file->f_flags & O_NONBLOCK) {
- 		if (!spu_ibox_read(ctx, &ibox_data))
--			ret = -EAGAIN;
-+			count = -EAGAIN;
- 	} else {
--		ret = spufs_wait(ctx->ibox_wq, spu_ibox_read(ctx, &ibox_data));
-+		count = spufs_wait(ctx->ibox_wq, spu_ibox_read(ctx, &ibox_data));
- 	}
-+	if (count)
-+		goto out;
- 
--	spu_release(ctx);
-+	/* if we can't write at all, return -EFAULT */
-+	count = __put_user(ibox_data, udata);
-+	if (count)
-+		goto out;
- 
--	if (ret)
--		return ret;
-+	for (count = 4, udata++; (count + 4) <= len; count += 4, udata++) {
-+		int ret;
-+		ret = ctx->ops->ibox_read(ctx, &ibox_data);
-+		if (ret == 0)
-+			break;
-+		/*
-+		 * at the end of the mapped area, we can fault
-+		 * but still need to return the data we have
-+		 * read successfully so far.
-+		 */
-+		ret = __put_user(ibox_data, udata);
-+		if (ret)
-+			break;
-+	}
- 
--	ret = 4;
--	if (copy_to_user(buf, &ibox_data, sizeof ibox_data))
--		ret = -EFAULT;
-+out:
-+	spu_release(ctx);
- 
--	return ret;
-+	return count;
- }
- 
- static unsigned int spufs_ibox_poll(struct file *file, poll_table *wait)
-@@ -532,32 +593,67 @@ void spufs_wbox_callback(struct spu *spu
- 	kill_fasync(&ctx->wbox_fasync, SIGIO, POLLOUT);
- }
- 
-+/*
-+ * Write as many bytes to the interrupt mailbox as possible, until
-+ * one of the conditions becomes true:
-+ *
-+ * - the mailbox is full
-+ * - end of the user provided buffer
-+ * - end of the mapped area
-+ *
-+ * If the file is opened without O_NONBLOCK, we wait here until
-+ * space is availabyl, but return when we have been able to
-+ * write something.
-+ */
- static ssize_t spufs_wbox_write(struct file *file, const char __user *buf,
- 			size_t len, loff_t *pos)
- {
- 	struct spu_context *ctx = file->private_data;
--	u32 wbox_data;
--	int ret;
-+	u32 wbox_data, __user *udata;
-+	ssize_t count;
- 
- 	if (len < 4)
- 		return -EINVAL;
- 
--	if (copy_from_user(&wbox_data, buf, sizeof wbox_data))
-+	udata = (void __user *)buf;
-+	if (!access_ok(VERIFY_READ, buf, len))
-+		return -EFAULT;
-+
-+	if (__get_user(wbox_data, udata))
- 		return -EFAULT;
- 
- 	spu_acquire(ctx);
- 
--	ret = 0;
-+	/*
-+	 * make sure we can at least write one element, by waiting
-+	 * in case of !O_NONBLOCK
-+	 */
-+	count = 0;
- 	if (file->f_flags & O_NONBLOCK) {
- 		if (!spu_wbox_write(ctx, wbox_data))
--			ret = -EAGAIN;
-+			count = -EAGAIN;
- 	} else {
--		ret = spufs_wait(ctx->wbox_wq, spu_wbox_write(ctx, wbox_data));
-+		count = spufs_wait(ctx->wbox_wq, spu_wbox_write(ctx, wbox_data));
- 	}
- 
--	spu_release(ctx);
-+	if (count)
-+		goto out;
-+
-+	/* write aѕ much as possible */
-+	for (count = 4, udata++; (count + 4) <= len; count += 4, udata++) {
-+		int ret;
-+		ret = __get_user(wbox_data, udata);
-+		if (ret)
-+			break;
-+
-+		ret = spu_wbox_write(ctx, wbox_data);
-+		if (ret == 0)
-+			break;
-+	}
- 
--	return ret ? ret : sizeof wbox_data;
-+out:
-+	spu_release(ctx);
-+	return count;
- }
- 
- static unsigned int spufs_wbox_poll(struct file *file, poll_table *wait)
-
---
+-Scott
