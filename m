@@ -1,15 +1,21 @@
-Return-Path: <Glenn.G.Hart@us.westinghouse.com>
-Received: from swec9607.wecnq.com (swec9607.wecnq.com [147.72.234.65])
-	by ozlabs.org (Postfix) with ESMTP id B37B367EA0
+Return-Path: <john.bonesio@xilinx.com>
+Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CB12067E19
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Oct 2006 02:55:34 +1000 (EST)
-Subject: Problem with initrd
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF1D5D325D.8937E77C-ON852571FD.005C0832-852571FD.005CF8D2@ct.wec.com>
-From: Glenn.G.Hart@us.westinghouse.com
-Date: Wed, 4 Oct 2006 12:55:29 -0400
+	Thu,  5 Oct 2006 03:17:28 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6E7D8.F278C161"
+Subject: RE: booting 2.6 kernel on ML403
+Date: Wed, 4 Oct 2006 10:17:18 -0700
+Message-ID: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC02300D10@XSJ-EXCHVS1.xlnx.xilinx.com>
+From: "John Bonesio" <john.bonesio@xilinx.com>
+To: "Pradeep Sampath" <pradeepsampath@yahoo.com>,
+	"Ming Liu" <eemingliu@hotmail.com>, <ammubhai@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,197 +26,563 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am trying to get Linux running on the PPC of a Xilinx V4-FX12 FPGA.  I am
-using the Linux 2.6.17.9 kernel (I have also tried 2.6.17.1 with the same
-results) and have gotten through the kernel initialization to the point
-where it mounts the root file system.  At this point I can an Oops and a
-kernel panic.  I traced the kernel and found it was happening on the gunzip
-of the ramdisk image.  I tried without compressing the ramdisk image and I
-got a slightly different error.  I have attached this output as well.  I am
-not a kernel expert, but I am guessing it is having trouble accessing the
-RAM for the ramdisk.  Can anybody offer some advice?
+This is a multi-part message in MIME format.
 
-Thanks,
-Glenn
+------_=_NextPart_001_01C6E7D8.F278C161
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-With compress ramdisk image:
+A quick amendment to my previous email:
 
-loaded at:     00400000 0052B13C
-board data at: 00529124 0052913C
-relocated to:  004050F0 00405108
-zimage at:     00405805 004D072E
-initrd at:     004D1000 00528981
-avail ram:     0052C000 10000000
+The device name you should use in the CONFIG_CMDLINE  "root=3D..." can =
+be found in the routine call to register_blkdev() in the driver source =
+code. The first parameter to register_blkdev() is the major number of =
+the device. The second parameter is the name of the device, as in =
+/dev/xsda2, or /dev/xsysace2. This second parameter will contain just =
+the 'xsda' or 'xsysace' in it, and it may be a preprocessor constant =
+defined earlier in the file, such as #define MAJOR_NAME "xsda", but it =
+might not be a constant either. It depends on the code.
 
-Linux/PPC load: console=ttyS0,9600 console=tty0 root=/dev/ram rw
-Uncompressing Linux...done.
-Now booting the kernel
-initrd start c04d1000 end c0528981
-Linux version 2.6.17.9 (root@AFedora3) (gcc version 3.4.5) #32 PREEMPT Tue
-Oct 3 23:25:12 EDT 2006
-Xilinx Virtex-II Pro port
-Port by MontaVista Software, Inc. (source@mvista.com)
-Built 1 zonelists
-Kernel command line: console=ttyS0,9600 console=tty0 root=/dev/ram rw
-Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 257408k available (1424k kernel code, 368k data, 80k init, 0k
-highmem)
-Mount-cache hash table entries: 512
-checking if image is initramfs...it isn't (no cpio magic); looks like an
-initrd
-Freeing initrd memory: 350k freed
-NET: Registered protocol family 16
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 3, 32768 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-TCP: Hash tables configured (established 8192 bind 4096)
-TCP reno registered
-io scheduler noop registered (default)
-Serial: 8250/16550 driver $Revision: 1.90 $ 1 ports, IRQ sharing disabled
-serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 1) is a 16450
-RAMDISK driver initialized: 1 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 2 devices)
-nbd: registered device at major 43
-eth0: using fifo mode.
-eth0: Xilinx EMAC #0 at 0x80400000 mapped to 0xD1000000, irq=0
-eth0: id 2.0a; block id 0, type 8
-mice: PS/2 mouse device common for all mice
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-RAMDISK: Compressed image found at block 0
-allocated in buffer
-allocated window buffer
-make crc
-gunzip
-Oops: kernel access of bad area, sig: 11 [#1]
-PREEMPT
-NIP: C004115C LR: C0041148 CTR: C00FA29C
-REGS: c0421610 TRAP: 0300   Not tainted  (2.6.17.9)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 35035093  XER: E0000000
-DAR: 00001000, DSISR: 00800000
-TASK = c0529b10[1] 'swapper' THREAD: c0420000
-GPR00: C0041148 C04216C0 C0529B10 00000000 00000001 00000001 C04216A8
-00000000
-GPR08: 00000000 00001000 00000400 00000000 35035099 FFFF9620 00000001
-C04216D0
-GPR16: C018CD50 C04C88A0 C052FC08 00000000 00001000 00010000 C052FCA8
-00000000
-GPR24: 00140000 C0450000 00000000 00001000 C01E3F20 00001000 00001000
-00000000
-NIP [C004115C] generic_file_buffered_write+0x4ec/0x5bc
-LR [C0041148] generic_file_buffered_write+0x4d8/0x5bc
-Call Trace:
-[C04216C0] [C0041148] generic_file_buffered_write+0x4d8/0x5bc (unreliable)
-[C0421780] [C0041A10] __generic_file_aio_write_nolock+0x4d4/0x50c
-[C0421810] [C0041DB8] generic_file_aio_write_nolock+0x28/0x98
-[C0421830] [C0041EA0] generic_file_write_nolock+0x78/0xa8
-[C04218D0] [C00657F8] blkdev_file_write+0x20/0x30
-[C04218E0] [C005B400] vfs_write+0xc8/0x190
-[C0421900] [C005B5A0] sys_write+0x4c/0x8c
-[C0421930] [C01AD2D4] flush_window+0x34/0xe4
-[C0421950] [C01AD8B8] inflate_codes+0x468/0x4b0
-[C04219A0] [C01AE0E0] inflate_dynamic+0x64c/0x690
-[C0421EE0] [C01AEA1C] rd_load_image+0x8f4/0x106c
-[C0421F40] [C01AF33C] initrd_load+0x4c/0x304
-[C0421F70] [C01ACCB8] prepare_namespace+0xa8/0x11c
-[C0421F90] [C0002580] init+0x1b4/0x280
-[C0421FF0] [C00051FC] kernel_thread+0x44/0x60
-Instruction dump:
-48006591 2f9d0000 419c001c 7ec3b378 38800001 4800441d 48120851 2f930000
-409efbe8 8061005c 81210064 2f830000 <92e90000> 93090004 41be0008 48006555
-Kernel panic - not syncing: Attempted to kill init!
- <0>Rebooting in 180 seconds.
+=20
+
+Hopefully this clears things up a bit.
+
+=20
+
+- John
+
+=20
+
+________________________________
+
+From: linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org =
+[mailto:linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org] On =
+Behalf Of Pradeep Sampath
+Sent: Wednesday, October 04, 2006 10:35 AM
+To: Ming Liu; ammubhai@gmail.com
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: booting 2.6 kernel on ML403
+
+=20
+
+Hello Ameet/Ming,
+
+=20
+
+First of all really appreciate your inputs on this...=20
+
+Problem 1 :
+
+I was using the factory shipped compact flash as is which comes with a =
+DOS FAT16 partition and a linux 83 partition with ext3 filesystem. I =
+tried it on 2 factory shipped CFs and its the same behavior - . When i =
+plug-in the CF card reader to the linux box it always reads it as "sda" =
+and in the linux2.6.17.1/Documentation/devices.txt - sda is the device =
+file for SCSI disk devices. Wonerding how you guys configured the root =
+option as "/dev/xsa".
+
+=20
+
+Now i re-formatted my CF, created a ext2 filesystem using busybox-1.1.0 =
+like the BYU instructions. Created 2 partitions on CF card 1. FAT16 =
+partition & 2. linux partition and then created 1. dos file system using =
+mkdosfs and 2. linux ext2 filesystem using mke2fs.
+
+=20
+
+But the problem still persists and i get "Please append a correct =
+"root=3D" boot option :"
+
+:(
+
+=20
+
+Problem 2: After i included the TEMAC driver and sysace drivers, the =
+kernel just hangs. I thought i'll fix problem 1 before i get to problem =
+2...=20
+
+=20
+
+With your help i am getting the confidence that i can make this all =
+work!
+
+thanks once again.
+
+-Pradeep
 
 
-With uncompress ramdisk image:
 
-loaded at:     00400000 008D313C
-board data at: 008D1124 008D113C
-relocated to:  004050F0 00405108
-zimage at:     00405805 004D072C
-initrd at:     004D1000 008D1000
-avail ram:     008D4000 10000000
+Ming Liu <eemingliu@hotmail.com> wrote:
 
-Linux/PPC load: console=ttyS0,9600 console=tty0 root=/dev/ram rw
-Uncompressing Linux...done.
-Now booting the kernel
-initrd start c04d1000 end c08d1000
-Linux version 2.6.17.9 (root@AFedora3) (gcc version 3.4.5) #33 PREEMPT Wed
-Oct 4 00:18:59 EDT 2006
-Xilinx Virtex-II Pro port
-Port by MontaVista Software, Inc. (source@mvista.com)
-Built 1 zonelists
-Kernel command line: console=ttyS0,9600 console=tty0 root=/dev/ram rw
-Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 253696k available (1424k kernel code, 368k data, 80k init, 0k
-highmem)
-Mount-cache hash table entries: 512
-checking if image is initramfs...it isn't (bad gzip magic numbers); looks
-like an initrd
-Freeing initrd memory: 4096k freed
-NET: Registered protocol family 16
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 3, 32768 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-TCP: Hash tables configured (established 8192 bind 4096)
-TCP reno registered
-io scheduler noop registered (default)
-Serial: 8250/16550 driver $Revision: 1.90 $ 1 ports, IRQ sharing disabled
-serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 1) is a 16450
-RAMDISK driver initialized: 1 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 2 devices)
-nbd: registered device at major 43
-eth0: using fifo mode.
-eth0: Xilinx EMAC #0 at 0x80400000 mapped to 0xD1000000, irq=0
-eth0: id 2.0a; block id 0, type 8
-mice: PS/2 mouse device common for all mice
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-RAMDISK: ext2 filesystem found at block 0
-found ramdisk # blocks = 4096 /initrd.image
-RAMDISK: Loading 4096KiB [1 disk] into ram disk... Oops: Exception in
-kernel mode, sig: 4 [#1]
-PREEMPT
-NIP: C0079058 LR: C0079018 CTR: 00000000
-REGS: c08e1c20 TRAP: 0700   Not tainted  (2.6.17.9)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 35005093  XER: C0000000
-TASK = c04c9b10[1] 'swapper' THREAD: c08e0000
-GPR00: 11A49A00 C08E1CD0 C04C9B10 C08E1CD8 C08E1CB8 00000001 C08D4C00
-00000003
-GPR08: 11A49A00 11A49A00 11A49A00 C08D26AC 00000400 FFFF9620 00000002
-C08D2664
-GPR16: 00000002 00000001 C08E1EC0 C04C26C0 00000000 C08E1DA0 000003FF
-C08D2704
-GPR24: 00001000 00000000 00400000 00000400 00000001 00000400 00000000
-C08D2664
-NIP [C0079058] touch_atime+0xc4/0xd8
-LR [C0079018] touch_atime+0x84/0xd8
-Call Trace:
-[C08E1CD0] [C0079018] touch_atime+0x84/0xd8 (unreliable)
-[C08E1CF0] [C003FBF0] do_generic_mapping_read+0x490/0x4a4
-[C08E1D90] [C00420BC] __generic_file_aio_read+0x1ec/0x238
-[C08E1DE0] [C0042238] generic_file_read+0x88/0xb8
-[C08E1E90] [C005B16C] vfs_read+0xc8/0x190
-[C08E1EB0] [C005B514] sys_read+0x4c/0x8c
-[C08E1EE0] [C01AF100] rd_load_image+0xfd8/0x106c
-[C08E1F40] [C01AF33C] initrd_load+0x4c/0x304
-[C08E1F70] [C01ACCB8] prepare_namespace+0xa8/0x11c
-[C08E1F90] [C0002580] init+0x1b4/0x280
-[C08E1FF0] [C00051FC] kernel_thread+0x44/0x60
-Instruction dump:
-409e0014 800b0004 8121000c 7f804800 419e0020 81210008 8141000c 7fe3fb78
-913f0048 915f004c 38800001 4800b1a1 <00000000> 00000800 7c0803a6 38210020
-Kernel panic - not syncing: Attempted to kill init!
- <0>Rebooting in 180 seconds..
+	Hello Ameet,
+	I am using that driver very well now. There is only one problem. It =
+seems=20
+	that the driver for TEMAC only support Gigabit Enet, not 10/100/1000M=20
+	adapted. But because I want to use the Gigabit enet, I don't care that. =
+So=20
+	it's OK, at lease for 1Gbit/s.
+=09
+	So I don't think Pradeep's problem is caused by Temac. I still suspect =
+that=20
+	he didn't pass a right parameter to "root=3D", just like what I posted=20
+	before.
+=09
+	Regards
+	Ming
+=09
+=09
+	>From: Ameet Patil=20
+	>To: Ming Liu=20
+	>CC: pradeepsampath@yahoo.com, linuxppc-embedded@ozlabs.org
+	>Subject: Re: booting 2.6 kernel on ML403
+	>Date: Wed, 04 Oct 2006 09:35:07 +0100
+	>
+	>Ming Liu wrote:
+	> > Hi,
+	> >
+	> >> [ 3.093694] TCP bic registered
+	> >> [ 3.129458] NET: Registered protocol family 8
+	> >> [ 3.181412] NET: Registered protocol family 20
+	> >> [ 3.236744] VFS: Cannot open root device "xsa2" or =
+unknown-block(0,0)
+	> >> [ 3.313092] Please append a correct "root=3D" boot option
+	> >
+	> > It looks that some errors still exist in the parameters you passed =
+to
+	> > "root=3D". Please double check it, or post it in the maillist for =
+deep
+	> > analysis.
+	> > Regards
+	> > Ming
+	> >
+	> > _________________________________________________________________
+	> > =
+=CF=ED=D3=C3=CA=C0=BD=E7=C9=CF=D7=EE=B4=F3=B5=C4=B5=E7=D7=D3=D3=CA=BC=FE=CF=
+=B5=CD=B3=A1=AA MSN Hotmail=A1=A3 http://www.hotmail.com
+	> >=20
+	=
+------------------------------------------------------------------------
+	> >
+	> > _______________________________________________
+	> > Linuxppc-embedded mailing list
+	> > Linuxppc-embedded@ozlabs.org
+	> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+	>Hi Ming,
+	>IIRC, you are or were using the TEMAC driver along with my System Ace
+	>driver, isn't it? Does my driver patch ***-after-TEMAC.patch work for
+	>you? I ask this because Pradeep is having some problems using it (see
+	>Problem 2 in his email). Could you please update on this?
+	>
+	>Thanks,
+	>-Ameet
+=09
+	_________________________________________________________________
+	=
+=D3=EB=C1=AA=BB=FA=B5=C4=C5=F3=D3=D1=BD=F8=D0=D0=BD=BB=C1=F7=A3=AC=C7=EB=CA=
+=B9=D3=C3 MSN Messenger: http://messenger.msn.com/cn=20
+=09
+	_______________________________________________
+	Linuxppc-embedded mailing list
+	Linuxppc-embedded@ozlabs.org
+	https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+=20
+
+
+------_=_NextPart_001_01C6E7D8.F278C161
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>A quick amendment to my previous =
+email:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>The device name you should use in =
+the
+CONFIG_CMDLINE =A0&#8220;root=3D&#8230;&#8221; can be found in the =
+routine call to
+register_blkdev() in the driver source code. The first parameter to
+register_blkdev() is the major number of the device. The second =
+parameter is
+the name of the device, as in /dev/xsda2, or /dev/xsysace2. This second
+parameter will contain just the &#8216;xsda&#8217; or =
+&#8216;xsysace&#8217; in
+it, and it may be a preprocessor constant defined earlier in the file, =
+such as #define
+MAJOR_NAME &#8220;xsda&#8221;, but it might not be a constant either. It
+depends on the code.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Hopefully this clears things up a =
+bit.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>- John<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
+linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org] =
+<b><span
+style=3D'font-weight:bold'>On Behalf Of </span></b>Pradeep Sampath<br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Wednesday, October =
+04, 2006
+10:35 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> Ming Liu; =
+ammubhai@gmail.com<br>
+<b><span style=3D'font-weight:bold'>Cc:</span></b> =
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> Re: booting 2.6 =
+kernel on
+ML403</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>Hello Ameet/Ming,<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>First of all really appreciate your inputs on this... =
+<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>Problem 1 :<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>I was using the factory shipped compact flash as is which comes =
+with a
+DOS FAT16 partition and a linux 83 partition with ext3 filesystem. =
+I&nbsp;tried
+it on 2&nbsp;factory shipped CFs and its&nbsp;the same behavior - . When =
+i
+plug-in the CF card reader to the linux box it always reads it as
+&quot;sda&quot; and in the linux2.6.17.1/Documentation/devices.txt - sda =
+is the
+device file for SCSI disk devices. Wonerding how you guys configured the =
+root
+option as &quot;/dev/xsa&quot;.<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>Now i re-formatted my CF, created a ext2 filesystem using =
+busybox-1.1.0
+like the BYU instructions. Created 2 partitions on CF card 1. FAT16 =
+partition
+&amp; 2. linux partition and then created 1. dos file system using =
+mkdosfs and 2.
+linux ext2 filesystem using mke2fs.<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>But the problem still persists and i get &quot;Please append a =
+correct
+&quot;root=3D&quot; boot option :&quot;<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>:(<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>Problem 2: After i included the TEMAC driver and sysace drivers,
+the&nbsp;kernel just hangs. I thought i'll fix problem 1 before i get to
+problem 2... <o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>With your help i am getting the confidence that i can make this =
+all
+work!<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>thanks once again.<o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>-Pradeep<br>
+<br>
+<br>
+<br>
+<b><i><span style=3D'font-weight:bold;font-style:italic'>Ming Liu
+&lt;eemingliu@hotmail.com&gt;</span></i></b> =
+wrote:<o:p></o:p></span></font></p>
+
+</div>
+
+<blockquote style=3D'border:none;border-left:solid #1010FF =
+1.5pt;padding:0in 0in 0in 3.0pt;
+margin-left:3.4pt;margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>Hello Ameet,<br>
+I am using that driver very well now. There is only one problem. It =
+seems <br>
+that the driver for TEMAC only support Gigabit Enet, not 10/100/1000M =
+<br>
+adapted. But because I want to use the Gigabit enet, I don't care that. =
+So <br>
+it's OK, at lease for 1Gbit/s.<br>
+<br>
+So I don't think Pradeep's problem is caused by Temac. I still suspect =
+that <br>
+he didn't pass a right parameter to &quot;root=3D&quot;, just like what =
+I posted <br>
+before.<br>
+<br>
+Regards<br>
+Ming<br>
+<br>
+<br>
+&gt;From: Ameet Patil <br>
+<AMMUBHAI@GMAIL.COM>&gt;To: Ming Liu <br>
+<EEMINGLIU@HOTMAIL.COM>&gt;CC: pradeepsampath@yahoo.com,
+linuxppc-embedded@ozlabs.org<br>
+&gt;Subject: Re: booting 2.6 kernel on ML403<br>
+&gt;Date: Wed, 04 Oct 2006 09:35:07 +0100<br>
+&gt;<br>
+&gt;Ming Liu wrote:<br>
+&gt; &gt; Hi,<br>
+&gt; &gt;<br>
+&gt; &gt;&gt; [ 3.093694] TCP bic registered<br>
+&gt; &gt;&gt; [ 3.129458] NET: Registered protocol family 8<br>
+&gt; &gt;&gt; [ 3.181412] NET: Registered protocol family 20<br>
+&gt; &gt;&gt; [ 3.236744] VFS: Cannot open root device &quot;xsa2&quot; =
+or
+unknown-block(0,0)<br>
+&gt; &gt;&gt; [ 3.313092] Please append a correct &quot;root=3D&quot; =
+boot option<br>
+&gt; &gt;<br>
+&gt; &gt; It looks that some errors still exist in the parameters you =
+passed to<br>
+&gt; &gt; &quot;root=3D&quot;. Please double check it, or post it in the =
+maillist
+for deep<br>
+&gt; &gt; analysis.<br>
+&gt; &gt; Regards<br>
+&gt; &gt; Ming<br>
+&gt; &gt;<br>
+&gt; &gt; =
+_________________________________________________________________<br>
+&gt; &gt; =
+=CF=ED=D3=C3=CA=C0=BD=E7=C9=CF=D7=EE=B4=F3=B5=C4=B5=E7=D7=D3=D3=CA=BC=FE=CF=
+=B5=CD=B3=A1=AA MSN Hotmail=A1=A3 http://www.hotmail.com<br>
+&gt; &gt; <br>
+------------------------------------------------------------------------<=
+br>
+&gt; &gt;<br>
+&gt; &gt; _______________________________________________<br>
+&gt; &gt; Linuxppc-embedded mailing list<br>
+&gt; &gt; Linuxppc-embedded@ozlabs.org<br>
+&gt; &gt; https://ozlabs.org/mailman/listinfo/linuxppc-embedded<br>
+&gt;Hi Ming,<br>
+&gt;IIRC, you are or were using the TEMAC driver along with my System =
+Ace<br>
+&gt;driver, isn't it? Does my driver patch ***-after-TEMAC.patch work =
+for<br>
+&gt;you? I ask this because Pradeep is having some problems using it =
+(see<br>
+&gt;Problem 2 in his email). Could you please update on this?<br>
+&gt;<br>
+&gt;Thanks,<br>
+&gt;-Ameet<br>
+<br>
+_________________________________________________________________<br>
+=D3=EB=C1=AA=BB=FA=B5=C4=C5=F3=D3=D1=BD=F8=D0=D0=BD=BB=C1=F7=A3=AC=C7=EB=CA=
+=B9=D3=C3 MSN Messenger: http://messenger.msn.com/cn <br>
+<br>
+_______________________________________________<br>
+Linuxppc-embedded mailing list<br>
+Linuxppc-embedded@ozlabs.org<br>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded<o:p></o:p></span></=
+font></p>
+
+</blockquote>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C6E7D8.F278C161--
