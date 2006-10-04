@@ -1,23 +1,24 @@
 Return-Path: <dan@embeddedalley.com>
 Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
-	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 5FDFB67CE3
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 00:31:51 +1000 (EST)
-In-Reply-To: <17699.769.632098.479906@cargo.ozlabs.ibm.com>
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id A54E667C62
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 01:03:22 +1000 (EST)
+In-Reply-To: <1159942128.13323.21.camel@localhost.localdomain>
 References: <20060927155626.4d5ca19c@vitb.ru.mvista.com>
 	<4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>
 	<20060927165556.04c8d5d7@vitb.ru.mvista.com>
 	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>
 	<20060927112201.293fef44@localhost.localdomain>
 	<EBD0615C-4F22-430F-BD23-1283DF98F1B3@embeddedalley.com>
-	<17699.769.632098.479906@cargo.ozlabs.ibm.com>
+	<1159942128.13323.21.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2867EA41-5135-43F7-9873-044C617EAC1B@embeddedalley.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7BD0D5CE-7BA3-43DC-B972-B75672F6A31E@embeddedalley.com>
 From: Dan Malek <dan@embeddedalley.com>
 Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
-Date: Wed, 4 Oct 2006 09:53:43 -0400
-To: Paul Mackerras <paulus@samba.org>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Date: Wed, 4 Oct 2006 10:48:29 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,100 +29,145 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 3, 2006, at 8:40 PM, Paul Mackerras wrote:
+On Oct 4, 2006, at 2:08 AM, Benjamin Herrenschmidt wrote:
 
-> ....   That means that ifdefs
-> are evil, because they obfuscate the code....
+> It's not that complex and the single binary is not necessarily the  
+> main
+> objective (it's a good practice as it enforce avoiding ugly #ifdef  
+> hacks
 
-This is not an #ifdefs discussion.  We've had those
-discussions many years ago and have done many
-things to eliminate that :-)
+Would you guys please get off of this #ifdefs discussion! :-)
+That's not what this is about.
 
-It's just a discussion about the purpose of placing
-things that are quite static about a board port in
-the board specific include file with a #define, rather
-than trying to add it as a device tree node.
+> There is fundamentally little difference between the OCP tables we had
+> before and the device-tree.
 
-If I:
-	#define MY_BOARD_BCSR 0xf00
+Exactly!  So why has it become such a desire to represent
+stuff in the device tree that was never necessary to represent
+in other table formats before?
 
-and then,
+> The new device-tree model provides a more flexible and richer semantic
+> for adding all sort of driver or BSP private infos, and for dealing  
+> with
+> address mapping and interrupt mapping.
 
-	bcsr = ioremap(MY_BOARD_BCSR);
+Not really, we had all of this before.....  and in a way
+that I didn't have to learn a new syntax to represent.
 
-I think it's pretty clear what I'm doing.
-In all of my experience, something like a BCSR
-is quite board specific and I honestly don't
-see any "generic BCSR code" that's going
-to exist and actually take advantage of
-representing this in a device tree.
+> When done right, it does simplify the matter. An example that I've  
+> seen
+> internally is embedded boards with all sorts of variety of dodgy
+> interrupt controllers cascaded on each other.
+
+Good example.  Cascaded interrupt controllers are always
+a challenge.  :-)  It doesn't matter how you present the
+information about their configuration if you don't have
+the code written properly to manage them.  It's the
+_code_ you write the solves the problem, not the
+device tree.
+
+> It simplifies the code, both on the driver and the platform side,
+
+I don't see that.  If I look at drivers we've had around for
+a while that have survived all of these evolutions, the
+core of them hasn't changed one bit.  The initialization
+functions have gone from simply stuffing an information
+data structure with #defined board information to lengthy
+process of performing (the once hated) OF searches
+and conversion of information, to stuff into the data
+structures.
 
 
-> The device-tree concept offers a way to make drivers more readable and
-> reusable, by separating out the board-specific configuration
-> information (thus reducing ifdefs) and by encouraging the style of
-> code that naturally copes with any number of device instances.
+> ....   doing so
+> makes it simpler for your own code/driver to retreive informations  
+> such
+> as base addresses, interrupts (see above), and all sort of auxilliary
+> infos you may which to pass to a given driver (MAC address, serial
+> number, default clock, whatever).
 
-Again, it's not a discussion of #ifdefs.  Most of the
-drivers we are discussing that take advantage of this
-have long since been properly written to use board
-specific information without them.  Initially, we just
-used #defines in a board specific file, then we had
-platform data, now we have device tree.  That "progress"
-didn't make a driver any more readable or reusable,
-it's just someone's personal preference for yet another
-implementation to do the same thing.  The people with
-the most time to waste on this are just able to push
-that in over the rest of us that don't.
+It doesn't really make it any simpler for the driver, because
+they have always retrieved that information in some way that
+has been consistent, usually from the old board descriptor
+or platform data.  The method of converting that information,
+usually a concern of the boot rom or the boot wrapper or
+compiled in, is what we are changing now.
 
-> How does the "internal memory map" differ from "everything addressable
-> in the system"?
+> There is a great flexibility of putting whatever you want in  
+> there... or
+> not.
 
-By quite a bit.  If you look at the Freescale SOC parts,
-many have the very same or quite similar functional
-units, they may just appear at different addresses
-in the memory map for the different variants of
-processor.  Again, proper use of #defines in a board
-specific file or platform data solved this problem just
-as nicely as device tree.  The real progress was using
-the smaller addressable units individually rather than
-dereference from the large structure.  The way we get
-those addresses and information (#defines, platform
-data, device tree) wasn't the enabler to this flexibility.
+It's the 'or not' part that I am worried about.  Things like
+you mention above make sense.  I'm starting to worry about
+some of this other stuff, and the bscr example is what
+woke me up :-)  I think that's an example of things that
+should be considered not necessary.
 
-When you venture off the SOC, you not only have
-board specific addresses, but also the register
-format and even the logic to access these devices
-varies greatly from one board to another.  Yeah,
-the BCSR address and maybe something about its
-size is in the device tree....BFD, what do I do with it?
+> It's up to the embedded developper to use that tool, it can be used
+> in a bloated way, or in a smart way, we aren't enforcing any direction
+> here.
 
-As we have seen in some e-mail exchanges already,
-people have tracking down "bugs" that eventually
-ended up in an improper device tree configuration.
-I don't see how this makes board ports any easier,
-it's just a different way of representing the information
-that has been needed all along.....  and adding
-additional steps to the process.
+Not really.  To use a particular driver you are going to have
+to provide the proper amount of information.  It's not up to
+me as a consumer of something already written.  I can
+only control that if I'm the developer of the code.
 
-> Leo Li had an interesting idea, which is a preprocessor that would
-> take kernel code ...
+> I think you are a bit too dismissive here. The approach has always  
+> been
+> to provide the choice,
 
-Ummmm,  I'm going to pretend I didn't even hear this
-suggestion :-)  Please, no, I really don't see any value
-in this.  Talk about obfuscation......  At least I have a
-chance at finding my way though #ifdefs :-)
+There isn't a choice.  If I want to use a particular driver
+I have to provide the proper and necessary information
+using a device tree, period.  If I want to change my
+board design for some reason that is advantageous
+to me, and the driver doesn't support it, no possible
+convolution of device tree information is going to make
+that happen.
 
-I'm not against using the device tree (or platform data
-or #defines) when it's appropriate to do so.  I think our
-obsession to represent everything there is what is
-creating the complexity.  If a #define in a board
-specific port file makes sense, then just do that,
-even if it is a BSCR address.  The device tree just
-seems like the new toy that everyone wants to play
-with, and we are forgetting that the old fashioned way
-of just writing some C code may be the way
-to implement what we need.
+> ...  is hopefully an easier way to create the BSP in the first place,
+
+Sorry, but I don't see that.  You are either skilled at
+creating a BSP or you are not.  The device tree just adds
+another dimension of information in a syntax and structure
+that you have to learn.
+
+> .... The -ability- to build multi-board
+> kernels is made mandatory for code to be merged upstream,
+
+Why?  When are people going to realize that the
+ratio of Linux on custom embedded systems to a standard
+workstation is about a million to one?  So what if I
+can boot the same kernel on a couple of obsolete
+PowerPC workstations using drivers that aren't used
+anywhere else?  Or, on a couple of embedded eval
+boards that don't represent how people build products?
+Hell, I tried to build an x86 kernel the other day
+for a PC and still don't have one that boots.  I can't
+seem to figure out what processor configuration
+options or compiler options to use.  Linux doesn't
+even support this on a "standard" PC. :-)
+
+> ... as it enforces
+> a certain level of quality,
+
+That's BS and you know it :-)
+
+
+> ....  In fact, you client may be happy, once it's done rev 3 of the
+> board with a 3rd type of wifi chip or a 2nd type of ethernet HUB to  
+> have
+> the ability to easily build, maintain, distribute and test a single
+> kernel image,
+
+That's not very important.  For high volume products that
+are already in the field, the way the binary image is created
+or if they need different ones on different versions, isn't
+important.  The whole process of tracking, testing, distributing,
+installing, upgrading, reverting makes our development
+tools insignificant to them.  All that is desired is an image
+that when upgraded doesn't turn a million boxes into
+bricks.  If it does, our cleverness to use a device tree to
+support multiple boards better not be the problem, because
+if it is it will never be used again.
 
 Thanks.
 
