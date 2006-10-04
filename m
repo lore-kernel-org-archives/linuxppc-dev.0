@@ -1,27 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <michel@tungstengraphics.com>
+Received: from admin.zirkelwireless.com (admin.zirkelwireless.com
+	[209.216.203.65])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DC8E667CBE
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 22:24:14 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Subject: Re: [PATCH] uninorth: Add module param 'aperture' for aperture size
-References: <115608447678-git-send-email-> <11560844762890-git-send-email->
-	<1156176559.16513.78.camel@thor.lorrainebruecke.local>
-	<1156231536.21752.100.camel@localhost.localdomain>
-	<1156236954.16513.141.camel@thor.lorrainebruecke.local>
-	<1156285033.21752.107.camel@localhost.localdomain>
-	<1159958670.23084.217.camel@thor.lorrainebruecke.local>
-Date: Wed, 04 Oct 2006 14:24:08 +0200
-In-Reply-To: <1159958670.23084.217.camel@thor.lorrainebruecke.local> (Michel
-	=?iso-8859-1?Q?D=E4nzer's?= message of "Wed,
-	04 Oct 2006 12:44:29 +0200")
-Message-ID: <jelknwb76f.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Dave Jones <davej@codemonkey.org.uk>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DB59B67CC7
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Oct 2006 22:56:52 +1000 (EST)
+Subject: [PATCH] uninorth: Add module param 'aperture' for aperture size
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: Dave Jones <davej@codemonkey.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 04 Oct 2006 14:56:44 +0200
+Message-Id: <1159966604.23084.236.camel@thor.lorrainebruecke.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,16 +22,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michel Dänzer <michel@tungstengraphics.com> writes:
+In contrast to most if not all PC BIOSes, OpenFirmware (OF) on PowerMacs with
+UniNorth bridges does not allow changing the aperture size. The size set up by
+OF is usually 16 MB, which is too low for graphics intensive environments.
+Hence, add a module parameter that allows changing the aperture size at driver
+initialization time. When the parameter is not specified, the default is 32 MB.
 
-> +			if (32 == values[i].size)
+Signed-off-by: Michel DÃ¤nzer <michel@tungstengraphics.com>
+---
 
-variable == value, please.
+Reversed a 'value == variable' test, as suggested by Andreas Schwab (thanks!).
 
-Andreas.
+ drivers/char/agp/uninorth-agp.c |   54 +++++++++++++++++++++++++--------------
+ 1 files changed, 35 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
+index 78c8cb2..c2b6f7d 100644
+--- a/drivers/char/agp/uninorth-agp.c
++++ b/drivers/char/agp/uninorth-agp.c
+@@ -27,32 +27,42 @@ #include "agp.h"
+ static int uninorth_rev;
+ static int is_u3;
+ 
++static char __devinitdata *aperture = NULL;
+ 
+ static int uninorth_fetch_size(void)
+ {
+-	int i;
+-	u32 temp;
+-	struct aper_size_info_32 *values;
+-
+-	pci_read_config_dword(agp_bridge->dev, UNI_N_CFG_GART_BASE, &temp);
+-	temp &= ~(0xfffff000);
+-	values = A_SIZE_32(agp_bridge->driver->aperture_sizes);
+-
+-	for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++) {
+-		if (temp == values[i].size_value) {
+-			agp_bridge->previous_size =
+-			    agp_bridge->current_size = (void *) (values + i);
+-			agp_bridge->aperture_size_idx = i;
+-			return values[i].size;
++	int i, size = 0;
++	struct aper_size_info_32 *values =
++	    A_SIZE_32(agp_bridge->driver->aperture_sizes);
++
++	if (aperture) {
++		char *save = aperture;
++
++		size = memparse(aperture, &aperture) >> 20;
++		aperture = save;
++
++		for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++)
++			if (size == values[i].size)
++				break;
++
++		if (i == agp_bridge->driver->num_aperture_sizes) {
++			printk(KERN_ERR PFX "Invalid aperture size, using"
++			       " default\n");
++			size = 0;
++			aperture = NULL;
+ 		}
+ 	}
+ 
+-	agp_bridge->previous_size =
+-	    agp_bridge->current_size = (void *) (values + 1);
+-	agp_bridge->aperture_size_idx = 1;
+-	return values[1].size;
++	if (!size) {
++		for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++)
++			if (values[i].size == 32)
++				break;
++	}
+ 
+-	return 0;
++	agp_bridge->previous_size =
++	    agp_bridge->current_size = (void *)(values + i);
++	agp_bridge->aperture_size_idx = i;
++	return values[i].size;
+ }
+ 
+ static void uninorth_tlbflush(struct agp_memory *mem)
+@@ -668,5 +678,11 @@ static void __exit agp_uninorth_cleanup(
+ module_init(agp_uninorth_init);
+ module_exit(agp_uninorth_cleanup);
+ 
++module_param(aperture, charp, 0);
++MODULE_PARM_DESC(aperture,
++		 "Aperture size, must be power of two between 4MB and an\n"
++		 "\t\tupper limit specific to the UniNorth revision.\n"
++		 "\t\tDefault: 32M");
++
+ MODULE_AUTHOR("Ben Herrenschmidt & Paul Mackerras");
+ MODULE_LICENSE("GPL");
+-- 
+1.4.2.1
+
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Earthling Michel DÃ¤nzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
