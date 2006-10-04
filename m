@@ -1,13 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061004161458.745590000@arndb.de>
+Message-Id: <20061004161509.115503000@arndb.de>
 References: <20061004152610.151599000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-Date: Wed, 04 Oct 2006 17:26:13 +0200
+Date: Wed, 04 Oct 2006 17:26:21 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 03/14] spufs: fix context switch during page fault
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	HyeonSeung Jang <hs8848.jang@samsung.com>
+Subject: [PATCH 11/14] spufs: add infrastructure for finding elf objects
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,63 +16,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: HyeonSeung Jang <hs8848.jang@samsung.com>
+This adds an 'object-id' file that the spe library can
+use to store a pointer to its ELF object. This was
+originally meant for use by oprofile, but is now
+also used by the GNU debugger, if available.
 
-For better explanation, I break down the page fault handling into steps:
+In order for oprofile to find the location in an spu-elf
+binary where an event counter triggered, we need a way
+to identify the binary in the first place.
 
-1) There is a page fault caused by DMA operation initiated by SPU and
-DMA is suspended.
+Unfortunately, that binary itself can be embedded in a
+powerpc ELF binary. Since we can assume it is mapped into
+the effective address space of the running process,
+have that one write the pointer value into a new spufs
+file.
 
-2) The interrupt handler 'spu_irq_class_1()/__spu_trap_data_map()' is
-called and it just wakes up the sleeping spe-manager thread.
-
-3) by PPE scheduler, the corresponding bottom half,
-spu_irq_class_1_bottom() is called in process context and DMA is
-restarted.
-
-There can be a quite large time gap between 2) and 3) and I found
-the following problem:
-
-Between 2) and 3) If the context becomes unbound, 3) is not executed
-because when the spe-manager thread is awaken, the context is already
-saved. (This situation can happen, for example, when a high priority spe
-thread newly started in that time gap)
-
-But the actual problem is that the corresponding SPU context does not
-work even if it is bound again to a SPU.
-
-Besides I can see the following warning in mambo simulator when the
-context becomes
-unbound(in save_mfc_cmd()), i.e. when unbind() is called for the
-context after step 2) before 3) :
-
-'WARNING: 61392752237: SPE2: MFC_CMD_QUEUE channel count of 15 is
-inconsistent with number of available DMA queue entries of 16'
-
-After I go through available documents, I found that the problem is
-because the suspended DMA is not restarted when it is bound again.
+When a context switch occurs, pass the user value to
+the profiler so that can look at the mapped file (with
+some care).
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/switch.c
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/switch.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -1779,6 +1779,15 @@ static inline void restore_mfc_cntl(stru
- 	 */
- 	out_be64(&priv2->mfc_control_RW, csa->priv2.mfc_control_RW);
- 	eieio();
-+	/*
-+	 * FIXME: this is to restart a DMA that we were processing
-+	 *        before the save. better remember the fault information
-+	 *        in the csa instead.
-+	 */
-+	if ((csa->priv2.mfc_control_RW & MFC_CNTL_SUSPEND_DMA_QUEUE_MASK)) {
-+		out_be64(&priv2->mfc_control_RW, MFC_CNTL_RESTART_DMA_COMMAND);
-+		eieio();
-+	}
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1487,6 +1487,21 @@ static u64 spufs_id_get(void *data)
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_id_ops, spufs_id_get, NULL, "0x%llx\n")
+ 
++static u64 spufs_object_id_get(void *data)
++{
++	struct spu_context *ctx = data;
++	return ctx->object_id;
++}
++
++static void spufs_object_id_set(void *data, u64 id)
++{
++	struct spu_context *ctx = data;
++	ctx->object_id = id;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(spufs_object_id_ops, spufs_object_id_get,
++		spufs_object_id_set, "0x%llx\n");
++
+ struct tree_descr spufs_dir_contents[] = {
+ 	{ "mem",  &spufs_mem_fops,  0666, },
+ 	{ "regs", &spufs_regs_fops,  0666, },
+@@ -1510,7 +1525,8 @@ struct tree_descr spufs_dir_contents[] =
+ 	{ "spu_tag_mask", &spufs_spu_tag_mask_ops, 0666, },
+ 	{ "event_mask", &spufs_event_mask_ops, 0666, },
+ 	{ "srr0", &spufs_srr0_ops, 0666, },
+-	{ "phys-id", &spufs_id_ops, 0666, },
+ 	{ "psmap", &spufs_psmap_fops, 0666, },
++	{ "phys-id", &spufs_id_ops, 0666, },
++	{ "object-id", &spufs_object_id_ops, 0666, },
+ 	{},
+ };
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -50,6 +50,7 @@ struct spu_context {
+ 	struct address_space *cntl; 	   /* 'control' area mappings. */
+ 	struct address_space *signal1; 	   /* 'signal1' area mappings. */
+ 	struct address_space *signal2; 	   /* 'signal2' area mappings. */
++	u64 object_id;		   /* user space pointer for oprofile */
+ 
+ 	enum { SPU_STATE_RUNNABLE, SPU_STATE_SAVED } state;
+ 	struct rw_semaphore state_sema;
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/sched.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/sched.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/sched.c
+@@ -35,6 +35,7 @@
+ #include <linux/unistd.h>
+ #include <linux/numa.h>
+ #include <linux/mutex.h>
++#include <linux/notifier.h>
+ 
+ #include <asm/io.h>
+ #include <asm/mmu_context.h>
+@@ -75,6 +76,25 @@ static inline void mm_needs_global_tlbie
+ 	__cpus_setall(&mm->cpu_vm_mask, nr);
  }
  
- static inline void enable_user_access(struct spu_state *csa, struct spu *spu)
++static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
++
++static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
++{
++	blocking_notifier_call_chain(&spu_switch_notifier,
++			    ctx ? ctx->object_id : 0, spu);
++}
++
++int spu_switch_event_register(struct notifier_block * n)
++{
++	return blocking_notifier_chain_register(&spu_switch_notifier, n);
++}
++
++int spu_switch_event_unregister(struct notifier_block * n)
++{
++	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
++}
++
++
+ static inline void bind_context(struct spu *spu, struct spu_context *ctx)
+ {
+ 	pr_debug("%s: pid=%d SPU=%d NODE=%d\n", __FUNCTION__, current->pid,
+@@ -97,12 +117,14 @@ static inline void bind_context(struct s
+ 	spu_restore(&ctx->csa, spu);
+ 	spu->timestamp = jiffies;
+ 	spu_cpu_affinity_set(spu, raw_smp_processor_id());
++	spu_switch_notify(spu, ctx);
+ }
+ 
+ static inline void unbind_context(struct spu *spu, struct spu_context *ctx)
+ {
+ 	pr_debug("%s: unbind pid=%d SPU=%d NODE=%d\n", __FUNCTION__,
+ 		 spu->pid, spu->number, spu->node);
++	spu_switch_notify(spu, NULL);
+ 	spu_unmap_mappings(ctx);
+ 	spu_save(&ctx->csa, spu);
+ 	spu->timestamp = jiffies;
+Index: linux-2.6/include/asm-powerpc/spu.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/spu.h
++++ linux-2.6/include/asm-powerpc/spu.h
+@@ -201,6 +201,24 @@ static inline void unregister_spu_syscal
+ 
+ 
+ /*
++ * Notifier blocks:
++ *
++ * oprofile can get notified when a context switch is performed
++ * on an spe. The notifer function that gets called is passed
++ * a pointer to the SPU structure as well as the object-id that
++ * identifies the binary running on that SPU now.
++ *
++ * For a context save, the object-id that is passed is zero,
++ * identifying that the kernel will run from that moment on.
++ *
++ * For a context restore, the object-id is the value written
++ * to object-id spufs file from user space and the notifer
++ * function can assume that spu->ctx is valid.
++ */
++int spu_switch_event_register(struct notifier_block * n);
++int spu_switch_event_unregister(struct notifier_block * n);
++
++/*
+  * This defines the Local Store, Problem Area and Privlege Area of an SPU.
+  */
+ 
 
 --
