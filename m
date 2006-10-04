@@ -1,27 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6B3BD67DB5
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 09:37:21 +1000 (EST)
-Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Malek <dan@embeddedalley.com>
-In-Reply-To: <7BD0D5CE-7BA3-43DC-B972-B75672F6A31E@embeddedalley.com>
-References: <20060927155626.4d5ca19c@vitb.ru.mvista.com>
-	<4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>
-	<20060927165556.04c8d5d7@vitb.ru.mvista.com>
-	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>
-	<20060927112201.293fef44@localhost.localdomain>
-	<EBD0615C-4F22-430F-BD23-1283DF98F1B3@embeddedalley.com>
-	<1159942128.13323.21.camel@localhost.localdomain>
-	<7BD0D5CE-7BA3-43DC-B972-B75672F6A31E@embeddedalley.com>
-Content-Type: text/plain
-Date: Thu, 05 Oct 2006 09:36:59 +1000
-Message-Id: <1160005019.5887.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17700.19065.798820.890331@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Oct 2006 09:57:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: mgreer@mvista.com, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix dtb inclusion in zImage and split OF stuff
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,193 +15,655 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-04 at 10:48 -0400, Dan Malek wrote:
-> On Oct 4, 2006, at 2:08 AM, Benjamin Herrenschmidt wrote:
-> 
-> > It's not that complex and the single binary is not necessarily the  
-> > main
-> > objective (it's a good practice as it enforce avoiding ugly #ifdef  
-> > hacks
-> 
-> Would you guys please get off of this #ifdefs discussion! :-)
-> That's not what this is about.
+This fixes the inclusion of device-tree blobs by the wrapper script,
+and splits of.c into of.c and ofcall.c, where ofcall.c contains the
+low-level interface to OF and of.c contains the platform definition
+for OF-based machines.  This patch forms part of the changes I have
+been working on to get an IBM PReP machine booting with ARCH=powerpc.
 
-But it _IS_ in large part ! #ifdefs are ugly and evil. So it's about
-that and having a central repository for board specific informations
-instead of hacks cluttered around 20 drivers....
+Paul.
 
-> > There is fundamentally little difference between the OCP tables we had
-> > before and the device-tree.
-> 
-> Exactly!  So why has it become such a desire to represent
-> stuff in the device tree that was never necessary to represent
-> in other table formats before?
-
-For several reasons. One of them is the fact that the previous tables
-were too limited, another is that we are converging using the same
-mecanism for all platforms.
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index c383d56..6568e32 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -40,8 +40,8 @@ zliblinuxheader := zlib.h zconf.h zutil.
+ $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
+ 		$(addprefix $(obj)/,$(zlibheader))
  
-> > The new device-tree model provides a more flexible and richer semantic
-> > for adding all sort of driver or BSP private infos, and for dealing  
-> > with
-> > address mapping and interrupt mapping.
-> 
-> Not really, we had all of this before.....  and in a way
-> that I didn't have to learn a new syntax to represent.
-
-Ugh ? Look at the #ifdef mess in ibm_emac...
-
-> > When done right, it does simplify the matter. An example that I've  
-> > seen
-> > internally is embedded boards with all sorts of variety of dodgy
-> > interrupt controllers cascaded on each other.
-> 
-> Good example.  Cascaded interrupt controllers are always
-> a challenge.  :-)  It doesn't matter how you present the
-> information about their configuration if you don't have
-> the code written properly to manage them.  It's the
-> _code_ you write the solves the problem, not the
-> device tree.
-
-The device-tree allows the code to be much simpler. The -code- becomes
-what it should be in the first place: purely a driver for each actual
-chip with no need for much knowledge if the general layout. Layout
-related (and in general board related) informations are in the
-device-tree and the board setup file(s). It's cleaner and simpler.
-
-> It doesn't really make it any simpler for the driver, because
-> they have always retrieved that information in some way that
-> has been consistent, usually from the old board descriptor
-> or platform data. 
-
-No, it's never been consistent.
-
->  The method of converting that information,
-> usually a concern of the boot rom or the boot wrapper or
-> compiled in, is what we are changing now.
-
-We are changing the method to make it consistent. Providing the
-information is still a concern of the boot rom or the wrapper.
+-src-wlib := string.S stdio.c main.c div64.S $(zlib)
+-src-plat := of.c
++src-wlib := string.S stdio.c main.c ofcons.c ofcall.c div64.S $(zlib)
++src-plat := of.c prep.c
+ src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
  
-> > There is a great flexibility of putting whatever you want in  
-> > there... or
-> > not.
-> 
-> It's the 'or not' part that I am worried about.  Things like
-> you mention above make sense.  I'm starting to worry about
-> some of this other stuff, and the bscr example is what
-> woke me up :-)  I think that's an example of things that
-> should be considered not necessary.
-
-I haven't looked at this specific example. I'll try to have a look
-later. I jumped into the discussion pointed by somebody else :)
-
-> > It's up to the embedded developper to use that tool, it can be used
-> > in a bloated way, or in a smart way, we aren't enforcing any direction
-> > here.
-> 
-> Not really.  To use a particular driver you are going to have
-> to provide the proper amount of information.  It's not up to
-> me as a consumer of something already written.  I can
-> only control that if I'm the developer of the code.
-
-Oh sure, existing drivers will require some amount of information, and
-that's good. Better have it in that central place than having board
-specific junk in every driver. However, you can use it to add your own
-stuffs as well if you feel the need. And when I say used in a simple vs.
-a bloated way, it's also up to the driver writer to not require too
-much...
-
-> > I think you are a bit too dismissive here. The approach has always  
-> > been
-> > to provide the choice,
-> 
-> There isn't a choice.  If I want to use a particular driver
-> I have to provide the proper and necessary information
-> using a device tree, period.  If I want to change my
-> board design for some reason that is advantageous
-> to me, and the driver doesn't support it, no possible
-> convolution of device tree information is going to make
-> that happen.
-
-Then you fix the driver. We are not solving world hunger but we are at
-least trying to improve our own food quality here.
-
-> > ...  is hopefully an easier way to create the BSP in the first place,
-> 
-> Sorry, but I don't see that.  You are either skilled at
-> creating a BSP or you are not.  The device tree just adds
-> another dimension of information in a syntax and structure
-> that you have to learn.
-
-To re-use your own answer to one of my points, I'd say that's
-bullshit :) It's easier to have a central place with well defined
-bindings to express things like your interrupt routing, device layout
-and addresses etc...
-
-> > .... The -ability- to build multi-board
-> > kernels is made mandatory for code to be merged upstream,
-> 
-> Why?  When are people going to realize that the
-> ratio of Linux on custom embedded systems to a standard
-> workstation is about a million to one?
-
-And ?
-
->   So what if I
-> can boot the same kernel on a couple of obsolete
-> PowerPC workstations using drivers that aren't used
-> anywhere else?  Or, on a couple of embedded eval
-> boards that don't represent how people build products?
-> Hell, I tried to build an x86 kernel the other day
-> for a PC and still don't have one that boots.  I can't
-> seem to figure out what processor configuration
-> options or compiler options to use.  Linux doesn't
-> even support this on a "standard" PC. :-)
-
-That's what defconfigs are for.
-
-> > ... as it enforces
-> > a certain level of quality,
-> 
-> That's BS and you know it :-)
-
-No, it's not. Look at the inextricable mess arch/ppc is in. We are
-trying hard to avoid that for arch/powerpc. If you let people just do
-hacks with #ifdef's all over the place for every single board, you end
-up with something mostly unmaintainable. Your point would be valid if
-the linux kernel was a frozen thing that didn't evolve. However, it
-evolves and needs to be actively devleopped/maintained. Having a sane
-infrastructure to hook board support in makes it easier and cleaner.
-
-Also, most of the code for embedded that actually gets merged upstream
-is code for evaluation boards provided by chip vendors, not end-user
-embedded code, you know very well that the actual embedded developpers
-never submit anything upstream, they don't care. That means that what
-gets merged upstream is what will be used as example code and base for
-new board supports. Thus it's important that is has as much flexibility
-as possible, including the ability to build kernels with multiple board
-supports in a single image. Embedded customers are the end of the chain
-might chose to not use that capability, but it shall be provided by the
-base/example code in the upstream repository.
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index d719bb9..3084fb0 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -27,6 +27,8 @@ extern char _vmlinux_start[];
+ extern char _vmlinux_end[];
+ extern char _initrd_start[];
+ extern char _initrd_end[];
++extern char _dtb_start[];
++extern char _dtb_end[];
  
-> > ....  In fact, you client may be happy, once it's done rev 3 of the
-> > board with a 3rd type of wifi chip or a 2nd type of ethernet HUB to  
-> > have
-> > the ability to easily build, maintain, distribute and test a single
-> > kernel image,
-> 
-> That's not very important.  For high volume products that
-> are already in the field, the way the binary image is created
-> or if they need different ones on different versions, isn't
-> important.  The whole process of tracking, testing, distributing,
-> installing, upgrading, reverting makes our development
-> tools insignificant to them.  All that is desired is an image
-> that when upgraded doesn't turn a million boxes into
-> bricks.  If it does, our cleverness to use a device tree to
-> support multiple boards better not be the problem, because
-> if it is it will never be used again.
-
-That argument too is BS and you know it :)
-
-Ben.
+ struct addr_range {
+ 	unsigned long addr;
+@@ -285,12 +287,6 @@ static void set_cmdline(char *buf)
+ 		setprop(devp, "bootargs", buf, strlen(buf) + 1);
+ }
+ 
+-/* Section where ft can be tacked on after zImage is built */
+-union blobspace {
+-	struct boot_param_header hdr;
+-	char space[8*1024];
+-} dt_blob __attribute__((__section__("__builtin_ft")));
+-
+ struct platform_ops platform_ops;
+ struct dt_ops dt_ops;
+ struct console_ops console_ops;
+@@ -309,9 +305,9 @@ void start(unsigned long a1, unsigned lo
+ 	/* Override the dt_ops and device tree if there was an flat dev
+ 	 * tree attached to the zImage.
+ 	 */
+-	if (dt_blob.hdr.magic == OF_DT_HEADER) {
++	if (_dtb_end > _dtb_start) {
+ 		have_dt = 1;
+-		ft_init(&dt_blob);
++		ft_init(_dtb_start);
+ 	}
+ 
+ 	if (platform_init(promptr))
+diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
+index fd99f78..2541339 100644
+--- a/arch/powerpc/boot/of.c
++++ b/arch/powerpc/boot/of.c
+@@ -14,165 +14,17 @@ #include "string.h"
+ #include "stdio.h"
+ #include "page.h"
+ #include "ops.h"
+-
+-typedef void *ihandle;
+-typedef void *phandle;
++#include "of.h"
+ 
+ extern char _end[];
+ 
++static unsigned long claim_base;
++
+ /* Value picked to match that used by yaboot */
+ #define PROG_START	0x01400000	/* only used on 64-bit systems */
+ #define RAM_END		(512<<20)	/* Fixme: use OF */
+ #define	ONE_MB		0x100000
+ 
+-int (*prom) (void *);
+-
+-
+-static unsigned long claim_base;
+-
+-static int call_prom(const char *service, int nargs, int nret, ...)
+-{
+-	int i;
+-	struct prom_args {
+-		const char *service;
+-		int nargs;
+-		int nret;
+-		unsigned int args[12];
+-	} args;
+-	va_list list;
+-
+-	args.service = service;
+-	args.nargs = nargs;
+-	args.nret = nret;
+-
+-	va_start(list, nret);
+-	for (i = 0; i < nargs; i++)
+-		args.args[i] = va_arg(list, unsigned int);
+-	va_end(list);
+-
+-	for (i = 0; i < nret; i++)
+-		args.args[nargs+i] = 0;
+-
+-	if (prom(&args) < 0)
+-		return -1;
+-
+-	return (nret > 0)? args.args[nargs]: 0;
+-}
+-
+-static int call_prom_ret(const char *service, int nargs, int nret,
+-		  unsigned int *rets, ...)
+-{
+-	int i;
+-	struct prom_args {
+-		const char *service;
+-		int nargs;
+-		int nret;
+-		unsigned int args[12];
+-	} args;
+-	va_list list;
+-
+-	args.service = service;
+-	args.nargs = nargs;
+-	args.nret = nret;
+-
+-	va_start(list, rets);
+-	for (i = 0; i < nargs; i++)
+-		args.args[i] = va_arg(list, unsigned int);
+-	va_end(list);
+-
+-	for (i = 0; i < nret; i++)
+-		args.args[nargs+i] = 0;
+-
+-	if (prom(&args) < 0)
+-		return -1;
+-
+-	if (rets != (void *) 0)
+-		for (i = 1; i < nret; ++i)
+-			rets[i-1] = args.args[nargs+i];
+-
+-	return (nret > 0)? args.args[nargs]: 0;
+-}
+-
+-/*
+- * Older OF's require that when claiming a specific range of addresses,
+- * we claim the physical space in the /memory node and the virtual
+- * space in the chosen mmu node, and then do a map operation to
+- * map virtual to physical.
+- */
+-static int need_map = -1;
+-static ihandle chosen_mmu;
+-static phandle memory;
+-
+-/* returns true if s2 is a prefix of s1 */
+-static int string_match(const char *s1, const char *s2)
+-{
+-	for (; *s2; ++s2)
+-		if (*s1++ != *s2)
+-			return 0;
+-	return 1;
+-}
+-
+-static int check_of_version(void)
+-{
+-	phandle oprom, chosen;
+-	char version[64];
+-
+-	oprom = finddevice("/openprom");
+-	if (oprom == (phandle) -1)
+-		return 0;
+-	if (getprop(oprom, "model", version, sizeof(version)) <= 0)
+-		return 0;
+-	version[sizeof(version)-1] = 0;
+-	printf("OF version = '%s'\r\n", version);
+-	if (!string_match(version, "Open Firmware, 1.")
+-	    && !string_match(version, "FirmWorks,3."))
+-		return 0;
+-	chosen = finddevice("/chosen");
+-	if (chosen == (phandle) -1) {
+-		chosen = finddevice("/chosen@0");
+-		if (chosen == (phandle) -1) {
+-			printf("no chosen\n");
+-			return 0;
+-		}
+-	}
+-	if (getprop(chosen, "mmu", &chosen_mmu, sizeof(chosen_mmu)) <= 0) {
+-		printf("no mmu\n");
+-		return 0;
+-	}
+-	memory = (ihandle) call_prom("open", 1, 1, "/memory");
+-	if (memory == (ihandle) -1) {
+-		memory = (ihandle) call_prom("open", 1, 1, "/memory@0");
+-		if (memory == (ihandle) -1) {
+-			printf("no memory node\n");
+-			return 0;
+-		}
+-	}
+-	printf("old OF detected\r\n");
+-	return 1;
+-}
+-
+-static void *claim(unsigned long virt, unsigned long size, unsigned long align)
+-{
+-	int ret;
+-	unsigned int result;
+-
+-	if (need_map < 0)
+-		need_map = check_of_version();
+-	if (align || !need_map)
+-		return (void *) call_prom("claim", 3, 1, virt, size, align);
+-
+-	ret = call_prom_ret("call-method", 5, 2, &result, "claim", memory,
+-			    align, size, virt);
+-	if (ret != 0 || result == -1)
+-		return (void *) -1;
+-	ret = call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
+-			    align, size, virt);
+-	/* 0x12 == coherent + read/write */
+-	ret = call_prom("call-method", 6, 1, "map", chosen_mmu,
+-			0x12, size, virt, virt);
+-	return (void *) virt;
+-}
+-
+ static void *of_try_claim(u32 size)
+ {
+ 	unsigned long addr = 0;
+@@ -187,7 +39,7 @@ static void *of_try_claim(u32 size)
+ #ifdef DEBUG
+ 		printf("    trying: 0x%08lx\n\r", claim_base);
+ #endif
+-		addr = (unsigned long)claim(claim_base, size, 0);
++		addr = (unsigned long)of_claim(claim_base, size, 0);
+ 		if ((void *)addr != (void *)-1)
+ 			break;
+ 	}
+@@ -211,73 +63,18 @@ static void of_image_hdr(const void *hdr
+ 	}
+ }
+ 
+-static void of_exit(void)
+-{
+-	call_prom("exit", 0, 0);
+-}
+-
+-/*
+- * OF device tree routines
+- */
+-static void *of_finddevice(const char *name)
+-{
+-	return (phandle) call_prom("finddevice", 1, 1, name);
+-}
+-
+-static int of_getprop(const void *phandle, const char *name, void *buf,
+-		const int buflen)
+-{
+-	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
+-}
+-
+-static int of_setprop(const void *phandle, const char *name, const void *buf,
+-		const int buflen)
+-{
+-	return call_prom("setprop", 4, 1, phandle, name, buf, buflen);
+-}
+-
+-/*
+- * OF console routines
+- */
+-static void *of_stdout_handle;
+-
+-static int of_console_open(void)
+-{
+-	void *devp;
+-
+-	if (((devp = finddevice("/chosen")) != NULL)
+-			&& (getprop(devp, "stdout", &of_stdout_handle,
+-				sizeof(of_stdout_handle))
+-				== sizeof(of_stdout_handle)))
+-		return 0;
+-
+-	return -1;
+-}
+-
+-static void of_console_write(char *buf, int len)
+-{
+-	call_prom("write", 3, 1, of_stdout_handle, buf, len);
+-}
+-
+ int platform_init(void *promptr)
+ {
++	of_init(promptr);
++
+ 	platform_ops.fixups = NULL;
+ 	platform_ops.image_hdr = of_image_hdr;
+ 	platform_ops.malloc = of_try_claim;
+ 	platform_ops.free = NULL;
+ 	platform_ops.exit = of_exit;
+ 
+-	dt_ops.finddevice = of_finddevice;
+-	dt_ops.getprop = of_getprop;
+-	dt_ops.setprop = of_setprop;
+-	dt_ops.translate_addr = NULL;
+-
+-	console_ops.open = of_console_open;
+-	console_ops.write = of_console_write;
+-	console_ops.edit_cmdline = NULL;
+-	console_ops.close = NULL;
+-	console_ops.data = NULL;
++	of_tree_init();
++	of_console_init();
+ 
+-	prom = (int (*)(void *))promptr;
+ 	return 0;
+ }
+diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
+new file mode 100644
+index 0000000..0828643
+--- /dev/null
++++ b/arch/powerpc/boot/of.h
+@@ -0,0 +1,29 @@
++/*
++ * Copyright (C) Paul Mackerras 1997.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++typedef void *ihandle;
++typedef void *phandle;
++
++/* In ofcall.c */
++void of_init(void *promptr);
++int call_prom(const char *service, int nargs, int nret, ...);
++int call_prom_ret(const char *service, int nargs, int nret,
++		  unsigned int *rets, ...);
++void *of_claim(unsigned long virt, unsigned long size, unsigned long align);
++void of_exit(void);
++
++void *of_finddevice(const char *name);
++int of_getprop(const void *phandle, const char *name, void *buf,
++	       const int buflen);
++int of_setprop(const void *phandle, const char *name, const void *buf,
++	       const int buflen);
++void of_tree_init(void);
++
++/* In ofcons.c */
++void of_console_init(void);
+diff --git a/arch/powerpc/boot/ofcall.c b/arch/powerpc/boot/ofcall.c
+new file mode 100644
+index 0000000..8086b60
+--- /dev/null
++++ b/arch/powerpc/boot/ofcall.c
+@@ -0,0 +1,200 @@
++/*
++ * Copyright (C) Paul Mackerras 1997.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "page.h"
++#include "ops.h"
++#include "of.h"
++
++int (*prom) (void *);
++
++
++void of_init(void *promptr)
++{
++	prom = (int (*)(void *))promptr;
++}
++
++int call_prom(const char *service, int nargs, int nret, ...)
++{
++	int i;
++	struct prom_args {
++		const char *service;
++		int nargs;
++		int nret;
++		unsigned int args[12];
++	} args;
++	va_list list;
++
++	args.service = service;
++	args.nargs = nargs;
++	args.nret = nret;
++
++	va_start(list, nret);
++	for (i = 0; i < nargs; i++)
++		args.args[i] = va_arg(list, unsigned int);
++	va_end(list);
++
++	for (i = 0; i < nret; i++)
++		args.args[nargs+i] = 0;
++
++	if (prom(&args) < 0)
++		return -1;
++
++	return (nret > 0)? args.args[nargs]: 0;
++}
++
++int call_prom_ret(const char *service, int nargs, int nret,
++		  unsigned int *rets, ...)
++{
++	int i;
++	struct prom_args {
++		const char *service;
++		int nargs;
++		int nret;
++		unsigned int args[12];
++	} args;
++	va_list list;
++
++	args.service = service;
++	args.nargs = nargs;
++	args.nret = nret;
++
++	va_start(list, rets);
++	for (i = 0; i < nargs; i++)
++		args.args[i] = va_arg(list, unsigned int);
++	va_end(list);
++
++	for (i = 0; i < nret; i++)
++		args.args[nargs+i] = 0;
++
++	if (prom(&args) < 0)
++		return -1;
++
++	if (rets != (void *) 0)
++		for (i = 1; i < nret; ++i)
++			rets[i-1] = args.args[nargs+i];
++
++	return (nret > 0)? args.args[nargs]: 0;
++}
++
++/*
++ * Older OF's require that when claiming a specific range of addresses,
++ * we claim the physical space in the /memory node and the virtual
++ * space in the chosen mmu node, and then do a map operation to
++ * map virtual to physical.
++ */
++static int need_map = -1;
++static ihandle chosen_mmu;
++static phandle memory;
++
++/* returns true if s2 is a prefix of s1 */
++static int string_match(const char *s1, const char *s2)
++{
++	for (; *s2; ++s2)
++		if (*s1++ != *s2)
++			return 0;
++	return 1;
++}
++
++static int check_of_version(void)
++{
++	phandle oprom, chosen;
++	char version[64];
++
++	oprom = finddevice("/openprom");
++	if (oprom == (phandle) -1)
++		return 0;
++	if (getprop(oprom, "model", version, sizeof(version)) <= 0)
++		return 0;
++	version[sizeof(version)-1] = 0;
++	printf("OF version = '%s'\r\n", version);
++	if (!string_match(version, "Open Firmware, 1.")
++	    && !string_match(version, "FirmWorks,3."))
++		return 0;
++	chosen = finddevice("/chosen");
++	if (chosen == (phandle) -1) {
++		chosen = finddevice("/chosen@0");
++		if (chosen == (phandle) -1) {
++			printf("no chosen\n");
++			return 0;
++		}
++	}
++	if (getprop(chosen, "mmu", &chosen_mmu, sizeof(chosen_mmu)) <= 0) {
++		printf("no mmu\n");
++		return 0;
++	}
++	memory = (ihandle) call_prom("open", 1, 1, "/memory");
++	if (memory == (ihandle) -1) {
++		memory = (ihandle) call_prom("open", 1, 1, "/memory@0");
++		if (memory == (ihandle) -1) {
++			printf("no memory node\n");
++			return 0;
++		}
++	}
++	printf("old OF detected\r\n");
++	return 1;
++}
++
++void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
++{
++	int ret;
++	unsigned int result;
++
++	if (need_map < 0)
++		need_map = check_of_version();
++	if (align || !need_map)
++		return (void *) call_prom("claim", 3, 1, virt, size, align);
++
++	ret = call_prom_ret("call-method", 5, 2, &result, "claim", memory,
++			    align, size, virt);
++	if (ret != 0 || result == -1)
++		return (void *) -1;
++	ret = call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
++			    align, size, virt);
++	/* 0x12 == coherent + read/write */
++	ret = call_prom("call-method", 6, 1, "map", chosen_mmu,
++			0x12, size, virt, virt);
++	return (void *) virt;
++}
++
++void of_exit(void)
++{
++	call_prom("exit", 0, 0);
++}
++
++/*
++ * OF device tree routines
++ */
++void *of_finddevice(const char *name)
++{
++	return (phandle) call_prom("finddevice", 1, 1, name);
++}
++
++int of_getprop(const void *phandle, const char *name, void *buf,
++	       const int buflen)
++{
++	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
++}
++
++int of_setprop(const void *phandle, const char *name, const void *buf,
++	       const int buflen)
++{
++	return call_prom("setprop", 4, 1, phandle, name, buf, buflen);
++}
++
++void of_tree_init(void)
++{
++	dt_ops.finddevice = of_finddevice;
++	dt_ops.getprop = of_getprop;
++	dt_ops.setprop = of_setprop;
++	dt_ops.translate_addr = NULL;
++}
+diff --git a/arch/powerpc/boot/ofcons.c b/arch/powerpc/boot/ofcons.c
+new file mode 100644
+index 0000000..5c76734
+--- /dev/null
++++ b/arch/powerpc/boot/ofcons.c
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) Paul Mackerras 1997.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "elf.h"
++#include "string.h"
++#include "stdio.h"
++#include "page.h"
++#include "ops.h"
++#include "of.h"
++
++/*
++ * OF console routines
++ */
++static void *of_stdout_handle;
++
++static int of_console_open(void)
++{
++	void *devp;
++
++	if (((devp = of_finddevice("/chosen")) != NULL)
++	    && (of_getprop(devp, "stdout", &of_stdout_handle,
++			   sizeof(of_stdout_handle))
++		== sizeof(of_stdout_handle)))
++		return 0;
++
++	return -1;
++}
++
++static void of_console_write(char *buf, int len)
++{
++	call_prom("write", 3, 1, of_stdout_handle, buf, len);
++}
++
++void of_console_init(void)
++{
++	console_ops.open = of_console_open;
++	console_ops.write = of_console_write;
++	console_ops.edit_cmdline = NULL;
++	console_ops.close = NULL;
++	console_ops.data = NULL;
++
++}
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index eab7318..debb02b 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -179,11 +179,11 @@ if [ -z "$cacheit" ]; then
+ fi
+ 
+ if [ -n "$initrd" ]; then
+-    addsec $tmp "$initrd" initrd
++    addsec $tmp "$initrd" $isection
+ fi
+ 
+ if [ -n "$dtb" ]; then
+-    addsec $tmp "$dtb" dtb
++    addsec $tmp "$dtb" .kernel:dtb
+ fi
+ 
+ if [ "$platform" != "miboot" ]; then
+diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
+index 4b6bb3f..4be3c64 100644
+--- a/arch/powerpc/boot/zImage.lds.S
++++ b/arch/powerpc/boot/zImage.lds.S
+@@ -21,6 +21,11 @@ SECTIONS
+     __got2_end = .;
+   }
+ 
++  . = ALIGN(8);
++  _dtb_start = .;
++  .kernel:dtb : { *(.kernel:dtb) }
++  _dtb_end = .;
++
+   . = ALIGN(4096);
+   _vmlinux_start =  .;
+   .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
