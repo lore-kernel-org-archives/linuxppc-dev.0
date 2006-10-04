@@ -1,18 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 636F667D63
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 07:16:16 +1000 (EST)
-Date: Wed, 4 Oct 2006 16:16:07 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] Add MPC8360EMDS board support (try 2)
-Message-Id: <20061004161607.6eeaa51f.kim.phillips@freescale.com>
-In-Reply-To: <CEA95FBE-ED7E-4512-A6C5-6362DAE69744@kernel.crashing.org>
-References: <20061003231751.00484d8a.kim.phillips@freescale.com>
-	<CEA95FBE-ED7E-4512-A6C5-6362DAE69744@kernel.crashing.org>
+Return-Path: <judith@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 862F767DA7
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 09:29:52 +1000 (EST)
+Date: Wed, 4 Oct 2006 16:29:27 -0700
+From: Judith Lebzelter <judith@osdl.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] use-generic-bug-for-ppc resubmitted
+Message-ID: <20061004232927.GI665@shell0.pdx.osdl.net>
+References: <20061004184927.GH665@shell0.pdx.osdl.net> <45241659.301@goop.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45241659.301@goop.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +24,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 3 Oct 2006 23:27:42 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On Wed, Oct 04, 2006 at 01:15:21PM -0700, Jeremy Fitzhardinge wrote:
+> Judith Lebzelter wrote:
+> >Index: linux/arch/ppc/kernel/traps.c
+> >===================================================================
+> >--- linux.orig/arch/ppc/kernel/traps.c	2006-10-03 
+> >16:11:26.461653713 -0700
+> >+++ linux/arch/ppc/kernel/traps.c	2006-10-04 10:00:21.198907987 -0700
+> >@@ -28,6 +28,7 @@
+> > #include <linux/init.h>
+> > #include <linux/module.h>
+> > #include <linux/prctl.h>
+> >+#include <linux/bug.h>
+> > 
+> > #include <asm/pgtable.h>
+> > #include <asm/uaccess.h>
+> >@@ -568,55 +569,9 @@
+> >  */
+> > extern struct bug_entry __start___bug_table[], __stop___bug_table[];
+> > 
+> >-#ifndef CONFIG_MODULES
+> >-#define module_find_bug(x)	NULL
+> >-#endif
+> >  
+> Looks like you need to delete a bit more here - the extern struct 
+> bug_entry, and the comment above.
+>    J
 
-> 
-> On Oct 3, 2006, at 11:17 PM, Kim Phillips wrote:
-> 
-<snip>
-> >  arch/powerpc/platforms/83xx/mpc8360e_pb.c  |  220 ++++++
-> >  arch/powerpc/platforms/83xx/mpc8360e_pb.h  |   23 +
-> >  3 files changed, 1261 insertions(+), 0 deletions(-)
-> 
-> What's the point of the mpc8360e_pb.h if there's nothing in it?
-> 
-well I thought I was being consistent with the other 83xx boards ;)
+Here is the generic bug ppc patch with the suggested change.  It compiles 
+without error.
 
-> Also, any reason the files are _pb and config is emds?
-> 
-_pb == processor board, the core of the mds (modular development system).  The pb can be operated independently of the rest of what comprises the mds.
 
-I used mds nomenclature in 832x since the support includes parts of the mds that are separate from just the pb, e.g. the pci bits in the device tree.
+Signed-off-by:  Judith Lebzelter <judith@osdl.org>
 
-but we need to be more consistent, I agree.
+---
 
-also, there is a wealth of duplicated platform code among each of the four 83xx platforms.  Somethings wrong when one duplicates a file just to s/836/832/g.  How about consolidating them all down to one mpc83xx_mach.c file that enables potential board quirks based on the dev tree root's model property?  That will eliminate all the redundant code, and get rid of the file naming inconsistencies.
+arch/ppc/kernel/traps.c
+arch/ppc/Kconfig
 
-Kim
+Index: linux/arch/ppc/Kconfig
+===================================================================
+--- linux.orig/arch/ppc/Kconfig	2006-10-03 16:11:26.000000000 -0700
++++ linux/arch/ppc/Kconfig	2006-10-03 17:10:09.000000000 -0700
+@@ -52,6 +52,11 @@
+ 	bool
+ 	default y
+ 
++config GENERIC_BUG
++	bool
++	default y
++	depends on BUG
++
+ source "init/Kconfig"
+ 
+ menu "Processor"
+Index: linux/arch/ppc/kernel/traps.c
+===================================================================
+--- linux.orig/arch/ppc/kernel/traps.c	2006-10-03 16:11:26.000000000 -0700
++++ linux/arch/ppc/kernel/traps.c	2006-10-04 15:37:46.674644563 -0700
+@@ -28,6 +28,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/prctl.h>
++#include <linux/bug.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+@@ -559,64 +560,9 @@
+ 	}
+ }
+ 
+-/*
+- * Look through the list of trap instructions that are used for BUG(),
+- * BUG_ON() and WARN_ON() and see if we hit one.  At this point we know
+- * that the exception was caused by a trap instruction of some kind.
+- * Returns 1 if we should continue (i.e. it was a WARN_ON) or 0
+- * otherwise.
+- */
+-extern struct bug_entry __start___bug_table[], __stop___bug_table[];
+-
+-#ifndef CONFIG_MODULES
+-#define module_find_bug(x)	NULL
+-#endif
+-
+-struct bug_entry *find_bug(unsigned long bugaddr)
+-{
+-	struct bug_entry *bug;
+-
+-	for (bug = __start___bug_table; bug < __stop___bug_table; ++bug)
+-		if (bugaddr == bug->bug_addr)
+-			return bug;
+-	return module_find_bug(bugaddr);
+-}
+-
+-int check_bug_trap(struct pt_regs *regs)
++int is_valid_bugaddr(unsigned long addr)
+ {
+-	struct bug_entry *bug;
+-	unsigned long addr;
+-
+-	if (regs->msr & MSR_PR)
+-		return 0;	/* not in kernel */
+-	addr = regs->nip;	/* address of trap instruction */
+-	if (addr < PAGE_OFFSET)
+-		return 0;
+-	bug = find_bug(regs->nip);
+-	if (bug == NULL)
+-		return 0;
+-	if (bug->line & BUG_WARNING_TRAP) {
+-		/* this is a WARN_ON rather than BUG/BUG_ON */
+-#ifdef CONFIG_XMON
+-		xmon_printf(KERN_ERR "Badness in %s at %s:%ld\n",
+-		       bug->function, bug->file,
+-		       bug->line & ~BUG_WARNING_TRAP);
+-#endif /* CONFIG_XMON */		
+-		printk(KERN_ERR "Badness in %s at %s:%ld\n",
+-		       bug->function, bug->file,
+-		       bug->line & ~BUG_WARNING_TRAP);
+-		dump_stack();
+-		return 1;
+-	}
+-#ifdef CONFIG_XMON
+-	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
+-	       bug->function, bug->file, bug->line);
+-	xmon(regs);
+-#endif /* CONFIG_XMON */
+-	printk(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
+-	       bug->function, bug->file, bug->line);
+-
+-	return 0;
++	return addr >= PAGE_OFFSET;
+ }
+ 
+ void program_check_exception(struct pt_regs *regs)
+@@ -671,7 +617,9 @@
+ 		/* trap exception */
+ 		if (debugger_bpt(regs))
+ 			return;
+-		if (check_bug_trap(regs)) {
++
++		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
++		    report_bug(regs->nip) == BUG_TRAP_TYPE_WARN) {
+ 			regs->nip += 4;
+ 			return;
+ 		}
