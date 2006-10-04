@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 5581A67F34
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 02:37:59 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Add of_platform_device_scan().
-Date: Wed, 4 Oct 2006 18:37:46 +0200
-References: <20061003225659.GA11955@ld0162-tx32.am.freescale.net>
-	<200610040118.09416.arnd@arndb.de> <4523E214.5060404@freescale.com>
-In-Reply-To: <4523E214.5060404@freescale.com>
+Return-Path: <tim.bird@am.sony.com>
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CD25567DBA
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 03:59:33 +1000 (EST)
+Message-ID: <4523EF39.50107@am.sony.com>
+Date: Wed, 04 Oct 2006 10:28:25 -0700
+From: Tim Bird <tim.bird@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200610041837.47317.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+To: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
+References: <20060927155626.4d5ca19c@vitb.ru.mvista.com>	<4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>	<20060927165556.04c8d5d7@vitb.ru.mvista.com>	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>	<20060927112201.293fef44@localhost.localdomain>	<EBD0615C-4F22-430F-BD23-1283DF98F1B3@embeddedalley.com>	<17699.769.632098.479906@cargo.ozlabs.ibm.com>
+	<2867EA41-5135-43F7-9873-044C617EAC1B@embeddedalley.com>
+In-Reply-To: <2867EA41-5135-43F7-9873-044C617EAC1B@embeddedalley.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 04 October 2006 18:32, Scott Wood wrote:
-> What I'd really like (long-term, of course) is if platform_device and=20
-> of_device were merged, with device tree support (or at least a means of=20
-> passing on properties that *could* come from a device tree without=20
-> special glue code that knows about each property) in arch-neutral code;=20
-> the mechanism for discovering devices ideally shouldn't depend on the=20
-> CPU's instruction set.
+Dan Malek wrote:
+> I'm not against using the device tree (or platform data
+> or #defines) when it's appropriate to do so.  I think our
+> obsession to represent everything there is what is
+> creating the complexity.  If a #define in a board
+> specific port file makes sense, then just do that,
+> even if it is a BSCR address.  The device tree just
+> seems like the new toy that everyone wants to play
+> with, and we are forgetting that the old fashioned way
+> of just writing some C code may be the way
+> to implement what we need.
 
-My guess is that this won't happen, because other architectures
-normally don't describe their platform devices in a way that is
-anywhere near what we have on powerpc.
+I'd like to "second" a lot of what Dan is saying.
 
-Benh suggested moving some of the functionality of of_platform_device
-into the common of_device so we don't really have to use an
-of_platform_device for stuff that can be automatically probed.
+Linux increasingly drifts away from simple, adequate
+solutions (that admittedly require a bit of embedded
+developer elbow grease), towards these types of
+"grand unification" schemes, which actually interfere
+with goals in the embedded space.
 
-I guess we'll see a patch from him soon.
-
-> > +=A0=A0=A0=A0=A0for (child =3D NULL; (child =3D of_get_next_child(root,=
- child)); ) {
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (strcmp(child->type, "spider=
-") =3D=3D 0) {
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0ret =3D=
- of_soc_device_create(child, NULL);
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (ret)
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0goto out3;
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0}
-> > +=A0=A0=A0=A0=A0}
->=20
-> Why only spider?
-
-Mistake on my side. That's what I have in my experimental device tree.
-It should be more generic.
-
-	Arnd <><
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Electronics
+=============================
