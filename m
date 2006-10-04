@@ -1,17 +1,19 @@
-Return-Path: <judith@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 94E7B67D4F
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 04:49:43 +1000 (EST)
-Date: Wed, 4 Oct 2006 11:49:27 -0700
-From: Judith Lebzelter <judith@osdl.org>
-To: paulus@samba.org
-Subject: [PATCH] use-generic-bug-for-ppc
-Message-ID: <20061004184927.GH665@shell0.pdx.osdl.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, jeremy@goop.org, linux-kernel@vger.kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 4F53167D4E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 05:33:49 +1000 (EST)
+Message-ID: <45240C92.6010006@freescale.com>
+Date: Wed, 04 Oct 2006 14:33:38 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] Add of_platform_device_scan().
+References: <20061003225659.GA11955@ld0162-tx32.am.freescale.net>
+	<200610040118.09416.arnd@arndb.de> <4523E214.5060404@freescale.com>
+	<200610041837.47317.arnd@arndb.de>
+In-Reply-To: <200610041837.47317.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,135 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For 2.6.18-mm3, the 32-bit 'ppc' architectures won't compile due to errors:
+Arnd Bergmann wrote:
+> On Wednesday 04 October 2006 18:32, Scott Wood wrote:
+> 
+>>What I'd really like (long-term, of course) is if platform_device and 
+>>of_device were merged, with device tree support (or at least a means of 
+>>passing on properties that *could* come from a device tree without 
+>>special glue code that knows about each property) in arch-neutral code; 
+>>the mechanism for discovering devices ideally shouldn't depend on the 
+>>CPU's instruction set.
+> 
+> 
+> My guess is that this won't happen, because other architectures
+> normally don't describe their platform devices in a way that is
+> anywhere near what we have on powerpc.
 
-arch/ppc/kernel/built-in.o: In function `find_bug':
-arch/ppc/kernel/traps.c:582: undefined reference to `module_find_bug'
-arch/powerpc/kernel/built-in.o: In function `module_arch_cleanup':
-arch/powerpc/kernel/module_32.c:282: undefined reference to `module_bug_cleanup'
-arch/powerpc/kernel/built-in.o: In function `module_finalize':
-arch/powerpc/kernel/module_32.c:277: undefined reference to `module_bug_finalize'
-make: [.tmp_vmlinux3] Error 1 (ignored)
-  KSYM    .tmp_kallsyms3.S
-powerpc-750-linux-gnu-nm: '.tmp_vmlinux3': No such file
-No valid symbol.
-make: [.tmp_kallsyms3.S] Error 1 (ignored)
-  AS      .tmp_kallsyms3.o
-  LD      vmlinux
-arch/ppc/kernel/built-in.o: In function `find_bug':
-arch/ppc/kernel/traps.c:582: undefined reference to `module_find_bug'
-arch/powerpc/kernel/built-in.o: In function `module_arch_cleanup':
-arch/powerpc/kernel/module_32.c:282: undefined reference to `module_bug_cleanup'
-arch/powerpc/kernel/built-in.o: In function `module_finalize':
-arch/powerpc/kernel/module_32.c:277: undefined reference to `module_bug_finalize'
-make: [vmlinux] Error 1 (ignored)
+They wouldn't need to, unless they want to support a driver that 
+requires it.  It would simply be an architecture-neutral mechanism for 
+attaching a dynamic list of properties and OF-compatible matching 
+criteria (or more generally the ability to match on any set of dynamic 
+properties) to platform devices; the source of the platform data could 
+choose to use it to represent an OF device tree, to supply a few 
+properties needed by a specific driver, or not at all.
 
-These changes match changes for using the generic bug libraries as in 
-'use-generic-bug-for-powerpc.patch' and gets rid of the compile errors.
+Ideally, users of static structure-based platform data would gradually 
+migrate to dynamic properties, but there's a benefit to the integration 
+even if they don't.  The main issue that I forsee being a problem is 
+clashing with another standard for the naming and content of properties. 
+  There could be tagging to indicate which standard is being followed by 
+a given property, but that could lead to some ugliness in drivers that 
+need to support more than one if the differences can't be easily 
+abstracted by get-me-this-piece-of-information accessor functions (or by 
+  code that generically converts properties from one standard to 
+another, which is similar to what we've already got in fsl_soc.c, but 
+hopefully less device-specific).
 
-Signed-off-by: Judith Lebzelter <judith@osdl.org>
-
----
-
-Files Edited:
-arch/ppc/kernel/traps.c
-arch/ppc/Kconfig
-
-
-Index: linux/arch/ppc/Kconfig
-===================================================================
---- linux.orig/arch/ppc/Kconfig	2006-10-03 16:11:26.456655259 -0700
-+++ linux/arch/ppc/Kconfig	2006-10-03 17:10:09.398320057 -0700
-@@ -52,6 +52,11 @@
- 	bool
- 	default y
- 
-+config GENERIC_BUG
-+	bool
-+	default y
-+	depends on BUG
-+
- source "init/Kconfig"
- 
- menu "Processor"
-Index: linux/arch/ppc/kernel/traps.c
-===================================================================
---- linux.orig/arch/ppc/kernel/traps.c	2006-10-03 16:11:26.461653713 -0700
-+++ linux/arch/ppc/kernel/traps.c	2006-10-04 10:00:21.198907987 -0700
-@@ -28,6 +28,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/prctl.h>
-+#include <linux/bug.h>
- 
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
-@@ -568,55 +569,9 @@
-  */
- extern struct bug_entry __start___bug_table[], __stop___bug_table[];
- 
--#ifndef CONFIG_MODULES
--#define module_find_bug(x)	NULL
--#endif
--
--struct bug_entry *find_bug(unsigned long bugaddr)
-+int is_valid_bugaddr(unsigned long addr)
- {
--	struct bug_entry *bug;
--
--	for (bug = __start___bug_table; bug < __stop___bug_table; ++bug)
--		if (bugaddr == bug->bug_addr)
--			return bug;
--	return module_find_bug(bugaddr);
--}
--
--int check_bug_trap(struct pt_regs *regs)
--{
--	struct bug_entry *bug;
--	unsigned long addr;
--
--	if (regs->msr & MSR_PR)
--		return 0;	/* not in kernel */
--	addr = regs->nip;	/* address of trap instruction */
--	if (addr < PAGE_OFFSET)
--		return 0;
--	bug = find_bug(regs->nip);
--	if (bug == NULL)
--		return 0;
--	if (bug->line & BUG_WARNING_TRAP) {
--		/* this is a WARN_ON rather than BUG/BUG_ON */
--#ifdef CONFIG_XMON
--		xmon_printf(KERN_ERR "Badness in %s at %s:%ld\n",
--		       bug->function, bug->file,
--		       bug->line & ~BUG_WARNING_TRAP);
--#endif /* CONFIG_XMON */		
--		printk(KERN_ERR "Badness in %s at %s:%ld\n",
--		       bug->function, bug->file,
--		       bug->line & ~BUG_WARNING_TRAP);
--		dump_stack();
--		return 1;
--	}
--#ifdef CONFIG_XMON
--	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
--	       bug->function, bug->file, bug->line);
--	xmon(regs);
--#endif /* CONFIG_XMON */
--	printk(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
--	       bug->function, bug->file, bug->line);
--
--	return 0;
-+	return addr >= PAGE_OFFSET;
- }
- 
- void program_check_exception(struct pt_regs *regs)
-@@ -671,7 +626,9 @@
- 		/* trap exception */
- 		if (debugger_bpt(regs))
- 			return;
--		if (check_bug_trap(regs)) {
-+
-+		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
-+		    report_bug(regs->nip) == BUG_TRAP_TYPE_WARN) {
- 			regs->nip += 4;
- 			return;
- 		}
+-Scott
