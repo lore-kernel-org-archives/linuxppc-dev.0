@@ -1,16 +1,17 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id CF96F67CB4
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 02:03:49 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k94HNwsv009167
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Oct 2006 11:23:58 -0600 (MDT)
-From: timur@freescale.com
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from agrxsusmail.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 0376C67CFD
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 02:05:24 +1000 (EST)
+Message-ID: <4523DBC1.30108@smiths-aerospace.com>
+Date: Wed, 04 Oct 2006 12:05:21 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Add DTS for MPC8349E-mITX board
-Date: Wed,  4 Oct 2006 11:03:44 -0500
-Message-Id: <11599778241936-git-send-email-timur@freescale.com>
+Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
+References: <20060927155626.4d5ca19c@vitb.ru.mvista.com>	<4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>	<20060927165556.04c8d5d7@vitb.ru.mvista.com>	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>	<1159941148.13323.6.camel@localhost.localdomain>
+	<80EE3621-ED80-408E-BF04-BA3CB985C769@embeddedalley.com>
+In-Reply-To: <80EE3621-ED80-408E-BF04-BA3CB985C769@embeddedalley.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,267 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Timur Tabi <timur@freescale.com>
+Dan Malek wrote:
+> On Oct 4, 2006, at 1:52 AM, Benjamin Herrenschmidt wrote:
+> 
+>> I don't see how a mecanism of feature call at the board support  
+>> level is
+>> in any way incompatible with the device-tree thing.
+> 
+> It isn't.
+> 
+>> ...  I'm happy mixing
+>> both on powermac :)
+> 
+> I know.  This was just an opportunity to make people
+> realize that a board port does require the writing of
+> some board specific code.  Using the feature call is
+> an excellent model of portability and flexibility.  My
+> point was that any BCSR access is necessary to be
+> hidden behind such a function, because it is truly
+> board specific.  You can't require the drivers to
+> have this kind of logic in them, they must call out
+> to board support functions for assistance.
+> 
+> Just like the powermac ports, embedded drivers
+> will need a feature call at some points during
+> their processing (set up clock routing, IO pin
+> configuration, board specific bus connections,
+> power management, etc).  Some board ports
+> may do nothing, others may do lots of work.
+> 
+> Therefore, I see no reason why a BSCR address
+> and all of it's associated format can't simply
+> be a #define in a board specific file.  There is no
+> need for this in the device tree.
+> 
+> 
+> 	-- Dan
 
-Add the DTS for the Freescale MPC 8349E-mITX reference board.  Contact 
-Vitesse for the driver for the VSC 7385.
+The promise of OF for me is that it promises to keep configuration 
+information in _one place_.  My experience to date is that my u-boot has 
+a bunch of semi-hardcoded constants, my linux drivers have a bunch of 
+semi-hardcoded constants that likely do not match 1:1 (name and 
+definitely not location) with the equivalent u-boot constants, and some 
+constants are passed from u-boot to linux using the BD structure, which 
+is never defined the same (for me) in u-boot and linux.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/boot/dts/mpc8349emitx.dts |  246 ++++++++++++++++++++++++++++++++
- 1 files changed, 246 insertions(+), 0 deletions(-)
+The result is that, when I upgrade my u-boot and/or linux sources, I end 
+up having to re-find all the places where the constants live (and find 
+some new places), fix them, and then make the u-boot and linux BD 
+structures match.  Granted, this isn't insurmountable, but it is a major 
+hassle and should be unnecessary.
 
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-new file mode 100644
-index 0000000..27807fc
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -0,0 +1,246 @@
-+/*
-+ * MPC8349E-mITX Device Tree Source
-+ *
-+ * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+/ {
-+	model = "MPC8349EMITX";
-+	compatible = "MPC834xMITX";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	cpus {
-+		#cpus = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,8349@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <20>;
-+			i-cache-line-size = <20>;
-+			d-cache-size = <8000>;
-+			i-cache-size = <8000>;
-+			timebase-frequency = <0>;	// from bootloader
-+			bus-frequency = <0>;		// from bootloader
-+			clock-frequency = <0>;		// from bootloader
-+			32-bit;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <00000000 10000000>;
-+	};
-+
-+	soc8349@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "soc";
-+		ranges = <0 e0000000 00100000>;
-+		reg = <e0000000 00000200>;
-+		bus-frequency = <0>;                    // from bootloader
-+
-+		wdt@200 {
-+			device_type = "watchdog";
-+			compatible = "mpc83xx_wdt";
-+			reg = <200 100>;
-+		};
-+
-+		i2c@3000 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3000 100>;
-+			interrupts = <e 8>;
-+			interrupt-parent = <700>;
-+			dfsrr;
-+		};
-+
-+		i2c@3100 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3100 100>;
-+			interrupts = <f 8>;
-+			interrupt-parent = <700>;
-+			dfsrr;
-+		};
-+
-+		spi@7000 {
-+			device_type = "spi";
-+			compatible = "mpc83xx_spi";
-+			reg = <7000 1000>;
-+			interrupts = <10 8>;
-+			interrupt-parent = <700>;
-+			mode = <0>;
-+		};
-+
-+		usb@22000 {
-+			device_type = "usb";
-+			compatible = "fsl-usb2-mph";
-+			reg = <22000 1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = <700>;
-+			interrupts = <27 2>;
-+			phy_type = "ulpi";
-+			port1;
-+		};
-+
-+		usb@23000 {
-+			device_type = "usb";
-+			compatible = "fsl-usb2-dr";
-+			reg = <23000 1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = <700>;
-+			interrupts = <26 2>;
-+			phy_type = "ulpi";
-+		};
-+
-+		mdio@24520 {
-+			device_type = "mdio";
-+			compatible = "gianfar";
-+			reg = <24520 20>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			linux,phandle = <24520>;
-+
-+			/* Vitesse 8201 */
-+			ethernet-phy@1c {
-+				linux,phandle = <245201c>;
-+				interrupt-parent = <700>;
-+				interrupts = <12 2>;
-+				reg = <1c>;
-+				device_type = "ethernet-phy";
-+			};
-+
-+			/* Vitesse 7385 */
-+			ethernet-phy@1f {
-+				linux,phandle = <245201f>;
-+				interrupt-parent = <700>;
-+				interrupts = <12 2>;
-+				reg = <1f>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@24000 {
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <24000 1000>;
-+			address = [ 00 00 00 00 00 00 ];
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <20 8 21 8 22 8>;
-+			interrupt-parent = <700>;
-+			phy-handle = <245201c>;
-+		};
-+
-+		ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <25000 1000>;
-+			address = [ 00 00 00 00 00 00 ];
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <23 8 24 8 25 8>;
-+			interrupt-parent = <700>;
-+			phy-handle = <245201f>;
-+		};
-+
-+		serial@4500 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4500 100>;
-+			clock-frequency = <0>;		// from bootloader
-+			interrupts = <9 8>;
-+			interrupt-parent = <700>;
-+		};
-+
-+		serial@4600 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4600 100>;
-+			clock-frequency = <0>;		// from bootloader
-+			interrupts = <a 8>;
-+			interrupt-parent = <700>;
-+		};
-+
-+		pci@8500 {
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+					/* IDSEL 0x10 - SATA */
-+					8000 0 0 1 700 16 8 /* SATA_INTA */
-+					>;
-+			interrupt-parent = <700>;
-+			interrupts = <42 8>;
-+			bus-range = <0 0>;
-+			ranges = <42000000 0 80000000 80000000 0 10000000
-+				  02000000 0 90000000 90000000 0 10000000
-+				  01000000 0 00000000 e2000000 0 01000000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8500 100>;
-+			compatible = "83xx";
-+			device_type = "pci";
-+		};
-+
-+		pci@8600 {
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+					/* IDSEL 0x0E - MiniPCI Slot */
-+					7000 0 0 1 700 15 8 /* PCI_INTA */
-+
-+					/* IDSEL 0x0F - PCI Slot */
-+					7800 0 0 1 700 14 8 /* PCI_INTA */
-+					7800 0 0 2 700 15 8 /* PCI_INTB */
-+					 >;
-+			interrupt-parent = <700>;
-+			interrupts = <43 8>;
-+			bus-range = <1 1>;
-+			ranges = <42000000 0 a0000000 a0000000 0 10000000
-+				  02000000 0 b0000000 b0000000 0 10000000
-+				  01000000 0 00000000 e3000000 0 01000000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8600 100>;
-+			compatible = "83xx";
-+			device_type = "pci";
-+		};
-+
-+		crypto@30000 {
-+			device_type = "crypto";
-+			model = "SEC2";
-+			compatible = "talitos";
-+			reg = <30000 10000>;
-+			interrupts = <b 8>;
-+			interrupt-parent = <700>;
-+			num-channels = <4>;
-+			channel-fifo-len = <18>;
-+			exec-units-mask = <0000007e>;
-+			descriptor-types-mask = <01010ebf>;
-+		};
-+
-+		pic@700 {
-+			linux,phandle = <700>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <700 100>;
-+			built-in;
-+			device_type = "ipic";
-+		};
-+	};
-+};
--- 
-1.4.2.1
+In a perfect world perhaps we would have one (set of) #include file(s) 
+that had all the configuration information necessary to build u-boot and 
+linux.  In the current world, u-boot and linux are in different 
+repositories with different people with different machines (and agendas) 
+doing different development on them, and the result is disjoint.
+
+I look at OF to be the /lingua franca/ of PowerPC bootloaders and linux.
+
+gvb
