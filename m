@@ -1,15 +1,17 @@
-Return-Path: <steck.armin@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id BA5FB67C55
+Return-Path: <hpchen163@tom.com>
+Received: from tom.com (smtpr4.tom.com [202.108.252.134])
+	by ozlabs.org (Postfix) with SMTP id C770567CF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Oct 2006 19:04:26 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 04 Oct 2006 11:04:25 +0200
-From: "Armin Steck" <steck.armin@gmx.de>
-Message-ID: <20061004090425.57760@gmx.net>
+	Wed,  4 Oct 2006 20:52:17 +1000 (EST)
 MIME-Version: 1.0
-Subject: uboot-1.1.4 linux-2.6.10: Image bootproblems
+Message-ID: <45237D1C.000106.00481@bjapp34>
+Date: Wed, 4 Oct 2006 17:21:32 +0800 (CST)
+From: "=?gb2312?B?aHBjaGVu?=" <hpchen163@tom.com>
 To: linuxppc-embedded@ozlabs.org
+Subject: =?gb2312?B?UmU6IExpbnV4cHBjLWVtYmVkZGVkIERpZ2VzdCwgVm9sIDI1LCBJc3M=?=
+	=?gb2312?B?dWUgNjA=?=
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_KGntowIOFrGqlXUeRrjYxrTvYcKW"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,48 +22,112 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-i have ported uboot1.1.4 for my board.
-When i would like to boot linux-kernel-2.6.10 the system hang after decompressing.
-can anybody help me? 
+--Boundary-=_KGntowIOFrGqlXUeRrjYxrTvYcKW
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-Flash: 0x00000000 uboot
-       0x00020000 ubootenvironment
-       0x00040000 kernel uImage
+RGVhciBNYXR0aGlhczoNCiAgSSBhbSBhbHNvIHVzaW5nIFNNNzIyIGFuZCBhY2Nlc3Npbmcg
+aXQgd2l0aCA4MjQ1LCBidXQgSSBjYW4ndA0KYWNjZXNzIHRoZSBTTTcyMidzIHJlZ2lzdGVy
+IHVuZGVyIG1wYzgyNDUgYXQgYWxsLiBXb3VsZCB5b3UgbWluZA0KZ2l2aW5nIG1lIGFueSBh
+ZHZpY2Ugb24gaXQ/IFRoYW5rIHlvdSENCg0KPiBXaGVuIHJlcGx5aW5nLCBwbGVhc2UgZWRp
+dCB5b3VyIFN1YmplY3QgbGluZSBzbyBpdCBpcyBtb3JlIHNwZWNpZmljDQo+IHRoYW4gIlJl
+OiBDb250ZW50cyBvZiBMaW51eHBwYy1lbWJlZGRlZCBkaWdlc3QuLi4iDQo+ICAgIDIuIFNN
+NzIyIChMeW54M0RNKykgZnJhbWVidWZmZXIgZHJpdmVyIChNYXR0aGlhcyBGdWNocykNCg0K
+PiBNZXNzYWdlOiAyDQo+IERhdGU6IFdlZCwgMjcgU2VwIDIwMDYgMTI6MjY6MDYgKzAyMDAN
+Cj4gRnJvbTogTWF0dGhpYXMgRnVjaHMgPG1hdHRoaWFzLmZ1Y2hzQGVzZC1lbGVjdHJvbmlj
+cy5jb20+DQo+IFN1YmplY3Q6IFNNNzIyIChMeW54M0RNKykgZnJhbWVidWZmZXIgZHJpdmVy
+DQo+IFRvOiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+IE1lc3NhZ2UtSUQ6IDwy
+MDA2MDkyNzEyMjYuMDYxMTUubWF0dGhpYXMuZnVjaHNAZXNkLWVsZWN0cm9uaWNzLmNvbT4N
+Cj4gQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyAgY2hhcnNldD0idXMtYXNjaWkiDQo+IA0K
+PiBIaSwNCj4gDQo+IGRvZXMgYW55b25lIGtub3cgYWJvdXQgYSBTaWxpY29uIE1vdGlvbiBT
+TTcyMiBmcmFtZWJ1ZmZlciBkcml2ZXIgZm9yIHJlY2VudCANCj4gMi42IGtlcm5lbHM/IEkg
+Zm91bmQgc29tZSBvbGQgYW5kIGR1c3R5IGNvZGUgZm9yIHRoZSBTaWxpY29uIE1vdGlvbiBw
+YXJ0cyBidXQgDQo+IGVpdGhlciBvbmx5IGZvciB0aGUgU003MTIgb3IgZm9yIDIuNCBrZXJu
+ZWxzLg0KPiANCj4gSXMgYW55b25lIHVzaW5nIHRoYXQgcGFydCBpbiBhIFBvd2VyUEMgc3lz
+dGVtPw0KPiANCj4gTWF0dGhpYXMNCiANCiANCiANCg0K
+--Boundary-=_KGntowIOFrGqlXUeRrjYxrTvYcKW
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-uImage: gzip -9 < zImage > Image.gz
-	/elinux/kernel2.6Richard/Richard/linux-2.6.10/scripts/mkuboot.sh 
-          -A arm -O linux -T kernel -C gzip -a 0xa0008000 -e 0xa0008000 -n
-          'Linux-2.6.10' -d Image.gz uImage
-
-U-BOOT output:
-RAM Configuration:
-Bank #0: a0000000 32 MB
-Flash #0: 00000000 16 MB
-In:    serial
-Out:   serial
-Err:   serial
-Hit any key to stop autoboot: 1
-uboot==> bootm 0x00040000
-## Booting image at 00040000 ...
-   Image Name:   Linux-2.6.10
-   Image Type:   ARM Linux Kernel Image (gzip compressed)
-   Data Size:    756009 Bytes = 738.3 kB
-   Load Address: a0008000
-   Entry Point:  a0008000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-
-Starting kernel ...
-
-Uncompressing Linux................................................... done, booting the kernel.
-
-69052D06:0000001B:00001078          #Kernel-Debug-Information
-A00DC914-A0259594>A0008000
-A0259594
-
-
--- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+RGVhciBNYXR0aGlhczo8YnI+ICBJIGFtIGFsc28gdXNpbmcgU003MjIgYW5kIGFjY2Vzc2lu
+ZyBpdCB3aXRoIDgyNDUsIGJ1dCBJIGNhbid0PGJyPmFjY2VzcyB0aGUgU003MjIncyByZWdp
+c3RlciB1bmRlciBtcGM4MjQ1IGF0IGFsbC4gV291bGQgeW91IG1pbmQ8YnI+Z2l2aW5nIG1l
+IGFueSBhZHZpY2Ugb24gaXQ/IFRoYW5rIHlvdSE8YnI+PGJyPiZndDsgV2hlbiByZXBseWlu
+ZywgcGxlYXNlIGVkaXQgeW91ciBTdWJqZWN0IGxpbmUgc28gaXQgaXMgbW9yZSBzcGVjaWZp
+Yzxicj4mZ3Q7IHRoYW4gJnF1b3Q7UmU6IENvbnRlbnRzIG9mIExpbnV4cHBjLWVtYmVkZGVk
+IGRpZ2VzdC4uLiZxdW90Ozxicj4mZ3Q7ICAgIDIuIFNNNzIyIChMeW54M0RNKykgZnJhbWVi
+dWZmZXIgZHJpdmVyIChNYXR0aGlhcyBGdWNocyk8YnI+PGJyPiZndDsgTWVzc2FnZTogMjxi
+cj4mZ3Q7IERhdGU6IFdlZCwgMjcgU2VwIDIwMDYgMTI6MjY6MDYgKzAyMDA8YnI+Jmd0OyBG
+cm9tOiBNYXR0aGlhcyBGdWNocyAmbHQ7bWF0dGhpYXMuZnVjaHNAZXNkLWVsZWN0cm9uaWNz
+LmNvbSZndDs8YnI+Jmd0OyBTdWJqZWN0OiBTTTcyMiAoTHlueDNETSspIGZyYW1lYnVmZmVy
+IGRyaXZlcjxicj4mZ3Q7IFRvOiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnPGJyPiZn
+dDsgTWVzc2FnZS1JRDogJmx0OzIwMDYwOTI3MTIyNi4wNjExNS5tYXR0aGlhcy5mdWNoc0Bl
+c2QtZWxlY3Ryb25pY3MuY29tJmd0Ozxicj4mZ3Q7IENvbnRlbnQtVHlwZTogdGV4dC9wbGFp
+bjsgIGNoYXJzZXQ9JnF1b3Q7dXMtYXNjaWkmcXVvdDs8YnI+Jmd0OyA8YnI+Jmd0OyBIaSw8
+YnI+Jmd0OyA8YnI+Jmd0OyBkb2VzIGFueW9uZSBrbm93IGFib3V0IGEgU2lsaWNvbiBNb3Rp
+b24gU003MjIgZnJhbWVidWZmZXIgZHJpdmVyIGZvciByZWNlbnQgPGJyPiZndDsgMi42IGtl
+cm5lbHM/IEkgZm91bmQgc29tZSBvbGQgYW5kIGR1c3R5IGNvZGUgZm9yIHRoZSBTaWxpY29u
+IE1vdGlvbiBwYXJ0cyBidXQgPGJyPiZndDsgZWl0aGVyIG9ubHkgZm9yIHRoZSBTTTcxMiBv
+ciBmb3IgMi40IGtlcm5lbHMuPGJyPiZndDsgPGJyPiZndDsgSXMgYW55b25lIHVzaW5nIHRo
+YXQgcGFydCBpbiBhIFBvd2VyUEMgc3lzdGVtPzxicj4mZ3Q7IDxicj4mZ3Q7IE1hdHRoaWFz
+PGJyPiA8YnI+IDxicj4gPGJyPjwhLS0gdXJsZmlsZXMgLS0+PGJyPjxicj48IS0tIGZvb3Rl
+ciAtLT48YnI+PGJyPgo8dGFibGUgY2VsbHBhZGRpbmc9IjEiIGNlbGxzcGFjaW5nPSIxIiBi
+b3JkZXI9IjAiIHN0eWxlPSJtYXJnaW4tdG9wOjEwcHg7Ij4KICA8dHI+IAogIDx0ZD4KPT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPGJyPgogPEEg
+dGl0bGU9Ir/swLS6zc7S0rvG8M/tytxUT03D4rfR08rP5LDJo6Egv7S/tLP9wcsxLjVHo6y7
+udPQyrLDtKO/IiAgaHJlZj0iaHR0cDovL2JqY2dpLjE2My5uZXQvY2dpLWJpbi9uZXdyZWcu
+Y2dpPwpyZj0wNTA2MDIiICB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9IkU3MEQ4OCIg
+dGFyZ2V0PSJfYmxhbmsiPr/swLS6zc7S0rvG8M/tytxUT03D4rfR08rP5LDJo6Egv7S/tLP9
+wcsxLjVHo6y7udPQyrLDtKO/PC9mb250PjxpbWcgCnNyYz0iaHR0cDovL21haWwudG9tLmNv
+bS9pbWFnZXMvbWFpbC8wNTAzMjgvcGFnZV8wMi5naWYiICBib3JkZXI9IjAiIHdpZHRoPSIz
+NyIgCmhlaWdodD0iMzMiPjwvQT4KPGJyPgo8YnI+CjxhIGhyZWY9Imh0dHA6Ly92aXAudG9t
+LmNvbS9pbmZvL2dnZF8wNTA0MDkvaW5kZXguaHRtbCIgdGFyZ2V0PSJfYmxhbmsiPjxpbWcg
+c3JjPSJodHRwOi8vbWFpbC50b20uY29tL2ltYWdlcy92aXAvdmlwX2FkL21haWxfc2NlMS5n
+aWYiIGJvcmRlcj0iMCIgYWxpZ249ImFic2JvdHRvbSI+PC9hPiZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwO8fDv6q+q7LKJm5ic3A7PGEgaHJlZj0iaHR0cDovL2NoYXQudG9tLmNvbS8iIHRh
+cmdldD0iX2JsYW5rIj7BxMzsysC95zwvYT6jujxhIGhyZWY9Imh0dHA6Ly9jaGF0LnRvbS5j
+b20vIiB0YXJnZXQ9Il9ibGFuayI+zfjNqNPDu6c8L2E+ICA8YSBocmVmPSJodHRwOi8vc2No
+YXQudG9tLmNvbS8iIHRhcmdldD0iX2JsYW5rIj6159DF08O7pzwvYT4KIDwhLS1BIHRpdGxl
+PSK5ss2szOXR6bOstPPI3cG/o6GzrMe/t8DT+aOh16jStcmxtr6jodeo0rW3wMCsu/ijoSIg
+aHJlZj0iaHR0cDovL2JqY2dpLjE2My5uZXQvY2dpLWJpbi9uZXdyZWcuY2dpPwpyZj0wNTA2
+MDIiIHRhcmdldD0iX2JsYW5rIj48Zm9udCBjb2xvcj0iRTcwRDg4Ij7U2s/fybG2vqOhsLLI
+q87ItqijobOsx7+3wNP5o6E8L2ZvbnQ+PC9BLS0+Cjxicj4KPGJyPgrD99DHvfDH+sPit9HL
+zSg8YSBocmVmPSJodHRwOi8vbW0udG9tLmNvbS9pdnIvIiB0YXJnZXQ9Il9ibGFuayI+aHR0
+cDovL21tLnRvbS5jb20vaXZyLzwvYT4po7o8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9p
+dnIvc2VhcmNoX2l2cnJpbmcucGhwP1Npbmdlck5hbWU91ty93MLXJnVzZXJfaWQ9MyZjb2Rl
+X2lkPTAwMDAwMCIgdGFyZ2V0PSJfYmxhbmsiPtbcvdzC1zwvYT4gPGEgaHJlZj0iaHR0cDov
+L2ZzLnRvbS5jb20vaXZyL3NlYXJjaF9pdnJyaW5nLnBocD9TaW5nZXJOYW1lPcHWv6G93CZ1
+c2VyX2lkPTMmY29kZV9pZD0wMDAwMDAiIHRhcmdldD0iX2JsYW5rIj7B1r+hvdw8L2E+IDxh
+IGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9zZWFyY2hfaXZycmluZy5waHA/U2luZ2Vy
+TmFtZT3F08H6JnVzZXJfaWQ9MyZjb2RlX2lkPTAwMDAwMCIgdGFyZ2V0PSJfYmxhbmsiPsXT
+wfo8L2E+IDxhIGhyZWY9Imh0dHA6Ly9mcy50b20uY29tL2l2ci9zZWFyY2hfaXZycmluZy5w
+aHA/U2luZ2VyTmFtZT3Vxbvdw8MmdXNlcl9pZD0zJmNvZGVfaWQ9MDAwMDAwIiB0YXJnZXQ9
+Il9ibGFuayI+1cW73cPDPC9hPjxicj4KPGJyPgq+orGsuOjH+r6hx+m14yg8YSBocmVmPSJo
+dHRwOi8vbW0udG9tLmNvbS9pdnIvIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL21tLnRvbS5j
+b20vaXZyLzwvYT4po7o8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2VuZF9zdGVw
+MS5waHA/SWQ9MzkyNDQmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJfYmxhbmsi
+Prv01Kq81zwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlbmRfc3RlcDEu
+cGhwP0lkPTM4Mzk3JnVzZXJfaWQ9MyZjb2RlX2lkPXc1NTUiIHRhcmdldD0iX2JsYW5rIj68
+qs/pyP2xpjwvYT4gPGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vaXZyL3NlbmRfc3RlcDEu
+cGhwP0lkPTM5MzM1JnVzZXJfaWQ9MyZjb2RlX2lkPXc1NTUiIHRhcmdldD0iX2JsYW5rIj7I
+y9bKPC9hPiA8YSBocmVmPSJodHRwOi8vZnMudG9tLmNvbS9pdnIvc2VuZF9zdGVwMS5waHA/
+SWQ9MzkzMjUmdXNlcl9pZD0zJmNvZGVfaWQ9dzU1NSIgdGFyZ2V0PSJfYmxhbmsiPrLcstk8
+L2E+PGJyPgo8YnI+CuzFv+GyysHlw+K30cvNKDxhIGhyZWY9Imh0dHA6Ly9tbS50b20uY29t
+L2NhaWxpbmcvIiB0YXJnZXQ9Il9ibGFuayI+aHR0cDovL21tLnRvbS5jb20vY2FpbGluZy88
+L2E+KaO6PGEgaHJlZj0iaHR0cDovL2ZzLnRvbS5jb20vY2FpbGluZy9zZWFyY2gucGhwP0N1
+clBhZ2U9MSZ1c2VyX2lkPTMmQ2F0YWxvZz0mcGhvbmVfbnVtPSZTZWFyY2hCeT1yaW5nJktl
+eXdvcmQ9JUQ2JURDJUJEJURDJUMyJUQ3JUIwJUVGJUM0JUUzJUJEJUQzJUI1JUU3JUJCJUIw
+IiB0YXJnZXQ9Il9ibGFuayI+1ty93MLXsO/E473Ttee7sDwvYT4gPGEgaHJlZj0iaHR0cDov
+L2ZzLnRvbS5jb20vY2FpbGluZy9zZWFyY2gucGhwP0N1clBhZ2U9MSZ1c2VyX2lkPTMmQ2F0
+YWxvZz0mcGhvbmVfbnVtPSZTZWFyY2hCeT1yaW5nJktleXdvcmQ9JUMyJUU5JUI3JUIzJUM1
+JUFFJUM1JUYzJUQzJUQxIiB0YXJnZXQ9Il9ibGFuayI+wum3s8WuxfPT0TwvYT4gPGEgaHJl
+Zj0iaHR0cDovL2ZzLnRvbS5jb20vY2FpbGluZy9zZWFyY2gucGhwP0N1clBhZ2U9MSZ1c2Vy
+X2lkPTMmQ2F0YWxvZz0mcGhvbmVfbnVtPSZTZWFyY2hCeT1yaW5nJktleXdvcmQ9JUM2JURG
+JUMwJUVGJUNGJUUzIiB0YXJnZXQ9Il9ibGFuayI+xt/A78/jPC9hPiA8YSBocmVmPSJodHRw
+Oi8vZnMudG9tLmNvbS9jYWlsaW5nL3NlYXJjaC5waHA/Q3VyUGFnZT0xJnVzZXJfaWQ9MyZD
+YXRhbG9nPSZwaG9uZV9udW09JlNlYXJjaEJ5PXJpbmcmS2V5d29yZD0lRDAlQTElQjMlQzcl
+QjklQ0ElQ0ElQzIiIHRhcmdldD0iX2JsYW5rIj7QobPHucrKwjwvYT4KCjxicj4KCgo9PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogIDwvdGQ+CiAg
+PC90cj4KPC90YWJsZT4=
+--Boundary-=_KGntowIOFrGqlXUeRrjYxrTvYcKW--
