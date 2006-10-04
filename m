@@ -1,16 +1,28 @@
-Return-Path: <gmuruga@gdatech.com>
+Return-Path: <aleck@gdatech.com>
 Received: from darwaza.gdatech.com (darwaza.gdatech.com [66.237.41.98])
-	by ozlabs.org (Postfix) with ESMTP id 24B8667C20
+	by ozlabs.org (Postfix) with ESMTP id CD84567C6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Oct 2006 11:11:50 +1000 (EST)
-Date: Tue, 3 Oct 2006 18:12:16 -0700
-Message-Id: <200610040112.k941CG112451@sierra.gdatech.com>
-From: "Muruga Ganapathy" <gmuruga@gdatech.com>
-To: David Hawkins <dwh@ovro.caltech.edu>,
-	Eric Heim <sheldoninstruments@yahoo.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: Windows boot recognition
+	Wed,  4 Oct 2006 12:24:37 +1000 (EST)
+Received: from spamcheck.gdatech.com (localhost.localdomain [127.0.0.1])
+	by spamcheck.gdatech.com (Postfix-out) with ESMTP id D92E86AC072
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  3 Oct 2006 19:24:37 -0700 (PDT)
+Received: from sierra.gdatech.com (sierra.gdatech.com [192.168.200.112])
+	by spamcheck.gdatech.com (Postfix-out) with ESMTP id 9FE006AC068
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  3 Oct 2006 19:24:37 -0700 (PDT)
+Received: from monstertop ([192.168.10.172]) (authenticated)
+	by sierra.gdatech.com (8.11.6/8.11.6) with ESMTP id k942P3n04022
+	for <linuxppc-embedded@ozlabs.org>; Tue, 3 Oct 2006 19:25:03 -0700
+From: "Aleck Lin" <aleck@gdatech.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: platform flash for Xilinx ML403
+Date: Tue, 3 Oct 2006 19:24:28 -0700
+Message-ID: <003001c6e75c$3ad7da70$800101df@monstertop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <mailman.5.1159927227.32514.linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,83 +33,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-You may need to configure the board in PCI agent mode so that it can
-respond to the PCI configuration cycles. By fefault, it might come 
-in master mode ( wherein it generates the PCI cycles and configures 
-other devices in its PCI bus)
+Can anyone help with my questions on platform flash for Xilinx ML403? 
 
-It should be a hardware configuration option. So you should see a 
-jumper on the board or you may need to mount/unmount a resistor.
-Pl check the hardware user manual.
+>From what I understand, I can use platform flash to store my FPGA bitstream
+file and my software application elf file, so it's like using an ACE file
+through the CompactFlash, except I just need to set the configuration
+address through DIP switch and then push the PROG button on the board
+(provided it's set to Platform Flash mode) and then the software application
+would start running. Is this correct?
 
-Thanks
-G.Muruganandam
+If it's correct, then how would I be able to program the Platform Flash? Do
+I program separate bit file and elf file, or do I program an ace file or ??
+I have the ML40x Getting Started Tutorial in which there's a section on how
+to program my own flash image. But I couldn't really understand some things
+in it, such as a PROM file, or adding file to Revision no. and etc. Can
+someone help or point out a more detailed document? 
 
+My eventual goal is to be able to use the platform flash to start u-boot and
+then boot linux image, which will be stored in linear flash. I think I have
+all the parts ready (u-boot image, uImage, and hardware bitstream), but just
+lack of the understanding to put in this particular configuration.
 
-> Hi Tim,
-> 
-> > I am trying to develop a windows driver for the MPC8349MDS board 
-but 
-> > Windows does not seem to acknowledge the existence of the board in 
-the 
-> > pci slot.  The device manager does not see the board and no 
-resources 
-> > are allocated on boot.
-> 
-> If no resources are allocated on boot, then it indicates the BIOS
-> has not found the board. Have you booted this same machine under
-> Linux? If not, grab a Knoppix or Ubuntu CD and boot the machine
-> and see if lspci sees the board.
-> 
-> > Running Linux as my OS works perfectly.  I have 
-> > tried both Windows 2000 and XP on two different machines.  Any 
-ideas?
-> 
-> Under Windows I've used a tool called PCI tree to find
-> PCI resources of boards, it'll even let you manipulate
-> config space registers (much like setpci can under Linux).
-> Try running that tool to see if the board is setup
-> correctly by the BIOS.
-> 
-> If your Windows and Linux development machines are different,
-> then you may just be fighting with hardware. So first confirm
-> that the BIOS is finding the board.
-> 
-> Also check for hardware differences between the development
-> machines; eg. 33MHz or 66MHz, 32-bit or 64-bit PCI.
-> 
-> Dave
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+Any help would be appreciated!
 
-*************************************************************
-GDA Technologies, Inc.		
-1010 Rincon Circle 
-San Jose CA, 95131
-Phone	(408) 432-3090
-Fax	(408) 432-3091
+Thanks,
 
-Accelerate Your Innovation	
-**************************************************************
-
-
-=====
-This message contains information from GDA Technologies Inc and 
-affiliates, and is intended for the sole use of the individual and 
-entity to whom it is addressed. It may contain information, including 
-any attachments, that is privileged, confidential and exempt from 
-disclosure under applicable law. If you are not the intended 
-addressee, nor authorized to receive for the intended addressee, you 
-are hereby notified that you may not use, copy, disclose or distribute 
-to anyone the message or any information contained in the message. If 
-you have received this electronic transmission in error, please notify 
-the sender immediately by a "reply to sender only" message and destroy 
-all electronic and hard copies of the communication, including 
-attachments.
-====
+Aleck
