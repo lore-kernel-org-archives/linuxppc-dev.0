@@ -1,17 +1,17 @@
 Return-Path: <john.bonesio@xilinx.com>
-Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CB12067E19
+	by ozlabs.org (Postfix) with ESMTP id 20FFB67D15
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Oct 2006 03:17:28 +1000 (EST)
+	Thu,  5 Oct 2006 03:43:22 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6E7D8.F278C161"
+	boundary="----_=_NextPart_001_01C6E7D7.E26DA434"
 Subject: RE: booting 2.6 kernel on ML403
-Date: Wed, 4 Oct 2006 10:17:18 -0700
-Message-ID: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC02300D10@XSJ-EXCHVS1.xlnx.xilinx.com>
+Date: Wed, 4 Oct 2006 10:09:41 -0700
+Message-ID: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC02300CFD@XSJ-EXCHVS1.xlnx.xilinx.com>
 From: "John Bonesio" <john.bonesio@xilinx.com>
 To: "Pradeep Sampath" <pradeepsampath@yahoo.com>,
 	"Ming Liu" <eemingliu@hotmail.com>, <ammubhai@gmail.com>
@@ -28,25 +28,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6E7D8.F278C161
+------_=_NextPart_001_01C6E7D7.E26DA434
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-A quick amendment to my previous email:
-
-The device name you should use in the CONFIG_CMDLINE  "root=3D..." can =
-be found in the routine call to register_blkdev() in the driver source =
-code. The first parameter to register_blkdev() is the major number of =
-the device. The second parameter is the name of the device, as in =
-/dev/xsda2, or /dev/xsysace2. This second parameter will contain just =
-the 'xsda' or 'xsysace' in it, and it may be a preprocessor constant =
-defined earlier in the file, such as #define MAJOR_NAME "xsda", but it =
-might not be a constant either. It depends on the code.
+Hi Pradeep,
 
 =20
 
-Hopefully this clears things up a bit.
+If you are using the MontaVista/Xilinx driver for sysace for linux 2.6, =
+the CONFIG_CMDLINE item in .config should have
+
+    root=3D/dev/xsysace2 rw
+
+in it. From the text below it's not clear what driver you are using. If =
+you are using a different driver, you may be able to search for
+
+    #define MAJOR_NAME
+
+in the source code of the sysace driver. I believe that will indicate =
+which device name you should use in the CONFIG_CMDLINE.
+
+=20
+
+As you probably already know, the '2' in '/dev/xsysace2' refers to the =
+partition number it should use - partition 2 in this case.
+
+=20
+
+For Problem 2: Do you see any error leds light up on the board? It's =
+possible that the drivers you are using for one or both of those cores =
+is not meant for the version of the cores you are using. The core most =
+likely to be suspect is the TEMAC soft core, as that has changed =
+recently. Even though you are using the hard TEMAC core, there is a soft =
+wrapper around it to connect it up to the bus and what not. This soft =
+wrapper has changed from version 2 to version 3 not too long ago. While =
+the TEMAC driver that MontaVista has (and I believe posted to this =
+mailing list) is for version 2 of the soft TEMAC core.
+
+=20
+
+Hope this helps,
 
 =20
 
@@ -190,7 +213,7 @@ deep
 =20
 
 
-------_=_NextPart_001_01C6E7D8.F278C161
+------_=_NextPart_001_01C6E7D7.E26DA434
 Content-Type: text/html;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -250,25 +273,8 @@ div.Section1
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>A quick amendment to my previous =
-email:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>The device name you should use in =
-the
-CONFIG_CMDLINE =A0&#8220;root=3D&#8230;&#8221; can be found in the =
-routine call to
-register_blkdev() in the driver source code. The first parameter to
-register_blkdev() is the major number of the device. The second =
-parameter is
-the name of the device, as in /dev/xsda2, or /dev/xsysace2. This second
-parameter will contain just the &#8216;xsda&#8217; or =
-&#8216;xsysace&#8217; in
-it, and it may be a preprocessor constant defined earlier in the file, =
-such as #define
-MAJOR_NAME &#8220;xsda&#8221;, but it might not be a constant either. It
-depends on the code.<o:p></o:p></span></font></p>
+10.0pt;font-family:Arial;color:navy'>Hi =
+Pradeep,<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
@@ -276,8 +282,80 @@ style=3D'font-size:
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Hopefully this clears things up a =
-bit.<o:p></o:p></span></font></p>
+10.0pt;font-family:Arial;color:navy'>If you are using the =
+MontaVista/Xilinx driver
+for sysace for linux 2.6, the CONFIG_CMDLINE item in .config should =
+have<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>=A0=A0=A0 root=3D/dev/xsysace2 =
+rw<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>in it. From the text below =
+it&#8217;s not
+clear what driver you are using. If you are using a different driver, =
+you may
+be able to search for<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>=A0=A0=A0 #define =
+MAJOR_NAME<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>in the source code of the sysace =
+driver. I
+believe that will indicate which device name you should use in the
+CONFIG_CMDLINE.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>As you probably already know, the =
+&#8216;2&#8217;
+in &#8216;/dev/xsysace2&#8217; refers to the partition number it should =
+use &#8211;
+partition 2 in this case.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>For Problem 2: Do you see any error =
+leds
+light up on the board? It&#8217;s possible that the drivers you are =
+using for
+one or both of those cores is not meant for the version of the cores you =
+are
+using. The core most likely to be suspect is the TEMAC soft core, as =
+that has
+changed recently. Even though you are using the hard TEMAC core, there =
+is a
+soft wrapper around it to connect it up to the bus and what not. This =
+soft wrapper
+has changed from version 2 to version 3 not too long ago. While the =
+TEMAC
+driver that MontaVista has (and I believe posted to this mailing list) =
+is for
+version 2 of the soft TEMAC core.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Hope this =
+helps,<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
@@ -305,7 +383,7 @@ face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
 style=3D'font-size:10.0pt;
 font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
 size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
 linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org
 [mailto:linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org] =
 <b><span
@@ -396,8 +474,8 @@ busybox-1.1.0
 like the BYU instructions. Created 2 partitions on CF card 1. FAT16 =
 partition
 &amp; 2. linux partition and then created 1. dos file system using =
-mkdosfs and 2.
-linux ext2 filesystem using mke2fs.<o:p></o:p></span></font></p>
+mkdosfs and
+2. linux ext2 filesystem using mke2fs.<o:p></o:p></span></font></p>
 
 </div>
 
@@ -585,4 +663,4 @@ style=3D'font-size:
 
 </html>
 
-------_=_NextPart_001_01C6E7D8.F278C161--
+------_=_NextPart_001_01C6E7D7.E26DA434--
