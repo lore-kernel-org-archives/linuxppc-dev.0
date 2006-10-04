@@ -1,20 +1,18 @@
-Return-Path: <jeremy@goop.org>
-Received: from mail.goop.org (gw.goop.org [64.81.55.164])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 62A6967C9A
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 06:39:16 +1000 (EST)
-Message-ID: <45241659.301@goop.org>
-Date: Wed, 04 Oct 2006 13:15:21 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-MIME-Version: 1.0
-To: Judith Lebzelter <judith@osdl.org>
-Subject: Re: [PATCH] use-generic-bug-for-ppc
-References: <20061004184927.GH665@shell0.pdx.osdl.net>
-In-Reply-To: <20061004184927.GH665@shell0.pdx.osdl.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 636F667D63
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 07:16:16 +1000 (EST)
+Date: Wed, 4 Oct 2006 16:16:07 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/7] Add MPC8360EMDS board support (try 2)
+Message-Id: <20061004161607.6eeaa51f.kim.phillips@freescale.com>
+In-Reply-To: <CEA95FBE-ED7E-4512-A6C5-6362DAE69744@kernel.crashing.org>
+References: <20061003231751.00484d8a.kim.phillips@freescale.com>
+	<CEA95FBE-ED7E-4512-A6C5-6362DAE69744@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Judith Lebzelter wrote:
-> Index: linux/arch/ppc/kernel/traps.c
-> ===================================================================
-> --- linux.orig/arch/ppc/kernel/traps.c	2006-10-03 16:11:26.461653713 -0700
-> +++ linux/arch/ppc/kernel/traps.c	2006-10-04 10:00:21.198907987 -0700
-> @@ -28,6 +28,7 @@
->  #include <linux/init.h>
->  #include <linux/module.h>
->  #include <linux/prctl.h>
-> +#include <linux/bug.h>
->  
->  #include <asm/pgtable.h>
->  #include <asm/uaccess.h>
-> @@ -568,55 +569,9 @@
->   */
->  extern struct bug_entry __start___bug_table[], __stop___bug_table[];
->  
-> -#ifndef CONFIG_MODULES
-> -#define module_find_bug(x)	NULL
-> -#endif
->   
-Looks like you need to delete a bit more here - the extern struct 
-bug_entry, and the comment above.
-    J
+On Tue, 3 Oct 2006 23:27:42 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
+> 
+> On Oct 3, 2006, at 11:17 PM, Kim Phillips wrote:
+> 
+<snip>
+> >  arch/powerpc/platforms/83xx/mpc8360e_pb.c  |  220 ++++++
+> >  arch/powerpc/platforms/83xx/mpc8360e_pb.h  |   23 +
+> >  3 files changed, 1261 insertions(+), 0 deletions(-)
+> 
+> What's the point of the mpc8360e_pb.h if there's nothing in it?
+> 
+well I thought I was being consistent with the other 83xx boards ;)
+
+> Also, any reason the files are _pb and config is emds?
+> 
+_pb == processor board, the core of the mds (modular development system).  The pb can be operated independently of the rest of what comprises the mds.
+
+I used mds nomenclature in 832x since the support includes parts of the mds that are separate from just the pb, e.g. the pci bits in the device tree.
+
+but we need to be more consistent, I agree.
+
+also, there is a wealth of duplicated platform code among each of the four 83xx platforms.  Somethings wrong when one duplicates a file just to s/836/832/g.  How about consolidating them all down to one mpc83xx_mach.c file that enables potential board quirks based on the dev tree root's model property?  That will eliminate all the redundant code, and get rid of the file naming inconsistencies.
+
+Kim
