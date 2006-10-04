@@ -1,20 +1,12 @@
-Return-Path: <judith@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 862F767DA7
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 09:29:52 +1000 (EST)
-Date: Wed, 4 Oct 2006 16:29:27 -0700
-From: Judith Lebzelter <judith@osdl.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] use-generic-bug-for-ppc resubmitted
-Message-ID: <20061004232927.GI665@shell0.pdx.osdl.net>
-References: <20061004184927.GH665@shell0.pdx.osdl.net> <45241659.301@goop.org>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45241659.301@goop.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Message-ID: <17700.17773.769331.167769@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Oct 2006 09:36:13 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: Please pull powerpc.git 'master' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,147 +16,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 04, 2006 at 01:15:21PM -0700, Jeremy Fitzhardinge wrote:
-> Judith Lebzelter wrote:
-> >Index: linux/arch/ppc/kernel/traps.c
-> >===================================================================
-> >--- linux.orig/arch/ppc/kernel/traps.c	2006-10-03 
-> >16:11:26.461653713 -0700
-> >+++ linux/arch/ppc/kernel/traps.c	2006-10-04 10:00:21.198907987 -0700
-> >@@ -28,6 +28,7 @@
-> > #include <linux/init.h>
-> > #include <linux/module.h>
-> > #include <linux/prctl.h>
-> >+#include <linux/bug.h>
-> > 
-> > #include <asm/pgtable.h>
-> > #include <asm/uaccess.h>
-> >@@ -568,55 +569,9 @@
-> >  */
-> > extern struct bug_entry __start___bug_table[], __stop___bug_table[];
-> > 
-> >-#ifndef CONFIG_MODULES
-> >-#define module_find_bug(x)	NULL
-> >-#endif
-> >  
-> Looks like you need to delete a bit more here - the extern struct 
-> bug_entry, and the comment above.
->    J
+Linus,
 
-Here is the generic bug ppc patch with the suggested change.  It compiles 
-without error.
+Please do:
 
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
 
-Signed-off-by:  Judith Lebzelter <judith@osdl.org>
+again, to get a Cell update.  I apologize on Arnd's behalf for the
+lateness of this update.
 
----
+Thanks,
+Paul.
 
-arch/ppc/kernel/traps.c
-arch/ppc/Kconfig
+ arch/powerpc/configs/cell_defconfig          |   60 +++
+ arch/powerpc/platforms/cell/Kconfig          |    5 
+ arch/powerpc/platforms/cell/interrupt.c      |   10 -
+ arch/powerpc/platforms/cell/iommu.c          |    8 
+ arch/powerpc/platforms/cell/spider-pic.c     |    6 
+ arch/powerpc/platforms/cell/spu_base.c       |  168 ++++++++--
+ arch/powerpc/platforms/cell/spufs/Makefile   |    2 
+ arch/powerpc/platforms/cell/spufs/context.c  |    6 
+ arch/powerpc/platforms/cell/spufs/file.c     |  354 +++++++++++++++-----
+ arch/powerpc/platforms/cell/spufs/gang.c     |   81 +++++
+ arch/powerpc/platforms/cell/spufs/inode.c    |  232 +++++++++++--
+ arch/powerpc/platforms/cell/spufs/run.c      |   48 ++-
+ arch/powerpc/platforms/cell/spufs/sched.c    |  450 ++++++++++----------------
+ arch/powerpc/platforms/cell/spufs/spufs.h    |   29 ++
+ arch/powerpc/platforms/cell/spufs/switch.c   |    9 +
+ arch/powerpc/platforms/cell/spufs/syscalls.c |    9 -
+ include/asm-powerpc/spu.h                    |   36 ++
+ 17 files changed, 1017 insertions(+), 496 deletions(-)
+ create mode 100644 arch/powerpc/platforms/cell/spufs/gang.c
 
-Index: linux/arch/ppc/Kconfig
-===================================================================
---- linux.orig/arch/ppc/Kconfig	2006-10-03 16:11:26.000000000 -0700
-+++ linux/arch/ppc/Kconfig	2006-10-03 17:10:09.000000000 -0700
-@@ -52,6 +52,11 @@
- 	bool
- 	default y
- 
-+config GENERIC_BUG
-+	bool
-+	default y
-+	depends on BUG
-+
- source "init/Kconfig"
- 
- menu "Processor"
-Index: linux/arch/ppc/kernel/traps.c
-===================================================================
---- linux.orig/arch/ppc/kernel/traps.c	2006-10-03 16:11:26.000000000 -0700
-+++ linux/arch/ppc/kernel/traps.c	2006-10-04 15:37:46.674644563 -0700
-@@ -28,6 +28,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/prctl.h>
-+#include <linux/bug.h>
- 
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
-@@ -559,64 +560,9 @@
- 	}
- }
- 
--/*
-- * Look through the list of trap instructions that are used for BUG(),
-- * BUG_ON() and WARN_ON() and see if we hit one.  At this point we know
-- * that the exception was caused by a trap instruction of some kind.
-- * Returns 1 if we should continue (i.e. it was a WARN_ON) or 0
-- * otherwise.
-- */
--extern struct bug_entry __start___bug_table[], __stop___bug_table[];
--
--#ifndef CONFIG_MODULES
--#define module_find_bug(x)	NULL
--#endif
--
--struct bug_entry *find_bug(unsigned long bugaddr)
--{
--	struct bug_entry *bug;
--
--	for (bug = __start___bug_table; bug < __stop___bug_table; ++bug)
--		if (bugaddr == bug->bug_addr)
--			return bug;
--	return module_find_bug(bugaddr);
--}
--
--int check_bug_trap(struct pt_regs *regs)
-+int is_valid_bugaddr(unsigned long addr)
- {
--	struct bug_entry *bug;
--	unsigned long addr;
--
--	if (regs->msr & MSR_PR)
--		return 0;	/* not in kernel */
--	addr = regs->nip;	/* address of trap instruction */
--	if (addr < PAGE_OFFSET)
--		return 0;
--	bug = find_bug(regs->nip);
--	if (bug == NULL)
--		return 0;
--	if (bug->line & BUG_WARNING_TRAP) {
--		/* this is a WARN_ON rather than BUG/BUG_ON */
--#ifdef CONFIG_XMON
--		xmon_printf(KERN_ERR "Badness in %s at %s:%ld\n",
--		       bug->function, bug->file,
--		       bug->line & ~BUG_WARNING_TRAP);
--#endif /* CONFIG_XMON */		
--		printk(KERN_ERR "Badness in %s at %s:%ld\n",
--		       bug->function, bug->file,
--		       bug->line & ~BUG_WARNING_TRAP);
--		dump_stack();
--		return 1;
--	}
--#ifdef CONFIG_XMON
--	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
--	       bug->function, bug->file, bug->line);
--	xmon(regs);
--#endif /* CONFIG_XMON */
--	printk(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
--	       bug->function, bug->file, bug->line);
--
--	return 0;
-+	return addr >= PAGE_OFFSET;
- }
- 
- void program_check_exception(struct pt_regs *regs)
-@@ -671,7 +617,9 @@
- 		/* trap exception */
- 		if (debugger_bpt(regs))
- 			return;
--		if (check_bug_trap(regs)) {
-+
-+		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
-+		    report_bug(regs->nip) == BUG_TRAP_TYPE_WARN) {
- 			regs->nip += 4;
- 			return;
- 		}
+Arnd Bergmann:
+      [POWERPC] spufs: implement error event delivery to user space
+      [POWERPC] spufs: Add infrastructure needed for gang scheduling
+      [POWERPC] spufs: use correct pg_prot for mapping SPU local store
+      [POWERPC] spufs: make mailbox functions handle multiple elements
+      [POWERPC] spufs: remove support for ancient firmware
+      [POWERPC] spufs: add support for read/write on cntl
+      [POWERPC] spufs: support new OF device tree format
+      [POWERPC] spufs: add infrastructure for finding elf objects
+      [POWERPC] Update cell_defconfig
+      [POWERPC] spiderpic: enable new style devtree support
+      [POWERPC] cell: fix bugs found by sparse
+
+Benjamin Herrenschmidt:
+      [POWERPC] spufs: cell spu problem state mapping updates
+
+HyeonSeung Jang:
+      [POWERPC] spufs: fix context switch during page fault
+
+Mark Nutter:
+      [POWERPC] spufs: scheduler support for NUMA.
