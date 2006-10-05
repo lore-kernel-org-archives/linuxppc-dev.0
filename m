@@ -1,19 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3FEBF67D9C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 15:34:37 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Enable DEEPNAP power savings mode on 970MP
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20061004234141.749b13fb@localhost.localdomain>
-References: <20061004234141.749b13fb@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 05 Oct 2006 15:34:24 +1000
-Message-Id: <1160026464.22232.16.camel@localhost.localdomain>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 18F0D67DA7
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 16:21:08 +1000 (EST)
+Date: Wed, 4 Oct 2006 23:21:05 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
+Message-ID: <20061005062105.GA1985@gate.ebshome.net>
+References: <20060927155626.4d5ca19c@vitb.ru.mvista.com>
+	<4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>
+	<20060927165556.04c8d5d7@vitb.ru.mvista.com>
+	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>
+	<20060927112201.293fef44@localhost.localdomain>
+	<EBD0615C-4F22-430F-BD23-1283DF98F1B3@embeddedalley.com>
+	<1159942128.13323.21.camel@localhost.localdomain>
+	<7BD0D5CE-7BA3-43DC-B972-B75672F6A31E@embeddedalley.com>
+	<1160005019.5887.30.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1160005019.5887.30.camel@localhost.localdomain>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,100 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-04 at 23:41 -0500, Olof Johansson wrote:
-> Hi,
-> 
-> Without this patch, on an idle system I get:
-> 
-> cpu-power-0:21.638
-> cpu-power-1:27.102
-> cpu-power-2:29.343
-> cpu-power-3:25.784
-> Total: 103.8W
-> 
-> With this patch:
-> 
-> cpu-power-0:11.730
-> cpu-power-1:17.185
-> cpu-power-2:18.547
-> cpu-power-3:17.528
-> Total: 65.0W
-> 
-> If I lower HZ to 100, I can get it as low as:
-> 
-> cpu-power-0:10.938
-> cpu-power-1:16.021
-> cpu-power-2:17.245
-> cpu-power-3:16.145
-> Total: 60.2W
-> 
-> Another (older) Quad G5 went from 54W to 39W at HZ=250.
-> 
-> Coming back out of Deep Nap takes 40-70 cycles longer than coming back
-> from just Nap (which already takes quite a while). I don't think it'll
-> be a performance issue (interrupt latency on an idle system), but in
-> case someone does measurements feel free to report them.
+On Thu, Oct 05, 2006 at 09:36:59AM +1000, Benjamin Herrenschmidt wrote:
+> Ugh ? Look at the #ifdef mess in ibm_emac...
 
-Isn't deep nap supposed to only get entered from F/4 which we never
-use ?
+Ugh?
 
-Ben confused...
+I think you have to thank IBM/AMCC designers which keep changing bit 
+layout of some registers, sometimes just changing polarity for no 
+reason.
 
+And with all due respect, Ben. Current ibm_emac despite of all "mess" 
+is actually usable in production environment, which cannot be said 
+about initial Armin version and second version you started but never 
+got time to actually finish.
 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> 
-> 
-> 
-> Index: linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_ppc970.S
-> +++ linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
-> @@ -83,6 +83,22 @@ _GLOBAL(__setup_cpu_ppc970)
->  	rldimi	r0,r11,52,8		/* set NAP and DPM */
->  	li	r11,0
->  	rldimi	r0,r11,32,31		/* clear EN_ATTN */
-> +	b	load_hids		/* Jump to shared code */
-> +
-> +
-> +_GLOBAL(__setup_cpu_ppc970MP)
-> +	/* Do nothing if not running in HV mode */
-> +	mfmsr	r0
-> +	rldicl.	r0,r0,4,63
-> +	beqlr
-> +
-> +	mfspr	r0,SPRN_HID0
-> +	li	r11,0x15		/* clear DOZE and SLEEP */
-> +	rldimi	r0,r11,52,6		/* set DEEPNAP, NAP and DPM */
-> +	li	r11,0
-> +	rldimi	r0,r11,32,31		/* clear EN_ATTN */
-> +
-> +load_hids:
->  	mtspr	SPRN_HID0,r0
->  	mfspr	r0,SPRN_HID0
->  	mfspr	r0,SPRN_HID0
-> Index: linux-2.6/arch/powerpc/kernel/cputable.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/cputable.c
-> +++ linux-2.6/arch/powerpc/kernel/cputable.c
-> @@ -41,6 +41,7 @@ extern void __setup_cpu_745x(unsigned lo
->  #endif /* CONFIG_PPC32 */
->  #ifdef CONFIG_PPC64
->  extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
-> +extern void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
->  extern void __restore_cpu_ppc970(void);
->  #endif /* CONFIG_PPC64 */
->  
-> @@ -221,7 +222,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.icache_bsize		= 128,
->  		.dcache_bsize		= 128,
->  		.num_pmcs		= 8,
-> -		.cpu_setup		= __setup_cpu_ppc970,
-> +		.cpu_setup		= __setup_cpu_ppc970MP,
->  		.cpu_restore		= __restore_cpu_ppc970,
->  		.oprofile_cpu_type	= "ppc64/970",
->  		.oprofile_type		= PPC_OPROFILE_POWER4,
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+Eugene
