@@ -1,18 +1,26 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C7D5967DF6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Oct 2006 01:43:01 +1000 (EST)
-Date: Thu, 5 Oct 2006 10:36:56 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH] linux,tce-size property is 32 bits
-Message-ID: <20061005103656.264aa3b2@localhost.localdomain>
-In-Reply-To: <20061005032800.GH24705@localdomain>
-References: <20061005032800.GH24705@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	matthltc@us.ibm.com
+Return-Path: <brking@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8FBAA67DD0
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Oct 2006 01:52:09 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k95Fq6eY030702
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Oct 2006 11:52:06 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k95Fq6mY146632
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Oct 2006 11:52:06 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k95Fq6CR022978
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Oct 2006 11:52:06 -0400
+Message-Id: <200610051552.k95Fq5rw022929@d01av03.pok.ibm.com>
+Subject: [PATCH 1/1] powerpc: Update pSeries defconfig for SATA
+To: paulus@samba.org
+From: Brian King <brking@us.ibm.com>
+Date: Thu, 05 Oct 2006 10:52:04 -0500
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,45 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Oct 2006 22:28:00 -0500 Nathan Lynch <ntl@pobox.com> wrote:
 
-> The "linux,tce-size" property is only 32 bits (see
-> prom_initialize_tce_table() in arch/powerpc/kernel/prom_init.c).
-> Treating it as an unsigned long in iommu_table_setparms() leads to
-> access beyond the end of the property's buffer, so we pass garbage to
-> the memset() in that function.
-> 
-> [boot]0020 XICS Init
-> i8259 legacy interrupt controller initialized
-> [boot]0021 XICS Done
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> cpu 0x0: Vector: 300 (Data Access) at [c0000000fe783850]
->     pc: c000000000035e90: .memset+0x60/0xfc
->     lr: c000000000044fa4: .iommu_table_setparms+0xb0/0x158
->     sp: c0000000fe783ad0
->    msr: 9000000000009032
->    dar: c000000100000000
->  dsisr: 42010000
->   current = 0xc00000000450e810
->   paca    = 0xc000000000411580
->     pid   = 1, comm = swapper
-> enter ? for help
-> [link register   ] c000000000044fa4 .iommu_table_setparms+0xb0/0x158
-> [c0000000fe783ad0] c000000000044f4c .iommu_table_setparms+0x58/0x158
-> (unreliable)
-> [c0000000fe783b70] c00000000004529c
-> .iommu_bus_setup_pSeries+0x1c4/0x254
-> [c0000000fe783c00] c00000000002b8ac .do_bus_setup+0x3c/0xe4
-> [c0000000fe783c80] c00000000002c924 .pcibios_fixup_bus+0x64/0xd8
-> [c0000000fe783d00] c0000000001a2d5c .pci_scan_child_bus+0x6c/0x10c
-> [c0000000fe783da0] c00000000002be28 .scan_phb+0x17c/0x1b4
-> [c0000000fe783e40] c0000000003cfa00 .pcibios_init+0x58/0x19c
-> [c0000000fe783ec0] c0000000000094b4 .init+0x1e8/0x3d8
-> [c0000000fe783f90] c000000000026e54 .kernel_thread+0x4c/0x68
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Since the ipr driver now supports SATA and depends on libata,
+enable libata to get built.
 
-It does not reproduce on the OpenPower box I have, but it's clearly a
-bug. Good catch.
+Signed-off-by: Brian King <brking@us.ibm.com>
+---
 
-Acked-by: Olof Johansson <olof@lixom.net>
+ linux-2.6-bjking1/arch/powerpc/configs/pseries_defconfig |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN arch/powerpc/configs/pseries_defconfig~powerpc_sata_config arch/powerpc/configs/pseries_defconfig
+--- linux-2.6/arch/powerpc/configs/pseries_defconfig~powerpc_sata_config	2006-10-05 10:11:57.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/configs/pseries_defconfig	2006-10-05 10:12:40.000000000 -0500
+@@ -506,7 +506,7 @@ CONFIG_SCSI_SAS_ATTRS=m
+ # CONFIG_MEGARAID_NEWGEN is not set
+ # CONFIG_MEGARAID_LEGACY is not set
+ # CONFIG_MEGARAID_SAS is not set
+-# CONFIG_ATA is not set
++CONFIG_ATA=y
+ # CONFIG_SCSI_HPTIOP is not set
+ # CONFIG_SCSI_BUSLOGIC is not set
+ # CONFIG_SCSI_DMX3191D is not set
+_
