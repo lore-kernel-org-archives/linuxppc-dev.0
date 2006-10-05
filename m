@@ -1,20 +1,30 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from marmot.shef.ac.uk (marmot.shef.ac.uk [143.167.1.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48E7F67DC7
+Return-Path: <wei.li4@elf.mcgill.ca>
+Received: from drizzle.cc.mcgill.ca (drizzle.cc.mcgill.ca [132.206.27.48])
+	by ozlabs.org (Postfix) with ESMTP id 3F15367DC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Oct 2006 18:30:16 +1000 (EST)
-Message-ID: <4524C290.3090702@gmail.com>
-Date: Thu, 05 Oct 2006 09:30:08 +0100
-From: Ameet Patil <ammubhai@gmail.com>
+	Thu,  5 Oct 2006 23:29:52 +1000 (EST)
+Received: from mailscan3.cc.mcgill.ca (mailscan3.CC.McGill.CA [132.216.77.250])
+	by drizzle.cc.mcgill.ca (8.12.11/8.12.3) with ESMTP id k95DTo7K006889
+	for <linuxppc-embedded@ozlabs.org>; Thu, 5 Oct 2006 09:29:50 -0400
+Received: from wgrappe1.cc.mcgill.ca (wgrappe1.CC.McGill.CA [132.216.46.250])
+	by mailscan3.cc.mcgill.ca (8.13.6/8.13.0) with ESMTP id
+	k95DTk9L002735
+	for <linuxppc-embedded@ozlabs.org>; Thu, 5 Oct 2006 09:29:46 -0400 (EDT)
+Received: from wgrappe1.cc.mcgill.ca (localhost.localdomain [127.0.0.1])
+	by wgrappe1.cc.mcgill.ca (8.13.7/8.13.4) with ESMTP id k95DTkKA013368
+	for <linuxppc-embedded@ozlabs.org>; Thu, 5 Oct 2006 09:29:46 -0400
+Received: (from apache@localhost)
+	by wgrappe1.cc.mcgill.ca (8.13.7/8.13.7/Submit) id k95DTk6C013365
+	for linuxppc-embedded@ozlabs.org; Thu, 5 Oct 2006 09:29:46 -0400
+Message-ID: <20061005092946.2004afu1wwc4kkcg@webmail.mcgill.ca>
+Date: Thu, 05 Oct 2006 09:29:46 -0400
+From: wei.li4@elf.mcgill.ca
+To: linuxppc-embedded@ozlabs.org
+Subject: Compiler Question
 MIME-Version: 1.0
-To: Pradeep Sampath <pradeepsampath@yahoo.com>
-Subject: Re: booting 2.6 kernel on ML403
-References: <20061004164721.22885.qmail@web83207.mail.mud.yahoo.com>
-In-Reply-To: <20061004164721.22885.qmail@web83207.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +35,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Pradeep,
-   What you have pasted is only part of the messages displayed. I can't 
-tell anything from this apart from you 'root=' option. It would be nice 
-if you could paste the entire log of the boot messages right from 
-'loaded at: xxxxxxx  xxxxxxxx' to 'Kernel Rebooting in 150 seconds'.
+Hi All,
 
--Ameet
+It seems that there is a rule that Compiler or Linker assigns r3, r4 
+... to the arguments of C function when it is called, and r1 is the 
+address of Stack Pointer, and how is for r0 and r2? where can I find 
+these rules? Thanks.
 
-Pradeep Sampath wrote:
-> Ameet,
->  
-> loaded at:     00400000 0051513C
-> board data at: 00513124 0051313C
-> relocated to:  004050E8 00405100
-> zimage at:     004057FD 0051230A
-> avail ram:     00516000 04000000
-> Linux/PPC load: console=ttyS0,9600 root=/dev/xsa2
-> Uncompressing Linux...done.
-> Now booting the kernel
->
->
-> Please could send me all the boot messages until the point where it
-> stops. This will help me better identify the problem.
->
-> Thanks,
-> -Ameet
->
->
+Wei
