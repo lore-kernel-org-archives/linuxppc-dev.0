@@ -2,13 +2,13 @@ Return-Path: <ebs@ebshome.net>
 Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DD54B67DA7
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 16:31:20 +1000 (EST)
-Date: Wed, 4 Oct 2006 23:31:18 -0700
+	by ozlabs.org (Postfix) with ESMTP id 1F41A67DB2
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 16:33:08 +1000 (EST)
+Date: Wed, 4 Oct 2006 23:33:04 -0700
 From: Eugene Surovegin <ebs@ebshome.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
-Message-ID: <20061005063118.GC1985@gate.ebshome.net>
+Message-ID: <20061005063304.GD1985@gate.ebshome.net>
 References: <4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>
 	<20060927165556.04c8d5d7@vitb.ru.mvista.com>
 	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>
@@ -34,26 +34,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thu, Oct 05, 2006 at 04:26:34PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2006-10-04 at 23:21 -0700, Eugene Surovegin wrote:
-> > On Thu, Oct 05, 2006 at 09:36:59AM +1000, Benjamin Herrenschmidt wrote:
-> > > Ugh ? Look at the #ifdef mess in ibm_emac...
-> > 
-> > Ugh?
-> > 
-> > I think you have to thank IBM/AMCC designers which keep changing bit 
-> > layout of some registers, sometimes just changing polarity for no 
-> > reason.
-> > 
-> > And with all due respect, Ben. Current ibm_emac despite of all "mess" 
-> > is actually usable in production environment, which cannot be said 
-> > about initial Armin version and second version you started but never 
-> > got time to actually finish.
 > 
-> That second version was working fine... on the limited available
-> variations of EMAC back then.
+> Regarding the "mess", it's the whole #ifdef junk in there that is
+> driving me nuts and that I'll rip appart probably next week. A lot of
+> this could be soft-tests or the ifdefs could be resolved at Kconfig
+> instead of having a list of processors in 3 different headers if you
+> really want to compile the changes in rather than do soft-tests.
 
-No it wasn't. If it were I would have never wasted my time re-writing 
-this driver.
+Well, sent me changes for review, or become a maintainer, but this 
+time _real_ maintainer, not like last time when you touched this code.
 
 -- 
 Eugene
