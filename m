@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4767167D6C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 19:18:27 +1000 (EST)
-Subject: Re: [PATCH] linux,tce-size property is 32 bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20061005032800.GH24705@localdomain>
-References: <20061005032800.GH24705@localdomain>
-Content-Type: text/plain
-Date: Thu, 05 Oct 2006 19:18:18 +1000
-Message-Id: <1160039899.22232.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	matthltc@us.ibm.com
+	by ozlabs.org (Postfix) with ESMTP id 58B1067CE3
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 21:30:24 +1000 (EST)
+Message-ID: <4524ECC6.2060201@garzik.org>
+Date: Thu, 05 Oct 2006 07:30:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH 2.6.19-rc1] ehea bug fix (port state notification, default
+	queue sizes)
+References: <200609281244.40887.ossthema@de.ibm.com>
+In-Reply-To: <200609281244.40887.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-04 at 22:28 -0500, Nathan Lynch wrote:
-> The "linux,tce-size" property is only 32 bits (see
-> prom_initialize_tce_table() in arch/powerpc/kernel/prom_init.c).
-> Treating it as an unsigned long in iommu_table_setparms() leads to
-> access beyond the end of the property's buffer, so we pass garbage to
-> the memset() in that function.
+which patch is to be applied first?
 
-Probably needs to go into stable as well. Do you know if RHEL5 is
-affected too ?
+You failed to include an order, as described by 
+http://linux.yyz.us/patch-format.html and Documentation/SubmittingPatches.
 
-Cheers
-Ben.
+Also, stuff like "hi Jeff" and "Thanks, Jan-Bernd" must be hand-edited 
+out before patch application.  All comments not intended to be DIRECTLY 
+copied into the kernel changeset description should follow the "---" 
+separator.
 
-> [boot]0020 XICS Init
-> i8259 legacy interrupt controller initialized
-> [boot]0021 XICS Done
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> cpu 0x0: Vector: 300 (Data Access) at [c0000000fe783850]
->     pc: c000000000035e90: .memset+0x60/0xfc
->     lr: c000000000044fa4: .iommu_table_setparms+0xb0/0x158
->     sp: c0000000fe783ad0
->    msr: 9000000000009032
->    dar: c000000100000000
->  dsisr: 42010000
->   current = 0xc00000000450e810
->   paca    = 0xc000000000411580
->     pid   = 1, comm = swapper
-> enter ? for help
-> [link register   ] c000000000044fa4 .iommu_table_setparms+0xb0/0x158
-> [c0000000fe783ad0] c000000000044f4c .iommu_table_setparms+0x58/0x158
-> (unreliable)
-> [c0000000fe783b70] c00000000004529c
-> .iommu_bus_setup_pSeries+0x1c4/0x254
-> [c0000000fe783c00] c00000000002b8ac .do_bus_setup+0x3c/0xe4
-> [c0000000fe783c80] c00000000002c924 .pcibios_fixup_bus+0x64/0xd8
-> [c0000000fe783d00] c0000000001a2d5c .pci_scan_child_bus+0x6c/0x10c
-> [c0000000fe783da0] c00000000002be28 .scan_phb+0x17c/0x1b4
-> [c0000000fe783e40] c0000000003cfa00 .pcibios_init+0x58/0x19c
-> [c0000000fe783ec0] c0000000000094b4 .init+0x1e8/0x3d8
-> [c0000000fe783f90] c000000000026e54 .kernel_thread+0x4c/0x68
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> 
-> ---
-> 
-> I believe this is a regression since 2.6.18, so please push for
-> inclusion in 2.6.19.
-> 
-> 
-> --- linux-2.6.git.orig/arch/powerpc/platforms/pseries/iommu.c
-> +++ linux-2.6.git/arch/powerpc/platforms/pseries/iommu.c
-> @@ -267,7 +267,8 @@ static void iommu_table_setparms(struct 
->  				 struct iommu_table *tbl)
->  {
->  	struct device_node *node;
-> -	const unsigned long *basep, *sizep;
-> +	const unsigned long *basep;
-> +	const u32 *sizep;
->  
->  	node = (struct device_node *)phb->arch_data;
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+	Jeff
