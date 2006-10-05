@@ -1,26 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8B7E567D81
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 10:16:39 +1000 (EST)
-Date: Thu, 5 Oct 2006 04:16:22 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17700.20834.792693.853677@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Oct 2006 10:27:14 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Dan Malek <dan@embeddedalley.com>
 Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
-Message-ID: <20061005041622.58c9ada2@vitb-lp.dev.rtsoft.ru>
-In-Reply-To: <17700.19414.724178.711359@cargo.ozlabs.ibm.com>
+In-Reply-To: <2867EA41-5135-43F7-9873-044C617EAC1B@embeddedalley.com>
 References: <20060927155626.4d5ca19c@vitb.ru.mvista.com>
 	<4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>
 	<20060927165556.04c8d5d7@vitb.ru.mvista.com>
 	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>
 	<20060927112201.293fef44@localhost.localdomain>
 	<EBD0615C-4F22-430F-BD23-1283DF98F1B3@embeddedalley.com>
-	<1159942128.13323.21.camel@localhost.localdomain>
-	<7BD0D5CE-7BA3-43DC-B972-B75672F6A31E@embeddedalley.com>
-	<1160005019.5887.30.camel@localhost.localdomain>
-	<17700.19414.724178.711359@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_=.4ZWK2o7Og1J473N8aGmgH";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+	<17699.769.632098.479906@cargo.ozlabs.ibm.com>
+	<2867EA41-5135-43F7-9873-044C617EAC1B@embeddedalley.com>
 Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,69 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_=.4ZWK2o7Og1J473N8aGmgH
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Dan Malek writes:
 
-On Thu, 5 Oct 2006 10:03:34 +1000
-Paul Mackerras wrote:
+> I'm not against using the device tree (or platform data
+> or #defines) when it's appropriate to do so.  I think our
+> obsession to represent everything there is what is
+> creating the complexity.  If a #define in a board
+> specific port file makes sense, then just do that,
+> even if it is a BSCR address.
 
-> Benjamin Herrenschmidt writes:
->=20
-> > > It's the 'or not' part that I am worried about.  Things like
-> > > you mention above make sense.  I'm starting to worry about
-> > > some of this other stuff, and the bscr example is what
-> > > woke me up :-)  I think that's an example of things that
-> > > should be considered not necessary.
-> >=20
-> > I haven't looked at this specific example. I'll try to have a look
-> > later. I jumped into the discussion pointed by somebody else :)
->=20
-> That one was interesting - the bcsr was being referenced from an
-> ethernet driver that looked to me like it would be useful on any board
-> based on an 836x chip (I think).  Yet it was claimed that the bcsr was
-> so specific and unique to each board that there was no point putting
-> it in the device tree - which implies that we would have to have a
-> separate lump of code in the tree to drive it for every single
-> board. :P  I asked why the ethernet driver was accessing it directly
-> if that was the case, but didn't get an answer (well, only an indirect
-> answer in that the bcsr access code got removed from the ethernet
-> driver).
->=20
+So, where this discussion started was that I saw an ioremap in an
+ethernet driver using a physical address defined with #define, and I
+said "that should go in the device tree".  And I would still say that
+if the ioremap was still there, since the driver is one that is useful
+across a range of boards and chips.
 
-Well that's because accessing bcsr in generic code is just odd. Yes, there =
-are some places with=20
-such a stuff still. bcsr is something like a sw jumper to enable/disable st=
-uff, configure things, etc.=20
-which may vary up to the hw design even if it's following the reference clo=
-sely.
+My other point would be that what you say is valid *until* the
+hardware engineers come to you and say "we're doing rev 2 of the
+board, and we had to move the BCSR a bit.  That's OK with you, isn't
+it?".
 
-It's unique across the boards, and should be touched in BSP code only to ke=
-ep the base sane.
+If you have the BCSR address in the device tree, you don't even need
+to recompile your kernel.  You can just copy your board.dts to
+board-rev2.dts, change the address in there, and rerun the wrapper
+script to create the flash image to put on the new board.  Or if you
+are using a bootloader that knows how to supply a device-tree blob,
+you just put board-rev2.dtb into flash along with your existing kernel
+image.
 
-Such a thing in the eth driver directly was sort of "nice" because takes ca=
-re of enabling network "physically"
-on board. For the same aim, I used to have board-specific callback to set u=
-p some bits if needed(speaking about
-fs_enet/ppc). IOW, upon network driver init, it triggers callback function =
-(passed in there via platform data) that's intended to do the bsp setup (or=
- may be unset if nothing needed). In powerpc, only sane solution seems to b=
-e Dan's proposed=20
-feature_call thing. I wish I'd have some time for that ...
-
-Thanks,=20
--Vitaly
-
---Sig_=.4ZWK2o7Og1J473N8aGmgH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFJE7XuOg9JvQhSEsRAuE+AKCObc5XlKJUt0iYIOC7hP6LscvsEQCdEdff
-XzYG4gf6ZJo0zsogjwe1JxE=
-=HPyp
------END PGP SIGNATURE-----
-
---Sig_=.4ZWK2o7Og1J473N8aGmgH--
+Paul.
