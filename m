@@ -1,19 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BB5FB67D77
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 11:10:09 +1000 (EST)
-Subject: Re: [PATCH] uninorth: Add module param 'aperture' for aperture size
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-In-Reply-To: <1159966604.23084.236.camel@thor.lorrainebruecke.local>
-References: <1159966604.23084.236.camel@thor.lorrainebruecke.local>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 05 Oct 2006 11:09:42 +1000
-Message-Id: <1160010582.5887.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Dave Jones <davej@codemonkey.org.uk>, linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 66C8167DAB
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 13:28:13 +1000 (EST)
+Date: Wed, 4 Oct 2006 22:28:00 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] linux,tce-size property is 32 bits
+Message-ID: <20061005032800.GH24705@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>, matthltc@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,113 +19,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-04 at 14:56 +0200, Michel Dänzer wrote:
-> In contrast to most if not all PC BIOSes, OpenFirmware (OF) on PowerMacs with
-> UniNorth bridges does not allow changing the aperture size. The size set up by
-> OF is usually 16 MB, which is too low for graphics intensive environments.
-> Hence, add a module parameter that allows changing the aperture size at driver
-> initialization time. When the parameter is not specified, the default is 32 MB.
-> 
-> Signed-off-by: Michel Dänzer <michel@tungstengraphics.com>
+The "linux,tce-size" property is only 32 bits (see
+prom_initialize_tce_table() in arch/powerpc/kernel/prom_init.c).
+Treating it as an unsigned long in iommu_table_setparms() leads to
+access beyond the end of the property's buffer, so we pass garbage to
+the memset() in that function.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+[boot]0020 XICS Init
+i8259 legacy interrupt controller initialized
+[boot]0021 XICS Done
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+cpu 0x0: Vector: 300 (Data Access) at [c0000000fe783850]
+    pc: c000000000035e90: .memset+0x60/0xfc
+    lr: c000000000044fa4: .iommu_table_setparms+0xb0/0x158
+    sp: c0000000fe783ad0
+   msr: 9000000000009032
+   dar: c000000100000000
+ dsisr: 42010000
+  current = 0xc00000000450e810
+  paca    = 0xc000000000411580
+    pid   = 1, comm = swapper
+enter ? for help
+[link register   ] c000000000044fa4 .iommu_table_setparms+0xb0/0x158
+[c0000000fe783ad0] c000000000044f4c .iommu_table_setparms+0x58/0x158
+(unreliable)
+[c0000000fe783b70] c00000000004529c
+.iommu_bus_setup_pSeries+0x1c4/0x254
+[c0000000fe783c00] c00000000002b8ac .do_bus_setup+0x3c/0xe4
+[c0000000fe783c80] c00000000002c924 .pcibios_fixup_bus+0x64/0xd8
+[c0000000fe783d00] c0000000001a2d5c .pci_scan_child_bus+0x6c/0x10c
+[c0000000fe783da0] c00000000002be28 .scan_phb+0x17c/0x1b4
+[c0000000fe783e40] c0000000003cfa00 .pcibios_init+0x58/0x19c
+[c0000000fe783ec0] c0000000000094b4 .init+0x1e8/0x3d8
+[c0000000fe783f90] c000000000026e54 .kernel_thread+0x4c/0x68
 
-(it should probably go in 2.6.19, patch has been around for some time)
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-> ---
-> 
-> Reversed a 'value == variable' test, as suggested by Andreas Schwab (thanks!).
-> 
->  drivers/char/agp/uninorth-agp.c |   54 +++++++++++++++++++++++++--------------
->  1 files changed, 35 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
-> index 78c8cb2..c2b6f7d 100644
-> --- a/drivers/char/agp/uninorth-agp.c
-> +++ b/drivers/char/agp/uninorth-agp.c
-> @@ -27,32 +27,42 @@ #include "agp.h"
->  static int uninorth_rev;
->  static int is_u3;
->  
-> +static char __devinitdata *aperture = NULL;
->  
->  static int uninorth_fetch_size(void)
->  {
-> -	int i;
-> -	u32 temp;
-> -	struct aper_size_info_32 *values;
-> -
-> -	pci_read_config_dword(agp_bridge->dev, UNI_N_CFG_GART_BASE, &temp);
-> -	temp &= ~(0xfffff000);
-> -	values = A_SIZE_32(agp_bridge->driver->aperture_sizes);
-> -
-> -	for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++) {
-> -		if (temp == values[i].size_value) {
-> -			agp_bridge->previous_size =
-> -			    agp_bridge->current_size = (void *) (values + i);
-> -			agp_bridge->aperture_size_idx = i;
-> -			return values[i].size;
-> +	int i, size = 0;
-> +	struct aper_size_info_32 *values =
-> +	    A_SIZE_32(agp_bridge->driver->aperture_sizes);
-> +
-> +	if (aperture) {
-> +		char *save = aperture;
-> +
-> +		size = memparse(aperture, &aperture) >> 20;
-> +		aperture = save;
-> +
-> +		for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++)
-> +			if (size == values[i].size)
-> +				break;
-> +
-> +		if (i == agp_bridge->driver->num_aperture_sizes) {
-> +			printk(KERN_ERR PFX "Invalid aperture size, using"
-> +			       " default\n");
-> +			size = 0;
-> +			aperture = NULL;
->  		}
->  	}
->  
-> -	agp_bridge->previous_size =
-> -	    agp_bridge->current_size = (void *) (values + 1);
-> -	agp_bridge->aperture_size_idx = 1;
-> -	return values[1].size;
-> +	if (!size) {
-> +		for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++)
-> +			if (values[i].size == 32)
-> +				break;
-> +	}
->  
-> -	return 0;
-> +	agp_bridge->previous_size =
-> +	    agp_bridge->current_size = (void *)(values + i);
-> +	agp_bridge->aperture_size_idx = i;
-> +	return values[i].size;
->  }
->  
->  static void uninorth_tlbflush(struct agp_memory *mem)
-> @@ -668,5 +678,11 @@ static void __exit agp_uninorth_cleanup(
->  module_init(agp_uninorth_init);
->  module_exit(agp_uninorth_cleanup);
->  
-> +module_param(aperture, charp, 0);
-> +MODULE_PARM_DESC(aperture,
-> +		 "Aperture size, must be power of two between 4MB and an\n"
-> +		 "\t\tupper limit specific to the UniNorth revision.\n"
-> +		 "\t\tDefault: 32M");
-> +
->  MODULE_AUTHOR("Ben Herrenschmidt & Paul Mackerras");
->  MODULE_LICENSE("GPL");
-> -- 
-> 1.4.2.1
-> 
-> 
-> -- 
-> Earthling Michel Dänzer           |          http://tungstengraphics.com
-> Libre software enthusiast         |          Debian, X and DRI developer
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+---
+
+I believe this is a regression since 2.6.18, so please push for
+inclusion in 2.6.19.
+
+
+--- linux-2.6.git.orig/arch/powerpc/platforms/pseries/iommu.c
++++ linux-2.6.git/arch/powerpc/platforms/pseries/iommu.c
+@@ -267,7 +267,8 @@ static void iommu_table_setparms(struct 
+ 				 struct iommu_table *tbl)
+ {
+ 	struct device_node *node;
+-	const unsigned long *basep, *sizep;
++	const unsigned long *basep;
++	const u32 *sizep;
+ 
+ 	node = (struct device_node *)phb->arch_data;
+ 
