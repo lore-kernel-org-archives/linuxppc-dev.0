@@ -1,15 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id E13C267D5E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 14:42:15 +1000 (EST)
-Date: Wed, 4 Oct 2006 23:41:41 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: Enable DEEPNAP power savings mode on 970MP
-Message-ID: <20061004234141.749b13fb@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 370D867D5E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 14:55:07 +1000 (EST)
+Subject: [PATCH] powerpc: make U4 PCIe work
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Thu, 05 Oct 2006 14:54:58 +1000
+Message-Id: <1160024098.22232.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,89 +21,271 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+The Maple support code was missing code for U4/CPC945 PCIe. This adds
+it, enabling it to work on tigerwood boards, and possibly also js21
+using SLOF.
 
-Without this patch, on an idle system I get:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-cpu-power-0:21.638
-cpu-power-1:27.102
-cpu-power-2:29.343
-cpu-power-3:25.784
-Total: 103.8W
+Patch just missed the merge window but should go in anyway. It's been
+hanging around for a while, I just forgot about it, and it's fairly
+harmless.
 
-With this patch:
-
-cpu-power-0:11.730
-cpu-power-1:17.185
-cpu-power-2:18.547
-cpu-power-3:17.528
-Total: 65.0W
-
-If I lower HZ to 100, I can get it as low as:
-
-cpu-power-0:10.938
-cpu-power-1:16.021
-cpu-power-2:17.245
-cpu-power-3:16.145
-Total: 60.2W
-
-Another (older) Quad G5 went from 54W to 39W at HZ=250.
-
-Coming back out of Deep Nap takes 40-70 cycles longer than coming back
-from just Nap (which already takes quite a while). I don't think it'll
-be a performance issue (interrupt latency on an idle system), but in
-case someone does measurements feel free to report them.
-
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-
-
-Index: linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
+Index: linux-work/arch/powerpc/platforms/maple/pci.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_ppc970.S
-+++ linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
-@@ -83,6 +83,22 @@ _GLOBAL(__setup_cpu_ppc970)
- 	rldimi	r0,r11,52,8		/* set NAP and DPM */
- 	li	r11,0
- 	rldimi	r0,r11,32,31		/* clear EN_ATTN */
-+	b	load_hids		/* Jump to shared code */
-+
-+
-+_GLOBAL(__setup_cpu_ppc970MP)
-+	/* Do nothing if not running in HV mode */
-+	mfmsr	r0
-+	rldicl.	r0,r0,4,63
-+	beqlr
-+
-+	mfspr	r0,SPRN_HID0
-+	li	r11,0x15		/* clear DOZE and SLEEP */
-+	rldimi	r0,r11,52,6		/* set DEEPNAP, NAP and DPM */
-+	li	r11,0
-+	rldimi	r0,r11,32,31		/* clear EN_ATTN */
-+
-+load_hids:
- 	mtspr	SPRN_HID0,r0
- 	mfspr	r0,SPRN_HID0
- 	mfspr	r0,SPRN_HID0
-Index: linux-2.6/arch/powerpc/kernel/cputable.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/cputable.c
-+++ linux-2.6/arch/powerpc/kernel/cputable.c
-@@ -41,6 +41,7 @@ extern void __setup_cpu_745x(unsigned lo
- #endif /* CONFIG_PPC32 */
- #ifdef CONFIG_PPC64
- extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_ppc970(void);
- #endif /* CONFIG_PPC64 */
+--- linux-work.orig/arch/powerpc/platforms/maple/pci.c	2006-10-05 14:14:28.000000000 +1000
++++ linux-work/arch/powerpc/platforms/maple/pci.c	2006-10-05 14:29:30.000000000 +1000
+@@ -8,7 +8,7 @@
+  * 2 of the License, or (at your option) any later version.
+  */
  
-@@ -221,7 +222,7 @@ struct cpu_spec	cpu_specs[] = {
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
--		.cpu_setup		= __setup_cpu_ppc970,
-+		.cpu_setup		= __setup_cpu_ppc970MP,
- 		.cpu_restore		= __restore_cpu_ppc970,
- 		.oprofile_cpu_type	= "ppc64/970",
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
+-#define DEBUG
++#undef DEBUG
+ 
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+@@ -16,6 +16,7 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/bootmem.h>
++#include <linux/irq.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/io.h>
+@@ -33,7 +34,7 @@
+ #define DBG(x...)
+ #endif
+ 
+-static struct pci_controller *u3_agp, *u3_ht;
++static struct pci_controller *u3_agp, *u3_ht, *u4_pcie;
+ 
+ static int __init fixup_one_level_bus_range(struct device_node *node, int higher)
+ {
+@@ -287,6 +288,110 @@ static struct pci_ops u3_ht_pci_ops =
+ 	u3_ht_write_config
+ };
+ 
++#define U4_PCIE_CFA0(devfn, off)        \
++        ((1 << ((unsigned int)PCI_SLOT(dev_fn)))        \
++         | (((unsigned int)PCI_FUNC(dev_fn)) << 8)      \
++         | ((((unsigned int)(off)) >> 8) << 28) \
++         | (((unsigned int)(off)) & 0xfcU))
++
++#define U4_PCIE_CFA1(bus, devfn, off)   \
++        ((((unsigned int)(bus)) << 16) \
++         |(((unsigned int)(devfn)) << 8)        \
++         | ((((unsigned int)(off)) >> 8) << 28) \
++         |(((unsigned int)(off)) & 0xfcU)       \
++         |1UL)
++
++static volatile void __iomem *u4_pcie_cfg_access(struct pci_controller* hose,
++                                        u8 bus, u8 dev_fn, int offset)
++{
++        unsigned int caddr;
++
++        if (bus == hose->first_busno) {
++                caddr = U4_PCIE_CFA0(dev_fn, offset);
++        } else
++                caddr = U4_PCIE_CFA1(bus, dev_fn, offset);
++
++        /* Uninorth will return garbage if we don't read back the value ! */
++        do {
++                out_le32(hose->cfg_addr, caddr);
++        } while (in_le32(hose->cfg_addr) != caddr);
++
++        offset &= 0x03;
++        return hose->cfg_data + offset;
++}
++
++static int u4_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
++                               int offset, int len, u32 *val)
++{
++        struct pci_controller *hose;
++        volatile void __iomem *addr;
++
++        hose = pci_bus_to_host(bus);
++        if (hose == NULL)
++                return PCIBIOS_DEVICE_NOT_FOUND;
++        if (offset >= 0x1000)
++                return  PCIBIOS_BAD_REGISTER_NUMBER;
++        addr = u4_pcie_cfg_access(hose, bus->number, devfn, offset);
++        if (!addr)
++                return PCIBIOS_DEVICE_NOT_FOUND;
++        /*
++         * Note: the caller has already checked that offset is
++         * suitably aligned and that len is 1, 2 or 4.
++         */
++        switch (len) {
++        case 1:
++                *val = in_8(addr);
++                break;
++        case 2:
++                *val = in_le16(addr);
++                break;
++        default:
++                *val = in_le32(addr);
++                break;
++        }
++        return PCIBIOS_SUCCESSFUL;
++}
++static int u4_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
++                                int offset, int len, u32 val)
++{
++        struct pci_controller *hose;
++        volatile void __iomem *addr;
++
++        hose = pci_bus_to_host(bus);
++        if (hose == NULL)
++                return PCIBIOS_DEVICE_NOT_FOUND;
++        if (offset >= 0x1000)
++                return  PCIBIOS_BAD_REGISTER_NUMBER;
++        addr = u4_pcie_cfg_access(hose, bus->number, devfn, offset);
++        if (!addr)
++                return PCIBIOS_DEVICE_NOT_FOUND;
++        /*
++         * Note: the caller has already checked that offset is
++         * suitably aligned and that len is 1, 2 or 4.
++         */
++        switch (len) {
++        case 1:
++                out_8(addr, val);
++                (void) in_8(addr);
++                break;
++        case 2:
++                out_le16(addr, val);
++                (void) in_le16(addr);
++                break;
++        default:
++                out_le32(addr, val);
++                (void) in_le32(addr);
++                break;
++        }
++        return PCIBIOS_SUCCESSFUL;
++}
++
++static struct pci_ops u4_pcie_pci_ops =
++{
++        u4_pcie_read_config,
++        u4_pcie_write_config
++};
++
+ static void __init setup_u3_agp(struct pci_controller* hose)
+ {
+ 	/* On G5, we move AGP up to high bus number so we don't need
+@@ -307,6 +412,26 @@ static void __init setup_u3_agp(struct p
+ 	u3_agp = hose;
+ }
+ 
++static void __init setup_u4_pcie(struct pci_controller* hose)
++{
++        /* We currently only implement the "non-atomic" config space, to
++         * be optimised later.
++         */
++        hose->ops = &u4_pcie_pci_ops;
++        hose->cfg_addr = ioremap(0xf0000000 + 0x800000, 0x1000);
++        hose->cfg_data = ioremap(0xf0000000 + 0xc00000, 0x1000);
++
++        /* The bus contains a bridge from root -> device, we need to
++         * make it visible on bus 0 so that we pick the right type
++         * of config cycles. If we didn't, we would have to force all
++         * config cycles to be type 1. So we override the "bus-range"
++         * property here
++         */
++        hose->first_busno = 0x00;
++        hose->last_busno = 0xff;
++        u4_pcie = hose;
++}
++
+ static void __init setup_u3_ht(struct pci_controller* hose)
+ {
+ 	hose->ops = &u3_ht_pci_ops;
+@@ -354,6 +479,10 @@ static int __init add_bridge(struct devi
+ 		setup_u3_ht(hose);
+ 		disp_name = "U3-HT";
+ 		primary = 1;
++        } else if (device_is_compatible(dev, "u4-pcie")) {
++                setup_u4_pcie(hose);
++                disp_name = "U4-PCIE";
++                primary = 0;
+ 	}
+ 	printk(KERN_INFO "Found %s PCI host bridge. Firmware bus number: %d->%d\n",
+ 		disp_name, hose->first_busno, hose->last_busno);
+@@ -361,7 +490,6 @@ static int __init add_bridge(struct devi
+ 	/* Interpret the "ranges" property */
+ 	/* This also maps the I/O region and sets isa_io/mem_base */
+ 	pci_process_bridge_OF_ranges(hose, dev, primary);
+-	pci_setup_phb_io(hose, primary);
+ 
+ 	/* Fixup "bus-range" OF property */
+ 	fixup_bus_range(dev);
+@@ -376,8 +504,17 @@ void __init maple_pcibios_fixup(void)
+ 
+ 	DBG(" -> maple_pcibios_fixup\n");
+ 
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
++	for_each_pci_dev(dev) {
++		/* Fixup IRQ for PCIe host */
++		if (u4_pcie != NULL && dev->bus->number == 0 &&
++		    pci_bus_to_host(dev->bus) == u4_pcie) {
++			printk(KERN_DEBUG "Fixup U4 PCIe IRQ\n");
++			dev->irq = irq_create_mapping(NULL, 1);
++			if (dev->irq != NO_IRQ)
++				set_irq_type(dev->irq, IRQ_TYPE_LEVEL_LOW);
++		} else
++			pci_read_irq_line(dev);
++	}
+ 
+ 	DBG(" <- maple_pcibios_fixup\n");
+ }
+@@ -388,8 +525,10 @@ static void __init maple_fixup_phb_resou
+ 	
+ 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+ 		unsigned long offset = (unsigned long)hose->io_base_virt - pci_io_base;
++
+ 		hose->io_resource.start += offset;
+ 		hose->io_resource.end += offset;
++
+ 		printk(KERN_INFO "PCI Host %d, io start: %llx; io end: %llx\n",
+ 		       hose->global_number,
+ 		       (unsigned long long)hose->io_resource.start,
+@@ -431,6 +570,19 @@ void __init maple_pci_init(void)
+ 	if (ht && add_bridge(ht) != 0)
+ 		of_node_put(ht);
+ 
++        /*
++         * We need to call pci_setup_phb_io for the HT bridge first
++         * so it gets the I/O port numbers starting at 0, and we
++         * need to call it for the AGP bridge after that so it gets
++         * small positive I/O port numbers.
++         */
++        if (u3_ht)
++                pci_setup_phb_io(u3_ht, 1);
++        if (u3_agp)
++                pci_setup_phb_io(u3_agp, 0);
++        if (u4_pcie)
++                pci_setup_phb_io(u4_pcie, 0);
++
+ 	/* Fixup the IO resources on our host bridges as the common code
+ 	 * does it only for childs of the host bridges
+ 	 */
+@@ -479,6 +631,9 @@ int maple_pci_get_legacy_ide_irq(struct 
+ /* XXX: To remove once all firmwares are ok */
+ static void fixup_maple_ide(struct pci_dev* dev)
+ {
++	if (!machine_is(maple))
++		return;
++
+ #if 0 /* Enable this to enable IDE port 0 */
+ 	{
+ 		u8 v;
+@@ -495,7 +650,7 @@ static void fixup_maple_ide(struct pci_d
+ 	dev->resource[4].start = 0xcc00;
+ 	dev->resource[4].end = 0xcc10;
+ #endif
+-#if 1 /* Enable this to fixup IDE sense/polarity of irqs in IO-APICs */
++#if 0 /* Enable this to fixup IDE sense/polarity of irqs in IO-APICs */
+ 	{
+ 		struct pci_dev *apicdev;
+ 		u32 v;
