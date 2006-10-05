@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B71F467C7E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 14:18:53 +1000 (EST)
-Subject: [PATCH] powerpc: Fix zImage decompress location
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Thu, 05 Oct 2006 14:18:46 +1000
-Message-Id: <1160021926.22232.6.camel@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id E13C267D5E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 14:42:15 +1000 (EST)
+Date: Wed, 4 Oct 2006 23:41:41 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: Enable DEEPNAP power savings mode on 970MP
+Message-ID: <20061004234141.749b13fb@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +19,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The zImage wrapper has a "hack" that force the decompression to happen
-above 20Mb for 64 bits kernels, to work around issues with some
-firmwares on the field. However, the new wrapper has a bug which makes
-that hack not work properly. This fixes it.
+Hi,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Without this patch, on an idle system I get:
 
-Index: linux-work/arch/powerpc/boot/of.c
+cpu-power-0:21.638
+cpu-power-1:27.102
+cpu-power-2:29.343
+cpu-power-3:25.784
+Total: 103.8W
+
+With this patch:
+
+cpu-power-0:11.730
+cpu-power-1:17.185
+cpu-power-2:18.547
+cpu-power-3:17.528
+Total: 65.0W
+
+If I lower HZ to 100, I can get it as low as:
+
+cpu-power-0:10.938
+cpu-power-1:16.021
+cpu-power-2:17.245
+cpu-power-3:16.145
+Total: 60.2W
+
+Another (older) Quad G5 went from 54W to 39W at HZ=250.
+
+Coming back out of Deep Nap takes 40-70 cycles longer than coming back
+from just Nap (which already takes quite a while). I don't think it'll
+be a performance issue (interrupt latency on an idle system), but in
+case someone does measurements feel free to report them.
+
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+
+Index: linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
 ===================================================================
---- linux-work.orig/arch/powerpc/boot/of.c	2006-10-03 12:41:02.000000000 +1000
-+++ linux-work/arch/powerpc/boot/of.c	2006-10-05 13:52:29.000000000 +1000
-@@ -176,12 +176,9 @@ static void *claim(unsigned long virt, u
- static void *of_try_claim(u32 size)
- {
- 	unsigned long addr = 0;
--	static u8 first_time = 1;
+--- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_ppc970.S
++++ linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
+@@ -83,6 +83,22 @@ _GLOBAL(__setup_cpu_ppc970)
+ 	rldimi	r0,r11,52,8		/* set NAP and DPM */
+ 	li	r11,0
+ 	rldimi	r0,r11,32,31		/* clear EN_ATTN */
++	b	load_hids		/* Jump to shared code */
++
++
++_GLOBAL(__setup_cpu_ppc970MP)
++	/* Do nothing if not running in HV mode */
++	mfmsr	r0
++	rldicl.	r0,r0,4,63
++	beqlr
++
++	mfspr	r0,SPRN_HID0
++	li	r11,0x15		/* clear DOZE and SLEEP */
++	rldimi	r0,r11,52,6		/* set DEEPNAP, NAP and DPM */
++	li	r11,0
++	rldimi	r0,r11,32,31		/* clear EN_ATTN */
++
++load_hids:
+ 	mtspr	SPRN_HID0,r0
+ 	mfspr	r0,SPRN_HID0
+ 	mfspr	r0,SPRN_HID0
+Index: linux-2.6/arch/powerpc/kernel/cputable.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/cputable.c
++++ linux-2.6/arch/powerpc/kernel/cputable.c
+@@ -41,6 +41,7 @@ extern void __setup_cpu_745x(unsigned lo
+ #endif /* CONFIG_PPC32 */
+ #ifdef CONFIG_PPC64
+ extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_ppc970(void);
+ #endif /* CONFIG_PPC64 */
  
--	if (first_time) {
-+	if (claim_base == 0)
- 		claim_base = _ALIGN_UP((unsigned long)_end, ONE_MB);
--		first_time = 0;
--	}
- 
- 	for(; claim_base < RAM_END; claim_base += ONE_MB) {
- #ifdef DEBUG
+@@ -221,7 +222,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
+-		.cpu_setup		= __setup_cpu_ppc970,
++		.cpu_setup		= __setup_cpu_ppc970MP,
+ 		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
