@@ -1,18 +1,21 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 90B2867D39
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Oct 2006 04:56:09 +1000 (EST)
-Message-ID: <45255069.2020206@am.sony.com>
-Date: Thu, 05 Oct 2006 11:35:21 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [PATCH] spufs: change ppc_rtas declaration to weak
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F05EF67DE4
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Oct 2006 08:10:34 +1000 (EST)
+Subject: Re: [PATCH] powerpc: make U4 PCIe work
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20061005170458.GL24705@localdomain>
+References: <1160024098.22232.13.camel@localhost.localdomain>
+	<20061005170458.GL24705@localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Oct 2006 08:10:26 +1000
+Message-Id: <1160086226.22232.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The symbol ppc_rtas is defined as weak, but the declaration is missing the
-weak attribute specifier.  The improper declaration causes problems when
-linking the ppc_rtas reference in spu_syscall_table[] (spu_callbacks.c)
-when RTAS support is not enabled.
 
-Fixes this powerpc build error with CONFIG_SPU_FS=y, CONFIG_PPC_RTAS=n:
+> Do the changes to fixup_maple_ide have anything to do with the rest of
+> the patch?  It's not clear from your description.  And with that last
+> hunk the function now appears to do nothing.
 
- arch/powerpc/platforms/built-in.o: undefined reference to `ppc_rtas'
+Hrm... I could split that indeed. The last bits to fixup_maple_ide()
+should no longer be necessary. They used to work around broken PIBS but
+that should have been fixed a long time ago.
 
+> Could we consider merging the powermac and maple pci code into a
+> common location that would be used by both platforms?  There's quite a
+> bit of code duplication going on here...
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+A bit but not exactly... I may do it but just not right now.
 
----
-
-I did a test build with pseries_defconfig and verified the proper routine is
-linked in.  No run time test done.
-
-
-Index: cell--common--5/include/asm-powerpc/syscalls.h
-===================================================================
---- cell--common--5.orig/include/asm-powerpc/syscalls.h
-+++ cell--common--5/include/asm-powerpc/syscalls.h
-@@ -37,7 +37,7 @@
- asmlinkage int sys_ipc(uint call, int first, unsigned long second,
- 		long third, void __user *ptr, long fifth);
- asmlinkage long ppc64_personality(unsigned long personality);
--asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
-+asmlinkage int ppc_rtas(struct rtas_args __user *uargs) __attribute__((weak));
- asmlinkage time_t sys64_time(time_t __user * tloc);
- asmlinkage long ppc_newuname(struct new_utsname __user * name);
- 
+Ben.
