@@ -1,17 +1,20 @@
-Return-Path: <pradeepsampath@yahoo.com>
-Received: from web83212.mail.mud.yahoo.com (web83212.mail.mud.yahoo.com
-	[216.252.101.68]) by ozlabs.org (Postfix) with SMTP id 4643967E35
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id E2FE167C6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Oct 2006 01:47:02 +1000 (EST)
-Message-ID: <20061005154700.5018.qmail@web83212.mail.mud.yahoo.com>
-Date: Thu, 5 Oct 2006 08:47:00 -0700 (PDT)
-From: Pradeep Sampath <pradeepsampath@yahoo.com>
-Subject: Re: booting 2.6 kernel on ML403
-To: Ameet Patil <ammubhai@gmail.com>
-In-Reply-To: <4524C290.3090702@gmail.com>
+	Fri,  6 Oct 2006 02:52:03 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so212898ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 05 Oct 2006 09:52:02 -0700 (PDT)
+Message-ID: <528646bc0610050951r70eb04a2xe80c36d48fdedd5a@mail.gmail.com>
+Date: Thu, 5 Oct 2006 10:52:01 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "John Rigby" <jrigby@freescale.com>,
+	"linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>
+Subject: Problems with SPI+I2S on MPC5200B
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1796950396-1160063220=:97611"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,60 +25,142 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1796950396-1160063220=:97611
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+John,
 
-Hi Ameet,
-   
-  As soon as i apply the sysace driver and temac drivers and copy the xparameters_ml300.h (from EDK) to xparameters_ml403.h all i get is this... meaning kernel hangs after displaying "Now booting the kernel".
-   
-  When i disable sysace and TEMAC drivers, the system goes further till "root=" option and then tries to "Kernel Rebooting in 180 seconds". Yesterday i tried root=/dev/xsysace2 rw and creating block device files in /dev of the CF card. But it ran into the same problem.Is there a sysace driver patch that i can apply without applying the TEMAC driver patch? 
-   
-  So far i was using the EDK 8.1 SP2 (latest) which has the IP core TEMAC version 3.00. Now i downgraded to EDK 8.1 to get the version 2.00 (please see John Bonesio's post). 
-   
-  I thought the first step is to get the sysace driver running before applying the TEMAC drivers.
+Kim Phillips pointed me in your direction.  I've got a 5200B based
+platform w/ two AIC26 codecs attached to PSC2 and PSC3 in I2S modes,
+and both are also connected to the SPI pins in the PSC3 pin group.
+Linux is running on the board.
 
-  thanks very much!
-  Pradeep
+In the early development of this board, we had some problems with the
+MPC5200 SPI device, and so implemented a gpio bitbanging driver
+instead just to get things working, and we've got an ALSA driver that
+works with both codecs.
 
-Ameet Patil <ammubhai@gmail.com> wrote:
-  Pradeep,
-What you have pasted is only part of the messages displayed. I can't 
-tell anything from this apart from you 'root=' option. It would be nice 
-if you could paste the entire log of the boot messages right from 
-'loaded at: xxxxxxx xxxxxxxx' to 'Kernel Rebooting in 150 seconds'.
+Of course, the bitbanged SPI driver is sub-optimal so dug back into
+the SPI device and put together a working MPC5200 SPI device driver.
+For Codec #1 on PSC2, this setup works perfectly.  However, Codec #2
+no longer works.  An application can connect to the ALSA device, but
+no audio data gets transfered in/out of the MPC5200.  If I switch back
+to bitbanging mode, everything works again.
 
--Ameet
+Things I've verified:
+1. SPI read/write to the Codec is correct.  All the settings are
+identical between the working codec and the non-working one
+2. Both codecs are correctly generating I2S BitClk and Frame signals
+3. On the working codec, PSC2+0x2210 reports 0x80000000, detected SYNC
+4. On the non-working codec, PSC3+0x2410 reports 0x00000000, no detected SYNC
+5. If I 'wrap' the spi transfers with modifications to port_config to
+enable/disable SPI to the PSC3 pin group, then audio works again.
+(However, this is not a viable solution because we have a lot of
+transfers across the SPI bus).
 
-Pradeep Sampath wrote:
-> Ameet,
-> 
-> loaded at: 00400000 0051513C
-> board data at: 00513124 0051313C
-> relocated to: 004050E8 00405100
-> zimage at: 004057FD 0051230A
-> avail ram: 00516000 04000000
-> Linux/PPC load: console=ttyS0,9600 root=/dev/xsa2
-> Uncompressing Linux...done.
-> Now booting the kernel
->
->
-> Please could send me all the boot messages until the point where it
-> stops. This will help me better identify the problem.
->
-> Thanks,
-> -Ameet
->
->
+Here is some of the relevant data:
+
+Setup of port_config
+
+	printk("old port_config=%.8x\n", val);
+	/* 48Mhz internal, pin is GPIO */
+	val &= ~0x00800000;
+
+	/* USB port - Differential mode - USB1 only */
+	/* Commented out until Atmel has proper firmware loaded
+	val &= ~0x00007000;
+	val |=  0x00001000;
+	*/
+
+	/* CODEC2 + GPIO on PSC2 */
+	val &= ~0x00000070;
+	val |= 0x00000060;
+
+#if !defined(CONFIG_MPC5200_SPI_BITBANG)
+	/* SPI+CODEC3 pins on PSC3 */
+	val &= ~0x00000F00;
+	val |= 0x00000F00; /* CODEC3 + SPI */
+#else
+	/* GPIO+CODEC3 pins on PSC3 */
+	val &= ~0x00000F00;
+	val |= 0x00000600;
+#endif
+
+	/* Commit port config */
+	out_be32(&gpio->port_config, val);
+	printk("new port_config=%.8x\n", val);
+
+'Wrapper' code on SPI driver just to get things working (Called at the
+start and end of an SPI transfer)
+
+void port_config_enable_spi(void)
+{
+	u32 val;
+	udelay(1);
+	val = in_be32(&gpio->port_config);
+	val |= 0x00000F00; /* CODEC3 + SPI */
+	out_be32(&gpio->port_config, val);
+	udelay(1);
+}
+
+void port_config_disable_spi(void)
+{
+	u32 val;
+	udelay(1);
+	val = in_be32(&gpio->port_config);
+	val &= ~0x00000F00;
+	val |= 0x00000600;
+	out_be32(&gpio->port_config, val);
+	udelay(1);
+}
 
 
+I2S interface:
+AIC26 is master, MPC5200 is slave
+bitclk generated by AIC26
 
---0-1796950396-1160063220=:97611
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+SPI interface
+SS controlled by a CPLD
+MPC5200 is master
+SPI transfers are confirmed working for both bitbanging and SPI device drivers.
 
-<div>Hi Ameet,</div>  <div>&nbsp;</div>  <div>As soon as i apply the sysace driver and temac drivers and copy the xparameters_ml300.h (from EDK) to xparameters_ml403.h all i get is this... meaning kernel hangs after displaying "Now booting the kernel".</div>  <div>&nbsp;</div>  <div>When i disable sysace and TEMAC drivers, the system goes further till "root=" option and then tries to "Kernel Rebooting in 180 seconds". Yesterday i tried root=/dev/xsysace2 rw and creating block device files in /dev of the CF card. But it&nbsp;ran into&nbsp;the same problem.Is there a sysace driver patch that i can apply without applying the TEMAC driver patch? </div>  <div>&nbsp;</div>  <div>So far i was using the EDK 8.1 SP2 (latest) which has the IP core TEMAC&nbsp;version 3.00. Now i downgraded to EDK 8.1&nbsp;to get the version&nbsp;2.00&nbsp;(please see John Bonesio's post). </div>  <div>&nbsp;</div>  <div>I thought the first step is to get the sysace driver running before applying the
- TEMAC drivers.<BR></div>  <div>thanks very much!</div>  <div>Pradeep<BR><BR><B><I>Ameet Patil &lt;ammubhai@gmail.com&gt;</I></B> wrote:</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">Pradeep,<BR>What you have pasted is only part of the messages displayed. I can't <BR>tell anything from this apart from you 'root=' option. It would be nice <BR>if you could paste the entire log of the boot messages right from <BR>'loaded at: xxxxxxx xxxxxxxx' to 'Kernel Rebooting in 150 seconds'.<BR><BR>-Ameet<BR><BR>Pradeep Sampath wrote:<BR>&gt; Ameet,<BR>&gt; <BR>&gt; loaded at: 00400000 0051513C<BR>&gt; board data at: 00513124 0051313C<BR>&gt; relocated to: 004050E8 00405100<BR>&gt; zimage at: 004057FD 0051230A<BR>&gt; avail ram: 00516000 04000000<BR>&gt; Linux/PPC load: console=ttyS0,9600 root=/dev/xsa2<BR>&gt; Uncompressing Linux...done.<BR>&gt; Now booting the kernel<BR>&gt;<BR>&gt;<BR>&gt; Please could send me all the boot
- messages until the point where it<BR>&gt; stops. This will help me better identify the problem.<BR>&gt;<BR>&gt; Thanks,<BR>&gt; -Ameet<BR>&gt;<BR>&gt;<BR><BR></BLOCKQUOTE><BR>
---0-1796950396-1160063220=:97611--
+Register dump for PSC2 (working) and PSC3 (not working):
+>md 0xf0002200
+f0002200 : 07000000 1f000000 00000000 05165dd3  ..............].
+f0002210 : 80000000 1b000000 00000000 00000000  ................
+f0002220 : 00000000 00000000 00000000 00000000  ................
+f0002230 : 00000000 bc000000 00000000 00000000  ................
+f0002240 : 2f600000 00000000 00000000 36000000  /`..........6...
+f0002250 : 00000000 00000000 02000000 00000000  ................
+f0002260 : 05165dd3 00060000 04200000 00000100  ..]...... ......
+f0002270 : 00000010 00000010 00000000 00000000  ................
+f0002280 : 00000000 00230000 07200000 00000100  .....#... ......
+f0002290 : 000001b0 000001b0 000001b0 000001b0  ................
+f00022a0 : 00000000 00000000 00000000 00000000  ................
+f00022b0 : 00000000 00000000 00000000 00000000  ................
+f00022c0 : 00000000 00000000 00000000 00000000  ................
+f00022d0 : 00000000 00000000 00000000 00000000  ................
+f00022e0 : 00000000 00000000 00000000 00000000  ................
+f00022f0 : 00000000 00000000 00000000 00000000  ................
+
+>md 0xf0002400
+f0002400 : 07000000 00000000 00000000 00000000  ................
+f0002410 : 00000000 00000000 00000000 00000000  ................
+f0002420 : 00000000 00000000 00000000 00000000  ................
+f0002430 : 00000000 fc000000 00000000 00000000  ................
+f0002440 : 2f600000 00000000 00000000 36000000  /`..........6...
+f0002450 : 00000000 00000000 00000000 01e80000  ................
+f0002460 : 00000000 00210000 04200000 00000100  .....!... ......
+f0002470 : 00000000 00000000 00000000 00000000  ................
+f0002480 : 10010000 00000000 07200000 00000100  ......... ......
+f0002490 : 0000000c 000001f0 00000000 00000000  ................
+f00024a0 : 00000000 00000000 00000000 00000000  ................
+f00024b0 : 00000000 00000000 00000000 00000000  ................
+f00024c0 : 00000000 00000000 00000000 00000000  ................
+f00024d0 : 00000000 00000000 00000000 00000000  ................
+f00024e0 : 00000000 00000000 00000000 00000000  ................
+f00024f0 : 00000000 00000000 00000000 00000000  ................
+
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
