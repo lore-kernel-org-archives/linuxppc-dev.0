@@ -2,29 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4AC5767DC7
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 16:51:57 +1000 (EST)
-Subject: Re: [PATCH 10/11] Add MPC8360EMDS board support
+	by ozlabs.org (Postfix) with ESMTP id 4767167D6C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Oct 2006 19:18:27 +1000 (EST)
+Subject: Re: [PATCH] linux,tce-size property is 32 bits
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <20061005063304.GD1985@gate.ebshome.net>
-References: <4879B0C6C249214CBE7AB04453F84E4D19D865@zch01exm20.fsl.freescale.net>
-	<20060927165556.04c8d5d7@vitb.ru.mvista.com>
-	<CE624A83-809E-4180-800E-660A578FFCFC@embeddedalley.com>
-	<20060927112201.293fef44@localhost.localdomain>
-	<EBD0615C-4F22-430F-BD23-1283DF98F1B3@embeddedalley.com>
-	<1159942128.13323.21.camel@localhost.localdomain>
-	<7BD0D5CE-7BA3-43DC-B972-B75672F6A31E@embeddedalley.com>
-	<1160005019.5887.30.camel@localhost.localdomain>
-	<20061005062105.GA1985@gate.ebshome.net>
-	<1160029594.22232.22.camel@localhost.localdomain>
-	<20061005063304.GD1985@gate.ebshome.net>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20061005032800.GH24705@localdomain>
+References: <20061005032800.GH24705@localdomain>
 Content-Type: text/plain
-Date: Thu, 05 Oct 2006 16:51:35 +1000
-Message-Id: <1160031095.22232.40.camel@localhost.localdomain>
+Date: Thu, 05 Oct 2006 19:18:18 +1000
+Message-Id: <1160039899.22232.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	matthltc@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,38 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-04 at 23:33 -0700, Eugene Surovegin wrote:
-> On Thu, Oct 05, 2006 at 04:26:34PM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > Regarding the "mess", it's the whole #ifdef junk in there that is
-> > driving me nuts and that I'll rip appart probably next week. A lot of
-> > this could be soft-tests or the ifdefs could be resolved at Kconfig
-> > instead of having a list of processors in 3 different headers if you
-> > really want to compile the changes in rather than do soft-tests.
-> 
-> Well, sent me changes for review, or become a maintainer, but this 
-> time _real_ maintainer, not like last time when you touched this code.
+On Wed, 2006-10-04 at 22:28 -0500, Nathan Lynch wrote:
+> The "linux,tce-size" property is only 32 bits (see
+> prom_initialize_tce_table() in arch/powerpc/kernel/prom_init.c).
+> Treating it as an unsigned long in iommu_table_setparms() leads to
+> access beyond the end of the property's buffer, so we pass garbage to
+> the memset() in that function.
 
-Well, last time I touched this code, I took something that was not
-working at all and made it work for me and a couple of other people that
-were working on it at the same time. If it had issues, they were never
-reported to me back then. However, I never intended to do long term
-maintainership of this driver and that was clear from the very
-beginning. If you ran into other issues and fixed them afterward, that's
-fine, but don't blame me for not fixing issues I didn't encounter nor
-was told about for the short time while I was taking care of it.
+Probably needs to go into stable as well. Do you know if RHEL5 is
+affected too ?
 
-Anyway, my point is, the per-processor ifdef lists are just fugly and
-need to be turned into "soft" changes. The driver also needs to get some
-OF probing and use the new DCR accessors to move over to powerpc and to
-work with the EMAC cell within the new Cell southbridge.
-
-I have some preliminary patches doing just the OF probing and DCR
-changes. I still want to do some serious change of the #ifdef mess into
-something more flexible to allow for runtime choice of the type of EMAC
-and MAL.
-
-I'll post patches (and possibly incremental "cleanup") to the list,
-CC'ing you, as expected for a driver you maintain.
-
+Cheers
 Ben.
+
+> [boot]0020 XICS Init
+> i8259 legacy interrupt controller initialized
+> [boot]0021 XICS Done
+> PID hash table entries: 4096 (order: 12, 32768 bytes)
+> cpu 0x0: Vector: 300 (Data Access) at [c0000000fe783850]
+>     pc: c000000000035e90: .memset+0x60/0xfc
+>     lr: c000000000044fa4: .iommu_table_setparms+0xb0/0x158
+>     sp: c0000000fe783ad0
+>    msr: 9000000000009032
+>    dar: c000000100000000
+>  dsisr: 42010000
+>   current = 0xc00000000450e810
+>   paca    = 0xc000000000411580
+>     pid   = 1, comm = swapper
+> enter ? for help
+> [link register   ] c000000000044fa4 .iommu_table_setparms+0xb0/0x158
+> [c0000000fe783ad0] c000000000044f4c .iommu_table_setparms+0x58/0x158
+> (unreliable)
+> [c0000000fe783b70] c00000000004529c
+> .iommu_bus_setup_pSeries+0x1c4/0x254
+> [c0000000fe783c00] c00000000002b8ac .do_bus_setup+0x3c/0xe4
+> [c0000000fe783c80] c00000000002c924 .pcibios_fixup_bus+0x64/0xd8
+> [c0000000fe783d00] c0000000001a2d5c .pci_scan_child_bus+0x6c/0x10c
+> [c0000000fe783da0] c00000000002be28 .scan_phb+0x17c/0x1b4
+> [c0000000fe783e40] c0000000003cfa00 .pcibios_init+0x58/0x19c
+> [c0000000fe783ec0] c0000000000094b4 .init+0x1e8/0x3d8
+> [c0000000fe783f90] c000000000026e54 .kernel_thread+0x4c/0x68
+> 
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> 
+> ---
+> 
+> I believe this is a regression since 2.6.18, so please push for
+> inclusion in 2.6.19.
+> 
+> 
+> --- linux-2.6.git.orig/arch/powerpc/platforms/pseries/iommu.c
+> +++ linux-2.6.git/arch/powerpc/platforms/pseries/iommu.c
+> @@ -267,7 +267,8 @@ static void iommu_table_setparms(struct 
+>  				 struct iommu_table *tbl)
+>  {
+>  	struct device_node *node;
+> -	const unsigned long *basep, *sizep;
+> +	const unsigned long *basep;
+> +	const u32 *sizep;
+>  
+>  	node = (struct device_node *)phb->arch_data;
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
