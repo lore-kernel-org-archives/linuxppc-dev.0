@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 15DE467E9C
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2006 07:29:22 +1000 (EST)
-Subject: Re: [PATCH] powerpc: make U4 PCIe work (#2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <64BDCE50-03D6-44BA-97EA-AA4AE5B53F32@kernel.crashing.org>
-References: <1160113201.22232.112.camel@localhost.localdomain>
-	<64BDCE50-03D6-44BA-97EA-AA4AE5B53F32@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 07 Oct 2006 07:29:02 +1000
-Message-Id: <1160170142.22232.132.camel@localhost.localdomain>
+Return-Path: <rdunlap@xenotime.net>
+Received: from xenotime.net (xenotime.net [66.160.160.81])
+	by ozlabs.org (Postfix) with SMTP id 2AEA367DCF
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2006 07:33:21 +1000 (EST)
+Received: from midway.site ([71.117.236.95]) by xenotime.net for
+	<linuxppc-dev@ozlabs.org>; Fri, 6 Oct 2006 14:33:09 -0700
+Date: Fri, 6 Oct 2006 14:34:37 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Judith Lebzelter <judith@osdl.org>
+Subject: Re: [PATCH] Add Kconfig dependency !VT for VIOCONS
+Message-Id: <20061006143437.f7338860.rdunlap@xenotime.net>
+In-Reply-To: <20061006200007.GD3684@shell0.pdx.osdl.net>
+References: <20061006180549.GB3684@shell0.pdx.osdl.net>
+	<20061006200007.GD3684@shell0.pdx.osdl.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-10-06 at 13:26 +0200, Segher Boessenkool wrote:
-> > +static unsigned int u4_pcie_cfa0(u8 devfn, u8 off)
+On Fri, 6 Oct 2006 13:00:07 -0700 Judith Lebzelter wrote:
+
+> Actually, this gets rid of the CONFIG_VIOCONS from my .config, but 
+> then I get another warning when I build:
 > 
-> "off" should be bigger than u8...
-
-Right
-
-> > +{
-> > +	return (1 << ((unsigned int)PCI_SLOT(devfn))) 	|
-> > +		(((unsigned int)PCI_FUNC(devfn)) << 8) |
-> > +		((((unsigned int)(off)) >> 8) << 28) 	|
+> Warning! Found recursive dependency: VT VIOCONS VT
 > 
-> ...and the compiler told you about that here.
+> Can anyone suggest something?
 
-No it didn't...
+I think that your patch is mostly good/correct, but one more line
+is needed on the VT side:  a deletion.
 
-> Make the parameters and return value all u32 and you won't
-> need casts anymore, the function call will implicitly do it.
+This works for me:
 
-Ben.
+From: Randy Dunlap <rdunlap@xenotime.net>
+
+Make allmodconfig .config build successfully by making VIOCONS
+available only if VT=n.  VT need not check VIOCONS.
+
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+---
+ arch/powerpc/platforms/iseries/Kconfig |    2 +-
+ drivers/char/Kconfig                   |    1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+--- linux-2619-rc1g2.orig/arch/powerpc/platforms/iseries/Kconfig
++++ linux-2619-rc1g2/arch/powerpc/platforms/iseries/Kconfig
+@@ -3,7 +3,7 @@ menu "iSeries device drivers"
+ 	depends on PPC_ISERIES
+ 
+ config VIOCONS
+-	tristate "iSeries Virtual Console Support (Obsolete)"
++	tristate "iSeries Virtual Console Support (Obsolete)" if !VT
+ 	help
+ 	  This is the old virtual console driver for legacy iSeries.
+ 	  You should use the iSeries Hypervisor Virtual Console
+--- linux-2619-rc1g2.orig/drivers/char/Kconfig
++++ linux-2619-rc1g2/drivers/char/Kconfig
+@@ -7,7 +7,6 @@ menu "Character devices"
+ config VT
+ 	bool "Virtual terminal" if EMBEDDED
+ 	select INPUT
+-	default y if !VIOCONS
+ 	---help---
+ 	  If you say Y here, you will get support for terminal devices with
+ 	  display and keyboard devices. These are called "virtual" because you
+
+
+
+
+> Thanks,
+> Judith
+> 
+> On Fri, Oct 06, 2006 at 11:05:49AM -0700, Judith Lebzelter wrote:
+> > From: Judith Lebzelter <judith@osdl.org>
+> > 
+> > Add Kconfig dependency !VT for VIOCONS
+> > 
+> > I would like to avoid this compile error in 'allmodconfig':
+> > drivers/char/viocons.c:52:2: error: #error You must turn off CONFIG_VT to use CONFIG_VIOCONS
+> > 
+> > Signed-off-by: Judith Lebzelter <judith@osdl.org>
+> > ---
+> > 
+> > Index: linux/arch/powerpc/platforms/iseries/Kconfig
+> > ===================================================================
+> > --- linux.orig/arch/powerpc/platforms/iseries/Kconfig	2006-10-05 09:35:09.000000000 -0700
+> > +++ linux/arch/powerpc/platforms/iseries/Kconfig	2006-10-06 10:30:19.333425703 -0700
+> > @@ -4,6 +4,7 @@
+> >  
+> >  config VIOCONS
+> >  	tristate "iSeries Virtual Console Support (Obsolete)"
+> > +	depends on !VT
+> >  	help
+> >  	  This is the old virtual console driver for legacy iSeries.
+> >  	  You should use the iSeries Hypervisor Virtual Console
+
+
+---
+~Randy
