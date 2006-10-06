@@ -1,16 +1,16 @@
-Return-Path: <jsteve17@yahoo.com>
-Received: from web33402.mail.mud.yahoo.com (web33402.mail.mud.yahoo.com
-	[68.142.206.134]) by ozlabs.org (Postfix) with SMTP id 261FD67EB0
+Return-Path: <jaap.dejong@nedap.com>
+Received: from smtp2.nedap.com (smtp2.nedap.com [213.160.213.92])
+	by ozlabs.org (Postfix) with ESMTP id 03C6867EAA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Oct 2006 20:27:39 +1000 (EST)
-Message-ID: <20061006102738.87758.qmail@web33402.mail.mud.yahoo.com>
-Date: Fri, 6 Oct 2006 03:27:38 -0700 (PDT)
-From: Jeff Stevens <jsteve17@yahoo.com>
-Subject: Re: 440SP External Interrupt IRQ
-To: Stefan Roese <sr@denx.de>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <200610060646.23125.sr@denx.de>
+	Fri,  6 Oct 2006 23:44:47 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linuxppc-embedded Digest, Vol 26, Issue 13
+Date: Fri, 6 Oct 2006 15:44:45 +0200
+Message-ID: <6915D0AE8B9047438F320B466AE30FDD798359@nvs0003.nedap.local>
+From: "Jaap de Jong" <jaap.dejong@nedap.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,96 +21,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm sorry if this is an easy question, but how do my
-schematics tell me that pint IRQ0 uses IRQ 48 in my
-board specific PCI IRQ lookup table, where it is
-matching up the idsel lines to an irq number?  For
-instance, in arch/ppc/platforms/4xx/luan.c it maps PCI
-interrupts like:
+Not sure...
+I have not been playing with 2.6 kernels but this looks a lot like
+the problems I found when trying to get the 2.4 kernel to work.
+Default for the avnet v4fx12 is to use the opb bus as raminterface.
+You should explicitly select the plb bus...
 
-static inline int
-luan_map_irq(struct pci_dev *dev, unsigned char idsel,
-unsigned char pin)
-{
-	struct pci_controller *hose =
-pci_bus_to_hose(dev->bus->number);
+Jaap de Jong
 
-	/* PCIX0 in adapter mode, no host interrupt routing
-*/
+----------------------------------------------------------------------
 
-	/* PCIX1 */
-	if (hose->index == 0) {
-		static char pci_irq_table[][4] =
-		/*
-		 *	PCI IDSEL/INTPIN->INTLINE
-		 *	  A   B   C   D
-		 */
-		{
-			{ 49, 49, 49, 49 },	/* IDSEL 1 - PCIX1 Slot 0 */
-			{ 49, 49, 49, 49 },	/* IDSEL 2 - PCIX1 Slot 1 */
-			{ 49, 49, 49, 49 },	/* IDSEL 3 - PCIX1 Slot 2 */
-			{ 49, 49, 49, 49 },	/* IDSEL 4 - PCIX1 Slot 3 */
-		};
-		const long min_idsel = 1, max_idsel = 4,
-irqs_per_slot = 4;
-		return PCI_IRQ_TABLE_LOOKUP;
-	/* PCIX2 */
-	} else if (hose->index == 1) {
-		static char pci_irq_table[][4] =
-		/*
-		 *	PCI IDSEL/INTPIN->INTLINE
-		 *	  A   B   C   D
-		 */
-		{
-			{ 50, 50, 50, 50 },	/* IDSEL 1 - PCIX2 Slot 0 */
-			{ 50, 50, 50, 50 },	/* IDSEL 2 - PCIX2 Slot 1 */
-			{ 50, 50, 50, 50 },	/* IDSEL 3 - PCIX2 Slot 2 */
-			{ 50, 50, 50, 50 },	/* IDSEL 4 - PCIX2 Slot 3 */
-		};
-		const long min_idsel = 1, max_idsel = 4,
-irqs_per_slot = 4;
-		return PCI_IRQ_TABLE_LOOKUP;
-	}
-	return -1;
-}
+Message: 1
+Date: Fri, 06 Oct 2006 10:33:53 +0900
+From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
+Subject: Re: Problem with initrd
+To: Glenn.G.Hart@us.westinghouse.com, linuxppc-embedded@ozlabs.org
+Message-ID: <JF2006100610335316.6823078@co-nss.co.jp>
+Content-Type: text/plain; charset=3DISO-2022-JP
 
-Based on their schematics, I assume:
-IRQ Line      IRQ#
-  IRQ0        48
-  IRQ1        49
-  IRQ2        50
-  IRQ3        51
-  IRQ4        52
-  IRQ5        53
+Glenn-San,
 
-I just hate assuming, and would like to understand how
-they come up with the IRQ offset for the external
-interrups.
+Are you developing by the custom-made hardware of V4FX12?
+If the 16-bit memory controller is used, it may have a problem in the
+memory controller.
 
--Jeff
+Can you try the memory controller of http://www.xilinx.com/mpmc2?
+I confirmed that the 16-bit memory controller of MPMC2 worked correctly
+by Linux. Or I can send the ramdisk image for 2.6.17.3 kernel which I am
+using to you.
 
---- Stefan Roese <sr@denx.de> wrote:
-
-> Jeff,
-> 
-> On Friday 06 October 2006 05:49, Jeff Stevens wrote:
-> > I am trying to figure out the PCI IRQ mapping on a
-> > 440SP processor in linux-2.6.17.9.  I have a board
-> > that is based off of the Luan development board,
-> and I
-> > am not sure which IRQ corresponds to each external
-> > IRQ[0:5] pins on the processor.  Where can I find
-> this
-> > information?
-> 
-> In your schematics. Sorry but it's that simple.
-> 
-> Best regards,
-> Stefan
-> 
-
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Yoshio kashiwagi - Nissin Systems
