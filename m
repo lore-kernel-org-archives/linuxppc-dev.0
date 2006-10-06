@@ -1,22 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2439767D89
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Oct 2006 21:26:43 +1000 (EST)
-In-Reply-To: <1160113201.22232.112.camel@localhost.localdomain>
-References: <1160113201.22232.112.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <64BDCE50-03D6-44BA-97EA-AA4AE5B53F32@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: make U4 PCIe work (#2)
-Date: Fri, 6 Oct 2006 13:26:25 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 3C6EB67ECA
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Oct 2006 21:54:10 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] spufs: change ppc_rtas declaration to weak
+Date: Fri, 6 Oct 2006 13:53:59 +0200
+References: <45255069.2020206@am.sony.com>
+In-Reply-To: <45255069.2020206@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200610061354.00398.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +static unsigned int u4_pcie_cfa0(u8 devfn, u8 off)
+On Thursday 05 October 2006 20:35, Geoff Levand wrote:
+> Index: cell--common--5/include/asm-powerpc/syscalls.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- cell--common--5.orig/include/asm-powerpc/syscalls.h
+> +++ cell--common--5/include/asm-powerpc/syscalls.h
+> @@ -37,7 +37,7 @@
+> =A0asmlinkage int sys_ipc(uint call, int first, unsigned long second,
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0long third, void __user *=
+ptr, long fifth);
+> =A0asmlinkage long ppc64_personality(unsigned long personality);
+> -asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
+> +asmlinkage int ppc_rtas(struct rtas_args __user *uargs) __attribute__((w=
+eak));
+> =A0asmlinkage time_t sys64_time(time_t __user * tloc);
+> =A0asmlinkage long ppc_newuname(struct new_utsname __user * name);
+> =A0
 
-"off" should be bigger than u8...
+Hmm, I can't see why this does the right thing. __attribute__((weak)) should
+normally be put only into the definition of a function, not into the common
+declaration. This looks like it makes _both_ definitions (kernel/sys.c and
+arch/powerpc/kernel/rtas.c) weak, so on pseries it becomes unspecific which
+one is actually used.
 
-> +{
-> +	return (1 << ((unsigned int)PCI_SLOT(devfn))) 	|
-> +		(((unsigned int)PCI_FUNC(devfn)) << 8) |
-> +		((((unsigned int)(off)) >> 8) << 28) 	|
+The problem that this is trying to work around is probably caused by the
+dot-symbols: cond_syscall defines a ".ppc_rtas", but not a "ppc_rtas" symbo=
+l,
+which spufs tries to resolve.
 
-...and the compiler told you about that here.
-
-Make the parameters and return value all u32 and you won't
-need casts anymore, the function call will implicitly do it.
-
-
-Segher
+	Arnd <><=20
