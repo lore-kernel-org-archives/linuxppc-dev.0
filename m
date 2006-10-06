@@ -1,20 +1,15 @@
-Return-Path: <kashiwagi@co-nss.co.jp>
-Received: from nssinet2.co-nss.co.jp (nssinet2.co-nss.co.jp [150.96.0.5])
-	by ozlabs.org (Postfix) with ESMTP id B6A6967E70
+Return-Path: <jsteve17@yahoo.com>
+Received: from web33407.mail.mud.yahoo.com (web33407.mail.mud.yahoo.com
+	[68.142.206.139]) by ozlabs.org (Postfix) with SMTP id 349DE67E9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Oct 2006 12:16:43 +1000 (EST)
-Received: from nssinet2.co-nss.co.jp (localhost [127.0.0.1])
-	by nssinet2.co-nss.co.jp (8.9.3/3.7W) with ESMTP id KAA23561
-	for <linuxppc-embedded@ozlabs.org>; Fri, 6 Oct 2006 10:30:31 +0900 (JST)
+	Fri,  6 Oct 2006 13:49:50 +1000 (EST)
+Message-ID: <20061006034949.17839.qmail@web33407.mail.mud.yahoo.com>
+Date: Thu, 5 Oct 2006 20:49:49 -0700 (PDT)
+From: Jeff Stevens <jsteve17@yahoo.com>
+Subject: 440SP External Interrupt IRQ
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Date: Fri, 06 Oct 2006 10:33:53 +0900
-Subject: Re: Problem with initrd
-From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
-To: Glenn.G.Hart@us.westinghouse.com, linuxppc-embedded@ozlabs.org
-Message-ID: <JF2006100610335316.6823078@co-nss.co.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
-In-Reply-To: <OF1D5D325D.8937E77C-ON852571FD.005C0832-852571FD.005CF8D2@ct.wec.com>
-References: <OF1D5D325D.8937E77C-ON852571FD.005C0832-852571FD.005CF8D2@ct.wec.com>
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,15 +20,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Glenn-San,
+I am trying to figure out the PCI IRQ mapping on a
+440SP processor in linux-2.6.17.9.  I have a board
+that is based off of the Luan development board, and I
+am not sure which IRQ corresponds to each external
+IRQ[0:5] pins on the processor.  Where can I find this
+information?
 
-Are you developing by the custom-made hardware of V4FX12?
-If the 16-bit memory controller is used, it may have a problem in the
-memory controller.
+Thanks,
+   Jeff Stevens
 
-Can you try the memory controller of http://www.xilinx.com/mpmc2?
-I confirmed that the 16-bit memory controller of MPMC2 worked correctly
-by Linux. Or I can send the ramdisk image for 2.6.17.3 kernel which I
-am using to you.
-
-Yoshio kashiwagi - Nissin Systems
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
