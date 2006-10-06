@@ -1,16 +1,21 @@
-Return-Path: <jaap.dejong@nedap.com>
-Received: from smtp2.nedap.com (smtp2.nedap.com [213.160.213.92])
-	by ozlabs.org (Postfix) with ESMTP id 03C6867EAA
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4672267D9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Oct 2006 23:44:47 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Linuxppc-embedded Digest, Vol 26, Issue 13
-Date: Fri, 6 Oct 2006 15:44:45 +0200
-Message-ID: <6915D0AE8B9047438F320B466AE30FDD798359@nvs0003.nedap.local>
-From: "Jaap de Jong" <jaap.dejong@nedap.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Sat,  7 Oct 2006 02:06:06 +1000 (EST)
+Date: Fri, 6 Oct 2006 09:06:03 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Jeff Stevens <jsteve17@yahoo.com>
+Subject: Re: 440SP External Interrupt IRQ
+Message-ID: <20061006160603.GB29795@gate.ebshome.net>
+References: <200610060646.23125.sr@denx.de>
+	<20061006102738.87758.qmail@web33402.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061006102738.87758.qmail@web33402.mail.mud.yahoo.com>
+Cc: Stefan Roese <sr@denx.de>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,33 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Not sure...
-I have not been playing with 2.6 kernels but this looks a lot like
-the problems I found when trying to get the 2.4 kernel to work.
-Default for the avnet v4fx12 is to use the opb bus as raminterface.
-You should explicitly select the plb bus...
+On Fri, Oct 06, 2006 at 03:27:38AM -0700, Jeff Stevens wrote:
 
-Jaap de Jong
+[snip]
 
-----------------------------------------------------------------------
+> Based on their schematics, I assume:
+> IRQ Line      IRQ#
+>   IRQ0        48
+>   IRQ1        49
+>   IRQ2        50
+>   IRQ3        51
+>   IRQ4        52
+>   IRQ5        53
 
-Message: 1
-Date: Fri, 06 Oct 2006 10:33:53 +0900
-From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
-Subject: Re: Problem with initrd
-To: Glenn.G.Hart@us.westinghouse.com, linuxppc-embedded@ozlabs.org
-Message-ID: <JF2006100610335316.6823078@co-nss.co.jp>
-Content-Type: text/plain; charset=3DISO-2022-JP
+No, this mapping doesn't depend on board shematics. This is fixed, see 
+"Universal Interrupt controller" chapter in user manual.
 
-Glenn-San,
+What is not fixed is mapping between IDSEL line which selects your PCI 
+device and INTx# line from that PCI device to IRQx line in 440SP.
 
-Are you developing by the custom-made hardware of V4FX12?
-If the 16-bit memory controller is used, it may have a problem in the
-memory controller.
-
-Can you try the memory controller of http://www.xilinx.com/mpmc2?
-I confirmed that the 16-bit memory controller of MPMC2 worked correctly
-by Linux. Or I can send the ramdisk image for 2.6.17.3 kernel which I am
-using to you.
-
-Yoshio kashiwagi - Nissin Systems
+-- 
+Eugene
+ 
