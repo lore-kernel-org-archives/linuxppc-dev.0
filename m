@@ -1,17 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 8 Oct 2006 01:21:12 +1000
-From: Anton Blanchard <anton@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 504ED67BF5
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Oct 2006 07:56:30 +1000 (EST)
 Subject: Re: vsdo_datapage.h WTF?
-Message-ID: <20061007152112.GB4043@krispykreme>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20061007145811.GA4043@krispykreme>
 References: <1160148208.4795.30.camel@pmac.infradead.org>
 	<1160170374.22232.135.camel@localhost.localdomain>
 	<20061007145811.GA4043@krispykreme>
-	<1160233817.4795.85.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1160233817.4795.85.camel@pmac.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain
+Date: Sun, 08 Oct 2006 07:54:35 +1000
+Message-Id: <1160258075.7122.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-> ELF auxvec?
+On Sun, 2006-10-08 at 00:58 +1000, Anton Blanchard wrote:
+> Hi,
+> 
+> > No. There -used- to be this systemcfg structure that was exposed to
+> > userspace on ppc64. I made it deprecated. However, for the sake of
+> > backward compatbility, I kept vdso datapage with the exact same layout
+> > for the first part of it (before the syscall maps) and haven't removed
+> > the mmap call for it, but it will be gone soon.
+> 
+> We need a way to export cache size/associativity information (sysfs,
+> /proc/device-tree parsing?) and a plan to fix the applications using it
+> first.
 
-Could do, but there may end up being a lot of information we need to
-export (L2/L3 caches etc). ia64 stuffed it all into sysfs (but didnt
-make it generic which was a bit annoying - arch/ia64/kernel/topology.c).
+The application using it can still use its own copy of the old header
+tho. And that's why I haven't removed the /proc file and will probably
+not do in the near future.
 
-One other thing that would be nice is a generic way to detect SMT
-siblings.  We could make our /proc/cpuinfo match x86 in this regard, but
-/proc/cpuinfo has so many subtle differences between architectures it is
-becoming a pain to parse.
+Regarding cache infos, I noticed the lack of anything useful in the
+device-tree on Power5 LPAR or did I miss something ? Which means that on
+recent machines, the kernel doesn't even know.
 
-Anton
+Ben.
