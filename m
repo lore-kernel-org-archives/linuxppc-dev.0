@@ -1,13 +1,13 @@
 Return-Path: <hch@lst.de>
-Date: Sat, 7 Oct 2006 10:55:24 +0200
+Date: Sat, 7 Oct 2006 10:57:38 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Cell interrupt rework (final)
-Message-ID: <20061007085524.GA3421@lst.de>
-References: <1159506029.15792.18.camel@localhost.localdomain>
+Subject: Re: [PATCH] powerpc: cell spu problem state mapping updates
+Message-ID: <20061007085738.GB3421@lst.de>
+References: <1159506605.15792.24.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1159506029.15792.18.camel@localhost.localdomain>
+In-Reply-To: <1159506605.15792.24.camel@localhost.localdomain>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
 	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>,
@@ -21,21 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 29, 2006 at 03:00:29PM +1000, Benjamin Herrenschmidt wrote:
-> This patch reworks the cell iic interrupt handling so that:
+On Fri, Sep 29, 2006 at 03:10:05PM +1000, Benjamin Herrenschmidt wrote:
+> This patch adds a new "psmap" file to spufs that allows mmap of all of
+> the problem state mapping of SPEs. It is compatible with 64k pages. In
+> addition, it removes mmap ability of individual files when using 64k
+> pages, with the exception of signal1 and signal2 which will both map the
+> entire 64k page holding both registers. It also removes
+> CONFIG_SPUFS_MMAP as there is no point in not building mmap support in
+> spufs.
 > 
->  - Node ID is back in the interrupt number (only one IRQ host is created
-> for all nodes). This allows interrupts from sources on another node to
-> be routed non-locally. This will allow possibly one day to fix maxcpus=1
-> or 2 and still get interrupts from devices on BE 1. (A bit more fixing
-> is needed for that) and it will allow us to implement actual affinity
-> control of external interrupts.
+> It goes along a separate patch to libspe implementing usage of that new
+> file to access problem state registers.
 > 
->  - Added handling of the IO exceptions interrupts (badly named, but I
-> re-used the name initially used by STI). Those are the interrupts
-> exposed by IIC_ISR and IIC_IRR, such as the IOC translation exception,
-> performance monitor, etc... Those get their special numbers in the IRQ
-> number space and are internally implemented as a cascade on unit 0xe,
-> class 1 of each node.
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 
-Looks good to me.
+> Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
+> ===================================================================
+> --- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2006-09-29 15:04:30.000000000 +1000
+> +++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2006-09-29 15:04:46.000000000 +1000
+> @@ -36,6 +36,8 @@
+>  
+>  #include "spufs.h"
+>  
+> +#define SPUFS_MMAP_4K (PAGE_SIZE == 0x1000)
+
+Here and later you specifiy the page size in hexadecimal which isn't all
+that readable to the casual observer.
