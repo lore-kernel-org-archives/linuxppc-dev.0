@@ -1,19 +1,12 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 0ADD967CFE
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Oct 2006 20:25:57 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Kim Phillips'" <kim.phillips@freescale.com>,
-	<netdev@vger.kernel.org>
-Subject: RE: [PATCH] changes to ucc_geth driver as a result of qe_lib
-	changesand bugfixes
-Date: Sat, 7 Oct 2006 12:23:45 +0200
-Message-ID: <000101c6e9fa$abc94cf0$020120ac@Jocke>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20061006172229.10b144df.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17703.40590.791171.334403@cargo.ozlabs.ibm.com>
+Date: Sat, 7 Oct 2006 22:33:18 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: Please pull powerpc.git 'merge' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +16,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 
-> changes due to qe_lib changes include:
-> 
-> o removed platform_device code, replaced with of_device
-> o removed typedefs
-> o uint -> u32 conversions
-> o removed following defines:
->   QE_SIZEOF_BD, BD_BUFFER_ARG, BD_BUFFER_CLEAR, BD_BUFFER,
->   BD_STATUS_AND_LENGTH_SET, BD_STATUS_AND_LENGTH, and BD_BUFFER_SET
->   because they hid sizeof/in_be32/out_be32 operations from the reader.
-> o removed irrelevant comments, added others to resemble 
-> removed BD_ defines
-> o const'd and uncasted all get_property() assignments
-> 
-> bugfixes, courtesy of Scott Wood, include:
-> 
-> - Read phy_address as a u32, not u8.
-> - Match on type == "network" as well as compatible == "ucc_geth", as
->   device_is_compatible() will only compare up to the length of the
->   test string, allowing "ucc_geth_phy" to match as well.
-> - fixes the MAC setting code in ucc_geth.c.  The old code was 
-> overwriting and dereferencing random stack contents.
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> 
-> ---
-> 
-> Jeff, this patch fixes ucc_geth buildtime and runtime errors; 
-> please apply.
+Linus,
 
-Can you send the complete patch againt paulus tree to get ucc_qeth driver going? Currently there
-are too many patches floating around.
+Please do:
 
- Regards
-          Joakim
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+to get a bunch of PowerPC bug fixes and comment and documentation
+updates, including fixes for the irq breakage.
+
+Thanks,
+Paul.
+
+ arch/powerpc/boot/dts/mpc8349emitx.dts            |  246 +++++++++++++++++++++
+ arch/powerpc/boot/of.c                            |    5 
+ arch/powerpc/configs/iseries_defconfig            |   86 ++++++-
+ arch/powerpc/configs/pseries_defconfig            |    2 
+ arch/powerpc/kernel/ibmebus.c                     |    2 
+ arch/powerpc/kernel/iommu.c                       |    2 
+ arch/powerpc/kernel/irq.c                         |    2 
+ arch/powerpc/kernel/prom.c                        |    2 
+ arch/powerpc/kernel/prom_parse.c                  |   17 +
+ arch/powerpc/kernel/time.c                        |    2 
+ arch/powerpc/platforms/82xx/mpc82xx_ads.c         |    5 
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    5 
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c         |    7 -
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |    5 
+ arch/powerpc/platforms/cell/interrupt.c           |    5 
+ arch/powerpc/platforms/cell/spu_base.c            |    6 -
+ arch/powerpc/platforms/chrp/setup.c               |    7 -
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    5 
+ arch/powerpc/platforms/iseries/irq.c              |   17 +
+ arch/powerpc/platforms/iseries/irq.h              |    2 
+ arch/powerpc/platforms/iseries/lpevents.c         |    4 
+ arch/powerpc/platforms/iseries/mf.c               |    4 
+ arch/powerpc/platforms/iseries/smp.c              |    6 -
+ arch/powerpc/platforms/iseries/smp.h              |    6 +
+ arch/powerpc/platforms/iseries/viopath.c          |    2 
+ arch/powerpc/platforms/powermac/pic.c             |   12 +
+ arch/powerpc/platforms/powermac/pic.h             |    4 
+ arch/powerpc/platforms/powermac/smp.c             |    8 -
+ arch/powerpc/platforms/pseries/iommu.c            |    3 
+ arch/powerpc/platforms/pseries/setup.c            |    2 
+ arch/powerpc/platforms/pseries/xics.c             |    4 
+ arch/powerpc/sysdev/cpm2_pic.c                    |    2 
+ arch/powerpc/sysdev/cpm2_pic.h                    |    2 
+ arch/powerpc/sysdev/fsl_soc.c                     |    9 -
+ arch/powerpc/sysdev/i8259.c                       |    2 
+ arch/powerpc/sysdev/ipic.c                        |    2 
+ arch/powerpc/sysdev/mpic.c                        |    6 -
+ arch/powerpc/sysdev/qe_lib/qe_ic.c                |   14 +
+ arch/powerpc/sysdev/tsi108_pci.c                  |    3 
+ arch/ppc/kernel/time.c                            |    2 
+ arch/ppc/platforms/85xx/mpc8560_ads.c             |    6 -
+ arch/ppc/platforms/85xx/mpc85xx_cds_common.c      |    6 -
+ arch/ppc/platforms/85xx/stx_gp3.c                 |    6 -
+ arch/ppc/platforms/85xx/tqm85xx.c                 |    6 -
+ arch/ppc/syslib/i8259.c                           |    2 
+ arch/ppc/syslib/open_pic.c                        |   14 +
+ drivers/char/viocons.c                            |    2 
+ include/asm-powerpc/i8259.h                       |    4 
+ include/asm-powerpc/ibmebus.h                     |    2 
+ include/asm-powerpc/ipic.h                        |    4 
+ include/asm-powerpc/iseries/hv_lp_event.h         |    2 
+ include/asm-powerpc/iseries/it_lp_queue.h         |    2 
+ include/asm-powerpc/machdep.h                     |    2 
+ include/asm-powerpc/mpic.h                        |    4 
+ include/asm-powerpc/reg.h                         |    2 
+ include/asm-ppc/floppy.h                          |    6 -
+ include/asm-ppc/machdep.h                         |    2 
+ include/asm-ppc/open_pic.h                        |    6 -
+ include/asm-ppc/smp.h                             |    2 
+ 59 files changed, 453 insertions(+), 154 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8349emitx.dts
+ create mode 100644 arch/powerpc/platforms/iseries/smp.h
+
+Anton Blanchard:
+      [POWERPC] Update MTFSF_L() comment
+
+Benjamin Herrenschmidt:
+      [POWERPC] Fix zImage decompress location
+      [POWERPC] Don't get PCI IRQ from OF for devices with no IRQ
+
+Brian King:
+      [POWERPC] Update pSeries defconfig for SATA
+
+Geoff Levand:
+      [POWERPC] Minor fix for bootargs property
+
+Nathan Lynch:
+      [POWERPC] linux,tce-size property is 32 bits
+
+Nick Piggin:
+      [POWERPC] Fix harmless typo
+
+Olaf Hering:
+      [POWERPC] Fix up after irq changes
+      [POWERPC] SPU fixup after irq changes
+      [POWERPC] PReP fixup after irq changes
+
+Olof Johansson:
+      [POWERPC] Fix fsl_soc build breaks
+
+Paul Mackerras:
+      [PPC] Fix some irq breakage with ARCH=ppc
+
+Stephen Rothwell:
+      [POWERPC] Update iseries_defconfig
+      [POWERPC] Fix viocons for irq breakage
+      [POWERPC] Fix iseries/smp.c for irq breakage
+
+Timur Tabi:
+      [POWERPC] Add DTS for MPC8349E-mITX board
