@@ -1,11 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17703.40590.791171.334403@cargo.ozlabs.ibm.com>
-Date: Sat, 7 Oct 2006 22:33:18 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: Please pull powerpc.git 'merge' branch
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-41-71-127.roch.qwest.net [67.41.71.127])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 928BA67E69
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Oct 2006 00:30:08 +1000 (EST)
+Subject: [PATCH] PPC 4xx: Fix 4xx handler after pt_regs irq changes
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Sat, 07 Oct 2006 09:29:16 -0500
+Message-Id: <1160231356.23429.3.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,116 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+The following patch fixes 4xx on ARCH=ppc after the removal of pt_regs from
+the irq handlers.
 
-Please do:
+Signed-off-by: Josh Boyer <jdub@us.ibm.com>
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+---
+ arch/ppc/syslib/ppc4xx_pic.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-to get a bunch of PowerPC bug fixes and comment and documentation
-updates, including fixes for the irq breakage.
-
-Thanks,
-Paul.
-
- arch/powerpc/boot/dts/mpc8349emitx.dts            |  246 +++++++++++++++++++++
- arch/powerpc/boot/of.c                            |    5 
- arch/powerpc/configs/iseries_defconfig            |   86 ++++++-
- arch/powerpc/configs/pseries_defconfig            |    2 
- arch/powerpc/kernel/ibmebus.c                     |    2 
- arch/powerpc/kernel/iommu.c                       |    2 
- arch/powerpc/kernel/irq.c                         |    2 
- arch/powerpc/kernel/prom.c                        |    2 
- arch/powerpc/kernel/prom_parse.c                  |   17 +
- arch/powerpc/kernel/time.c                        |    2 
- arch/powerpc/platforms/82xx/mpc82xx_ads.c         |    5 
- arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    5 
- arch/powerpc/platforms/85xx/mpc85xx_cds.c         |    7 -
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |    5 
- arch/powerpc/platforms/cell/interrupt.c           |    5 
- arch/powerpc/platforms/cell/spu_base.c            |    6 -
- arch/powerpc/platforms/chrp/setup.c               |    7 -
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    5 
- arch/powerpc/platforms/iseries/irq.c              |   17 +
- arch/powerpc/platforms/iseries/irq.h              |    2 
- arch/powerpc/platforms/iseries/lpevents.c         |    4 
- arch/powerpc/platforms/iseries/mf.c               |    4 
- arch/powerpc/platforms/iseries/smp.c              |    6 -
- arch/powerpc/platforms/iseries/smp.h              |    6 +
- arch/powerpc/platforms/iseries/viopath.c          |    2 
- arch/powerpc/platforms/powermac/pic.c             |   12 +
- arch/powerpc/platforms/powermac/pic.h             |    4 
- arch/powerpc/platforms/powermac/smp.c             |    8 -
- arch/powerpc/platforms/pseries/iommu.c            |    3 
- arch/powerpc/platforms/pseries/setup.c            |    2 
- arch/powerpc/platforms/pseries/xics.c             |    4 
- arch/powerpc/sysdev/cpm2_pic.c                    |    2 
- arch/powerpc/sysdev/cpm2_pic.h                    |    2 
- arch/powerpc/sysdev/fsl_soc.c                     |    9 -
- arch/powerpc/sysdev/i8259.c                       |    2 
- arch/powerpc/sysdev/ipic.c                        |    2 
- arch/powerpc/sysdev/mpic.c                        |    6 -
- arch/powerpc/sysdev/qe_lib/qe_ic.c                |   14 +
- arch/powerpc/sysdev/tsi108_pci.c                  |    3 
- arch/ppc/kernel/time.c                            |    2 
- arch/ppc/platforms/85xx/mpc8560_ads.c             |    6 -
- arch/ppc/platforms/85xx/mpc85xx_cds_common.c      |    6 -
- arch/ppc/platforms/85xx/stx_gp3.c                 |    6 -
- arch/ppc/platforms/85xx/tqm85xx.c                 |    6 -
- arch/ppc/syslib/i8259.c                           |    2 
- arch/ppc/syslib/open_pic.c                        |   14 +
- drivers/char/viocons.c                            |    2 
- include/asm-powerpc/i8259.h                       |    4 
- include/asm-powerpc/ibmebus.h                     |    2 
- include/asm-powerpc/ipic.h                        |    4 
- include/asm-powerpc/iseries/hv_lp_event.h         |    2 
- include/asm-powerpc/iseries/it_lp_queue.h         |    2 
- include/asm-powerpc/machdep.h                     |    2 
- include/asm-powerpc/mpic.h                        |    4 
- include/asm-powerpc/reg.h                         |    2 
- include/asm-ppc/floppy.h                          |    6 -
- include/asm-ppc/machdep.h                         |    2 
- include/asm-ppc/open_pic.h                        |    6 -
- include/asm-ppc/smp.h                             |    2 
- 59 files changed, 453 insertions(+), 154 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mpc8349emitx.dts
- create mode 100644 arch/powerpc/platforms/iseries/smp.h
-
-Anton Blanchard:
-      [POWERPC] Update MTFSF_L() comment
-
-Benjamin Herrenschmidt:
-      [POWERPC] Fix zImage decompress location
-      [POWERPC] Don't get PCI IRQ from OF for devices with no IRQ
-
-Brian King:
-      [POWERPC] Update pSeries defconfig for SATA
-
-Geoff Levand:
-      [POWERPC] Minor fix for bootargs property
-
-Nathan Lynch:
-      [POWERPC] linux,tce-size property is 32 bits
-
-Nick Piggin:
-      [POWERPC] Fix harmless typo
-
-Olaf Hering:
-      [POWERPC] Fix up after irq changes
-      [POWERPC] SPU fixup after irq changes
-      [POWERPC] PReP fixup after irq changes
-
-Olof Johansson:
-      [POWERPC] Fix fsl_soc build breaks
-
-Paul Mackerras:
-      [PPC] Fix some irq breakage with ARCH=ppc
-
-Stephen Rothwell:
-      [POWERPC] Update iseries_defconfig
-      [POWERPC] Fix viocons for irq breakage
-      [POWERPC] Fix iseries/smp.c for irq breakage
-
-Timur Tabi:
-      [POWERPC] Add DTS for MPC8349E-mITX board
+--- linux-2.6.orig/arch/ppc/syslib/ppc4xx_pic.c
++++ linux-2.6/arch/ppc/syslib/ppc4xx_pic.c
+@@ -96,7 +96,7 @@ UIC_HANDLERS(1);
+ UIC_HANDLERS(2);
+ UIC_HANDLERS(3);
+ 
+-static int ppc4xx_pic_get_irq(struct pt_regs *regs)
++static int ppc4xx_pic_get_irq(void)
+ {
+ 	u32 uic0 = mfdcr(DCRN_UIC_MSR(UIC0));
+ 	if (uic0 & UIC0_UIC1NC)
+@@ -125,7 +125,7 @@ UIC_HANDLERS(0);
+ UIC_HANDLERS(1);
+ UIC_HANDLERS(2);
+ 
+-static int ppc4xx_pic_get_irq(struct pt_regs *regs)
++static int ppc4xx_pic_get_irq(void)
+ {
+ 	u32 uicb = mfdcr(DCRN_UIC_MSR(UICB));
+ 	if (uicb & UICB_UIC0NC)
+@@ -158,7 +158,7 @@ static void __init ppc4xx_pic_impl_init(
+ UIC_HANDLERS(0);
+ UIC_HANDLERS(1);
+ 
+-static int ppc4xx_pic_get_irq(struct pt_regs *regs)
++static int ppc4xx_pic_get_irq(void)
+ {
+ 	u32 uic0 = mfdcr(DCRN_UIC_MSR(UIC0));
+ 	if (uic0 & UIC0_UIC1NC)
+@@ -179,7 +179,7 @@ static void __init ppc4xx_pic_impl_init(
+ #define ACK_UIC0_PARENT
+ UIC_HANDLERS(0);
+ 
+-static int ppc4xx_pic_get_irq(struct pt_regs *regs)
++static int ppc4xx_pic_get_irq(void)
+ {
+ 	u32 uic0 = mfdcr(DCRN_UIC_MSR(UIC0));
+ 	return uic0 ? 32 - ffs(uic0) : -1;
