@@ -1,15 +1,41 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
-	by ozlabs.org (Postfix) with ESMTP id 8B40067C3C
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Oct 2006 18:59:18 +1000 (EST)
-Date: Sun, 8 Oct 2006 10:59:13 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Roy Zang <tie-fei.zang@freescale.com>, Paul Mackeras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix compile warnings in mpc7448_hpc2
-Message-ID: <20061008085913.GA19422@aepfle.de>
+Return-Path: <castet.matthieu@free.fr>
+Received: from postfix1-g20.free.fr (postfix1-g20.free.fr [212.27.60.42])
+	by ozlabs.org (Postfix) with ESMTP id 2AAB367CE1
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Oct 2006 19:28:00 +1000 (EST)
+Received: from smtp2-g19.free.fr (smtp2-g19.free.fr [212.27.42.28])
+	by postfix1-g20.free.fr (Postfix) with ESMTP id 2FBCD1A8431
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Oct 2006 10:56:43 +0200 (CEST)
+Message-ID: <4528BD47.5030509@free.fr>
+Date: Sun, 08 Oct 2006 10:56:39 +0200
+From: matthieu castet <castet.matthieu@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.19-rc1: known regressions (v2)
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
+	<20061007214620.GB8810@stusta.de>
+In-Reply-To: <20061007214620.GB8810@stusta.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: alsa-devel@alsa-project.org, Thierry Vignaud <tvignaud@mandriva.com>,
+	fastboot@osdl.org, Torsten Kaiser <kernel@bardioc.dyndns.org>,
+	ak@suse.de, linux-ide@vger.kernel.org,
+	Vivek Goyal <vgoyal@in.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+	linux1394-devel@lists.sourceforge.net,
+	linux-usb-devel@lists.sourceforge.net, Steve Fox <drfickle@us.ibm.com>,
+	Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+	linux-acpi@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+	"Michael S. Tsirkin" <mst@mellanox.co.il>, jgarzik@pobox.com,
+	Prakash Punnoor <prakash@punnoor.de>, len.brown@intel.com,
+	Olaf Hering <olaf@aepfle.de>, linux-pm@osdl.org,
+	Trond Myklebust <Trond.Myklebust@netapp.com>,
+	Alex Romosan <romosan@sycorax.lbl.gov>, Linus Torvalds <torvalds@osdl.org>,
+	Dave Kleikamp <shaggy@austin.ibm.com>,
+	Antonino Daplas <adaplas@pol.net>, perex@suse.cz,
+	discuss@x86-64.org, linux-fbdev-devel@lists.sourceforge.net,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Jens Axboe <axboe@oracle.com>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	ebiederm@xmission.com, Ernst Herzberg <list-lkml@net4u.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,101 +45,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c: In function 'mpc7448_hpc2_fixup_irq':
-arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c:114: warning: passing argument 1 of 'find_slot_by_devfn' discards qualifiers from pointer target type
+Adrian Bunk wrote:
+> This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
+> that are not yet fixed Linus' tree.
+> 
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you was declared guilty for a breakage or I'm considering you in any
+> other way possibly involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+> 
 
-make interrupt_map as const
+> 
+> Subject    : ueagle-atm Oops
+> References : http://lkml.org/lkml/2006/10/6/390
+> Submitter  : Ernst Herzberg <list-lkml@net4u.de>
+> Handled-By : Matthieu Castet <castet.matthieu@free.fr>
+> Status     : unknown
+> 
+> 
+Guilty     :
+http://www.kernel.org/git/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e7ccdfec087f02930c5cdc81143d4a045ae8d361
 
-make local functions static, which leads to:
-arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c:264: warning: 'mpc7448_hpc2_halt' defined but not used
-add currently unused halt and power_off functions to machdep.
+Patch available at 
+https://mail.gna.org/public/ueagleatm-dev/2006-10/msg00022.html , but 
+some cleaning is need (I wasn't aware of "USB: fix __must_check warnings 
+in drivers/usb/atm/" patch).
 
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ linux-2.6/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -63,7 +63,7 @@ extern void _nmask_and_or_msr(unsigned l
- extern void tsi108_pci_int_init(void);
- extern void tsi108_irq_cascade(unsigned int irq, struct irq_desc *desc);
- 
--int mpc7448_hpc2_exclude_device(u_char bus, u_char devfn)
-+static int mpc7448_hpc2_exclude_device(u_char bus, u_char devfn)
- {
- 	if (bus == 0 && PCI_SLOT(devfn) == 0)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
-@@ -74,7 +74,7 @@ int mpc7448_hpc2_exclude_device(u_char b
- /*
-  * find pci slot by devfn in interrupt map of OF tree
-  */
--u8 find_slot_by_devfn(unsigned int *interrupt_map, unsigned int devfn)
-+static u8 find_slot_by_devfn(const unsigned int *interrupt_map, unsigned int devfn)
- {
- 	int i;
- 	unsigned int tmp;
-@@ -89,7 +89,7 @@ u8 find_slot_by_devfn(unsigned int *inte
- /*
-  * Scans the interrupt map for pci device
-  */
--void mpc7448_hpc2_fixup_irq(struct pci_dev *dev)
-+static void mpc7448_hpc2_fixup_irq(struct pci_dev *dev)
- {
- 	struct pci_controller *hose;
- 	struct device_node *node;
-@@ -121,7 +121,7 @@ void mpc7448_hpc2_fixup_irq(struct pci_d
- }
- /* temporary pci irq map fixup*/
- 
--void __init mpc7448_hpc2_pcibios_fixup(void)
-+static void __init mpc7448_hpc2_pcibios_fixup(void)
- {
- 	struct pci_dev *dev = NULL;
- 	for_each_pci_dev(dev) {
-@@ -238,13 +238,13 @@ static void __init mpc7448_hpc2_init_IRQ
- 	of_node_put(tsi_pic);
- }
- 
--void mpc7448_hpc2_show_cpuinfo(struct seq_file *m)
-+static void mpc7448_hpc2_show_cpuinfo(struct seq_file *m)
- {
- 	seq_printf(m, "vendor\t\t: Freescale Semiconductor\n");
- 	seq_printf(m, "machine\t\t: MPC7448hpc2\n");
- }
- 
--void mpc7448_hpc2_restart(char *cmd)
-+static void mpc7448_hpc2_restart(char *cmd)
- {
- 	local_irq_disable();
- 
-@@ -254,13 +254,13 @@ void mpc7448_hpc2_restart(char *cmd)
- 	for (;;) ;		/* Spin until reset happens */
- }
- 
--void mpc7448_hpc2_power_off(void)
-+static void mpc7448_hpc2_power_off(void)
- {
- 	local_irq_disable();
- 	for (;;) ;		/* No way to shut power off with software */
- }
- 
--void mpc7448_hpc2_halt(void)
-+static void mpc7448_hpc2_halt(void)
- {
- 	mpc7448_hpc2_power_off();
- }
-@@ -302,6 +302,8 @@ define_machine(mpc7448_hpc2){
- 	.get_irq 		= mpic_get_irq,
- 	.pcibios_fixup 		= mpc7448_hpc2_pcibios_fixup,
- 	.restart 		= mpc7448_hpc2_restart,
-+	.power_off		= mpc7448_hpc2_power_off,
-+	.halt			= mpc7448_hpc2_halt,
- 	.calibrate_decr 	= generic_calibrate_decr,
- 	.machine_check_exception= mpc7448_machine_check_exception,
- 	.progress 		= udbg_progress,
+Matthieu
