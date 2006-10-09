@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E87E67B52
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Oct 2006 13:29:58 +1000 (EST)
-Subject: [PATCH] Update maple defconfig
+	by ozlabs.org (Postfix) with ESMTP id ADC43679E9
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Oct 2006 15:10:41 +1000 (EST)
+Subject: [PATCH] powerpc: Cell timebase bug workaround
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Mon, 09 Oct 2006 13:28:59 +1000
-Message-Id: <1160364539.14601.25.camel@localhost.localdomain>
+Date: Mon, 09 Oct 2006 15:10:22 +1000
+Message-Id: <1160370623.14601.42.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,293 +21,273 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This updates the Maple defconfig to 4 CPUs (along with current defaults)
-to support the "tigerwood" 970MP evaluation board. 
+The Cell CPU timebase has an errata. When reading the entire 64 bits of
+the timebase with one mftb instruction, there is a handful of cycles
+window during which one might read a value with the low order 32 bits
+already reset to 0x00000000 but the high order bits not yet incremeted
+by one. Simply reading the timebase a second time if the low order bits
+are 0 is enough (the second read will always miss that window).
+
+Note that there is still a potential issue if the process gets
+interrupted between the 2 reads for long enough that the second reads
+pricely hits that same window on the next 32 bits wrap. However, this is
+so extremely unlikely to happen that we choose not to do anything
+against it (the 32 bits wrap happens every few seconds or so, in fact
+every few minutes on IBM cell blades).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Index: linux-work/arch/powerpc/configs/maple_defconfig
+Index: linux-work/arch/powerpc/kernel/vdso64/gettimeofday.S
 ===================================================================
---- linux-work.orig/arch/powerpc/configs/maple_defconfig	2006-10-06 13:47:54.000000000 +1000
-+++ linux-work/arch/powerpc/configs/maple_defconfig	2006-10-09 12:06:34.000000000 +1000
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.18-rc6
--# Sun Sep 10 10:24:55 2006
-+# Linux kernel version: 2.6.18
-+# Mon Oct  9 11:59:34 2006
- #
- CONFIG_PPC64=y
- CONFIG_64BIT=y
-@@ -22,6 +22,7 @@ CONFIG_ARCH_MAY_HAVE_PC_FDC=y
- CONFIG_PPC_OF=y
- CONFIG_PPC_UDBG_16550=y
- CONFIG_GENERIC_TBSYNC=y
-+CONFIG_AUDIT_ARCH=y
- # CONFIG_DEFAULT_UIMAGE is not set
- 
- #
-@@ -34,7 +35,7 @@ CONFIG_PPC_FPU=y
- CONFIG_PPC_STD_MMU=y
- CONFIG_VIRT_CPU_ACCOUNTING=y
- CONFIG_SMP=y
--CONFIG_NR_CPUS=2
-+CONFIG_NR_CPUS=4
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
- #
-@@ -51,10 +52,11 @@ CONFIG_LOCALVERSION=""
- CONFIG_LOCALVERSION_AUTO=y
- CONFIG_SWAP=y
- CONFIG_SYSVIPC=y
-+# CONFIG_IPC_NS is not set
- CONFIG_POSIX_MQUEUE=y
- # CONFIG_BSD_PROCESS_ACCT is not set
- # CONFIG_TASKSTATS is not set
--CONFIG_SYSCTL=y
-+# CONFIG_UTS_NS is not set
- # CONFIG_AUDIT is not set
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
-@@ -62,7 +64,9 @@ CONFIG_IKCONFIG_PROC=y
- # CONFIG_RELAY is not set
- CONFIG_INITRAMFS_SOURCE=""
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-+CONFIG_SYSCTL=y
- # CONFIG_EMBEDDED is not set
-+# CONFIG_SYSCTL_SYSCALL is not set
- CONFIG_KALLSYMS=y
- CONFIG_KALLSYMS_ALL=y
- # CONFIG_KALLSYMS_EXTRA_PASS is not set
-@@ -71,12 +75,12 @@ CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
- CONFIG_BASE_FULL=y
--CONFIG_RT_MUTEXES=y
- CONFIG_FUTEX=y
- CONFIG_EPOLL=y
- CONFIG_SHMEM=y
- CONFIG_SLAB=y
- CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_RT_MUTEXES=y
- # CONFIG_TINY_SHMEM is not set
- CONFIG_BASE_SMALL=0
- # CONFIG_SLOB is not set
-@@ -95,6 +99,7 @@ CONFIG_STOP_MACHINE=y
- #
- # Block layer
- #
-+CONFIG_BLOCK=y
- # CONFIG_BLK_DEV_IO_TRACE is not set
- 
- #
-@@ -114,16 +119,16 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
- # Platform support
- #
- CONFIG_PPC_MULTIPLATFORM=y
--# CONFIG_PPC_ISERIES is not set
- # CONFIG_EMBEDDED6xx is not set
- # CONFIG_APUS is not set
- # CONFIG_PPC_PSERIES is not set
-+# CONFIG_PPC_ISERIES is not set
- # CONFIG_PPC_PMAC is not set
- CONFIG_PPC_MAPLE=y
-+# CONFIG_PPC_PASEMI is not set
- # CONFIG_PPC_CELL is not set
- # CONFIG_PPC_CELL_NATIVE is not set
- # CONFIG_PPC_IBM_CELL_BLADE is not set
--# CONFIG_UDBG_RTAS_CONSOLE is not set
- CONFIG_U3_DART=y
- # CONFIG_PPC_RTAS is not set
- # CONFIG_MMIO_NVRAM is not set
-@@ -157,6 +162,7 @@ CONFIG_IRQ_ALL_CPUS=y
- CONFIG_ARCH_SELECT_MEMORY_MODEL=y
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_SPARSEMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
- CONFIG_SELECT_MEMORY_MODEL=y
- CONFIG_FLATMEM_MANUAL=y
- # CONFIG_DISCONTIGMEM_MANUAL is not set
-@@ -184,6 +190,7 @@ CONFIG_GENERIC_ISA_DMA=y
- CONFIG_PCI=y
- CONFIG_PCI_DOMAINS=y
- # CONFIG_PCIEPORTBUS is not set
-+# CONFIG_PCI_MULTITHREAD_PROBE is not set
- # CONFIG_PCI_DEBUG is not set
- 
- #
-@@ -211,6 +218,7 @@ CONFIG_PACKET_MMAP=y
- CONFIG_UNIX=y
- CONFIG_XFRM=y
- CONFIG_XFRM_USER=m
-+# CONFIG_XFRM_SUB_POLICY is not set
- # CONFIG_NET_KEY is not set
- CONFIG_INET=y
- CONFIG_IP_MULTICAST=y
-@@ -232,10 +240,12 @@ CONFIG_IP_PNP_DHCP=y
- # CONFIG_INET_TUNNEL is not set
- CONFIG_INET_XFRM_MODE_TRANSPORT=y
- CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
- CONFIG_INET_DIAG=y
- CONFIG_INET_TCP_DIAG=y
- # CONFIG_TCP_CONG_ADVANCED is not set
--CONFIG_TCP_CONG_BIC=y
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
- # CONFIG_IPV6 is not set
- # CONFIG_INET6_XFRM_TUNNEL is not set
- # CONFIG_INET6_TUNNEL is not set
-@@ -265,7 +275,6 @@ CONFIG_TCP_CONG_BIC=y
- # CONFIG_ATALK is not set
- # CONFIG_X25 is not set
- # CONFIG_LAPB is not set
--# CONFIG_NET_DIVERT is not set
- # CONFIG_ECONET is not set
- # CONFIG_WAN_ROUTER is not set
- 
-@@ -377,6 +386,7 @@ CONFIG_BLK_DEV_AMD74XX=y
- # CONFIG_BLK_DEV_CS5530 is not set
- # CONFIG_BLK_DEV_HPT34X is not set
- # CONFIG_BLK_DEV_HPT366 is not set
-+# CONFIG_BLK_DEV_JMICRON is not set
- # CONFIG_BLK_DEV_SC1200 is not set
- # CONFIG_BLK_DEV_PIIX is not set
- # CONFIG_BLK_DEV_IT821X is not set
-@@ -399,6 +409,12 @@ CONFIG_IDEDMA_AUTO=y
- #
- # CONFIG_RAID_ATTRS is not set
- # CONFIG_SCSI is not set
-+# CONFIG_SCSI_NETLINK is not set
+--- linux-work.orig/arch/powerpc/kernel/vdso64/gettimeofday.S	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/kernel/vdso64/gettimeofday.S	2006-10-09 13:28:54.000000000 +1000
+@@ -11,6 +11,8 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
 +
-+#
-+# Serial ATA (prod) and Parallel ATA (experimental) drivers
-+#
-+# CONFIG_ATA is not set
++#include <linux/config.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/vdso.h>
+@@ -229,8 +231,13 @@ V_FUNCTION_BEGIN(__do_get_xsec)
+ 	xor	r0,r8,r8		/* create dependency */
+ 	add	r3,r3,r0
  
- #
- # Multi-device support (RAID and LVM)
-@@ -498,7 +514,7 @@ CONFIG_E1000=y
- # CONFIG_VIA_VELOCITY is not set
- CONFIG_TIGON3=y
- # CONFIG_BNX2 is not set
--# CONFIG_MV643XX_ETH is not set
-+# CONFIG_QLA3XXX is not set
+-	/* Get TB & offset it */
+-	mftb	r7
++	/* Get TB & offset it. We use the MFTB macro which will generate
++	 * workaround code for Cell. The macro will generate the ELF bits
++	 * for the CPU feature fixup though those aren't actually applied
++	 * on the vDSO, which means that the workaround will always be
++	 * executed if CONFIG_PPC_CELL is set.
++	 */
++	MFTB(r7)
+ 	ld	r9,CFG_TB_ORIG_STAMP(r3)
+ 	subf	r7,r9,r7
  
- #
- # Ethernet (10000 Mbit)
-@@ -545,6 +561,7 @@ CONFIG_TIGON3=y
- # Input device support
- #
- CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
+Index: linux-work/include/asm-powerpc/cputable.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/cputable.h	2006-10-06 13:48:23.000000000 +1000
++++ linux-work/include/asm-powerpc/cputable.h	2006-10-09 13:30:02.000000000 +1000
+@@ -144,6 +144,7 @@ extern void do_cpu_ftr_fixups(unsigned l
+ #define CPU_FTR_CI_LARGE_PAGE		LONG_ASM_CONST(0x0000100000000000)
+ #define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000200000000000)
+ #define CPU_FTR_PURR			LONG_ASM_CONST(0x0000400000000000)
++#define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000800000000000)
  
- #
- # Userland interfaces
-@@ -704,6 +721,7 @@ CONFIG_I2C_AMD8111=y
- #
- # Misc devices
- #
-+# CONFIG_TIFM_CORE is not set
+ #ifndef __ASSEMBLY__
  
- #
- # Multimedia devices
-@@ -779,7 +797,6 @@ CONFIG_USB_UHCI_HCD=y
- #
- # may also be needed; see USB_STORAGE Help for more information
- #
--# CONFIG_USB_STORAGE is not set
- # CONFIG_USB_LIBUSUAL is not set
+@@ -332,7 +333,7 @@ extern void do_cpu_ftr_fixups(unsigned l
+ #define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+-	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
++	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_CELL_TB_BUG)
+ #define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
+@@ -431,30 +432,34 @@ static inline int cpu_has_feature(unsign
  
- #
-@@ -802,6 +819,7 @@ CONFIG_USB_HIDINPUT=y
- # CONFIG_USB_ATI_REMOTE2 is not set
- # CONFIG_USB_KEYSPAN_REMOTE is not set
- # CONFIG_USB_APPLETOUCH is not set
-+# CONFIG_USB_TRANCEVIBRATOR is not set
+ #ifdef __ASSEMBLY__
  
- #
- # USB Imaging devices
-@@ -828,6 +846,7 @@ CONFIG_USB_MON=y
- CONFIG_USB_SERIAL=y
- # CONFIG_USB_SERIAL_CONSOLE is not set
- CONFIG_USB_SERIAL_GENERIC=y
-+# CONFIG_USB_SERIAL_AIRCABLE is not set
- # CONFIG_USB_SERIAL_AIRPRIME is not set
- # CONFIG_USB_SERIAL_ARK3116 is not set
- # CONFIG_USB_SERIAL_BELKIN is not set
-@@ -862,6 +881,7 @@ CONFIG_USB_SERIAL_KEYSPAN_USA49WLC=y
- # CONFIG_USB_SERIAL_KLSI is not set
- # CONFIG_USB_SERIAL_KOBIL_SCT is not set
- # CONFIG_USB_SERIAL_MCT_U232 is not set
-+# CONFIG_USB_SERIAL_MOS7840 is not set
- # CONFIG_USB_SERIAL_NAVMAN is not set
- # CONFIG_USB_SERIAL_PL2303 is not set
- # CONFIG_USB_SERIAL_HP4X is not set
-@@ -879,6 +899,7 @@ CONFIG_USB_EZUSB=y
- #
- # CONFIG_USB_EMI62 is not set
- # CONFIG_USB_EMI26 is not set
-+# CONFIG_USB_ADUTUX is not set
- # CONFIG_USB_AUERSWALD is not set
- # CONFIG_USB_RIO500 is not set
- # CONFIG_USB_LEGOTOWER is not set
-@@ -886,9 +907,9 @@ CONFIG_USB_EZUSB=y
- # CONFIG_USB_LED is not set
- # CONFIG_USB_CYPRESS_CY7C63 is not set
- # CONFIG_USB_CYTHERM is not set
--# CONFIG_USB_PHIDGETKIT is not set
--# CONFIG_USB_PHIDGETSERVO is not set
-+# CONFIG_USB_PHIDGET is not set
- # CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_FTDI_ELAN is not set
- # CONFIG_USB_APPLEDISPLAY is not set
- # CONFIG_USB_SISUSBVGA is not set
- # CONFIG_USB_LD is not set
-@@ -995,8 +1016,10 @@ CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
- #
- CONFIG_PROC_FS=y
- CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
- CONFIG_SYSFS=y
- CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
- CONFIG_HUGETLBFS=y
- CONFIG_HUGETLB_PAGE=y
- CONFIG_RAMFS=y
-@@ -1129,6 +1152,7 @@ CONFIG_PLIST=y
- # Kernel hacking
- #
- # CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_MUST_CHECK=y
- CONFIG_MAGIC_SYSRQ=y
- # CONFIG_UNUSED_SYMBOLS is not set
- CONFIG_DEBUG_KERNEL=y
-@@ -1148,6 +1172,7 @@ CONFIG_DEBUG_SPINLOCK_SLEEP=y
- # CONFIG_DEBUG_INFO is not set
- CONFIG_DEBUG_FS=y
- # CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
- # CONFIG_FORCED_INLINING is not set
- # CONFIG_RCU_TORTURE_TEST is not set
- CONFIG_DEBUG_STACKOVERFLOW=y
-@@ -1169,6 +1194,9 @@ CONFIG_BOOTX_TEXT=y
- # Cryptographic options
- #
- CONFIG_CRYPTO=y
-+CONFIG_CRYPTO_ALGAPI=y
-+CONFIG_CRYPTO_BLKCIPHER=m
-+CONFIG_CRYPTO_MANAGER=m
- # CONFIG_CRYPTO_HMAC is not set
- # CONFIG_CRYPTO_NULL is not set
- # CONFIG_CRYPTO_MD4 is not set
-@@ -1178,6 +1206,8 @@ CONFIG_CRYPTO_MD5=y
- # CONFIG_CRYPTO_SHA512 is not set
- # CONFIG_CRYPTO_WP512 is not set
- # CONFIG_CRYPTO_TGR192 is not set
-+CONFIG_CRYPTO_ECB=m
-+CONFIG_CRYPTO_CBC=m
- CONFIG_CRYPTO_DES=y
- # CONFIG_CRYPTO_BLOWFISH is not set
- # CONFIG_CRYPTO_TWOFISH is not set
+-#define BEGIN_FTR_SECTION		98:
++#define BEGIN_FTR_SECTION_NESTED(label)	label:
++#define BEGIN_FTR_SECTION		BEGIN_FTR_SECTION_NESTED(98)
+ 
+ #ifndef __powerpc64__
+-#define END_FTR_SECTION(msk, val)		\
++#define END_FTR_SECTION_NESTED(msk, val, label) \
+ 99:						\
+ 	.section __ftr_fixup,"a";		\
+ 	.align 2;				\
+ 	.long msk;				\
+ 	.long val;				\
+-	.long 98b;				\
++	.long label##b;				\
+ 	.long 99b;				\
+ 	.previous
+ #else /* __powerpc64__ */
+-#define END_FTR_SECTION(msk, val)		\
++#define END_FTR_SECTION_NESTED(msk, val, label) \
+ 99:						\
+ 	.section __ftr_fixup,"a";		\
+ 	.align 3;				\
+ 	.llong msk;				\
+ 	.llong val;				\
+-	.llong 98b;				\
++	.llong label##b;				\
+ 	.llong 99b;	 			\
+ 	.previous
+ #endif /* __powerpc64__ */
+ 
++#define END_FTR_SECTION(msk, val)		\
++	END_FTR_SECTION_NESTED(msk, val, 98)
++
+ #define END_FTR_SECTION_IFSET(msk)	END_FTR_SECTION((msk), (msk))
+ #define END_FTR_SECTION_IFCLR(msk)	END_FTR_SECTION((msk), 0)
+ #endif /* __ASSEMBLY__ */
+Index: linux-work/include/asm-powerpc/ppc_asm.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/ppc_asm.h	2006-10-06 13:45:32.000000000 +1000
++++ linux-work/include/asm-powerpc/ppc_asm.h	2006-10-09 13:28:54.000000000 +1000
+@@ -29,10 +29,10 @@
+ BEGIN_FTR_SECTION;							\
+ 	mfspr	ra,SPRN_PURR;		/* get processor util. reg */	\
+ END_FTR_SECTION_IFSET(CPU_FTR_PURR);					\
+-BEGIN_FTR_SECTION;							\
+-	mftb	ra;			/* or get TB if no PURR */	\
+-END_FTR_SECTION_IFCLR(CPU_FTR_PURR);					\
+-	ld	rb,PACA_STARTPURR(r13);				\
++BEGIN_FTR_SECTION_NESTED(96);						\
++	MFTB(ra);			/* or get TB if no PURR */	\
++END_FTR_SECTION_NESTED(CPU_FTR_PURR, 0, 96);				\
++	ld	rb,PACA_STARTPURR(r13);					\
+ 	std	ra,PACA_STARTPURR(r13);					\
+ 	subf	rb,rb,ra;		/* subtract start value */	\
+ 	ld	ra,PACA_USER_TIME(r13);					\
+@@ -44,9 +44,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
+ BEGIN_FTR_SECTION;							\
+ 	mfspr	ra,SPRN_PURR;		/* get processor util. reg */	\
+ END_FTR_SECTION_IFSET(CPU_FTR_PURR);					\
+-BEGIN_FTR_SECTION;							\
+-	mftb	ra;			/* or get TB if no PURR */	\
+-END_FTR_SECTION_IFCLR(CPU_FTR_PURR);					\
++BEGIN_FTR_SECTION_NESTED(96);						\
++	MFTB(ra);			/* or get TB if no PURR */	\
++END_FTR_SECTION_NESTED(CPU_FTR_PURR, 0, 96);				\
+ 	ld	rb,PACA_STARTPURR(r13);				\
+ 	std	ra,PACA_STARTPURR(r13);					\
+ 	subf	rb,rb,ra;		/* subtract start value */	\
+@@ -274,6 +274,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_601)
+ #define ISYNC_601
+ #endif
+ 
++#ifdef CONFIG_PPC_CELL
++#define MFTB(dest)			\
++	mftb  dest;			\
++BEGIN_FTR_SECTION;			\
++	cmpwi dest,0;			\
++	bne+  97f;			\
++	mftb  dest;			\
++97:					\
++END_FTR_SECTION_IFSET(CPU_FTR_CELL_TB_BUG)
++#else
++#define MFTB(dest)			mftb dest
++#endif
+ 
+ #ifndef CONFIG_SMP
+ #define TLBSYNC
+Index: linux-work/include/asm-powerpc/reg.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/reg.h	2006-10-09 12:03:34.000000000 +1000
++++ linux-work/include/asm-powerpc/reg.h	2006-10-09 13:28:54.000000000 +1000
+@@ -617,9 +617,26 @@
+ 			asm volatile("mfspr %0," __stringify(rn) \
+ 				: "=r" (rval)); rval;})
+ #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : : "r" (v))
+-
++#ifdef CONFIG_PPC_CELL
++#define mftb()		({unsigned long rval;				\
++			asm volatile(					\
++				"	mftb %0;\n"			\
++				"98:	cmpwi %0,0;\n"			\
++				"	bne+ 99f;\n"			\
++				"	mftb %0;\n"			\
++				"99:\n"					\
++				".section __ftr_fixup,\"a\"\n"		\
++				"	.llong %1\n"			\
++				"	.llong 0\n"			\
++				"	.llong 98b\n"			\
++				"	.llong 99b\n"			\
++				".previous"				\
++			: "=r" (rval) : "i" (CPU_FTR_CELL_TB_BUG)); rval;})
++#else
+ #define mftb()		({unsigned long rval;	\
+ 			asm volatile("mftb %0" : "=r" (rval)); rval;})
++#endif
++
+ #define mftbl()		({unsigned long rval;	\
+ 			asm volatile("mftbl %0" : "=r" (rval)); rval;})
+ 
+Index: linux-work/include/asm-powerpc/time.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/time.h	2006-10-06 13:48:24.000000000 +1000
++++ linux-work/include/asm-powerpc/time.h	2006-10-09 13:28:54.000000000 +1000
+@@ -85,26 +85,28 @@ struct div_result {
+ /* On ppc64 this gets us the whole timebase; on ppc32 just the lower half */
+ static inline unsigned long get_tbl(void)
+ {
+-	unsigned long tbl;
+-
+ #if defined(CONFIG_403GCX)
++	unsigned long tbl;
+ 	asm volatile("mfspr %0, 0x3dd" : "=r" (tbl));
++	return tbl;
++#elif defined(CONFIG_PPC32)
++	return mftbl();
+ #else
+-	asm volatile("mftb %0" : "=r" (tbl));
++	return mftb();
+ #endif
+-	return tbl;
+ }
+ 
+ static inline unsigned int get_tbu(void)
+ {
++#ifdef CONFIG_403GCX
+ 	unsigned int tbu;
+-
+-#if defined(CONFIG_403GCX)
+ 	asm volatile("mfspr %0, 0x3dc" : "=r" (tbu));
++	return tbu;
++#elif defined(CONFIG_PPC32)
++	return mftbu();
+ #else
+-	asm volatile("mftbu %0" : "=r" (tbu));
++	return mftb();
+ #endif
+-	return tbu;
+ }
+ 
+ static inline unsigned int get_rtcl(void)
+Index: linux-work/include/asm-powerpc/timex.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/timex.h	2006-10-06 13:45:32.000000000 +1000
++++ linux-work/include/asm-powerpc/timex.h	2006-10-09 13:28:54.000000000 +1000
+@@ -8,6 +8,7 @@
+  */
+ 
+ #include <asm/cputable.h>
++#include <asm/reg.h>
+ 
+ #define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
+ 
+@@ -15,13 +16,11 @@ typedef unsigned long cycles_t;
+ 
+ static inline cycles_t get_cycles(void)
+ {
+-	cycles_t ret;
+-
+ #ifdef __powerpc64__
+-
+-	__asm__ __volatile__("mftb %0" : "=r" (ret) : );
+-
++	return mftb();
+ #else
++	cycles_t ret;
++
+ 	/*
+ 	 * For the "cycle" counter we use the timebase lower half.
+ 	 * Currently only used on SMP.
+@@ -39,9 +38,8 @@ static inline cycles_t get_cycles(void)
+ 		"	.long 99b\n"
+ 		".previous"
+ 		: "=r" (ret) : "i" (CPU_FTR_601));
+-#endif
+-
+ 	return ret;
++#endif
+ }
+ 
+ #endif	/* __KERNEL__ */
