@@ -1,16 +1,18 @@
-Return-Path: <jsteve17@yahoo.com>
-Received: from web33406.mail.mud.yahoo.com (web33406.mail.mud.yahoo.com
-	[68.142.206.138]) by ozlabs.org (Postfix) with SMTP id 683E167C50
+Return-Path: <powerpc440@googlemail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id ACF1E67A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Oct 2006 02:26:19 +1000 (EST)
-Message-ID: <20061008162617.57578.qmail@web33406.mail.mud.yahoo.com>
-Date: Sun, 8 Oct 2006 09:26:17 -0700 (PDT)
-From: Jeff Stevens <jsteve17@yahoo.com>
-Subject: Re: USB Disk Support
-To: Jeff Stevens <jsteve17@yahoo.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <20061007210105.23485.qmail@web33402.mail.mud.yahoo.com>
+	Mon,  9 Oct 2006 23:45:59 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id n29so622372nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 09 Oct 2006 06:45:57 -0700 (PDT)
+Message-ID: <452A52B4.1010303@googlemail.com>
+Date: Mon, 09 Oct 2006 15:46:28 +0200
+From: powerpc440 <powerpc440@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem with OPB access on 440GX and Linux 2.6.15
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,351 +23,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have more information.  I am using a Phillips
-ISP1562 USB host controller.  I ran the same kernel
-config on the actual Luan board (with an ISP1563 PCI
-eval board from Phillips), and the USB storage works
-fine.  I compared the dmesg from both the Luan board
-and our 440SP custom system, and here are the
-differences:
+Hi everybody,
 
-The custom system stops at:
-...
-usb-storage: Command READ_CAPACITY (10 bytes)
-usb-storage:  25 00 00 00 00 00 00 00 00 00
-usb-storage: Bulk Command S 0x43425355 T 0x3 L 8 F 128
-Trg 0 LUN 0 CL 10
-usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-usb-storage: Status code 0; transferred 31/31
-usb-storage: -- transfer complete
-usb-storage: Bulk command transfer result=0
-usb-storage: usb_stor_bulk_transfer_sglist: xfer 8
-bytes, 1 entries
-usb-storage: Status code 0; transferred 8/8
-usb-storage: -- transfer complete
-usb-storage: Bulk data transfer result 0x0
-usb-storage: Attempting to get CSW...
-usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-usb-storage: command_abort called
-usb-storage: usb_stor_stop_transport called
-usb-storage: -- cancelling URB
+I'm having a PPC440GX based board, based on Ocotea.
+On the board is a Xilinx CPLD chip, connected with OPB (On-Chip
+Peripheral Bus).
+Under U-Boot I can communicate – reading and writing, without any
+problems, but when the Linux kernel ones is loaded, then I'm getting
+error message: “Bus error”. This error message appears on reading or
+writing.
+How I can access the units, which are connected with OPB?
 
-It seems to fail on Attempting to get CSW...  On the
-Luan board it gets passed this:
+There are the source code from the driver, that I use :
 
-usb-storage: Command READ_CAPACITY (10 bytes)
-usb-storage:  25 00 00 00 00 00 00 00 00 00
-usb-storage: Bulk Command S 0x43425355 T 0x3 L 8 F 128
-Trg 0 LUN 0 CL 10
-usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-usb-storage: Status code 0; transferred 31/31
-usb-storage: -- transfer complete
-usb-storage: Bulk command transfer result=0
-usb-storage: usb_stor_bulk_transfer_sglist: xfer 8
-bytes, 1 entries
-usb-storage: Status code 0; transferred 8/8
-usb-storage: -- transfer complete
-usb-storage: Bulk data transfer result 0x0
-usb-storage: Attempting to get CSW...
-usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-usb-storage: Status code 0; transferred 13/13
-usb-storage: -- transfer complete
-usb-storage: Bulk status result = 0
-usb-storage: Bulk Status S 0x53425355 T 0x3 R 0 Stat
-0x0
-usb-storage: scsi cmd done, result=0x0
-usb-storage: *** thread sleeping.
-usb-storage: queuecommand called
-usb-storage: *** thread awakened.
-usb-storage: Command MODE_SENSE (6 bytes)
-usb-storage:  1a 00 3f 00 c0 00
-usb-storage: Bulk Command S 0x43425355 T 0x4 L 192 F
-128 Trg 0 LUN 0 CL 6
-usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-usb-storage: Status code 0; transferred 31/31
-... <continues>
+static void io_addr = ioremap(0x48300000, 0x100000); /* allocate 1MB
+adress space */
+long value = readl(io_addr + 0x7000);
 
-Could this be a noisy usb port?  The USB controller
-used is the same, the only difference is that on the
-custom board, the USB controller is onboard, where as
-on the Luan board it is a PCI card.  U-boot is also
-using practically the same board specific config file
-and board file, other than the flash and DDR stuff. 
-On the custom board, the card reader never ends up in
-/proc/scsi/scsi, but it does on the luan board.
+and the error message:
 
-Thanks,
-   Jeff Stevens
+VA: 0xe2180000
+Machine check in kernel mode.
+Data Read PLB Error
+PLB0: BEAR=0x0000000048307000 ACR= 0x9b000000 BESR= 0x0c000000
+POB0: BEAR=0x00000000040c0020 BESR0=0x00000000 BESR1=0x00000000
+OPB0: BEAR=0x0000000000000000 BSTAT=0x00000000
+Oops: machine check, sig: 7 [#4]
+NIP: E107D078 LR: E107D068 CTR: 00000000
+REGS: c0335f50 TRAP: 0202 Not tainted (2.6.16.27-himadef-0)
+MSR: 00029000 <EE,ME> CR: 22004024 XER: 20000000
+TASK = dfa1cc10[412] 'cat' THREAD: dcc54000
+GPR00: E107D068 DCC55E80 DFA1CC10 00000010 00000010 E107D7AB D490F704
+00000010
+GPR08: 00000000 E2180000 00000000 FFFFFFFF 22004048 1001C334 00000000
+00000400
+GPR16: 00000001 100B0000 10014344 00000000 00000002 00000000 00000000
+DDAC8600
+GPR24: 00000000 DCC55EB8 DD3E5000 00000C00 E1080000 00000010 10014204
+00001000
+NIP [E107D078] sensor_proc_read+0x58/0x94 [himaio]
+LR [E107D068] sensor_proc_read+0x48/0x94 [himaio]
+Call Trace:
+[DCC55E80] [E107D068] sensor_proc_read+0x48/0x94 [himaio] (unreliable)
+[DCC55EB0] [C008C6EC] proc_file_read+0x2a4/0x354
+[DCC55EF0] [C00564F0] vfs_read+0xcc/0x1a0
+[DCC55F10] [C0057228] sys_read+0x4c/0x90
+[DCC55F40] [C00019C4] ret_from_syscall+0x0/0x3c
+Instruction dump:
+7cf93b78 4800048d 80dce160 3ca0e108 38a5d7a0 7f43d378 7f64db78 48000485
+813ce160 7c7d1b78 38c97000 7cc0342c <0c060000> 4c00012c 3ca0e108 7c7a1a14
 
-
---- Jeff Stevens <jsteve17@yahoo.com> wrote:
-
-> I am having issues getting a uDiskOnChip to mount or
-> fdisk under linux.  I have a board running U-Boot on
-> a
-> AMCC 440SP platform.  Linux seems to find the
-> uDiskOnChip fine, however, when I try to fdisk or
-> mount the device, the console hangs.  I have added
-> SCSI, SCSI storage, USB, USB OHCI, USB EHCI, USB
-> Mass
-> Storage.  Here is my dmesg:
-> 
-> bash-3.00# dmesg | grep -i usb
-> usbcore: registered new driver usbfs
-> usbcore: registered new driver hub
-> usbmon: debugfs is not available
-> drivers/usb/core/inode.c: creating file 'devices'
-> drivers/usb/core/inode.c: creating file '001'
-> ehci_hcd 0002:02:08.2: new USB bus registered,
-> assigned bus number 1
-> ehci_hcd 0002:02:08.2: supports USB remote wakeup
-> ehci_hcd 0002:02:08.2: USB 2.0 started, EHCI 0.95,
-> driver 10 Dec 2004
-> usb usb1: default language 0x0409
-> usb usb1: new device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> usb usb1: Product: EHCI Host Controller
-> usb usb1: Manufacturer: Linux 2.6.17.9 ehci_hcd
-> usb usb1: SerialNumber: 0002:02:08.2
-> usb usb1: configuration #1 chosen from 1 choice
-> usb usb1: adding 1-0:1.0 (config #1, interface 0)
-> hub 1-0:1.0: usb_probe_interface
-> hub 1-0:1.0: usb_probe_interface - got id
-> hub 1-0:1.0: USB hub found
-> drivers/usb/core/inode.c: creating file '001'
-> ohci_hcd: 2005 April 22 USB 1.1 'Open' Host
-> Controller
-> (OHCI) Driver (PCI)
-> drivers/usb/core/inode.c: creating file '002'
-> ohci_hcd 0002:02:08.0: new USB bus registered,
-> assigned bus number 2
-> usb usb2: default language 0x0409
-> usb usb2: new device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> usb usb2: Product: OHCI Host Controller
-> usb usb2: Manufacturer: Linux 2.6.17.9 ohci_hcd
-> usb usb2: SerialNumber: 0002:02:08.0
-> usb usb2: configuration #1 chosen from 1 choice
-> usb usb2: adding 2-0:1.0 (config #1, interface 0)
-> hub 2-0:1.0: usb_probe_interface
-> hub 2-0:1.0: usb_probe_interface - got id
-> hub 2-0:1.0: USB hub found
-> hub 2-0:1.0: no power switching (usb 1.0)
-> usb 1-1: new high speed USB device using ehci_hcd
-> and
-> address 2
-> usb 1-1: default language 0x0409
-> usb 1-1: new device strings: Mfr=1, Product=2,
-> SerialNumber=3
-> usb 1-1: Product: uDiskOnChip
-> usb 1-1: Manufacturer: M-Systems
-> usb 1-1: SerialNumber: 98B0FB510031E86E
-> usb 1-1: configuration #1 chosen from 1 choice
-> drivers/usb/core/inode.c: creating file '001'
-> drivers/usb/core/inode.c: creating file '003'
-> ohci_hcd 0002:02:08.1: new USB bus registered,
-> assigned bus number 3
-> usb 1-1: adding 1-1:1.0 (config #1, interface 0)
-> drivers/usb/core/inode.c: creating file '002'
-> usb usb3: default language 0x0409
-> usb usb3: new device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> usb usb3: Product: OHCI Host Controller
-> usb usb3: Manufacturer: Linux 2.6.17.9 ohci_hcd
-> usb usb3: SerialNumber: 0002:02:08.1
-> usb usb3: configuration #1 chosen from 1 choice
-> usb usb3: adding 3-0:1.0 (config #1, interface 0)
-> hub 3-0:1.0: usb_probe_interface
-> hub 3-0:1.0: usb_probe_interface - got id
-> hub 3-0:1.0: USB hub found
-> hub 3-0:1.0: no power switching (usb 1.0)
-> drivers/usb/core/inode.c: creating file '001'
-> Initializing USB Mass Storage driver...
-> usb-storage 1-1:1.0: usb_probe_interface
-> usb-storage 1-1:1.0: usb_probe_interface - got id
-> usb-storage: USB Mass Storage device detected
-> usb-storage: -- associate_dev
-> usb-storage: Vendor: 0x08ec, Product: 0x1000,
-> Revision: 0x0200
-> usb-storage: Interface Subclass: 0x06, Protocol:
-> 0x50
-> usb-storage: Transport: Bulk
-> usb-storage: Protocol: Transparent SCSI
-> scsi0 : SCSI emulation for USB Mass Storage devices
-> usb-storage: *** thread sleeping.
-> usbcore: registered new driver usb-storage
-> USB Mass Storage support registered.
-> usb-storage: device found at 2
-> usb-storage: waiting for device to settle before
-> scanning
-> usb-storage: usb_stor_control_msg: rq=fe rqtype=a1
-> value=0000 index=00 len=1
-> usb-storage: GetMaxLUN command result is 1, data is
-> 0
-> usb-storage: queuecommand called
-> usb-storage: *** thread awakened.
-> usb-storage: Command INQUIRY (6 bytes)
-> usb-storage:  12 00 00 00 24 00
-> usb-storage: Bulk Command S 0x43425355 T 0x1 L 36 F
-> 128 Trg 0 LUN 0 CL 6
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 31
-> bytes
-> usb-storage: Status code 0; transferred 31/31
-> usb-storage: -- transfer complete
-> usb-storage: Bulk command transfer result=0
-> usb-storage: usb_stor_bulk_transfer_sglist: xfer 36
-> bytes, 1 entries
-> usb-storage: Status code 0; transferred 36/36
-> usb-storage: -- transfer complete
-> usb-storage: Bulk data transfer result 0x0
-> usb-storage: Attempting to get CSW...
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 13
-> bytes
-> usb-storage: Status code 0; transferred 13/13
-> usb-storage: -- transfer complete
-> usb-storage: Bulk status result = 0
-> usb-storage: Bulk Status S 0x53425355 T 0x1 R 0 Stat
-> 0x0
-> usb-storage: scsi cmd done, result=0x0
-> usb-storage: *** thread sleeping.
-> usb-storage: queuecommand called
-> usb-storage: *** thread awakened.
-> usb-storage: Command TEST_UNIT_READY (6 bytes)
-> usb-storage:  00 00 00 00 00 00
-> usb-storage: Bulk Command S 0x43425355 T 0x2 L 0 F 0
-> Trg 0 LUN 0 CL 6
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 31
-> bytes
-> usb-storage: Status code 0; transferred 31/31
-> usb-storage: -- transfer complete
-> usb-storage: Bulk command transfer result=0
-> usb-storage: Attempting to get CSW...
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 13
-> bytes
-> usb-storage: Status code 0; transferred 13/13
-> usb-storage: -- transfer complete
-> usb-storage: Bulk status result = 0
-> usb-storage: Bulk Status S 0x53425355 T 0x2 R 0 Stat
-> 0x0
-> usb-storage: scsi cmd done, result=0x0
-> usb-storage: *** thread sleeping.
-> usb-storage: queuecommand called
-> usb-storage: *** thread awakened.
-> usb-storage: Command READ_CAPACITY (10 bytes)
-> usb-storage:  25 00 00 00 00 00 00 00 00 00
-> usb-storage: Bulk Command S 0x43425355 T 0x3 L 8 F
-> 128
-> Trg 0 LUN 0 CL 10
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 31
-> bytes
-> usb-storage: Status code 0; transferred 31/31
-> usb-storage: -- transfer complete
-> usb-storage: Bulk command transfer result=0
-> usb-storage: usb_stor_bulk_transfer_sglist: xfer 8
-> bytes, 1 entries
-> usb-storage: Status code 0; transferred 8/8
-> usb-storage: -- transfer complete
-> usb-storage: Bulk data transfer result 0x0
-> usb-storage: Attempting to get CSW...
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 13
-> bytes
-> usb-storage: command_abort called
-> usb-storage: usb_stor_stop_transport called
-> usb-storage: -- cancelling URB
-> 
-> 
->
--------------------------------------------------------
-> And a few other things:
-> 
-> bash-3.00# cat /proc/bus/usb/devices
-> 
-> T:  Bus=03 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1
-> Spd=12  MxCh= 1
-> B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
-> D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64
-> #Cfgs=  1
-> P:  Vendor=0000 ProdID=0000 Rev= 2.06
-> S:  Manufacturer=Linux 2.6.17.9 ohci_hcd
-> S:  Product=OHCI Host Controller
-> S:  SerialNumber=0002:02:08.1
-> C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
-> I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00
-> Prot=00
-> Driver=hub
-> E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
-> 
-> T:  Bus=02 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1
-> Spd=12  MxCh= 1
-> B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
-> D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64
-> #Cfgs=  1
-> P:  Vendor=0000 ProdID=0000 Rev= 2.06
-> S:  Manufacturer=Linux 2.6.17.9 ohci_hcd
-> S:  Product=OHCI Host Controller
-> S:  SerialNumber=0002:02:08.0
-> C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
-> I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00
-> Prot=00
-> Driver=hub
-> E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
-> 
-> T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1
-> Spd=480 MxCh= 2
-> B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
-> D:  Ver= 2.00 Cls=09(hub  ) Sub=00 Prot=01 MxPS=64
-> #Cfgs=  1
-> P:  Vendor=0000 ProdID=0000 Rev= 2.06
-> S:  Manufacturer=Linux 2.6.17.9 ehci_hcd
-> S:  Product=EHCI Host Controller
-> S:  SerialNumber=0002:02:08.2
-> C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
-> I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00
-> Prot=00
-> Driver=hub
-> E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=256ms
-> 
-> T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2
-> Spd=480 MxCh= 0
-> D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64
-> #Cfgs=  1
-> P:  Vendor=08ec ProdID=1000 Rev= 2.00
-> S:  Manufacturer=M-Systems
-> S:  Product=uDiskOnChip
-> S:  SerialNumber=98B0FB510031E86E
-> C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=140mA
-> I:  If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06
-> Prot=50
-> Driver=usb-storage
-> E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> 
-> bash-3.00# cat /proc/scsi/scsi
-> Attached devices:
-> 
-> 
-> It's probably just a kernel config issue, but I'm
-> not
-> sure what else to try.  I would appreciate any
-> input!
-> 
-> Thanks,
->    Jeff
-> 
-> __________________________________________________
-> Do You Yahoo!?
-> Tired of spam?  Yahoo! Mail has the best spam
-> protection around 
-> http://mail.yahoo.com 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Thanks in advance!
