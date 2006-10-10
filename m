@@ -4,8 +4,8 @@ Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: [Cbe-oss-dev] [PATCH 09/14] spufs: add support for read/write
 	oncntl
-Date: Tue, 10 Oct 2006 15:00:14 +0900
-Message-ID: <C3DCD550FB9ACD4D911D1271DD8CFDD20113D3D7@jptkyxms38.jp.sony.com>
+Date: Tue, 10 Oct 2006 15:49:08 +0900
+Message-ID: <C3DCD550FB9ACD4D911D1271DD8CFDD20113D3E7@jptkyxms38.jp.sony.com>
 From: "Noguchi, Masato" <Masato.Noguchi@jp.sony.com>
 To: "Arnd Bergmann" <arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
@@ -20,9 +20,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-After applying these patches, it seems the kernel leaks memory.
-No doubt you forget to call simple_attr_close on "[PATCH 09/14]
-spufs: add support for read/write oncntl".
+Oops,
+I'm so sorry. I mistake to send wrong patch.
+Correct version is below:
 
 Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 
@@ -36,11 +36,51 @@ linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
 ---
 linux-2.6.18-arnd-20061004.orig/arch/powerpc/platforms/cell/spufs/file.c
 +++ linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
-@@ -246,6 +246,7 @@ static int spufs_cntl_open(struct inode=20
-=20
+@@ -246,6 +246,7 @@ static int spufs_cntl_open(struct inode
+
  static struct file_operations spufs_cntl_fops =3D {
  	.open =3D spufs_cntl_open,
-+	.close =3D simple_attr_close,
++	.release =3D simple_attr_close,
  	.read =3D simple_attr_read,
  	.write =3D simple_attr_write,
  	.mmap =3D spufs_cntl_mmap,
+
+
+> -----Original Message-----
+> From: Noguchi, Masato
+> Sent: Tuesday, October 10, 2006 3:00 PM
+> To: 'Arnd Bergmann'
+> Cc: Paul Mackerras; Arnd Bergmann; linuxppc-dev@ozlabs.org;
+> cbe-oss-dev@ozlabs.org; linux-kernel@vger.kernel.org
+> Subject: RE: [Cbe-oss-dev] [PATCH 09/14] spufs: add support for
+read/write
+> oncntl
+>=20
+> After applying these patches, it seems the kernel leaks memory.
+> No doubt you forget to call simple_attr_close on "[PATCH 09/14]
+> spufs: add support for read/write oncntl".
+>=20
+> Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+>=20
+> ---
+>=20
+> Index:
+linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
+> =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> ---
+>
+linux-2.6.18-arnd-20061004.orig/arch/powerpc/platforms/cell/spufs/file.c
+> +++
+linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
+> @@ -246,6 +246,7 @@ static int spufs_cntl_open(struct inode
+>=20
+>  static struct file_operations spufs_cntl_fops =3D {
+>  	.open =3D spufs_cntl_open,
+> +	.close =3D simple_attr_close,
+>  	.read =3D simple_attr_read,
+>  	.write =3D simple_attr_write,
+>  	.mmap =3D spufs_cntl_mmap,
+>=20
