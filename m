@@ -1,19 +1,18 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 5C58F67B22
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 14:55:37 +1000 (EST)
-Date: Tue, 10 Oct 2006 06:55:34 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH] Add Kconfig dependency !VT for VIOCONS
-Message-ID: <20061010045534.GA3650@stusta.de>
-References: <20061006180549.GB3684@shell0.pdx.osdl.net>
-	<20061006200007.GD3684@shell0.pdx.osdl.net>
-	<20061006143437.f7338860.rdunlap@xenotime.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061006143437.f7338860.rdunlap@xenotime.net>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2502967B22
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:15:13 +1000 (EST)
+Subject: [PATCH] powerpc: Don't crash on cell with 2 BEs when !CONFIG_NUMA
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 10 Oct 2006 15:14:12 +1000
+Message-Id: <1160457252.32237.105.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,65 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 06, 2006 at 02:34:37PM -0700, Randy Dunlap wrote:
-> On Fri, 6 Oct 2006 13:00:07 -0700 Judith Lebzelter wrote:
-> 
-> > Actually, this gets rid of the CONFIG_VIOCONS from my .config, but 
-> > then I get another warning when I build:
-> > 
-> > Warning! Found recursive dependency: VT VIOCONS VT
-> > 
-> > Can anyone suggest something?
-> 
-> I think that your patch is mostly good/correct, but one more line
-> is needed on the VT side:  a deletion.
-> 
-> This works for me:
-> 
-> From: Randy Dunlap <rdunlap@xenotime.net>
-> 
-> Make allmodconfig .config build successfully by making VIOCONS
-> available only if VT=n.  VT need not check VIOCONS.
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
-> ---
->  arch/powerpc/platforms/iseries/Kconfig |    2 +-
->  drivers/char/Kconfig                   |    1 -
->  2 files changed, 1 insertion(+), 2 deletions(-)
-> 
-> --- linux-2619-rc1g2.orig/arch/powerpc/platforms/iseries/Kconfig
-> +++ linux-2619-rc1g2/arch/powerpc/platforms/iseries/Kconfig
-> @@ -3,7 +3,7 @@ menu "iSeries device drivers"
->  	depends on PPC_ISERIES
->  
->  config VIOCONS
-> -	tristate "iSeries Virtual Console Support (Obsolete)"
-> +	tristate "iSeries Virtual Console Support (Obsolete)" if !VT
->  	help
->...
->  config VT
->  	bool "Virtual terminal" if EMBEDDED
+The SPU code will crash if CONFIG_NUMA is not set and SPUs are found on
+a non-0 node. This workaround will ignore those SPEs and just print an
+message in the kernel log.
 
-With this dependency on EMBEDDED, you could as well simply remove 
-VIOCONS...
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
->  	select INPUT
-> -	default y if !VIOCONS
-
-Removing the "default y" is wrong.
-
->  	---help---
->  	  If you say Y here, you will get support for terminal devices with
->  	  display and keyboard devices. These are called "virtual" because you
->...
-> ~Randy
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Index: linux-cell/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/spu_base.c	2006-10-10 13:50:25.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/cell/spu_base.c	2006-10-10 15:11:39.000000000 +1000
+@@ -847,6 +847,17 @@ static int __init create_spu(struct devi
+ 	if (!spu)
+ 		goto out;
+ 
++	spu->node = find_spu_node_id(spe);
++	if (spu->node >= MAX_NUMNODES) {
++		printk(KERN_WARNING "SPE %s on node %d ignored,"
++		       " node number too big\n", spe->full_name, spu->node);
++		printk(KERN_WARNING "Check if CONFIG_NUMA is enabled.\n");
++		return -ENODEV;
++	}
++	spu->nid = of_node_to_nid(spe);
++	if (spu->nid == -1)
++		spu->nid = 0;
++
+ 	ret = spu_map_device(spu, spe);
+ 	/* try old method */
+ 	if (ret)
+@@ -854,10 +865,6 @@ static int __init create_spu(struct devi
+ 	if (ret)
+ 		goto out_free;
+ 
+-	spu->node = find_spu_node_id(spe);
+-	spu->nid = of_node_to_nid(spe);
+-	if (spu->nid == -1)
+-		spu->nid = 0;
+ 	ret = spu_map_interrupts(spu, spe);
+ 	if (ret)
+ 		ret = spu_map_interrupts_old(spu, spe);
