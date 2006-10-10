@@ -1,21 +1,20 @@
-Return-Path: <nvbolhuis@aimsys.nl>
-Received: from smtp-vbr10.xs4all.nl (smtp-vbr10.xs4all.nl [194.109.24.30])
-	by ozlabs.org (Postfix) with ESMTP id 4046167B8D
+Return-Path: <abdul.rahaman@semindia.in>
+Received: from tbird.websitewelcome.com (tbird.websitewelcome.com
+	[67.19.210.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 981EB67A5E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Oct 2006 19:14:24 +1000 (EST)
-Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
-	[80.127.156.242])
-	by smtp-vbr10.xs4all.nl (8.13.8/8.13.8) with ESMTP id k9A95xZi020263
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Oct 2006 11:06:04 +0200 (CEST)
-	(envelope-from nvbolhuis@aimsys.nl)
-Message-ID: <452B626D.8050106@aimsys.nl>
-Date: Tue, 10 Oct 2006 11:05:49 +0200
-From: Norbert van Bolhuis <nvbolhuis@aimsys.nl>
+	Tue, 10 Oct 2006 19:45:33 +1000 (EST)
+Message-ID: <003c01c6ec4e$001bbd60$ab80a8c0@xaltedindia.net>
+From: "Abdul Rahaman" <abdul.rahaman@semindia.in>
+To: "Norbert van Bolhuis" <nvbolhuis@aimsys.nl>, <linuxppc-embedded@ozlabs.org>
+References: <452B626D.8050106@aimsys.nl>
+Subject: Re: MPC8xx CPM I2C interface driver
+Date: Tue, 10 Oct 2006 14:55:11 +0530
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: MPC8xx CPM I2C interface driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,18 +25,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Can somebody can provide me ramdisk iamge to me (initd.boot)
 
-Is there no MPC8xx CPM I2C interface driver in (latest) linux v2.6 or am I
-mistaken ?
-There's no code for CONFIG_I2C_ALGO8XX.
+Or some clear procedure build my self.
 
-I've a MPC870 based board and I was hoping for a MPC8xx CPM I2C interface driver
-to be there (allowing user applications to open and read/write /dev/i2c-0)
+Right now my kernel is booting but is not able come to application shell
+stage.
 
-Thanks,
-N.
+Thanks
+Rahaman
+----- Original Message ----- 
+From: "Norbert van Bolhuis" <nvbolhuis@aimsys.nl>
+To: <linuxppc-embedded@ozlabs.org>
+Sent: Tuesday, October 10, 2006 2:35 PM
+Subject: MPC8xx CPM I2C interface driver
 
 
-
--- 
-This message has been scanned for viruses and is believed to be clean
+>
+> Is there no MPC8xx CPM I2C interface driver in (latest) linux v2.6 or am I
+> mistaken ?
+> There's no code for CONFIG_I2C_ALGO8XX.
+>
+> I've a MPC870 based board and I was hoping for a MPC8xx CPM I2C interface
+driver
+> to be there (allowing user applications to open and read/write /dev/i2c-0)
+>
+> Thanks,
+> N.
+>
+>
+>
+> -- 
+> This message has been scanned for viruses and is believed to be clean
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>
