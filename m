@@ -1,16 +1,19 @@
-Return-Path: <Masato.Noguchi@jp.sony.com>
+Return-Path: <robbat2@gentoo.org>
+Received: from mail.isohunt.com (mail.isohunt.com [69.64.61.20])
+	by ozlabs.org (Postfix) with ESMTP id F1FBC679E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 22:16:10 +1000 (EST)
+Date: Tue, 10 Oct 2006 05:09:23 -0700
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix windfarm platform device usage
+Message-ID: <20061010120923.GA1516@curie-int.orbis-terrarum.net>
+References: <1160444851.32237.41.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [Cbe-oss-dev] [PATCH 09/14] spufs: add support for read/write
-	oncntl
-Date: Tue, 10 Oct 2006 15:49:08 +0900
-Message-ID: <C3DCD550FB9ACD4D911D1271DD8CFDD20113D3E7@jptkyxms38.jp.sony.com>
-From: "Noguchi, Masato" <Masato.Noguchi@jp.sony.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
+In-Reply-To: <1160444851.32237.41.camel@localhost.localdomain>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,67 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Oops,
-I'm so sorry. I mistake to send wrong patch.
-Correct version is below:
 
-Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----
+On Tue, Oct 10, 2006 at 11:47:31AM +1000, Benjamin Herrenschmidt wrote:
+> The windfarm code uses a struct device_driver instead of
+> platform_driver, which can cause crashes if any of the callbacks are
+> called (like on module removal). This fixes it.
+Thanks! This makes my windfarm work a lot easier!
+(I am still working on it, just very slowly).
 
-Index:
-linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
----
-linux-2.6.18-arnd-20061004.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
-@@ -246,6 +246,7 @@ static int spufs_cntl_open(struct inode
+--=20
+Robin Hugh Johnson
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
 
- static struct file_operations spufs_cntl_fops =3D {
- 	.open =3D spufs_cntl_open,
-+	.release =3D simple_attr_close,
- 	.read =3D simple_attr_read,
- 	.write =3D simple_attr_write,
- 	.mmap =3D spufs_cntl_mmap,
+--fUYQa+Pmc3FrFX/N
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks
 
-> -----Original Message-----
-> From: Noguchi, Masato
-> Sent: Tuesday, October 10, 2006 3:00 PM
-> To: 'Arnd Bergmann'
-> Cc: Paul Mackerras; Arnd Bergmann; linuxppc-dev@ozlabs.org;
-> cbe-oss-dev@ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: RE: [Cbe-oss-dev] [PATCH 09/14] spufs: add support for
-read/write
-> oncntl
->=20
-> After applying these patches, it seems the kernel leaks memory.
-> No doubt you forget to call simple_attr_close on "[PATCH 09/14]
-> spufs: add support for read/write oncntl".
->=20
-> Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
->=20
-> ---
->=20
-> Index:
-linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
-> =
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> ---
->
-linux-2.6.18-arnd-20061004.orig/arch/powerpc/platforms/cell/spufs/file.c
-> +++
-linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
-> @@ -246,6 +246,7 @@ static int spufs_cntl_open(struct inode
->=20
->  static struct file_operations spufs_cntl_fops =3D {
->  	.open =3D spufs_cntl_open,
-> +	.close =3D simple_attr_close,
->  	.read =3D simple_attr_read,
->  	.write =3D simple_attr_write,
->  	.mmap =3D spufs_cntl_mmap,
->=20
+iD8DBQFFK41zPpIsIjIzwiwRAhYsAJ9eHBnfo0sPA4SAfYwXJE+tUad5EwCfcn8E
+6DMif6CiI/AvDjf5zF6olLQ=
+=L1PJ
+-----END PGP SIGNATURE-----
+
+--fUYQa+Pmc3FrFX/N--
