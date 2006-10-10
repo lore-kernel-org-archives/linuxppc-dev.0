@@ -1,41 +1,16 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id D112F679E0
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:10:23 +1000 (EST)
-Date: Tue, 10 Oct 2006 07:10:19 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: 2.6.19-rc1: known regressions (v3)
-Message-ID: <20061010051019.GB3650@stusta.de>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
+Return-Path: <Masato.Noguchi@jp.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-Cc: alsa-devel@alsa-project.org, Thierry Vignaud <tvignaud@mandriva.com>,
-	Torsten Kaiser <kernel@bardioc.dyndns.org>, ak@suse.de,
-	linuxppc-dev@ozlabs.org, pavel@suse.cz, Vivek Goyal <vgoyal@in.ibm.com>,
-	Andrew de Quincey <adq_dvb@lidskialf.net>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-usb-devel@lists.sourceforge.net,
-	Steve Fox <drfickle@us.ibm.com>, lm-sensors@lm-sensors.org,
-	art@usfltd.com, Mel Gorman <mel@skynet.ie>,
-	Michael Krufky <mkrufky@linuxtv.org>,
-	Sylvain BERTRAND <sylvain.bertrand@gmail.com>, jgarzik@pobox.com,
-	Prakash Punnoor <prakash@punnoor.de>, fastboot@osdl.org,
-	Olaf Hering <olaf@aepfle.de>, linux-pm@osdl.org,
-	Trond Myklebust <Trond.Myklebust@netapp.com>,
-	Alex Romosan <romosan@sycorax.lbl.gov>,
-	Dave Kleikamp <shaggy@austin.ibm.com>, Antonino Daplas <adaplas@pol.net>,
-	v4l-dvb-maintainer@linuxtv.org, perex@suse.cz,
-	discuss@x86-64.org, linux-fbdev-devel@lists.sourceforge.net,
-	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Sukadev Bhattiprolu <sukadev@us.ibm.com>, ebiederm@xmission.com,
-	Matthieu Castet <castet.matthieu@free.fr>,
-	Jean Delvare <khali@linux-fr.org>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Ernst Herzberg <list-lkml@net4u.de>,
-	David Hubbard <david.c.hubbard@gmail.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [Cbe-oss-dev] [PATCH 09/14] spufs: add support for read/write
+	oncntl
+Date: Tue, 10 Oct 2006 15:00:14 +0900
+Message-ID: <C3DCD550FB9ACD4D911D1271DD8CFDD20113D3D7@jptkyxms38.jp.sony.com>
+From: "Noguchi, Masato" <Masato.Noguchi@jp.sony.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,133 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
-that are not yet fixed Linus' tree.
+After applying these patches, it seems the kernel leaks memory.
+No doubt you forget to call simple_attr_close on "[PATCH 09/14]
+spufs: add support for read/write oncntl".
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+---
 
-
-Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
-Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
-Status     : unknown
-
-
-Subject    : monitor not active after boot
-References : http://lkml.org/lkml/2006/10/5/338
-Submitter  : Olaf Hering <olaf@aepfle.de>
-Caused-By  : Antonino Daplas <adaplas@pol.net>
-             commit 346bc21026e7a92e1d7a4a1b3792c5e8b686133d
-Status     : unknown
-
-
-Subject    : SMP x86_64 boot problem
-References : http://lkml.org/lkml/2006/9/28/330
-             http://lkml.org/lkml/2006/10/5/289
-Submitter  : art@usfltd.com
-Status     : submitter was asked to git bisect
-             result of bisecting seems to be wrong
-
-
-Subject    : sleep/wakeup on powerbooks apparently busted
-References : http://lkml.org/lkml/2006/10/5/13
-Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Handled-By : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Status     : Benjamin will investigate
-
-
-Subject    : w83781d modprobing failure
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7293
-Submitter  : Sylvain BERTRAND <sylvain.bertrand@gmail.com>
-Caused-By  : David Hubbard <david.c.hubbard@gmail.com> (?)
-             commit 8202632647278eba7223727dc442f49227c040d0 (?)
-Handled-By : Jean Delvare <khali@linux-fr.org>
-Status     : Jean is investigating
-
-
-Subject    : CD/DVD drives lost capabilities
-References : http://lkml.org/lkml/2006/10/1/45
-             http://bugzilla.kernel.org/show_bug.cgi?id=7284
-Submitter  : Olaf Hering <olaf@aepfle.de>
-             Johannes Berg <johannes@sipsolutions.net>
-Caused-By  : Jens Axboe <jens.axboe@oracle.com>
-             commit 4aff5e2333c9a1609662f2091f55c3f6fffdad36
-Handled-By : Jens Axboe <jens.axboe@oracle.com>
-Status     : Jens is working on a fix
-
-
-Subject    : snd-hda-intel <-> forcedeth MSI problem
-References : http://lkml.org/lkml/2006/10/5/40
-             http://lkml.org/lkml/2006/10/7/164
-Submitter  : Prakash Punnoor <prakash@punnoor.de>
-Status     : suggested workaround for 2.6.19:
-             deactivate MSI in snd-intel-hda by default
-
-
-Subject    : DVB frontend selection causes compile errors
-References : http://lkml.org/lkml/2006/10/8/244
-Submitter  : Adrian Bunk <bunk@stusta.de>
-Caused-By  : "Andrew de Quincey" <adq_dvb@lidskialf.net>
-             commit 176ac9da4f09820a43fd48f0e74b1486fc3603ba
-Handled-By : Michael Krufky <mkrufky@linuxtv.org>
-             "Andrew de Quincey" <adq_dvb@lidskialf.net>
-Status     : possible workaround: don't allow CONFIG_DVB_FE_CUSTOMISE=y
-
-
-Subject    : ueagle-atm Oops
-References : http://lkml.org/lkml/2006/10/6/390
-Submitter  : Ernst Herzberg <list-lkml@net4u.de>
-Caused-By  : Greg Kroah-Hartman <gregkh@suse.de>
-             commit e7ccdfec087f02930c5cdc81143d4a045ae8d361
-Handled-By : Matthieu Castet <castet.matthieu@free.fr>
-             Laurent Riffard
-Patch      : https://mail.gna.org/public/ueagleatm-dev/2006-10/msg00022.html
-Status     : "patch available, but some cleaning is needed"
-
-
-Subject    : oops in xfrm_register_mode
-References : http://lkml.org/lkml/2006/10/4/170
-Submitter  : Steve Fox <drfickle@us.ibm.com>
-Handled-By : Vivek Goyal <vgoyal@in.ibm.com>
-Status     : patch available
-
-
-Subject    : doesn't boot on iBook G4
-References : http://lkml.org/lkml/2006/10/5/305
-Submitter  : Andreas Schwab <schwab@suse.de>
-Handled-By : Mel Gorman <mel@skynet.ie>
-Patch      : http://lkml.org/lkml/2006/10/6/80
-Status     : patch available
-
-
-Subject    : airo suspend fails
-References : http://lkml.org/lkml/2006/10/6/3
-Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
-Caused-By  : Sukadev Bhattiprolu <sukadev@us.ibm.com>  (?)
-             commit 3b4c7d640376dbccfe80fc4f7b8772ecc7de28c5  (?)
-Handled-By : Dave Kleikamp <shaggy@austin.ibm.com>
-Patch      : http://lkml.org/lkml/2006/10/7/139
-Status     : patch available
-
-
-Subject    : kexec broken on x86_64
-References : http://lkml.org/lkml/2006/10/5/86
-Submitter  : Magnus Damm <magnus.damm@gmail.com>
-Handled-By : Vivek Goyal <vgoyal@in.ibm.com>
-Patch      : http://lkml.org/lkml/2006/10/5/199
-Status     : patch available
-
-
-Subject    : NFSv4 fails to mount (timeout)
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7274
-Submitter  : Torsten Kaiser <kernel@bardioc.dyndns.org>
-Caused-By  : Trond Myklebust <Trond.Myklebust@netapp.com>
-             commit 51b6ded4d9a94a61035deba1d8f51a54e3a3dd86
-Handled-By : Trond Myklebust <Trond.Myklebust@netapp.com>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7274
-Status     : patch available
+Index:
+linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+---
+linux-2.6.18-arnd-20061004.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6.18-arnd-20061004/arch/powerpc/platforms/cell/spufs/file.c
+@@ -246,6 +246,7 @@ static int spufs_cntl_open(struct inode=20
+=20
+ static struct file_operations spufs_cntl_fops =3D {
+ 	.open =3D spufs_cntl_open,
++	.close =3D simple_attr_close,
+ 	.read =3D simple_attr_read,
+ 	.write =3D simple_attr_write,
+ 	.mmap =3D spufs_cntl_mmap,
