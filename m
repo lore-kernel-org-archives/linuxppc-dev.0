@@ -1,17 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 10 Oct 2006 10:23:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: powerpc: Fix make rules for dtc
-Message-ID: <20061010002303.GB8209@localhost.localdomain>
-References: <20061004033753.GB20636@localhost.localdomain>
-	<3711678A-7AA9-493F-B046-2F459604C028@kernel.crashing.org>
-	<20061009002945.GA2259@localhost.localdomain>
-	<811124BA-A99B-46B9-9A16-4111D937468E@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <811124BA-A99B-46B9-9A16-4111D937468E@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 51ED2679E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 11:46:03 +1000 (EST)
+Subject: [PATCH] powerpc: Fix i2c-powermac platform device usage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 10 Oct 2006 11:45:45 +1000
+Message-Id: <1160444745.32237.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 09, 2006 at 04:21:31PM +0200, Segher Boessenkool wrote:
-> >>>  clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
-> >>> -		$(obj)/empty.c
-> >>> +		$(obj)/empty.c *.dtb
-> >>
-> >> If this wildcard works at all, it will still do the wrong thing:
-> >> deleting all .dtb files (even the ones that the Makefile cannot
-> >> create again, e.g., the user put them in the tree manually) is
-> >> at best not very polite.
-> >
-> > It certainly works at all
-> 
-> My problem with it is the := which might be expanded at the wrong
-> time.  Or maybe that won't glob the *.dtb yet, who knows.  
+i2c-powermac was written & merged right after Russell King's changes
+adding platform_driver... which I missed. Thus it still used struct
+device, causing crashes when hitting sleep/wakeup callbacks (it happened
+to work by luck so far, until early/late callbacks got added). This
+causes crashes on sleep/wakeup on PowerBooks with 2.6.19. The patch
+fixes it by using a proper platform_driver.
 
-*I* know, because I checked the Kbuild rules first, and verified that
-globs are legal in the clean-files variable.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> It's
-> not obviously "working" either way.
-
-> > (the preceding $(obj)/empty.c, however, is
-> > wrong, I've sent a separate patch for that).  One could say the same
-> > thing for *.o in clean targets,
-> 
-> Yes, and that's a very well-known problem.
-> 
-> > though I guess adding .dtb files is
-> > rather more likely.  However, I can't seen an obvious way of
-> > generating a list of the re-creatable dtbs, without an explicit
-> > listing of every file in arch/powerpc/boot/dts which sounds like a bit
-> > of a pain.  Suggestions?
-> 
-> You shouldn't clean _all_ dtb's that you could build, only the dtb's
-> that you _did_ build.  You already have a rule for what dtb's to
-> build I assume; just copy the logic from there.
-
-No.  clean rules never work this way, because if you change the config
-between building and cleaning, things won't get cleaned (which is why
-clean rules are just about the only place one uses globs in makefiles,
-rather than expanding variables appropriately).
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Index: linux-work/drivers/i2c/busses/i2c-powermac.c
+===================================================================
+--- linux-work.orig/drivers/i2c/busses/i2c-powermac.c	2006-10-06 13:48:03.000000000 +1000
++++ linux-work/drivers/i2c/busses/i2c-powermac.c	2006-10-10 11:35:46.000000000 +1000
+@@ -182,9 +182,9 @@ static const struct i2c_algorithm i2c_po
+ };
+ 
+ 
+-static int i2c_powermac_remove(struct device *dev)
++static int i2c_powermac_remove(struct platform_device *dev)
+ {
+-	struct i2c_adapter	*adapter = dev_get_drvdata(dev);
++	struct i2c_adapter	*adapter = platform_get_drvdata(dev);
+ 	struct pmac_i2c_bus	*bus = i2c_get_adapdata(adapter);
+ 	int			rc;
+ 
+@@ -195,16 +195,16 @@ static int i2c_powermac_remove(struct de
+ 	if (rc)
+ 		printk("i2c-powermac.c: Failed to remove bus %s !\n",
+ 		       adapter->name);
+-	dev_set_drvdata(dev, NULL);
++	platform_set_drvdata(dev, NULL);
+ 	kfree(adapter);
+ 
+ 	return 0;
+ }
+ 
+ 
+-static int i2c_powermac_probe(struct device *dev)
++static int __devexit i2c_powermac_probe(struct platform_device *dev)
+ {
+-	struct pmac_i2c_bus *bus = dev->platform_data;
++	struct pmac_i2c_bus *bus = dev->dev.platform_data;
+ 	struct device_node *parent = NULL;
+ 	struct i2c_adapter *adapter;
+ 	char name[32];
+@@ -246,11 +246,11 @@ static int i2c_powermac_probe(struct dev
+ 		printk(KERN_ERR "i2c-powermac: can't allocate inteface !\n");
+ 		return -ENOMEM;
+ 	}
+-	dev_set_drvdata(dev, adapter);
++	platform_set_drvdata(dev, adapter);
+ 	strcpy(adapter->name, name);
+ 	adapter->algo = &i2c_powermac_algorithm;
+ 	i2c_set_adapdata(adapter, bus);
+-	adapter->dev.parent = dev;
++	adapter->dev.parent = &dev->dev;
+ 	pmac_i2c_attach_adapter(bus, adapter);
+ 	rc = i2c_add_adapter(adapter);
+ 	if (rc) {
+@@ -265,23 +265,25 @@ static int i2c_powermac_probe(struct dev
+ }
+ 
+ 
+-static struct device_driver i2c_powermac_driver = {
+-	.name = "i2c-powermac",
+-	.bus = &platform_bus_type,
++static struct platform_driver i2c_powermac_driver = {
+ 	.probe = i2c_powermac_probe,
+-	.remove = i2c_powermac_remove,
++	.remove = __devexit_p(i2c_powermac_remove),
++	.driver = {
++		.name = "i2c-powermac",
++		.bus = &platform_bus_type,
++	},
+ };
+ 
+ static int __init i2c_powermac_init(void)
+ {
+-	driver_register(&i2c_powermac_driver);
++	platform_driver_register(&i2c_powermac_driver);
+ 	return 0;
+ }
+ 
+ 
+ static void __exit i2c_powermac_cleanup(void)
+ {
+-	driver_unregister(&i2c_powermac_driver);
++	platform_driver_unregister(&i2c_powermac_driver);
+ }
+ 
+ module_init(i2c_powermac_init);
