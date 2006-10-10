@@ -1,20 +1,34 @@
-Return-Path: <mb@bu3sch.de>
-Received: from bu3sch.de (static-ip-62-75-166-246.inaddr.intergenia.de
-	[62.75.166.246]) by ozlabs.org (Postfix) with ESMTP id 4EA3067BDA
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 09:16:33 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] trivial iomem annotations
-	(arch/powerpc/platfroms/parsemi/pci.c)
-Date: Wed, 11 Oct 2006 01:16:05 +0200
-References: <20061009152309.GQ29920@ftp.linux.org.uk>
-In-Reply-To: <20061009152309.GQ29920@ftp.linux.org.uk>
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 36DF867C06
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 09:20:16 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9ANKD9x009206
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 19:20:13 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9ANKDdb353476
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:20:13 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9ANKCEQ000662
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:20:13 -0600
+Message-ID: <452C2AAA.5070001@austin.ibm.com>
+Date: Tue, 10 Oct 2006 18:20:10 -0500
+From: jschopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200610110116.05870.mb@bu3sch.de>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	linux-kernel@vger.kernel.org
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 21/21]: powerpc/cell spidernet DMA coalescing
+References: <20061010204946.GW4381@austin.ibm.com>
+	<20061010212324.GR4381@austin.ibm.com>
+In-Reply-To: <20061010212324.GR4381@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: akpm@osdl.org, jeff@garzik.org, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,88 +38,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 09 October 2006 17:23, Al Viro wrote:
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  arch/powerpc/platforms/pasemi/pci.c |   26 +++++++++++++-------------
->  1 files changed, 13 insertions(+), 13 deletions(-)
+Linas Vepstas wrote:
+> The current driver code performs 512 DMA mappns of a bunch of 
+> 32-byte structures. This is silly, as they are all in contiguous 
+> memory. Ths patch changes the code to DMA map the entie area
+> with just one call.
 > 
-> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-> index 4679c52..39020c1 100644
-> --- a/arch/powerpc/platforms/pasemi/pci.c
-> +++ b/arch/powerpc/platforms/pasemi/pci.c
-> @@ -35,17 +35,17 @@ #define PA_PXP_CFA(bus, devfn, off) (((b
->  
->  #define CONFIG_OFFSET_VALID(off) ((off) < 4096)
->  
-> -static unsigned long pa_pxp_cfg_addr(struct pci_controller *hose,
-> +static void volatile __iomem *pa_pxp_cfg_addr(struct pci_controller *hose,
->  				       u8 bus, u8 devfn, int offset)
->  {
-> -	return ((unsigned long)hose->cfg_data) + PA_PXP_CFA(bus, devfn, offset);
-> +	return hose->cfg_data + PA_PXP_CFA(bus, devfn, offset);
->  }
->  
->  static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
->  			      int offset, int len, u32 *val)
->  {
->  	struct pci_controller *hose;
-> -	unsigned long addr;
-> +	void volatile __iomem *addr;
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> Cc: James K Lewis <jklewis@us.ibm.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
 
-I think you should drop all these new "volatile"s.
-
->  	hose = pci_bus_to_host(bus);
->  	if (!hose)
-> @@ -62,13 +62,13 @@ static int pa_pxp_read_config(struct pci
->  	 */
->  	switch (len) {
->  	case 1:
-> -		*val = in_8((u8 *)addr);
-> +		*val = in_8(addr);
->  		break;
->  	case 2:
-> -		*val = in_le16((u16 *)addr);
-> +		*val = in_le16(addr);
->  		break;
->  	default:
-> -		*val = in_le32((u32 *)addr);
-> +		*val = in_le32(addr);
->  		break;
->  	}
->  
-> @@ -79,7 +79,7 @@ static int pa_pxp_write_config(struct pc
->  			       int offset, int len, u32 val)
->  {
->  	struct pci_controller *hose;
-> -	unsigned long addr;
-> +	void volatile __iomem *addr;
->  
->  	hose = pci_bus_to_host(bus);
->  	if (!hose)
-> @@ -96,16 +96,16 @@ static int pa_pxp_write_config(struct pc
->  	 */
->  	switch (len) {
->  	case 1:
-> -		out_8((u8 *)addr, val);
-> -		(void) in_8((u8 *)addr);
-> +		out_8(addr, val);
-> +		(void) in_8(addr);
->  		break;
->  	case 2:
-> -		out_le16((u16 *)addr, val);
-> -		(void) in_le16((u16 *)addr);
-> +		out_le16(addr, val);
-> +		(void) in_le16(addr);
->  		break;
->  	default:
-> -		out_le32((u32 *)addr, val);
-> -		(void) in_le32((u32 *)addr);
-> +		out_le32(addr, val);
-> +		(void) in_le32(addr);
->  		break;
->  	}
->  	return PCIBIOS_SUCCESSFUL;
-
--- 
-Greetings Michael.
+The others look good, but this one complicates the code and doesn't have any benefit.  20 
+for 21 isn't bad.
