@@ -1,21 +1,16 @@
-Return-Path: <kashiwagi@co-nss.co.jp>
-Received: from nssinet2.co-nss.co.jp (nssinet2.co-nss.co.jp [150.96.0.5])
-	by ozlabs.org (Postfix) with ESMTP id 7ACCF679E9
+Return-Path: <DFolden@LIO.AACISD.com>
+Received: from mail.aacisd.com (mail.aacisd.com [63.144.132.67])
+	by ozlabs.org (Postfix) with SMTP id 733D367A5E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Oct 2006 01:52:21 +1000 (EST)
-Received: from nssinet2.co-nss.co.jp (localhost [127.0.0.1])
-	by nssinet2.co-nss.co.jp (8.9.3/3.7W) with ESMTP id AAA16377
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Oct 2006 00:48:49 +0900 (JST)
+	Wed, 11 Oct 2006 02:05:17 +1000 (EST)
 MIME-Version: 1.0
-Date: Wed, 11 Oct 2006 00:50:57 +0900
-Subject: RE: Linuxppc-embedded Digest, Vol 26, Issue 13
-From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
-To: Jaap de Jong <jaap.dejong@nedap.com>, linuxppc-embedded@ozlabs.org
-Message-ID: <JP2006101100505710.12505093@co-nss.co.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
-In-Reply-To: <6915D0AE8B9047438F320B466AE30FDD798359@nvs0003.nedap.local>
-References: <6915D0AE8B9047438F320B466AE30FDD798359@nvs0003.nedap.local>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6EC84.29B0D83B"
+Subject: I2C Driver for mpc8272
+Date: Tue, 10 Oct 2006 11:52:42 -0400
+Message-ID: <BE8B3EECA608414FB163FBA4576FCEBD88BAAD@EXNY.us.corp.aacisd.com>
+From: "Folden Dwayne" <DFolden@LIO.AACISD.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,60 +21,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
 
-Thanks for your advice.
-Although I was not verifying "Digest Vol26 Issue13", cache needed to be
-turned OFF for operating 2.4 kernels by Avnet v4fx12mm.
-However, when the same kernel was operated by ML403, even if it did not
-turn OFF cache, it was operating normally.
+------_=_NextPart_001_01C6EC84.29B0D83B
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Although the default reference design is not verified by v4fx12mm
-recently, it is operating normally by 2.6.17.3 kernel and MPMC2 now.
+If anyone is interested I have a working module for the mpc8272 under =
+the Linux 2.6.11 kernel.
+If you want this driver please compile a list of email addresses and =
+email me the request with the list in the CC field and I will do a =
+blanket reply to all with the files. This driver was compiled using =
+Freescale Codewarrior for Linux.
+=20
+This driver is a generic driver which uses the CPM and has been =
+successfully interfaced to a TMP100 (TI temp sensor) and a PCF8574 (TI =
+8-bit I/O expander).
+=20
+Good luck to all
+Dwayne Folden
 
-However, if there is fault of infalte in 2.6.17 kernels, there is E-Mail
-of Dave-San. Since the ramdisk capacity is 2MB that initrd is operating
-normally in my kernel.
+------_=_NextPart_001_01C6EC84.29B0D83B
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Best Regards,
-
-Yoshio Kashiwagi - Nissin Systems
-
-> Not sure...
-> I have not been playing with 2.6 kernels but this looks a lot like
-> the problems I found when trying to get the 2.4 kernel to work.
-> Default for the avnet v4fx12 is to use the opb bus as raminterface.
-> You should explicitly select the plb bus...
-> 
-> Jaap de Jong
-> 
-> ----------------------------------------------------------------------
-> 
-> Message: 1
-> Date: Fri, 06 Oct 2006 10:33:53 +0900
-> From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
-> Subject: Re: Problem with initrd
-> To: Glenn.G.Hart@us.westinghouse.com, linuxppc-embedded@ozlabs.org
-> Message-ID: <JF2006100610335316.6823078@co-nss.co.jp>
-> Content-Type: text/plain; charset=ISO-2022-JP
-> 
-> Glenn-San,
-> 
-> Are you developing by the custom-made hardware of V4FX12?
-> If the 16-bit memory controller is used, it may have a problem in the
-> memory controller.
-> 
-> Can you try the memory controller of http://www.xilinx.com/mpmc2?
-> I confirmed that the 16-bit memory controller of MPMC2 worked 
-correctly
-> by Linux. Or I can send the ramdisk image for 2.6.17.3 kernel which I 
-am
-> using to you.
-> 
-> Yoshio kashiwagi - Nissin Systems
-> 
-__________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><HTML =
+DIR=3Dltr><HEAD><META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1"></HEAD><BODY><DIV><FONT face=3D'Arial' =
+color=3D#000000 size=3D2>If anyone is interested I have a working module =
+for the =0A=
+mpc8272 under the Linux 2.6.11 kernel.</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>If you want this driver please compile =
+a list of =0A=
+email addresses and email me the request with the list in the CC field =
+and I =0A=
+will do a blanket reply to all with the files. This driver was compiled =
+using =0A=
+Freescale Codewarrior for Linux.</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>This driver is a generic driver which =
+uses the CPM =0A=
+and has been successfully interfaced to a TMP100 (TI temp sensor) and a =
+PCF8574 =0A=
+(TI 8-bit I/O expander).</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Good luck to all</FONT></DIV>=0A=
+<DIV><FONT face=3DArial size=3D2>Dwayne Folden</FONT></DIV></BODY></HTML>
+------_=_NextPart_001_01C6EC84.29B0D83B--
