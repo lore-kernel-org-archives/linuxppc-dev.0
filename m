@@ -1,18 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2502967B22
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:15:13 +1000 (EST)
-Subject: [PATCH] powerpc: Don't crash on cell with 2 BEs when !CONFIG_NUMA
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 10 Oct 2006 15:14:12 +1000
-Message-Id: <1160457252.32237.105.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17707.12331.371766.892813@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Oct 2006 15:31:23 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: Please pull powerpc.git 'merge' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The SPU code will crash if CONFIG_NUMA is not set and SPUs are found on
-a non-0 node. This workaround will ignore those SPEs and just print an
-message in the kernel log.
+Linus,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Please do:
 
-Index: linux-cell/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spu_base.c	2006-10-10 13:50:25.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/spu_base.c	2006-10-10 15:11:39.000000000 +1000
-@@ -847,6 +847,17 @@ static int __init create_spu(struct devi
- 	if (!spu)
- 		goto out;
- 
-+	spu->node = find_spu_node_id(spe);
-+	if (spu->node >= MAX_NUMNODES) {
-+		printk(KERN_WARNING "SPE %s on node %d ignored,"
-+		       " node number too big\n", spe->full_name, spu->node);
-+		printk(KERN_WARNING "Check if CONFIG_NUMA is enabled.\n");
-+		return -ENODEV;
-+	}
-+	spu->nid = of_node_to_nid(spe);
-+	if (spu->nid == -1)
-+		spu->nid = 0;
-+
- 	ret = spu_map_device(spu, spe);
- 	/* try old method */
- 	if (ret)
-@@ -854,10 +865,6 @@ static int __init create_spu(struct devi
- 	if (ret)
- 		goto out_free;
- 
--	spu->node = find_spu_node_id(spe);
--	spu->nid = of_node_to_nid(spe);
--	if (spu->nid == -1)
--		spu->nid = 0;
- 	ret = spu_map_interrupts(spu, spe);
- 	if (ret)
- 		ret = spu_map_interrupts_old(spu, spe);
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+to get some PowerPC bugfixes, including a pile of pt_regs fixes for
+ARCH=ppc from Al Viro, and a fix for a crash on resume on powerbooks
+from Ben.
+
+Thanks,
+Paul.
+
+ arch/powerpc/boot/Makefile            |   16 +--
+ arch/powerpc/configs/maple_defconfig  |   56 ++++++++--
+ arch/powerpc/platforms/maple/pci.c    |  187 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powermac/smp.c |    7 +
+ arch/powerpc/xmon/xmon.c              |    6 +
+ arch/ppc/4xx_io/serial_sicc.c         |    8 +
+ arch/ppc/8260_io/enet.c               |    4 -
+ arch/ppc/8260_io/fcc_enet.c           |    6 +
+ arch/ppc/8xx_io/commproc.c            |   19 ++-
+ arch/ppc/8xx_io/cs4218_tdm.c          |    4 -
+ arch/ppc/8xx_io/enet.c                |    4 -
+ arch/ppc/8xx_io/fec.c                 |    7 +
+ arch/ppc/kernel/smp.c                 |    4 -
+ arch/ppc/platforms/apus_setup.c       |    2 
+ arch/ppc/platforms/hdpu.c             |   22 ++--
+ arch/ppc/platforms/radstone_ppc7d.c   |   10 +-
+ arch/ppc/platforms/sbc82xx.c          |    4 -
+ arch/ppc/syslib/cpc700.h              |    2 
+ arch/ppc/syslib/cpc700_pic.c          |    2 
+ arch/ppc/syslib/cpm2_pic.c            |    2 
+ arch/ppc/syslib/cpm2_pic.h            |    2 
+ arch/ppc/syslib/gt64260_pic.c         |    9 +-
+ arch/ppc/syslib/ibm440gx_common.c     |    2 
+ arch/ppc/syslib/ipic.c                |    2 
+ arch/ppc/syslib/m82xx_pci.c           |    4 -
+ arch/ppc/syslib/m8xx_setup.c          |    2 
+ arch/ppc/syslib/m8xx_wdt.c            |    4 -
+ arch/ppc/syslib/mpc52xx_pic.c         |    2 
+ arch/ppc/syslib/mv64360_pic.c         |   18 +--
+ arch/ppc/syslib/open_pic2.c           |    2 
+ arch/ppc/syslib/ppc403_pic.c          |    2 
+ arch/ppc/syslib/ppc4xx_pic.c          |    8 +
+ arch/ppc/syslib/ppc85xx_rio.c         |    9 +-
+ arch/ppc/syslib/ppc8xx_pic.c          |    4 -
+ arch/ppc/syslib/xilinx_pic.c          |    2 
+ drivers/i2c/busses/i2c-powermac.c     |   28 +++--
+ drivers/macintosh/windfarm_pm112.c    |   18 ++-
+ drivers/macintosh/windfarm_pm81.c     |   24 ++--
+ drivers/macintosh/windfarm_pm91.c     |   24 ++--
+ include/asm-ppc/commproc.h            |    3 -
+ include/asm-ppc/gt64260.h             |    2 
+ include/asm-ppc/mpc52xx.h             |    2 
+ include/asm-ppc/mv64x60.h             |    4 -
+ 43 files changed, 370 insertions(+), 179 deletions(-)
+
+Al Viro:
+      [POWERPC] ARCH=ppc pt_regs fixes
+
+Benjamin Herrenschmidt:
+      [POWERPC] Make U4 PCIe work on maple
+      [POWERPC] Fix Maple secondary IDE interrupt
+      [POWERPC] Update maple defconfig
+      [POWERPC] Fix i2c-powermac platform device usage
+      [POWERPC] Fix windfarm platform device usage
+
+Geoff Levand:
+      [POWERPC] cell: fix default zImage build target
+
+Michael Ellerman:
+      [POWERPC] Fix boot wrapper invocation if CROSS_COMPILE contains spaces
+
+Paul Mackerras:
+      [POWERPC] Fix xmon IRQ handler for pt_regs removal
+      [POWERPC] Fix secondary CPU startup on old "powersurge" SMP powermacs
