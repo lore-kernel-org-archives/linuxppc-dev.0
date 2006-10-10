@@ -1,18 +1,12 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3DD5A67A5E
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 03:16:22 +1000 (EST)
-Date: Tue, 10 Oct 2006 12:15:19 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@osdl.org>
-Subject: BUG() in copy_fdtable() with 64K pages (2.6.19-rc1-mm1)
-Message-ID: <20061010121519.447d62f8@localhost.localdomain>
-In-Reply-To: <20061010000928.9d2d519a.akpm@osdl.org>
-References: <20061010000928.9d2d519a.akpm@osdl.org>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 10 Oct 2006 11:50:51 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 4/4] powerpc: Add simple memory allocator to bootwrapper
+Message-ID: <20061010185051.GA32008@mag.az.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Vadim Lobanov <vlobanov@speakeasy.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +16,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I keep hitting this on -rc1-mm1. The system comes up but I can't login
-since login hits it.
+Provide primitive malloc, free, and realloc functions for bootwrapper.
 
-Bisect says that fdtable-implement-new-pagesize-based-fdtable-allocator.patch is at fault.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
 
-CONFIG_PPC_64K_PAGES=y is required for it to fail, with 4K pages it's fine.
+This is a replacement patch for [PATCH 3/4]
+---
 
-(Hardware is a Quad G5, 1GB RAM, g5_defconfig + CONFIG_PPC_64K_PAGES, defaults 
-on all new options)
+ Makefile       |    2 
+ simple_alloc.c |  149 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 150 insertions(+), 1 deletion(-)
+---
 
-
-
-kernel BUG in copy_fdtable at fs/file.c:138!
-Oops: Exception in kernel mode, sig: 5 [#1]
-SMP NR_CPUS=4 
-Modules linked in: snd_pcm_oss snd_mixer_oss joydev snd_pcm snd_page_alloc snd_timer snd soundcore
-NIP: C0000000000B926C LR: C0000000000B9210 CTR: C0000000000ADA34
-REGS: c00000000f80ba60 TRAP: 0700   Not tainted  (2.6.19-rc1-mm1)
-MSR: 9000000000029032 <EE,ME,IR,DR>  CR: 22002428  XER: 200FFFFF
-TASK = c00000000fe38ba0[2022] 'dhclient-script' THREAD: c00000000f808000 CPU: 2
-GPR00: 0000000000000001 C00000000F80BCE0 C0000000006CDCC8 C00000003F8CF880 
-GPR04: 00000000000000D0 0000000042002428 0000000000004000 000000000FEC1950 
-GPR08: C000000000585480 0000000000000000 C00000003FFD0480 C000000001E04200 
-GPR12: 100000000000F032 C000000000585480 0000000010000000 0000000010010000 
-GPR16: 0000000010002790 000000001001819D 00000000FCCDF818 0000000000000000 
-GPR20: 0000000000000000 00000000FCCDF828 0000000010018790 0000000010018760 
-GPR24: 00000000F7FDE6F0 C00000003F8CF800 0000000000000000 C00000003F8CF810 
-GPR28: 0000000000000040 0000000000000000 C0000000005B4B00 C00000000FB511C0 
-NIP [C0000000000B926C] .expand_files+0x1d4/0x34c
-LR [C0000000000B9210] .expand_files+0x178/0x34c
-Call Trace:
-[C00000000F80BCE0] [C0000000000B91D0] .expand_files+0x138/0x34c (unreliable)
-[C00000000F80BD90] [C0000000000ADAD8] .sys_dup2+0xa4/0x1ec
-[C00000000F80BE30] [C00000000000871C] syscall_exit+0x0/0x40
-Instruction dump:
-60000000 4800000c 4bfd3609 60000000 7fe3fb78 4bfdf125 60000000 48000150 
-835f0000 7f9ae040 7c101026 5400effe <0b000000> 2fbc0000 419e00a4 7b9d1828 
-
-
-
--Olof
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index ef1bec4..895e537 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -41,7 +41,7 @@ zliblinuxheader := zlib.h zconf.h zutil.
+ 		$(addprefix $(obj)/,$(zlibheader))
+ 
+ src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c ns16550.c \
+-		serial.c div64.S util.S $(zlib)
++		serial.c simple_alloc.c div64.S util.S $(zlib)
+ src-plat := of.c
+ src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
+ 
+diff --git a/arch/powerpc/boot/simple_alloc.c b/arch/powerpc/boot/simple_alloc.c
+new file mode 100644
+index 0000000..d6aa1b1
+--- /dev/null
++++ b/arch/powerpc/boot/simple_alloc.c
+@@ -0,0 +1,149 @@
++/*
++ * Implement primitive realloc(3) functionality.
++ *
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ *
++ * 2006 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <stddef.h>
++#include "types.h"
++#include "page.h"
++#include "string.h"
++#include "ops.h"
++
++#define	ENTRY_BEEN_USED	0x01
++#define	ENTRY_IN_USE	0x02
++
++static struct alloc_info {
++	u32	flags;
++	u32	base;
++	u32	size;
++} *alloc_tbl;
++
++static u32 tbl_entries;
++static u32 alloc_min;
++static u32 space_left;
++
++/*
++ * First time an entry is used, its base and size are set.
++ * An entry can be freed and re-malloc'd but its base & size don't change.
++ * Should be smart enough for needs of bootwrapper.
++ */
++static void *simple_malloc(u32 size)
++{
++	u32 i;
++	struct alloc_info *p = alloc_tbl, *prevp = NULL;
++
++	if (size == 0)
++		goto err_out;
++
++	size = _ALIGN_UP(size, alloc_min);
++
++	for (i=0; i<tbl_entries; i++) {
++		if (!(p->flags & ENTRY_BEEN_USED)) { /* never been used */
++			if (size <= space_left) {
++				if (i > 0)
++					p->base = prevp->base + prevp->size;
++				p->size = size;
++				p->flags = ENTRY_BEEN_USED | ENTRY_IN_USE;
++				space_left -= size;
++				return (void *)p->base;
++			}
++			goto err_out; /* not enough space left */
++		}
++		/* reuse an entry keeping same base & size */
++		else if (!(p->flags & ENTRY_IN_USE) && (size <= p->size)) {
++			p->flags |= ENTRY_IN_USE;
++			return (void *)p->base;
++		}
++		prevp = p++;
++	}
++err_out:
++	return NULL;
++}
++
++static struct alloc_info *simple_find_entry(void *ptr)
++{
++	u32 i;
++	struct alloc_info *p = alloc_tbl;
++
++	for (i=0; i<tbl_entries; i++,p++) {
++		if (!(p->flags & ENTRY_BEEN_USED))
++			break;
++		if ((p->flags & ENTRY_IN_USE) && (p->base == (u32)ptr))
++			return p;
++	}
++	return NULL;
++}
++
++static void simple_free(void *ptr)
++{
++	struct alloc_info *p = simple_find_entry(ptr);
++
++	if (p != NULL)
++		p->flags &= ~ENTRY_IN_USE;
++}
++
++/*
++ * Change size of area pointed to by 'ptr' to 'size'.
++ * If 'ptr' is NULL, then its a malloc().  If 'size' is 0, then its a free().
++ * 'ptr' must be NULL or a value previously returned by simple_realloc().
++ */
++static void *simple_realloc(void *ptr, unsigned long size)
++{
++	struct alloc_info *p;
++	void *new;
++
++	if (size == 0) {
++		simple_free(ptr);
++		return NULL;
++	}
++
++	if (ptr == NULL)
++		return simple_malloc(size);
++
++	p = simple_find_entry(ptr);
++	if (p == NULL) /* ptr not from simple_malloc/simple_realloc */
++		return NULL;
++	if (size <= p->size) /* fits in current block */
++		return ptr;
++
++	new = simple_malloc(size);
++	memcpy(new, ptr, p->size);
++	simple_free(ptr);
++	return new;
++}
++
++/*
++ * Returns addr of first byte after heap so caller can see if it took
++ * too much space.  If so, change args & try again.
++ */
++void *simple_alloc_init(char *base, u32 heap_size, u32 granularity,
++		u32 max_allocs)
++{
++	u32 heap_base, tbl_size;
++
++	heap_size = _ALIGN_UP(heap_size, granularity);
++	alloc_min = granularity;
++	tbl_entries = max_allocs;
++
++	tbl_size = tbl_entries * sizeof(struct alloc_info);
++
++	alloc_tbl = (struct alloc_info *)_ALIGN_UP((unsigned long)base, 8);
++	memset(alloc_tbl, 0, tbl_size);
++
++	heap_base = _ALIGN_UP((u32)alloc_tbl + tbl_size, alloc_min);
++
++	alloc_tbl[0].base = heap_base;
++	space_left = heap_size;
++
++	platform_ops.malloc = simple_malloc;
++	platform_ops.free = simple_free;
++	platform_ops.realloc = simple_realloc;
++
++	return (void *)(heap_base + heap_size);
++}
