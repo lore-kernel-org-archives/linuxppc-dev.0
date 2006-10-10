@@ -1,19 +1,16 @@
-Return-Path: <abdul.rahaman@semindia.in>
-Received: from tbird.websitewelcome.com (tbird.websitewelcome.com
-	[67.19.210.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E193667B8B
+Return-Path: <bottle715@126.com>
+Received: from m15-2.126.com (m15-2.126.com [220.181.15.2])
+	by ozlabs.org (Postfix) with SMTP id 6C45B67B83
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Oct 2006 21:05:33 +1000 (EST)
-Message-ID: <004401c6ec4e$2e079190$ab80a8c0@xaltedindia.net>
-From: "Abdul Rahaman" <abdul.rahaman@semindia.in>
-To: "Norbert van Bolhuis" <nvbolhuis@aimsys.nl>, <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8xx CPM I2C interface driver
-Date: Tue, 10 Oct 2006 14:56:27 +0530
+	Tue, 10 Oct 2006 22:36:17 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <452B88BF.000156.24582@bj126app2.126.com>
+Date: Tue, 10 Oct 2006 19:49:19 +0800 (CST)
+From: "lzh" <bottle715@126.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: linux hang at a random place on booting
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,66 +21,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-sorry I forgot to mention its MPC 8xx
-Can somebody can provide me ramdisk iamge to me (initd.boot)
 
-Or some clear procedure build my self.
+--Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-Right now my kernel is booting but is not able come to application shell
-stage.
+  hi,
+ i built a linux-2.6.11 kernel for mpc8540ads board=A1=A3linux hang at a =
+random place on booting.
+can anybody help?
+thank you!
+ =20
+--Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
-Rahaman
-
------ Original Message ----- 
-From: "Abdul Rahaman" <abdul.rahaman@semindia.in>
-To: "Norbert van Bolhuis" <nvbolhuis@aimsys.nl>;
-<linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, October 10, 2006 2:55 PM
-Subject: Re: MPC8xx CPM I2C interface driver
-
-
-> Can somebody can provide me ramdisk iamge to me (initd.boot)
->
-> Or some clear procedure build my self.
->
-> Right now my kernel is booting but is not able come to application shell
-> stage.
->
-> Thanks
-> Rahaman
-> ----- Original Message ----- 
-> From: "Norbert van Bolhuis" <nvbolhuis@aimsys.nl>
-> To: <linuxppc-embedded@ozlabs.org>
-> Sent: Tuesday, October 10, 2006 2:35 PM
-> Subject: MPC8xx CPM I2C interface driver
->
->
-> >
-> > Is there no MPC8xx CPM I2C interface driver in (latest) linux v2.6 or am
-I
-> > mistaken ?
-> > There's no code for CONFIG_I2C_ALGO8XX.
-> >
-> > I've a MPC870 based board and I was hoping for a MPC8xx CPM I2C
-interface
-> driver
-> > to be there (allowing user applications to open and read/write
-/dev/i2c-0)
-> >
-> > Thanks,
-> > N.
-> >
-> >
-> >
-> > -- 
-> > This message has been scanned for viruses and is believed to be clean
-> >
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
-> >
->
+<div>&nbsp;</div><div>&nbsp;hi,<br>&nbsp;i built a linux-2.6.11 kernel fo=
+r mpc8540ads board=A1=A3linux hang at a random place on booting.<br>can a=
+nybody help?<br>thank you!<br></div><div>&nbsp;</div><div>&nbsp;</div><br=
+><!-- footer --><br><br><br><br><br><div style=3D"border-bottom:1px solid=
+ #999"></div><br>=0A=0A=09<font color=3D"black" style=3D"font-size:14.8px=
+">=C3=C0 =C5=AE =BF=B4 =C1=CB =BE=CD =CF=EB =D2=AA ( =CD=BC )</font>=0A=09=
+<br>=0A=09 <a href=3D"http://adtaobao.allyes.com/main/adfclick?db=3Dadtao=
+bao&bid=3D600,597,58&cid=3D30015,198,1&sid=3D32501&show=3Dignore&url=3Dht=
+tp://www.taobao.com/vertical/lady/pro.php" target=3D"_blank" style=3D"fon=
+t-size:13px;line-height:160%;color:blue">=BE=F8 =B6=D4 =C1=ED =C0=E0 ! =BA=
+=CD =C0=CF =C6=C5 =B3=A4 =BC=D9 =C6=DA =BC=E4 =B5=C4 =B0=DC =BC=D2 =BC=C7=
+ =C2=BC ( =D7=E9 =CD=BC )=0A</a>=0A=0A
+--Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi--
