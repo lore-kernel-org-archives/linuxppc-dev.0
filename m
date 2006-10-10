@@ -1,25 +1,24 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 701ED67C28
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 07:03:15 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e33.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9AL2t1D026248
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:02:55 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9AL2taD530504
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:02:55 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9AL2t3X030318
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:02:55 -0600
-Date: Tue, 10 Oct 2006 16:02:54 -0500
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 73E0167CEA
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 07:04:04 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9AL41gV011608
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:04:01 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9AL41nk132290
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:04:01 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9AL40jh003358
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:04:00 -0400
+Date: Tue, 10 Oct 2006 16:04:00 -0500
 To: akpm@osdl.org
-Subject: [PATCH 7/21]: Spidernet fix register field definitions
-Message-ID: <20061010210254.GD4381@austin.ibm.com>
+Subject: [PATCH 8/21]: Spidernet stop queue when queue is full.
+Message-ID: <20061010210400.GE4381@austin.ibm.com>
 References: <20061010204946.GW4381@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,70 +37,78 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This patch fixes the names of a few fields in the DMA control 
-register. There is no functional change.
+This patch adds a call to netif_stop_queue() when there is
+no more room for more packets on the transmit queue.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: James K Lewis <jklewis@us.ibm.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 
 ----
-
- drivers/net/spider_net.c |    2 +-
- drivers/net/spider_net.h |   16 +++++++++++-----
- 2 files changed, 12 insertions(+), 6 deletions(-)
+ drivers/net/spider_net.c |   33 ++++++++++-----------------------
+ 1 file changed, 10 insertions(+), 23 deletions(-)
 
 Index: linux-2.6.18-mm2/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.18-mm2.orig/drivers/net/spider_net.c	2006-10-10 12:49:56.000000000 -0500
-+++ linux-2.6.18-mm2/drivers/net/spider_net.c	2006-10-10 12:51:26.000000000 -0500
-@@ -1614,7 +1614,7 @@ spider_net_enable_card(struct spider_net
- 			     SPIDER_NET_INT2_MASK_VALUE);
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net.c	2006-10-10 12:51:26.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net.c	2006-10-10 12:52:42.000000000 -0500
+@@ -823,39 +823,25 @@ spider_net_xmit(struct sk_buff *skb, str
+ 	struct spider_net_descr_chain *chain = &card->tx_chain;
+ 	struct spider_net_descr *descr = chain->head;
+ 	unsigned long flags;
+-	int result;
  
- 	spider_net_write_reg(card, SPIDER_NET_GDTDMACCNTR,
--			     SPIDER_NET_GDTDCEIDIS);
-+			     SPIDER_NET_GDTBSTA | SPIDER_NET_GDTDCEIDIS);
+ 	spin_lock_irqsave(&chain->lock, flags);
+ 
+ 	spider_net_release_tx_chain(card, 0);
+ 
+-	if (chain->head->next == chain->tail->prev) {
+-		card->netdev_stats.tx_dropped++;
+-		result = NETDEV_TX_LOCKED;
+-		goto out;
+-	}
++	if ((chain->head->next == chain->tail->prev) ||
++	   (spider_net_get_descr_status(descr) != SPIDER_NET_DESCR_NOT_IN_USE) ||
++	   (spider_net_prepare_tx_descr(card, skb) != 0)) {
+ 
+-	if (spider_net_get_descr_status(descr) != SPIDER_NET_DESCR_NOT_IN_USE) {
+ 		card->netdev_stats.tx_dropped++;
+-		result = NETDEV_TX_LOCKED;
+-		goto out;
++		spin_unlock_irqrestore(&chain->lock, flags);
++		netif_stop_queue(netdev);
++		return NETDEV_TX_BUSY;
+ 	}
+ 
+-	if (spider_net_prepare_tx_descr(card, skb) != 0) {
+-		card->netdev_stats.tx_dropped++;
+-		result = NETDEV_TX_BUSY;
+-		goto out;
+-	}
+-
+-	result = NETDEV_TX_OK;
+-
+ 	spider_net_kick_tx_dma(card);
+ 	card->tx_chain.head = card->tx_chain.head->next;
+-
+-out:
+ 	spin_unlock_irqrestore(&chain->lock, flags);
+-	netif_wake_queue(netdev);
+-	return result;
++	return NETDEV_TX_OK;
  }
  
  /**
-Index: linux-2.6.18-mm2/drivers/net/spider_net.h
-===================================================================
---- linux-2.6.18-mm2.orig/drivers/net/spider_net.h	2006-10-10 12:20:55.000000000 -0500
-+++ linux-2.6.18-mm2/drivers/net/spider_net.h	2006-10-10 12:51:26.000000000 -0500
-@@ -191,7 +191,9 @@ extern char spider_net_driver_name[];
- #define SPIDER_NET_MACMODE_VALUE	0x00000001
- #define SPIDER_NET_BURSTLMT_VALUE	0x00000200 /* about 16 us */
+@@ -874,9 +860,10 @@ spider_net_cleanup_tx_ring(struct spider
+ 	spin_lock_irqsave(&card->tx_chain.lock, flags);
  
--/* 1(0)					enable r/tx dma
-+/* DMAC control register GDMACCNTR
-+ *
-+ * 1(0)				enable r/tx dma
-  *  0000000				fixed to 0
-  *
-  *         000000			fixed to 0
-@@ -200,6 +202,7 @@ extern char spider_net_driver_name[];
-  *
-  *                 000000		fixed to 0
-  *                       00		burst alignment: 128 bytes
-+ *                       11		burst alignment: 1024 bytes
-  *
-  *                         00000	fixed to 0
-  *                              0	descr writeback size 32 bytes
-@@ -210,10 +213,13 @@ extern char spider_net_driver_name[];
- #define SPIDER_NET_DMA_RX_VALUE		0x80000000
- #define SPIDER_NET_DMA_RX_FEND_VALUE	0x00030003
- /* to set TX_DMA_EN */
--#define SPIDER_NET_TX_DMA_EN		0x80000000
--#define SPIDER_NET_GDTDCEIDIS		0x00000302
--#define SPIDER_NET_DMA_TX_VALUE		SPIDER_NET_TX_DMA_EN | \
--					SPIDER_NET_GDTDCEIDIS
-+#define SPIDER_NET_TX_DMA_EN           0x80000000
-+#define SPIDER_NET_GDTBSTA             0x00000300
-+#define SPIDER_NET_GDTDCEIDIS          0x00000002
-+#define SPIDER_NET_DMA_TX_VALUE        SPIDER_NET_TX_DMA_EN | \
-+                                       SPIDER_NET_GDTBSTA | \
-+                                       SPIDER_NET_GDTDCEIDIS
-+
- #define SPIDER_NET_DMA_TX_FEND_VALUE	0x00030003
+ 	if ((spider_net_release_tx_chain(card, 0) != 0) &&
+-	    (card->netdev->flags & IFF_UP))
++	    (card->netdev->flags & IFF_UP)) {
+ 		spider_net_kick_tx_dma(card);
+-
++		netif_wake_queue(card->netdev);
++	}
+ 	spin_unlock_irqrestore(&card->tx_chain.lock, flags);
+ }
  
- /* SPIDER_NET_UA_DESCR_VALUE is OR'ed with the unicast address */
