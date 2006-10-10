@@ -1,21 +1,33 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 816EA67B56
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 05:34:56 +1000 (EST)
-Date: Tue, 10 Oct 2006 12:34:49 -0700
-From: Andrew Morton <akpm@osdl.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0FA0267B6D
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 06:20:38 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9AKKZxR020722
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 16:20:35 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9AKKZEZ470114
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 14:20:35 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9AKKZ9W019222
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 14:20:35 -0600
+Date: Tue, 10 Oct 2006 15:20:34 -0500
 To: Olof Johansson <olof@lixom.net>
 Subject: Re: BUG() in copy_fdtable() with 64K pages (2.6.19-rc1-mm1)
-Message-Id: <20061010123449.7be924f0.akpm@osdl.org>
-In-Reply-To: <20061010121519.447d62f8@localhost.localdomain>
+Message-ID: <20061010202034.GV4381@austin.ibm.com>
 References: <20061010000928.9d2d519a.akpm@osdl.org>
 	<20061010121519.447d62f8@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Vadim Lobanov <vlobanov@speakeasy.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061010121519.447d62f8@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, Vadim Lobanov <vlobanov@speakeasy.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,9 +37,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 10 Oct 2006 12:15:19 -0500
-Olof Johansson <olof@lixom.net> wrote:
-
+On Tue, Oct 10, 2006 at 12:15:19PM -0500, Olof Johansson wrote:
 > I keep hitting this on -rc1-mm1. The system comes up but I can't login
 > since login hits it.
 > 
@@ -42,5 +52,11 @@ Olof Johansson <olof@lixom.net> wrote:
 > 
 > kernel BUG in copy_fdtable at fs/file.c:138!
 
-OK, thanks.  I put the revert patch into
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.19-rc1/2.6.19-rc1-mm1/hot-fixes/
+FWIW, I too was hitting this bug, during init:
+
+[   41.659823] Freeing unused kernel memory: 320k freed
+INIT: version 2.86 bootin[   42.509322] kernel BUG in copy_fdtable at fs/file.c:138!
+
+and of course systm does not come up.
+
+--linas
