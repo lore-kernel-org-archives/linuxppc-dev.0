@@ -1,39 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mb@bu3sch.de>
+Received: from bu3sch.de (static-ip-62-75-166-246.inaddr.intergenia.de
+	[62.75.166.246]) by ozlabs.org (Postfix) with ESMTP id 4EA3067BDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 09:16:33 +1000 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] trivial iomem annotations
+	(arch/powerpc/platfroms/parsemi/pci.c)
+Date: Wed, 11 Oct 2006 01:16:05 +0200
+References: <20061009152309.GQ29920@ftp.linux.org.uk>
+In-Reply-To: <20061009152309.GQ29920@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17708.9637.569670.824121@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Oct 2006 08:58:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.19-rc1: known regressions (v3)
-In-Reply-To: <20061010051019.GB3650@stusta.de>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-	<20061010051019.GB3650@stusta.de>
-Cc: alsa-devel@alsa-project.org, Thierry Vignaud <tvignaud@mandriva.com>,
-	Torsten Kaiser <kernel@bardioc.dyndns.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Andrew de Quincey <adq_dvb@lidskialf.net>,
-	Vivek Goyal <vgoyal@in.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-	linux-usb-devel@lists.sourceforge.net,
-	Steve Fox <drfickle@us.ibm.com>, lm-sensors@lm-sensors.org,
-	art@usfltd.com, Mel Gorman <mel@skynet.ie>,
-	Michael Krufky <mkrufky@linuxtv.org>,
-	Sylvain BERTRAND <sylvain.bertrand@gmail.com>, jgarzik@pobox.com,
-	Prakash Punnoor <prakash@punnoor.de>, fastboot@osdl.org,
-	Olaf Hering <olaf@aepfle.de>, discuss@x86-64.org,
-	Trond Myklebust <Trond.Myklebust@netapp.com>,
-	Alex Romosan <romosan@sycorax.lbl.gov>, Linus Torvalds <torvalds@osdl.org>,
-	Dave Kleikamp <shaggy@austin.ibm.com>, Antonino Daplas <adaplas@pol.net>,
-	v4l-dvb-maintainer@linuxtv.org,
-	Johannes Berg <johannes@sipsolutions.net>, perex@suse.cz,
-	linux-pm@osdl.org, linux-fbdev-devel@lists.sourceforge.net,
-	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@suse.de>, ak@suse.de,
-	Sukadev Bhattiprolu <sukadev@us.ibm.com>, ebiederm@xmission.com,
-	Matthieu Castet <castet.matthieu@free.fr>,
-	Jean Delvare <khali@linux-fr.org>, pavel@suse.cz,
-	Ernst Herzberg <list-lkml@net4u.de>,
-	David Hubbard <david.c.hubbard@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200610110116.05870.mb@bu3sch.de>
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,14 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk writes:
+On Monday 09 October 2006 17:23, Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  arch/powerpc/platforms/pasemi/pci.c |   26 +++++++++++++-------------
+>  1 files changed, 13 insertions(+), 13 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+> index 4679c52..39020c1 100644
+> --- a/arch/powerpc/platforms/pasemi/pci.c
+> +++ b/arch/powerpc/platforms/pasemi/pci.c
+> @@ -35,17 +35,17 @@ #define PA_PXP_CFA(bus, devfn, off) (((b
+>  
+>  #define CONFIG_OFFSET_VALID(off) ((off) < 4096)
+>  
+> -static unsigned long pa_pxp_cfg_addr(struct pci_controller *hose,
+> +static void volatile __iomem *pa_pxp_cfg_addr(struct pci_controller *hose,
+>  				       u8 bus, u8 devfn, int offset)
+>  {
+> -	return ((unsigned long)hose->cfg_data) + PA_PXP_CFA(bus, devfn, offset);
+> +	return hose->cfg_data + PA_PXP_CFA(bus, devfn, offset);
+>  }
+>  
+>  static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
+>  			      int offset, int len, u32 *val)
+>  {
+>  	struct pci_controller *hose;
+> -	unsigned long addr;
+> +	void volatile __iomem *addr;
 
-> Subject    : sleep/wakeup on powerbooks apparently busted
-> References : http://lkml.org/lkml/2006/10/5/13
-> Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Handled-By : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Status     : Benjamin will investigate
+I think you should drop all these new "volatile"s.
 
-Should be fixed once Linus pulls the powerpc.git tree.
+>  	hose = pci_bus_to_host(bus);
+>  	if (!hose)
+> @@ -62,13 +62,13 @@ static int pa_pxp_read_config(struct pci
+>  	 */
+>  	switch (len) {
+>  	case 1:
+> -		*val = in_8((u8 *)addr);
+> +		*val = in_8(addr);
+>  		break;
+>  	case 2:
+> -		*val = in_le16((u16 *)addr);
+> +		*val = in_le16(addr);
+>  		break;
+>  	default:
+> -		*val = in_le32((u32 *)addr);
+> +		*val = in_le32(addr);
+>  		break;
+>  	}
+>  
+> @@ -79,7 +79,7 @@ static int pa_pxp_write_config(struct pc
+>  			       int offset, int len, u32 val)
+>  {
+>  	struct pci_controller *hose;
+> -	unsigned long addr;
+> +	void volatile __iomem *addr;
+>  
+>  	hose = pci_bus_to_host(bus);
+>  	if (!hose)
+> @@ -96,16 +96,16 @@ static int pa_pxp_write_config(struct pc
+>  	 */
+>  	switch (len) {
+>  	case 1:
+> -		out_8((u8 *)addr, val);
+> -		(void) in_8((u8 *)addr);
+> +		out_8(addr, val);
+> +		(void) in_8(addr);
+>  		break;
+>  	case 2:
+> -		out_le16((u16 *)addr, val);
+> -		(void) in_le16((u16 *)addr);
+> +		out_le16(addr, val);
+> +		(void) in_le16(addr);
+>  		break;
+>  	default:
+> -		out_le32((u32 *)addr, val);
+> -		(void) in_le32((u32 *)addr);
+> +		out_le32(addr, val);
+> +		(void) in_le32(addr);
+>  		break;
+>  	}
+>  	return PCIBIOS_SUCCESSFUL;
 
-Paul.
+-- 
+Greetings Michael.
