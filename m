@@ -1,25 +1,25 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E50D967C97
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 07:09:43 +1000 (EST)
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 35A4267C35
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 07:11:37 +1000 (EST)
 Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
 	[9.17.195.11])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9AL9ft4006267
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:09:41 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9ALBYwK022412
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 17:11:34 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
 	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9AL9fgj535528
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:09:41 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9AL9eI8006926
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:09:41 -0600
-Date: Tue, 10 Oct 2006 16:09:40 -0500
+	k9ALBYP1523368
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:11:34 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9ALBXGh002370
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Oct 2006 15:11:34 -0600
+Date: Tue, 10 Oct 2006 16:11:33 -0500
 To: akpm@osdl.org
-Subject: [PATCH 12/21]: powerpc/cell spidernet incorrect offset
-Message-ID: <20061010210940.GI4381@austin.ibm.com>
+Subject: [PATCH 13/21]: powerpc/cell spidernet low watermark patch.
+Message-ID: <20061010211133.GJ4381@austin.ibm.com>
 References: <20061010204946.GW4381@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,32 +38,162 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Bugfix -- the rx chain is in memory after the tx chain -- 
-the offset being used was wrong, resulting in memory corruption
-when the size of the rx and tx rings weren't exactly the same.
+Implement basic low-watermark support for the transmit queue.
+Hardware low-watermarks allow a properly configured kernel
+to continously stream data to a device and not have to handle 
+any interrupts at all in doing so. Correct zero-interrupt
+operation can be actually observed for this driver, when the 
+socket buffer is made large enough.
+
+The basic idea of a low-watermark interrupt is as follows.
+The device driver queues up a bunch of packets for the hardware
+to transmit, and then kicks the hardware to get it started.
+As the hardware drains the queue of pending, untransmitted 
+packets, the device driver will want to know when the queue
+is almost empty, so that it can queue some more packets.
+
+If the queue drains down to the low waterark, then an interrupt
+will be generated. However, if the kernel/driver continues 
+to add enough packets to keep the queue partially filled,
+no interrupt will actually be generated, and the hardware 
+can continue streaming packets indefinitely in this mode.
+
+The impelmentation is done by setting the DESCR_TXDESFLG flag 
+in one of the packets. When the hardware sees this flag, it will 
+interrupt the device driver. Because this flag is on a fixed
+packet, rather than at  fixed location in the queue, the
+code below needs to move the flag as more packets are
+queued up. This implementation attempts to keep the flag 
+at about 1/4 from "empty".
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: James K Lewis <jklewis@us.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: James K Lewis <jklewis@us.ibm.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
 ----
-
- drivers/net/spider_net.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/spider_net.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/spider_net.h |    8 ++++----
+ 2 files changed, 47 insertions(+), 4 deletions(-)
 
 Index: linux-2.6.18-mm2/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.18-mm2.orig/drivers/net/spider_net.c	2006-10-10 13:01:06.000000000 -0500
-+++ linux-2.6.18-mm2/drivers/net/spider_net.c	2006-10-10 13:03:11.000000000 -0500
-@@ -1628,8 +1628,10 @@ spider_net_open(struct net_device *netde
- 	if (spider_net_init_chain(card, &card->tx_chain, card->descr,
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net.c	2006-10-10 13:03:11.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net.c	2006-10-10 13:09:27.000000000 -0500
+@@ -684,6 +684,7 @@ spider_net_prepare_tx_descr(struct spide
+ 			break;
+ 		}
+ 
++	/* Chain the bus address, so that the DMA engine finds this descr. */
+ 	descr->prev->next_descr_addr = descr->bus_addr;
+ 
+ 	card->netdev->trans_start = jiffies; /* set netdev watchdog timer */
+@@ -717,6 +718,41 @@ spider_net_release_tx_descr(struct spide
+ 	dev_kfree_skb_any(skb);
+ }
+ 
++static void
++spider_net_set_low_watermark(struct spider_net_card *card)
++{
++	int status;
++	int cnt=0;
++	int i;
++	struct spider_net_descr *descr = card->tx_chain.tail;
++
++	/* Measure the length of the queue. */
++	while (descr != card->tx_chain.head) {
++		status = descr->dmac_cmd_status & SPIDER_NET_DESCR_NOT_IN_USE;
++		if (status == SPIDER_NET_DESCR_NOT_IN_USE)
++			break;
++		descr = descr->next;
++		cnt++;
++	}
++
++	/* If TX queue is short, don't even bother with interrupts */
++	if (cnt < card->tx_desc/4)
++		return;
++
++	/* Set low-watermark 3/4th's of the way into the queue. */
++	descr = card->tx_chain.tail;
++	cnt = (cnt*3)/4;
++	for (i=0;i<cnt; i++)
++		descr = descr->next;
++
++	/* Set the new watermark, clear the old watermark */
++	descr->dmac_cmd_status |= SPIDER_NET_DESCR_TXDESFLG;
++	if (card->low_watermark && card->low_watermark != descr)
++		card->low_watermark->dmac_cmd_status =
++		     card->low_watermark->dmac_cmd_status & ~SPIDER_NET_DESCR_TXDESFLG;
++	card->low_watermark = descr;
++}
++
+ /**
+  * spider_net_release_tx_chain - processes sent tx descriptors
+  * @card: adapter structure
+@@ -838,6 +874,7 @@ spider_net_xmit(struct sk_buff *skb, str
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
++	spider_net_set_low_watermark(card);
+ 	spider_net_kick_tx_dma(card);
+ 	card->tx_chain.head = card->tx_chain.head->next;
+ 	spin_unlock_irqrestore(&chain->lock, flags);
+@@ -1467,6 +1504,10 @@ spider_net_interrupt(int irq, void *ptr,
+ 		spider_net_rx_irq_off(card);
+ 		netif_rx_schedule(netdev);
+ 	}
++	if (status_reg & SPIDER_NET_TXINT ) {
++		spider_net_cleanup_tx_ring(card);
++		netif_wake_queue(netdev);
++	}
+ 
+ 	if (status_reg & SPIDER_NET_ERRINT )
+ 		spider_net_handle_error_irq(card, status_reg);
+@@ -1629,6 +1670,8 @@ spider_net_open(struct net_device *netde
  			PCI_DMA_TODEVICE, card->tx_desc))
  		goto alloc_tx_failed;
+ 
++	card->low_watermark = NULL;
 +
-+	/* rx_chain is after tx_chain, so offset is descr + tx_count */
+ 	/* rx_chain is after tx_chain, so offset is descr + tx_count */
  	if (spider_net_init_chain(card, &card->rx_chain,
--			card->descr + card->rx_desc,
-+			card->descr + card->tx_desc,
- 			PCI_DMA_FROMDEVICE, card->rx_desc))
- 		goto alloc_rx_failed;
+ 			card->descr + card->tx_desc,
+Index: linux-2.6.18-mm2/drivers/net/spider_net.h
+===================================================================
+--- linux-2.6.18-mm2.orig/drivers/net/spider_net.h	2006-10-10 12:54:06.000000000 -0500
++++ linux-2.6.18-mm2/drivers/net/spider_net.h	2006-10-10 13:09:27.000000000 -0500
+@@ -49,7 +49,7 @@ extern char spider_net_driver_name[];
+ #define SPIDER_NET_TX_DESCRIPTORS_MIN		16
+ #define SPIDER_NET_TX_DESCRIPTORS_MAX		512
+ 
+-#define SPIDER_NET_TX_TIMER			20
++#define SPIDER_NET_TX_TIMER			(HZ/5)
+ 
+ #define SPIDER_NET_RX_CSUM_DEFAULT		1
+ 
+@@ -328,9 +328,7 @@ enum spider_net_int2_status {
+ 	SPIDER_NET_GRISPDNGINT
+ };
+ 
+-#define SPIDER_NET_TXINT	( (1 << SPIDER_NET_GTTEDINT) | \
+-				  (1 << SPIDER_NET_GDTDCEINT) | \
+-				  (1 << SPIDER_NET_GDTFDCINT) )
++#define SPIDER_NET_TXINT	( (1 << SPIDER_NET_GDTFDCINT) )
+ 
+ /* We rely on flagged descriptor interrupts */
+ #define SPIDER_NET_RXINT	( (1 << SPIDER_NET_GDAFDCINT) )
+@@ -356,6 +354,7 @@ enum spider_net_int2_status {
+ #define SPIDER_NET_DESCR_FORCE_END		0x50000000 /* used in rx and tx */
+ #define SPIDER_NET_DESCR_CARDOWNED		0xA0000000 /* used in rx and tx */
+ #define SPIDER_NET_DESCR_NOT_IN_USE		0xF0000000
++#define SPIDER_NET_DESCR_TXDESFLG		0x00800000
+ 
+ struct spider_net_descr {
+ 	/* as defined by the hardware */
+@@ -440,6 +439,7 @@ struct spider_net_card {
+ 
+ 	struct spider_net_descr_chain tx_chain;
+ 	struct spider_net_descr_chain rx_chain;
++	struct spider_net_descr *low_watermark;
+ 
+ 	struct net_device_stats netdev_stats;
  
