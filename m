@@ -1,16 +1,21 @@
-Return-Path: <bottle715@126.com>
-Received: from m15-2.126.com (m15-2.126.com [220.181.15.2])
-	by ozlabs.org (Postfix) with SMTP id 6C45B67B83
+Return-Path: <kashiwagi@co-nss.co.jp>
+Received: from nssinet2.co-nss.co.jp (nssinet2.co-nss.co.jp [150.96.0.5])
+	by ozlabs.org (Postfix) with ESMTP id CC7D367B92
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Oct 2006 22:36:17 +1000 (EST)
+	Wed, 11 Oct 2006 01:09:24 +1000 (EST)
+Received: from nssinet2.co-nss.co.jp (localhost [127.0.0.1])
+	by nssinet2.co-nss.co.jp (8.9.3/3.7W) with ESMTP id AAA14875
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 Oct 2006 00:05:51 +0900 (JST)
 MIME-Version: 1.0
-Message-ID: <452B88BF.000156.24582@bj126app2.126.com>
-Date: Tue, 10 Oct 2006 19:49:19 +0800 (CST)
-From: "lzh" <bottle715@126.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: linux hang at a random place on booting
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi"
+Date: Wed, 11 Oct 2006 00:09:08 +0900
+Subject: Re: linux hang at a random place on booting
+From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
+To: lzh <bottle715@126.com>, linuxppc-embedded@ozlabs.org
+Message-ID: <JW200610110009084.9995562@co-nss.co.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
+In-Reply-To: <452B88BF.000156.24582@bj126app2.126.com>
+References: <452B88BF.000156.24582@bj126app2.126.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,31 +26,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+If the u-boot version of your MPC8540ADS board is 1.0.1, it is necessary
+to apply the latest u-boot1.1.4.
+Moreover, if MPC8540ADS and u-boot1.1.4 are used, 2.6.17 and 2.6.18
+kernels of kernel.org should be used without modification.
 
-  hi,
- i built a linux-2.6.11 kernel for mpc8540ads board=A1=A3linux hang at a =
+Yoshio Kashiwagi - Nissin Systems
+
+>  hi,
+>  i built a linux-2.6.11 kernel for mpc8540ads board。linux hang at a 
 random place on booting.
-can anybody help?
-thank you!
- =20
---Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-<div>&nbsp;</div><div>&nbsp;hi,<br>&nbsp;i built a linux-2.6.11 kernel fo=
-r mpc8540ads board=A1=A3linux hang at a random place on booting.<br>can a=
-nybody help?<br>thank you!<br></div><div>&nbsp;</div><div>&nbsp;</div><br=
-><!-- footer --><br><br><br><br><br><div style=3D"border-bottom:1px solid=
- #999"></div><br>=0A=0A=09<font color=3D"black" style=3D"font-size:14.8px=
-">=C3=C0 =C5=AE =BF=B4 =C1=CB =BE=CD =CF=EB =D2=AA ( =CD=BC )</font>=0A=09=
-<br>=0A=09 <a href=3D"http://adtaobao.allyes.com/main/adfclick?db=3Dadtao=
-bao&bid=3D600,597,58&cid=3D30015,198,1&sid=3D32501&show=3Dignore&url=3Dht=
-tp://www.taobao.com/vertical/lady/pro.php" target=3D"_blank" style=3D"fon=
-t-size:13px;line-height:160%;color:blue">=BE=F8 =B6=D4 =C1=ED =C0=E0 ! =BA=
-=CD =C0=CF =C6=C5 =B3=A4 =BC=D9 =C6=DA =BC=E4 =B5=C4 =B0=DC =BC=D2 =BC=C7=
- =C2=BC ( =D7=E9 =CD=BC )=0A</a>=0A=0A
---Boundary-=_jJvigalrdnyQBdWxxNWLRiSqMgxi--
+> can anybody help?
+> thank you!
+> 
+> 胆 溺 心 阻 祥 ・ 勣 ( 夕 )
+> 蒸 斤 総 窃 ! 才 析 禿 海 邪 豚 寂 議 移 社 芝 村 ( 怏 夕 ) 
