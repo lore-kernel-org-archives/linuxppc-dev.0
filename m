@@ -1,12 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 9 Oct 2006 23:09:45 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/4] powerpc: Next round of bootwrapper flat dt patches
+Message-ID: <20061010060945.GA28311@mag.az.mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17707.12331.371766.892813@cargo.ozlabs.ibm.com>
-Date: Tue, 10 Oct 2006 15:31:23 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: Please pull powerpc.git 'merge' branch
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,81 +16,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Hi,
 
-Please do:
+This patch series is a respin of--and complete replacement for--the
+bootwrapper reorg patches that I sent out a while back.  I also included
+the flatdevtree.c file which is the latest version that Paul sent plus
+changes that I've made.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+The patches apply to powerpc.git commit id:
 
-to get some PowerPC bugfixes, including a pile of pt_regs fixes for
-ARCH=ppc from Al Viro, and a fix for a crash on resume on powerbooks
-from Ben.
+	ba00003aa83a61b615542dd66f5af8fb4a7cee1d
 
-Thanks,
-Paul.
+Paul, it would really help the rest of us if you would apply these patches
+quickly.  There are several people waiting for this work but there are so
+many versions of so many patches that no one knows what to use.  Plus, it
+would get more people testing/debugging the flatdevtree code.
 
- arch/powerpc/boot/Makefile            |   16 +--
- arch/powerpc/configs/maple_defconfig  |   56 ++++++++--
- arch/powerpc/platforms/maple/pci.c    |  187 ++++++++++++++++++++++++++++++++-
- arch/powerpc/platforms/powermac/smp.c |    7 +
- arch/powerpc/xmon/xmon.c              |    6 +
- arch/ppc/4xx_io/serial_sicc.c         |    8 +
- arch/ppc/8260_io/enet.c               |    4 -
- arch/ppc/8260_io/fcc_enet.c           |    6 +
- arch/ppc/8xx_io/commproc.c            |   19 ++-
- arch/ppc/8xx_io/cs4218_tdm.c          |    4 -
- arch/ppc/8xx_io/enet.c                |    4 -
- arch/ppc/8xx_io/fec.c                 |    7 +
- arch/ppc/kernel/smp.c                 |    4 -
- arch/ppc/platforms/apus_setup.c       |    2 
- arch/ppc/platforms/hdpu.c             |   22 ++--
- arch/ppc/platforms/radstone_ppc7d.c   |   10 +-
- arch/ppc/platforms/sbc82xx.c          |    4 -
- arch/ppc/syslib/cpc700.h              |    2 
- arch/ppc/syslib/cpc700_pic.c          |    2 
- arch/ppc/syslib/cpm2_pic.c            |    2 
- arch/ppc/syslib/cpm2_pic.h            |    2 
- arch/ppc/syslib/gt64260_pic.c         |    9 +-
- arch/ppc/syslib/ibm440gx_common.c     |    2 
- arch/ppc/syslib/ipic.c                |    2 
- arch/ppc/syslib/m82xx_pci.c           |    4 -
- arch/ppc/syslib/m8xx_setup.c          |    2 
- arch/ppc/syslib/m8xx_wdt.c            |    4 -
- arch/ppc/syslib/mpc52xx_pic.c         |    2 
- arch/ppc/syslib/mv64360_pic.c         |   18 +--
- arch/ppc/syslib/open_pic2.c           |    2 
- arch/ppc/syslib/ppc403_pic.c          |    2 
- arch/ppc/syslib/ppc4xx_pic.c          |    8 +
- arch/ppc/syslib/ppc85xx_rio.c         |    9 +-
- arch/ppc/syslib/ppc8xx_pic.c          |    4 -
- arch/ppc/syslib/xilinx_pic.c          |    2 
- drivers/i2c/busses/i2c-powermac.c     |   28 +++--
- drivers/macintosh/windfarm_pm112.c    |   18 ++-
- drivers/macintosh/windfarm_pm81.c     |   24 ++--
- drivers/macintosh/windfarm_pm91.c     |   24 ++--
- include/asm-ppc/commproc.h            |    3 -
- include/asm-ppc/gt64260.h             |    2 
- include/asm-ppc/mpc52xx.h             |    2 
- include/asm-ppc/mv64x60.h             |    4 -
- 43 files changed, 370 insertions(+), 179 deletions(-)
+Summary of changes:
+===================
 
-Al Viro:
-      [POWERPC] ARCH=ppc pt_regs fixes
+more reorg patch
+----------------
+- This patch includes Paul's changes to zImage.lds.S which define
+  _dtb_start & _dtb_end and a related patch for the wrapper script.
+- I changed main.c:start() a little so that the call to ft_init() is
+  done in platform_init().  I did this because of an interface change
+  to ft_init which now require some platform knowledge.
+- I added a realloc() call to dt_ops so it can be passed to ft_open.
 
-Benjamin Herrenschmidt:
-      [POWERPC] Make U4 PCIe work on maple
-      [POWERPC] Fix Maple secondary IDE interrupt
-      [POWERPC] Update maple defconfig
-      [POWERPC] Fix i2c-powermac platform device usage
-      [POWERPC] Fix windfarm platform device usage
+flatdevtree patch
+-----------------
+- I did not debug all of the flatdevtree.c code.  I only debugged
+  ft_find_device, ft_get_prop, ft_set_prop and their supporting routines.
+- I added a phandle table (insided the cxt) to track phandles returned by
+  ft_find_device().  Now the value returned by ft_find_device() is a phandle
+  which is nothing more than an index into the phandle table.  The phandle
+  table contains the address of the corresponding node.  When the flat dt
+  is edited/moved, the node pointers in the phandle table are updated
+  accordingly so no phandles kept by the caller become stale.
+- I tested shrinking, and expanding an existing property but did not test
+  adding a new property.
+- I'm not sure of the usefulness of the genealogy stuff but I left it there
+  in case Paul has plans for it.  I did not test ft_get_parent (the only user
+  of genealogy).
 
-Geoff Levand:
-      [POWERPC] cell: fix default zImage build target
+simple_realloc patch
+--------------------
+- The flatdevtree code needs a realloc now so that is implemented in here.
+- As the name implies, it is a simple allocator which uses a table to track
+  what's been allocated.  simple_alloc_init() let's the caller set where
+  the heap is, its size, the granularity of its allocations, and how many
+  entries the table has.
+- Once a slot in the table is used, its base & size are set.  This allows
+  the code to be much simpler.
 
-Michael Ellerman:
-      [POWERPC] Fix boot wrapper invocation if CROSS_COMPILE contains spaces
+non-OF serial console patch
+---------------------------
+- I decided not to look for a /cpus/<some cpu>/64-bit property and instead
+  get either 1 or 2 "32-bit things" from the uart's 'virtual-reg' property.
+  If there is 1, its 32-bits; if its 2, its 64-bits.
 
-Paul Mackerras:
-      [POWERPC] Fix xmon IRQ handler for pt_regs removal
-      [POWERPC] Fix secondary CPU startup on old "powersurge" SMP powermacs
+Mark
