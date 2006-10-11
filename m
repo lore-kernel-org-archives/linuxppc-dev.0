@@ -1,15 +1,21 @@
-Return-Path: <rdcorle@yahoo.com>
-Received: from web56312.mail.re3.yahoo.com (web56312.mail.re3.yahoo.com
-	[216.252.110.236]) by ozlabs.org (Postfix) with SMTP id 1A52B67BB7
+Return-Path: <adrian@it-live.co.uk>
+Received: from ns1.it-live.co.uk (ns1.it-live.co.uk [195.10.233.36])
+	by ozlabs.org (Postfix) with ESMTP id 12C2667BB6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 02:21:31 +1000 (EST)
-Message-ID: <20061011161451.3292.qmail@web56312.mail.re3.yahoo.com>
-Date: Wed, 11 Oct 2006 09:14:51 -0700 (PDT)
-From: robert corley <rdcorle@yahoo.com>
-Subject: plb_temac, ML403, linux 2.4.26, EDK 7.1
-To: linuxppc-embedded@ozlabs.org
+	Thu, 12 Oct 2006 02:26:42 +1000 (EST)
+Received: from adrianlaptop (63.Red-83-37-241.dynamicIP.rima-tde.net
+	[83.37.241.63])
+	by ns1.it-live.co.uk (8.13.6/8.13.3) with SMTP id k9BFQdGv024214
+	for <linuxppc-embedded@ozlabs.org>; Wed, 11 Oct 2006 15:26:44 GMT
+Message-ID: <010001c6ed49$aa8ab390$3a0da8c0@adrianlaptop>
+From: "Adrian" <adrian@it-live.co.uk>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: PPChameleonEVB Newbie question
+Date: Wed, 11 Oct 2006 17:24:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
+Reply-To: Adrian <adrian@it-live.co.uk>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +26,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Some background:=0A    ML403 devel board=0A    EDK 7.1=0A    compilation of=
- reference design xapp902, modified to use linux and without loopback=0A   =
- use of linux_2_4_devel obtained from montavista via rsync=0A=0AI am trying=
- to use the plb_temac rather than the ll_temac.  In the long run, I'd prefe=
-r to stick with linux 2.4.  In addition, I will need to get both embedded E=
-MAC's up and running, but first I just wanna get the xapp902 working.  Also=
-, I will need gigE support.=0A=0ASo, right now I am trying to get the plb_t=
-emac to compile and get errors about the defines XPAR_XTEMAC_* within the l=
-inux directories ../drivers/net/xilinx_enet.  I see that the edk gets the d=
-efines within the xparameters.h file of the xapp902 project.  I also see th=
-at my C:\EDK\sw\ThirdParty\bsp\linux_mvl31_v1_01_a\drivers don't have anyth=
-ing for a plb_temac.=0A=0AQ:    Is my error related to an incorrect setup o=
-f the linux or with the EDK?=0A=0AQ:    t is stated that the plb_temac driv=
-ers are in EDK 8.1.  Can I stick=0Awith 7.1 or must I ugprade?=0A=0AQ:    W=
-here in the linux tree should I look for the xtemac=0Astuff?  Is this what =
-the EDK pushes on to the tree or is it released=0Awithin the MVL distro?=0A=
-=0AQ    Based on posts by David and Ming, it=0Aappears that I must use xili=
-nx_gige to get up to gigE speeds.  Will the=0Aplb_temac support this data r=
-ate and, if so, is this a transparent=0Asupport or do I need to go the rout=
-e suggested to Ming and=0Aoverwrite files in xilinx_enet?=0A=0AR. Corley=0A=
-=0A=0A=0A=0A
+Hi Folks.
+
+I'm a newbie to embedded and am getting stuck.
+
+I have a PPChameleonEVB board running a 405EP processor.
+
+I have tried many things, and can now boot Linux 2.6.15 on the board using 
+an NFS share as both root fs and swap.
+
+When I try to compile & install the kernel modules on the board, i get an 
+message about perl and then it errors.
+
+So i'm trying to install perl. And failing.
+
+Can someone tell me the following please, from a working setup (i.e. where 
+you can compile/install kernel 2.6.15 + modules) :-
+
+1) Kernel version/Linux distroof the i386 PC used for the cross-compiling.
+2) ELDK version and if there are any patches needed.
+2) Perl version (or how to stop the Kernel build using perl)
+
+I'm using Slack 8.1, kernel 2.4.18 and perl 5.6.1 on the cross-compiler pc. 
+Anything newer fell apart a lot earlier.
+
+Many thanks in advance.
+
+Adrian Atkins
+IT Live Limited
+
+tel: 0161 408 3327
+fax: 08702 360 443
+skype: adrianitlive
+ES mob: (0034) 606806236 
