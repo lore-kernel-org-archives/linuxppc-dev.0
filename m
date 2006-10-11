@@ -1,21 +1,16 @@
-Return-Path: <adrian@it-live.co.uk>
-Received: from ns1.it-live.co.uk (ns1.it-live.co.uk [195.10.233.36])
-	by ozlabs.org (Postfix) with ESMTP id 12C2667BB6
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc1-s37.bay0.hotmail.com (bay0-omc1-s37.bay0.hotmail.com
+	[65.54.246.109]) by ozlabs.org (Postfix) with ESMTP id 996DD67B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 02:26:42 +1000 (EST)
-Received: from adrianlaptop (63.Red-83-37-241.dynamicIP.rima-tde.net
-	[83.37.241.63])
-	by ns1.it-live.co.uk (8.13.6/8.13.3) with SMTP id k9BFQdGv024214
-	for <linuxppc-embedded@ozlabs.org>; Wed, 11 Oct 2006 15:26:44 GMT
-Message-ID: <010001c6ed49$aa8ab390$3a0da8c0@adrianlaptop>
-From: "Adrian" <adrian@it-live.co.uk>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: PPChameleonEVB Newbie question
-Date: Wed, 11 Oct 2006 17:24:34 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Reply-To: Adrian <adrian@it-live.co.uk>
+	Thu, 12 Oct 2006 06:27:26 +1000 (EST)
+Message-ID: <BAY110-F29333102EBA79FA70A2873B2140@phx.gbl>
+In-Reply-To: <20061011161451.3292.qmail@web56312.mail.re3.yahoo.com>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: rdcorle@yahoo.com, linuxppc-embedded@ozlabs.org
+Subject: RE: plb_temac, ML403, linux 2.4.26, EDK 7.1
+Date: Wed, 11 Oct 2006 20:24:51 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,36 +21,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Folks.
+Hi,
 
-I'm a newbie to embedded and am getting stuck.
 
-I have a PPChameleonEVB board running a 405EP processor.
+>So, right now I am trying to get the plb_temac to compile and get errors 
+about the defines XPAR_XTEMAC_* within the linux directories 
+../drivers/net/xilinx_enet.  I see that the edk gets the defines within the 
+xparameters.h file of the xapp902 project.  I also see that my 
+C:\EDK\sw\ThirdParty\bsp\linux_mvl31_v1_01_a\drivers don't have anything 
+for a plb_temac.
 
-I have tried many things, and can now boot Linux 2.6.15 on the board using 
-an NFS share as both root fs and swap.
+Yes. In MV3.1, there is no gige enet supported. You should include the 
+patch for TEMAC by yourself.
 
-When I try to compile & install the kernel modules on the board, i get an 
-message about perl and then it errors.
+>Q:    Is my error related to an incorrect setup of the linux or with the 
+EDK?
 
-So i'm trying to install perl. And failing.
+Try to check your xparameters.h file and find if there are the definations.
 
-Can someone tell me the following please, from a working setup (i.e. where 
-you can compile/install kernel 2.6.15 + modules) :-
+>Q:    t is stated that the plb_temac drivers are in EDK 8.1.  Can I stick
+>with 7.1 or must I ugprade?
 
-1) Kernel version/Linux distroof the i386 PC used for the cross-compiling.
-2) ELDK version and if there are any patches needed.
-2) Perl version (or how to stop the Kernel build using perl)
+I don't think that's the problem of 7.1, if you can make sure you use a 
+correct core for TEMAC and generated correct BSP files.
 
-I'm using Slack 8.1, kernel 2.4.18 and perl 5.6.1 on the cross-compiler pc. 
-Anything newer fell apart a lot earlier.
+>Q:    Where in the linux tree should I look for the xtemac
+>stuff?  Is this what the EDK pushes on to the tree or is it released
+>within the MVL distro?
 
-Many thanks in advance.
+Try to find the patch for TEMAC in this list. 
 
-Adrian Atkins
-IT Live Limited
+>Q    Based on posts by David and Ming, it
+>appears that I must use xilinx_gige to get up to gigE speeds.  Will the
+>plb_temac support this data rate and, if so, is this a transparent
+>support or do I need to go the route suggested to Ming and
+>overwrite files in xilinx_enet?
 
-tel: 0161 408 3327
-fax: 08702 360 443
-skype: adrianitlive
-ES mob: (0034) 606806236 
+Temac is tri-mode including 1000M/s speed. sorry that i cannot understand 
+this question very well.
+
+Ming
+
+_________________________________________________________________
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
