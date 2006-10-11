@@ -1,17 +1,20 @@
-Return-Path: <jag.kali@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id BAFAF67A5E
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 23:31:52 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id 30so95498ugc
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 06:31:50 -0700 (PDT)
-Message-ID: <ad309b220610110631s3f04b055y546a5122c53ac44e@mail.gmail.com>
-Date: Wed, 11 Oct 2006 19:01:50 +0530
-From: "jagadeesh kali" <jag.kali@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: help for sound support on PPC405EP
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_13842_8028237.1160573510432"
+Return-Path: <michel@tungstengraphics.com>
+Received: from admin.zirkelwireless.com (admin.zirkelwireless.com
+	[209.216.203.65])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A062467C3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 23:50:03 +1000 (EST)
+Subject: Re: Graphic issues (emulating VGA bios on IBM Maple)
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: jean-francois simon <jfaslist@yahoo.fr>
+In-Reply-To: <20061010203620.771.qmail@web27502.mail.ukl.yahoo.com>
+References: <20061010203620.771.qmail@web27502.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 11 Oct 2006 15:49:51 +0200
+Message-Id: <1160574593.23225.56.camel@thor.lorrainebruecke.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,147 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_13842_8028237.1160573510432
-Content-Type: multipart/alternative;
-	boundary="----=_Part_13843_8216653.1160573510432"
+On Tue, 2006-10-10 at 22:36 +0200, jean-francois simon wrote:
+> Hi,
+> I have ported the x86emu x86 emulator to IBM PIBS firmware on a Maple 
+> platform. I am now trying to emulate a PCI ATI RADEON RV100 VGA BIOS.  
+> It goes all the way and seems OK.  When I boot Linux , the card is 
+> recognized (it wasn't before), 
 
-------=_Part_13843_8216653.1160573510432
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+If the VGA BIOS POST works correctly, you should probably see some
+output in VGA text mode. Do you?
 
-Hi,
+> but the screen just flickers a couple of time.  I worry about the message:
+> "radeonfb: Retrieved PLL infos from BIOS" since I don't have a BIOS.
+
+It refers to the VGA BIOS.
+
+> The PLL values may be bogus..
+
+[...]
+
+> radeonfb: Retrieved PLL infos from BIOS
+> radeonfb: Reference=27.00 MHz (RefDiv=60) Memory=150.00 Mhz, 
+> System=150.00 MHz
+> radeonfb:
+>  PLL min 12000 max 35000
+
+These look sane.
+
+> radeonfb: I2C (port 3) ... found CRT display
+> radeonfb: Monitor 1 type CRT found
+> radeonfb: EDID probed
+> radeonfb: Monitor 2 type no found
+
+Is this correct?
+
+> hStart = 1328, hEnd = 1440, hTotal = 1688
+> vStart = 1025, vEnd = 1028, vTotal = 1066
+
+Does the monitor support this mode?
+
+> kobject_register failed for radeonfb (-17)
+> Call Trace:
+> [C000000000BFFB60] [C00000000000E97C] .show_stack+0x68/0x1b4 
+> (unreliable)
+> [C000000000BFFC10] [C00000000017EC54] .kobject_register+0x5c/0x8c
+> [C000000000BFFCA0] [C0000000001FAAF0] .bus_add_driver+0x7c/0x1b4
+> [C000000000BFFD50] [C0000000001FBDC8] .driver_register+0xac/0xc8
+> [C000000000BFFDD0] [C00000000018D084] .__pci_register_driver+0x8c/0xdc
+> [C000000000BFFE60] [C0000000003CCC9C] .radeonfb_old_init+0x164/0x188
+> [C000000000BFFF00] [C00000000000929C] .init+0x258/0x3d0
+> [C000000000BFFF90] [C00000000001E848] .kernel_thread+0x4c/0x68
+
+Could this be the problem?
 
 
-I am working on AMCC PPC405EP Taihu board.
-
-I created Linux kernel Image with kernel source 2.6.13(provided by AMCC) by
-enabling inbuilt alsa-drivers(CA0106) for soundcard Creative Sound Blaster
-Live 24bit! and I am using ELDK 4.0.
-
-we have successfully installed alsa-libs and alsa-utils on the board using
-ELDK 4.0 compilers.
-
-The sound card is detecting properly when I type "aplay -l", but I am unable
-to play audio file on the Taihu board.
-
-I am getting some exceptions while playing audio files on the board.
-The log file contains the errors.
-
-Please let me know weather we have to made any kernel level configurations
-for sound support?
-
-Thanks and Regards,
-Jagadeesh.
-
-------=_Part_13843_8216653.1160573510432
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<br>Hi,<br><br><br>I am working on AMCC PPC405EP Taihu board.<br><br>I created Linux kernel Image with kernel source 2.6.13(provided by AMCC) by enabling inbuilt alsa-drivers(CA0106) for soundcard Creative Sound Blaster Live 24bit! and I am using ELDK 
-4.0.<br><br>we have successfully installed alsa-libs and alsa-utils on the board using ELDK 4.0 compilers.<br><br>The sound card is detecting properly when I type &quot;aplay -l&quot;, but I am unable to play audio file on the Taihu board.
-<br><br>I am getting some exceptions while playing audio files on the board.<br>The log file contains the errors.<br><br>Please let me know weather we have to made any kernel level configurations for sound support?<br><br>
-Thanks and Regards,<br>Jagadeesh.<br><br><br>
-
-------=_Part_13843_8216653.1160573510432--
-
-------=_Part_13842_8028237.1160573510432
-Content-Type: text/plain; name="log.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="log.txt"
-X-Attachment-Id: f_et5rhgv5
-
-DQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18NCldpdGggU291bmQgQ2FyZCAoQ3JlYXRpdmUgU291bmQg
-Qmxhc3RlciBMaXZlISAyNCBiaXQgKSBvbiB0aGUgVGFpaHUgYm9hcmQNCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXw0KYmFzaC0zLjAwIyBhcGxheQ0KQWJvcnRlZCBieSBzaWduYWwgSW50ZXJydXB0Li4u
-DQpiYXNoLTMuMDAjIA0KDQpiYXNoLTMuMDAjIGFwbGF5IC1sDQoqKioqIExpc3Qgb2YgUExBWUJB
-Q0sgSGFyZHdhcmUgRGV2aWNlcyAqKioqDQpjYXJkIDA6IENBMDEwNiBbQ0EwMTA2XSwgZGV2aWNl
-IDA6IGNhMDEwNiBbQ0EwMTA2XQ0KICBTdWJkZXZpY2VzOiAxLzENCiAgU3ViZGV2aWNlICMwOiBz
-dWJkZXZpY2UgIzANCmNhcmQgMDogQ0EwMTA2IFtDQTAxMDZdLCBkZXZpY2UgMTogY2EwMTA2IFtD
-QTAxMDZdDQogIFN1YmRldmljZXM6IDEvMQ0KICBTdWJkZXZpY2UgIzA6IHN1YmRldmljZSAjMA0K
-Y2FyZCAwOiBDQTAxMDYgW0NBMDEwNl0sIGRldmljZSAyOiBjYTAxMDYgW0NBMDEwNl0NCiAgU3Vi
-ZGV2aWNlczogMS8xDQogIFN1YmRldmljZSAjMDogc3ViZGV2aWNlICMwDQpjYXJkIDA6IENBMDEw
-NiBbQ0EwMTA2XSwgZGV2aWNlIDM6IGNhMDEwNiBbQ0EwMTA2XQ0KICBTdWJkZXZpY2VzOiAxLzEN
-CiAgU3ViZGV2aWNlICMwOiBzdWJkZXZpY2UgIzANCmJhc2gtMy4wMCMNCg0KDQpiYXNoLTMuMDAj
-IGFyZWNvcmQgLWwNCioqKiogTGlzdCBvZiBDQVBUVVJFIEhhcmR3YXJlIERldmljZXMgKioqKg0K
-Y2FyZCAwOiBDQTAxMDYgW0NBMDEwNl0sIGRldmljZSAwOiBjYTAxMDYgW0NBMDEwNl0NCiAgU3Vi
-ZGV2aWNlczogMS8xDQogIFN1YmRldmljZSAjMDogc3ViZGV2aWNlICMwDQpjYXJkIDA6IENBMDEw
-NiBbQ0EwMTA2XSwgZGV2aWNlIDE6IGNhMDEwNiBbQ0EwMTA2XQ0KICBTdWJkZXZpY2VzOiAxLzEN
-CiAgU3ViZGV2aWNlICMwOiBzdWJkZXZpY2UgIzANCmNhcmQgMDogQ0EwMTA2IFtDQTAxMDZdLCBk
-ZXZpY2UgMjogY2EwMTA2IFtDQTAxMDZdDQogIFN1YmRldmljZXM6IDEvMQ0KICBTdWJkZXZpY2Ug
-IzA6IHN1YmRldmljZSAjMA0KY2FyZCAwOiBDQTAxMDYgW0NBMDEwNl0sIGRldmljZSAzOiBjYTAx
-MDYgW0NBMDEwNl0NCiAgU3ViZGV2aWNlczogMS8xDQogIFN1YmRldmljZSAjMDogc3ViZGV2aWNl
-ICMwDQpiYXNoLTMuMDAjDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18NCl9fX19fd2hpbGUgcGxheWluZyBhdWRpbyBmaWxlcyBfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KDQpiYXNoLTMu
-MDAjIGFwbGF5IGF1ZGlvMS53YXYNClBsYXlpbmcgV0FWRSAnYXVkaW8xLndhdicgOiBVbnNpZ25l
-ZCA4IGJpdCwgUmF0ZURhdGEgbWFjaGluZSBjaGVjayBpbiBrZXJuZWwgbW9kZS4NClBMQjA6IEJF
-QVI9IDB4M2YxMDcwMDAgQUNSPSAgIDB4MDAwMDAwMDAgQkVTUj0gIDB4MDBjMDAwMDANClBMQjAg
-dG8gT1BCOiBCRUFSPSAweDAwMDAwMDAwIEJFU1IwPSAweDAwMDAwMDAwIEJFU1IxPSAweDAwMDAw
-MDAwDQpPb3BzOiBtYWNoaW5lIGNoZWNrLCBzaWc6IDcgWyMxXQ0KTklQOiBDMDAwMzczMCBMUjog
-QzAwMDM1QkMgU1A6IEM3M0QzRjQwIFJFR1M6IGMwMmNjZjUwIFRSQVA6IDAyMDIgICAgTm90IHRh
-aW50ZWQNCk1TUjogMDAwMjkwMzAgRUU6IDEgUFI6IDAgRlA6IDAgTUU6IDEgSVIvRFI6IDExDQpU
-QVNLID0gYzc3ODU0NzBbMTI5MF0gJ2FwbGF5JyBUSFJFQUQ6IGM3M2QyMDAwDQpMYXN0IHN5c2Nh
-bGw6IDMNCkdQUjAwOiAwMDAwMDAwMCBDNzNEM0Y0MCBDNzc4NTQ3MCAwMDAwNDAwMCAwMDAwMDAw
-MSAwMDAwMDAwMCBDNzJFODk3OCAwMDAwMDAwMA0KR1BSMDg6IEM3Nzg1NzhDIDAwMDAwMDA0IDAw
-MDI5MDMyIEM3M0QyMDAwIDIyMDA4MDI4IDEwMDI0NkQ0IDAwMDAwMkFBIDAwMDAwMDAwDQpHUFIx
-NjogMTAwMjdCRUMgMDAwMDEwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAzMDBDMDMg
-MTAwMjdCRjAgMDAwODAwMDANCkdQUjI0OiAzMDAzODAwNCAxMDAxREIyNCAwMDAwMDAwMCAxMDAz
-NjIyMCAxMDAxRDdEMCAwMDAwMDAwMCAwRkZFN0M1OCBGRkZGRTEwMA0KQ2FsbCB0cmFjZToNCiA4
-MDAwIEh6LCBNb25vDQpEYXRhIG1hY2hpbmUgY2hlY2sgaW4ga2VybmVsIG1vZGUuDQpQTEIwOiBC
-RUFSPSAweDNmMTA3MDAwIEFDUj0gICAweDAwMDAwMDAwIEJFU1I9ICAweDAwODAwMDAwDQpQTEIw
-IHRvIE9QQjogQkVBUj0gMHgwMDAwMDAwMCBCRVNSMD0gMHgwMDAwMDAwMCBCRVNSMT0gMHgwMDAw
-MDAwMA0KT29wczogbWFjaGluZSBjaGVjaywgc2lnOiA3IFsjMl0NCk5JUDogQzAwMDQ5NTggTFI6
-IEMwMDAzNTEwIFNQOiBDMDJDQ0UzMCBSRUdTOiBjMDJjY2Y1MCBUUkFQOiAwMjAyICAgIE5vdCB0
-YWludGVkDQpNU1I6IDAwMDIxMDMwIEVFOiAwIFBSOiAwIEZQOiAwIE1FOiAxIElSL0RSOiAxMQ0K
-VEFTSyA9IGM3Nzg1NDcwWzEyOTBdICdhcGxheScgVEhSRUFEOiBjNzNkMjAwMA0KTGFzdCBzeXNj
-YWxsOiAzDQpHUFIwMDogMDgwMDAwMDAgQzAyQ0NFMzAgQzc3ODU0NzAgQzAyQ0NFNDAgQzAyQ0Yz
-OTQgMDAwMDAwMDAgM0I3RjQ0ODYgM0I3RjQ0ODYNCkdQUjA4OiBDMDJDRjM5OCBDMDAwMzUxMCAw
-MDAyMTAzMiBDMDAwNDk1OCAwNzc4NTYzOCAxMDAyNDZENCAwMDAwMDJBQSAwMDAwMDAwMA0KR1BS
-MTY6IDEwMDI3QkVDIDAwMDAxMDAwIDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwIDAwMzAwQzAz
-IDEwMDI3QkYwIEM3Nzg1NTU0DQpHUFIyNDogQzc3ODU1MjAgQzc3ODU0REMgQzAyQ0NFRjggQzA0
-MzRCMTAgQzc3ODU0REMgMDAwMDAwMTAgQzc3ODU0NzAgQzA0NDYyRTANCkZpeGluZyByZWN1cnNp
-dmUgZmF1bHQgYnV0IHJlYm9vdCBpcyBuZWVkZWQhDQpCdXMgZXJyb3INCmJhc2gtMy4wMCMNCg0K
-DQoNCg0KYmFzaC0zLjAwIyBhcmVjb3JkIDEud2F2DQpSZWNvcmRpbmcgV0FWRSAnMS53YXYnIDog
-VW5zaWduZWQgOCBiaXQsIFJhdGUgODAwMCBIeiwgTW9ubw0Kb3ZlcnJ1biEhISAoYXQgbGVhc3Qg
-MC4yMDMgbXMgbG9uZykNCkRhdGEgbWFjaGluZSBjaGVjayBpbiBrZXJuZWwgbW9kZS4NClBMQjA6
-IEJFQVI9IDB4M2YxMTcwMDAgQUNSPSAgIDB4MDAwMDAwMDAgQkVTUj0gIDB4MDBjMDAwMDANClBM
-QjAgdG8gT1BCOiBCRUFSPSAweDAwMDAwMDAwIEJFU1IwPSAweDAwMDAwMDAwIEJFU1IxPSAweDAw
-MDAwMDAwDQpPb3BzOiBtYWNoaW5lIGNoZWNrLCBzaWc6IDcgWyM5XQ0KTklQOiBDMDAwMzczMCBM
-UjogQzAwMDM1QkMgU1A6IEM3MUYzRjQwIFJFR1M6IGMwMmNjZjUwIFRSQVA6IDAyMDIgICAgTm90
-IHRhaW50ZWQNCk1TUjogMDAwMjkwMzAgRUU6IDEgUFI6IDAgRlA6IDAgTUU6IDEgSVIvRFI6IDEx
-DQpUQVNLID0gYzdkZGUwYjBbMTI5Nl0gJ2FyZWNvcmQnIFRIUkVBRDogYzcxZjIwMDANCkxhc3Qg
-c3lzY2FsbDogMTY3DQpHUFIwMDogMDAwMDAwMDAgQzcxRjNGNDAgQzdEREUwQjAgMDAwMDQwMDAg
-MDAwMDAwMDEgMDAwMDAwMDAgQzcyMjY5NTggMDAwMDAwMDANCkdQUjA4OiBDN0RERTNDQyAwMDAw
-MDAwNCAwMDAyOTAzMiBDNzFGMjAwMCAyMjA0ODAyOCAxMDAyNDZENCAzMDAxRTAwMCAwRkY2RkE3
-NA0KR1BSMTY6IDdGQkRGNEUwIDBGRjZGODY4IDAwMDAwMDAyIDdGQkRGNTAwIDAwMDAxMDA4IDdG
-QkRGNEIwIDAwMDAwMDAwIDAwMDAwMDAwDQpHUFIyNDogMDAwMDAwMDAgMDAwMDAwMDAgMzAwMjgw
-MDAgMDAwMDAwMDQgMDAwMDAwMDAgN0ZCREY0QjAgMEZGRTc5QTggN0ZCREY1MTANCkNhbGwgdHJh
-Y2U6DQpCdXMgZXJyb3INCmJhc2gtMy4wMCMNCg0KX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18NCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-Xw0KDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-DQpXaXRob3V0IFNvdW5kIENhcmQgb24gdGhlIFRhaWh1IGJvYXJkDQpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQoNCg0KYmFzaC0zLjAwIyBhcGxh
-eQ0KQUxTQSBsaWIgY29uZm1pc2MuYzo1NjA6KHNuZF9kZXRlcm1pbmVfZHJpdmVyKSBjb3VsZCBu
-b3Qgb3BlbiBjb250cm9sIGZvciBjYXJkIDANCkFMU0EgbGliIGNvbmYuYzozNDc5Oihfc25kX2Nv
-bmZpZ19ldmFsdWF0ZSkgZnVuY3Rpb24gc25kX2Z1bmNfY2FyZF9kcml2ZXIgcmV0dXJuZWQgZXJy
-b3I6IE5vIHN1Y2ggZGV2aWNlDQpBTFNBIGxpYiBjb25mbWlzYy5jOjM5Mjooc25kX2Z1bmNfY29u
-Y2F0KSBlcnJvciBldmFsdWF0aW5nIHN0cmluZ3MNCkFMU0EgbGliIGNvbmYuYzozNDc5Oihfc25k
-X2NvbmZpZ19ldmFsdWF0ZSkgZnVuY3Rpb24gc25kX2Z1bmNfY29uY2F0IHJldHVybmVkIGVycm9y
-OiBObyBzdWNoIGRldmljZQ0KQUxTQSBsaWIgY29uZm1pc2MuYzo5NTU6KHNuZF9mdW5jX3JlZmVy
-KSBlcnJvciBldmFsdWF0aW5nIG5hbWUNCkFMU0EgbGliIGNvbmYuYzozNDc5Oihfc25kX2NvbmZp
-Z19ldmFsdWF0ZSkgZnVuY3Rpb24gc25kX2Z1bmNfcmVmZXIgcmV0dXJuZWQgZXJyb3I6IE5vIHN1
-Y2ggZGV2aWNlDQpBTFNBIGxpYiBjb25mLmM6Mzk0ODooc25kX2NvbmZpZ19leHBhbmQpIEV2YWx1
-YXRlIGVycm9yOiBObyBzdWNoIGRldmljZQ0KQUxTQSBsaWIgcGNtLmM6MjA5MDooc25kX3BjbV9v
-cGVuX25vdXBkYXRlKSBVbmtub3duIFBDTSBkZWZhdWx0DQphcGxheTogbWFpbjo1MzM6IGF1ZGlv
-IG9wZW4gZXJyb3I6IE5vIHN1Y2ggZGV2aWNlDQpiYXNoLTMuMDAjDQoNCg0KYmFzaC0zLjAwIyBh
-cGxheSAtbA0KYXBsYXk6IGRldmljZV9saXN0OjIxODogbm8gc291bmRjYXJkcyBmb3VuZC4uLg0K
-YmFzaC0zLjAwIw0KYmFzaC0zLjAwIyBhcmVjb3JkIC1sDQphcmVjb3JkOiBkZXZpY2VfbGlzdDoy
-MTg6IG5vIHNvdW5kY2FyZHMgZm91bmQuLi4NCmJhc2gtMy4wMCMNCg==
-------=_Part_13842_8028237.1160573510432--
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
