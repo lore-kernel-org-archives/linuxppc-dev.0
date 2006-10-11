@@ -1,19 +1,32 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E6C8867B89
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 03:47:51 +1000 (EST)
-Date: Wed, 11 Oct 2006 10:47:48 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: make MAL use the new DCR methods
-Message-ID: <20061011174748.GA3368@gate.ebshome.net>
-References: <1160545539.6177.56.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1160545539.6177.56.camel@localhost.localdomain>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jklewis@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5B3AF67B56
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 07:06:15 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9BL6Av4000469
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 17:06:10 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9BL6A8I361946
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 15:06:10 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9BL69OV018281
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 15:06:10 -0600
+In-Reply-To: <200610111802.43996.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>, jim@jklewis.com
+MIME-Version: 1.0
+Subject: Re: [PATCH 0/21]: powerpc/cell spidernet bugfixes, etc.
+Message-ID: <OF98E8C8C2.02CDA47C-ON87257204.0073AF96-86257204.0073EA50@us.ibm.com>
+From: James K Lewis <jklewis@us.ibm.com>
+Date: Wed, 11 Oct 2006 16:06:06 -0500
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0073EA4E86257204_="
+Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +36,185 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 11, 2006 at 03:45:39PM +1000, Benjamin Herrenschmidt wrote:
-> This is a test patch to validate the new DCR method code for the
-> "native" case. It will ultimately be the first of a pile porting the
-> EMAC driver to ARCH=powerpc and non-native DCRs.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Index: linux-cell/drivers/net/ibm_emac/ibm_emac_mal.h
-> ===================================================================
-> --- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_mal.h	2006-10-11 13:01:59.000000000 +1000
-> +++ linux-cell/drivers/net/ibm_emac/ibm_emac_mal.h	2006-10-11 14:35:28.000000000 +1000
-> @@ -24,6 +24,7 @@
->  #include <linux/netdevice.h>
->  
->  #include <asm/io.h>
-> +#include <asm/dcr.h>
->  
->  /*
->   * These MAL "versions" probably aren't the real versions IBM uses for these 
-> @@ -191,6 +192,7 @@ struct mal_commac {
->  
->  struct ibm_ocp_mal {
->  	int			dcrbase;
-> +	dcr_host_t		dcrhost;
->  
->  	struct list_head	poll_list;
->  	struct net_device	poll_dev;
-> @@ -207,12 +209,12 @@ struct ibm_ocp_mal {
->  
->  static inline u32 get_mal_dcrn(struct ibm_ocp_mal *mal, int reg)
->  {
-> -	return mfdcr(mal->dcrbase + reg);
-> +	return dcr_read(mal->dcrhost, mal->dcrbase + reg);
->  }
->  
->  static inline void set_mal_dcrn(struct ibm_ocp_mal *mal, int reg, u32 val)
->  {
-> -	mtdcr(mal->dcrbase + reg, val);
-> +	dcr_write(mal->dcrhost, mal->dcrbase + reg, val);
->  }
->  
->  /* Register MAL devices */
-> 
-> 
+This is a multipart message in MIME format.
+--=_alternative 0073EA4E86257204_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Looks fine to me.
+Jeff,
 
-Acked-by: Eugene Surovegin <ebs@ebshome.net>
+  Please apply and forward these Spidernet patches. Thanks!
+
+Jim Lewis
+Advisory Software Engineer
+IBM Linux Technology Center
+512-838-7754
+
+
+
+
+
+
+Arnd Bergmann <arnd@arndb.de> 
+10/11/2006 11:02 AM
+
+To
+Linas Vepstas <linas@austin.ibm.com>
+cc
+akpm@osdl.org, jeff@garzik.org, James K Lewis/Austin/IBM@ibmus, 
+netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+linuxppc-dev@ozlabs.org
+Subject
+Re: [PATCH 0/21]: powerpc/cell spidernet bugfixes, etc.
+
+
+
+
+
+
+On Tuesday 10 October 2006 22:49, Linas Vepstas wrote:
+> Andrew, please apply/forward upstream.
+> 
+> The following set of 21 patches (!) are all aimed at the the 
+> spidernet ethernet device driver. The spidernet is an etherenet
+> controller built into the Toshiba southbridge for the PowerPC Cell
+> processor. (This is the only device in existance that with this
+> ethernet hardware in it).
+> 
+> These patches re-package/re-order/re-cleanup a previous
+> set of patches I've previously mailed. Thus, some have
+> been previously Acked-by lines, most do not. Most of
+> these patches are tiny, and handle problems that cropped
+> up during testing. Sorry about there being so many of them.
+> 
+> The first set of 12 patches fix a large variety of mostly 
+> minor bugs. 
+> 
+> The important patches are 13 through 17: these overcome a 
+> debilitating performance problem on transmit (6 megabits
+> per second !!) on transmit of patches 500 bytes or larger.
+> After applying these, I am able to get the following:
+> 
+> pkt sz   speed (100K buffs)       speed (4M buffs)
+> ------   -----------------        ----------------
+> 1500     700 Mbits/sec            951 Mbits/sec
+> 1000     658 Mbits/sec            770
+> 800      600                      648
+> 500      500                      500
+> 300      372                      372
+> 60        70                       70
+> 
+> Above buf size refers to /proc/sys/net/core/wmem_default
+
+Excellent work! I guess this the best tx performance we've
+seen so far on this hardware.
+
+Consider this as an Acked-by: for all the patches, I'll save
+the effort of replying to each one of them separately.
+
+Jeff, do you plan on merging these fixes for 2.6.19?
+
+                 Arnd <><
+
+
+--=_alternative 0073EA4E86257204_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Jeff,</font>
+<br>
+<br><font size=2 face="sans-serif">&nbsp; Please apply and forward these
+Spidernet patches. Thanks!</font>
+<br><font size=2 face="sans-serif"><br>
+Jim Lewis<br>
+Advisory Software Engineer<br>
+IBM Linux Technology Center<br>
+512-838-7754<br>
+<br>
+<br>
+</font>
+<br>
+<br>
+<br>
+<table width=100%>
+<tr valign=top>
+<td width=40%><font size=1 face="sans-serif"><b>Arnd Bergmann &lt;arnd@arndb.de&gt;</b>
+</font>
+<p><font size=1 face="sans-serif">10/11/2006 11:02 AM</font>
+<td width=59%>
+<table width=100%>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">To</font></div>
+<td><font size=1 face="sans-serif">Linas Vepstas &lt;linas@austin.ibm.com&gt;</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">cc</font></div>
+<td><font size=1 face="sans-serif">akpm@osdl.org, jeff@garzik.org, James
+K Lewis/Austin/IBM@ibmus, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+linuxppc-dev@ozlabs.org</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">Subject</font></div>
+<td><font size=1 face="sans-serif">Re: [PATCH 0/21]: powerpc/cell spidernet
+bugfixes, etc.</font></table>
+<br>
+<table>
+<tr valign=top>
+<td>
+<td></table>
+<br></table>
+<br>
+<br>
+<br><tt><font size=2>On Tuesday 10 October 2006 22:49, Linas Vepstas wrote:<br>
+&gt; Andrew, please apply/forward upstream.<br>
+&gt; <br>
+&gt; The following set of 21 patches (!) are all aimed at the the <br>
+&gt; spidernet ethernet device driver. The spidernet is an etherenet<br>
+&gt; controller built into the Toshiba southbridge for the PowerPC Cell<br>
+&gt; processor. (This is the only device in existance that with this<br>
+&gt; ethernet hardware in it).<br>
+&gt; <br>
+&gt; These patches re-package/re-order/re-cleanup a previous<br>
+&gt; set of patches I've previously mailed. Thus, some have<br>
+&gt; been previously Acked-by lines, most do not. Most of<br>
+&gt; these patches are tiny, and handle problems that cropped<br>
+&gt; up during testing. Sorry about there being so many of them.<br>
+&gt; <br>
+&gt; The first set of 12 patches fix a large variety of mostly <br>
+&gt; minor bugs. <br>
+&gt; <br>
+&gt; The important patches are 13 through 17: these overcome a <br>
+&gt; debilitating performance problem on transmit (6 megabits<br>
+&gt; per second !!) on transmit of patches 500 bytes or larger.<br>
+&gt; After applying these, I am able to get the following:<br>
+&gt; <br>
+&gt; pkt sz &nbsp; speed (100K buffs) &nbsp; &nbsp; &nbsp; speed (4M buffs)<br>
+&gt; ------ &nbsp; ----------------- &nbsp; &nbsp; &nbsp; &nbsp;----------------<br>
+&gt; 1500 &nbsp; &nbsp; 700 Mbits/sec &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;951 Mbits/sec<br>
+&gt; 1000 &nbsp; &nbsp; 658 Mbits/sec &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;770<br>
+&gt; 800 &nbsp; &nbsp; &nbsp;600 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;648<br>
+&gt; 500 &nbsp; &nbsp; &nbsp;500 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;500<br>
+&gt; 300 &nbsp; &nbsp; &nbsp;372 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;372<br>
+&gt; 60 &nbsp; &nbsp; &nbsp; &nbsp;70 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 70<br>
+&gt; <br>
+&gt; Above buf size refers to /proc/sys/net/core/wmem_default<br>
+<br>
+Excellent work! I guess this the best tx performance we've<br>
+seen so far on this hardware.<br>
+<br>
+Consider this as an Acked-by: for all the patches, I'll save<br>
+the effort of replying to each one of them separately.<br>
+<br>
+Jeff, do you plan on merging these fixes for 2.6.19?<br>
+<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+Arnd &lt;&gt;&lt;<br>
+</font></tt>
+<br>
+--=_alternative 0073EA4E86257204_=--
