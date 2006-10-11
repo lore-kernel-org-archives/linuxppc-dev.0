@@ -1,16 +1,15 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s37.bay0.hotmail.com (bay0-omc1-s37.bay0.hotmail.com
-	[65.54.246.109]) by ozlabs.org (Postfix) with ESMTP id 996DD67B55
+Return-Path: <rdcorle@yahoo.com>
+Received: from web56309.mail.re3.yahoo.com (web56309.mail.re3.yahoo.com
+	[216.252.110.233]) by ozlabs.org (Postfix) with SMTP id 9976067B1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 06:27:26 +1000 (EST)
-Message-ID: <BAY110-F29333102EBA79FA70A2873B2140@phx.gbl>
-In-Reply-To: <20061011161451.3292.qmail@web56312.mail.re3.yahoo.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: rdcorle@yahoo.com, linuxppc-embedded@ozlabs.org
+	Thu, 12 Oct 2006 06:46:33 +1000 (EST)
+Message-ID: <20061011204632.80180.qmail@web56309.mail.re3.yahoo.com>
+Date: Wed, 11 Oct 2006 13:46:31 -0700 (PDT)
+From: robert corley <rdcorle@yahoo.com>
 Subject: RE: plb_temac, ML403, linux 2.4.26, EDK 7.1
-Date: Wed, 11 Oct 2006 20:24:51 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,46 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-
->So, right now I am trying to get the plb_temac to compile and get errors 
-about the defines XPAR_XTEMAC_* within the linux directories 
-../drivers/net/xilinx_enet.  I see that the edk gets the defines within the 
-xparameters.h file of the xapp902 project.  I also see that my 
-C:\EDK\sw\ThirdParty\bsp\linux_mvl31_v1_01_a\drivers don't have anything 
-for a plb_temac.
-
-Yes. In MV3.1, there is no gige enet supported. You should include the 
-patch for TEMAC by yourself.
-
->Q:    Is my error related to an incorrect setup of the linux or with the 
-EDK?
-
-Try to check your xparameters.h file and find if there are the definations.
-
->Q:    t is stated that the plb_temac drivers are in EDK 8.1.  Can I stick
->with 7.1 or must I ugprade?
-
-I don't think that's the problem of 7.1, if you can make sure you use a 
-correct core for TEMAC and generated correct BSP files.
-
->Q:    Where in the linux tree should I look for the xtemac
->stuff?  Is this what the EDK pushes on to the tree or is it released
->within the MVL distro?
-
-Try to find the patch for TEMAC in this list. 
-
->Q    Based on posts by David and Ming, it
->appears that I must use xilinx_gige to get up to gigE speeds.  Will the
->plb_temac support this data rate and, if so, is this a transparent
->support or do I need to go the route suggested to Ming and
->overwrite files in xilinx_enet?
-
-Temac is tri-mode including 1000M/s speed. sorry that i cannot understand 
-this question very well.
-
-Ming
-
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+Ming;=0A=0AHere is what the EDK generates in this file:=0A=0AC:\EDK\project=
+s\startup_network\ppc405_0\libsrc\linux_mvl31_v1_01_a\linux\arch\ppc\platfo=
+rms\xilinx_ocp\xparameters_ml300.h=0A=0A<snip>=0A#define XPAR_XTEMAC_NUM_IN=
+STANCES 1=0A#define XPAR_PLB_TEMAC_0_BASEADDR 0x60000000=0A#define XPAR_PLB=
+_TEMAC_0_HIGHADDR 0x60003FFF=0A#define XPAR_PLB_TEMAC_0_DEVICE_ID 0=0A#defi=
+ne XPAR_PLB_TEMAC_0_IPIF_RDFIFO_DEPTH 131072=0A#define XPAR_PLB_TEMAC_0_IPI=
+F_WRFIFO_DEPTH 131072=0A#define XPAR_PLB_TEMAC_0_MAC_FIFO_DEPTH 64=0A#defin=
+e XPAR_PLB_TEMAC_0_DMA_TYPE 3=0A#define XPAR_PLB_TEMAC_0_TEMAC_DCR_HOST 0=
+=0A#define XPAR_PLB_TEMAC_0_INCLUDE_DRE 1=0A<snip>=0A=0A=0AWhich is fine.  =
+However, the file in the linux distribution: linux_2_4_devel/drivers/net/xi=
+linx_enet/adapter.c is looking for "XEMAC" instead of "XTEMAC" as above.=0A=
+=0AAlso, when I look at the EDK project directory =0A=0A"C:\EDK\projects\st=
+artup_network\ppc405_0\libsrc\linux_mvl31_v1_01_a\linux\drivers\net\"=0A=0A=
+I see that it is empty.  Which means that nothing in the MVL tree will be o=
+verwritten (specifically the adapter.c file, which uses the above defines).=
+=0A=0ASo, it appears that the driver is not being properly insterted into t=
+he tree as expected.  Would you agree?=0A=0A-R=0A=0A
