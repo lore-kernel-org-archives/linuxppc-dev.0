@@ -1,20 +1,32 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 7B9F267BC4
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 02:03:23 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH 0/21]: powerpc/cell spidernet bugfixes, etc.
-Date: Wed, 11 Oct 2006 18:02:42 +0200
-References: <20061010204946.GW4381@austin.ibm.com>
-In-Reply-To: <20061010204946.GW4381@austin.ibm.com>
+Return-Path: <jklewis@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 88DE867BEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 02:42:57 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e32.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9BGgsTK014516
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 12:42:54 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9BGgsc2498334
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 10:42:54 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9BGgr2M011682
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Oct 2006 10:42:54 -0600
+In-Reply-To: <200610111802.43996.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200610111802.43996.arnd@arndb.de>
+Subject: Re: [PATCH 0/21]: powerpc/cell spidernet bugfixes, etc.
+Message-ID: <OF15EAE7E2.A99D8025-ON87257204.005AF2CA-86257204.005BD035@us.ibm.com>
+From: James K Lewis <jklewis@us.ibm.com>
+Date: Wed, 11 Oct 2006 11:42:51 -0500
+Content-Type: multipart/alternative;
+	boundary="=_alternative 005BD03086257204_="
 Cc: akpm@osdl.org, jeff@garzik.org, netdev@vger.kernel.org,
-	James K Lewis <jklewis@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +36,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multipart message in MIME format.
+--=_alternative 005BD03086257204_=
+Content-Type: text/plain; charset="US-ASCII"
+
+  Please don't be confused by the numbers in the 4M column, they don't 
+mean anything to the end user. We had a bit better performance (approx. 
+720 Mbps) at one time but at 100% CPU usage. These new patches lower the 
+max. to about 700 Mbps but decrease CPU usage down to about 30% which I 
+think will help all around. I have been testing this driver all night and 
+have not found a problem yet. Consider this my Acked-by:  for all these 
+patches.
+
+Jim Lewis
+Advisory Software Engineer
+IBM Linux Technology Center
+512-838-7754
+
+
+
+
+
+
+Arnd Bergmann <arnd@arndb.de> 
+10/11/2006 11:02 AM
+
+To
+Linas Vepstas <linas@austin.ibm.com>
+cc
+akpm@osdl.org, jeff@garzik.org, James K Lewis/Austin/IBM@ibmus, 
+netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+linuxppc-dev@ozlabs.org
+Subject
+Re: [PATCH 0/21]: powerpc/cell spidernet bugfixes, etc.
+
+
+
+
+
+
 On Tuesday 10 October 2006 22:49, Linas Vepstas wrote:
 > Andrew, please apply/forward upstream.
->=20
-> The following set of 21 patches (!) are all aimed at the the=20
+> 
+> The following set of 21 patches (!) are all aimed at the the 
 > spidernet ethernet device driver. The spidernet is an etherenet
 > controller built into the Toshiba southbridge for the PowerPC Cell
 > processor. (This is the only device in existance that with this
 > ethernet hardware in it).
->=20
+> 
 > These patches re-package/re-order/re-cleanup a previous
 > set of patches I've previously mailed. Thus, some have
 > been previously Acked-by lines, most do not. Most of
 > these patches are tiny, and handle problems that cropped
 > up during testing. Sorry about there being so many of them.
->=20
-> The first set of 12 patches fix a large variety of mostly=20
-> minor bugs.=20
->=20
-> The important patches are 13 through 17: these overcome a=20
+> 
+> The first set of 12 patches fix a large variety of mostly 
+> minor bugs. 
+> 
+> The important patches are 13 through 17: these overcome a 
 > debilitating performance problem on transmit (6 megabits
 > per second !!) on transmit of patches 500 bytes or larger.
 > After applying these, I am able to get the following:
->=20
-> pkt sz =A0 speed (100K buffs) =A0 =A0 =A0 speed (4M buffs)
-> ------ =A0 ----------------- =A0 =A0 =A0 =A0----------------
-> 1500 =A0 =A0 700 Mbits/sec =A0 =A0 =A0 =A0 =A0 =A0951 Mbits/sec
-> 1000 =A0 =A0 658 Mbits/sec =A0 =A0 =A0 =A0 =A0 =A0770
-> 800 =A0 =A0 =A0600 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0648
-> 500 =A0 =A0 =A0500 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0500
-> 300 =A0 =A0 =A0372 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0372
-> 60 =A0 =A0 =A0 =A070 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 70
->=20
+> 
+> pkt sz   speed (100K buffs)       speed (4M buffs)
+> ------   -----------------        ----------------
+> 1500     700 Mbits/sec            951 Mbits/sec
+> 1000     658 Mbits/sec            770
+> 800      600                      648
+> 500      500                      500
+> 300      372                      372
+> 60        70                       70
+> 
 > Above buf size refers to /proc/sys/net/core/wmem_default
 
 Excellent work! I guess this the best tx performance we've
@@ -66,4 +117,111 @@ the effort of replying to each one of them separately.
 
 Jeff, do you plan on merging these fixes for 2.6.19?
 
-	Arnd <><
+                 Arnd <><
+
+
+--=_alternative 005BD03086257204_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">&nbsp; Please don't be confused by the
+numbers in the 4M column, they don't mean anything to the end user. We
+had a bit better performance (approx. 720 Mbps) at one time but at 100%
+CPU usage. These new patches lower the max. to about 700 Mbps but decrease
+CPU usage down to about 30% which I think will help all around. I have
+been testing this driver all night and have not found a problem yet. Consider
+this my Acked-by: &nbsp;for all these patches.</font>
+<br><font size=2 face="sans-serif"><br>
+Jim Lewis<br>
+Advisory Software Engineer<br>
+IBM Linux Technology Center<br>
+512-838-7754<br>
+<br>
+<br>
+</font>
+<br>
+<br>
+<br>
+<table width=100%>
+<tr valign=top>
+<td width=40%><font size=1 face="sans-serif"><b>Arnd Bergmann &lt;arnd@arndb.de&gt;</b>
+</font>
+<p><font size=1 face="sans-serif">10/11/2006 11:02 AM</font>
+<td width=59%>
+<table width=100%>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">To</font></div>
+<td><font size=1 face="sans-serif">Linas Vepstas &lt;linas@austin.ibm.com&gt;</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">cc</font></div>
+<td><font size=1 face="sans-serif">akpm@osdl.org, jeff@garzik.org, James
+K Lewis/Austin/IBM@ibmus, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+linuxppc-dev@ozlabs.org</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">Subject</font></div>
+<td><font size=1 face="sans-serif">Re: [PATCH 0/21]: powerpc/cell spidernet
+bugfixes, etc.</font></table>
+<br>
+<table>
+<tr valign=top>
+<td>
+<td></table>
+<br></table>
+<br>
+<br>
+<br><tt><font size=2>On Tuesday 10 October 2006 22:49, Linas Vepstas wrote:<br>
+&gt; Andrew, please apply/forward upstream.<br>
+&gt; <br>
+&gt; The following set of 21 patches (!) are all aimed at the the <br>
+&gt; spidernet ethernet device driver. The spidernet is an etherenet<br>
+&gt; controller built into the Toshiba southbridge for the PowerPC Cell<br>
+&gt; processor. (This is the only device in existance that with this<br>
+&gt; ethernet hardware in it).<br>
+&gt; <br>
+&gt; These patches re-package/re-order/re-cleanup a previous<br>
+&gt; set of patches I've previously mailed. Thus, some have<br>
+&gt; been previously Acked-by lines, most do not. Most of<br>
+&gt; these patches are tiny, and handle problems that cropped<br>
+&gt; up during testing. Sorry about there being so many of them.<br>
+&gt; <br>
+&gt; The first set of 12 patches fix a large variety of mostly <br>
+&gt; minor bugs. <br>
+&gt; <br>
+&gt; The important patches are 13 through 17: these overcome a <br>
+&gt; debilitating performance problem on transmit (6 megabits<br>
+&gt; per second !!) on transmit of patches 500 bytes or larger.<br>
+&gt; After applying these, I am able to get the following:<br>
+&gt; <br>
+&gt; pkt sz &nbsp; speed (100K buffs) &nbsp; &nbsp; &nbsp; speed (4M buffs)<br>
+&gt; ------ &nbsp; ----------------- &nbsp; &nbsp; &nbsp; &nbsp;----------------<br>
+&gt; 1500 &nbsp; &nbsp; 700 Mbits/sec &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;951 Mbits/sec<br>
+&gt; 1000 &nbsp; &nbsp; 658 Mbits/sec &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;770<br>
+&gt; 800 &nbsp; &nbsp; &nbsp;600 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;648<br>
+&gt; 500 &nbsp; &nbsp; &nbsp;500 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;500<br>
+&gt; 300 &nbsp; &nbsp; &nbsp;372 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;372<br>
+&gt; 60 &nbsp; &nbsp; &nbsp; &nbsp;70 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 70<br>
+&gt; <br>
+&gt; Above buf size refers to /proc/sys/net/core/wmem_default<br>
+<br>
+Excellent work! I guess this the best tx performance we've<br>
+seen so far on this hardware.<br>
+<br>
+Consider this as an Acked-by: for all the patches, I'll save<br>
+the effort of replying to each one of them separately.<br>
+<br>
+Jeff, do you plan on merging these fixes for 2.6.19?<br>
+<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+Arnd &lt;&gt;&lt;<br>
+</font></tt>
+<br>
+--=_alternative 005BD03086257204_=--
