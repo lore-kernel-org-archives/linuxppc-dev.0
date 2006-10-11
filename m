@@ -1,21 +1,15 @@
-Return-Path: <miguel.valero@ericsson.com>
-Received: from mailgw4.ericsson.se (mailgw4.ericsson.se [193.180.251.62])
-	by ozlabs.org (Postfix) with ESMTP id E493967BAD
+Return-Path: <rdcorle@yahoo.com>
+Received: from web56312.mail.re3.yahoo.com (web56312.mail.re3.yahoo.com
+	[216.252.110.236]) by ozlabs.org (Postfix) with SMTP id 1A52B67BB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 00:24:40 +1000 (EST)
-Received: from esealmw126.eemea.ericsson.se (unknown [153.88.254.123])
-	by mailgw4.ericsson.se (Symantec Mail Security) with ESMTP id
-	09FEC4F0002 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Oct 2006 16:07:56 +0200 (CEST)
+	Thu, 12 Oct 2006 02:21:31 +1000 (EST)
+Message-ID: <20061011161451.3292.qmail@web56312.mail.re3.yahoo.com>
+Date: Wed, 11 Oct 2006 09:14:51 -0700 (PDT)
+From: robert corley <rdcorle@yahoo.com>
+Subject: plb_temac, ML403, linux 2.4.26, EDK 7.1
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6ED3E.A5B9C2C6"
-Subject: How to connect a CF to a MPC82xx in trueIDE mode with DMA/UDMA
-	capability?
-Date: Wed, 11 Oct 2006 16:07:55 +0200
-Message-ID: <A882E155DA2B6449842E839A0E1DB4E70307D35B@esealmw109.eemea.ericsson.se>
-From: "Miguel Valero \(OS/EXA\)" <miguel.valero@ericsson.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,78 +20,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C6ED3E.A5B9C2C6
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Does anybody know whether it is possible to have a CF card directly
-connected to a MPC82xx and have it working in trueIDE mode with either
-multiword DMA or, preferibly, UDMA capabilities on?
-We know how to have it connected and working in trueIDE mode, but
-without DMA capabilities.
-
-Is the MPC82xx DMA controller at all able to assist the CF in doing
-multiword DMA or UDMA? How does one connect the DMA related CF pins to
-the MPC82xx? How does one configure the UPM that controls the CF? Is
-there a linux driver for MPC82xx that exploits the DMA/UDMA capabilities
-of the CF?
-
-
-Regards
-Miguel A. Valero
-R&D engineer
-Ericsson AXXESSIT AS
-
-
-
-------_=_NextPart_001_01C6ED3E.A5B9C2C6
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7650.28">
-<TITLE>How to connect a CF to a MPC82xx in trueIDE mode with DMA/UDMA =
-capability?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Does anybody know whether it is =
-possible to have a CF card directly connected to a MPC82xx and have it =
-working in trueIDE mode with either multiword DMA or, preferibly, UDMA =
-capabilities on?</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">We know how to have it connected and =
-working in trueIDE mode, but without DMA capabilities.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Is the MPC82xx DMA controller at all =
-able to assist the CF in doing multiword DMA or UDMA? How does one =
-connect the DMA related CF pins to the MPC82xx? How does one configure =
-the UPM that controls the CF? Is there a linux driver for MPC82xx that =
-exploits the DMA/UDMA capabilities of the CF?</FONT></P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Regards</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Miguel A. Valero</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">R&amp;D engineer</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Ericsson AXXESSIT AS</FONT>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C6ED3E.A5B9C2C6--
+Some background:=0A    ML403 devel board=0A    EDK 7.1=0A    compilation of=
+ reference design xapp902, modified to use linux and without loopback=0A   =
+ use of linux_2_4_devel obtained from montavista via rsync=0A=0AI am trying=
+ to use the plb_temac rather than the ll_temac.  In the long run, I'd prefe=
+r to stick with linux 2.4.  In addition, I will need to get both embedded E=
+MAC's up and running, but first I just wanna get the xapp902 working.  Also=
+, I will need gigE support.=0A=0ASo, right now I am trying to get the plb_t=
+emac to compile and get errors about the defines XPAR_XTEMAC_* within the l=
+inux directories ../drivers/net/xilinx_enet.  I see that the edk gets the d=
+efines within the xparameters.h file of the xapp902 project.  I also see th=
+at my C:\EDK\sw\ThirdParty\bsp\linux_mvl31_v1_01_a\drivers don't have anyth=
+ing for a plb_temac.=0A=0AQ:    Is my error related to an incorrect setup o=
+f the linux or with the EDK?=0A=0AQ:    t is stated that the plb_temac driv=
+ers are in EDK 8.1.  Can I stick=0Awith 7.1 or must I ugprade?=0A=0AQ:    W=
+here in the linux tree should I look for the xtemac=0Astuff?  Is this what =
+the EDK pushes on to the tree or is it released=0Awithin the MVL distro?=0A=
+=0AQ    Based on posts by David and Ming, it=0Aappears that I must use xili=
+nx_gige to get up to gigE speeds.  Will the=0Aplb_temac support this data r=
+ate and, if so, is this a transparent=0Asupport or do I need to go the rout=
+e suggested to Ming and=0Aoverwrite files in xilinx_enet?=0A=0AR. Corley=0A=
+=0A=0A=0A=0A
