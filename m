@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5DB0567B7C
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 18:30:24 +1000 (EST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k9C8cqAu010519
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 03:38:53 -0500
-Subject: [PATCH 4/4] powerpc: Cell timebase workaround
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 12 Oct 2006 18:30:04 +1000
-Message-Id: <1160641804.4792.136.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/4] powerpc: consolidate feature fixup code
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1160641793.4792.133.camel@localhost.localdomain>
+References: <1160641793.4792.133.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-909da/iKFkPpqryxa0XI"
+Date: Thu, 12 Oct 2006 19:56:05 +1000
+Message-Id: <1160646965.16101.4.camel@localhost.localdomain>
 Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,239 +21,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Cell CPU timebase has an errata. When reading the entire 64 bits of
-the timebase with one mftb instruction, there is a handful of cycles
-window during which one might read a value with the low order 32 bits
-already reset to 0x00000000 but the high order bits not yet incremeted
-by one. Simply reading the timebase a second time if the low order bits
-are 0 is enough (the second read will always miss that window).
 
-Note that there is still a potential issue if the process gets
-interrupted between the 2 reads for long enough that the second reads
-pricely hits that same window on the next 32 bits wrap. However, this is
-so extremely unlikely to happen that we choose not to do anything
-against it (the 32 bits wrap happens every few seconds or so, in fact
-every few minutes on IBM cell blades).
+--=-909da/iKFkPpqryxa0XI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+On Thu, 2006-10-12 at 18:29 +1000, Benjamin Herrenschmidt wrote:
+> There are currently two versions of the functions for applying the
+> feature fixups, one for CPU features and one for firmware features. In
+> addition, they are both in assembly.
+>=20
+> This patch replaces them with a single C function. The call site is
+> slightly moved on ppc64 as well to be called from C instead of from
+> assembly, though it's a very small move, and thus shouldn't cause any
+> problem (called at the start of setup_system() instead of just before
+> calling it).
 
-This is the "old" patch adapted to apply on top of the previous changes.
-I'll post tomorrow a new version of the patch using a different
-technique for the workaround
+Nice to see it written in C :)
 
-Index: linux-cell/arch/powerpc/kernel/vdso64/gettimeofday.S
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/vdso64/gettimeofday.S	2006-10-12 18:08:40.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/vdso64/gettimeofday.S	2006-10-12 18:18:15.000000000 +1000
-@@ -11,6 +11,7 @@
-  * as published by the Free Software Foundation; either version
-  * 2 of the License, or (at your option) any later version.
-  */
-+
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/vdso.h>
-@@ -229,8 +230,13 @@ V_FUNCTION_BEGIN(__do_get_xsec)
- 	xor	r0,r8,r8		/* create dependency */
- 	add	r3,r3,r0
- 
--	/* Get TB & offset it */
--	mftb	r7
-+	/* Get TB & offset it. We use the MFTB macro which will generate
-+	 * workaround code for Cell. The macro will generate the ELF bits
-+	 * for the CPU feature fixup though those aren't actually applied
-+	 * on the vDSO, which means that the workaround will always be
-+	 * executed if CONFIG_PPC_CELL is set.
-+	 */
-+	MFTB(r7)
- 	ld	r9,CFG_TB_ORIG_STAMP(r3)
- 	subf	r7,r9,r7
- 
-Index: linux-cell/include/asm-powerpc/cputable.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/cputable.h	2006-10-12 18:17:44.000000000 +1000
-+++ linux-cell/include/asm-powerpc/cputable.h	2006-10-12 18:18:15.000000000 +1000
-@@ -144,6 +144,7 @@ extern void do_cpu_ftr_fixups(unsigned l
- #define CPU_FTR_CI_LARGE_PAGE		LONG_ASM_CONST(0x0000100000000000)
- #define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000200000000000)
- #define CPU_FTR_PURR			LONG_ASM_CONST(0x0000400000000000)
-+#define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000800000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -332,7 +333,7 @@ extern void do_cpu_ftr_fixups(unsigned l
- #define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
--	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
-+	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_CELL_TB_BUG)
- #define CPU_FTRS_PA6T (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
-Index: linux-cell/include/asm-powerpc/ppc_asm.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/ppc_asm.h	2006-10-12 18:08:40.000000000 +1000
-+++ linux-cell/include/asm-powerpc/ppc_asm.h	2006-10-12 18:18:15.000000000 +1000
-@@ -29,10 +29,10 @@
- BEGIN_FTR_SECTION;							\
- 	mfspr	ra,SPRN_PURR;		/* get processor util. reg */	\
- END_FTR_SECTION_IFSET(CPU_FTR_PURR);					\
--BEGIN_FTR_SECTION;							\
--	mftb	ra;			/* or get TB if no PURR */	\
--END_FTR_SECTION_IFCLR(CPU_FTR_PURR);					\
--	ld	rb,PACA_STARTPURR(r13);				\
-+BEGIN_FTR_SECTION_NESTED(96);						\
-+	MFTB(ra);			/* or get TB if no PURR */	\
-+END_FTR_SECTION_NESTED(CPU_FTR_PURR, 0, 96);				\
-+	ld	rb,PACA_STARTPURR(r13);					\
- 	std	ra,PACA_STARTPURR(r13);					\
- 	subf	rb,rb,ra;		/* subtract start value */	\
- 	ld	ra,PACA_USER_TIME(r13);					\
-@@ -44,9 +44,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
- BEGIN_FTR_SECTION;							\
- 	mfspr	ra,SPRN_PURR;		/* get processor util. reg */	\
- END_FTR_SECTION_IFSET(CPU_FTR_PURR);					\
--BEGIN_FTR_SECTION;							\
--	mftb	ra;			/* or get TB if no PURR */	\
--END_FTR_SECTION_IFCLR(CPU_FTR_PURR);					\
-+BEGIN_FTR_SECTION_NESTED(96);						\
-+	MFTB(ra);			/* or get TB if no PURR */	\
-+END_FTR_SECTION_NESTED(CPU_FTR_PURR, 0, 96);				\
- 	ld	rb,PACA_STARTPURR(r13);				\
- 	std	ra,PACA_STARTPURR(r13);					\
- 	subf	rb,rb,ra;		/* subtract start value */	\
-@@ -274,6 +274,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_601)
- #define ISYNC_601
- #endif
- 
-+#ifdef CONFIG_PPC_CELL
-+#define MFTB(dest)			\
-+	mftb  dest;			\
-+BEGIN_FTR_SECTION;			\
-+	cmpwi dest,0;			\
-+	bne+  90f;			\
-+	mftb  dest;			\
-+90:					\
-+END_FTR_SECTION_IFSET(CPU_FTR_CELL_TB_BUG)
-+#else
-+#define MFTB(dest)			mftb dest
-+#endif
- 
- #ifndef CONFIG_SMP
- #define TLBSYNC
-Index: linux-cell/include/asm-powerpc/reg.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/reg.h	2006-10-12 18:17:44.000000000 +1000
-+++ linux-cell/include/asm-powerpc/reg.h	2006-10-12 18:19:05.000000000 +1000
-@@ -617,9 +617,28 @@
- 			asm volatile("mfspr %0," __stringify(rn) \
- 				: "=r" (rval)); rval;})
- #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : : "r" (v))
--
-+#ifdef CONFIG_PPC_CELL
-+#define mftb()		({unsigned long rval;				\
-+			asm volatile(					\
-+				"	mftb %0;\n"			\
-+				"97:	cmpwi %0,0;\n"			\
-+				"	bne+ 99f;\n"			\
-+				"	mftb %0;\n"			\
-+				"99:\n"					\
-+				".section __ftr_fixup,\"a\"\n"		\
-+				".align 3\n"				\
-+				"98:\n"					\
-+				"	.llong %1\n"			\
-+				"	.llong %1\n"			\
-+				"	.llong 97b-98b\n"		\
-+				"	.llong 99b-98b\n"		\
-+				".previous"				\
-+			: "=r" (rval) : "i" (CPU_FTR_CELL_TB_BUG)); rval;})
-+#else
- #define mftb()		({unsigned long rval;	\
- 			asm volatile("mftb %0" : "=r" (rval)); rval;})
-+#endif
-+
- #define mftbl()		({unsigned long rval;	\
- 			asm volatile("mftbl %0" : "=r" (rval)); rval;})
- 
-Index: linux-cell/include/asm-powerpc/time.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/time.h	2006-10-12 18:08:40.000000000 +1000
-+++ linux-cell/include/asm-powerpc/time.h	2006-10-12 18:18:15.000000000 +1000
-@@ -85,26 +85,28 @@ struct div_result {
- /* On ppc64 this gets us the whole timebase; on ppc32 just the lower half */
- static inline unsigned long get_tbl(void)
- {
--	unsigned long tbl;
--
- #if defined(CONFIG_403GCX)
-+	unsigned long tbl;
- 	asm volatile("mfspr %0, 0x3dd" : "=r" (tbl));
-+	return tbl;
-+#elif defined(CONFIG_PPC32)
-+	return mftbl();
- #else
--	asm volatile("mftb %0" : "=r" (tbl));
-+	return mftb();
- #endif
--	return tbl;
- }
- 
- static inline unsigned int get_tbu(void)
- {
-+#ifdef CONFIG_403GCX
- 	unsigned int tbu;
--
--#if defined(CONFIG_403GCX)
- 	asm volatile("mfspr %0, 0x3dc" : "=r" (tbu));
-+	return tbu;
-+#elif defined(CONFIG_PPC32)
-+	return mftbu();
- #else
--	asm volatile("mftbu %0" : "=r" (tbu));
-+	return mftb();
- #endif
--	return tbu;
- }
- 
- static inline unsigned int get_rtcl(void)
-Index: linux-cell/include/asm-powerpc/timex.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/timex.h	2006-10-12 18:17:44.000000000 +1000
-+++ linux-cell/include/asm-powerpc/timex.h	2006-10-12 18:18:15.000000000 +1000
-@@ -8,6 +8,7 @@
-  */
- 
- #include <asm/cputable.h>
-+#include <asm/reg.h>
- 
- #define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
- 
-@@ -15,13 +16,11 @@ typedef unsigned long cycles_t;
- 
- static inline cycles_t get_cycles(void)
- {
--	cycles_t ret;
--
- #ifdef __powerpc64__
--
--	__asm__ __volatile__("mftb %0" : "=r" (ret) : );
--
-+	return mftb();
- #else
-+	cycles_t ret;
-+
- 	/*
- 	 * For the "cycle" counter we use the timebase lower half.
- 	 * Currently only used on SMP.
-@@ -41,9 +40,8 @@ static inline cycles_t get_cycles(void)
- 		"	.long 99b-98b\n"
- 		".previous"
- 		: "=r" (ret) : "i" (CPU_FTR_601));
--#endif
--
- 	return ret;
-+#endif
- }
- 
- #endif	/* __KERNEL__ */
+> Index: linux-cell/arch/powerpc/kernel/setup.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-cell.orig/arch/powerpc/kernel/setup.h	2006-10-12 14:24:10.00000=
+0000 +1000
+> +++ linux-cell/arch/powerpc/kernel/setup.h	2006-10-12 17:46:02.000000000 =
++1000
+> @@ -1,9 +1,12 @@
+>  #ifndef _POWERPC_KERNEL_SETUP_H
+>  #define _POWERPC_KERNEL_SETUP_H
+> =20
+> -void check_for_initrd(void);
+> -void do_init_bootmem(void);
+> -void setup_panic(void);
+> +extern void check_for_initrd(void);
+> +extern void do_init_bootmem(void);
+> +extern void setup_panic(void);
+> +extern void do_feature_fixups(unsigned long offset, unsigned long value,
+> +			      void *fixup_start, void *fixup_end);
+> +
+>  extern int do_early_xmon;
+> =20
+>  #endif /* _POWERPC_KERNEL_SETUP_H */
+> Index: linux-cell/arch/powerpc/kernel/setup_32.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-cell.orig/arch/powerpc/kernel/setup_32.c	2006-10-12 14:24:10.00=
+0000000 +1000
+> +++ linux-cell/arch/powerpc/kernel/setup_32.c	2006-10-12 17:46:24.0000000=
+00 +1000
+> @@ -90,6 +90,7 @@ int ucache_bsize;
+>   */
+>  unsigned long __init early_init(unsigned long dt_ptr)
+>  {
+> +	extern unsigned int __start___ftr_fixup, __stop___ftr_fixup;
+
+> Index: linux-cell/arch/powerpc/kernel/setup_64.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-cell.orig/arch/powerpc/kernel/setup_64.c	2006-10-12 14:24:10.00=
+0000000 +1000
+> +++ linux-cell/arch/powerpc/kernel/setup_64.c	2006-10-12 17:46:18.0000000=
+00 +1000
+> @@ -346,8 +346,19 @@ static void __init initialize_cache_info
+>   */
+>  void __init setup_system(void)
+>  {
+> +	extern unsigned int __start___ftr_fixup, __stop___ftr_fixup;
+> +	extern unsigned int __start___fw_ftr_fixup, __stop___fw_ftr_fixup;
+
+
+Every extern in a C file ... god kills a kitten! :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-909da/iKFkPpqryxa0XI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBFLhE1dSjSd0sB4dIRAtryAKDF8aP1XbAZDv5w7zjS37FSHYwczACfZsUY
+0xDn4h8xzJVcH4ZYjl/dAEA=
+=cULV
+-----END PGP SIGNATURE-----
+
+--=-909da/iKFkPpqryxa0XI--
