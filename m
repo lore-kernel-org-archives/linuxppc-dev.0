@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 11 Oct 2006 18:34:27 -0700
+Date: Wed, 11 Oct 2006 18:35:08 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/4] powerpc: Add flatdevtree source
-Message-ID: <20061012013427.GC9143@mag.az.mvista.com>
+Subject: [PATCH 3/4] powerpc: Add non-OF serial console support
+Message-ID: <20061012013508.GD9143@mag.az.mvista.com>
 References: <20061012013223.GA9143@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,1112 +18,430 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the latest version of the flatdevtree code and corresponding glue.
-
-A phandle table now tracks values returned by ft_find_device().
-The value returned by ft_find_device() is a phandle which is really
-an index into the phandle table.  The phandle table contains the address
-of the corresponding node.  When the flat dt is edited/moved, the node
-pointers in the phandle table are updated accordingly so no phandles kept
-by the caller become stale.
+Add serial console support for non-OF systems.  There is a generic serial
+console layer which calls a serial console driver.  Included is the serial
+console driver for the ns16550 class of uarts.  Necessary support routines
+are added as well.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
- Makefile           |    3 
- flatdevtree.c      |  876 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- flatdevtree.h      |   62 +++
- flatdevtree_env.h  |   47 ++
- flatdevtree_misc.c |   56 +++
- 5 files changed, 1042 insertions(+), 2 deletions(-)
+ Makefile  |    4 -
+ io.h      |   53 +++++++++++++++++++++++
+ ns16550.c |   76 +++++++++++++++++++++++++++++++++
+ serial.c  |  142 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ util.S    |  101 ++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 374 insertions(+), 2 deletions(-)
 ---
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 37ddfca..8660cc5 100644
+index 8660cc5..ef1bec4 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -40,7 +40,8 @@ zliblinuxheader := zlib.h zconf.h zutil.
+@@ -40,8 +40,8 @@ zliblinuxheader := zlib.h zconf.h zutil.
  $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
  		$(addprefix $(obj)/,$(zlibheader))
  
--src-wlib := string.S stdio.c main.c div64.S $(zlib)
-+src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c div64.S \
-+		$(zlib)
+-src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c div64.S \
+-		$(zlib)
++src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c ns16550.c \
++		serial.c div64.S util.S $(zlib)
  src-plat := of.c
  src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
  
-diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
+diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
 new file mode 100644
-index 0000000..0d24f50
+index 0000000..32974ed
 --- /dev/null
-+++ b/arch/powerpc/boot/flatdevtree.c
-@@ -0,0 +1,876 @@
++++ b/arch/powerpc/boot/io.h
+@@ -0,0 +1,53 @@
++#ifndef _IO_H
++#define __IO_H
 +/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * Low-level I/O routines.
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright Pantelis Antoniou 2006
-+ * Copyright (C) IBM Corporation 2006
-+ *
-+ * Authors: Pantelis Antoniou <pantelis@embeddedalley.com>
-+ *	    Hollis Blanchard <hollisb@us.ibm.com>
-+ *	    Mark A. Greer <mgreer@mvista.com>
-+ *	    Paul Mackerras <paulus@samba.org>
++ * Copied from <file:include/asm-powerpc/io.h> (which has no copyright)
 + */
-+
-+#include <string.h>
-+#include <stddef.h>
-+#include "flatdevtree.h"
-+#include "flatdevtree_env.h"
-+
-+#define _ALIGN(x, al)	(((x) + (al) - 1) & ~((al) - 1))
-+
-+/* Routines for keeping node ptrs returned by ft_find_device current */
-+/* First entry not used b/c it would return 0 and be taken as NULL/error */
-+static void *ft_node_add(struct ft_cxt *cxt, char *node)
++static inline int in_8(const volatile unsigned char *addr)
 +{
-+	unsigned int i;
++	int ret;
 +
-+	for (i = 1; i < cxt->nodes_used; i++)	/* already there? */
-+		if (cxt->node_tbl[i] == node)
-+			return (void *)i;
-+
-+	if (cxt->nodes_used < cxt->node_max) {
-+		cxt->node_tbl[cxt->nodes_used] = node;
-+		return (void *)cxt->nodes_used++;
-+	}
-+
-+	return NULL;
++	__asm__ __volatile__("lbz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
 +}
 +
-+static char *ft_node_ph2node(struct ft_cxt *cxt, const void *phandle)
++static inline void out_8(volatile unsigned char *addr, int val)
 +{
-+	unsigned int i = (unsigned int)phandle;
-+
-+	if (i < cxt->nodes_used)
-+		return cxt->node_tbl[i];
-+	return NULL;
++	__asm__ __volatile__("stb%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
 +}
 +
-+static void ft_node_update_before(struct ft_cxt *cxt, char *addr, int shift)
++static inline unsigned in_le32(const volatile unsigned *addr)
 +{
-+	unsigned int i;
++	unsigned ret;
 +
-+	if (shift == 0)
-+		return;
-+
-+	for (i = 1; i < cxt->nodes_used; i++)
-+		if (cxt->node_tbl[i] < addr)
-+			cxt->node_tbl[i] += shift;
++	__asm__ __volatile__("lwbrx %0,0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "r" (addr), "m" (*addr));
++	return ret;
 +}
 +
-+static void ft_node_update_after(struct ft_cxt *cxt, char *addr, int shift)
++static inline unsigned in_be32(const volatile unsigned *addr)
 +{
-+	unsigned int i;
++	unsigned ret;
 +
-+	if (shift == 0)
-+		return;
-+
-+	for (i = 1; i < cxt->nodes_used; i++)
-+		if (cxt->node_tbl[i] >= addr)
-+			cxt->node_tbl[i] += shift;
++	__asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
 +}
 +
-+/* Struct used to return info from ft_next() */
-+struct ft_atom {
-+	u32 tag;
-+	const char *name;
-+	void *data;
-+	u32 size;
-+};
-+
-+/* Set ptrs to current one's info; return addr of next one */
-+static char *ft_next(struct ft_cxt *cxt, char *p, struct ft_atom *ret)
++static inline void out_le32(volatile unsigned *addr, int val)
 +{
-+	u32 sz;
-+
-+	if (p >= cxt->rgn[FT_STRUCT].start + cxt->rgn[FT_STRUCT].size)
-+		return NULL;
-+
-+	ret->tag = be32_to_cpu(*(u32 *) p);
-+	p += 4;
-+
-+	switch (ret->tag) {	/* Tag */
-+	case OF_DT_BEGIN_NODE:
-+		ret->name = p;
-+		ret->data = (void *)(p - 4);	/* start of node */
-+		p += _ALIGN(strlen(p) + 1, 4);
-+		break;
-+	case OF_DT_PROP:
-+		ret->size = sz = be32_to_cpu(*(u32 *) p);
-+		ret->name = cxt->str_anchor + be32_to_cpu(*(u32 *) (p + 4));
-+		ret->data = (void *)(p + 8);
-+		p += 8 + _ALIGN(sz, 4);
-+		break;
-+	case OF_DT_END_NODE:
-+	case OF_DT_NOP:
-+		break;
-+	case OF_DT_END:
-+	default:
-+		p = NULL;
-+		break;
-+	}
-+
-+	return p;
++	__asm__ __volatile__("stwbrx %1,0,%2; sync" : "=m" (*addr)
++			     : "r" (val), "r" (addr));
 +}
 +
-+#define HDR_SIZE	_ALIGN(sizeof(struct boot_param_header), 8)
-+#define EXPAND_INCR	1024	/* alloc this much extra when expanding */
-+
-+/* See if the regions are in the standard order and non-overlapping */
-+static int ft_ordered(struct ft_cxt *cxt)
++static inline void out_be32(volatile unsigned *addr, int val)
 +{
-+	char *p = (char *)cxt->bph + HDR_SIZE;
-+	enum ft_rgn_id r;
-+
-+	for (r = FT_RSVMAP; r <= FT_STRINGS; ++r) {
-+		if (p > cxt->rgn[r].start)
-+			return 0;
-+		p = cxt->rgn[r].start + cxt->rgn[r].size;
-+	}
-+	return p <= (char *)cxt->bph + cxt->max_size;
++	__asm__ __volatile__("stw%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
 +}
 +
-+/* Copy the tree to a newly-allocated region and put things in order */
-+static int ft_reorder(struct ft_cxt *cxt, int nextra)
-+{
-+	unsigned long tot;
-+	enum ft_rgn_id r;
-+	char *p, *pend;
-+	int stroff;
-+
-+	tot = HDR_SIZE + EXPAND_INCR;
-+	for (r = FT_RSVMAP; r <= FT_STRINGS; ++r)
-+		tot += cxt->rgn[r].size;
-+	if (nextra > 0)
-+		tot += nextra;
-+	tot = _ALIGN(tot, 8);
-+
-+	if (!cxt->realloc)
-+		return 0;
-+	p = cxt->realloc(NULL, tot);
-+	if (!p)
-+		return 0;
-+
-+	memcpy(p, cxt->bph, sizeof(struct boot_param_header));
-+	/* offsets get fixed up later */
-+
-+	cxt->bph = (struct boot_param_header *)p;
-+	cxt->max_size = tot;
-+	pend = p + tot;
-+	p += HDR_SIZE;
-+
-+	memcpy(p, cxt->rgn[FT_RSVMAP].start, cxt->rgn[FT_RSVMAP].size);
-+	cxt->rgn[FT_RSVMAP].start = p;
-+	p += cxt->rgn[FT_RSVMAP].size;
-+
-+	memcpy(p, cxt->rgn[FT_STRUCT].start, cxt->rgn[FT_STRUCT].size);
-+	ft_node_update_after(cxt, cxt->rgn[FT_STRUCT].start,
-+			p - cxt->rgn[FT_STRUCT].start);
-+	cxt->rgn[FT_STRUCT].start = p;
-+
-+	p = pend - cxt->rgn[FT_STRINGS].size;
-+	memcpy(p, cxt->rgn[FT_STRINGS].start, cxt->rgn[FT_STRINGS].size);
-+	stroff = cxt->str_anchor - cxt->rgn[FT_STRINGS].start;
-+	cxt->rgn[FT_STRINGS].start = p;
-+	cxt->str_anchor = p + stroff;
-+
-+	cxt->isordered = 1;
-+	return 1;
-+}
-+
-+static inline char *prev_end(struct ft_cxt *cxt, enum ft_rgn_id r)
-+{
-+	if (r > FT_RSVMAP)
-+		return cxt->rgn[r - 1].start + cxt->rgn[r - 1].size;
-+	return (char *)cxt->bph + HDR_SIZE;
-+}
-+
-+static inline char *next_start(struct ft_cxt *cxt, enum ft_rgn_id r)
-+{
-+	if (r < FT_STRINGS)
-+		return cxt->rgn[r + 1].start;
-+	return (char *)cxt->bph + cxt->max_size;
-+}
-+
-+/*
-+ * See if we can expand region rgn by nextra bytes by using up
-+ * free space after or before the region.
-+ */
-+static int ft_shuffle(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
-+		int nextra)
-+{
-+	char *p = *pp;
-+	char *rgn_start, *rgn_end;
-+
-+	rgn_start = cxt->rgn[rgn].start;
-+	rgn_end = rgn_start + cxt->rgn[rgn].size;
-+	if (nextra <= 0 || rgn_end + nextra <= next_start(cxt, rgn)) {
-+		/* move following stuff */
-+		if (p < rgn_end) {
-+			if (nextra < 0)
-+				memmove(p, p - nextra, rgn_end - p + nextra);
-+			else
-+				memmove(p + nextra, p, rgn_end - p);
-+			if (rgn == FT_STRUCT)
-+				ft_node_update_after(cxt, p, nextra);
-+		}
-+		cxt->rgn[rgn].size += nextra;
-+		if (rgn == FT_STRINGS)
-+			/* assumes strings only added at beginning */
-+			cxt->str_anchor += nextra;
-+		return 1;
-+	}
-+	if (prev_end(cxt, rgn) <= rgn_start - nextra) {
-+		/* move preceding stuff */
-+		if (p > rgn_start) {
-+			memmove(rgn_start - nextra, rgn_start, p - rgn_start);
-+			if (rgn == FT_STRUCT)
-+				ft_node_update_before(cxt, p, -nextra);
-+		}
-+		*p -= nextra;
-+		cxt->rgn[rgn].start -= nextra;
-+		cxt->rgn[rgn].size += nextra;
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static int ft_make_space(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
-+			 int nextra)
-+{
-+	unsigned long size, ssize, tot;
-+	char *str, *next;
-+	enum ft_rgn_id r;
-+
-+	if (!cxt->isordered && !ft_reorder(cxt, nextra))
-+		return 0;
-+	if (ft_shuffle(cxt, pp, rgn, nextra))
-+		return 1;
-+
-+	/* See if there is space after the strings section */
-+	ssize = cxt->rgn[FT_STRINGS].size;
-+	if (cxt->rgn[FT_STRINGS].start + ssize
-+			< (char *)cxt->bph + cxt->max_size) {
-+		/* move strings up as far as possible */
-+		str = (char *)cxt->bph + cxt->max_size - ssize;
-+		cxt->str_anchor += str - cxt->rgn[FT_STRINGS].start;
-+		memmove(str, cxt->rgn[FT_STRINGS].start, ssize);
-+		cxt->rgn[FT_STRINGS].start = str;
-+		/* enough space now? */
-+		if (rgn >= FT_STRUCT && ft_shuffle(cxt, pp, rgn, nextra))
-+			return 1;
-+	}
-+
-+	/* how much total free space is there following this region? */
-+	tot = 0;
-+	for (r = rgn; r < FT_STRINGS; ++r) {
-+		char *r_end = cxt->rgn[r].start + cxt->rgn[r].size;
-+		tot += next_start(cxt, rgn) - r_end;
-+	}
-+
-+	/* cast is to shut gcc up; we know nextra >= 0 */
-+	if (tot < (unsigned int)nextra) {
-+		/* have to reallocate */
-+		char *newp, *oldp, *new_start;
-+		int shift;
-+
-+		if (!cxt->realloc)
-+			return 0;
-+		size = _ALIGN(cxt->max_size + (nextra - tot) + EXPAND_INCR, 8);
-+		newp = cxt->realloc(cxt->bph, size);
-+		if (!newp)
-+			return 0;
-+		cxt->max_size = size;
-+		oldp = (char *)cxt->bph;
-+		shift = newp - oldp;
-+
-+		if (shift != 0) {	/* realloc can return same addr */
-+			cxt->bph = (struct boot_param_header *)newp;
-+			memmove(newp, oldp, sizeof(struct boot_param_header));
-+			ft_node_update_after(cxt, cxt->rgn[FT_STRUCT].start,
-+					shift);
-+			for (r = FT_RSVMAP; r <= FT_STRUCT; ++r) {
-+				new_start = cxt->rgn[r].start + shift;
-+				memmove(new_start, cxt->rgn[r].start,
-+					cxt->rgn[r].size);
-+				cxt->rgn[r].start = new_start;
-+			}
-+			*pp += shift;
-+		}
-+
-+		/* move strings up to the end */
-+		str = newp + size - ssize;
-+		cxt->str_anchor += str - cxt->rgn[FT_STRINGS].start;
-+		memmove(str, cxt->rgn[FT_STRINGS].start, ssize);
-+		cxt->rgn[FT_STRINGS].start = str;
-+
-+		if (ft_shuffle(cxt, pp, rgn, nextra))
-+			return 1;
-+	}
-+
-+	/* must be FT_RSVMAP and we need to move FT_STRUCT up */
-+	if (rgn == FT_RSVMAP) {
-+		next = cxt->rgn[FT_RSVMAP].start + cxt->rgn[FT_RSVMAP].size
-+			+ nextra;
-+		ssize = cxt->rgn[FT_STRUCT].size;
-+		if (next + ssize >= cxt->rgn[FT_STRINGS].start)
-+			return 0;	/* "can't happen" */
-+		memmove(next, cxt->rgn[FT_STRUCT].start, ssize);
-+		ft_node_update_after(cxt, cxt->rgn[FT_STRUCT].start, nextra);
-+		cxt->rgn[FT_STRUCT].start = next;
-+
-+		if (ft_shuffle(cxt, pp, rgn, nextra))
-+			return 1;
-+	}
-+
-+	return 0;		/* "can't happen" */
-+}
-+
-+static void ft_put_word(struct ft_cxt *cxt, u32 v)
-+{
-+	*(u32 *) cxt->p = cpu_to_be32(v);
-+	cxt->p += 4;
-+}
-+
-+static void ft_put_bin(struct ft_cxt *cxt, const void *data, unsigned int sz)
-+{
-+	unsigned long sza = _ALIGN(sz, 4);
-+
-+	/* zero out the alignment gap if necessary */
-+	if (sz < sza)
-+		*(u32 *) (cxt->p + sza - 4) = 0;
-+
-+	/* copy in the data */
-+	memcpy(cxt->p, data, sz);
-+
-+	cxt->p += sza;
-+}
-+
-+int ft_begin_node(struct ft_cxt *cxt, const char *name)
-+{
-+	unsigned long nlen = strlen(name) + 1;
-+	unsigned long len = 8 + _ALIGN(nlen, 4);
-+
-+	if (!ft_make_space(cxt, &cxt->p, FT_STRUCT, len))
-+		return -1;
-+	ft_put_word(cxt, OF_DT_BEGIN_NODE);
-+	ft_put_bin(cxt, name, strlen(name) + 1);
-+	return 0;
-+}
-+
-+void ft_end_node(struct ft_cxt *cxt)
-+{
-+	ft_put_word(cxt, OF_DT_END_NODE);
-+}
-+
-+void ft_nop(struct ft_cxt *cxt)
-+{
-+	if (ft_make_space(cxt, &cxt->p, FT_STRUCT, 4))
-+		ft_put_word(cxt, OF_DT_NOP);
-+}
-+
-+#define NO_STRING	0x7fffffff
-+
-+static int lookup_string(struct ft_cxt *cxt, const char *name)
-+{
-+	char *p, *end;
-+
-+	p = cxt->rgn[FT_STRINGS].start;
-+	end = p + cxt->rgn[FT_STRINGS].size;
-+	while (p < end) {
-+		if (strcmp(p, (char *)name) == 0)
-+			return p - cxt->str_anchor;
-+		p += strlen(p) + 1;
-+	}
-+
-+	return NO_STRING;
-+}
-+
-+/* lookup string and insert if not found */
-+static int map_string(struct ft_cxt *cxt, const char *name)
-+{
-+	int off;
-+	char *p;
-+
-+	off = lookup_string(cxt, name);
-+	if (off != NO_STRING)
-+		return off;
-+	p = cxt->rgn[FT_STRINGS].start;
-+	if (!ft_make_space(cxt, &p, FT_STRINGS, strlen(name) + 1))
-+		return NO_STRING;
-+	strcpy(p, name);
-+	return p - cxt->str_anchor;
-+}
-+
-+int ft_prop(struct ft_cxt *cxt, const char *name, const void *data,
-+		unsigned int sz)
-+{
-+	int off, len;
-+
-+	off = lookup_string(cxt, name);
-+	if (off == NO_STRING)
-+		return -1;
-+
-+	len = 12 + _ALIGN(sz, 4);
-+	if (!ft_make_space(cxt, &cxt->p, FT_STRUCT, len))
-+		return -1;
-+
-+	ft_put_word(cxt, OF_DT_PROP);
-+	ft_put_word(cxt, sz);
-+	ft_put_word(cxt, off);
-+	ft_put_bin(cxt, data, sz);
-+	return 0;
-+}
-+
-+int ft_prop_str(struct ft_cxt *cxt, const char *name, const char *str)
-+{
-+	return ft_prop(cxt, name, str, strlen(str) + 1);
-+}
-+
-+int ft_prop_int(struct ft_cxt *cxt, const char *name, unsigned int val)
-+{
-+	u32 v = cpu_to_be32((u32) val);
-+
-+	return ft_prop(cxt, name, &v, 4);
-+}
-+
-+/* Calculate the size of the reserved map */
-+static unsigned long rsvmap_size(struct ft_cxt *cxt)
-+{
-+	struct ft_reserve *res;
-+
-+	res = (struct ft_reserve *)cxt->rgn[FT_RSVMAP].start;
-+	while (res->start || res->len)
-+		++res;
-+	return (char *)(res + 1) - cxt->rgn[FT_RSVMAP].start;
-+}
-+
-+/* Calculate the size of the struct region by stepping through it */
-+static unsigned long struct_size(struct ft_cxt *cxt)
-+{
-+	char *p = cxt->rgn[FT_STRUCT].start;
-+	char *next;
-+	struct ft_atom atom;
-+
-+	/* make check in ft_next happy */
-+	if (cxt->rgn[FT_STRUCT].size == 0)
-+		cxt->rgn[FT_STRUCT].size = 0xfffffffful - (unsigned long)p;
-+
-+	while ((next = ft_next(cxt, p, &atom)) != NULL)
-+		p = next;
-+	return p + 4 - cxt->rgn[FT_STRUCT].start;
-+}
-+
-+/* add `adj' on to all string offset values in the struct area */
-+static void adjust_string_offsets(struct ft_cxt *cxt, int adj)
-+{
-+	char *p = cxt->rgn[FT_STRUCT].start;
-+	char *next;
-+	struct ft_atom atom;
-+	int off;
-+
-+	while ((next = ft_next(cxt, p, &atom)) != NULL) {
-+		if (atom.tag == OF_DT_PROP) {
-+			off = be32_to_cpu(*(u32 *) (p + 8));
-+			*(u32 *) (p + 8) = cpu_to_be32(off + adj);
-+		}
-+		p = next;
-+	}
-+}
-+
-+/* start construction of the flat OF tree from scratch */
-+void ft_begin(struct ft_cxt *cxt, void *blob, unsigned int max_size,
-+		void *(*realloc_fn) (void *, unsigned long))
-+{
-+	struct boot_param_header *bph = blob;
-+	char *p;
-+	struct ft_reserve *pres;
-+
-+	/* clear the cxt */
-+	memset(cxt, 0, sizeof(*cxt));
-+
-+	cxt->bph = bph;
-+	cxt->max_size = max_size;
-+	cxt->realloc = realloc_fn;
-+	cxt->isordered = 1;
-+
-+	/* zero everything in the header area */
-+	memset(bph, 0, sizeof(*bph));
-+
-+	bph->magic = cpu_to_be32(OF_DT_HEADER);
-+	bph->version = cpu_to_be32(0x10);
-+	bph->last_comp_version = cpu_to_be32(0x10);
-+
-+	/* start pointers */
-+	cxt->rgn[FT_RSVMAP].start = p = blob + HDR_SIZE;
-+	cxt->rgn[FT_RSVMAP].size = sizeof(struct ft_reserve);
-+	pres = (struct ft_reserve *)p;
-+	cxt->rgn[FT_STRUCT].start = p += sizeof(struct ft_reserve);
-+	cxt->rgn[FT_STRUCT].size = 4;
-+	cxt->rgn[FT_STRINGS].start = blob + max_size;
-+	cxt->rgn[FT_STRINGS].size = 0;
-+
-+	/* init rsvmap and struct */
-+	pres->start = 0;
-+	pres->len = 0;
-+	*(u32 *) p = cpu_to_be32(OF_DT_END);
-+
-+	cxt->str_anchor = blob;
-+}
-+
-+/* open up an existing blob to be examined or modified */
-+int ft_open(struct ft_cxt *cxt, void *blob, unsigned int max_size,
-+		unsigned int max_find_device,
-+		void *(*realloc_fn) (void *, unsigned long))
-+{
-+	struct boot_param_header *bph = blob;
-+
-+	/* can't cope with version < 16 */
-+	if (be32_to_cpu(bph->version) < 16)
-+		return -1;
-+
-+	/* clear the cxt */
-+	memset(cxt, 0, sizeof(*cxt));
-+
-+	/* alloc node_tbl to track node ptrs returned by ft_find_device */
-+	++max_find_device;
-+	cxt->node_tbl = realloc_fn(NULL, max_find_device * sizeof(char *));
-+	if (!cxt->node_tbl)
-+		return -1;
-+	memset(cxt->node_tbl, 0, max_find_device * sizeof(char *));
-+	cxt->node_max = max_find_device;
-+	cxt->nodes_used = 1;	/* don't use idx 0 b/c looks like NULL */
-+
-+	cxt->bph = bph;
-+	cxt->max_size = max_size;
-+	cxt->realloc = realloc_fn;
-+
-+	cxt->rgn[FT_RSVMAP].start = blob + be32_to_cpu(bph->off_mem_rsvmap);
-+	cxt->rgn[FT_RSVMAP].size = rsvmap_size(cxt);
-+	cxt->rgn[FT_STRUCT].start = blob + be32_to_cpu(bph->off_dt_struct);
-+	cxt->rgn[FT_STRUCT].size = struct_size(cxt);
-+	cxt->rgn[FT_STRINGS].start = blob + be32_to_cpu(bph->off_dt_strings);
-+	cxt->rgn[FT_STRINGS].size = be32_to_cpu(bph->dt_strings_size);
-+	cxt->isordered = ft_ordered(cxt);
-+
-+	cxt->p = cxt->rgn[FT_STRUCT].start;
-+	cxt->str_anchor = cxt->rgn[FT_STRINGS].start;
-+
-+	return 0;
-+}
-+
-+/* add a reserver physical area to the rsvmap */
-+int ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size)
-+{
-+	char *p;
-+	struct ft_reserve *pres;
-+
-+	p = cxt->rgn[FT_RSVMAP].start + cxt->rgn[FT_RSVMAP].size
-+		- sizeof(struct ft_reserve);
-+	if (!ft_make_space(cxt, &p, FT_RSVMAP, sizeof(struct ft_reserve)))
-+		return -1;
-+
-+	pres = (struct ft_reserve *)p;
-+	pres->start = cpu_to_be64(physaddr);
-+	pres->len = cpu_to_be64(size);
-+
-+	return 0;
-+}
-+
-+void ft_begin_tree(struct ft_cxt *cxt)
-+{
-+	cxt->p = cxt->rgn[FT_STRUCT].start;
-+}
-+
-+void ft_end_tree(struct ft_cxt *cxt)
-+{
-+	struct boot_param_header *bph = cxt->bph;
-+	char *p, *oldstr, *str, *endp;
-+	unsigned long ssize;
-+
-+	if (!cxt->isordered)
-+		return;		/* we haven't touched anything */
-+
-+	/* adjust string offsets */
-+	oldstr = cxt->rgn[FT_STRINGS].start;
-+	adjust_string_offsets(cxt, cxt->str_anchor - oldstr);
-+
-+	/* make strings end on 8-byte boundary */
-+	ssize = cxt->rgn[FT_STRINGS].size;
-+	endp = (char *)_ALIGN((unsigned long)cxt->rgn[FT_STRUCT].start
-+			+ cxt->rgn[FT_STRUCT].size + ssize, 8);
-+	str = endp - ssize;
-+
-+	/* move strings down to end of structs */
-+	memmove(str, oldstr, ssize);
-+	cxt->str_anchor = str;
-+	cxt->rgn[FT_STRINGS].start = str;
-+
-+	/* fill in header fields */
-+	p = (char *)bph;
-+	bph->totalsize = cpu_to_be32(endp - p);
-+	bph->off_mem_rsvmap = cpu_to_be32(cxt->rgn[FT_RSVMAP].start - p);
-+	bph->off_dt_struct = cpu_to_be32(cxt->rgn[FT_STRUCT].start - p);
-+	bph->off_dt_strings = cpu_to_be32(cxt->rgn[FT_STRINGS].start - p);
-+	bph->dt_strings_size = cpu_to_be32(ssize);
-+}
-+
-+void *ft_find_device(struct ft_cxt *cxt, const char *srch_path)
-+{
-+	char *node;
-+
-+	/* require absolute path */
-+	if (srch_path[0] != '/')
-+		return NULL;
-+	node = ft_find_descendent(cxt, cxt->rgn[FT_STRUCT].start, srch_path);
-+	return ft_node_add(cxt, node);
-+}
-+
-+void *ft_find_descendent(struct ft_cxt *cxt, void *top, const char *srch_path)
-+{
-+	struct ft_atom atom;
-+	char *p;
-+	const char *cp, *q;
-+	int cl;
-+	int depth = -1;
-+	int dmatch = 0;
-+	const char *path_comp[FT_MAX_DEPTH];
-+
-+	cp = srch_path;
-+	cl = 0;
-+	p = top;
-+
-+	while ((p = ft_next(cxt, p, &atom)) != NULL) {
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+			++depth;
-+			if (depth != dmatch)
-+				break;
-+			cxt->genealogy[depth] = atom.data;
-+			cxt->genealogy[depth + 1] = NULL;
-+			if (depth && !(strncmp(atom.name, cp, cl) == 0
-+					&& (atom.name[cl] == '/'
-+						|| atom.name[cl] == '\0'
-+						|| atom.name[cl] == '@')))
-+				break;
-+			path_comp[dmatch] = cp;
-+			/* it matches so far, advance to next path component */
-+			cp += cl;
-+			/* skip slashes */
-+			while (*cp == '/')
-+				++cp;
-+			/* we're done if this is the end of the string */
-+			if (*cp == 0)
-+				return atom.data;
-+			/* look for end of this component */
-+			q = strchr(cp, '/');
-+			if (q)
-+				cl = q - cp;
-+			else
-+				cl = strlen(cp);
-+			++dmatch;
-+			break;
-+		case OF_DT_END_NODE:
-+			if (depth == 0)
-+				return NULL;
-+			if (dmatch > depth) {
-+				--dmatch;
-+				cl = cp - path_comp[dmatch] - 1;
-+				cp = path_comp[dmatch];
-+				while (cl > 0 && cp[cl - 1] == '/')
-+					--cl;
-+			}
-+			--depth;
-+			break;
-+		}
-+	}
-+	return NULL;
-+}
-+
-+void *ft_get_parent(struct ft_cxt *cxt, const void *phandle)
-+{
-+	void *node;
-+	int d;
-+	struct ft_atom atom;
-+	char *p;
-+
-+	node = ft_node_ph2node(cxt, phandle);
-+	if (node == NULL)
-+		return NULL;
-+
-+	for (d = 0; cxt->genealogy[d] != NULL; ++d)
-+		if (cxt->genealogy[d] == node)
-+			return cxt->genealogy[d > 0 ? d - 1 : 0];
-+
-+	/* have to do it the hard way... */
-+	p = cxt->rgn[FT_STRUCT].start;
-+	d = 0;
-+	while ((p = ft_next(cxt, p, &atom)) != NULL) {
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+			cxt->genealogy[d] = atom.data;
-+			if (node == atom.data) {
-+				/* found it */
-+				cxt->genealogy[d + 1] = NULL;
-+				return d > 0 ? cxt->genealogy[d - 1] : node;
-+			}
-+			++d;
-+			break;
-+		case OF_DT_END_NODE:
-+			--d;
-+			break;
-+		}
-+	}
-+	return NULL;
-+}
-+
-+int ft_get_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
-+		void *buf, const unsigned int buflen)
-+{
-+	struct ft_atom atom;
-+	void *node;
-+	char *p;
-+	int depth;
-+	unsigned int size;
-+
-+	node = ft_node_ph2node(cxt, phandle);
-+	if (node == NULL)
-+		return -1;
-+
-+	depth = 0;
-+	p = (char *)node;
-+
-+	while ((p = ft_next(cxt, p, &atom)) != NULL) {
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+			++depth;
-+			break;
-+		case OF_DT_PROP:
-+			if ((depth != 1) || strcmp(atom.name, propname))
-+				break;
-+			size = min(atom.size, buflen);
-+			memcpy(buf, atom.data, size);
-+			return atom.size;
-+		case OF_DT_END_NODE:
-+			if (--depth <= 0)
-+				return -1;
-+		}
-+	}
-+	return -1;
-+}
-+
-+int ft_set_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
-+		const void *buf, const unsigned int buflen)
-+{
-+	struct ft_atom atom;
-+	void *node;
-+	char *p, *next;
-+	int nextra, depth;
-+
-+	node = ft_node_ph2node(cxt, phandle);
-+	if (node == NULL)
-+		return -1;
-+
-+	depth = 0;
-+	p = node;
-+
-+	while ((next = ft_next(cxt, p, &atom)) != NULL) {
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+			++depth;
-+			break;
-+		case OF_DT_END_NODE:
-+			if (--depth > 0)
-+				break;
-+			/* haven't found the property, insert here */
-+			cxt->p = p;
-+			return ft_prop(cxt, propname, buf, buflen);
-+		case OF_DT_PROP:
-+			if ((depth != 1) || strcmp(atom.name, propname))
-+				break;
-+			/* found an existing property, overwrite it */
-+			nextra = _ALIGN(buflen, 4) - _ALIGN(atom.size, 4);
-+			cxt->p = atom.data;
-+			if (nextra && !ft_make_space(cxt, &cxt->p, FT_STRUCT,
-+						nextra))
-+				return -1;
-+			*(u32 *) (cxt->p - 8) = cpu_to_be32(buflen);
-+			ft_put_bin(cxt, buf, buflen);
-+			return 0;
-+		}
-+		p = next;
-+	}
-+	return -1;
-+}
-+
-+int ft_del_prop(struct ft_cxt *cxt, const void *phandle, const char *propname)
-+{
-+	struct ft_atom atom;
-+	void *node;
-+	char *p, *next;
-+	int size;
-+
-+	node = ft_node_ph2node(cxt, phandle);
-+	if (node == NULL)
-+		return -1;
-+
-+	p = node;
-+	while ((next = ft_next(cxt, p, &atom)) != NULL) {
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+		case OF_DT_END_NODE:
-+			return -1;
-+		case OF_DT_PROP:
-+			if (strcmp(atom.name, propname))
-+				break;
-+			/* found the property, remove it */
-+			size = 12 + -_ALIGN(atom.size, 4);
-+			cxt->p = p;
-+			if (!ft_make_space(cxt, &cxt->p, FT_STRUCT, -size))
-+				return -1;
-+			return 0;
-+		}
-+		p = next;
-+	}
-+	return -1;
-+}
-+
-+void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *path)
-+{
-+	struct ft_atom atom;
-+	char *p, *next;
-+	int depth = 0;
-+
-+	p = cxt->rgn[FT_STRUCT].start;
-+	while ((next = ft_next(cxt, p, &atom)) != NULL) {
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+			++depth;
-+			if (depth == 1 && strcmp(atom.name, path) == 0)
-+				/* duplicate node path, return error */
-+				return NULL;
-+			break;
-+		case OF_DT_END_NODE:
-+			--depth;
-+			if (depth > 0)
-+				break;
-+			/* end of node, insert here */
-+			cxt->p = p;
-+			ft_begin_node(cxt, path);
-+			ft_end_node(cxt);
-+			return p;
-+		}
-+		p = next;
-+	}
-+	return NULL;
-+}
-diff --git a/arch/powerpc/boot/flatdevtree.h b/arch/powerpc/boot/flatdevtree.h
-index 761c8dc..b9cd9f6 100644
---- a/arch/powerpc/boot/flatdevtree.h
-+++ b/arch/powerpc/boot/flatdevtree.h
-@@ -17,7 +17,7 @@
- #ifndef FLATDEVTREE_H
- #define FLATDEVTREE_H
- 
--#include "types.h"
-+#include "flatdevtree_env.h"
- 
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER            0xd00dfeed      /* marker */
-@@ -43,4 +43,64 @@ struct boot_param_header {
- 	u32 dt_strings_size;    /* size of the DT strings block */
- };
- 
-+struct ft_reserve {
-+	u64 start;
-+	u64 len;
-+};
-+
-+struct ft_region {
-+	char *start;
-+	unsigned long size;
-+};
-+
-+enum ft_rgn_id {
-+	FT_RSVMAP,
-+	FT_STRUCT,
-+	FT_STRINGS,
-+	FT_N_REGION
-+};
-+
-+#define FT_MAX_DEPTH	50
-+
-+struct ft_cxt {
-+	struct boot_param_header *bph;
-+	int max_size;           /* maximum size of tree */
-+	int isordered;		/* everything in standard order */
-+	void *(*realloc)(void *, unsigned long);
-+	char *str_anchor;
-+	char *p;		/* current insertion point in structs */
-+	struct ft_region rgn[FT_N_REGION];
-+	void *genealogy[FT_MAX_DEPTH+1];
-+	char **node_tbl;
-+	unsigned int node_max;
-+	unsigned int nodes_used;
-+};
-+
-+int ft_begin_node(struct ft_cxt *cxt, const char *name);
-+void ft_end_node(struct ft_cxt *cxt);
-+
-+void ft_begin_tree(struct ft_cxt *cxt);
-+void ft_end_tree(struct ft_cxt *cxt);
-+
-+void ft_nop(struct ft_cxt *cxt);
-+int ft_prop(struct ft_cxt *cxt, const char *name,
-+	    const void *data, unsigned int sz);
-+int ft_prop_str(struct ft_cxt *cxt, const char *name, const char *str);
-+int ft_prop_int(struct ft_cxt *cxt, const char *name, unsigned int val);
-+void ft_begin(struct ft_cxt *cxt, void *blob, unsigned int max_size,
-+	      void *(*realloc_fn)(void *, unsigned long));
-+int ft_open(struct ft_cxt *cxt, void *blob, unsigned int max_size,
-+		unsigned int max_find_device,
-+		void *(*realloc_fn)(void *, unsigned long));
-+int ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size);
-+
-+void ft_dump_blob(const void *bphp);
-+void ft_merge_blob(struct ft_cxt *cxt, void *blob);
-+void *ft_find_device(struct ft_cxt *cxt, const char *srch_path);
-+void *ft_find_descendent(struct ft_cxt *cxt, void *top, const char *srch_path);
-+int ft_get_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
-+		void *buf, const unsigned int buflen);
-+int ft_set_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
-+		const void *buf, const unsigned int buflen);
-+
- #endif /* FLATDEVTREE_H */
-diff --git a/arch/powerpc/boot/flatdevtree_env.h b/arch/powerpc/boot/flatdevtree_env.h
++#endif /* _IO_H */
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
 new file mode 100644
-index 0000000..83bc1c7
+index 0000000..e066942
 --- /dev/null
-+++ b/arch/powerpc/boot/flatdevtree_env.h
-@@ -0,0 +1,47 @@
++++ b/arch/powerpc/boot/ns16550.c
+@@ -0,0 +1,76 @@
 +/*
-+ * This file adds the header file glue so that the shared files
-+ * flatdevicetree.[ch] can compile and work in the powerpc bootwrapper.
++ * 16550 serial console support.
 + *
-+ * strncmp & strchr copied from <file:lib/strings.c>
-+ * Copyright (C) 1991, 1992  Linus Torvalds
++ * Original copied from <file:arch/ppc/boot/common/ns16550.c>
++ * (which had no copyright)
++ * Modifications: 2006 (c) MontaVista Software, Inc.
 + *
-+ * Maintained by: Mark A. Greer <mgreer@mvista.com>
++ * Modified by: Mark A. Greer <mgreer@mvista.com>
 + */
-+#ifndef _PPC_BOOT_FLATDEVTREE_ENV_H_
-+#define _PPC_BOOT_FLATDEVTREE_ENV_H_
-+
 +#include <stdarg.h>
 +#include <stddef.h>
 +#include "types.h"
 +#include "string.h"
 +#include "stdio.h"
++#include "io.h"
 +#include "ops.h"
 +
-+#define be16_to_cpu(x)		(x)
-+#define cpu_to_be16(x)		(x)
-+#define be32_to_cpu(x)		(x)
-+#define cpu_to_be32(x)		(x)
-+#define be64_to_cpu(x)		(x)
-+#define cpu_to_be64(x)		(x)
++#define UART_DLL	0	/* Out: Divisor Latch Low */
++#define UART_DLM	1	/* Out: Divisor Latch High */
++#define UART_FCR	2	/* Out: FIFO Control Register */
++#define UART_LCR	3	/* Out: Line Control Register */
++#define UART_MCR	4	/* Out: Modem Control Register */
++#define UART_LSR	5	/* In:  Line Status Register */
++#define UART_LSR_THRE	0x20	/* Transmit-hold-register empty */
++#define UART_LSR_DR	0x01	/* Receiver data ready */
++#define UART_MSR	6	/* In:  Modem Status Register */
++#define UART_SCR	7	/* I/O: Scratch Register */
 +
-+static inline int strncmp(const char *cs, const char *ct, size_t count)
++static unsigned char *reg_base;
++static u8 reg_shift;
++
++static int ns16550_open(void)
 +{
-+	signed char __res = 0;
-+
-+	while (count) {
-+		if ((__res = *cs - *ct++) != 0 || !*cs++)
-+			break;
-+		count--;
-+	}
-+	return __res;
++	out_8(reg_base + (UART_FCR << reg_shift), 0x06);
++	return 0;
 +}
 +
-+static inline char *strchr(const char *s, int c)
++static void ns16550_putc(unsigned char c)
 +{
-+	for (; *s != (char)c; ++s)
-+		if (*s == '\0')
-+			return NULL;
-+	return (char *)s;
++	while ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_THRE) == 0);
++	out_8(reg_base, c);
 +}
 +
-+#endif /* _PPC_BOOT_FLATDEVTREE_ENV_H_ */
-diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
++static unsigned char ns16550_getc(void)
++{
++	while ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_DR) == 0);
++	return in_8(reg_base);
++}
++
++static u8 ns16550_tstc(void)
++{
++	return ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_DR) != 0);
++}
++
++int ns16550_console_init(void *devp, struct serial_console_data *scdp)
++{
++	u32 reg[2];
++	int n;
++
++	n = getprop(devp, "virtual-reg", &reg, sizeof(reg)) / 4;
++	if (n < 1)
++		return -1;
++	reg_base = (unsigned char *)((n == 1) ? reg[0] : reg[0] | reg[1]);
++
++	if (getprop(devp, "reg_shift", &reg_shift, sizeof(reg_shift))
++			!= sizeof(reg_shift))
++		reg_shift = 0;
++
++	scdp->open = ns16550_open;
++	scdp->putc = ns16550_putc;
++	scdp->getc = ns16550_getc;
++	scdp->tstc = ns16550_tstc;
++	scdp->close = NULL;
++
++	return 0;
++}
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
 new file mode 100644
-index 0000000..c7f9adb
+index 0000000..e8de4cf
 --- /dev/null
-+++ b/arch/powerpc/boot/flatdevtree_misc.c
-@@ -0,0 +1,56 @@
++++ b/arch/powerpc/boot/serial.c
+@@ -0,0 +1,142 @@
 +/*
-+ * This file does the necessary interface mapping between the bootwrapper
-+ * device tree operations and the interface provided by shared source
-+ * files flatdevicetree.[ch].
++ * Generic serial console support
 + *
 + * Author: Mark A. Greer <mgreer@mvista.com>
 + *
-+ * 2006 (c) MontaVista Software, Inc.  This file is licensed under
++ * Code in serial_edit_cmdline() copied from <file:arch/ppc/boot/simple/misc.c>
++ * and was written by Matt Porter <mporter@kernel.crashing.org>.
++ *
++ * 2001,2006 (c) MontaVista Software, Inc.  This file is licensed under
 + * the terms of the GNU General Public License version 2.  This program
 + * is licensed "as is" without any warranty of any kind, whether express
 + * or implied.
 + */
++#include <stdarg.h>
 +#include <stddef.h>
-+#include "flatdevtree.h"
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "io.h"
 +#include "ops.h"
 +
-+static struct ft_cxt cxt;
++extern void udelay(long delay);
 +
-+static void *ft_finddevice(const char *name)
++static int serial_open(void)
 +{
-+	return ft_find_device(&cxt, name);
++	struct serial_console_data *scdp = console_ops.data;
++	return scdp->open();
 +}
 +
-+static int ft_getprop(const void *phandle, const char *propname, void *buf,
-+		const int buflen)
++static void serial_write(char *buf, int len)
 +{
-+	return ft_get_prop(&cxt, phandle, propname, buf, buflen);
++	struct serial_console_data *scdp = console_ops.data;
++
++	while (*buf != '\0')
++		scdp->putc(*buf++);
 +}
 +
-+static int ft_setprop(const void *phandle, const char *propname,
-+		const void *buf, const int buflen)
++static void serial_edit_cmdline(char *buf, int len)
 +{
-+	return ft_set_prop(&cxt, phandle, propname, buf, buflen);
++	int timer = 0, count;
++	char ch, *cp;
++	struct serial_console_data *scdp = console_ops.data;
++
++	cp = buf;
++	count = strlen(buf);
++	cp = &buf[count];
++	count++;
++
++	while (timer++ < 5*1000) {
++		if (scdp->tstc()) {
++			while (((ch = scdp->getc()) != '\n') && (ch != '\r')) {
++				/* Test for backspace/delete */
++				if ((ch == '\b') || (ch == '\177')) {
++					if (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				/* Test for ^x/^u (and wipe the line) */
++				} else if ((ch == '\030') || (ch == '\025')) {
++					while (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				} else if (count < len) {
++						*cp++ = ch;
++						count++;
++						scdp->putc(ch);
++				}
++			}
++			break;  /* Exit 'timer' loop */
++		}
++		udelay(1000);  /* 1 msec */
++	}
++	*cp = 0;
 +}
 +
-+static void ft_pack(void)
++static void serial_close(void)
 +{
-+	ft_end_tree(&cxt);
++	struct serial_console_data *scdp = console_ops.data;
++
++	if (scdp->close)
++		scdp->close();
 +}
 +
-+static unsigned long ft_addr(void)
++static void *serial_get_stdout_devp(void)
 +{
-+	return (unsigned long)cxt.bph;
++	void *devp;
++	char devtype[MAX_PROP_LEN];
++	char path[MAX_PATH_LEN];
++
++	devp = finddevice("/chosen");
++	if (devp == NULL)
++		goto err_out;
++
++	if (getprop(devp, "linux,stdout-path", path, MAX_PATH_LEN) > 0) {
++		devp = finddevice(path);
++		if (devp == NULL)
++			goto err_out;
++
++		if ((getprop(devp, "device_type", devtype, sizeof(devtype)) > 0)
++				&& !strcmp(devtype, "serial"))
++			return devp;
++	}
++err_out:
++	return NULL;
 +}
 +
-+int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device)
-+{
-+	dt_ops.finddevice = ft_finddevice;
-+	dt_ops.getprop = ft_getprop;
-+	dt_ops.setprop = ft_setprop;
-+	dt_ops.ft_pack = ft_pack;
-+	dt_ops.ft_addr = ft_addr;
++static struct serial_console_data serial_cd;
 +
-+	return ft_open(&cxt, dt_blob, max_size, max_find_device,
-+			platform_ops.realloc);
++/* Node's "compatible" property determines which serial driver to use */
++int serial_console_init(void)
++{
++	void *devp;
++	int rc = -1;
++	char compat[MAX_PROP_LEN];
++
++	devp = serial_get_stdout_devp();
++	if (devp == NULL)
++		goto err_out;
++
++	if (getprop(devp, "compatible", compat, sizeof(compat)) < 0)
++		goto err_out;
++
++	if (!strcmp(compat, "ns16550"))
++		rc = ns16550_console_init(devp, &serial_cd);
++
++	/* Add other serial console driver calls here */
++
++	if (!rc) {
++		console_ops.open = serial_open;
++		console_ops.write = serial_write;
++		console_ops.edit_cmdline = serial_edit_cmdline;
++		console_ops.close = serial_close;
++		console_ops.data = &serial_cd;
++
++		return 0;
++	}
++err_out:
++	return -1;
 +}
+diff --git a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
+new file mode 100644
+index 0000000..b8e1c23
+--- /dev/null
++++ b/arch/powerpc/boot/util.S
+@@ -0,0 +1,101 @@
++/*
++ * Copied from <file:arch/powerpc/kernel/misc_32.S>
++ *
++ * This file contains miscellaneous low-level functions.
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ * Largely rewritten by Cort Dougan (cort@cs.nmt.edu)
++ * and Paul Mackerras.
++ *
++ * kexec bits:
++ * Copyright (C) 2002-2003 Eric Biederman  <ebiederm@xmission.com>
++ * GameCube/ppc32 port Copyright (C) 2004 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++#include "ppc_asm.h"
++
++#define SPRN_PVR        0x11F   /* Processor Version Register */
++
++	.text
++/*
++ * complement mask on the msr then "or" some values on.
++ *     _nmask_and_or_msr(nmask, value_to_or)
++ */
++	.globl _nmask_and_or_msr
++_nmask_and_or_msr:
++	mfmsr	r0		/* Get current msr */
++	andc	r0,r0,r3	/* And off the bits set in r3 (first parm) */
++	or	r0,r0,r4	/* Or on the bits in r4 (second parm) */
++	SYNC			/* Some chip revs have problems here... */
++	mtmsr	r0		/* Update machine state */
++	isync
++	blr			/* Done */
++
++/* udelay (on non-601 processors) needs to know the period of the
++ * timebase in nanoseconds.  This used to be hardcoded to be 60ns
++ * (period of 66MHz/4).  Now a variable is used that is initialized to
++ * 60 for backward compatibility, but it can be overridden as necessary
++ * with code something like this:
++ *    extern unsigned long timebase_period_ns;
++ *    timebase_period_ns = 1000000000 / bd->bi_tbfreq;
++ */
++	.data
++	.globl timebase_period_ns
++timebase_period_ns:
++	.long	60
++
++	.text
++/*
++ * Delay for a number of microseconds
++ */
++	.globl	udelay
++udelay:
++	mfspr	r4,SPRN_PVR
++	srwi	r4,r4,16
++	cmpwi	0,r4,1		/* 601 ? */
++	bne	.udelay_not_601
++00:	li	r0,86	/* Instructions / microsecond? */
++	mtctr	r0
++10:	addi	r0,r0,0 /* NOP */
++	bdnz	10b
++	subic.	r3,r3,1
++	bne	00b
++	blr
++
++.udelay_not_601:
++	mulli	r4,r3,1000	/* nanoseconds */
++	/*  Change r4 to be the number of ticks using:
++	 *	(nanoseconds + (timebase_period_ns - 1 )) / timebase_period_ns
++	 *  timebase_period_ns defaults to 60 (16.6MHz) */
++	mflr	r5
++	bl	0f
++0:	mflr	r6
++	mtlr	r5
++	lis	r5,0b@ha
++	addi	r5,r5,0b@l
++	subf	r5,r5,r6	/* In case we're relocated */
++	addis	r5,r5,timebase_period_ns@ha
++	lwz	r5,timebase_period_ns@l(r5)
++	add	r4,r4,r5
++	addi	r4,r4,-1
++	divw	r4,r4,r5	/* BUS ticks */
++1:	mftbu	r5
++	mftb	r6
++	mftbu	r7
++	cmpw	0,r5,r7
++	bne	1b		/* Get [synced] base time */
++	addc	r9,r6,r4	/* Compute end time */
++	addze	r8,r5
++2:	mftbu	r5
++	cmpw	0,r5,r8
++	blt	2b
++	bgt	3f
++	mftb	r6
++	cmpw	0,r6,r9
++	blt	2b
++3:	blr
