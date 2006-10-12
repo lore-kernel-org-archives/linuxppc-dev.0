@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B892567B8F
+Return-Path: <arsadri@yahoo.ca>
+Received: from web56815.mail.re3.yahoo.com (web56815.mail.re3.yahoo.com
+	[66.196.97.89]) by ozlabs.org (Postfix) with SMTP id 5839F67BD7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 09:00:10 +1000 (EST)
-To: Adrian <adrian@it-live.co.uk>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: PPChameleonEVB Newbie question 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 Oct 2006 17:24:34 +0200."
-	<010001c6ed49$aa8ab390$3a0da8c0@adrianlaptop>
-Date: Thu, 12 Oct 2006 01:00:08 +0200
-Sender: wd@denx.de
-Message-Id: <20061011230008.74BA7353DA0@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 12 Oct 2006 20:19:44 +1000 (EST)
+Message-ID: <20061012101302.5382.qmail@web56815.mail.re3.yahoo.com>
+Date: Thu, 12 Oct 2006 03:13:02 -0700 (PDT)
+From: Alireza Sadri <arsadri@yahoo.ca>
+Subject: SystemACE in a multiprocessor system
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +20,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Adrian,
+Hi,
 
-in message <010001c6ed49$aa8ab390$3a0da8c0@adrianlaptop> you wrote:
-> 
-> I have a PPChameleonEVB board running a 405EP processor.
+My question is about using only one SystemACE in a
+board containing several Virtex4 chips all in the JTAG
+chain.
 
-DAVE has a lot of pretty detailed application  notes.  Make  sure  to
-read their docs.
+How are kernels run on these processors, as only one
+of these FPGAs are connected to this CompactFlash
+directly.
 
-> I have tried many things, and can now boot Linux 2.6.15 on the board using 
-> an NFS share as both root fs and swap.
+Regards,
+Ali R. Sadri,
+Sarv-net Inc.
+www.sarv-net.com
 
-Swap over NFS? Grrghh... 
-
-> When I try to compile & install the kernel modules on the board, i get an 
-> message about perl and then it errors.
-
-Why don't you just use the cross tools?
-
-> 1) Kernel version/Linux distroof the i386 PC used for the cross-compiling.
-
-Should not matter much.
-
-> 2) ELDK version and if there are any patches needed.
-
-For a 2.6 kernel tree you need ELDK 4.0.
-
-> 2) Perl version (or how to stop the Kernel build using perl)
-
-Use the cross tools. It's much faster anyway.
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-He had quite a powerful intellect, but it  was  as  powerful  like  a
-locomotive,  and  ran on rails and was therefore almost impossible to
-steer.                          - Terry Pratchett, _Lords and Ladies_
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
