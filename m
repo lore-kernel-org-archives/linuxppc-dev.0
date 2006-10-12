@@ -1,22 +1,23 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 99CDF67C38
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 04:01:17 +1000 (EST)
-Message-ID: <452E7E8E.8000808@am.sony.com>
-Date: Thu, 12 Oct 2006 10:42:38 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [PATCH 2/2] Add support for dumping spu info from
-	xmon
-References: <20061012120312.10FDD67BE5@ozlabs.org>
-In-Reply-To: <20061012120312.10FDD67BE5@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E691967BED
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 06:05:53 +1000 (EST)
+In-Reply-To: <1160664666.4792.151.camel@localhost.localdomain>
+References: <20061012045943.9389.qmail@web52403.mail.yahoo.com>
+	<452E1A1D.1050601@genesi-usa.com>
+	<1160664666.4792.151.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1924CA98-A7C7-4FD2-9709-58EC9DD6BEB6@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Handling machine check exception
+Date: Thu, 12 Oct 2006 22:05:40 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: ganesh subramonian <gun_raj@yahoo.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> This patch adds a command to xmon for dumping information about
-> spu structs. The command is 'sf' for "spu fields" perhaps, and
-> takes the spu number as an argument. This is the same value as the
-> spu->number field, or the "phys-id" value of a context when it is
-> bound to a physical spu.
+>> The G2 core definitely has a DAR register (SPR 19).
+>>
+>> Look on the Freescale site for G2CORERM.pdf - this is
+>> your reference manual, not the one specifically for the
+>> 8247.
+>
+> Is DAR set for a machine check ?
 
-> +static void dump_spu_fields(struct spu *spu)
-> +{
-...
-> +	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
-> +	DUMP_FIELD(spu, "0x%p", priv1);
-> +
-> +	if (spu->priv1)
-> +		DUMP_FIELD(spu, "0x%lx", priv1->mfc_sr1_RW);
-> +
-> +	DUMP_FIELD(spu, "0x%p", priv2);
+Not on these old cores.
 
-Just to let you know, I've been doing some work to abstract the platform
-specific parts out of the spu support to better support running on a
-hypervisor.  It shouldn't make much difference, but maybe I'll try to set
-something up like this for you:
- 
-	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
-	DUMP_FIELD(spu, "0x%p", priv2);
-	spu_dump_platform_fields(spu);
 
--Geoff
+Segher
