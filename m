@@ -1,22 +1,16 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 1FF6067C40
+Return-Path: <rdcorle@yahoo.com>
+Received: from web56304.mail.re3.yahoo.com (web56304.mail.re3.yahoo.com
+	[216.252.110.228]) by ozlabs.org (Postfix) with SMTP id B270B67C48
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Oct 2006 01:48:20 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1GY2nC-00055o-Uk
-	for linuxppc-embedded@ozlabs.org; Thu, 12 Oct 2006 17:48:18 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Xilinx I2C driver for linux 2.6?
-References: <877iz5wo8q.fsf@sleipner.barco.com>
-	<452E612D.1070301@ovro.caltech.edu>
-Date: Thu, 12 Oct 2006 17:48:18 +0200
-In-Reply-To: <452E612D.1070301@ovro.caltech.edu> (David Hawkins's message of
-	"Thu, 12 Oct 2006 08:37:17 -0700")
-Message-ID: <87u029v8l9.fsf@sleipner.barco.com>
+	Fri, 13 Oct 2006 02:15:07 +1000 (EST)
+Message-ID: <20061012161505.28394.qmail@web56304.mail.re3.yahoo.com>
+Date: Thu, 12 Oct 2006 09:15:05 -0700 (PDT)
+From: robert corley <rdcorle@yahoo.com>
+Subject: plb_temac, EDK 8.1 et al
+To: Rick Moleres <rick.moleres@xilinx.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ascii
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +21,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "DH" == David Hawkins <dwh@ovro.caltech.edu> writes:
-
-Hi,
-
-DH> Peter, whats the name of the driver in mainline?  (Denx git or
-DH> kernel.org?)
-
-Kernel.org - drivers/i2c/busses/i2c-ocores.c
-
-Also take a look at Documentation/i2c/busses/i2c-ocores.
-
-DH> I want to use the opencore IP in a memory mapped FPGA (Altera
-DH> though), so would like to take a look at your driver.
-
-You're welcome. It should be pretty easy to get going (just provide a
-platform device with addr/irq).
-
--- 
-Bye, Peter Korsgaard
+Rick;=0A=0AThanks so much for the reply.=0A=0AAs I understand your email=0A=
+=0AEDK 7.1 vs. EDK 8.1=0A    gets the *best* plb_temac I need to upgrade th=
+e EDK,=0A    I can stick with 7.1 if I am satisfied with the lower performa=
+nce,=0A    MVL drivers in source tree of EDK (sw/Thirdparty...)=0A=0Alinux =
+2.4 vs. linux 2.6=0A    plb_temac drivers already done=0A    plb_temac avai=
+lable in 2.4 via use of xilinx_gige directory=0A=0A-cy=0A
