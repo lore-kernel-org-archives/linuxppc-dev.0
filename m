@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 648C867DE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 01:25:07 +1000 (EST)
-Subject: Re: [PATCH 1/4] powerpc: consolidate feature fixup code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20061012095649.23bb6b35@localhost.localdomain>
-References: <1160641793.4792.133.camel@localhost.localdomain>
-	<20061012085617.3a5d6a31@localhost.localdomain>
-	<1160664449.4792.147.camel@localhost.localdomain>
-	<20061012095649.23bb6b35@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 13 Oct 2006 01:24:58 +1000
-Message-Id: <1160666698.4792.154.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 16DBE67C30
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 01:44:58 +1000 (EST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: sfr@canb.auug.org.au
+Subject: Recently removed io accessors
+Date: Thu, 12 Oct 2006 17:44:56 +0200
+Message-ID: <873b9twnbb.fsf@sleipner.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> It will also be easier to graft in a branch forward instead of a large
-> amount of nops for large feature sections. I guess it will take some
-> benchmarking to see what the breakeven point is.
+Commit 661f1cdb8b3e3c2c44e97df122c1d5643c054ce8 ([POWERPC] remove
+unused asm routines) removed the _insl / _outsl routines for 32bit
+copies with byteswap.
 
-Yeah, I've been thinking about that one for some time (in fact since I
-did the first implementation of feature fixup). Thing is, back when it
-was all asm, it was hard, and we never really had big feature sections.
-Now that we have all that stuff with with PURR etc... in the exception
-entry/return path, it might be worth having another look. I suspect that
-the breakeven point will be very CPU dependant tho.
+I've been working on adding ppc support to drivers/net/smc911x.c, and
+I was unfortunately using those routines (The ethernet controller can
+be configured for big endian mode, but the contents of the internal
+packet buffers is still little endian, so you need to byteswap in the
+tx/rx routines).
 
-Ben.
+Any chance of getting them back or should I implement a (slower) loop
+myself before submitting the patch?
+
+-- 
+Bye, Peter Korsgaard
