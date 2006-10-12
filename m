@@ -1,21 +1,21 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 3947D67BEE
+Return-Path: <adrian@it-live.co.uk>
+Received: from ns1.it-live.co.uk (ns1.it-live.co.uk [195.10.233.36])
+	by ozlabs.org (Postfix) with ESMTP id B8A7167BB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 20:34:42 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1GXxte-0004OW-8E
-	for linuxppc-embedded@ozlabs.org; Thu, 12 Oct 2006 12:34:38 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-Date: Thu, 12 Oct 2006 12:34:38 +0200
-In-Reply-To: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	(David Bolcsfoldi's message of "Tue, 10 Oct 2006 13:49:08 -0700")
-Message-ID: <87ac41esap.fsf@sleipner.barco.com>
+	Thu, 12 Oct 2006 21:48:06 +1000 (EST)
+Received: from adrianlaptop (63.Red-83-37-241.dynamicIP.rima-tde.net
+	[83.37.241.63])
+	by ns1.it-live.co.uk (8.13.6/8.13.3) with SMTP id k9CBlsQH020162
+	for <linuxppc-embedded@ozlabs.org>; Thu, 12 Oct 2006 11:48:00 GMT
+Message-ID: <005b01c6edf4$452f03b0$3a0da8c0@adrianlaptop>
+From: "Adrian" <adrian@it-live.co.uk>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: PPChameleonEVB Newbie question
+Date: Thu, 12 Oct 2006 13:47:55 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
+Reply-To: Adrian <adrian@it-live.co.uk>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +26,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David Bolcsfoldi <dbolcsfoldi@gmail.com> writes:
+Thanks Wolfgang.
 
-Hi David,
+I have now got the target compiling modules, kernel and everything.
 
-David> here's a set of patches that adds support for Xilinx UART lite
-David> devices. It has been tested on an ML403-FX using xapp902
-David> (ml403_ppc_plb_temac) using a 2.6.18 kernel and a BusyBox
-David> userspace.
+For the record, I found it very difficult and time consuming.
 
-I guess you didn't know, but there already exists a uartlite driver!
-It unfortunately didn't made it into 2.6.19-rc1 because Russell
-stopped maintaining serial stuff, but it's in -mm.
+To get to this stage I had to :-
 
-It also has an official lanana.org assigned set of device nodes.
+Install Slack 8.1 kernel 2.4.18
+Install ELDK version 4
+as per docs add /usr/local/eldk/usr/bin:/usr/local/eldk/bin to PATH
 
-I didn't look at your patch yet, but I think it would be more useful
-to add any features missing to my driver than writing yet another
-driver (I think we're up to 3 now).
+set and export ARCH=ppc, CROSS_COMPILE=ppc_4xx-
 
--- 
-Bye, Peter Korsgaard
+make mrproper
+
+make PPChameleon_defconfig
+
+edit arch/ppc/platforms/4xx/Kconfig and add
+
+'select WANT_EARLY_SERIAL'
+
+to PPChameleonEVB definition
+
+make menuconfig
+
+make
+then copy kernel to /tftpboot dir.
+
+Board then booted ok provided the ELDK instructions about NFS shares were 
+followed.
+
+Under Slack 9 + 10.1 the kernel cross-compile barfed with 'clobber list' 
+errors.
+
+The dev host would cross-compile the modules, but wouldn't install them 
+(INSTALL_MOD_PATH set).
+
+After that i wanted to build the Kernel and modules on the target to make 
+sure it was all ok, so :-
+
+Installed Perl 5.6.4 with etc/Digest/MD5 copied from Perl 5.8.2 tree
+(make modules_install wouldn't work without perl, and it isn't supplied 
+AFAICS)
+cd /usr/src/linux/include
+
+ln -s asm-ppc asm
+
+make mrproper
+make PPChameleon_defconfig
+
+edit arch/ppc/platforms/4xx/Kconfig and add
+
+'select WANT_EARLY_SERIAL'
+
+to PPChameleonEVB definition
+
+make menuconfig
+
+make
+make modules
+make modules_install
+
+On the target it is (naturally) slow and you have to set up some NFS shared 
+swap if you don't have much ram (i have 32mb and the kernel compile ran out 
+of memory).
+
+Out of the box i couldn't get ELDK 3.1.1 working at all, and the 
+linux-2.4.20-pelk- thing wouldn't compile under either.
+
+The main hurdle was needing to retro-grade the dev host.
+
+Anyway. It is working happily now. Thanks for your help.
+
+Adrian Atkins
+IT Live Limited
+
+tel: 0161 408 3327
+fax: 08702 360 443
+skype: adrianitlive
+ES mob: (0034) 606806236 
