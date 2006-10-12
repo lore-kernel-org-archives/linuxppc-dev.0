@@ -1,24 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E46667B9B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Oct 2006 08:16:46 +1000 (EST)
-Subject: Re: [PATCH 21/21]: powerpc/cell spidernet DMA coalescing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061011152016.GU4381@austin.ibm.com>
-References: <20061010204946.GW4381@austin.ibm.com>
-	<20061010212324.GR4381@austin.ibm.com>
-	<452C2AAA.5070001@austin.ibm.com>
-	<452C4CE0.5010607@am.sony.com> <20061011152016.GU4381@austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 12 Oct 2006 08:13:52 +1000
-Message-Id: <1160604832.4792.10.camel@localhost.localdomain>
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 11 Oct 2006 18:32:23 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/4] powerpc: Next round of bootwrapper flat dt patches
+Message-ID: <20061012013223.GA9143@mag.az.mvista.com>
 Mime-Version: 1.0
-Cc: akpm@osdl.org, jeff@garzik.org, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +16,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm resumitting the entire patch series because I messed up the
+threading and made some changes to simple_alloc.
 
-> I started writingthe patch thinking it will have some huge effect on
-> performance, based on a false assumption on how i/o was done on this
-> machine
-> 
-> *If* this were another pSeries system, then each call to 
-> pci_map_single() chews up an actual hardware "translation 
-> control entry" (TCE) that maps pci bus addresses into 
-> system RAM addresses. These are somewhat limited resources,
-> and so one shouldn't squander them.  Furthermore, I thouhght
-> TCE's have TLB's associated with them (similar to how virtual
-> memory page tables are backed by hardware page TLB's), of which 
-> there are even less of. I was thinking that TLB thrashing would 
-> have a big hit on performance. 
-> 
-> Turns out that there was no difference to performance at all, 
-> and a quick look at "cell_map_single()" in arch/powerpc/platforms/cell
-> made it clear why: there's no fancy i/o address mapping.
-> 
-> Thus, the patch has only mrginal benefit; I submit it only in the 
-> name of "its the right thing to do anyway".
+Mark
+---
 
-Well, there is no fancy iommu mapping ... yet.
+Hi,
 
-It's been implemented and is coming after we put together some
-workarounds for various other spider hardware issues that trigger when
-using it (bogus prefetches and bogus pci ordering).
+This patch series is a respin of--and complete replacement for--the
+bootwrapper reorg patches that I sent out a while back.  I also included
+the flatdevtree.c file which is the latest version that Paul sent plus
+changes that I've made.
 
-I think the hypervisor based platforms will be happy with that patch
-too.
+The patches apply to powerpc.git commit id:
 
-Ben.
+	ba00003aa83a61b615542dd66f5af8fb4a7cee1d
+
+Paul, it would really help the rest of us if you would apply these patches
+quickly.  There are several people waiting for this work but there are so
+many versions of so many patches that no one knows what to use.  Plus, it
+would get more people testing/debugging the flatdevtree code.
+
+Summary of changes:
+===================
+
+more reorg patch
+----------------
+- This patch includes Paul's changes to zImage.lds.S which define
+  _dtb_start & _dtb_end and a related patch for the wrapper script.
+- I changed main.c:start() a little so that the call to ft_init() is
+  done in platform_init().  I did this because of an interface change
+  to ft_init which now require some platform knowledge.
+- I added a realloc() call to dt_ops so it can be passed to ft_open.
+
+flatdevtree patch
+-----------------
+- I did not debug all of the flatdevtree.c code.  I only debugged
+  ft_find_device, ft_get_prop, ft_set_prop and their supporting routines.
+- I added a phandle table (insided the cxt) to track phandles returned by
+  ft_find_device().  Now the value returned by ft_find_device() is a phandle
+  which is nothing more than an index into the phandle table.  The phandle
+  table contains the address of the corresponding node.  When the flat dt
+  is edited/moved, the node pointers in the phandle table are updated
+  accordingly so no phandles kept by the caller become stale.
+- I tested shrinking, and expanding an existing property but did not test
+  adding a new property.
+- I'm not sure of the usefulness of the genealogy stuff but I left it there
+  in case Paul has plans for it.  I did not test ft_get_parent (the only user
+  of genealogy).
+
+simple_realloc patch
+--------------------
+- The flatdevtree code needs a realloc now so that is implemented in here.
+- As the name implies, it is a simple allocator which uses a table to track
+  what's been allocated.  simple_alloc_init() let's the caller set where
+  the heap is, its size, the granularity of its allocations, and how many
+  entries the table has.
+- Once a slot in the table is used, its base & size are set.  This allows
+  the code to be much simpler.
+
+non-OF serial console patch
+---------------------------
+- I decided not to look for a /cpus/<some cpu>/64-bit property and instead
+  get either 1 or 2 "32-bit things" from the uart's 'virtual-reg' property.
+  If there is 1, its 32-bits; if its 2, its 64-bits.
+
+Mark
