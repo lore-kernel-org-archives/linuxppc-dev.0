@@ -1,18 +1,21 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id BF59467C1F
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 20A2867CB6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Oct 2006 01:24:55 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1GY2QX-0004x3-G9
-	for linuxppc-embedded@ozlabs.org; Thu, 12 Oct 2006 17:24:53 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Xilinx I2C driver for linux 2.6?
-Date: Thu, 12 Oct 2006 17:24:53 +0200
-Message-ID: <877iz5wo8q.fsf@sleipner.barco.com>
+	Fri, 13 Oct 2006 01:37:45 +1000 (EST)
+Message-ID: <452E612D.1070301@ovro.caltech.edu>
+Date: Thu, 12 Oct 2006 08:37:17 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: Xilinx I2C driver for linux 2.6?
+References: <877iz5wo8q.fsf@sleipner.barco.com>
+In-Reply-To: <877iz5wo8q.fsf@sleipner.barco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,16 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "JBM" == Jean-Baptiste Maneyrol <MANE@teamlog.com> writes:
 
-Hi,
 
-JBM> Does anyone know if there is somewhere an i2c driver for the
-JBM> Xilinx IIC IP working on linux 2.6?
+> Not afaik. We're using the OpenCores I2C controller instead which I in
+> the mean time have written a driver for (in mainline). The IP core is
+> afaik even smaller than the Xilinx controller.
+> 
 
-Not afaik. We're using the OpenCores I2C controller instead which I in
-the mean time have written a driver for (in mainline). The IP core is
-afaik even smaller than the Xilinx controller.
+Peter, whats the name of the driver in mainline?
+(Denx git or kernel.org?)
 
--- 
-Bye, Peter Korsgaard
+I want to use the opencore IP in a memory mapped
+FPGA (Altera though), so would like to take a look
+at your driver.
+
+Cheers,
+Dave
