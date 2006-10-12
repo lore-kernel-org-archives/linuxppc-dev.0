@@ -1,21 +1,18 @@
-Return-Path: <adrian@it-live.co.uk>
-Received: from ns1.it-live.co.uk (ns1.it-live.co.uk [195.10.233.36])
-	by ozlabs.org (Postfix) with ESMTP id B8A7167BB4
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id C04F567BB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 21:48:06 +1000 (EST)
-Received: from adrianlaptop (63.Red-83-37-241.dynamicIP.rima-tde.net
-	[83.37.241.63])
-	by ns1.it-live.co.uk (8.13.6/8.13.3) with SMTP id k9CBlsQH020162
-	for <linuxppc-embedded@ozlabs.org>; Thu, 12 Oct 2006 11:48:00 GMT
-Message-ID: <005b01c6edf4$452f03b0$3a0da8c0@adrianlaptop>
-From: "Adrian" <adrian@it-live.co.uk>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: PPChameleonEVB Newbie question
-Date: Thu, 12 Oct 2006 13:47:55 +0200
+	Thu, 12 Oct 2006 22:46:39 +1000 (EST)
+Message-ID: <452E3930.8040101@ru.mvista.com>
+Date: Thu, 12 Oct 2006 16:46:40 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Reply-To: Adrian <adrian@it-live.co.uk>
+To: robert corley <rdcorle@yahoo.com>
+Subject: Re: plb_temac, ML403, linux 2.4.26, EDK 7.1
+References: <20061011204632.80180.qmail@web56309.mail.re3.yahoo.com>
+In-Reply-To: <20061011204632.80180.qmail@web56309.mail.re3.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,84 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Wolfgang.
+Robert,
 
-I have now got the target compiling modules, kernel and everything.
+There is no support for TEMAC in MontaVista Linux 3.1. It has been added in MVL 4.0.1.
+In 3.1 there is the gige driver, but gige is for ML300's optical gigabit ethernet, not for TEMAC.
 
-For the record, I found it very difficult and time consuming.
+Thanks,
+Andrei
 
-To get to this stage I had to :-
-
-Install Slack 8.1 kernel 2.4.18
-Install ELDK version 4
-as per docs add /usr/local/eldk/usr/bin:/usr/local/eldk/bin to PATH
-
-set and export ARCH=ppc, CROSS_COMPILE=ppc_4xx-
-
-make mrproper
-
-make PPChameleon_defconfig
-
-edit arch/ppc/platforms/4xx/Kconfig and add
-
-'select WANT_EARLY_SERIAL'
-
-to PPChameleonEVB definition
-
-make menuconfig
-
-make
-then copy kernel to /tftpboot dir.
-
-Board then booted ok provided the ELDK instructions about NFS shares were 
-followed.
-
-Under Slack 9 + 10.1 the kernel cross-compile barfed with 'clobber list' 
-errors.
-
-The dev host would cross-compile the modules, but wouldn't install them 
-(INSTALL_MOD_PATH set).
-
-After that i wanted to build the Kernel and modules on the target to make 
-sure it was all ok, so :-
-
-Installed Perl 5.6.4 with etc/Digest/MD5 copied from Perl 5.8.2 tree
-(make modules_install wouldn't work without perl, and it isn't supplied 
-AFAICS)
-cd /usr/src/linux/include
-
-ln -s asm-ppc asm
-
-make mrproper
-make PPChameleon_defconfig
-
-edit arch/ppc/platforms/4xx/Kconfig and add
-
-'select WANT_EARLY_SERIAL'
-
-to PPChameleonEVB definition
-
-make menuconfig
-
-make
-make modules
-make modules_install
-
-On the target it is (naturally) slow and you have to set up some NFS shared 
-swap if you don't have much ram (i have 32mb and the kernel compile ran out 
-of memory).
-
-Out of the box i couldn't get ELDK 3.1.1 working at all, and the 
-linux-2.4.20-pelk- thing wouldn't compile under either.
-
-The main hurdle was needing to retro-grade the dev host.
-
-Anyway. It is working happily now. Thanks for your help.
-
-Adrian Atkins
-IT Live Limited
-
-tel: 0161 408 3327
-fax: 08702 360 443
-skype: adrianitlive
-ES mob: (0034) 606806236 
+robert corley wrote:
+> Ming;
+> 
+> Here is what the EDK generates in this file:
+> 
+> C:\EDK\projects\startup_network\ppc405_0\libsrc\linux_mvl31_v1_01_a\linux\arch\ppc\platforms\xilinx_ocp\xparameters_ml300.h
+> 
+> <snip>
+> #define XPAR_XTEMAC_NUM_INSTANCES 1
+> #define XPAR_PLB_TEMAC_0_BASEADDR 0x60000000
+> #define XPAR_PLB_TEMAC_0_HIGHADDR 0x60003FFF
+> #define XPAR_PLB_TEMAC_0_DEVICE_ID 0
+> #define XPAR_PLB_TEMAC_0_IPIF_RDFIFO_DEPTH 131072
+> #define XPAR_PLB_TEMAC_0_IPIF_WRFIFO_DEPTH 131072
+> #define XPAR_PLB_TEMAC_0_MAC_FIFO_DEPTH 64
+> #define XPAR_PLB_TEMAC_0_DMA_TYPE 3
+> #define XPAR_PLB_TEMAC_0_TEMAC_DCR_HOST 0
+> #define XPAR_PLB_TEMAC_0_INCLUDE_DRE 1
+> <snip>
+> 
+> 
+> Which is fine.  However, the file in the linux distribution: linux_2_4_devel/drivers/net/xilinx_enet/adapter.c is looking for "XEMAC" instead of "XTEMAC" as above.
+> 
+> Also, when I look at the EDK project directory 
+> 
+> "C:\EDK\projects\startup_network\ppc405_0\libsrc\linux_mvl31_v1_01_a\linux\drivers\net\"
+> 
+> I see that it is empty.  Which means that nothing in the MVL tree will be overwritten (specifically the adapter.c file, which uses the above defines).
+> 
+> So, it appears that the driver is not being properly insterted into the tree as expected.  Would you agree?
+> 
+> -R
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
