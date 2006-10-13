@@ -1,16 +1,22 @@
-Return-Path: <cthomas@Soneticom.com>
-Received: from Soneticom.com (soneticom.com [209.114.210.150])
-	by ozlabs.org (Postfix) with ESMTP id 4CCDF679E9
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B334B67C22
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Oct 2006 00:55:27 +1000 (EST)
-Subject: GCC version to kernel version
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6EED7.9D2B7D14"
-Date: Fri, 13 Oct 2006 10:55:23 -0400
-Message-ID: <3C02138692C13C4BB675FE7EA24095291F5A08@bluefin.Soneticom.local>
-From: "Clint Thomas" <cthomas@Soneticom.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Sat, 14 Oct 2006 01:27:17 +1000 (EST)
+In-Reply-To: <op.thcr4fbjes1gi5@laurie.liewenthal.ee>
+References: <20061012173231.56756.qmail@web34703.mail.mud.yahoo.com>
+	<op.thcr4fbjes1gi5@laurie.liewenthal.ee>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CDCE6FAC-2DA9-4D94-8BB6-C26622DF6685@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Problems with DMA from user space on MPC834x (Cache coherency?)
+Date: Fri, 13 Oct 2006 10:27:21 -0500
+To: Lauri Ehrenpreis <lauri.ehrenpreis@liewenthal.ee>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,54 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6EED7.9D2B7D14
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Oct 13, 2006, at 4:18 AM, Lauri Ehrenpreis wrote:
 
-Hey guys,
+>
+> Thank you!
+>
+> I added following before starting DMA:
+>
+> kaddr = (unsigned long)kmap(pages[i]);
+> flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
+> kunmap(pages[i]);
+>
+> ...and everything works now. As I understand this now, dma_map_page is
+> not flushing caches on MPS834x because the processor should snoop the
+> memory transactions and flush cache automatically if needed
+> (__dma_sync_page
+> is defined as do { } while (0) in kernel). But there exists an errata
+> (PCI5) which states that there may be some problems with this  
+> automatic
+> flushing. So the caches must be flushed with flush_dcache_range.
 
-Generic question here. To each linux kernel version, is there a specific
-version of GCC and GLIBC I should be using to build the kernel, RFS,
-etc? I cannot seem to find any concrete proof that this is the case, but
-I am having issues building a new RFS with my older GCC and GLIBC, so
-I'm looking at updating them. I'm currently using GCC 3.3.2 and GLIBC
-2.3.2 to build for the Linux 2.4.27 kernel on an e500 (MPC8541) core.
-Thanks!
-=20
-Clinton Thomas
-cthomas@soneticom.com
-=20
+What silicon version are you using.  PCI5 should be fixed in rev1.1  
+and newer.  You can be taking a big perf hit having to flush all the  
+time.
 
-------_=_NextPart_001_01C6EED7.9D2B7D14
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D252345314-13102006><FONT face=3DArial size=3D2>Hey=20
-guys,<BR><BR>Generic question here. To each linux kernel version, is =
-there a=20
-specific version of GCC and GLIBC I should be using to build the kernel, =
-RFS,=20
-etc? I cannot seem to find any concrete proof that this is the case, but =
-I am=20
-having issues building a new RFS with my older GCC and GLIBC, so I'm =
-looking at=20
-updating them. I'm currently using GCC 3.3.2 and GLIBC 2.3.2 to build =
-for the=20
-Linux 2.4.27 kernel on an e500 (MPC8541) core. =
-Thanks!</FONT></SPAN></DIV>
-<DIV>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton=20
-Thomas<BR>cthomas@soneticom.com</FONT></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
-
-------_=_NextPart_001_01C6EED7.9D2B7D14--
+- k
