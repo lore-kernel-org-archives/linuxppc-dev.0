@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Fri, 13 Oct 2006 11:41:00 +1000
+Date: Fri, 13 Oct 2006 12:13:12 +1000
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Never panic when taking altivec exceptions from userspace
-Message-ID: <20061013014100.GA16029@krispykreme>
+Subject: [PATCH] POWER6 has 6 PMCs
+Message-ID: <20061013021312.GB16029@krispykreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: paulus@samba.org
@@ -17,33 +17,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-At the moment we rely on a cpu feature bit or a firmware property to
-detect altivec. If we dont have either of these and the cpu does in fact
-support altivec we can cause a panic from userspace.
-
-It seems safer to always send a signal if we manage to get an 0xf20
-exception from userspace.
+Change ->num_pmcs to match the number of PMCs in POWER6. 
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index d9f10f2..5ed4c2c 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -900,14 +900,13 @@ void kernel_fp_unavailable_exception(str
- 
- void altivec_unavailable_exception(struct pt_regs *regs)
- {
--#if !defined(CONFIG_ALTIVEC)
- 	if (user_mode(regs)) {
- 		/* A user program has executed an altivec instruction,
- 		   but this kernel doesn't support altivec. */
- 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
- 		return;
- 	}
--#endif
-+
- 	printk(KERN_EMERG "Unrecoverable VMX/Altivec Unavailable Exception "
- 			"%lx at %lx\n", regs->trap, regs->nip);
- 	die("Unrecoverable VMX/Altivec Unavailable Exception", regs, SIGABRT);
+Index: build/arch/powerpc/kernel/cputable.c
+===================================================================
+--- build.orig/arch/powerpc/kernel/cputable.c	2006-09-22 19:04:56.000000000 +1000
++++ build/arch/powerpc/kernel/cputable.c	2006-09-22 19:24:11.000000000 +1000
+@@ -268,7 +268,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.cpu_user_features	= COMMON_USER_POWER6,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
++		.num_pmcs		= 6,
+ 		.oprofile_cpu_type	= "ppc64/power6",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+  		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
