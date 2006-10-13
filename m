@@ -1,21 +1,17 @@
-Return-Path: <dbolcsfoldi@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id C7CF267B8B
+Return-Path: <pradeepsampath@yahoo.com>
+Received: from web83202.mail.mud.yahoo.com (web83202.mail.mud.yahoo.com
+	[216.252.101.46]) by ozlabs.org (Postfix) with SMTP id 73A0267B6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Oct 2006 07:12:27 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id t32so844874pyc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Oct 2006 14:12:26 -0700 (PDT)
-Message-ID: <609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-Date: Thu, 12 Oct 2006 14:12:24 -0700
-From: "David Bolcsfoldi" <dbolcsfoldi@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-In-Reply-To: <87ac41esap.fsf@sleipner.barco.com>
+	Fri, 13 Oct 2006 10:18:24 +1000 (EST)
+Message-ID: <20061013001822.68808.qmail@web83202.mail.mud.yahoo.com>
+Date: Thu, 12 Oct 2006 17:18:22 -0700 (PDT)
+From: Pradeep Sampath <pradeepsampath@yahoo.com>
+Subject: RE: plb_temac, ML403, linux 2.4.26, EDK 7.1
+To: Ming Liu <eemingliu@hotmail.com>
+In-Reply-To: <BAY110-F29333102EBA79FA70A2873B2140@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	<87ac41esap.fsf@sleipner.barco.com>
+Content-Type: multipart/alternative; boundary="0-1844684586-1160698702=:67678"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,47 +22,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-No I did not know that unfortunately, it could have saved me some work.
-You are of course right and I'd much prefer to make changes to your driver
-instead of writing another one.
+--0-1844684586-1160698702=:67678
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-I've noticed that in the probe function it tries to get some resources
-from the platform_device structure but it looks like that this
-operation will always fail unless I add a 'uartlite' platform device
-or have I completely misunderstood how platform devices work?
 
-But yes, I will try to add support for the things I need to this
-driver instead, most importantly early console support and move the
-#defines for register offsets and such into a separate header file per
-Grants comment.
+Guys,
+   
+  I need your help on this, i am stuck for over a week now. I am currently using
+  ML403 Virtex-4 FX12 board, linux kernel 2.6.17.1, EDK 8.1.2i, and Ameet's sysace and TEMAC driver patch. With your help I was able to get the Kernel to boot on the ML403 board. But kernel crashes at xsysace_init function call.
+  [    3.995416] Call Trace:
+[    4.024581] [C04A1D20] [FFFFFFFF] 0xffffffff (unreliable)
+[    4.089156] [C04A1D40] [C021D358] xsysace_init+0x50/0x330
+[    4.153726] [C04A1F90] [C0002448] init+0xa4/0x27c
+[    4.209968] [C04A1FF0] [C000509C] kernel_thread+0x44/0x60
 
-Cheers,
-David
+   
+  Since I am using 8.1.2i to generate the BSP, i suspect that the xparamater_ml300.h file the EDK generates for the ML403 board is not compatible with the sysace driver patch. I suspect that if i include a xparameters_ml300.h file that was generated using EDK 7.1 it would run. 
+   
+  Ming, would it be possible for you to send me a xparameters.h file using EDK 7.1 (or the version you are using) with very basic IP cores that will work with the sysace and TEMAC drivers. Thanks in advance.
+   
+  I need to get the sysace driver and TEMAC driver's up and running for the project. Any suggestions will be very helpful...
+   
+  -Pradeep
 
-On 10/12/06, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> >>>>> "David" == David Bolcsfoldi <dbolcsfoldi@gmail.com> writes:
->
-> Hi David,
->
-> David> here's a set of patches that adds support for Xilinx UART lite
-> David> devices. It has been tested on an ML403-FX using xapp902
-> David> (ml403_ppc_plb_temac) using a 2.6.18 kernel and a BusyBox
-> David> userspace.
->
-> I guess you didn't know, but there already exists a uartlite driver!
-> It unfortunately didn't made it into 2.6.19-rc1 because Russell
-> stopped maintaining serial stuff, but it's in -mm.
->
-> It also has an official lanana.org assigned set of device nodes.
->
-> I didn't look at your patch yet, but I think it would be more useful
-> to add any features missing to my driver than writing yet another
-> driver (I think we're up to 3 now).
->
-> --
-> Bye, Peter Korsgaard
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+--0-1844684586-1160698702=:67678
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<div><BR>Guys,</div>  <div>&nbsp;</div>  <div>I need your help on this, i am stuck for over a week now. I am currently using</div>  <div>ML403 Virtex-4 FX12 board, linux kernel 2.6.17.1, EDK 8.1.2i, and Ameet's sysace and TEMAC driver patch. With your help I was able to get the Kernel to boot on the ML403 board. But kernel crashes at xsysace_init function call.</div>  <div>[&nbsp;&nbsp;&nbsp; 3.995416] Call Trace:<BR>[&nbsp;&nbsp;&nbsp; 4.024581] [C04A1D20] [FFFFFFFF] 0xffffffff (unreliable)<BR>[&nbsp;&nbsp;&nbsp; 4.089156] [C04A1D40] [C021D358] xsysace_init+0x50/0x330<BR>[&nbsp;&nbsp;&nbsp; 4.153726] [C04A1F90] [C0002448] init+0xa4/0x27c<BR>[&nbsp;&nbsp;&nbsp; 4.209968] [C04A1FF0] [C000509C] kernel_thread+0x44/0x60<BR></div>  <div>&nbsp;</div>  <div>Since I am using 8.1.2i to generate the BSP, i suspect that the xparamater_ml300.h file the EDK generates for the ML403 board is not compatible with the sysace driver patch. I suspect that if i include a xparameters_ml300.h
+ file that was generated using EDK 7.1 it would run. </div>  <div>&nbsp;</div>  <div>Ming, would&nbsp;it be possible for you to send me a xparameters.h file using EDK 7.1 (or the version you are using) with very basic IP cores that will work with the sysace and TEMAC drivers. Thanks in advance.</div>  <div>&nbsp;</div>  <div>I need to get the sysace driver and TEMAC driver's up and running for the project. Any suggestions will be very helpful...</div>  <div>&nbsp;</div>  <div>-Pradeep</div>
+--0-1844684586-1160698702=:67678--
