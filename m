@@ -1,14 +1,16 @@
-Return-Path: <bigskang@gmail.com>
-Message-ID: <2bae02f30610130241rbb238bcx724cea2340bd7292@mail.gmail.com>
-Date: Fri, 13 Oct 2006 18:41:30 +0900
-From: "Kyungwan Kang" <bigskang@gmail.com>
-To: Linuxppc-embedded@ozlabs.org
-Subject: Re: unresolved symbol on target ... while insmod
-In-Reply-To: <200610130653.k9D6r0Jq028482@bLinux.pontusys.com>
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id 4CCDF679E9
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 14 Oct 2006 00:55:27 +1000 (EST)
+Subject: GCC version to kernel version
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_161009_10133525.1160732490449"
-References: <200610130653.k9D6r0Jq028482@bLinux.pontusys.com>
+	boundary="----_=_NextPart_001_01C6EED7.9D2B7D14"
+Date: Fri, 13 Oct 2006 10:55:23 -0400
+Message-ID: <3C02138692C13C4BB675FE7EA24095291F5A08@bluefin.Soneticom.local>
+From: "Clint Thomas" <cthomas@Soneticom.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,116 +21,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_161009_10133525.1160732490449
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is a multi-part message in MIME format.
 
-I can find the option for /dev filesystem in 2.4.x kernel.
-Thanks.
+------_=_NextPart_001_01C6EED7.9D2B7D14
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+Hey guys,
 
-2006/10/13, kwkang <kwkang@pontusys.com>:
->
->  Hi Srideep,
->
->
->
-> Can anyone show me how I can overcome below problem?
->
-> I have searched mailing list but I can not find any answer for that
-> problem.
->
->
->
-> [test ~]#insmod linux-kernel-bde.o
->
-> Using linux-kernel-bde.o
->
-> Using linux-kernel-bde.o
->
-> insmod: Warning: kernel-module version mismatch
->
->         linux-kernel-bde.o was compiled for kernel version 2.4.20_dev
->
->         while this kernel is version 2.4.21-pre5
->
-> insmod: unresolved symbol devfs_register
->
-> insmod: unresolved symbol devfs_unregister
->
->
->
-> Thanks.
->
-> William.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
+Generic question here. To each linux kernel version, is there a specific
+version of GCC and GLIBC I should be using to build the kernel, RFS,
+etc? I cannot seem to find any concrete proof that this is the case, but
+I am having issues building a new RFS with my older GCC and GLIBC, so
+I'm looking at updating them. I'm currently using GCC 3.3.2 and GLIBC
+2.3.2 to build for the Linux 2.4.27 kernel on an e500 (MPC8541) core.
+Thanks!
+=20
+Clinton Thomas
+cthomas@soneticom.com
+=20
 
-------=_Part_161009_10133525.1160732490449
-Content-Type: text/html; charset=EUC-KR
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+------_=_NextPart_001_01C6EED7.9D2B7D14
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-PGRpdj5JIGNhbiBmaW5kIHRoZSBvcHRpb24gZm9yIC9kZXYgZmlsZXN5c3RlbSBpbiAyLjQueCBr
-ZXJuZWwuPC9kaXY+CjxkaXY+VGhhbmtzLjxicj48YnI+Jm5ic3A7PC9kaXY+CjxkaXY+PHNwYW4g
-Y2xhc3M9ImdtYWlsX3F1b3RlIj4yMDA2LzEwLzEzLCBrd2thbmcgJmx0OzxhIGhyZWY9Im1haWx0
-bzprd2thbmdAcG9udHVzeXMuY29tIj5rd2thbmdAcG9udHVzeXMuY29tPC9hPiZndDs6PC9zcGFu
-Pgo8YmxvY2txdW90ZSBjbGFzcz0iZ21haWxfcXVvdGUiIHN0eWxlPSJQQURESU5HLUxFRlQ6IDFl
-eDsgTUFSR0lOOiAwcHggMHB4IDBweCAwLjhleDsgQk9SREVSLUxFRlQ6ICNjY2MgMXB4IHNvbGlk
-Ij4KPGRpdiBsYW5nPSJLTyIgdmxpbms9InB1cnBsZSIgbGluaz0iYmx1ZSI+CjxkaXYgc3R5bGU9
-IkxBWU9VVC1HUklEOiAgMThwdCBub25lIj4KPHA+PGZvbnQgZmFjZT0iudnFwSIgc2l6ZT0iMiI+
-PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQiPkhpIFNyaWRlZXAsPC9z
-cGFuPjwvZm9udD48L3A+CjxwPjxmb250IGZhY2U9IrnZxcEiIHNpemU9IjIiPjxzcGFuIGxhbmc9
-IkVOLVVTIj4mbmJzcDs8L3NwYW4+PC9mb250PjwvcD4KPHA+PGZvbnQgZmFjZT0iudnFwSIgc2l6
-ZT0iMiI+PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQiPkNhbiBhbnlv
-bmUgc2hvdyBtZSBob3cgSSBjYW4gb3ZlcmNvbWUgYmVsb3cgcHJvYmxlbT88L3NwYW4+PC9mb250
-PjwvcD4KPHA+PGZvbnQgZmFjZT0iudnFwSIgc2l6ZT0iMiI+PHNwYW4gbGFuZz0iRU4tVVMiIHN0
-eWxlPSJGT05ULVNJWkU6IDEwcHQiPkkgaGF2ZSBzZWFyY2hlZCBtYWlsaW5nIGxpc3QgYnV0IEkg
-Y2FuIG5vdCBmaW5kIGFueSBhbnN3ZXIgZm9yIHRoYXQgcHJvYmxlbS48L3NwYW4+PC9mb250Pjwv
-cD4KPHA+PGZvbnQgZmFjZT0isby4siIgc2l6ZT0iMiI+PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxl
-PSJGT05ULVNJWkU6IDEwcHQ7IEZPTlQtRkFNSUxZOiBHdWxpbSI+Jm5ic3A7PC9zcGFuPjwvZm9u
-dD48L3A+CjxwPjxmb250IGZhY2U9IrG8uLIiIHNpemU9IjIiPjxzcGFuIGxhbmc9IkVOLVVTIiBz
-dHlsZT0iRk9OVC1TSVpFOiAxMHB0OyBGT05ULUZBTUlMWTogR3VsaW0iPlt0ZXN0IH5dI2luc21v
-ZCBsaW51eC1rZXJuZWwtYmRlLm8gPC9zcGFuPjwvZm9udD48L3A+CjxwPjxmb250IGZhY2U9IrG8
-uLIiIHNpemU9IjIiPjxzcGFuIGxhbmc9IkVOLVVTIiBzdHlsZT0iRk9OVC1TSVpFOiAxMHB0OyBG
-T05ULUZBTUlMWTogR3VsaW0iPlVzaW5nIGxpbnV4LWtlcm5lbC1iZGUubzwvc3Bhbj48L2ZvbnQ+
-PC9wPgo8cD48Zm9udCBmYWNlPSKxvLiyIiBzaXplPSIyIj48c3BhbiBsYW5nPSJFTi1VUyIgc3R5
-bGU9IkZPTlQtU0laRTogMTBwdDsgRk9OVC1GQU1JTFk6IEd1bGltIj5Vc2luZyBsaW51eC1rZXJu
-ZWwtYmRlLm88L3NwYW4+PC9mb250PjwvcD4KPHA+PGZvbnQgZmFjZT0isby4siIgc2l6ZT0iMiI+
-PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IEZPTlQtRkFNSUxZOiBH
-dWxpbSI+aW5zbW9kOiBXYXJuaW5nOiBrZXJuZWwtbW9kdWxlIHZlcnNpb24gbWlzbWF0Y2g8L3Nw
-YW4+PC9mb250PjwvcD4KPHA+PGZvbnQgZmFjZT0isby4siIgc2l6ZT0iMiI+PHNwYW4gbGFuZz0i
-RU4tVVMiIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IEZPTlQtRkFNSUxZOiBHdWxpbSI+Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGxpbnV4LWtlcm5lbC1iZGUubyB3
-YXMgY29tcGlsZWQgZm9yIGtlcm5lbCB2ZXJzaW9uIDIuNC4yMF9kZXY8L3NwYW4+PC9mb250Pjwv
-cD4KPHA+PGZvbnQgZmFjZT0isby4siIgc2l6ZT0iMiI+PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxl
-PSJGT05ULVNJWkU6IDEwcHQ7IEZPTlQtRkFNSUxZOiBHdWxpbSI+Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHdoaWxlIHRoaXMga2VybmVsIGlzIHZlcnNpb24gMi40
-LjIxLXByZTU8L3NwYW4+PC9mb250PjwvcD4KPHA+PGZvbnQgZmFjZT0isby4siIgc2l6ZT0iMiI+
-PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IEZPTlQtRkFNSUxZOiBH
-dWxpbSI+aW5zbW9kOiB1bnJlc29sdmVkIHN5bWJvbCBkZXZmc19yZWdpc3Rlcjwvc3Bhbj48L2Zv
-bnQ+PC9wPgo8cD48Zm9udCBmYWNlPSKxvLiyIiBzaXplPSIyIj48c3BhbiBsYW5nPSJFTi1VUyIg
-c3R5bGU9IkZPTlQtU0laRTogMTBwdDsgRk9OVC1GQU1JTFk6IEd1bGltIj5pbnNtb2Q6IHVucmVz
-b2x2ZWQgc3ltYm9sIGRldmZzX3VucmVnaXN0ZXI8L3NwYW4+PC9mb250PjwvcD4KPHA+PGZvbnQg
-ZmFjZT0isby4siIgc2l6ZT0iMiI+PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxlPSJGT05ULVNJWkU6
-IDEwcHQ7IEZPTlQtRkFNSUxZOiBHdWxpbSI+Jm5ic3A7PC9zcGFuPjwvZm9udD48L3A+CjxwPjxm
-b250IGZhY2U9IrG8uLIiIHNpemU9IjIiPjxzcGFuIGxhbmc9IkVOLVVTIiBzdHlsZT0iRk9OVC1T
-SVpFOiAxMHB0OyBGT05ULUZBTUlMWTogR3VsaW0iPlRoYW5rcy48L3NwYW4+PC9mb250PjwvcD4K
-PHA+PGZvbnQgZmFjZT0isby4siIgc2l6ZT0iMiI+PHNwYW4gbGFuZz0iRU4tVVMiIHN0eWxlPSJG
-T05ULVNJWkU6IDEwcHQ7IEZPTlQtRkFNSUxZOiBHdWxpbSI+V2lsbGlhbS48L3NwYW4+PC9mb250
-PjwvcD48L2Rpdj48L2Rpdj48YnI+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX188YnI+TGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0PGJyPjxhIG9uY2xp
-Y2s9InJldHVybiB0b3AuanMuT3BlbkV4dExpbmsod2luZG93LGV2ZW50LHRoaXMpIiBocmVmPSJt
-YWlsdG86TGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZyI+CkxpbnV4cHBjLWVtYmVkZGVkQG96
-bGFicy5vcmc8L2E+PGJyPjxhIG9uY2xpY2s9InJldHVybiB0b3AuanMuT3BlbkV4dExpbmsod2lu
-ZG93LGV2ZW50LHRoaXMpIiBocmVmPSJodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5m
-by9saW51eHBwYy1lbWJlZGRlZCIgdGFyZ2V0PSJfYmxhbmsiPmh0dHBzOi8vb3psYWJzLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWVtYmVkZGVkCjwvYT48YnI+PGJyPjwvYmxvY2txdW90
-ZT48L2Rpdj48YnI+Cg==
-------=_Part_161009_10133525.1160732490449--
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D252345314-13102006><FONT face=3DArial size=3D2>Hey=20
+guys,<BR><BR>Generic question here. To each linux kernel version, is =
+there a=20
+specific version of GCC and GLIBC I should be using to build the kernel, =
+RFS,=20
+etc? I cannot seem to find any concrete proof that this is the case, but =
+I am=20
+having issues building a new RFS with my older GCC and GLIBC, so I'm =
+looking at=20
+updating them. I'm currently using GCC 3.3.2 and GLIBC 2.3.2 to build =
+for the=20
+Linux 2.4.27 kernel on an e500 (MPC8541) core. =
+Thanks!</FONT></SPAN></DIV>
+<DIV>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton=20
+Thomas<BR>cthomas@soneticom.com</FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------_=_NextPart_001_01C6EED7.9D2B7D14--
