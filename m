@@ -1,18 +1,31 @@
-Return-Path: <jfaslist@yahoo.fr>
-Received: from smtp003.mail.ukl.yahoo.com (smtp003.mail.ukl.yahoo.com
-	[217.12.11.34]) by ozlabs.org (Postfix) with SMTP id A7D1967C32
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Oct 2006 03:37:02 +1000 (EST)
-Message-ID: <452FCE99.20809@yahoo.fr>
-Date: Fri, 13 Oct 2006 19:36:25 +0200
-From: jf simon <jfaslist@yahoo.fr>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Graphic issues (emulating VGA bios on IBM Maple)
-References: <20061010203620.771.qmail@web27502.mail.ukl.yahoo.com>
-	<1160604978.4792.12.camel@localhost.localdomain>
-In-Reply-To: <1160604978.4792.12.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DAB5367C28
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Oct 2006 04:21:36 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9DILUAM005832
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 14:21:30 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9DILU56264440
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 14:21:30 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9DILTNI026762
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 14:21:29 -0400
+Subject: Re: [PATCH] powerpc: Add mktree utility to arch/powerpc/boot
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <452FBB67.4060509@am.sony.com>
+References: <1160752023.3351.3.camel@zod.rchland.ibm.com>
+	<452FBB67.4060509@am.sony.com>
+Content-Type: text/plain
+Date: Fri, 13 Oct 2006 13:25:17 -0500
+Message-Id: <1160763918.3941.2.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+On Fri, 2006-10-13 at 09:14 -0700, Geoff Levand wrote:
+> Josh Boyer wrote:
+> > + * Makes a tree bootable image for IBM Evaluation boards.
+> > + * Basically, just take a zImage, skip the ELF header, and stuff
+> > + * a 32 byte header on the front.
+> 
+> I guess you mean on some standard bootloader that comes with
+> IBM Evaluation boards?  Should this comment reflect that this
+> operation is required by that bootloader, not the hardware?
 
->>[C000000000BFFE60] [C0000000003CCC9C] .radeonfb_old_init+0x164/0x188
->>    
->>
->
->Try getting rid of the old radeonfb and see if that works.
->
->Ben.
->
->
->  
->
-Thanks. It is now working. I have X running on my screen now.
--jfs
+Yes, this is needed for the standard bootloader on some boards.
+However, neither the bootloader or the HW are doing what the comment
+says.  That is what mktree.c itself does, so I think it's correctly
+describing what's going on.
 
+BTW, this is simply a copy of the mktree.c that's been in
+arch/ppc/boot/simple for years.  I'm simply adding it to arch/powerpc in
+preparation for some more 4xx merge work to follow.
 
-	
-
-	
-		
-___________________________________________________________________________ 
-Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
-Demandez à ceux qui savent sur Yahoo! Questions/Réponses
-http://fr.answers.yahoo.com
+josh
