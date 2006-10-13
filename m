@@ -1,18 +1,21 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 92CC467C23
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Oct 2006 07:21:20 +1000 (EST)
-Date: Sat, 14 Oct 2006 01:21:05 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "Rune Torgersen" <runet@innovsys.com>
-Subject: Re: preempt crash in 2.6.18
-Message-ID: <20061014012105.6ca4ff05@localhost.localdomain>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B07B397@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B07B397@ismail.innsys.innovsys.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_1I_Oqfr7SyGFX/F4.MBR2+s";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 67A3167C23
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Oct 2006 07:22:15 +1000 (EST)
+Date: Fri, 13 Oct 2006 16:22:02 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+Message-ID: <20061013212202.GG28620@localdomain>
+References: <1160764895.11239.14.camel@farscape>
+	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
+	<1160769226.11239.22.camel@farscape>
+	<1160773040.11239.28.camel@farscape>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1160773040.11239.28.camel@farscape>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_1I_Oqfr7SyGFX/F4.MBR2+s
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Will Schmidt wrote:
+> On Fri, 2006-13-10 at 14:53 -0500, Will Schmidt wrote:
+> > On Fri, 2006-13-10 at 12:05 -0700, Christoph Lameter wrote:
+> > > On Fri, 13 Oct 2006, Will Schmidt wrote:
+> > > 
+> > > >     Am seeing a crash on a power5 LPAR when booting the linux-2.6 git
+> > > > tree.  It's fairly early during boot, so I've included the whole log
+> > > > below.   This partition has 8 procs, (shared, including threads), and
+> > > > 512M RAM.  
+> > > 
+> > > This looks like slab bootstrap. You are bootstrapping while having 
+> > > zonelists build with zones that are only going to be populated later? 
+> > > This will lead to incorrect NUMA placement of lots of slab structures on 
+> > > bootup.
+> > 
+> > I dont think so..   but it's not an area I'm very familiar with.   one
+> > of the other PPC folks might chime in with something here.  
+> > 
+> > > 
+> > > Check if the patch below may cure the oops. Your memory is likely 
+> > > still placed on the wrong numa nodes since we have to fallback from 
+> > > the intended node.
+> > 
+> > Nope, no change with this patch.
+> > 
+> 
+> Here is another boot log, with that patch applied, and with a numa=debug
+> parm. 
+> 
+> -----------------------------------------------------
+> ppc64_pft_size                = 0x18
+> physicalMemorySize            = 0x22000000
+> ppc64_caches.dcache_line_size = 0x80
+> ppc64_caches.icache_line_size = 0x80
+> htab_address                  = 0x0000000000000000
+> htab_hash_mask                = 0x1ffff
+> -----------------------------------------------------
+> Linux version 2.6.19-rc1-gb8a3ad5b-dirty (willschm@airbag2) (gcc version
+> 4.1.0 (SUSE Linux)) #60 SMP Fri Oct 13 14:48:20 CDT 2006
+> [boot]0012 Setup Arch
+> NUMA associativity depth for CPU/Memory: 3
+> adding cpu 0 to node 0
+> node 0
+> NODE_DATA() = c000000015ffee80
+> start_paddr = 8000000
+> end_paddr = 16000000
+> bootmap_paddr = 15ffc000
+> reserve_bootmem ffc0000 40000
+> reserve_bootmem 15ffc000 2000
+> reserve_bootmem 15ffee80 1180
+> node 1
+> NODE_DATA() = c000000021ff7c80
+> start_paddr = 0
+> end_paddr = 22000000
 
-On Fri, 13 Oct 2006 09:16:52 -0500
-Rune Torgersen wrote:
-
->=20
-> This is from a Freescale 8265 running 2.6.18
-> Anyone have any idea what this is and how to fix it?
->=20
-Yes. Actually, I recall alike thing and used to fix with proper spin-lockin=
-g if the=20
-cascade PCI irq, which apparently does do_irq that seems to confuse preempt=
- counters.
-
-Just a pure guess.
-
-Hope it helps.
-
--Vitaly
-
---Sig_1I_Oqfr7SyGFX/F4.MBR2+s
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFMANCuOg9JvQhSEsRAs37AKCDRptEGSiZoZAKx/MsP96KVBnBLwCbBD/h
-dbrxTvZya9kRsehEElfWW5w=
-=r4Dc
------END PGP SIGNATURE-----
-
---Sig_1I_Oqfr7SyGFX/F4.MBR2+s--
+Strange, node 0 appears to be in the middle of node 1.
