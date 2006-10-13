@@ -1,15 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 12 Oct 2006 20:59:46 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: change bad ptr handling in simple_alloc
-Message-ID: <20061013035946.GB32327@mag.az.mvista.com>
-References: <20061012013223.GA9143@mag.az.mvista.com>
-	<20061012013544.GE9143@mag.az.mvista.com>
-Mime-Version: 1.0
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 5254967C0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Oct 2006 16:56:35 +1000 (EST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Recently removed io accessors
+References: <873b9twnbb.fsf@sleipner.barco.com>
+	<1160697861.4792.177.camel@localhost.localdomain>
+Date: Fri, 13 Oct 2006 08:56:34 +0200
+In-Reply-To: <1160697861.4792.177.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Fri, 13 Oct 2006 10:04:21 +1000")
+Message-ID: <87iriovh3x.fsf@sleipner.barco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061012013544.GE9143@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,85 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some minor changes to simple_alloc.c:
- - Make simple_realloc return NULL if the ptr passed to it wasn't from a
-   previous simple_malloc or simple_realloc.
- - Change tracking of base of unused memory.
+>>>>> "BH" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
+Hi,
 
- simple_alloc.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
----
+>> Any chance of getting them back or should I implement a (slower)
+>> loop myself before submitting the patch?
 
-diff --git a/arch/powerpc/boot/simple_alloc.c b/arch/powerpc/boot/simple_alloc.c
-index 478a381..7cc3389 100644
---- a/arch/powerpc/boot/simple_alloc.c
-+++ b/arch/powerpc/boot/simple_alloc.c
-@@ -26,6 +26,7 @@ static struct alloc_info {
- 
- static u32 tbl_entries;
- static u32 alloc_min;
-+static u32 next_base;
- static u32 space_left;
- 
- /*
-@@ -36,20 +37,20 @@ static u32 space_left;
- static void *simple_malloc(u32 size)
- {
- 	u32 i;
--	struct alloc_info *p = alloc_tbl, *prevp = NULL;
-+	struct alloc_info *p = alloc_tbl;
- 
- 	if (size == 0)
- 		goto err_out;
- 
- 	size = _ALIGN_UP(size, alloc_min);
- 
--	for (i=0; i<tbl_entries; i++) {
-+	for (i=0; i<tbl_entries; i++, p++)
- 		if (!(p->flags & ENTRY_BEEN_USED)) { /* never been used */
- 			if (size <= space_left) {
--				if (i > 0)
--					p->base = prevp->base + prevp->size;
-+				p->base = next_base;
- 				p->size = size;
- 				p->flags = ENTRY_BEEN_USED | ENTRY_IN_USE;
-+				next_base += size;
- 				space_left -= size;
- 				return (void *)p->base;
- 			}
-@@ -60,8 +61,6 @@ static void *simple_malloc(u32 size)
- 			p->flags |= ENTRY_IN_USE;
- 			return (void *)p->base;
- 		}
--		prevp = p++;
--	}
- err_out:
- 	return NULL;
- }
-@@ -103,10 +102,12 @@ static void *simple_realloc(void *ptr, u
- 		return NULL;
- 	}
- 
--	/* also malloc if ptr didn't come from simple_malloc/realloc */
--	if ((ptr == NULL) || ((p = simple_find_entry(ptr)) == NULL))
-+	if (ptr == NULL)
- 		return simple_malloc(size);
- 
-+	p = simple_find_entry(ptr);
-+	if (p == NULL) /* ptr not from simple_malloc/simple_realloc */
-+		return NULL;
- 	if (size <= p->size) /* fits in current block */
- 		return ptr;
- 
-@@ -136,7 +137,7 @@ void *simple_alloc_init(char *base, u32 
- 
- 	heap_base = _ALIGN_UP((u32)alloc_tbl + tbl_size, alloc_min);
- 
--	alloc_tbl[0].base = heap_base;
-+	next_base = heap_base;
- 	space_left = heap_size;
- 
- 	platform_ops.malloc = simple_malloc;
+BH> Well, a "packet buffer" should have no endian. When streaming in
+BH> our out a fifo, you basically stream bytes that happen to come out
+BH> 2 at a time.  So unless somebody wired the hardware backward, you
+BH> should do no swapping when using the fifo.
+
+I agree in principle, but the issue gets complicated by the fact that
+the chip works in chunks of 32bit, but the 911{5..7} chips only have a
+16bit interface to lower costs, and that the chip has a builtin endian
+swap feature (which works for all direct registers, but apparently not
+for the packet buffers).
+
+The memory controller automatically translates a 32bit access to two
+16 bit accesses.
+
+You could be right that the hw people screwed something up, but that
+doesn't help much once there's units in the field :/
+
+-- 
+Bye, Peter Korsgaard
