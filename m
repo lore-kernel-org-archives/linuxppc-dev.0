@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC67F67C33
+Return-Path: <rcorley@aegis-inc.net>
+Received: from web56302.mail.re3.yahoo.com (web56302.mail.re3.yahoo.com
+	[216.252.110.226]) by ozlabs.org (Postfix) with SMTP id 1AF3667C68
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Oct 2006 01:54:32 +1000 (EST)
-In-Reply-To: <3C02138692C13C4BB675FE7EA24095291F5A15@bluefin.Soneticom.local>
-References: <3C02138692C13C4BB675FE7EA24095291F5A15@bluefin.Soneticom.local>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <79F33E1E-6E53-4814-9C09-B591FFB1953E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: GCC version to kernel version
-Date: Fri, 13 Oct 2006 10:54:39 -0500
-To: "Clint Thomas" <cthomas@Soneticom.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 14 Oct 2006 02:05:49 +1000 (EST)
+Message-ID: <20061013155908.4944.qmail@web56302.mail.re3.yahoo.com>
+Date: Fri, 13 Oct 2006 08:59:08 -0700 (PDT)
+From: Robert Corley <rcorley@aegis-inc.net>
+Subject: which driver for uartlite with 2.6.17?
+To: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +20,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 13, 2006, at 10:39 AM, Clint Thomas wrote:
-
-> I tried building some different cross-tools earlier on today that used
-> GCC 3.4.3 and GLIBC 2.3.3 (I believe Kumar, you provided links to  
-> these
-> in another mailing list) They were from some e500 patches to
-> crosstool-0.28, but I decided to just patch crosstool-0.42 since  
-> that is
-> what is available. They were not able to compile my linux kernel  
-> source
-> without a build error, so I am running out of ideas. I have been  
-> trying
-> to build GCC 3.4.1 / GLIBC 2.3.3 by passing it the necessary
-> TARGET_CFLAGS="-msoft-float -mno-string -Wa,-me500 -O2" and
-> GLIBC_EXTRA_CONFIG="--without-fp", but this is not building correctly
-> either. Any advice or recommendations are appreciated.
-
-I'd suggest taking a look at the ltib project as it has prebuilt  
-compilers and support for 85xx:
-
-http://savannah.nongnu.org/projects/ltib/
-http://www.bitshrine.org/
-
-- k
+All,=0A=0ABased on what was posted recently, it appears that there is more =
+than one uartlite driver =0Afloating about.=0A=0ACan someone please inform =
+me of which driver works for which kernel?=0A=0AHere is what I see=0A=0AD. =
+Lynch    2.6.15    polled, (Pico E12 board specific?)=0AP. Korsgaard    2.6=
+.18    interrupt driven, official lanana.org nodes=0AD. Bolcsfoldi    2.6.1=
+8    interrupt driven=0A=0Apatch locations:=0AD. Lynch    http://ozlabs.org=
+/pipermail/linuxppc-embedded/2006-January/021592.html=0AP. Korsgaard    htt=
+p://lkml.org/lkml/2006/9/13/71=0AD. Bolcsfoldi    http://ozlabs.org/piperma=
+il/linuxppc-embedded/2006-October/024697.html=0A=0AComments?=0A=0AAnd, last=
+ly, I need a driver for 2.6.17.  Can someone point me in the right directio=
+n?  =0AI have tried Peter's driver but it fails to compile, showing this:=
+=0A=0ACC      drivers/serial/serial_core.o=0ACC      drivers/serial/uartlit=
+e.o=0Adrivers/serial/uartlite.c: In function `ulite_startup':=0Adrivers/ser=
+ial/uartlite.c:199: error: `IRQF_DISABLED' undeclared (first use in this fu=
+nction)=0Adrivers/serial/uartlite.c:199: error: (Each undeclared identifier=
+ is reported only once=0Adrivers/serial/uartlite.c:199: error: for each fun=
+ction it appears in.)=0Adrivers/serial/uartlite.c:199: error: `IRQF_SAMPLE_=
+RANDOM' undeclared (first use in this function)=0Amake[2]: *** [drivers/ser=
+ial/uartlite.o] Error 1=0Amake[1]: *** [drivers/serial] Error 2=0Amake: ***=
+ [drivers] Error 2=0A=0A=0A=0A
