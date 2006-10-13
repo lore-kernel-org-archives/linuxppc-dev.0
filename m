@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Fri, 13 Oct 2006 12:13:12 +1000
+Date: Fri, 13 Oct 2006 12:17:16 +1000
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] POWER6 has 6 PMCs
-Message-ID: <20061013021312.GB16029@krispykreme>
+Subject: [PATCH] Better check in show_instructions
+Message-ID: <20061013021716.GC16029@krispykreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: paulus@samba.org
@@ -17,21 +17,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Change ->num_pmcs to match the number of PMCs in POWER6. 
+Instead of just checking that an address is in the right range, use the 
+provided __kernel_text_address() helper which covers both the kernel and
+module text sections.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: build/arch/powerpc/kernel/cputable.c
+Index: build/arch/powerpc/kernel/process.c
 ===================================================================
---- build.orig/arch/powerpc/kernel/cputable.c	2006-09-22 19:04:56.000000000 +1000
-+++ build/arch/powerpc/kernel/cputable.c	2006-09-22 19:24:11.000000000 +1000
-@@ -268,7 +268,7 @@ struct cpu_spec	cpu_specs[] = {
- 		.cpu_user_features	= COMMON_USER_POWER6,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
--		.num_pmcs		= 8,
-+		.num_pmcs		= 6,
- 		.oprofile_cpu_type	= "ppc64/power6",
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
-  		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
+--- build.orig/arch/powerpc/kernel/process.c	2006-07-01 20:27:57.000000000 +1000
++++ build/arch/powerpc/kernel/process.c	2006-09-22 20:01:22.000000000 +1000
+@@ -341,13 +341,6 @@ struct task_struct *__switch_to(struct t
+ 
+ static int instructions_to_print = 16;
+ 
+-#ifdef CONFIG_PPC64
+-#define BAD_PC(pc)	((REGION_ID(pc) != KERNEL_REGION_ID) && \
+-		         (REGION_ID(pc) != VMALLOC_REGION_ID))
+-#else
+-#define BAD_PC(pc)	((pc) < KERNELBASE)
+-#endif
+-
+ static void show_instructions(struct pt_regs *regs)
+ {
+ 	int i;
+@@ -366,7 +359,8 @@ static void show_instructions(struct pt_
+ 		 * bad address because the pc *should* only be a
+ 		 * kernel address.
+ 		 */
+-		if (BAD_PC(pc) || __get_user(instr, (unsigned int __user *)pc)) {
++		if (!__kernel_text_address(pc) ||
++		     __get_user(instr, (unsigned int __user *)pc)) {
+ 			printk("XXXXXXXX ");
+ 		} else {
+ 			if (regs->nip == pc)
