@@ -1,18 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17712.7972.493547.357685@cargo.ozlabs.ibm.com>
-Date: Sat, 14 Oct 2006 09:20:04 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: Recently removed io accessors
-In-Reply-To: <87slhstxlk.fsf@sleipner.barco.com>
-References: <873b9twnbb.fsf@sleipner.barco.com>
-	<1160697861.4792.177.camel@localhost.localdomain>
-	<87iriovh3x.fsf@sleipner.barco.com>
-	<1160724670.4792.195.camel@localhost.localdomain>
-	<87slhstxlk.fsf@sleipner.barco.com>
-Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E666867C2A
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Oct 2006 11:43:06 +1000 (EST)
+Received: from localhost (ta-1-1.tip.net.au [203.11.71.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by smtps.tip.net.au (Postfix) with ESMTP id 1E53A3684CD
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Oct 2006 11:43:06 +1000 (EST)
+Date: Sat, 14 Oct 2006 11:42:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/5] powerpc: consolidate feature fixup code
+Message-Id: <20061014114259.0cf258ed.sfr@canb.auug.org.au>
+In-Reply-To: <20061013115457.7b36a7c3@localhost.localdomain>
+References: <1160726663.4792.222.camel@localhost.localdomain>
+	<20061013115457.7b36a7c3@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__14_Oct_2006_11_42_59_+1000_n+N2saTf.D.C92Hv"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Peter Korsgaard writes:
+--Signature=_Sat__14_Oct_2006_11_42_59_+1000_n+N2saTf.D.C92Hv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-> We're using the smsc9117
-> (http://www.smsc.com/main/datasheets/9117.pdf) connected over a 16bit
-> EMC bus (together with a spansion 29PL127 flash) to a Xilinx V4FX FPGA
-> with a 405 core in it.
-> 
-> LSB of the processor is connected to LSB of of the 9117 (and same for
-> the flash) and so on.
-> 
-> Reading the byte test register of the 9117 (supposed to contain
-> 0x87654321) gives:
-> 
-> Endian register set to little endian (default at powerup):
-> RedBoot> x -b 0x8e000064 -2 -l 4
-> 8E000064: 4321 8765
-> RedBoot> x -b 0x8e000064 -4 -l 4
-> 8E000064: 43218765
+Hi Olof,
 
-Which is neither big-endian nor little-endian, but something more like
-vax-endian (or pdp11-endian), but not exactly that either - vax-endian
-would be 65872143.  What a mess.
+On Fri, 13 Oct 2006 11:54:57 -0500 Olof Johansson <olof@lixom.net> wrote:
+>
+... lots of stuff deleted ...
 
-> And with it set to big endian:
-> RedBoot> x -b 0x8e000064 -2 -l 4
-> 8E000064: 8765 4321
-> RedBoot> x -b 0x8e000064 -4 -l 4
-> 8E000064: 87654321
+Could you please trim your replies to just areasonable amount of context,
+please. You are not the only one who is at fault here, but yours was the
+example that came my way just as I needed to point out the problem.
 
-Clearly the "big endian" bit on the chip doesn't actually switch
-between little-endian and big-endian at all, but just acts to invert
-the 0x2 bit of the address...
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-So the two hardware bogosities taken together leave you with only one
-combination that is anything like usable.  I suggest that you code up
-a loop of readw (or equivalent) in the driver with a big comment
-explaining why you need to do it that way.
+--Signature=_Sat__14_Oct_2006_11_42_59_+1000_n+N2saTf.D.C92Hv
+Content-Type: application/pgp-signature
 
-Paul.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFMECpFdBgD/zoJvwRAimwAKCe9jgj51Cd+TYMPH9f0aQI7bHeWACfShli
+77POoXnKddjYkNPWKAk3BBw=
+=ggrH
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__14_Oct_2006_11_42_59_+1000_n+N2saTf.D.C92Hv--
