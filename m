@@ -2,23 +2,19 @@ Return-Path: <dhlii@dlasys.net>
 Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
 	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C85B267C1D
+	by ozlabs.org (Postfix) with ESMTP id 56BF067C17
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 Oct 2006 07:09:54 +1000 (EST)
-Message-ID: <4532A1D1.4040006@dlasys.net>
-Date: Sun, 15 Oct 2006 17:02:09 -0400
+	Mon, 16 Oct 2006 07:14:53 +1000 (EST)
+Message-ID: <4532A430.6060208@dlasys.net>
+Date: Sun, 15 Oct 2006 17:12:16 -0400
 From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	<87ac41esap.fsf@sleipner.barco.com>
-	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-	<452F36AE.6040205@dlasys.net> <8764eovg81.fsf@sleipner.barco.com>
-In-Reply-To: <8764eovg81.fsf@sleipner.barco.com>
-Content-Type: multipart/alternative;
-	boundary="------------070702090903080101010102"
-Cc: linuxppc-embedded@ozlabs.org
+To: Robert Corley <rcorley@aegis-inc.net>
+Subject: Re: uartlite with 2.6.17 kernel and kernel early text messages
+References: <20061013204442.52818.qmail@web56308.mail.re3.yahoo.com>
+In-Reply-To: <20061013204442.52818.qmail@web56308.mail.re3.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,107 +25,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070702090903080101010102
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Peter Korsgaard wrote:
->>>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
->>>>>>             
+Robert Corley wrote:
+> I am still trying to get the UARTLITE to work with 2.6 and a plb_temac design.  I am using EDK 7.1.  I have generated the edk files and copied xparameters_ml300.h to arch/ppc/platforms/4xx/xparameters.xparameters_ml403.h
 >
-> Hi,
->
-> David>    Peter's driver uses the IORESOURCE requests to pull platform
-> David> data.  Most other serial platformdevices pull a uart_port
-> David> object.  My limited understanding of IORESOURCE is that it is
-> David> not sufficiently deep to support the parameters that are needed
-> David> to support UartLite such as a DCR flag and a regoffset.
->
-> I'm still not convinced that DCR access and variable register offsets
-> are needed - But it can always be added (through a seperate struct in
-> platform_data) - Patches are welcome.
+> In an effort to get past the "Rebooting to System ACE Configuration Address 6..." message, I have selected "support for early boot texts over serial port" in kernel debugging.
 >   
-    It does not matter whether you or I are convinced. It matters 
-whether there are people that need it.
-    Xilinx has a reference design that uses DCR. While I have never 
-tripped over an actual implimentation that uses
-    DCR there are others on this list that have.
+    I do not think Peter's driver actually supports early boot texts. I 
+beleive the patches David  Bolcsfoldi posted add early boot support.
 
-> The same with interrupt-less support if the changes are not too
-> intrusive.
+    If you can not get that working I posted a driver in January (as 
+part of a patchset for the Pico E12) that has early boot support - 
+though on inspection David's patches looked like they should work.
+
+
+> FYI, I'm using Peter's patches to create the uartlite.c and associated files and have selected the uartlite using make menuconfig.
 >
+> The first error is as follows:
+> athena startup_network # make ARCH=ppc zImage.initrd
+>   CHK     include/linux/version.h
+>   CHK     include/linux/compile.h
+> dnsdomainname: Unknown host
+>   CC      arch/ppc/syslib/gen550_dbg.o
+> arch/ppc/syslib/gen550_dbg.c:36: error: `RS_TABLE_SIZE' undeclared here (not in a function)
+> arch/ppc/syslib/gen550_dbg.c:38: error: empty scalar initializer
+> arch/ppc/syslib/gen550_dbg.c:38: error: (near initialization for `rs_table')
+> arch/ppc/syslib/gen550_dbg.c:36: error: storage size of `rs_table' isn't known
+> arch/ppc/syslib/gen550_dbg.c:36: warning: 'rs_table' defined but not used
+> make[1]: *** [arch/ppc/syslib/gen550_dbg.o] Error 1
+> make: *** [arch/ppc/syslib] Error 2
 >   
-    Right now I can not get your driver to work. I spent alot of time 
-trying to fix it and got nowhere.
-    I can not get it to receive at all, and I can not get it to send 
-after switching from the console driver
-    without dropping characters. I am very busy with other things right 
-now and it is going to be a long
-    time before I have time to look at your driver again.
+    Unless you actually have an 8250 based Uart in your system - and you 
+are not configured for one, then arch/ppc/syslib/gen550_dbg should NOT 
+be getting built.
+    Proper early boot text support for the UartLite requires both a 
+replacement for this AND changes to use those instead of gen550_dbg.c
 
-    In the meantime, my own driver works - atleast for me. And it is out 
-in the real world on production systems.
- 
-   The most instrusive changes is likely to be fixing whatever is 
-causing yours to drop characters - the problem is
-    worse when I patch your driver to be timer driven - but that is 
-likely because your service routines blindly presume it is
-    safe to transmit - true on a Tx empty interrupt, but  not on a timer 
-tick.
+> so, I modified the gen550_dbg.c file to #include the xparameters.h, where the RS_TABLE_SIZE is defined
+>  but still get more errors.  Here they are:
+>   
+    You do not want to touch gen550_dbg.c
+    You need a new uartlite_dbg.c and Makefile and other changes to use it.
 
-    But what matters is not whether the changes are intrusive, but  
-whether they produce a better result.
-
-
-
-
-
-
-
-
-
-> David>    You are welcome to do that. I already patched his driver to
-> David> work with my early console support as well as adding the
-> David> boot-bash stuff similar to yours. But I gave up actually using
-> David> it when I could not get it to work.
+>   CHK     include/linux/version.h
+>   CHK     include/linux/compile.h
+> dnsdomainname: Unknown host
+>   CC      arch/ppc/syslib/gen550_dbg.o
+> arch/ppc/syslib/gen550_dbg.c:37: error: `XPAR_UARTNS550_0_CLOCK_FREQ_HZ' undeclared here (not in a function)
+> arch/ppc/syslib/gen550_dbg.c:37: error: initializer element is not constant
+> arch/ppc/syslib/gen550_dbg.c:37: error: (near initialization for `rs_table[0].baud_base')
+> arch/ppc/syslib/gen550_dbg.c:37: error: `XPAR_INTC_0_UARTNS550_0_VEC_ID' undeclared here (not in a function)
+> arch/ppc/syslib/gen550_dbg.c:37: error: initializer element is not constant
+> arch/ppc/syslib/gen550_dbg.c:37: error: (near initialization for `rs_table[0].irq')
+> arch/ppc/syslib/gen550_dbg.c:37: error: `XPAR_UARTNS550_0_BASEADDR' undeclared here (not in a function)
+> arch/ppc/syslib/gen550_dbg.c:37: error: initializer element is not constant
+> arch/ppc/syslib/gen550_dbg.c:37: error: (near initialization for `rs_table[0].iomem_base')
+> arch/ppc/syslib/gen550_dbg.c:37: error: initializer element is not constant
+> arch/ppc/syslib/gen550_dbg.c:37: error: (near initialization for `rs_table[0]')
+> make[1]: *** [arch/ppc/syslib/gen550_dbg.o] Error 1
+> make: *** [arch/ppc/syslib] Error 2
 >
-> Which is odd as I've gotten positive feedback from others.
->   
-    I am glad somebody is using your driver and finding it works. But we 
-are all better served by fixing the failure cases.
-
-    It is not particularly odd at all. The UartLite despite its 
-simplicity is   worse than a normal driver - different
-    FPGA implimentations can vary. Normal drivers for fixed inflexible 
-hardware often do not work accross
-    differing implimentations, why would you expect something like 
-UartLite to be invariant ?
-
-    One of the other reasons for implimenting polling is because a 
-polled driver tends to work accross
-    wider hardware variations. You can not make state assumptions in a 
-poll routine,
-    and if the poll routine does nto run then the rest of the OS is hosed.
-
-    Even today, flakey hardware interrupts are not unheard of.
-
-    I would also ask what data rates you and others with Working 
-UartLites are using ?
-    The cases I am dealing with run at 57600 and 115200 respectively - 
-it is not that odd for
-    driver problems to manifest themselves only or more frequently at 
-high baud rates.
-
-
-> David>    Next time I get an opportunity I am going to try to setup an
-> David> ml403 to atleast verify that Peter's driver is working there.
+> Questions:
 >
-> Great.
+> 1.    Now, is this an issue with the UARTLITE driver or is it just not supported for early messaging?
 >   
-    Without being difficult - don't hold your breath. It is something I 
-would like to do, but
- I do not have  infinite time.
+    Peters does not support early boot texts.
+    Both David's and my drivers do as do David's patches to Peter's driver./
+> 2.   What am I missing w.r.t. getting something out of the serial port?
+> 3.    I am assuming that the boot args for a initrd boot are:  "console=ttyUL0 ip=off root=/dev/ram rw", correct?
+>   
+    Presuming you have no other serial device I think you should not 
+need any console= argument at all.
+> -corley
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>   
 
 
 -- 
@@ -141,148 +114,3 @@ Over 25 years' experience in platforms, languages, and technologies too numerous
 
 "Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
 Albert Einstein
-
-
---------------070702090903080101010102
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Peter Korsgaard wrote:
-<blockquote cite="mid:8764eovg81.fsf@sleipner.barco.com" type="cite">
-  <blockquote type="cite">
-    <blockquote type="cite">
-      <blockquote type="cite">
-        <blockquote type="cite">
-          <blockquote type="cite">
-            <pre wrap="">"David" == David H Lynch <a class="moz-txt-link-rfc2396E" href="mailto:dhlii@dlasys.net">&lt;dhlii@dlasys.net&gt;</a> writes:
-            </pre>
-          </blockquote>
-        </blockquote>
-      </blockquote>
-    </blockquote>
-  </blockquote>
-  <pre wrap=""><!---->
-Hi,
-
-David&gt;    Peter's driver uses the IORESOURCE requests to pull platform
-David&gt; data.  Most other serial platformdevices pull a uart_port
-David&gt; object.  My limited understanding of IORESOURCE is that it is
-David&gt; not sufficiently deep to support the parameters that are needed
-David&gt; to support UartLite such as a DCR flag and a regoffset.
-
-I'm still not convinced that DCR access and variable register offsets
-are needed - But it can always be added (through a seperate struct in
-platform_data) - Patches are welcome.
-  </pre>
-</blockquote>
-&nbsp;&nbsp;&nbsp; It does not matter whether you or I are convinced. It matters
-whether there are people that need it.<br>
-&nbsp;&nbsp;&nbsp; Xilinx has a reference design that uses DCR. While I have never
-tripped over an actual implimentation that uses<br>
-&nbsp;&nbsp;&nbsp; DCR there are others on this list that have.<br>
-<br>
-<blockquote cite="mid:8764eovg81.fsf@sleipner.barco.com" type="cite">
-  <pre wrap="">
-The same with interrupt-less support if the changes are not too
-intrusive.
-
-  </pre>
-</blockquote>
-&nbsp;&nbsp;&nbsp; Right now I can not get your driver to work. I spent alot of time
-trying to fix it and got nowhere.<br>
-&nbsp;&nbsp;&nbsp; I can not get it to receive at all, and I can not get it to send
-after switching from the console driver<br>
-&nbsp;&nbsp;&nbsp; without dropping characters. I am very busy with other things right
-now and it is going to be a long <br>
-&nbsp;&nbsp;&nbsp; time before I have time to look at your driver again.<br>
-<br>
-&nbsp;&nbsp;&nbsp; In the meantime, my own driver works - atleast for me. And it is
-out in the real world on production systems.<br>
-&nbsp;<br>
-&nbsp;&nbsp; The most instrusive changes is likely to be fixing whatever is
-causing yours to drop characters - the problem is <br>
-&nbsp;&nbsp;&nbsp; worse when I patch your driver to be timer driven - but that is
-likely because your service routines blindly presume it is <br>
-&nbsp;&nbsp;&nbsp; safe to transmit - true on a Tx empty interrupt, but&nbsp; not on a
-timer tick.<br>
-<br>
-&nbsp;&nbsp;&nbsp; But what matters is not whether the changes are intrusive, but&nbsp;
-whether they produce a better result.<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<blockquote cite="mid:8764eovg81.fsf@sleipner.barco.com" type="cite">
-  <pre wrap="">David&gt;    You are welcome to do that. I already patched his driver to
-David&gt; work with my early console support as well as adding the
-David&gt; boot-bash stuff similar to yours. But I gave up actually using
-David&gt; it when I could not get it to work.
-
-Which is odd as I've gotten positive feedback from others.
-  </pre>
-</blockquote>
-&nbsp;&nbsp;&nbsp; I am glad somebody is using your driver and finding it works. But
-we are all better served by fixing the failure cases.<br>
-<br>
-&nbsp;&nbsp;&nbsp; It is not particularly odd at all. The UartLite despite its
-simplicity is &nbsp; worse than a normal driver - different<br>
-&nbsp;&nbsp;&nbsp; FPGA implimentations can vary. Normal drivers for fixed inflexible
-hardware often do not work accross<br>
-&nbsp;&nbsp;&nbsp; differing implimentations, why would you expect something like
-UartLite to be invariant ?<br>
-<br>
-&nbsp;&nbsp;&nbsp; One of the other reasons for implimenting polling is because a
-polled driver tends to work accross <br>
-&nbsp;&nbsp;&nbsp; wider hardware variations. You can not make state assumptions in a
-poll routine, <br>
-&nbsp;&nbsp;&nbsp; and if the poll routine does nto run then the rest of the OS is
-hosed.<br>
-<br>
-&nbsp;&nbsp;&nbsp; Even today, flakey hardware interrupts are not unheard of. <br>
-<br>
-&nbsp;&nbsp;&nbsp; I would also ask what data rates you and others with Working
-UartLites are using ?<br>
-&nbsp;&nbsp;&nbsp; The cases I am dealing with run at 57600 and 115200 respectively -
-it is not that odd for <br>
-&nbsp;&nbsp;&nbsp; driver problems to manifest themselves only or more frequently at
-high baud rates.<br>
-<br>
-<br>
-<blockquote cite="mid:8764eovg81.fsf@sleipner.barco.com" type="cite">
-  <pre wrap="">
-David&gt;    Next time I get an opportunity I am going to try to setup an
-David&gt; ml403 to atleast verify that Peter's driver is working there.
-
-Great.
-  </pre>
-</blockquote>
-&nbsp;&nbsp;&nbsp; Without being difficult - don't hold your breath. It is something I
-would like to do, but<br>
-&nbsp;I do not have&nbsp; infinite time.<br>
-<br>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-</pre>
-</body>
-</html>
-
---------------070702090903080101010102--
