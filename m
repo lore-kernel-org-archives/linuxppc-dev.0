@@ -1,21 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7AD3267C2B
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 14:51:38 +1000 (EST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k9G4xnAu025631
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Oct 2006 23:59:50 -0500
-Subject: Re: [PATCH 1/5] powerpc: consolidate feature fixup code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1160726663.4792.222.camel@localhost.localdomain>
-References: <1160726663.4792.222.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 16 Oct 2006 14:51:26 +1000
-Message-Id: <1160974286.22522.37.camel@localhost.localdomain>
-Mime-Version: 1.0
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C45067B6D
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 11:47:08 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.5) with ESMTP id k9G1uNre249402
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 11:56:24 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
+	by sd0109e.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9G1o991089420
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 11:50:09 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9G1khFa000349
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 11:46:43 +1000
+Date: Mon, 16 Oct 2006 11:43:34 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Yao Fei Zhu <walkinair@cn.ibm.com>
+Subject: Re: Failed to boot kernel 2.6.19-rc2 due to IBM veth problem.
+Message-ID: <20061016014334.GA30921@localhost.localdomain>
+References: <4532613D.1090107@cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4532613D.1090107@cn.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-10-13 at 18:04 +1000, Benjamin Herrenschmidt wrote:
->  
-> Index: linux-cell/include/asm-powerpc/system.h
-> ===================================================================
-> --- linux-cell.orig/include/asm-powerpc/system.h        2006-10-06 13:48:24.000000000 +1000
-> +++ linux-cell/include/asm-powerpc/system.h     2006-10-13 16:24:45.000000000 +1000
-> @@ -378,7 +378,11 @@ extern unsigned long reloc_offset(void);
->  extern unsigned long add_reloc_offset(unsigned long);
->  extern void reloc_got2(unsigned long);
->  
-> +#ifdef CONFIG_PPC64
-> +#define PTRRELOC(x)    x
-> +#else
->  #define PTRRELOC(x)    ((typeof(x)) add_reloc_offset((unsigned long)(x)))
-> +#endif
->  
->  static inline void create_instruction(unsigned long addr, unsigned int instr)
->  {
+On Mon, Oct 16, 2006 at 12:26:37AM +0800, Yao Fei Zhu wrote:
+> Hi, all,
+> 
+> Boot kernel 2.6.19-rc2 on IBM System P5 partitions will fall into xmon.
+> Here is the boot log,
 
-And of course that bit of the patch is a stupid "optimisation" that
-breaks prom_init.c on ppc64... I'll post a new patch without it and do
-more tests (damn, I tested iSeries and figured if it worked there, it
-would work everywhere :)
+This is probably the same bug I recently posted about.  The patch
+below should fix it.
 
-Ben.
+ibmveth: Fix index increment calculation
+
+The recent commit 751ae21c6cd1493e3d0a4935b08fb298b9d89773 introduced
+a bug in the producer/consumer index calculation in the ibmveth driver
+- incautious use of the post-increment ++ operator resulted in an
+increment being immediately reverted.  This patch corrects the logic.
+
+Without this patch, the driver oopses almost immediately after
+activation on at least some machines.
+
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
+
+Index: working-2.6/drivers/net/ibmveth.c
+===================================================================
+--- working-2.6.orig/drivers/net/ibmveth.c	2006-10-13 14:19:54.000000000 +1000
++++ working-2.6/drivers/net/ibmveth.c	2006-10-13 14:19:59.000000000 +1000
+@@ -212,8 +212,8 @@ static void ibmveth_replenish_buffer_poo
+ 			break;
+ 		}
+ 
+-		free_index = pool->consumer_index++ % pool->size;
+-		pool->consumer_index = free_index;
++		free_index = pool->consumer_index;
++		pool->consumer_index = (pool->consumer_index + 1) % pool->size;
+ 		index = pool->free_map[free_index];
+ 
+ 		ibmveth_assert(index != IBM_VETH_INVALID_MAP);
+@@ -329,8 +329,10 @@ static void ibmveth_remove_buffer_from_p
+ 			 adapter->rx_buff_pool[pool].buff_size,
+ 			 DMA_FROM_DEVICE);
+ 
+-	free_index = adapter->rx_buff_pool[pool].producer_index++ % adapter->rx_buff_pool[pool].size;
+-	adapter->rx_buff_pool[pool].producer_index = free_index;
++	free_index = adapter->rx_buff_pool[pool].producer_index;
++	adapter->rx_buff_pool[pool].producer_index
++		= (adapter->rx_buff_pool[pool].producer_index + 1)
++		% adapter->rx_buff_pool[pool].size;
+ 	adapter->rx_buff_pool[pool].free_map[free_index] = index;
+ 
+ 	mb();
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
