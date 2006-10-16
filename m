@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17715.25338.313368.506272@cargo.ozlabs.ibm.com>
-Date: Mon, 16 Oct 2006 20:46:18 +1000
+Message-ID: <17715.25272.777558.66052@cargo.ozlabs.ibm.com>
+Date: Mon, 16 Oct 2006 20:45:12 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 2/4] powerpc: Add flatdevtree source
-In-Reply-To: <20061012013427.GC9143@mag.az.mvista.com>
+Subject: Re: [PATCH 1/4] powerpc: More bootwrapper reorg
+In-Reply-To: <20061012013346.GB9143@mag.az.mvista.com>
 References: <20061012013223.GA9143@mag.az.mvista.com>
-	<20061012013427.GC9143@mag.az.mvista.com>
+	<20061012013346.GB9143@mag.az.mvista.com>
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,9 +21,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Mark A. Greer writes:
 
-> Add the latest version of the flatdevtree code and corresponding glue.
+> More reorganization of the bootwrapper:
+> - Add dtb section to zImage
 
-Please resend with the fixes you posted subsequently applied.  Same
-for your patch 4/4.
+Unfortunately it doesn't build for powermac because zImage.coff.lds is
+missing the _dtb_start/end symbols.  Could you add the necessary bits
+to zImage.coff.lds and resend?
 
 Paul.
