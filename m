@@ -1,37 +1,15 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C79267C06
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 06:50:32 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9GKoTUb028216
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 16:50:29 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9GKoT7F040150
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 16:50:29 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9GKoSU5001838
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 16:50:28 -0400
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-References: <1160764895.11239.14.camel@farscape>
-	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
-	<1160769226.11239.22.camel@farscape>
-	<1160773040.11239.28.camel@farscape>
-	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
-	<1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 16 Oct 2006 15:50:20 -0500
-Message-Id: <1161031821.31903.28.camel@farscape>
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 16 Oct 2006 13:52:09 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 3/4] powerpc: Add non-OF serial console support
+Message-ID: <20061016205209.GE16901@mag.az.mvista.com>
+References: <20061012013223.GA9143@mag.az.mvista.com>
+	<20061012013508.GD9143@mag.az.mvista.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: will_schmidt@vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061012013508.GD9143@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,139 +19,434 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-16-10 at 12:25 -0700, Christoph Lameter wrote:
+Changed how ns16550.c sets up reg_base with data from 'virtual-reg'
+property.
 
+Mark
+---
 
-> zero slab??? That cannot be. The slab allocator always allocs on each 
-> node. Or is this <2.6.18 with the strange counters that we had before?
+Add serial console support for non-OF systems.  There is a generic serial
+console layer which calls a serial console driver.  Included is the serial
+console driver for the ns16550 class of uarts.  Necessary support routines
+are added as well.
 
-This is output from 2.6.18-rc2.   MemFree, MemTotal, MemUsed still
-wrong.  Node0 slab is still zero.  I've also attached the numa=debug
-boot log from this boot, in case it has any clues that were missing from
-the other boot log. 
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
 
-15:40:53 0 willschm@airbag2:~> find /sys/devices/system/node/ -type f -exec cat {} \;
-20 10
-numa_hit 4952
-numa_miss 152776
-numa_foreign 0
-interleave_hit 3176
-local_node 0
-other_node 157761
+ Makefile  |    4 -
+ io.h      |   53 +++++++++++++++++++++++
+ ns16550.c |   74 ++++++++++++++++++++++++++++++++
+ serial.c  |  142 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ util.S    |  101 ++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 372 insertions(+), 2 deletions(-)
+---
 
-Node 1 MemTotal:       327680 kB
-Node 1 MemFree:        441136 kB
-Node 1 MemUsed:      18446744073709438160 kB
-Node 1 Active:          39008 kB
-Node 1 Inactive:        18040 kB
-Node 1 HighTotal:           0 kB
-Node 1 HighFree:            0 kB
-Node 1 LowTotal:       327680 kB
-Node 1 LowFree:        441136 kB
-Node 1 Dirty:               0 kB
-Node 1 Writeback:           0 kB
-Node 1 FilePages:       39868 kB
-Node 1 Mapped:          15080 kB
-Node 1 AnonPages:       17172 kB
-Node 1 PageTables:        956 kB
-Node 1 NFS Unstable:        0 kB
-Node 1 Bounce:              0 kB
-Node 1 Slab:            26036 kB
-Node 1 HugePages_Total:     0
-Node 1 HugePages_Free:      0
-00000000,00000000,00000000,00000000
-10 20
-numa_hit 0
-numa_miss 0
-numa_foreign 152941
-interleave_hit 0
-local_node 0
-other_node 0
-
-Node 0 MemTotal:       229376 kB
-Node 0 MemFree:             0 kB
-Node 0 MemUsed:        229376 kB
-Node 0 Active:              0 kB
-Node 0 Inactive:            0 kB
-Node 0 HighTotal:           0 kB
-Node 0 HighFree:            0 kB
-Node 0 LowTotal:       229376 kB
-Node 0 LowFree:             0 kB
-Node 0 Dirty:               0 kB
-Node 0 Writeback:           0 kB
-Node 0 FilePages:           0 kB
-Node 0 Mapped:              0 kB
-Node 0 AnonPages:           0 kB
-Node 0 PageTables:          0 kB
-Node 0 NFS Unstable:        0 kB
-Node 0 Bounce:              0 kB
-Node 0 Slab:                0 kB
-Node 0 HugePages_Total:     0
-Node 0 HugePages_Free:      0
-00000000,00000000,00000000,000000ff
-15:40:57 0 willschm@airbag2:~>                
-
--
------------------------------------------------------
-ppc64_pft_size                = 0x18
-physicalMemorySize            = 0x22000000
-ppc64_caches.dcache_line_size = 0x80
-ppc64_caches.icache_line_size = 0x80
-htab_address                  = 0x0000000000000000
-htab_hash_mask                = 0x1ffff
------------------------------------------------------
-Linux version 2.6.18-rc2 (willschm@airbag2) (gcc version 4.1.0 (SUSE
-Linux)) #1 SMP Mon Oct 16 15:27:37 CDT 2006
-[boot]0012 Setup Arch
-NUMA associativity depth for CPU/Memory: 3
-add_region nid 1 start_pfn 0x0 pages 0x8000
-add_region nid 0 start_pfn 0x8000 pages 0x2000
-add_region nid 0 start_pfn 0xa000 pages 0x2000
-add_region nid 0 start_pfn 0xc000 pages 0x2000
-add_region nid 0 start_pfn 0xe000 pages 0x2000
-add_region nid 0 start_pfn 0x10000 pages 0x2000
-add_region nid 0 start_pfn 0x12000 pages 0x2000
-add_region nid 0 start_pfn 0x14000 pages 0x2000
-add_region nid 1 start_pfn 0x16000 pages 0x2000
-add_region nid 1 start_pfn 0x18000 pages 0x2000
-add_region nid 1 start_pfn 0x1a000 pages 0x2000
-add_region nid 1 start_pfn 0x1c000 pages 0x2000
-add_region nid 1 start_pfn 0x1e000 pages 0x2000
-add_region nid 1 start_pfn 0x20000 pages 0x2000
-Node 0 Memory: 0x8000000-0x16000000
-Node 1 Memory: 0x0-0x8000000 0x16000000-0x22000000
-adding cpu 0 to node 0
-node 0
-NODE_DATA() = c000000015ffd780
-start_paddr = 8000000
-end_paddr = 16000000
-bootmap_paddr = 15ffb000
-free_bootmem 8000000 e000000
-reserve_bootmem ffc0000 40000
-reserve_bootmem 15ffb000 2000
-reserve_bootmem 15ffd780 2880
-node 1
-NODE_DATA() = c000000021ff6580
-start_paddr = 0
-end_paddr = 22000000
-bootmap_paddr = 21ff1000
-free_bootmem 0 8000000
-free_bootmem 16000000 c000000
-reserve_bootmem 0 802000
-reserve_bootmem 2606000 9000
-reserve_bootmem 77b2000 84e000
-reserve_bootmem 21ff1000 5000
-reserve_bootmem 21ff6580 2880
-reserve_bootmem 21ff8e58 71a4
-No ramdisk, default root is /dev/sda2
-EEH: No capable adapters found
-PPC64 nvram contains 7168 bytes
-Using shared processor idle loop
-free_area_init node 0 e000 8000 (hole: 0)
-On node 0 totalpages: 57344
-  DMA zone: 57344 pages, LIFO batch:15
-free_area_init node 1 22000 0 (hole: e000)
-On node 1 totalpages: 81920
-  DMA zone: 81920 pages, LIFO batch:15
-[boot]0015 Setup Done
-Built 2 zonelists.  Total pages: 139264
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 8660cc5..ef1bec4 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -40,8 +40,8 @@ zliblinuxheader := zlib.h zconf.h zutil.
+ $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
+ 		$(addprefix $(obj)/,$(zlibheader))
+ 
+-src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c div64.S \
+-		$(zlib)
++src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c ns16550.c \
++		serial.c div64.S util.S $(zlib)
+ src-plat := of.c
+ src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
+ 
+diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
+new file mode 100644
+index 0000000..32974ed
+--- /dev/null
++++ b/arch/powerpc/boot/io.h
+@@ -0,0 +1,53 @@
++#ifndef _IO_H
++#define __IO_H
++/*
++ * Low-level I/O routines.
++ *
++ * Copied from <file:include/asm-powerpc/io.h> (which has no copyright)
++ */
++static inline int in_8(const volatile unsigned char *addr)
++{
++	int ret;
++
++	__asm__ __volatile__("lbz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_8(volatile unsigned char *addr, int val)
++{
++	__asm__ __volatile__("stb%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
++static inline unsigned in_le32(const volatile unsigned *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lwbrx %0,0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "r" (addr), "m" (*addr));
++	return ret;
++}
++
++static inline unsigned in_be32(const volatile unsigned *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_le32(volatile unsigned *addr, int val)
++{
++	__asm__ __volatile__("stwbrx %1,0,%2; sync" : "=m" (*addr)
++			     : "r" (val), "r" (addr));
++}
++
++static inline void out_be32(volatile unsigned *addr, int val)
++{
++	__asm__ __volatile__("stw%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
++#endif /* _IO_H */
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+new file mode 100644
+index 0000000..1ffe72e
+--- /dev/null
++++ b/arch/powerpc/boot/ns16550.c
+@@ -0,0 +1,74 @@
++/*
++ * 16550 serial console support.
++ *
++ * Original copied from <file:arch/ppc/boot/common/ns16550.c>
++ * (which had no copyright)
++ * Modifications: 2006 (c) MontaVista Software, Inc.
++ *
++ * Modified by: Mark A. Greer <mgreer@mvista.com>
++ */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "io.h"
++#include "ops.h"
++
++#define UART_DLL	0	/* Out: Divisor Latch Low */
++#define UART_DLM	1	/* Out: Divisor Latch High */
++#define UART_FCR	2	/* Out: FIFO Control Register */
++#define UART_LCR	3	/* Out: Line Control Register */
++#define UART_MCR	4	/* Out: Modem Control Register */
++#define UART_LSR	5	/* In:  Line Status Register */
++#define UART_LSR_THRE	0x20	/* Transmit-hold-register empty */
++#define UART_LSR_DR	0x01	/* Receiver data ready */
++#define UART_MSR	6	/* In:  Modem Status Register */
++#define UART_SCR	7	/* I/O: Scratch Register */
++
++static unsigned char *reg_base;
++static u32 reg_shift;
++
++static int ns16550_open(void)
++{
++	out_8(reg_base + (UART_FCR << reg_shift), 0x06);
++	return 0;
++}
++
++static void ns16550_putc(unsigned char c)
++{
++	while ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_THRE) == 0);
++	out_8(reg_base, c);
++}
++
++static unsigned char ns16550_getc(void)
++{
++	while ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_DR) == 0);
++	return in_8(reg_base);
++}
++
++static u8 ns16550_tstc(void)
++{
++	return ((in_8(reg_base + (UART_LSR << reg_shift)) & UART_LSR_DR) != 0);
++}
++
++int ns16550_console_init(void *devp, struct serial_console_data *scdp)
++{
++	int n;
++
++	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
++	if (n != sizeof(reg_base))
++		return -1;
++
++	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
++	if (n != sizeof(reg_shift))
++		reg_shift = 0;
++
++	scdp->open = ns16550_open;
++	scdp->putc = ns16550_putc;
++	scdp->getc = ns16550_getc;
++	scdp->tstc = ns16550_tstc;
++	scdp->close = NULL;
++
++	return 0;
++}
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+new file mode 100644
+index 0000000..e8de4cf
+--- /dev/null
++++ b/arch/powerpc/boot/serial.c
+@@ -0,0 +1,142 @@
++/*
++ * Generic serial console support
++ *
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ *
++ * Code in serial_edit_cmdline() copied from <file:arch/ppc/boot/simple/misc.c>
++ * and was written by Matt Porter <mporter@kernel.crashing.org>.
++ *
++ * 2001,2006 (c) MontaVista Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "io.h"
++#include "ops.h"
++
++extern void udelay(long delay);
++
++static int serial_open(void)
++{
++	struct serial_console_data *scdp = console_ops.data;
++	return scdp->open();
++}
++
++static void serial_write(char *buf, int len)
++{
++	struct serial_console_data *scdp = console_ops.data;
++
++	while (*buf != '\0')
++		scdp->putc(*buf++);
++}
++
++static void serial_edit_cmdline(char *buf, int len)
++{
++	int timer = 0, count;
++	char ch, *cp;
++	struct serial_console_data *scdp = console_ops.data;
++
++	cp = buf;
++	count = strlen(buf);
++	cp = &buf[count];
++	count++;
++
++	while (timer++ < 5*1000) {
++		if (scdp->tstc()) {
++			while (((ch = scdp->getc()) != '\n') && (ch != '\r')) {
++				/* Test for backspace/delete */
++				if ((ch == '\b') || (ch == '\177')) {
++					if (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				/* Test for ^x/^u (and wipe the line) */
++				} else if ((ch == '\030') || (ch == '\025')) {
++					while (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				} else if (count < len) {
++						*cp++ = ch;
++						count++;
++						scdp->putc(ch);
++				}
++			}
++			break;  /* Exit 'timer' loop */
++		}
++		udelay(1000);  /* 1 msec */
++	}
++	*cp = 0;
++}
++
++static void serial_close(void)
++{
++	struct serial_console_data *scdp = console_ops.data;
++
++	if (scdp->close)
++		scdp->close();
++}
++
++static void *serial_get_stdout_devp(void)
++{
++	void *devp;
++	char devtype[MAX_PROP_LEN];
++	char path[MAX_PATH_LEN];
++
++	devp = finddevice("/chosen");
++	if (devp == NULL)
++		goto err_out;
++
++	if (getprop(devp, "linux,stdout-path", path, MAX_PATH_LEN) > 0) {
++		devp = finddevice(path);
++		if (devp == NULL)
++			goto err_out;
++
++		if ((getprop(devp, "device_type", devtype, sizeof(devtype)) > 0)
++				&& !strcmp(devtype, "serial"))
++			return devp;
++	}
++err_out:
++	return NULL;
++}
++
++static struct serial_console_data serial_cd;
++
++/* Node's "compatible" property determines which serial driver to use */
++int serial_console_init(void)
++{
++	void *devp;
++	int rc = -1;
++	char compat[MAX_PROP_LEN];
++
++	devp = serial_get_stdout_devp();
++	if (devp == NULL)
++		goto err_out;
++
++	if (getprop(devp, "compatible", compat, sizeof(compat)) < 0)
++		goto err_out;
++
++	if (!strcmp(compat, "ns16550"))
++		rc = ns16550_console_init(devp, &serial_cd);
++
++	/* Add other serial console driver calls here */
++
++	if (!rc) {
++		console_ops.open = serial_open;
++		console_ops.write = serial_write;
++		console_ops.edit_cmdline = serial_edit_cmdline;
++		console_ops.close = serial_close;
++		console_ops.data = &serial_cd;
++
++		return 0;
++	}
++err_out:
++	return -1;
++}
+diff --git a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
+new file mode 100644
+index 0000000..b8e1c23
+--- /dev/null
++++ b/arch/powerpc/boot/util.S
+@@ -0,0 +1,101 @@
++/*
++ * Copied from <file:arch/powerpc/kernel/misc_32.S>
++ *
++ * This file contains miscellaneous low-level functions.
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ * Largely rewritten by Cort Dougan (cort@cs.nmt.edu)
++ * and Paul Mackerras.
++ *
++ * kexec bits:
++ * Copyright (C) 2002-2003 Eric Biederman  <ebiederm@xmission.com>
++ * GameCube/ppc32 port Copyright (C) 2004 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++#include "ppc_asm.h"
++
++#define SPRN_PVR        0x11F   /* Processor Version Register */
++
++	.text
++/*
++ * complement mask on the msr then "or" some values on.
++ *     _nmask_and_or_msr(nmask, value_to_or)
++ */
++	.globl _nmask_and_or_msr
++_nmask_and_or_msr:
++	mfmsr	r0		/* Get current msr */
++	andc	r0,r0,r3	/* And off the bits set in r3 (first parm) */
++	or	r0,r0,r4	/* Or on the bits in r4 (second parm) */
++	SYNC			/* Some chip revs have problems here... */
++	mtmsr	r0		/* Update machine state */
++	isync
++	blr			/* Done */
++
++/* udelay (on non-601 processors) needs to know the period of the
++ * timebase in nanoseconds.  This used to be hardcoded to be 60ns
++ * (period of 66MHz/4).  Now a variable is used that is initialized to
++ * 60 for backward compatibility, but it can be overridden as necessary
++ * with code something like this:
++ *    extern unsigned long timebase_period_ns;
++ *    timebase_period_ns = 1000000000 / bd->bi_tbfreq;
++ */
++	.data
++	.globl timebase_period_ns
++timebase_period_ns:
++	.long	60
++
++	.text
++/*
++ * Delay for a number of microseconds
++ */
++	.globl	udelay
++udelay:
++	mfspr	r4,SPRN_PVR
++	srwi	r4,r4,16
++	cmpwi	0,r4,1		/* 601 ? */
++	bne	.udelay_not_601
++00:	li	r0,86	/* Instructions / microsecond? */
++	mtctr	r0
++10:	addi	r0,r0,0 /* NOP */
++	bdnz	10b
++	subic.	r3,r3,1
++	bne	00b
++	blr
++
++.udelay_not_601:
++	mulli	r4,r3,1000	/* nanoseconds */
++	/*  Change r4 to be the number of ticks using:
++	 *	(nanoseconds + (timebase_period_ns - 1 )) / timebase_period_ns
++	 *  timebase_period_ns defaults to 60 (16.6MHz) */
++	mflr	r5
++	bl	0f
++0:	mflr	r6
++	mtlr	r5
++	lis	r5,0b@ha
++	addi	r5,r5,0b@l
++	subf	r5,r5,r6	/* In case we're relocated */
++	addis	r5,r5,timebase_period_ns@ha
++	lwz	r5,timebase_period_ns@l(r5)
++	add	r4,r4,r5
++	addi	r4,r4,-1
++	divw	r4,r4,r5	/* BUS ticks */
++1:	mftbu	r5
++	mftb	r6
++	mftbu	r7
++	cmpw	0,r5,r7
++	bne	1b		/* Get [synced] base time */
++	addc	r9,r6,r4	/* Compute end time */
++	addze	r8,r5
++2:	mftbu	r5
++	cmpw	0,r5,r8
++	blt	2b
++	bgt	3f
++	mftb	r6
++	cmpw	0,r6,r9
++	blt	2b
++3:	blr
