@@ -1,19 +1,26 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id C08C667BC8
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 04:46:59 +1000 (EST)
-In-Reply-To: <713AF674-0689-4F20-9896-70696969ED24@embeddededge.com>
-References: <724D42AC-3DBA-4B32-8E4A-914441251470@kernel.crashing.org>
-	<713AF674-0689-4F20-9896-70696969ED24@embeddededge.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F75246DE-A58C-43EA-875E-CD82A3668188@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: RFC: qe lib code location?
-Date: Mon, 16 Oct 2006 13:46:33 -0500
-To: Dan Malek <dan@embeddededge.com>
-Cc: Li Yang <leoli@freescale.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Kim Phillips <Kim.Phillips@freescale.com>
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 7B76467C44
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 04:54:31 +1000 (EST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linas@austin.ibm.com (Linas Vepstas)
+Subject: Re: Recently removed io accessors
+References: <873b9twnbb.fsf@sleipner.barco.com>
+	<1160697861.4792.177.camel@localhost.localdomain>
+	<87iriovh3x.fsf@sleipner.barco.com>
+	<1160724670.4792.195.camel@localhost.localdomain>
+	<87slhstxlk.fsf@sleipner.barco.com>
+	<17712.7972.493547.357685@cargo.ozlabs.ibm.com>
+	<8764ent8j4.fsf@sleipner.barco.com>
+	<20061016165140.GB6537@austin.ibm.com>
+Date: Mon, 16 Oct 2006 20:54:10 +0200
+In-Reply-To: <20061016165140.GB6537@austin.ibm.com> (Linas Vepstas's message
+	of "Mon, 16 Oct 2006 11:51:40 -0500")
+Message-ID: <87vemk6qi5.fsf@sleipner.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> "LV" == Linas Vepstas <linas@austin.ibm.com> writes:
 
-On Oct 3, 2006, at 12:30, Dan Malek wrote:
+Hi,
 
->
-> On Oct 3, 2006, at 12:34 PM, Kumar Gala wrote:
->
->> I was wondering what peoples thought were on having the qe lib code
->> live in drivers/qe instead of sysdev/qe_lib (with the exception of
->> the interrupt controller code)
->
-> My personal reason for choosing one place or the other
-> is based upon usefulness to architectures other than PowerPC,
-> or general kernel APIs that may change.  If something is
-> useful to architectures other than PowerPC, clearly it
-> should go there.  If the software has dependencies on
-> general kernel APIs (networking is a good example), I like
-> to put is there in hopes that someone changing the APIs
-> will at least make an attempt to keep this code up to
-> date as well.
->
-> I think it neither of these apply (and I don't think the VM
-> interfaces are a good argument because they generally
-> affect the architecture ports anyway), then I think it
-> should stay in a more architecture specific place.
+>> It doesn't have to be readw (16bit accesses). Enabling the BE mode
+>> and using _outsl/_insl (32bit access with byteswap) works fine.
 
-My feeling here is that, all things being equal, drivers/ is better.   
-My reasoning is that, should Freescale decide to release a non- 
-powerpc chip with a QUICC Engine, having the code in drivers/ makes  
-this easier.  It would also allow for some screwier implementations  
-(put an 8360 on a PCI card, and just use the QE directly from the  
-host processor).  Of course, all of this is pure speculation, so if  
-there's a good reason *not* to put it in drivers/, we should probably  
-just maintain the status quo.
+LV> I think Paul was trrying to say that it might be easier just to
+LV> 16-bit words. Are you trying to use 32-bit access due to
+LV> performance concerns?
 
->
->
->> Yes, one can argue the cpm code should live in drivers/cpm by this
->> logic, but lets considered them grandfathered for now.
->
-> I would say that based on my opinion above the cpm
-> stuff should stay  in sysdev, too.  These are not only
-> powerpc specific, but even Freescale embedded powerpc
-> specific.  I don't think that code belongs in drivers.
->
-> Thanks.
->
-> 	-- Dan
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Yes, this is the hot path of the driver as I don't have DMA hardware
+(copy to/from packet buffer).
+
+Another reason is that the same driver is used for the entire 911x
+series, some which have an 16bit interface and others with full 32bit.
+
+-- 
+Bye, Peter Korsgaard
