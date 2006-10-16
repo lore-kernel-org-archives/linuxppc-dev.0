@@ -1,19 +1,35 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id EE1B367C06
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 23:52:30 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6F12A.517511E3"
-Subject: RE: preempt crash in 2.6.18
-Date: Mon, 16 Oct 2006 08:50:40 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B07B398@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B07B397@ismail.innsys.innovsys.com><20061014012105.6ca4ff05@localhost.localdomain><1160781278.4792.279.camel@localhost.localdomain>
-	<20061015132058.01c68605@localhost.localdomain>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1BFFE67BDA
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 02:01:10 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9GG16dP031048
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 12:01:06 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9GG16GI071634
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 12:01:06 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9GG169X030979
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Oct 2006 12:01:06 -0400
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
+References: <1160764895.11239.14.camel@farscape>
+	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
+	<1160769226.11239.22.camel@farscape>
+	<1160773040.11239.28.camel@farscape>
+	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 16 Oct 2006 11:00:57 -0500
+Message-Id: <1161014457.31903.1.camel@farscape>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,116 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, 2006-13-10 at 15:22 -0700, Christoph Lameter wrote:
+> Here is another fall back fix checking if the slab has already been setup 
+> for this node. MPOL_INTERLEAVE could redirect the allocation.
+> 
 
-------_=_NextPart_001_01C6F12A.517511E3
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+with this patch applied, a different error in the same area.. 
 
------Original Message-----
-From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]
-=20
-On Sat, 14 Oct 2006 09:14:38 +1000
-Benjamin Herrenschmidt wrote:
-
-> On Sat, 2006-10-14 at 01:21 +0400, Vitaly Bordug wrote:
-> > On Fri, 13 Oct 2006 09:16:52 -0500
-> > Rune Torgersen wrote:
-> >=20
-> > >=20
-> > > This is from a Freescale 8265 running 2.6.18
-> > > Anyone have any idea what this is and how to fix it?
-> > >=20
-> > Yes. Actually, I recall alike thing and used to fix with proper
-> > spin-locking if the cascade PCI irq, which apparently does do_irq
-> > that seems to confuse preempt counters.
-> >=20
-> > Just a pure guess.
->=20
-> How so ? Cascades shouldn't do do_IRQ with the new irq code anyway
-> unless this is still arch/ppc, they should do either __do_IRQ or
-> better, generic_handle_irq().
->=20
-To clarify - I was about __do_IRQ and arch/ppc.=20
-Anyway, cascade for PCI is the first place I'd give a look.
-
-In our case it turned out to be in the TIPC network code. post_timeout =
-was called and didn't unlock a lock.
-The patch had been in the TIPC tree for abpout 2 days when we saw the =
-problem.
+freeing bootmem node 0
+freeing bootmem node 1
+Memory: 530256k/557056k available (5508k kernel code, 30468k reserved,
+2224k data, 543k bss, 244k init)
+Kernel panic - not syncing: kmem_cache_create(): failed to create slab
+`size-32'
 
 
---
-Sincerely,
 
--Vitaly
-
-
-------_=_NextPart_001_01C6F12A.517511E3
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7233.69">
-<TITLE>RE: preempt crash in 2.6.18</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>-----Original Message-----<BR>
-From: Vitaly Bordug [<A =
-HREF=3D"mailto:vbordug@ru.mvista.com">mailto:vbordug@ru.mvista.com</A>]<B=
-R>
-<BR>
-On Sat, 14 Oct 2006 09:14:38 +1000<BR>
-Benjamin Herrenschmidt wrote:<BR>
-<BR>
-&gt; On Sat, 2006-10-14 at 01:21 +0400, Vitaly Bordug wrote:<BR>
-&gt; &gt; On Fri, 13 Oct 2006 09:16:52 -0500<BR>
-&gt; &gt; Rune Torgersen wrote:<BR>
-&gt; &gt;<BR>
-&gt; &gt; &gt;<BR>
-&gt; &gt; &gt; This is from a Freescale 8265 running 2.6.18<BR>
-&gt; &gt; &gt; Anyone have any idea what this is and how to fix it?<BR>
-&gt; &gt; &gt;<BR>
-&gt; &gt; Yes. Actually, I recall alike thing and used to fix with =
-proper<BR>
-&gt; &gt; spin-locking if the cascade PCI irq, which apparently does =
-do_irq<BR>
-&gt; &gt; that seems to confuse preempt counters.<BR>
-&gt; &gt;<BR>
-&gt; &gt; Just a pure guess.<BR>
-&gt;<BR>
-&gt; How so ? Cascades shouldn't do do_IRQ with the new irq code =
-anyway<BR>
-&gt; unless this is still arch/ppc, they should do either __do_IRQ =
-or<BR>
-&gt; better, generic_handle_irq().<BR>
-&gt;<BR>
-To clarify - I was about __do_IRQ and arch/ppc.<BR>
-Anyway, cascade for PCI is the first place I'd give a look.<BR>
-<BR>
-In our case it turned out to be in the TIPC network code. post_timeout =
-was called and didn't unlock a lock.<BR>
-The patch had been in the TIPC tree for abpout 2 days when we saw the =
-problem.<BR>
-<BR>
-<BR>
---<BR>
-Sincerely,<BR>
-<BR>
--Vitaly<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C6F12A.517511E3--
+> Index: linux-2.6.19-rc1-mm1/mm/slab.c
+> ===================================================================
+> --- linux-2.6.19-rc1-mm1.orig/mm/slab.c	2006-10-10 21:47:12.949563383 -0500
+> +++ linux-2.6.19-rc1-mm1/mm/slab.c	2006-10-13 17:21:31.937863714 -0500
+> @@ -3158,12 +3158,15 @@ void *fallback_alloc(struct kmem_cache *
+>  	struct zone **z;
+>  	void *obj = NULL;
+> 
+> -	for (z = zonelist->zones; *z && !obj; z++)
+> +	for (z = zonelist->zones; *z && !obj; z++) {
+> +		int nid = zone_to_nid(*z);
+> +
+>  		if (zone_idx(*z) <= ZONE_NORMAL &&
+> -				cpuset_zone_allowed(*z, flags))
+> +				cpuset_zone_allowed(*z, flags) &&
+> +				cache->nodelists[nid])
+>  			obj = __cache_alloc_node(cache,
+> -					flags | __GFP_THISNODE,
+> -					zone_to_nid(*z));
+> +					flags | __GFP_THISNODE, nid);
+> +	}
+>  	return obj;
+>  }
+> 
+> 
