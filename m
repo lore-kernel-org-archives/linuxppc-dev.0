@@ -1,13 +1,14 @@
-Return-Path: <hch@lst.de>
-Date: Mon, 16 Oct 2006 10:17:48 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: New DCR access methods
-Message-ID: <20061016081748.GA11677@lst.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20061016081748.GA11677@lst.de>
 References: <1160984698.22522.60.camel@localhost.localdomain>
+	<20061016081748.GA11677@lst.de>
+Content-Type: text/plain
+Date: Mon, 16 Oct 2006 18:21:52 +1000
+Message-Id: <1160986912.22522.79.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1160984698.22522.60.camel@localhost.localdomain>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,48 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 16, 2006 at 05:44:58PM +1000, Benjamin Herrenschmidt wrote:
-> This patch adds new dcr_map/dcr_read/dcr_write accessors for DCRs that
-> can be used by drivers to transparently address either native DCRs or
-> memory mapped DCRs. The implementation for memory mapped DCRs is done
-> after the binding being currently worked on for SLOF and the Axon
-> chipset. This patch enables it for the cell native platform
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Index: linux-cell/include/asm-powerpc/dcr.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-cell/include/asm-powerpc/dcr.h	2006-10-16 16:42:32.000000000 +1000
-> @@ -0,0 +1,42 @@
-> +/*
-> + * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
-> + *                    <benh@kernel.crashing.org>
-> + *
-> + *   This program is free software;  you can redistribute it and/or modify
-> + *   it under the terms of the GNU General Public License as published by
-> + *   the Free Software Foundation; either version 2 of the License, or
-> + *   (at your option) any later version.
-> + *
-> + *   This program is distributed in the hope that it will be useful,
-> + *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
-> + *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-> + *   the GNU General Public License for more details.
-> + *
-> + *   You should have received a copy of the GNU General Public License
-> + *   along with this program;  if not, write to the Free Software
-> + *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-> + */
-> +
-> +#ifndef _ASM_POWERPC_DCR_H
-> +#define _ASM_POWERPC_DCR_H
-> +#ifdef __KERNEL__
-> +
-> +#ifdef CONFIG_PPC_DCR_NATIVE
-> +#include <asm/dcr-native.h>
-> +#else
-> +#include <asm/dcr-mmio.h>
-> +#endif
 
-Having this as a compile-time switch seems broken.  I thought the plan was
-to support all different 64bit kernels with a single kernel binary?
+> > +#ifdef CONFIG_PPC_DCR_NATIVE
+> > +#include <asm/dcr-native.h>
+> > +#else
+> > +#include <asm/dcr-mmio.h>
+> > +#endif
+> 
+> Having this as a compile-time switch seems broken.  I thought the plan was
+> to support all different 64bit kernels with a single kernel binary?
+
+"native" DCRs only exist in 32 bits 4xx / BookE processors as of today.
+
+Basically, those processors have mtdcr and mfdcr instructions to access
+those special "registers". They are in fact connected to a bus to
+control various IOs. On AXON (and possibly other future chips), since
+the host processor doesn't have those instructions, they are memory
+mapped.
+
+There is currently no way you can have both in the same kernel. If that
+ever happens, then the "mmio" version could easily be tweaked to deal
+with both. However, the "native only" implementation is useful for
+embedded 4xx etc... as it resolves directly to mfdcr/mtdcr instructions,
+dcr_map is an empty macro, etc... thus there is 0 overhead of switching
+4xx code to the new dcr accessors.
+
+Ben.
