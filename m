@@ -1,23 +1,15 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id EF26F67C70
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 05:25:18 +1000 (EST)
-Date: Mon, 16 Oct 2006 12:25:14 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <1161026409.31903.15.camel@farscape>
-Message-ID: <Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-References: <1160764895.11239.14.camel@farscape>
-	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
-	<1160769226.11239.22.camel@farscape>
-	<1160773040.11239.28.camel@farscape>
-	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
-	<1161026409.31903.15.camel@farscape>
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id A295667C44
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 05:30:37 +1000 (EST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: paulus@samba.org
+Subject: [PATCH] fix ARCH=ppc timer_interrupt after global pt_regs
+Date: Mon, 16 Oct 2006 21:30:35 +0200
+Message-ID: <871wp8ukh0.fsf@sleipner.barco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 16 Oct 2006, Will Schmidt wrote:
+Hi,
 
-> Node 1 MemTotal:       327680 kB
-> Node 1 MemFree:        435704 kB
+2.6.19-rc2 doesn't boot on arch/ppc (atleast of 4xx), because the
+'global-pt_regs' megapatch forgot to fix up the arch/ppc
+timer_interrupt handler. This patch fixes it.
 
-Too big.
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-> Node 1 MemUsed:      18446744073709443592 kB
+diff -urpN linux-2.6.19-rc2.orig/arch/ppc/kernel/time.c linux-2.6.19-rc2/arch/ppc/kernel/time.c
+--- linux-2.6.19-rc2.orig/arch/ppc/kernel/time.c	2006-10-16 21:05:52.000000000 +0200
++++ linux-2.6.19-rc2/arch/ppc/kernel/time.c	2006-10-16 21:12:42.000000000 +0200
+@@ -56,6 +56,7 @@
+ #include <linux/time.h>
+ #include <linux/init.h>
+ #include <linux/profile.h>
++#include <linux/irq.h>
+ 
+ #include <asm/io.h>
+ #include <asm/nvram.h>
+@@ -129,6 +130,7 @@ void wakeup_decrementer(void)
+  */
+ void timer_interrupt(struct pt_regs * regs)
+ {
++	struct pt_regs *old_regs;
+ 	int next_dec;
+ 	unsigned long cpu = smp_processor_id();
+ 	unsigned jiffy_stamp = last_jiffy_stamp(cpu);
+@@ -137,6 +139,7 @@ void timer_interrupt(struct pt_regs * re
+ 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+ 		do_IRQ(regs);
+ 
++	old_regs = set_irq_regs(regs);
+ 	irq_enter();
+ 
+ 	while ((next_dec = tb_ticks_per_jiffy - tb_delta(&jiffy_stamp)) <= 0) {
+@@ -188,6 +191,7 @@ void timer_interrupt(struct pt_regs * re
+ 		ppc_md.heartbeat();
+ 
+ 	irq_exit();
++	set_irq_regs(old_regs);
+ }
+ 
+ /*
 
-Memused is going negative?
-
-> Node 1 Active:          41412 kB
-> Node 1 Inactive:        19976 kB
-> Node 1 HighTotal:           0 kB
-> Node 1 HighFree:            0 kB
-> Node 1 LowTotal:       327680 kB
-> Node 1 LowFree:        435704 kB
-> Node 1 Dirty:               0 kB
-> Node 1 Writeback:           0 kB
-> Node 1 Mapped:              0 kB
-> Node 1 Slab:                0 kB
-
-zero slab??? That cannot be. The slab allocator always allocs on each 
-node. Or is this <2.6.18 with the strange counters that we had before?
-
-
-> Node 0 MemTotal:       229376 kB
-> Node 0 MemFree:             0 kB
-> Node 0 MemUsed:        229376 kB
-
-Node 0 is filled up during bootup?
+-- 
+Bye, Peter Korsgaard
