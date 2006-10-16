@@ -1,25 +1,24 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 6C8E267C09
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 09:37:36 +1000 (EST)
-Date: Mon, 16 Oct 2006 16:37:33 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <1161031821.31903.28.camel@farscape>
-Message-ID: <Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-References: <1160764895.11239.14.camel@farscape>
-	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
-	<1160769226.11239.22.camel@farscape>
-	<1160773040.11239.28.camel@farscape>
-	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
-	<1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <kumar@kgala.com>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1C72A67C77
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 06:40:32 +1000 (EST)
+In-Reply-To: <0371C551-B535-4B95-81F3-8CC95C4FFC82@kernel.crashing.org>
+References: <871wp8ukh0.fsf@sleipner.barco.com>
+	<1161029148.3172.19.camel@zod.rchland.ibm.com>
+	<87slhot3pe.fsf@sleipner.barco.com>
+	<0371C551-B535-4B95-81F3-8CC95C4FFC82@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F0164778-EE39-469A-A254-43377438AD81@kgala.com>
+From: Kumar Gala <kumar@kgala.com>
+Subject: Re: [PATCH] fix ARCH=ppc timer_interrupt after global pt_regs
+Date: Mon, 16 Oct 2006 15:40:24 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, paulus@samba.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,29 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 16 Oct 2006, Will Schmidt wrote:
 
-> This is output from 2.6.18-rc2.   MemFree, MemTotal, MemUsed still
-> wrong.  Node0 slab is still zero.  I've also attached the numa=debug
-> boot log from this boot, in case it has any clues that were missing from
-> the other boot log. 
+On Oct 16, 2006, at 3:22 PM, Kumar Gala wrote:
 
-It looks as if node 0 is allready full on bootup. The new code in 2.6.19 
-controls locality in a more strict form in the slab. 2.6.18 and earlier 
-were able to tolerate if a request for a page from the slab allocator for 
-node 0 returns memory on node1 even if node 1 has not been bootstrapped 
-yet. But this resulted in a problem in the slab because the node lists 
-dedicated for node 0 now had memory from node 1 in it (which led to 
-latency problems since slab code subsequently assumes that node local 
-memory is very fast, which with corrupted per node lists is no longer 
-true.).
+>
+> On Oct 16, 2006, at 3:18 PM, Peter Korsgaard wrote:
+>
+>>>>>>> "JB" == Josh Boyer <jwboyer@linux.vnet.ibm.com> writes:
+>>
+>> Hi,
+>>
+>> JB> Kumar Galak already fixed this on Oct 11 in the powerpc git tree.
+>>
+>> Ahh, I didn't notice.
+>>
+>> JB> Paul, could you send this fix to Linus soon please?
+>>
+>> Yes, please - I spend most of the morning tracking this down.
+>
+> Yeah, akpm picked up the patch for -mm.
 
-You must bootstrap on a node that has memory available. If you would 
-bootstrap the slab on node 1 that would work.
+Paul's got this in is powerpc.git tree now so it should go to Linus  
+on his next pull request.
 
-> Node 0 MemTotal:       229376 kB
-> Node 0 MemUsed:        229376 kB
-
-^^^^^ This node should not be full!!!
-
-Increase memory on node 0 so that the slab can bootstrap.
+- k
