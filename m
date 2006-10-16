@@ -1,23 +1,25 @@
 Return-Path: <jacmet@sunsite.dk>
-Received: from hoboe1bl1.telenet-ops.be (hoboe1bl1.telenet-ops.be
-	[195.130.137.72]) by ozlabs.org (Postfix) with ESMTP id 2814167C3C
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 9102767C71
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Oct 2006 05:49:54 +1000 (EST)
+	Tue, 17 Oct 2006 05:52:27 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1GZYVd-0001i2-6M
+	for linuxppc-embedded@ozlabs.org; Mon, 16 Oct 2006 21:52:25 +0200
 From: Peter Korsgaard <jacmet@sunsite.dk>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
 References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
 	<87ac41esap.fsf@sleipner.barco.com>
 	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
 	<452F36AE.6040205@dlasys.net> <8764eovg81.fsf@sleipner.barco.com>
 	<4532A1D1.4040006@dlasys.net>
-Date: Mon, 16 Oct 2006 21:49:43 +0200
+Date: Mon, 16 Oct 2006 21:52:25 +0200
 In-Reply-To: <4532A1D1.4040006@dlasys.net> (David H. Lynch, Jr.'s message of
 	"Sun, 15 Oct 2006 17:02:09 -0400")
-Message-ID: <873b9oqbvs.fsf@slug.be.48ers.dk>
+Message-ID: <87wt70t4w6.fsf@sleipner.barco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -44,7 +46,8 @@ Hi,
 
 Those people are welcome to add it then. Benh recently posted some
 patches with a dcr abstraction that could probably make it pretty
-clean to add.
+clean to add. I don't have a DCR based design to do the implementation
+and test, so it's pretty low on my priority list.
 
  David>     Right now I can not get your driver to work. I spent alot
  David> of time trying to fix it and got nowhere.  I can not get it to
