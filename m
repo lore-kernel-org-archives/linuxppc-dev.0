@@ -1,25 +1,29 @@
 Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 9102767C71
+Received: from hoefnix.telenet-ops.be (hoefnix.telenet-ops.be [195.130.132.54])
+	by ozlabs.org (Postfix) with ESMTP id 4577267C03
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Oct 2006 05:52:27 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1GZYVd-0001i2-6M
-	for linuxppc-embedded@ozlabs.org; Mon, 16 Oct 2006 21:52:25 +0200
+	Tue, 17 Oct 2006 07:57:41 +1000 (EST)
+Received: from hoboe1bl1.telenet-ops.be (hoboe1bl1.telenet-ops.be
+	[195.130.137.72])
+	by hoefnix.telenet-ops.be (Postfix) with ESMTP id F0B41A9132
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 Oct 2006 21:42:15 +0200 (CEST)
 From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
+To: "David H. Lynch Jr." <dhlii@dlasys.net>
 Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
 References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
 	<87ac41esap.fsf@sleipner.barco.com>
 	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-	<452F36AE.6040205@dlasys.net> <8764eovg81.fsf@sleipner.barco.com>
-	<4532A1D1.4040006@dlasys.net>
-Date: Mon, 16 Oct 2006 21:52:25 +0200
-In-Reply-To: <4532A1D1.4040006@dlasys.net> (David H. Lynch, Jr.'s message of
-	"Sun, 15 Oct 2006 17:02:09 -0400")
-Message-ID: <87wt70t4w6.fsf@sleipner.barco.com>
+	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
+	<452F3A82.7070803@dlasys.net> <871wpcvfvw.fsf@sleipner.barco.com>
+	<45329C42.3030000@dlasys.net>
+Date: Mon, 16 Oct 2006 21:42:07 +0200
+In-Reply-To: <45329C42.3030000@dlasys.net> (David H. Lynch, Jr.'s message of
+	"Sun, 15 Oct 2006 16:38:26 -0400")
+Message-ID: <877iz0qc8g.fsf@slug.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,65 +38,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
- >> I'm still not convinced that DCR access and variable register
- >> offsets are needed - But it can always be added (through a
- >> seperate struct in platform_data) - Patches are welcome.
+ David>     The 8250 is certainly the oldest driver - but it is also
+ David> by far the most used. It is also the most heavily maintained,
 
- David>     It does not matter whether you or I are convinced. It
- David> matters whether there are people that need it.  Xilinx has a
- David> reference design that uses DCR. While I have never tripped
- David> over an actual implimentation that uses DCR there are others
- David> on this list that have.
+Yes, because there's so many more-or-less compatible variants of the
+hardware. Most drivers don't see a lot of development once they are
+past the initial development/testing..
 
-Those people are welcome to add it then. Benh recently posted some
-patches with a dcr abstraction that could probably make it pretty
-clean to add. I don't have a DCR based design to do the implementation
-and test, so it's pretty low on my priority list.
+ David> There are complexities to the 8250 that proved to be difficult
+ David> and troubling when I based my UartLite driver on it, Those
+ David> problems were because the 8250driver suports so many 8250
+ David> variants with so many idiosyncracies.
 
- David>     Right now I can not get your driver to work. I spent alot
- David> of time trying to fix it and got nowhere.  I can not get it to
- David> receive at all, and I can not get it to send after switching
- David> from the console driver without dropping characters. I am very
- David> busy with other things right now and it is going to be a long
- David> time before I have time to look at your driver again.
+Exactly. Try to compare it to one of the "modern" drivers like
+atmel_serial.c - It's almost 3 times as big.
 
-Sorry to hear. We are using it in several designs without problems and
-it also worked for Oluf. I'm afraid I won't be able to help you
-anymore unless you provide more details.
+ >> Remove support? I don't remember anything about that.
 
- David>     But what matters is not whether the changes are intrusive,
- David> but whether they produce a better result.
+ David>     I may have misread something there - I thought your
+ David> initial driver allowed stting the number of Uarts, and I
+ David> beleive your current one does not.  If I am wrong, then I
+ David> think support for more Uarts needs to get added to the todo
+ David> list.  That is not something important to me. But it probably
+ David> will be for others.
 
-Sorry, I don't agree. Maintainability is very important.
+There was a discussion about how many device nodes to register with
+lanana.org and hence how many devices to support. I went with 4 which
+seems to be pretty standard (E.G. virtex.c supports up to 4 8250s). If
+more is needed a bigger range can be requested with lanana.org.
 
- David>     I am glad somebody is using your driver and finding it
- David> works. But we are all better served by fixing the failure
- David> cases.
+Again, let's see a real need before changing anything.
 
-Yes, please do or provide enough details for me to reproduce it.
+ David> Despite the fact hat you apear to run combined 16550/Uartlite
+ David> implimentations, My expectation is that will be rare.  A small
+ David> savings in FPGA spare is rarely going to justify more complex
+ David> hardware and software.  Multiple port systems are mostly
+ David> likely to be all one type or another.
 
- David>     It is not particularly odd at all. The UartLite despite
- David> its simplicity is worse than a normal driver - different FPGA
- David> implimentations can vary. Normal drivers for fixed inflexible
- David> hardware often do not work accross differing implimentations,
- David> why would you expect something like UartLite to be invariant ?
+Almost all our designs use both.
 
-It's no worse than Xilinx 8250 core. There's only 1 implementation of
-the uarlite IP core - Xilinx's.
-
- David>     I would also ask what data rates you and others with
- David> Working UartLites are using ?  The cases I am dealing with run
- David> at 57600 and 115200 respectively - it is not that odd for
- David> driver problems to manifest themselves only or more frequently
- David> at high baud rates.
-
-We're using 115200 for most designs, but one design is using it at
-1mbit.
-
- David>     Without being difficult - don't hold your breath. It is
- David> something I would like to do, but I do not have infinite time.
-
-Ok.
+P.S.: Would it be possible to fix up your quoting?
 
 -- 
 Bye, Peter Korsgaard
