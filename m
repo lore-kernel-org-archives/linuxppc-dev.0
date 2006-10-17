@@ -2,10 +2,10 @@ Return-Path: <randy.dunlap@oracle.com>
 Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9364F679E2
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 06:28:00 +1000 (EST)
-Message-ID: <45353D16.2010106@oracle.com>
-Date: Tue, 17 Oct 2006 13:29:10 -0700
+	by ozlabs.org (Postfix) with ESMTP id 106C9679E2
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 06:36:35 +1000 (EST)
+Message-ID: <45353F21.1030605@oracle.com>
+Date: Tue, 17 Oct 2006 13:37:53 -0700
 From: "Randy.Dunlap" <randy.dunlap@oracle.com>
 MIME-Version: 1.0
 To: Judith Lebzelter <judith@osdl.org>
@@ -13,7 +13,7 @@ Subject: Re: [PATCH 1/2] ramdisk: make powerpc allmodconfig build
 References: <20061017094742.a61c4873.randy.dunlap@oracle.com>
 	<20061017180447.GC822@shell0.pdx.osdl.net>
 In-Reply-To: <20061017180447.GC822@shell0.pdx.osdl.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: ppcdev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,7 +35,7 @@ Judith Lebzelter wrote:
 > 
 > Judith
 
-I agree.  Just this patch, not my previous patch.
+Yes, I agree, this is better.  Just drop my patch 1/2.
 
 > Index: 2/linux/arch/powerpc/platforms/iseries/setup.c
 > ===================================================================
