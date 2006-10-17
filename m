@@ -1,11 +1,11 @@
 Return-Path: <dedekind@infradead.org>
-Received: from mgw-ext13.nokia.com (mgw-ext13.nokia.com [131.228.20.172])
+Received: from mgw-ext14.nokia.com (mgw-ext14.nokia.com [131.228.20.173])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mgw-ext13.nokia.com",
+	(Client CN "mgw-ext14.nokia.com",
 	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 93EFA67C04
+	by ozlabs.org (Postfix) with ESMTP id 8DB8D67DE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Oct 2006 23:54:30 +1000 (EST)
+	Wed, 18 Oct 2006 00:19:06 +1000 (EST)
 Subject: Re: JFFS2 on Lite5200
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Andrey Volkov <avolkov@varma-el.com>
@@ -13,8 +13,8 @@ In-Reply-To: <4534D8A5.7060206@varma-el.com>
 References: <1161081183.22948.58.camel@localhost.localdomain>
 	<4534D8A5.7060206@varma-el.com>
 Content-Type: text/plain; charset=UTF-8
-Date: Tue, 17 Oct 2006 16:36:33 +0300
-Message-Id: <1161092193.3260.61.camel@sauron>
+Date: Tue, 17 Oct 2006 17:18:44 +0300
+Message-Id: <1161094725.3260.76.camel@sauron>
 Mime-Version: 1.0
 Cc: Andrea Galbusera <andrea.galbusera@teamware.it>,
 	linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
@@ -30,20 +30,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 On Tue, 2006-10-17 at 17:20 +0400, Andrey Volkov wrote:
+> Andrea, check ml archive, I already sent patch half-year ago
+> (http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022566.html)
+> Problem is in alignment/memcpy: JFFS2 code assumed that memory at
+> unaligned addresses could be touched, but access to an external MMIO
+> on MPC5200 _must_ be aligned (i.e. you could not read u32 from odd addres=
+s).
+>=20
 > P.S. Artem, I repeat, I sent this patch _HALF_YEAR_AGO_
 > how about to fix scan.c?
 
-Andrey,
+Just talked to David. Please, find the result of our discussion in my
+edition below.
 
-I am not JFFS2 maintainer, David Woodhouse is.
+Strictly speaking, JFFS2 *does not* do anything wrong, so it should not
+be fixed. Indeed, JFFS2 does have full right to use memcpy() for that.
 
-Just looked into your patch. I agree that it may make sense to teach
-JFFS2 to use only aligned addresses, but your patch changes
-include/asm-ppc/io.h which is probably not MTD's business. It probably
-makes sense to submit these changes to a PPC maintainer separately.
+The question is: does memcpy() make sense for flash adresses at your
+board? Is it a valid operation for flash addresses at your board?
 
-A question - does this mean that one can write only 4-byte chunks to
-this NOR (?) flash?
+If the answer is yes - then please fix memcpy() for your platform.
+
+If no - then please, do not pretend that your flash may be treated as
+memory and fix your platform MTD driver. Namely, set point()/unpoint()
+to NULL in your mapping driver - JFFS2 should work then.
 
 --=20
 Best regards,
