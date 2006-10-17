@@ -1,21 +1,15 @@
-Return-Path: <peterarbejde@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id E760067B66
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 19:06:22 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id t32so2716361pyc
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 02:06:21 -0700 (PDT)
-Message-ID: <36468a5c0610170206t79ff9318q67de66465bfa19d1@mail.gmail.com>
-Date: Tue, 17 Oct 2006 11:06:20 +0200
-From: "Peter N. Andreasen" <peterarbejde@gmail.com>
-To: "Liu Dave-r63238" <DaveLiu@freescale.com>,
-	"Linas Vepstas" <linas@austin.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: Linux on custom Xilinx board with PPC405 hangs on boot
-In-Reply-To: <36468a5c0609210040o3f2fad38r7f6f9848ffa48ec8@mail.gmail.com>
+Return-Path: <nd@bplan-gmbh.de>
+Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
+	by ozlabs.org (Postfix) with ESMTP id 1D96267BDC
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 22:00:15 +1000 (EST)
+Message-ID: <4534BE9D.7030908@bplan-gmbh.de>
+Date: Tue, 17 Oct 2006 13:29:33 +0200
+From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20060920235716.GV29167@austin.ibm.com>
-	<995B09A8299C2C44B59866F6391D263516BFD2@zch01exm21.fsl.freescale.net>
-	<36468a5c0609210040o3f2fad38r7f6f9848ffa48ec8@mail.gmail.com>
+To: linuxppc-dev@ozlabs.org, akpm@osdl.org, Sven Luther <sl@bplan-gmbh.de>,
+	tilmann@bitterberg.de
+Subject: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
+Content-Type: multipart/mixed; boundary="------------020208050801000105080002"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,63 +19,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/21/06, Peter N. Andreasen <peterarbejde@gmail.com> wrote:
-> Liu, Linas, list
-> Thanks a lot for the answers. It helped me to review the hardware configuration again.
-> The problem was the definition of the Flash size.
-> It turns out that the Xilinx generated header files define the size of the Flash. But the kernel also has a configuration option: Memory Technology Devices / Mapping Drivers for Chip Access / Physical Length of Chip Mapping
-> My arch/ppc/platforms/xilinx_ocp/xparameters_ml300.h defines this as 4Mbyte, but the option in the kernel was set to 64 Mbyte (an extra 0 which I had not seen)
+This is a multi-part message in MIME format.
+--------------020208050801000105080002
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hello list,
-I have successfully booted the kernel, but the uartlite device seems
-to give me a lot of headache. I am using Busybox v. 1.0 and made some
-changes to the libb.h:
-# define CURRENT_VC "/dev/ttl0"
-# define VC_1 "/dev/ttl1"
-# define VC_2 "/dev/ttl2"
-# define VC_3 "/dev/ttl3"
-# define VC_4 "/dev/ttl4"
-# define VC_5 "/dev/ttl5"
+This patch enables RTAS /proc support for PowerPC 32bits / CHRP platform.
 
-#  define SC_0 "/dev/ttl0"
-#  define SC_1 "/dev/ttl1"
-#  define SC_FORMAT "/dev/ttl%d"
-# define VC_FORMAT "/dev/ttl%d"
+A new entry is created (/proc/ppc/rtas/) which contains the RTAS nodes. 
+Theses nodes and the code are the exact same than with the ppc64 
+architecture.
 
-To make sure I get the correct device node I also changed this in
-xuartllite_serial.h:
-#define XULITE_MINOR_START	187
-#define UARTLITE_TTY_NAME	"ttl"
-#define UARTLITE_TTY_DEVFS_NAME	"ttl/%d"
-#define UARTLITE_CU_NAME	"cul"
-#define UARTLITE_CU_DEVFS_NAME	"cul/%d"
-#define XULITE_MAJOR            204
-#define XULITE_AUX_MAJOR        205
+This patch has been succefully applied on the kernel 2.6.18.1 and tested 
+on bPlan's OpenFirmware.
 
-The system stops when init launches the busybox init process. This is
-the message I get just after "Freeing unused kernel memory: 44k init"
+Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
 
-First I got an assert() from the Xilinx Uartlite driver:
-...
-init started:  Bu
-<2>Xilinx OS Independent Code XAssert:  xuartlite.c:194
-Code may crash due to unhandled errors.
-...
-and the system stops.
-The check made in the driver is for a 0 length string. If I change it
-to ignore that, the console show this instead:
-init started:  Bu
-init started:  B
-trying to run init_process
-...
-(the "trying to run init process" is a message I put in
-run_init_process in init.c in the kernel, and the message it tries to
-output is "init started: Busybox version 1.0 .....")
+--------------020208050801000105080002
+Content-Type: text/plain;
+ name="rtas-proc_ppc32.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="rtas-proc_ppc32.patch"
 
-Now my question is:
-What exactly are the device nodes I have to make in /dev/ on the
-ramdisk on target? I made a ttl, ttl0, and tty  which have major
-204/minor 187, and ttl1, ttl2 minor 188 and 189. I also
-Hope someone can help me on this
+--- a/arch/powerpc/kernel/rtas-proc.c	2006-10-14 05:34:03.000000000 +0200
++++ b/arch/powerpc/kernel/rtas-proc.c	2006-10-16 10:46:16.000000000 +0200
+@@ -253,43 +253,70 @@ static void get_location_code(struct seq
+ static void check_location_string(struct seq_file *m, char *c);
+ static void check_location(struct seq_file *m, char *c);
+ 
++#ifdef CONFIG_PPC64
++#define PROCRTAS_ROOT "ppc64"
++#else
++#define PROCRTAS_ROOT "ppc"
++static int __init proc_ppc32_create(void)
++{
++        struct proc_dir_entry *root;
++
++        root = proc_mkdir(PROCRTAS_ROOT , NULL);
++        if (!root)
++                return -1;
++
++        if (!proc_mkdir("rtas", root))
++                return -1;
++
++        if (!proc_symlink("rtas", NULL, PROCRTAS_ROOT "/rtas"))
++                return -1;
++
++        return 0;
++}
++#endif
++
+ static int __init proc_rtas_init(void)
+ {
+ 	struct proc_dir_entry *entry;
+ 
+-	if (!machine_is(pseries))
++	if ( ! ( machine_is(pseries) || machine_is(chrp) ) )
+ 		return -ENODEV;
+ 
+ 	rtas_node = of_find_node_by_name(NULL, "rtas");
+ 	if (rtas_node == NULL)
+ 		return -ENODEV;
+ 
+-	entry = create_proc_entry("ppc64/rtas/progress", S_IRUGO|S_IWUSR, NULL);
++#ifndef CONFIG_PPC64
++	if (proc_ppc32_create() != 0)
++		return -ENODEV;
++#endif
++
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/progress", S_IRUGO|S_IWUSR, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_progress_operations;
+ 
+-	entry = create_proc_entry("ppc64/rtas/clock", S_IRUGO|S_IWUSR, NULL);
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/clock", S_IRUGO|S_IWUSR, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_clock_operations;
+ 
+-	entry = create_proc_entry("ppc64/rtas/poweron", S_IWUSR|S_IRUGO, NULL);
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/poweron", S_IWUSR|S_IRUGO, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_poweron_operations;
+ 
+-	entry = create_proc_entry("ppc64/rtas/sensors", S_IRUGO, NULL);
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/sensors", S_IRUGO, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_sensors_operations;
+ 
+-	entry = create_proc_entry("ppc64/rtas/frequency", S_IWUSR|S_IRUGO,
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/frequency", S_IWUSR|S_IRUGO,
+ 				  NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_tone_freq_operations;
+ 
+-	entry = create_proc_entry("ppc64/rtas/volume", S_IWUSR|S_IRUGO, NULL);
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/volume", S_IWUSR|S_IRUGO, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_tone_volume_operations;
+ 
+-	entry = create_proc_entry("ppc64/rtas/rmo_buffer", S_IRUSR, NULL);
++	entry = create_proc_entry(PROCRTAS_ROOT "/rtas/rmo_buffer", S_IRUSR, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &ppc_rtas_rmo_buf_ops;
+ 
 
-Peter
+--------------020208050801000105080002
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
+
+
+--------------020208050801000105080002--
