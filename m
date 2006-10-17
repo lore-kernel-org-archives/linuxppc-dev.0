@@ -1,30 +1,19 @@
-Return-Path: <walkinair@cn.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 01BF667C18
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 02:15:18 +1000 (EST)
-Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.5) with ESMTP id k9HGOo6K238014
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 02:24:51 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by sd0208e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9HGIR6q236208
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 02:18:32 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9HGF19G025796
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 02:15:02 +1000
-Message-ID: <45350182.8030801@cn.ibm.com>
-Date: Wed, 18 Oct 2006 00:14:58 +0800
-From: Yao Fei Zhu <walkinair@cn.ibm.com>
-MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [Regression] cpu hotplug failed on kernel 2.6.19-rc2
-References: <4534D7C6.2080402@cn.ibm.com> <20061017161251.GB18689@localdomain>
-In-Reply-To: <20061017161251.GB18689@localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <judith@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0740367C00
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 04:05:05 +1000 (EST)
+Date: Tue, 17 Oct 2006 11:04:47 -0700
+From: Judith Lebzelter <judith@osdl.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/2] ramdisk: make powerpc allmodconfig build
+Message-ID: <20061017180447.GC822@shell0.pdx.osdl.net>
+References: <20061017094742.a61c4873.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061017094742.a61c4873.randy.dunlap@oracle.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,21 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch 写道:
-> Yao Fei Zhu wrote:
-> 
-> 
->>Running cpu hotplug regression tsstcase lhcs_regression on kernel
->>2.6.19-rc2/IBM System p5 will fall into xmon.
-> 
-> 
-> Your subject implies this is a regression; what is the most recent
-> kernel that worked?
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-2.6.18 works. Not tested on 2.6.19-rc1.
+Hi Randy,
+
+There is another section in that function which depends on 
+'CONFIG_BLK_DEV_INITRD' being defined.  Although it does not throw an
+error, it does depend on some of the variables set in this section,
+but not 'rd_size'.  I think for consistancy it might be better to do 
+somthing like this(below)?  Or else add the same ifdef down there...
+
+Judith
+
+
+Index: 2/linux/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- 2.orig/linux/arch/powerpc/platforms/iseries/setup.c	2006-10-17 10:49:31.423551104 -0700
++++ 2/linux/arch/powerpc/platforms/iseries/setup.c	2006-10-17 10:52:22.682515784 -0700
+@@ -305,8 +305,10 @@
+ 		initrd_end = initrd_start + naca.xRamDiskSize * HW_PAGE_SIZE;
+ 		initrd_below_start_ok = 1;	// ramdisk in kernel space
+ 		ROOT_DEV = Root_RAM0;
++#if defined(CONFIG_BLK_DEV_RAM)
+ 		if (((rd_size * 1024) / HW_PAGE_SIZE) < naca.xRamDiskSize)
+ 			rd_size = (naca.xRamDiskSize * HW_PAGE_SIZE) / 1024;
++#endif /* CONFIG_BLK_DEV_RAM */
+ 	} else
+ #endif /* CONFIG_BLK_DEV_INITRD */
+ 	{
