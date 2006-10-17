@@ -1,29 +1,15 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from hoefnix.telenet-ops.be (hoefnix.telenet-ops.be [195.130.132.54])
-	by ozlabs.org (Postfix) with ESMTP id 4577267C03
+Return-Path: <andrea.galbusera@teamware.it>
+Received: from smtp2.aruba.it (smtpa1.aruba.it [62.149.128.206])
+	by ozlabs.org (Postfix) with SMTP id 8AEA467B6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Oct 2006 07:57:41 +1000 (EST)
-Received: from hoboe1bl1.telenet-ops.be (hoboe1bl1.telenet-ops.be
-	[195.130.137.72])
-	by hoefnix.telenet-ops.be (Postfix) with ESMTP id F0B41A9132
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 Oct 2006 21:42:15 +0200 (CEST)
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	<87ac41esap.fsf@sleipner.barco.com>
-	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
-	<452F3A82.7070803@dlasys.net> <871wpcvfvw.fsf@sleipner.barco.com>
-	<45329C42.3030000@dlasys.net>
-Date: Mon, 16 Oct 2006 21:42:07 +0200
-In-Reply-To: <45329C42.3030000@dlasys.net> (David H. Lynch, Jr.'s message of
-	"Sun, 15 Oct 2006 16:38:26 -0400")
-Message-ID: <877iz0qc8g.fsf@slug.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 17 Oct 2006 20:45:58 +1000 (EST)
+Subject: JFFS2 on Lite5200
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: linuxppc-embedded@ozlabs.org, linux-mtd@lists.infradead.org
+Content-Type: text/plain
+Date: Tue, 17 Oct 2006 12:33:03 +0200
+Message-Id: <1161081183.22948.58.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,50 +20,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
+Hello.
 
-Hi,
+I'm currently using linux-2.6.16 from denx on a Lite5200 V2.0. I need to
+access a JFFS2 filesystem on the onboard flash ( 16MB Am29L652D ).
 
- David>     The 8250 is certainly the oldest driver - but it is also
- David> by far the most used. It is also the most heavily maintained,
+I see the flash using physmap driver and cmdline partitions.
+I experience a problem when creating files on JFFS2 with filename longer
+than a few characters. They appear to be created correctly with the
+content I want, but, after unmounting and remounting the filesystem they
+result unreadable and ls complains with "no such file or
+directory" (short-named files are ok).
 
-Yes, because there's so many more-or-less compatible variants of the
-hardware. Most drivers don't see a lot of development once they are
-past the initial development/testing..
+I can deterministically reproduce the problem this way:
 
- David> There are complexities to the 8250 that proved to be difficult
- David> and troubling when I based my UartLite driver on it, Those
- David> problems were because the 8250driver suports so many 8250
- David> variants with so many idiosyncracies.
+$ eraseall /dev/mtd1	(start with a fresh MTD partition)
+$ mount -t jffs2 /dev/mtdblock1 /mnt/flash
+$ date > /mnt/flash/short
+$ date > /mnt/flash/timestamp
+$ ls /mnt/flash/
+short  timestamp
+$ umount /dev/mtdblock1
+$ mount -t jffs2 /dev/mtdblock1 /mnt/flash
+$ ls /mnt/flash
+ls: /mnt/flash/time: No such file or directory
+short
 
-Exactly. Try to compare it to one of the "modern" drivers like
-atmel_serial.c - It's almost 3 times as big.
+...than I cannot access /mnt/flash/timestamp anymore,
+while /mnt/flash/short is ok!
 
- >> Remove support? I don't remember anything about that.
+These are the kernel relevant settings:
 
- David>     I may have misread something there - I thought your
- David> initial driver allowed stting the number of Uarts, and I
- David> beleive your current one does not.  If I am wrong, then I
- David> think support for more Uarts needs to get added to the todo
- David> list.  That is not something important to me. But it probably
- David> will be for others.
+#
+# Memory Technology Devices (MTD)
+#
+CONFIG_MTD=y
+CONFIG_MTD_DEBUG=y
+CONFIG_MTD_DEBUG_VERBOSE=3
+CONFIG_MTD_PARTITIONS=y
+CONFIG_MTD_CMDLINE_PARTS=y
 
-There was a discussion about how many device nodes to register with
-lanana.org and hence how many devices to support. I went with 4 which
-seems to be pretty standard (E.G. virtex.c supports up to 4 8250s). If
-more is needed a bigger range can be requested with lanana.org.
+#
+# User Modules And Translation Layers
+#
+CONFIG_MTD_CHAR=y
+CONFIG_MTD_BLOCK=y
 
-Again, let's see a real need before changing anything.
+#
+# RAM/ROM/Flash chip drivers
+#
+CONFIG_MTD_CFI=y
+CONFIG_MTD_GEN_PROBE=y
+CONFIG_MTD_MAP_BANK_WIDTH_1=y
+CONFIG_MTD_MAP_BANK_WIDTH_2=y
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+CONFIG_MTD_CFI_I1=y
+CONFIG_MTD_CFI_I2=y
+CONFIG_MTD_CFI_INTELEXT=y
+CONFIG_MTD_CFI_AMDSTD=y
+CONFIG_MTD_CFI_AMDSTD_RETRY=0
+CONFIG_MTD_CFI_UTIL=y
 
- David> Despite the fact hat you apear to run combined 16550/Uartlite
- David> implimentations, My expectation is that will be rare.  A small
- David> savings in FPGA spare is rarely going to justify more complex
- David> hardware and software.  Multiple port systems are mostly
- David> likely to be all one type or another.
+#
+# Mapping drivers for chip access
+#
+CONFIG_MTD_PHYSMAP=y
+CONFIG_MTD_PHYSMAP_START=0xff000000
+CONFIG_MTD_PHYSMAP_LEN=0x01000000
+CONFIG_MTD_PHYSMAP_BANKWIDTH=1
 
-Almost all our designs use both.
+#
+# Miscellaneous filesystems
+#
+CONFIG_JFFS_FS=y
+CONFIG_JFFS_FS_VERBOSE=0
+CONFIG_JFFS2_FS=y
+CONFIG_JFFS2_FS_DEBUG=2
+CONFIG_JFFS2_ZLIB=y
+CONFIG_JFFS2_RTIME=y
 
-P.S.: Would it be possible to fix up your quoting?
 
--- 
-Bye, Peter Korsgaard
+I enabled both MTD and JFFS2 maximum verbosity debug messages. If
+relevant, I can post them for any of the commands in the sequence. Btw I
+have the same problem with crafted filesystem images built with
+mkfs.jffs2 (they fail at first mount).
+
+Trying to exclude MTD issues I tested the same with JFFS and I don't
+have any problem, but JFFS is not suitable for my needs :-(
+
+By digging the net, I can't find any reference to this problem. Hope
+anybody out there is using this setup (lite5200_defconfig as MTD
+disabled) and can help. TIA.
+
+Regards,
+Andrea
