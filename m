@@ -1,19 +1,31 @@
-Return-Path: <judith@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0740367C00
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 04:05:05 +1000 (EST)
-Date: Tue, 17 Oct 2006 11:04:47 -0700
-From: Judith Lebzelter <judith@osdl.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 1/2] ramdisk: make powerpc allmodconfig build
-Message-ID: <20061017180447.GC822@shell0.pdx.osdl.net>
-References: <20061017094742.a61c4873.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7DB4367C00
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 06:42:11 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9HKg8r9005516
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 16:42:08 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9HKg8Hd258224
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 14:42:08 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9HKg7L1006441
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 14:42:08 -0600
+Date: Tue, 17 Oct 2006 15:42:06 -0500
+To: akpm@osdl.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+	Auke Kok <auke-jan.h.kok@intel.com>
+Subject: [PATCH] e1000: Reset all functions after a PCI error
+Message-ID: <20061017204206.GG6537@austin.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061017094742.a61c4873.randy.dunlap@oracle.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Randy,
+Please apply and forward upstream.
 
-There is another section in that function which depends on 
-'CONFIG_BLK_DEV_INITRD' being defined.  Although it does not throw an
-error, it does depend on some of the variables set in this section,
-but not 'rd_size'.  I think for consistancy it might be better to do 
-somthing like this(below)?  Or else add the same ifdef down there...
+--linas
 
-Judith
+During the handling of the PCI error recovery sequence,
+the current e1000 driver erroneously blocks a device reset
+for any but the first PCI function. It shouldn't -- this 
+is a cut-n-paste error from a different driver (which
+tolerated only one hardware reset per hardware card). 
 
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Auke Kok <auke-jan.h.kok@intel.com>
 
-Index: 2/linux/arch/powerpc/platforms/iseries/setup.c
+----
+ drivers/net/e1000/e1000_main.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+Index: linux-2.6.19-rc1-git11/drivers/net/e1000/e1000_main.c
 ===================================================================
---- 2.orig/linux/arch/powerpc/platforms/iseries/setup.c	2006-10-17 10:49:31.423551104 -0700
-+++ 2/linux/arch/powerpc/platforms/iseries/setup.c	2006-10-17 10:52:22.682515784 -0700
-@@ -305,8 +305,10 @@
- 		initrd_end = initrd_start + naca.xRamDiskSize * HW_PAGE_SIZE;
- 		initrd_below_start_ok = 1;	// ramdisk in kernel space
- 		ROOT_DEV = Root_RAM0;
-+#if defined(CONFIG_BLK_DEV_RAM)
- 		if (((rd_size * 1024) / HW_PAGE_SIZE) < naca.xRamDiskSize)
- 			rd_size = (naca.xRamDiskSize * HW_PAGE_SIZE) / 1024;
-+#endif /* CONFIG_BLK_DEV_RAM */
- 	} else
- #endif /* CONFIG_BLK_DEV_INITRD */
- 	{
+--- linux-2.6.19-rc1-git11.orig/drivers/net/e1000/e1000_main.c	2006-10-17 15:02:25.000000000 -0500
++++ linux-2.6.19-rc1-git11/drivers/net/e1000/e1000_main.c	2006-10-17 15:03:35.000000000 -0500
+@@ -4914,10 +4914,6 @@ static pci_ers_result_t e1000_io_slot_re
+ 	pci_enable_wake(pdev, PCI_D3hot, 0);
+ 	pci_enable_wake(pdev, PCI_D3cold, 0);
+ 
+-	/* Perform card reset only on one instance of the card */
+-	if (PCI_FUNC (pdev->devfn) != 0)
+-		return PCI_ERS_RESULT_RECOVERED;
+-
+ 	e1000_reset(adapter);
+ 	E1000_WRITE_REG(&adapter->hw, WUS, ~0);
+ 
