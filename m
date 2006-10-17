@@ -1,12 +1,25 @@
-Return-Path: <Marc.Howard@KLA-Tencor.com>
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (amanaus.varma-el.com [195.144.240.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.varma-el.com",
+	Issuer "mail.varma-el.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8EE0067BF2
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 18 Oct 2006 06:17:00 +1000 (EST)
+Message-ID: <45353A3A.9060609@varma-el.com>
+Date: Wed, 18 Oct 2006 00:16:58 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: How does Linux treat memory above the "mem=" mark?
-Date: Tue, 17 Oct 2006 11:04:27 -0700
-Message-ID: <91B22F93A880FA48879475E134D6F0BE031D7613@CA1EXCLV02.adcorp.kla-tencor.com>
-From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
-To: <Linuxppc-embedded@ozlabs.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: JFFS2 on Lite5200
+References: <1161081183.22948.58.camel@localhost.localdomain>	
+	<4534D8A5.7060206@varma-el.com> <1161092193.3260.61.camel@sauron>	
+	<4534E078.9030301@varma-el.com>
+	<1161106630.23666.109.camel@hades.cambridge.redhat.com>
+In-Reply-To: <1161106630.23666.109.camel@hades.cambridge.redhat.com>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: dedekind@infradead.org, Andrea Galbusera <andrea.galbusera@teamware.it>,
+	linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,19 +30,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+David Woodhouse wrote:
+> On Tue, 2006-10-17 at 17:54 +0400, Andrey Volkov wrote:
+>> No, MPC5200 could write any size chunks, but it must be aligned (same
+>> restrictions as in SH4), and this restriction applied only to LPB, but
+>> not SDRAM.
+>>
+>> Also, I've in view that jffs2(jffs3 ?) read/write stuff already used
+>> functions which MTD drivers exported, but jffs2_scan_dirent_node and
+>> friends - doesn't.
+> 
+> There are two modes of operation for JFFS2 scan. Either it can use the
+> MTD device's read() function to read from the flash into memory and scan
+> from there, or -- IF the flash can be accessed as if it were normal
+> memory -- it can use the point() method and skip the read() call by
+> using a pointer directly into the flash.
+> 
+> In your case, the flash cannot be accessed directly as if it were normal
+> memory. So your map driver probably shouldn't be allowing point() to
+> succeed.
+> 
+> Having said that, I'm not entirely sure we have the code set up so that
+> 'simple' map drivers _can_ prevent point(). We may need to fix that.
+David, thanks for an explanations (Artem already pointed me to this
+jffs2 behavior).
 
-I have a PPC440GX board with 512M of memory.  I use "mem=3D496M" boot
-argument to keep Linux from using the uppermost 16MB of memory.  That
-region of memory is instead used for hardware communications.
-Occasionally however the CPU will read/write this space as well.
-
-My questions concerns TLB entries.  How does Linux define this region in
-the TLB?  Does it define this region as non-cacheable in the TLB?  If
-not, what is the correct way to define an area of memory that is outside
-the OS's control as non-cacheable?
-
-Thanks,
-
-Marc W. Howard
-marc.howard@kla-tencor.com
+--
+Regards
+Andrey
