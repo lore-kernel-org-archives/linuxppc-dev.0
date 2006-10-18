@@ -1,16 +1,14 @@
 Return-Path: <michael@ellerman.id.au>
 Subject: Re: [PATCH 1/2] Add support for stopping spus from xmon
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061012161845.GY4381@austin.ibm.com>
-References: <1160654587.449977.520618728447.qpush@concordia>
-	<20061012120310.6B5A967BD5@ozlabs.org>
-	<20061012161845.GY4381@austin.ibm.com>
+To: Luke Browning <LukeBrowning@us.ibm.com>
+In-Reply-To: <OF47E899DB.A06D1502-ON83257206.00106CF2-83257206.00122A1D@us.ibm.com>
+References: <OF47E899DB.A06D1502-ON83257206.00106CF2-83257206.00122A1D@us.ibm.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-73OC6ioMe/i8bt+fhRNa"
-Date: Wed, 18 Oct 2006 17:13:46 +1000
-Message-Id: <1161155626.7906.17.camel@localhost.localdomain>
+	boundary="=-yHKkw/F7Gi+uDC2mi9wf"
+Date: Wed, 18 Oct 2006 17:14:56 +1000
+Message-Id: <1161155697.7906.18.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
 	cbe-oss-dev@ozlabs.org
@@ -25,29 +23,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-73OC6ioMe/i8bt+fhRNa
+--=-yHKkw/F7Gi+uDC2mi9wf
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-10-12 at 11:18 -0500, Linas Vepstas wrote:
-> On Thu, Oct 12, 2006 at 10:03:08PM +1000, Michael Ellerman wrote:
-> >=20
-> >  arch/powerpc/platforms/cell/spu_base.c |    4=20
-> >  arch/powerpc/xmon/xmon.c               |  142 ++++++++++++++++++++++++=
-++++++++-
-> >  include/asm-powerpc/xmon.h             |    2=20
-> >  3 files changed, 146 insertions(+), 2 deletions(-)
+On Fri, 2006-10-13 at 01:18 -0200, Luke Browning wrote:
 >=20
-> The next patch adds another 60 lines to xmon.c, which=20
-> is already a bit too big. Perhaps you could instead
-> put this code in "xmon/cell.c" or something like that?
+> linuxppc-dev-bounces+lukebrowning=3Dus.ibm.com@ozlabs.org wrote on
+> 10/12/2006 09:03:08 AM:
+>=20
+> > This patch adds support for stopping, and restarting, spus
+> > from xmon. We use the spu master runcntl bit to stop execution,
+> > this is apparently the "right" way to control spu execution and
+> > spufs will be changed in the future to use this bit.
+> >=20
+> > Testing has shown that to restart execution we have to turn the
+> > master runcntl bit on and also rewrite the spu runcntl bit, even
+> > if it is already set to 1 (running).
+> >=20
+> > Stopping spus is triggered by the xmon command 'ss' - "spus stop"
+> > perhaps. Restarting them is triggered via 'sr'. Restart doesn't
+> > start execution on spus unless they were running prior to being
+> > stopped by xmon.
+> >=20
+> > Walking the spu->full_list in xmon after a panic, would mean
+> > corruption of any spu struct would make all the others
+> > inaccessible. To avoid this, and also to make the next patch
+> > easier, we cache pointers to all spus during boot.
+>=20
+> The spe affinity code drop created an array of spu pointers that=20
+> is indexed by spu->number.  We have a couple of other fields in=20
+> there that are needed for multiple spu scheduling operations.  =20
+> Maybe, you can use this array.  The name of the arry is lspu[]=20
+> for logical spus.=20
 
-I did originally, but that requires exporting several globals from
-xmon.c, which struck me as even less pleasant.
-
-I looked at some way of wrapping the if(setjmp) .. logic into a
-function, but I couldn't come up with anything neat in the little time I
-had.
+I'll have a look at it, but part of the rationale for xmon keeping its
+own array is that there should be no code during normal kernel operation
+that touches that array, and therefore less chance that a programming
+error will corrupt the array.
 
 cheers
 
@@ -61,16 +74,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-73OC6ioMe/i8bt+fhRNa
+--=-yHKkw/F7Gi+uDC2mi9wf
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQBFNdQpdSjSd0sB4dIRAjfiAJ0W+O93ahYOxUMFP4QUIZf43L06YQCfbMGg
-OLzecU1naylXfVjmb1jukx0=
-=0okG
+iD8DBQBFNdRwdSjSd0sB4dIRAo0MAKCBe1lyxRoE33YqrdXUvI2L95FYlQCfa5ws
+p+Jab6iYgCfEdY+C/HBU+n4=
+=+Iqd
 -----END PGP SIGNATURE-----
 
---=-73OC6ioMe/i8bt+fhRNa--
+--=-yHKkw/F7Gi+uDC2mi9wf--
