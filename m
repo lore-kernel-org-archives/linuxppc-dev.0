@@ -1,14 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <91B22F93A880FA48879475E134D6F0BE031D7613@CA1EXCLV02.adcorp.kla-tencor.com>
-References: <91B22F93A880FA48879475E134D6F0BE031D7613@CA1EXCLV02.adcorp.kla-tencor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <54EA2493-0567-4ED7-A987-DB45B34B2ADC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: How does Linux treat memory above the "mem=" mark?
-Date: Wed, 18 Oct 2006 08:42:53 -0500
-To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id D472767BE8
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 18 Oct 2006 23:52:36 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so158254ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 18 Oct 2006 06:52:35 -0700 (PDT)
+Message-ID: <528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
+Date: Wed, 18 Oct 2006 07:52:02 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Sascha Hauer" <s.hauer@pengutronix.de>
+Subject: Re: status of mpc52xx with arch=powerpc?
+In-Reply-To: <20061018130628.GE6202@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061018130628.GE6202@localhost.localdomain>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,30 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 17, 2006, at 1:04 PM, Howard, Marc wrote:
-
-> Hi,
+On 10/18/06, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> Is someone working on this already?
 >
-> I have a PPC440GX board with 512M of memory.  I use "mem=496M" boot
-> argument to keep Linux from using the uppermost 16MB of memory.  That
-> region of memory is instead used for hardware communications.
-> Occasionally however the CPU will read/write this space as well.
->
-> My questions concerns TLB entries.  How does Linux define this  
-> region in
-> the TLB?  Does it define this region as non-cacheable in the TLB?  If
-> not, what is the correct way to define an area of memory that is  
-> outside
-> the OS's control as non-cacheable?
+> There are some Kconfig entries, but there seems to be no code, at least
+> not in vanilla.
 
-Linux will not touch the the memory from 496 to 512M.  If you want to  
-have access to it you'll have to explicitly map it.  Depending on  
-what type of mapping you use will get different page attributes.  For  
-example of use ioremap() it will be marked non-cacheable/guarded (I  
-forget if 44x adds any other attributes).
+I'm slowly working on it.  I've got a .dts written and I've got u-boot
+w/ the fdt patches running on the board.  I need to port the 52xx PIC
+driver into arch/powerpc before I attempt to boot.
 
-It sounds like you want to access the region as non-cacheable, you  
-can than just use ioremap() to get the desired effect.
+g.
 
-- k
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
