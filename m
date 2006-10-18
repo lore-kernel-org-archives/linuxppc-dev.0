@@ -1,20 +1,27 @@
-Return-Path: <dwalker@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 1004C67C44
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 00:52:11 +1000 (EST)
-Subject: Re: [PATCH -rt] powerpc update
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20061018143318.GB25141@elte.hu>
-References: <20061003155358.756788000@dwalker1.mvista.com>
-	<20061018072858.GA29576@elte.hu>
-	<1161181941.23082.32.camel@c-67-180-230-165.hsd1.ca.comcast.net>
-	<20061018143318.GB25141@elte.hu>
-Content-Type: text/plain
-Date: Wed, 18 Oct 2006 07:52:08 -0700
-Message-Id: <1161183128.23082.43.camel@c-67-180-230-165.hsd1.ca.comcast.net>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
+	by ozlabs.org (Postfix) with ESMTP id 7B2B467BF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 01:12:55 +1000 (EST)
+Date: Wed, 18 Oct 2006 08:12:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+In-Reply-To: <17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+References: <1160764895.11239.14.camel@farscape>
+	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
+	<1160769226.11239.22.camel@farscape>
+	<1160773040.11239.28.camel@farscape>
+	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
+	<1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-18 at 16:33 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > On Wed, 2006-10-18 at 09:28 +0200, Ingo Molnar wrote:
-> > > * Daniel Walker <dwalker@mvista.com> wrote:
-> > > 
-> > > > Pay close attention to the fasteoi interrupt threading. I added usage 
-> > > > of mask/unmask instead of using level handling, which worked well on 
-> > > > PPC.
-> > > 
-> > > this is wrong - it should be doing mask+ack.
-> > 
-> > The main reason I did it this way is cause the current threaded eoi 
-> > expected the line to be masked. So if you happen to have a eoi that's 
-> > threaded you get a warning then the interrupt hangs.
-> 
-> does that in fact happen on -rt6? If yes, could you send the warning 
-> that is produced?
-> 
-> 	Ingo
+On Wed, 18 Oct 2006, Paul Mackerras wrote:
 
-The warning was the WARN_ON_ONCE from the section below (which is gone
-is -rt6)
+> Since this is a virtualized system there is every possibility that the
+> memory we get won't be divided into nodes in the nice neat manner you
+> seem to be expecting.  It just depends on what memory the hypervisor
+> has free, and on what nodes, when the partition is booted.
 
-        if (redirect_hardirq(desc)) {
--               WARN_ON_ONCE(1);
-+               mask_ack_irq(desc, irq);
-                goto out_unlock;
-        }
-+
+The only expectation is that memory is available on the node that you are 
+bootstrapping the slab allocator from.
+ 
+> In other words, the assumption that node pfn ranges won't overlap is
+> completely untenable for us.
 
-I haven't tried it, but I'd think it will work. That's assuming you have
-an "ack" which I hear some PowerPC don't (Benjamin Herrenschmidt talked
-about having no "ack" when discussing fasteoi a few month back).
+That does not matter for this problem.,
+ 
+> Linus' tree is currently broken for us.  Any suggestions for how to
+> fix it, since I am not very familiar with the NUMA code?
 
-Daniel
+Have memory available for slab boot strap on node 0? Or modify the boot 
+code in such a way that it runs on node 1 or any other node that has 
+memory available.
