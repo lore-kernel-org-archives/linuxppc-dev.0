@@ -1,23 +1,21 @@
-Return-Path: <ben.collins@ubuntu.com>
-Received: from swissweb.swissdisk.com (www.swissdisk.com [216.66.254.197])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B012B67B61
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 03:50:25 +1000 (EST)
-Received: from [72.169.114.90] (helo=critter.internal)
-	by swissweb.swissdisk.com with esmtp (Exim 4.50) id 1GaDfP-0000Tu-HY
-	for linuxppc-dev@ozlabs.org; Wed, 18 Oct 2006 08:49:18 -0700
-Received: from collinsap1.internal.net ([192.168.1.1]
-	helo=mail.phunnypharm.org) by critter.internal with smtp (Exim 4.62)
-	(envelope-from <ben.collins@ubuntu.com>) id 1GaEt8-0003NU-DR
-	for linuxppc-dev@ozlabs.org; Wed, 18 Oct 2006 13:07:31 -0400
-Subject: [PATCHES] Ubuntu trivial powerpc patches
-From: Ben Collins <ben.collins@ubuntu.com>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <dwalker@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 3B3D067B89
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 06:54:36 +1000 (EST)
+Subject: Re: [PATCH -rt] powerpc update
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20061018143318.GB25141@elte.hu>
+References: <20061003155358.756788000@dwalker1.mvista.com>
+	<20061018072858.GA29576@elte.hu>
+	<1161181941.23082.32.camel@c-67-180-230-165.hsd1.ca.comcast.net>
+	<20061018143318.GB25141@elte.hu>
 Content-Type: text/plain
-Date: Wed, 18 Oct 2006 13:07:30 -0400
-Message-Id: <1161191250.5663.14.camel@gullible>
+Date: Wed, 18 Oct 2006 13:54:33 -0700
+Message-Id: <1161204873.19590.14.camel@dwalker1.mvista.com>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Reply-To: dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,93 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's a couple of small patches I've got in the Ubuntu kernel tree for
-powerpc. They can be synced from:
+On Wed, 2006-10-18 at 16:33 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > On Wed, 2006-10-18 at 09:28 +0200, Ingo Molnar wrote:
+> > > * Daniel Walker <dwalker@mvista.com> wrote:
+> > > 
+> > > > Pay close attention to the fasteoi interrupt threading. I added usage 
+> > > > of mask/unmask instead of using level handling, which worked well on 
+> > > > PPC.
+> > > 
+> > > this is wrong - it should be doing mask+ack.
+> > 
+> > The main reason I did it this way is cause the current threaded eoi 
+> > expected the line to be masked. So if you happen to have a eoi that's 
+> > threaded you get a warning then the interrupt hangs.
+> 
+> does that in fact happen on -rt6? If yes, could you send the warning 
+> that is produced?
 
-git.kernel.org:/pub/scm/linux/kernel/git/bcollins/ubuntu-2.6#ubuntu-powerpc
+Here's the kernel messages (from Sergei who is CC'd)
+---
+Subject: 2.6.18-rt6 failure on MPC8540ADS
 
-The patch for prom init printf's disabling is just to make the boot a
-little cleaner.
+   My PPC32 board doesn't boot with 2.6.18-rt6, I'm getting this nice trace:
 
-Ben Collins:
-      [powerpc] Allow disabling of prom init messages.
-      [powerpc] Make pSeries_init_panel message configurable.
+Time: timebase clocksource has been installed.
+Unable to handle kernel paging request for instruction fetch
+Faulting instruction address: 0x00000000
+Oops: Kernel access of bad area, sig: 11 [#1]
+PREEMPT
+Modules linked in:
+NIP: 00000000 LR: C0051AA8 CTR: 00000000
+REGS: c0615cf0 TRAP: 0400   Not tainted  (2.6.18_dev)
+MSR: 00021000 <ME>  CR: 42028088  XER: 20000000
+TASK = cffea600[4] 'softirq-timer/0' THREAD: c0614000
+GPR00: C0051A94 C0615DA0 CFFEA600 00000035 C0339CC0 00000035 00000013 00000003
+GPR08: 00010000 00000000 FCFED080 C0480035 28028084 00000000 0FFFE700 FFFFFFFF
+GPR16: FFFD7C1E FFFFFFFF FFFD7B78 C02E5930 00000000 00028488 00000000 FFFFFFFF
+GPR24: C033FB1C C0699498 00008000 C0615DE0 C06BBCA0 C0614000 00000035 C0323AC0
+NIP [00000000] _start+0x40000000/0x20
+LR [C0051AA8] handle_fasteoi_irq+0x170/0x1b8
+Call Trace:
+[C0615DA0] [C0051A94] handle_fasteoi_irq+0x15c/0x1b8 (unreliable)
+[C0615DC0] [C00045A4] do_IRQ+0x9c/0xbc
+[C0615DD0] [C000E0C8] ret_from_except+0x0/0x18
+[C0615E90] [C01B4A90] phy_write+0x2c/0x6c
+[C0615EC0] [C01B6450] marvell_config_aneg+0x24/0xc8
+[C0615ED0] [C01B48F8] phy_start_aneg+0x44/0xcc
+[C0615EF0] [C01B50E8] phy_timer+0xd8/0x588
+[C0615F10] [C0031EC4] run_timer_softirq+0x224/0x1048
+[C0615F80] [C002D1EC] ksoftirqd+0x100/0x1ac
+[C0615FC0] [C003F36C] kthread+0xc0/0xfc
+[C0615FF0] [C000EC4C] original_kernel_thread+0x44/0x60
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+  <0>Kernel panic - not syncing: Fatal exception in interrupt
+Call Trace:
+[C0615C30] [C0006DA8] show_stack+0x3c/0x1a0 (unreliable)
+[C0615C60] [C0026484] panic+0x98/0x170
+[C0615CB0] [C000BF60] die+0x120/0x130
+[C0615CD0] [C0010D38] bad_page_fault+0xcc/0xe8
+[C0615CE0] [C000DF24] handle_page_fault+0x7c/0x80
+[C0615DA0] [C0051A94] handle_fasteoi_irq+0x15c/0x1b8
+[C0615DC0] [C00045A4] do_IRQ+0x9c/0xbc
+[C0615DD0] [C000E0C8] ret_from_except+0x0/0x18
+[C0615E90] [C01B4A90] phy_write+0x2c/0x6c
+[C0615EC0] [C01B6450] marvell_config_aneg+0x24/0xc8
+[C0615ED0] [C01B48F8] phy_start_aneg+0x44/0xcc
+[C0615EF0] [C01B50E8] phy_timer+0xd8/0x588
+[C0615F10] [C0031EC4] run_timer_softirq+0x224/0x1048
+[C0615F80] [C002D1EC] ksoftirqd+0x100/0x1ac
+[C0615FC0] [C003F36C] kthread+0xc0/0xfc
+[C0615FF0] [C000EC4C] original_kernel_thread+0x44/0x60
 
- arch/powerpc/Kconfig                   |    5 +++++
- arch/powerpc/Kconfig.debug             |    9 +++++++++
- arch/powerpc/kernel/prom_init.c        |    5 ++++-
- arch/powerpc/platforms/pseries/setup.c |    2 +-
- 4 files changed, 19 insertions(+), 2 deletions(-)
+    After looking into the source, I figured out that handle_fasteoi_irq() is 
+trying to call ack() handler for the irq_chip but arch/powerpc/sysdev/mpic.c 
+(driving OpenPIC-compatible chips) doesn't have it (and I suppose is not 
+obliged to since it's using the "fasteoi" flow)...
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8b69104..58b9ed9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -371,6 +371,11 @@ config PPC_PSERIES
- 	select PPC_UDBG_16550
- 	default y
- 
-+config PPC_PSERIES_PANEL_MSG
-+	depends on PPC_PSERIES
-+	string "Message for pSeries progress panel"
-+	default "Linux ppc64"
-+
- config PPC_ISERIES
- 	bool "IBM Legacy iSeries"
- 	depends on PPC_MULTIPLATFORM && PPC64
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 5ad149b..0f7a26c 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -121,6 +121,15 @@ config BOOTX_TEXT
- 	  Say Y here to see progress messages from the boot firmware in text
- 	  mode. Requires either BootX or Open Firmware.
- 
-+config EARLY_PROM_PRINT
-+	bool "Support early messages from the kernel via the prom console"
-+	depends PPC_OF
-+	default y
-+	help
-+	  Say Y here to see early messages from the kernel through the
-+	  prom console. These are usually only related to the prom init
-+	  and detection code.
-+
- config SERIAL_TEXT_DEBUG
- 	bool "Support for early boot texts over serial port"
- 	depends on 4xx || LOPEC || MV64X60 || PPLUS || PRPMC800 || \
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index b917616..e95cd81 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -297,7 +297,7 @@ static void __init prom_print(const char
- 	}
- }
- 
--
-+#ifdef CONFIG_EARLY_PROM_PRINT
- static void __init prom_print_hex(unsigned long val)
- {
- 	int i, nibbles = sizeof(val)*2;
-@@ -356,6 +356,9 @@ #endif
- 		}
- 	}
- }
-+#else
-+#define prom_printf(fmt, ...)	do {} while(0)
-+#endif
- 
- 
- static unsigned int __init prom_claim(unsigned long virt, unsigned long size,
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 89a8119..c9fc362 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -340,7 +340,7 @@ static void __init pSeries_setup_arch(vo
- static int __init pSeries_init_panel(void)
- {
- 	/* Manually leave the kernel version on the panel. */
--	ppc_md.progress("Linux ppc64\n", 0);
-+	ppc_md.progress(CONFIG_PPC_PSERIES_PANEL_MSG "\n", 0);
- 	ppc_md.progress(init_utsname()->version, 0);
- 
- 	return 0;
+WBR, Sergei
