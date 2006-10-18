@@ -2,18 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AED5867B6D
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 08:35:59 +1000 (EST)
-Subject: Re: [PATCHES] Ubuntu trivial powerpc patches
+	by ozlabs.org (Postfix) with ESMTP id 6DB5C67B6D
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 08:38:28 +1000 (EST)
+Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ben Collins <ben.collins@ubuntu.com>
-In-Reply-To: <1161191250.5663.14.camel@gullible>
-References: <1161191250.5663.14.camel@gullible>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20061018073851.GA13083@aepfle.de>
+References: <4534BE9D.7030908@bplan-gmbh.de> <20061017132243.GA6773@lst.de>
+	<4535C0F8.1070905@bplan-gmbh.de>
+	<1161152109.7906.6.camel@localhost.localdomain>
+	<20061018073851.GA13083@aepfle.de>
 Content-Type: text/plain
-Date: Thu, 19 Oct 2006 08:35:46 +1000
-Message-Id: <1161210946.10524.12.camel@localhost.localdomain>
+Date: Thu, 19 Oct 2006 08:38:03 +1000
+Message-Id: <1161211083.10524.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: akpm@osdl.org, tilmann@bitterberg.de, Sven Luther <sl@bplan-gmbh.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-18 at 13:07 -0400, Ben Collins wrote:
+On Wed, 2006-10-18 at 09:38 +0200, Olaf Hering wrote:
+> On Wed, Oct 18, Michael Ellerman wrote:
+> 
+> > But it's called '/proc/ppc64' right now on lots of machines, so you
+> > can't go changing it.
+> 
+> if test -d /proc/ppc64 .. is a quick way to check wether the system is
+> 64bit or not. Similar to if test -d /proc/iSeries ..
 
-> +config EARLY_PROM_PRINT
-> +	bool "Support early messages from the kernel via the prom console"
-> +	depends PPC_OF
-> +	default y
-> +	help
-> +	  Say Y here to see early messages from the kernel through the
-> +	  prom console. These are usually only related to the prom init
-> +	  and detection code.
-> +
+That's really ugly ! You really do that ? Gack...
 
-The help text should probably be a little bit less cryptic :) Something
-like saying that those messages are displayed by the Open Firmware
-wrapper.
-
-Ben.
+> You better leave that simple interface.
