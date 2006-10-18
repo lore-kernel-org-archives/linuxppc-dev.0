@@ -1,21 +1,16 @@
-Return-Path: <john.bonesio@xilinx.com>
-Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CD44667BD3
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id 9D42B67BE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 02:01:56 +1000 (EST)
+	Thu, 19 Oct 2006 03:53:48 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6F2CA.55498F3A"
-Subject: RE: Looking For XILINX TEMAC Driver For linux 2.4 or 2.6 
-Date: Wed, 18 Oct 2006 08:30:25 -0700
-Message-ID: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC0152EB@XSJ-EXCHVS1.xlnx.xilinx.com>
-References: <8506C3905ED0764F889ADEB33E3A9E8062CECA@MAIA.scopus.net>
-From: "John Bonesio" <john.bonesio@xilinx.com>
-To: "Sharon Feldman" <sharonf@scopus.net>, <linuxppc-embedded@ozlabs.org>
-Cc: Rick Moleres <rick.moleres@xilinx.com>
+	boundary="----_=_NextPart_001_01C6F2DE.5B86BC79"
+Subject: ELDK 4.0 / GDB with mpc85xx
+Date: Wed, 18 Oct 2006 13:53:45 -0400
+Message-ID: <3C02138692C13C4BB675FE7EA24095291F5CB9@bluefin.Soneticom.local>
+From: "Clint Thomas" <cthomas@Soneticom.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,109 +23,72 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6F2CA.55498F3A
+------_=_NextPart_001_01C6F2DE.5B86BC79
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hey guys,
+
+I am trying to use GDB to debug U-boot 1.1.2 on a system based loosely
+off the MPC8540ADS platform. Right now, both Linux (2.4.27) and U-boot
+compile perfectly using our in-house cross-compilers
+(gcc-3.3.2-glibc-2.3.2), where with the cross-compilers provided in the
+ELDK they will not compile.=20
 =20
-I could just send out one of these drivers and hope that it helps, but I =
-thought it might be better to find out some more specifics on what is =
-needed first. This way we can avoid lots thrashing and missed attempts =
-at getting something to work.
+My real question however is, will this effect the use of the crossGDB
+provided with the ELDK? I want to use it with a BDI2000, and the
+documentation on the Denx website shows it working, but I have also read
+about issues related to the version of GDB, the BDI firmware, and the
+e500 core not playing nicely together. Has anybody had good experience
+getting this setup fully functional? I really need to be able to step
+through the U-boot code and see where it is failing on our platform.
+Thanks for the help!
 =20
-What TEMAC core are you using? What version?
-Is there a preference of linux kernels, 2.4 or 2.6?
-If you prefer 2.6, do you already have the other kernel changes to =
-support Virtex 4 (assuming that's the fpga you're using)?
+Clinton Thomas
 =20
-Let me know what you're trying to accomplish so I can give you better =
-specific help.
-=20
-- John
 
-________________________________
-
-From: linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org on =
-behalf of Sharon Feldman
-Sent: Wed 10/18/2006 8:01 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Looking For XILINX TEMAC Driver For linux 2.4 or 2.6=20
-
-
-
-I Need XILINX ll_temac Or PLB_Temac Drivers For Linux 2.4 Or 2.6
-
-I Understand There Is A Driver For MV That Can Be Used.
-
-Best Regards/
-
-
-------_=_NextPart_001_01C6F2CA.55498F3A
+------_=_NextPart_001_01C6F2DE.5B86BC79
 Content-Type: text/html;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">=0A=
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">=0A=
-<HTML>=0A=
-<HEAD>=0A=
-=0A=
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">=0A=
-<TITLE>Looking For XILINX TEMAC Driver For linux 2.4 or 2.6 </TITLE>=0A=
-</HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText2012 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>Hi,</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>I could just =
-send out one of =0A=
-these drivers and hope that it helps, but I thought it might be better =
-to find =0A=
-out some more specifics on what is needed first. This way we can avoid =
-lots =0A=
-thrashing and missed attempts at getting something to work.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>What TEMAC core are you =
-using? What =0A=
-version?</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>Is there a preference of =
-linux kernels, 2.4 =0A=
-or 2.6?</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>If you prefer 2.6, do you =
-already have the =0A=
-other kernel changes to support Virtex 4 (assuming that's the fpga =
-you're =0A=
-using)?</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>Let me know what you're =
-trying to =0A=
-accomplish so I can give you better specific help.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>- John</FONT></DIV></DIV>=0A=
-<DIV dir=3Dltr><BR>=0A=
-<HR tabIndex=3D-1>=0A=
-<FONT face=3DTahoma size=3D2><B>From:</B> =0A=
-linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org on behalf of =
-Sharon =0A=
-Feldman<BR><B>Sent:</B> Wed 10/18/2006 8:01 AM<BR><B>To:</B> =0A=
-linuxppc-embedded@ozlabs.org<BR><B>Subject:</B> Looking For XILINX TEMAC =
-Driver =0A=
-For linux 2.4 or 2.6 <BR></FONT><BR></DIV>=0A=
-<DIV>=0A=
-<P dir=3Dltr><FONT face=3DArial size=3D2>I Need XILINX ll_temac Or =
-PLB_Temac Drivers =0A=
-For Linux 2.4 Or 2.6</FONT></P>=0A=
-<P dir=3Dltr><FONT face=3DArial size=3D2>I Understand There Is A Driver =
-For MV That =0A=
-Can Be Used.</FONT></P>=0A=
-<P dir=3Dltr><FONT face=3DArial size=3D2>Best Regards/</FONT></P></DIV>=0A=
-=0A=
-</BODY>=0A=
-</HTML>
-------_=_NextPart_001_01C6F2CA.55498F3A--
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2963" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D715174817-18102006><FONT face=3DArial size=3D2>Hey =
+guys,<BR><BR>I=20
+am trying to use GDB to debug U-boot 1.1.2 on a system based loosely off =
+the=20
+MPC8540ADS platform. Right now, both Linux (2.4.27) and U-boot compile =
+perfectly=20
+using our in-house cross-compilers (gcc-3.3.2-glibc-2.3.2), where with =
+the=20
+cross-compilers provided in the ELDK they will not compile. =
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D715174817-18102006><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D715174817-18102006><FONT face=3DArial size=3D2>My =
+real question=20
+however is, will this effect the use of the crossGDB provided with the =
+ELDK? I=20
+want to use it with a BDI2000, and the documentation on the Denx website =
+shows=20
+it working, but I have also read about issues related to the version of =
+GDB, the=20
+BDI firmware, and the e500 core not playing nicely together. Has anybody =
+had=20
+good experience getting this setup fully functional? I really need to be =
+able to=20
+step through the U-boot code and see where it is failing on our =
+platform. Thanks=20
+for the help!</FONT></SPAN></DIV>
+<DIV>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton =
+Thomas</FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------_=_NextPart_001_01C6F2DE.5B86BC79--
