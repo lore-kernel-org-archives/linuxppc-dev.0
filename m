@@ -1,27 +1,32 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 4CE25679E1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 02:06:34 +1000 (EST)
-Date: Wed, 18 Oct 2006 09:06:31 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <17717.50596.248553.816155@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0610180858440.27799@schroedinger.engr.sgi.com>
-References: <1160764895.11239.14.camel@farscape>
-	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
-	<1160769226.11239.22.camel@farscape>
-	<1160773040.11239.28.camel@farscape>
-	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
-	<1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+Return-Path: <santil@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DB39567C3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 02:14:25 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9IGEKci014106
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 12:14:20 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9IGEKWX133558
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 12:14:20 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9IGEJgG030414
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 12:14:19 -0400
+Message-ID: <453652D2.8070609@us.ibm.com>
+Date: Wed, 18 Oct 2006 11:14:10 -0500
+From: Santiago Leon <santil@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ibmveth and LIOBN field
+References: <1161150069.23947.18.camel@localhost.localdomain>
+In-Reply-To: <1161150069.23947.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 18 Oct 2006, Paul Mackerras wrote:
+Benjamin Herrenschmidt wrote:
+> Hi Santiago !
+> 
+> I'm a bit annoyed by a bit of code in the ibmveth driver:
+> 
+> It accesses the iommu table pointer, to get the index and put it into
+> it's own private adapter->liobn member. However, that is never used
+> anywhere except in ibmveth_seq_show() for the /proc stuff to display
+> th'is LIOBN value.
+> 
+> Is this actually useful ? I'd like to just remove that code. 
 
-> Linus' tree is currently broken for us.  Any suggestions for how to
-> fix it, since I am not very familiar with the NUMA code?
+I'll gladly sign off a patch that removes that code.  I think we used 
+liobn in the driver a long time ago to do the tce mappings before we 
+merged all the common virtual io code into arch/powerpc/vio.c.
 
-I am not very familiar with the powerpc code and what I got here is 
-conjecture from various messages. It would help to get some clarification 
-on what is going on with node 0 memory. Is there really no memory 
-available from node 0 on bootup? Why is this? 
-
-If this is the case then you already have had issues for long time with 
-per node memory lists being contaminated on bootup.
-
-Why would you attempt to boot linux on a memory node without 
-memory?
+-- 
+Santiago A. Leon
+Power Linux Development
+IBM Linux Technology Center
