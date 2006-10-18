@@ -1,20 +1,20 @@
-Return-Path: <nd@bplan-gmbh.de>
-Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
-	by ozlabs.org (Postfix) with ESMTP id 5D62467B75
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 16:36:21 +1000 (EST)
-Message-ID: <4535CADC.5010100@bplan-gmbh.de>
-Date: Wed, 18 Oct 2006 08:34:04 +0200
-From: Nicolas DET <nd@bplan-gmbh.de>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-References: <4534BE9D.7030908@bplan-gmbh.de> <20061017132243.GA6773@lst.de>	
-	<4535C0F8.1070905@bplan-gmbh.de>
-	<1161152109.7906.6.camel@localhost.localdomain>
-In-Reply-To: <1161152109.7906.6.camel@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------000800070500020609020308"
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Sven Luther <sl@bplan-gmbh.de>,
-	tilmann@bitterberg.de
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [PATCH 2/2] Add support for dumping spu info
+	from xmon
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <452E7E8E.8000808@am.sony.com>
+References: <20061012120312.10FDD67BE5@ozlabs.org>
+	<452E7E8E.8000808@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-USzTjjNqaJ4uo6OpNSOf"
+Date: Wed, 18 Oct 2006 16:56:13 +1000
+Message-Id: <1161154573.7906.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,83 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000800070500020609020308
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Michael Ellerman wrote:
+--=-USzTjjNqaJ4uo6OpNSOf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- >>  >> +#ifdef CONFIG_PPC64
- >>  >> +#define PROCRTAS_ROOT "ppc64"
- >>  >> +#else
- >>  >> +#define PROCRTAS_ROOT "ppc"
- >>  >
- >>  > Please don't do any pathname changes.  Even if ppc64 isn't 
-correct it's
- >>  > what applications expect and what we should provide for a 
-coherent user
- >>  > interface.
- >>
- >> Humm, ok.
- >> However, in this case 'ppc' (could be 32 or 64 as it is not specified)
- >> is more generic than 'ppc64'.
- >
- > But it's called '/proc/ppc64' right now on lots of machines, so you
- > can't go changing it.
+On Thu, 2006-10-12 at 10:42 -0700, Geoff Levand wrote:
+> Michael Ellerman wrote:
+> > This patch adds a command to xmon for dumping information about
+> > spu structs. The command is 'sf' for "spu fields" perhaps, and
+> > takes the spu number as an argument. This is the same value as the
+> > spu->number field, or the "phys-id" value of a context when it is
+> > bound to a physical spu.
+>=20
+> > +static void dump_spu_fields(struct spu *spu)
+> > +{
+> ...
+> > +	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
+> > +	DUMP_FIELD(spu, "0x%p", priv1);
+> > +
+> > +	if (spu->priv1)
+> > +		DUMP_FIELD(spu, "0x%lx", priv1->mfc_sr1_RW);
+> > +
+> > +	DUMP_FIELD(spu, "0x%p", priv2);
+>=20
+> Just to let you know, I've been doing some work to abstract the platform
+> specific parts out of the spu support to better support running on a
+> hypervisor.  It shouldn't make much difference, but maybe I'll try to set
+> something up like this for you:
+> =20
+> 	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
+> 	DUMP_FIELD(spu, "0x%p", priv2);
+> 	spu_dump_platform_fields(spu);
 
-Ok. No problem
+We already have the spu_priv1_ops abstracted out, is that not enough? I
+decided to check explicitly for the priv1 pointer because calling the
+hypervisor from a panicked kernel is risky at best. Although I haven't
+seen how you guys implement hypervisor calls, so perhaps it's not so
+bad.
 
+cheers
 
- >>
- >> Indeed, however I can only test on CHRP. I'll remove the check in the
- >> upcomming patch.
- >
- > That should be fine AFAICT, you should probably just check that each of
- > the proc routines checks for errors - ie. just because you have an
- > "/rtas" node doesn't mean you necessarily have "/rtas/set-indicator" or
- > whatever.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-ok
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
- >
- >> The patch also include a small code to create the /proc/ppc/rtas entry.
- >> Should this be done here, or somewhere in arch/powerpc/chrp/setup.c ?
- >
- > That code is almost entirely the same as proc_ppc64_create(), so I think
- > you should try and merge them - we want to minimise the number of
- > foo_ppc64() and foo_ppc32() routines we have.
- >
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-Ok.
-proc_ppc64_create() is now locate in arch/powerpc/kernel/proc_ppc64.c. 
-Maybe a new file could be created (arch/powerpc/kernel/proc_ppc.c) ?
+--=-USzTjjNqaJ4uo6OpNSOf
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Any other suggestions?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-Just indicate me the direction, and I would provide others patches.
+iD8DBQBFNdANdSjSd0sB4dIRAhr6AKC6rDYbWu4MFGWNKYwpBJ/wY/YiXwCff1+U
+2RR9ukdWkJ/B+PKLeekgM6Q=
+=hy3f
+-----END PGP SIGNATURE-----
 
-Regards
-
---------------000800070500020609020308
-Content-Type: text/x-vcard; charset=utf-8;
- name="nd.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="nd.vcf"
-
-begin:vcard
-fn:Nicolas DET ( bplan GmbH )
-n:DET;Nicolas
-org:bplan GmbH
-adr:;;;;;;Germany
-email;internet:nd@bplan-gmbh.de
-title:Software Entwicklung
-tel;work:+49 6171 9187 - 31
-x-mozilla-html:FALSE
-url:http://www.bplan-gmbh.de
-version:2.1
-end:vcard
-
-
---------------000800070500020609020308--
+--=-USzTjjNqaJ4uo6OpNSOf--
