@@ -1,24 +1,21 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3B43367C1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 13:18:43 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k9I3IbAa029180
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 20:18:37 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k9I3IZBD013102
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Oct 2006 22:18:36 -0500 (CDT)
-Subject: [PATCH] Powerpc:  Fix the warining message from the return value
-	of function get_property
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Message-Id: <1161141538.24931.9.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B9A2567B9E
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 13:39:54 +1000 (EST)
+Date: Wed, 18 Oct 2006 13:39:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Randy.Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 2/2] viocons: make powerpc allmodconfig build
+Message-Id: <20061018133947.20a2c84f.sfr@canb.auug.org.au>
+In-Reply-To: <4535824F.1020407@oracle.com>
+References: <20061017095003.c447d88a.randy.dunlap@oracle.com>
+	<20061018111935.a143164c.sfr@canb.auug.org.au>
+	<4535824F.1020407@oracle.com>
 Mime-Version: 1.0
-Date: 18 Oct 2006 11:18:58 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__18_Oct_2006_13_39_47_+1000_=tzQ/7bM4VBZDDi4"
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following patch fixes the warning message from the return value of
-function get_property().
-Add const constrain for the return value of function get_property()
+--Signature=_Wed__18_Oct_2006_13_39_47_+1000_=tzQ/7bM4VBZDDi4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
+On Tue, 17 Oct 2006 18:24:31 -0700 "Randy.Dunlap" <randy.dunlap@oracle.com> wrote:
+>
+> OK.  Makes sense.  Will you just build VT in that combo *series
+> config and not build VIOCONS?  If so, that would still fix
+> "make allmodconfig" to build cleanly (I think).
 
-Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com> 
+Yes, VIOCONS is now obsolete (it is replaced by HVC_ISERIES which doesn't
+clash with VT), but it is used by the distros so I don't want to remove
+it (yet).
 
 --
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/sysdev/tsi108_dev.c b/arch/powerpc/sysdev/tsi108_dev.c
-index 11de090..97f37ef 100644
---- a/arch/powerpc/sysdev/tsi108_dev.c
-+++ b/arch/powerpc/sysdev/tsi108_dev.c
-@@ -48,7 +48,7 @@ phys_addr_t get_csrbase(void)
- 	tsi = of_find_node_by_type(NULL, "tsi-bridge");
- 	if (tsi) {
- 		unsigned int size;
--		void *prop = get_property(tsi, "reg", &size);
-+		const void *prop = get_property(tsi, "reg", &size);
- 		tsi108_csr_base = of_translate_address(tsi, prop);
- 		of_node_put(tsi);
- 	};
-@@ -79,7 +79,7 @@ static int __init tsi108_eth_of_init(voi
- 		hw_info tsi_eth_data;
- 		unsigned int *id;
- 		unsigned int *phy_id;
--		void *mac_addr;
-+		const void *mac_addr;
- 		phandle *ph;
- 
- 		memset(r, 0, sizeof(r));
+--Signature=_Wed__18_Oct_2006_13_39_47_+1000_=tzQ/7bM4VBZDDi4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFNaIDFdBgD/zoJvwRAuyUAJ9I4IR0KzcQiChIeikttwQjzGsFLACgmt07
+alB87s7I5IuNJ51346UhyIg=
+=AZzX
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__18_Oct_2006_13_39_47_+1000_=tzQ/7bM4VBZDDi4--
