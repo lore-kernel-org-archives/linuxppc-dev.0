@@ -1,16 +1,19 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9E3B167B89
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 08:27:38 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k9INmDdI028014
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 17:48:13 -0600 (MDT)
-From: timur@freescale.com
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix spelling errors in ucc_fast.c and ucc_slow.c
-Date: Wed, 18 Oct 2006 17:27:32 -0500
-Message-Id: <1161210452371-git-send-email-timur@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AED5867B6D
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 08:35:59 +1000 (EST)
+Subject: Re: [PATCHES] Ubuntu trivial powerpc patches
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ben Collins <ben.collins@ubuntu.com>
+In-Reply-To: <1161191250.5663.14.camel@gullible>
+References: <1161191250.5663.14.camel@gullible>
+Content-Type: text/plain
+Date: Thu, 19 Oct 2006 08:35:46 +1000
+Message-Id: <1161210946.10524.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,41 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Timur Tabi <timur@freescale.com>
+On Wed, 2006-10-18 at 13:07 -0400, Ben Collins wrote:
 
-In ucc_fast.c and ucc_slow.c, "illegal" is twice spelled "illagal".
+> +config EARLY_PROM_PRINT
+> +	bool "Support early messages from the kernel via the prom console"
+> +	depends PPC_OF
+> +	default y
+> +	help
+> +	  Say Y here to see early messages from the kernel through the
+> +	  prom console. These are usually only related to the prom init
+> +	  and detection code.
+> +
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/sysdev/qe_lib/ucc_fast.c |    2 +-
- arch/powerpc/sysdev/qe_lib/ucc_slow.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+The help text should probably be a little bit less cryptic :) Something
+like saying that those messages are displayed by the Open Firmware
+wrapper.
 
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-index c2be734..75fa310 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-@@ -163,7 +163,7 @@ int ucc_fast_init(struct ucc_fast_info *
- 
- 	/* check if the UCC port number is in range. */
- 	if ((uf_info->ucc_num < 0) || (uf_info->ucc_num > UCC_MAX_NUM - 1)) {
--		uccf_err("ucc_fast_init: Illagal UCC number!");
-+		uccf_err("ucc_fast_init: Illegal UCC number!");
- 		return -EINVAL;
- 	}
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-index 1fb88ef..a49da6b 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-@@ -152,7 +152,7 @@ int ucc_slow_init(struct ucc_slow_info *
- 
- 	/* check if the UCC port number is in range. */
- 	if ((us_info->ucc_num < 0) || (us_info->ucc_num > UCC_MAX_NUM - 1)) {
--		uccs_err("ucc_slow_init: Illagal UCC number!");
-+		uccs_err("ucc_slow_init: Illegal UCC number!");
- 		return -EINVAL;
- 	}
- 
--- 
-1.4.2.1
+Ben.
