@@ -1,19 +1,20 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from tag-03.ashton-group.com (tag-03.ashton-group.com [66.94.86.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5BC367BD6
+Return-Path: <boris@fabiotec.com>
+Received: from mtaout4.barak.net.il (mtaout4.barak.net.il [212.150.49.174])
+	by ozlabs.org (Postfix) with ESMTP id 702F367B6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 04:30:56 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: ELDK 4.0 / GDB with mpc85xx
-Date: Wed, 18 Oct 2006 14:00:40 -0400
-Message-ID: <1628E43D99629C46988BE46087A3FBB972A26A@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Clint Thomas" <cthomas@Soneticom.com>,
-	<linuxppc-embedded@ozlabs.org>
+	Thu, 19 Oct 2006 07:10:34 +1000 (EST)
+Received: from [192.168.200.97] ([62.90.35.117])
+	by mtaout4.barak.net.il (Sun Java System Messaging Server 6.2-6.02
+	(built Apr
+	25 2006)) with ESMTPA id <0J7C00HWWMRJK7E0@mtaout4.barak.net.il> for
+	linuxppc-embedded@ozlabs.org; Wed, 18 Oct 2006 22:40:31 +0200 (IST)
+Date: Wed, 18 Oct 2006 22:40:31 +0200
+From: Boris Shteinbock <boris@fabiotec.com>
+Subject: CPM2 (MPC8260) SMC problem. Please help.
+To: linuxppc-embedded@ozlabs.org
+Message-id: <4536913F.8060801@fabiotec.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=A0
->My real question however is, will this effect the use of the crossGDB =
->provided with the ELDK? I want to use it with a BDI2000, and the =
->documentation on the Denx website shows it working, but I have also =
-read >about issues related to the version of GDB, the BDI firmware, and =
-the e500 >c.ore not playing nicely together. Has anybody had good =
-experience getting >this setup fully functional? I really need to be =
-able to step through the >U-boot code and see where it is failing on our =
-platform. Thanks for the >help!
-=A0
+Hi ppl.
 
-When the GDB defaults to powerpc:e500 problems do occur.  All you need =
-to do is set it to powerpc:common and all works swell.  I've used it =
-plenty of times.
+I have discovered very very odd problem with SMC2 on my 8260 board.
+kernel version is 2.6.17.
 
-(gdb) show architecture
-The target architecture is set automatically (currently
-powerpc:e500)
-(gdb) set architecture powerpc:common
+The board is 8260 with serial ports on SMC1 and SMC 2 (SMC1 - console)
+
+Now if I use SMC2 for communicating with remote device, ( some protocol)
+I am sending packets and wait for a response.
+However if the packet I send is SMALLER than 5 bytes, SMC goes 
+completely crazy.
+write() doesn't return error, but the next read() hangs completely, and the
+process moves to D state and it is impossible to kill it by any means.
+It only happens when consequent writes of smaller than 5 bytes.
+I tried to check the driver, but couldn't find any clues to what goes wrong.
+
+I tried both compatibility and platform-based modes with the same results.
+
+Any help on the issue would be highliy appreciated.
