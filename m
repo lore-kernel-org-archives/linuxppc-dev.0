@@ -1,18 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 4E79F67C08
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 23:53:28 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-Date: Wed, 18 Oct 2006 00:22:23 +0200
-References: <4534BE9D.7030908@bplan-gmbh.de> <20061017132243.GA6773@lst.de>
-In-Reply-To: <20061017132243.GA6773@lst.de>
-MIME-Version: 1.0
-Message-Id: <200610180022.24631.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: akpm@osdl.org, tilmann@bitterberg.de, Sven Luther <sl@bplan-gmbh.de>
+Return-Path: <dwalker@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 02FAC67B93
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 00:32:24 +1000 (EST)
+Subject: Re: [PATCH -rt] powerpc update
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20061018072858.GA29576@elte.hu>
+References: <20061003155358.756788000@dwalker1.mvista.com>
+	<20061018072858.GA29576@elte.hu>
+Content-Type: text/plain
+Date: Wed, 18 Oct 2006 07:32:21 -0700
+Message-Id: <1161181941.23082.32.camel@c-67-180-230-165.hsd1.ca.comcast.net>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 17 October 2006 15:22, Christoph Hellwig wrote:
-> > =A0=A0=A0=A0=A0=A0rtas_node =3D of_find_node_by_name(NULL, "rtas");
-> > =A0=A0=A0=A0=A0=A0if (rtas_node =3D=3D NULL)
-> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -ENODEV;
->=20
-> And given this check I wonder why we need the platform check at all. =A0It
-> should be safe to just remove it.
->=20
+On Wed, 2006-10-18 at 09:28 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > Pay close attention to the fasteoi interrupt threading. I added usage 
+> > of mask/unmask instead of using level handling, which worked well on 
+> > PPC.
+> 
+> this is wrong - it should be doing mask+ack.
 
-One difference would be that it triggers on machines running SLOF (QS20,=20
-some JS20/JS21) and maybe some older Macs, which is probably a good
-thing.
+The main reason I did it this way is cause the current threaded eoi
+expected the line to be masked. So if you happen to have a eoi that's
+threaded you get a warning then the interrupt hangs. 
 
-I wonder if it should be a little stricter though:
+> also note that you changed:
 
-> 	rtas_node =3D of_find_node_by_path("/rtas");
->	if (!rtas_node)
->		return -ENODEV;
+> > -		goto out_unlock;
+> 
+> to:
+> 
+> > +		goto out;
+> 
+> and you even tried to hide your tracks:
 
-In case there is a node called "rtas" somewhere else.
+hiding something? I made note of these changes specifically so you would
+review them.
 
-	Arnd <><
+Daniel
