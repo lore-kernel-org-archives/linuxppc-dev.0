@@ -1,13 +1,29 @@
-Return-Path: <mgreer@mvista.com>
-Date: Wed, 18 Oct 2006 14:38:09 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
+	by ozlabs.org (Postfix) with ESMTP id 3603B67B9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 07:49:43 +1000 (EST)
+Date: Wed, 18 Oct 2006 14:49:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: wrapper: don't require execute perms for
-	zImage.initrd
-Message-ID: <20061018213809.GA8175@mag.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+In-Reply-To: <17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
+References: <1160764895.11239.14.camel@farscape>
+	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
+	<1160769226.11239.22.camel@farscape>
+	<1160773040.11239.28.camel@farscape>
+	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
+	<1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Don't require that the wrapper script be executable when building
-zImage.initrds.  This has already been fixed for zImages.
+Here is patch to add some printk to try to figure out what is going on. 
+Run with this and send me the console output leading up to the failure.
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
 
- Makefile |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
----
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 37ddfca..4b2be61 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -115,7 +115,7 @@ endif
- quiet_cmd_wrap	= WRAP    $@
-       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) vmlinux
- quiet_cmd_wrap_initrd = WRAP    $@
--      cmd_wrap_initrd =$(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-+      cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
- 				-i $(obj)/ramdisk.image.gz vmlinux
+Index: linux-2.6.19-rc2-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-17 18:43:47.000000000 -0500
++++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-18 16:47:42.904912835 -0500
+@@ -2005,6 +2005,7 @@ static int setup_cpu_cache(struct kmem_c
+ 		return enable_cpucache(cachep);
  
- $(obj)/zImage.chrp: vmlinux $(wrapperbits)
+ 	if (g_cpucache_up == NONE) {
++		printk(KERN_CRIT "setup_cpu_cache: NONE\n");
+ 		/*
+ 		 * Note: the first kmem_cache_create must create the cache
+ 		 * that's used by kmalloc(24), otherwise the creation of
+@@ -2023,6 +2024,7 @@ static int setup_cpu_cache(struct kmem_c
+ 		else
+ 			g_cpucache_up = PARTIAL_AC;
+ 	} else {
++		printk(KERN_CRIT "setup_cpu_cache: PARTIAL\n");
+ 		cachep->array[smp_processor_id()] =
+ 			kmalloc(sizeof(struct arraycache_init), GFP_KERNEL);
+ 
+@@ -2219,6 +2221,7 @@ kmem_cache_create (const char *name, siz
+ 	align = ralign;
+ 
+ 	/* Get cache's description obj. */
++	printk(KERN_CRIT "Get cache descritor\n");
+ 	cachep = kmem_cache_zalloc(&cache_cache, SLAB_KERNEL);
+ 	if (!cachep)
+ 		goto oops;
+@@ -3082,6 +3085,7 @@ static inline void *____cache_alloc(stru
+ 	void *objp;
+ 	struct array_cache *ac;
+ 
++	printk(KERN_CRIT "__cache_alloc\n");
+ 	check_irq_off();
+ 	ac = cpu_cache_get(cachep);
+ 	if (likely(ac->avail)) {
+@@ -3135,6 +3139,7 @@ static void *alternate_node_alloc(struct
+ {
+ 	int nid_alloc, nid_here;
+ 
++	printk(KERN_CRIT "alternate_node_alloc\n");
+ 	if (in_interrupt() || (flags & __GFP_THISNODE))
+ 		return NULL;
+ 	nid_alloc = nid_here = numa_node_id();
+@@ -3160,6 +3165,7 @@ void *fallback_alloc(struct kmem_cache *
+ 	struct zone **z;
+ 	void *obj = NULL;
+ 
++	printk(KERN_CRIT "fallback_alloc\n");
+ 	for (z = zonelist->zones; *z && !obj; z++)
+ 		if (zone_idx(*z) <= ZONE_NORMAL &&
+ 				cpuset_zone_allowed(*z, flags))
+@@ -3181,6 +3187,8 @@ static void *__cache_alloc_node(struct k
+ 	void *obj;
+ 	int x;
+ 
++	printk("__cache_alloc_node %d\n", nodeid);
++
+ 	l3 = cachep->nodelists[nodeid];
+ 	BUG_ON(!l3);
+ 
