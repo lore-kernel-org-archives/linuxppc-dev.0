@@ -1,21 +1,14 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A59A167B6D
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Oct 2006 14:55:28 +1000 (EST)
-Message-ID: <4535B40A.80401@oracle.com>
-Date: Tue, 17 Oct 2006 21:56:42 -0700
-From: "Randy.Dunlap" <randy.dunlap@oracle.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 1/2] ramdisk: make powerpc allmodconfig build
-References: <20061017094742.a61c4873.randy.dunlap@oracle.com>	
-	<20061017180447.GC822@shell0.pdx.osdl.net>
-	<1161141055.7906.0.camel@localhost.localdomain>
-In-Reply-To: <1161141055.7906.0.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: ibmveth and LIOBN field
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Santiago Leon <santil@us.ibm.com>
+Content-Type: text/plain
+Date: Wed, 18 Oct 2006 15:41:09 +1000
+Message-Id: <1161150069.23947.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Tue, 2006-10-17 at 11:04 -0700, Judith Lebzelter wrote:
->> Hi Randy,
->>
->> There is another section in that function which depends on 
->> 'CONFIG_BLK_DEV_INITRD' being defined.  Although it does not throw an
->> error, it does depend on some of the variables set in this section,
->> but not 'rd_size'.  I think for consistancy it might be better to do 
->> somthing like this(below)?  Or else add the same ifdef down there...
->>
->> Judith
->>
->>
->> Index: 2/linux/arch/powerpc/platforms/iseries/setup.c
->> ===================================================================
->> --- 2.orig/linux/arch/powerpc/platforms/iseries/setup.c	2006-10-17 10:49:31.423551104 -0700
->> +++ 2/linux/arch/powerpc/platforms/iseries/setup.c	2006-10-17 10:52:22.682515784 -0700
->> @@ -305,8 +305,10 @@
->>  		initrd_end = initrd_start + naca.xRamDiskSize * HW_PAGE_SIZE;
->>  		initrd_below_start_ok = 1;	// ramdisk in kernel space
->>  		ROOT_DEV = Root_RAM0;
->> +#if defined(CONFIG_BLK_DEV_RAM)
->>  		if (((rd_size * 1024) / HW_PAGE_SIZE) < naca.xRamDiskSize)
->>  			rd_size = (naca.xRamDiskSize * HW_PAGE_SIZE) / 1024;
->> +#endif /* CONFIG_BLK_DEV_RAM */
->>  	} else
->>  #endif /* CONFIG_BLK_DEV_INITRD */
->>  	{
-> 
-> That code is bogus, we'll remove it entirely.
+Hi Santiago !
 
-Great, thanks.  :)
+I'm a bit annoyed by a bit of code in the ibmveth driver:
 
--- 
-~Randy
+It accesses the iommu table pointer, to get the index and put it into
+it's own private adapter->liobn member. However, that is never used
+anywhere except in ibmveth_seq_show() for the /proc stuff to display
+this LIOBN value.
+
+Is this actually useful ? I'd like to just remove that code. I'm
+changing the DMA operations management globally in the powerpc
+architecture and that code now needs fixups. I've done them, but it
+annoys me to have this driver dive into data structures like iommu_table
+that is should have no business mucking with.
+
+Cheers,
+Ben.
