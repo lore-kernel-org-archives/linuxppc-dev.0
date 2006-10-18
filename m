@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A30DF67C09
+Return-Path: <npbalajiirtt@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 833C767B75
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Oct 2006 06:37:59 +1000 (EST)
-To: Andrea Galbusera <andrea.galbusera@teamware.it>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: JFFS2 on Lite5200 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 17 Oct 2006 12:33:03 +0200."
-	<1161081183.22948.58.camel@localhost.localdomain>
-Date: Tue, 17 Oct 2006 22:37:57 +0200
-Sender: wd@denx.de
-Message-Id: <20061017203757.0C533353602@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 18 Oct 2006 16:27:57 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so99369ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 Oct 2006 23:27:56 -0700 (PDT)
+Message-ID: <30d8ddcf0610172327w1fa87207n54b2f59402caaa14@mail.gmail.com>
+Date: Wed, 18 Oct 2006 11:57:55 +0530
+From: "Balaji N" <npbalajiirtt@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem in EHCI controller Driver and NEC D720100 chip set
+In-Reply-To: <30d8ddcf0610172247u3d536fa3h96ee13cdafde92ef@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_165868_27384920.1161152875708"
+References: <30d8ddcf0610172247u3d536fa3h96ee13cdafde92ef@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +26,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1161081183.22948.58.camel@localhost.localdomain> you wrote:
-> 
-> I'm currently using linux-2.6.16 from denx on a Lite5200 V2.0. I need to
-> access a JFFS2 filesystem on the onboard flash ( 16MB Am29L652D ).
+------=_Part_165868_27384920.1161152875708
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-We do NOT support the MPC5200 in the context of this kernel tree yet.
+Hi,
+   I am working on NEC D720100 chip set and I configured the EHCI, OHCI
+controller drivers in the kernel 2.6.11. When the kernel boots,  it gave the
+following error on the EHCI controller.
 
-For the MPC5200, we still recommend  to  use  the  linuxppc_2_4_devel
-tree.
+ehci_hcd 0000:00:11.2: Unlink after no-IRQ?  Controller is probably using
+the wrong IRQ.
+For OHCI controllers, it gave the following error.
 
-Best regards,
+ohci_hcd 0000:00:11.1: bogus NDP=255, rereads as NDP=255
+ohci_hcd 0000:00:11.0: bogus NDP=255, rereads as NDP=255
 
-Wolfgang Denk
+I do not know that what is the problem. Please give ur suggestions to solve
+this problem.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"The whole problem with the world is  that  fools  and  fanatics  are
-always so certain of themselves, but wiser people so full of doubts."
-- Bertrand Russell
+Thanks
+  -N.Balaji
+
+------=_Part_165868_27384920.1161152875708
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>
+&nbsp;&nbsp; I am working on NEC D720100 chip set and I
+configured the EHCI, OHCI controller drivers in the kernel 2.6.11. When the
+kernel boots,&nbsp; it gave the following error on the EHCI controller.
+<br>
+<br>
+ehci_hcd 0000:00:11.2: Unlink after no-IRQ?&nbsp; Controller is probably using the wrong IRQ. <br>
+For OHCI controllers, it gave the following error. <br>
+<br>
+ohci_hcd 0000:00:11.1: bogus NDP=255, rereads as NDP=255<br>
+ohci_hcd 0000:00:11.0: bogus NDP=255, rereads as NDP=255<br>
+<br>
+I do not know that what is the problem. Please give ur suggestions to solve this problem.<br>
+<br>
+Thanks <br><span class="sg">
+&nbsp; -N.Balaji<br>
+<br>
+<br>
+
+</span>
+
+------=_Part_165868_27384920.1161152875708--
