@@ -1,26 +1,16 @@
 Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp-1.hut.fi (smtp-1.hut.fi [130.233.228.91])
+Received: from smtp-4.hut.fi (smtp-4.hut.fi [130.233.228.94])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C735C67BD4
+	by ozlabs.org (Postfix) with ESMTP id A515A67BDF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 22:56:20 +1000 (EST)
-Received: from localhost (katosiko.hut.fi [130.233.228.115])
-	by smtp-1.hut.fi (8.13.6/8.12.10) with ESMTP id k9JCuGFt005528
-	for <linuxppc-embedded@ozlabs.org>; Thu, 19 Oct 2006 15:56:16 +0300
-Received: from smtp-1.hut.fi ([130.233.228.91])
-	by localhost (katosiko.hut.fi [130.233.228.115]) (amavisd-new,
-	port 10024)
-	with LMTP id 06221-01-3 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 15:56:15 +0300 (EEST)
-Received: from kosh.hut.fi (kosh.hut.fi [130.233.228.10])
-	by smtp-1.hut.fi (8.13.6/8.12.10) with ESMTP id k9JCqBa2004734
-	for <linuxppc-embedded@ozlabs.org>; Thu, 19 Oct 2006 15:52:11 +0300
-Date: Thu, 19 Oct 2006 15:52:11 +0300 (EEST)
-From: Kalle Pokki <kalle.pokki@iki.fi>
-To: linuxppc-embedded@ozlabs.org
+	Thu, 19 Oct 2006 23:41:12 +1000 (EST)
+Date: Thu, 19 Oct 2006 15:25:55 +0300 (EEST)
+From: kalle.pokki@iki.fi
+To: linuxppc-embedded@ozlabs.org, galak@kernel.crashing.org, panto@intracom.gr,
+	vbordug@ru.mvista.com
 Subject: [PATCH] CPM_UART: Fix non-console transmit
-Message-ID: <Pine.OSF.4.61.0610191549130.318096@kosh.hut.fi>
+Message-ID: <Pine.OSF.4.61.0610191519020.318096@kosh.hut.fi>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
