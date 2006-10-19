@@ -1,17 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 4A1F167B8B
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 08:40:14 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Andy Fleming'" <afleming@freescale.com>
-Subject: RE: [PATCH] Slight refactor of interrupt mapping for FSL parts
-Date: Fri, 20 Oct 2006 00:40:11 +0200
-Message-ID: <02d901c6f3cf$8952e990$1267a8c0@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <E86BE632-0841-4572-BE65-C308B0E0BF78@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, 'Jeff Garzik' <jgarzik@pobox.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CE250679E1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 09:33:42 +1000 (EST)
+Subject: Re: Badness in irq_create_mapping at arch/powerpc/kernel/irq.c:527
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicolas DET <nd@bplan-gmbh.de>
+In-Reply-To: <45377ED3.9030001@bplan-gmbh.de>
+References: <20061019122802.GA26637@aepfle.de> <45377ED3.9030001@bplan-gmbh.de>
+Content-Type: text/plain
+Date: Fri, 20 Oct 2006 09:33:28 +1000
+Message-Id: <1161300808.10524.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-10-19 at 15:34 +0200, Nicolas DET wrote:
+> Olaf Hering wrote:
+>  > I get irq warnings with current Linus tree on Pegasos.
+>  > The EDID handling for radeonfb appears to be broken as well,
+>  > but thats a different story:
+>  >
 > 
-> On Oct 16, 2006, at 16:51, Joakim Tjernlund wrote:
+> This patch enables chrp_pcibios_fixup() for bPlan's machine. however, 
+> this function should NOT be called as thoses platforms.
 > 
-> >>> -#define PHY_POLL		-1
-> >>> +#define PHY_POLL		NO_IRQ
-> >>>  #define PHY_IGNORE_INTERRUPT	-2
-> >
-> > What does PHY_IGNORE_INTERRUPT mean? Can I use that in a dummy PHY
-> > driver that just pretends that all is well? Got a ethernet port that
-> > is connect to a switch directly over MII.
-> > How do I express -2 in a dts file?
+> http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=26c5032eaa64090b2a01973b0c6ea9e7f6a80fa7
 > 
-> 
-> PHY_IGNORE_INTERRUPT means that the PHY Lib will not poll the  
-> interface, nor will it register for the interrupt.  Actually, it  
-> would be best for a dummy PHY driver.  Take a look at the driver in  
-> drivers/phy/fixed.c.  It's there to provide that kind of interface.   
-> It looks like it uses -1, which is a problem, but my revision 
-> of this  
-> patch will fix that.
+> An upcomming patch will "ppc_md.pcibios_fixup = NULL;" for every bPlan's 
+> platforms.
 
-Great, thanks. I don't see how to connect this PHY to ucc_geth driver yet. I think
-it needs some PHY work first.
+Ugh ?
 
-Maybe this patch,http://ozlabs.org/pipermail/linuxppc-dev/2006-October/026690.html, will make it better?
-Why hasn't it been applied yet?
+I'm not sure what the patch you pointed to has to do with fixups :)
 
- Jocke
+Anyway, the irq code should work with Pegasos. I think the problem is
+that it's missing a call to irq_set_default_host() on the i8259 when no
+MPIC is present. It's strange, I though I had it... BriQ needs it too.
+
+Ben.
