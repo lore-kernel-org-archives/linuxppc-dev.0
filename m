@@ -1,15 +1,22 @@
-Return-Path: <msm@freescale.com>
-Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
-From: Matthew McClintock <msm@freescale.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <1161237001.4992.5.camel@localhost>
-References: <20061019002635.GA2356@mag.az.mvista.com>
-	<1161237001.4992.5.camel@localhost>
-Content-Type: text/plain
-Date: Thu, 19 Oct 2006 00:58:00 -0500
-Message-Id: <1161237481.4992.11.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natlemon.rzone.de (natlemon.rzone.de [81.169.145.170])
+	by ozlabs.org (Postfix) with ESMTP id 74F6E67B52
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 17:04:42 +1000 (EST)
+Date: Thu, 19 Oct 2006 09:03:18 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
+Message-ID: <20061019070318.GA24642@aepfle.de>
+References: <4534BE9D.7030908@bplan-gmbh.de> <20061017132243.GA6773@lst.de>
+	<4535C0F8.1070905@bplan-gmbh.de>
+	<1161152109.7906.6.camel@localhost.localdomain>
+	<20061018073851.GA13083@aepfle.de>
+	<1161211083.10524.13.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1161211083.10524.13.camel@localhost.localdomain>
+Cc: akpm@osdl.org, tilmann@bitterberg.de, Sven Luther <sl@bplan-gmbh.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-10-19 at 00:50 -0500, Matthew McClintock wrote:
->         $(obj)/$(CONFIG_SANDPOINT): vmlinux $(wrapperbits)
->                 $(call cmd,wrap_dts,`echo $CONFIG_SANDPOINT | awk
-> '{print substr($1, 8)}'`) 
+On Thu, Oct 19, Benjamin Herrenschmidt wrote:
 
-The $(CONFIG_SANDPOINT) bits should ideally be renamed to
-$(CONFIG_TARGET) or something....
+> On Wed, 2006-10-18 at 09:38 +0200, Olaf Hering wrote:
+> > On Wed, Oct 18, Michael Ellerman wrote:
+> > 
+> > > But it's called '/proc/ppc64' right now on lots of machines, so you
+> > > can't go changing it.
+> > 
+> > if test -d /proc/ppc64 .. is a quick way to check wether the system is
+> > 64bit or not. Similar to if test -d /proc/iSeries ..
+> 
+> That's really ugly ! You really do that ? Gack...
 
--Matthew
+What way should I use?
