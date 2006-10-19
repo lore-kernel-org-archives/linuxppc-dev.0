@@ -1,17 +1,15 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D721E67B5B
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 05:14:27 +1000 (EST)
-In-Reply-To: <016001c6f16d$44d707b0$1267a8c0@Jocke>
-References: <016001c6f16d$44d707b0$1267a8c0@Jocke>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E86BE632-0841-4572-BE65-C308B0E0BF78@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] Slight refactor of interrupt mapping for FSL parts
-Date: Thu, 19 Oct 2006 14:14:18 -0500
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: linuxppc-dev@ozlabs.org, 'Jeff Garzik' <jgarzik@pobox.com>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 19 Oct 2006 12:26:41 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
+Message-ID: <20061019192641.GA6586@mag.az.mvista.com>
+References: <20061019002635.GA2356@mag.az.mvista.com>
+	<1161237001.4992.5.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1161237001.4992.5.camel@localhost>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Oct 19, 2006 at 12:50:01AM -0500, Matthew McClintock wrote:
+> On Wed, 2006-10-18 at 17:26 -0700, Mark A. Greer wrote:
+> > 
+> >         $(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
+> >                 $(call cmd,wrap_dts,sandpoint)
+> > 
+> >         $(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
+> >                 $(call cmd,wrap_dts_initrd,sandpoint) 
+> 
+> 
+> Can you do something like this to make it even more automatic:
+> 
+>         $(obj)/$(CONFIG_SANDPOINT): vmlinux $(wrapperbits)
+>                 $(call cmd,wrap_dts,`echo $CONFIG_SANDPOINT | awk '{print substr($1, 8)}'`)
+> 
+> I'm not sure if this will work exactly as is. But, I do think adding an
+> entry in the Makefile for every possible bootwrapper target is needed. I
+> say this because I intend to add targets for all variants of Freescale
+> boards at some point in the future.
+> 
+> Let me clarify my needs here some more, I want to be able to type 'make
+> cuImage' and have the scripts build the wrapper target and attached the
+> correct dtb for all variants of Freescale boards. Of course, the dtb
+> will hopefully be specified in the defconfig. Does this make sense?
 
-On Oct 16, 2006, at 16:51, Joakim Tjernlund wrote:
+Yes, something like that would reduce the number of rules that would
+have to be added.  I'll think about it.  It'll be low on my priority
+list though so feel free to submit your own patch.
 
->>> -#define PHY_POLL		-1
->>> +#define PHY_POLL		NO_IRQ
->>>  #define PHY_IGNORE_INTERRUPT	-2
->
-> What does PHY_IGNORE_INTERRUPT mean? Can I use that in a dummy PHY
-> driver that just pretends that all is well? Got a ethernet port that
-> is connect to a switch directly over MII.
-> How do I express -2 in a dts file?
-
-
-PHY_IGNORE_INTERRUPT means that the PHY Lib will not poll the  
-interface, nor will it register for the interrupt.  Actually, it  
-would be best for a dummy PHY driver.  Take a look at the driver in  
-drivers/phy/fixed.c.  It's there to provide that kind of interface.   
-It looks like it uses -1, which is a problem, but my revision of this  
-patch will fix that.
-
-(Sorry for the odd delay.  I was sure I had clicked "send" on this one)
+Mark
