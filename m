@@ -1,29 +1,18 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 77C6967B6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 03:03:13 +1000 (EST)
-Date: Thu, 19 Oct 2006 10:03:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <20061019163044.GB5819@krispykreme>
-Message-ID: <Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
-References: <1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
-	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
-	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
-	<20061019163044.GB5819@krispykreme>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 7CCBD67B6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 03:47:32 +1000 (EST)
+Date: Thu, 19 Oct 2006 12:43:29 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Nicolas DET <nd@bplan-gmbh.de>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+Message-ID: <20061019124329.1f32257a@pb15>
+In-Reply-To: <453771E5.4090808@bplan-gmbh.de>
+References: <453771E5.4090808@bplan-gmbh.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,31 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I would expect this patch to fix your issues. This will allow fallback 
-allocations to occur in the page allocator during slab bootstrap. This 
-means your per node queues will be contaminated as they were before. After 
-the slab allocator is fully booted then the per node queues will become 
-gradually become node clean.
+On Thu, 19 Oct 2006 14:39:01 +0200 Nicolas DET <nd@bplan-gmbh.de> wrote:
 
-I think it would be better if the PPC arch would fix this issue 
-by either making memory  available on node 0 or setting up node 1 as 
-the boot node.
+> We know this patch is not totaly compliant with Documentation/CodingStyle/.
+> 
+> We would like people to comment and review it. This way we would provide 
+> a new patch with the changes required (if any) for an upcomming merge in 
+> the kernel.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Hi,
 
-Index: linux-2.6.19-rc2-mm1/mm/slab.c
-===================================================================
---- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-19 11:54:24.000000000 -0500
-+++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-19 11:59:24.208194796 -0500
-@@ -1589,7 +1589,10 @@ static void *kmem_getpages(struct kmem_c
- 	 * the needed fallback ourselves since we want to serve from our
- 	 * per node object lists first for other nodes.
- 	 */
--	flags |= cachep->gfpflags | GFP_THISNODE;
-+	if (g_cpucache_up != FULL)
-+		flags |= cachep->gfpflags;
-+	else
-+		flags |= cachep->gfpflags | GFP_THISNODE;
- 
- 	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
- 	if (!page)
+Like others have said, a monolithic patch like this is really hard to
+review. Please split it up, there are several logical ways it could be
+cut, drivers vs base platform support, etc.
+
+First reaction from just browsing through it:
+
+* Lots of SillyCaps, i.e. codingstyle issues, especially in the
+  bestcomm code
+* No need to have filenames at top of files (they're even wrong in some
+  cases)
+* You reinvented pr_debug() (everyone loves doing this, myself included)
+* Some hardcoded baudrate stuff in the serial driver. Should probably
+  be passed in from somewhere -- device tree?
+* Network drivers should be posted to netdev, not the arch list
+
+
+More thorough review would be easier to do with split-up patches.
+
+
+-Olof
