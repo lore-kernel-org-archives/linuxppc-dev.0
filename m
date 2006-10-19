@@ -1,15 +1,43 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 19 Oct 2006 12:51:56 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
-Message-ID: <20061019195156.GB6586@mag.az.mvista.com>
-References: <20061019002635.GA2356@mag.az.mvista.com>
-	<E1GaYUQ-0001jb-20@jdl.com>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 592B167B22
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 06:37:19 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9JKbEpP024043
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 16:37:14 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9JKbEFr273470
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 16:37:14 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9JKbDJk005151
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 16:37:13 -0400
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
+References: <1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
+	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
+	<20061019163044.GB5819@krispykreme>
+	<Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 19 Oct 2006 15:37:09 -0500
+Message-Id: <1161290229.8946.51.camel@farscape>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1GaYUQ-0001jb-20@jdl.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,59 +47,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 19, 2006 at 09:03:18AM -0500, Jon Loeliger wrote:
-> So, like, the other day "Mark A. Greer" mumbled:
-> > 
-> > This would be used by the sandpoint, say, by adding the following rules
-> > to the Makefile in the appropriate places:
-> > 
-> > 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
-> > 		$(call cmd,wrap_dts,sandpoint)
-> > 
-> > 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
-> > 		$(call cmd,wrap_dts_initrd,sandpoint)
-> > 
-> > and:
-> > 
-> > 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
-> > 
-> > Comments?
+On Thu, 2006-19-10 at 10:03 -0700, Christoph Lameter wrote:
+> I would expect this patch to fix your issues. This will allow fallback 
+> allocations to occur in the page allocator during slab bootstrap. This 
+> means your per node queues will be contaminated as they were before. After 
+> the slab allocator is fully booted then the per node queues will become 
+> gradually become node clean.
 > 
-> Isn't there a way to do this without hardcoding the
-> platform name in the makefiles directly?  I fear for
-> the one-per-platform effect that is yet to come with
-> the conversion of many of the legacy boards.
-
-I share your apprehension but somewhere we have to map a
-CONFIG_<platform> into a name so we can make/use the correct
-zImage.<platform> and dts/<platform>.dts.
-
-We could do that in the Kconfig--define CONFIG_<platform> and
-CONFIG_TARGET to "<platform>".  Don't know if that's acceptable.
-Other ideas?
-
-> > +++ b/arch/powerpc/boot/Makefile
-> > @@ -117,6 +117,13 @@ quiet_cmd_wrap	= WRAP    $@
-> >  quiet_cmd_wrap_initrd = WRAP    $@
-> >        cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-> >  				-i $(obj)/ramdisk.image.gz vmlinux
-> > +quiet_cmd_wrap_dts = WRAP_DTS    $@
-> > +      cmd_wrap_dts =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-> > +				-s $(obj)/dts/$2.dts vmlinux
-> > +quiet_cmd_wrap_dts_initrd = WRAP_DTS    $@
-> > +      cmd_wrap_dts_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 \
-> > +				$(CROSSWRAP) -s $(obj)/dts/$2.dts \
-> > +				-i $(obj)/ramdisk.image.gz vmlinux
-> >  
-> >  $(obj)/zImage.chrp: vmlinux $(wrapperbits)
-> >  	$(call cmd,wrap,chrp)
+> I think it would be better if the PPC arch would fix this issue 
+> by either making memory  available on node 0 or setting up node 1 as 
+> the boot node.
 > 
-> Which I guess means this patch is OK, but the zImage.chrp use
-> around it is suspect.... :-)
 
-I didn't follow you here.  zImage.chrp was already there; I didn't
-change it.  It should probably stay the as it is because "chrp" could
-be any number of platforms and have several different dt's attached
-once the zImage is built.
+This didnt fix the problem on my box.  I tried this both against mm and
+linux-2.6.git 
 
-Mark
+
+
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Index: linux-2.6.19-rc2-mm1/mm/slab.c
+> ===================================================================
+> --- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-19 11:54:24.000000000 -0500
+> +++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-19 11:59:24.208194796 -0500
+> @@ -1589,7 +1589,10 @@ static void *kmem_getpages(struct kmem_c
+>  	 * the needed fallback ourselves since we want to serve from our
+>  	 * per node object lists first for other nodes.
+>  	 */
+> -	flags |= cachep->gfpflags | GFP_THISNODE;
+> +	if (g_cpucache_up != FULL)
+> +		flags |= cachep->gfpflags;
+> +	else
+> +		flags |= cachep->gfpflags | GFP_THISNODE;
+> 
+>  	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
+>  	if (!page)
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
