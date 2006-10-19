@@ -1,13 +1,13 @@
 Return-Path: <christoph@schroedinger.engr.sgi.com>
 Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 5129967BD7
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 02:49:10 +1000 (EST)
-Date: Thu, 19 Oct 2006 09:49:05 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 77C6967B6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 03:03:13 +1000 (EST)
+Date: Thu, 19 Oct 2006 10:03:04 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 To: Anton Blanchard <anton@samba.org>
 Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
 In-Reply-To: <20061019163044.GB5819@krispykreme>
-Message-ID: <Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
 References: <1161026409.31903.15.camel@farscape>
 	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
 	<1161031821.31903.28.camel@farscape>
@@ -33,16 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Oct 2006, Anton Blanchard wrote:
+I would expect this patch to fix your issues. This will allow fallback 
+allocations to occur in the page allocator during slab bootstrap. This 
+means your per node queues will be contaminated as they were before. After 
+the slab allocator is fully booted then the per node queues will become 
+gradually become node clean.
 
-> > Would you please make memory available on the node that you bootstrap 
-> > the slab allocator on? numa_node_id() must point to a node that has memory 
-> > available.
-> 
-> So we've gone from something that worked around sub optimal memory
-> layouts to something that panics. Sounds like a step backwards to me.
+I think it would be better if the PPC arch would fix this issue 
+by either making memory  available on node 0 or setting up node 1 as 
+the boot node.
 
-Could you confirm that there is indeed no memory on node 0? 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-The expectation to have memory available on the node that you 
-bootstrap on is not unrealistic.
+Index: linux-2.6.19-rc2-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-19 11:54:24.000000000 -0500
++++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-19 11:59:24.208194796 -0500
+@@ -1589,7 +1589,10 @@ static void *kmem_getpages(struct kmem_c
+ 	 * the needed fallback ourselves since we want to serve from our
+ 	 * per node object lists first for other nodes.
+ 	 */
+-	flags |= cachep->gfpflags | GFP_THISNODE;
++	if (g_cpucache_up != FULL)
++		flags |= cachep->gfpflags;
++	else
++		flags |= cachep->gfpflags | GFP_THISNODE;
+ 
+ 	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
+ 	if (!page)
