@@ -1,25 +1,18 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
-	by ozlabs.org (Postfix) with ESMTP id C0D3E67B5B
+Return-Path: <kalle.pokki@iki.fi>
+Received: from smtp-1.hut.fi (smtp-1.hut.fi [130.233.228.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0BD6B67B83
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 19:49:20 +1000 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 9B3E630D28
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 11:49:11 +0200 (CEST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: status of mpc52xx with arch=powerpc?
-References: <20061018130628.GE6202@localhost.localdomain>
-	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
-	<20061019081337.GF6202@localhost.localdomain>
-In-Reply-To: <20061019081337.GF6202@localhost.localdomain>
+	Thu, 19 Oct 2006 22:35:58 +1000 (EST)
+Date: Thu, 19 Oct 2006 15:31:10 +0300 (EEST)
+From: kalle.pokki@iki.fi
+To: linuxppc-embedded@ozlabs.org, galak@kernel.crashing.org, panto@intracom.gr,
+	vbordug@ru.mvista.com
+Subject: [PATCH] CPM_UART: Fix non-console initialisation
+Message-ID: <Pine.OSF.4.61.0610191525580.318096@kosh.hut.fi>
 MIME-Version: 1.0
-Message-ID: <200610191149.10873.roman.fietze@telemotive.de>
-Date: Thu, 19 Oct 2006 11:49:07 +0200
-Content-Type: multipart/signed; boundary="nextPart1882253.B4UWtndt8c";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,65 +23,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1882253.B4UWtndt8c
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+If there is a frame buffer console, the cpm_uart_init_portdesc()
+function is never called in the compat mode. Also, the set_lineif()
+method is not called in the compat mode.
 
-Hello,
+Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
+---
+  drivers/serial/cpm_uart/cpm_uart.h      |    2 +-
+  drivers/serial/cpm_uart/cpm_uart_core.c |    9 ++++-----
+  drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +++++-
+  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    6 +++++-
+  4 files changed, 15 insertions(+), 8 deletions(-)
 
-On Thursday 19 October 2006 10:13, Sascha Hauer wrote:
+diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+index 3b35cb7..19a6ffe 100644
+--- a/drivers/serial/cpm_uart/cpm_uart.h
++++ b/drivers/serial/cpm_uart/cpm_uart.h
+@@ -89,7 +89,7 @@ extern struct uart_cpm_port cpm_uart_por
 
-> Could you post your .dts?
-> I'm too working on it, so maybe we should stay synchronized. At the
-> moment I have nothing but a minimal dts and some .progress() messages.
+  /* these are located in their respective files */
+  void cpm_line_cr_cmd(int line, int cmd);
+-int cpm_uart_init_portdesc(void);
++int __init cpm_uart_init_portdesc(void);
+  int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con);
+  void cpm_uart_freebuf(struct uart_cpm_port *pinfo);
 
-Could you both double check e.g. with Sylvain Munaut at
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 8f3b3e5..895f2f1 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1349,11 +1349,8 @@ static int cpm_uart_init(void) {
+  		pr_info("cpm_uart: WARNING: no UART devices found on platform bus!\n");
+  		pr_info(
+  		"cpm_uart: the driver will guess configuration, but this mode is no longer supported.\n");
+-#ifndef CONFIG_SERIAL_CPM_CONSOLE
+-		ret = cpm_uart_init_portdesc();
+-		if (ret)
+-			return ret;
+-#endif
++
++		cpm_uart_init_portdesc();
 
-  http://246tnt.com/mpc52xx/
+  		cpm_reg.nr = cpm_uart_nr;
+  		ret = uart_register_driver(&cpm_reg);
+@@ -1365,6 +1362,8 @@ #endif
+  			int con = cpm_uart_port_map[i];
+  			cpm_uart_ports[con].port.line = i;
+  			cpm_uart_ports[con].port.flags = UPF_BOOT_AUTOCONF;
++			if (cpm_uart_ports[con].set_lineif)
++				cpm_uart_ports[con].set_lineif(&cpm_uart_ports[con]);
+  			uart_add_one_port(&cpm_reg, &cpm_uart_ports[con].port);
+  		}
 
-There are many drivers (git heads) available already, including IDE,
-=46EC, and so on. There's also new BestComm/FEC/IDE code from Dale
-=46arnsworth and John Rigby (Freescale) somewhere on the net.
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 95afc37..6f04a9f 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -184,10 +184,14 @@ void cpm_uart_freebuf(struct uart_cpm_po
+  }
 
-I've already opened my own branch using DENX 2.6 and several patches
-from Sylvain, Dale and John and got a first working 2.6 for the
-MPC5200 including DMA driven FEC and IDE. Sylvain promised to get in
-touch with the 2.6 maintainers to incorporate his changes into vanilla
-2.6. I don't know if he still works on that since his server crashed a
-few months ago, that's why I didn't do anything about it.
+  /* Setup any dynamic params in the uart desc */
+-int cpm_uart_init_portdesc(void)
++int __init cpm_uart_init_portdesc(void)
+  {
+  	pr_debug("CPM uart[-]:init portdesc\n");
 
++	/* Don't run this again, if the console driver did it already */
++	if (cpm_uart_nr > 0)
++		return 0;
++
+  	cpm_uart_nr = 0;
+  #ifdef CONFIG_SERIAL_CPM_SMC1
+  	cpm_uart_ports[UART_SMC1].smcp = &cpmp->cp_smc[0];
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index ef3bb47..0f21543 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -252,10 +252,14 @@ void cpm_uart_freebuf(struct uart_cpm_po
+  }
 
-Here's a part of a mail I got from John in 2006-05:
+  /* Setup any dynamic params in the uart desc */
+-int cpm_uart_init_portdesc(void)
++int __init cpm_uart_init_portdesc(void)
+  {
+  	pr_debug("CPM uart[-]:init portdesc\n");
 
-"Sylvain Munaut is working on a different bestcomm patch.  It's much
-cleaner and is based on bestcomm code written by Dale Farnsworth.
-
-You can search the mailing list for a pointer to Sylvain's git tree."
-
-
-I assume that's what I have here, spinning around with 15k for a few
-months now.
-
-
-Roman
-
-=2D-=20
-Roman Fietze              Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                            73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45      http://www.telemotive.de
-
-
---nextPart1882253.B4UWtndt8c
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQBFN0oWp5XY/BK//MIRAmVYAJ4sTHLKrmxtkOOVxB8iyl608qxqXgCeKzW8
-gf6YKHrykKcNspPGZ1TWfJY=
-=2phT
------END PGP SIGNATURE-----
-
---nextPart1882253.B4UWtndt8c--
++	/* Don't run this again, if the console driver did it already */
++	if (cpm_uart_nr > 0)
++		return 0;
++
+  	cpm_uart_nr = 0;
+  #ifdef CONFIG_SERIAL_CPM_SMC1
+  	cpm_uart_ports[UART_SMC1].smcp = (smc_t *) & cpm2_immr->im_smc[0];
+-- 
+1.4.1.1
