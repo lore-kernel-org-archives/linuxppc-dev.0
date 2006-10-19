@@ -1,22 +1,24 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 0717067BB7
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 02:26:23 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id 30so441141ugc
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 09:26:19 -0700 (PDT)
-Message-ID: <528646bc0610190926y380b454agf3b1bb90770a747c@mail.gmail.com>
-Date: Thu, 19 Oct 2006 10:26:18 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Nicolas DET" <nd@bplan-gmbh.de>, "Linas Vepstas" <linas@austin.ibm.com>
-Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
-	comment
-In-Reply-To: <20061019161855.GI6537@austin.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 20 Oct 2006 02:30:44 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+Message-ID: <20061019163044.GB5819@krispykreme>
+References: <1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
+	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <453771E5.4090808@bplan-gmbh.de>
-	<20061019161855.GI6537@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/19/06, Linas Vepstas <linas@austin.ibm.com> wrote:
-> On Thu, Oct 19, 2006 at 02:39:01PM +0200, Nicolas DET wrote:
-> > This 'big' patch adds support for CHRP/MPC52xx based platform. Here,
-> > this is the bPlan's Efika computer
-> > (http://www.bplan-gmbh.de/efika_spec_en.html)
-> >
-> > We know this patch is not totaly compliant with Documentation/CodingStyle/.
-> >
-> > We would like people to comment and review it.
->
-> Can you send the patch unzipped, and not as an attachement?
-> This would make reviewing and commenting much easier.
 
-Yes, and please break it up into more digestible chunks.
+Hi,
 
-cheers,
-g.
+> Would you please make memory available on the node that you bootstrap 
+> the slab allocator on? numa_node_id() must point to a node that has memory 
+> available.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+So we've gone from something that worked around sub optimal memory
+layouts to something that panics. Sounds like a step backwards to me.
+
+Anton
