@@ -1,25 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id A3A5867BB2
+Return-Path: <rainer.poisel@kirchnersoft.com>
+Received: from mxs.KSOFTCOM (ksow-gw.kirchnersoft.com [80.122.131.238])
+	by ozlabs.org (Postfix) with ESMTP id 3715D67B9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Oct 2006 00:46:45 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id 30so413325ugc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 07:46:43 -0700 (PDT)
-Message-ID: <528646bc0610190746i78068543mf343d19167a38f97@mail.gmail.com>
-Date: Thu, 19 Oct 2006 11:46:43 -0300
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Roman Fietze" <roman.fietze@telemotive.de>
-Subject: Re: status of mpc52xx with arch=powerpc?
-In-Reply-To: <200610191149.10873.roman.fietze@telemotive.de>
+	Fri, 20 Oct 2006 01:21:19 +1000 (EST)
+Message-ID: <F05B338A1B21D9119FFF0004761A51136AB28E@exchange-server.ow.ks>
+From: RPo <rainer.poisel@kirchnersoft.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: MPC5200 (Board: PM520) I2C Problem
+Date: Thu, 19 Oct 2006 17:05:59 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20061018130628.GE6202@localhost.localdomain>
-	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
-	<20061019081337.GF6202@localhost.localdomain>
-	<200610191149.10873.roman.fietze@telemotive.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,21 +21,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/19/06, Roman Fietze <roman.fietze@telemotive.de> wrote:
-> Could you both double check e.g. with Sylvain Munaut at
+Hi,
 
-If Sylvain is around and has available bandwidth, I'm sure he is
-monitoring this list.
+I'm currently using the MPC5200 based board "PM520" and 
+want to access the I2C bus. To do so, I attached a PCF8574P
+to the bus. But I was not successful in setting the outputs
+of this IC. 
 
-> There are many drivers (git heads) available already, including IDE,
-> FEC, and so on. There's also new BestComm/FEC/IDE code from Dale
-> Farnsworth and John Rigby (Freescale) somewhere on the net.
+Here is the code with which I tried to access the bus:
+8<==================================================
+  int i2c = 0, i = 0xfffffff;
+  i2c = open("/dev/i2c-0",O_RDWR);
+  if(i2c > 0)
+    RT_TRACE(printf("I2C opened successfully.\n"));
+  else
+    RT_TRACE(printf("Error: I2C could not be opened.\n"));
+  ioctl(i2c, I2C_SLAVE, 0x46);
+  write(i2c, &i, 1);
+8<==================================================
 
-Yes, I'm using those patches; but they don't help with getting the
-mpc52xx moved over to arch/powerpc
+The open() and ioctl() calls are successful (checked with 
+strace) but the write() call always returns -1 and an 
+EREMOTEIO error. The device nodes have been created this way:
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+8<==================================================
+mknod /dev/i2c-0 c 89 0
+mknod /dev/i2c-1 c 89 1
+chmod 666 /dev/i2c-*
+8<==================================================
+
+So here is my configuration:
+
+Linux 2.4.25 (ELDK 3.1.1-2005-06-07)
+
+The I2C modules were compiled after I had made some changes
+to the i2c-pm520.c file in the kernel-tree:
+
+8<================== ORIGINAL ======================
+/* #define MPC5xxx_I2C1_ENABLE  0 */    /* Disabled     */
+8<================== ORIGINAL ======================
+
+8<================== MODIFIED ======================
+#define MPC5xxx_I2C1_ENABLE     1       /* Enabled      */
+8<================== MODIFIED ======================
+
+I was unsure about the bus my code uses and so I decided to
+enable both busses. These are the printks I get, when I load 
+the modules:
+
+8<==================================================
+# /ftp/sbin/insmod ./i2c-core.o
+i2c-core.o: i2c core module version 2.6.1 (20010830)
+# /ftp/sbin/insmod ./i2c-proc.o
+i2c-proc.o version 2.6.1 (20010830)
+# /ftp/sbin/insmod ./i2c-dev.o
+i2c-dev.o: i2c /dev entries driver module version 2.6.1 (20010830)
+# /ftp/sbin/insmod ./i2c-algo-mpc5xxx.o speed=85
+# /ftp/sbin/insmod ./i2c-pm520.o
+i2c-algo-5xxx.o: scanning bus PM520 I2C module #1 interface...
+............................................................................
+....
+................................................
+i2c-pm520.o: I2C module #1 installed
+i2c-algo-5xxx.o: scanning bus PM520 I2C module #2 interface...
+............................................................................
+....
+.(0x51)......(0x58)(0x59)(0x5a)(0x5b)(0x5c)(0x5d)(0x5e)(0x5f)...............
+....
+............(0x7f)
+i2c-pm520.o: I2C module #2 installed
+8<==================================================
+
+So, what are these identifiers on I2C module #2 interface? 
+I can neither find them in the documentation of the EEPROM
+nor the one of the realtime clock. write() calls to these
+IDs are succesful, but it seems like nothing happens. The
+same is for the other bus (module #1 interface).
+
+Has anyone an idea or experience with I2C bus on the MPC5200?
+Best regards and thanks for reading,
+Rainer
