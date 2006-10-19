@@ -1,13 +1,12 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id D75CC67B6A
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 08:00:13 +1000 (EST)
-Date: Thu, 19 Oct 2006 15:00:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17719.64246.555371.701194@cargo.ozlabs.ibm.com>
+Date: Fri, 20 Oct 2006 08:23:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Lameter <clameter@sgi.com>
 Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <1161294197.8946.56.camel@farscape>
-Message-ID: <Pine.LNX.4.64.0610191456200.10605@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
 References: <1161026409.31903.15.camel@farscape>
 	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
 	<1161031821.31903.28.camel@farscape>
@@ -19,15 +18,9 @@ References: <1161026409.31903.15.camel@farscape>
 	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
 	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
 	<20061019163044.GB5819@krispykreme>
-	<Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
-	<1161290229.8946.51.camel@farscape>
-	<Pine.LNX.4.64.0610191427270.10316@schroedinger.engr.sgi.com>
-	<1161294197.8946.56.camel@farscape>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
+	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,20 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 19 Oct 2006, Will Schmidt wrote:
+Christoph Lameter writes:
 
-> Get cache descritor
-> __cache_alloc
-> __cache_alloc_node 0
+> Could you confirm that there is indeed no memory on node 0? 
 
-Hmmm... Still no fallback? Weird, would you apply the other patch that 
-filters the __GFP_THISNODE flag and try again? Could you try to add some 
-printk's to the page allocator to figure out what is going on there? Or is 
-it clear that the node is overallocated?
+There is about a gigabyte of memory on node 0.
 
-Could it be that the node online mask contains a node that has not been 
-bootstrapped yet?
+> The expectation to have memory available on the node that you 
+> bootstrap on is not unrealistic.
 
-Dont you have someone who can debug this? This is kind of an awkward back 
-and forth with me guessing what the system does. Someone with knowledge 
-about the way NUMA is implemented in the arch code?
+What exactly does "available" mean in this context?  The console log I
+posted earlier showed node 0 as having an active PFN range of 32768 -
+278528 (245760 pages, or 960MB), and then showed a "freeing bootmem
+node 0" message, *before* we hit the BUG.
+
+If "available" doesn't mean "there are active pages which have been
+given to the VM system via free_all_bootmem_node()", what does it
+mean?
+
+Paul.
