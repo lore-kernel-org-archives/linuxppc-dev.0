@@ -1,13 +1,24 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 0062D67B61
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 07:39:12 +1000 (EST)
-Date: Thu, 19 Oct 2006 14:39:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6E18E67B77
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 07:43:24 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9JLhKld024194
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 17:43:20 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9JLhKR5144268
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 17:43:20 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9JLhKFA030973
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 17:43:20 -0400
 Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <1161290229.8946.51.camel@farscape>
-Message-ID: <Pine.LNX.4.64.0610191432540.10401@schroedinger.engr.sgi.com>
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0610191427270.10316@schroedinger.engr.sgi.com>
 References: <1161026409.31903.15.camel@farscape>
 	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
 	<1161031821.31903.28.camel@farscape>
@@ -21,11 +32,14 @@ References: <1161026409.31903.15.camel@farscape>
 	<20061019163044.GB5819@krispykreme>
 	<Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
 	<1161290229.8946.51.camel@farscape>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0610191427270.10316@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 19 Oct 2006 16:43:16 -0500
+Message-Id: <1161294197.8946.56.camel@farscape>
+Mime-Version: 1.0
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +49,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 19 Oct 2006, Will Schmidt wrote:
+On Thu, 2006-19-10 at 14:28 -0700, Christoph Lameter wrote:
+> On Thu, 19 Oct 2006, Will Schmidt wrote:
+> 
+> > This didnt fix the problem on my box.  I tried this both against mm and
+> > linux-2.6.git 
+> 
+> Same failure condition? Would you also apply the printk patch and send 
+> me the output?
 
-> This didnt fix the problem on my box.  I tried this both against mm and
-> linux-2.6.git 
+Yup, here it is:
 
-GFP_THISNODE is also set at a higher level for fallback but it should not 
-be set for the initial allocation. If you try this with the debug printks
-then please use this patch to make sure that all allocs fall back,
-
-Index: linux-2.6.19-rc2-mm1/mm/slab.c
-===================================================================
---- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-19 11:54:24.000000000 -0500
-+++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-19 16:32:09.454825851 -0500
-@@ -1589,7 +1589,10 @@ static void *kmem_getpages(struct kmem_c
- 	 * the needed fallback ourselves since we want to serve from our
- 	 * per node object lists first for other nodes.
- 	 */
--	flags |= cachep->gfpflags | GFP_THISNODE;
-+	if (g_cpucache_up != FULL)
-+		flags |= cachep->gfpflags & ~__GFP_THISNODE;
-+	else
-+		flags |= cachep->gfpflags | GFP_THISNODE;
- 
- 	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
- 	if (!page)
+-----------------------------------------------------
+ppc64_pft_size                = 0x18
+physicalMemorySize            = 0x22000000
+ppc64_caches.dcache_line_size = 0x80
+ppc64_caches.icache_line_size = 0x80
+htab_address                  = 0x0000000000000000
+htab_hash_mask                = 0x1ffff
+-----------------------------------------------------
+Linux version 2.6.19-rc2-mm1 (willschm@airbag2) (gcc version 4.1.0 (SUSE
+Linux)) #2 SMP Thu Oct 19 16:37:26 CDT 2006
+[boot]0012 Setup Arch
+NUMA associativity depth for CPU/Memory: 3
+adding cpu 0 to node 0
+node 0
+NODE_DATA() = c000000015ffed80
+start_paddr = 8000000
+end_paddr = 16000000
+bootmap_paddr = 15ffc000
+reserve_bootmem ffc0000 40000
+reserve_bootmem 15ffc000 2000
+reserve_bootmem 15ffed80 1280
+node 1
+NODE_DATA() = c000000021ff7b80
+start_paddr = 0
+end_paddr = 22000000
+bootmap_paddr = 21ff2000
+reserve_bootmem 0 851000
+reserve_bootmem 2655000 9000
+reserve_bootmem 77b2000 84e000
+reserve_bootmem 21ff2000 5000
+reserve_bootmem 21ff7b80 1280
+reserve_bootmem 21ff8e58 71a4
+No ramdisk, default root is /dev/sda2
+EEH: No capable adapters found
+PPC64 nvram contains 7168 bytes
+Zone PFN ranges:
+  DMA             0 ->   139264
+  Normal     139264 ->   139264
+early_node_map[3] active PFN ranges
+    1:        0 ->    32768
+    0:    32768 ->    90112
+    1:    90112 ->   139264
+[boot]0015 Setup Done
+Built 2 zonelists.  Total pages: 136576
+Kernel command line: root=/dev/sda3  xmon=on numa=debug
+[boot]0020 XICS Init
+[boot]0021 XICS Done
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+freeing bootmem node 0
+freeing bootmem node 1
+Memory: 530216k/557056k available (5544k kernel code, 30508k reserved,
+2232k data, 548k bss, 248k init)
+Get cache descritor
+__cache_alloc
+__cache_alloc_node 0
+fallback_alloc
+__cache_alloc_node 0
+__cache_alloc_node 1
+kernel BUG in __cache_alloc_node
+at /development/kernels/2.6-mm/mm/slab.c:3193!
+cpu 0x0: Vector: 700 (Program Check) at [c00000000079b8d0]
+    pc: c0000000000b70f8: .__cache_alloc_node+0x5c/0x208
+    lr: c0000000000b70e0: .__cache_alloc_node+0x44/0x208
+    sp: c00000000079bb50
+   msr: 8000000000021032
+  current = 0xc00000000058ca90
+  paca    = 0xc00000000058d380
+    pid   = 0, comm = swapper
+kernel BUG in __cache_alloc_node
+at /development/kernels/2.6-mm/mm/slab.c:3193!
+enter ? for help
+[c00000000079bc00] c0000000000b735c .fallback_alloc+0xb8/0xfc
+[c00000000079bca0] c0000000000b7930 .kmem_cache_zalloc+0xd4/0x128
+[c00000000079bd40] c0000000000b9af4 .kmem_cache_create+0x1f4/0x604
+[c00000000079be30] c000000000546d98 .kmem_cache_init+0x1d8/0x4b0
+[c00000000079bef0] c00000000052c748 .start_kernel+0x244/0x328
+[c00000000079bf90] c0000000000084f8 .start_here_common+0x54/0x5c
+0:mon>  
