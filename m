@@ -1,18 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9223167B89
+Return-Path: <kallepokki@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 20ED067B61
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Oct 2006 05:28:09 +1000 (EST)
-Date: Thu, 19 Oct 2006 23:28:03 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: kalle.pokki@iki.fi
-Subject: Re: [PATCH] CPM_UART: Fix non-console transmit
-Message-ID: <20061019232803.6f28ca85@localhost.localdomain>
-In-Reply-To: <Pine.OSF.4.61.0610191519020.318096@kosh.hut.fi>
-References: <Pine.OSF.4.61.0610191519020.318096@kosh.hut.fi>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_7KQbBuxYK=9nQE_/0IJ4ZU=";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Fri, 20 Oct 2006 05:40:30 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id t32so870897pyc
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 19 Oct 2006 12:40:28 -0700 (PDT)
+Message-ID: <a425f86c0610191240q3be8bc87q7f20a345e27a5d3d@mail.gmail.com>
+Date: Thu, 19 Oct 2006 22:40:27 +0300
+From: "Kalle Pokki" <kalle.pokki@iki.fi>
+Sender: kallepokki@gmail.com
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+Subject: Re: [PATCH] CPM_UART: Fix non-console initialisation
+In-Reply-To: <20061019231455.0ea159e1@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <Pine.OSF.4.61.0610191525580.318096@kosh.hut.fi>
+	<20061019231455.0ea159e1@localhost.localdomain>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,73 +28,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_7KQbBuxYK=9nQE_/0IJ4ZU=
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 10/19/06, Vitaly Bordug <vbordug@ru.mvista.com> wrote:
+> And we end up with init_portdesc called unconditionally? this would likely break, or at least confuse the
+> code, that uses platform dev to pass resources offsets.
 
-On Thu, 19 Oct 2006 15:25:55 +0300 (EEST)
-kalle.pokki@iki.fi wrote:
+Well now that I look at it again, we should probably do
 
-> The SMC and SCC hardware transmitter is enabled at the wrong
-> place. Simply writing twice to the non-console port, like
->=20
-> $ echo asdf > /dev/ttyCPM1
-> $ echo asdf > /dev/ttyCPM1
->=20
-> puts the shell into endless uninterruptible sleep, since the
-> transmitter is stopped after the first write, and is not enabled
-> before the shutdown function of the second write. Thus the transmit
-> buffers are never emptied.
->=20
-Was about to Ack, but... need one more glance at it on hw.=20
-I recall something that might be reason of the current implementation,
-but had no chance to recover the details.
+if (cpm_uart_no == 0)
+     cpm_uart_init_portdesc();
 
-Thanks for the input. I'll follow-up tomorrow.
+to make it at least a little less confusing. Remember that
+init_portdesc() is not called when using platform device, so this
+should not affect those targets using it at all.
 
-> Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
-> ---
->   drivers/serial/cpm_uart/cpm_uart_core.c |    5 ++---
->   1 files changed, 2 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
-> b/drivers/serial/cpm_uart/cpm_uart_core.c index 90ff96e..8f3b3e5
-> 100644 --- a/drivers/serial/cpm_uart/cpm_uart_core.c
-> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-> @@ -194,10 +194,8 @@ static void cpm_uart_start_tx(struct uar
->   	if (cpm_uart_tx_pump(port) !=3D 0) {
->   		if (IS_SMC(pinfo)) {
->   			smcp->smc_smcm |=3D SMCM_TX;
-> -			smcp->smc_smcmr |=3D SMCMR_TEN;
->   		} else {
->   			sccp->scc_sccm |=3D UART_SCCM_TX;
-> -			pinfo->sccp->scc_gsmrl |=3D SCC_GSMRL_ENT;
->   		}
->   	}
->   }
-> @@ -420,9 +418,10 @@ static int cpm_uart_startup(struct uart_
->   	/* Startup rx-int */
->   	if (IS_SMC(pinfo)) {
->   		pinfo->smcp->smc_smcm |=3D SMCM_RX;
-> -		pinfo->smcp->smc_smcmr |=3D SMCMR_REN;
-> +		pinfo->smcp->smc_smcmr |=3D (SMCMR_REN | SMCMR_TEN);
->   	} else {
->   		pinfo->sccp->scc_sccm |=3D UART_SCCM_RX;
-> +		pinfo->sccp->scc_gsmrl |=3D (SCC_GSMRL_ENR |
-> SCC_GSMRL_ENT); }
->=20
->   	if (!(pinfo->flags & FLAG_CONSOLE))
+> Personally, I don't care much of compat stuff, unless it is breaking/confusing targets
+> using proper resources...
 
---Sig_7KQbBuxYK=9nQE_/0IJ4ZU=
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFN9HDuOg9JvQhSEsRAttdAJ4t3HsV/UAPHe1wji7ofjeXDL7iRgCdGObV
-K6tgyZAtG6/HfKpVQLnH0fs=
-=PXvY
------END PGP SIGNATURE-----
-
---Sig_7KQbBuxYK=9nQE_/0IJ4ZU=--
+I'm sure there are still lots of people using the compat mode. As long
+as we have it, it should be kept functional.
