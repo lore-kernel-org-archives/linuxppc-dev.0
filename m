@@ -1,13 +1,19 @@
 Return-Path: <jdl@jdl.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile 
-In-Reply-To: Your message of "Wed, 18 Oct 2006 17:26:35 PDT."
-	<20061019002635.GA2356@mag.az.mvista.com>
-References: <20061019002635.GA2356@mag.az.mvista.com> 
-Date: Thu, 19 Oct 2006 09:03:18 -0500
+Received: from jdl.com (mail.jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 78A9567C4E
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 01:51:45 +1000 (EST)
+To: Nicolas DET <nd@bplan-gmbh.de>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+In-Reply-To: Your message of "Thu, 19 Oct 2006 14:39:01 +0200."
+	<453771E5.4090808@bplan-gmbh.de>
+References: <453771E5.4090808@bplan-gmbh.de> 
+Date: Thu, 19 Oct 2006 09:12:44 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1GaYUQ-0001jb-20@jdl.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Message-Id: <E1GaYdY-0001kz-Ae@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,46 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day "Mark A. Greer" mumbled:
+So, like, the other day Nicolas DET mumbled:
 > 
-> This would be used by the sandpoint, say, by adding the following rules
-> to the Makefile in the appropriate places:
-> 
-> 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
-> 		$(call cmd,wrap_dts,sandpoint)
-> 
-> 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
-> 		$(call cmd,wrap_dts_initrd,sandpoint)
-> 
-> and:
-> 
-> 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
-> 
-> Comments?
+> This 'big' patch adds support for CHRP/MPC52xx based platform. Here, 
+> this is the bPlan's Efika computer 
+> (http://www.bplan-gmbh.de/efika_spec_en.html)
 
-Isn't there a way to do this without hardcoding the
-platform name in the makefiles directly?  I fear for
-the one-per-platform effect that is yet to come with
-the conversion of many of the legacy boards.
+In mail like this with buried patches, could we at least get
+the full "git diff --stat HEAD"  or "git apply --stat /path/to/patch"
+included in the base mail too please?
 
-
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -117,6 +117,13 @@ quiet_cmd_wrap	= WRAP    $@
->  quiet_cmd_wrap_initrd = WRAP    $@
->        cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
->  				-i $(obj)/ramdisk.image.gz vmlinux
-> +quiet_cmd_wrap_dts = WRAP_DTS    $@
-> +      cmd_wrap_dts =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-> +				-s $(obj)/dts/$2.dts vmlinux
-> +quiet_cmd_wrap_dts_initrd = WRAP_DTS    $@
-> +      cmd_wrap_dts_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 \
-> +				$(CROSSWRAP) -s $(obj)/dts/$2.dts \
-> +				-i $(obj)/ramdisk.image.gz vmlinux
->  
->  $(obj)/zImage.chrp: vmlinux $(wrapperbits)
->  	$(call cmd,wrap,chrp)
-
-Which I guess means this patch is OK, but the zImage.chrp use
-around it is suspect.... :-)
-
+Thanks,
 jdl
