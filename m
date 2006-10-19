@@ -1,31 +1,17 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 2B33367B83
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 08:31:22 +1000 (EST)
-Date: Thu, 19 Oct 2006 15:31:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <17719.64246.555371.701194@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
-References: <1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
-	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
-	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
-	<20061019163044.GB5819@krispykreme>
-	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
-	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 4A1F167B8B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 08:40:14 +1000 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Andy Fleming'" <afleming@freescale.com>
+Subject: RE: [PATCH] Slight refactor of interrupt mapping for FSL parts
+Date: Fri, 20 Oct 2006 00:40:11 +0200
+Message-ID: <02d901c6f3cf$8952e990$1267a8c0@Jocke>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <E86BE632-0841-4572-BE65-C308B0E0BF78@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, 'Jeff Garzik' <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,23 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Oct 2006, Paul Mackerras wrote:
+> 
+> On Oct 16, 2006, at 16:51, Joakim Tjernlund wrote:
+> 
+> >>> -#define PHY_POLL		-1
+> >>> +#define PHY_POLL		NO_IRQ
+> >>>  #define PHY_IGNORE_INTERRUPT	-2
+> >
+> > What does PHY_IGNORE_INTERRUPT mean? Can I use that in a dummy PHY
+> > driver that just pretends that all is well? Got a ethernet port that
+> > is connect to a switch directly over MII.
+> > How do I express -2 in a dts file?
+> 
+> 
+> PHY_IGNORE_INTERRUPT means that the PHY Lib will not poll the  
+> interface, nor will it register for the interrupt.  Actually, it  
+> would be best for a dummy PHY driver.  Take a look at the driver in  
+> drivers/phy/fixed.c.  It's there to provide that kind of interface.   
+> It looks like it uses -1, which is a problem, but my revision 
+> of this  
+> patch will fix that.
 
-> What exactly does "available" mean in this context?  The console log I
-> posted earlier showed node 0 as having an active PFN range of 32768 -
-> 278528 (245760 pages, or 960MB), and then showed a "freeing bootmem
-> node 0" message, *before* we hit the BUG.
+Great, thanks. I don't see how to connect this PHY to ucc_geth driver yet. I think
+it needs some PHY work first.
 
-Available in the sense that the page allocator can allocate from them. 
-Will's console output shows that all memory of node 0 is allocated and not 
-available.
+Maybe this patch,http://ozlabs.org/pipermail/linuxppc-dev/2006-October/026690.html, will make it better?
+Why hasn't it been applied yet?
 
-> If "available" doesn't mean "there are active pages which have been
-> given to the VM system via free_all_bootmem_node()", what does it
-> mean?
-
-The page allocator must be running and able to serve pages from the boot 
-node. This fails for some reason and the slab cannot bootstrap. The memory 
-not available is the first guess. Could you trace the allocation in the 
-page allocator (__alloc_pages) when the slab attempts to bootstrap and 
-figure out why exactly the allocation fails?
+ Jocke
