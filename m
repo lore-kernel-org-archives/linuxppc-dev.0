@@ -1,33 +1,30 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D8DB267B77
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 04:03:12 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k9JI3Bek010636
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 11:03:11 -0700 (MST)
-Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
-	[10.82.65.62])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k9JI39Bu007204
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 13:03:10 -0500 (CDT)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
-	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	k9JHnRvR024122
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 12:49:28 -0500 (CDT)
-Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 6C20B4B92C
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 13:03:08 -0500 (CDT)
-Received: (from b07421@localhost)
-	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	k9JI38hI024271
-	for linuxppc-dev@ozlabs.org; Thu, 19 Oct 2006 13:03:08 -0500
-Date: Thu, 19 Oct 2006 13:03:08 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] qe_ic: Do a sync when masking interrupts.
-Message-ID: <20061019180308.GA24256@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
+	by ozlabs.org (Postfix) with ESMTP id 16DAA67B99
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 04:07:16 +1000 (EST)
+Date: Thu, 19 Oct 2006 11:07:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+In-Reply-To: <Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0610191057040.8873@schroedinger.engr.sgi.com>
+References: <1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
+	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
+	<20061019163044.GB5819@krispykreme>
+	<Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,97 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch causes a sync do be done after masking a QE interrupt, to
-ensure that the masking has completed before interrupts are enabled.
-This allows the masking of the cascade IRQ to be removed without causing
-spurious interrupts.
+On Thu, 19 Oct 2006, Christoph Lameter wrote:
 
-The mask_and_ack function is also removed and set to the mask function,
-as the two are identical.
+> I would expect this patch to fix your issues. This will allow fallback 
+> allocations to occur in the page allocator during slab bootstrap. This 
+> means your per node queues will be contaminated as they were before. After 
+> the slab allocator is fully booted then the per node queues will become 
+> gradually become node clean.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/sysdev/qe_lib/qe_ic.c |   34 +++++++---------------------------
- 1 files changed, 7 insertions(+), 27 deletions(-)
+Forgot to mention the results of this contamination: The bootstrap process 
+exercises fine control over data structures to place them in such a way 
+that the slab allocator can perform optimally. F.e. data structures are 
+placed in such a way on nodes that a kmalloc does not need a single off 
+node reference.
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-index 6995f51..d96e48d 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-@@ -222,24 +222,12 @@ static void qe_ic_mask_irq(unsigned int 
- 	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
- 	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
- 		    temp & ~qe_ic_info[src].mask);
--
--	spin_unlock_irqrestore(&qe_ic_lock, flags);
--}
--
--static void qe_ic_mask_irq_and_ack(unsigned int virq)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
--	unsigned long flags;
--	u32 temp;
--
--	spin_lock_irqsave(&qe_ic_lock, flags);
--
--	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
--	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
--		    temp & ~qe_ic_info[src].mask);
--
--	/* There is nothing to do for ack here, ack is handled in ISR */
-+	
-+	/* Flush the above write before enabling interrupts;
-+	 * otherwise, spurious interrupts will sometimes
-+	 * happen
-+	 */
-+	mb();
- 
- 	spin_unlock_irqrestore(&qe_ic_lock, flags);
- }
-@@ -248,7 +236,7 @@ static struct irq_chip qe_ic_irq_chip = 
- 	.typename = " QEIC  ",
- 	.unmask = qe_ic_unmask_irq,
- 	.mask = qe_ic_mask_irq,
--	.mask_ack = qe_ic_mask_irq_and_ack,
-+	.mask_ack = qe_ic_mask_irq,
- };
- 
- static int qe_ic_host_match(struct irq_host *h, struct device_node *node)
-@@ -331,8 +319,6 @@ unsigned int qe_ic_get_high_irq(struct q
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
- 
--/* FIXME: We mask all the QE Low interrupts while handling.  We should
-- * let other interrupt come in, but BAD interrupts are generated */
- void fastcall qe_ic_cascade_low(unsigned int irq, struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = desc->handler_data;
-@@ -340,14 +326,10 @@ void fastcall qe_ic_cascade_low(unsigned
- 
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
- 
--	chip->mask_ack(irq);
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
--	chip->unmask(irq);
- }
- 
--/* FIXME: We mask all the QE High interrupts while handling.  We should
-- * let other interrupt come in, but BAD interrupts are generated */
- void fastcall qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = desc->handler_data;
-@@ -355,10 +337,8 @@ void fastcall qe_ic_cascade_high(unsigne
- 
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 
--	chip->mask_ack(irq);
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
--	chip->unmask(irq);
- }
- 
- void __init qe_ic_init(struct device_node *node, unsigned int flags)
--- 
-1.4.2.3
+The contamination will disrupt this placement. The slab believes that 
+memory is from a different node than were it actually came from. As a 
+result key data structures (such as cpucache descriptors) are placed 
+on the wrong node. kmalloc and other slab operations may require
+off node allocations for every call. Depending on the NUMA factor this may 
+have a significant influence on overall system performance (We have 
+measured this effect to cause a drop of 20% in AIM7 performance!).
+
+In addition to this stuff, I am right now dealing with huge page 
+fault serialization (introduced to safely support DB2) and sparsemem 
+continually causing nested table lookups in fundamental vm operations. All 
+work of IBM people. Not interested in performance at all?
