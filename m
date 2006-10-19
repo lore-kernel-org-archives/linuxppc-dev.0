@@ -1,19 +1,14 @@
 Return-Path: <christoph@schroedinger.engr.sgi.com>
 Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
-	by ozlabs.org (Postfix) with ESMTP id 1DD0B67B77
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 07:30:34 +1000 (EST)
-Date: Thu, 19 Oct 2006 14:30:30 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 0062D67B61
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 07:39:12 +1000 (EST)
+Date: Thu, 19 Oct 2006 14:39:05 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 To: Will Schmidt <will_schmidt@vnet.ibm.com>
 Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <1161290304.8946.54.camel@farscape>
-Message-ID: <Pine.LNX.4.64.0610191429010.10316@schroedinger.engr.sgi.com>
-References: <1160764895.11239.14.camel@farscape>
-	<Pine.LNX.4.64.0610131158270.26311@schroedinger.engr.sgi.com>
-	<1160769226.11239.22.camel@farscape>
-	<1160773040.11239.28.camel@farscape>
-	<Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
-	<1161026409.31903.15.camel@farscape>
+In-Reply-To: <1161290229.8946.51.camel@farscape>
+Message-ID: <Pine.LNX.4.64.0610191432540.10401@schroedinger.engr.sgi.com>
+References: <1161026409.31903.15.camel@farscape>
 	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
 	<1161031821.31903.28.camel@farscape>
 	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
@@ -23,12 +18,14 @@ References: <1160764895.11239.14.camel@farscape>
 	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
 	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
 	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
-	<1161290304.8946.54.camel@farscape>
+	<20061019163044.GB5819@krispykreme>
+	<Pine.LNX.4.64.0610190959560.8433@schroedinger.engr.sgi.com>
+	<1161290229.8946.51.camel@farscape>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+	Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,18 +37,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Thu, 19 Oct 2006, Will Schmidt wrote:
 
-> Is there a hook where we can see what/where the memory is going?  Does
-> it seem reasonable for all of the memory that is in node 0 to be
-> consumed? 
-> Mine appears to have... 
-> Node 0 MemTotal:       229376 kB
-> Node 0 MemFree:             0 kB
-> Node 0 MemUsed:        229376 kB
+> This didnt fix the problem on my box.  I tried this both against mm and
+> linux-2.6.git 
 
-The memory is likely consumed before the slab allocator bootstrap code is 
-reached.
+GFP_THISNODE is also set at a higher level for fallback but it should not 
+be set for the initial allocation. If you try this with the debug printks
+then please use this patch to make sure that all allocs fall back,
 
-> And one of Paul's earlier notes mentioned about a gig of ram on node0;
-
-Yeah. I cannot make sense out of all of this. What is so special about 
-node 0?
+Index: linux-2.6.19-rc2-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-19 11:54:24.000000000 -0500
++++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-19 16:32:09.454825851 -0500
+@@ -1589,7 +1589,10 @@ static void *kmem_getpages(struct kmem_c
+ 	 * the needed fallback ourselves since we want to serve from our
+ 	 * per node object lists first for other nodes.
+ 	 */
+-	flags |= cachep->gfpflags | GFP_THISNODE;
++	if (g_cpucache_up != FULL)
++		flags |= cachep->gfpflags & ~__GFP_THISNODE;
++	else
++		flags |= cachep->gfpflags | GFP_THISNODE;
+ 
+ 	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
+ 	if (!page)
