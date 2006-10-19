@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 47C0A67BD4
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Oct 2006 08:40:13 +1000 (EST)
-Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200610180022.24631.arnd@arndb.de>
-References: <4534BE9D.7030908@bplan-gmbh.de> <20061017132243.GA6773@lst.de>
-	<200610180022.24631.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 19 Oct 2006 08:39:55 +1000
-Message-Id: <1161211195.10524.15.camel@localhost.localdomain>
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 18 Oct 2006 17:26:35 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
+Message-ID: <20061019002635.GA2356@mag.az.mvista.com>
 Mime-Version: 1.0
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Sven Luther <sl@bplan-gmbh.de>,
-	tilmann@bitterberg.de
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +16,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-18 at 00:22 +0200, Arnd Bergmann wrote:
-> On Tuesday 17 October 2006 15:22, Christoph Hellwig wrote:
-> > >       rtas_node = of_find_node_by_name(NULL, "rtas");
-> > >       if (rtas_node == NULL)
-> > >               return -ENODEV;
-> > 
-> > And given this check I wonder why we need the platform check at all.  It
-> > should be safe to just remove it.
-> > 
-> 
-> One difference would be that it triggers on machines running SLOF (QS20, 
-> some JS20/JS21) and maybe some older Macs, which is probably a good
-> thing.
+Paul, et. al.,
 
-Older macs may have bits of RTAS, but it doesn't work. I'd rather still
-blacklist machine_is(powermac).
+Currently, platforms that don't have a dt-aware firmware need to
+manually run the wrapper script to wrap a dtb into the zImage that
+was just built.  This is a PITA and is guaranteed to mess up people
+who just want to build a zImage and have it work.
 
-> I wonder if it should be a little stricter though:
-> 
-> > 	rtas_node = of_find_node_by_path("/rtas");
-> >	if (!rtas_node)
-> >		return -ENODEV;
-> 
-> In case there is a node called "rtas" somewhere else.
+To address this, I added a couple new rules to arch/powerpc/boot/Makefile
+so that the dtb is automatically wrapped for "reference" platforms.
+"reference" meaning a platform that has its dts in
+arch/powerpc/boot/dts/<platform>.dts.  It won't work for non-reference
+platforms.
 
-Yeah, just in case...
+The patch is attached below with a header in case it is acceptable, as
+is.
 
-Ben.
+This would be used by the sandpoint, say, by adding the following rules
+to the Makefile in the appropriate places:
+
+	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
+		$(call cmd,wrap_dts,sandpoint)
+
+	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
+		$(call cmd,wrap_dts_initrd,sandpoint)
+
+and:
+
+	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
+
+Comments?
+
+Mark
+---
+
+[PATCH] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
+
+Add cmd_wrap_dts rules to bootwrapper Makefile so "make zImage" and
+"make zImage.initrd" will wrap the platform's dtb in the zImage.
+This eliminates the need to manually run the wrapper script a
+second time just to add the dtb to the zImage.
+
+This only works for reference platforms that have their dts files
+in arch/powerpc/boot/dts/<platform>.dts.
+
+Depends-on: http://ozlabs.org/pipermail/linuxppc-dev/2006-October/027003.html
+
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+
+ Makefile |    7 +++++++
+ 1 files changed, 7 insertions(+)
+---
+
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 4b2be61..3dc4e55 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -117,6 +117,13 @@ quiet_cmd_wrap	= WRAP    $@
+ quiet_cmd_wrap_initrd = WRAP    $@
+       cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+ 				-i $(obj)/ramdisk.image.gz vmlinux
++quiet_cmd_wrap_dts = WRAP_DTS    $@
++      cmd_wrap_dts =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
++				-s $(obj)/dts/$2.dts vmlinux
++quiet_cmd_wrap_dts_initrd = WRAP_DTS    $@
++      cmd_wrap_dts_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 \
++				$(CROSSWRAP) -s $(obj)/dts/$2.dts \
++				-i $(obj)/ramdisk.image.gz vmlinux
+ 
+ $(obj)/zImage.chrp: vmlinux $(wrapperbits)
+ 	$(call cmd,wrap,chrp)
