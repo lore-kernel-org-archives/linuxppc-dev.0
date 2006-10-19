@@ -1,23 +1,25 @@
-Return-Path: <rahul.theraja@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
-	by ozlabs.org (Postfix) with ESMTP id 9067B679E9
+Return-Path: <jcrigby@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id 111A767B89
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Oct 2006 02:23:27 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 50so177116wri
+	Fri, 20 Oct 2006 03:21:03 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id x4so1047798nfb
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 09:23:26 -0700 (PDT)
-Message-ID: <ff9652ca0610190923vffbb981j1978ce4159489b0c@mail.gmail.com>
-Date: Thu, 19 Oct 2006 21:53:24 +0530
-From: "Rahul Theraja" <rahul.theraja@gmail.com>
-To: "Shakthi Kannan" <shakthimaan@gmail.com>
-Subject: Re: help in block drivers
-In-Reply-To: <d16b1c80610190808y17c516dl35cfc8ca4a7a42ad@mail.gmail.com>
+	Thu, 19 Oct 2006 10:21:01 -0700 (PDT)
+Message-ID: <4b73d43f0610191021y76eb6a04ydca2d73f90467c1@mail.gmail.com>
+Date: Thu, 19 Oct 2006 11:21:00 -0600
+From: "John Rigby" <jcrigby@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: status of mpc52xx with arch=powerpc?
+In-Reply-To: <528646bc0610190746i78068543mf343d19167a38f97@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_156228_15324467.1161275004769"
-References: <ff9652ca0610190314u32a620b5qd0bd27a1b2700a22@mail.gmail.com>
-	<d16b1c80610190808y17c516dl35cfc8ca4a7a42ad@mail.gmail.com>
-Cc: kernelnewbies@nl.linux.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061018130628.GE6202@localhost.localdomain>
+	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
+	<20061019081337.GF6202@localhost.localdomain>
+	<200610191149.10873.roman.fietze@telemotive.de>
+	<528646bc0610190746i78068543mf343d19167a38f97@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,67 +30,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_156228_15324467.1161275004769
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Last time I offered to help Sylvain with the migration to powerpc he said:
 
-Hello Shakthi Kannan,
+>Frankly ... I don't know, I don't get how this new thing works ...
+>if you figure it out, be my guest do it and explain it to me ;)
 
-Thanks for the reply .
+>It would be great because I get this cleaned API sitting on my
+>tree along with the IDE DMA and the FEC code that I'd really
+>like to send ...
 
-> driver. I could not understand why the "sbd_request " is called even
-> though
-> > i have given only one read call from user space file.
+Unfortunately I haven't been able to work on it either.
+
+On 10/19/06, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 10/19/06, Roman Fietze <roman.fietze@telemotive.de> wrote:
+> > Could you both double check e.g. with Sylvain Munaut at
 >
-> Block device I/O transfer is done in blocks.
+> If Sylvain is around and has available bandwidth, I'm sure he is
+> monitoring this list.
 >
-> >  And also in the driver, in the function sbd_request() how does the
-> driver
-> > get the parameters  like sector, current_nr_sectors and buffer.
+> > There are many drivers (git heads) available already, including IDE,
+> > FEC, and so on. There's also new BestComm/FEC/IDE code from Dale
+> > Farnsworth and John Rigby (Freescale) somewhere on the net.
 >
-> VFS <-> SCSI <-> Block device?
+> Yes, I'm using those patches; but they don't help with getting the
+> mpc52xx moved over to arch/powerpc
 >
-> > i could move
-> > furhter fastly.
+> --
+> Grant Likely, B.Sc. P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >
-> Fastly? IMHO, learning kernel development involves lot of patience.
->
-> SK
-
-
-
-Is it necessary to use kernel_thread() in block drivers. In  drivers/block
-loop.c i could see  kernel_thread() being used but in floopy.c it is not
-used. When is this kernel_thread() function is supposed to be used ?  In the
-sbd_device also the kernel_thread() is not used.
-
-Anyone please kindly clarify my doubts.
-
-Thanks in Advance
-
--Rahul
-
-------=_Part_156228_15324467.1161275004769
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello Shakthi Kannan,<br><br>
-Thanks for the reply .<br>
-<br><div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">&gt; driver. I could not understand why the &quot;sbd_request &quot; is called even though
-<br>&gt; i have given only one read call from user space file.<br><br>Block device I/O transfer is done in blocks.<br><br>&gt;&nbsp;&nbsp;And also in the driver, in the function sbd_request() how does the driver<br>&gt; get the parameters&nbsp;&nbsp;like sector, current_nr_sectors and buffer.
-<br><br>VFS &lt;-&gt; SCSI &lt;-&gt; Block device?<br><br>&gt; i could move<br>&gt; furhter fastly.<br><br>Fastly? IMHO, learning kernel development involves lot of patience.<br><br>SK</blockquote><div><br><br>
-Is it necessary to use kernel_thread() in block drivers. In&nbsp;
-drivers/block loop.c i could see&nbsp; kernel_thread() being used but
-in floopy.c it is not used. When is this kernel_thread() function is supposed to be
-used ?&nbsp; In the sbd_device also the kernel_thread() is not used.<br>
-<br>
-Anyone please kindly clarify my doubts.<br>
-<br>
-Thanks in Advance<br>
-<br>
--Rahul<br>&nbsp; <br>
-</div></div><br>
-
-------=_Part_156228_15324467.1161275004769--
