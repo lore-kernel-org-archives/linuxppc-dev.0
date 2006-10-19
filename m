@@ -1,22 +1,20 @@
-Return-Path: <kallepokki@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
-	by ozlabs.org (Postfix) with ESMTP id 20ED067B61
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B7DC167B8F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Oct 2006 05:40:30 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id t32so870897pyc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 12:40:28 -0700 (PDT)
-Message-ID: <a425f86c0610191240q3be8bc87q7f20a345e27a5d3d@mail.gmail.com>
-Date: Thu, 19 Oct 2006 22:40:27 +0300
-From: "Kalle Pokki" <kalle.pokki@iki.fi>
-Sender: kallepokki@gmail.com
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+	Fri, 20 Oct 2006 05:51:30 +1000 (EST)
+Date: Thu, 19 Oct 2006 23:51:23 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "Kalle Pokki" <kalle.pokki@iki.fi>
 Subject: Re: [PATCH] CPM_UART: Fix non-console initialisation
-In-Reply-To: <20061019231455.0ea159e1@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-ID: <20061019235123.2e542229@localhost.localdomain>
+In-Reply-To: <a425f86c0610191240q3be8bc87q7f20a345e27a5d3d@mail.gmail.com>
 References: <Pine.OSF.4.61.0610191525580.318096@kosh.hut.fi>
 	<20061019231455.0ea159e1@localhost.localdomain>
+	<a425f86c0610191240q3be8bc87q7f20a345e27a5d3d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_ZGONDm5r75icQ/ypXEmMiys";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,21 +26,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/19/06, Vitaly Bordug <vbordug@ru.mvista.com> wrote:
-> And we end up with init_portdesc called unconditionally? this would likely break, or at least confuse the
-> code, that uses platform dev to pass resources offsets.
+--Sig_ZGONDm5r75icQ/ypXEmMiys
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Well now that I look at it again, we should probably do
+On Thu, 19 Oct 2006 22:40:27 +0300
+Kalle Pokki wrote:
 
-if (cpm_uart_no == 0)
-     cpm_uart_init_portdesc();
+> On 10/19/06, Vitaly Bordug <vbordug@ru.mvista.com> wrote:
+> > And we end up with init_portdesc called unconditionally? this would
+> > likely break, or at least confuse the code, that uses platform dev
+> > to pass resources offsets.
+>=20
+> Well now that I look at it again, we should probably do
+>=20
+> if (cpm_uart_no =3D=3D 0)
+>      cpm_uart_init_portdesc();
+>=20
+> to make it at least a little less confusing. Remember that
+> init_portdesc() is not called when using platform device, so this
+> should not affect those targets using it at all.
+>=20
+ok.
+> > Personally, I don't care much of compat stuff, unless it is
+> > breaking/confusing targets using proper resources...
+>=20
+> I'm sure there are still lots of people using the compat mode. As long
+> as we have it, it should be kept functional.
+I'm not for removing it - just any update to the compat stuff should=20
+not touch platform-managed/ make it more  complex/confusing to deal with.
 
-to make it at least a little less confusing. Remember that
-init_portdesc() is not called when using platform device, so this
-should not affect those targets using it at all.
+I believe it's cumbersome enough yet :-)
 
-> Personally, I don't care much of compat stuff, unless it is breaking/confusing targets
-> using proper resources...
 
-I'm sure there are still lots of people using the compat mode. As long
-as we have it, it should be kept functional.
+>=20
+>=20
+-Vitaly
+
+--Sig_ZGONDm5r75icQ/ypXEmMiys
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFN9c7uOg9JvQhSEsRAvT/AKCmX/JZhqd6i4bJ3VVTNmTpcFv6NwCfdcBF
+W8ITTvThQX8GI/ffLLJg8EA=
+=e8eC
+-----END PGP SIGNATURE-----
+
+--Sig_ZGONDm5r75icQ/ypXEmMiys--
