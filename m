@@ -1,18 +1,21 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp-4.hut.fi (smtp-4.hut.fi [130.233.228.94])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A515A67BDF
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id EA39367B9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 23:41:12 +1000 (EST)
-Date: Thu, 19 Oct 2006 15:25:55 +0300 (EEST)
-From: kalle.pokki@iki.fi
-To: linuxppc-embedded@ozlabs.org, galak@kernel.crashing.org, panto@intracom.gr,
-	vbordug@ru.mvista.com
-Subject: [PATCH] CPM_UART: Fix non-console transmit
-Message-ID: <Pine.OSF.4.61.0610191519020.318096@kosh.hut.fi>
+	Fri, 20 Oct 2006 00:17:19 +1000 (EST)
+Date: Thu, 19 Oct 2006 16:17:14 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Roman Fietze <roman.fietze@telemotive.de>
+Subject: Re: status of mpc52xx with arch=powerpc?
+Message-ID: <20061019141714.GH6202@localhost.localdomain>
+References: <20061018130628.GE6202@localhost.localdomain>
+	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
+	<20061019081337.GF6202@localhost.localdomain>
+	<200610191149.10873.roman.fietze@telemotive.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200610191149.10873.roman.fietze@telemotive.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,48 +26,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The SMC and SCC hardware transmitter is enabled at the wrong
-place. Simply writing twice to the non-console port, like
+On Thu, Oct 19, 2006 at 11:49:07AM +0200, Roman Fietze wrote:
+> Hello,
+> 
+> On Thursday 19 October 2006 10:13, Sascha Hauer wrote:
+> 
+> > Could you post your .dts?
+> > I'm too working on it, so maybe we should stay synchronized. At the
+> > moment I have nothing but a minimal dts and some .progress() messages.
+> 
+> Could you both double check e.g. with Sylvain Munaut at
+> 
+>   http://246tnt.com/mpc52xx/
 
-$ echo asdf > /dev/ttyCPM1
-$ echo asdf > /dev/ttyCPM1
+I have his tree here and and it does not seem to contain bits for
+mpc52xx with arch=powerpc (unless there are some git-secrets I'm not
+aware of)
 
-puts the shell into endless uninterruptible sleep, since the
-transmitter is stopped after the first write, and is not enabled
-before the shutdown function of the second write. Thus the transmit
-buffers are never emptied.
+> 
+> There are many drivers (git heads) available already, including IDE,
+> FEC, and so on. There's also new BestComm/FEC/IDE code from Dale
+> Farnsworth and John Rigby (Freescale) somewhere on the net.
+> 
 
-Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
----
-  drivers/serial/cpm_uart/cpm_uart_core.c |    5 ++---
-  1 files changed, 2 insertions(+), 3 deletions(-)
+We have these drivers running already with arch=ppc. I have not looked
+into it deeper, but I think (well, hope) they only need minor changes
+like a transition from platform_device to of_device.
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index 90ff96e..8f3b3e5 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -194,10 +194,8 @@ static void cpm_uart_start_tx(struct uar
-  	if (cpm_uart_tx_pump(port) != 0) {
-  		if (IS_SMC(pinfo)) {
-  			smcp->smc_smcm |= SMCM_TX;
--			smcp->smc_smcmr |= SMCMR_TEN;
-  		} else {
-  			sccp->scc_sccm |= UART_SCCM_TX;
--			pinfo->sccp->scc_gsmrl |= SCC_GSMRL_ENT;
-  		}
-  	}
-  }
-@@ -420,9 +418,10 @@ static int cpm_uart_startup(struct uart_
-  	/* Startup rx-int */
-  	if (IS_SMC(pinfo)) {
-  		pinfo->smcp->smc_smcm |= SMCM_RX;
--		pinfo->smcp->smc_smcmr |= SMCMR_REN;
-+		pinfo->smcp->smc_smcmr |= (SMCMR_REN | SMCMR_TEN);
-  	} else {
-  		pinfo->sccp->scc_sccm |= UART_SCCM_RX;
-+		pinfo->sccp->scc_gsmrl |= (SCC_GSMRL_ENR | SCC_GSMRL_ENT);
-  	}
+I just received a patch from nicolas det with a port from ppc to
+powerpc, I'll have a look at it. He posted it on linuxppc-dev
 
-  	if (!(pinfo->flags & FLAG_CONSOLE))
+Sascha
+
 -- 
-1.4.1.1
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
