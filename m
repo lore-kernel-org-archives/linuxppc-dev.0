@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA97467A2E
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 7157E67B77
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 11:54:33 +1000 (EST)
-In-Reply-To: <54A124D27BDE0F449E2032F42ED617583197CD@zch01exm21.fsl.freescale.net>
-References: <54A124D27BDE0F449E2032F42ED617583197CD@zch01exm21.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <39D16244-1677-4ED0-99CD-C1A1F393D140@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Linuxppc-embedded Digest, Vol 26, Issue 36
-Date: Wed, 18 Oct 2006 20:54:24 -0500
-To: Wang Matthew-R59995 <Qi.W@freescale.com>
+	Thu, 19 Oct 2006 18:13:42 +1000 (EST)
+Date: Thu, 19 Oct 2006 10:13:37 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: status of mpc52xx with arch=powerpc?
+Message-ID: <20061019081337.GF6202@localhost.localdomain>
+References: <20061018130628.GE6202@localhost.localdomain>
+	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,44 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wed, Oct 18, 2006 at 07:52:02AM -0600, Grant Likely wrote:
+> On 10/18/06, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> >Is someone working on this already?
+> >
+> >There are some Kconfig entries, but there seems to be no code, at least
+> >not in vanilla.
+> 
+> I'm slowly working on it.  I've got a .dts written and I've got u-boot
+> w/ the fdt patches running on the board.  I need to port the 52xx PIC
+> driver into arch/powerpc before I attempt to boot.
 
-On Oct 18, 2006, at 8:10 PM, Wang Matthew-R59995 wrote:
+Could you post your .dts?
+I'm too working on it, so maybe we should stay synchronized. At the
+moment I have nothing but a minimal dts and some .progress() messages.
 
-> Hi Kumar,
->
-> Actually I do many trials about it. Vxwerks Bootrom is smaller than
-> U-Boot. The key difference between Bootrom and U-boot is that some
-> source code of Bootrom is invisible to the users.
->
-> Actually the rfi instruction which I point out is the first rfi
-> instruction of Linux PowerPC bringup.
->
-> Before that, it's TLB entry invalidation and temp TLB entry mapping.
->
-> I check MMU setting carefully before coming Linux Kernel.
->
-> I just want to know if other guys met similar scenario like me. I  
-> don't
-> need the precise answer, just overall suggestion about it because I
-> understand that not everyone has the same bootloader of mine, that
-> bootloader is actually a customized bootloader.
+Sascha
 
-I understand that, thus I was asking what exact problem you were  
-seeing to try and help.
-
-> Anyway thank you.
->
-> R9 point to LR register, mask the high 20 bit of r9 and send to r7,  
-> and
-> then add 24, which means stride 6 instructions for rfi instruction
-> execution.
->
-> Of course, rfi can switch the TLB entry, both the previous TLB  
-> entry and
-> the temp TLB entry point to the same physical address.
->
-> I've checked it.
-
-I know what the code does, I wrote it :)
-
-- kumar
+-- 
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
