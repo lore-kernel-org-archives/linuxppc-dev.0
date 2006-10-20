@@ -1,21 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 0AA2C67B5B
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 16:03:24 +1000 (EST)
-Date: Fri, 20 Oct 2006 01:02:49 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/5] powerpc: Cell timebase bug workaround #3
-Message-ID: <20061020010249.24bd3bc8@pb15>
-In-Reply-To: <1161322630.10524.136.camel@localhost.localdomain>
-References: <1161308840.10524.112.camel@localhost.localdomain>
-	<1161319025.10524.134.camel@localhost.localdomain>
-	<20061020002409.3c396148@pb15>
-	<1161322630.10524.136.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 38E6667B1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 16:06:18 +1000 (EST)
+In-Reply-To: <453771E5.4090808@bplan-gmbh.de>
+References: <453771E5.4090808@bplan-gmbh.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+Date: Fri, 20 Oct 2006 01:06:14 -0500
+To: Nicolas DET <nd@bplan-gmbh.de>
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Oct 2006 15:37:10 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Fri, 2006-10-20 at 00:24 -0500, Olof Johansson wrote:
-> > On Fri, 20 Oct 2006 14:37:05 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > Acked-by: Olof Johansson <olof@lixom.net>
-> 
-> I note that you carefully avoid to hack the vdso and module fixup
-> patches :)
+On Oct 19, 2006, at 7:39 AM, Nicolas DET wrote:
 
-Hack or ack? :-)
+> This 'big' patch adds support for CHRP/MPC52xx based platform.  
+> Here, this is the bPlan's Efika computer (http://www.bplan-gmbh.de/ 
+> efika_spec_en.html)
+>
+> We know this patch is not totaly compliant with Documentation/ 
+> CodingStyle/.
+>
+> We would like people to comment and review it. This way we would  
+> provide a new patch with the changes required (if any) for an  
+> upcomming merge in the kernel.
+>
+> This patch has been applied on the kernel 2.6.18.1.
+>
+> Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
+> Signed-off-by: Sven Luther <sl@bplan-gmbh.de>
 
-The module one isn't that hairy, I just didn't look at it during
-previous submission so I took it last.
+I think it would be extremely useful to get a dump of what the device- 
+tree looks like.  We have to be very careful to device nodes for 52xx  
+components are competed consistent between this 'CHRP' style and a  
+more embedded 52xx boards.
 
-I don't know the VDSO and side effects well enough to review that
-patch, so you're on your own there.
+Some high level comments:
+1. lets stick with the 52xx naming, instead of 5k2
+2. PIC code needs to be updated for new interrupt model (as well as  
+remove of pt_regs)
+3. use standard kernel debug macros
+4. look at replacing sram_allocator w/rheap
 
+if you repost the patch broken up into driver and platform bits it  
+will be easier to provide more detailed comments.
 
--Olof
+- kumar
