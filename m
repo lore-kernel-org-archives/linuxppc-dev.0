@@ -1,19 +1,36 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7FF9867C33
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 03:36:14 +1000 (EST)
-In-Reply-To: <94A9DAA6-37CD-48F0-A793-70274E0B38FA@kernel.crashing.org>
-References: <Pine.LNX.4.61.0610191947090.632@ld0175-tx32.am.freescale.net>
-	<94A9DAA6-37CD-48F0-A793-70274E0B38FA@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FF715000-8935-40EB-8A04-64A699441F6C@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] Slight refactor of interrupt mapping for FSL parts (take
-	3)
-Date: Fri, 20 Oct 2006 12:36:03 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
+	by ozlabs.org (Postfix) with ESMTP id 965C267C59
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 03:47:51 +1000 (EST)
+Date: Fri, 20 Oct 2006 10:46:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+In-Reply-To: <20061020100904.ed1fa0af.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0610201044570.16161@schroedinger.engr.sgi.com>
+References: <1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
+	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
+	<20061019163044.GB5819@krispykreme>
+	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
+	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
+	<17720.30804.180390.197567@cargo.ozlabs.ibm.com>
+	<4538DACC.5050605@shadowen.org>
+	<4538F2A2.5040305@shadowen.org> <20061020100904.ed1fa0af.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Here is the patch:
 
-On Oct 20, 2006, at 00:44, Kumar Gala wrote:
+Slab: Do not fallback to nodes that have not been bootstrapped yet
 
->
-> On Oct 19, 2006, at 7:52 PM, Andy Fleming wrote:
->
->> * Cleaned up interrupt mapping a little by adding a helper
->>   function which parses the irq out of the device-tree, and puts
->>   it into a resource.
->
-> Split this patch in two.  One for the mapping cleanup and one for  
-> the PHY changes.
+The zonelist may contain zones of nodes that have not been bootstrapped 
+and we will oops if we try to allocate from those zones. So check if the 
+node information for the slab and the node have been setup before 
+attempting an allocation. If it has not been setup then skip that zone.
 
+Usually we will not encounter this situation since the slab bootstrap
+code avoids falling back before we have setup the respective nodes but we 
+seem to have a special needs for pppc.
 
-I don't want to be a whiner, here, but isn't that more effort than  
-the benefit it gives?  I mean, I'll do it if you really want, but I'm  
-trying to get to work on the *next* patch.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-
->
->> * Changed the arch/ppc platform files to specify PHY_POLL, instead  
->> of -1
->
-> This seems like a confusing way to indicate lack of interrupt.   
-> Can't remember but if in my system all the PHYs are just polled do  
-> I even have to setup the data structure?
-
-
-It is precisely the way to indicate lack of interrupt.  Here are the  
-options:
-
-1) PHY is not used.
-2) PHY is polled by PHY lib
-3) PHY lib handles interrupts, does not poll
-4) PHY Lib does not handle reflecting device state changes
-
-#4 Is indicated by setting phydev->irq to PHY_IGNORE_INTERRUPT
-#3 Is indicated by phydev->irq containing an actual irq number
-#2 is indicated by setting phydev->irq to PHY_POLL
-#1 means it doesn't matter what the irq is set to
-
-So yes, you have to set up the data structure.  If you set it to -1,  
-you have only been *coincidentally* getting PHY_POLL (because  
-PHY_POLL is -1).  That's a bad idea, because PHY_POLL might change in  
-the future.
-
-Andy
+Index: linux-2.6.19-rc2-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-20 12:39:02.000000000 -0500
++++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-20 12:41:04.137684581 -0500
+@@ -3160,12 +3160,15 @@ void *fallback_alloc(struct kmem_cache *
+ 	struct zone **z;
+ 	void *obj = NULL;
+ 
+-	for (z = zonelist->zones; *z && !obj; z++)
++	for (z = zonelist->zones; *z && !obj; z++) {
++		int nid = zone_to_nid(*z);
++
+ 		if (zone_idx(*z) <= ZONE_NORMAL &&
+-				cpuset_zone_allowed(*z, flags))
++				cpuset_zone_allowed(*z, flags) &&
++				cache->nodelists[nid])
+ 			obj = __cache_alloc_node(cache,
+-					flags | __GFP_THISNODE,
+-					zone_to_nid(*z));
++					flags | __GFP_THISNODE, nid);
++	}
+ 	return obj;
+ }
+ 
