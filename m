@@ -1,48 +1,23 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 57E8A67C42
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 01:19:36 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9KFJUAW001790
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 11:19:30 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9KFJUIi149932
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 11:19:30 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9KFJUKJ009164
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 11:19:30 -0400
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8DB9567BC5
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 02:01:27 +1000 (EST)
+Message-ID: <4538F2A2.5040305@shadowen.org>
+Date: Fri, 20 Oct 2006 17:00:34 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <4538DACC.5050605@shadowen.org>
-References: <1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
-	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
-	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
-	<20061019163044.GB5819@krispykreme>
-	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
-	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
+References: <1161026409.31903.15.camel@farscape>	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>	<1161031821.31903.28.camel@farscape>	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>	<20061019163044.GB5819@krispykreme>	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
 	<17720.30804.180390.197567@cargo.ozlabs.ibm.com>
 	<4538DACC.5050605@shadowen.org>
-Content-Type: text/plain
-Date: Fri, 20 Oct 2006 10:19:25 -0500
-Message-Id: <1161357566.8946.62.camel@farscape>
-Mime-Version: 1.0
+In-Reply-To: <4538DACC.5050605@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: akpm@osdl.org, Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
 	Christoph Lameter <clameter@sgi.com>
-Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -52,17 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-20-10 at 15:18 +0100, Andy Whitcroft wrote:
+Andy Whitcroft wrote:
 > Paul Mackerras wrote:
-> > Christoph Lameter writes:
-> > 
-
-I got dropped off the CC list somewhere..  :-(     
-
-if something is bouncing, let me know,.. otherwise please dont do
-that.. 
-
-
+>> Christoph Lameter writes:
+>>
+>>> The page allocator must be running and able to serve pages from the boot 
+>>> node. This fails for some reason and the slab cannot bootstrap. The memory 
+>>> not available is the first guess. Could you trace the allocation in the 
+>>> page allocator (__alloc_pages) when the slab attempts to bootstrap and 
+>>> figure out why exactly the allocation fails?
+>> What is happening is that all pages are getting their zone id field in
+>> their page->flags set to point to zone for node 1 by memmap_init_zone
+>> calling set_page_links (which does set_page_zone).  Thus, when those
+>> pages get freed by free_all_bootmem_node, they all end up in the zone
+>> for node 1.
+>>
+>> memmap_init_zone is called (as memmap_init, since we don't have
+>> __HAVE_ARCH_MEMMAP_INIT defined) from init_currently_empty_zone, which
+>> is called from free_area_init_core.  Now the thing is that memmap_init
+>> and init_currently_empty_zone are called with the node's start PFN and
+>> size in pages, *including* holes.  On the partition I'm using we have
+>> these PFN ranges for the nodes:
+>>
+>>     1:        0 ->    32768
+>>     0:    32768 ->   278528
+>>     1:   278528 ->   524288
+>>
+>> So node 0's start PFN is 32768 and its size is 245760 pages, and so we
+>> correctly set pages 32786 to 278527 to be in the zone for node 0.
+>> Then for node 1, we have the start PFN is 0 and the size is 524288, so
+>> we then go through and set *all* pages of memory to be in the zone for
+>> node 1, including the pages which are actually on node 0.
+>>
+>> That's why we can't allocate any pages on node 0, and the kmem cache
+>> bootstrapping blows up.
+>>
+>> I don't know this code well enough to know what the correct fix is.
+>> Clearly memmap_init_zone should only be touching the pages that are
+>> actually present in the zone, but I don't know exactly what data
+>> structures it should be using to know what those pages are.
+> 
 > Mel Gorman and I have been poking at this from different ends.  Mel from
 > the context of this thread and myself trying to fix a machine which was
 > exhibiting on 32MB of ram in node 0 and the rest in node 1.
@@ -84,11 +88,21 @@ that..
 > reverts the two patches above and updates the commentry on the Kconfig
 > entry.
 
-I've got a couple LPARs that exhibit the problem, so can verify your
-patch once I see it.. 
+Ok, I've just gotten a successful boot on this box for the first time in
+like 15 git releases.  I needed the three patches below:
 
--Will
+clameter-fallback_alloc_fix2 -- from earlier in this thread, under the
+message ID below:
+    <Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
 
+Reintroduce-NODES_SPAN_OTHER_NODES-for-powerpc -- the patch I just
+submitted, under the message ID below:
+    <8a76dfd735e544016c5f04c98617b87d@pinky>
 
-> 
-> -apw
+ibmveth-fix-index-increment-calculation -- this patch is already in -mm.
+
+Feel free to take this as an ACK for the patches other than mine.
+
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+-apw
