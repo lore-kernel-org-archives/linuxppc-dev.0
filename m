@@ -1,24 +1,13 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C397D67C02
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 03:14:00 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9KHDvSj026140
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 13:13:57 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9KHDvW1147620
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 13:13:57 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9KHDuj9027312
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 13:13:57 -0400
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
+	by ozlabs.org (Postfix) with ESMTP id 5971067BC8
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 03:34:52 +1000 (EST)
+Date: Fri, 20 Oct 2006 10:34:48 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <4538F2A2.5040305@shadowen.org>
+In-Reply-To: <17720.30804.180390.197567@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0610201029190.16161@schroedinger.engr.sgi.com>
 References: <1161026409.31903.15.camel@farscape>
 	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
 	<1161031821.31903.28.camel@farscape>
@@ -34,15 +23,11 @@ References: <1161026409.31903.15.camel@farscape>
 	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
 	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
 	<17720.30804.180390.197567@cargo.ozlabs.ibm.com>
-	<4538DACC.5050605@shadowen.org>  <4538F2A2.5040305@shadowen.org>
-Content-Type: text/plain
-Date: Fri, 20 Oct 2006 12:13:49 -0500
-Message-Id: <1161364430.8946.67.camel@farscape>
-Mime-Version: 1.0
-Cc: akpm@osdl.org, Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Christoph Lameter <clameter@sgi.com>
-Reply-To: will_schmidt@vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -52,33 +37,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-20-10 at 17:00 +0100, Andy Whitcroft wrote:
-> Andy Whitcroft wrote:
-> > Paul Mackerras wrote:
-> >> Christoph Lameter writes:
+On Fri, 20 Oct 2006, Paul Mackerras wrote:
 
-> Ok, I've just gotten a successful boot on this box for the first time in
-> like 15 git releases.  I needed the three patches below:
-> 
-> clameter-fallback_alloc_fix2 -- from earlier in this thread, under the
-> message ID below:
->     <Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
-> 
-> Reintroduce-NODES_SPAN_OTHER_NODES-for-powerpc -- the patch I just
-> submitted, under the message ID below:
->     <8a76dfd735e544016c5f04c98617b87d@pinky>
-> 
-> ibmveth-fix-index-increment-calculation -- this patch is already in -mm.
-> 
-> Feel free to take this as an ACK for the patches other than mine.
-> 
-> Acked-by: Andy Whitcroft <apw@shadowen.org>
-> 
-> -apw
+> What is happening is that all pages are getting their zone id field in
+> their page->flags set to point to zone for node 1 by memmap_init_zone
+> calling set_page_links (which does set_page_zone).  Thus, when those
+> pages get freed by free_all_bootmem_node, they all end up in the zone
+> for node 1.
 
-I've applied these three blobs to the linux-2.6.git tree and verified
-that it does fix the problem.        
-And a "Thanks!" to Christoph for being responsive.. even when the
-problem wasnt introduced by him. :)
+Ok. So no memory on node 0? Then my patch to reenable fallback in the slab
+should have worked but it did not. Could you retest with the patch that 
+Will tried? If that is not working the comment out the 3 lines with 
+__GFP_THISNODE in get_page_from_freelist. That will reenable fallback 
+globally. If that does not work then I doubt that this is my issue.
 
-Acked-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+> memmap_init_zone is called (as memmap_init, since we don't have
+> __HAVE_ARCH_MEMMAP_INIT defined) from init_currently_empty_zone, which
+> is called from free_area_init_core.  Now the thing is that memmap_init
+> and init_currently_empty_zone are called with the node's start PFN and
+> size in pages, *including* holes.  On the partition I'm using we have
+> these PFN ranges for the nodes:
+> 
+>     1:        0 ->    32768
+>     0:    32768 ->   278528
+>     1:   278528 ->   524288
+> 
+> So node 0's start PFN is 32768 and its size is 245760 pages, and so we
+> correctly set pages 32786 to 278527 to be in the zone for node 0.
+> Then for node 1, we have the start PFN is 0 and the size is 524288, so
+> we then go through and set *all* pages of memory to be in the zone for
+> node 1, including the pages which are actually on node 0.
+
+I do not get it. You first mark all pages on node 0 then we run the bootup 
+code and later we shift those pages into node 0? So the slab bootstrap is 
+running when all pages are marked as being part of node 1 then later we 
+switch those pages under it to node 0?
+ 
+> I don't know this code well enough to know what the correct fix is.
+> Clearly memmap_init_zone should only be touching the pages that are
+> actually present in the zone, but I don't know exactly what data
+> structures it should be using to know what those pages are.
+
+The fix that I posted yesterday should have reenabled fallback in the 
+slab during bootstrap and should have made the system work. Here it is 
+again:
+
+Index: linux-2.6.19-rc2-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.19-rc2-mm1.orig/mm/slab.c	2006-10-19 11:54:24.000000000 -0500
++++ linux-2.6.19-rc2-mm1/mm/slab.c	2006-10-19 16:32:09.454825851 -0500
+@@ -1589,7 +1589,10 @@ static void *kmem_getpages(struct kmem_c
+ 	 * the needed fallback ourselves since we want to serve from our
+ 	 * per node object lists first for other nodes.
+ 	 */
+-	flags |= cachep->gfpflags | GFP_THISNODE;
++	if (g_cpucache_up != FULL)
++		flags |= cachep->gfpflags & ~__GFP_THISNODE;
++	else
++		flags |= cachep->gfpflags | GFP_THISNODE;
+ 
+ 	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
+ 	if (!page)
