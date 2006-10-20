@@ -1,15 +1,20 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s20.bay0.hotmail.com (bay0-omc2-s20.bay0.hotmail.com
-	[65.54.246.156]) by ozlabs.org (Postfix) with ESMTP id DB22967C62
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7620167CED
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Oct 2006 00:28:05 +1000 (EST)
-Message-ID: <BAY110-F990057FF58BF5A4F24763B20D0@phx.gbl>
-From: "Ming Liu" <eemingliu@hotmail.com>
+	Sat, 21 Oct 2006 01:02:37 +1000 (EST)
+Received: from vitb.ru.mvista.com ([10.150.0.9])
+	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k9KF2Yi15117
+	for <linuxppc-embedded@ozlabs.org>; Fri, 20 Oct 2006 20:02:34 +0500
+Date: Fri, 20 Oct 2006 19:03:08 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: how to reserve memory in linux?
-Date: Fri, 20 Oct 2006 14:27:59 +0000
+Subject: Re: CPM2 (MPC8260) SMC problem. Please help.
+Message-ID: <20061020190308.28dfaf34@vitb.ru.mvista.com>
+In-Reply-To: <4536913F.8060801@fabiotec.com>
+References: <4536913F.8060801@fabiotec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,31 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
-My situation is, I want to reserve some amount of memory and make it shared 
-by both Linux kernel and another hardware peripheral. That is, when I boot 
-linux and execute some user space programs, this part of memory should be 
-reserved for other use and cannot be used by both the kernel and those 
-applications. But it could be accessed by Linux with some certain kind of 
-application and also be accessed by another hardware peripheral with DMA or 
-something like that. 
+On Wed, 18 Oct 2006 22:40:31 +0200
+Boris Shteinbock <boris@fabiotec.com> wrote:
 
-I am not sure if I am right but I think it's just like the situation of 
-multiprocessing (if we can treat that hardware peripheral as another 
-processor, or just use another processor to realize its functions.) and 
-that part of memory is just like the hardware shared memory by 
-multiprocessor. Am I right? 
+> Hi ppl.
+> 
+> I have discovered very very odd problem with SMC2 on my 8260 board.
+> kernel version is 2.6.17.
+> 
+> The board is 8260 with serial ports on SMC1 and SMC 2 (SMC1 - console)
+> 
+> Now if I use SMC2 for communicating with remote device, ( some protocol)
+> I am sending packets and wait for a response.
+> However if the packet I send is SMALLER than 5 bytes, SMC goes 
+> completely crazy.
+> write() doesn't return error, but the next read() hangs completely, and the
+> process moves to D state and it is impossible to kill it by any means.
+> It only happens when consequent writes of smaller than 5 bytes.
+> I tried to check the driver, but couldn't find any clues to what goes wrong.
+> 
+> I tried both compatibility and platform-based modes with the same results.
+> 
+> Any help on the issue would be highliy appreciated.
+> 
+> 
 
-Then my question is, how to reserve such part of memory in Linux? Does 
-Linux has such a function? 
+I think that should be walked along the cpm_uart driver, TX part to see is sending stuff 
+do not indicate any error in the CPM registers, or at least discover exact track leading to the endless loop. 
 
-I am not falimiar with such a topic, so any hint related to this is 
-appreciated.
-
-Thanks for your ideals and suggestions.
-
-Regards
-Ming
-
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+-- 
+Sincerely, 
+Vitaly
