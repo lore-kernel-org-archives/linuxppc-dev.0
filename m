@@ -1,21 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2E0EB67CCD
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 11:48:05 +1000 (EST)
-Date: Fri, 20 Oct 2006 11:47:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Badness in irq_create_mapping at arch/powerpc/kernel/irq.c:527
-Message-Id: <20061020114749.fe7b71d6.sfr@canb.auug.org.au>
-In-Reply-To: <1161308221.10524.92.camel@localhost.localdomain>
-References: <20061019122802.GA26637@aepfle.de> <45377ED3.9030001@bplan-gmbh.de>
-	<1161308221.10524.92.camel@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AE96267C08
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 11:50:05 +1000 (EST)
+Subject: [PATCH] powerpc: Fix device_is_compatible() const warning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Fri, 20 Oct 2006 11:49:54 +1000
+Message-Id: <1161308994.10524.114.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__20_Oct_2006_11_47_49_+1000_hcS5D6F+KX79LmRP"
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__20_Oct_2006_11_47_49_+1000_hcS5D6F+KX79LmRP
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Fix a const'ification related warning with device_is_compatible()
+and friends related to get_property() not properly having const
+on it's input device node argument.
 
-Hi Ben,
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Fri, 20 Oct 2006 11:37:01 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> Index: linux-cell/arch/powerpc/sysdev/i8259.c
-> ===================================================================
-> --- linux-cell.orig/arch/powerpc/sysdev/i8259.c	2006-10-09 12:03:33.000000000 +1000
-> +++ linux-cell/arch/powerpc/sysdev/i8259.c	2006-10-20 11:32:07.000000000 +1000
-> @@ -13,6 +13,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/kernel.h>
->  #include <linux/delay.h>
-> +#include <linux/module.h>
->  #include <asm/io.h>
->  #include <asm/i8259.h>
->  #include <asm/prom.h>
-> @@ -224,6 +225,12 @@ static struct irq_host_ops i8259_host_op
->  	.xlate = i8259_host_xlate,
->  };
->
-> +struct irq_host *i8259_get_host(void)
-> +{
-> +	return i8259_host;
-> +}
-> +EXPORT_SYMBOL(i8259_get_host);
-
-Surely it doesn't need exporting is its only caller is in
-arch/powerpc/platforms/chrp/setup.c?
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__20_Oct_2006_11_47_49_+1000_hcS5D6F+KX79LmRP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFOCrFFdBgD/zoJvwRAj96AKCf28+zNMiddHmPCL7SLjNAIRyaNACgiM+y
-gdzKlzwxoqLEnGcqz3gOgUg=
-=dMvI
------END PGP SIGNATURE-----
-
---Signature=_Fri__20_Oct_2006_11_47_49_+1000_hcS5D6F+KX79LmRP--
+Index: linux-cell/arch/powerpc/kernel/prom.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/prom.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/prom.c	2006-10-17 11:12:51.000000000 +1000
+@@ -1014,7 +1014,7 @@ EXPORT_SYMBOL(find_all_nodes);
+ /** Checks if the given "compat" string matches one of the strings in
+  * the device's "compatible" property
+  */
+-int device_is_compatible(struct device_node *device, const char *compat)
++int device_is_compatible(const struct device_node *device, const char *compat)
+ {
+ 	const char* cp;
+ 	int cplen, l;
+@@ -1491,7 +1491,8 @@ static int __init prom_reconfig_setup(vo
+ __initcall(prom_reconfig_setup);
+ #endif
+ 
+-struct property *of_find_property(struct device_node *np, const char *name,
++struct property *of_find_property(const struct device_node *np,
++				  const char *name,
+ 				  int *lenp)
+ {
+ 	struct property *pp;
+@@ -1512,7 +1513,8 @@ struct property *of_find_property(struct
+  * Find a property with a given name for a given node
+  * and return the value.
+  */
+-const void *get_property(struct device_node *np, const char *name, int *lenp)
++const void *get_property(const struct device_node *np, const char *name,
++			 int *lenp)
+ {
+ 	struct property *pp = of_find_property(np,name,lenp);
+ 	return pp ? pp->value : NULL;
+Index: linux-cell/include/asm-powerpc/prom.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/prom.h	2006-10-06 13:48:24.000000000 +1000
++++ linux-cell/include/asm-powerpc/prom.h	2006-10-17 11:12:12.000000000 +1000
+@@ -134,7 +134,7 @@ extern struct device_node *of_find_all_n
+ extern struct device_node *of_get_parent(const struct device_node *node);
+ extern struct device_node *of_get_next_child(const struct device_node *node,
+ 					     struct device_node *prev);
+-extern struct property *of_find_property(struct device_node *np,
++extern struct property *of_find_property(const struct device_node *np,
+ 					 const char *name,
+ 					 int *lenp);
+ extern struct device_node *of_node_get(struct device_node *node);
+@@ -158,10 +158,12 @@ extern void of_detach_node(const struct 
+ extern void finish_device_tree(void);
+ extern void unflatten_device_tree(void);
+ extern void early_init_devtree(void *);
+-extern int device_is_compatible(struct device_node *device, const char *);
++extern int device_is_compatible(const struct device_node *device,
++				const char *);
+ extern int machine_is_compatible(const char *compat);
+-extern const void *get_property(struct device_node *node, const char *name,
+-		int *lenp);
++extern const void *get_property(const struct device_node *node,
++				const char *name,
++				int *lenp);
+ extern void print_properties(struct device_node *node);
+ extern int prom_n_addr_cells(struct device_node* np);
+ extern int prom_n_size_cells(struct device_node* np);
