@@ -1,28 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id B8AF367B6A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 17:20:59 +1000 (EST)
+Date: Fri, 20 Oct 2006 09:20:37 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
+Message-ID: <20061020072037.GA4355@aepfle.de>
+References: <1161152109.7906.6.camel@localhost.localdomain>
+	<20061018073851.GA13083@aepfle.de>
+	<1161211083.10524.13.camel@localhost.localdomain>
+	<20061019070318.GA24642@aepfle.de>
+	<1161300942.10524.64.camel@localhost.localdomain>
+	<20061020054434.GC3277@aepfle.de>
+	<1161323797.10524.150.camel@localhost.localdomain>
+	<20061020062431.GB14390@powerlinux.fr>
+	<20061020064456.GA3946@aepfle.de>
+	<20061020065849.GA17286@powerlinux.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17720.30804.180390.197567@cargo.ozlabs.ibm.com>
-Date: Fri, 20 Oct 2006 17:18:44 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
-References: <1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
-	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
-	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
-	<20061019163044.GB5819@krispykreme>
-	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
-	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061020065849.GA17286@powerlinux.fr>
+Cc: akpm@osdl.org, Sven Luther <sl@bplan-gmbh.de>, tilmann@bitterberg.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,43 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Lameter writes:
+On Fri, Oct 20, Sven Luther wrote:
 
-> The page allocator must be running and able to serve pages from the boot 
-> node. This fails for some reason and the slab cannot bootstrap. The memory 
-> not available is the first guess. Could you trace the allocation in the 
-> page allocator (__alloc_pages) when the slab attempts to bootstrap and 
-> figure out why exactly the allocation fails?
+> Exact, it is not about poluting, but about rationalizing. The fact is that
+> these are the two infos that are the most necessary to userland, then why
+> disseminate the info in thousand different places, instead of making it easily
+> available in a canonical place in a standard format for everyone ? 
 
-What is happening is that all pages are getting their zone id field in
-their page->flags set to point to zone for node 1 by memmap_init_zone
-calling set_page_links (which does set_page_zone).  Thus, when those
-pages get freed by free_all_bootmem_node, they all end up in the zone
-for node 1.
-
-memmap_init_zone is called (as memmap_init, since we don't have
-__HAVE_ARCH_MEMMAP_INIT defined) from init_currently_empty_zone, which
-is called from free_area_init_core.  Now the thing is that memmap_init
-and init_currently_empty_zone are called with the node's start PFN and
-size in pages, *including* holes.  On the partition I'm using we have
-these PFN ranges for the nodes:
-
-    1:        0 ->    32768
-    0:    32768 ->   278528
-    1:   278528 ->   524288
-
-So node 0's start PFN is 32768 and its size is 245760 pages, and so we
-correctly set pages 32786 to 278527 to be in the zone for node 0.
-Then for node 1, we have the start PFN is 0 and the size is 524288, so
-we then go through and set *all* pages of memory to be in the zone for
-node 1, including the pages which are actually on node 0.
-
-That's why we can't allocate any pages on node 0, and the kmem cache
-bootstrapping blows up.
-
-I don't know this code well enough to know what the correct fix is.
-Clearly memmap_init_zone should only be touching the pages that are
-actually present in the zone, but I don't know exactly what data
-structures it should be using to know what those pages are.
-
-Paul.
+cpuinfo is about the cpu, not the board layout nor the firmware
+expectations.
