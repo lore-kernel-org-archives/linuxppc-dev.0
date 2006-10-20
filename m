@@ -1,13 +1,14 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
-	by ozlabs.org (Postfix) with ESMTP id 659CA67BB7
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 17:50:10 +1000 (EST)
-Date: Fri, 20 Oct 2006 09:49:23 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-Message-ID: <20061020074923.GA4943@aepfle.de>
-References: <1161211083.10524.13.camel@localhost.localdomain>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 65F8467B9B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 18:12:49 +1000 (EST)
+In-Reply-To: <20061020073745.GC17286@powerlinux.fr>
+References: <20061018073851.GA13083@aepfle.de>
+	<1161211083.10524.13.camel@localhost.localdomain>
 	<20061019070318.GA24642@aepfle.de>
 	<1161300942.10524.64.camel@localhost.localdomain>
 	<20061020054434.GC3277@aepfle.de>
@@ -17,11 +18,15 @@ References: <1161211083.10524.13.camel@localhost.localdomain>
 	<20061020065849.GA17286@powerlinux.fr>
 	<20061020072037.GA4355@aepfle.de>
 	<20061020073745.GC17286@powerlinux.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20061020073745.GC17286@powerlinux.fr>
-Cc: akpm@osdl.org, Sven Luther <sl@bplan-gmbh.de>, tilmann@bitterberg.de,
-	linuxppc-dev@ozlabs.org
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D22CDFD1-C5A7-422E-9052-FFB5480AE06F@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
+Date: Fri, 20 Oct 2006 10:12:40 +0200
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	Sven Luther <sl@bplan-gmbh.de>, tilmann@bitterberg.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,20 +36,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 20, Sven Luther wrote:
+>> cpuinfo is about the cpu, not the board layout nor the firmware
+>> expectations.
+>
+> What is the machine: field doing there then ? Would it make sense  
+> to provide a
+> machineinfo then ?
 
-> On Fri, Oct 20, 2006 at 09:20:37AM +0200, Olaf Hering wrote:
-> > On Fri, Oct 20, Sven Luther wrote:
-> > 
-> > > Exact, it is not about poluting, but about rationalizing. The fact is that
-> > > these are the two infos that are the most necessary to userland, then why
-> > > disseminate the info in thousand different places, instead of making it easily
-> > > available in a canonical place in a standard format for everyone ? 
-> > 
-> > cpuinfo is about the cpu, not the board layout nor the firmware
-> > expectations.
-> 
-> What is the machine: field doing there then ? Would it make sense to provide a
-> machineinfo then ? 
+Yes.  Or better, don't use /proc, get all info from sysfs
+(with a nice userland tool to summarize the info, perhaps).
 
-All historical bullshit. Use the device-tree.
+
+Segher
