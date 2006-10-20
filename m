@@ -1,22 +1,29 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from calculon.skynet.ie (calculon.skynet.ie [193.1.99.88])
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 95CC067BD9
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 02:31:04 +1000 (EST)
-Date: Fri, 20 Oct 2006 17:30:58 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] Reintroduce NODES_SPAN_OTHER_NODES for powerpc
-In-Reply-To: <8a76dfd735e544016c5f04c98617b87d@pinky>
-Message-ID: <Pine.LNX.4.64.0610201730420.13216@skynet.skynet.ie>
-References: <4538DACC.5050605@shadowen.org>
-	<8a76dfd735e544016c5f04c98617b87d@pinky>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 07FBF67BF2
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 02:40:21 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9KGeHYF020863
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 12:40:17 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9KGeGFe314920
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 10:40:16 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9KGeGOt027219
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 10:40:16 -0600
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org, Anthony J Marsala <marsala@us.ibm.com>
+Subject: Selecting the ppc_md.power_save method at boot time
+Date: Fri, 20 Oct 2006 18:40:13 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	Christoph Lameter <clameter@sgi.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200610201840.14389.arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Oct 2006, Andy Whitcroft wrote:
+Anthony was asking me to add support for disabling the cbe_idle
+function for cell at boot time, in order to make it easier to
+use some debugging tools.
 
-> Reintroduce NODES_SPAN_OTHER_NODES for powerpc
->
-> Revert "[PATCH] Remove SPAN_OTHER_NODES config definition"
->    This reverts commit f62859bb6871c5e4a8e591c60befc8caaf54db8c.
-> Revert "[PATCH] mm: remove arch independent NODES_SPAN_OTHER_NODES"
->    This reverts commit a94b3ab7eab4edcc9b2cb474b188f774c331adf7.
->
-> Also update the comments to indicate that this is still required
-> and where its used.
->
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+I already intend to move the cbe_idle implementation over to
+a simpler power_save method, so these two changes could be
+combined by making the power_save function selectable at
+boot time.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+I could imagine two ways to implement this:
+
+1. Add a boot option to simply disable calling ppc_md->power_save
+on all platforms. E.g. powersave=off.
+
+2. Make it possible to have multiple implementations, e.g.
+powersave=cbe, powersave=nap, powersave=cede, powersave=off,
+powersave=power4, with a per-platform default.
+
+Is anyone interested in the second solution? Otherwise I'd post
+a simple patch to just do powersave=off.
+
+	Arnd <><
