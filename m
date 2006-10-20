@@ -1,12 +1,14 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp-msa-out01.orange.fr (unknown [193.252.23.120])
-	by ozlabs.org (Postfix) with ESMTP id 0EB6D67B92
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 17:02:55 +1000 (EST)
-Date: Fri, 20 Oct 2006 08:58:50 +0200
-To: Olaf Hering <olaf@aepfle.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2C58E67B59
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 17:12:20 +1000 (EST)
 Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-Message-ID: <20061020065849.GA17286@powerlinux.fr>
-References: <4535C0F8.1070905@bplan-gmbh.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20061020064456.GA3946@aepfle.de>
+References: <20061017132243.GA6773@lst.de> <4535C0F8.1070905@bplan-gmbh.de>
 	<1161152109.7906.6.camel@localhost.localdomain>
 	<20061018073851.GA13083@aepfle.de>
 	<1161211083.10524.13.camel@localhost.localdomain>
@@ -16,10 +18,10 @@ References: <4535C0F8.1070905@bplan-gmbh.de>
 	<1161323797.10524.150.camel@localhost.localdomain>
 	<20061020062431.GB14390@powerlinux.fr>
 	<20061020064456.GA3946@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061020064456.GA3946@aepfle.de>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Content-Type: text/plain
+Date: Fri, 20 Oct 2006 17:11:54 +1000
+Message-Id: <1161328314.10524.168.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: akpm@osdl.org, Sven Luther <sl@bplan-gmbh.de>, tilmann@bitterberg.de,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -31,7 +33,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 20, 2006 at 08:44:56AM +0200, Olaf Hering wrote:
+On Fri, 2006-10-20 at 08:44 +0200, Olaf Hering wrote:
 > On Fri, Oct 20, Sven Luther wrote:
 > 
 > > Ben, would it make sense to add two informations to /proc/cpuinfo ?
@@ -45,27 +47,21 @@ On Fri, Oct 20, 2006 at 08:44:56AM +0200, Olaf Hering wrote:
 > > grained informations, while we do have it in the kernel.
 > 
 > /proc/device-tree/{model,device_type,compatible} is enough to map
-
-Yeah, well.
-
 > everything reliable in the installer. Dont pollute /proc/cpuinfo
 > further. There has already enough stuff that doesnt belong there, like
 > pmac-generation, 'pmac flags', 'detected as', motherboard and machine.
 > Oh, and bogomips...
 
-Exact, it is not about poluting, but about rationalizing. The fact is that
-these are the two infos that are the most necessary to userland, then why
-disseminate the info in thousand different places, instead of making it easily
-available in a canonical place in a standard format for everyone ? 
+Some powermac detection bits for older models are not actually available
+via the device-tree :)
 
 > About 32bit/64bit, maybe VmallocTotal from /proc/meminfo can be used.
 > incredible large numer == must be a 64bit kernel
 > No idea how reliable it is. There are those 36bit systems, but I bet
 > they dont run a distro.
 
-This sounds like the ugliest hack i have seen around, and is prone to break. A
-proper /proc/cpuinfo flag would be most welcome to solve this cleanly.
+But why are you absolutely trying to defeat uname ?
 
-Friendly,
+If somebody is trying to fake it, then use the faked version !
 
-Sven Luther
+Ben.
