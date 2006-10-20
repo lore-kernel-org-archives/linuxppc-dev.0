@@ -1,19 +1,26 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp-msa-out01.orange.fr (unknown [193.252.23.120])
-	by ozlabs.org (Postfix) with ESMTP id B254D67B6D
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 16:32:47 +1000 (EST)
-Date: Fri, 20 Oct 2006 08:29:29 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
-	comment
-Message-ID: <20061020062929.GC14390@powerlinux.fr>
-References: <453771E5.4090808@bplan-gmbh.de>
-	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+Return-Path: <olaf@ibook.aepfle.de>
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id 9A999679E1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 16:45:15 +1000 (EST)
+Date: Fri, 20 Oct 2006 08:44:56 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
+Message-ID: <20061020064456.GA3946@aepfle.de>
+References: <20061017132243.GA6773@lst.de> <4535C0F8.1070905@bplan-gmbh.de>
+	<1161152109.7906.6.camel@localhost.localdomain>
+	<20061018073851.GA13083@aepfle.de>
+	<1161211083.10524.13.camel@localhost.localdomain>
+	<20061019070318.GA24642@aepfle.de>
+	<1161300942.10524.64.camel@localhost.localdomain>
+	<20061020054434.GC3277@aepfle.de>
+	<1161323797.10524.150.camel@localhost.localdomain>
+	<20061020062431.GB14390@powerlinux.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, tnt@246tNt.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061020062431.GB14390@powerlinux.fr>
+Cc: akpm@osdl.org, Sven Luther <sl@bplan-gmbh.de>, tilmann@bitterberg.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 20, 2006 at 01:06:14AM -0500, Kumar Gala wrote:
-> 
-> On Oct 19, 2006, at 7:39 AM, Nicolas DET wrote:
-> 
-> >This 'big' patch adds support for CHRP/MPC52xx based platform.  
-> >Here, this is the bPlan's Efika computer (http://www.bplan-gmbh.de/ 
-> >efika_spec_en.html)
-> >
-> >We know this patch is not totaly compliant with Documentation/ 
-> >CodingStyle/.
-> >
-> >We would like people to comment and review it. This way we would  
-> >provide a new patch with the changes required (if any) for an  
-> >upcomming merge in the kernel.
-> >
-> >This patch has been applied on the kernel 2.6.18.1.
-> >
-> >Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
-> >Signed-off-by: Sven Luther <sl@bplan-gmbh.de>
-> 
-> I think it would be extremely useful to get a dump of what the device- 
-> tree looks like.  We have to be very careful to device nodes for 52xx  
-> components are competed consistent between this 'CHRP' style and a  
-> more embedded 52xx boards.
+On Fri, Oct 20, Sven Luther wrote:
 
-Well, the efika is a CHRP board, and thus more akin to the pegasos or IBM
-boxes than the embedded 52xx boards with regard to the device trees. Nico will
-provide you an lsprop output.
+> Ben, would it make sense to add two informations to /proc/cpuinfo ?
+> It would be great to have a field there which will allow to check for the
+> kernel flavour to run, namely if the kernel/processor/whatever is running in
+> 32bit or 64bit mode. The second field would be a generalized machine field,
+> or plateform or whatever, which would easily allow to differentiate between an
+> apple machine, a ibm chrp, a pegasos or other genesi product, etc. Without
+> necessarily having to maintain a huge amount of userlanf mappings from all
+> those different machine: fields, which all have CHRP, true, but no finer
+> grained informations, while we do have it in the kernel.
 
-> Some high level comments:
-> 2. PIC code needs to be updated for new interrupt model (as well as  
-> remove of pt_regs)
+/proc/device-tree/{model,device_type,compatible} is enough to map
+everything reliable in the installer. Dont pollute /proc/cpuinfo
+further. There has already enough stuff that doesnt belong there, like
+pmac-generation, 'pmac flags', 'detected as', motherboard and machine.
+Oh, and bogomips...
 
-Notice that the efika does not have the interrupt tree bindings in the
-firmware. I implemented those on pegasos last month, but linux refused to
-boot, and i am currently waiting for comments from benh on the lsprop output.
-
-Friendly,
-
-Sven Luther
+About 32bit/64bit, maybe VmallocTotal from /proc/meminfo can be used.
+incredible large numer == must be a 64bit kernel
+No idea how reliable it is. There are those 36bit systems, but I bet
+they dont run a distro.
