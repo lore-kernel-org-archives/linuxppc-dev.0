@@ -1,20 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7620167CED
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D032867BCC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Oct 2006 01:02:37 +1000 (EST)
-Received: from vitb.ru.mvista.com ([10.150.0.9])
-	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k9KF2Yi15117
-	for <linuxppc-embedded@ozlabs.org>; Fri, 20 Oct 2006 20:02:34 +0500
-Date: Fri, 20 Oct 2006 19:03:08 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: CPM2 (MPC8260) SMC problem. Please help.
-Message-ID: <20061020190308.28dfaf34@vitb.ru.mvista.com>
-In-Reply-To: <4536913F.8060801@fabiotec.com>
-References: <4536913F.8060801@fabiotec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 21 Oct 2006 04:48:36 +1000 (EST)
+To: tran vanle <vantranbk@yahoo.com.au>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Build openssl in ELDK 3.1.1 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 20 Oct 2006 22:46:51 +1000."
+	<20061020124651.41291.qmail@web33003.mail.mud.yahoo.com>
+Date: Fri, 20 Oct 2006 20:48:33 +0200
+Sender: wd@denx.de
+Message-Id: <20061020184834.04B743525AB@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 18 Oct 2006 22:40:31 +0200
-Boris Shteinbock <boris@fabiotec.com> wrote:
+In message <20061020124651.41291.qmail@web33003.mail.mud.yahoo.com> you wrote:
+> 
+...
+> - Go to <project>/usr/src/denx/SPECS and run
+>        ppc_8xx-rpmbuild  openssl.spec
+> Then  I receive  in  <project>/usr/src/denx/openssl-0.9.7f/   libssl.so.0.9.7 and  openssl in <project>/usr/src/denx/openssl-0.9.7f/apps
+> 
+> That's OK
 
-> Hi ppl.
-> 
-> I have discovered very very odd problem with SMC2 on my 8260 board.
-> kernel version is 2.6.17.
-> 
-> The board is 8260 with serial ports on SMC1 and SMC 2 (SMC1 - console)
-> 
-> Now if I use SMC2 for communicating with remote device, ( some protocol)
-> I am sending packets and wait for a response.
-> However if the packet I send is SMALLER than 5 bytes, SMC goes 
-> completely crazy.
-> write() doesn't return error, but the next read() hangs completely, and the
-> process moves to D state and it is impossible to kill it by any means.
-> It only happens when consequent writes of smaller than 5 bytes.
-> I tried to check the driver, but couldn't find any clues to what goes wrong.
-> 
-> I tried both compatibility and platform-based modes with the same results.
-> 
-> Any help on the issue would be highliy appreciated.
-> 
-> 
+Good.
 
-I think that should be walked along the cpm_uart driver, TX part to see is sending stuff 
-do not indicate any error in the CPM registers, or at least discover exact track leading to the endless loop. 
+> But I don't know Was command openssl added in image in <project>/ppc_8xx/images? If no how i can do it ?
+
+It does not modify the images files at all. why should it?
+
+> I also want to rebuild kernel but i only receive vmlinux in <project>/ppc_8xx/usr/src/linux/ Was vmlinux added in image in <project>/ppc_8xx/images? If no how i can do it ?
+> If I want to build an application but not in ftp://ftp.sunet.se/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/sources/target/SRPMS/
+>  how can I do?
+
+May I suggest you start reading the documentation? It explains all
+these things. See http://www.denx.de/wiki/DULG/Manual
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Sincerely, 
-Vitaly
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+1 1 was a race-horse, 2 2 was 1 2. When 1 1 1 1 race, 2 2 1 1 2.
