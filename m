@@ -1,14 +1,17 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9ECC067B1A
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 16:02:24 +1000 (EST)
-Date: Fri, 20 Oct 2006 01:01:47 -0500
+	by ozlabs.org (Postfix) with ESMTP id 0AA2C67B5B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 16:03:24 +1000 (EST)
+Date: Fri, 20 Oct 2006 01:02:49 -0500
 From: Olof Johansson <olof@lixom.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/5] powerpc: Support feature fixups in modules
-Message-ID: <20061020010147.3ef4694e@pb15>
-In-Reply-To: <1161308839.10524.111.camel@localhost.localdomain>
-References: <1161308839.10524.111.camel@localhost.localdomain>
+Subject: Re: [PATCH 5/5] powerpc: Cell timebase bug workaround #3
+Message-ID: <20061020010249.24bd3bc8@pb15>
+In-Reply-To: <1161322630.10524.136.camel@localhost.localdomain>
+References: <1161308840.10524.112.camel@localhost.localdomain>
+	<1161319025.10524.134.camel@localhost.localdomain>
+	<20061020002409.3c396148@pb15>
+	<1161322630.10524.136.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
@@ -22,41 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Oct 2006 11:47:19 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, 20 Oct 2006 15:37:10 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> This patch adds support for feature fixups in modules. This involves
-> adding support for R_PPC64_REL64 relocs to the 64 bits module loader.
-> It also modifies modpost.c to ignore the powerpc fixup sections (or it
-> would warn when used in .init.text).
+> On Fri, 2006-10-20 at 00:24 -0500, Olof Johansson wrote:
+> > On Fri, 20 Oct 2006 14:37:05 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > Acked-by: Olof Johansson <olof@lixom.net>
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> I note that you carefully avoid to hack the vdso and module fixup
+> patches :)
 
-Acked-by: Olof Johansson <olof@lixom.net>
+Hack or ack? :-)
 
-> Index: linux-cell/arch/powerpc/kernel/module_32.c
-> ===================================================================
-> --- linux-cell.orig/arch/powerpc/kernel/module_32.c	2006-10-13 16:00:26.000000000 +1000
-> +++ linux-cell/arch/powerpc/kernel/module_32.c	2006-10-13 16:59:36.000000000 +1000
-[...]
-> +static const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
-> +				    const Elf_Shdr *sechdrs,
-> +				    const char *name)
-> +{
-> +	char *secstrings;
-> +	unsigned int i;
-> +
-> +	secstrings = (char *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
-> +	for (i = 1; i < hdr->e_shnum; i++)
-> +		if (strcmp(secstrings+sechdrs[i].sh_name, name) == 0)
-> +			return &sechdrs[i];
-> +	return NULL;
-> +}
-> +
+The module one isn't that hairy, I just didn't look at it during
+previous submission so I took it last.
 
-It would be nice if this could be put in some common location instead
-of duplicated between the two files. It builds differently on 32 and 64
-bits due to the type defines, but both will never be used in the same
-kernel.
+I don't know the VDSO and side effects well enough to review that
+patch, so you're on your own there.
 
 
 -Olof
