@@ -1,24 +1,21 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
-	by ozlabs.org (Postfix) with ESMTP id B0DB667B6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 15:44:50 +1000 (EST)
-Date: Fri, 20 Oct 2006 07:44:34 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-Message-ID: <20061020054434.GC3277@aepfle.de>
-References: <4534BE9D.7030908@bplan-gmbh.de> <20061017132243.GA6773@lst.de>
-	<4535C0F8.1070905@bplan-gmbh.de>
-	<1161152109.7906.6.camel@localhost.localdomain>
-	<20061018073851.GA13083@aepfle.de>
-	<1161211083.10524.13.camel@localhost.localdomain>
-	<20061019070318.GA24642@aepfle.de>
-	<1161300942.10524.64.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1161300942.10524.64.camel@localhost.localdomain>
-Cc: akpm@osdl.org, tilmann@bitterberg.de, Sven Luther <sl@bplan-gmbh.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8B19E67C0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 15:44:58 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.61.0610191947090.632@ld0175-tx32.am.freescale.net>
+References: <Pine.LNX.4.61.0610191947090.632@ld0175-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <94A9DAA6-37CD-48F0-A793-70274E0B38FA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Slight refactor of interrupt mapping for FSL parts (take
+	3)
+Date: Fri, 20 Oct 2006 00:44:52 -0500
+To: Andy Fleming <afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 20, Benjamin Herrenschmidt wrote:
 
-> On Thu, 2006-10-19 at 09:03 +0200, Olaf Hering wrote:
-> > On Thu, Oct 19, Benjamin Herrenschmidt wrote:
-> > 
-> > > On Wed, 2006-10-18 at 09:38 +0200, Olaf Hering wrote:
-> > > > On Wed, Oct 18, Michael Ellerman wrote:
-> > > > 
-> > > > > But it's called '/proc/ppc64' right now on lots of machines, so you
-> > > > > can't go changing it.
-> > > > 
-> > > > if test -d /proc/ppc64 .. is a quick way to check wether the system is
-> > > > 64bit or not. Similar to if test -d /proc/iSeries ..
-> > > 
-> > > That's really ugly ! You really do that ? Gack...
-> > 
-> > What way should I use?
-> 
-> uname ? /proc/cpuinfo ? Whatever but not that.
+On Oct 19, 2006, at 7:52 PM, Andy Fleming wrote:
 
-uname can be faked with powerpc32 or setarch. grep POWER /proc/cpuinfo
-might be an option. I think its only used in rpm preinstall scripts to
-reject 64bit kernel on 32bit systems or the other way around.
+> * Cleaned up interrupt mapping a little by adding a helper
+>   function which parses the irq out of the device-tree, and puts
+>   it into a resource.
+
+Split this patch in two.  One for the mapping cleanup and one for the  
+PHY changes.
+
+> * Changed the arch/ppc platform files to specify PHY_POLL, instead  
+> of -1
+
+This seems like a confusing way to indicate lack of interrupt.  Can't  
+remember but if in my system all the PHYs are just polled do I even  
+have to setup the data structure?
+
+> * Changed the fixed phy to use PHY_IGNORE_INTERRUPT
+> * Added ethtool.h and mii.h to phy.h includes
+
+- kumar
