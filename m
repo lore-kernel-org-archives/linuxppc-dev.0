@@ -1,32 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 65F8467B9B
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 18:12:49 +1000 (EST)
-In-Reply-To: <20061020073745.GC17286@powerlinux.fr>
-References: <20061018073851.GA13083@aepfle.de>
-	<1161211083.10524.13.camel@localhost.localdomain>
-	<20061019070318.GA24642@aepfle.de>
-	<1161300942.10524.64.camel@localhost.localdomain>
-	<20061020054434.GC3277@aepfle.de>
-	<1161323797.10524.150.camel@localhost.localdomain>
-	<20061020062431.GB14390@powerlinux.fr>
-	<20061020064456.GA3946@aepfle.de>
-	<20061020065849.GA17286@powerlinux.fr>
-	<20061020072037.GA4355@aepfle.de>
-	<20061020073745.GC17286@powerlinux.fr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D22CDFD1-C5A7-422E-9052-FFB5480AE06F@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] enable RTAS /proc for PowerPC/CHRP platform
-Date: Fri, 20 Oct 2006 10:12:40 +0200
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	Sven Luther <sl@bplan-gmbh.de>, tilmann@bitterberg.de
+Return-Path: <nd@bplan-gmbh.de>
+Received: from natklopstock.rzone.de (natklopstock.rzone.de [81.169.145.174])
+	by ozlabs.org (Postfix) with ESMTP id 3EE8B67B9B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 18:14:53 +1000 (EST)
+Message-ID: <453884F5.4000804@bplan-gmbh.de>
+Date: Fri, 20 Oct 2006 10:12:37 +0200
+From: Nicolas DET <nd@bplan-gmbh.de>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+References: <453771E5.4090808@bplan-gmbh.de>
+	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+In-Reply-To: <77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+Content-Type: multipart/mixed; boundary="------------060206050701080407040008"
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,15 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> cpuinfo is about the cpu, not the board layout nor the firmware
->> expectations.
->
-> What is the machine: field doing there then ? Would it make sense  
-> to provide a
-> machineinfo then ?
+This is a multi-part message in MIME format.
+--------------060206050701080407040008
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yes.  Or better, don't use /proc, get all info from sysfs
-(with a nice userland tool to summarize the info, perhaps).
+Kumar Gala wrote:
+ >
+ > On Oct 19, 2006, at 7:39 AM, Nicolas DET wrote:
+ >
+ >> This 'big' patch adds support for CHRP/MPC52xx based platform. Here, 
+this is the bPlan's Efika computer 
+(http://www.bplan-gmbh.de/efika_spec_en.html)
+ >
+
+ > Some high level comments:
+ > 1. lets stick with the 52xx naming, instead of 5k2
+
+Ok. Will be done
+
+ > 2. PIC code needs to be updated for new interrupt model (as well as 
+remove of pt_regs)
+
+Ok.
+
+ > 3. use standard kernel debug macros
+
+Loads of changes in the pipe line ;-)
+
+ > 4. look at replacing sram_allocator w/rheap
+ >
+
+This SRAM allocator is the exact same from the original Linux one. In 
+fact, it is the original one. Would it be possible to accept this code 
+as it is and schedule rheap integration later ?
+
+ > if you repost the patch broken up into driver and platform bits it 
+will be easier to provide more detailed comments.
+
+Ok. I'm alraedy working on it since I post the first one :-) . Thank you 
+very much for your comments. I hope to re submit a much better patch today.
+
+Regads
+
+--------------060206050701080407040008
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
 
 
-Segher
+--------------060206050701080407040008--
