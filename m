@@ -1,14 +1,23 @@
-Return-Path: <olaf@ibook.aepfle.de>
-Received: from natklopstock.rzone.de (mi-ob.rzone.de [81.169.146.145])
-	by ozlabs.org (Postfix) with ESMTP id B43BF67BB2
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 00:10:42 +1000 (EST)
-Date: Fri, 20 Oct 2006 15:57:15 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] stop infinite loop in start_ldr due to unaligned sections
-Message-ID: <20061020135715.GA7197@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 576EF67BB7
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 00:18:17 +1000 (EST)
+In-Reply-To: <453884F5.4000804@bplan-gmbh.de>
+References: <453771E5.4090808@bplan-gmbh.de>
+	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+	<453884F5.4000804@bplan-gmbh.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+Date: Fri, 20 Oct 2006 09:18:12 -0500
+To: Nicolas DET <nd@bplan-gmbh.de>
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,37 +28,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Quick fix for lack of memset(__bss_start,0,_end-__bss_start) in load_kernel()
-If edata is unaligned, the loop will overwrite all memory because
-r3 and r4 will never be equal.
+On Oct 20, 2006, at 3:12 AM, Nicolas DET wrote:
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> Kumar Gala wrote:
+> >
+> > On Oct 19, 2006, at 7:39 AM, Nicolas DET wrote:
+> >
+> >> This 'big' patch adds support for CHRP/MPC52xx based platform.  
+> Here, this is the bPlan's Efika computer (http://www.bplan-gmbh.de/ 
+> efika_spec_en.html)
+> >
+>
+> > Some high level comments:
+> > 1. lets stick with the 52xx naming, instead of 5k2
+>
+> Ok. Will be done
+>
+> > 2. PIC code needs to be updated for new interrupt model (as well  
+> as remove of pt_regs)
+>
+> Ok.
+>
+> > 3. use standard kernel debug macros
+>
+> Loads of changes in the pipe line ;-)
+>
+> > 4. look at replacing sram_allocator w/rheap
+> >
+>
+> This SRAM allocator is the exact same from the original Linux one.  
+> In fact, it is the original one. Would it be possible to accept  
+> this code as it is and schedule rheap integration later ?
 
----
- arch/ppc/boot/simple/relocate.S |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I dont follow, what do you mean by 'original Linux one' ?
 
-Index: linux-2.6.19-rc2/arch/ppc/boot/simple/relocate.S
-===================================================================
---- linux-2.6.19-rc2.orig/arch/ppc/boot/simple/relocate.S
-+++ linux-2.6.19-rc2/arch/ppc/boot/simple/relocate.S
-@@ -154,8 +154,8 @@ do_relocate_out:
- 
- start_ldr:
- /* Clear all of BSS and set up stack for C calls */
--	lis	r3,edata@h
--	ori	r3,r3,edata@l
-+	lis	r3,__bss_start@h
-+	ori	r3,r3,__bss_start@l
- 	lis	r4,end@h
- 	ori	r4,r4,end@l
- 	subi	r3,r3,4
-@@ -163,7 +163,7 @@ start_ldr:
- 	li	r0,0
- 50:	stwu	r0,4(r3)
- 	cmpw	cr0,r3,r4
--	bne	50b
-+	blt	50b
- 90:	mr	r9,r1		/* Save old stack pointer (in case it matters) */
- 	lis	r1,.stack@h
- 	ori	r1,r1,.stack@l
+> > if you repost the patch broken up into driver and platform bits  
+> it will be easier to provide more detailed comments.
+>
+> Ok. I'm alraedy working on it since I post the first one :-) .  
+> Thank you very much for your comments. I hope to re submit a much  
+> better patch today.
+>
+> Regads
+> <nd.vcf>
