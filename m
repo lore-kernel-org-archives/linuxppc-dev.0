@@ -1,29 +1,37 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 07FBF67BF2
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 02:40:21 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9KGeHYF020863
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 12:40:17 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9KGeGFe314920
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 10:40:16 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9KGeGOt027219
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Oct 2006 10:40:16 -0600
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org, Anthony J Marsala <marsala@us.ibm.com>
-Subject: Selecting the ppc_md.power_save method at boot time
-Date: Fri, 20 Oct 2006 18:40:13 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200610201840.14389.arnd.bergmann@de.ibm.com>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C9D8A67BB4
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 03:10:28 +1000 (EST)
+Date: Fri, 20 Oct 2006 10:09:04 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
+Message-Id: <20061020100904.ed1fa0af.akpm@osdl.org>
+In-Reply-To: <4538F2A2.5040305@shadowen.org>
+References: <1161026409.31903.15.camel@farscape>
+	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
+	<1161031821.31903.28.camel@farscape>
+	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
+	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
+	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
+	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
+	<20061019163044.GB5819@krispykreme>
+	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
+	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
+	<17720.30804.180390.197567@cargo.ozlabs.ibm.com>
+	<4538DACC.5050605@shadowen.org> <4538F2A2.5040305@shadowen.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Jeff Garzik <jeff@garzik.org>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,25 +41,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anthony was asking me to add support for disabling the cbe_idle
-function for cell at boot time, in order to make it easier to
-use some debugging tools.
+On Fri, 20 Oct 2006 17:00:34 +0100
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-I already intend to move the cbe_idle implementation over to
-a simpler power_save method, so these two changes could be
-combined by making the power_save function selectable at
-boot time.
+> > I'll follow up to this email with the reversion patch we used in
+> > testing.  It seems to sort this problem out at least, though now its
+> > blam'ing in ibmveth, so am retesting with yet another patch.  This patch
+> > reverts the two patches above and updates the commentry on the Kconfig
+> > entry.
+> 
+> Ok, I've just gotten a successful boot on this box for the first time in
+> like 15 git releases.  I needed the three patches below:
+> 
+> clameter-fallback_alloc_fix2 -- from earlier in this thread, under the
+> message ID below:
+>     <Pine.LNX.4.64.0610131515200.28279@schroedinger.engr.sgi.com>
 
-I could imagine two ways to implement this:
+That's this:
 
-1. Add a boot option to simply disable calling ppc_md->power_save
-on all platforms. E.g. powersave=off.
+Here is another fall back fix checking if the slab has already been setup 
+for this node. MPOL_INTERLEAVE could redirect the allocation.
 
-2. Make it possible to have multiple implementations, e.g.
-powersave=cbe, powersave=nap, powersave=cede, powersave=off,
-powersave=power4, with a per-platform default.
+Index: linux-2.6.19-rc1-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.19-rc1-mm1.orig/mm/slab.c	2006-10-10 21:47:12.949563383 -0500
++++ linux-2.6.19-rc1-mm1/mm/slab.c	2006-10-13 17:21:31.937863714 -0500
+@@ -3158,12 +3158,15 @@ void *fallback_alloc(struct kmem_cache *
+ 	struct zone **z;
+ 	void *obj = NULL;
+ 
+-	for (z = zonelist->zones; *z && !obj; z++)
++	for (z = zonelist->zones; *z && !obj; z++) {
++		int nid = zone_to_nid(*z);
++
+ 		if (zone_idx(*z) <= ZONE_NORMAL &&
+-				cpuset_zone_allowed(*z, flags))
++				cpuset_zone_allowed(*z, flags) &&
++				cache->nodelists[nid])
+ 			obj = __cache_alloc_node(cache,
+-					flags | __GFP_THISNODE,
+-					zone_to_nid(*z));
++					flags | __GFP_THISNODE, nid);
++	}
+ 	return obj;
+ }
+ 
 
-Is anyone interested in the second solution? Otherwise I'd post
-a simple patch to just do powersave=off.
+Christoph, can you please finalise and resend that?
 
-	Arnd <><
+> Reintroduce-NODES_SPAN_OTHER_NODES-for-powerpc -- the patch I just
+> submitted, under the message ID below:
+>     <8a76dfd735e544016c5f04c98617b87d@pinky>
+
+OK, I got that.
+
+> ibmveth-fix-index-increment-calculation -- this patch is already in -mm.
+
+Normally a Jeff thing, but small-and-simple.  I'll send that in to Linus
+today.
