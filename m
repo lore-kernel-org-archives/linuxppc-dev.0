@@ -1,17 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9486E67BBE
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 09:23:29 +1000 (EST)
-Date: Fri, 20 Oct 2006 18:22:03 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Subject: Re: Selecting the ppc_md.power_save method at boot time
-Message-ID: <20061020182203.7871d1b1@pb15>
-In-Reply-To: <200610201840.14389.arnd.bergmann@de.ibm.com>
-References: <200610201840.14389.arnd.bergmann@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Anthony J Marsala <marsala@us.ibm.com>
+Return-Path: <decimal@us.ibm.com>
+Date: Fri, 20 Oct 2006 08:54:37 -0500 (Central Daylight Time)
+From: Dwayne Grant McConnell <decimal@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Correct way to format spufs file output.
+In-Reply-To: <200610201023.12796.arnd@arndb.de>
+Message-ID: <Pine.WNT.4.64.0610200848580.5976@dwayne>
+References: <Pine.WNT.4.64.0610182227120.6056@doodlebug>
+	<200610201023.12796.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +20,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Oct 2006 18:40:13 +0200 Arnd Bergmann <arnd.bergmann@de.ibm.com> wrote:
+On Fri, 20 Oct 2006, Arnd Bergmann wrote:
 
-> 2. Make it possible to have multiple implementations, e.g.
-> powersave=cbe, powersave=nap, powersave=cede, powersave=off,
-> powersave=power4, with a per-platform default.
+> On Thursday 19 October 2006 05:30, Dwayne Grant McConnell wrote:
+> > In a recent submission I added the lslr file and used "%llx" for the 
+> > format string. You mentioned that it should probably be "0x%llx" so it 
+> > would be clearly parsed as hex so I changed it in the next submission. But 
+> > I noticed that there seems to be some inconsistent usage of 0x as follows:
+> 
+> Thanks for bringing this up, I guess I screwed up in some way here, so
+> we should fix it up one way or another:
+> 
+> > signal1_type (%llu)
+> > signal2_type (%llu)
+> 
+> These are fine, they can only ever be 1 or 0.
+> 
+> > npc (%llx)
+> 
+> I think we used to access this in _very_ old versions of libspe,
+> before we move to a syscall based interface.
+> 
+> > decr (%llx)
+> > decr_status (%llx)
+> > spu_tag_mask (%llx)
+> > event_mask (%llx)
+> > event_status (%llx)
+> > srr0 (%llx)
+> 
+> These are used exclusively for debugging purposes, and no publically
+> available version of gdb accesses them, so I guess we can still change
+> them, although it's not nice.
+> 
+> > phys_id (0x%llx)
+> 
+> This one is used in some forks of libspe, we should not change it.
+> 
+> > object_id (0x%llx)
+> 
+> This is used in libspe, gdb and oprofile, but only in fairly recent
+> versions.
+> 
+> > lslr (0x%llx)
+> 
+> As this is introduced by your own patch, there is no precedent for
+> it yet.
+> 
+> Current kernels now also have 'cntl' (0x%08lx), which was introduced
+> in 2.6.19 and is so far unused. I guess we should change that one
+> to be consistant with the others as well.
+> 
+> > Should all the %llx be changed to 0x%llx or should the 0x be dropped from 
+> > those that have it or is the inconsistency acceptable?
+> 
+> I'd rather have it consistant. Moreover, I guess the "%llx" format is
+> actually harmful, because that means you can not use the same format
+> for read and write. The simple_attr_write function currently uses
+> the simple_strtol helper to interpret the value written to it, and that
+> requires the input to be wither decimal, or hexadecimal with a preceding
+> 0x. I'd suggest we change all files to take a 0x%llx format on output.
 
-Doesn't make a whole lot of sense, since there's no way to use the
-power4 powersave on a cell system -- specifying it on the command line
-won't do much good.
+I think %0xllx is the way to go. I would even advocate changing 
+signal1_type and signal2_type unless it is actually too dangerous. Is 
+there even a case where changing from %llu to %0xllx would break things? 
+Perhaps with the combination of a old library with a new kernel?
 
-> Is anyone interested in the second solution? Otherwise I'd post
-> a simple patch to just do powersave=off.
-
-Gobal powersave=off sounds good, specific platforms could implement
-others as needed.
-
-
--Olof
+-- 
+Dwayne Grant McConnell <decimal@us.ibm.com>
+Lotus Notes Mail: Dwayne McConnell [Mail]/Austin/IBM@IBMUS
+Lotus Notes Calendar: Dwayne McConnell [Calendar]/Austin/IBM@IBMUS
