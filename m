@@ -1,30 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17721.21412.931764.263941@cargo.ozlabs.ibm.com>
-Date: Sat, 21 Oct 2006 08:54:28 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: kernel BUG in __cache_alloc_node at linux-2.6.git/mm/slab.c:3177!
-In-Reply-To: <Pine.LNX.4.64.0610201029190.16161@schroedinger.engr.sgi.com>
-References: <1161026409.31903.15.camel@farscape>
-	<Pine.LNX.4.64.0610161221300.6908@schroedinger.engr.sgi.com>
-	<1161031821.31903.28.camel@farscape>
-	<Pine.LNX.4.64.0610161630430.8341@schroedinger.engr.sgi.com>
-	<17717.50596.248553.816155@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610180811040.27096@schroedinger.engr.sgi.com>
-	<17718.39522.456361.987639@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610181448250.30710@schroedinger.engr.sgi.com>
-	<17719.1849.245776.4501@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610190906490.7852@schroedinger.engr.sgi.com>
-	<20061019163044.GB5819@krispykreme>
-	<Pine.LNX.4.64.0610190947110.8310@schroedinger.engr.sgi.com>
-	<17719.64246.555371.701194@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610191527040.10880@schroedinger.engr.sgi.com>
-	<17720.30804.180390.197567@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0610201029190.16161@schroedinger.engr.sgi.com>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9486E67BBE
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Oct 2006 09:23:29 +1000 (EST)
+Date: Fri, 20 Oct 2006 18:22:03 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: Re: Selecting the ppc_md.power_save method at boot time
+Message-ID: <20061020182203.7871d1b1@pb15>
+In-Reply-To: <200610201840.14389.arnd.bergmann@de.ibm.com>
+References: <200610201840.14389.arnd.bergmann@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Anthony J Marsala <marsala@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,25 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Lameter writes:
+On Fri, 20 Oct 2006 18:40:13 +0200 Arnd Bergmann <arnd.bergmann@de.ibm.com> wrote:
 
-> I do not get it. You first mark all pages on node 0 then we run the bootup 
-> code and later we shift those pages into node 0? So the slab bootstrap is 
-> running when all pages are marked as being part of node 1 then later we 
-> switch those pages under it to node 0?
+> 2. Make it possible to have multiple implementations, e.g.
+> powersave=cbe, powersave=nap, powersave=cede, powersave=off,
+> powersave=power4, with a per-platform default.
 
-No, the bootmem code correctly marks all the pages in node 0 as being
-in node 0.  Then it goes through and marks *all* pages as being in
-node 1, because it marks all pages between the first and last pages in
-the node as being in the node.  The first page in node 1 is before all
-the pages in node 0, and the last page in node 1 is after all the
-pages in node 0.
+Doesn't make a whole lot of sense, since there's no way to use the
+power4 powersave on a cell system -- specifying it on the command line
+won't do much good.
 
-So we end up with the system thinking all the memory is in node 1,
-although in fact half the memory is in node 0.
+> Is anyone interested in the second solution? Otherwise I'd post
+> a simple patch to just do powersave=off.
 
-Anyway, it looks like this problem wasn't introduced by your patches,
-and is solved by the patch Andy Whitcroft posted, so thanks for your
-assistance with this.
+Gobal powersave=off sounds good, specific platforms could implement
+others as needed.
 
-Paul.
+
+-Olof
