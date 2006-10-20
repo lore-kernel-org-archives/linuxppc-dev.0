@@ -1,24 +1,15 @@
-Return-Path: <fawadlateef@gmail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.238])
-	by ozlabs.org (Postfix) with ESMTP id 808DB67B6C
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33003.mail.mud.yahoo.com (web33003.mail.mud.yahoo.com
+	[209.191.69.118]) by ozlabs.org (Postfix) with SMTP id 5B39067B6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Oct 2006 15:13:46 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id c7so104200qbc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Oct 2006 22:13:44 -0700 (PDT)
-Message-ID: <1e62d1370610192213g7502709ufcc2bce6903040d8@mail.gmail.com>
-Date: Fri, 20 Oct 2006 10:13:43 +0500
-From: "Fawad Lateef" <fawadlateef@gmail.com>
-To: "Rahul Theraja" <rahul.theraja@gmail.com>
-Subject: Re: help in block drivers
-In-Reply-To: <ff9652ca0610190923vffbb981j1978ce4159489b0c@mail.gmail.com>
+	Fri, 20 Oct 2006 22:46:52 +1000 (EST)
+Message-ID: <20061020124651.41291.qmail@web33003.mail.mud.yahoo.com>
+Date: Fri, 20 Oct 2006 22:46:51 +1000 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: Build openssl in ELDK 3.1.1
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <ff9652ca0610190314u32a620b5qd0bd27a1b2700a22@mail.gmail.com>
-	<d16b1c80610190808y17c516dl35cfc8ca4a7a42ad@mail.gmail.com>
-	<ff9652ca0610190923vffbb981j1978ce4159489b0c@mail.gmail.com>
-Cc: kernelnewbies@nl.linux.org, Shakthi Kannan <shakthimaan@gmail.com>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-1409984804-1161348411=:41008"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,71 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Rahul,
+--0-1409984804-1161348411=:41008
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-First of all please don't do top-posting rather do bottom-posting. For
-more information search google.
+Thanks Wolfgang Denk
+I'm reinstall ELDK 3.1.1 and it ok
+I rebuild openssl like that
+- Download openssl-0.9.7f-7.10_1.src.rpm in <project>/usr/src/denx/SRPMS
+- Go to <project>/usr/src/denx/SRPMS and run
+        ppc_8xx-rpm -iv openssl-0.9.7f-7.10_1.src.rpm
+- Go to <project>/usr/src/denx/SPECS and run
+       ppc_8xx-rpmbuild  openssl.spec
+Then  I receive  in  <project>/usr/src/denx/openssl-0.9.7f/   libssl.so.0.9.7 and  openssl in <project>/usr/src/denx/openssl-0.9.7f/apps
 
-On 10/19/06, Rahul Theraja <rahul.theraja@gmail.com> wrote:
-> Hello Shakthi Kannan,
->
->  Thanks for the reply .
->
->
-> > > driver. I could not understand why the "sbd_request " is called even
-> though
-> > > i have given only one read call from user space file.
-> >
-> > Block device I/O transfer is done in blocks.
-> >
-> > >  And also in the driver, in the function sbd_request() how does the
-> driver
-> > > get the parameters  like sector, current_nr_sectors and buffer.
-> >
-> > VFS <-> SCSI <-> Block device?
-> >
+That's OK
+But I don't know Was command openssl added in image in <project>/ppc_8xx/images? If no how i can do it ?
+I also want to rebuild kernel but i only receive vmlinux in <project>/ppc_8xx/usr/src/linux/ Was vmlinux added in image in <project>/ppc_8xx/images? If no how i can do it ?
+If I want to build an application but not in ftp://ftp.sunet.se/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/sources/target/SRPMS/
+ how can I do?
 
-I think its VFS<->Buffer-Cache<->Block-Device and if drive is mounted
-then VFS<->FS<->Buffer-Cache<->Block-Device
+Thanks
+LeVan
 
-> > > i could move
-> > > furhter fastly.
-> >
-> > Fastly? IMHO, learning kernel development involves lot of patience.
-> >
-> > SK
->
->
->  Is it necessary to use kernel_thread() in block drivers. In  drivers/block
-> loop.c i could see  kernel_thread() being used but in floopy.c it is not
-> used. When is this kernel_thread() function is supposed to be used ?  In the
-> sbd_device also the kernel_thread() is not used.
->
+ 		
+---------------------------------
+On Yahoo!7
+  Fuel Price Watch: Find the cheapest petrol in your area
+--0-1409984804-1161348411=:41008
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-First in kernel-2.6.x its better to use kthread_*() rather than
-kernel_thread if threading is needed.
-
-Threading isn't necessary in any device until unless you need it. For
-example if your driver is emulating a device or performing IO directly
-then you don't need it, but if your driver is sending request to a
-device which generates interrupts after completing IO and you want to
-do some extra work after getting IO completion interrupt then you must
-use thread. As threads work in process-context, hence can do sleep and
-lengthy processing but interrupt-context shouldn't sleep or nor do
-long processing.
-
-For getting more understanding about different contexts like process,
-interrupt, softirqs contexts do search google.
-
->  Anyone please kindly clarify my doubts.
->
-
-I hope you doubts are not clear.
-
->  Thanks in Advance
->
->  -Rahul
->
-
--- 
-Fawad Lateef
+Thanks Wolfgang Denk<br>I'm reinstall ELDK 3.1.1 and it ok<br>I rebuild openssl like that<br>- Download openssl-0.9.7f-7.10_1.src.rpm in &lt;project&gt;/usr/src/denx/SRPMS<br>- Go to &lt;project&gt;/usr/src/denx/SRPMS and run<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ppc_8xx-rpm -iv openssl-0.9.7f-7.10_1.src.rpm<br>- Go to &lt;project&gt;/usr/src/denx/SPECS and run<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ppc_8xx-rpmbuild&nbsp; openssl.spec<br>Then&nbsp; I receive&nbsp; in&nbsp; &lt;project&gt;/usr/src/denx/openssl-0.9.7f/&nbsp;&nbsp; libssl.so.0.9.7 and&nbsp; openssl in &lt;project&gt;/usr/src/denx/openssl-0.9.7f/apps<br><br>That's OK<br>But I don't know Was command openssl added in image in &lt;project&gt;/ppc_8xx/images? If no how i can do it ?<br>I also want to rebuild kernel but i only receive vmlinux in &lt;project&gt;/ppc_8xx/usr/src/linux/ Was vmlinux added in image in &lt;project&gt;/ppc_8xx/images? If no how i can do it ?<br>If I want to build an application
+ but not in ftp://ftp.sunet.se/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/sources/target/SRPMS/<br>&nbsp;how can I do?<br><br>Thanks<br>LeVan<br><p>&#32;
+		<hr size=1>On Yahoo!7<br> 
+<a 
+href="http://au.rd.yahoo.com/mail/tag/fuelpricewatch/**http%3A%2F%2Fau.maps.yahoo.com%2Ffuelwatch%2F"> 
+Fuel Price Watch: Find the cheapest petrol in your area</a>
+--0-1409984804-1161348411=:41008--
