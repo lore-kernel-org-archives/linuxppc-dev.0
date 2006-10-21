@@ -1,26 +1,22 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id B31F167B52
+Return-Path: <urwithsudheer@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 9FF5E67BA8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Oct 2006 05:41:37 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1Gb0FK-0003dS-Jv
-	for linuxppc-embedded@ozlabs.org; Fri, 20 Oct 2006 21:41:34 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	<87ac41esap.fsf@sleipner.barco.com>
-	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
-	<87ac40vgeo.fsf@sleipner.barco.com>
-	<609d5c8e0610151648x41b0c49cj4d0cda0e3b5bf1e@mail.gmail.com>
-Date: Fri, 20 Oct 2006 21:41:34 +0200
-In-Reply-To: <609d5c8e0610151648x41b0c49cj4d0cda0e3b5bf1e@mail.gmail.com>
-	(David Bolcsfoldi's message of "Sun, 15 Oct 2006 16:48:41 -0700")
-Message-ID: <87lknadbbl.fsf@sleipner.barco.com>
+	Sat, 21 Oct 2006 15:15:03 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so784775ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 20 Oct 2006 22:15:01 -0700 (PDT)
+Message-ID: <12c9fc1a0610202215k67f374d3ie3db3d6cbfb82180@mail.gmail.com>
+Date: Sat, 21 Oct 2006 10:45:01 +0530
+From: "a sudheer" <urwithsudheer@gmail.com>
+To: "Ming Liu" <eemingliu@hotmail.com>
+Subject: Re: how to reserve memory in linux?
+In-Reply-To: <BAY110-F990057FF58BF5A4F24763B20D0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----=_Part_252347_30906971.1161407701582"
+References: <BAY110-F990057FF58BF5A4F24763B20D0@phx.gbl>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,54 +27,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David Bolcsfoldi <dbolcsfoldi@gmail.com> writes:
+------=_Part_252347_30906971.1161407701582
+Content-Type: text/plain; charset=GB2312; format=flowed
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-Hi - sorry for the slow response, this week has been crazy :/
+SGVsbG8gTWluZyBMdQoKT24gMTAvMjAvMDYsIE1pbmcgTGl1IDxlZW1pbmdsaXVAaG90bWFpbC5j
+b20+IHdyb3RlOgo+Cj4gRGVhciBhbGwsCj4gTXkgc2l0dWF0aW9uIGlzLCBJIHdhbnQgdG8gcmVz
+ZXJ2ZSBzb21lIGFtb3VudCBvZiBtZW1vcnkgYW5kIG1ha2UgaXQKPiBzaGFyZWQKPiBieSBib3Ro
+IExpbnV4IGtlcm5lbCBhbmQgYW5vdGhlciBoYXJkd2FyZSBwZXJpcGhlcmFsLiBUaGF0IGlzLCB3
+aGVuIEkgYm9vdAo+IGxpbnV4IGFuZCBleGVjdXRlIHNvbWUgdXNlciBzcGFjZSBwcm9ncmFtcywg
+dGhpcyBwYXJ0IG9mIG1lbW9yeSBzaG91bGQgYmUKPiByZXNlcnZlZCBmb3Igb3RoZXIgdXNlIGFu
+ZCBjYW5ub3QgYmUgdXNlZCBieSBib3RoIHRoZSBrZXJuZWwgYW5kIHRob3NlCj4gYXBwbGljYXRp
+b25zLgoKCkNvbnNpZGVyaW5nIHlvdXIgc2V0dXAgYXMgbm9ybWFsIGRlc2t0b3AsIEkgaG9wZSB0
+aGlzIGNhbiBiZSBkb25lIGJ5IGdpdmluZwoibWVtPSB4eG0iICBhcyB0aGUgYm9vdCBhcmd1bWVu
+dHMuICBTYXkgdGhlIGRtZXNnIGluIHlvdXIgc3lzdGVtIHNob3dzICAgIgo0OTVNQiBMT1dNRU0g
+YXZhaWxhYmxlLiIgIC4gIEluIHRoZSBib290IGFyZ3VtZW50cyB5b3UgY2FuIGdpdmUgbWVtPTQ5
+MG0Kc2F5aW5nIHRoZSBsaW51eCB0byB1c2Ugb25seSA0OTBNQiAuIFRoZSByZXN0IDVNQiBjYW4g
+YmUgdXNlZCBsYXRlciBhcyB5b3UKd2lzaC4KClBsZWFzZSBjb3JyZWN0IGlmIGkgYW0gd3Jvbmcu
+CgpUaGFua3MKU3VkaGVlcgoKCgpCdXQgaXQgY291bGQgYmUgYWNjZXNzZWQgYnkgTGludXggd2l0
+aCBzb21lIGNlcnRhaW4ga2luZCBvZgo+IGFwcGxpY2F0aW9uIGFuZCBhbHNvIGJlIGFjY2Vzc2Vk
+IGJ5IGFub3RoZXIgaGFyZHdhcmUgcGVyaXBoZXJhbCB3aXRoIERNQQo+IG9yCj4gc29tZXRoaW5n
+IGxpa2UgdGhhdC4KPgo+IEkgYW0gbm90IHN1cmUgaWYgSSBhbSByaWdodCBidXQgSSB0aGluayBp
+dCdzIGp1c3QgbGlrZSB0aGUgc2l0dWF0aW9uIG9mCj4gbXVsdGlwcm9jZXNzaW5nIChpZiB3ZSBj
+YW4gdHJlYXQgdGhhdCBoYXJkd2FyZSBwZXJpcGhlcmFsIGFzIGFub3RoZXIKPiBwcm9jZXNzb3Is
+IG9yIGp1c3QgdXNlIGFub3RoZXIgcHJvY2Vzc29yIHRvIHJlYWxpemUgaXRzIGZ1bmN0aW9ucy4p
+IGFuZAo+IHRoYXQgcGFydCBvZiBtZW1vcnkgaXMganVzdCBsaWtlIHRoZSBoYXJkd2FyZSBzaGFy
+ZWQgbWVtb3J5IGJ5Cj4gbXVsdGlwcm9jZXNzb3IuIEFtIEkgcmlnaHQ/Cj4KPiBUaGVuIG15IHF1
+ZXN0aW9uIGlzLCBob3cgdG8gcmVzZXJ2ZSBzdWNoIHBhcnQgb2YgbWVtb3J5IGluIExpbnV4PyBE
+b2VzCj4gTGludXggaGFzIHN1Y2ggYSBmdW5jdGlvbj8KPgo+IEkgYW0gbm90IGZhbGltaWFyIHdp
+dGggc3VjaCBhIHRvcGljLCBzbyBhbnkgaGludCByZWxhdGVkIHRvIHRoaXMgaXMKPiBhcHByZWNp
+YXRlZC4KPgo+IFRoYW5rcyBmb3IgeW91ciBpZGVhbHMgYW5kIHN1Z2dlc3Rpb25zLgo+Cj4gUmVn
+YXJkcwo+IE1pbmcKPgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCj4g0+vBqrv6tcTF89PRvfjQ0L27wfejrMfryrnTwyBN
+U04gTWVzc2VuZ2VyOiAgaHR0cDovL21lc3Nlbmdlci5tc24uY29tL2NuCj4KPgo+Cj4gX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiBMaW51eHBwYy1lbWJl
+ZGRlZCBtYWlsaW5nIGxpc3QKPiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnCj4gaHR0cHM6
+Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQKPgo+Cg==
+------=_Part_252347_30906971.1161407701582
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
->> Could you make it relative to my driver so the changes are easier
->> to see?
-
-David> Done and done. Look at the end of this e-mail.
-
-Thanks.
-
->> The PPC is big endian - Did you remember to add 3 to your base
->> address?
-
-David> I don't see how reading a single byte would be affected by the
-David> endianess of the platform.  I think it has more to do with the
-David> fact that the status and control registers are both 4 byte wide
-David> and when you add 3 to your offset you read only the LSB. I also
-David> suspect that the RX and TX registers are 4 byte wide too, even
-David> though this is not stated explicitly in the documentation I
-David> think it would be prudent to access these two as 4-byte wide
-David> registers as well.
-
-Well, the end result is the same. I guess the only reason for the
-4-byte spacing between the registers is the 32bit width of the OPB
-bus. The logical contents of the registers are all 8bit or less, and
-sticking to 8bit access makes things easier (no endianness issues, no
-issues with alternative implementations with another physical width).
-
-E.G. the driver might be useful for other architectures
-(E.G. microblaze) and for other implementations of the uartlite. We
-are using another uart with a uartlite compatible interface in a
-non-virtex fpga.
-
-The exact same thing is done my 8250.c for the 16550 opb core.
-
-David> I guess it is OK to read and write bytes as long as the
-David> bitflags don't change location. But I believe it is stated in
-David> the documentation that the OPB UART Lite device is a big endian
-David> device, in my opinion it would better to honor this and do big
-David> endian access of register width.
-
-The driver has to be updated If the hardware interface changes no
-matter what. The documentation clearly states (bottom of page 3) that
-you can access the registers using 8, 16 or 32bit accesses.
-
-I'll test and take a closer look at your patch when I have access to
-hw again on Monday.
-
--- 
-Bye, Peter Korsgaard
+SGVsbG8gTWluZyBMdTxicj48YnI+PGRpdj48c3BhbiBjbGFzcz0iZ21haWxfcXVvdGUiPk9uIDEw
+LzIwLzA2LCA8YiBjbGFzcz0iZ21haWxfc2VuZGVybmFtZSI+TWluZyBMaXU8L2I+ICZsdDs8YSBo
+cmVmPSJtYWlsdG86ZWVtaW5nbGl1QGhvdG1haWwuY29tIj5lZW1pbmdsaXVAaG90bWFpbC5jb208
+L2E+Jmd0OyB3cm90ZTo8L3NwYW4+PGJsb2NrcXVvdGUgY2xhc3M9ImdtYWlsX3F1b3RlIiBzdHls
+ZT0iYm9yZGVyLWxlZnQ6IDFweCBzb2xpZCByZ2IoMjA0LCAyMDQsIDIwNCk7IG1hcmdpbjogMHB0
+IDBwdCAwcHQgMC44ZXg7IHBhZGRpbmctbGVmdDogMWV4OyI+CkRlYXIgYWxsLDxicj5NeSBzaXR1
+YXRpb24gaXMsIEkgd2FudCB0byByZXNlcnZlIHNvbWUgYW1vdW50IG9mIG1lbW9yeSBhbmQgbWFr
+ZSBpdCBzaGFyZWQ8YnI+YnkgYm90aCBMaW51eCBrZXJuZWwgYW5kIGFub3RoZXIgaGFyZHdhcmUg
+cGVyaXBoZXJhbC4gVGhhdCBpcywgd2hlbiBJIGJvb3Q8YnI+bGludXggYW5kIGV4ZWN1dGUgc29t
+ZSB1c2VyIHNwYWNlIHByb2dyYW1zLCB0aGlzIHBhcnQgb2YgbWVtb3J5IHNob3VsZCBiZQo8YnI+
+cmVzZXJ2ZWQgZm9yIG90aGVyIHVzZSBhbmQgY2Fubm90IGJlIHVzZWQgYnkgYm90aCB0aGUga2Vy
+bmVsIGFuZCB0aG9zZTxicj5hcHBsaWNhdGlvbnMuIDwvYmxvY2txdW90ZT48ZGl2Pjxicj4KQ29u
+c2lkZXJpbmcgeW91ciBzZXR1cCBhcyBub3JtYWwgZGVza3RvcCwgSSBob3BlIHRoaXMgY2FuIGJl
+IGRvbmUgYnkKZ2l2aW5nICZxdW90O21lbT0geHhtJnF1b3Q7Jm5ic3A7IGFzIHRoZSBib290IGFy
+Z3VtZW50cy4mbmJzcDsgU2F5IHRoZSBkbWVzZyBpbgp5b3VyIHN5c3RlbSBzaG93cyZuYnNwOyZu
+YnNwOyAmcXVvdDsgNDk1TUIgTE9XTUVNIGF2YWlsYWJsZS4mcXVvdDsmbmJzcDsgLiZuYnNwOwpJ
+biB0aGUgYm9vdCBhcmd1bWVudHMgeW91IGNhbiBnaXZlIG1lbT00OTBtIHNheWluZyB0aGUgbGlu
+dXggdG8gdXNlCm9ubHkgNDkwTUIgLiBUaGUgcmVzdCA1TUIgY2FuIGJlIHVzZWQgbGF0ZXIgYXMg
+eW91IHdpc2guPGJyPgo8YnI+ClBsZWFzZSBjb3JyZWN0IGlmIGkgYW0gd3JvbmcuIDxicj4KPGJy
+PgpUaGFua3M8YnI+ClN1ZGhlZXI8YnI+Cjxicj4KJm5ic3A7PC9kaXY+PGJyPjxibG9ja3F1b3Rl
+IGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAxcHggc29saWQgcmdiKDIw
+NCwgMjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBwYWRkaW5nLWxlZnQ6IDFl
+eDsiPkJ1dCBpdCBjb3VsZCBiZSBhY2Nlc3NlZCBieSBMaW51eCB3aXRoIHNvbWUgY2VydGFpbiBr
+aW5kIG9mPGJyPmFwcGxpY2F0aW9uIGFuZCBhbHNvIGJlIGFjY2Vzc2VkIGJ5IGFub3RoZXIgaGFy
+ZHdhcmUgcGVyaXBoZXJhbCB3aXRoIERNQSBvcgo8YnI+c29tZXRoaW5nIGxpa2UgdGhhdC48YnI+
+PGJyPkkgYW0gbm90IHN1cmUgaWYgSSBhbSByaWdodCBidXQgSSB0aGluayBpdCdzIGp1c3QgbGlr
+ZSB0aGUgc2l0dWF0aW9uIG9mPGJyPm11bHRpcHJvY2Vzc2luZyAoaWYgd2UgY2FuIHRyZWF0IHRo
+YXQgaGFyZHdhcmUgcGVyaXBoZXJhbCBhcyBhbm90aGVyPGJyPnByb2Nlc3Nvciwgb3IganVzdCB1
+c2UgYW5vdGhlciBwcm9jZXNzb3IgdG8gcmVhbGl6ZSBpdHMgZnVuY3Rpb25zLikgYW5kCjxicj50
+aGF0IHBhcnQgb2YgbWVtb3J5IGlzIGp1c3QgbGlrZSB0aGUgaGFyZHdhcmUgc2hhcmVkIG1lbW9y
+eSBieTxicj5tdWx0aXByb2Nlc3Nvci4gQW0gSSByaWdodD88YnI+PGJyPlRoZW4gbXkgcXVlc3Rp
+b24gaXMsIGhvdyB0byByZXNlcnZlIHN1Y2ggcGFydCBvZiBtZW1vcnkgaW4gTGludXg/IERvZXM8
+YnI+TGludXggaGFzIHN1Y2ggYSBmdW5jdGlvbj88YnI+PGJyPkkgYW0gbm90IGZhbGltaWFyIHdp
+dGggc3VjaCBhIHRvcGljLCBzbyBhbnkgaGludCByZWxhdGVkIHRvIHRoaXMgaXMKPGJyPmFwcHJl
+Y2lhdGVkLjxicj48YnI+VGhhbmtzIGZvciB5b3VyIGlkZWFscyBhbmQgc3VnZ2VzdGlvbnMuPGJy
+Pjxicj5SZWdhcmRzPGJyPk1pbmc8YnI+PGJyPl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fPGJyPtPrwaq7+rXExfPT0b340NC9
+u8H3o6zH68q508MgTVNOIE1lc3NlbmdlcjombmJzcDsmbmJzcDs8YSBocmVmPSJodHRwOi8vbWVz
+c2VuZ2VyLm1zbi5jb20vY24iPgpodHRwOi8vbWVzc2VuZ2VyLm1zbi5jb20vY248L2E+PGJyPjxi
+cj48YnI+PGJyPl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+PGJyPkxpbnV4cHBjLWVtYmVkZGVkIG1haWxpbmcgbGlzdDxicj48YSBocmVmPSJtYWlsdG86TGlu
+dXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZyI+TGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZzwv
+YT48YnI+PGEgaHJlZj0iaHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhw
+cGMtZW1iZWRkZWQiPgpodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBw
+Yy1lbWJlZGRlZDwvYT48YnI+PGJyPjwvYmxvY2txdW90ZT48L2Rpdj48YnI+Cg==
+------=_Part_252347_30906971.1161407701582--
