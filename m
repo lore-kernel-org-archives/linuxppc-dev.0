@@ -1,18 +1,25 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] Correct way to format spufs file output.
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B42FB67BAC
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Oct 2006 09:25:23 +1000 (EST)
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200610201638.52404.arnd@arndb.de>
-References: <Pine.WNT.4.64.0610182227120.6056@doodlebug>
-	<200610201023.12796.arnd@arndb.de>
-	<Pine.WNT.4.64.0610200848580.5976@dwayne>
-	<200610201638.52404.arnd@arndb.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <6B8FAF75-44DF-4638-BD7D-AF6BB063F339@kernel.crashing.org>
+References: <453771E5.4090808@bplan-gmbh.de>
+	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+	<453884F5.4000804@bplan-gmbh.de>
+	<122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
+	<4538DC0B.7060402@bplan-gmbh.de>
+	<6B8FAF75-44DF-4638-BD7D-AF6BB063F339@kernel.crashing.org>
 Content-Type: text/plain
-Date: Sat, 21 Oct 2006 11:44:53 +1000
-Message-Id: <1161395093.10524.225.camel@localhost.localdomain>
+Date: Sun, 22 Oct 2006 09:25:13 +1000
+Message-Id: <1161473113.10524.264.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dwayne Grant McConnell <decimal@us.ibm.com>,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-10-20 at 16:38 +0200, Arnd Bergmann wrote:
-> On Friday 20 October 2006 15:54, Dwayne Grant McConnell wrote:
-> > I think %0xllx is the way to go. I would even advocate changing 
-> > signal1_type and signal2_type unless it is actually too dangerous.
-> 
-> There is absolutely no reason why these should be hexadecimal, they
-> are basically implementing a bool.
-> 
-> > Is there even a case where changing from %llu to %0xllx would break things? 
-> > Perhaps with the combination of a old library with a new kernel?
-> 
-> Right, a library or some script that has been written assuming there
-> is no leading 0x.
 
-We might still want to "broadcast" that we might change that and see how
-much gets broken. It's very likely that nothing will.
+> > I was just thinking, as this code is alraedy in some Linux tree, we  
+> > could still use it there, and plan to replace it by a much better  
+> > one (keeping the API compatible) later on.
+> 
+> Is this in the kernel tree already, I am not coming across it.
 
-Ben.
+Probably only in the WD tree and not even attempted to be merged like
+most of the gunk in there...
+
+Ben
