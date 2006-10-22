@@ -1,32 +1,21 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 5DCD567B5B
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Oct 2006 22:24:05 +1000 (EST)
-Date: Sun, 22 Oct 2006 14:23:55 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Subject: 2.6.19-rc2: known unfixed regressions (v3)
-Message-ID: <20061022122355.GC3502@stusta.de>
-References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
+Return-Path: <nd@bplan-gmbh.de>
+Received: from mi-ob.rzone.de (mi-ob.rzone.de [81.169.146.144])
+	by ozlabs.org (Postfix) with ESMTP id 87052679FD
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Oct 2006 22:58:52 +1000 (EST)
+Message-ID: <453B6A84.3050209@bplan-gmbh.de>
+Date: Sun, 22 Oct 2006 14:56:36 +0200
+From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
-Cc: alsa-devel@alsa-project.org, Thierry Vignaud <tvignaud@mandriva.com>,
-	Greg KH <greg@kroah.com>, ak@suse.de, linux-ide@vger.kernel.org,
-	pavel@suse.cz, paulus@samba.org, Jens Axboe <jens.axboe@oracle.com>,
-	linux-visws-devel@lists.sf.net, Meelis Roos <mroos@linux.ee>,
-	Christian <christiand59@web.de>, art@usfltd.com,
-	linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>,
-	linux-pci@atrey.karlin.mff.cuni.cz, jgarzik@pobox.com,
-	Martin Lorenz <martin@lorenz.eu.org>,
-	Stephen Hemminger <shemminger@osdl.org>, len.brown@intel.com,
-	discuss@x86-64.org, cpufreq@lists.linux.org.uk,
-	Alex Romosan <romosan@sycorax.lbl.gov>, perex@suse.cz,
-	linux-pm@osdl.org, linuxppc-dev@ozlabs.org, pazke@donpac.ru,
-	Jesper Juhl <jesper.juhl@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	davej@codemonkey.org.uk, Mark Langsdorf <mark.langsdorf@amd.com>,
-	Prakash Punnoor <prakash@punnoor.de>, James.Bottomley@HansenPartnership.com
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+References: <453771E5.4090808@bplan-gmbh.de>
+	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+	<453884F5.4000804@bplan-gmbh.de>
+	<122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
+In-Reply-To: <122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
+Content-Type: multipart/mixed; boundary="------------090304040009030307000501"
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com, sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,88 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This email lists some known unfixed regressions in 2.6.19-rc2 compared 
-to 2.6.18 that are not yet fixed Linus' tree.
+This is a multi-part message in MIME format.
+--------------090304040009030307000501
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+Kumar Gala wrote:
+ >
+ > On Oct 20, 2006, at 3:12 AM, Nicolas DET wrote:
+ >
+ >> Kumar Gala wrote:
+ >> >
+ >> > On Oct 19, 2006, at 7:39 AM, Nicolas DET wrote:
+ >> >
+ >> >> This 'big' patch adds support for CHRP/MPC52xx based platform.
+ >> Here, this is the bPlan's Efika computer
+ >> (http://www.bplan-gmbh.de/efika_spec_en.html)
+ >> >
+ >>
+ >> > Some high level comments:
+ >> > 1. lets stick with the 52xx naming, instead of 5k2
+ >>
+ >> Ok. Will be done
+ >>
+ >> > 2. PIC code needs to be updated for new interrupt model (as well as
+ >> remove of pt_regs)
+ >>
+ >> Ok.
+ >>
+ >> > 3. use standard kernel debug macros
+ >>
+ >> Loads of changes in the pipe line ;-)
+ >>
+ >> > 4. look at replacing sram_allocator w/rheap
+ >> >
+ >>
+ >> This SRAM allocator is the exact same from the original Linux one. In
+ >> fact, it is the original one. Would it be possible to accept this code
+ >> as it is and schedule rheap integration later ?
+ >
+ > I dont follow, what do you mean by 'original Linux one' ?
+ >
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+There is a driver for Linux (not in the official kernel.org tree) for 
+this chipset. This is the one I'm speaking about
+You can find it into various embbeded kernel like MontaVista tree, etc...
 
+By the way, I uploaded the current patch on a private URL:
+http://powernico.free.fr/chrpmpc52x_bigone.patch.bz2
 
-Subject    : ppc prep boot hang
-References : http://lkml.org/lkml/2006/10/14/58
-Submitter  : Meelis Roos <mroos@linux.ee>
-Status     : unknown
-
-
-Subject    : X60s: BUG()s, lose ACPI events after suspend/resume
-References : http://lkml.org/lkml/2006/10/10/39
-Submitter  : Martin Lorenz <martin@lorenz.eu.org>
-Status     : unknown
-
-
-Subject    : T60 stops triggering any ACPI events
-References : http://lkml.org/lkml/2006/10/4/425
-             http://lkml.org/lkml/2006/10/16/262
-Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
-Status     : unknown
-
-
-Subject    : CONFIG_X86_VOYAGER=y, CONFIG_SMP=n compile error
-References : http://lkml.org/lkml/2006/10/7/51
-Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
-Caused-By  : David Howells <dhowells@redhat.com>
-             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
-Status     : unknown
-
-
-Subject    : CONFIG_X86_VISWS=y, CONFIG_SMP=n compile error
-References : http://lkml.org/lkml/2006/10/7/51
-Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
-Caused-By  : David Howells <dhowells@redhat.com>
-             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
-Status     : unknown
-
-
-Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
-Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
-Status     : unknown
-
-
-Subject    : SMP x86_64 boot problem
-References : http://lkml.org/lkml/2006/9/28/330
-             http://lkml.org/lkml/2006/10/5/289
-Submitter  : art@usfltd.com
-Status     : submitter was asked to git bisect
-             result of bisecting seems to be wrong
+If people wish to have a look.
 
 
-Subject    : unable to rip cd
-References : http://lkml.org/lkml/2006/10/13/100
-Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
-Status     : unknown
+--------------090304040009030307000501
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
 
 
-Subject    : cpufreq not working on AMD K8
-References : http://lkml.org/lkml/2006/10/10/114
-Submitter  : Christian <christiand59@web.de>
-Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
-Status     : Mark is investigating
-
-
-Subject    : MSI errors during boot (CONFIG_PCI_MULTITHREAD_PROBE)
-References : http://lkml.org/lkml/2006/10/16/291
-Submitter  : Stephen Hemminger <shemminger@osdl.org>
-Handled-By : Greg KH <greg@kroah.com>
-Status     : Greg is working on a fix
-
-
-Subject    : snd-hda-intel <-> forcedeth MSI problem
-References : http://lkml.org/lkml/2006/10/5/40
-             http://lkml.org/lkml/2006/10/7/164
-Submitter  : Prakash Punnoor <prakash@punnoor.de>
-Status     : patches are being discussed
+--------------090304040009030307000501--
