@@ -1,16 +1,18 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s26.bay0.hotmail.com (bay0-omc1-s26.bay0.hotmail.com
-	[65.54.246.98]) by ozlabs.org (Postfix) with ESMTP id 68BAE679E0
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 0A28767B5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Oct 2006 21:40:09 +1000 (EST)
-Message-ID: <BAY110-F14D14B6EBD6394F62C88A5B2030@phx.gbl>
-In-Reply-To: <ff9652ca0610212348p42f46a52w9b147dc3d7ae1838@mail.gmail.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: rahul.theraja@gmail.com
-Subject: Re: how to reserve memory in linux?
-Date: Sun, 22 Oct 2006 11:40:04 +0000
+	Mon, 23 Oct 2006 08:50:17 +1000 (EST)
+Date: Mon, 23 Oct 2006 02:50:01 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Norbert van Bolhuis <nvbolhuis@aimsys.nl>
+Subject: Re: MPC8xx CPM I2C interface driver
+Message-ID: <20061023025001.45e821c3@localhost.localdomain>
+In-Reply-To: <452B626D.8050106@aimsys.nl>
+References: <452B626D.8050106@aimsys.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+Content-Type: multipart/signed; boundary="Sig_qm.gOoLD9Fyna/NOpySuWSe";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,36 +24,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Rahul,
+--Sig_qm.gOoLD9Fyna/NOpySuWSe
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
->why do you think so ?
->Can't you give the physical address of the allocated memory from 
->linux
->kernel to peripheral's DMA.?
->Unless you need to hardcode the physicall address i hope
->virt_to_phys(kmalloc_address) can be given to DMA.
->Sorry if i am still wrong in understanding your requirement.
->
+On Tue, 10 Oct 2006 11:05:49 +0200
+Norbert van Bolhuis wrote:
 
-In fact, I have considered this method before. Just to dynamically allocate 
-such a memory buffer and then tell the peripheral its physical address for 
-accessing. However, because I really know little about the memory 
-management in Linux, so I am not sure if the following question could be 
-guaranteed:
-Q. When I dynamically allocate a large amount of memory, I am not sure if I 
-can allocate a physically continous large amount of memory. For the 
-peripheral, it hopes the continous physical address, unless it has 
-scatter-gather function. 
+>=20
+> Is there no MPC8xx CPM I2C interface driver in (latest) linux v2.6 or
+> am I mistaken ?
+> There's no code for CONFIG_I2C_ALGO8XX.
+The answer is - no, there is no stuff in the 2.6 kernel. I used to have the=
+ port from 2.4 a while ago (an=20
+improvement to the patches posted here btw)  but had no chance to cleanup i=
+t and push through lm_sensors.
 
-I think I must dig deeply into LDD memory management chapter to find the 
-answer. :)
+>=20
+> I've a MPC870 based board and I was hoping for a MPC8xx CPM I2C
+> interface driver to be there (allowing user applications to open and
+> read/write /dev/i2c-0)
+>=20
+You should be able to locate sources in this list's archives. Ping me once =
+more if not, I'll try to dig it out of my HDD then...
 
-Of course, I appreciate your idea and suggestion. This is really a 
-candidate method to solve my problem.
+> Thanks,
+> N.
+>=20
+>=20
+>=20
 
-Thanks a lot.
-Regards
-Ming
+--
+-Vitaly
 
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+--Sig_qm.gOoLD9Fyna/NOpySuWSe
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFO/WauOg9JvQhSEsRArlTAKCk4HOWJETzofK+90Y91ujPmvkj4ACgmFT6
+YXZtTxeOQopExhongRBMAxY=
+=3qy3
+-----END PGP SIGNATURE-----
+
+--Sig_qm.gOoLD9Fyna/NOpySuWSe--
