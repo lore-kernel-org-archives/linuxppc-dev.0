@@ -1,23 +1,26 @@
 Return-Path: <rahul.theraja@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.193])
-	by ozlabs.org (Postfix) with ESMTP id 7A17667B56
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id 0385667B1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Oct 2006 16:48:07 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id z31so447436nzd
+	Sun, 22 Oct 2006 19:02:29 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id f25so113202pyf
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Oct 2006 23:48:06 -0700 (PDT)
-Message-ID: <ff9652ca0610212348p42f46a52w9b147dc3d7ae1838@mail.gmail.com>
-Date: Sun, 22 Oct 2006 12:18:06 +0530
+	Sun, 22 Oct 2006 02:02:28 -0700 (PDT)
+Message-ID: <ff9652ca0610220202w4b0d831bu202ccff8ed941f2d@mail.gmail.com>
+Date: Sun, 22 Oct 2006 14:32:28 +0530
 From: Rahul <rahul.theraja@gmail.com>
-To: "Ming Liu" <eemingliu@hotmail.com>
-Subject: Re: how to reserve memory in linux?
-In-Reply-To: <BAY110-F2BA131ED0055064C26658B2020@phx.gbl>
+To: "Fawad Lateef" <fawadlateef@gmail.com>
+Subject: Re: help in block drivers
+In-Reply-To: <1e62d1370610192213g7502709ufcc2bce6903040d8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_192918_32681572.1161499686339"
-References: <12c9fc1a0610202215k67f374d3ie3db3d6cbfb82180@mail.gmail.com>
-	<BAY110-F2BA131ED0055064C26658B2020@phx.gbl>
-Cc: linuxppc-embedded@ozlabs.org
+	boundary="----=_Part_193540_1498869.1161507748467"
+References: <ff9652ca0610190314u32a620b5qd0bd27a1b2700a22@mail.gmail.com>
+	<d16b1c80610190808y17c516dl35cfc8ca4a7a42ad@mail.gmail.com>
+	<ff9652ca0610190923vffbb981j1978ce4159489b0c@mail.gmail.com>
+	<1e62d1370610192213g7502709ufcc2bce6903040d8@mail.gmail.com>
+Cc: kernelnewbies@nl.linux.org, Shakthi Kannan <shakthimaan@gmail.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,109 +31,111 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_192918_32681572.1161499686339
-Content-Type: text/plain; charset=GB2312; format=flowed
-Content-Transfer-Encoding: base64
+------=_Part_193540_1498869.1161507748467
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-T24gMTAvMjEvMDYsIE1pbmcgTGl1IDxlZW1pbmdsaXVAaG90bWFpbC5jb20+IHdyb3RlOgo+Cj4g
-RGVhciBzdWRoZWVyLAo+IEFib3V0IHRoZSAibWVtPXh4IiBhcmd1bWVudCwgSSBjaGVja2VkIGl0
-IGZyb20gdGhlIHdlYnNpdGUgYW5kIGdvdCBzdWNoIGEKPiBleHBsYW5hdGlvbjoKPgo+IFRoaXMg
-YXJndW1lbnQgaGFzIHNldmVyYWwgcHVycG9zZXM6IFRoZSBvcmlnaW5hbCBwdXJwb3NlIHdhcyB0
-byBzcGVjaWZ5Cj4gdGhlCj4gYW1vdW50IG9mIGluc3RhbGxlZCBtZW1vcnkgKG9yIGEgdmFsdWUg
-bGVzcyB0aGFuIHRoYXQgaWYgeW91IHdhbnRlZCB0bwo+IGxpbWl0IHRoZSBhbW91bnQgb2YgbWVt
-b3J5IGF2YWlsYWJsZSB0byBsaW51eCkuCj4KPiBGcm9tIHRoZSBhcmd1bWVudCBhYm92ZSwgaXQg
-c2F5cyAibWVtPXh4IiBpcyB0byBzcGVjaWZ5IHRoZSBhbW91bnQgb2YKPiBtZW1vcnkgYXZhaWxh
-YmxlIHRvIExpbnV4LiBJIGFtIG5vdCBzdXJlIGlmIEkgYW0gcmlnaHQsIGJ1dCBJIHRoaW5rIGlm
-IEkKPiB1c2Ugc3VjaCBhbiBhcmd1bWVudCwgdGhhdCByZXNlcnZlZCBwYXJ0ICh0aGF0IDVNQiB5
-b3UgbWVudGlvbmVkKSwgaXMgbm90Cj4gYXZhaWxhYmxlIGFueSBtb3JlIGZvciBMaW51eCB0byBh
-Y2Nlc3MgaXQuCj4KPiBNeSBvcmlnaW5hbCBtZWFuaW5nIGlzOiBzcGVjaWZ5IGEgZml4ZWQgcGh5
-c2ljYWwgYWRkcmVzcyBmb3IgYSBtb3VudCBvZgo+IG1lbW9yeSBmb3IgcmVzZXJ2ZWQgdXNlLiBU
-aGUgcG9pbnQgaXMgdG8gbWFrZSB0aGlzIHBhcnQgb2YgbWVtb3J5IGZpeGVkIGluCj4gdGhlIG1l
-bW9yeSBvZiBwaHlzaWNhbCBhZGRyZXNzLCBhbmQgdGhlbiBhbm90aGVyIEkvTyBwZXJpcGhlcmFs
-IGNvdWxkIHVzZQo+IERNQSB0byBhY2Nlc3Mgc3VjaCBhIGZpeGVkIHBoeXNpY2FsIGFkZHJlc3Mg
-bWVtb3J5LiBIb3dldmVyIGlmIEkgZG9uJ3QKPiByZXNlcnZlIHN1Y2ggYSBwYXJ0LCBJIG11c3Qg
-bGV0IExpbnV4IHRvIGFsbG9jYXRlIHN1Y2ggYSBtZW1vcnkgcGFydC4gQW5kCj4gdGhlbiBMaW51
-eCB3aWxsIG5vdCBwdXQgaXQgaW4gYSBmaXhlZCBwaHlzaWNhbCBhZGRyZXNzCgoKeWVzCgphbmQg
-dGhlbiB0aGUKPiBwZXJpcGhlcmFsIHdpbGwgbm90IGtub3cgd2hlcmUgaXMgdGhpcyBwYXJ0LgoK
-CndoeSBkbyB5b3UgdGhpbmsgc28gPwpDYW4ndCB5b3UgZ2l2ZSB0aGUgcGh5c2ljYWwgYWRkcmVz
-cyBvZiB0aGUgYWxsb2NhdGVkIG1lbW9yeSBmcm9tIGxpbnV4Cmtlcm5lbCB0byBwZXJpcGhlcmFs
-J3MgRE1BLj8KVW5sZXNzIHlvdSBuZWVkIHRvIGhhcmRjb2RlIHRoZSBwaHlzaWNhbGwgYWRkcmVz
-cyBpIGhvcGUKdmlydF90b19waHlzKGttYWxsb2NfYWRkcmVzcykgY2FuIGJlIGdpdmVuIHRvIERN
-QS4KU29ycnkgaWYgaSBhbSBzdGlsbCB3cm9uZyBpbiB1bmRlcnN0YW5kaW5nIHlvdXIgcmVxdWly
-ZW1lbnQuCgoKQW0gSSByaWdodD8gVGhhbmtzIGZvciB5b3VyIGlkZWEuCj4KPiBBbHNvIG90aGVy
-IGlkZWFzIGFyZSBhcHByZWNpYXRlZC4KPgo+IFJlZ2FyZHMKPiBNaW5nCj4KPiA+Q29uc2lkZXJp
-bmcgeW91ciBzZXR1cCBhcyBub3JtYWwgZGVza3RvcCwgSSBob3BlIHRoaXMgY2FuIGJlIGRvbmUg
-YnkKPiA+Z2l2aW5nCj4gPiJtZW09IHh4bSIgIGFzIHRoZSBib290IGFyZ3VtZW50cy4gIFNheSB0
-aGUgZG1lc2cgaW4geW91ciBzeXN0ZW0KPiA+c2hvd3MgICAiCj4gPjQ5NU1CIExPV01FTSBhdmFp
-bGFibGUuIiAgLiAgSW4gdGhlIGJvb3QgYXJndW1lbnRzIHlvdSBjYW4gZ2l2ZQo+ID5tZW09NDkw
-bQo+ID5zYXlpbmcgdGhlIGxpbnV4IHRvIHVzZSBvbmx5IDQ5ME1CIC4gVGhlIHJlc3QgNU1CIGNh
-biBiZSB1c2VkIGxhdGVyCj4gPmFzIHlvdQo+ID53aXNoLgo+Cj4gX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiDP7dPDysC9
-58nP1+6087XEtefX09PKvP7Ptc2zoaogTVNOIEhvdG1haWyhoyAgaHR0cDovL3d3dy5ob3RtYWls
-LmNvbQo+Cj4KPgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCj4gTGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0Cj4gTGludXhwcGMtZW1iZWRkZWRA
-b3psYWJzLm9yZwo+IGh0dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBj
-LWVtYmVkZGVkCj4KPgo=
-------=_Part_192918_32681572.1161499686339
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: base64
+On 10/20/06, Fawad Lateef <fawadlateef@gmail.com> wrote:
+>
+> Hello Rahul,
+>
+> First of all please don't do top-posting rather do bottom-posting. For
+> more information search google.
+
+
+oh sorry for that
+
+On 10/19/06, Rahul Theraja <rahul.theraja@gmail.com> wrote:
+> > Hello Shakthi Kannan,
+> >
+> >  Thanks for the reply .
+> >
+> >
+> > > > driver. I could not understand why the "sbd_request " is called even
+> > though
+> > > > i have given only one read call from user space file.
+> > >
+> > > Block device I/O transfer is done in blocks.
+> > >
+> > > >  And also in the driver, in the function sbd_request() how does the
+> > driver
+> > > > get the parameters  like sector, current_nr_sectors and buffer.
+> > >
+> > > VFS <-> SCSI <-> Block device?
+> > >
+>
+> I think its VFS<->Buffer-Cache<->Block-Device and if drive is mounted
+> then VFS<->FS<->Buffer-Cache<->Block-Device
+>
+> > > > i could move
+> > > > furhter fastly.
+> > >
+> > > Fastly? IMHO, learning kernel development involves lot of patience.
+> > >
+> > > SK
+> >
+> >
+> >  Is it necessary to use kernel_thread() in block drivers.
+> In  drivers/block
+> > loop.c i could see  kernel_thread() being used but in floopy.c it is not
+> > used. When is this kernel_thread() function is supposed to be used ?  In
+> the
+> > sbd_device also the kernel_thread() is not used.
+> >
+>
+> First in kernel-2.6.x its better to use kthread_*() rather than
+> kernel_thread if threading is needed.
+>
+> Threading isn't necessary in any device until unless you need it. For
+> example if your driver is emulating a device or performing IO directly
+> then you don't need it, but if your driver is sending request to a
+> device which generates interrupts after completing IO and you want to
+> do some extra work after getting IO completion interrupt then you must
+> use thread. As threads work in process-context, hence can do sleep and
+> lengthy processing but interrupt-context shouldn't sleep or nor do
+> long processing.
+>
+> For getting more understanding about different contexts like process,
+> interrupt, softirqs contexts do search google.
+>
+> >  Anyone please kindly clarify my doubts.
+> >
+>
+> I hope you doubts are not clear.
+
+
+thank you very much for all the help
+
+>  Thanks in Advance
+> >
+> >  -Rahul
+> >
+>
+> --
+> Fawad Lateef
+>
+
+------=_Part_193540_1498869.1161507748467
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-PGJyPjxkaXY+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiAxMC8yMS8wNiwgPGIgY2xhc3M9
-ImdtYWlsX3NlbmRlcm5hbWUiPk1pbmcgTGl1PC9iPiAmbHQ7PGEgaHJlZj0ibWFpbHRvOmVlbWlu
-Z2xpdUBob3RtYWlsLmNvbSI+ZWVtaW5nbGl1QGhvdG1haWwuY29tPC9hPiZndDsgd3JvdGU6PC9z
-cGFuPjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAx
-cHggc29saWQgcmdiKDIwNCwgMjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBw
-YWRkaW5nLWxlZnQ6IDFleDsiPgpEZWFyIHN1ZGhlZXIsPGJyPkFib3V0IHRoZSAmcXVvdDttZW09
-eHgmcXVvdDsgYXJndW1lbnQsIEkgY2hlY2tlZCBpdCBmcm9tIHRoZSB3ZWJzaXRlIGFuZCBnb3Qg
-c3VjaCBhPGJyPmV4cGxhbmF0aW9uOjxicj48YnI+VGhpcyBhcmd1bWVudCBoYXMgc2V2ZXJhbCBw
-dXJwb3NlczogVGhlIG9yaWdpbmFsIHB1cnBvc2Ugd2FzIHRvIHNwZWNpZnkgdGhlPGJyPmFtb3Vu
-dCBvZiBpbnN0YWxsZWQgbWVtb3J5IChvciBhIHZhbHVlIGxlc3MgdGhhbiB0aGF0IGlmIHlvdSB3
-YW50ZWQgdG8KPGJyPmxpbWl0IHRoZSBhbW91bnQgb2YgbWVtb3J5IGF2YWlsYWJsZSB0byBsaW51
-eCkuPGJyPjxicj5Gcm9tIHRoZSBhcmd1bWVudCBhYm92ZSwgaXQgc2F5cyAmcXVvdDttZW09eHgm
-cXVvdDsgaXMgdG8gc3BlY2lmeSB0aGUgYW1vdW50IG9mPGJyPm1lbW9yeSBhdmFpbGFibGUgdG8g
-TGludXguIEkgYW0gbm90IHN1cmUgaWYgSSBhbSByaWdodCwgYnV0IEkgdGhpbmsgaWYgSTxicj51
-c2Ugc3VjaCBhbiBhcmd1bWVudCwgdGhhdCByZXNlcnZlZCBwYXJ0ICh0aGF0IDVNQiB5b3UgbWVu
-dGlvbmVkKSwgaXMgbm90Cjxicj5hdmFpbGFibGUgYW55IG1vcmUgZm9yIExpbnV4IHRvIGFjY2Vz
-cyBpdC48YnI+PGJyPk15IG9yaWdpbmFsIG1lYW5pbmcgaXM6IHNwZWNpZnkgYSBmaXhlZCBwaHlz
-aWNhbCBhZGRyZXNzIGZvciBhIG1vdW50IG9mPGJyPm1lbW9yeSBmb3IgcmVzZXJ2ZWQgdXNlLiBU
-aGUgcG9pbnQgaXMgdG8gbWFrZSB0aGlzIHBhcnQgb2YgbWVtb3J5IGZpeGVkIGluPGJyPnRoZSBt
-ZW1vcnkgb2YgcGh5c2ljYWwgYWRkcmVzcywgYW5kIHRoZW4gYW5vdGhlciBJL08gcGVyaXBoZXJh
-bCBjb3VsZCB1c2UKPGJyPkRNQSB0byBhY2Nlc3Mgc3VjaCBhIGZpeGVkIHBoeXNpY2FsIGFkZHJl
-c3MgbWVtb3J5LiBIb3dldmVyIGlmIEkgZG9uJ3Q8YnI+cmVzZXJ2ZSBzdWNoIGEgcGFydCwgSSBt
-dXN0IGxldCBMaW51eCB0byBhbGxvY2F0ZSBzdWNoIGEgbWVtb3J5IHBhcnQuIEFuZDxicj50aGVu
-IExpbnV4IHdpbGwgbm90IHB1dCBpdCBpbiBhIGZpeGVkIHBoeXNpY2FsIGFkZHJlc3MgPC9ibG9j
-a3F1b3RlPgo8ZGl2Pjxicj4KeWVzJm5ic3A7IDxicj4KPC9kaXY+PGJyPjxibG9ja3F1b3RlIGNs
-YXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAxcHggc29saWQgcmdiKDIwNCwg
-MjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBwYWRkaW5nLWxlZnQ6IDFleDsi
-PmFuZCB0aGVuIHRoZTxicj5wZXJpcGhlcmFsIHdpbGwgbm90IGtub3cgd2hlcmUgaXMgdGhpcyBw
-YXJ0LjwvYmxvY2txdW90ZT48ZGl2Pjxicj4KCndoeSBkbyB5b3UgdGhpbmsgc28gPzxicj4KQ2Fu
-J3QgeW91IGdpdmUgdGhlIHBoeXNpY2FsIGFkZHJlc3Mgb2YgdGhlIGFsbG9jYXRlZCBtZW1vcnkg
-ZnJvbSBsaW51eCBrZXJuZWwgdG8gcGVyaXBoZXJhbCdzIERNQS4/PGJyPgpVbmxlc3MgeW91IG5l
-ZWQgdG8gaGFyZGNvZGUgdGhlIHBoeXNpY2FsbCBhZGRyZXNzIGkgaG9wZSB2aXJ0X3RvX3BoeXMo
-a21hbGxvY19hZGRyZXNzKSBjYW4gYmUgZ2l2ZW4gdG8gRE1BLjxicj4KU29ycnkgaWYgaSBhbSBz
-dGlsbCB3cm9uZyBpbiB1bmRlcnN0YW5kaW5nIHlvdXIgcmVxdWlyZW1lbnQuPGJyPgo8YnI+Cjwv
-ZGl2Pjxicj48YmxvY2txdW90ZSBjbGFzcz0iZ21haWxfcXVvdGUiIHN0eWxlPSJib3JkZXItbGVm
-dDogMXB4IHNvbGlkIHJnYigyMDQsIDIwNCwgMjA0KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAwLjhl
-eDsgcGFkZGluZy1sZWZ0OiAxZXg7Ij5BbSBJIHJpZ2h0PyBUaGFua3MgZm9yIHlvdXIgaWRlYS48
-YnI+PGJyPkFsc28gb3RoZXIgaWRlYXMgYXJlIGFwcHJlY2lhdGVkLjxicj48YnI+ClJlZ2FyZHM8
-YnI+TWluZzxicj48YnI+Jmd0O0NvbnNpZGVyaW5nIHlvdXIgc2V0dXAgYXMgbm9ybWFsIGRlc2t0
-b3AsIEkgaG9wZSB0aGlzIGNhbiBiZSBkb25lIGJ5PGJyPiZndDtnaXZpbmc8YnI+Jmd0OyZxdW90
-O21lbT0geHhtJnF1b3Q7Jm5ic3A7Jm5ic3A7YXMgdGhlIGJvb3QgYXJndW1lbnRzLiZuYnNwOyZu
-YnNwO1NheSB0aGUgZG1lc2cgaW4geW91ciBzeXN0ZW08YnI+Jmd0O3Nob3dzJm5ic3A7Jm5ic3A7
-ICZxdW90Ozxicj4mZ3Q7NDk1TUIgTE9XTUVNIGF2YWlsYWJsZS4mcXVvdDsmbmJzcDsmbmJzcDsu
-Jm5ic3A7Jm5ic3A7SW4gdGhlIGJvb3QgYXJndW1lbnRzIHlvdSBjYW4gZ2l2ZQo8YnI+Jmd0O21l
-bT00OTBtPGJyPiZndDtzYXlpbmcgdGhlIGxpbnV4IHRvIHVzZSBvbmx5IDQ5ME1CIC4gVGhlIHJl
-c3QgNU1CIGNhbiBiZSB1c2VkIGxhdGVyPGJyPiZndDthcyB5b3U8YnI+Jmd0O3dpc2guPGJyPjxi
-cj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXzxicj7P7dPDysC958nP1+6087XEtefX09PKvP7Ptc2zoaogTVNOIEhvdG1haWyh
-oyZuYnNwOyZuYnNwOwo8YSBocmVmPSJodHRwOi8vd3d3LmhvdG1haWwuY29tIj5odHRwOi8vd3d3
-LmhvdG1haWwuY29tPC9hPjxicj48YnI+PGJyPjxicj5fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXzxicj5MaW51eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxpc3Q8
-YnI+PGEgaHJlZj0ibWFpbHRvOkxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmciPkxpbnV4cHBj
-LWVtYmVkZGVkQG96bGFicy5vcmcKPC9hPjxicj48YSBocmVmPSJodHRwczovL296bGFicy5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZCI+aHR0cHM6Ly9vemxhYnMub3JnL21h
-aWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQ8L2E+PGJyPjxicj48L2Jsb2NrcXVvdGU+
-PC9kaXY+PGJyPgo=
-------=_Part_192918_32681572.1161499686339--
+<br><br><div><span class="gmail_quote">On 10/20/06, <b class="gmail_sendername">Fawad Lateef</b> &lt;<a href="mailto:fawadlateef@gmail.com">fawadlateef@gmail.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hello Rahul,<br><br>First of all please don't do top-posting rather do bottom-posting. For<br>more information search google.</blockquote><div><br>
+oh sorry for that <br>
+</div><br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">On 10/19/06, Rahul Theraja &lt;<a href="mailto:rahul.theraja@gmail.com">rahul.theraja@gmail.com
+</a>&gt; wrote:<br>&gt; Hello Shakthi Kannan,<br>&gt;<br>&gt;&nbsp;&nbsp;Thanks for the reply .<br>&gt;<br>&gt;<br>&gt; &gt; &gt; driver. I could not understand why the &quot;sbd_request &quot; is called even<br>&gt; though<br>&gt; &gt; &gt; i have given only one read call from user space file.
+<br>&gt; &gt;<br>&gt; &gt; Block device I/O transfer is done in blocks.<br>&gt; &gt;<br>&gt; &gt; &gt;&nbsp;&nbsp;And also in the driver, in the function sbd_request() how does the<br>&gt; driver<br>&gt; &gt; &gt; get the parameters&nbsp;&nbsp;like sector, current_nr_sectors and buffer.
+<br>&gt; &gt;<br>&gt; &gt; VFS &lt;-&gt; SCSI &lt;-&gt; Block device?<br>&gt; &gt;<br><br>I think its VFS&lt;-&gt;Buffer-Cache&lt;-&gt;Block-Device and if drive is mounted<br>then VFS&lt;-&gt;FS&lt;-&gt;Buffer-Cache&lt;-&gt;Block-Device
+<br><br>&gt; &gt; &gt; i could move<br>&gt; &gt; &gt; furhter fastly.<br>&gt; &gt;<br>&gt; &gt; Fastly? IMHO, learning kernel development involves lot of patience.<br>&gt; &gt;<br>&gt; &gt; SK<br>&gt;<br>&gt;<br>&gt;&nbsp;&nbsp;Is it necessary to use kernel_thread() in block drivers. In&nbsp;&nbsp;drivers/block
+<br>&gt; loop.c i could see&nbsp;&nbsp;kernel_thread() being used but in floopy.c it is not<br>&gt; used. When is this kernel_thread() function is supposed to be used ?&nbsp;&nbsp;In the<br>&gt; sbd_device also the kernel_thread() is not used.
+<br>&gt;<br><br>First in kernel-2.6.x its better to use kthread_*() rather than<br>kernel_thread if threading is needed.<br><br>Threading isn't necessary in any device until unless you need it. For<br>example if your driver is emulating a device or performing IO directly
+<br>then you don't need it, but if your driver is sending request to a<br>device which generates interrupts after completing IO and you want to<br>do some extra work after getting IO completion interrupt then you must<br>
+use thread. As threads work in process-context, hence can do sleep and<br>lengthy processing but interrupt-context shouldn't sleep or nor do<br>long processing.<br><br>For getting more understanding about different contexts like process,
+<br>interrupt, softirqs contexts do search google.<br><br>&gt;&nbsp;&nbsp;Anyone please kindly clarify my doubts.<br>&gt;<br><br>I hope you doubts are not clear.</blockquote><div><br>
+thank you very much for all the help <br>
+</div><br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">&gt;&nbsp;&nbsp;Thanks in Advance<br>&gt;<br>&gt;&nbsp;&nbsp;-Rahul<br>&gt;<br><br>--<br>Fawad Lateef
+<br></blockquote></div><br>
+
+------=_Part_193540_1498869.1161507748467--
