@@ -1,30 +1,23 @@
-Return-Path: <mcr@sandelman.ottawa.on.ca>
-Received: from cod.sandelman.ca (newcod.sandelman.ca [192.139.46.42])
-	by ozlabs.org (Postfix) with ESMTP id 3C31467BBC
+Return-Path: <rahul.theraja@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 7A17667B56
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Oct 2006 11:07:12 +1000 (EST)
-Received: from sandelman.ottawa.on.ca (extrud198.sandelman.ca
-	[205.150.200.198])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "marajade.sandelman.ca.",
-	Issuer "Michael Richardson" (verified OK))
-	by cod.sandelman.ca (Postfix) with ESMTP id 5B32112BA1
+	Sun, 22 Oct 2006 16:48:07 +1000 (EST)
+Received: by nz-out-0102.google.com with SMTP id z31so447436nzd
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Oct 2006 20:36:06 -0400 (EDT)
-Received: from sandelman.ottawa.on.ca (unknown [127.0.0.1])
-	by sandelman.ottawa.on.ca (Postfix) with ESMTP id 1CC134E76F
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Oct 2006 20:36:02 -0400 (EDT)
-From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: how to reserve memory in linux? 
-In-Reply-To: Message from "Ming Liu" <eemingliu@hotmail.com> of "Sat,
-	21 Oct 2006 14:22:25 -0000."
+	Sat, 21 Oct 2006 23:48:06 -0700 (PDT)
+Message-ID: <ff9652ca0610212348p42f46a52w9b147dc3d7ae1838@mail.gmail.com>
+Date: Sun, 22 Oct 2006 12:18:06 +0530
+From: Rahul <rahul.theraja@gmail.com>
+To: "Ming Liu" <eemingliu@hotmail.com>
+Subject: Re: how to reserve memory in linux?
+In-Reply-To: <BAY110-F2BA131ED0055064C26658B2020@phx.gbl>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_192918_32681572.1161499686339"
+References: <12c9fc1a0610202215k67f374d3ie3db3d6cbfb82180@mail.gmail.com>
 	<BAY110-F2BA131ED0055064C26658B2020@phx.gbl>
-References: <BAY110-F2BA131ED0055064C26658B2020@phx.gbl> 
-Date: Sat, 21 Oct 2006 20:36:01 -0400
-Message-ID: <10436.1161477361@sandelman.ottawa.on.ca>
-Sender: mcr@sandelman.ottawa.on.ca
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,55 +28,109 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+------=_Part_192918_32681572.1161499686339
+Content-Type: text/plain; charset=GB2312; format=flowed
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
+T24gMTAvMjEvMDYsIE1pbmcgTGl1IDxlZW1pbmdsaXVAaG90bWFpbC5jb20+IHdyb3RlOgo+Cj4g
+RGVhciBzdWRoZWVyLAo+IEFib3V0IHRoZSAibWVtPXh4IiBhcmd1bWVudCwgSSBjaGVja2VkIGl0
+IGZyb20gdGhlIHdlYnNpdGUgYW5kIGdvdCBzdWNoIGEKPiBleHBsYW5hdGlvbjoKPgo+IFRoaXMg
+YXJndW1lbnQgaGFzIHNldmVyYWwgcHVycG9zZXM6IFRoZSBvcmlnaW5hbCBwdXJwb3NlIHdhcyB0
+byBzcGVjaWZ5Cj4gdGhlCj4gYW1vdW50IG9mIGluc3RhbGxlZCBtZW1vcnkgKG9yIGEgdmFsdWUg
+bGVzcyB0aGFuIHRoYXQgaWYgeW91IHdhbnRlZCB0bwo+IGxpbWl0IHRoZSBhbW91bnQgb2YgbWVt
+b3J5IGF2YWlsYWJsZSB0byBsaW51eCkuCj4KPiBGcm9tIHRoZSBhcmd1bWVudCBhYm92ZSwgaXQg
+c2F5cyAibWVtPXh4IiBpcyB0byBzcGVjaWZ5IHRoZSBhbW91bnQgb2YKPiBtZW1vcnkgYXZhaWxh
+YmxlIHRvIExpbnV4LiBJIGFtIG5vdCBzdXJlIGlmIEkgYW0gcmlnaHQsIGJ1dCBJIHRoaW5rIGlm
+IEkKPiB1c2Ugc3VjaCBhbiBhcmd1bWVudCwgdGhhdCByZXNlcnZlZCBwYXJ0ICh0aGF0IDVNQiB5
+b3UgbWVudGlvbmVkKSwgaXMgbm90Cj4gYXZhaWxhYmxlIGFueSBtb3JlIGZvciBMaW51eCB0byBh
+Y2Nlc3MgaXQuCj4KPiBNeSBvcmlnaW5hbCBtZWFuaW5nIGlzOiBzcGVjaWZ5IGEgZml4ZWQgcGh5
+c2ljYWwgYWRkcmVzcyBmb3IgYSBtb3VudCBvZgo+IG1lbW9yeSBmb3IgcmVzZXJ2ZWQgdXNlLiBU
+aGUgcG9pbnQgaXMgdG8gbWFrZSB0aGlzIHBhcnQgb2YgbWVtb3J5IGZpeGVkIGluCj4gdGhlIG1l
+bW9yeSBvZiBwaHlzaWNhbCBhZGRyZXNzLCBhbmQgdGhlbiBhbm90aGVyIEkvTyBwZXJpcGhlcmFs
+IGNvdWxkIHVzZQo+IERNQSB0byBhY2Nlc3Mgc3VjaCBhIGZpeGVkIHBoeXNpY2FsIGFkZHJlc3Mg
+bWVtb3J5LiBIb3dldmVyIGlmIEkgZG9uJ3QKPiByZXNlcnZlIHN1Y2ggYSBwYXJ0LCBJIG11c3Qg
+bGV0IExpbnV4IHRvIGFsbG9jYXRlIHN1Y2ggYSBtZW1vcnkgcGFydC4gQW5kCj4gdGhlbiBMaW51
+eCB3aWxsIG5vdCBwdXQgaXQgaW4gYSBmaXhlZCBwaHlzaWNhbCBhZGRyZXNzCgoKeWVzCgphbmQg
+dGhlbiB0aGUKPiBwZXJpcGhlcmFsIHdpbGwgbm90IGtub3cgd2hlcmUgaXMgdGhpcyBwYXJ0LgoK
+CndoeSBkbyB5b3UgdGhpbmsgc28gPwpDYW4ndCB5b3UgZ2l2ZSB0aGUgcGh5c2ljYWwgYWRkcmVz
+cyBvZiB0aGUgYWxsb2NhdGVkIG1lbW9yeSBmcm9tIGxpbnV4Cmtlcm5lbCB0byBwZXJpcGhlcmFs
+J3MgRE1BLj8KVW5sZXNzIHlvdSBuZWVkIHRvIGhhcmRjb2RlIHRoZSBwaHlzaWNhbGwgYWRkcmVz
+cyBpIGhvcGUKdmlydF90b19waHlzKGttYWxsb2NfYWRkcmVzcykgY2FuIGJlIGdpdmVuIHRvIERN
+QS4KU29ycnkgaWYgaSBhbSBzdGlsbCB3cm9uZyBpbiB1bmRlcnN0YW5kaW5nIHlvdXIgcmVxdWly
+ZW1lbnQuCgoKQW0gSSByaWdodD8gVGhhbmtzIGZvciB5b3VyIGlkZWEuCj4KPiBBbHNvIG90aGVy
+IGlkZWFzIGFyZSBhcHByZWNpYXRlZC4KPgo+IFJlZ2FyZHMKPiBNaW5nCj4KPiA+Q29uc2lkZXJp
+bmcgeW91ciBzZXR1cCBhcyBub3JtYWwgZGVza3RvcCwgSSBob3BlIHRoaXMgY2FuIGJlIGRvbmUg
+YnkKPiA+Z2l2aW5nCj4gPiJtZW09IHh4bSIgIGFzIHRoZSBib290IGFyZ3VtZW50cy4gIFNheSB0
+aGUgZG1lc2cgaW4geW91ciBzeXN0ZW0KPiA+c2hvd3MgICAiCj4gPjQ5NU1CIExPV01FTSBhdmFp
+bGFibGUuIiAgLiAgSW4gdGhlIGJvb3QgYXJndW1lbnRzIHlvdSBjYW4gZ2l2ZQo+ID5tZW09NDkw
+bQo+ID5zYXlpbmcgdGhlIGxpbnV4IHRvIHVzZSBvbmx5IDQ5ME1CIC4gVGhlIHJlc3QgNU1CIGNh
+biBiZSB1c2VkIGxhdGVyCj4gPmFzIHlvdQo+ID53aXNoLgo+Cj4gX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiDP7dPDysC9
+58nP1+6087XEtefX09PKvP7Ptc2zoaogTVNOIEhvdG1haWyhoyAgaHR0cDovL3d3dy5ob3RtYWls
+LmNvbQo+Cj4KPgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCj4gTGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0Cj4gTGludXhwcGMtZW1iZWRkZWRA
+b3psYWJzLm9yZwo+IGh0dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBj
+LWVtYmVkZGVkCj4KPgo=
+------=_Part_192918_32681572.1161499686339
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-On x86, many BIOSs reported the wrong amount of memory.
-Either they screwed up and reported too much (which means the system
-would crash if it tried to use), or failed to report more than 64MB
-of ram through that interface.
-
-(Which was the physical limit on one generation of systems due to number
-of pins that came out of processors/support chips/etc.) 
-
-The point of mem= is to let you override it.
-It only became useful later on to people who wanted contiguous DMA
-regions.  Frankly: it's a terrible hack.  
-
-On any reasonable embedded system you should get yourself sufficiently
-involved in the linux memory management, and do it early enough
-(i.e. not as a module. Why would you need modules on a single-purpose
-embedded system, except because you want to play non-GPL games).
-
-The question about whether or not the MMU is setup is nonsense --- you
-don't understand the system properly. mem= is telling the system how
-much PHYSICAL memory there is, not how much virtual address space setup.
-
-On some architectures, the kernel gets a 1:1 mapping of all virtual to
-physical, on others, you don't.  You can trivially add new mappings to
-head.S, if you need them very early on, or you can map the physical
-spaces afterward if you can deal later on.
-
-- -- 
-]            Bear: "Me, I'm just the shape of a bear."          |  firewalls  [
-]   Michael Richardson,    Xelerance Corporation, Ottawa, ON    |net architect[
-] mcr@xelerance.com      http://www.sandelman.ottawa.on.ca/mcr/ |device driver[
-] panic("Just another Debian GNU/Linux using, kernel hacking, security guy"); [
-
-
-
-
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-Comment: Finger me for keys
-
-iQEVAwUBRTq834CLcPvd0N1lAQJdpQgAo0+sYTTi/FBgyFA3Lyn6HTNZ6xHQ0BMf
-40h1B2qXvB0cWeGaHndfXFe04r3w0w/z0RKsjE5ultVxGO/WNBb8gCYDbmA/M4y0
-DuTjMh+unn63o7iVwtJbPeSWA8T5KK8RW1y0NNRnwVzMkjzxo2IZbGblwreSXJWg
-MF1Hsh79MTfIlpel7BkxFmcBWTUj16W0XQljmyBW6F5zK7DZ5di2WYbWKM+khzVs
-ydlems1Nns8Qk8bI8s0Jq8NBx+J1VSV95qRvCtLIAfVyiO9lRZgeozvsB3Ri0cbA
-C4usgAL4yUgUPG3DeN9PfL+uVELzWo1CyB7JOiyYDGYDKswau8vmoA==
-=4THO
------END PGP SIGNATURE-----
+PGJyPjxkaXY+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiAxMC8yMS8wNiwgPGIgY2xhc3M9
+ImdtYWlsX3NlbmRlcm5hbWUiPk1pbmcgTGl1PC9iPiAmbHQ7PGEgaHJlZj0ibWFpbHRvOmVlbWlu
+Z2xpdUBob3RtYWlsLmNvbSI+ZWVtaW5nbGl1QGhvdG1haWwuY29tPC9hPiZndDsgd3JvdGU6PC9z
+cGFuPjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAx
+cHggc29saWQgcmdiKDIwNCwgMjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBw
+YWRkaW5nLWxlZnQ6IDFleDsiPgpEZWFyIHN1ZGhlZXIsPGJyPkFib3V0IHRoZSAmcXVvdDttZW09
+eHgmcXVvdDsgYXJndW1lbnQsIEkgY2hlY2tlZCBpdCBmcm9tIHRoZSB3ZWJzaXRlIGFuZCBnb3Qg
+c3VjaCBhPGJyPmV4cGxhbmF0aW9uOjxicj48YnI+VGhpcyBhcmd1bWVudCBoYXMgc2V2ZXJhbCBw
+dXJwb3NlczogVGhlIG9yaWdpbmFsIHB1cnBvc2Ugd2FzIHRvIHNwZWNpZnkgdGhlPGJyPmFtb3Vu
+dCBvZiBpbnN0YWxsZWQgbWVtb3J5IChvciBhIHZhbHVlIGxlc3MgdGhhbiB0aGF0IGlmIHlvdSB3
+YW50ZWQgdG8KPGJyPmxpbWl0IHRoZSBhbW91bnQgb2YgbWVtb3J5IGF2YWlsYWJsZSB0byBsaW51
+eCkuPGJyPjxicj5Gcm9tIHRoZSBhcmd1bWVudCBhYm92ZSwgaXQgc2F5cyAmcXVvdDttZW09eHgm
+cXVvdDsgaXMgdG8gc3BlY2lmeSB0aGUgYW1vdW50IG9mPGJyPm1lbW9yeSBhdmFpbGFibGUgdG8g
+TGludXguIEkgYW0gbm90IHN1cmUgaWYgSSBhbSByaWdodCwgYnV0IEkgdGhpbmsgaWYgSTxicj51
+c2Ugc3VjaCBhbiBhcmd1bWVudCwgdGhhdCByZXNlcnZlZCBwYXJ0ICh0aGF0IDVNQiB5b3UgbWVu
+dGlvbmVkKSwgaXMgbm90Cjxicj5hdmFpbGFibGUgYW55IG1vcmUgZm9yIExpbnV4IHRvIGFjY2Vz
+cyBpdC48YnI+PGJyPk15IG9yaWdpbmFsIG1lYW5pbmcgaXM6IHNwZWNpZnkgYSBmaXhlZCBwaHlz
+aWNhbCBhZGRyZXNzIGZvciBhIG1vdW50IG9mPGJyPm1lbW9yeSBmb3IgcmVzZXJ2ZWQgdXNlLiBU
+aGUgcG9pbnQgaXMgdG8gbWFrZSB0aGlzIHBhcnQgb2YgbWVtb3J5IGZpeGVkIGluPGJyPnRoZSBt
+ZW1vcnkgb2YgcGh5c2ljYWwgYWRkcmVzcywgYW5kIHRoZW4gYW5vdGhlciBJL08gcGVyaXBoZXJh
+bCBjb3VsZCB1c2UKPGJyPkRNQSB0byBhY2Nlc3Mgc3VjaCBhIGZpeGVkIHBoeXNpY2FsIGFkZHJl
+c3MgbWVtb3J5LiBIb3dldmVyIGlmIEkgZG9uJ3Q8YnI+cmVzZXJ2ZSBzdWNoIGEgcGFydCwgSSBt
+dXN0IGxldCBMaW51eCB0byBhbGxvY2F0ZSBzdWNoIGEgbWVtb3J5IHBhcnQuIEFuZDxicj50aGVu
+IExpbnV4IHdpbGwgbm90IHB1dCBpdCBpbiBhIGZpeGVkIHBoeXNpY2FsIGFkZHJlc3MgPC9ibG9j
+a3F1b3RlPgo8ZGl2Pjxicj4KeWVzJm5ic3A7IDxicj4KPC9kaXY+PGJyPjxibG9ja3F1b3RlIGNs
+YXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9ImJvcmRlci1sZWZ0OiAxcHggc29saWQgcmdiKDIwNCwg
+MjA0LCAyMDQpOyBtYXJnaW46IDBwdCAwcHQgMHB0IDAuOGV4OyBwYWRkaW5nLWxlZnQ6IDFleDsi
+PmFuZCB0aGVuIHRoZTxicj5wZXJpcGhlcmFsIHdpbGwgbm90IGtub3cgd2hlcmUgaXMgdGhpcyBw
+YXJ0LjwvYmxvY2txdW90ZT48ZGl2Pjxicj4KCndoeSBkbyB5b3UgdGhpbmsgc28gPzxicj4KQ2Fu
+J3QgeW91IGdpdmUgdGhlIHBoeXNpY2FsIGFkZHJlc3Mgb2YgdGhlIGFsbG9jYXRlZCBtZW1vcnkg
+ZnJvbSBsaW51eCBrZXJuZWwgdG8gcGVyaXBoZXJhbCdzIERNQS4/PGJyPgpVbmxlc3MgeW91IG5l
+ZWQgdG8gaGFyZGNvZGUgdGhlIHBoeXNpY2FsbCBhZGRyZXNzIGkgaG9wZSB2aXJ0X3RvX3BoeXMo
+a21hbGxvY19hZGRyZXNzKSBjYW4gYmUgZ2l2ZW4gdG8gRE1BLjxicj4KU29ycnkgaWYgaSBhbSBz
+dGlsbCB3cm9uZyBpbiB1bmRlcnN0YW5kaW5nIHlvdXIgcmVxdWlyZW1lbnQuPGJyPgo8YnI+Cjwv
+ZGl2Pjxicj48YmxvY2txdW90ZSBjbGFzcz0iZ21haWxfcXVvdGUiIHN0eWxlPSJib3JkZXItbGVm
+dDogMXB4IHNvbGlkIHJnYigyMDQsIDIwNCwgMjA0KTsgbWFyZ2luOiAwcHQgMHB0IDBwdCAwLjhl
+eDsgcGFkZGluZy1sZWZ0OiAxZXg7Ij5BbSBJIHJpZ2h0PyBUaGFua3MgZm9yIHlvdXIgaWRlYS48
+YnI+PGJyPkFsc28gb3RoZXIgaWRlYXMgYXJlIGFwcHJlY2lhdGVkLjxicj48YnI+ClJlZ2FyZHM8
+YnI+TWluZzxicj48YnI+Jmd0O0NvbnNpZGVyaW5nIHlvdXIgc2V0dXAgYXMgbm9ybWFsIGRlc2t0
+b3AsIEkgaG9wZSB0aGlzIGNhbiBiZSBkb25lIGJ5PGJyPiZndDtnaXZpbmc8YnI+Jmd0OyZxdW90
+O21lbT0geHhtJnF1b3Q7Jm5ic3A7Jm5ic3A7YXMgdGhlIGJvb3QgYXJndW1lbnRzLiZuYnNwOyZu
+YnNwO1NheSB0aGUgZG1lc2cgaW4geW91ciBzeXN0ZW08YnI+Jmd0O3Nob3dzJm5ic3A7Jm5ic3A7
+ICZxdW90Ozxicj4mZ3Q7NDk1TUIgTE9XTUVNIGF2YWlsYWJsZS4mcXVvdDsmbmJzcDsmbmJzcDsu
+Jm5ic3A7Jm5ic3A7SW4gdGhlIGJvb3QgYXJndW1lbnRzIHlvdSBjYW4gZ2l2ZQo8YnI+Jmd0O21l
+bT00OTBtPGJyPiZndDtzYXlpbmcgdGhlIGxpbnV4IHRvIHVzZSBvbmx5IDQ5ME1CIC4gVGhlIHJl
+c3QgNU1CIGNhbiBiZSB1c2VkIGxhdGVyPGJyPiZndDthcyB5b3U8YnI+Jmd0O3dpc2guPGJyPjxi
+cj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXzxicj7P7dPDysC958nP1+6087XEtefX09PKvP7Ptc2zoaogTVNOIEhvdG1haWyh
+oyZuYnNwOyZuYnNwOwo8YSBocmVmPSJodHRwOi8vd3d3LmhvdG1haWwuY29tIj5odHRwOi8vd3d3
+LmhvdG1haWwuY29tPC9hPjxicj48YnI+PGJyPjxicj5fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXzxicj5MaW51eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxpc3Q8
+YnI+PGEgaHJlZj0ibWFpbHRvOkxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmciPkxpbnV4cHBj
+LWVtYmVkZGVkQG96bGFicy5vcmcKPC9hPjxicj48YSBocmVmPSJodHRwczovL296bGFicy5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZCI+aHR0cHM6Ly9vemxhYnMub3JnL21h
+aWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQ8L2E+PGJyPjxicj48L2Jsb2NrcXVvdGU+
+PC9kaXY+PGJyPgo=
+------=_Part_192918_32681572.1161499686339--
