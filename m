@@ -1,17 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 1C12A679E1
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 01:29:32 +1000 (EST)
-Message-ID: <453CDFDA.6090104@freescale.com>
-Date: Mon, 23 Oct 2006 10:29:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] qe_ic: Do a sync when masking interrupts.
-References: <20061019180308.GA24256@ld0162-tx32.am.freescale.net>	<17724.15919.790114.628418@cargo.ozlabs.ibm.com>
-	<453CDD70.9010100@freescale.com>
-In-Reply-To: <453CDD70.9010100@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BF886679E9
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 01:53:17 +1000 (EST)
+Date: Mon, 23 Oct 2006 17:52:57 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
+	comment
+Message-ID: <20061023155257.GC15028@lst.de>
+References: <453771E5.4090808@bplan-gmbh.de>
+	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
+	<453884F5.4000804@bplan-gmbh.de>
+	<122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
+	<453B6A84.3050209@bplan-gmbh.de>
+	<1161585371.10524.444.camel@localhost.localdomain>
+	<453CD615.4050401@genesi-usa.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <453CD615.4050401@genesi-usa.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,14 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Note that many/most interrupt controller drivers don't even do that 
-> much; they just have more fortuitous timing than the QE (and/or the 
-> spurious interrupt is non-cascaded, and thus gets caught in 
-> handle_level_irq and doesn't increment the spurious interrupt count).
+On Mon, Oct 23, 2006 at 04:47:49PM +0200, Matt Sealey wrote:
+> Curious question.
+> 
+> What are you guys going to do when the PowerPC name is defunct?
+> 
+> Like, last month :)
+> 
+> Power Architecture is where it is at. The trademark is even going to
+> lapse. It's a bit too late for the ppc->powerpc tree breakout now,
+> but wouldn't it just confuse people to be using a "Power Architecture"
+> processor or SoC of some type, using collections of definitions from
+> the Power ISA 2.03 and have this "powerpc" thing pop up?
 
-Ignore that last bit about non-cascaded interrupts; if it makes a 
-difference at all, it's because of added delays (getting back to the 
-fortuitous timing thing).
-
--Scott
+Who the f***k cares.  We've always given a chip what the newspeak party
+line of the days is, and we will here aswell.  If the IBM/Mot/PowerYodda
+overlords are unhappy with that it's their problem, not ours.
