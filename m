@@ -1,14 +1,21 @@
-Return-Path: <msm@freescale.com>
-Subject: [PATCH] Fixed some missing files to be deleted when running make clean
-From: Matthew McClintock <msm@freescale.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20061012013223.GA9143@mag.az.mvista.com>
-References: <20061012013223.GA9143@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Mon, 23 Oct 2006 14:26:57 -0500
-Message-Id: <1161631617.5450.10.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id D12E167B5B
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 06:59:05 +1000 (EST)
+Date: Mon, 23 Oct 2006 22:59:03 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: 2.6.19-rc2: known unfixed regressions (v3)
+Message-ID: <20061023205902.GK3502@stusta.de>
+References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
+	<20061022122355.GC3502@stusta.de>
+	<Pine.SOC.4.61.0610231757590.27929@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.SOC.4.61.0610231757590.27929@math.ut.ee>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, paulus@samba.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,36 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixed some missing files to be deleted when running make clean
+On Mon, Oct 23, 2006 at 06:20:18PM +0300, Meelis Roos wrote:
+> >Subject    : ppc prep boot hang
+> >References : http://lkml.org/lkml/2006/10/14/58
+> >Submitter  : Meelis Roos <mroos@linux.ee>
+> >Status     : unknown
+> 
+> Seems to be fixed in 2.6.19-rc2+git as of 20061022.
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
+Thanks for the information, I've removed it from my list.
 
----
-These patches apply against the latest series of Mark's bootwrapper
-patches. They fix some missing files that need to be cleaned.
+> Meelis Roos
 
-commit b05c2cae79ba02edd7263e19fe5f722c67c3c5cb
-tree 3016e7e0f0b84d36ded2ec1c1ff5efe98cc94d4c
-parent 44ae8267b3597965b485669885ff68384640b95a
-author Matthew McClintock <msm@freescale.com> Mon, 23 Oct 2006 14:09:47
--0500
-committer Matthew McClintock <msm@freescale.com> Mon, 23 Oct 2006
-14:09:47 -0500
+cu
+Adrian
 
- arch/powerpc/boot/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+-- 
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 8e33890..43507ca 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -75,7 +75,7 @@ quiet_cmd_copy_zliblinuxheader = COPY   
- 	@cp $< $@
- 
- clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
--		$(obj)/empty.c
-+		empty.c zImage.coff.lds zImage.lds zImage.sandpoint
- 
- quiet_cmd_bootcc = BOOTCC  $@
-       cmd_bootcc = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTCFLAGS) -c -o
-$@ $<
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
