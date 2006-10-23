@@ -1,20 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5815967C1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:50:26 +1000 (EST)
-In-Reply-To: <11892067.4322551161617453238.JavaMail.root@vms069.mailsrvcs.net>
-References: <11892067.4322551161617453238.JavaMail.root@vms069.mailsrvcs.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 64C4C67BC5
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 03:52:28 +1000 (EST)
+In-Reply-To: <453CDD70.9010100@freescale.com>
+References: <20061019180308.GA24256@ld0162-tx32.am.freescale.net>
+	<17724.15919.790114.628418@cargo.ozlabs.ibm.com>
+	<453CDD70.9010100@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F886CBFA-4710-4185-AA99-92EDEE3F2FE8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Message-Id: <E8190CD2-1898-473E-812A-AE2CBD85D73A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] qe_ic: Do a sync when masking interrupts.
-Date: Mon, 23 Oct 2006 18:49:58 +0200
-To: mrz5149@acm.org
+Date: Mon, 23 Oct 2006 12:52:26 -0500
+To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,28 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> ll a sync tells you is that an I/O made it out of the CPU. The  
-> problem is, there may be other places a write could get hung up.  
-> For instance, sometimes devices sit behind a bridge with a write  
-> FIFO. In such a scenario, you can't be sure a write has made it to  
-> the device until you do a read to flush the FIFO.
 
-It's not enough that a write made it to the device even -- you
-have to make sure the device has acted on it.
+On Oct 23, 2006, at 10:19 AM, Scott Wood wrote:
 
-> If you're trying to figure out the minimum thing to do (eieio,  
-> sync, read-back, etc.) you have to understand what your system is  
-> doing between the store and the bits going into the register.
+> Paul Mackerras wrote:
+>> Hmmm.  In general a sync having completed doesn't mean that previous
+>> MMIO stores have actually got to the device.  Reading from a device
+>> register generally does ensure that previous writes have actually got
+>> to the device though - could you do that instead?  I'm concerned that
+>> adding the sync is not a robust fix and is possibly only working due
+>> to fortuitous timing.
+>
+> Possibly -- but the only problem on the rare occasions where the  
+> timing
+> is not fortuitous is a spurious interrupt; the only reason the sync
+> needs to be there at all is to avoid the overhead of the extra  
+> interrupt
+> (and to avoid user complaints that they're getting "BAD" interrupts).
 
-What the system is doing, and also what exactly you want to
-accomplish (what ordering and what completion you depend on).
+Why wouldn't the read accomplish the same thing in a more robust way  
+than the sync?
 
-> It may be that a sync is enough, but you won't know until you fully  
-> understand the system's bus/bridge topolgy between the CPU and the  
-> device.
-
-If a sync after an MMIO write is enough, then (in almost all
-cases) so is an eieio.
-
-
-Segher
+- k
