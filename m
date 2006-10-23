@@ -1,26 +1,22 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B0C78679E9
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:25:29 +1000 (EST)
-Message-ID: <453CECFD.1060900@genesi-usa.com>
-Date: Mon, 23 Oct 2006 18:25:33 +0200
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
-	comment
-References: <453771E5.4090808@bplan-gmbh.de>
-	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
-	<453884F5.4000804@bplan-gmbh.de>
-	<122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
-	<453B6A84.3050209@bplan-gmbh.de>
-	<1161585371.10524.444.camel@localhost.localdomain>
-	<453CD615.4050401@genesi-usa.com> <20061023155257.GC15028@lst.de>
-In-Reply-To: <20061023155257.GC15028@lst.de>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <mzucca@verizon.net>
+Received: from vms044pub.verizon.net (vms044pub.verizon.net [206.46.252.44])
+	by ozlabs.org (Postfix) with ESMTP id BEC1C67BDF
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:34:27 +1000 (EST)
+Received: from vms069.mailsrvcs.net ([192.168.1.2])
+	by vms044.mailsrvcs.net (Sun Java System Messaging Server 6.2-4.02
+	(built Sep
+	9 2005)) with ESMTPA id <0J7L009Z8HRHXMWE@vms044.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Mon, 23 Oct 2006 10:30:53 -0500 (CDT)
+Date: Mon, 23 Oct 2006 10:30:52 -0500 (CDT)
+From: "Michael R. Zucca" <mzucca@verizon.net>
+Subject: Re: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
+To: Li Yang-r58472 <LeoLi@freescale.com>, Paul Mackerras <paulus@samba.org>,
+	Wood Scott-B07421 <scottwood@freescale.com>
+Message-id: <11892067.4322551161617453238.JavaMail.root@vms069.mailsrvcs.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: mrz5149@acm.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,27 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Very eloquently put.
+>From: Li Yang-r58472 <LeoLi@freescale.com>
+>
+>But an i/o read will be considerably slower than a sync, and it is in
+>the critical path of interrupt.  I have tested the patch under
+>relatively heavy Ethernet load, and there is no spurious interrupt.
+>Maybe it is because the device is an SOC device and MMIO store completes
+>faster.  I'm wondering if there is a standard test method to show if the
+>faster approach is sufficient or not.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+All a sync tells you is that an I/O made it out of the CPU. The problem is, there may be other places a write could get hung up. For instance, sometimes devices sit behind a bridge with a write FIFO. In such a scenario, you can't be sure a write has made it to the device until you do a read to flush the FIFO.
 
-Christoph Hellwig wrote:
-> On Mon, Oct 23, 2006 at 04:47:49PM +0200, Matt Sealey wrote:
->> Curious question.
->>
->> What are you guys going to do when the PowerPC name is defunct?
->>
->> Like, last month :)
->>
->> Power Architecture is where it is at. The trademark is even going to
->> lapse. It's a bit too late for the ppc->powerpc tree breakout now,
->> but wouldn't it just confuse people to be using a "Power Architecture"
->> processor or SoC of some type, using collections of definitions from
->> the Power ISA 2.03 and have this "powerpc" thing pop up?
-> 
-> Who the f***k cares.  We've always given a chip what the newspeak party
-> line of the days is, and we will here aswell.  If the IBM/Mot/PowerYodda
-> overlords are unhappy with that it's their problem, not ours.
-> 
+If you're trying to figure out the minimum thing to do (eieio, sync, read-back, etc.) you have to understand what your system is doing between the store and the bits going into the register.
+
+It may be that a sync is enough, but you won't know until you fully understand the system's bus/bridge topolgy between the CPU and the device.
