@@ -1,22 +1,33 @@
-Return-Path: <mzucca@verizon.net>
-Received: from vms044pub.verizon.net (vms044pub.verizon.net [206.46.252.44])
-	by ozlabs.org (Postfix) with ESMTP id 46AF867BDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:34:28 +1000 (EST)
-Received: from vms069.mailsrvcs.net ([192.168.1.2])
-	by vms044.mailsrvcs.net (Sun Java System Messaging Server 6.2-4.02
-	(built Sep
-	9 2005)) with ESMTPA id <0J7L009LHHUXXR4F@vms044.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Mon, 23 Oct 2006 10:32:57 -0500 (CDT)
-Date: Mon, 23 Oct 2006 10:32:57 -0500 (CDT)
-From: "Michael R. Zucca" <mzucca@verizon.net>
-Subject: Re: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
-To: Li Yang-r58472 <LeoLi@freescale.com>, Paul Mackerras <paulus@samba.org>,
-	Wood Scott-B07421 <scottwood@freescale.com>
-Message-id: <25462872.4323541161617577705.JavaMail.root@vms069.mailsrvcs.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: mrz5149@acm.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B991C67BEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:35:26 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k9NHuChh020542
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Oct 2006 11:56:12 -0600 (MDT)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k9NGZNPi023767
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Oct 2006 11:35:23 -0500 (CDT)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	k9NGLVHO027637
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Oct 2006 11:21:31 -0500 (CDT)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 664444B92D
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Oct 2006 11:35:22 -0500 (CDT)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	k9NGZMom016027
+	for linuxppc-dev@ozlabs.org; Mon, 23 Oct 2006 11:35:22 -0500
+Date: Mon, 23 Oct 2006 11:35:22 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] IPIC: Don't call set_irq_handler with desc->lock held.
+Message-ID: <20061023163522.GA15901@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From: Li Yang-r58472 <LeoLi@freescale.com>
->
->But an i/o read will be considerably slower than a sync, and it is in
->the critical path of interrupt.  I have tested the patch under
->relatively heavy Ethernet load, and there is no spurious interrupt.
->Maybe it is because the device is an SOC device and MMIO store completes
->faster.  I'm wondering if there is a standard test method to show if the
->faster approach is sufficient or not.
+This patch causes ipic_set_irq_type to set the handler directly rather
+than call set_irq_handler, which causes spinlock recursion because
+the lock is already held when ipic_set_irq_type is called.
 
-All a sync tells you is that an I/O made it out of the CPU. The problem is, there may be other places a write could get hung up. For instance, sometimes devices sit behind a bridge with a write FIFO. In such a scenario, you can't be sure a write has made it to the device until you do a read to flush the FIFO.
+I'm also not convinced that ipic_set_irq_type should be changing the
+handler at all.  There seem to be several controllers that don't and
+several that do.  Those that do would break what appears to be a common
+usage of calling set_irq_chip_and_handler followed by set_irq_type, if a
+non-standard handler were to be used.  OTOH, irq_create_of_mapping()
+doesn't set the handler, but only calls set_irq_type().
 
-If you're trying to figure out the minimum thing to do (eieio, sync, read-back, etc.) you have to understand what your system is doing between the store and the bits going into the register.
+This patch gets things working in the spinlock-debugging-enabled case,
+but I'm curious as to where the handler setting is ideally supposed to be
+done.  I don't see any documentation on set_irq_type() that clarifies
+what the semantics are supposed to be.
 
-It may be that a sync is enough, but you won't know until you fully understand the system's bus/bridge topolgy between the CPU and the device.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/sysdev/ipic.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+index bc4d4a7..746f78c 100644
+--- a/arch/powerpc/sysdev/ipic.c
++++ b/arch/powerpc/sysdev/ipic.c
+@@ -473,9 +473,9 @@ static int ipic_set_irq_type(unsigned in
+ 	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
+ 	if (flow_type & IRQ_TYPE_LEVEL_LOW)  {
+ 		desc->status |= IRQ_LEVEL;
+-		set_irq_handler(virq, handle_level_irq);
++		desc->handle_irq = handle_level_irq;
+ 	} else {
+-		set_irq_handler(virq, handle_edge_irq);
++		desc->handle_irq = handle_edge_irq;
+ 	}
+ 
+ 	/* only EXT IRQ senses are programmable on ipic
+-- 
+1.4.2.3
