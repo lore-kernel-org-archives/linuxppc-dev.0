@@ -1,18 +1,18 @@
 Return-Path: <mzucca@verizon.net>
 Received: from vms044pub.verizon.net (vms044pub.verizon.net [206.46.252.44])
-	by ozlabs.org (Postfix) with ESMTP id BEC1C67BDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:34:27 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 46AF867BDF
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:34:28 +1000 (EST)
 Received: from vms069.mailsrvcs.net ([192.168.1.2])
 	by vms044.mailsrvcs.net (Sun Java System Messaging Server 6.2-4.02
 	(built Sep
-	9 2005)) with ESMTPA id <0J7L009Z8HRHXMWE@vms044.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Mon, 23 Oct 2006 10:30:53 -0500 (CDT)
-Date: Mon, 23 Oct 2006 10:30:52 -0500 (CDT)
+	9 2005)) with ESMTPA id <0J7L009LHHUXXR4F@vms044.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Mon, 23 Oct 2006 10:32:57 -0500 (CDT)
+Date: Mon, 23 Oct 2006 10:32:57 -0500 (CDT)
 From: "Michael R. Zucca" <mzucca@verizon.net>
 Subject: Re: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
 To: Li Yang-r58472 <LeoLi@freescale.com>, Paul Mackerras <paulus@samba.org>,
 	Wood Scott-B07421 <scottwood@freescale.com>
-Message-id: <11892067.4322551161617453238.JavaMail.root@vms069.mailsrvcs.net>
+Message-id: <25462872.4323541161617577705.JavaMail.root@vms069.mailsrvcs.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
