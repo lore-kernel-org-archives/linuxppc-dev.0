@@ -1,19 +1,14 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 4CD1567BE7
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 04:57:17 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Mon, 23 Oct 2006 20:57:14 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1161474692.10524.266.camel@localhost.localdomain>
-Message-ID: <20061023185714.22630@gmx.net>
-MIME-Version: 1.0
-References: <20060628202753.198630@gmx.net>	<s5hfyhopb0s.wl%tiwai@suse.de>	
-	<20060629211513.64980@gmx.net> <s5hwtaz9fdr.wl%tiwai@suse.de>	
-	<20060630182144.27980@gmx.net>  <20061019132423.270440@gmx.net>
-	<1161474692.10524.266.camel@localhost.localdomain>
-Subject: Crash with highmem support enabled
-To: linuxppc-dev@ozlabs.org
+Return-Path: <msm@freescale.com>
+Subject: [PATCH] Fixed some missing files to be deleted when running make clean
+From: Matthew McClintock <msm@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20061012013223.GA9143@mag.az.mvista.com>
+References: <20061012013223.GA9143@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Mon, 23 Oct 2006 14:26:57 -0500
+Message-Id: <1161631617.5450.10.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Fixed some missing files to be deleted when running make clean
 
-I'm trying to get highmem support working on my AmigaOne. The machine is equipped with 1.5G RAM. Unfortunately the kernel crashes early in the boot process, so I couldn't save the crash log. But it seems to crash during the initialization of the radeonfb driver.
+Signed-off-by: Matthew McClintock <msm@freescale.com>
 
-I guess this has something to do with the IO block mapping, which is implemented in the amigaone_setup.c file and looks like this:
+---
+These patches apply against the latest series of Mark's bootwrapper
+patches. They fix some missing files that need to be cleaned.
 
-{
-/* Remap ISA/PCI IO space first to get it mapped by BATs. */
-io_block_mapping(0xfe000000, 0xfe000000, 0x01000000, _PAGE_IO);
-/* Remap ISA memory for framebuffer (U-boot framebuffer). */
-io_block_mapping(0xfd000000, 0xfd000000, 0x01000000, _PAGE_IO);
-/* Remap PROM I/O space to 0xfc000000, to get a window for non
- * cache coherent DMA support at 0xff100000.
- */
-io_block_mapping(0xfc000000, 0xff000000, 0x01000000, _PAGE_IO);
-}
+commit b05c2cae79ba02edd7263e19fe5f722c67c3c5cb
+tree 3016e7e0f0b84d36ded2ec1c1ff5efe98cc94d4c
+parent 44ae8267b3597965b485669885ff68384640b95a
+author Matthew McClintock <msm@freescale.com> Mon, 23 Oct 2006 14:09:47
+-0500
+committer Matthew McClintock <msm@freescale.com> Mon, 23 Oct 2006
+14:09:47 -0500
 
-The addresses below 0xfc000000 belong to the PCI memory space (0x80000000-0xfbffffff).
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thus I moved the highmem base to 0xfc000000, since the PCI memory is not ioremap'd. But the kernel still crashes.
-
-Can somebody give me a hint how to get highmem working? I'm not sure what the real problem is, as also other platforms (PReP, sandpoint) ioremap the address space from 0xfe000000 to 0xffffffff.
-
-Gerhard
-
--- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 8e33890..43507ca 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -75,7 +75,7 @@ quiet_cmd_copy_zliblinuxheader = COPY   
+ 	@cp $< $@
+ 
+ clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
+-		$(obj)/empty.c
++		empty.c zImage.coff.lds zImage.lds zImage.sandpoint
+ 
+ quiet_cmd_bootcc = BOOTCC  $@
+       cmd_bootcc = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTCFLAGS) -c -o
+$@ $<
