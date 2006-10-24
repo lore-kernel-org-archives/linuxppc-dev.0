@@ -1,25 +1,19 @@
-Return-Path: <fredrik.roubert@barco.com>
-Received: from df.lth.se (mail.df.lth.se [194.47.250.12])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DC8767BC6
+Return-Path: <nvbolhuis@aimsys.nl>
+Received: from smtp-vbr4.xs4all.nl (smtp-vbr4.xs4all.nl [194.109.24.24])
+	by ozlabs.org (Postfix) with ESMTP id 491E967B8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Oct 2006 03:25:06 +1000 (EST)
-Received: from igloo.df.lth.se (localhost [127.0.0.1])
-	by df.lth.se (8.13.1/8.13.1) with ESMTP id k9NGfH8p006759
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Oct 2006 18:41:17 +0200 (CEST)
-Received: (from roubert@localhost)
-	by igloo.df.lth.se (8.13.1/8.13.1/Submit) id k9NGfGiY006758
-	for linuxppc-embedded@ozlabs.org; Mon, 23 Oct 2006 18:41:16 +0200 (CEST)
-Date: Mon, 23 Oct 2006 18:41:16 +0200
-From: Fredrik Roubert <fredrik.roubert@barco.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: ARCH=powerpc: IRQ numbers change mysteriously
-Message-ID: <20061023164116.GC15953@igloo.df.lth.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 24 Oct 2006 16:58:08 +1000 (EST)
+Message-ID: <453DB97A.2020500@aimsys.nl>
+Date: Tue, 24 Oct 2006 08:58:02 +0200
+From: Norbert van Bolhuis <nvbolhuis@aimsys.nl>
+MIME-Version: 1.0
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: MPC8xx CPM I2C interface driver
+References: <452B626D.8050106@aimsys.nl>
+	<20061023025001.45e821c3@localhost.localdomain>
+In-Reply-To: <20061023025001.45e821c3@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,46 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hi Vitaly,
 
-On my MPC8439 based board, running Linux 2.6.18 with ARCH=powerpc, the
-IRQ's for the I2C behave in a for me mysterious way.
+>>Is there no MPC8xx CPM I2C interface driver in (latest) linux v2.6 or
+>>am I mistaken ?
+>>There's no code for CONFIG_I2C_ALGO8XX.
+> 
+> The answer is - no, there is no stuff in the 2.6 kernel. I used to have the port from 2.4 a while ago (an 
+> improvement to the patches posted here btw)  but had no chance to cleanup it and push through lm_sensors.
+> 
+> 
+>>I've a MPC870 based board and I was hoping for a MPC8xx CPM I2C
+>>interface driver to be there (allowing user applications to open and
+>>read/write /dev/i2c-0)
+>>
+> 
+> You should be able to locate sources in this list's archives. Ping me once more if not, I'll try to dig it out of my HDD then...
+> 
 
-In my DTS file, I have the following:
+Yes indeed. I got i2c-algo-8xx.c from 2005-August. Also in the mail archives there
+are some patches to this file and the I2C RPX adapter (which is about the only one
+using I2C algo 8xx).
+Btw. One of the changes had to do with I2C RPX adapter not requesting the I2C IRQ
+since I2C algo is already doing that.
 
+Anyway, it all seems to work now.
 
-i2c@3000 {
-	device_type = "i2c";
-	compatible = "fsl-i2c";
-	reg = <3000 100>;
-	interrupts = <e 8>;
-	interrupt-parent = <&/soc8349@ff400000/pic@700>;
-	dfsrr;
-};
+Thanks.
 
-i2c@3100 {
-	device_type = "i2c";
-	compatible = "fsl-i2c";
-	reg = <3000 100>;
-	interrupts = <f 8>;
-	interrupt-parent = <&/soc8349@ff400000/pic@700>;
-	dfsrr;
-};
-
-
-But when I boot the system and cat /proc/interrupts, the output says:
-
-
-18:         61   IPIC   Level     i2c-mpc
-19:          0   IPIC   Level     i2c-mpc
-
-
-This doesn't make sense to me. Why are the IRQ numbers changed? They are
-still adjacent, so it seems to be some logic to the change. Does anyone
-know what this is?
-
-Cheers // Fredrik Roubert
+N.
 
 -- 
-Barco Medical Imaging          |  +32 56 233549
-http://www.barco.com/medical/  |  fredrik.roubert@barco.com
+This message has been scanned for viruses and is believed to be clean
