@@ -1,19 +1,18 @@
-Return-Path: <slayer.jb@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
-	by ozlabs.org (Postfix) with ESMTP id 485F0679E1
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id ECE1867B7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Oct 2006 23:36:50 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id f25so108039pyf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Oct 2006 06:36:48 -0700 (PDT)
-Message-ID: <4b95c0590610240612w71c5b429j59465322d64c4fd0@mail.gmail.com>
-Date: Tue, 24 Oct 2006 16:12:31 +0300
-From: jaybee <slayer.jb@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: flash.dev for MT28F320J3
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_61757_32498419.1161695551918"
+	Wed, 25 Oct 2006 00:14:49 +1000 (EST)
+In-Reply-To: <CAB1644F1C94A24BAC68B05D0F9774635CC446@VIECLEX01.frequentis.frq>
+References: <CAB1644F1C94A24BAC68B05D0F9774635CC446@VIECLEX01.frequentis.frq>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <676F279D-18AA-4B3C-8FDF-CEA73019B366@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: MPC834x TSECs/Gianfar w/o MDIO accessible PHYs
+Date: Tue, 24 Oct 2006 10:14:44 -0400
+To: KRONSTORFER Horst <Horst.KRONSTORFER@frequentis.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_61757_32498419.1161695551918
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi ppl.
-I am looking for "Flash.dev" file for MT28F320J3 Flash. Anybody has it???
+On Oct 24, 2006, at 5:16 AM, KRONSTORFER Horst wrote:
 
-------=_Part_61757_32498419.1161695551918
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> i therefore 'simply' removed the mdio bus and phy support and tested
+> with ping over tsec0.
 
-Hi ppl.<br>I am looking for &quot;Flash.dev&quot; file for MT28F320J3 Flash. Anybody has it???<br>
+My experience with similar designs is you can't just
+remove the knowledge of the phy from the driver.  You
+have to "fake" some kind of phy that causes the driver
+to initialize the tsec properly.
 
-------=_Part_61757_32498419.1161695551918--
+With more people using this kind of design, it would
+be nice if we could extend the phy support to more
+generally allow this.   For now, you will have to make
+some code modifications that basically result in the
+phy functions "finding" a phy and properly initializing
+the data structure information to match the connection
+between the tsec and the switch.
+
+Thanks.
+
+	-- Dan
