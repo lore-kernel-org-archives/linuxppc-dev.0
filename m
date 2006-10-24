@@ -1,14 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <200610241839.46180.arnd@arndb.de>
+Message-Id: <20061024163814.209789000@arndb.de>
 References: <20061024163113.694643000@arndb.de>
-Date: Tue, 24 Oct 2006 18:39:45 +0200
+Date: Tue, 24 Oct 2006 18:31:19 +0200
 From: arnd@arndb.de
 To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: [PATCH 16/16] cell: add cpufreq driver for Cell BE processor
-MIME-Version: 1.0
-Cc: Christian Krafft <krafft@de.ibm.com>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [PATCH 06/16] spufs: Add isolated-mode SPE recycling support
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,352 +16,203 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Krafft <krafft@de.ibm.com>
+From: Jeremy Kerr <jeremy@au1.ibm.com>
 
-This patch adds a cpufreq backend driver to enable frequency scaling on cell.
+When in isolated mode, SPEs have access to an area of persistent
+storage, which is per-SPE. In order for isolated-mode apps to
+communicate arbitrary data through this storage, we need to ensure that
+isolated physical SPEs can be reused for subsequent applications.
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+Add a file ("recycle") in a spethread dir to enable isolated-mode
+recycling. By writing to this file, the kernel will reload the
+isolated-mode loader kernel, allowing a new app to be run on the same
+physical SPE.
+
+This requires the spu_acquire_exclusive function to enforce exclusive
+access to the SPE while the loader is initialised.
+
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linux-2.6/arch/powerpc/platforms/cell/Kconfig
+---
+Update: clarify locking, remove unnecessary yield, require >0 bytes
+        when writing to recycle file.
+
+ arch/powerpc/platforms/cell/spufs/context.c |   27 +++++++++++++++++++++++
+ arch/powerpc/platforms/cell/spufs/file.c    |   32 ++++++++++++++++++++++++++++
+ arch/powerpc/platforms/cell/spufs/inode.c   |   23 +++++++++++++-------
+ arch/powerpc/platforms/cell/spufs/spufs.h   |    7 ++++++
+ 4 files changed, 81 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/context.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/cell/Kconfig
-@@ -25,4 +25,13 @@ config CBE_THERM
- 	default m
- 	depends on CBE_RAS
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/context.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/context.c
+@@ -120,6 +120,33 @@ void spu_unmap_mappings(struct spu_conte
+ 		unmap_mapping_range(ctx->signal2, 0, 0x4000, 1);
+ }
  
-+config CBE_CPUFREQ
-+	tristate "CBE frequency scaling"
-+	depends on CBE_RAS && CPU_FREQ
-+	default m
-+	help
-+	  This adds the cpufreq driver for Cell BE processors.
-+	  For details, take a look at <file:Documentation/cpu-freq/>.
-+	  If you don't have such processor, say N
-+
- endmenu
-Index: linux-2.6/arch/powerpc/platforms/cell/Makefile
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/Makefile
-+++ linux-2.6/arch/powerpc/platforms/cell/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_PPC_CELL_NATIVE)		+= interr
- obj-$(CONFIG_CBE_RAS)			+= ras.o
- 
- obj-$(CONFIG_CBE_THERM)			+= cbe_thermal.o
-+obj-$(CONFIG_CBE_CPUFREQ)		+= cbe_cpufreq.o
- 
- ifeq ($(CONFIG_SMP),y)
- obj-$(CONFIG_PPC_CELL_NATIVE)		+= smp.o
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
-===================================================================
---- /dev/null
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -0,0 +1,248 @@
-+/*
-+ * cpufreq driver for the cell processor
-+ *
-+ * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
-+ *
-+ * Author: Christian Krafft <krafft@de.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/timer.h>
-+
-+#include <asm/hw_irq.h>
-+#include <asm/io.h>
-+#include <asm/processor.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+
-+#include "cbe_regs.h"
-+
-+static DEFINE_MUTEX(cbe_switch_mutex);
-+
-+
-+/* the CBE supports an 8 step frequency scaling */
-+static struct cpufreq_frequency_table cbe_freqs[] = {
-+	{1,	0},
-+	{2,	0},
-+	{3,	0},
-+	{4,	0},
-+	{5,	0},
-+	{6,	0},
-+	{8,	0},
-+	{10,	0},
-+	{0,	CPUFREQ_TABLE_END},
-+};
-+
-+/* to write to MIC register */
-+static u64 MIC_Slow_Fast_Timer_table[] = {
-+	[0 ... 7] = 0x007fc00000000000ull,
-+};
-+
-+/* more values for the MIC */
-+static u64 MIC_Slow_Next_Timer_table[] = {
-+	0x0000240000000000ull,
-+	0x0000268000000000ull,
-+	0x000029C000000000ull,
-+	0x00002D0000000000ull,
-+	0x0000300000000000ull,
-+	0x0000334000000000ull,
-+	0x000039C000000000ull,
-+	0x00003FC000000000ull,
-+};
-+
-+/*
-+ * hardware specific functions
-+ */
-+
-+static int get_pmode(int cpu)
++int spu_acquire_exclusive(struct spu_context *ctx)
 +{
++       int ret = 0;
++
++       down_write(&ctx->state_sema);
++       /* ctx is about to be freed, can't acquire any more */
++       if (!ctx->owner) {
++               ret = -EINVAL;
++               goto out;
++       }
++
++       if (ctx->state == SPU_STATE_SAVED) {
++               ret = spu_activate(ctx, 0);
++               if (ret)
++                       goto out;
++               ctx->state = SPU_STATE_RUNNABLE;
++       } else {
++               /* We need to exclude userspace access to the context. */
++               spu_unmap_mappings(ctx);
++       }
++
++out:
++       if (ret)
++               up_write(&ctx->state_sema);
++       return ret;
++}
++
+ int spu_acquire_runnable(struct spu_context *ctx)
+ {
+ 	int ret = 0;
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1343,6 +1343,37 @@ static struct file_operations spufs_mfc_
+ 	.mmap	 = spufs_mfc_mmap,
+ };
+ 
++
++static int spufs_recycle_open(struct inode *inode, struct file *file)
++{
++	file->private_data = SPUFS_I(inode)->i_ctx;
++	return nonseekable_open(inode, file);
++}
++
++static ssize_t spufs_recycle_write(struct file *file,
++		const char __user *buffer, size_t size, loff_t *pos)
++{
++	struct spu_context *ctx = file->private_data;
 +	int ret;
-+	struct cbe_pmd_regs __iomem *pmd_regs;
 +
-+	pmd_regs = cbe_get_cpu_pmd_regs(cpu);
-+	ret = in_be64(&pmd_regs->pmsr) & 0x07;
-+
-+	return ret;
-+}
-+
-+static int set_pmode(int cpu, unsigned int pmode)
-+{
-+	struct cbe_pmd_regs __iomem *pmd_regs;
-+	struct cbe_mic_tm_regs __iomem *mic_tm_regs;
-+	u64 flags;
-+	u64 value;
-+
-+	local_irq_save(flags);
-+
-+	mic_tm_regs = cbe_get_cpu_mic_tm_regs(cpu);
-+	pmd_regs = cbe_get_cpu_pmd_regs(cpu);
-+
-+	pr_debug("pm register is mapped at %p\n", &pmd_regs->pmcr);
-+	pr_debug("mic register is mapped at %p\n", &mic_tm_regs->slow_fast_timer_0);
-+
-+	out_be64(&mic_tm_regs->slow_fast_timer_0, MIC_Slow_Fast_Timer_table[pmode]);
-+	out_be64(&mic_tm_regs->slow_fast_timer_1, MIC_Slow_Fast_Timer_table[pmode]);
-+
-+	out_be64(&mic_tm_regs->slow_next_timer_0, MIC_Slow_Next_Timer_table[pmode]);
-+	out_be64(&mic_tm_regs->slow_next_timer_1, MIC_Slow_Next_Timer_table[pmode]);
-+
-+	value = in_be64(&pmd_regs->pmcr);
-+	/* set bits to zero */
-+	value &= 0xFFFFFFFFFFFFFFF8ull;
-+	/* set bits to next pmode */
-+	value |= pmode;
-+
-+	out_be64(&pmd_regs->pmcr, value);
-+
-+	/* wait until new pmode appears in status register */
-+	value = in_be64(&pmd_regs->pmsr) & 0x07;
-+	while(value != pmode) {
-+		cpu_relax();
-+		value = in_be64(&pmd_regs->pmsr) & 0x07;
-+	}
-+
-+	local_irq_restore(flags);
-+
-+	return 0;
-+}
-+
-+/*
-+ * cpufreq functions
-+ */
-+
-+static int cbe_cpufreq_cpu_init (struct cpufreq_policy *policy)
-+{
-+	u32 *max_freq;
-+	int i, cur_pmode;
-+	struct device_node *cpu;
-+
-+	cpu = of_get_cpu_node(policy->cpu, NULL);
-+
-+	if(!cpu)
-+		return -ENODEV;
-+
-+	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
-+
-+	max_freq = (u32*) get_property(cpu, "clock-frequency", NULL);
-+
-+	if(!max_freq)
++	if (!(ctx->flags & SPU_CREATE_ISOLATE))
 +		return -EINVAL;
 +
-+	// we need the freq in kHz
-+	*max_freq /= 1000;
++	if (size < 1)
++		return -EINVAL;
 +
-+	pr_debug("max clock-frequency is at %u kHz\n", *max_freq);
-+	pr_debug("initializing frequency table\n");
++	ret = spu_recycle_isolated(ctx);
 +
-+	// initialize frequency table
-+	for (i=0; cbe_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
-+		cbe_freqs[i].frequency = *max_freq / cbe_freqs[i].index;
-+		pr_debug("%d: %d\n", i, cbe_freqs[i].frequency);
-+	}
-+
-+	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
-+	/* if DEBUG is enabled set_pmode() measures the correct latency of a transition */
-+	policy->cpuinfo.transition_latency = 25000;
-+
-+	cur_pmode = get_pmode(policy->cpu);
-+	pr_debug("current pmode is at %d\n",cur_pmode);
-+
-+	policy->cur = cbe_freqs[cur_pmode].frequency;
-+
-+#ifdef CONFIG_SMP
-+	policy->cpus = cpu_sibling_map[policy->cpu];
-+#endif
-+
-+	cpufreq_frequency_table_get_attr (cbe_freqs, policy->cpu);
-+
-+	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max are set correctly */
-+	return cpufreq_frequency_table_cpuinfo (policy, cbe_freqs);
++	if (ret)
++		return ret;
++	return size;
 +}
 +
-+static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	return 0;
-+}
-+
-+static int cbe_cpufreq_verify(struct cpufreq_policy *policy)
-+{
-+	return cpufreq_frequency_table_verify(policy, cbe_freqs);
-+}
-+
-+
-+static int cbe_cpufreq_target(struct cpufreq_policy *policy, unsigned int target_freq,
-+			    unsigned int relation)
-+{
-+	int rc;
-+	struct cpufreq_freqs freqs;
-+	int cbe_pmode_new;
-+
-+	cpufreq_frequency_table_target(policy,
-+				       cbe_freqs,
-+				       target_freq,
-+				       relation,
-+				       &cbe_pmode_new);
-+
-+	freqs.old = policy->cur;
-+	freqs.new = cbe_freqs[cbe_pmode_new].frequency;
-+	freqs.cpu = policy->cpu;
-+
-+	mutex_lock (&cbe_switch_mutex);
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+	pr_debug("setting frequency for cpu %d to %d kHz, 1/%d of max frequency\n",
-+		 policy->cpu,
-+		 cbe_freqs[cbe_pmode_new].frequency,
-+		 cbe_freqs[cbe_pmode_new].index);
-+
-+	rc = set_pmode(policy->cpu, cbe_pmode_new);
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	mutex_unlock(&cbe_switch_mutex);
-+
-+	return rc;
-+}
-+
-+static struct cpufreq_driver cbe_cpufreq_driver = {
-+	.verify		= cbe_cpufreq_verify,
-+	.target		= cbe_cpufreq_target,
-+	.init		= cbe_cpufreq_cpu_init,
-+	.exit		= cbe_cpufreq_cpu_exit,
-+	.name		= "cbe-cpufreq",
-+	.owner		= THIS_MODULE,
-+	.flags		= CPUFREQ_CONST_LOOPS,
++static struct file_operations spufs_recycle_fops = {
++	.open	 = spufs_recycle_open,
++	.write	 = spufs_recycle_write,
 +};
 +
-+/*
-+ * module init and destoy
-+ */
-+
-+static int __init cbe_cpufreq_init(void)
-+{
-+	return cpufreq_register_driver(&cbe_cpufreq_driver);
-+}
-+
-+static void __exit cbe_cpufreq_exit(void)
-+{
-+	cpufreq_unregister_driver(&cbe_cpufreq_driver);
-+}
-+
-+module_init(cbe_cpufreq_init);
-+module_exit(cbe_cpufreq_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
-Index: linux-2.6/arch/powerpc/configs/cell_defconfig
+ static void spufs_npc_set(void *data, u64 val)
+ {
+ 	struct spu_context *ctx = data;
+@@ -1551,5 +1582,6 @@ struct tree_descr spufs_dir_nosched_cont
+ 	{ "psmap", &spufs_psmap_fops, 0666, },
+ 	{ "phys-id", &spufs_id_ops, 0666, },
+ 	{ "object-id", &spufs_object_id_ops, 0666, },
++	{ "recycle", &spufs_recycle_fops, 0222, },
+ 	{},
+ };
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/configs/cell_defconfig
-+++ linux-2.6/arch/powerpc/configs/cell_defconfig
-@@ -139,7 +139,19 @@ CONFIG_RTAS_FLASH=y
- CONFIG_MMIO_NVRAM=y
- # CONFIG_PPC_MPC106 is not set
- # CONFIG_PPC_970_NAP is not set
--# CONFIG_CPU_FREQ is not set
-+CONFIG_CPU_FREQ=y
-+CONFIG_CPU_FREQ_TABLE=y
-+CONFIG_CPU_FREQ_DEBUG=y
-+CONFIG_CPU_FREQ_STAT=y
-+# CONFIG_CPU_FREQ_STAT_DETAILS is not set
-+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-+CONFIG_CPU_FREQ_GOV_USERSPACE=y
-+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-+# CONFIG_CPU_FREQ_PMAC64 is not set
- # CONFIG_WANT_EARLY_SERIAL is not set
- # CONFIG_MPIC is not set
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/inode.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -248,7 +248,7 @@ static int spu_setup_isolated(struct spu
+ 	if (!isolated_loader)
+ 		return -ENODEV;
  
-@@ -150,6 +162,7 @@ CONFIG_SPU_FS=m
- CONFIG_SPU_BASE=y
- CONFIG_CBE_RAS=y
- CONFIG_CBE_THERM=m
-+CONFIG_CBE_CPUFREQ=m
+-	if ((ret = spu_acquire_runnable(ctx)) != 0)
++	if ((ret = spu_acquire_exclusive(ctx)) != 0)
+ 		return ret;
  
- #
- # Kernel options
-Index: linux-2.6/arch/powerpc/kernel/prom.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/prom.c
-+++ linux-2.6/arch/powerpc/kernel/prom.c
-@@ -1672,6 +1672,7 @@ struct device_node *of_get_cpu_node(int 
- 	}
- 	return NULL;
+ 	mfc_cntl = &ctx->spu->priv2->mfc_control_RW;
+@@ -314,10 +314,16 @@ out_drop_priv:
+ 	spu_mfc_sr1_set(ctx->spu, sr1);
+ 
+ out_unlock:
+-	up_write(&ctx->state_sema);
++	spu_release_exclusive(ctx);
+ 	return ret;
  }
-+EXPORT_SYMBOL(of_get_cpu_node);
  
- #ifdef DEBUG
- static struct debugfs_blob_wrapper flat_dt_blob;
-Index: linux-2.6/arch/powerpc/kernel/smp.c
++int spu_recycle_isolated(struct spu_context *ctx)
++{
++	ctx->ops->runcntl_stop(ctx);
++	return spu_setup_isolated(ctx);
++}
++
+ static int
+ spufs_mkdir(struct inode *dir, struct dentry *dentry, unsigned int flags,
+ 		int mode)
+@@ -341,12 +347,6 @@ spufs_mkdir(struct inode *dir, struct de
+ 		goto out_iput;
+ 
+ 	ctx->flags = flags;
+-	if (flags & SPU_CREATE_ISOLATE) {
+-		ret = spu_setup_isolated(ctx);
+-		if (ret)
+-			goto out_iput;
+-	}
+-
+ 	inode->i_op = &spufs_dir_inode_operations;
+ 	inode->i_fop = &simple_dir_operations;
+ 	if (flags & SPU_CREATE_NOSCHED)
+@@ -432,6 +432,13 @@ static int spufs_create_context(struct i
+ out_unlock:
+ 	mutex_unlock(&inode->i_mutex);
+ out:
++	if (ret >= 0 && (flags & SPU_CREATE_ISOLATE)) {
++		int setup_err = spu_setup_isolated(
++				SPUFS_I(dentry->d_inode)->i_ctx);
++		if (setup_err)
++			ret = setup_err;
++	}
++
+ 	dput(dentry);
+ 	return ret;
+ }
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6/arch/powerpc/kernel/smp.c
-@@ -65,6 +65,7 @@ cpumask_t cpu_sibling_map[NR_CPUS] = { [
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -163,6 +163,12 @@ void spu_acquire(struct spu_context *ctx
+ void spu_release(struct spu_context *ctx);
+ int spu_acquire_runnable(struct spu_context *ctx);
+ void spu_acquire_saved(struct spu_context *ctx);
++int spu_acquire_exclusive(struct spu_context *ctx);
++
++static inline void spu_release_exclusive(struct spu_context *ctx)
++{
++	up_write(&ctx->state_sema);
++}
  
- EXPORT_SYMBOL(cpu_online_map);
- EXPORT_SYMBOL(cpu_possible_map);
-+EXPORT_SYMBOL(cpu_sibling_map);
+ int spu_activate(struct spu_context *ctx, u64 flags);
+ void spu_deactivate(struct spu_context *ctx);
+@@ -170,6 +176,7 @@ void spu_yield(struct spu_context *ctx);
+ int __init spu_sched_init(void);
+ void __exit spu_sched_exit(void);
  
- /* SMP operations for this machine */
- struct smp_ops_t *smp_ops;
++int spu_recycle_isolated(struct spu_context *ctx);
+ /*
+  * spufs_wait
+  * 	Same as wait_event_interruptible(), except that here
 
 --
