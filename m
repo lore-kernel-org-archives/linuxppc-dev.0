@@ -1,12 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20061024163815.364550000@arndb.de>
-References: <20061024163113.694643000@arndb.de>
-Date: Tue, 24 Oct 2006 18:31:21 +0200
-From: arnd@arndb.de
-To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: [PATCH 08/16] cell: add shadow registers for pmd_reg
-Cc: Kevin Corry <kevcorry@us.ibm.com>, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <penberg@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id DB2FD67BBC
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 04:42:28 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so1362626ugc
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 11:42:25 -0700 (PDT)
+Message-ID: <84144f020610241142y2c86485dj898f555174803577@mail.gmail.com>
+Date: Tue, 24 Oct 2006 21:42:06 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Sender: penberg@gmail.com
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH 2/3] spufs: fix another off-by-one bug in mbox_read
+In-Reply-To: <20061024160406.923275000@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061024160140.452484000@arndb.de>
+	<20061024160406.923275000@arndb.de>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,98 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kevin Corry <kevcorry@us.ibm.com>
+Hi Arnd,
 
-Many of the registers in the performance monitoring unit are write-only.
-We need to save a "shadow" copy when we write to those registers so we
-can retrieve the values if we need them later.
+On 10/24/06, Arnd Bergmann <arnd@arndb.de> wrote:
+>         spu_acquire(ctx);
+> -       for (count = 0; count <= len; count += 4, udata++) {
+> +       for (count = 0; (count + 4) <= len; count += 4, udata++) {
 
-The new cbe_pmd_shadow_regs structure is added to the cbe_regs_map structure
-so we have the appropriate per-node copies of these shadow values.
+Wouldn't this be more obvious as
 
-Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+  for (count = 0, count < (len / 4); count++, udata++) {
 
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_regs.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_regs.c
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_regs.c
-@@ -30,6 +30,7 @@ static struct cbe_regs_map
- 	struct cbe_pmd_regs __iomem *pmd_regs;
- 	struct cbe_iic_regs __iomem *iic_regs;
- 	struct cbe_mic_tm_regs __iomem *mic_tm_regs;
-+	struct cbe_pmd_shadow_regs pmd_shadow_regs;
- } cbe_regs_maps[MAX_CBE];
- static int cbe_regs_map_count;
- 
-@@ -80,6 +81,22 @@ struct cbe_pmd_regs __iomem *cbe_get_cpu
- }
- EXPORT_SYMBOL_GPL(cbe_get_cpu_pmd_regs);
- 
-+struct cbe_pmd_shadow_regs *cbe_get_pmd_shadow_regs(struct device_node *np)
-+{
-+	struct cbe_regs_map *map = cbe_find_map(np);
-+	if (map == NULL)
-+		return NULL;
-+	return &map->pmd_shadow_regs;
-+}
-+
-+struct cbe_pmd_shadow_regs *cbe_get_cpu_pmd_shadow_regs(int cpu)
-+{
-+	struct cbe_regs_map *map = cbe_thread_map[cpu].regs;
-+	if (map == NULL)
-+		return NULL;
-+	return &map->pmd_shadow_regs;
-+}
-+
- struct cbe_iic_regs __iomem *cbe_get_iic_regs(struct device_node *np)
- {
- 	struct cbe_regs_map *map = cbe_find_map(np);
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_regs.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_regs.h
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_regs.h
-@@ -121,6 +121,41 @@ extern struct cbe_pmd_regs __iomem *cbe_
- extern struct cbe_pmd_regs __iomem *cbe_get_cpu_pmd_regs(int cpu);
- 
- /*
-+ * PMU shadow registers
-+ *
-+ * Many of the registers in the performance monitoring unit are write-only,
-+ * so we need to save a copy of what we write to those registers.
-+ *
-+ * The actual data counters are read/write. However, writing to the counters
-+ * only takes effect if the PMU is enabled. Otherwise the value is stored in
-+ * a hardware latch until the next time the PMU is enabled. So we save a copy
-+ * of the counter values if we need to read them back while the PMU is
-+ * disabled. The counter_value_in_latch field is a bitmap indicating which
-+ * counters currently have a value waiting to be written.
-+ */
-+
-+#define NR_PHYS_CTRS	4
-+#define NR_CTRS		(NR_PHYS_CTRS * 2)
-+
-+struct cbe_pmd_shadow_regs {
-+	u32 group_control;
-+	u32 debug_bus_control;
-+	u32 trace_address;
-+	u32 ext_tr_timer;
-+	u32 pm_status;
-+	u32 pm_control;
-+	u32 pm_interval;
-+	u32 pm_start_stop;
-+	u32 pm07_control[NR_CTRS];
-+
-+	u32 pm_ctr[NR_PHYS_CTRS];
-+	u32 counter_value_in_latch;
-+};
-+
-+extern struct cbe_pmd_shadow_regs *cbe_get_pmd_shadow_regs(struct device_node *np);
-+extern struct cbe_pmd_shadow_regs *cbe_get_cpu_pmd_shadow_regs(int cpu);
-+
-+/*
-  *
-  * IIC unit register definitions
-  *
-
---
+And then do count * 4 if you need the actual index somewhere. Hmm?
