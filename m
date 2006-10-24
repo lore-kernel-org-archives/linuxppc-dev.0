@@ -1,11 +1,11 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061024163814.209789000@arndb.de>
+Message-Id: <20061024163818.481906000@arndb.de>
 References: <20061024163113.694643000@arndb.de>
-Date: Tue, 24 Oct 2006 18:31:19 +0200
+Date: Tue, 24 Oct 2006 18:31:28 +0200
 From: arnd@arndb.de
 To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: [PATCH 06/16] spufs: Add isolated-mode SPE recycling support
+Subject: [PATCH 15/16] add support for dumping spu info from xmon
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,203 +16,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jeremy Kerr <jeremy@au1.ibm.com>
+From: Michael Ellerman <michael@ellerman.id.au>
 
-When in isolated mode, SPEs have access to an area of persistent
-storage, which is per-SPE. In order for isolated-mode apps to
-communicate arbitrary data through this storage, we need to ensure that
-isolated physical SPEs can be reused for subsequent applications.
+This patch adds a command to xmon for dumping information about
+spu structs. The command is 'sf' for "spu fields" perhaps, and
+takes the spu number as an argument. This is the same value as the
+spu->number field, or the "phys-id" value of a context when it is
+bound to a physical spu.
 
-Add a file ("recycle") in a spethread dir to enable isolated-mode
-recycling. By writing to this file, the kernel will reload the
-isolated-mode loader kernel, allowing a new app to be run on the same
-physical SPE.
+We try to catch memory errors as we dump each field, hopefully this
+will make the command reasonably robust, but YMMV. If people see a
+need we can easily add more fields to the dump in future.
 
-This requires the spu_acquire_exclusive function to enforce exclusive
-access to the SPE while the loader is initialised.
+Output looks something like this:
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+0:mon> sf 0
+Dumping spu fields at address c00000001ffd9e80:
+  number                  = 0x0
+  name                    = spe
+  devnode->full_name      = /cpus/PowerPC,BE@0/spes/spe@0
+  nid                     = 0x0
+  local_store_phys        = 0x20000000000
+  local_store             = 0xd0000800801e0000
+  ls_size                 = 0x0
+  isrc                    = 0x4
+  node                    = 0x0
+  flags                   = 0x0
+  dar                     = 0x0
+  dsisr                   = 0x0
+  class_0_pending         = 0
+  irqs[0]                 = 0x16
+  irqs[1]                 = 0x17
+  irqs[2]                 = 0x24
+  slb_replace             = 0x0
+  pid                     = 0
+  prio                    = 0
+  mm                      = 0x0000000000000000
+  ctx                     = 0x0000000000000000
+  rq                      = 0x0000000000000000
+  timestamp               = 0x0000000000000000
+  problem_phys            = 0x20000040000
+  problem                 = 0xd000080080220000
+  problem->spu_runcntl_RW = 0x0
+  problem->spu_status_R   = 0x0
+  problem->spu_npc_RW     = 0x0
+  priv1                   = 0xd000080080240000
+  priv1->mfc_sr1_RW       = 0x33
+  priv2                   = 0xd000080080250000
+
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
-Update: clarify locking, remove unnecessary yield, require >0 bytes
-        when writing to recycle file.
 
- arch/powerpc/platforms/cell/spufs/context.c |   27 +++++++++++++++++++++++
- arch/powerpc/platforms/cell/spufs/file.c    |   32 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/cell/spufs/inode.c   |   23 +++++++++++++-------
- arch/powerpc/platforms/cell/spufs/spufs.h   |    7 ++++++
- 4 files changed, 81 insertions(+), 8 deletions(-)
+ arch/powerpc/xmon/xmon.c |   68 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/context.c
+Index: linux-2.6/arch/powerpc/xmon/xmon.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/context.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/context.c
-@@ -120,6 +120,33 @@ void spu_unmap_mappings(struct spu_conte
- 		unmap_mapping_range(ctx->signal2, 0, 0x4000, 1);
+--- linux-2.6.orig/arch/powerpc/xmon/xmon.c
++++ linux-2.6/arch/powerpc/xmon/xmon.c
+@@ -216,7 +216,8 @@ Commands:\n\
+   s	single step\n"
+ #ifdef CONFIG_PPC_CELL
+ "  ss	stop execution on all spus\n\
+-  sr	restore execution on stopped spus\n"
++  sr	restore execution on stopped spus\n\
++  sf #	dump spu fields for spu # (in hex)\n"
+ #endif
+ "  S	print special registers\n\
+   t	print backtrace\n\
+@@ -2744,8 +2745,66 @@ static void restart_spus(void)
+ 	}
  }
  
-+int spu_acquire_exclusive(struct spu_context *ctx)
++#define DUMP_WIDTH	23
++#define DUMP_FIELD(obj, format, field)					\
++do {									\
++	if (setjmp(bus_error_jmp) == 0) {				\
++		catch_memory_errors = 1;				\
++		sync();							\
++		printf("  %-*s = "format"\n", DUMP_WIDTH,		\
++				#field, obj->field);			\
++		sync();							\
++		__delay(200);						\
++	} else {							\
++		catch_memory_errors = 0;				\
++		printf("  %-*s = *** Error reading field.\n",		\
++					DUMP_WIDTH, #field);		\
++	}								\
++	catch_memory_errors = 0;					\
++} while (0)
++
++static void dump_spu_fields(struct spu *spu)
 +{
-+       int ret = 0;
++	printf("Dumping spu fields at address %p:\n", spu);
 +
-+       down_write(&ctx->state_sema);
-+       /* ctx is about to be freed, can't acquire any more */
-+       if (!ctx->owner) {
-+               ret = -EINVAL;
-+               goto out;
-+       }
++	DUMP_FIELD(spu, "0x%x", number);
++	DUMP_FIELD(spu, "%s", name);
++	DUMP_FIELD(spu, "%s", devnode->full_name);
++	DUMP_FIELD(spu, "0x%x", nid);
++	DUMP_FIELD(spu, "0x%lx", local_store_phys);
++	DUMP_FIELD(spu, "0x%p", local_store);
++	DUMP_FIELD(spu, "0x%lx", ls_size);
++	DUMP_FIELD(spu, "0x%x", node);
++	DUMP_FIELD(spu, "0x%lx", flags);
++	DUMP_FIELD(spu, "0x%lx", dar);
++	DUMP_FIELD(spu, "0x%lx", dsisr);
++	DUMP_FIELD(spu, "%d", class_0_pending);
++	DUMP_FIELD(spu, "0x%lx", irqs[0]);
++	DUMP_FIELD(spu, "0x%lx", irqs[1]);
++	DUMP_FIELD(spu, "0x%lx", irqs[2]);
++	DUMP_FIELD(spu, "0x%x", slb_replace);
++	DUMP_FIELD(spu, "%d", pid);
++	DUMP_FIELD(spu, "%d", prio);
++	DUMP_FIELD(spu, "0x%p", mm);
++	DUMP_FIELD(spu, "0x%p", ctx);
++	DUMP_FIELD(spu, "0x%p", rq);
++	DUMP_FIELD(spu, "0x%p", timestamp);
++	DUMP_FIELD(spu, "0x%lx", problem_phys);
++	DUMP_FIELD(spu, "0x%p", problem);
++	DUMP_FIELD(spu, "0x%x", problem->spu_runcntl_RW);
++	DUMP_FIELD(spu, "0x%x", problem->spu_status_R);
++	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
++	DUMP_FIELD(spu, "0x%p", priv1);
 +
-+       if (ctx->state == SPU_STATE_SAVED) {
-+               ret = spu_activate(ctx, 0);
-+               if (ret)
-+                       goto out;
-+               ctx->state = SPU_STATE_RUNNABLE;
-+       } else {
-+               /* We need to exclude userspace access to the context. */
-+               spu_unmap_mappings(ctx);
-+       }
++	if (spu->priv1)
++		DUMP_FIELD(spu, "0x%lx", priv1->mfc_sr1_RW);
 +
-+out:
-+       if (ret)
-+               up_write(&ctx->state_sema);
-+       return ret;
++	DUMP_FIELD(spu, "0x%p", priv2);
 +}
 +
- int spu_acquire_runnable(struct spu_context *ctx)
+ static int do_spu_cmd(void)
  {
- 	int ret = 0;
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-@@ -1343,6 +1343,37 @@ static struct file_operations spufs_mfc_
- 	.mmap	 = spufs_mfc_mmap,
- };
++	unsigned long num = 0;
+ 	int cmd;
  
-+
-+static int spufs_recycle_open(struct inode *inode, struct file *file)
-+{
-+	file->private_data = SPUFS_I(inode)->i_ctx;
-+	return nonseekable_open(inode, file);
-+}
-+
-+static ssize_t spufs_recycle_write(struct file *file,
-+		const char __user *buffer, size_t size, loff_t *pos)
-+{
-+	struct spu_context *ctx = file->private_data;
-+	int ret;
-+
-+	if (!(ctx->flags & SPU_CREATE_ISOLATE))
-+		return -EINVAL;
-+
-+	if (size < 1)
-+		return -EINVAL;
-+
-+	ret = spu_recycle_isolated(ctx);
-+
-+	if (ret)
-+		return ret;
-+	return size;
-+}
-+
-+static struct file_operations spufs_recycle_fops = {
-+	.open	 = spufs_recycle_open,
-+	.write	 = spufs_recycle_write,
-+};
-+
- static void spufs_npc_set(void *data, u64 val)
- {
- 	struct spu_context *ctx = data;
-@@ -1551,5 +1582,6 @@ struct tree_descr spufs_dir_nosched_cont
- 	{ "psmap", &spufs_psmap_fops, 0666, },
- 	{ "phys-id", &spufs_id_ops, 0666, },
- 	{ "object-id", &spufs_object_id_ops, 0666, },
-+	{ "recycle", &spufs_recycle_fops, 0222, },
- 	{},
- };
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/inode.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -248,7 +248,7 @@ static int spu_setup_isolated(struct spu
- 	if (!isolated_loader)
- 		return -ENODEV;
- 
--	if ((ret = spu_acquire_runnable(ctx)) != 0)
-+	if ((ret = spu_acquire_exclusive(ctx)) != 0)
- 		return ret;
- 
- 	mfc_cntl = &ctx->spu->priv2->mfc_control_RW;
-@@ -314,10 +314,16 @@ out_drop_priv:
- 	spu_mfc_sr1_set(ctx->spu, sr1);
- 
- out_unlock:
--	up_write(&ctx->state_sema);
-+	spu_release_exclusive(ctx);
- 	return ret;
- }
- 
-+int spu_recycle_isolated(struct spu_context *ctx)
-+{
-+	ctx->ops->runcntl_stop(ctx);
-+	return spu_setup_isolated(ctx);
-+}
-+
- static int
- spufs_mkdir(struct inode *dir, struct dentry *dentry, unsigned int flags,
- 		int mode)
-@@ -341,12 +347,6 @@ spufs_mkdir(struct inode *dir, struct de
- 		goto out_iput;
- 
- 	ctx->flags = flags;
--	if (flags & SPU_CREATE_ISOLATE) {
--		ret = spu_setup_isolated(ctx);
--		if (ret)
--			goto out_iput;
--	}
--
- 	inode->i_op = &spufs_dir_inode_operations;
- 	inode->i_fop = &simple_dir_operations;
- 	if (flags & SPU_CREATE_NOSCHED)
-@@ -432,6 +432,13 @@ static int spufs_create_context(struct i
- out_unlock:
- 	mutex_unlock(&inode->i_mutex);
- out:
-+	if (ret >= 0 && (flags & SPU_CREATE_ISOLATE)) {
-+		int setup_err = spu_setup_isolated(
-+				SPUFS_I(dentry->d_inode)->i_ctx);
-+		if (setup_err)
-+			ret = setup_err;
-+	}
-+
- 	dput(dentry);
- 	return ret;
- }
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-@@ -163,6 +163,12 @@ void spu_acquire(struct spu_context *ctx
- void spu_release(struct spu_context *ctx);
- int spu_acquire_runnable(struct spu_context *ctx);
- void spu_acquire_saved(struct spu_context *ctx);
-+int spu_acquire_exclusive(struct spu_context *ctx);
-+
-+static inline void spu_release_exclusive(struct spu_context *ctx)
-+{
-+	up_write(&ctx->state_sema);
-+}
- 
- int spu_activate(struct spu_context *ctx, u64 flags);
- void spu_deactivate(struct spu_context *ctx);
-@@ -170,6 +176,7 @@ void spu_yield(struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
- 
-+int spu_recycle_isolated(struct spu_context *ctx);
- /*
-  * spufs_wait
-  * 	Same as wait_event_interruptible(), except that here
+ 	cmd = inchar();
+@@ -2756,6 +2815,12 @@ static int do_spu_cmd(void)
+ 	case 'r':
+ 		restart_spus();
+ 		break;
++	case 'f':
++		if (scanhex(&num) && num < XMON_NUM_SPUS && spu_info[num].spu)
++			dump_spu_fields(spu_info[num].spu);
++		else
++			printf("*** Error: invalid spu number\n");
++		break;
+ 	default:
+ 		return -1;
+ 	}
 
 --
