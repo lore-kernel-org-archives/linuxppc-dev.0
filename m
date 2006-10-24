@@ -1,19 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH 3/7] Powerpc MSI ops layer
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jake Moilanen <moilanen@austin.ibm.com>
-In-Reply-To: <1159912492.4997.257.camel@goblue>
-References: <20060928215339.D911C67BFA@ozlabs.org>
-	<1159912492.4997.257.camel@goblue>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-+Xa4a5mGvbKTEIPuXDjT"
-Date: Tue, 24 Oct 2006 11:51:28 +1000
-Message-Id: <1161654688.2149.45.camel@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0AEDC67A3B
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 12:22:38 +1000 (EST)
+Subject: Re: [RFC]: map 4K iommu pages even on 64K largepage systems.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061024002540.GA6360@austin.ibm.com>
+References: <20061024002540.GA6360@austin.ibm.com>
+Content-Type: text/plain
+Date: Tue, 24 Oct 2006 12:22:25 +1000
+Message-Id: <1161656545.10524.524.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,128 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2006-10-23 at 19:25 -0500, Linas Vepstas wrote:
+> Subject: [RFC]: map 4K iommu pages even on 64K largepage systems.
+> 
+> The 10Gigabit ethernet device drivers appear to be able to chew
+> up all 256MB of TCE mappings on pSeries systems, as evidenced by
+> numerous error messages:
+> 
+>  iommu_alloc failed, tbl c0000000010d5c48 vaddr c0000000d875eff0 npages 1
+> 
+> Some experimentaiton indicates that this is essentially because
+> one 1500 byte ethernet MTU gets mapped as a 64K DMA region when
+> the large 64K pages are enabled. Thus, it doesn't take much to
+> exhaust all of the available DMA mappings for a high-speed card.
 
---=-+Xa4a5mGvbKTEIPuXDjT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+There is much to be said about using a 1500MTU and no TSO on a 10G
+link :) But appart from that, I agree, we have a problem.
+ 
+> This patch changes the iommu allocator to work with its own 
+> unique, distinct page size. Although the patch is long, its
+> actually quite simple: it just #defines  distinct IOMMU_PAGE_SIZE
+> and then uses this in al the places tha matter.
+> 
+> The patch boots on pseries, untested in other places.
+> 
+> Haven't yet thought if this is a good long-term solution or not,
+> whether this kind of thing is desirable or not.  That's why its 
+> an RFC.  Comments?
 
-On Tue, 2006-10-03 at 16:54 -0500, Jake Moilanen wrote:
-> On Fri, 2006-09-29 at 07:53 +1000, Michael Ellerman wrote:
-> > Powerpc MSI ops layer.
-> >=20
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> >=20
-> >  arch/powerpc/kernel/msi.c        |  347 ++++++++++++++++++++++++++++++=
-+++++++++
-> >  include/asm-powerpc/machdep.h    |    6=20
-> >  include/asm-powerpc/msi.h        |  175 +++++++++++++++++++
-> >  include/asm-powerpc/pci-bridge.h |    4=20
-> >  4 files changed, 532 insertions(+)
-> >=20
-> > Index: to-merge/arch/powerpc/kernel/msi.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- /dev/null
-> > +++ to-merge/arch/powerpc/kernel/msi.c
-> > @@ -0,0 +1,347 @@
-> > +/*
-> > + * Copyright 2006 (C), Michael Ellerman, IBM Corporation.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + */
-> > +
-> > +#undef DEBUG
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/slab.h>
-> > +#include <asm/msi.h>
-> > +#include <asm/machdep.h>
-> > +
-> > +static struct ppc_msi_ops *get_msi_ops(struct pci_dev *pdev)
-> > +{
-> > +	if (ppc_md.get_msi_ops)
-> > +		return ppc_md.get_msi_ops(pdev);
-> > +	return NULL;
-> > +}
-> > +
-> > +/* Activated by pci=3Dnomsi on the command line. */
-> > +static int no_msi;
-> > +
-> > +void pci_no_msi(void)
-> > +{
-> > +	no_msi =3D 1;
-> > +}
-> > +
-> > +
-> > +/* msi_info helpers */
-> > +
-> > +static struct pci_dn *get_pdn(struct pci_dev *pdev)
-> > +{
-> > +	struct device_node *dn;
-> > +	struct pci_dn *pdn;
-> > +
-> > +	dn =3D pci_device_to_OF_node(pdev);
-> > +	if (!dn) {
-> > +		pr_debug("get_pdn: no dn found for %s\n", pci_name(pdev));
-> > +		return NULL;
-> > +	}
-> > +
-> > +	pdn =3D PCI_DN(dn);
-> > +	if (!pdn) {
-> > +		pr_debug("get_pdn: no pci_dn found for %s\n", pci_name(pdev));
-> > +		return NULL;
-> > +	}
-> > +
-> > +	return pdn;
-> > +}
-> > +
-> > +static int alloc_msi_info(struct pci_dev *pdev, int num,
-> > +			struct msix_entry *entries, int type)
-> > +{
-> > +	struct msi_info *info;
-> > +	unsigned int entries_size;
-> > +	struct pci_dn *pdn;
-> > +
-> > +	entries_size =3D sizeof(struct msix_entry) * num;
-> > +
-> > +	info =3D kzalloc(sizeof(struct msi_info) + entries_size, GFP_KERNEL);
->=20
-> Shouldn't you do a second kzalloc for info->entries, and not just add on
-> the size to the end?
+It's probably a good enough solution for RHEL, but we should do
+something different long term. There are a few things I have in mind:
 
-We could, but I don't see why it's better. It's a little sneaky to tack
-the entries on the end but I don't see a problem with it?
+ - We could have a page size field in the iommu_table and have the iommu
+allocator use that. Thus we can have a per iommu table instance page
+size. That would allow Geoff to deal with his crazy hypervisor by
+basically having one iommu table instance per device. It would also
+allow us to keep using large iommu page sizes on platform where the
+system gives us more than a pinhole for iommu space :)
 
-There is a bug in there that I don't set the entries pointer before
-doing the memcpy, but I've fixed that - or is that what you meant ? :)
+ - In the long run, I'm thinking about the interest in supporting two
+page sizes for the fine and coarse allocation regions of the table. We
+would need to get a bit more infos from the HW backend to do that, but
+for example, on native Cell, we can have a page size per 256Mb region,
+thus we could have the iommu space dividied in 4k pages for small
+mappings and 64k pages for full page or more mappings.
 
-cheers
+So I reckon we should first audit and make sure your current patch works
+fine on everything as a crash-fix for 2.6.19 and backportable to RHEL. 
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Then, we can implement my first option for 2.6.20 and possibly debate
+about the interest of my second option, unless somebody else comes up
+with better ideas of course :)
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-+Xa4a5mGvbKTEIPuXDjT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBFPXGgdSjSd0sB4dIRAqnsAKCN7M8/MmS6Fcm4uaMUJI4NmPTdFwCeJA5q
-fnFaEJu9+KYvZ3EYoJdfxHU=
-=nxUS
------END PGP SIGNATURE-----
-
---=-+Xa4a5mGvbKTEIPuXDjT--
+Ben.
