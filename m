@@ -1,12 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061024163816.460479000@arndb.de>
+Message-Id: <20061024163812.670608000@arndb.de>
 References: <20061024163113.694643000@arndb.de>
-Date: Tue, 24 Oct 2006 18:31:24 +0200
+Date: Tue, 24 Oct 2006 18:31:15 +0200
 From: arnd@arndb.de
 To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: [PATCH 11/16] sysfs: add support for adding/removing spu sysfs
-	attributes
+Subject: [PATCH 02/16] cell: remove unused struct spu variable
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,111 +16,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Krafft <krafft@de.ibm.com>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 
-This patch adds two functions to create and remove sysfs attributes and
-attribute_group to all cpus.  That allows to register sysfs attributes in
-a subdirectory like: /sys/devices/system/cpu/cpuX/group_name/what_ever
-This will be used by cbe_thermal to group all attributes dealing with
-thermal support in one directory.
+Remove the mostly unused variable isrc from struct spu and a forgotten
+function declaration.
 
-Signed-of-by: Christian Krafft <krafft@de.ibm.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linux-2.6/arch/powerpc/kernel/sysfs.c
+---
+
+Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/sysfs.c
-+++ linux-2.6/arch/powerpc/kernel/sysfs.c
-@@ -299,6 +299,72 @@ static struct notifier_block __cpuinitda
- 	.notifier_call	= sysfs_cpu_notify,
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
+@@ -364,8 +364,7 @@ struct spu *spu_alloc_node(int node)
+ 	if (!list_empty(&spu_list[node])) {
+ 		spu = list_entry(spu_list[node].next, struct spu, list);
+ 		list_del_init(&spu->list);
+-		pr_debug("Got SPU %x %d %d\n",
+-			 spu->isrc, spu->number, spu->node);
++		pr_debug("Got SPU %d %d\n", spu->number, spu->node);
+ 		spu_init_channels(spu);
+ 	}
+ 	mutex_unlock(&spu_mutex);
+@@ -591,7 +590,6 @@ static int __init spu_map_interrupts_old
+ 
+ 	/* Add the node number */
+ 	isrc |= spu->node << IIC_IRQ_NODE_SHIFT;
+-	spu->isrc = isrc;
+ 
+ 	/* Now map interrupts of all 3 classes */
+ 	spu->irqs[0] = irq_create_mapping(NULL, IIC_IRQ_CLASS_0 | isrc);
+@@ -733,16 +731,6 @@ struct sysdev_class spu_sysdev_class = {
+ 	set_kset_name("spu")
  };
  
-+static DEFINE_MUTEX(cpu_mutex);
-+
-+int cpu_add_sysdev_attr(struct sysdev_attribute *attr)
-+{
-+	int cpu;
-+
-+	mutex_lock(&cpu_mutex);
-+
-+	for_each_possible_cpu(cpu) {
-+		sysdev_create_file(get_cpu_sysdev(cpu), attr);
-+	}
-+
-+	mutex_unlock(&cpu_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cpu_add_sysdev_attr);
-+
-+int cpu_add_sysdev_attr_group(struct attribute_group *attrs)
-+{
-+	int cpu;
-+	struct sys_device *sysdev;
-+
-+	mutex_lock(&cpu_mutex);
-+
-+	for_each_possible_cpu(cpu) {
-+		sysdev = get_cpu_sysdev(cpu);
-+		sysfs_create_group(&sysdev->kobj, attrs);
-+	}
-+
-+	mutex_unlock(&cpu_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cpu_add_sysdev_attr_group);
-+
-+
-+void cpu_remove_sysdev_attr(struct sysdev_attribute *attr)
-+{
-+	int cpu;
-+
-+	mutex_lock(&cpu_mutex);
-+
-+	for_each_possible_cpu(cpu) {
-+		sysdev_remove_file(get_cpu_sysdev(cpu), attr);
-+	}
-+
-+	mutex_unlock(&cpu_mutex);
-+}
-+EXPORT_SYMBOL_GPL(cpu_remove_sysdev_attr);
-+
-+void cpu_remove_sysdev_attr_group(struct attribute_group *attrs)
-+{
-+	int cpu;
-+	struct sys_device *sysdev;
-+
-+	mutex_lock(&cpu_mutex);
-+
-+	for_each_possible_cpu(cpu) {
-+		sysdev = get_cpu_sysdev(cpu);
-+		sysfs_remove_group(&sysdev->kobj, attrs);
-+	}
-+
-+	mutex_unlock(&cpu_mutex);
-+}
-+EXPORT_SYMBOL_GPL(cpu_remove_sysdev_attr_group);
-+
-+
- /* NUMA stuff */
+-static ssize_t spu_show_isrc(struct sys_device *sysdev, char *buf)
+-{
+-	struct spu *spu = container_of(sysdev, struct spu, sysdev);
+-	return sprintf(buf, "%d\n", spu->isrc);
+-
+-}
+-static SYSDEV_ATTR(isrc, 0400, spu_show_isrc, NULL);
+-
+-extern int attach_sysdev_to_node(struct sys_device *dev, int nid);
+-
+ static int spu_create_sysdev(struct spu *spu)
+ {
+ 	int ret;
+@@ -756,8 +744,6 @@ static int spu_create_sysdev(struct spu 
+ 		return ret;
+ 	}
  
- #ifdef CONFIG_NUMA
-Index: linux-2.6/include/linux/cpu.h
+-	if (spu->isrc != 0)
+-		sysdev_create_file(&spu->sysdev, &attr_isrc);
+ 	sysfs_add_device_to_node(&spu->sysdev, spu->nid);
+ 
+ 	return 0;
+@@ -765,7 +751,6 @@ static int spu_create_sysdev(struct spu 
+ 
+ static void spu_destroy_sysdev(struct spu *spu)
+ {
+-	sysdev_remove_file(&spu->sysdev, &attr_isrc);
+ 	sysfs_remove_device_from_node(&spu->sysdev, spu->nid);
+ 	sysdev_unregister(&spu->sysdev);
+ }
+@@ -821,8 +806,8 @@ static int __init create_spu(struct devi
+ 	list_add(&spu->list, &spu_list[spu->node]);
+ 	mutex_unlock(&spu_mutex);
+ 
+-	pr_debug(KERN_DEBUG "Using SPE %s %02x %p %p %p %p %d\n",
+-		spu->name, spu->isrc, spu->local_store,
++	pr_debug(KERN_DEBUG "Using SPE %s %p %p %p %p %d\n",
++		spu->name, spu->local_store,
+ 		spu->problem, spu->priv1, spu->priv2, spu->number);
+ 	goto out;
+ 
+Index: linux-2.6/include/asm-powerpc/spu.h
 ===================================================================
---- linux-2.6.orig/include/linux/cpu.h
-+++ linux-2.6/include/linux/cpu.h
-@@ -33,6 +33,14 @@ struct cpu {
- 
- extern int register_cpu(struct cpu *cpu, int num);
- extern struct sys_device *get_cpu_sysdev(unsigned cpu);
-+
-+extern int cpu_add_sysdev_attr(struct sysdev_attribute *attr);
-+extern void cpu_remove_sysdev_attr(struct sysdev_attribute *attr);
-+
-+extern int cpu_add_sysdev_attr_group(struct attribute_group *attrs);
-+extern void cpu_remove_sysdev_attr_group(struct attribute_group *attrs);
-+
-+
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unregister_cpu(struct cpu *cpu);
- #endif
+--- linux-2.6.orig/include/asm-powerpc/spu.h
++++ linux-2.6/include/asm-powerpc/spu.h
+@@ -118,7 +118,6 @@ struct spu {
+ 	int number;
+ 	int nid;
+ 	unsigned int irqs[3];
+-	u32 isrc;
+ 	u32 node;
+ 	u64 flags;
+ 	u64 dar;
 
 --
