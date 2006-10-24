@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6BDAB679E9
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 14:43:39 +1000 (EST)
-Subject: Re: [RFC]: map 4K iommu pages even on 64K largepage systems.
+	by ozlabs.org (Postfix) with ESMTP id D593A679FD
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 15:14:41 +1000 (EST)
+Subject: [PATCH] powerpc: map 4K iommu pages even on 64K largepage systems
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061024002540.GA6360@austin.ibm.com>
+In-Reply-To: <1161665007.10524.572.camel@localhost.localdomain>
 References: <20061024002540.GA6360@austin.ibm.com>
+	<1161665007.10524.572.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 24 Oct 2006 14:43:27 +1000
-Message-Id: <1161665007.10524.572.camel@localhost.localdomain>
+Date: Tue, 24 Oct 2006 15:14:27 +1000
+Message-Id: <1161666868.10524.577.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,245 +25,506 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The 10Gigabit ethernet device drivers appear to be able to chew
+up all 256MB of TCE mappings on pSeries systems, as evidenced by
+numerous error messages:
 
-> Haven't yet thought if this is a good long-term solution or not,
-> whether this kind of thing is desirable or not.  That's why its 
-> an RFC.  Comments?
+ iommu_alloc failed, tbl c0000000010d5c48 vaddr c0000000d875eff0 npages 1
 
-Ok, after some time reading the details of the patch, it looks fairly
-good, just a few nits. Also, we need to fix the DART code still :)
+Some experimentaiton indicates that this is essentially because
+one 1500 byte ethernet MTU gets mapped as a 64K DMA region when
+the large 64K pages are enabled. Thus, it doesn't take much to
+exhaust all of the available DMA mappings for a high-speed card.
 
-Ben
+This patch changes the iommu allocator to work with its own 
+unique, distinct page size. Although the patch is long, its
+actually quite simple: it just #defines  distinct IOMMU_PAGE_SIZE
+and then uses this in al the places tha matter.
 
+The patch boots on pseries, untested in other places.
+
+Haven't yet thought if this is a good long-term solution or not,
+whether this kind of thing is desirable or not.  That's why its 
+an RFC.  Comments?
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+----
+
+And here's a slightly modified version that fixes dart_iommu too and
+changes things according to some of my comments.
+
+(I tested on the G5 with and without 64K pages.
+
+ arch/powerpc/kernel/iommu.c            |   77 +++++++++++++++++++--------------
+ arch/powerpc/kernel/vio.c              |    4 -
+ arch/powerpc/platforms/pseries/iommu.c |   35 +++------------
+ arch/powerpc/sysdev/dart.h             |    1
+ arch/powerpc/sysdev/dart_iommu.c       |    8 ---
+ include/asm-powerpc/iommu.h            |   22 ++++++++-
+ include/asm-powerpc/tce.h              |    3 -
+ 7 files changed, 78 insertions(+), 72 deletions(-)
+
+Index: linux-cell/arch/powerpc/kernel/iommu.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/iommu.c	2006-10-24 14:44:26.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/iommu.c	2006-10-24 14:55:59.000000000 +1000
+@@ -47,6 +47,17 @@ static int novmerge = 0;
+ static int novmerge = 1;
+ #endif
  
-> +static inline unsigned long
-> +iommu_num_pages(unsigned long vaddr, unsigned long slen)
-
-Coding style in that file is to do:
-
-static inline unsigned long iommu_num_pages(unsigned long vaddr,
-					    unsigned long slen)
-
-
-> @@ -557,8 +562,8 @@ void iommu_unmap_single(struct iommu_tab
->  	BUG_ON(direction == DMA_NONE);
->  
->  	if (tbl)
-> -		iommu_free(tbl, dma_handle, (PAGE_ALIGN(dma_handle + size) -
-> -					(dma_handle & PAGE_MASK)) >> PAGE_SHIFT);
-> +		iommu_free(tbl, dma_handle, (IOMMU_PAGE_ALIGN(dma_handle + size) -
-> +					(dma_handle & IOMMU_PAGE_MASK)) >> IOMMU_PAGE_SHIFT);
->  }
-
-Use iommu_num_pages ?
-
->  /* Allocates a contiguous real buffer and creates mappings over it.
-> @@ -571,6 +576,7 @@ void *iommu_alloc_coherent(struct iommu_
->  	void *ret = NULL;
->  	dma_addr_t mapping;
->  	unsigned int npages, order;
-> +	unsigned int nio_pages, io_order;
->  	struct page *page;
->  
->  	size = PAGE_ALIGN(size);
-> @@ -598,8 +604,10 @@ void *iommu_alloc_coherent(struct iommu_
->  	memset(ret, 0, size);
->  
->  	/* Set up tces to cover the allocated range */
-> -	mapping = iommu_alloc(tbl, ret, npages, DMA_BIDIRECTIONAL,
-> -			      mask >> PAGE_SHIFT, order);
-> +	nio_pages = size >> IOMMU_PAGE_SHIFT;
-> +	io_order = get_iommu_order(size);
-
-Not directly related to your patch, but do we really have this
-requirement of allocating with an alignement of the order of the
-alloation size here ?
-
-Also, your code assumes that PAGE_SHIFT >= IOMMU_PAGE_SHIFT... it might
-be useful to not have this restriction in fact. Just maybe use
-iommu_num_pages(size) instead of size >> IOMMU_PAGE_SHIFT here ...
-
-> +	mapping = iommu_alloc(tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
-> +			      mask >> IOMMU_PAGE_SHIFT, io_order);
->  	if (mapping == DMA_ERROR_CODE) {
->  		free_pages((unsigned long)ret, order);
->  		return NULL;
-> @@ -614,9 +622,10 @@ void iommu_free_coherent(struct iommu_ta
->  	unsigned int npages;
->  
->  	if (tbl) {
-> -		size = PAGE_ALIGN(size);
-> -		npages = size >> PAGE_SHIFT;
-> +		size = IOMMU_PAGE_ALIGN(size);
-> +		npages = size >> IOMMU_PAGE_SHIFT;
->
->  		iommu_free(tbl, dma_handle, npages);
-> +		size = PAGE_ALIGN(size);
->  		free_pages((unsigned long)vaddr, get_order(size));
->  	}
-
-All those repeated alignments on size and one loses track... Are you
-sure you'll always end up with the proper values ? I'd rather use
-iommu_num_pages() for the iommu_free and only align size once with
-PAGE_ALIGN for free_pages().
-
->  }
-> Index: linux-2.6.19-rc1-git11/include/asm-powerpc/iommu.h
-> ===================================================================
-> --- linux-2.6.19-rc1-git11.orig/include/asm-powerpc/iommu.h	2006-09-19 22:42:06.000000000 -0500
-> +++ linux-2.6.19-rc1-git11/include/asm-powerpc/iommu.h	2006-10-23 18:28:21.000000000 -0500
-> @@ -23,16 +23,41 @@
->  #ifdef __KERNEL__
->  
->  #include <asm/types.h>
-> +#include <linux/compiler.h>
->  #include <linux/spinlock.h>
->  #include <linux/device.h>
->  #include <linux/dma-mapping.h>
->  
-> +#define IOMMU_PAGE_SHIFT      12
-> +#define IOMMU_PAGE_SIZE       (ASM_CONST(1) << IOMMU_PAGE_SHIFT)
-> +#define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
-> +#define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
-> +
-> +#ifndef __ASSEMBLY__
-> +
-> +/* Pure 2^n version of get_order */
-> +static __inline__ __attribute_const__ int get_iommu_order(unsigned long size)
-> +{
-> +	int order;
-> +
-> +	size = (size - 1) >> (IOMMU_PAGE_SHIFT - 1);
-> +	order = -1;
-> +	do {
-> +		size >>= 1;
-> +		order++;
-> +	} while (size);
-> +	return order;
-> +}
-> +
-> +#endif   /* __ASSEMBLY__ */
-
-Use cntlzw... or ilog2, which would give something like :
-
-	return __ilog2((size - 1) >> IOMMU_PAGE_SHIFT) + 1;
-
-I think Dave Howells has patches fixing get_order generically to be
-implemented in terms of ilog2. (I just discovered that on ppc64, we
-didn't use cntlzw/ilog2 for it, sucks, but let's wait for Dave patches
-rather than fixing it ourselves now).
-
-> +
->  /*
->   * IOMAP_MAX_ORDER defines the largest contiguous block
->   * of dma space we can get.  IOMAP_MAX_ORDER = 13
->   * allows up to 2**12 pages (4096 * 4096) = 16 MB
->   */
-> -#define IOMAP_MAX_ORDER 13
-> +#define IOMAP_MAX_ORDER (25 - PAGE_SHIFT)
-
-I'm not completely sure we want the above to be defined as a function of
-the page shift... 
-
->  struct iommu_table {
->  	unsigned long  it_busno;     /* Bus number this table belongs to */
-> Index: linux-2.6.19-rc1-git11/include/asm-powerpc/tce.h
-> ===================================================================
-> --- linux-2.6.19-rc1-git11.orig/include/asm-powerpc/tce.h	2006-09-19 22:42:06.000000000 -0500
-> +++ linux-2.6.19-rc1-git11/include/asm-powerpc/tce.h	2006-10-23 15:46:57.000000000 -0500
-> @@ -22,6 +22,8 @@
->  #define _ASM_POWERPC_TCE_H
->  #ifdef __KERNEL__
->  
-> +#include <asm/iommu.h>
-> +
->  /*
->   * Tces come in two formats, one for the virtual bus and a different
->   * format for PCI
-> @@ -33,7 +35,7 @@
->  
->  #define TCE_SHIFT	12
->  #define TCE_PAGE_SIZE	(1 << TCE_SHIFT)
-> -#define TCE_PAGE_FACTOR	(PAGE_SHIFT - TCE_SHIFT)
-> +#define TCE_PAGE_FACTOR	(IOMMU_PAGE_SHIFT - TCE_SHIFT)
->  
->  #define TCE_ENTRY_SIZE		8		/* each TCE is 64 bits */
-
-We can actually remove TCE_PAGE_FACTOR and code using it completely.
-
-With your patch, TCE_SHIFT == IOMMU_PAGE_SHIFT, and in a second step, we
-can start having the iommu_page_shift be a member of iommu_table. Thus
-there will no longer be any need for a correction factor in the backend.
-
-> Index: linux-2.6.19-rc1-git11/arch/powerpc/kernel/vio.c
-> ===================================================================
-> --- linux-2.6.19-rc1-git11.orig/arch/powerpc/kernel/vio.c	2006-10-13 11:52:51.000000000 -0500
-> +++ linux-2.6.19-rc1-git11/arch/powerpc/kernel/vio.c	2006-10-23 16:06:43.000000000 -0500
-> @@ -92,9 +92,9 @@ static struct iommu_table *vio_build_iom
->  				&tbl->it_index, &offset, &size);
->  
->  		/* TCE table size - measured in tce entries */
-> -		tbl->it_size = size >> PAGE_SHIFT;
-> +		tbl->it_size = size >> IOMMU_PAGE_SHIFT;
->  		/* offset for VIO should always be 0 */
-> -		tbl->it_offset = offset >> PAGE_SHIFT;
-> +		tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
->  		tbl->it_busno = 0;
->  		tbl->it_type = TCE_VB;
->  
-> Index: linux-2.6.19-rc1-git11/arch/powerpc/platforms/pseries/iommu.c
-> ===================================================================
-> --- linux-2.6.19-rc1-git11.orig/arch/powerpc/platforms/pseries/iommu.c	2006-10-13 11:54:00.000000000 -0500
-> +++ linux-2.6.19-rc1-git11/arch/powerpc/platforms/pseries/iommu.c	2006-10-23 18:42:03.000000000 -0500
-> @@ -289,7 +289,7 @@ static void iommu_table_setparms(struct 
->  	tbl->it_busno = phb->bus->number;
->  
->  	/* Units of tce entries */
-> -	tbl->it_offset = phb->dma_window_base_cur >> PAGE_SHIFT;
-> +	tbl->it_offset = phb->dma_window_base_cur >> IOMMU_PAGE_SHIFT;
->  
->  	/* Test if we are going over 2GB of DMA space */
->  	if (phb->dma_window_base_cur + phb->dma_window_size > 0x80000000ul) {
-> @@ -300,7 +300,7 @@ static void iommu_table_setparms(struct 
->  	phb->dma_window_base_cur += phb->dma_window_size;
->  
->  	/* Set the tce table size - measured in entries */
-> -	tbl->it_size = phb->dma_window_size >> PAGE_SHIFT;
-> +	tbl->it_size = phb->dma_window_size >> IOMMU_PAGE_SHIFT;
->  
->  	tbl->it_index = 0;
->  	tbl->it_blocksize = 16;
-> @@ -325,8 +325,8 @@ static void iommu_table_setparms_lpar(st
->  	tbl->it_base   = 0;
->  	tbl->it_blocksize  = 16;
->  	tbl->it_type = TCE_PCI;
-> -	tbl->it_offset = offset >> PAGE_SHIFT;
-> -	tbl->it_size = size >> PAGE_SHIFT;
-> +	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
-> +	tbl->it_size = size >> IOMMU_PAGE_SHIFT;
->  }
->  
->  static void iommu_bus_setup_pSeries(struct pci_bus *bus)
-> @@ -522,8 +522,6 @@ static void iommu_dev_setup_pSeriesLP(st
->  	const void *dma_window = NULL;
->  	struct pci_dn *pci;
->  
-> -	DBG("iommu_dev_setup_pSeriesLP, dev %p (%s)\n", dev, pci_name(dev));
-> -
->  	/* dev setup for LPAR is a little tricky, since the device tree might
->  	 * contain the dma-window properties per-device and not neccesarily
->  	 * for the bus. So we need to search upwards in the tree until we
-> @@ -532,6 +530,9 @@ static void iommu_dev_setup_pSeriesLP(st
->  	 */
->  	dn = pci_device_to_OF_node(dev);
->  
-> +	DBG("iommu_dev_setup_pSeriesLP, dev %p (%s) %s\n",
-> +	     dev, pci_name(dev), dn->full_name);
-> +
->  	for (pdn = dn; pdn && PCI_DN(pdn) && !PCI_DN(pdn)->iommu_table;
->  	     pdn = pdn->parent) {
->  		dma_window = get_property(pdn, "ibm,dma-window", NULL);
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
++static inline unsigned long iommu_num_pages(unsigned long vaddr,
++					    unsigned long slen)
++{
++	unsigned long npages;
++
++	npages = IOMMU_PAGE_ALIGN(vaddr + slen) - (vaddr & IOMMU_PAGE_MASK);
++	npages >>= IOMMU_PAGE_SHIFT;
++
++	return npages;
++}
++
+ static int __init setup_iommu(char *str)
+ {
+ 	if (!strcmp(str, "novmerge"))
+@@ -178,10 +189,10 @@ static dma_addr_t iommu_alloc(struct iom
+ 	}
+ 
+ 	entry += tbl->it_offset;	/* Offset into real TCE table */
+-	ret = entry << PAGE_SHIFT;	/* Set the return dma address */
++	ret = entry << IOMMU_PAGE_SHIFT;	/* Set the return dma address */
+ 
+ 	/* Put the TCEs in the HW table */
+-	ppc_md.tce_build(tbl, entry, npages, (unsigned long)page & PAGE_MASK,
++	ppc_md.tce_build(tbl, entry, npages, (unsigned long)page & IOMMU_PAGE_MASK,
+ 			 direction);
+ 
+ 
+@@ -203,7 +214,7 @@ static void __iommu_free(struct iommu_ta
+ 	unsigned long entry, free_entry;
+ 	unsigned long i;
+ 
+-	entry = dma_addr >> PAGE_SHIFT;
++	entry = dma_addr >> IOMMU_PAGE_SHIFT;
+ 	free_entry = entry - tbl->it_offset;
+ 
+ 	if (((free_entry + npages) > tbl->it_size) ||
+@@ -270,7 +281,7 @@ int iommu_map_sg(struct device *dev, str
+ 	/* Init first segment length for backout at failure */
+ 	outs->dma_length = 0;
+ 
+-	DBG("mapping %d elements:\n", nelems);
++	DBG("sg mapping %d elements:\n", nelems);
+ 
+ 	spin_lock_irqsave(&(tbl->it_lock), flags);
+ 
+@@ -285,9 +296,8 @@ int iommu_map_sg(struct device *dev, str
+ 		}
+ 		/* Allocate iommu entries for that segment */
+ 		vaddr = (unsigned long)page_address(s->page) + s->offset;
+-		npages = PAGE_ALIGN(vaddr + slen) - (vaddr & PAGE_MASK);
+-		npages >>= PAGE_SHIFT;
+-		entry = iommu_range_alloc(tbl, npages, &handle, mask >> PAGE_SHIFT, 0);
++		npages = iommu_num_pages(vaddr, slen);
++		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
+ 
+ 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
+ 
+@@ -301,14 +311,14 @@ int iommu_map_sg(struct device *dev, str
+ 
+ 		/* Convert entry to a dma_addr_t */
+ 		entry += tbl->it_offset;
+-		dma_addr = entry << PAGE_SHIFT;
+-		dma_addr |= s->offset;
++		dma_addr = entry << IOMMU_PAGE_SHIFT;
++		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK);
+ 
+-		DBG("  - %lx pages, entry: %lx, dma_addr: %lx\n",
++		DBG("  - %lu pages, entry: %lx, dma_addr: %lx\n",
+ 			    npages, entry, dma_addr);
+ 
+ 		/* Insert into HW table */
+-		ppc_md.tce_build(tbl, entry, npages, vaddr & PAGE_MASK, direction);
++		ppc_md.tce_build(tbl, entry, npages, vaddr & IOMMU_PAGE_MASK, direction);
+ 
+ 		/* If we are in an open segment, try merging */
+ 		if (segstart != s) {
+@@ -323,7 +333,7 @@ int iommu_map_sg(struct device *dev, str
+ 				DBG("    can't merge, new segment.\n");
+ 			} else {
+ 				outs->dma_length += s->length;
+-				DBG("    merged, new len: %lx\n", outs->dma_length);
++				DBG("    merged, new len: %ux\n", outs->dma_length);
+ 			}
+ 		}
+ 
+@@ -367,9 +377,8 @@ int iommu_map_sg(struct device *dev, str
+ 		if (s->dma_length != 0) {
+ 			unsigned long vaddr, npages;
+ 
+-			vaddr = s->dma_address & PAGE_MASK;
+-			npages = (PAGE_ALIGN(s->dma_address + s->dma_length) - vaddr)
+-				>> PAGE_SHIFT;
++			vaddr = s->dma_address & IOMMU_PAGE_MASK;
++			npages = iommu_num_pages(s->dma_address, s->dma_length);
+ 			__iommu_free(tbl, vaddr, npages);
+ 			s->dma_address = DMA_ERROR_CODE;
+ 			s->dma_length = 0;
+@@ -398,8 +407,7 @@ void iommu_unmap_sg(struct iommu_table *
+ 
+ 		if (sglist->dma_length == 0)
+ 			break;
+-		npages = (PAGE_ALIGN(dma_handle + sglist->dma_length)
+-			  - (dma_handle & PAGE_MASK)) >> PAGE_SHIFT;
++		npages = iommu_num_pages(dma_handle,sglist->dma_length);
+ 		__iommu_free(tbl, dma_handle, npages);
+ 		sglist++;
+ 	}
+@@ -532,12 +540,11 @@ dma_addr_t iommu_map_single(struct iommu
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	uaddr = (unsigned long)vaddr;
+-	npages = PAGE_ALIGN(uaddr + size) - (uaddr & PAGE_MASK);
+-	npages >>= PAGE_SHIFT;
++	npages = iommu_num_pages(uaddr, size);
+ 
+ 	if (tbl) {
+ 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
+-					 mask >> PAGE_SHIFT, 0);
++					 mask >> IOMMU_PAGE_SHIFT, 0);
+ 		if (dma_handle == DMA_ERROR_CODE) {
+ 			if (printk_ratelimit())  {
+ 				printk(KERN_INFO "iommu_alloc failed, "
+@@ -545,7 +552,7 @@ dma_addr_t iommu_map_single(struct iommu
+ 						tbl, vaddr, npages);
+ 			}
+ 		} else
+-			dma_handle |= (uaddr & ~PAGE_MASK);
++			dma_handle |= (uaddr & ~IOMMU_PAGE_MASK);
+ 	}
+ 
+ 	return dma_handle;
+@@ -554,11 +561,14 @@ dma_addr_t iommu_map_single(struct iommu
+ void iommu_unmap_single(struct iommu_table *tbl, dma_addr_t dma_handle,
+ 		size_t size, enum dma_data_direction direction)
+ {
++	unsigned int npages;
++
+ 	BUG_ON(direction == DMA_NONE);
+ 
+-	if (tbl)
+-		iommu_free(tbl, dma_handle, (PAGE_ALIGN(dma_handle + size) -
+-					(dma_handle & PAGE_MASK)) >> PAGE_SHIFT);
++	if (tbl) {
++		npages = iommu_num_pages(dma_handle, size);
++		iommu_free(tbl, dma_handle, npages);
++	}
+ }
+ 
+ /* Allocates a contiguous real buffer and creates mappings over it.
+@@ -570,11 +580,11 @@ void *iommu_alloc_coherent(struct iommu_
+ {
+ 	void *ret = NULL;
+ 	dma_addr_t mapping;
+-	unsigned int npages, order;
++	unsigned int order;
++	unsigned int nio_pages, io_order;
+ 	struct page *page;
+ 
+ 	size = PAGE_ALIGN(size);
+-	npages = size >> PAGE_SHIFT;
+ 	order = get_order(size);
+ 
+  	/*
+@@ -598,8 +608,10 @@ void *iommu_alloc_coherent(struct iommu_
+ 	memset(ret, 0, size);
+ 
+ 	/* Set up tces to cover the allocated range */
+-	mapping = iommu_alloc(tbl, ret, npages, DMA_BIDIRECTIONAL,
+-			      mask >> PAGE_SHIFT, order);
++	nio_pages = size >> IOMMU_PAGE_SHIFT;
++	io_order = get_iommu_order(size);
++	mapping = iommu_alloc(tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
++			      mask >> IOMMU_PAGE_SHIFT, io_order);
+ 	if (mapping == DMA_ERROR_CODE) {
+ 		free_pages((unsigned long)ret, order);
+ 		return NULL;
+@@ -611,12 +623,13 @@ void *iommu_alloc_coherent(struct iommu_
+ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+ 			 void *vaddr, dma_addr_t dma_handle)
+ {
+-	unsigned int npages;
+-
+ 	if (tbl) {
++		unsigned int nio_pages;
++
++		size = PAGE_ALIGN(size);
++		nio_pages = size >> IOMMU_PAGE_SHIFT;
++		iommu_free(tbl, dma_handle, nio_pages);
+ 		size = PAGE_ALIGN(size);
+-		npages = size >> PAGE_SHIFT;
+-		iommu_free(tbl, dma_handle, npages);
+ 		free_pages((unsigned long)vaddr, get_order(size));
+ 	}
+ }
+Index: linux-cell/include/asm-powerpc/iommu.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/iommu.h	2006-10-24 14:44:26.000000000 +1000
++++ linux-cell/include/asm-powerpc/iommu.h	2006-10-24 14:58:45.000000000 +1000
+@@ -22,17 +22,35 @@
+ #define _ASM_IOMMU_H
+ #ifdef __KERNEL__
+ 
+-#include <asm/types.h>
++#include <linux/compiler.h>
+ #include <linux/spinlock.h>
+ #include <linux/device.h>
+ #include <linux/dma-mapping.h>
++#include <asm/types.h>
++#include <asm/bitops.h>
++
++#define IOMMU_PAGE_SHIFT      12
++#define IOMMU_PAGE_SIZE       (ASM_CONST(1) << IOMMU_PAGE_SHIFT)
++#define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
++#define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
++
++#ifndef __ASSEMBLY__
++
++/* Pure 2^n version of get_order */
++static __inline__ __attribute_const__ int get_iommu_order(unsigned long size)
++{
++	return __ilog2((size - 1) >> IOMMU_PAGE_SHIFT) + 1;
++}
++
++#endif   /* __ASSEMBLY__ */
++
+ 
+ /*
+  * IOMAP_MAX_ORDER defines the largest contiguous block
+  * of dma space we can get.  IOMAP_MAX_ORDER = 13
+  * allows up to 2**12 pages (4096 * 4096) = 16 MB
+  */
+-#define IOMAP_MAX_ORDER 13
++#define IOMAP_MAX_ORDER		13
+ 
+ struct iommu_table {
+ 	unsigned long  it_busno;     /* Bus number this table belongs to */
+Index: linux-cell/include/asm-powerpc/tce.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/tce.h	2006-10-06 13:45:32.000000000 +1000
++++ linux-cell/include/asm-powerpc/tce.h	2006-10-24 14:59:20.000000000 +1000
+@@ -22,6 +22,8 @@
+ #define _ASM_POWERPC_TCE_H
+ #ifdef __KERNEL__
+ 
++#include <asm/iommu.h>
++
+ /*
+  * Tces come in two formats, one for the virtual bus and a different
+  * format for PCI
+@@ -33,7 +35,6 @@
+ 
+ #define TCE_SHIFT	12
+ #define TCE_PAGE_SIZE	(1 << TCE_SHIFT)
+-#define TCE_PAGE_FACTOR	(PAGE_SHIFT - TCE_SHIFT)
+ 
+ #define TCE_ENTRY_SIZE		8		/* each TCE is 64 bits */
+ 
+Index: linux-cell/arch/powerpc/kernel/vio.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/vio.c	2006-10-24 14:44:26.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/vio.c	2006-10-24 14:44:55.000000000 +1000
+@@ -92,9 +92,9 @@ static struct iommu_table *vio_build_iom
+ 				&tbl->it_index, &offset, &size);
+ 
+ 		/* TCE table size - measured in tce entries */
+-		tbl->it_size = size >> PAGE_SHIFT;
++		tbl->it_size = size >> IOMMU_PAGE_SHIFT;
+ 		/* offset for VIO should always be 0 */
+-		tbl->it_offset = offset >> PAGE_SHIFT;
++		tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
+ 		tbl->it_busno = 0;
+ 		tbl->it_type = TCE_VB;
+ 
+Index: linux-cell/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/pseries/iommu.c	2006-10-24 14:44:26.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/pseries/iommu.c	2006-10-24 15:00:07.000000000 +1000
+@@ -57,9 +57,6 @@ static void tce_build_pSeries(struct iom
+ 	u64 *tcep;
+ 	u64 rpn;
+ 
+-	index <<= TCE_PAGE_FACTOR;
+-	npages <<= TCE_PAGE_FACTOR;
+-
+ 	proto_tce = TCE_PCI_READ; // Read allowed
+ 
+ 	if (direction != DMA_TO_DEVICE)
+@@ -82,9 +79,6 @@ static void tce_free_pSeries(struct iomm
+ {
+ 	u64 *tcep;
+ 
+-	npages <<= TCE_PAGE_FACTOR;
+-	index <<= TCE_PAGE_FACTOR;
+-
+ 	tcep = ((u64 *)tbl->it_base) + index;
+ 
+ 	while (npages--)
+@@ -95,7 +89,6 @@ static unsigned long tce_get_pseries(str
+ {
+ 	u64 *tcep;
+ 
+-	index <<= TCE_PAGE_FACTOR;
+ 	tcep = ((u64 *)tbl->it_base) + index;
+ 
+ 	return *tcep;
+@@ -109,9 +102,6 @@ static void tce_build_pSeriesLP(struct i
+ 	u64 proto_tce, tce;
+ 	u64 rpn;
+ 
+-	tcenum <<= TCE_PAGE_FACTOR;
+-	npages <<= TCE_PAGE_FACTOR;
+-
+ 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
+ 	proto_tce = TCE_PCI_READ;
+ 	if (direction != DMA_TO_DEVICE)
+@@ -146,7 +136,7 @@ static void tce_buildmulti_pSeriesLP(str
+ 	u64 rpn;
+ 	long l, limit;
+ 
+-	if (TCE_PAGE_FACTOR == 0 && npages == 1)
++	if (npages == 1)
+ 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+ 					   direction);
+ 
+@@ -164,9 +154,6 @@ static void tce_buildmulti_pSeriesLP(str
+ 		__get_cpu_var(tce_page) = tcep;
+ 	}
+ 
+-	tcenum <<= TCE_PAGE_FACTOR;
+-	npages <<= TCE_PAGE_FACTOR;
+-
+ 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
+ 	proto_tce = TCE_PCI_READ;
+ 	if (direction != DMA_TO_DEVICE)
+@@ -207,9 +194,6 @@ static void tce_free_pSeriesLP(struct io
+ {
+ 	u64 rc;
+ 
+-	tcenum <<= TCE_PAGE_FACTOR;
+-	npages <<= TCE_PAGE_FACTOR;
+-
+ 	while (npages--) {
+ 		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, 0);
+ 
+@@ -229,9 +213,6 @@ static void tce_freemulti_pSeriesLP(stru
+ {
+ 	u64 rc;
+ 
+-	tcenum <<= TCE_PAGE_FACTOR;
+-	npages <<= TCE_PAGE_FACTOR;
+-
+ 	rc = plpar_tce_stuff((u64)tbl->it_index, (u64)tcenum << 12, 0, npages);
+ 
+ 	if (rc && printk_ratelimit()) {
+@@ -248,7 +229,6 @@ static unsigned long tce_get_pSeriesLP(s
+ 	u64 rc;
+ 	unsigned long tce_ret;
+ 
+-	tcenum <<= TCE_PAGE_FACTOR;
+ 	rc = plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12, &tce_ret);
+ 
+ 	if (rc && printk_ratelimit()) {
+@@ -289,7 +269,7 @@ static void iommu_table_setparms(struct 
+ 	tbl->it_busno = phb->bus->number;
+ 
+ 	/* Units of tce entries */
+-	tbl->it_offset = phb->dma_window_base_cur >> PAGE_SHIFT;
++	tbl->it_offset = phb->dma_window_base_cur >> IOMMU_PAGE_SHIFT;
+ 
+ 	/* Test if we are going over 2GB of DMA space */
+ 	if (phb->dma_window_base_cur + phb->dma_window_size > 0x80000000ul) {
+@@ -300,7 +280,7 @@ static void iommu_table_setparms(struct 
+ 	phb->dma_window_base_cur += phb->dma_window_size;
+ 
+ 	/* Set the tce table size - measured in entries */
+-	tbl->it_size = phb->dma_window_size >> PAGE_SHIFT;
++	tbl->it_size = phb->dma_window_size >> IOMMU_PAGE_SHIFT;
+ 
+ 	tbl->it_index = 0;
+ 	tbl->it_blocksize = 16;
+@@ -325,8 +305,8 @@ static void iommu_table_setparms_lpar(st
+ 	tbl->it_base   = 0;
+ 	tbl->it_blocksize  = 16;
+ 	tbl->it_type = TCE_PCI;
+-	tbl->it_offset = offset >> PAGE_SHIFT;
+-	tbl->it_size = size >> PAGE_SHIFT;
++	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
++	tbl->it_size = size >> IOMMU_PAGE_SHIFT;
+ }
+ 
+ static void iommu_bus_setup_pSeries(struct pci_bus *bus)
+@@ -522,8 +502,6 @@ static void iommu_dev_setup_pSeriesLP(st
+ 	const void *dma_window = NULL;
+ 	struct pci_dn *pci;
+ 
+-	DBG("iommu_dev_setup_pSeriesLP, dev %p (%s)\n", dev, pci_name(dev));
+-
+ 	/* dev setup for LPAR is a little tricky, since the device tree might
+ 	 * contain the dma-window properties per-device and not neccesarily
+ 	 * for the bus. So we need to search upwards in the tree until we
+@@ -532,6 +510,9 @@ static void iommu_dev_setup_pSeriesLP(st
+ 	 */
+ 	dn = pci_device_to_OF_node(dev);
+ 
++	DBG("iommu_dev_setup_pSeriesLP, dev %p (%s) %s\n",
++	     dev, pci_name(dev), dn->full_name);
++
+ 	for (pdn = dn; pdn && PCI_DN(pdn) && !PCI_DN(pdn)->iommu_table;
+ 	     pdn = pdn->parent) {
+ 		dma_window = get_property(pdn, "ibm,dma-window", NULL);
+Index: linux-cell/arch/powerpc/sysdev/dart.h
+===================================================================
+--- linux-cell.orig/arch/powerpc/sysdev/dart.h	2006-10-06 13:47:54.000000000 +1000
++++ linux-cell/arch/powerpc/sysdev/dart.h	2006-10-24 15:01:16.000000000 +1000
+@@ -72,7 +72,6 @@
+ 
+ #define DART_PAGE_SHIFT		12
+ #define DART_PAGE_SIZE		(1 << DART_PAGE_SHIFT)
+-#define DART_PAGE_FACTOR	(PAGE_SHIFT - DART_PAGE_SHIFT)
+ 
+ 
+ #endif /* _POWERPC_SYSDEV_DART_H */
+Index: linux-cell/arch/powerpc/sysdev/dart_iommu.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/sysdev/dart_iommu.c	2006-10-24 14:44:26.000000000 +1000
++++ linux-cell/arch/powerpc/sysdev/dart_iommu.c	2006-10-24 15:01:47.000000000 +1000
+@@ -156,9 +156,6 @@ static void dart_build(struct iommu_tabl
+ 
+ 	DBG("dart: build at: %lx, %lx, addr: %x\n", index, npages, uaddr);
+ 
+-	index <<= DART_PAGE_FACTOR;
+-	npages <<= DART_PAGE_FACTOR;
+-
+ 	dp = ((unsigned int*)tbl->it_base) + index;
+ 
+ 	/* On U3, all memory is contigous, so we can move this
+@@ -199,9 +196,6 @@ static void dart_free(struct iommu_table
+ 
+ 	DBG("dart: free at: %lx, %lx\n", index, npages);
+ 
+-	index <<= DART_PAGE_FACTOR;
+-	npages <<= DART_PAGE_FACTOR;
+-
+ 	dp  = ((unsigned int *)tbl->it_base) + index;
+ 
+ 	while (npages--)
+@@ -281,7 +275,7 @@ static void iommu_table_dart_setup(void)
+ 	iommu_table_dart.it_busno = 0;
+ 	iommu_table_dart.it_offset = 0;
+ 	/* it_size is in number of entries */
+-	iommu_table_dart.it_size = (dart_tablesize / sizeof(u32)) >> DART_PAGE_FACTOR;
++	iommu_table_dart.it_size = dart_tablesize / sizeof(u32);
+ 
+ 	/* Initialize the common IOMMU code */
+ 	iommu_table_dart.it_base = (unsigned long)dart_vbase;
