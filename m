@@ -1,26 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 17960679E2
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 17:16:47 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k9O7UFg7013511
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 00:30:15 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k9O7GgTt009998
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 02:16:44 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
-Date: Tue, 24 Oct 2006 15:17:27 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D2071C2@zch01exm20.fsl.freescale.net>
-In-Reply-To: <453D097D.6090603@freescale.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Wood Scott-B07421" <scottwood@freescale.com>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5766167A2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 17:40:23 +1000 (EST)
+Subject: Re: pci_set_power_state() failure and breaking suspend
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux1394-devel@lists.sourceforge.net
+In-Reply-To: <1161672898.10524.596.camel@localhost.localdomain>
+References: <1161672898.10524.596.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 24 Oct 2006 17:40:11 +1000
+Message-Id: <1161675611.10524.598.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Scott Wood [mailto:scottwood@freescale.com]
-> Sent: Tuesday, October 24, 2006 2:27 AM
-> To: Segher Boessenkool
-> Cc: mrz5149@acm.org; Li Yang-r58472; Paul Mackerras;
-linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] qe_ic: Do a sync when masking interrupts.
->=20
-> Segher Boessenkool wrote:
-> > If a sync after an MMIO write is enough, then (in almost all
-> > cases) so is an eieio.
->=20
-> In this case, the spurious interrupts still happen with eieio, but not
-> with sync. =20
+On Tue, 2006-10-24 at 16:54 +1000, Benjamin Herrenschmidt wrote:
+> So I noticed a small regression that I think might uncover a deeper
+> issue...
+> 
+> Recently, ohci1394 grew some "proper" error handling in its suspend
+> function, something that looks like:
+> 
+>         err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
+>         if (err)
+>                 goto out;
+> 
+> First, it breaks some old PowerBooks where the internal OHCI had PM
+> feature exposed on PCI (the pmac specific code that follows those lines
+> is enough on those machines).
 
-eieio on e300 core is just a no-op.
+If I could type, the above would have read...
 
-- Leo
+First, it breaks some old PowerBooks where the internal OHCI has no PM
+feature exposed on PCI....
+
+Ben.
