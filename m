@@ -1,12 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061024163816.851732000@arndb.de>
+Message-Id: <20061024163812.285991000@arndb.de>
 References: <20061024163113.694643000@arndb.de>
-Date: Tue, 24 Oct 2006 18:31:25 +0200
+Date: Tue, 24 Oct 2006 18:31:14 +0200
 From: arnd@arndb.de
 To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: [PATCH 12/16] cell: add temperature to SPU and CPU sysfs entries
-Cc: Christian Krafft <krafft@de.ibm.com>,
+Subject: [PATCH 01/16] spufs: wrap mfc sdr access
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>,
 	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,288 +17,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Krafft <krafft@de.ibm.com>
+From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 
-This patch adds a module that registers sysfs attributes to CPU and SPU
-containing the temperature of the CBE.
+SPRN_SDR1 and the SPE's MFC SDR are hypervisor resources and
+are not accessible from a logical partition.  This change adds an
+access wrapper.
 
-They can be found under
-/sys/devices/system/spu/cpuX/thermal/temperature[0|1]
-/sys/devices/system/spu/spuX/thermal/temperature
+When running on bare H/W, the spufs needs to only set the SPE's MFC SDR
+to the value of the PPE's SPRN_SDR1 once at SPE initialization, so this
+change renames mfc_sdr_set() to mfc_sdr_setup() and moves the
+access of SPRN_SDR1 into the mmio wrapper.  It also removes the now
+unneeded member mfc_sdr_RW from struct spu_priv1_collapsed.
 
-The temperature is read from the on-chip temperature sensors.
-
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linux-2.6/arch/powerpc/platforms/cell/Kconfig
+--
+
+Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/cell/Kconfig
-@@ -20,4 +20,9 @@ config CBE_RAS
- 	bool "RAS features for bare metal Cell BE"
- 	default y
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
+@@ -805,7 +805,7 @@ static int __init create_spu(struct devi
+ 	if (ret)
+ 		goto out_unmap;
+ 	spin_lock_init(&spu->register_lock);
+-	spu_mfc_sdr_set(spu, mfspr(SPRN_SDR1));
++	spu_mfc_sdr_setup(spu);
+ 	spu_mfc_sr1_set(spu, 0x33);
+ 	mutex_lock(&spu_mutex);
  
-+config CBE_THERM
-+	tristate "CBE thermal support"
-+	default m
-+	depends on CBE_RAS
-+
- endmenu
-Index: linux-2.6/arch/powerpc/platforms/cell/Makefile
+Index: linux-2.6/arch/powerpc/platforms/cell/spu_priv1_mmio.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/Makefile
-+++ linux-2.6/arch/powerpc/platforms/cell/Makefile
-@@ -3,6 +3,8 @@ obj-$(CONFIG_PPC_CELL_NATIVE)		+= interr
- 					   pmu.o
- obj-$(CONFIG_CBE_RAS)			+= ras.o
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c
++++ linux-2.6/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+@@ -84,9 +84,9 @@ static void mfc_dsisr_set(struct spu *sp
+ 	out_be64(&spu->priv1->mfc_dsisr_RW, dsisr);
+ }
  
-+obj-$(CONFIG_CBE_THERM)			+= cbe_thermal.o
-+
- ifeq ($(CONFIG_SMP),y)
- obj-$(CONFIG_PPC_CELL_NATIVE)		+= smp.o
- endif
-Index: linux-2.6/arch/powerpc/configs/cell_defconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/configs/cell_defconfig
-+++ linux-2.6/arch/powerpc/configs/cell_defconfig
-@@ -149,6 +149,7 @@ CONFIG_MMIO_NVRAM=y
- CONFIG_SPU_FS=m
- CONFIG_SPU_BASE=y
- CONFIG_CBE_RAS=y
-+CONFIG_CBE_THERM=m
+-static void mfc_sdr_set(struct spu *spu, u64 sdr)
++static void mfc_sdr_setup(struct spu *spu)
+ {
+-	out_be64(&spu->priv1->mfc_sdr_RW, sdr);
++	out_be64(&spu->priv1->mfc_sdr_RW, mfspr(SPRN_SDR1));
+ }
  
- #
- # Kernel options
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
+ static void mfc_sr1_set(struct spu *spu, u64 sr1)
+@@ -146,7 +146,7 @@ const struct spu_priv1_ops spu_priv1_mmi
+ 	.mfc_dar_get = mfc_dar_get,
+ 	.mfc_dsisr_get = mfc_dsisr_get,
+ 	.mfc_dsisr_set = mfc_dsisr_set,
+-	.mfc_sdr_set = mfc_sdr_set,
++	.mfc_sdr_setup = mfc_sdr_setup,
+ 	.mfc_sr1_set = mfc_sr1_set,
+ 	.mfc_sr1_get = mfc_sr1_get,
+ 	.mfc_tclass_id_set = mfc_tclass_id_set,
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/switch.c
 ===================================================================
---- /dev/null
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
-@@ -0,0 +1,225 @@
-+/*
-+ * thermal support for the cell processor
-+ *
-+ * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
-+ *
-+ * Author: Christian Krafft <krafft@de.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/sysdev.h>
-+#include <linux/kernel.h>
-+#include <linux/cpu.h>
-+#include <asm/spu.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+
-+#include "cbe_regs.h"
-+
-+static struct cbe_pmd_regs __iomem *get_pmd_regs(struct sys_device *sysdev)
-+{
-+	struct spu *spu;
-+
-+	spu = container_of(sysdev, struct spu, sysdev);
-+
-+	return cbe_get_pmd_regs(spu->devnode);
-+}
-+
-+/* returns the value for a given spu in a given register */
-+static u8 spu_read_register_value(struct sys_device *sysdev, union spe_reg __iomem *reg)
-+{
-+	unsigned int *id;
-+	union spe_reg value;
-+	struct spu *spu;
-+
-+	/* getting the id from the reg attribute will not work on future device-tree layouts
-+	 * in future we should store the id to the spu struct and use it here */
-+	spu = container_of(sysdev, struct spu, sysdev);
-+	id = (unsigned int *)get_property(spu->devnode, "reg", NULL);
-+	value.val = in_be64(&reg->val);
-+
-+	return value.spe[*id];
-+}
-+
-+static ssize_t spu_show_temp(struct sys_device *sysdev, char *buf)
-+{
-+	int value;
-+	struct cbe_pmd_regs __iomem *pmd_regs;
-+
-+	pmd_regs = get_pmd_regs(sysdev);
-+
-+	value = spu_read_register_value(sysdev, &pmd_regs->ts_ctsr1);
-+	/* clear all other bits */
-+	value &= 0x3F;
-+	/* temp is stored in steps of 2 degrees */
-+	value *= 2;
-+	/* base temp is 65 degrees */
-+	value += 65;
-+
-+	return sprintf(buf, "%d\n", (int) value);
-+}
-+
-+static ssize_t ppe_show_temp(struct sys_device *sysdev, char *buf, int pos)
-+{
-+	struct cbe_pmd_regs __iomem *pmd_regs;
-+	u64 value;
-+
-+	pmd_regs = cbe_get_cpu_pmd_regs(sysdev->id);
-+	value = in_be64(&pmd_regs->ts_ctsr2);
-+
-+	/* access the corresponding byte */
-+	value >>= pos;
-+	/* clear all other bits */
-+	value &= 0x3F;
-+	/* temp is stored in steps of 2 degrees */
-+	value *= 2;
-+	/* base temp is 65 degrees */
-+	value += 65;
-+
-+	return sprintf(buf, "%d\n", (int) value);
-+}
-+
-+
-+/* shows the temperature of the DTS on the PPE,
-+ * located near the linear thermal sensor */
-+static ssize_t ppe_show_temp0(struct sys_device *sysdev, char *buf)
-+{
-+	return ppe_show_temp(sysdev, buf, 32);
-+}
-+
-+/* shows the temperature of the second DTS on the PPE */
-+static ssize_t ppe_show_temp1(struct sys_device *sysdev, char *buf)
-+{
-+	return ppe_show_temp(sysdev, buf, 0);
-+}
-+
-+static struct sysdev_attribute attr_spu_temperature = {
-+	.attr = {.name = "temperature", .mode = 0400 },
-+	.show = spu_show_temp,
-+};
-+
-+static struct attribute *spu_attributes[] = {
-+	&attr_spu_temperature.attr,
-+};
-+
-+static struct attribute_group spu_attribute_group = {
-+	.name	= "thermal",
-+	.attrs	= spu_attributes,
-+};
-+
-+static struct sysdev_attribute attr_ppe_temperature0 = {
-+	.attr = {.name = "temperature0", .mode = 0400 },
-+	.show = ppe_show_temp0,
-+};
-+
-+static struct sysdev_attribute attr_ppe_temperature1 = {
-+	.attr = {.name = "temperature1", .mode = 0400 },
-+	.show = ppe_show_temp1,
-+};
-+
-+static struct attribute *ppe_attributes[] = {
-+	&attr_ppe_temperature0.attr,
-+	&attr_ppe_temperature1.attr,
-+};
-+
-+static struct attribute_group ppe_attribute_group = {
-+	.name	= "thermal",
-+	.attrs	= ppe_attributes,
-+};
-+
-+/*
-+ * initialize throttling with default values
-+ */
-+static void __init init_default_values(void)
-+{
-+	int cpu;
-+	struct cbe_pmd_regs __iomem *pmd_regs;
-+	struct sys_device *sysdev;
-+	union ppe_spe_reg tpr;
-+	union spe_reg str1;
-+	u64 str2;
-+	union spe_reg cr1;
-+	u64 cr2;
-+
-+	/* TPR defaults */
-+	/* ppe
-+	 *	1F - no full stop
-+	 *	08 - dynamic throttling starts if over 80 degrees
-+	 *	03 - dynamic throttling ceases if below 70 degrees */
-+	tpr.ppe = 0x1F0803;
-+	/* spe
-+	 *	10 - full stopped when over 96 degrees
-+	 *	08 - dynamic throttling starts if over 80 degrees
-+	 *	03 - dynamic throttling ceases if below 70 degrees
-+	 */
-+	tpr.spe = 0x100803;
-+
-+	/* STR defaults */
-+	/* str1
-+	 *	10 - stop 16 of 32 cycles
-+	 */
-+	str1.val = 0x1010101010101010ull;
-+	/* str2
-+	 *	10 - stop 16 of 32 cycles
-+	 */
-+	str2 = 0x10;
-+
-+	/* CR defaults */
-+	/* cr1
-+	 *	4 - normal operation
-+	 */
-+	cr1.val = 0x0404040404040404ull;
-+	/* cr2
-+	 *	4 - normal operation
-+	 */
-+	cr2 = 0x04;
-+
-+	for_each_possible_cpu (cpu) {
-+		pr_debug("processing cpu %d\n", cpu);
-+		sysdev = get_cpu_sysdev(cpu);
-+		pmd_regs = cbe_get_cpu_pmd_regs(sysdev->id);
-+
-+		out_be64(&pmd_regs->tm_str2, str2);
-+		out_be64(&pmd_regs->tm_str1.val, str1.val);
-+		out_be64(&pmd_regs->tm_tpr.val, tpr.val);
-+		out_be64(&pmd_regs->tm_cr1.val, cr1.val);
-+		out_be64(&pmd_regs->tm_cr2, cr2);
-+	}
-+}
-+
-+
-+static int __init thermal_init(void)
-+{
-+	init_default_values();
-+
-+	spu_add_sysdev_attr_group(&spu_attribute_group);
-+	cpu_add_sysdev_attr_group(&ppe_attribute_group);
-+
-+	return 0;
-+}
-+module_init(thermal_init);
-+
-+static void __exit thermal_exit(void)
-+{
-+	spu_remove_sysdev_attr_group(&spu_attribute_group);
-+	cpu_remove_sysdev_attr_group(&ppe_attribute_group);
-+}
-+module_exit(thermal_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
-+
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/switch.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/switch.c
+@@ -2165,9 +2165,6 @@ static void init_priv1(struct spu_state 
+ 	    MFC_STATE1_PROBLEM_STATE_MASK |
+ 	    MFC_STATE1_RELOCATE_MASK | MFC_STATE1_BUS_TLBIE_MASK;
+ 
+-	/* Set storage description.  */
+-	csa->priv1.mfc_sdr_RW = mfspr(SPRN_SDR1);
+-
+ 	/* Enable OS-specific set of interrupts. */
+ 	csa->priv1.int_mask_class0_RW = CLASS0_ENABLE_DMA_ALIGNMENT_INTR |
+ 	    CLASS0_ENABLE_INVALID_DMA_COMMAND_INTR |
+Index: linux-2.6/include/asm-powerpc/spu_csa.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/spu_csa.h
++++ linux-2.6/include/asm-powerpc/spu_csa.h
+@@ -151,7 +151,6 @@ struct spu_priv1_collapsed {
+ 	u64 mfc_fir_chkstp_enable_RW;
+ 	u64 smf_sbi_signal_sel;
+ 	u64 smf_ato_signal_sel;
+-	u64 mfc_sdr_RW;
+ 	u64 tlb_index_hint_RO;
+ 	u64 tlb_index_W;
+ 	u64 tlb_vpn_RW;
+Index: linux-2.6/include/asm-powerpc/spu_priv1.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/spu_priv1.h
++++ linux-2.6/include/asm-powerpc/spu_priv1.h
+@@ -37,7 +37,7 @@ struct spu_priv1_ops
+ 	u64 (*mfc_dar_get) (struct spu *spu);
+ 	u64 (*mfc_dsisr_get) (struct spu *spu);
+ 	void (*mfc_dsisr_set) (struct spu *spu, u64 dsisr);
+-	void (*mfc_sdr_set) (struct spu *spu, u64 sdr);
++	void (*mfc_sdr_setup) (struct spu *spu);
+ 	void (*mfc_sr1_set) (struct spu *spu, u64 sr1);
+ 	u64 (*mfc_sr1_get) (struct spu *spu);
+ 	void (*mfc_tclass_id_set) (struct spu *spu, u64 tclass_id);
+@@ -112,9 +112,9 @@ spu_mfc_dsisr_set (struct spu *spu, u64 
+ }
+ 
+ static inline void
+-spu_mfc_sdr_set (struct spu *spu, u64 sdr)
++spu_mfc_sdr_setup (struct spu *spu)
+ {
+-	spu_priv1_ops->mfc_sdr_set(spu, sdr);
++	spu_priv1_ops->mfc_sdr_setup(spu);
+ }
+ 
+ static inline void
 
 --
