@@ -2,20 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D593A679FD
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 15:14:41 +1000 (EST)
-Subject: [PATCH] powerpc: map 4K iommu pages even on 64K largepage systems
+	by ozlabs.org (Postfix) with ESMTP id EA3FB679E1
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 16:42:51 +1000 (EST)
+Subject: [PATCH] powerpc: Consolidate feature fixup code
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <1161665007.10524.572.camel@localhost.localdomain>
-References: <20061024002540.GA6360@austin.ibm.com>
-	<1161665007.10524.572.camel@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Tue, 24 Oct 2006 15:14:27 +1000
-Message-Id: <1161666868.10524.577.camel@localhost.localdomain>
+Date: Tue, 24 Oct 2006 16:42:40 +1000
+Message-Id: <1161672160.10524.585.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,506 +21,613 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 10Gigabit ethernet device drivers appear to be able to chew
-up all 256MB of TCE mappings on pSeries systems, as evidenced by
-numerous error messages:
 
- iommu_alloc failed, tbl c0000000010d5c48 vaddr c0000000d875eff0 npages 1
+    There are currently two versions of the functions for applying the
+    feature fixups, one for CPU features and one for firmware features. In
+    addition, they are both in assembly and with separate implementations
+    for 32 and 64 bits. identify_cpu() is also implemented in assembly and
+    separately for 32 and 64 bits.
+    
+    This patch replaces them with a pair of C functions. The call sites are
+    slightly moved on ppc64 as well to be called from C instead of from
+    assembly, though it's a very small change, and thus shouldn't cause any
+    problem.
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Acked-by: Olof Johansson <olof@lixom.net>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Some experimentaiton indicates that this is essentially because
-one 1500 byte ethernet MTU gets mapped as a 64K DMA region when
-the large 64K pages are enabled. Thus, it doesn't take much to
-exhaust all of the available DMA mappings for a high-speed card.
+---
 
-This patch changes the iommu allocator to work with its own 
-unique, distinct page size. Although the patch is long, its
-actually quite simple: it just #defines  distinct IOMMU_PAGE_SIZE
-and then uses this in al the places tha matter.
+New version fixes the missing call to setup_cpu on ppc64. Also includes
+change from Paulus to fix build on ARCH=ppc
 
-The patch boots on pseries, untested in other places.
-
-Haven't yet thought if this is a good long-term solution or not,
-whether this kind of thing is desirable or not.  That's why its 
-an RFC.  Comments?
-
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-----
-
-And here's a slightly modified version that fixes dart_iommu too and
-changes things according to some of my comments.
-
-(I tested on the G5 with and without 64K pages.
-
- arch/powerpc/kernel/iommu.c            |   77 +++++++++++++++++++--------------
- arch/powerpc/kernel/vio.c              |    4 -
- arch/powerpc/platforms/pseries/iommu.c |   35 +++------------
- arch/powerpc/sysdev/dart.h             |    1
- arch/powerpc/sysdev/dart_iommu.c       |    8 ---
- include/asm-powerpc/iommu.h            |   22 ++++++++-
- include/asm-powerpc/tce.h              |    3 -
- 7 files changed, 78 insertions(+), 72 deletions(-)
-
-Index: linux-cell/arch/powerpc/kernel/iommu.c
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index f23aad6..dc7ccca 100644
+Index: linux-cell/arch/powerpc/kernel/cputable.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/iommu.c	2006-10-24 14:44:26.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/iommu.c	2006-10-24 14:55:59.000000000 +1000
-@@ -47,6 +47,17 @@ static int novmerge = 0;
- static int novmerge = 1;
+--- linux-cell.orig/arch/powerpc/kernel/cputable.c	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/cputable.c	2006-10-24 16:35:51.000000000 +1000
+@@ -18,6 +18,7 @@
+ 
+ #include <asm/oprofile_impl.h>
+ #include <asm/cputable.h>
++#include <asm/prom.h>		/* for PTRRELOC on ARCH=ppc */
+ 
+ struct cpu_spec* cur_cpu_spec = NULL;
+ EXPORT_SYMBOL(cur_cpu_spec);
+@@ -73,7 +74,7 @@ extern void __restore_cpu_ppc970(void);
+ #define PPC_FEATURE_SPE_COMP	0
  #endif
  
-+static inline unsigned long iommu_num_pages(unsigned long vaddr,
-+					    unsigned long slen)
+-struct cpu_spec	cpu_specs[] = {
++static struct cpu_spec cpu_specs[] = {
+ #ifdef CONFIG_PPC64
+ 	{	/* Power3 */
+ 		.pvr_mask		= 0xffff0000,
+@@ -1152,3 +1153,72 @@ struct cpu_spec	cpu_specs[] = {
+ #endif /* !CLASSIC_PPC */
+ #endif /* CONFIG_PPC32 */
+ };
++
++struct cpu_spec *identify_cpu(unsigned long offset)
 +{
-+	unsigned long npages;
++	struct cpu_spec *s = cpu_specs;
++	struct cpu_spec **cur = &cur_cpu_spec;
++	unsigned int pvr = mfspr(SPRN_PVR);
++	int i;
 +
-+	npages = IOMMU_PAGE_ALIGN(vaddr + slen) - (vaddr & IOMMU_PAGE_MASK);
-+	npages >>= IOMMU_PAGE_SHIFT;
++	s = PTRRELOC(s);
++	cur = PTRRELOC(cur);
 +
-+	return npages;
++	if (*cur != NULL)
++		return PTRRELOC(*cur);
++
++	for (i = 0; i < ARRAY_SIZE(cpu_specs); i++,s++)
++		if ((pvr & s->pvr_mask) == s->pvr_value) {
++			*cur = cpu_specs + i;
++#ifdef CONFIG_PPC64
++			/* ppc64 expects identify_cpu to also call setup_cpu
++			 * for that processor. I will consolidate that at a
++			 * later time, for now, just use our friend #ifdef.
++			 * we also don't need to PTRRELOC the function pointer
++			 * on ppc64 as we are running at 0 in real mode.
++			 */
++			if (s->cpu_setup) {
++				s->cpu_setup(offset, s);
++			}
++#endif /* CONFIG_PPC64 */
++			return s;
++		}
++	BUG();
++	return NULL;
 +}
 +
- static int __init setup_iommu(char *str)
- {
- 	if (!strcmp(str, "novmerge"))
-@@ -178,10 +189,10 @@ static dma_addr_t iommu_alloc(struct iom
- 	}
- 
- 	entry += tbl->it_offset;	/* Offset into real TCE table */
--	ret = entry << PAGE_SHIFT;	/* Set the return dma address */
-+	ret = entry << IOMMU_PAGE_SHIFT;	/* Set the return dma address */
- 
- 	/* Put the TCEs in the HW table */
--	ppc_md.tce_build(tbl, entry, npages, (unsigned long)page & PAGE_MASK,
-+	ppc_md.tce_build(tbl, entry, npages, (unsigned long)page & IOMMU_PAGE_MASK,
- 			 direction);
- 
- 
-@@ -203,7 +214,7 @@ static void __iommu_free(struct iommu_ta
- 	unsigned long entry, free_entry;
- 	unsigned long i;
- 
--	entry = dma_addr >> PAGE_SHIFT;
-+	entry = dma_addr >> IOMMU_PAGE_SHIFT;
- 	free_entry = entry - tbl->it_offset;
- 
- 	if (((free_entry + npages) > tbl->it_size) ||
-@@ -270,7 +281,7 @@ int iommu_map_sg(struct device *dev, str
- 	/* Init first segment length for backout at failure */
- 	outs->dma_length = 0;
- 
--	DBG("mapping %d elements:\n", nelems);
-+	DBG("sg mapping %d elements:\n", nelems);
- 
- 	spin_lock_irqsave(&(tbl->it_lock), flags);
- 
-@@ -285,9 +296,8 @@ int iommu_map_sg(struct device *dev, str
- 		}
- 		/* Allocate iommu entries for that segment */
- 		vaddr = (unsigned long)page_address(s->page) + s->offset;
--		npages = PAGE_ALIGN(vaddr + slen) - (vaddr & PAGE_MASK);
--		npages >>= PAGE_SHIFT;
--		entry = iommu_range_alloc(tbl, npages, &handle, mask >> PAGE_SHIFT, 0);
-+		npages = iommu_num_pages(vaddr, slen);
-+		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
- 
- 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
- 
-@@ -301,14 +311,14 @@ int iommu_map_sg(struct device *dev, str
- 
- 		/* Convert entry to a dma_addr_t */
- 		entry += tbl->it_offset;
--		dma_addr = entry << PAGE_SHIFT;
--		dma_addr |= s->offset;
-+		dma_addr = entry << IOMMU_PAGE_SHIFT;
-+		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK);
- 
--		DBG("  - %lx pages, entry: %lx, dma_addr: %lx\n",
-+		DBG("  - %lu pages, entry: %lx, dma_addr: %lx\n",
- 			    npages, entry, dma_addr);
- 
- 		/* Insert into HW table */
--		ppc_md.tce_build(tbl, entry, npages, vaddr & PAGE_MASK, direction);
-+		ppc_md.tce_build(tbl, entry, npages, vaddr & IOMMU_PAGE_MASK, direction);
- 
- 		/* If we are in an open segment, try merging */
- 		if (segstart != s) {
-@@ -323,7 +333,7 @@ int iommu_map_sg(struct device *dev, str
- 				DBG("    can't merge, new segment.\n");
- 			} else {
- 				outs->dma_length += s->length;
--				DBG("    merged, new len: %lx\n", outs->dma_length);
-+				DBG("    merged, new len: %ux\n", outs->dma_length);
- 			}
- 		}
- 
-@@ -367,9 +377,8 @@ int iommu_map_sg(struct device *dev, str
- 		if (s->dma_length != 0) {
- 			unsigned long vaddr, npages;
- 
--			vaddr = s->dma_address & PAGE_MASK;
--			npages = (PAGE_ALIGN(s->dma_address + s->dma_length) - vaddr)
--				>> PAGE_SHIFT;
-+			vaddr = s->dma_address & IOMMU_PAGE_MASK;
-+			npages = iommu_num_pages(s->dma_address, s->dma_length);
- 			__iommu_free(tbl, vaddr, npages);
- 			s->dma_address = DMA_ERROR_CODE;
- 			s->dma_length = 0;
-@@ -398,8 +407,7 @@ void iommu_unmap_sg(struct iommu_table *
- 
- 		if (sglist->dma_length == 0)
- 			break;
--		npages = (PAGE_ALIGN(dma_handle + sglist->dma_length)
--			  - (dma_handle & PAGE_MASK)) >> PAGE_SHIFT;
-+		npages = iommu_num_pages(dma_handle,sglist->dma_length);
- 		__iommu_free(tbl, dma_handle, npages);
- 		sglist++;
- 	}
-@@ -532,12 +540,11 @@ dma_addr_t iommu_map_single(struct iommu
- 	BUG_ON(direction == DMA_NONE);
- 
- 	uaddr = (unsigned long)vaddr;
--	npages = PAGE_ALIGN(uaddr + size) - (uaddr & PAGE_MASK);
--	npages >>= PAGE_SHIFT;
-+	npages = iommu_num_pages(uaddr, size);
- 
- 	if (tbl) {
- 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
--					 mask >> PAGE_SHIFT, 0);
-+					 mask >> IOMMU_PAGE_SHIFT, 0);
- 		if (dma_handle == DMA_ERROR_CODE) {
- 			if (printk_ratelimit())  {
- 				printk(KERN_INFO "iommu_alloc failed, "
-@@ -545,7 +552,7 @@ dma_addr_t iommu_map_single(struct iommu
- 						tbl, vaddr, npages);
- 			}
- 		} else
--			dma_handle |= (uaddr & ~PAGE_MASK);
-+			dma_handle |= (uaddr & ~IOMMU_PAGE_MASK);
- 	}
- 
- 	return dma_handle;
-@@ -554,11 +561,14 @@ dma_addr_t iommu_map_single(struct iommu
- void iommu_unmap_single(struct iommu_table *tbl, dma_addr_t dma_handle,
- 		size_t size, enum dma_data_direction direction)
- {
-+	unsigned int npages;
++void do_feature_fixups(unsigned long offset, unsigned long value,
++		       void *fixup_start, void *fixup_end)
++{
++	struct fixup_entry {
++		unsigned long	mask;
++		unsigned long	value;
++		unsigned int	*start;
++		unsigned int	*end;
++	} *fcur, *fend;
 +
- 	BUG_ON(direction == DMA_NONE);
- 
--	if (tbl)
--		iommu_free(tbl, dma_handle, (PAGE_ALIGN(dma_handle + size) -
--					(dma_handle & PAGE_MASK)) >> PAGE_SHIFT);
-+	if (tbl) {
-+		npages = iommu_num_pages(dma_handle, size);
-+		iommu_free(tbl, dma_handle, npages);
++	fcur = fixup_start;
++	fend = fixup_end;
++
++	for (; fcur < fend; fcur++) {
++		unsigned int *pstart, *pend, *p;
++
++		if ((value & fcur->mask) == fcur->value)
++			continue;
++
++		/* These PTRRELOCs will disappear once the new scheme for
++		 * modules and vdso is implemented
++		 */
++		pstart = PTRRELOC(fcur->start);
++		pend = PTRRELOC(fcur->end);
++
++		for (p = pstart; p < pend; p++) {
++			*p = 0x60000000u;
++			asm volatile ("dcbst 0, %0" : : "r" (p));
++		}
++		asm volatile ("sync" : : : "memory");
++		for (p = pstart; p < pend; p++)
++			asm volatile ("icbi 0,%0" : : "r" (p));
++		asm volatile ("sync; isync" : : : "memory");
 +	}
- }
- 
- /* Allocates a contiguous real buffer and creates mappings over it.
-@@ -570,11 +580,11 @@ void *iommu_alloc_coherent(struct iommu_
- {
- 	void *ret = NULL;
- 	dma_addr_t mapping;
--	unsigned int npages, order;
-+	unsigned int order;
-+	unsigned int nio_pages, io_order;
- 	struct page *page;
- 
- 	size = PAGE_ALIGN(size);
--	npages = size >> PAGE_SHIFT;
- 	order = get_order(size);
- 
-  	/*
-@@ -598,8 +608,10 @@ void *iommu_alloc_coherent(struct iommu_
- 	memset(ret, 0, size);
- 
- 	/* Set up tces to cover the allocated range */
--	mapping = iommu_alloc(tbl, ret, npages, DMA_BIDIRECTIONAL,
--			      mask >> PAGE_SHIFT, order);
-+	nio_pages = size >> IOMMU_PAGE_SHIFT;
-+	io_order = get_iommu_order(size);
-+	mapping = iommu_alloc(tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
-+			      mask >> IOMMU_PAGE_SHIFT, io_order);
- 	if (mapping == DMA_ERROR_CODE) {
- 		free_pages((unsigned long)ret, order);
- 		return NULL;
-@@ -611,12 +623,13 @@ void *iommu_alloc_coherent(struct iommu_
- void iommu_free_coherent(struct iommu_table *tbl, size_t size,
- 			 void *vaddr, dma_addr_t dma_handle)
- {
--	unsigned int npages;
--
- 	if (tbl) {
-+		unsigned int nio_pages;
-+
-+		size = PAGE_ALIGN(size);
-+		nio_pages = size >> IOMMU_PAGE_SHIFT;
-+		iommu_free(tbl, dma_handle, nio_pages);
- 		size = PAGE_ALIGN(size);
--		npages = size >> PAGE_SHIFT;
--		iommu_free(tbl, dma_handle, npages);
- 		free_pages((unsigned long)vaddr, get_order(size));
- 	}
- }
-Index: linux-cell/include/asm-powerpc/iommu.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/iommu.h	2006-10-24 14:44:26.000000000 +1000
-+++ linux-cell/include/asm-powerpc/iommu.h	2006-10-24 14:58:45.000000000 +1000
-@@ -22,17 +22,35 @@
- #define _ASM_IOMMU_H
- #ifdef __KERNEL__
- 
--#include <asm/types.h>
-+#include <linux/compiler.h>
- #include <linux/spinlock.h>
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
-+#include <asm/types.h>
-+#include <asm/bitops.h>
-+
-+#define IOMMU_PAGE_SHIFT      12
-+#define IOMMU_PAGE_SIZE       (ASM_CONST(1) << IOMMU_PAGE_SHIFT)
-+#define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
-+#define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
-+
-+#ifndef __ASSEMBLY__
-+
-+/* Pure 2^n version of get_order */
-+static __inline__ __attribute_const__ int get_iommu_order(unsigned long size)
-+{
-+	return __ilog2((size - 1) >> IOMMU_PAGE_SHIFT) + 1;
 +}
-+
-+#endif   /* __ASSEMBLY__ */
-+
+Index: linux-cell/arch/powerpc/kernel/head_64.S
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/head_64.S	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/head_64.S	2006-10-24 16:31:25.000000000 +1000
+@@ -1580,11 +1580,6 @@ _STATIC(__start_initialization_iSeries)
+ 	li	r0,0
+ 	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
+ 
+-	LOAD_REG_IMMEDIATE(r3,cpu_specs)
+-	LOAD_REG_IMMEDIATE(r4,cur_cpu_spec)
+-	li	r5,0
+-	bl	.identify_cpu
+-
+ 	LOAD_REG_IMMEDIATE(r2,__toc_start)
+ 	addi	r2,r2,0x4000
+ 	addi	r2,r2,0x4000
+@@ -1964,13 +1959,6 @@ _STATIC(start_here_multiplatform)
+ 	addi	r2,r2,0x4000
+ 	add	r2,r2,r26
+ 
+-	LOAD_REG_IMMEDIATE(r3, cpu_specs)
+-	add	r3,r3,r26
+-	LOAD_REG_IMMEDIATE(r4,cur_cpu_spec)
+-	add	r4,r4,r26
+-	mr	r5,r26
+-	bl	.identify_cpu
+-
+ 	/* Do very early kernel initializations, including initial hash table,
+ 	 * stab and slb setup before we turn on relocation.	*/
+ 
+@@ -2000,13 +1988,6 @@ _STATIC(start_here_common)
+ 	li	r0,0
+ 	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
+ 
+-	/* Apply the CPUs-specific fixups (nop out sections not relevant
+-	 * to this CPU
+-	 */
+-	li	r3,0
+-	bl	.do_cpu_ftr_fixups
+-	bl	.do_fw_ftr_fixups
+-
+ 	/* ptr to current */
+ 	LOAD_REG_IMMEDIATE(r4, init_task)
+ 	std	r4,PACACURRENT(r13)
+Index: linux-cell/arch/powerpc/kernel/misc_32.S
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/misc_32.S	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/misc_32.S	2006-10-24 16:31:25.000000000 +1000
+@@ -102,80 +102,6 @@ _GLOBAL(reloc_got2)
+ 	blr
  
  /*
-  * IOMAP_MAX_ORDER defines the largest contiguous block
-  * of dma space we can get.  IOMAP_MAX_ORDER = 13
-  * allows up to 2**12 pages (4096 * 4096) = 16 MB
-  */
--#define IOMAP_MAX_ORDER 13
-+#define IOMAP_MAX_ORDER		13
- 
- struct iommu_table {
- 	unsigned long  it_busno;     /* Bus number this table belongs to */
-Index: linux-cell/include/asm-powerpc/tce.h
+- * identify_cpu,
+- * called with r3 = data offset and r4 = CPU number
+- * doesn't change r3
+- */
+-_GLOBAL(identify_cpu)
+-	addis	r8,r3,cpu_specs@ha
+-	addi	r8,r8,cpu_specs@l
+-	mfpvr	r7
+-1:
+-	lwz	r5,CPU_SPEC_PVR_MASK(r8)
+-	and	r5,r5,r7
+-	lwz	r6,CPU_SPEC_PVR_VALUE(r8)
+-	cmplw	0,r6,r5
+-	beq	1f
+-	addi	r8,r8,CPU_SPEC_ENTRY_SIZE
+-	b	1b
+-1:
+-	addis	r6,r3,cur_cpu_spec@ha
+-	addi	r6,r6,cur_cpu_spec@l
+-	sub	r8,r8,r3
+-	stw	r8,0(r6)
+-	blr
+-
+-/*
+- * do_cpu_ftr_fixups - goes through the list of CPU feature fixups
+- * and writes nop's over sections of code that don't apply for this cpu.
+- * r3 = data offset (not changed)
+- */
+-_GLOBAL(do_cpu_ftr_fixups)
+-	/* Get CPU 0 features */
+-	addis	r6,r3,cur_cpu_spec@ha
+-	addi	r6,r6,cur_cpu_spec@l
+-	lwz	r4,0(r6)
+-	add	r4,r4,r3
+-	lwz	r4,CPU_SPEC_FEATURES(r4)
+-
+-	/* Get the fixup table */
+-	addis	r6,r3,__start___ftr_fixup@ha
+-	addi	r6,r6,__start___ftr_fixup@l
+-	addis	r7,r3,__stop___ftr_fixup@ha
+-	addi	r7,r7,__stop___ftr_fixup@l
+-
+-	/* Do the fixup */
+-1:	cmplw	0,r6,r7
+-	bgelr
+-	addi	r6,r6,16
+-	lwz	r8,-16(r6)	/* mask */
+-	and	r8,r8,r4
+-	lwz	r9,-12(r6)	/* value */
+-	cmplw	0,r8,r9
+-	beq	1b
+-	lwz	r8,-8(r6)	/* section begin */
+-	lwz	r9,-4(r6)	/* section end */
+-	subf.	r9,r8,r9
+-	beq	1b
+-	/* write nops over the section of code */
+-	/* todo: if large section, add a branch at the start of it */
+-	srwi	r9,r9,2
+-	mtctr	r9
+-	add	r8,r8,r3
+-	lis	r0,0x60000000@h	/* nop */
+-3:	stw	r0,0(r8)
+-	andi.	r10,r4,CPU_FTR_SPLIT_ID_CACHE@l
+-	beq	2f
+-	dcbst	0,r8		/* suboptimal, but simpler */
+-	sync
+-	icbi	0,r8
+-2:	addi	r8,r8,4
+-	bdnz	3b
+-	sync			/* additional sync needed on g4 */
+-	isync
+-	b	1b
+-
+-/*
+  * call_setup_cpu - call the setup_cpu function for this cpu
+  * r3 = data offset, r24 = cpu number
+  *
+Index: linux-cell/arch/powerpc/kernel/misc_64.S
 ===================================================================
---- linux-cell.orig/include/asm-powerpc/tce.h	2006-10-06 13:45:32.000000000 +1000
-+++ linux-cell/include/asm-powerpc/tce.h	2006-10-24 14:59:20.000000000 +1000
-@@ -22,6 +22,8 @@
- #define _ASM_POWERPC_TCE_H
- #ifdef __KERNEL__
+--- linux-cell.orig/arch/powerpc/kernel/misc_64.S	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/misc_64.S	2006-10-24 16:31:25.000000000 +1000
+@@ -246,130 +246,6 @@ _GLOBAL(__flush_dcache_icache)
+ 	isync
+ 	blr
  
-+#include <asm/iommu.h>
-+
+-/*
+- * identify_cpu and calls setup_cpu
+- * In:	r3 = base of the cpu_specs array
+- *	r4 = address of cur_cpu_spec
+- *	r5 = relocation offset
+- */
+-_GLOBAL(identify_cpu)
+-	mfpvr	r7
+-1:
+-	lwz	r8,CPU_SPEC_PVR_MASK(r3)
+-	and	r8,r8,r7
+-	lwz	r9,CPU_SPEC_PVR_VALUE(r3)
+-	cmplw	0,r9,r8
+-	beq	1f
+-	addi	r3,r3,CPU_SPEC_ENTRY_SIZE
+-	b	1b
+-1:
+-	sub	r0,r3,r5
+-	std	r0,0(r4)
+-	ld	r4,CPU_SPEC_SETUP(r3)
+-	cmpdi	0,r4,0
+-	add	r4,r4,r5
+-	beqlr
+-	ld	r4,0(r4)
+-	add	r4,r4,r5
+-	mtctr	r4
+-	/* Calling convention for cpu setup is r3=offset, r4=cur_cpu_spec */
+-	mr	r4,r3
+-	mr	r3,r5
+-	bctr
+-
+-/*
+- * do_cpu_ftr_fixups - goes through the list of CPU feature fixups
+- * and writes nop's over sections of code that don't apply for this cpu.
+- * r3 = data offset (not changed)
+- */
+-_GLOBAL(do_cpu_ftr_fixups)
+-	/* Get CPU 0 features */
+-	LOAD_REG_IMMEDIATE(r6,cur_cpu_spec)
+-	sub	r6,r6,r3
+-	ld	r4,0(r6)
+-	sub	r4,r4,r3
+-	ld	r4,CPU_SPEC_FEATURES(r4)
+-	/* Get the fixup table */
+-	LOAD_REG_IMMEDIATE(r6,__start___ftr_fixup)
+-	sub	r6,r6,r3
+-	LOAD_REG_IMMEDIATE(r7,__stop___ftr_fixup)
+-	sub	r7,r7,r3
+-	/* Do the fixup */
+-1:	cmpld	r6,r7
+-	bgelr
+-	addi	r6,r6,32
+-	ld	r8,-32(r6)	/* mask */
+-	and	r8,r8,r4
+-	ld	r9,-24(r6)	/* value */
+-	cmpld	r8,r9
+-	beq	1b
+-	ld	r8,-16(r6)	/* section begin */
+-	ld	r9,-8(r6)	/* section end */
+-	subf.	r9,r8,r9
+-	beq	1b
+-	/* write nops over the section of code */
+-	/* todo: if large section, add a branch at the start of it */
+-	srwi	r9,r9,2
+-	mtctr	r9
+-	sub	r8,r8,r3
+-	lis	r0,0x60000000@h	/* nop */
+-3:	stw	r0,0(r8)
+-	andi.	r10,r4,CPU_FTR_SPLIT_ID_CACHE@l
+-	beq	2f
+-	dcbst	0,r8		/* suboptimal, but simpler */
+-	sync
+-	icbi	0,r8
+-2:	addi	r8,r8,4
+-	bdnz	3b
+-	sync			/* additional sync needed on g4 */
+-	isync
+-	b	1b
+-
+-/*
+- * do_fw_ftr_fixups - goes through the list of firmware feature fixups
+- * and writes nop's over sections of code that don't apply for this firmware.
+- * r3 = data offset (not changed)
+- */
+-_GLOBAL(do_fw_ftr_fixups)
+-	/* Get firmware features */
+-	LOAD_REG_IMMEDIATE(r6,powerpc_firmware_features)
+-	sub	r6,r6,r3
+-	ld	r4,0(r6)
+-	/* Get the fixup table */
+-	LOAD_REG_IMMEDIATE(r6,__start___fw_ftr_fixup)
+-	sub	r6,r6,r3
+-	LOAD_REG_IMMEDIATE(r7,__stop___fw_ftr_fixup)
+-	sub	r7,r7,r3
+-	/* Do the fixup */
+-1:	cmpld	r6,r7
+-	bgelr
+-	addi	r6,r6,32
+-	ld	r8,-32(r6)	/* mask */
+-	and	r8,r8,r4
+-	ld	r9,-24(r6)	/* value */
+-	cmpld	r8,r9
+-	beq	1b
+-	ld	r8,-16(r6)	/* section begin */
+-	ld	r9,-8(r6)	/* section end */
+-	subf.	r9,r8,r9
+-	beq	1b
+-	/* write nops over the section of code */
+-	/* todo: if large section, add a branch at the start of it */
+-	srwi	r9,r9,2
+-	mtctr	r9
+-	sub	r8,r8,r3
+-	lis	r0,0x60000000@h	/* nop */
+-3:	stw	r0,0(r8)
+-BEGIN_FTR_SECTION
+-	dcbst	0,r8		/* suboptimal, but simpler */
+-	sync
+-	icbi	0,r8
+-END_FTR_SECTION_IFSET(CPU_FTR_SPLIT_ID_CACHE)
+-	addi	r8,r8,4
+-	bdnz	3b
+-	sync			/* additional sync needed on g4 */
+-	isync
+-	b	1b
+ 
+ #if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
  /*
-  * Tces come in two formats, one for the virtual bus and a different
-  * format for PCI
-@@ -33,7 +35,6 @@
- 
- #define TCE_SHIFT	12
- #define TCE_PAGE_SIZE	(1 << TCE_SHIFT)
--#define TCE_PAGE_FACTOR	(PAGE_SHIFT - TCE_SHIFT)
- 
- #define TCE_ENTRY_SIZE		8		/* each TCE is 64 bits */
- 
-Index: linux-cell/arch/powerpc/kernel/vio.c
+Index: linux-cell/arch/powerpc/kernel/setup_32.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/vio.c	2006-10-24 14:44:26.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/vio.c	2006-10-24 14:44:55.000000000 +1000
-@@ -92,9 +92,9 @@ static struct iommu_table *vio_build_iom
- 				&tbl->it_index, &offset, &size);
- 
- 		/* TCE table size - measured in tce entries */
--		tbl->it_size = size >> PAGE_SHIFT;
-+		tbl->it_size = size >> IOMMU_PAGE_SHIFT;
- 		/* offset for VIO should always be 0 */
--		tbl->it_offset = offset >> PAGE_SHIFT;
-+		tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
- 		tbl->it_busno = 0;
- 		tbl->it_type = TCE_VB;
- 
-Index: linux-cell/arch/powerpc/platforms/pseries/iommu.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/pseries/iommu.c	2006-10-24 14:44:26.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/pseries/iommu.c	2006-10-24 15:00:07.000000000 +1000
-@@ -57,9 +57,6 @@ static void tce_build_pSeries(struct iom
- 	u64 *tcep;
- 	u64 rpn;
- 
--	index <<= TCE_PAGE_FACTOR;
--	npages <<= TCE_PAGE_FACTOR;
--
- 	proto_tce = TCE_PCI_READ; // Read allowed
- 
- 	if (direction != DMA_TO_DEVICE)
-@@ -82,9 +79,6 @@ static void tce_free_pSeries(struct iomm
+--- linux-cell.orig/arch/powerpc/kernel/setup_32.c	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/setup_32.c	2006-10-24 16:31:25.000000000 +1000
+@@ -91,6 +91,7 @@ int ucache_bsize;
+ unsigned long __init early_init(unsigned long dt_ptr)
  {
- 	u64 *tcep;
+ 	unsigned long offset = reloc_offset();
++	struct cpu_spec *spec;
  
--	npages <<= TCE_PAGE_FACTOR;
--	index <<= TCE_PAGE_FACTOR;
--
- 	tcep = ((u64 *)tbl->it_base) + index;
- 
- 	while (npages--)
-@@ -95,7 +89,6 @@ static unsigned long tce_get_pseries(str
- {
- 	u64 *tcep;
- 
--	index <<= TCE_PAGE_FACTOR;
- 	tcep = ((u64 *)tbl->it_base) + index;
- 
- 	return *tcep;
-@@ -109,9 +102,6 @@ static void tce_build_pSeriesLP(struct i
- 	u64 proto_tce, tce;
- 	u64 rpn;
- 
--	tcenum <<= TCE_PAGE_FACTOR;
--	npages <<= TCE_PAGE_FACTOR;
--
- 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
- 	proto_tce = TCE_PCI_READ;
- 	if (direction != DMA_TO_DEVICE)
-@@ -146,7 +136,7 @@ static void tce_buildmulti_pSeriesLP(str
- 	u64 rpn;
- 	long l, limit;
- 
--	if (TCE_PAGE_FACTOR == 0 && npages == 1)
-+	if (npages == 1)
- 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
- 					   direction);
- 
-@@ -164,9 +154,6 @@ static void tce_buildmulti_pSeriesLP(str
- 		__get_cpu_var(tce_page) = tcep;
- 	}
- 
--	tcenum <<= TCE_PAGE_FACTOR;
--	npages <<= TCE_PAGE_FACTOR;
--
- 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
- 	proto_tce = TCE_PCI_READ;
- 	if (direction != DMA_TO_DEVICE)
-@@ -207,9 +194,6 @@ static void tce_free_pSeriesLP(struct io
- {
- 	u64 rc;
- 
--	tcenum <<= TCE_PAGE_FACTOR;
--	npages <<= TCE_PAGE_FACTOR;
--
- 	while (npages--) {
- 		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, 0);
- 
-@@ -229,9 +213,6 @@ static void tce_freemulti_pSeriesLP(stru
- {
- 	u64 rc;
- 
--	tcenum <<= TCE_PAGE_FACTOR;
--	npages <<= TCE_PAGE_FACTOR;
--
- 	rc = plpar_tce_stuff((u64)tbl->it_index, (u64)tcenum << 12, 0, npages);
- 
- 	if (rc && printk_ratelimit()) {
-@@ -248,7 +229,6 @@ static unsigned long tce_get_pSeriesLP(s
- 	u64 rc;
- 	unsigned long tce_ret;
- 
--	tcenum <<= TCE_PAGE_FACTOR;
- 	rc = plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12, &tce_ret);
- 
- 	if (rc && printk_ratelimit()) {
-@@ -289,7 +269,7 @@ static void iommu_table_setparms(struct 
- 	tbl->it_busno = phb->bus->number;
- 
- 	/* Units of tce entries */
--	tbl->it_offset = phb->dma_window_base_cur >> PAGE_SHIFT;
-+	tbl->it_offset = phb->dma_window_base_cur >> IOMMU_PAGE_SHIFT;
- 
- 	/* Test if we are going over 2GB of DMA space */
- 	if (phb->dma_window_base_cur + phb->dma_window_size > 0x80000000ul) {
-@@ -300,7 +280,7 @@ static void iommu_table_setparms(struct 
- 	phb->dma_window_base_cur += phb->dma_window_size;
- 
- 	/* Set the tce table size - measured in entries */
--	tbl->it_size = phb->dma_window_size >> PAGE_SHIFT;
-+	tbl->it_size = phb->dma_window_size >> IOMMU_PAGE_SHIFT;
- 
- 	tbl->it_index = 0;
- 	tbl->it_blocksize = 16;
-@@ -325,8 +305,8 @@ static void iommu_table_setparms_lpar(st
- 	tbl->it_base   = 0;
- 	tbl->it_blocksize  = 16;
- 	tbl->it_type = TCE_PCI;
--	tbl->it_offset = offset >> PAGE_SHIFT;
--	tbl->it_size = size >> PAGE_SHIFT;
-+	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
-+	tbl->it_size = size >> IOMMU_PAGE_SHIFT;
- }
- 
- static void iommu_bus_setup_pSeries(struct pci_bus *bus)
-@@ -522,8 +502,6 @@ static void iommu_dev_setup_pSeriesLP(st
- 	const void *dma_window = NULL;
- 	struct pci_dn *pci;
- 
--	DBG("iommu_dev_setup_pSeriesLP, dev %p (%s)\n", dev, pci_name(dev));
--
- 	/* dev setup for LPAR is a little tricky, since the device tree might
- 	 * contain the dma-window properties per-device and not neccesarily
- 	 * for the bus. So we need to search upwards in the tree until we
-@@ -532,6 +510,9 @@ static void iommu_dev_setup_pSeriesLP(st
+ 	/* First zero the BSS -- use memset_io, some platforms don't have
+ 	 * caches on yet */
+@@ -100,8 +101,11 @@ unsigned long __init early_init(unsigned
+ 	 * Identify the CPU type and fix up code sections
+ 	 * that depend on which cpu we have.
  	 */
- 	dn = pci_device_to_OF_node(dev);
- 
-+	DBG("iommu_dev_setup_pSeriesLP, dev %p (%s) %s\n",
-+	     dev, pci_name(dev), dn->full_name);
+-	identify_cpu(offset, 0);
+-	do_cpu_ftr_fixups(offset);
++	spec = identify_cpu(offset);
 +
- 	for (pdn = dn; pdn && PCI_DN(pdn) && !PCI_DN(pdn)->iommu_table;
- 	     pdn = pdn->parent) {
- 		dma_window = get_property(pdn, "ibm,dma-window", NULL);
-Index: linux-cell/arch/powerpc/sysdev/dart.h
++	do_feature_fixups(offset, spec->cpu_features,
++			  PTRRELOC(&__start___ftr_fixup),
++			  PTRRELOC(&__stop___ftr_fixup));
+ 
+ 	return KERNELBASE + offset;
+ }
+Index: linux-cell/arch/powerpc/kernel/setup_64.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/sysdev/dart.h	2006-10-06 13:47:54.000000000 +1000
-+++ linux-cell/arch/powerpc/sysdev/dart.h	2006-10-24 15:01:16.000000000 +1000
-@@ -72,7 +72,6 @@
+--- linux-cell.orig/arch/powerpc/kernel/setup_64.c	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/setup_64.c	2006-10-24 16:31:25.000000000 +1000
+@@ -170,6 +170,9 @@ void __init setup_paca(int cpu)
  
- #define DART_PAGE_SHIFT		12
- #define DART_PAGE_SIZE		(1 << DART_PAGE_SHIFT)
--#define DART_PAGE_FACTOR	(PAGE_SHIFT - DART_PAGE_SHIFT)
+ void __init early_setup(unsigned long dt_ptr)
+ {
++	/* Identify CPU type */
++	identify_cpu(0);
++
+ 	/* Assume we're on cpu 0 for now. Don't write to the paca yet! */
+ 	setup_paca(0);
  
+@@ -348,6 +351,14 @@ void __init setup_system(void)
+ {
+ 	DBG(" -> setup_system()\n");
  
- #endif /* _POWERPC_SYSDEV_DART_H */
-Index: linux-cell/arch/powerpc/sysdev/dart_iommu.c
++	/* Apply the CPUs-specific and firmware specific fixups to kernel
++	 * text (nop out sections not relevant to this CPU or this firmware)
++	 */
++	do_feature_fixups(0, cur_cpu_spec->cpu_features,
++			  &__start___ftr_fixup, &__stop___ftr_fixup);
++	do_feature_fixups(0, powerpc_firmware_features,
++			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
++
+ 	/*
+ 	 * Unflatten the device-tree passed by prom_init or kexec
+ 	 */
+Index: linux-cell/arch/powerpc/platforms/iseries/setup.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/sysdev/dart_iommu.c	2006-10-24 14:44:26.000000000 +1000
-+++ linux-cell/arch/powerpc/sysdev/dart_iommu.c	2006-10-24 15:01:47.000000000 +1000
-@@ -156,9 +156,6 @@ static void dart_build(struct iommu_tabl
+--- linux-cell.orig/arch/powerpc/platforms/iseries/setup.c	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/iseries/setup.c	2006-10-24 16:31:25.000000000 +1000
+@@ -694,6 +694,11 @@ void * __init iSeries_early_setup(void)
+ {
+ 	unsigned long phys_mem_size;
  
- 	DBG("dart: build at: %lx, %lx, addr: %x\n", index, npages, uaddr);
++	/* Identify CPU type. This is done again by the common code later
++	 * on but calling this function multiple times is fine.
++	 */
++	identify_cpu(0);
++
+ 	powerpc_firmware_features |= FW_FEATURE_ISERIES;
+ 	powerpc_firmware_features |= FW_FEATURE_LPAR;
  
--	index <<= DART_PAGE_FACTOR;
--	npages <<= DART_PAGE_FACTOR;
+Index: linux-cell/arch/ppc/kernel/misc.S
+===================================================================
+--- linux-cell.orig/arch/ppc/kernel/misc.S	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/ppc/kernel/misc.S	2006-10-24 16:31:25.000000000 +1000
+@@ -110,80 +110,6 @@ _GLOBAL(reloc_got2)
+ 	blr
+ 
+ /*
+- * identify_cpu,
+- * called with r3 = data offset and r4 = CPU number
+- * doesn't change r3
+- */
+-_GLOBAL(identify_cpu)
+-	addis	r8,r3,cpu_specs@ha
+-	addi	r8,r8,cpu_specs@l
+-	mfpvr	r7
+-1:
+-	lwz	r5,CPU_SPEC_PVR_MASK(r8)
+-	and	r5,r5,r7
+-	lwz	r6,CPU_SPEC_PVR_VALUE(r8)
+-	cmplw	0,r6,r5
+-	beq	1f
+-	addi	r8,r8,CPU_SPEC_ENTRY_SIZE
+-	b	1b
+-1:
+-	addis	r6,r3,cur_cpu_spec@ha
+-	addi	r6,r6,cur_cpu_spec@l
+-	sub	r8,r8,r3
+-	stw	r8,0(r6)
+-	blr
 -
- 	dp = ((unsigned int*)tbl->it_base) + index;
- 
- 	/* On U3, all memory is contigous, so we can move this
-@@ -199,9 +196,6 @@ static void dart_free(struct iommu_table
- 
- 	DBG("dart: free at: %lx, %lx\n", index, npages);
- 
--	index <<= DART_PAGE_FACTOR;
--	npages <<= DART_PAGE_FACTOR;
+-/*
+- * do_cpu_ftr_fixups - goes through the list of CPU feature fixups
+- * and writes nop's over sections of code that don't apply for this cpu.
+- * r3 = data offset (not changed)
+- */
+-_GLOBAL(do_cpu_ftr_fixups)
+-	/* Get CPU 0 features */
+-	addis	r6,r3,cur_cpu_spec@ha
+-	addi	r6,r6,cur_cpu_spec@l
+-	lwz	r4,0(r6)
+-	add	r4,r4,r3
+-	lwz	r4,CPU_SPEC_FEATURES(r4)
 -
- 	dp  = ((unsigned int *)tbl->it_base) + index;
+-	/* Get the fixup table */
+-	addis	r6,r3,__start___ftr_fixup@ha
+-	addi	r6,r6,__start___ftr_fixup@l
+-	addis	r7,r3,__stop___ftr_fixup@ha
+-	addi	r7,r7,__stop___ftr_fixup@l
+-
+-	/* Do the fixup */
+-1:	cmplw	0,r6,r7
+-	bgelr
+-	addi	r6,r6,16
+-	lwz	r8,-16(r6)	/* mask */
+-	and	r8,r8,r4
+-	lwz	r9,-12(r6)	/* value */
+-	cmplw	0,r8,r9
+-	beq	1b
+-	lwz	r8,-8(r6)	/* section begin */
+-	lwz	r9,-4(r6)	/* section end */
+-	subf.	r9,r8,r9
+-	beq	1b
+-	/* write nops over the section of code */
+-	/* todo: if large section, add a branch at the start of it */
+-	srwi	r9,r9,2
+-	mtctr	r9
+-	add	r8,r8,r3
+-	lis	r0,0x60000000@h	/* nop */
+-3:	stw	r0,0(r8)
+-	andi.	r10,r4,CPU_FTR_SPLIT_ID_CACHE@l
+-	beq	2f
+-	dcbst	0,r8		/* suboptimal, but simpler */
+-	sync
+-	icbi	0,r8
+-2:	addi	r8,r8,4
+-	bdnz	3b
+-	sync			/* additional sync needed on g4 */
+-	isync
+-	b	1b
+-
+-/*
+  * call_setup_cpu - call the setup_cpu function for this cpu
+  * r3 = data offset, r24 = cpu number
+  *
+Index: linux-cell/arch/ppc/kernel/setup.c
+===================================================================
+--- linux-cell.orig/arch/ppc/kernel/setup.c	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/arch/ppc/kernel/setup.c	2006-10-24 16:31:25.000000000 +1000
+@@ -38,6 +38,7 @@
+ #include <asm/nvram.h>
+ #include <asm/xmon.h>
+ #include <asm/ocp.h>
++#include <asm/prom.h>
  
- 	while (npages--)
-@@ -281,7 +275,7 @@ static void iommu_table_dart_setup(void)
- 	iommu_table_dart.it_busno = 0;
- 	iommu_table_dart.it_offset = 0;
- 	/* it_size is in number of entries */
--	iommu_table_dart.it_size = (dart_tablesize / sizeof(u32)) >> DART_PAGE_FACTOR;
-+	iommu_table_dart.it_size = dart_tablesize / sizeof(u32);
+ #define USES_PPC_SYS (defined(CONFIG_85xx) || defined(CONFIG_83xx) || \
+ 		      defined(CONFIG_MPC10X_BRIDGE) || defined(CONFIG_8260) || \
+@@ -53,8 +54,6 @@
  
- 	/* Initialize the common IOMMU code */
- 	iommu_table_dart.it_base = (unsigned long)dart_vbase;
+ extern void platform_init(unsigned long r3, unsigned long r4,
+ 		unsigned long r5, unsigned long r6, unsigned long r7);
+-extern void identify_cpu(unsigned long offset, unsigned long cpu);
+-extern void do_cpu_ftr_fixups(unsigned long offset);
+ extern void reloc_got2(unsigned long offset);
+ 
+ extern void ppc6xx_idle(void);
+@@ -301,6 +300,7 @@ early_init(int r3, int r4, int r5)
+ {
+  	unsigned long phys;
+ 	unsigned long offset = reloc_offset();
++	struct cpu_spec *spec;
+ 
+  	/* Default */
+  	phys = offset + KERNELBASE;
+@@ -313,8 +313,10 @@ early_init(int r3, int r4, int r5)
+ 	 * Identify the CPU type and fix up code sections
+ 	 * that depend on which cpu we have.
+ 	 */
+-	identify_cpu(offset, 0);
+-	do_cpu_ftr_fixups(offset);
++	spec = identify_cpu(offset);
++	do_feature_fixups(offset, spec->cpu_features,
++			  PTRRELOC(&__start___ftr_fixup),
++			  PTRRELOC(&__stop___ftr_fixup));
+ 
+ 	return phys;
+ }
+Index: linux-cell/include/asm-powerpc/cputable.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/cputable.h	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/include/asm-powerpc/cputable.h	2006-10-24 16:31:25.000000000 +1000
+@@ -89,8 +89,11 @@ struct cpu_spec {
+ 
+ extern struct cpu_spec		*cur_cpu_spec;
+ 
+-extern void identify_cpu(unsigned long offset, unsigned long cpu);
+-extern void do_cpu_ftr_fixups(unsigned long offset);
++extern unsigned int __start___ftr_fixup, __stop___ftr_fixup;
++
++extern struct cpu_spec *identify_cpu(unsigned long offset);
++extern void do_feature_fixups(unsigned long offset, unsigned long value,
++			      void *fixup_start, void *fixup_end);
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+Index: linux-cell/include/asm-powerpc/firmware.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/firmware.h	2006-10-24 16:30:52.000000000 +1000
++++ linux-cell/include/asm-powerpc/firmware.h	2006-10-24 16:31:25.000000000 +1000
+@@ -96,6 +96,8 @@ extern void machine_check_fwnmi(void);
+ /* This is true if we are using the firmware NMI handler (typically LPAR) */
+ extern int fwnmi_active;
+ 
++extern unsigned int __start___fw_ftr_fixup, __stop___fw_ftr_fixup;
++
+ #else /* __ASSEMBLY__ */
+ 
+ #define BEGIN_FW_FTR_SECTION		96:
