@@ -1,23 +1,36 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 61A5F67BD7
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 09:17:23 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9ONHKap023863
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 19:17:20 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9ONHKj5533306
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 17:17:20 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9ONHJEG028363
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 17:17:20 -0600
+Date: Tue, 24 Oct 2006 18:17:19 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: map 4K iommu pages even on 64K largepage systems
+Message-ID: <20061024231719.GE6360@austin.ibm.com>
+References: <20061024002540.GA6360@austin.ibm.com>
+	<1161665007.10524.572.camel@localhost.localdomain>
+	<1161666868.10524.577.camel@localhost.localdomain>
+	<20061024200803.GC6360@austin.ibm.com>
+	<1161726084.10524.622.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17726.39780.732843.150044@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Oct 2006 09:01:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [PATCH] General CHRP/MPC5K2 Platform and drivers support - to
-	comment
-In-Reply-To: <453E34FB.3030209@genesi-usa.com>
-References: <453771E5.4090808@bplan-gmbh.de>
-	<77AD49CA-69CB-4ADA-B8F3-3BC3A066BCF9@kernel.crashing.org>
-	<453884F5.4000804@bplan-gmbh.de>
-	<122A4E06-B8A6-4256-B96E-3811EA93EA25@kernel.crashing.org>
-	<453B6A84.3050209@bplan-gmbh.de>
-	<1161585371.10524.444.camel@localhost.localdomain>
-	<453CD615.4050401@genesi-usa.com>
-	<17725.18623.768768.438157@cargo.ozlabs.ibm.com>
-	<453E34FB.3030209@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1161726084.10524.622.camel@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +40,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey writes:
+On Wed, Oct 25, 2006 at 07:41:23AM +1000, Benjamin Herrenschmidt wrote:
+>
+> My point is that we'll probably not change IOMMU_PAGE_SHIFT. The only
+> thing we might do is to move the shift into the iommu_table structure to
+> make it per-iommu (in which case the TCE backend will use 4k or 64k
+> depending on actual HW/FW support for those sizes).
 
-> http://www.power.org/news/articles/new_brand/#isa
-> 
-> I'm talking about the one they consolidated from all the different specs
-> Freescale, AMCC and IBM had about what makes a PowerPC processor. Since
-> POWER is part of it and it's all Power.org now.. they seem to have changed
-> the name.
+OK, right; I don't know why, I didn't see this right wawy.
 
-So, are you proposing we drop support for all the PowerPC processors
-that don't conform to the recently-published V2.03 ISA?  You don't
-want 6xx, 7xx, 7xxx, 52xx, etc. supported any more? :)  (joke :)
-
-Seriously, the v2.03 ISA covers only IBM's latest POWER processors
-(i.e. not POWER3, POWER4, or even POWER5), and Book E processors.  We
-support a lot more than that.
-
-Paul.
+--linas
