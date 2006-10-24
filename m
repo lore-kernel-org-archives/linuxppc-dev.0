@@ -1,11 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061024163813.285446000@arndb.de>
+Message-Id: <20061024163814.052569000@arndb.de>
 References: <20061024163113.694643000@arndb.de>
-Date: Tue, 24 Oct 2006 18:31:16 +0200
+Date: Tue, 24 Oct 2006 18:31:18 +0200
 From: arnd@arndb.de
 To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: [PATCH 03/16] spufs: add support for nonschedulable contexts
+Subject: [PATCH 05/16] spufs: allow isolated mode apps by starting the SPE
+	loader
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,253 +17,278 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Mark Nutter <mnutter@us.ibm.com>
+This patch adds general support for isolated mode SPE apps.
 
-This adds two new flags to spu_create:
+Isolated apps are started indirectly, by a dedicated loader "kernel".
+This patch starts the loader when spe_create is invoked with the
+ISOLATE flag. We do this at spe_create time to allow libspe to pass the
+isolated app in before calling spe_run.
 
-SPU_CREATE_NONSCHED: create a context that is never moved
-away from an SPE once it has started running. This flag
-can only be used by tasks with the CAP_SYS_NICE capability.
+The loader is read from the device tree, at the location
+"/spu-isolation/loader". If the loader is not present, an attempt to
+start an isolated SPE binary will fail with -ENODEV.
 
-SPU_CREATE_ISOLATED: create a nonschedulable context that
-enters isolation mode upon first run. This requires the
-SPU_CREATE_NONSCHED flag.
+Update: loader needs to be correctly aligned - copy to a kmalloced buf.
+Update: remove workaround for systemsim/spurom 'L-bit' bug, which has
+        been fixed.
+Update: don't write to runcntl on spu_run_init: SPU is already running.
+Update: do spu_setup_isolated earlier
+
+Tested on systemsim.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
 
-Update: add psmap file.
+ arch/powerpc/platforms/cell/spu_base.c    |   35 ++++++--
+ arch/powerpc/platforms/cell/spufs/inode.c |  117 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/cell/spufs/run.c   |   12 +--
+ 3 files changed, 148 insertions(+), 16 deletions(-)
 
- arch/powerpc/platforms/cell/spufs/file.c   |   22 ++++++++++++
- arch/powerpc/platforms/cell/spufs/hw_ops.c |    5 ++
- arch/powerpc/platforms/cell/spufs/inode.c  |   17 +++++++++
- arch/powerpc/platforms/cell/spufs/run.c    |   10 ++++-
- arch/powerpc/platforms/cell/spufs/spufs.h  |    1 
- arch/powerpc/platforms/cell/spufs/switch.c |   50 +++++++++++++++++++++++++++--
- include/asm-powerpc/spu.h                  |    5 ++
- 7 files changed, 103 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-@@ -1531,3 +1531,25 @@ struct tree_descr spufs_dir_contents[] =
- 	{ "object-id", &spufs_object_id_ops, 0666, },
- 	{},
- };
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
+@@ -89,7 +89,30 @@ static int __spu_trap_data_seg(struct sp
+ 		printk("%s: invalid access during switch!\n", __func__);
+ 		return 1;
+ 	}
+-	if (!mm || (REGION_ID(ea) != USER_REGION_ID)) {
++	esid = (ea & ESID_MASK) | SLB_ESID_V;
 +
-+struct tree_descr spufs_dir_nosched_contents[] = {
-+	{ "mem",  &spufs_mem_fops,  0666, },
-+	{ "mbox", &spufs_mbox_fops, 0444, },
-+	{ "ibox", &spufs_ibox_fops, 0444, },
-+	{ "wbox", &spufs_wbox_fops, 0222, },
-+	{ "mbox_stat", &spufs_mbox_stat_fops, 0444, },
-+	{ "ibox_stat", &spufs_ibox_stat_fops, 0444, },
-+	{ "wbox_stat", &spufs_wbox_stat_fops, 0444, },
-+	{ "signal1", &spufs_signal1_fops, 0666, },
-+	{ "signal2", &spufs_signal2_fops, 0666, },
-+	{ "signal1_type", &spufs_signal1_type, 0666, },
-+	{ "signal2_type", &spufs_signal2_type, 0666, },
-+	{ "mss", &spufs_mss_fops, 0666, },
-+	{ "mfc", &spufs_mfc_fops, 0666, },
-+	{ "cntl", &spufs_cntl_fops,  0666, },
-+	{ "npc", &spufs_npc_ops, 0666, },
-+	{ "psmap", &spufs_psmap_fops, 0666, },
-+	{ "phys-id", &spufs_id_ops, 0666, },
-+	{ "object-id", &spufs_object_id_ops, 0666, },
-+	{},
-+};
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/hw_ops.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/hw_ops.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/hw_ops.c
-@@ -219,8 +219,11 @@ static char *spu_hw_get_ls(struct spu_co
++	switch(REGION_ID(ea)) {
++	case USER_REGION_ID:
++#ifdef CONFIG_HUGETLB_PAGE
++		if (in_hugepage_area(mm->context, ea))
++			llp = mmu_psize_defs[mmu_huge_psize].sllp;
++		else
++#endif
++			llp = mmu_psize_defs[mmu_virtual_psize].sllp;
++		vsid = (get_vsid(mm->context.id, ea) << SLB_VSID_SHIFT) |
++				SLB_VSID_USER | llp;
++		break;
++	case VMALLOC_REGION_ID:
++		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
++		vsid = (get_kernel_vsid(ea) << SLB_VSID_SHIFT) |
++			SLB_VSID_KERNEL | llp;
++		break;
++	case KERNEL_REGION_ID:
++		llp = mmu_psize_defs[mmu_linear_psize].sllp;
++		vsid = (get_kernel_vsid(ea) << SLB_VSID_SHIFT) |
++			SLB_VSID_KERNEL | llp;
++		break;
++	default:
+ 		/* Future: support kernel segments so that drivers
+ 		 * can use SPUs.
+ 		 */
+@@ -97,16 +120,6 @@ static int __spu_trap_data_seg(struct sp
+ 		return 1;
+ 	}
  
- static void spu_hw_runcntl_write(struct spu_context *ctx, u32 val)
- {
--	eieio();
-+	spin_lock_irq(&ctx->spu->register_lock);
-+	if (val & SPU_RUNCNTL_ISOLATE)
-+		out_be64(&ctx->spu->priv2->spu_privcntl_RW, 4LL);
- 	out_be32(&ctx->spu->problem->spu_runcntl_RW, val);
-+	spin_unlock_irq(&ctx->spu->register_lock);
- }
- 
- static void spu_hw_runcntl_stop(struct spu_context *ctx)
+-	esid = (ea & ESID_MASK) | SLB_ESID_V;
+-#ifdef CONFIG_HUGETLB_PAGE
+-	if (in_hugepage_area(mm->context, ea))
+-		llp = mmu_psize_defs[mmu_huge_psize].sllp;
+-	else
+-#endif
+-		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
+-	vsid = (get_vsid(mm->context.id, ea) << SLB_VSID_SHIFT) |
+-			SLB_VSID_USER | llp;
+-
+ 	out_be64(&priv2->slb_index_W, spu->slb_replace);
+ 	out_be64(&priv2->slb_vsid_RW, vsid);
+ 	out_be64(&priv2->slb_esid_RW, esid);
 Index: linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/inode.c
 +++ linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -258,7 +258,12 @@ spufs_mkdir(struct inode *dir, struct de
+@@ -33,6 +33,8 @@
+ #include <linux/slab.h>
+ #include <linux/parser.h>
+ 
++#include <asm/prom.h>
++#include <asm/spu_priv1.h>
+ #include <asm/io.h>
+ #include <asm/semaphore.h>
+ #include <asm/spu.h>
+@@ -41,6 +43,7 @@
+ #include "spufs.h"
+ 
+ static kmem_cache_t *spufs_inode_cache;
++static char *isolated_loader;
+ 
+ static struct inode *
+ spufs_alloc_inode(struct super_block *sb)
+@@ -232,6 +235,89 @@ struct file_operations spufs_context_fop
+ 	.fsync		= simple_sync_file,
+ };
+ 
++static int spu_setup_isolated(struct spu_context *ctx)
++{
++	int ret;
++	u64 __iomem *mfc_cntl;
++	u64 sr1;
++	u32 status;
++	unsigned long timeout;
++	const u32 status_loading = SPU_STATUS_RUNNING
++		| SPU_STATUS_ISOLATED_STATE | SPU_STATUS_ISOLATED_LOAD_STATUS;
++
++	if (!isolated_loader)
++		return -ENODEV;
++
++	if ((ret = spu_acquire_runnable(ctx)) != 0)
++		return ret;
++
++	mfc_cntl = &ctx->spu->priv2->mfc_control_RW;
++
++	/* purge the MFC DMA queue to ensure no spurious accesses before we
++	 * enter kernel mode */
++	timeout = jiffies + HZ;
++	out_be64(mfc_cntl, MFC_CNTL_PURGE_DMA_REQUEST);
++	while ((in_be64(mfc_cntl) & MFC_CNTL_PURGE_DMA_STATUS_MASK)
++			!= MFC_CNTL_PURGE_DMA_COMPLETE) {
++		if (time_after(jiffies, timeout)) {
++			printk(KERN_ERR "%s: timeout flushing MFC DMA queue\n",
++					__FUNCTION__);
++			ret = -EIO;
++			goto out_unlock;
++		}
++		cond_resched();
++	}
++
++	/* put the SPE in kernel mode to allow access to the loader */
++	sr1 = spu_mfc_sr1_get(ctx->spu);
++	sr1 &= ~MFC_STATE1_PROBLEM_STATE_MASK;
++	spu_mfc_sr1_set(ctx->spu, sr1);
++
++	/* start the loader */
++	ctx->ops->signal1_write(ctx, (unsigned long)isolated_loader >> 32);
++	ctx->ops->signal2_write(ctx,
++			(unsigned long)isolated_loader & 0xffffffff);
++
++	ctx->ops->runcntl_write(ctx,
++			SPU_RUNCNTL_RUNNABLE | SPU_RUNCNTL_ISOLATE);
++
++	ret = 0;
++	timeout = jiffies + HZ;
++	while (((status = ctx->ops->status_read(ctx)) & status_loading) ==
++				status_loading) {
++		if (time_after(jiffies, timeout)) {
++			printk(KERN_ERR "%s: timeout waiting for loader\n",
++					__FUNCTION__);
++			ret = -EIO;
++			goto out_drop_priv;
++		}
++		cond_resched();
++	}
++
++	if (!(status & SPU_STATUS_RUNNING)) {
++		/* If isolated LOAD has failed: run SPU, we will get a stop-and
++		 * signal later. */
++		pr_debug("%s: isolated LOAD failed\n", __FUNCTION__);
++		ctx->ops->runcntl_write(ctx, SPU_RUNCNTL_RUNNABLE);
++		ret = -EACCES;
++
++	} else if (!(status & SPU_STATUS_ISOLATED_STATE)) {
++		/* This isn't allowed by the CBEA, but check anyway */
++		pr_debug("%s: SPU fell out of isolated mode?\n", __FUNCTION__);
++		ctx->ops->runcntl_write(ctx, SPU_RUNCNTL_STOP);
++		ret = -EINVAL;
++	}
++
++out_drop_priv:
++	/* Finished accessing the loader. Drop kernel mode */
++	sr1 |= MFC_STATE1_PROBLEM_STATE_MASK;
++	spu_mfc_sr1_set(ctx->spu, sr1);
++
++out_unlock:
++	up_write(&ctx->state_sema);
++	return ret;
++}
++
+ static int
+ spufs_mkdir(struct inode *dir, struct dentry *dentry, unsigned int flags,
+ 		int mode)
+@@ -255,6 +341,11 @@ spufs_mkdir(struct inode *dir, struct de
+ 		goto out_iput;
+ 
+ 	ctx->flags = flags;
++	if (flags & SPU_CREATE_ISOLATE) {
++		ret = spu_setup_isolated(ctx);
++		if (ret)
++			goto out_iput;
++	}
  
  	inode->i_op = &spufs_dir_inode_operations;
  	inode->i_fop = &simple_dir_operations;
--	ret = spufs_fill_dir(dentry, spufs_dir_contents, mode, ctx);
-+	if (flags & SPU_CREATE_NOSCHED)
-+		ret = spufs_fill_dir(dentry, spufs_dir_nosched_contents,
-+					 mode, ctx);
-+	else
-+		ret = spufs_fill_dir(dentry, spufs_dir_contents, mode, ctx);
-+
- 	if (ret)
- 		goto out_free_ctx;
+@@ -555,6 +646,30 @@ spufs_parse_options(char *options, struc
+ 	return 1;
+ }
  
-@@ -307,6 +312,16 @@ static int spufs_create_context(struct i
++static void
++spufs_init_isolated_loader(void)
++{
++	struct device_node *dn;
++	const char *loader;
++	int size;
++
++	dn = of_find_node_by_path("/spu-isolation");
++	if (!dn)
++		return;
++
++	loader = get_property(dn, "loader", &size);
++	if (!loader)
++		return;
++
++	/* kmalloc should align on a 16 byte boundary..* */
++	isolated_loader = kmalloc(size, GFP_KERNEL);
++	if (!isolated_loader)
++		return;
++
++	memcpy(isolated_loader, loader, size);
++	printk(KERN_INFO "spufs: SPU isolation mode enabled\n");
++}
++
+ static int
+ spufs_create_root(struct super_block *sb, void *data)
  {
- 	int ret;
- 
-+	ret = -EPERM;
-+	if ((flags & SPU_CREATE_NOSCHED) &&
-+	    !capable(CAP_SYS_NICE))
-+		goto out_unlock;
-+
-+	ret = -EINVAL;
-+	if ((flags & (SPU_CREATE_NOSCHED | SPU_CREATE_ISOLATE))
-+	    == SPU_CREATE_ISOLATE)
-+		goto out_unlock;
-+
- 	ret = spufs_mkdir(inode, dentry, flags, mode & S_IRWXUGO);
+@@ -640,6 +755,8 @@ static int __init spufs_init(void)
+ 	ret = register_spu_syscalls(&spufs_calls);
  	if (ret)
- 		goto out_unlock;
+ 		goto out_fs;
++
++	spufs_init_isolated_loader();
+ 	return 0;
+ out_fs:
+ 	unregister_filesystem(&spufs_type);
 Index: linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/run.c
 +++ linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
-@@ -51,11 +51,17 @@ static inline int spu_stopped(struct spu
- static inline int spu_run_init(struct spu_context *ctx, u32 * npc)
- {
- 	int ret;
-+	unsigned long runcntl = SPU_RUNCNTL_RUNNABLE;
+@@ -1,3 +1,5 @@
++#define DEBUG
++
+ #include <linux/wait.h>
+ #include <linux/ptrace.h>
  
+@@ -56,12 +58,12 @@ static inline int spu_run_init(struct sp
  	if ((ret = spu_acquire_runnable(ctx)) != 0)
  		return ret;
--	ctx->ops->npc_write(ctx, *npc);
--	ctx->ops->runcntl_write(ctx, SPU_RUNCNTL_RUNNABLE);
-+
-+	if (ctx->flags & SPU_CREATE_ISOLATE)
-+		runcntl |= SPU_RUNCNTL_ISOLATE;
-+	else
-+		ctx->ops->npc_write(ctx, *npc);
-+
-+	ctx->ops->runcntl_write(ctx, runcntl);
+ 
+-	if (ctx->flags & SPU_CREATE_ISOLATE)
+-		runcntl |= SPU_RUNCNTL_ISOLATE;
+-	else
++	/* if we're in isolated mode, we would have started the SPU
++	 * earlier, so don't do it again now. */
++	if (!(ctx->flags & SPU_CREATE_ISOLATE)) {
+ 		ctx->ops->npc_write(ctx, *npc);
+-
+-	ctx->ops->runcntl_write(ctx, runcntl);
++		ctx->ops->runcntl_write(ctx, runcntl);
++	}
  	return 0;
  }
  
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-@@ -135,6 +135,7 @@ struct spufs_inode_info {
- 	container_of(inode, struct spufs_inode_info, vfs_inode)
- 
- extern struct tree_descr spufs_dir_contents[];
-+extern struct tree_descr spufs_dir_nosched_contents[];
- 
- /* system call implementation */
- long spufs_run_spu(struct file *file,
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/switch.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/switch.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -1916,6 +1916,51 @@ static void save_lscsa(struct spu_state 
- 	wait_spu_stopped(prev, spu);	/* Step 57. */
- }
- 
-+static void force_spu_isolate_exit(struct spu *spu)
-+{
-+	struct spu_problem __iomem *prob = spu->problem;
-+	struct spu_priv2 __iomem *priv2 = spu->priv2;
-+
-+	/* Stop SPE execution and wait for completion. */
-+	out_be32(&prob->spu_runcntl_RW, SPU_RUNCNTL_STOP);
-+	iobarrier_rw();
-+	POLL_WHILE_TRUE(in_be32(&prob->spu_status_R) & SPU_STATUS_RUNNING);
-+
-+	/* Restart SPE master runcntl. */
-+	spu_mfc_sr1_set(spu, MFC_STATE1_MASTER_RUN_CONTROL_MASK);
-+	iobarrier_w();
-+
-+	/* Initiate isolate exit request and wait for completion. */
-+	out_be64(&priv2->spu_privcntl_RW, 4LL);
-+	iobarrier_w();
-+	out_be32(&prob->spu_runcntl_RW, 2);
-+	iobarrier_rw();
-+	POLL_WHILE_FALSE((in_be32(&prob->spu_status_R)
-+				& SPU_STATUS_STOPPED_BY_STOP));
-+
-+	/* Reset load request to normal. */
-+	out_be64(&priv2->spu_privcntl_RW, SPU_PRIVCNT_LOAD_REQUEST_NORMAL);
-+	iobarrier_w();
-+}
-+
-+/**
-+ * stop_spu_isolate
-+ *	Check SPU run-control state and force isolated
-+ *	exit function as necessary.
-+ */
-+static void stop_spu_isolate(struct spu *spu)
-+{
-+	struct spu_problem __iomem *prob = spu->problem;
-+
-+	if (in_be32(&prob->spu_status_R) & SPU_STATUS_ISOLATED_STATE) {
-+		/* The SPU is in isolated state; the only way
-+		 * to get it out is to perform an isolated
-+		 * exit (clean) operation.
-+		 */
-+		force_spu_isolate_exit(spu);
-+	}
-+}
-+
- static void harvest(struct spu_state *prev, struct spu *spu)
- {
- 	/*
-@@ -1928,6 +1973,7 @@ static void harvest(struct spu_state *pr
- 	inhibit_user_access(prev, spu);	        /* Step 3.  */
- 	terminate_spu_app(prev, spu);	        /* Step 4.  */
- 	set_switch_pending(prev, spu);	        /* Step 5.  */
-+	stop_spu_isolate(spu);			/* NEW.     */
- 	remove_other_spu_access(prev, spu);	/* Step 6.  */
- 	suspend_mfc(prev, spu);	                /* Step 7.  */
- 	wait_suspend_mfc_complete(prev, spu);	/* Step 8.  */
-@@ -2096,11 +2142,11 @@ int spu_save(struct spu_state *prev, str
- 	acquire_spu_lock(spu);	        /* Step 1.     */
- 	rc = __do_spu_save(prev, spu);	/* Steps 2-53. */
- 	release_spu_lock(spu);
--	if (rc) {
-+	if (rc != 0 && rc != 2 && rc != 6) {
- 		panic("%s failed on SPU[%d], rc=%d.\n",
- 		      __func__, spu->number, rc);
- 	}
--	return rc;
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(spu_save);
- 
-Index: linux-2.6/include/asm-powerpc/spu.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/spu.h
-+++ linux-2.6/include/asm-powerpc/spu.h
-@@ -181,8 +181,10 @@ extern struct spufs_calls {
-  */
- #define SPU_CREATE_EVENTS_ENABLED	0x0001
- #define SPU_CREATE_GANG			0x0002
-+#define SPU_CREATE_NOSCHED		0x0004
-+#define SPU_CREATE_ISOLATE		0x0008
- 
--#define SPU_CREATE_FLAG_ALL		0x0003 /* mask of all valid flags */
-+#define SPU_CREATE_FLAG_ALL		0x000f /* mask of all valid flags */
- 
- 
- #ifdef CONFIG_SPU_FS_MODULE
-@@ -276,6 +278,7 @@ struct spu_problem {
- 	u32 spu_runcntl_RW;					/* 0x401c */
- #define SPU_RUNCNTL_STOP	0L
- #define SPU_RUNCNTL_RUNNABLE	1L
-+#define SPU_RUNCNTL_ISOLATE	2L
- 	u8  pad_0x4020_0x4024[0x4];				/* 0x4020 */
- 	u32 spu_status_R;					/* 0x4024 */
- #define SPU_STOP_STATUS_SHIFT           16
 
 --
