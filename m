@@ -1,26 +1,17 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 98A9767B92
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 14:47:49 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k9P4lmE9013518
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 21:47:48 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k9P4ljRm025392
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 23:47:47 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
-Date: Wed, 25 Oct 2006 12:47:43 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D2635219A16@zch01exm21.fsl.freescale.net>
-In-Reply-To: <1161748274.22582.30.camel@localhost.localdomain>
-From: "Liu Dave-r63238" <DaveLiu@freescale.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Li Yang-r58472" <LeoLi@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E6A7B67BB7
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 15:22:49 +1000 (EST)
+Subject: MPC7448_HPC2 question
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roy Zang <tie-fei.zang@freescale.com>
+Content-Type: text/plain
+Date: Wed, 25 Oct 2006 15:20:05 +1000
+Message-Id: <1161753605.22582.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,22 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > > Segher Boessenkool wrote:
-> > > > If a sync after an MMIO write is enough, then (in almost all
-> > > > cases) so is an eieio.
-> > >=20
-> > > In this case, the spurious interrupts still happen with=20
-> eieio, but=20
-> > > not with sync.
-> >=20
-> > eieio on e300 core is just a no-op.
->=20
-> It's not sent to the bus on non-cahed storage (like the PCI=20
-> bridge ?) That's pretty bad ... there is quite a bit of code=20
-> that assumes that eieio's will prevent write combining...
+Any reason why that:
 
-Due to the LSU, the e300 cored doesn't reorder non-cached
-stroage, and doesn't implementation of write commbining.
-So, actually its behavior likes eieio.
+void mpc7448_hpc2_fixup_irq(struct pci_dev *dev)
+{
+	struct pci_controller *hose;
+	struct device_node *node;
+	const unsigned int *interrupt;
+	int busnr;
+	int len;
+	u8 slot;
+	u8 pin;
 
--Dave
+	/* Lookup the hose */
+	busnr = dev->bus->number;
+	hose = pci_bus_to_hose(busnr);
+	if (!hose)
+		printk(KERN_ERR "No pci hose found\n");
+
+	/* Check it has an OF node associated */
+	node = (struct device_node *) hose->arch_data;
+	if (!node)
+		printk(KERN_ERR "No pci node found\n");
+
+	interrupt = get_property(node, "interrupt-map", &len);
+	slot = find_slot_by_devfn(interrupt, dev->devfn);
+	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
+	if (pin == 0 || pin > 4)
+		pin = 1;
+	pin--;
+	dev->irq  = interrupt[slot*4*7 + pin*7 + 5];
+	DBG("TSI_PCI: dev->irq = 0x%x\n", dev->irq);
+}
+
+Cannot be replaced by:
+
+	pci_read_irq_line(dev);
+
+I'm about to make pci_read_irq_line() called by default by the PCI
+code (with a new ppc_md.pci_irq_fixup for platforms that really need
+something else done) and so while "fixing" all platforms, I stumbled
+accross the code above which is a bit shocking :)
+
+Cheers,
+
+Ben.
