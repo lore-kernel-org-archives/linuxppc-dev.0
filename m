@@ -1,17 +1,18 @@
-Return-Path: <luong.ngo@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 6AAC167A3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 14:14:29 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id f25so26815pyf
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 21:14:28 -0700 (PDT)
-Message-ID: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
-Date: Tue, 24 Oct 2006 20:49:45 -0700
-From: "Luong Ngo" <luong.ngo@gmail.com>
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-Subject: MPC8343: PCI resource allocation questions
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_103324_21783576.1161748185653"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 175A767B8B
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 14:17:23 +1000 (EST)
+Subject: [PATCH] powerpc: Remove ibmveth "liobn" field
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Santiago Leon <santil@us.ibm.com>
+Content-Type: text/plain
+Date: Wed, 25 Oct 2006 14:17:14 +1000
+Message-Id: <1161749834.22582.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,65 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_103324_21783576.1161748185653
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Remove the now unused "liobn" field in ibmveth which also avoids
+having insider knowledge of the iommu table in that driver.
 
-Hello,
-I am trying to bring up linux kernel 2.6.14 on a system using MPC 8343E and
-am having issues with the PCI resource allocation in the kernel. I saw these
-messages:
-.............
-PCI: Cannot allocate resource region 0 of device 0000:00:00.0
-PCI: Cannot allocate resource region 2 of device 0000:00:00.0
-PCI: Failed to allocate mem resource #2:80000000@0 for 0000:00:00.0
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-After digging into the codes, I realize that the PCI subsystem scan the bus
-and reading the BARs in the CPU PCI controller, which give the region 1 from
-0x0 to 0x000FFFFF and region 2 from 0x0 to 0x7FFFFFFF. And the values I
-assign to the bridge resource in calling pci_init_resource during setup hose
-is 0x80000000 - 0x9FFFFFFF (I got this values from the mpc834x_sys.h).  So I
-just extend the bridge resource to 0x70000000 - 0xFFFFFFFF to cover all 2
-regions in the 2 BAR and this seems to get rid of the above messages.
-However this would cause other platform devices to fail to claim its
-resources,
+This will avoid this driver from breaking when I change the dma
+mapping code for 2.6.20.
 
-fsl-gianfar.1: failed to claim resource 0
-unable to register device 0
-fsl-gianfar.2: failed to claim resource 0
-unable to register device 1
-fsl-i2c.1: failed to claim resource 0
-unable to register device 2
-
-Could anyone tell me how these PCI resource work and how to resolve this
-conflict?
-And my other questions are  why is the region 2 in the mpc8343E such huge
-and what is it used for?
-Also Why the kernel looks into the CPU PCI controller? because as I
-understand, in the hose setup step in platform initialization, the host
-bridge is skipped while other PCI devices would be probed and have their
-BARs assigned the address range to use ( in function pciauto_bus_scan in
-arch/ppc/syslib/pci_auto.c )
-
-One more question, are these BARs in the PCI controller related with the PCI
-inbound and outbound mapping of the PCI interface? Do the regions in BAR
-need to match/derive from the inbound/outbound address mapping?
-
-Thank you,
-
-Luong Ngo
-
-------=_Part_103324_21783576.1161748185653
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello,<br>I am trying to bring up linux kernel 2.6.14 on a system using MPC 8343E and am having issues with the PCI resource allocation in the kernel. I saw these messages:<br>.............<br>PCI: Cannot allocate resource region 0 of device 0000:00:
-00.0<br>PCI: Cannot allocate resource region 2 of device 0000:00:00.0<br>PCI: Failed to allocate mem resource #2:80000000@0 for 0000:00:00.0<br><br>After digging into the codes, I realize that the PCI subsystem scan the bus and reading the BARs in the CPU PCI controller, which give the region 1 from 0x0 to 0x000FFFFF and region 2 from 0x0 to 0x7FFFFFFF. And the values I assign to the bridge resource in calling pci_init_resource during setup hose is 0x80000000 - 0x9FFFFFFF (I got this values from the mpc834x_sys.h).&nbsp; So I just extend the bridge resource to 0x70000000 - 0xFFFFFFFF to cover all 2 regions in the 2 BAR and this seems to get rid of the above messages. However this would cause other platform devices to fail to claim its resources, 
-<br><br>fsl-gianfar.1: failed to claim resource 0<br>unable to register device 0<br>fsl-gianfar.2: failed to claim resource 0<br>unable to register device 1<br>fsl-i2c.1: failed to claim resource 0<br>unable to register device 2
-<br><br>Could anyone tell me how these PCI resource work and how to resolve this conflict?<br>And my other questions are&nbsp; why is the region 2 in the mpc8343E such huge and what is it used for? <br>Also Why the kernel looks into the CPU PCI controller? because as I understand, in the hose setup step in platform initialization, the host bridge is skipped while other PCI devices would be probed and have their BARs assigned the address range to use ( in function pciauto_bus_scan in arch/ppc/syslib/pci_auto.c )
-<br><br>One more question, are these BARs in the PCI controller related with the PCI inbound and outbound mapping of the PCI interface? Do the regions in BAR need to match/derive from the inbound/outbound address mapping?
-<br><br>Thank you,<br><br>Luong Ngo<br>
-
-------=_Part_103324_21783576.1161748185653--
+Index: linux-cell/drivers/net/ibmveth.c
+===================================================================
+--- linux-cell.orig/drivers/net/ibmveth.c	2006-10-23 14:41:38.000000000 +1000
++++ linux-cell/drivers/net/ibmveth.c	2006-10-25 14:12:05.000000000 +1000
+@@ -50,7 +50,6 @@
+ #include <asm/semaphore.h>
+ #include <asm/hvcall.h>
+ #include <asm/atomic.h>
+-#include <asm/iommu.h>
+ #include <asm/vio.h>
+ #include <asm/uaccess.h>
+ #include <linux/seq_file.h>
+@@ -1000,8 +999,6 @@ static int __devinit ibmveth_probe(struc
+ 	adapter->mac_addr = 0;
+ 	memcpy(&adapter->mac_addr, mac_addr_p, 6);
+ 
+-	adapter->liobn = dev->iommu_table->it_index;
+-
+ 	netdev->irq = dev->irq;
+ 	netdev->open               = ibmveth_open;
+ 	netdev->poll               = ibmveth_poll;
+@@ -1115,7 +1112,6 @@ static int ibmveth_seq_show(struct seq_f
+ 	seq_printf(seq, "%s %s\n\n", ibmveth_driver_string, ibmveth_driver_version);
+ 
+ 	seq_printf(seq, "Unit Address:    0x%x\n", adapter->vdev->unit_address);
+-	seq_printf(seq, "LIOBN:           0x%lx\n", adapter->liobn);
+ 	seq_printf(seq, "Current MAC:     %02X:%02X:%02X:%02X:%02X:%02X\n",
+ 		   current_mac[0], current_mac[1], current_mac[2],
+ 		   current_mac[3], current_mac[4], current_mac[5]);
+Index: linux-cell/drivers/net/ibmveth.h
+===================================================================
+--- linux-cell.orig/drivers/net/ibmveth.h	2006-10-06 13:48:09.000000000 +1000
++++ linux-cell/drivers/net/ibmveth.h	2006-10-25 14:10:39.000000000 +1000
+@@ -118,7 +118,6 @@ struct ibmveth_adapter {
+     struct net_device_stats stats;
+     unsigned int mcastFilterSize;
+     unsigned long mac_addr;
+-    unsigned long liobn;
+     void * buffer_list_addr;
+     void * filter_list_addr;
+     dma_addr_t buffer_list_dma;
