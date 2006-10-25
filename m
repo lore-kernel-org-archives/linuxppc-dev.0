@@ -1,17 +1,26 @@
-Return-Path: <heiko.carstens@de.ibm.com>
-Date: Wed, 25 Oct 2006 10:00:48 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: arnd@arndb.de
-Subject: Re: [PATCH 12/16] cell: add temperature to SPU and CPU sysfs entries
-Message-ID: <20061025080048.GB7090@osiris.boeblingen.de.ibm.com>
-References: <20061024163113.694643000@arndb.de>
-	<20061024163816.851732000@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061024163816.851732000@arndb.de>
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Christian Krafft <krafft@de.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 27E6D67A2E
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 19:30:57 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k9PApjql028189
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 04:51:45 -0600 (MDT)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k9P9UqNT010072
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 04:30:54 -0500 (CDT)
+Subject: Re: MPC7448_HPC2 question
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1161753605.22582.42.camel@localhost.localdomain>
+References: <1161753605.22582.42.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1161768688.17597.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 25 Oct 2006 17:31:29 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"Alexandre.Bounine@tundra.com" <Alexandre.Bounine@tundra.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 24, 2006 at 06:31:25PM +0200, arnd@arndb.de wrote:
+On Wed, 2006-10-25 at 13:20, Benjamin Herrenschmidt wrote:
 
-> + * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
+> 
+> Cannot be replaced by:
+> 
+>         pci_read_irq_line(dev);
 
-IBM Corp. instead of IBM DE? 2006?
+When I use pci_read_irq_line(), the pci interrupt number exceeds the
+limit of mpic-> irq_count. my mpic->irq_count = 0x18, which is gotten
+from on chip register. 
 
-> +static int __init thermal_init(void)
-> +{
-> +	init_default_values();
-> +
-> +	spu_add_sysdev_attr_group(&spu_attribute_group);
-> +	cpu_add_sysdev_attr_group(&ppe_attribute_group);
-> +
-> +	return 0;
-> +}
+mpic_host_map() can not return successful value.
 
-Same here: check for errors on spu_add_sysdev_attr_group and
-cpu_add_sysdev_attr_group.
-
-> +static void __exit thermal_exit(void)
-> +{
-> +	spu_remove_sysdev_attr_group(&spu_attribute_group);
-> +	cpu_remove_sysdev_attr_group(&ppe_attribute_group);
-
-Will crash if cpu_add_sysdev_attr_group failed...
+Roy
