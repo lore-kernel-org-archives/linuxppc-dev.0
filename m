@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 11/16] sysfs: add support for adding/removing spu sysfs
-	attributes
-Date: Wed, 25 Oct 2006 14:27:18 +0200
-References: <20061024163113.694643000@arndb.de>
-	<20061024163816.460479000@arndb.de>
-	<20061025075238.GA7090@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20061025075238.GA7090@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200610251427.20039.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
-	Christian Krafft <krafft@de.ibm.com>, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 57FA567BF4
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 23:45:45 +1000 (EST)
+Subject: Re: MPC7448_HPC2 question
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <1161768688.17597.8.camel@localhost.localdomain>
+References: <1161753605.22582.42.camel@localhost.localdomain>
+	<1161768688.17597.8.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 25 Oct 2006 23:45:36 +1000
+Message-Id: <1161783936.22582.89.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"Alexandre.Bounine@tundra.com" <Alexandre.Bounine@tundra.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,13 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 25 October 2006 09:52, Heiko Carstens wrote:
-> You probably should check for errors on sysdev_create_file, clean up and
-> return an error number instead of always 0.
-> This is true for all the new functions here.
+On Wed, 2006-10-25 at 17:31 +0800, Zang Roy-r61911 wrote:
+> On Wed, 2006-10-25 at 13:20, Benjamin Herrenschmidt wrote:
+> 
+> > 
+> > Cannot be replaced by:
+> > 
+> >         pci_read_irq_line(dev);
+> 
+> When I use pci_read_irq_line(), the pci interrupt number exceeds the
+> limit of mpic-> irq_count. my mpic->irq_count = 0x18, which is gotten
+> from on chip register. 
+> 
+> mpic_host_map() can not return successful value.
 
-Right, thanks for the review.
+That is not normal... Something must be wrong with your code or your
+DT... can you get more details about what precisely is happening in both
+cases ?
 
-Christian or I will take care of this.
-
-	Arnd <><
+Ben.
