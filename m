@@ -1,17 +1,17 @@
 Return-Path: <heiko.carstens@de.ibm.com>
-Date: Wed, 25 Oct 2006 09:52:38 +0200
+Date: Wed, 25 Oct 2006 10:00:48 +0200
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: arnd@arndb.de
-Subject: Re: [PATCH 11/16] sysfs: add support for adding/removing spu sysfs
-	attributes
-Message-ID: <20061025075238.GA7090@osiris.boeblingen.de.ibm.com>
+Subject: Re: [PATCH 12/16] cell: add temperature to SPU and CPU sysfs entries
+Message-ID: <20061025080048.GB7090@osiris.boeblingen.de.ibm.com>
 References: <20061024163113.694643000@arndb.de>
-	<20061024163816.460479000@arndb.de>
+	<20061024163816.851732000@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061024163816.460479000@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20061024163816.851732000@arndb.de>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Christian Krafft <krafft@de.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +int cpu_add_sysdev_attr(struct sysdev_attribute *attr)
+On Tue, Oct 24, 2006 at 06:31:25PM +0200, arnd@arndb.de wrote:
+
+> + * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
+
+IBM Corp. instead of IBM DE? 2006?
+
+> +static int __init thermal_init(void)
 > +{
-> +	int cpu;
+> +	init_default_values();
 > +
-> +	mutex_lock(&cpu_mutex);
+> +	spu_add_sysdev_attr_group(&spu_attribute_group);
+> +	cpu_add_sysdev_attr_group(&ppe_attribute_group);
 > +
-> +	for_each_possible_cpu(cpu) {
-> +		sysdev_create_file(get_cpu_sysdev(cpu), attr);
-> +	}
-> +
-> +	mutex_unlock(&cpu_mutex);
 > +	return 0;
 > +}
 
-You probably should check for errors on sysdev_create_file, clean up and
-return an error number instead of always 0.
-This is true for all the new functions here.
+Same here: check for errors on spu_add_sysdev_attr_group and
+cpu_add_sysdev_attr_group.
+
+> +static void __exit thermal_exit(void)
+> +{
+> +	spu_remove_sysdev_attr_group(&spu_attribute_group);
+> +	cpu_remove_sysdev_attr_group(&ppe_attribute_group);
+
+Will crash if cpu_add_sysdev_attr_group failed...
