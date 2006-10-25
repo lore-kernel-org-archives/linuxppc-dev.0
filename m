@@ -1,21 +1,12 @@
-Return-Path: <luong.ngo@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id D34FF67B5B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 16:44:36 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id f25so49356pyf
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 23:44:02 -0700 (PDT)
-Message-ID: <1b2aacd80610242246n20075a33pcc76ab5be71fb87e@mail.gmail.com>
-Date: Tue, 24 Oct 2006 22:46:12 -0700
-From: "Luong Ngo" <luong.ngo@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: MPC8343: PCI resource allocation questions
-In-Reply-To: <E2847437-6C75-4963-B9DB-BAC050015C88@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_104533_6573733.1161755172001"
-References: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
-	<E2847437-6C75-4963-B9DB-BAC050015C88@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17727.901.368752.68802@cargo.ozlabs.ibm.com>
+Date: Wed, 25 Oct 2006 16:26:13 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: Please pull powerpc.git 'merge' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +16,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_104533_6573733.1161755172001
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Linus,
 
-Kumar, thanks a lot for your prompt and clear answers. But I still have a
-couple questions about the BARs.
+Please do:
 
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-> The PCI resources are used for any PCI devices that need memory
-> mapped space allocated to them.  What devices are you connecting over
-> PCI?
-
-
-I am connecting Broadcom BCM56502 controllers over PCI.
-
-The region was large since the reference board has general purpose
-PCI slots for any number of various cards.  We provide a large space
-to allow for those cards to be allocated into.  Depending on your
-application you can adjust this as you need.
-
-I'm a bit confused here. If the host bridge is ignored/excluded, then the
-region size in BARs will not be allocated corresponding resource by the PCI
-subsystem, then how would other PCI devices in the slots could be allocated
-in the BAR's range? If I understand correctly, the PCI devices's resources
-are allocated based on the bridge resource, which is assigned statically by
-PCI subsystem using hose->mem_space and hose->io_space instead of reading it
-from the BARs. Maybe you are saying in the case the CPU is in agent mode and
-its PCI host bridge is functioning as a PCI-PCI bridge?
-
-You are not leaving any memory space for any of the onchip devices,
-the error messages are because the regions of memory that the devices
-are expected to be at are already occupied by the PCI space.
-
-Isn't it the PCI IO and PCI MEM space are separated from local memory space?
-I believe I see the global io_resource and mem_resource have the range of
-0x0 - 0xFFFFFFFF.
-
-I appreciate your help,
+to get some more PowerPC bugfixes, as listed below.  There is also a
+defconfig update and the addition of a new processor type (970GX) to
+the cpu table.  The first 4 listed under Ben H.'s name aren't strictly
+bugfixes in themselves, but are needed for the Cell timebase hardware
+bug workaround (the bug is that reads from the timebase may
+occasionally not return monotonically increasing values, as they
+implemented the timebase as two 32-bit counters).
 
 Thanks,
-Luong Ngo
+Paul.
 
-------=_Part_104533_6573733.1161755172001
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ arch/powerpc/boot/Makefile                 |    2 
+ arch/powerpc/configs/cell_defconfig        |   19 +++-
+ arch/powerpc/kernel/cputable.c             |   86 +++++++++++++++++++
+ arch/powerpc/kernel/head_64.S              |   19 ----
+ arch/powerpc/kernel/misc_32.S              |   74 -----------------
+ arch/powerpc/kernel/misc_64.S              |  124 ----------------------------
+ arch/powerpc/kernel/module_32.c            |   39 +++++++--
+ arch/powerpc/kernel/module_64.c            |   49 +++++++++--
+ arch/powerpc/kernel/prom.c                 |    8 +-
+ arch/powerpc/kernel/setup_32.c             |    8 +-
+ arch/powerpc/kernel/setup_64.c             |   11 ++
+ arch/powerpc/kernel/time.c                 |   63 ++++----------
+ arch/powerpc/kernel/vdso.c                 |   43 ++++++++++
+ arch/powerpc/kernel/vdso32/vdso32.lds.S    |   12 +++
+ arch/powerpc/kernel/vdso64/gettimeofday.S  |    6 +
+ arch/powerpc/kernel/vdso64/vdso64.lds.S    |   10 ++
+ arch/powerpc/oprofile/op_model_power4.c    |    2 
+ arch/powerpc/platforms/cell/spufs/file.c   |    2 
+ arch/powerpc/platforms/cell/spufs/hw_ops.c |    2 
+ arch/powerpc/platforms/chrp/setup.c        |    4 +
+ arch/powerpc/platforms/iseries/setup.c     |    5 +
+ arch/powerpc/platforms/powermac/sleep.S    |    3 -
+ arch/powerpc/sysdev/i8259.c                |    5 +
+ arch/powerpc/sysdev/ipic.c                 |    4 -
+ arch/powerpc/sysdev/qe_lib/ucc.c           |    2 
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c      |    2 
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c      |    2 
+ arch/powerpc/sysdev/tsi108_dev.c           |    4 -
+ arch/ppc/boot/simple/relocate.S            |    6 +
+ arch/ppc/kernel/misc.S                     |   74 -----------------
+ arch/ppc/kernel/setup.c                    |   10 +-
+ include/asm-powerpc/asm-compat.h           |   52 ++++++++++++
+ include/asm-powerpc/cputable.h             |   37 +++-----
+ include/asm-powerpc/firmware.h             |   17 ++--
+ include/asm-powerpc/i8259.h                |    1 
+ include/asm-powerpc/ppc_asm.h              |   18 +++-
+ include/asm-powerpc/prom.h                 |   10 +-
+ include/asm-powerpc/reg.h                  |   26 ++++++
+ include/asm-powerpc/time.h                 |   27 ++++--
+ include/asm-powerpc/timex.h                |   20 ++---
+ scripts/mod/modpost.c                      |    2 
+ 41 files changed, 456 insertions(+), 454 deletions(-)
 
-<div>Kumar, thanks a lot for your prompt and clear&nbsp;answers. But I still have a couple questions about the BARs.<br>&nbsp;</div>
-<div><span class="gmail_quote"></span>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">The PCI resources are used for any PCI devices that need memory<br>mapped space allocated to them.&nbsp;&nbsp;What devices are you connecting over
-<br>PCI?</blockquote>
-<div>&nbsp;</div>
-<div><font color="#996633">I am connecting Broadcom BCM56502 controllers over PCI.</font></div><br>
-<div>The region was large since the reference board has general purpose<br>PCI slots for any number of various cards.&nbsp;&nbsp;We provide a large space<br>to allow for those cards to be allocated into.&nbsp;&nbsp;Depending on your<br>application you can adjust this as you need.
-</div>
-<div>&nbsp;</div>
-<div><font color="#996633">I'm a bit confused here. If the host bridge is ignored/excluded, then the region size in BARs will not be allocated&nbsp;corresponding resource by the PCI subsystem, then how would other PCI devices in the slots could be allocated in the BAR's range? If I understand correctly, the PCI devices's resources are allocated based on the bridge resource, which is assigned statically by PCI subsystem using hose-&gt;mem_space and hose-&gt;io_space instead of reading it from the BARs. Maybe you are saying in the case the CPU is in agent mode and its&nbsp;PCI host bridge is functioning as a PCI-PCI bridge?
-</font><br>&nbsp;</div>
-<div>You are not leaving any memory space for any of the onchip devices,<br>the error messages are because the regions of memory that the devices<br>are expected to be at are already occupied by the PCI space.<br>&nbsp;</div>
+Arnd Bergmann:
+      [POWERPC] spufs: fix another off-by-one bug in spufs_mbox_read
+      [POWERPC] cell: update defconfig
 
-<div>Isn't it the PCI IO and PCI MEM space are separated from local memory space? I believe I see the global io_resource and mem_resource have the range of 0x0 - 0xFFFFFFFF. </div>
-<div><br>I appreciate your help,</div>
-<div>&nbsp;</div>
-<div>Thanks,</div>
-<div>Luong Ngo<br><br>&nbsp;</div></div><br>
+Benjamin Herrenschmidt:
+      [POWERPC] Consolidate feature fixup code
+      [POWERPC] Support nested cpu feature sections
+      [POWERPC] Support feature fixups in vdso's
+      [POWERPC] Support feature fixups in modules
+      [POWERPC] Cell timebase bug workaround
+      [POWERPC] Fix device_is_compatible() const warning
+      [POWERPC] Fix CHRP platforms with only 8259
 
-------=_Part_104533_6573733.1161755172001--
+Dwayne Grant Mcconnell:
+      [POWERPC] spufs: fix signal2 file to report signal2
+
+Jake Moilanen:
+      [POWERPC] Add 970GX cputable entry
+
+Liu Dave-r63238:
+      [POWERPC] Fix the UCC rx/tx clock of QE
+
+Mark A. Greer:
+      [POWERPC] Don't require execute perms on wrapper when building zImage.initrd
+
+Olaf Hering:
+      [POWERPC] Fix hang in start_ldr if _end or _edata is unaligned
+
+Scott Wood:
+      [POWERPC] IPIC: Fix spinlock recursion in set_irq_handler
+
+Srinivasa Ds:
+      [POWERPC] Fix build breakage with CONFIG_PPC32
+
+Stephen Rothwell:
+      [POWERPC] Simplify stolen time calculation
+
+Timur Tabi:
+      [POWERPC] Fix spelling errors in ucc_fast.c and ucc_slow.c
+
+Zang Roy-r61911:
+      [POWERPC] Fix compiler warning message on get_property call
