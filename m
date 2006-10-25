@@ -1,9 +1,10 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 25 Oct 2006 16:36:16 -0700
+Date: Wed, 25 Oct 2006 16:36:49 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [POWERPC] Round up bootwrapper alloc size for vmlinux to page size
-Message-ID: <20061025233616.GA17461@mag.az.mvista.com>
+Subject: [POWERPC] 32-bit early_init() should zero from __bss_start to
+	__bss_stop only
+Message-ID: <20061025233649.GB17461@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
@@ -16,32 +17,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc kernel linker script, arch/powerpc/kernel/vmlinux.lds.S,
-aligns '_end' up to a page boundary.  However, the bootwrapper
-does not round up the size of the area that it allocates to gunzip
-the kernel into.  This leaves space between '__bss_stop' and '_end'
-where the bootwrapper could allocate other things (e.g., space for
-a flattened device tree).  This patch rounds up the allocation size
-to a multiple of the page size to match '_end' and prevent the latent
-bug.
+Currently, early_init() in setup_32.c zeroes from '_bss_start' to '_end'.
+It should only zero from '__bss_start' to '__bss_stop'.  This patch does that.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
- main.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ setup_32.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 ---
 
-diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
-index 4184974..234bb5b 100644
---- a/arch/powerpc/boot/main.c
-+++ b/arch/powerpc/boot/main.c
-@@ -198,7 +198,7 @@ static void prep_kernel(unsigned long *a
- 	 * be claimed (it will be zero'd by the kernel itself)
- 	 */
- 	printf("Allocating 0x%lx bytes for kernel ...\n\r", vmlinux.memsize);
--	vmlinux.addr = (unsigned long)malloc(vmlinux.memsize);
-+	vmlinux.addr = (unsigned long)malloc(_ALIGN(vmlinux.memsize, 4096));
- 	if (vmlinux.addr == 0) {
- 		printf("Can't allocate memory for kernel image !\n\r");
- 		exit();
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index a4c2964..c682e9a 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -95,7 +95,8 @@ unsigned long __init early_init(unsigned
+ 
+ 	/* First zero the BSS -- use memset_io, some platforms don't have
+ 	 * caches on yet */
+-	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0, _end - __bss_start);
++	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
++			__bss_stop - __bss_start);
+ 
+ 	/*
+ 	 * Identify the CPU type and fix up code sections
