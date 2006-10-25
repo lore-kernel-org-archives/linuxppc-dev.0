@@ -1,31 +1,19 @@
-Return-Path: <santil@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2B73C67CCF
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 08:14:44 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9PMEu89030000
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 18:14:56 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9PMEfES141936
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 18:14:41 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9PMEeAQ006420
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 18:14:41 -0400
-Message-ID: <453FE1DF.5050004@us.ibm.com>
-Date: Wed, 25 Oct 2006 17:14:55 -0500
-From: Santiago Leon <santil@us.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Remove ibmveth "liobn" field
-References: <1161749834.22582.36.camel@localhost.localdomain>
-In-Reply-To: <1161749834.22582.36.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 41F4567C63
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 08:33:45 +1000 (EST)
+Date: Wed, 25 Oct 2006 17:32:40 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+Message-ID: <20061025173240.6c6b7dd1@localhost.localdomain>
+In-Reply-To: <17727.55399.959132.886705@cargo.ozlabs.ibm.com>
+References: <17727.901.368752.68802@cargo.ozlabs.ibm.com>
+	<20061025092210.6d208031@localhost.localdomain>
+	<17727.55399.959132.886705@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,34 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> Remove the now unused "liobn" field in ibmveth which also avoids
-> having insider knowledge of the iommu table in that driver.
+Add check for 970GX for __cpu_preinit_ppc970.
 
-Thanks for cleaning that up.
 
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Signed-off-by: Santiago Leon <santil@us.ibm.com>
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
 ---
-> 
-> This will avoid this driver from breaking when I change the dma
-> mapping code for 2.6.20.
-> 
-> Index: linux-cell/drivers/net/ibmveth.c
-> ===================================================================
-> --- linux-cell.orig/drivers/net/ibmveth.c	2006-10-23 14:41:38.000000000 +1000
-> +++ linux-cell/drivers/net/ibmveth.c	2006-10-25 14:12:05.000000000 +1000
-> @@ -50,7 +50,6 @@
->  #include <asm/semaphore.h>
->  #include <asm/hvcall.h>
->  #include <asm/atomic.h>
-> -#include <asm/iommu.h>
-...
 
--- 
-Santiago A. Leon
-Power Linux Development
-IBM Linux Technology Center
+On Thu, 26 Oct 2006 07:34:31 +1000 Paul Mackerras <paulus@samba.org> wrote:
+
+> There was no "issue", there was a possible further optimization, but
+> that's not a reason not to put in the cputable entry in the first
+> place.
+
+
+For the deep nap stuff, yes. But the below was what I meant. Only
+really needed on firmware that will never ship with a 970GX chip, but
+for correctness sake it should still be in there.
+
+
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 645c7f1..d528641 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -1646,6 +1646,8 @@ #endif
+ 	cmpwi	r0,0x3c		/* 970FX */
+ 	beq	1f
+ 	cmpwi	r0,0x44		/* 970MP */
++	beq	1f
++	cmpwi	r0,0x45		/* 970GX */
+ 	bne	2f
+ 1:	bl	.__cpu_preinit_ppc970
+ 2:
