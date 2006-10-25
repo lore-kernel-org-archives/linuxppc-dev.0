@@ -1,36 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 61A5F67BD7
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 09:17:23 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9ONHKap023863
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 19:17:20 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	k9ONHKj5533306
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 17:17:20 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k9ONHJEG028363
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 17:17:20 -0600
-Date: Tue, 24 Oct 2006 18:17:19 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: map 4K iommu pages even on 64K largepage systems
-Message-ID: <20061024231719.GE6360@austin.ibm.com>
-References: <20061024002540.GA6360@austin.ibm.com>
-	<1161665007.10524.572.camel@localhost.localdomain>
-	<1161666868.10524.577.camel@localhost.localdomain>
-	<20061024200803.GC6360@austin.ibm.com>
-	<1161726084.10524.622.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1161726084.10524.622.camel@localhost.localdomain>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AB927679A6
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 12:54:53 +1000 (EST)
+Subject: [PATCH] powerpc: Fix CHRP platforms with only 8259
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Wed, 25 Oct 2006 12:54:38 +1000
+Message-Id: <1161744878.22582.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,13 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 25, 2006 at 07:41:23AM +1000, Benjamin Herrenschmidt wrote:
->
-> My point is that we'll probably not change IOMMU_PAGE_SHIFT. The only
-> thing we might do is to move the shift into the iommu_table structure to
-> make it per-iommu (in which case the TCE backend will use 4k or 64k
-> depending on actual HW/FW support for those sizes).
+On CHRP platforms with only a 8259 controller, we should set the
+default IRQ host to the 8259 driver's one for the IRQ probing
+fallbacks to work in case the IRQ tree is incorrect (like on
+Pegasos for example). Without this fix, we get a bunch of WARN_ON's
+during boot.
 
-OK, right; I don't know why, I didn't see this right wawy.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
---linas
+
+Index: linux-cell/arch/powerpc/platforms/chrp/setup.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/chrp/setup.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/chrp/setup.c	2006-10-25 12:51:18.000000000 +1000
+@@ -477,8 +477,10 @@ static void __init chrp_find_8259(void)
+ 		       " address, polling\n");
+ 
+ 	i8259_init(pic, chrp_int_ack);
+-	if (ppc_md.get_irq == NULL)
++	if (ppc_md.get_irq == NULL) {
+ 		ppc_md.get_irq = i8259_irq;
++		irq_set_default_host(i8259_get_host());
++	}
+ 	if (chrp_mpic != NULL) {
+ 		cascade_irq = irq_of_parse_and_map(pic, 0);
+ 		if (cascade_irq == NO_IRQ)
+Index: linux-cell/arch/powerpc/sysdev/i8259.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/sysdev/i8259.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-cell/arch/powerpc/sysdev/i8259.c	2006-10-25 12:51:58.000000000 +1000
+@@ -13,6 +13,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
++#include <linux/module.h>
+ #include <asm/io.h>
+ #include <asm/i8259.h>
+ #include <asm/prom.h>
+@@ -224,6 +225,11 @@ static struct irq_host_ops i8259_host_op
+ 	.xlate = i8259_host_xlate,
+ };
+ 
++struct irq_host *i8259_get_host(void)
++{
++	return i8259_host;
++}
++
+ /**
+  * i8259_init - Initialize the legacy controller
+  * @node: device node of the legacy PIC (can be NULL, but then, it will match
+Index: linux-cell/include/asm-powerpc/i8259.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/i8259.h	2006-10-09 12:03:34.000000000 +1000
++++ linux-cell/include/asm-powerpc/i8259.h	2006-10-25 12:51:18.000000000 +1000
+@@ -7,6 +7,7 @@
+ #ifdef CONFIG_PPC_MERGE
+ extern void i8259_init(struct device_node *node, unsigned long intack_addr);
+ extern unsigned int i8259_irq(void);
++extern struct irq_host *i8259_get_host(void);
+ #else
+ extern void i8259_init(unsigned long intack_addr, int offset);
+ extern int i8259_irq(void);
