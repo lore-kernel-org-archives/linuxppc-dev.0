@@ -1,17 +1,24 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id ED43567C27
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 23:59:03 +1000 (EST)
-Date: Wed, 25 Oct 2006 08:58:53 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH] Maple: Use RTAS power off methods if available
-Message-ID: <20061025135853.GB5408@localdomain>
-References: <20061025102823.CF83667BBC@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061025102823.CF83667BBC@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA88A67C4D
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 00:06:39 +1000 (EST)
+In-Reply-To: <1b2aacd80610250016q4bcc5f9bm467ef09022ce1285@mail.gmail.com>
+References: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
+	<E2847437-6C75-4963-B9DB-BAC050015C88@kernel.crashing.org>
+	<1b2aacd80610242246n20075a33pcc76ab5be71fb87e@mail.gmail.com>
+	<4BF669F6-7A28-4915-9DFF-0B00CC04E242@kernel.crashing.org>
+	<1b2aacd80610250016q4bcc5f9bm467ef09022ce1285@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0D89F8D2-496A-4229-A732-46EC23E69B62@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPC8343: PCI resource allocation questions
+Date: Wed, 25 Oct 2006 09:06:32 -0500
+To: "Luong Ngo" <luong.ngo@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> 
-> Index: powerpc/arch/powerpc/Kconfig
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/Kconfig
-> +++ powerpc/arch/powerpc/Kconfig
-> @@ -422,6 +422,7 @@ config PPC_MAPLE
->  	select GENERIC_TBSYNC
->  	select PPC_UDBG_16550
->  	select PPC_970_NAP
-> +	select PPC_RTAS
->  	default n
->  	help
->            This option enables support for the Maple 970FX Evaluation Board.
-> Index: powerpc/arch/powerpc/platforms/maple/setup.c
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/platforms/maple/setup.c
-> +++ powerpc/arch/powerpc/platforms/maple/setup.c
-> @@ -61,6 +61,7 @@
->  #include <asm/lmb.h>
->  #include <asm/mpic.h>
->  #include <asm/udbg.h>
-> +#include <asm/rtas.h>
->  
->  #include "maple.h"
->  
-> @@ -185,6 +186,26 @@ void __init maple_setup_arch(void)
->  	printk(KERN_DEBUG "Using native/NAP idle loop\n");
->  }
->  
-> +static void __init maple_check_for_rtas_poweroff(void)
-> +{
-> +#ifdef CONFIG_PPC_RTAS
-> +	struct device_node *rtas;
-> +
-> +	rtas = of_find_node_by_path("/rtas");
-> +	if (rtas) {
-> +		if (get_property(rtas, "system-reboot", NULL))
-> +			ppc_md.restart = rtas_restart;
-> +
-> +		if (get_property(rtas, "power-off", NULL)) {
-> +			ppc_md.power_off = rtas_power_off;
-> +			ppc_md.halt = rtas_halt;
-> +		}
-> +
-> +		of_node_put(rtas);
-> +	}
-> +#endif
 
-PPC_RTAS is selected in Kconfig, the ifdef isn't necessary.
+On Oct 25, 2006, at 2:16 AM, Luong Ngo wrote:
+
+>
+> Would you mind explain me the last question in previous email?
+>
+>
+> You are not leaving any memory space for any of the onchip devices,
+> the error messages are because the regions of memory that the devices
+> are expected to be at are already occupied by the PCI space.
+>
+> Isn't it the PCI IO and PCI MEM space are separated from local  
+> memory space? I think I see the global IO resource and MEM resource  
+> have the range of 0x0 - 0xFFFFFFFF.
+
+PCI MEM space mapped into the processors physical address space, so  
+you can't easily have access to all 4G of PCI MEM space.  Instead we  
+usually just allocate 256M or 512M or physical address space for PCI  
+MEM.  (the same is roughly true for PCI IO).
+
+
+- kumar
+
+>
+> Thanks,
+> Luong Ngo
+>
+> On 10/24/06, Kumar Gala <galak@kernel.crashing.org> wrote:
+> > I'm a bit confused here. If the host bridge is ignored/excluded,
+> > then the region size in BARs will not be allocated corresponding
+> > resource by the PCI subsystem, then how would other PCI devices in
+> > the slots could be allocated in the BAR's range? If I understand
+> > correctly, the PCI devices's resources are allocated based on the
+> > bridge resource, which is assigned statically by PCI subsystem
+> > using hose->mem_space and hose->io_space instead of reading it from
+> > the BARs. Maybe you are saying in the case the CPU is in agent mode
+> > and its PCI host bridge is functioning as a PCI-PCI bridge?
+>
+> The problem is the host bridge shouldn't be included in BAR
+> assignment since its the host bridge.  The problem is FSL devices
+> show up when they scan themselves and the kernel then tries to
+> allocate resources to them as if they were any other device.
+>
+> you are correct, the pci subsystem is setup via the hose structure
+> and not by trying to read BARs on the host controller itself.
+>
+> - kumar
+>
