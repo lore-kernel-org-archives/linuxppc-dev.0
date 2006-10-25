@@ -1,10 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 25 Oct 2006 20:28:13 +1000
-Subject: [RFC/PATCH] Maple: Use RTAS power off methods if available
-Message-Id: <20061025102823.CF83667BBC@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C8F6567B7C
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 21:04:30 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k9PB4SP3020852
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 04:04:28 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k9PB4P4X024164
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 06:04:27 -0500 (CDT)
+Message-ID: <453F44E6.8030706@freescale.com>
+Date: Wed, 25 Oct 2006 19:05:10 +0800
+From: Li Yang <leoli@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] qe_lib: Remove immrbar_virt_to_phys() function
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,79 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some versions of SLOF have the RTAS power-off/restart methods
-implemented, if they're available they should be used in preference
-to the nvram based methods.
+Remove private physical address mapping routine in qe_lib.  Users
+of qe_lib should use generic functions like iopa().
+The change also addresses a bug found by Timur Tabi that cmd_input
+got mapped in qe_issue_cmd().  It should be written to CECDR
+unmodified.
 
-Not sure what the best way to do this is, this is the easy approach
-although it leaves the system unrebootable until the callbacks get
-rewired. The other option would be to do the check in maple_restart
-etc. when they're called.
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
+ arch/powerpc/sysdev/qe_lib/qe.c |    3 +--
+ include/asm-powerpc/immap_qe.h  |    9 ---------
+ 2 files changed, 1 insertions(+), 11 deletions(-)
 
- arch/powerpc/Kconfig                 |    1 +
- arch/powerpc/platforms/maple/setup.c |   23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+)
-
-Index: powerpc/arch/powerpc/Kconfig
-===================================================================
---- powerpc.orig/arch/powerpc/Kconfig
-+++ powerpc/arch/powerpc/Kconfig
-@@ -422,6 +422,7 @@ config PPC_MAPLE
- 	select GENERIC_TBSYNC
- 	select PPC_UDBG_16550
- 	select PPC_970_NAP
-+	select PPC_RTAS
- 	default n
- 	help
-           This option enables support for the Maple 970FX Evaluation Board.
-Index: powerpc/arch/powerpc/platforms/maple/setup.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/maple/setup.c
-+++ powerpc/arch/powerpc/platforms/maple/setup.c
-@@ -61,6 +61,7 @@
- #include <asm/lmb.h>
- #include <asm/mpic.h>
- #include <asm/udbg.h>
-+#include <asm/rtas.h>
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 2bae632..e422322 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -122,8 +122,7 @@ int qe_issue_cmd(u32 cmd, u32 device, u8
+ 				mcn_shift = QE_CR_MCN_NORMAL_SHIFT;
+ 		}
  
- #include "maple.h"
+-		out_be32(&qe_immr->cp.cecdr,
+-			 immrbar_virt_to_phys((void *)cmd_input));
++		out_be32(&qe_immr->cp.cecdr, cmd_input);
+ 		out_be32(&qe_immr->cp.cecr,
+ 			 (cmd | QE_CR_FLG | ((u32) device << dev_shift) | (u32)
+ 			  mcn_protocol << mcn_shift));
+diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
+index ce12f85..7cccd16 100644
+--- a/include/asm-powerpc/immap_qe.h
++++ b/include/asm-powerpc/immap_qe.h
+@@ -464,14 +464,5 @@ struct qe_immap {
+ extern struct qe_immap *qe_immr;
+ extern phys_addr_t get_qe_base(void);
  
-@@ -185,6 +186,26 @@ void __init maple_setup_arch(void)
- 	printk(KERN_DEBUG "Using native/NAP idle loop\n");
- }
- 
-+static void __init maple_check_for_rtas_poweroff(void)
-+{
-+#ifdef CONFIG_PPC_RTAS
-+	struct device_node *rtas;
-+
-+	rtas = of_find_node_by_path("/rtas");
-+	if (rtas) {
-+		if (get_property(rtas, "system-reboot", NULL))
-+			ppc_md.restart = rtas_restart;
-+
-+		if (get_property(rtas, "power-off", NULL)) {
-+			ppc_md.power_off = rtas_power_off;
-+			ppc_md.halt = rtas_halt;
-+		}
-+
-+		of_node_put(rtas);
-+	}
-+#endif
-+}
-+
- /* 
-  * Early initialization.
-  */
-@@ -192,6 +213,8 @@ static void __init maple_init_early(void
- {
- 	DBG(" -> maple_init_early\n");
- 
-+	maple_check_for_rtas_poweroff();
-+
- 	iommu_init_early_dart();
- 
- 	DBG(" <- maple_init_early\n");
+-static inline unsigned long immrbar_virt_to_phys(volatile void * address)
+-{
+-	if ( ((u32)address >= (u32)qe_immr) &&
+-			((u32)address < ((u32)qe_immr + QE_IMMAP_SIZE)) )
+-		return (unsigned long)(address - (u32)qe_immr +
+-				(u32)get_qe_base());
+-	return (unsigned long)virt_to_phys(address);
+-}
+-
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_IMMAP_QE_H */
