@@ -3,22 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EA88A67C4D
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 00:06:39 +1000 (EST)
-In-Reply-To: <1b2aacd80610250016q4bcc5f9bm467ef09022ce1285@mail.gmail.com>
-References: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
-	<E2847437-6C75-4963-B9DB-BAC050015C88@kernel.crashing.org>
-	<1b2aacd80610242246n20075a33pcc76ab5be71fb87e@mail.gmail.com>
-	<4BF669F6-7A28-4915-9DFF-0B00CC04E242@kernel.crashing.org>
-	<1b2aacd80610250016q4bcc5f9bm467ef09022ce1285@mail.gmail.com>
+	by ozlabs.org (Postfix) with ESMTP id 2960A67C67
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 00:10:06 +1000 (EST)
+In-Reply-To: <17727.901.368752.68802@cargo.ozlabs.ibm.com>
+References: <17727.901.368752.68802@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0D89F8D2-496A-4229-A732-46EC23E69B62@kernel.crashing.org>
+Message-Id: <6908EBCA-E869-4949-8096-34717733E6C1@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8343: PCI resource allocation questions
-Date: Wed, 25 Oct 2006 09:06:32 -0500
-To: "Luong Ngo" <luong.ngo@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+Date: Wed, 25 Oct 2006 09:09:56 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,50 +25,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 25, 2006, at 2:16 AM, Luong Ngo wrote:
+On Oct 25, 2006, at 1:26 AM, Paul Mackerras wrote:
 
+> Linus,
 >
-> Would you mind explain me the last question in previous email?
+> Please do:
 >
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 >
-> You are not leaving any memory space for any of the onchip devices,
-> the error messages are because the regions of memory that the devices
-> are expected to be at are already occupied by the PCI space.
->
-> Isn't it the PCI IO and PCI MEM space are separated from local  
-> memory space? I think I see the global IO resource and MEM resource  
-> have the range of 0x0 - 0xFFFFFFFF.
+> to get some more PowerPC bugfixes, as listed below.  There is also a
+> defconfig update and the addition of a new processor type (970GX) to
+> the cpu table.  The first 4 listed under Ben H.'s name aren't strictly
+> bugfixes in themselves, but are needed for the Cell timebase hardware
+> bug workaround (the bug is that reads from the timebase may
+> occasionally not return monotonically increasing values, as they
+> implemented the timebase as two 32-bit counters).
 
-PCI MEM space mapped into the processors physical address space, so  
-you can't easily have access to all 4G of PCI MEM space.  Instead we  
-usually just allocate 256M or 512M or physical address space for PCI  
-MEM.  (the same is roughly true for PCI IO).
+Can you hold off on the this.  The following patch is still under  
+discussion and the problem exists on more than just PPC.
 
+[snip]
+
+> Scott Wood:
+>       [POWERPC] IPIC: Fix spinlock recursion in set_irq_handler
 
 - kumar
-
->
-> Thanks,
-> Luong Ngo
->
-> On 10/24/06, Kumar Gala <galak@kernel.crashing.org> wrote:
-> > I'm a bit confused here. If the host bridge is ignored/excluded,
-> > then the region size in BARs will not be allocated corresponding
-> > resource by the PCI subsystem, then how would other PCI devices in
-> > the slots could be allocated in the BAR's range? If I understand
-> > correctly, the PCI devices's resources are allocated based on the
-> > bridge resource, which is assigned statically by PCI subsystem
-> > using hose->mem_space and hose->io_space instead of reading it from
-> > the BARs. Maybe you are saying in the case the CPU is in agent mode
-> > and its PCI host bridge is functioning as a PCI-PCI bridge?
->
-> The problem is the host bridge shouldn't be included in BAR
-> assignment since its the host bridge.  The problem is FSL devices
-> show up when they scan themselves and the kernel then tries to
-> allocate resources to them as if they were any other device.
->
-> you are correct, the pci subsystem is setup via the hose structure
-> and not by trying to read BARs on the host controller itself.
->
-> - kumar
->
