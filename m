@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3356567A3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 16:39:15 +1000 (EST)
-In-Reply-To: <1b2aacd80610242246n20075a33pcc76ab5be71fb87e@mail.gmail.com>
-References: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
-	<E2847437-6C75-4963-B9DB-BAC050015C88@kernel.crashing.org>
-	<1b2aacd80610242246n20075a33pcc76ab5be71fb87e@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4BF669F6-7A28-4915-9DFF-0B00CC04E242@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8343: PCI resource allocation questions
-Date: Wed, 25 Oct 2006 01:39:08 -0500
-To: "Luong Ngo" <luong.ngo@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8A48267BB7
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 16:41:24 +1000 (EST)
+Date: Wed, 25 Oct 2006 08:40:54 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: pci_set_power_state() failure and breaking suspend
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1161675611.10524.598.camel@localhost.localdomain>
+Message-ID: <tkrat.1b479115136413cf@s5r6.in-berlin.de>
+References: <1161672898.10524.596.camel@localhost.localdomain>
+	<1161675611.10524.598.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux1394-devel@lists.sourceforge.net,
+	Linux Kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 24 Okt, Benjamin Herrenschmidt wrote:
+>> Recently, ohci1394 grew some "proper" error handling in its suspend
+>> function, something that looks like:
+>> 
+>>         err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
+>>         if (err)
+>>                 goto out;
+...
+> First, it breaks some old PowerBooks where the internal OHCI has no PM
+> feature exposed on PCI....
 
-> I'm a bit confused here. If the host bridge is ignored/excluded,  
-> then the region size in BARs will not be allocated corresponding  
-> resource by the PCI subsystem, then how would other PCI devices in  
-> the slots could be allocated in the BAR's range? If I understand  
-> correctly, the PCI devices's resources are allocated based on the  
-> bridge resource, which is assigned statically by PCI subsystem  
-> using hose->mem_space and hose->io_space instead of reading it from  
-> the BARs. Maybe you are saying in the case the CPU is in agent mode  
-> and its PCI host bridge is functioning as a PCI-PCI bridge?
+What about the following? Could someone compile-test it with gcc4
+and CONFIG_IEEE1394_VERBOSEDEBUG=n?
 
-The problem is the host bridge shouldn't be included in BAR  
-assignment since its the host bridge.  The problem is FSL devices  
-show up when they scan themselves and the kernel then tries to  
-allocate resources to them as if they were any other device.
 
-you are correct, the pci subsystem is setup via the hose structure  
-and not by trying to read BARs on the host controller itself.
 
-- kumar
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: ohci1394: revert fail on error in suspend
+
+The error checks in the suspend code were too harsh and broke
+suspend on some PPC_PMACs again which have extra platform code.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+Index: linux/drivers/ieee1394/ohci1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/ohci1394.c	2006-10-25 08:26:44.000000000 +0200
++++ linux/drivers/ieee1394/ohci1394.c	2006-10-25 08:28:34.000000000 +0200
+@@ -3553,11 +3553,16 @@ static int ohci1394_pci_suspend (struct 
+ 	int err;
+ 
+ 	err = pci_save_state(pdev);
+-	if (err)
+-		goto out;
++	if (err) {
++		printk(KERN_ERR "%s: pci_save_state failed with %d\n",
++		       OHCI1394_DRIVER_NAME, err);
++		return err;
++	}
+ 	err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
++#ifdef OHCI1394_DEBUG
+ 	if (err)
+-		goto out;
++		printk(KERN_DEBUG "pci_set_power_state failed %d\n", err);
++#endif /* OHCI1394_DEBUG */
+ 
+ /* PowerMac suspend code comes last */
+ #ifdef CONFIG_PPC_PMAC
+@@ -3570,8 +3575,8 @@ static int ohci1394_pci_suspend (struct 
+ 			pmac_call_feature(PMAC_FTR_1394_ENABLE, of_node, 0, 0);
+ 	}
+ #endif /* CONFIG_PPC_PMAC */
+-out:
+-	return err;
++
++	return 0;
+ }
+ #endif /* CONFIG_PM */
+ 
