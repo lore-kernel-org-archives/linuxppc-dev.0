@@ -1,17 +1,20 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 96C5167B92
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 440BD67B6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Oct 2006 04:15:25 +1000 (EST)
-In-Reply-To: <CAB1644F1C94A24BAC68B05D0F9774635CC446@VIECLEX01.frequentis.frq>
-References: <CAB1644F1C94A24BAC68B05D0F9774635CC446@VIECLEX01.frequentis.frq>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <95309226-07A8-43E0-A03B-7D7E828D4429@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: MPC834x TSECs/Gianfar w/o MDIO accessible PHYs
-Date: Tue, 24 Oct 2006 13:15:24 -0500
-To: KRONSTORFER Horst <Horst.KRONSTORFER@frequentis.com>
+	Wed, 25 Oct 2006 11:47:05 +1000 (EST)
+Subject: Re: status of mpc52xx with arch=powerpc?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
+References: <20061018130628.GE6202@localhost.localdomain>
+	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 25 Oct 2006 11:46:55 +1000
+Message-Id: <1161740815.22582.1.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,46 +26,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Look at the driver in drivers/net/phy/fixed.c.  It probably needs  
-some documentation, and Vitaly implied it needed a little tweaking,  
-but it provides the basics of what you need (and what Dan  
-mentioned).  Essentially, you need to fake the PHY.  However, if you  
-wanted, you could also get smarter and write a new mdiobus driver,  
-which handles configuring and using the switch.
+On Wed, 2006-10-18 at 07:52 -0600, Grant Likely wrote:
+> On 10/18/06, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> > Is someone working on this already?
+> >
+> > There are some Kconfig entries, but there seems to be no code, at least
+> > not in vanilla.
+> 
+> I'm slowly working on it.  I've got a .dts written and I've got u-boot
+> w/ the fdt patches running on the board.  I need to port the 52xx PIC
+> driver into arch/powerpc before I attempt to boot.
 
-I'm not quite sure why your approach isn't working, but I agree with  
-Dan's suspicions that removing the PHY code doesn't just work.
+Can you send me your .dts ? The bplan folks are doing things for their
+EFIKA board and I didn't manage to get them to open up publically their
+device-tree until the firmware is final and in production :( But I've
+got them to change a few things already, and I'd like to make sure
+things are in sync.
 
-One thing to check is the adjust_link() function.  You need to make  
-sure that you have the carrier on, and that the MAC is set to MII  
-mode, rather than GMII mode.
+Regarding devices, I want to move everything to of_platform_device. I
+have some patches in progress to make those easier to work with. I'll
+send something in the upcoming couple of days as it's all part of some
+Cell related work for a new southbridge.
 
-Andy
+I'm trying to make sure the bplan stuff and whatever you guys come up
+with don't conflict.
 
-On Oct 24, 2006, at 04:16, KRONSTORFER Horst wrote:
-
-> hi!
->
-> in our design we use an mpc8343 with the 2 tsecs connected to a
-> zarlink zl50411 eth switch in mii mode. the 2 ports of the switch
-> are running in phy mode (reverse mii) w/o mdio. we're currently
-> running kernel 2.6.17.13.
->
-> i therefore 'simply' removed the mdio bus and phy support and tested
-> with ping over tsec0. result: i can see arp requests which are some-
-> what malformed (dest mac addr is not bcast, source ip addr is  
-> incorrect,
-> etc ...) btw: i used the same approach in u-boot and it works fine.
->
-> i then checked the content of the sk_buff handed over to  
-> gfar_start_xmit
-> which is correct (mac addrs, ip addrs, ...)
->
-> i'm currently out of ideas, any kind of help is appreciated!
->
-> thanks
-> -h
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Ben.
