@@ -1,19 +1,19 @@
-Return-Path: <Horst.KRONSTORFER@frequentis.com>
-Received: from webmail.frequentis.com (webmail.frequentis.com [213.47.210.151])
-	by ozlabs.org (Postfix) with ESMTP id DAD6867BEA
+Return-Path: <michaelzwrk@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 68C5867C00
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Oct 2006 22:47:36 +1000 (EST)
+	Wed, 25 Oct 2006 22:54:13 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so68219ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 25 Oct 2006 05:54:12 -0700 (PDT)
+Message-ID: <1ea6be8e0610250554l5f9a431cr26f03a99574f68d9@mail.gmail.com>
+Date: Wed, 25 Oct 2006 14:54:11 +0200
+From: "Michael Zagalsky" <michaelzwrk@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Using WindRiver Probe JTAG
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: MPC834x TSECs/Gianfar w/o MDIO accessible PHYs
-Date: Wed, 25 Oct 2006 14:47:33 +0200
-Message-ID: <CAB1644F1C94A24BAC68B05D0F9774635CC913@VIECLEX01.frequentis.frq>
-In-Reply-To: <95309226-07A8-43E0-A03B-7D7E828D4429@freescale.com>
-From: "KRONSTORFER Horst" <Horst.KRONSTORFER@frequentis.com>
-To: "Andy Fleming" <afleming@freescale.com>,
-	"Dan Malek" <dan@embeddedalley.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_24562_6179528.1161780851554"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,85 +24,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_24562_6179528.1161780851554
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-andy, dan, thanks for your replies!=20
+Hi guys.
+I'd like to know if anybody had an experience using Wind River Probe JTAG
+with PowerPC architecture in general, and with PowerQuicc iii family in
+particular.
+We're using WR workbench, but I am not sure whether to use their JTAG or the
+popular BDI2000.
+Does anybody know if WR Probe uses GDB, or something proprietary to WR?
+Can it be attached to gdb/ddd/eclipse, or only to WR workbench IDE?
+For kernel debugging with symbolic information - can it use any binary
+compiled with -g, or it has to be compiled under WR workbench environment
+that has some add-ons (I know, it sounds strange - but I actually heard some
+vague saying of this kind from WR representative).
 
-> Look at the driver in drivers/net/phy/fixed.c.
+I know those are questions that should be addressed to Wind River , which I
+did, but I didn't get clear enough answers - so your (good/bad) field
+experience could be very helpful.
 
-i did that w/o luck. the results are 100% the same compared to the
-'remove phy/mdio support' approach. i therefore assume that the source
-of the problem must be something else.
+Thanks a lot,
+Michael
 
-debugging around gfar_start_xmit() i made the following observations:
+------=_Part_24562_6179528.1161780851554
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-1) dumping skb->data i see correct frame data.
+<div>Hi guys.</div>
+<div>I'd like to know if anybody had an experience&nbsp;using Wind River Probe JTAG with PowerPC architecture in general, and with PowerQuicc iii family in particular.</div>
+<div>We're using WR workbench, but I am not sure whether to use their JTAG or the popular BDI2000.</div>
+<div>Does anybody know if WR Probe uses GDB, or something proprietary to WR?</div>
+<div>Can it be attached to gdb/ddd/eclipse, or only to WR workbench IDE?</div>
+<div>For kernel debugging with symbolic information - can it use any binary compiled with -g, or it has to be compiled under WR workbench environment that has some add-ons (I know, it sounds strange - but I actually heard some vague saying of this kind from WR representative).
+</div>
+<div>&nbsp;</div>
+<div>I know those are questions that should be addressed to Wind River , which I did, but I didn't get clear enough answers - so your (good/bad) field experience could be very helpful.</div>
+<div>&nbsp;</div>
+<div>Thanks a lot, </div>
+<div>Michael</div>
 
-2) dumping txbdp->bufPtr (using a bdi) i sometimes see correct frame =
-data,
-sometimes the corrupted frame data as i see it on the wire.
-
-3) regardless of 2) the data of these frames is always corrupted on the=20
-wire.
-
-on the 1st look this seems to be some kind of caching effect, but then =
-...
-
-thanks
--h
-
-> -----Original Message-----
-> From: Andy Fleming [mailto:afleming@freescale.com]=20
-> Sent: Dienstag, 24. Oktober 2006 20:15
-> To: KRONSTORFER Horst
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: MPC834x TSECs/Gianfar w/o MDIO accessible PHYs
->=20
-> Look at the driver in drivers/net/phy/fixed.c.  It probably=20
-> needs some documentation, and Vitaly implied it needed a=20
-> little tweaking, but it provides the basics of what you need=20
-> (and what Dan mentioned).  Essentially, you need to fake the=20
-> PHY.  However, if you wanted, you could also get smarter and=20
-> write a new mdiobus driver, which handles configuring and=20
-> using the switch.
->=20
-> I'm not quite sure why your approach isn't working, but I=20
-> agree with Dan's suspicions that removing the PHY code=20
-> doesn't just work.
->=20
-> One thing to check is the adjust_link() function.  You need=20
-> to make sure that you have the carrier on, and that the MAC=20
-> is set to MII mode, rather than GMII mode.
->=20
-> Andy
->=20
-> On Oct 24, 2006, at 04:16, KRONSTORFER Horst wrote:
->=20
-> > hi!
-> >
-> > in our design we use an mpc8343 with the 2 tsecs connected to a=20
-> > zarlink zl50411 eth switch in mii mode. the 2 ports of the=20
-> switch are=20
-> > running in phy mode (reverse mii) w/o mdio. we're currently running=20
-> > kernel 2.6.17.13.
-> >
-> > i therefore 'simply' removed the mdio bus and phy support=20
-> and tested=20
-> > with ping over tsec0. result: i can see arp requests which=20
-> are some-=20
-> > what malformed (dest mac addr is not bcast, source ip addr is=20
-> > incorrect, etc ...) btw: i used the same approach in u-boot and it=20
-> > works fine.
-> >
-> > i then checked the content of the sk_buff handed over to=20
-> > gfar_start_xmit which is correct (mac addrs, ip addrs, ...)
-> >
-> > i'm currently out of ideas, any kind of help is appreciated!
-> >
-> > thanks
-> > -h
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
->=20
+------=_Part_24562_6179528.1161780851554--
