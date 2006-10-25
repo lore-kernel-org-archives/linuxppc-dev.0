@@ -1,20 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BDFBC67B22
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 14:35:17 +1000 (EST)
-In-Reply-To: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
-References: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E2847437-6C75-4963-B9DB-BAC050015C88@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8343: PCI resource allocation questions
-Date: Tue, 24 Oct 2006 23:35:18 -0500
-To: "Luong Ngo" <luong.ngo@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 98A9767B92
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 14:47:49 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k9P4lmE9013518
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 21:47:48 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k9P4ljRm025392
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 23:47:47 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
+Date: Wed, 25 Oct 2006 12:47:43 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D2635219A16@zch01exm21.fsl.freescale.net>
+In-Reply-To: <1161748274.22582.30.camel@localhost.localdomain>
+From: "Liu Dave-r63238" <DaveLiu@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Li Yang-r58472" <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,85 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> > > Segher Boessenkool wrote:
+> > > > If a sync after an MMIO write is enough, then (in almost all
+> > > > cases) so is an eieio.
+> > >=20
+> > > In this case, the spurious interrupts still happen with=20
+> eieio, but=20
+> > > not with sync.
+> >=20
+> > eieio on e300 core is just a no-op.
+>=20
+> It's not sent to the bus on non-cahed storage (like the PCI=20
+> bridge ?) That's pretty bad ... there is quite a bit of code=20
+> that assumes that eieio's will prevent write combining...
 
-On Oct 24, 2006, at 10:49 PM, Luong Ngo wrote:
+Due to the LSU, the e300 cored doesn't reorder non-cached
+stroage, and doesn't implementation of write commbining.
+So, actually its behavior likes eieio.
 
-> Hello,
-> I am trying to bring up linux kernel 2.6.14 on a system using MPC  
-> 8343E and am having issues with the PCI resource allocation in the  
-> kernel. I saw these messages:
-> .............
-> PCI: Cannot allocate resource region 0 of device 0000:00: 00.0
-> PCI: Cannot allocate resource region 2 of device 0000:00:00.0
-> PCI: Failed to allocate mem resource #2:80000000@0 for 0000:00:00.0
-
-You can ignore these, they can usually be handled by adding a  
-pci_exclude call back to ignore the host controller itself.
-
-something like:
-
-int mpc83xx_exclude_device(u_char bus, u_char devfn)
-{
-         if (bus == 0 && PCI_SLOT(devfn) == 0)
-                 return PCIBIOS_DEVICE_NOT_FOUND;
-         return PCIBIOS_SUCCESSFUL;
-}
-
-> After digging into the codes, I realize that the PCI subsystem scan  
-> the bus and reading the BARs in the CPU PCI controller, which give  
-> the region 1 from 0x0 to 0x000FFFFF and region 2 from 0x0 to  
-> 0x7FFFFFFF. And the values I assign to the bridge resource in  
-> calling pci_init_resource during setup hose is 0x80000000 -  
-> 0x9FFFFFFF (I got this values from the mpc834x_sys.h).  So I just  
-> extend the bridge resource to 0x70000000 - 0xFFFFFFFF to cover all  
-> 2 regions in the 2 BAR and this seems to get rid of the above  
-> messages. However this would cause other platform devices to fail  
-> to claim its resources,
->
-> fsl-gianfar.1: failed to claim resource 0
-> unable to register device 0
-> fsl-gianfar.2: failed to claim resource 0
-> unable to register device 1
-> fsl-i2c.1: failed to claim resource 0
-> unable to register device 2
-
-You are not leaving any memory space for any of the onchip devices,  
-the error messages are because the regions of memory that the devices  
-are expected to be at are already occupied by the PCI space.
-
-> Could anyone tell me how these PCI resource work and how to resolve  
-> this conflict?
-
-The PCI resources are used for any PCI devices that need memory  
-mapped space allocated to them.  What devices are you connecting over  
-PCI?
-
-> And my other questions are  why is the region 2 in the mpc8343E  
-> such huge and what is it used for?
-
-The region was large since the reference board has general purpose  
-PCI slots for any number of various cards.  We provide a large space  
-to allow for those cards to be allocated into.  Depending on your  
-application you can adjust this as you need.
-
-> Also Why the kernel looks into the CPU PCI controller? because as I  
-> understand, in the hose setup step in platform initialization, the  
-> host bridge is skipped while other PCI devices would be probed and  
-> have their BARs assigned the address range to use ( in function  
-> pciauto_bus_scan in arch/ppc/syslib/pci_auto.c )
-
-This is because when the kernel code scan's for devices the host  
-bridge responses as a device.  You can use the exclude function as a  
-way to override the scanning code and have it ignore the host bridge.
-
-> One more question, are these BARs in the PCI controller related  
-> with the PCI inbound and outbound mapping of the PCI interface? Do  
-> the regions in BAR need to match/derive from the inbound/outbound  
-> address mapping?
-
-Yes, but you should only need to setup the inbound/outbound address  
-mapping registers.  The actually PCI BARs are only important if you  
-are using the MPC8343 as a PCI agent, it sounds like you are using it  
-as a host.
-
-- kumar
+-Dave
