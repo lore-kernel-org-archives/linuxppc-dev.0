@@ -1,22 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <santil@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09C8767C68
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 08:02:25 +1000 (EST)
-In-Reply-To: <17727.55569.981861.182079@cargo.ozlabs.ibm.com>
-References: <17727.901.368752.68802@cargo.ozlabs.ibm.com>
-	<6908EBCA-E869-4949-8096-34717733E6C1@kernel.crashing.org>
-	<17727.55569.981861.182079@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5A1E7134-BDE0-40EA-96FC-B60AAC82BEA9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull powerpc.git 'merge' branch
-Date: Wed, 25 Oct 2006 17:02:18 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2B73C67CCF
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 08:14:44 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id k9PMEu89030000
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 18:14:56 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	k9PMEfES141936
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 18:14:41 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k9PMEeAQ006420
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 18:14:41 -0400
+Message-ID: <453FE1DF.5050004@us.ibm.com>
+Date: Wed, 25 Oct 2006 17:14:55 -0500
+From: Santiago Leon <santil@us.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Remove ibmveth "liobn" field
+References: <1161749834.22582.36.camel@localhost.localdomain>
+In-Reply-To: <1161749834.22582.36.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> Remove the now unused "liobn" field in ibmveth which also avoids
+> having insider knowledge of the iommu table in that driver.
 
-On Oct 25, 2006, at 4:37 PM, Paul Mackerras wrote:
+Thanks for cleaning that up.
 
-> Kumar Gala writes:
->
->> Can you hold off on the this.  The following patch is still under
->> discussion and the problem exists on more than just PPC.
->
-> The patch that I put in fixes the problem in the situation where it
-> was found, right?  That the problem may exist on other architectures
-> isn't a reason not to fix it here.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Just if we come up with a more general solution.  I guess its ok if  
-we paper tape over it, just didn't want to if we decide the change  
-should be handled in more generic code.
+Signed-off-by: Santiago Leon <santil@us.ibm.com>
 
->
->>> Scott Wood:
->>>       [POWERPC] IPIC: Fix spinlock recursion in set_irq_handler
->
-> Paul.
+---
+> 
+> This will avoid this driver from breaking when I change the dma
+> mapping code for 2.6.20.
+> 
+> Index: linux-cell/drivers/net/ibmveth.c
+> ===================================================================
+> --- linux-cell.orig/drivers/net/ibmveth.c	2006-10-23 14:41:38.000000000 +1000
+> +++ linux-cell/drivers/net/ibmveth.c	2006-10-25 14:12:05.000000000 +1000
+> @@ -50,7 +50,6 @@
+>  #include <asm/semaphore.h>
+>  #include <asm/hvcall.h>
+>  #include <asm/atomic.h>
+> -#include <asm/iommu.h>
+...
+
+-- 
+Santiago A. Leon
+Power Linux Development
+IBM Linux Technology Center
