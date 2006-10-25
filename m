@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5305D67BB4
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 13:51:23 +1000 (EST)
-Subject: RE: [PATCH] qe_ic: Do a sync when masking interrupts.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D2071C2@zch01exm20.fsl.freescale.net>
-References: <4879B0C6C249214CBE7AB04453F84E4D2071C2@zch01exm20.fsl.freescale.net>
-Content-Type: text/plain
-Date: Wed, 25 Oct 2006 13:51:14 +1000
-Message-Id: <1161748274.22582.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <luong.ngo@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id 6AAC167A3B
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Oct 2006 14:14:29 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id f25so26815pyf
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Oct 2006 21:14:28 -0700 (PDT)
+Message-ID: <1b2aacd80610242049j23917f61x1e277b4c6a581f9a@mail.gmail.com>
+Date: Tue, 24 Oct 2006 20:49:45 -0700
+From: "Luong Ngo" <luong.ngo@gmail.com>
+To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+Subject: MPC8343: PCI resource allocation questions
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_103324_21783576.1161748185653"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-10-24 at 15:17 +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Scott Wood [mailto:scottwood@freescale.com]
-> > Sent: Tuesday, October 24, 2006 2:27 AM
-> > To: Segher Boessenkool
-> > Cc: mrz5149@acm.org; Li Yang-r58472; Paul Mackerras;
-> linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH] qe_ic: Do a sync when masking interrupts.
-> > 
-> > Segher Boessenkool wrote:
-> > > If a sync after an MMIO write is enough, then (in almost all
-> > > cases) so is an eieio.
-> > 
-> > In this case, the spurious interrupts still happen with eieio, but not
-> > with sync.  
-> 
-> eieio on e300 core is just a no-op.
+------=_Part_103324_21783576.1161748185653
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It's not sent to the bus on non-cahed storage (like the PCI bridge ?)
-That's pretty bad ... there is quite a bit of code that assumes that
-eieio's will prevent write combining...
+Hello,
+I am trying to bring up linux kernel 2.6.14 on a system using MPC 8343E and
+am having issues with the PCI resource allocation in the kernel. I saw these
+messages:
+.............
+PCI: Cannot allocate resource region 0 of device 0000:00:00.0
+PCI: Cannot allocate resource region 2 of device 0000:00:00.0
+PCI: Failed to allocate mem resource #2:80000000@0 for 0000:00:00.0
 
-Ben.
+After digging into the codes, I realize that the PCI subsystem scan the bus
+and reading the BARs in the CPU PCI controller, which give the region 1 from
+0x0 to 0x000FFFFF and region 2 from 0x0 to 0x7FFFFFFF. And the values I
+assign to the bridge resource in calling pci_init_resource during setup hose
+is 0x80000000 - 0x9FFFFFFF (I got this values from the mpc834x_sys.h).  So I
+just extend the bridge resource to 0x70000000 - 0xFFFFFFFF to cover all 2
+regions in the 2 BAR and this seems to get rid of the above messages.
+However this would cause other platform devices to fail to claim its
+resources,
+
+fsl-gianfar.1: failed to claim resource 0
+unable to register device 0
+fsl-gianfar.2: failed to claim resource 0
+unable to register device 1
+fsl-i2c.1: failed to claim resource 0
+unable to register device 2
+
+Could anyone tell me how these PCI resource work and how to resolve this
+conflict?
+And my other questions are  why is the region 2 in the mpc8343E such huge
+and what is it used for?
+Also Why the kernel looks into the CPU PCI controller? because as I
+understand, in the hose setup step in platform initialization, the host
+bridge is skipped while other PCI devices would be probed and have their
+BARs assigned the address range to use ( in function pciauto_bus_scan in
+arch/ppc/syslib/pci_auto.c )
+
+One more question, are these BARs in the PCI controller related with the PCI
+inbound and outbound mapping of the PCI interface? Do the regions in BAR
+need to match/derive from the inbound/outbound address mapping?
+
+Thank you,
+
+Luong Ngo
+
+------=_Part_103324_21783576.1161748185653
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello,<br>I am trying to bring up linux kernel 2.6.14 on a system using MPC 8343E and am having issues with the PCI resource allocation in the kernel. I saw these messages:<br>.............<br>PCI: Cannot allocate resource region 0 of device 0000:00:
+00.0<br>PCI: Cannot allocate resource region 2 of device 0000:00:00.0<br>PCI: Failed to allocate mem resource #2:80000000@0 for 0000:00:00.0<br><br>After digging into the codes, I realize that the PCI subsystem scan the bus and reading the BARs in the CPU PCI controller, which give the region 1 from 0x0 to 0x000FFFFF and region 2 from 0x0 to 0x7FFFFFFF. And the values I assign to the bridge resource in calling pci_init_resource during setup hose is 0x80000000 - 0x9FFFFFFF (I got this values from the mpc834x_sys.h).&nbsp; So I just extend the bridge resource to 0x70000000 - 0xFFFFFFFF to cover all 2 regions in the 2 BAR and this seems to get rid of the above messages. However this would cause other platform devices to fail to claim its resources, 
+<br><br>fsl-gianfar.1: failed to claim resource 0<br>unable to register device 0<br>fsl-gianfar.2: failed to claim resource 0<br>unable to register device 1<br>fsl-i2c.1: failed to claim resource 0<br>unable to register device 2
+<br><br>Could anyone tell me how these PCI resource work and how to resolve this conflict?<br>And my other questions are&nbsp; why is the region 2 in the mpc8343E such huge and what is it used for? <br>Also Why the kernel looks into the CPU PCI controller? because as I understand, in the hose setup step in platform initialization, the host bridge is skipped while other PCI devices would be probed and have their BARs assigned the address range to use ( in function pciauto_bus_scan in arch/ppc/syslib/pci_auto.c )
+<br><br>One more question, are these BARs in the PCI controller related with the PCI inbound and outbound mapping of the PCI interface? Do the regions in BAR need to match/derive from the inbound/outbound address mapping?
+<br><br>Thank you,<br><br>Luong Ngo<br>
+
+------=_Part_103324_21783576.1161748185653--
