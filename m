@@ -1,19 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D3FDC68126
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Oct 2006 06:32:25 +1000 (EST)
-Message-ID: <45411B46.9060106@ru.mvista.com>
-Date: Fri, 27 Oct 2006 00:32:06 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <tnt@246tNt.com>
+Message-ID: <45411FC4.5000708@246tNt.com>
+Date: Thu, 26 Oct 2006 22:51:16 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-To: Vitaly Wool <vwool@ru.mvista.com>
-Subject: Re: [1/2] build failure for E500 CPUs w/ CONFIG_OPROFLE=y
-References: <20061026104338.99e89782.vwool@ru.mvista.com>	<4A3EAE00-3647-4B72-8CDF-ED6E0ADEC910@kernel.crashing.org>
-	<1161894389.2820.14.camel@barja>
-In-Reply-To: <1161894389.2820.14.camel@barja>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	oprofile-list@lists.sourceforge.net
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
+References: <453FB582.20802@bplan-gmbh.de>	
+	<1161816783.22582.132.camel@localhost.localdomain>	
+	<45409760.7030902@bplan-gmbh.de>	
+	<1161866964.27827.2.camel@localhost.localdomain>	
+	<4540B0A9.6070404@bplan-gmbh.de>	
+	<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>	
+	<4541118F.60002@bplan-gmbh.de>
+	<528646bc0610261300s3e93e53fk5732990089b68d35@mail.gmail.com>
+In-Reply-To: <528646bc0610261300s3e93e53fk5732990089b68d35@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: akpm@osdl.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
+	linuxppc-embedded@ozlabs.org, sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +26,552 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+FWIW, Looks good to me too.
 
-Vitaly Wool wrote:
-> Hello Kumar,
+Acked-by: Sylvain Munaut <tnt@246tNt.com>
 
->>This makes sense to me since we are just increasing kernel code size  
->>for code we would never use for an FSL_BOOKE part if we do it the  
->>other way.  I dont think its that much more messy with the ifdef's.
 
-> Okay, if you're fine with this patch, is it possible that you include it
-> into your tree?
+It will need some changes when we'll get rid of the need to stay compatible
+with arch/ppc. This will hopefully be soon and getting this in should help
+get things moving imho.
 
->>If you want to do the other cleanup as well I've got no issue with  
->>that, but we really should NOT build in support for 7450 into a  
->>FSL_BOOKE kernel when reasonably avoidable.
 
-> That's fine with me.
-> As of the cleanups, well... looks to me some more patches will follow
-> soon, kinda bugfixing ones rather than cleanups first :)
+       Sylvain
 
-   The most funny/stupd thing is that the patch existed since May but it never 
-went in:
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=5531
 
-> Thanks,
->   Vitaly
-
-WBR, Sergei
+Grant Likely wrote:
+> My comments are satisfied
+>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> On 10/26/06, Nicolas DET <nd@bplan-gmbh.de> wrote:
+>> Grant Likely wrote:
+>>
+>> >> +
+>> >> +struct device_node *find_mpc52xx_pic(void)
+>> >> +{
+>> >> +       struct device_node *dev;
+>> >> +       const char *piccompatible_list[] =
+>> >> +       {
+>> >> +               "mpc5200-interrupt-controller",
+>> >> +               "mpc52xx-interrupt-controller",
+>> >> +               "mpc52xx-pic",
+>> >> +               "mpc5200-pic",
+>> >> +               "5200-interrupt-controller",
+>> >> +               "52xx-interrupt-controller",
+>> >> +               "52xx-pic",
+>> >> +               "5200-pic",
+>> >> +               NULL
+>> >> +       };
+>> >
+>> > Considering Efika is the *only* CHRP 52xx board out there at the
+>> > moment, and only a handful of embedded folks trying to move it to
+>> > arch/powerpc, surely we can come to an agreement now on what this
+>> > thing is named.  :)
+>> >
+>> >
+>>
+>> Done
+>>
+>>
+>>
+>>
+>> --- a/arch/powerpc/sysdev/Makefile      2006-10-25 19:07:24.000000000
+>> +0200
+>> +++ b/arch/powerpc/sysdev/Makefile      2006-10-26 11:38:02.000000000
+>> +0200
+>> @@ -13,6 +13,7 @@ obj-$(CONFIG_FSL_SOC)         += fsl_soc.o
+>>  obj-$(CONFIG_PPC_TODC)         += todc.o
+>>  obj-$(CONFIG_TSI108_BRIDGE)    += tsi108_pci.o tsi108_dev.o
+>>  obj-$(CONFIG_QUICC_ENGINE)     += qe_lib/
+>> +obj-$(CONFIG_PPC_MPC52xx_PIC)  += mpc52xx_pic.o
+>>
+>>  ifeq ($(CONFIG_PPC_MERGE),y)
+>>  obj-$(CONFIG_PPC_I8259)                += i8259.o
+>> --- a/arch/powerpc/sysdev/mpc52xx_pic.c 1970-01-01 01:00:00.000000000
+>> +0100
+>> +++ b/arch/powerpc/sysdev/mpc52xx_pic.c 2006-10-26 21:32:05.000000000
+>> +0200
+>> @@ -0,0 +1,363 @@
+>> +/*
+>> + * arch/powerpc/sysdev/mpc52xx_pic.c
+>> + *
+>> + * Programmable Interrupt Controller functions for the Freescale
+>> MPC52xx
+>> + * embedded CPU.
+>> + * Modified for CHRP Efika 5K2
+>> + *
+>> + * Maintainer : Sylvain Munaut <tnt@246tNt.com>
+>> + *
+>> + * Based on (well, mostly copied from) the code from the 2.4 kernel by
+>> + * Dale Farnsworth <dfarnsworth@mvista.com> and Kent Borg.
+>> + *
+>> + * Copyright (C) 2004 Sylvain Munaut <tnt@246tNt.com>
+>> + * Copyright (C) 2003 Montavista Software, Inc
+>> + *
+>> + * This file is licensed under the terms of the GNU General Public
+>> License
+>> + * version 2. This program is licensed "as is" without any warranty
+>> of any
+>> + * kind, whether express or implied.
+>> + */
+>> +
+>> +#include <linux/stddef.h>
+>> +#include <linux/init.h>
+>> +#include <linux/sched.h>
+>> +#include <linux/signal.h>
+>> +#include <linux/stddef.h>
+>> +#include <linux/delay.h>
+>> +#include <linux/irq.h>
+>> +
+>> +#include <asm/io.h>
+>> +#include <asm/processor.h>
+>> +#include <asm/system.h>
+>> +#include <asm/irq.h>
+>> +#include <asm/prom.h>
+>> +
+>> +#include <asm/mpc52xx.h>
+>> +
+>> +static struct mpc52xx_intr __iomem *intr;
+>> +static struct mpc52xx_sdma __iomem *sdma;
+>> +
+>> +static struct irq_host *mpc52xx_irqhost = NULL;
+>> +
+>> +static void mpc52xx_ic_disable(unsigned int virq)
+>> +{
+>> +       u32 val;
+>> +       int irq;
+>> +
+>> +       irq = irq_map[virq].hwirq;
+>> +
+>> +       pr_debug("%s: irq=%d\n", __func__, irq);
+>> +
+>> +       if (irq == MPC52xx_IRQ0) {
+>> +               val = in_be32(&intr->ctrl);
+>> +               val &= ~(1 << 11);
+>> +               out_be32(&intr->ctrl, val);
+>> +       } else if (irq < MPC52xx_IRQ1) {
+>> +               BUG();
+>> +       } else if (irq <= MPC52xx_IRQ3) {
+>> +               val = in_be32(&intr->ctrl);
+>> +               val &= ~(1 << (10 - (irq - MPC52xx_IRQ1)));
+>> +               out_be32(&intr->ctrl, val);
+>> +       } else if (irq < MPC52xx_SDMA_IRQ_BASE) {
+>> +               val = in_be32(&intr->main_mask);
+>> +               val |= 1 << (16 - (irq - MPC52xx_MAIN_IRQ_BASE));
+>> +               out_be32(&intr->main_mask, val);
+>> +       } else if (irq < MPC52xx_PERP_IRQ_BASE) {
+>> +               val = in_be32(&sdma->IntMask);
+>> +               val |= 1 << (irq - MPC52xx_SDMA_IRQ_BASE);
+>> +               out_be32(&sdma->IntMask, val);
+>> +       } else {
+>> +               val = in_be32(&intr->per_mask);
+>> +               val |= 1 << (31 - (irq - MPC52xx_PERP_IRQ_BASE));
+>> +               out_be32(&intr->per_mask, val);
+>> +       }
+>> +}
+>> +
+>> +static void mpc52xx_ic_enable(unsigned int virq)
+>> +{
+>> +       u32 val;
+>> +       int irq;
+>> +
+>> +       irq = irq_map[virq].hwirq;
+>> +
+>> +       pr_debug("%s: irq=%d\n", __func__, irq);
+>> +
+>> +       if (irq == MPC52xx_IRQ0) {
+>> +               val = in_be32(&intr->ctrl);
+>> +               val |= 1 << 11;
+>> +               out_be32(&intr->ctrl, val);
+>> +       } else if (irq < MPC52xx_IRQ1) {
+>> +               BUG();
+>> +       } else if (irq <= MPC52xx_IRQ3) {
+>> +               val = in_be32(&intr->ctrl);
+>> +               val |= 1 << (10 - (irq - MPC52xx_IRQ1));
+>> +               out_be32(&intr->ctrl, val);
+>> +       } else if (irq < MPC52xx_SDMA_IRQ_BASE) {
+>> +               val = in_be32(&intr->main_mask);
+>> +               val &= ~(1 << (16 - (irq - MPC52xx_MAIN_IRQ_BASE)));
+>> +               out_be32(&intr->main_mask, val);
+>> +       } else if (irq < MPC52xx_PERP_IRQ_BASE) {
+>> +               val = in_be32(&sdma->IntMask);
+>> +               val &= ~(1 << (irq - MPC52xx_SDMA_IRQ_BASE));
+>> +               out_be32(&sdma->IntMask, val);
+>> +       } else {
+>> +               val = in_be32(&intr->per_mask);
+>> +               val &= ~(1 << (31 - (irq - MPC52xx_PERP_IRQ_BASE)));
+>> +               out_be32(&intr->per_mask, val);
+>> +       }
+>> +}
+>> +
+>> +static void mpc52xx_ic_ack(unsigned int virq)
+>> +{
+>> +       u32 val;
+>> +       int irq;
+>> +
+>> +       irq = irq_map[virq].hwirq;
+>> +
+>> +       pr_debug("%s: irq=%d\n", __func__, irq);
+>> +
+>> +       /*
+>> +        * Only some irqs are reset here, others in interrupting
+>> hardware.
+>> +        */
+>> +
+>> +       switch (irq) {
+>> +       case MPC52xx_IRQ0:
+>> +               val = in_be32(&intr->ctrl);
+>> +               val |= 0x08000000;
+>> +               out_be32(&intr->ctrl, val);
+>> +               break;
+>> +       case MPC52xx_CCS_IRQ:
+>> +               val = in_be32(&intr->enc_status);
+>> +               val |= 0x00000400;
+>> +               out_be32(&intr->enc_status, val);
+>> +               break;
+>> +       case MPC52xx_IRQ1:
+>> +               val = in_be32(&intr->ctrl);
+>> +               val |= 0x04000000;
+>> +               out_be32(&intr->ctrl, val);
+>> +               break;
+>> +       case MPC52xx_IRQ2:
+>> +               val = in_be32(&intr->ctrl);
+>> +               val |= 0x02000000;
+>> +               out_be32(&intr->ctrl, val);
+>> +               break;
+>> +       case MPC52xx_IRQ3:
+>> +               val = in_be32(&intr->ctrl);
+>> +               val |= 0x01000000;
+>> +               out_be32(&intr->ctrl, val);
+>> +               break;
+>> +       default:
+>> +               if (irq >= MPC52xx_SDMA_IRQ_BASE
+>> +                   && irq < (MPC52xx_SDMA_IRQ_BASE +
+>> MPC52xx_SDMA_IRQ_NUM)) {
+>> +                       out_be32(&sdma->IntPend,
+>> +                                1 << (irq - MPC52xx_SDMA_IRQ_BASE));
+>> +               }
+>> +
+>> +               break;
+>> +       }
+>> +
+>> +}
+>> +
+>> +static void mpc52xx_ic_disable_and_ack(unsigned int irq)
+>> +{
+>> +       mpc52xx_ic_disable(irq);
+>> +       mpc52xx_ic_ack(irq);
+>> +}
+>> +
+>> +static void mpc52xx_ic_end(unsigned int irq)
+>> +{
+>> +       if (!(irq_desc[irq].status & (IRQ_DISABLED | IRQ_INPROGRESS)))
+>> +               mpc52xx_ic_enable(irq);
+>> +}
+>> +
+>> +static struct irq_chip mpc52xx_irqchip = {
+>> +       .name = " MPC52xx  ",
+>> +       .enable = mpc52xx_ic_enable,
+>> +       .disable = mpc52xx_ic_disable,
+>> +       .ack = mpc52xx_ic_disable_and_ack,
+>> +       .end = mpc52xx_ic_end,
+>> +};
+>> +
+>> +extern struct device_node *find_mpc52xx_pic(void);
+>> +static int mpc52xx_irqhost_match(struct irq_host *h, struct
+>> device_node *node)
+>> +{
+>> +       pr_debug("%s: %p vs %p\n", __func__, find_mpc52xx_pic(), node);
+>> +       return find_mpc52xx_pic() == node;
+>> +}
+>> +
+>> +static int mpc52xx_irqhost_xlate(struct irq_host *h, struct
+>> device_node *ct,
+>> +                                u32 * intspec, unsigned int intsize,
+>> +                                irq_hw_number_t * out_hwirq,
+>> +                                unsigned int *out_flags)
+>> +{
+>> +       static unsigned char map_senses[4] = {
+>> +               IRQ_TYPE_LEVEL_HIGH,
+>> +               IRQ_TYPE_EDGE_FALLING,
+>> +               IRQ_TYPE_EDGE_RISING,
+>> +               IRQ_TYPE_LEVEL_LOW,
+>> +       };
+>> +
+>> +       int intrvect_l1;
+>> +       int intrvect_l2;
+>> +       int intrvect_type;
+>> +       int intrvect_linux;
+>> +
+>> +       pr_debug("%s:\n", __func__);
+>> +
+>> +       if (intsize != 3)
+>> +               return -1;
+>> +
+>> +       intrvect_l1 = (int)intspec[0];
+>> +       intrvect_l2 = (int)intspec[1];
+>> +       intrvect_type = (int)intspec[2];
+>> +
+>> +       pr_debug("l1=%d, l2=%d, type=%d\n", intrvect_l1, intrvect_l2,
+>> +                intrvect_type);
+>> +
+>> +       switch (intrvect_l1) {
+>> +       case 0:         /* Critical */
+>> +               intrvect_linux = MPC52xx_CRIT_IRQ_BASE;
+>> +               break;
+>> +
+>> +       case 1:         /* Main */
+>> +               intrvect_linux = MPC52xx_MAIN_IRQ_BASE;
+>> +               break;
+>> +
+>> +       case 2:         /* Periph */
+>> +               intrvect_linux = MPC52xx_PERP_IRQ_BASE;
+>> +               break;
+>> +
+>> +       case 3:         /* Bestcomm */
+>> +               intrvect_linux = MPC52xx_SDMA_IRQ_BASE;
+>> +               break;
+>> +
+>> +       default:
+>> +               if (printk_ratelimit())
+>> +                       printk(KERN_ERR "Wrong L1 interrupt vector
+>> (%d)\n",
+>> +                              intrvect_l1);
+>> +
+>> +               return -1;
+>> +       }
+>> +
+>> +       intrvect_linux += intrvect_l2;
+>> +
+>> +       pr_debug("return %d\n", intrvect_linux);
+>> +
+>> +       *out_hwirq = intrvect_linux;
+>> +       *out_flags = map_senses[intrvect_type];
+>> +
+>> +       return 0;
+>> +
+>> +}
+>> +
+>> +int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
+>> +                       irq_hw_number_t hw)
+>> +{
+>> +       pr_debug("%s: v=%d, hw=%d\n", __func__, virq, (int)hw);
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +void mpc52xx_irqhost_unmap(struct irq_host *h, unsigned int virq)
+>> +{
+>> +       pr_debug("%s: v=%d\n", __func__, virq);
+>> +}
+>> +
+>> +static struct irq_host_ops mpc52xx_irqhost_ops = {
+>> +       .match = mpc52xx_irqhost_match,
+>> +       .xlate = mpc52xx_irqhost_xlate,
+>> +       .map = mpc52xx_irqhost_map,
+>> +       .unmap = mpc52xx_irqhost_unmap,
+>> +};
+>> +
+>> +void __init mpc52xx_init_irq(void)
+>> +{
+>> +       int i;
+>> +       u32 intr_ctrl;
+>> +
+>> +       /* Remap the necessary zones */
+>> +       intr = ioremap(MPC52xx_PA(MPC52xx_INTR_OFFSET),
+>> MPC52xx_INTR_SIZE);
+>> +       sdma = ioremap(MPC52xx_PA(MPC52xx_SDMA_OFFSET),
+>> MPC52xx_SDMA_SIZE);
+>> +
+>> +       if ((intr == NULL) || (sdma == NULL))
+>> +               panic("Can't ioremap PIC/SDMA register or init_irq !");
+>> +
+>> +       /* Disable all interrupt sources. */
+>> +       out_be32(&sdma->IntPend, 0xffffffff);   /* 1 means clear
+>> pending */
+>> +       out_be32(&sdma->IntMask, 0xffffffff);   /* 1 means disabled */
+>> +       out_be32(&intr->per_mask, 0x7ffffc00);  /* 1 means disabled */
+>> +       out_be32(&intr->main_mask, 0x00010fff); /* 1 means disabled */
+>> +       intr_ctrl = in_be32(&intr->ctrl);
+>> +       intr_ctrl &= 0x00ff0000;        /* Keeps IRQ[0-3] config */
+>> +       intr_ctrl |= 0x0f000000 |       /* clear IRQ 0-3 */
+>> +           0x00001000 |        /* MEE master external enable */
+>> +           0x00000000 |        /* 0 means disable IRQ 0-3 */
+>> +           0x00000001;         /* CEb route critical normally */
+>> +       out_be32(&intr->ctrl, intr_ctrl);
+>> +
+>> +       /* Zero a bunch of the priority settings.  */
+>> +       out_be32(&intr->per_pri1, 0);
+>> +       out_be32(&intr->per_pri2, 0);
+>> +       out_be32(&intr->per_pri3, 0);
+>> +       out_be32(&intr->main_pri1, 0);
+>> +       out_be32(&intr->main_pri2, 0);
+>> +       /* Initialize irq_desc[i].handler's with mpc52xx_ic. */
+>> +       for (i = 0; i < NR_IRQS; i++) {
+>> +               irq_desc[i].chip = &mpc52xx_irqchip;
+>> +               irq_desc[i].status = IRQ_LEVEL;
+>> +
+>> +       }
+>> +
+>> +#define IRQn_MODE(intr_ctrl,irq) (((intr_ctrl) >> (22-(i<<1))) & 0x03)
+>> +       for (i = 0; i < 4; i++) {
+>> +               int mode;
+>> +               mode = IRQn_MODE(intr_ctrl, i);
+>> +               if ((mode == 0x1) || (mode == 0x2))
+>> +                       irq_desc[i ? MPC52xx_IRQ1 + i -
+>> +                                1 : MPC52xx_IRQ0].status = 0;
+>> +       }
+>> +
+>> +       /*
+>> +        * As last step, add an irq host to translate the real
+>> +        * hw irq information provided by the ofw to linux virq
+>> +        */
+>> +
+>> +       mpc52xx_irqhost =
+>> +           irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_IRQS,
+>> &mpc52xx_irqhost_ops,
+>> +                          -1);
+>> +       pr_debug("%s: mpc52xx_irqhost =%p\n", __func__,
+>> mpc52xx_irqhost);
+>> +}
+>> +
+>> +unsigned int mpc52xx_get_irq(void)
+>> +{
+>> +       u32 status;
+>> +       int virq;
+>> +       int irq = NO_IRQ_IGNORE;
+>> +
+>> +       status = in_be32(&intr->enc_status);
+>> +       if (status & 0x00000400) {      /* critical */
+>> +               irq = (status >> 8) & 0x3;
+>> +               if (irq == 2)   /* high priority peripheral */
+>> +                       goto peripheral;
+>> +               irq += MPC52xx_CRIT_IRQ_BASE;
+>> +       } else if (status & 0x00200000) {       /* main */
+>> +               irq = (status >> 16) & 0x1f;
+>> +               if (irq == 4)   /* low priority peripheral */
+>> +                       goto peripheral;
+>> +               irq += MPC52xx_MAIN_IRQ_BASE;
+>> +       } else if (status & 0x20000000) {       /* peripheral */
+>> +             peripheral:
+>> +               irq = (status >> 24) & 0x1f;
+>> +               if (irq == 0) { /* bestcomm */
+>> +                       status = in_be32(&sdma->IntPend);
+>> +                       irq = ffs(status) + MPC52xx_SDMA_IRQ_BASE - 1;
+>> +               } else
+>> +                       irq += MPC52xx_PERP_IRQ_BASE;
+>> +
+>> +       }
+>> +
+>> +       virq = irq_linear_revmap(mpc52xx_irqhost, irq);
+>> +       pr_debug("%s: irq=%d -> %d\n", __func__, irq, virq);
+>> +
+>> +       return virq;
+>> +}
+>> --- a/arch/powerpc/Kconfig      2006-10-25 19:07:23.000000000 +0200
+>> +++ b/arch/powerpc/Kconfig      2006-10-26 18:55:58.000000000 +0200
+>> @@ -384,6 +384,11 @@ config PPC_CHRP
+>>         select PPC_RTAS
+>>         select PPC_MPC106
+>>         select PPC_UDBG_16550
+>> +       select PPC_MPC52xx_PIC
+>> +       default y
+>> +
+>> +config PPC_MPC52xx_PIC
+>> +        bool
+>>         default y
+>>
+>>  config PPC_PMAC
+>> --- a/arch/powerpc/platforms/chrp/setup.c       2006-10-25
+>> 19:07:23.000000000 +0200
+>> +++ b/arch/powerpc/platforms/chrp/setup.c       2006-10-26
+>> 21:47:29.000000000 +0200
+>> @@ -51,6 +51,7 @@
+>>  #include <asm/mpic.h>
+>>  #include <asm/rtas.h>
+>>  #include <asm/xmon.h>
+>> +#include <asm/mpc52xx.h>
+>>
+>>  #include "chrp.h"
+>>
+>> @@ -435,6 +436,44 @@ static struct irqaction xmon_irqaction =
+>>  };
+>>  #endif
+>>
+>> +
+>> +struct device_node *find_mpc52xx_pic(void)
+>> +{
+>> +       struct device_node *dev;
+>> +       const char *piccompatible_list[] =
+>> +       {
+>> +               "mpc5200-pic",
+>> +               NULL
+>> +       };
+>> +
+>> +       /* Look for an MPC52xx interrupt controller */
+>> +       for_each_node_by_type(dev, "interrupt-controller")
+>> +       {
+>> +               const char **piccompatible_entry = piccompatible_list;
+>> +
+>> +               for(piccompatible_entry = piccompatible_list;
+>> *piccompatible_entry; piccompatible_entry++ )
+>> +               {
+>> +                       if (device_is_compatible(dev,
+>> *piccompatible_entry ))
+>> +                               return dev;
+>> +               }
+>> +       }
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +static int  __init chrp_find_mpc52xx_pic(void)
+>> +{
+>> +       if (find_mpc52xx_pic())
+>> +       {
+>> +               printk(KERN_INFO "Found MPC52xx Interrupt
+>> Controller\n");
+>> +               ppc_md.get_irq = mpc52xx_get_irq;
+>> +               mpc52xx_init_irq();
+>> +               return 0;
+>> +       }
+>> +
+>> +       return -ENODEV;
+>> +}
+>> +
+>>  static void __init chrp_find_8259(void)
+>>  {
+>>         struct device_node *np, *pic = NULL;
+>> @@ -473,8 +512,11 @@ static void __init chrp_find_8259(void)
+>>                 break;
+>>         }
+>>         if (np == NULL)
+>> -               printk(KERN_WARNING "Cannot find PCI interrupt
+>> acknowledge"
+>> -                      " address, polling\n");
+>> +       {
+>> +               printk(KERN_WARNING "Cannot find PCI/i8259 interrupt
+>> acknowledge"
+>> +                      " Fix your tree!\n");
+>> +               return;
+>> +       }
+>>
+>>         i8259_init(pic, chrp_int_ack);
+>>         if (ppc_md.get_irq == NULL)
+>> @@ -494,6 +536,8 @@ void __init chrp_init_IRQ(void)
+>>  #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
+>>         struct device_node *kbd;
+>>  #endif
+>> +
+>> +       chrp_find_mpc52xx_pic();
+>>         chrp_find_openpic();
+>>         chrp_find_8259();
+>>
+>>
+>>
+>>
+>>
+>
+>
