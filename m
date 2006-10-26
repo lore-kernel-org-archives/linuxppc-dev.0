@@ -1,16 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
+Return-Path: <vwool@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 518AD68034
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Oct 2006 06:17:18 +1000 (EST)
-Date: Fri, 27 Oct 2006 00:17:02 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: fix up the bd_info address
-Message-ID: <20061027001702.4da5f5b0@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 4FB406804E
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Oct 2006 06:26:35 +1000 (EST)
+Subject: Re: [1/2] build failure for E500 CPUs w/ CONFIG_OPROFLE=y
+From: Vitaly Wool <vwool@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4A3EAE00-3647-4B72-8CDF-ED6E0ADEC910@kernel.crashing.org>
+References: <20061026104338.99e89782.vwool@ru.mvista.com>
+	<4A3EAE00-3647-4B72-8CDF-ED6E0ADEC910@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 27 Oct 2006 00:26:29 +0400
+Message-Id: <1161894389.2820.14.camel@barja>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_Kvr5TjIIc.74/JmEndYL3Tb";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,70 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_Kvr5TjIIc.74/JmEndYL3Tb
-Content-Type: multipart/mixed; boundary=MP_jyvtnxkQr.yzM87bq2P_sc5
+Hello Kumar,
 
---MP_jyvtnxkQr.yzM87bq2P_sc5
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> This makes sense to me since we are just increasing kernel code size  
+> for code we would never use for an FSL_BOOKE part if we do it the  
+> other way.  I dont think its that much more messy with the ifdef's.
 
-Hi,
+Okay, if you're fine with this patch, is it possible that you include it
+into your tree?
 
-The patch is attached. It is applied after Matt's bootm stuff. I was going =
-to send it through u-boot list when
-all the things around FDT will arrive there. It used to fix the problem boo=
-ting the bd_t kernel on FDT u-boot.
+> If you want to do the other cleanup as well I've got no issue with  
+> that, but we really should NOT build in support for 7450 into a  
+> FSL_BOOKE kernel when reasonably avoidable.
 
-Just as reference for now.
+That's fine with me.
+As of the cleanups, well... looks to me some more patches will follow
+soon, kinda bugfixing ones rather than cleanups first :)
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-
---MP_jyvtnxkQr.yzM87bq2P_sc5
-Content-Type: text/x-patch; name=fix_bd_info_address.patch
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename=fix_bd_info_address.patch
-
-Patch fixes the address of the board info passed to kernel when OF tree is =
-disabled.
-
----
-
- common/cmd_bootm.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/common/cmd_bootm.c b/common/cmd_bootm.c
-index f1c0eb4..eb59817 100644
---- a/common/cmd_bootm.c
-+++ b/common/cmd_bootm.c
-@@ -836,8 +836,12 @@ #endif
- 	(*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
-=20
- #else
--	ft_setup(of_flat_tree, kbd, initrd_start, initrd_end);
--	/* ft_dump_blob(of_flat_tree); */
-+	if (getenv("disable_of") !=3D NULL)
-+		of_flat_tree =3D kbd;
-+	else {
-+		ft_setup(of_flat_tree, kbd, initrd_start, initrd_end);
-+		/* ft_dump_blob(of_flat_tree); */
-+	}
-=20
- #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
- 	unlock_ram_in_cache();
-
---MP_jyvtnxkQr.yzM87bq2P_sc5--
-
---Sig_Kvr5TjIIc.74/JmEndYL3Tb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFQRe/uOg9JvQhSEsRAknfAKCdOFmzJtMNkHqeCBw6MgygDDq73ACdEh/4
-AggtcHCxy2QX+jlkKBCESYw=
-=mvEl
------END PGP SIGNATURE-----
-
---Sig_Kvr5TjIIc.74/JmEndYL3Tb--
+Thanks,
+  Vitaly
