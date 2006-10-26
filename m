@@ -1,20 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 12/16] cell: add temperature to SPU and
-	CPU sysfs entries
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200610260935.01801.arnd@arndb.de>
-References: <20061024163113.694643000@arndb.de>
-	<20061025080048.GB7090@osiris.boeblingen.de.ibm.com>
-	<1161818364.22582.145.camel@localhost.localdomain>
-	<200610260935.01801.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 26 Oct 2006 19:19:02 +1000
-Message-Id: <1161854342.5299.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org
+Return-Path: <nd@bplan-gmbh.de>
+Received: from mo-p04-ob.rzone.de (mo-p04-ob.rzone.de [81.169.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 3135D67CB3
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 21:09:53 +1000 (EST)
+Date: Thu, 26 Oct 2006 13:09:41 +0200 (MEST)
+Message-ID: <454096E5.8050202@bplan-gmbh.de>
+From: Nicolas DET <nd@bplan-gmbh.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
+References: <453FB582.20802@bplan-gmbh.de>	
+	<17727.56923.634981.723647@cargo.ozlabs.ibm.com>	
+	<528646bc0610251541s21bb45f1t6fc911778d5084@mail.gmail.com>
+	<1161817178.22582.138.camel@localhost.localdomain>
+In-Reply-To: <1161817178.22582.138.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="------------090601000803030007070004"
+Cc: akpm@osdl.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org,
+	sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-10-26 at 09:35 +0200, Arnd Bergmann wrote:
-> On Thursday 26 October 2006 01:19, Benjamin Herrenschmidt wrote:
-> > > 
-> > > Will crash if cpu_add_sysdev_attr_group failed...
-> > 
-> > 
-> > Which is a total PITA. If this is the case, then we should modify the
-> > add calls to at least initialize enough fields before they can fail for
-> > the remove calls not to crash. You don't want to keep track precisely of
-> > what file was added and what not and test all of that in your exit code
-> > path, it's just insane.
-> 
-> Heiko suggested that earlied in http://lkml.org/lkml/2006/10/9/22,
-> but Andrew didn't like it.
-> 
-> Currently, the worst is that sysfs_remove_file can be used
-> on a nonexisting file,  but sysfs_remove_group cannot, which is
-> inconsistent. Either sysfs_remove_file should WARN_ON or
-> sysfs_remove_group should silently return, and I'd prefer the
-> latter, as it makes users simpler.
+This is a multi-part message in MIME format.
+--------------090601000803030007070004
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-We need to argue with Andrew then. I'll have a go tomorrow
+Benjamin Herrenschmidt wrote:
 
-Ben.
+>  - Format of the interrupt cells (they have come up upon my suggestion
+> to a 3-cell based format (could probably be compressed a bit but heh)
+> and that should be documented publically)
+> 
+
+It's some kind of 'documented' in mpc52xx_pic.c/xlate()
+
+>  - Binding (set of required properties and their definitions) for on
+> chip devices, and more specifically, for representing the bestcomm and
+> the links between devices and associated bestcomm tasks.
+
+Bestcomm is something a bit 'weird'. I think we are the only to use this 
+approach (task code loaded by the OFW and not by the OS). As said 
+earlier, I've been in contact with an bestcomm coders and I think we 
+would work together on this subject.
+
+
+--------------090601000803030007070004
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
+
+
+--------------090601000803030007070004--
