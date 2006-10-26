@@ -1,26 +1,20 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 0913767CEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 18:34:25 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k9Q8YOnl011478
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 01:34:24 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k9Q8YM6Y021164
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 03:34:23 -0500 (CDT)
-Subject: Re: [PATCH] powerpc: Make pci_read_irq_line the default:
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1161843365.5299.21.camel@localhost.localdomain>
-References: <1161843365.5299.21.camel@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH 12/16] cell: add temperature to SPU and
+	CPU sysfs entries
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200610260935.01801.arnd@arndb.de>
+References: <20061024163113.694643000@arndb.de>
+	<20061025080048.GB7090@osiris.boeblingen.de.ibm.com>
+	<1161818364.22582.145.camel@localhost.localdomain>
+	<200610260935.01801.arnd@arndb.de>
 Content-Type: text/plain
-Message-Id: <1161851698.21511.8.camel@localhost.localdomain>
+Date: Thu, 26 Oct 2006 19:19:02 +1000
+Message-Id: <1161854342.5299.30.camel@localhost.localdomain>
 Mime-Version: 1.0
-Date: 26 Oct 2006 16:34:58 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-10-26 at 14:16, Benjamin Herrenschmidt wrote:
+On Thu, 2006-10-26 at 09:35 +0200, Arnd Bergmann wrote:
+> On Thursday 26 October 2006 01:19, Benjamin Herrenschmidt wrote:
+> > > 
+> > > Will crash if cpu_add_sysdev_attr_group failed...
+> > 
+> > 
+> > Which is a total PITA. If this is the case, then we should modify the
+> > add calls to at least initialize enough fields before they can fail for
+> > the remove calls not to crash. You don't want to keep track precisely of
+> > what file was added and what not and test all of that in your exit code
+> > path, it's just insane.
+> 
+> Heiko suggested that earlied in http://lkml.org/lkml/2006/10/9/22,
+> but Andrew didn't like it.
+> 
+> Currently, the worst is that sysfs_remove_file can be used
+> on a nonexisting file,  but sysfs_remove_group cannot, which is
+> inconsistent. Either sysfs_remove_file should WARN_ON or
+> sysfs_remove_group should silently return, and I'd prefer the
+> latter, as it makes users simpler.
 
-> Index: linux-work/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-> ===================================================================
-> ---
-> linux-work.orig/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c  
-> 2006-10-09 12:03:33.000000000 +1000
-> +++
-> linux-work/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c       
-> 2006-10-26 15:52:15.000000000 +1000
+We need to argue with Andrew then. I'll have a go tomorrow
 
-Paul,
-	Please do not apply this part of patch. I will prove a new one to
-update the irq map hopefully tomorrow.
-
-Roy
-
-	
+Ben.
