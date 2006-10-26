@@ -1,16 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20061026104338.99e89782.vwool@ru.mvista.com>
-References: <20061026104338.99e89782.vwool@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4A3EAE00-3647-4B72-8CDF-ED6E0ADEC910@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [1/2] build failure for E500 CPUs w/ CONFIG_OPROFLE=y
-Date: Thu, 26 Oct 2006 08:57:59 -0500
-To: Vitaly Wool <vwool@ru.mvista.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	oprofile-list@lists.sourceforge.net,
-	"linuxppc-embedded \(\(\(\(E-Mail\)\)\)\)" <linuxppc-embedded@ozlabs.org>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 205B267E04
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Oct 2006 02:02:04 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so356990ugc
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 09:02:01 -0700 (PDT)
+Message-ID: <528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>
+Date: Thu, 26 Oct 2006 10:02:00 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Nicolas DET" <nd@bplan-gmbh.de>
+Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
+In-Reply-To: <4540B0A9.6070404@bplan-gmbh.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <453FB582.20802@bplan-gmbh.de>
+	<1161816783.22582.132.camel@localhost.localdomain>
+	<45409760.7030902@bplan-gmbh.de>
+	<1161866964.27827.2.camel@localhost.localdomain>
+	<4540B0A9.6070404@bplan-gmbh.de>
+Cc: akpm@osdl.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
+	linuxppc-embedded@ozlabs.org, sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,76 +29,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+(minor) Whitespace is still inconsistent; mostly spaces used where
+they should be tabs and a few lines longer than 80 chars.  Running the
+source through scripts/Lindent will help.
 
-On Oct 26, 2006, at 1:43 AM, Vitaly Wool wrote:
+On 10/26/06, Nicolas DET <nd@bplan-gmbh.de> wrote:
+> --- a/arch/powerpc/sysdev/mpc52xx_pic.c 2006-10-25 19:07:24.000000000 +0200
+> +++ b/arch/powerpc/sysdev/mpc52xx_pic.c 2006-10-26 10:55:44.000000000 +0200
+> @@ -0,0 +1,371 @@
+> +/*
+> + * arch/powerpc/sysdev/mpc52xx_pic.c
+> + *
+> + * Programmable Interrupt Controller functions for the Freescale MPC52xx
+> + * embedded CPU.
+> + * Modified for CHRP Efika 5K2
 
-> Below is the patch for the problem described in "[0/2] build  
-> failure for 8540 w/ CONFIG_OPROFLE=y" letter representing the first  
-> approach. This approach is based on (pretty reasonable) assumption  
-> that op_model_7450.c is applicable only to 6XX, so let's compile it  
-> only when CONFIG_6XX==y. This results in more #ifdef's in arch/ 
-> powerpc/oprofile/common.c, which doesn't look good to me. I'd  
-> rather "switch (cur_cpu_spec->oprofile_type) ..." to SoC-dependent  
-> header files arranging that one as static inline func...
->
-> Anyway, here's the patch.
->
->  arch/powerpc/oprofile/Makefile |    2 +-
->  arch/powerpc/oprofile/common.c |    7 +++----
->  2 files changed, 4 insertions(+), 5 deletions(-)
->
-> Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
+Don't really need to add the "Modified for.." line; That's what git is
+for.  Besides this code is modified for more than just the Efika now.
+:)
 
-This makes sense to me since we are just increasing kernel code size  
-for code we would never use for an FSL_BOOKE part if we do it the  
-other way.  I dont think its that much more messy with the ifdef's.
+> + *
+> + * Maintainer : Sylvain Munaut <tnt@246tNt.com>
+> + *
+> + * Based on (well, mostly copied from) the code from the 2.4 kernel by
+> + * Dale Farnsworth <dfarnsworth@mvista.com> and Kent Borg.
 
-If you want to do the other cleanup as well I've got no issue with  
-that, but we really should NOT build in support for 7450 into a  
-FSL_BOOKE kernel when reasonably avoidable.
+Ditto for this; but I know you didn't add it.  :)  Although this kind
+of comment is more justified because it captures information not
+maintained in git.  (Namely where the original file came from.)
 
-- kumar
+> + *
+> + * Copyright (C) 2004 Sylvain Munaut <tnt@246tNt.com>
+> + * Copyright (C) 2003 Montavista Software, Inc
 
+You should add a bplan copyright line too.
+
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +//#define DEBUG
+
+C++ style comment bad.  :)
+
+> +
+> +#include <linux/stddef.h>
+> +#include <linux/init.h>
+> +#include <linux/sched.h>
+> +#include <linux/signal.h>
+> +#include <linux/stddef.h>
+> +#include <linux/delay.h>
+> +#include <linux/irq.h>
+> +
+> +#include <asm/io.h>
+> +#include <asm/processor.h>
+> +#include <asm/system.h>
+> +#include <asm/irq.h>
+> +#include <asm/prom.h>
+> +
+> +#include <asm/mpc52xx.h>
+> +
+> +static struct mpc52xx_intr __iomem *intr;
+> +static struct mpc52xx_sdma __iomem *sdma;
+> +
+> +static struct irq_host *mpc52xx_irqhost = NULL;
+> +
+
+(snip)
+
+> --- a/arch/powerpc/Kconfig      2006-10-25 19:07:23.000000000 +0200
+> +++ b/arch/powerpc/Kconfig      2006-10-26 11:32:54.000000000 +0200
+> @@ -384,6 +384,12 @@ config PPC_CHRP
+>         select PPC_RTAS
+>         select PPC_MPC106
+>         select PPC_UDBG_16550
+> +       select PPC_MPC52xx_PIC
+> +       default y
+> +
+> +config PPC_MPC52xx_PIC
+> +        bool
+> +       depends on PPC_CHRP
+>         default y
+
+This isn't good for embedded 52xx boards.  Anything u-boot based
+cannot be CHRP.  Please drop the "depends on" line
+
+> --- a/arch/powerpc/platforms/chrp/setup.c       2006-10-25 19:07:23.000000000 +0200
+> +++ b/arch/powerpc/platforms/chrp/setup.c       2006-10-26 10:59:39.000000000 +0200
+> @@ -51,6 +51,7 @@
+>  #include <asm/mpic.h>
+>  #include <asm/rtas.h>
+>  #include <asm/xmon.h>
+> +#include <asm/mpc52xx.h>
 >
-> Index: linux-2.6.18/arch/powerpc/oprofile/Makefile
-> ===================================================================
-> --- linux-2.6.18.orig/arch/powerpc/oprofile/Makefile
-> +++ linux-2.6.18/arch/powerpc/oprofile/Makefile
-> @@ -13,4 +13,4 @@ DRIVER_OBJS := $(addprefix ../../../driv
->  oprofile-y := $(DRIVER_OBJS) common.o backtrace.o
->  oprofile-$(CONFIG_PPC64) += op_model_rs64.o op_model_power4.o
->  oprofile-$(CONFIG_FSL_BOOKE) += op_model_fsl_booke.o
-> -oprofile-$(CONFIG_PPC32) += op_model_7450.o
-> +oprofile-$(CONFIG_6XX) += op_model_7450.o
-> Index: linux-2.6.18/arch/powerpc/oprofile/common.c
-> ===================================================================
-> --- linux-2.6.18.orig/arch/powerpc/oprofile/common.c
-> +++ linux-2.6.18/arch/powerpc/oprofile/common.c
-> @@ -135,19 +135,18 @@ int __init oprofile_arch_init(struct opr
->  		return -ENODEV;
+>  #include "chrp.h"
 >
->  	switch (cur_cpu_spec->oprofile_type) {
-> -#ifdef CONFIG_PPC64
-> +#if defined(CONFIG_PPC64)
->  		case PPC_OPROFILE_RS64:
->  			model = &op_model_rs64;
->  			break;
->  		case PPC_OPROFILE_POWER4:
->  			model = &op_model_power4;
->  			break;
-> -#else
-> +#elif defined (CONFIG_6XX)
->  		case PPC_OPROFILE_G4:
->  			model = &op_model_7450;
->  			break;
-> -#endif
-> -#ifdef CONFIG_FSL_BOOKE
-> +#elif defined (CONFIG_FSL_BOOKE)
->  		case PPC_OPROFILE_BOOKE:
->  			model = &op_model_fsl_booke;
->  			break;
+> @@ -435,6 +436,51 @@ static struct irqaction xmon_irqaction =
+>  };
+>  #endif
 >
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> +
+> +struct device_node *find_mpc52xx_pic(void)
+> +{
+> +       struct device_node *dev;
+> +       const char *piccompatible_list[] =
+> +       {
+> +               "mpc5200-interrupt-controller",
+> +               "mpc52xx-interrupt-controller",
+> +               "mpc52xx-pic",
+> +               "mpc5200-pic",
+> +               "5200-interrupt-controller",
+> +               "52xx-interrupt-controller",
+> +               "52xx-pic",
+> +               "5200-pic",
+> +               NULL
+> +       };
+
+Considering Efika is the *only* CHRP 52xx board out there at the
+moment, and only a handful of embedded folks trying to move it to
+arch/powerpc, surely we can come to an agreement now on what this
+thing is named.  :)
+
+Seriously, just recommend a name to use and everyone will use it.
+Providing a list of names means that every name in your list will be
+used.
+
+> +
+> +       /* Look for an MPC52xx interrupt controller */
+> +       for_each_node_by_type(dev, "interrupt-controller")
+> +       {
+> +               const char **piccompatible_entry = piccompatible_list;
+> +
+> +               for(piccompatible_entry = piccompatible_list; *piccompatible_entry; piccompatible_entry++ )
+> +               {
+> +                       if (device_is_compatible(dev, *piccompatible_entry ))
+> +                               return dev;
+> +               }
+> +       }
+> +
+> +       return NULL;
+> +}
+> +
+> +static int  __init chrp_find_mpc52xx_pic(void)
+> +{
+> +       if (find_mpc52xx_pic())
+> +       {
+> +               printk(KERN_INFO "Found MPC52xx Interrupt Controller\n");
+> +               ppc_md.get_irq = mpc52xx_get_irq;
+> +               mpc52xx_init_irq();
+> +               return 0;
+> +       }
+> +
+> +       return -ENODEV;
+> +}
+> +
+>  static void __init chrp_find_8259(void)
+>  {
+>         struct device_node *np, *pic = NULL;
+> @@ -494,8 +540,12 @@ void __init chrp_init_IRQ(void)
+>  #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
+>         struct device_node *kbd;
+>  #endif
+> -       chrp_find_openpic();
+> -       chrp_find_8259();
+> +
+> +       if ( chrp_find_mpc52xx_pic() < 0)
+> +       {
+> +               chrp_find_openpic();
+> +               chrp_find_8259();
+> +       }
+
+Why?  Why not just add the call to chrp_find_mpc52xx_pic() before or
+after the other two chrp_find_ calls?  Will calling them cause things
+to break?
+
+Keep the code simple.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
