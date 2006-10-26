@@ -1,18 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 53DFA67EFE
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id EDD9B68155
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Oct 2006 03:06:37 +1000 (EST)
-To: tran vanle <vantranbk@yahoo.com.au>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux-2.6.x for TQM860L 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 26 Oct 2006 19:50:33 +1000."
-	<20061026095033.85887.qmail@web33012.mail.mud.yahoo.com>
-Date: Thu, 26 Oct 2006 19:06:34 +0200
-Sender: wd@denx.de
-Message-Id: <20061026170634.F40E43535FD@atlas.denx.de>
+	Fri, 27 Oct 2006 04:19:36 +1000 (EST)
+Message-ID: <4540FC2D.6000403@freescale.com>
+Date: Thu, 26 Oct 2006 13:19:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: wei.li4@elf.mcgill.ca
+Subject: Re: Kernel hangs in console_init()
+References: <20061025173304.c57o9tf3go000wc0@webmail.mcgill.ca>
+In-Reply-To: <20061025173304.c57o9tf3go000wc0@webmail.mcgill.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,33 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-
-in message <20061026095033.85887.qmail@web33012.mail.mud.yahoo.com> you wrote:
+wei.li4@elf.mcgill.ca wrote:
+> Hi All,
 > 
->   I have just read pages
->   http://www.denx.de/wiki/Know/Linux24vs26 and i see you had build Linux-2.6.11.7 for TQM860L with instruction below 
->   Download  Kernel Version 2.6.11.7 from kernel.org plus 8xx v2.6 TLB patch by Marcelo Tosatti (4 Apr 2005)
->   Download config-2.6.11.7-TQM860L
->   Build instruction
-> 
-> -> export CROSS_COMPILE=ppc_8xx-
-> -> cp ../config-2.6.11.7-TQM860L .config
-> -> make ARCH=ppc CROSS_COMPILE=ppc_8xx- oldconfig
-> -> time make -j8 ARCH=ppc CROSS_COMPILE=ppc_8xx- uImage
->    
->   I had done exactly these intruction but I received error 
->   Why? Had I missed another guide?
+> I am working on linux 2.6.18-rc2 with my mpc875 demo board, I used 
+> Debugger LEDs to find that kernel stopped in:
+> 	while (call < __con_initcall_end) {
+> 		(*call)();
+> 		call++;
+>         }
+> which is in console_init() of tty_io.c, what kind of problem could be?
+> What's the means of 'bctrl' instruction that I found in its assembler?
 
-Did you use exact this kernel version, with Marcelo's patch  applied,
-with the provided configuration file?
+It's an indirect function call (i.e. the (*call)(); line) to the address 
+specified in the CTR register.  You need to find out the value of *call 
+in order to figure out which function is failing.  There are probably 
+only a small number of possibilities that are actually configured into 
+your kernel (look for console_initcall in files that get built for your 
+target).
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-No one may kill a man.  Not for any purpose.  It cannot be condoned.
-	-- Kirk, "Spock's Brain", stardate 5431.6
+-Scott
