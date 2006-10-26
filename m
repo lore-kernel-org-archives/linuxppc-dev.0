@@ -1,15 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [POWERPC] 32-bit early_init() should zero from __bss_start to
-	__bss_stop only
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20061025233649.GB17461@mag.az.mvista.com>
-References: <20061025233649.GB17461@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Thu, 26 Oct 2006 10:06:16 +1000
-Message-Id: <1161821177.22582.149.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id BAD8167BEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 13:35:14 +1000 (EST)
+Date: Thu, 26 Oct 2006 13:26:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] Constify compat_get_bitmap argument
+Message-Id: <20061026132659.2ff90dd1.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org, ak@suse.de,
+	linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-10-25 at 16:36 -0700, Mark A. Greer wrote:
-> Currently, early_init() in setup_32.c zeroes from '_bss_start' to '_end'.
-> It should only zero from '__bss_start' to '__bss_stop'.  This patch does that.
-> 
-> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+This means we can call it when the bitmap we want to fetch is declared
+const.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/compat.h |    2 +-
+ kernel/compat.c        |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> 
->  setup_32.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
-> ---
-> 
-> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> index a4c2964..c682e9a 100644
-> --- a/arch/powerpc/kernel/setup_32.c
-> +++ b/arch/powerpc/kernel/setup_32.c
-> @@ -95,7 +95,8 @@ unsigned long __init early_init(unsigned
->  
->  	/* First zero the BSS -- use memset_io, some platforms don't have
->  	 * caches on yet */
-> -	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0, _end - __bss_start);
-> +	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
-> +			__bss_stop - __bss_start);
->  
->  	/*
->  	 * Identify the CPU type and fix up code sections
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+This is headed towards getting sys_migrate_pages wired up for powerpc.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index f4ebf96..f155319 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -196,7 +196,7 @@ #define BITS_PER_COMPAT_LONG    (8*sizeo
+ #define BITS_TO_COMPAT_LONGS(bits) \
+ 	(((bits)+BITS_PER_COMPAT_LONG-1)/BITS_PER_COMPAT_LONG)
+ 
+-long compat_get_bitmap(unsigned long *mask, compat_ulong_t __user *umask,
++long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
+ 		       unsigned long bitmap_size);
+ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
+ 		       unsigned long bitmap_size);
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 75573e5..d4898aa 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -678,7 +678,7 @@ int get_compat_sigevent(struct sigevent
+ 		? -EFAULT : 0;
+ }
+ 
+-long compat_get_bitmap(unsigned long *mask, compat_ulong_t __user *umask,
++long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
+ 		       unsigned long bitmap_size)
+ {
+ 	int i, j;
+-- 
+1.4.3.2
