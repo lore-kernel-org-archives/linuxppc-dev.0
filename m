@@ -1,20 +1,12 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 12/16] cell: add temperature to SPU and CPU
-	sysfs entries
-Date: Thu, 26 Oct 2006 09:35:00 +0200
-References: <20061024163113.694643000@arndb.de>
-	<20061025080048.GB7090@osiris.boeblingen.de.ibm.com>
-	<1161818364.22582.145.camel@localhost.localdomain>
-In-Reply-To: <1161818364.22582.145.camel@localhost.localdomain>
-MIME-Version: 1.0
-Message-Id: <200610260935.01801.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org
+Return-Path: <vwool@ru.mvista.com>
+Date: Thu, 26 Oct 2006 10:43:27 +0400
+From: Vitaly Wool <vwool@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [0/2] build failure for E500 CPUs w/ CONFIG_OPROFLE=y
+Message-Id: <20061026104327.8278e300.vwool@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: oprofile-list@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +16,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 26 October 2006 01:19, Benjamin Herrenschmidt wrote:
-> > 
-> > Will crash if cpu_add_sysdev_attr_group failed...
-> 
-> 
-> Which is a total PITA. If this is the case, then we should modify the
-> add calls to at least initialize enough fields before they can fail for
-> the remove calls not to crash. You don't want to keep track precisely of
-> what file was added and what not and test all of that in your exit code
-> path, it's just insane.
+Hello folks,
 
-Heiko suggested that earlied in http://lkml.org/lkml/2006/10/9/22,
-but Andrew didn't like it.
+we've observed the following build failure compiling the kernel w/ oprofile on 8540 (FSL_BOOKE):
 
-Currently, the worst is that sysfs_remove_file can be used
-on a nonexisting file,  but sysfs_remove_group cannot, which is
-inconsistent. Either sysfs_remove_file should WARN_ON or
-sysfs_remove_group should silently return, and I'd prefer the
-latter, as it makes users simpler.
+CC      arch/powerpc/oprofile/op_model_7450.o
+arch/powerpc/oprofile/op_model_7450.c:62: error: conflicting types for
+'pmc_start_ctrs'
+include/asm/pmc.h:41: error: previous declaration of 'pmc_start_ctrs' was here
+arch/powerpc/oprofile/op_model_7450.c:62: error: conflicting types for
+'pmc_start_ctrs'
+include/asm/pmc.h:41: error: previous declaration of 'pmc_start_ctrs' was here
+arch/powerpc/oprofile/op_model_7450.c:73: warning: static declaration of
+'pmc_stop_ctrs' follows non-static declaration
+include/asm/pmc.h:42: warning: previous declaration of 'pmc_stop_ctrs' was here
+arch/powerpc/oprofile/op_model_7450.c: In function `fsl7450_start':
+arch/powerpc/oprofile/op_model_7450.c:140: warning: implicit declaration of
+function `ctr_write'
+arch/powerpc/oprofile/op_model_7450.c: In function `fsl7450_handle_interrupt':
+arch/powerpc/oprofile/op_model_7450.c:182: warning: implicit declaration of
+function `ctr_read'
+make[1]: *** [arch/powerpc/oprofile/op_model_7450.o] Error 1
 
-	Arnd <><
+The thing is that op_model_7450.c is compiled when CONFIG_PPC32 is true which might be reasonable but results in conflicting functions' types when compiled w/ CONFIG_FSL_BOOKE=y. Effectively, op_model_fsl_booke.c introduces the functions with the same names as op_model_7450.c but with different declarations, and latter ones are static while former ones are not, and this can drive any compiler mad.
+
+This message will have two *alternative* follow-up patches which are probably more likely RFCs rather than complete solutions, but still I'm sure it's reasonable to look at those, b/c those represent two different approaches and we need to decide which way to go first.
+
+Vitaly
