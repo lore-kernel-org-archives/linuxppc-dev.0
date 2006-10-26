@@ -1,12 +1,28 @@
-Return-Path: <vwool@ru.mvista.com>
-Date: Thu, 26 Oct 2006 10:43:44 +0400
-From: Vitaly Wool <vwool@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [2/2] build failure for E500 CPUs w/ CONFIG_OPROFLE=y
-Message-Id: <20061026104344.ed4bfc60.vwool@ru.mvista.com>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 214D067CD3
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 17:59:06 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k9Q7x4gd002354
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 00:59:04 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k9Q7x2kW010389
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 02:59:03 -0500 (CDT)
+Subject: Re: MPC7448_HPC2 question
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1161783936.22582.89.camel@localhost.localdomain>
+References: <1161753605.22582.42.camel@localhost.localdomain>
+	<1161768688.17597.8.camel@localhost.localdomain>
+	<1161783936.22582.89.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1161849578.21362.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: oprofile-list@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Date: 26 Oct 2006 15:59:38 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"Alexandre.Bounine@tundra.com" <Alexandre.Bounine@tundra.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,169 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Below is the patch for the problem described in "[0/2] build failure for 8540 w/ CONFIG_OPROFLE=y" letter representing the second approach. This approach just fixes the mess with ctr_read/ctr_write functions.
-Pro: no need to mess with arch's and add more confusion to arch/powerpc/oprofile/common.c.
-Con: when compiled for FSL_BOOKE, op_model_7450 is not valid as it takes ctr_read/ctr_write from FSL_BOOKE variant, which is confusing but actually doesn't matter since it will never be used in this case.
+On Wed, 2006-10-25 at 21:45, Benjamin Herrenschmidt wrote:
+> On Wed, 2006-10-25 at 17:31 +0800, Zang Roy-r61911 wrote:
+> > On Wed, 2006-10-25 at 13:20, Benjamin Herrenschmidt wrote:
+> > 
+> > > 
+> > > Cannot be replaced by:
+> > > 
+> > >         pci_read_irq_line(dev);
+> > 
+> > When I use pci_read_irq_line(), the pci interrupt number exceeds the
+> > limit of mpic-> irq_count. my mpic->irq_count = 0x18, which is
+> gotten
+> > from on chip register. 
+> > 
+> > mpic_host_map() can not return successful value.
+> 
+> That is not normal... Something must be wrong with your code or your
+> DT... can you get more details about what precisely is happening in
+> both
+> cases ?
+> 
+> Ben.
+> 
 
-So, here's the second patch...
-
- arch/powerpc/oprofile/op_model_7450.c      |   12 ++++-----
- arch/powerpc/oprofile/op_model_fsl_booke.c |   37 -----------------------------
- include/asm-powerpc/oprofile_impl.h        |   36 ++++++++++++++++++++++++++++
- 3 files changed, 42 insertions(+), 43 deletions(-)
-
-Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
-
-Index: linux-2.6.18/arch/powerpc/oprofile/op_model_7450.c
-===================================================================
---- linux-2.6.18.orig/arch/powerpc/oprofile/op_model_7450.c
-+++ linux-2.6.18/arch/powerpc/oprofile/op_model_7450.c
-@@ -58,7 +58,7 @@ static u32 mmcr0_val, mmcr1_val, mmcr2_v
-  * enables the counters to trigger the interrupt, and sets the
-  * counters to only count when the mark bit is not set.
-  */
--static void pmc_start_ctrs(void)
-+static void pmc_7450_start_ctrs(void)
- {
- 	u32 mmcr0 = mfspr(SPRN_MMCR0);
- 
-@@ -69,7 +69,7 @@ static void pmc_start_ctrs(void)
- }
- 
- /* Disables the counters on this CPU, and freezes them */
--static void pmc_stop_ctrs(void)
-+static void pmc_7450_stop_ctrs(void)
- {
- 	u32 mmcr0 = mfspr(SPRN_MMCR0);
- 
-@@ -84,7 +84,7 @@ static void pmc_stop_ctrs(void)
- static void fsl7450_cpu_setup(void *unused)
- {
- 	/* freeze all counters */
--	pmc_stop_ctrs();
-+	pmc_7450_stop_ctrs();
- 
- 	mtspr(SPRN_MMCR0, mmcr0_val);
- 	mtspr(SPRN_MMCR1, mmcr1_val);
-@@ -145,7 +145,7 @@ static void fsl7450_start(struct op_coun
- 	/* Clear the freeze bit, and enable the interrupt.
- 	 * The counters won't actually start until the rfi clears
- 	 * the PMM bit */
--	pmc_start_ctrs();
-+	pmc_7450_start_ctrs();
- 
- 	oprofile_running = 1;
- }
-@@ -154,7 +154,7 @@ static void fsl7450_start(struct op_coun
- static void fsl7450_stop(void)
- {
- 	/* freeze counters */
--	pmc_stop_ctrs();
-+	pmc_7450_stop_ctrs();
- 
- 	oprofile_running = 0;
- 
-@@ -194,7 +194,7 @@ static void fsl7450_handle_interrupt(str
- 	/* Clear the freeze bit, and reenable the interrupt.
- 	 * The counters won't actually start until the rfi clears
- 	 * the PMM bit */
--	pmc_start_ctrs();
-+	pmc_7450_start_ctrs();
- }
- 
- struct op_powerpc_model op_model_7450= {
-Index: linux-2.6.18/arch/powerpc/oprofile/op_model_fsl_booke.c
-===================================================================
---- linux-2.6.18.orig/arch/powerpc/oprofile/op_model_fsl_booke.c
-+++ linux-2.6.18/arch/powerpc/oprofile/op_model_fsl_booke.c
-@@ -32,43 +32,6 @@ static unsigned long reset_value[OP_MAX_
- static int num_counters;
- static int oprofile_running;
- 
--static inline unsigned int ctr_read(unsigned int i)
--{
--	switch(i) {
--		case 0:
--			return mfpmr(PMRN_PMC0);
--		case 1:
--			return mfpmr(PMRN_PMC1);
--		case 2:
--			return mfpmr(PMRN_PMC2);
--		case 3:
--			return mfpmr(PMRN_PMC3);
--		default:
--			return 0;
--	}
--}
--
--static inline void ctr_write(unsigned int i, unsigned int val)
--{
--	switch(i) {
--		case 0:
--			mtpmr(PMRN_PMC0, val);
--			break;
--		case 1:
--			mtpmr(PMRN_PMC1, val);
--			break;
--		case 2:
--			mtpmr(PMRN_PMC2, val);
--			break;
--		case 3:
--			mtpmr(PMRN_PMC3, val);
--			break;
--		default:
--			break;
--	}
--}
--
--
- static void fsl_booke_reg_setup(struct op_counter_config *ctr,
- 			     struct op_system_config *sys,
- 			     int num_ctrs)
-Index: linux-2.6.18/include/asm-powerpc/oprofile_impl.h
-===================================================================
---- linux-2.6.18.orig/include/asm-powerpc/oprofile_impl.h
-+++ linux-2.6.18/include/asm-powerpc/oprofile_impl.h
-@@ -121,6 +121,42 @@ static inline void ctr_write(unsigned in
- 		break;
- 	}
- }
-+#else
-+static inline unsigned int ctr_read(unsigned int i)
-+{
-+	switch(i) {
-+		case 0:
-+			return mfpmr(PMRN_PMC0);
-+		case 1:
-+			return mfpmr(PMRN_PMC1);
-+		case 2:
-+			return mfpmr(PMRN_PMC2);
-+		case 3:
-+			return mfpmr(PMRN_PMC3);
-+		default:
-+			return 0;
-+	}
-+}
-+
-+static inline void ctr_write(unsigned int i, unsigned int val)
-+{
-+	switch(i) {
-+		case 0:
-+			mtpmr(PMRN_PMC0, val);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMC1, val);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMC2, val);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMC3, val);
-+			break;
-+		default:
-+			break;
-+	}
-+}
- #endif /* !CONFIG_FSL_BOOKE */
- 
- extern void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth);
+I think I have gotten the point. For tsi108/9, there are 24 internal
+interrupt. PCI/INTA  to PCI/INTD are routed to interrupt 23 with a
+special mechanism on the chip. INTA to INTD are assiged to nubmer 36 to
+39, which are exceed the nubmer irq number assigned in mpic_alloc().
+This cause abnormal return in function pci_read_irq_line().
+I have worked out a patch. after a test, I will publish it.
+Roy
