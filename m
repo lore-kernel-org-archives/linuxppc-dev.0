@@ -1,12 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BAD8167BEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 13:35:14 +1000 (EST)
-Date: Thu, 26 Oct 2006 13:26:59 +1000
+	by ozlabs.org (Postfix) with ESMTP id 8F78867BEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 13:35:15 +1000 (EST)
+Date: Thu, 26 Oct 2006 13:33:05 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] Constify compat_get_bitmap argument
-Message-Id: <20061026132659.2ff90dd1.sfr@canb.auug.org.au>
+Subject: [PATCH 2/3] Create compat_sys_migrate_pages
+Message-Id: <20061026133305.b0db54e6.sfr@canb.auug.org.au>
+In-Reply-To: <20061026132659.2ff90dd1.sfr@canb.auug.org.au>
+References: <20061026132659.2ff90dd1.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org, ak@suse.de,
@@ -20,45 +22,167 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This means we can call it when the bitmap we want to fetch is declared
-const.
+This is needed on bigendian 64bit architectures. The obvious way to do
+this (taking the other compat_ routines in this file as examples) is to
+use compat_alloc_user_space and copy the bitmasks back there, however you
+cannot call compat_alloc_user_space twice for a single system call and
+this method saves two copies of the bitmasks.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/linux/compat.h |    2 +-
- kernel/compat.c        |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ mm/mempolicy.c |  107 ++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 93 insertions(+), 14 deletions(-)
 
-This is headed towards getting sys_migrate_pages wired up for powerpc.
+Maybe the other compat routines in here should be converted to use
+compat_get_nodes as well.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index f4ebf96..f155319 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -196,7 +196,7 @@ #define BITS_PER_COMPAT_LONG    (8*sizeo
- #define BITS_TO_COMPAT_LONGS(bits) \
- 	(((bits)+BITS_PER_COMPAT_LONG-1)/BITS_PER_COMPAT_LONG)
- 
--long compat_get_bitmap(unsigned long *mask, compat_ulong_t __user *umask,
-+long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
- 		       unsigned long bitmap_size);
- long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
- 		       unsigned long bitmap_size);
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 75573e5..d4898aa 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -678,7 +678,7 @@ int get_compat_sigevent(struct sigevent
- 		? -EFAULT : 0;
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 617fb31..65c0281 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -854,6 +854,58 @@ static int get_nodes(nodemask_t *nodes,
+ 	return 0;
  }
  
--long compat_get_bitmap(unsigned long *mask, compat_ulong_t __user *umask,
-+long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
- 		       unsigned long bitmap_size)
++#ifdef CONFIG_COMPAT
++static int compat_get_nodes(nodemask_t *nodes,
++		const compat_ulong_t __user *nmask, unsigned long maxnode)
++{
++	unsigned long k;
++	unsigned long nlongs;
++	unsigned long nbits = maxnode - 1;
++	compat_ulong_t endmask;
++
++	if (maxnode == 0)
++		return -EINVAL;
++	nodes_clear(*nodes);
++	if (nbits == 0 || !nmask)
++		return 0;
++	if (nbits > PAGE_SIZE * BITS_PER_BYTE)
++		return -EINVAL;
++
++	nlongs = BITS_TO_COMPAT_LONGS(nbits);
++	if ((nbits % BITS_PER_COMPAT_LONG) == 0)
++		endmask = (compat_ulong_t)~0;
++	else
++		endmask = ((compat_ulong_t)1 <<
++				(nbits % BITS_PER_COMPAT_LONG)) - 1;
++
++	/* When the user specified more nodes than supported just check
++	   if the non supported part is all zero. */
++	if (nbits > MAX_NUMNODES) {
++		if (nlongs > PAGE_SIZE / sizeof(compat_ulong_t))
++			return -EINVAL;
++		for (k = BITS_TO_COMPAT_LONGS(MAX_NUMNODES); k < nlongs; k++) {
++			compat_ulong_t t;
++
++			if (get_user(t, nmask + k))
++				return -EFAULT;
++			if (k == (nlongs - 1)) {
++				if (t & endmask)
++					return -EINVAL;
++			} else if (t)
++				return -EINVAL;
++		}
++		nbits = MAX_NUMNODES;
++		endmask = ~0;
++	}
++
++	if (compat_get_bitmap(nodes_addr(*nodes), nmask, nbits))
++		return -EFAULT;
++	if (nbits % BITS_PER_COMPAT_LONG)
++		nodes_addr(*nodes)[BITS_TO_COMPAT_LONGS(nbits) - 1] &= endmask;
++	return 0;
++}
++#endif /* CONFIG_COMPAT */
++
+ /* Copy a kernel node mask to user space */
+ static int copy_nodes_to_user(unsigned long __user *mask, unsigned long maxnode,
+ 			      nodemask_t *nodes)
+@@ -900,25 +952,13 @@ asmlinkage long sys_set_mempolicy(int mo
+ 	return do_set_mempolicy(mode, &nodes);
+ }
+ 
+-asmlinkage long sys_migrate_pages(pid_t pid, unsigned long maxnode,
+-		const unsigned long __user *old_nodes,
+-		const unsigned long __user *new_nodes)
++static long internal_migrate_pages(pid_t pid, nodemask_t *old, nodemask_t *new)
  {
- 	int i, j;
+ 	struct mm_struct *mm;
+ 	struct task_struct *task;
+-	nodemask_t old;
+-	nodemask_t new;
+ 	nodemask_t task_nodes;
+ 	int err;
+ 
+-	err = get_nodes(&old, old_nodes, maxnode);
+-	if (err)
+-		return err;
+-
+-	err = get_nodes(&new, new_nodes, maxnode);
+-	if (err)
+-		return err;
+-
+ 	/* Find the mm_struct */
+ 	read_lock(&tasklist_lock);
+ 	task = pid ? find_task_by_pid(pid) : current;
+@@ -963,6 +1003,25 @@ out:
+ 	return err;
+ }
+ 
++asmlinkage long sys_migrate_pages(pid_t pid, unsigned long maxnode,
++		const unsigned long __user *old_nodes,
++		const unsigned long __user *new_nodes)
++{
++	nodemask_t old;
++	nodemask_t new;
++	int err;
++
++	err = get_nodes(&old, old_nodes, maxnode);
++	if (err)
++		return err;
++
++	err = get_nodes(&new, new_nodes, maxnode);
++	if (err)
++		return err;
++
++	return internal_migrate_pages(pid, old, new);
++}
++
+ 
+ /* Retrieve NUMA policy */
+ asmlinkage long sys_get_mempolicy(int __user *policy,
+@@ -1067,7 +1126,27 @@ asmlinkage long compat_sys_mbind(compat_
+ 	return sys_mbind(start, len, mode, nm, nr_bits+1, flags);
+ }
+ 
+-#endif
++asmlinkage long compat_sys_migrate_pages(compat_pid_t pid,
++			compat_ulong_t maxnode,
++			const compat_ulong_t __user *old_nodes,
++			const compat_ulong_t __user *new_nodes)
++{
++	nodemask_t old;
++	nodemask_t new;
++	int err;
++
++	err = get_nodes(&old, old_nodes, maxnode);
++	if (err)
++		return err;
++
++	err = get_nodes(&new, new_nodes, maxnode);
++	if (err)
++		return err;
++
++	return internal_migrate_pages(pid, old, new);
++}
++
++#endif /* CONFIG_COMPAT */
+ 
+ /* Return effective policy for a VMA */
+ static struct mempolicy * get_vma_policy(struct task_struct *task,
 -- 
 1.4.3.2
