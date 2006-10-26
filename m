@@ -1,14 +1,18 @@
 Return-Path: <nd@bplan-gmbh.de>
-Message-ID: <45410D5F.1000607@bplan-gmbh.de>
-Date: Thu, 26 Oct 2006 21:32:47 +0200
+Message-ID: <4541118F.60002@bplan-gmbh.de>
+Date: Thu, 26 Oct 2006 21:50:39 +0200
 From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
-To: Nicolas DET <nd@bplan-gmbh.de>
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
-References: <453FB582.20802@bplan-gmbh.de>		<1161816783.22582.132.camel@localhost.localdomain>		<45409760.7030902@bplan-gmbh.de>		<1161866964.27827.2.camel@localhost.localdomain>		<4540B0A9.6070404@bplan-gmbh.de>		<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>		<528646bc0610260909x10c3b242i64387f576e625048@mail.gmail.com>		<4540EB0E.2090000@bplan-gmbh.de>	<528646bc0610261214i34351884reb3171413e4c105@mail.gmail.com>
-	<45410ABA.9000902@bplan-gmbh.de>
-In-Reply-To: <45410ABA.9000902@bplan-gmbh.de>
-Content-Type: multipart/mixed; boundary="------------060005040109020707000608"
+References: <453FB582.20802@bplan-gmbh.de>	
+	<1161816783.22582.132.camel@localhost.localdomain>	
+	<45409760.7030902@bplan-gmbh.de>	
+	<1161866964.27827.2.camel@localhost.localdomain>	
+	<4540B0A9.6070404@bplan-gmbh.de>
+	<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>
+In-Reply-To: <528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="------------000505070802060305040809"
 Cc: akpm@osdl.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
 	linuxppc-embedded@ozlabs.org, sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,33 +25,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------060005040109020707000608
+--------------000505070802060305040809
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Nicolas DET wrote:
-> Grant Likely wrote:
-> 
->>>
->>> diff -uprN a/include/asm-ppc/mpc52xx.h b/include/asm-ppc/mpc52xx.h
->>> --- a/include/asm-ppc/mpc52xx.h 2006-10-25 19:07:48.000000000 +0200
->>> +++ b/include/asm-ppc/mpc52xx.h 2006-10-25 19:11:55.000000000 +0200
->>> @@ -119,7 +119,7 @@ enum ppc_sys_devices {
->>>  #define MPC52xx_SDMA_IRQ_NUM   17
->>>  #define MPC52xx_PERP_IRQ_NUM   23
->>>
->>> -#define MPC52xx_CRIT_IRQ_BASE  1
->>> +#define MPC52xx_CRIT_IRQ_BASE  0
->>
->> Is this *strictly* necessary for adding mpc52xx-pic support to
->> arch/powerpc?  If not, then move it to a separate patch.
-> 
-> 
-> Removed as it does not hurt ARCH=powerpc.
+Grant Likely wrote:
 
-Lindent...
+>> +
+>> +struct device_node *find_mpc52xx_pic(void)
+>> +{
+>> +       struct device_node *dev;
+>> +       const char *piccompatible_list[] =
+>> +       {
+>> +               "mpc5200-interrupt-controller",
+>> +               "mpc52xx-interrupt-controller",
+>> +               "mpc52xx-pic",
+>> +               "mpc5200-pic",
+>> +               "5200-interrupt-controller",
+>> +               "52xx-interrupt-controller",
+>> +               "52xx-pic",
+>> +               "5200-pic",
+>> +               NULL
+>> +       };
+> 
+> Considering Efika is the *only* CHRP 52xx board out there at the
+> moment, and only a handful of embedded folks trying to move it to
+> arch/powerpc, surely we can come to an agreement now on what this
+> thing is named.  :)
+>
+> 
 
---------------060005040109020707000608
+Done
+
+
+
+--------------000505070802060305040809
 Content-Type: text/plain;
  name="chrpmpc52xx_2.6.19-rc3.patch"
 Content-Transfer-Encoding: 7bit
@@ -445,7 +457,7 @@ Content-Disposition: inline;
  
  config PPC_PMAC
 --- a/arch/powerpc/platforms/chrp/setup.c	2006-10-25 19:07:23.000000000 +0200
-+++ b/arch/powerpc/platforms/chrp/setup.c	2006-10-26 18:56:34.000000000 +0200
++++ b/arch/powerpc/platforms/chrp/setup.c	2006-10-26 21:47:29.000000000 +0200
 @@ -51,6 +51,7 @@
  #include <asm/mpic.h>
  #include <asm/rtas.h>
@@ -454,7 +466,7 @@ Content-Disposition: inline;
  
  #include "chrp.h"
  
-@@ -435,6 +436,51 @@ static struct irqaction xmon_irqaction =
+@@ -435,6 +436,44 @@ static struct irqaction xmon_irqaction =
  };
  #endif
  
@@ -464,14 +476,7 @@ Content-Disposition: inline;
 +	struct device_node *dev;
 +	const char *piccompatible_list[] =
 +	{
-+		"mpc5200-interrupt-controller",
-+		"mpc52xx-interrupt-controller",
-+		"mpc52xx-pic",
 +		"mpc5200-pic",
-+		"5200-interrupt-controller",
-+		"52xx-interrupt-controller",
-+		"52xx-pic",
-+		"5200-pic",
 +		NULL
 +	};
 +
@@ -506,7 +511,7 @@ Content-Disposition: inline;
  static void __init chrp_find_8259(void)
  {
  	struct device_node *np, *pic = NULL;
-@@ -473,8 +519,11 @@ static void __init chrp_find_8259(void)
+@@ -473,8 +512,11 @@ static void __init chrp_find_8259(void)
  		break;
  	}
  	if (np == NULL)
@@ -520,7 +525,7 @@ Content-Disposition: inline;
  
  	i8259_init(pic, chrp_int_ack);
  	if (ppc_md.get_irq == NULL)
-@@ -494,6 +543,8 @@ void __init chrp_init_IRQ(void)
+@@ -494,6 +536,8 @@ void __init chrp_init_IRQ(void)
  #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
  	struct device_node *kbd;
  #endif
@@ -530,7 +535,7 @@ Content-Disposition: inline;
  	chrp_find_8259();
  
 
---------------060005040109020707000608
+--------------000505070802060305040809
 Content-Type: text/x-vcard; charset=utf-8;
  name="nd.vcf"
 Content-Transfer-Encoding: 7bit
@@ -551,4 +556,4 @@ version:2.1
 end:vcard
 
 
---------------060005040109020707000608--
+--------------000505070802060305040809--
