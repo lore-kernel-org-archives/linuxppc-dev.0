@@ -1,15 +1,18 @@
-Return-Path: <vantranbk@yahoo.com.au>
-Received: from web33012.mail.mud.yahoo.com (web33012.mail.mud.yahoo.com
-	[209.191.69.127]) by ozlabs.org (Postfix) with SMTP id 816BF67CCC
+Return-Path: <kalle.pokki@iki.fi>
+Received: from host32.eke.fi (host32.eke.fi [194.100.64.32])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8155B67D86
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Oct 2006 19:50:35 +1000 (EST)
-Message-ID: <20061026095033.85887.qmail@web33012.mail.mud.yahoo.com>
-Date: Thu, 26 Oct 2006 19:50:33 +1000 (EST)
-From: tran vanle <vantranbk@yahoo.com.au>
-Subject: Linux-2.6.x for TQM860L
-To: linuxppc-embedded@ozlabs.org
+	Thu, 26 Oct 2006 23:39:44 +1000 (EST)
+Date: Thu, 26 Oct 2006 16:33:53 +0300 (EEST)
+From: Kalle Pokki <kalle.pokki@iki.fi>
+To: linuxppc-embedded@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] 8xx: Fixed compile error
+Message-ID: <Pine.LNX.4.64.0610261630390.2243@host32.eke.fi>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-419931175-1161856233=:66158"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,37 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-419931175-1161856233=:66158
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Compilation fails in case of CONFIG_MTD_PARTITIONS && !CONFIG_MTD_PHYSMAP.
+Also put board-specific definitions inside #ifdef.
 
-Hi WolfgangDenk
-  I have just read pages
-  http://www.denx.de/wiki/Know/Linux24vs26 and i see you had build Linux-2.6.11.7 for TQM860L with instruction below 
-  Download  Kernel Version 2.6.11.7 from kernel.org plus 8xx v2.6 TLB patch by Marcelo Tosatti (4 Apr 2005)
-  Download config-2.6.11.7-TQM860L
-  Build instruction
+Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
+---
+  arch/ppc/syslib/m8xx_setup.c |    6 +++---
+  1 files changed, 3 insertions(+), 3 deletions(-)
 
--> export CROSS_COMPILE=ppc_8xx-  -> cp ../config-2.6.11.7-TQM860L .config  -> make ARCH=ppc CROSS_COMPILE=ppc_8xx- oldconfig  -> time make -j8 ARCH=ppc CROSS_COMPILE=ppc_8xx- uImage
-   
-  I had done exactly these intruction but I received error 
-  Why? Had I missed another guide?
-  Thanks
-   
-  LeVan  
+diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+index 54303a7..7d3bf66 100644
+--- a/arch/ppc/syslib/m8xx_setup.c
++++ b/arch/ppc/syslib/m8xx_setup.c
+@@ -31,12 +31,10 @@ #include <linux/bootmem.h>
+  #include <linux/seq_file.h>
+  #include <linux/root_dev.h>
 
- 		
----------------------------------
-Do you Yahoo!?
-  Help K-Zone create the longest line of footprints and break a world record
---0-419931175-1161856233=:66158
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+-#if defined(CONFIG_MTD) && defined(CONFIG_MTD_PHYSMAP)
+  #include <linux/mtd/partitions.h>
+  #include <linux/mtd/physmap.h>
+  #include <linux/mtd/mtd.h>
+  #include <linux/mtd/map.h>
+-#endif
 
-<div>Hi <A class=twikiLink href="http://www.denx.de/wiki/Main/WolfgangDenk">WolfgangDenk</A></div>  <div>I have just read pages</div>  <div><A href="http://www.denx.de/wiki/Know/Linux24vs26">http://www.denx.de/wiki/Know/Linux24vs26</A>&nbsp;and i see you had build Linux-2.6.11.7 for TQM860L with instruction below </div>  <div>Download &nbsp;Kernel <A href="ftp://ftp.kernel.org/pub/linux/kernel/v2.6/linux-2.6.11.7.tar.bz2" target=_top>Version 2.6.11.7 from kernel.org</A> plus <A href="http://www.denx.de/wiki/pub/Know/Linux24vs26/tosatti.patch" target=_top>8xx v2.6 TLB patch by Marcelo Tosatti (4 Apr 2005)</A></div>  <div>Download <A href="http://www.denx.de/wiki/pub/Know/Linux24vs26/config-2.6.11.7-TQM860L" target=_top>config-2.6.11.7-TQM860L</A></div>  <div>Build instruction</div><PRE>-&gt; export CROSS_COMPILE=ppc_8xx-  -&gt; cp ../config-2.6.11.7-TQM860L .config  -&gt; make ARCH=ppc CROSS_COMPILE=ppc_8xx- oldconfig  -&gt; time make -j8 ARCH=ppc CROSS_COMPILE=ppc_8xx-
- uImage</PRE>  <div>&nbsp;</div>  <div>I had done exactly these intruction but I received error </div>  <div>Why? Had I missed&nbsp;another guide?</div>  <div>Thanks</div>  <div>&nbsp;</div>  <div>LeVan&nbsp;&nbsp;</div><p>&#32;
-		<hr size=1>Do you Yahoo!?<br> 
-<a 
-href="http://au.rd.yahoo.com/mail/tag/kzone/SIG=12vv1ch5j/**http%3A%2F%2Fwww.kzone.com.au%2Fdisplay.cfm%3FObjectID%3DFB378E31-10DA-493F-B97AE3065F22180E"> 
-Help K-Zone create the longest line of footprints and break a world record</a>
---0-419931175-1161856233=:66158--
+  #include <asm/mmu.h>
+  #include <asm/reg.h>
+@@ -53,6 +51,7 @@ #include <asm/ppc_sys.h>
+
+  #include "ppc8xx_pic.h"
+
++#if defined (CONFIG_MPC86XADS) || defined (CONFIG_MPC885ADS)
+  #ifdef CONFIG_MTD_PHYSMAP
+  #define MPC8xxADS_BANK_WIDTH 4
+  #endif
+@@ -79,7 +78,8 @@ static struct mtd_partition mpc8xxads_pa
+
+  #define mpc8xxads_part_num (sizeof (mpc8xxads_partitions) / sizeof (mpc8xxads_partitions[0]))
+
+-#endif
++#endif /* CONFIG_MTD_PARTITIONS */
++#endif /* CONFIG_MPC86XADS || CONFIG_MPC855ADS */
+
+  static int m8xx_set_rtc_time(unsigned long time);
+  static unsigned long m8xx_get_rtc_time(void);
+-- 
+1.4.1.1
