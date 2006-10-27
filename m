@@ -1,25 +1,13 @@
-Return-Path: <jdl@freescale.com>
-Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
-From: Jon Loeliger <jdl@freescale.com>
-To: Nicolas DET <nd@bplan-gmbh.de>
-In-Reply-To: <45421FFD.8070407@bplan-gmbh.de>
-References: <453FB582.20802@bplan-gmbh.de>
-	<1161816783.22582.132.camel@localhost.localdomain>
-	<45409760.7030902@bplan-gmbh.de>
-	<1161866964.27827.2.camel@localhost.localdomain>
-	<4540B0A9.6070404@bplan-gmbh.de>
-	<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>
-	<4541118F.60002@bplan-gmbh.de>
-	<528646bc0610261300s3e93e53fk5732990089b68d35@mail.gmail.com>
-	<1161919709.25682.61.camel@localhost.localdomain>
-	<45421C97.80501@bplan-gmbh.de>  <45421FFD.8070407@bplan-gmbh.de>
-Content-Type: text/plain
-Message-Id: <1161968926.2426.415.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Fri, 27 Oct 2006 12:08:46 -0500
-Cc: akpm@osdl.org, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	sl@bplan-gmbh.de, sha@pengutronix.de,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Return-Path: <grant.likely@gmail.com>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 7C67567E63
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 03:15:43 +1000 (EST)
+From: Grant Likely <grant.likely@gmail.com>
+To: Nicolas DET <nd@bplan-gmbh.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: [POWERPC] Cleanup pegasos i8259 not in device tree workaround.
+Date: Fri, 27 Oct 2006 10:42:09 -0600
+Message-Id: <116196732980-git-send-email-grant.likely@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-10-27 at 10:04, Nicolas DET wrote:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> > diff -uprN a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
-> > --- a/include/asm-powerpc/mpc52xx.h	1970-01-01 01:00:00.000000000 +0100
-> > +++ b/include/asm-powerpc/mpc52xx.h	2006-10-27 15:51:55.000000000 +0200
-> > @@ -0,0 +1,414 @@
-> > +/*
-> > + * include/asm-ppc/mpc52xx.h
-> > + * 
-> 
-> 
-> Fixed to powerpc
+Only make assumptions about i8259 presence if ppc_md.get_irq is not set.
+Previous workaround only checked chrp_mpic value.
 
-I thought we were removing the names of files from
-within the file itself, right?
+Nicolas, please verify that this patch fixes your mpc52xx pic problems.
+Ben, I got tired of how often this question was being raised, so I just
+wrote this patch; I've compiled, but cannot test it.
 
-Thanks,
-jdl
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/powerpc/platforms/chrp/setup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index 49b8dab..a5466ed 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -451,7 +451,7 @@ static void __init chrp_find_8259(void)
+ 	 * we have a pegasos that claims to be chrp but doesn't have
+ 	 * a proper interrupt tree
+ 	 */
+-	if (pic == NULL && chrp_mpic != NULL) {
++	if (pic == NULL && ppc_md.get_irq != NULL) {
+ 		printk(KERN_ERR "i8259: Not found in device-tree"
+ 		       " assuming no legacy interrupts\n");
+ 		return;
+-- 
+1.4.3.rc2.g0503
