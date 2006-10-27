@@ -1,13 +1,14 @@
 Return-Path: <benh@kernel.crashing.org>
 Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Rigby <jcrigby@gmail.com>
-In-Reply-To: <4b73d43f0610261017s38cdc78fn23ea07113bf8c0fc@mail.gmail.com>
+To: Sylvain Munaut <tnt@246tNt.com>
+In-Reply-To: <4540F16E.2050305@246tNt.com>
 References: <453FB582.20802@bplan-gmbh.de>
 	<4b73d43f0610261017s38cdc78fn23ea07113bf8c0fc@mail.gmail.com>
+	<4540F16E.2050305@246tNt.com>
 Content-Type: text/plain
-Date: Fri, 27 Oct 2006 12:57:41 +1000
-Message-Id: <1161917861.25682.46.camel@localhost.localdomain>
+Date: Fri, 27 Oct 2006 13:03:02 +1000
+Message-Id: <1161918182.25682.52.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org, sl@bplan-gmbh.de,
 	linuxppc-dev@ozlabs.org, sha@pengutronix.de
@@ -20,65 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-10-26 at 11:17 -0600, John Rigby wrote:
-> >
-> > * mpc5k2_bestcomm.c (& helpers): I've been in contact with others people
-> > using bestcomm and please to see the development was still active. I'm
-> > already using latest code on my board but this is not include in this
-> > patch. Indeed, it needs some changes for ARCH=powerpc. Moreover, we have
-> > a different approach for the tasks. I'll be pleased to work with the
-> > bestcomm folks.
-> >
-> 
-> So you preload the bestcomm task code in your boot loader?  Do those
-> of us using other bootloaders still have the option of loading the
-> task code later in linux?
-> 
-> What api are you using?  Sylvain's proposed one based on Dale's with
-> some additions from me?  Or have you come up with your own?
+> Since the bestcomm init is in a module, a different module could be
+> implemented,
+> (like bestcomm-chrp5k2.ko) that instead of clearing SRAM and doing
+> everything
+> from scrtch, would rely on the bootloader more. This would allow
+> "custom" tasks
+> to be marked as "don't touch". So if the bootloader want to load
+> something that
+> will not be altered by the linux driver (for whatever reason ...)
 
-I think we need to look into 3 options for the bestcomm task code:
+I don't think we should have two different modules.
 
- - Preloaded by the firmware
- - In the device-tree but not preloaded
- - In the kernel
+We are talking here about arch/powerpc where the presence of a
+device-tree is mandatory. Thus, we should rely on that and define
+something based on that.
 
-Though we might want to completely dismiss the 3rd option and decide
-that it has to be in the device-tree, wether it's provided by the
-zImage wrapper, or by the firmware.
+In any case, I strongly think a single module with a single API should
+be able to deal with all the cases we need to define for loading the
+tasks. As I defined in a separate email, that includes wether the tasks
+are preloaded, provided as a blob in the device-tree (possibly via the
+zImage wrapper, and thus still in the kernel tree), or hard coded in the
+kernel driver (I don't like that solution though).
 
-Do you see any other case ?
+It's mostly a matter on how the thing initializes anyway. Once it's up
+and running, the code path should be identical.
 
-So we need to define the content of the various device nodes for those
-3 cases. The 3rd case is easy: probably nothing to put there, purely an
-in-kernel thing, unless the bestcomm task IDs related to a given cell
-are always the same.
+> However, for the tasks like FEC and ATA and everything supported in the
+> kernel
+> natively, I would still recommend reload the task code (anyway the
+> driver is gonna
+> reset the task and everything ...) Trying to reuse the microcode loaded
+> by the
+> bootloader is not a great idea IMHO. (Imagine, the fec driver is changed
+> to use
+> the latest microcode, but the bootloader is not ... both have to be in
+> perfect sync ...)
 
-The two first ones are similar, with the exception that the "blob" is in
-one case preloaded (thus we provide a property telling where it is in
-the sram) and in the other case, the blob is in the DT itself, thus we
-have a bit of "bootstrap" code that loads it. In both cases, tasks IDs
-are known and thus the device-tree might contain the necessary binding
-informations.
+Is there some versionning available with the microcode ? I'm afraid
+there might not be (since that whole bestcomm business seems to be
+immune to good ideas from whoever design the whole chip), but that would
+be useful. I agree that having the task code coming from the firmware
+might not be the best idea if there is no versionning, but it nicely
+solves some of the problems related to distributing "binary blobs" ...
+I'm sure debian would have issues with bestcomm code shipped with the
+kernel....
 
-Now, in any case, the "drivers" need a way to link to their respective
-"tasks". That is, the function drivers (FEC, ...) need to use functions
-provided by the "bestcomm" driver to setup and use tasks. In order to do
-that the function drivers need to provide enough information of course
-to allow the bestcomm to properly find out the tasks.
+If no versionning is available we might want to create one ourselves,
+via a wiki possibly and one person (you ?) responsible for distributing
+the "releases" and assigning them versions...
 
-That's why my idea is that we associate to "known" bestcomm tasks a name
-(a string), for example, "fec-tx" and "fec-rx" and the function drivers
-pass their device-node to the bestcomm drivers. The Bestcomm "driver"
-can then look into the device-tree node for a property "bestcomm-task-%
-s" where %s is the task "name", containing the task informations (ID,
-position in a table, whatever, I don't remember the details, it's up to
-you guys to define something).
+At which point, the device-tree can contain version information along
+with the task code or pointers to the code in sram.
 
-That property can then be in the device own node, in the bestcomm node,
-or absent in the case where the whole bestcom ucode is embedded in the
-kernel itself, in which case the driver has an internal table to resolve
-that, but I wonder if we shouldn't make madantory to at least have it in
-the device-tree and thus ignore that case 3...
+> We would still have to compare the internal FDT and the preloaded one
+> though since
+> they have to match ...
 
 Ben.
