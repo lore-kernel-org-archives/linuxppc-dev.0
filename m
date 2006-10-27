@@ -1,18 +1,24 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8BD7167D98
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 905B567E9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Oct 2006 00:29:32 +1000 (EST)
-Date: Fri, 27 Oct 2006 17:38:42 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: robin.gilks@tait.co.nz
-Subject: Re: Building new FEC code on 8xx with 2.6.17 kernel
-Message-ID: <20061027173842.4e53bdd6@vitb.ru.mvista.com>
-In-Reply-To: <454163B2.4010308@tait.co.nz>
-References: <454163B2.4010308@tait.co.nz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc embedded list <linuxppc-embedded@ozlabs.org>
+	Sat, 28 Oct 2006 01:03:04 +1000 (EST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: dbolcsfoldi@gmail.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
+References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
+	<87ac41esap.fsf@sleipner.barco.com>
+	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
+	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
+	<87ac40vgeo.fsf@sleipner.barco.com>
+	<609d5c8e0610151648x41b0c49cj4d0cda0e3b5bf1e@mail.gmail.com>
+	<87lknadbbl.fsf@sleipner.barco.com>
+Date: Fri, 27 Oct 2006 17:03:01 +0200
+In-Reply-To: <87lknadbbl.fsf@sleipner.barco.com> (Peter Korsgaard's message of
+	"Fri, 20 Oct 2006 21:41:34 +0200")
+Message-ID: <877iylreca.fsf@sleipner.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,34 +29,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 27 Oct 2006 14:41:06 +1300
-Robin Gilks <robin.gilks@tait.co.nz> wrote:
+>>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
 
-> Greetings
-> 
-> Just having a first stab at building for an 859T based product so I 
-> assume I'll be using the new FEC driver. I'm getting two unresolved 
-> references as follows:
-> 
-> drivers/built-in.o: In function 
-> `fec_8xx_init':fec_main.c:(.init.text+0x1a40): undefined reference to 
-> `fec_8xx_platform_init'
-> drivers/built-in.o: In function 
-> `fec_8xx_cleanup':fec_main.c:(.exit.text+0x39c): undefined reference to 
-> `fec_8xx_platform_cleanup'
-> 
-> No big deal as I can see an example for the netta platform (whatever 
-> that is) that defines these functions and I can hack that to suit my 
-> hardware - what I can't find is where CONFIG_NETTA is defined. I can't 
-> find it in any Kconfig file, and I want to use the same mechanism for 
-> selecting my platform.
-> 
-> Any ideas? (or is FEC still broken on CPM1 processors)
-> 
+Peter> I'll test and take a closer look at your patch when I have
+Peter> access to hw again on Monday.
 
-Please use fs_enet driver (drivers/fs_enet). You can find the reference for platform code at
-say arch/ppc/platforms/mpc885_setup.c
+Sorry, it got a bit later than promised, but I've now had a closer
+look at your patch ..
+
+--- uartlite/arch/ppc/boot/simple/misc.c	2006-10-15 14:09:47.000000000 -0700
++++ uartlite-mod/arch/ppc/boot/simple/misc.c	2006-10-15 13:58:51.000000000 -0700
+@@ -48,7 +48,8 @@
+ #if (defined(CONFIG_SERIAL_8250_CONSOLE) \
+ 	|| defined(CONFIG_VGA_CONSOLE) \
+ 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
+-	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)) \
++	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
++	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)) \
+ 	&& !defined(CONFIG_GEMINI)
+ #define INTERACTIVE_CONSOLE	1
+ #endif
+
+The Xilinx boards use misc-embedded.c not misc.c - Why is this needed?
+
++unsigned long serial_init(int chan, void *ignored)
++{
++	switch (chan)  {
++	#ifdef XPAR_XUL_UART_0_BASEADDR
++		case 0:
++			return XPAR_XUL_UART_0_BASEADDR;
++	#endif
++	#ifdef XPAR_XUL_UART_1_BASEADDR
++		case 1:		
++			return XPAR_XUL_UART_1_BASEADDR;
++	#endif
++	#ifdef XPAR_XUL_UART_2_BASEADDR
++		case 2:
++			return XPAR_XUL_UART_2_BASEADDR;
++	#endif
++	#ifdef XPAR_XUL_UART_3_BASEADDR
++		case 3:
++			return XPAR_XUL_UART_3_BASEADDR;
++	#endif
+
+This doesn't help much as you don't use the com_port argument in the
+other functions.
+
+Where did you get the XPAR_XUL_UART_ defines from? Our xparameters.h
+seem to contain XPAR_UARTLITE_ defines instead.
+
+@@ -131,12 +115,16 @@
+ 	struct uart_port *port = (struct uart_port *)dev_id;
+ 	int busy;
+
++	spin_lock(&port->lock); /* Lock the port in case of printk */
++	
+
+In an interrupt handler? Why? The console_write does a spin_lock_irqsave.
+
+ static int __init ulite_console_setup(struct console *co, char *options)
+ {
++	int i, ret;
+ 	struct uart_port *port;
+-
++	struct platform_device *pdev;
++	
+ 	if (co->index < 0 || co->index >= ULITE_NR_UARTS)
+ 		return -EINVAL;
+
+ 	port = &ports[co->index];
+
+ 	/* not initialized yet? */
+-	if (!port->membase)
+-		return -ENODEV;
++	if (!port->membase) {
++		/* We might be early console */
+
+Is this really necessary? The platform probe get's called quite early, E.G.:
+
+Breakpoint 2, ulite_probe (pdev=0xc01c84d0) at drivers/serial/uartlite.c:392
+392     {
+(gdb) print __log_buf 
+$1 = "<5>Linux version 2.6.19-rc3 (peko@sleipner) (gcc version 3.4.5) #19 Fri Oct 27 16:39:00 CEST 2006\n<6>Barco ThinLite (V2P) <peter.korsgaard@barco.com>\n<7>Entering add_active_range(0, 0, 15360) 0 entrie"...
+
+You can always use the ppc_md.progress() stuff for really early
+debugging if needed. I would prefer to keep this workaround out of
+uartlite.c if it isn't needed.
 
 -- 
-Sincerely, 
-Vitaly
+Bye, Peter Korsgaard
