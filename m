@@ -1,24 +1,15 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 905B567E9B
+Return-Path: <jmwoo2@yahoo.com>
+Received: from web50315.mail.yahoo.com (web50315.mail.yahoo.com
+	[206.190.39.228]) by ozlabs.org (Postfix) with SMTP id 1A0AE67DDD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Oct 2006 01:03:04 +1000 (EST)
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: dbolcsfoldi@gmail.com, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	<87ac41esap.fsf@sleipner.barco.com>
-	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
-	<87ac40vgeo.fsf@sleipner.barco.com>
-	<609d5c8e0610151648x41b0c49cj4d0cda0e3b5bf1e@mail.gmail.com>
-	<87lknadbbl.fsf@sleipner.barco.com>
-Date: Fri, 27 Oct 2006 17:03:01 +0200
-In-Reply-To: <87lknadbbl.fsf@sleipner.barco.com> (Peter Korsgaard's message of
-	"Fri, 20 Oct 2006 21:41:34 +0200")
-Message-ID: <877iylreca.fsf@sleipner.barco.com>
+	Sat, 28 Oct 2006 04:27:55 +1000 (EST)
+Message-ID: <20061027182114.24662.qmail@web50315.mail.yahoo.com>
+Date: Fri, 27 Oct 2006 11:21:14 -0700 (PDT)
+From: John W <jmwoo2@yahoo.com>
+Subject: Building ELDK 3.0/3.1 from SRPMS
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,92 +20,111 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
+Hello-
 
-Peter> I'll test and take a closer look at your patch when I have
-Peter> access to hw again on Monday.
+I having trouble rebuilding ELDK 3.0 & ELDK 3.1 from
+the source RPMS.  I have spent a great deal of time on
+this, and I have a feeling that maybe I’m just not
+doing something correctly (setting up the build
+environment, retrieving source/specs from CVS..
+etc..).  My build machine is Red Hat 9.0 without any
+updates (Kernel 2.4.20-8, the Shrike release).
 
-Sorry, it got a bit later than promised, but I've now had a closer
-look at your patch ..
+The following is the process I’m using to setup my
+development environment for ELDK 3.0
 
---- uartlite/arch/ppc/boot/simple/misc.c	2006-10-15 14:09:47.000000000 -0700
-+++ uartlite-mod/arch/ppc/boot/simple/misc.c	2006-10-15 13:58:51.000000000 -0700
-@@ -48,7 +48,8 @@
- #if (defined(CONFIG_SERIAL_8250_CONSOLE) \
- 	|| defined(CONFIG_VGA_CONSOLE) \
- 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
--	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)) \
-+	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
-+	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)) \
- 	&& !defined(CONFIG_GEMINI)
- #define INTERACTIVE_CONSOLE	1
- #endif
+#Make build directory
+mkdir /opt/eldkv3.0
 
-The Xilinx boards use misc-embedded.c not misc.c - Why is this needed?
+#checkout tarballs & build.  One caveat is that I’m
+behind a proxy server, and I’m having to check these
+files out on remote computer, and tar -czvf the
+directories up, and copying the files to the build
+computer. I would imagine that this is functionally
+equivalent.
 
-+unsigned long serial_init(int chan, void *ignored)
-+{
-+	switch (chan)  {
-+	#ifdef XPAR_XUL_UART_0_BASEADDR
-+		case 0:
-+			return XPAR_XUL_UART_0_BASEADDR;
-+	#endif
-+	#ifdef XPAR_XUL_UART_1_BASEADDR
-+		case 1:		
-+			return XPAR_XUL_UART_1_BASEADDR;
-+	#endif
-+	#ifdef XPAR_XUL_UART_2_BASEADDR
-+		case 2:
-+			return XPAR_XUL_UART_2_BASEADDR;
-+	#endif
-+	#ifdef XPAR_XUL_UART_3_BASEADDR
-+		case 3:
-+			return XPAR_XUL_UART_3_BASEADDR;
-+	#endif
+cd /opt/eldkv3.0
+cvs -d :pserver:anonymous@www.denx.de:/cvsroot login
+cvs -z6 -d :pserver:anonymous@www.denx.de:/cvsroot co
+-rELDK_3_0 -P eldk_tarballs
+cvs -z6 -d :pserver:anonymous@www.denx.de:/cvsroot co
+-rELDK_3_0 -P eldk_build
 
-This doesn't help much as you don't use the com_port argument in the
-other functions.
+#get yellowdog 3.0 prestine SRPMS
+cd /opt/eldkv3.0
+mkdir SRPMS
+cd /opt/eldkv3.0/SRPMS
+wget -r -nd -np -l1 -A ‘*.rpm’
+http://ydl.osuosl.org/releases/yellowdog-3.0/en/os/SRPMS/
+wget -r -nd -np -l1 -A ‘*.rpm’
+http://ydl.osuosl.org/updates/yellowdog-3.0/SRPMS/
 
-Where did you get the XPAR_XUL_UART_ defines from? Our xparameters.h
-seem to contain XPAR_UARTLITE_ defines instead.
+#export the prefix & target architecture
+export ELDK_PREFIX=/opt/eldkv3.0
+export TARGET_CPU_FAMILY_LIST=”4xx”
 
-@@ -131,12 +115,16 @@
- 	struct uart_port *port = (struct uart_port *)dev_id;
- 	int busy;
+#execute build process
+cd /opt/eldkv3.0/build
+./ELDK_BUILD
 
-+	spin_lock(&port->lock); /* Lock the port in case of printk */
-+	
+Executing ELDK_BUILD seems to build almost everything,
+but there seems to be a lot of packages missing,
+namely libstdc++.so.  When checking the logs, I see
+something suspicious while build the make RPM in that
+it shows the following failure:
+/opt/eldkv3.0/build/ppc-2006-10-27/logs/build_make.log:
+….
+checking for waitpid... yes
+checking for wait3... yes
+checking for union wait... no
+checking for sys_siglist declaration in signal.h or
+unistd.h... yes
+checking for library containing getpwnam... none
+required
+checking for location of SCCS get command... get
+checking if system libc has GNU glob... yes
+updating cache ./config.cache
+creating ./config.status
+creating build.sh
+creating Makefile
+creating glob/Makefile
+creating i18n/Makefile
+creating config.h
++ make
+cd . && aclocal
+cd . && automake --gnu --include-deps Makefile
+Makefile.am: required file `./depcomp' not found
+make: *** [Makefile.in] Error 1
+error: Bad exit status from
+/opt/eldkv3.0/build/ppc-2006-10-27/work/var/tmp/rpm-tmp.54649
+(%build)
 
-In an interrupt handler? Why? The console_write does a spin_lock_irqsave.
 
- static int __init ulite_console_setup(struct console *co, char *options)
- {
-+	int i, ret;
- 	struct uart_port *port;
--
-+	struct platform_device *pdev;
-+	
- 	if (co->index < 0 || co->index >= ULITE_NR_UARTS)
- 		return -EINVAL;
+RPM build errors:
+    Bad exit status from
+/opt/eldkv3.0/build/ppc-2006-10-27/work/var/tmp/rpm-tmp.54649
+(%build)
 
- 	port = &ports[co->index];
+I’m not exactly sure that by fixing this problem will
+install libstdc++ correctly, infact, I’m not exactly
+sure why ELDK is not completely building everything. 
+In trying to remedy this problem, I have upgraded my
+system to use autoconf 2.60, automake 1.9 and m4
+1.4.7, but none of those seems to help.  The only
+other thing I can think of is upgrading my version of
+bison.
 
- 	/* not initialized yet? */
--	if (!port->membase)
--		return -ENODEV;
-+	if (!port->membase) {
-+		/* We might be early console */
+I have also tried the same type of method to build
+ELDK 3.1 from SRPMS, and have received the same error
+from the build_make.log file.
 
-Is this really necessary? The platform probe get's called quite early, E.G.:
+Any help would be greatly appreciated!
 
-Breakpoint 2, ulite_probe (pdev=0xc01c84d0) at drivers/serial/uartlite.c:392
-392     {
-(gdb) print __log_buf 
-$1 = "<5>Linux version 2.6.19-rc3 (peko@sleipner) (gcc version 3.4.5) #19 Fri Oct 27 16:39:00 CEST 2006\n<6>Barco ThinLite (V2P) <peter.korsgaard@barco.com>\n<7>Entering add_active_range(0, 0, 15360) 0 entrie"...
+John M. Woo
+jmwoo2 <at> yahoo.com
 
-You can always use the ppc_md.progress() stuff for really early
-debugging if needed. I would prefer to keep this workaround out of
-uartlite.c if it isn't needed.
 
--- 
-Bye, Peter Korsgaard
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
