@@ -1,23 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 657D267C14
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Oct 2006 12:37:57 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id 30so512984ugc
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Oct 2006 19:37:55 -0700 (PDT)
-Message-ID: <528646bc0610261937j7a0405eer3a6efbb8d6a9e053@mail.gmail.com>
-Date: Thu, 26 Oct 2006 20:37:54 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-	"Kumar Gala" <galak@kernel.crashing.org>,
-	"Matthew McClintock" <msm@freescale.com>, jdl@jdl.com
-Subject: Re: [PATCH/RFC] Allow CONFIG_OF_FLAT_TREE to boot a non-arch/powerpc
-	kernel
-In-Reply-To: <528646bc0610261411y2bd7522co9693b33d8ddab5cd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11618969241015-git-send-email-grant.likely@secretlab.ca>
-	<528646bc0610261411y2bd7522co9693b33d8ddab5cd@mail.gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicolas DET <nd@bplan-gmbh.de>
+In-Reply-To: <4540EB0E.2090000@bplan-gmbh.de>
+References: <453FB582.20802@bplan-gmbh.de>
+	<1161816783.22582.132.camel@localhost.localdomain>
+	<45409760.7030902@bplan-gmbh.de>
+	<1161866964.27827.2.camel@localhost.localdomain>
+	<4540B0A9.6070404@bplan-gmbh.de>
+	<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>
+	<528646bc0610260909x10c3b242i64387f576e625048@mail.gmail.com>
+	<4540EB0E.2090000@bplan-gmbh.de>
+Content-Type: text/plain
+Date: Fri, 27 Oct 2006 12:49:41 +1000
+Message-Id: <1161917381.25682.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: akpm@osdl.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
+	linuxppc-embedded@ozlabs.org, sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,132 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-BBTW, considering that this is a u-boot patch; sorry for posting this
-here linuxppc-dev instead of u-boot-users.
-
-g.
-
-On 10/26/06, Grant Likely <grant.likely@secretlab.ca> wrote:
-> BTW, can someone please actually test this w/ a arch/powerpc kernel?
-> I've only got a lite5200b to play with, and it isn't ported yet.  :)
->
-> g.
->
-> On 10/26/06, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > This patch allows an arch/ppc kernel to be booted by just passing 1 or 2
-> > arguments to bootm.  It removes the getenv("disable_of") test that used
-> > to be used for this purpose.
-> >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > ---
-> >  common/cmd_bootm.c |   52 ++++++++++++++++++++--------------------------------
-> >  1 files changed, 20 insertions(+), 32 deletions(-)
-> >
-> > diff --git a/common/cmd_bootm.c b/common/cmd_bootm.c
-> > index 3091a58..07a9f12 100644
-> > --- a/common/cmd_bootm.c
-> > +++ b/common/cmd_bootm.c
-> > @@ -833,10 +833,6 @@ #endif
-> >                         printf ("ERROR: flat device tree size does not agree with image\n");
-> >                         return;
-> >                 }
-> > -
-> > -       } else if (getenv("disable_of") == NULL) {
-> > -               printf ("ERROR: bootm needs flat device tree as third argument\n");
-> > -               return;
-> >         }
-> >  #endif
-> >         if (!data) {
-> > @@ -913,23 +909,11 @@ #endif    /* CONFIG_HW_WATCHDOG || CONFIG_W
-> >
-> >         SHOW_BOOT_PROGRESS (15);
-> >
-> > -#ifndef CONFIG_OF_FLAT_TREE
-> > -
-> >  #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
-> >         unlock_ram_in_cache();
-> >  #endif
-> >
-> > -       /*
-> > -        * Linux Kernel Parameters:
-> > -        *   r3: ptr to board info data
-> > -        *   r4: initrd_start or 0 if no initrd
-> > -        *   r5: initrd_end - unused if r4 is 0
-> > -        *   r6: Start of command line string
-> > -        *   r7: End   of command line string
-> > -        */
-> > -       (*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
-> > -
-> > -#else  /* CONFIG_OF_FLAT_TREE */
-> > +#ifdef CONFIG_OF_FLAT_TREE
-> >         /* move of_flat_tree if needed */
-> >         if (of_data) {
-> >                 ulong of_start, of_len;
-> > @@ -949,29 +933,33 @@ #else     /* CONFIG_OF_FLAT_TREE */
-> >                 memmove ((void *)of_start, (void *)of_data, of_len);
-> >         }
-> >
-> > -       ft_setup(of_flat_tree, kbd, initrd_start, initrd_end);
-> > -       /* ft_dump_blob(of_flat_tree); */
-> > -
-> > -#if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
-> > -       unlock_ram_in_cache();
-> > +       /*
-> > +        * Linux Kernel Parameters (passing board info data):
-> > +        *   r3: ptr to board info data
-> > +        *   r4: initrd_start or 0 if no initrd
-> > +        *   r5: initrd_end - unused if r4 is 0
-> > +        *   r6: Start of command line string
-> > +        *   r7: End   of command line string
-> > +        */
-> > +#ifdef CONFIG_OF_FLAT_TREE
-> > +       if (!of_flat_tree)      /* no device tree; boot old style */
-> >  #endif
-> > +               (*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
-> > +               /* does not return */
-> > +
-> >         /*
-> > -        * Linux Kernel Parameters:
-> > +        * Linux Kernel Parameters (passing device tree):
-> >          *   r3: ptr to OF flat tree, followed by the board info data
-> >          *   r4: physical pointer to the kernel itself
-> >          *   r5: NULL
-> >          *   r6: NULL
-> >          *   r7: NULL
-> >          */
-> > -       if (getenv("disable_of") != NULL)
-> > -               (*kernel) ((bd_t *)of_flat_tree, initrd_start, initrd_end,
-> > -                       cmd_start, cmd_end);
-> > -       else {
-> > -               ft_setup(of_flat_tree, kbd, initrd_start, initrd_end);
-> > -               /* ft_dump_blob(of_flat_tree); */
-> > -               (*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
-> > -       }
-> > -#endif /* CONFIG_OF_FLAT_TREE */
-> > +       ft_setup(of_flat_tree, kbd, initrd_start, initrd_end);
-> > +       /* ft_dump_blob(of_flat_tree); */
-> > +
-> > +       (*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
-> > +#endif
-> >  }
-> >  #endif /* CONFIG_PPC */
-> >
-> > --
-> > 1.4.3.rc2.g0503
-> >
-> >
->
->
-> --
-> Grant Likely, B.Sc. P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
->
 
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Any reason why this is not static nor __init ? :
+> +struct device_node *find_mpc52xx_pic(void)
+> +{
+> +	struct device_node *dev;
+> +	const char *piccompatible_list[] =
+> +	{
+> +		"mpc5200-interrupt-controller",
+> +		"mpc52xx-interrupt-controller",
+> +		"mpc52xx-pic",
+> +		"mpc5200-pic",
+> +		"5200-interrupt-controller",
+> +		"52xx-interrupt-controller",
+> +		"52xx-pic",
+> +		"5200-pic",
+> +		NULL
+> +	};
+> +
+> +	/* Look for an MPC52xx interrupt controller */
+> +	for_each_node_by_type(dev, "interrupt-controller")
+> +	{
+> +		const char **piccompatible_entry = piccompatible_list;
+> +
+> +		for(piccompatible_entry = piccompatible_list; *piccompatible_entry; piccompatible_entry++ )
+> +		{
+> +			if (device_is_compatible(dev, *piccompatible_entry ))
+> +				return dev;
+> +		}
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+> +static int  __init chrp_find_mpc52xx_pic(void)
+> +{
+> +	if (find_mpc52xx_pic())
+> +	{
+> +		printk(KERN_INFO "Found MPC52xx Interrupt Controller\n");
+> +		ppc_md.get_irq = mpc52xx_get_irq;
+> +		mpc52xx_init_irq();
+> +		return 0;
+> +	}
+> +
+> +	return -ENODEV;
+> +}
+
+I'm not sure I see any point in splitting in two functions like that
+ 
+>  static void __init chrp_find_8259(void)
+>  {
+>  	struct device_node *np, *pic = NULL;
+> @@ -473,8 +519,11 @@ static void __init chrp_find_8259(void)
+>  		break;
+>  	}
+>  	if (np == NULL)
+> -		printk(KERN_WARNING "Cannot find PCI interrupt acknowledge"
+> -		       " address, polling\n");
+> +	{
+> +		printk(KERN_WARNING "Cannot find PCI/i8259 interrupt acknowledge"
+> +		       " Fix your tree!\n");
+> +		return;
+> +	}
+
+Unrelated changes/fix, should probably be in a separate patch.
+
+Cheers,
+Ben.
