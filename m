@@ -1,21 +1,23 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (amanaus.varma-el.com [195.144.240.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.varma-el.com",
-	Issuer "mail.varma-el.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AFFDE67CC3
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id EC96967D0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Oct 2006 22:45:02 +1000 (EST)
-Message-ID: <4541FF48.1020204@varma-el.com>
-Date: Fri, 27 Oct 2006 16:44:56 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
+	Fri, 27 Oct 2006 23:21:23 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so581516ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 27 Oct 2006 06:21:22 -0700 (PDT)
+Message-ID: <528646bc0610270621q70a11be1we6215b3d91465525@mail.gmail.com>
+Date: Fri, 27 Oct 2006 07:21:22 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [POWERPC] MPC52xx is a 6xx variant, remove PPC_52xx config option
+In-Reply-To: <1161944693.25682.70.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Roman Fietze <roman.fietze@telemotive.de>
-Subject: Re: MPC5200 (Board: PM520) I2C Problem
-References: <F05B338A1B21D9119FFF0004761A51136AB28E@exchange-server.ow.ks>	<4541B547.1010908@varma-el.com>
-	<200610271315.19077.roman.fietze@telemotive.de>
-In-Reply-To: <200610271315.19077.roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <11618347593934-git-send-email-grant.likely@secretlab.ca>
+	<4541D7D5.7090001@varma-el.com>
+	<1161944693.25682.70.camel@localhost.localdomain>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,30 +29,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 10/27/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Fri, 2006-10-27 at 13:56 +0400, Andrey Volkov wrote:
+> > Please _don't_ do it, since mpc5200 platform drivers depend from this
+> > option.
+>
+> And that should be fixed. We are yet discussing the proper way of
+> integrating 52xx in arch/powerpc, but that definitely doesn't involve
+> making it an exclusive processor type. Besides, there will probably be
+> enough changes in the drivers to adapt them to of_platform_device type
+> probing that we might just well fork them all anyway.
 
-Roman Fietze wrote:
-> Hello,
-> 
-> On Friday 27 October 2006 09:29, Andrey Volkov wrote:
-> 
->> Revision of MPC5200? (third string engraved on the MPC)
->> If L25R then check this doco:
->>    http://www.freescale.com/files/32bit/doc/errata/MPC5200E.pdf
->> (if be short - I2C didn't work on this revision chips)
-> 
-> We have an "MPC5200CBV400 L25R Rev 2" on our boards, and we
-> successfully drive a PCF8563 real time clock and an UDA1380 Codec on
-> the same line.
-> 
-> The problems described in the errata are an arbitration loss problem
-> and, depending on teh chp's Rev, a clock noise problem.
-> 
-> Probably your problem is related to the connected I2C client?
-Problem was not in noise. Chips of this rev. _sometime_ didn't
-generate clock in ACK/NAK phase. Such behavior acceptable for
-a RTC (you could reread clock, after timeout), but for eeprom - not.
+Besides; this is only arch/powerpc.  52xx doesn't event boot on
+arch/powerpc yet.
 
---
-Regards
-Andrey
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
