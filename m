@@ -1,13 +1,19 @@
-Return-Path: <grant.likely@gmail.com>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 7C67567E63
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 03:15:43 +1000 (EST)
-From: Grant Likely <grant.likely@gmail.com>
-To: Nicolas DET <nd@bplan-gmbh.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [POWERPC] Cleanup pegasos i8259 not in device tree workaround.
-Date: Fri, 27 Oct 2006 10:42:09 -0600
-Message-Id: <116196732980-git-send-email-grant.likely@gmail.com>
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E96A067EB1
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 06:03:59 +1000 (EST)
+In-Reply-To: <45411B46.9060106@ru.mvista.com>
+References: <20061026104338.99e89782.vwool@ru.mvista.com>	<4A3EAE00-3647-4B72-8CDF-ED6E0ADEC910@kernel.crashing.org>
+	<1161894389.2820.14.camel@barja> <45411B46.9060106@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1093E9E4-5FDC-4AF7-9065-6236B0482CA4@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [1/2] build failure for E500 CPUs w/ CONFIG_OPROFLE=y
+Date: Fri, 27 Oct 2006 15:03:51 -0500
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Vitaly Wool <vwool@ru.mvista.com>, oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,32 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-Only make assumptions about i8259 presence if ppc_md.get_irq is not set.
-Previous workaround only checked chrp_mpic value.
+On Oct 26, 2006, at 15:32, Sergei Shtylyov wrote:
 
-Nicolas, please verify that this patch fixes your mpc52xx pic problems.
-Ben, I got tired of how often this question was being raised, so I just
-wrote this patch; I've compiled, but cannot test it.
+> Hello.
+>
+> Vitaly Wool wrote:
+>> Hello Kumar,
+>
+>>> This makes sense to me since we are just increasing kernel code size
+>>> for code we would never use for an FSL_BOOKE part if we do it the
+>>> other way.  I dont think its that much more messy with the ifdef's.
+>
+>> Okay, if you're fine with this patch, is it possible that you  
+>> include it
+>> into your tree?
+>
+>>> If you want to do the other cleanup as well I've got no issue with
+>>> that, but we really should NOT build in support for 7450 into a
+>>> FSL_BOOKE kernel when reasonably avoidable.
+>
+>> That's fine with me.
+>> As of the cleanups, well... looks to me some more patches will follow
+>> soon, kinda bugfixing ones rather than cleanups first :)
+>
+>    The most funny/stupd thing is that the patch existed since May  
+> but it never
+> went in:
+>
+> http://patchwork.ozlabs.org/linuxppc/patch?id=5531
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- arch/powerpc/platforms/chrp/setup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 49b8dab..a5466ed 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -451,7 +451,7 @@ static void __init chrp_find_8259(void)
- 	 * we have a pegasos that claims to be chrp but doesn't have
- 	 * a proper interrupt tree
- 	 */
--	if (pic == NULL && chrp_mpic != NULL) {
-+	if (pic == NULL && ppc_md.get_irq != NULL) {
- 		printk(KERN_ERR "i8259: Not found in device-tree"
- 		       " assuming no legacy interrupts\n");
- 		return;
--- 
-1.4.3.rc2.g0503
+Yeah, I guess it got lost.  After looking at both patches, I see the  
+different approaches.  I think I'd vote for the older patch, since it  
+also solves some SMP issues that will crop up when the dual-core 8572  
+comes out.  In fact, it's similar to this patch: http:// 
+patchwork.ozlabs.org/linuxppc/patch?id=4012
+
+Oi.  Ok, I'm going to update and resend that patch in just a second  
+(Ok, this took longer than I thought, due to the lwsync patch I sent  
+out being required).  I like Vitaly's patch, but the one I sent  
+cleans up some early design mistakes I made in the original ppc32  
+oprofile code.
+
+
+
+>
+>> Thanks,
+>>   Vitaly
+>
+> WBR, Sergei
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
