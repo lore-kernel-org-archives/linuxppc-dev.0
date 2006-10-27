@@ -1,16 +1,18 @@
-Return-Path: <rdcorle@yahoo.com>
-Received: from web56302.mail.re3.yahoo.com (web56302.mail.re3.yahoo.com
-	[216.252.110.226]) by ozlabs.org (Postfix) with SMTP id 1049567D72
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8BD7167D98
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Oct 2006 23:38:24 +1000 (EST)
-Message-ID: <20061027133823.25945.qmail@web56302.mail.re3.yahoo.com>
-Date: Fri, 27 Oct 2006 06:38:23 -0700 (PDT)
-From: robert corley <rdcorle@yahoo.com>
-Subject: initial success with uartlite w/interrupt and 2.6.18.1
-To: David Bolcsfoldi <dbolcsfoldi@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
-Cc: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Sat, 28 Oct 2006 00:29:32 +1000 (EST)
+Date: Fri, 27 Oct 2006 17:38:42 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: robin.gilks@tait.co.nz
+Subject: Re: Building new FEC code on 8xx with 2.6.17 kernel
+Message-ID: <20061027173842.4e53bdd6@vitb.ru.mvista.com>
+In-Reply-To: <454163B2.4010308@tait.co.nz>
+References: <454163B2.4010308@tait.co.nz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,21 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-DB;=0A=0AI moved the declaration to outside the loop and now the uartlite d=
-river sends and receives=0Adata.  See below for details (as if it needs exp=
-laining, right?  :-))=0A=0AFYI, the RS232 irq line stays high (it's level-t=
-riggered for RX data) for 9usec, although I=0Asuspect that isn't the irq se=
-rvice time as it probably drops as soon as the RX fifo is read.=0AStill, it=
-'s good to know that it takes that long from irq start to reading a byte.=
-=0A=0AI still don't know why I could not get it to properly function in 2.6=
-.17, although I was close =0Awith the latest patch you gave me.=0A=0ANow on=
- to the temac...=0A=0A-cy=0A=0A---------------- code follows  -------------=
----------=0A=0Astatic irqreturn_t ulite_isr(int irq, void *dev_id, struct p=
-t_regs *regs)=0A{=0A        struct uart_port *port =3D (struct uart_port *)=
-dev_id;=0A        int busy;=0A        int stat;=0A=0A        spin_lock(&por=
-t->lock); /* Lock the port in case of printk */=0A=0A        do {=0A       =
-         stat =3D readb((unsigned volatile *) (port->membase + ULITE_STATUS=
-_BYTE));=0A                busy  =3D ulite_receive(port, stat);=0A         =
-       busy |=3D ulite_transmit(port, stat);=0A        } while (busy);=0A=
-=0A        spin_unlock(&port->lock);=0A=0A        tty_flip_buffer_push(port=
-->info->tty);=0A=0A        return IRQ_HANDLED;=0A}=0A=0A=0A=0A
+On Fri, 27 Oct 2006 14:41:06 +1300
+Robin Gilks <robin.gilks@tait.co.nz> wrote:
+
+> Greetings
+> 
+> Just having a first stab at building for an 859T based product so I 
+> assume I'll be using the new FEC driver. I'm getting two unresolved 
+> references as follows:
+> 
+> drivers/built-in.o: In function 
+> `fec_8xx_init':fec_main.c:(.init.text+0x1a40): undefined reference to 
+> `fec_8xx_platform_init'
+> drivers/built-in.o: In function 
+> `fec_8xx_cleanup':fec_main.c:(.exit.text+0x39c): undefined reference to 
+> `fec_8xx_platform_cleanup'
+> 
+> No big deal as I can see an example for the netta platform (whatever 
+> that is) that defines these functions and I can hack that to suit my 
+> hardware - what I can't find is where CONFIG_NETTA is defined. I can't 
+> find it in any Kconfig file, and I want to use the same mechanism for 
+> selecting my platform.
+> 
+> Any ideas? (or is FEC still broken on CPM1 processors)
+> 
+
+Please use fs_enet driver (drivers/fs_enet). You can find the reference for platform code at
+say arch/ppc/platforms/mpc885_setup.c
+
+-- 
+Sincerely, 
+Vitaly
