@@ -1,24 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id EC96967D0F
+Return-Path: <rdcorle@yahoo.com>
+Received: from web56302.mail.re3.yahoo.com (web56302.mail.re3.yahoo.com
+	[216.252.110.226]) by ozlabs.org (Postfix) with SMTP id 1049567D72
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Oct 2006 23:21:23 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id 30so581516ugc
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Oct 2006 06:21:22 -0700 (PDT)
-Message-ID: <528646bc0610270621q70a11be1we6215b3d91465525@mail.gmail.com>
-Date: Fri, 27 Oct 2006 07:21:22 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [POWERPC] MPC52xx is a 6xx variant, remove PPC_52xx config option
-In-Reply-To: <1161944693.25682.70.camel@localhost.localdomain>
+	Fri, 27 Oct 2006 23:38:24 +1000 (EST)
+Message-ID: <20061027133823.25945.qmail@web56302.mail.re3.yahoo.com>
+Date: Fri, 27 Oct 2006 06:38:23 -0700 (PDT)
+From: robert corley <rdcorle@yahoo.com>
+Subject: initial success with uartlite w/interrupt and 2.6.18.1
+To: David Bolcsfoldi <dbolcsfoldi@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11618347593934-git-send-email-grant.likely@secretlab.ca>
-	<4541D7D5.7090001@varma-el.com>
-	<1161944693.25682.70.camel@localhost.localdomain>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ascii
+Cc: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,24 +21,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/27/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Fri, 2006-10-27 at 13:56 +0400, Andrey Volkov wrote:
-> > Please _don't_ do it, since mpc5200 platform drivers depend from this
-> > option.
->
-> And that should be fixed. We are yet discussing the proper way of
-> integrating 52xx in arch/powerpc, but that definitely doesn't involve
-> making it an exclusive processor type. Besides, there will probably be
-> enough changes in the drivers to adapt them to of_platform_device type
-> probing that we might just well fork them all anyway.
-
-Besides; this is only arch/powerpc.  52xx doesn't event boot on
-arch/powerpc yet.
-
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+DB;=0A=0AI moved the declaration to outside the loop and now the uartlite d=
+river sends and receives=0Adata.  See below for details (as if it needs exp=
+laining, right?  :-))=0A=0AFYI, the RS232 irq line stays high (it's level-t=
+riggered for RX data) for 9usec, although I=0Asuspect that isn't the irq se=
+rvice time as it probably drops as soon as the RX fifo is read.=0AStill, it=
+'s good to know that it takes that long from irq start to reading a byte.=
+=0A=0AI still don't know why I could not get it to properly function in 2.6=
+.17, although I was close =0Awith the latest patch you gave me.=0A=0ANow on=
+ to the temac...=0A=0A-cy=0A=0A---------------- code follows  -------------=
+---------=0A=0Astatic irqreturn_t ulite_isr(int irq, void *dev_id, struct p=
+t_regs *regs)=0A{=0A        struct uart_port *port =3D (struct uart_port *)=
+dev_id;=0A        int busy;=0A        int stat;=0A=0A        spin_lock(&por=
+t->lock); /* Lock the port in case of printk */=0A=0A        do {=0A       =
+         stat =3D readb((unsigned volatile *) (port->membase + ULITE_STATUS=
+_BYTE));=0A                busy  =3D ulite_receive(port, stat);=0A         =
+       busy |=3D ulite_transmit(port, stat);=0A        } while (busy);=0A=
+=0A        spin_unlock(&port->lock);=0A=0A        tty_flip_buffer_push(port=
+->info->tty);=0A=0A        return IRQ_HANDLED;=0A}=0A=0A=0A=0A
