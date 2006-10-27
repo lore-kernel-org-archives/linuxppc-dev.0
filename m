@@ -1,24 +1,14 @@
 Return-Path: <nd@bplan-gmbh.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id 4CF4267E30
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 00:52:31 +1000 (EST)
-Date: Fri, 27 Oct 2006 16:52:27 +0200 (MEST)
-Message-ID: <45421C97.80501@bplan-gmbh.de>
+Message-ID: <45421FFD.8070407@bplan-gmbh.de>
+Date: Fri, 27 Oct 2006 17:04:29 +0200
 From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicolas DET <nd@bplan-gmbh.de>
 Subject: Re: [PATCH] General CHRP/MPC5K2 platform support patch
-References: <453FB582.20802@bplan-gmbh.de>	
-	<1161816783.22582.132.camel@localhost.localdomain>	
-	<45409760.7030902@bplan-gmbh.de>	
-	<1161866964.27827.2.camel@localhost.localdomain>	
-	<4540B0A9.6070404@bplan-gmbh.de>	
-	<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>	
-	<4541118F.60002@bplan-gmbh.de>	
-	<528646bc0610261300s3e93e53fk5732990089b68d35@mail.gmail.com>
-	<1161919709.25682.61.camel@localhost.localdomain>
-In-Reply-To: <1161919709.25682.61.camel@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------000701010202070101070002"
+References: <453FB582.20802@bplan-gmbh.de>		<1161816783.22582.132.camel@localhost.localdomain>		<45409760.7030902@bplan-gmbh.de>		<1161866964.27827.2.camel@localhost.localdomain>		<4540B0A9.6070404@bplan-gmbh.de>		<528646bc0610260902o4d4996a4i3dcf2a9b874037c7@mail.gmail.com>		<4541118F.60002@bplan-gmbh.de>		<528646bc0610261300s3e93e53fk5732990089b68d35@mail.gmail.com>	<1161919709.25682.61.camel@localhost.localdomain>
+	<45421C97.80501@bplan-gmbh.de>
+In-Reply-To: <45421C97.80501@bplan-gmbh.de>
+Content-Type: multipart/mixed; boundary="------------090405080409060703070805"
 Cc: akpm@osdl.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
 	linuxppc-embedded@ozlabs.org, sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -31,39 +21,94 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------000701010202070101070002
+--------------090405080409060703070805
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2006-10-26 at 14:00 -0600, Grant Likely wrote:
->> My comments are satisfied
+Nicolas DET wrote:
+> Benjamin Herrenschmidt wrote:
+>> On Thu, 2006-10-26 at 14:00 -0600, Grant Likely wrote:
+>>> My comments are satisfied
+>>>
+>>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 >>
->> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>> Nack.
+>>
+>> The irq code doesn't properly use the genirq infrastructure. It's not
+>> setting flow handlers, not implementing set_irq_type, not using the new
+>> mask/unmask instead of the toplevel enable/disable...
+>>
+>>
 > 
-> Nack.
+> Done.
 > 
-> The irq code doesn't properly use the genirq infrastructure. It's not
-> setting flow handlers, not implementing set_irq_type, not using the new
-> mask/unmask instead of the toplevel enable/disable...
+> We agree on IRC last night to postpone this implementation later on. 
+> However, here it is.
+> 
+> This patch compiles fine when applied to the kernel 2.6.19-rc3. I also 
+> tested gcc 3.3.5 and 4.1.2.
+> 
+> I made some tests and did not found any issue. However, more 
+> testing/stressing/torturing and also with on others platforms is 
+> required to fully validate the driver.
 > 
 >
+>  	/* Pegasos has no MPIC, those ops would make it crash. It might be an
+> diff -uprN a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
+> --- a/include/asm-powerpc/mpc52xx.h	1970-01-01 01:00:00.000000000 +0100
+> +++ b/include/asm-powerpc/mpc52xx.h	2006-10-27 15:51:55.000000000 +0200
+> @@ -0,0 +1,414 @@
+> +/*
+> + * include/asm-ppc/mpc52xx.h
+> + * 
 
-Done.
 
-We agree on IRC last night to postpone this implementation later on. 
-However, here it is.
+Fixed to powerpc
 
-This patch compiles fine when applied to the kernel 2.6.19-rc3. I also 
-tested gcc 3.3.5 and 4.1.2.
 
-I made some tests and did not found any issue. However, more 
-testing/stressing/torturing and also with on others platforms is 
-required to fully validate the driver.
+> +#endif /* __ASSEMBLY__ */
+> +
+> +
+> +#ifdef CONFIG_PCI
+> +#define _IO_BASE	isa_io_base
+> +#define _ISA_MEM_BASE	isa_mem_base
+> +#define PCI_DRAM_OFFSET	pci_dram_offset
+> +#else
+> +#define _IO_BASE	0
+> +#define _ISA_MEM_BASE	0
+> +#define PCI_DRAM_OFFSET	0
+> +#endif
+> +
+> +
+> +/* ======================================================================== */
+> +/* PPC Sys devices definition                                               */
+> +/* ======================================================================== */
+> +
+> +enum ppc_sys_devices {
+> +	MPC52xx_MSCAN1,
+> +	MPC52xx_MSCAN2,
+> +	MPC52xx_SPI,
+> +	MPC52xx_USB,
+> +	MPC52xx_BDLC,
+> +	MPC52xx_PSC1,
+> +	MPC52xx_PSC2,
+> +	MPC52xx_PSC3,
+> +	MPC52xx_PSC4,
+> +	MPC52xx_PSC5,
+> +	MPC52xx_PSC6,
+> +	MPC52xx_FEC,
+> +	MPC52xx_ATA,
+> +	MPC52xx_I2C1,
+> +	MPC52xx_I2C2,
+> +	NUM_PPC_SYS_DEVS,
+> +};
+> +
+> +
 
-Regards
+Removed
 
---------------000701010202070101070002
+
+--------------090405080409060703070805
 Content-Type: text/plain;
  name="chrpmpc52xx_2.6.19-rc3.patch"
 Content-Transfer-Encoding: 7bit
@@ -552,7 +597,7 @@ diff -uprN a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
 +++ b/include/asm-powerpc/mpc52xx.h	2006-10-27 15:51:55.000000000 +0200
 @@ -0,0 +1,414 @@
 +/*
-+ * include/asm-ppc/mpc52xx.h
++ * include/asm-powerpc/mpc52xx.h
 + * 
 + * Prototypes, etc. for the Freescale MPC52xx embedded cpu chips
 + * May need to be cleaned as the port goes on ...
@@ -590,31 +635,6 @@ diff -uprN a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
 +#define _ISA_MEM_BASE	0
 +#define PCI_DRAM_OFFSET	0
 +#endif
-+
-+
-+/* ======================================================================== */
-+/* PPC Sys devices definition                                               */
-+/* ======================================================================== */
-+
-+enum ppc_sys_devices {
-+	MPC52xx_MSCAN1,
-+	MPC52xx_MSCAN2,
-+	MPC52xx_SPI,
-+	MPC52xx_USB,
-+	MPC52xx_BDLC,
-+	MPC52xx_PSC1,
-+	MPC52xx_PSC2,
-+	MPC52xx_PSC3,
-+	MPC52xx_PSC4,
-+	MPC52xx_PSC5,
-+	MPC52xx_PSC6,
-+	MPC52xx_FEC,
-+	MPC52xx_ATA,
-+	MPC52xx_I2C1,
-+	MPC52xx_I2C2,
-+	NUM_PPC_SYS_DEVS,
-+};
-+
 +
 +/* ======================================================================== */
 +/* Main registers/struct addresses                                          */
@@ -966,7 +986,7 @@ diff -uprN a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
 +
 +#endif /* _ASM_POWERPC_MPC52xx_H__ */
 
---------------000701010202070101070002
+--------------090405080409060703070805
 Content-Type: text/x-vcard; charset=utf-8;
  name="nd.vcf"
 Content-Transfer-Encoding: 7bit
@@ -987,4 +1007,4 @@ version:2.1
 end:vcard
 
 
---------------000701010202070101070002--
+--------------090405080409060703070805--
