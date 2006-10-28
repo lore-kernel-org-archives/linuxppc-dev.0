@@ -1,19 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Is get_property() correct?
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <528646bc0610280038x421014bdxde263c5399907fcb@mail.gmail.com>
-References: <528646bc0610272341s3c655ebbn785b373f148f6174@mail.gmail.com>
-	<1162020235.25682.124.camel@localhost.localdomain>
-	<528646bc0610280038x421014bdxde263c5399907fcb@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-6o0C0Ou33BPNVkva62zK"
-Date: Sat, 28 Oct 2006 19:08:23 +1000
-Message-Id: <1162026503.14822.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <nd@bplan-gmbh.de>
+Received: from natcgimail.rzone.de (natcgimail.rzone.de [81.169.145.167])
+	by ozlabs.org (Postfix) with ESMTP id CABE667CE1
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 23:42:16 +1000 (EST)
+Date: Sat, 28 Oct 2006 15:41:54 +0200 (MEST)
+Message-Id: <200610281341.k9SDfsqF020068@post.webmailer.de>
+To: "Benjamin Herrenschmidt"<benh@kernel.crashing.org>,
+	"Nicolas DET"<nd@bplan-gmbh.de>, "Matt Sealey"<matt@genesi-usa.com>
+From: "Nicolas DET"<nd@bplan-gmbh.de>
+Subject: Re: EFIKA vs. CHRP platform
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+----- original message --------
 
---=-6o0C0Ou33BPNVkva62zK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Subject: EFIKA vs. CHRP platform
+Sent: Sat, 28 Oct 2006
+From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 
-On Sat, 2006-10-28 at 01:38 -0600, Grant Likely wrote:
-> On 10/28/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > On Sat, 2006-10-28 at 00:41 -0600, Grant Likely wrote:
-> >
-> > Well considering that we don't know the type of the property value, the
-> > best we can do is return a pointer to it ...
-> >
-> > The comment might want an update, though it never stroke me as confusin=
-g
-> > but heh :)
+
 >=20
-> No, it's not confusing.  Both the comment and the code are correct.  I
-> just forgot how to read code.  :(
+>  - I'm not sure using RTAS for PCI config space is a very good idea.
+> We'll need native mpc52xx_pci.c anyway, so we can juse use it for Efika
+> as well instead of taking the massive overhead of RTAS calls on PCI
+> config space accesses.
+>=20
 
-But at least now we're all _sure_ they're correct, some good still
-done :)
+Compiling...
+Efika will use as far as possible RTAS.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-6o0C0Ou33BPNVkva62zK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBFQx4HdSjSd0sB4dIRAv/NAJ0VUgLAiPUaEe/LLRhrxCE1f8ECNgCfYSNn
-KozMah0VgDfTqNWm+//b6ec=
-=9iOd
------END PGP SIGNATURE-----
-
---=-6o0C0Ou33BPNVkva62zK--
+Bye
