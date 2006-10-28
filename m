@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
+	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C77C367DA1
+	by ozlabs.org (Postfix) with ESMTP id 6EDD067C5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Oct 2006 08:39:30 +1000 (EST)
-Subject: Re: status of mpc52xx with arch=powerpc?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <45411F14.6020308@246tNt.com>
-References: <20061018130628.GE6202@localhost.localdomain>
-	<528646bc0610180652u2ee8e8b4xe25d555a59a27c85@mail.gmail.com>
-	<1161740815.22582.1.camel@localhost.localdomain>
-	<528646bc0610242325m45fa610egb47f118f5f4f6f5e@mail.gmail.com>
-	<4b73d43f0610261307sd0668d1x6e535880a46e71d3@mail.gmail.com>
-	<528646bc0610261336i61521af3y3a5f134bb8c2f8da@mail.gmail.com>
-	<45411F14.6020308@246tNt.com>
-Content-Type: text/plain
-Date: Sat, 28 Oct 2006 08:39:25 +1000
-Message-Id: <1161988765.25682.99.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Sat, 28 Oct 2006 16:36:28 +1000 (EST)
+Message-ID: <4542CFE5.3070105@dlasys.net>
+Date: Fri, 27 Oct 2006 23:35:01 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: Pradeep Sampath <pradeepsampath@yahoo.com>
+Subject: Re: TEMAC drivers for kernel 2.6.17.1
+References: <20061027192025.26161.qmail@web83212.mail.mud.yahoo.com>
+In-Reply-To: <20061027192025.26161.qmail@web83212.mail.mud.yahoo.com>
+Content-Type: multipart/alternative;
+	boundary="------------040300010300090109090503"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,40 +26,110 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------040300010300090109090503
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> We would use the API we worked earlier on (Dale, Andrey, John, ...).
-> To add support of fw preloaded task :
->  - The bestcomm.ko module would be used when bestcomm is completely
-> controlled by the kernel
-> - A different module but with the same exported function would be used
-> when the fw has a part to play in the init. That allows to customize a bunch
-> of the sdma init / sram mapping ...
-> - All the other code (task helpers / the .h / the driver api) would be
-> exactly
-> the same.
+Pradeep Sampath wrote:
+> Hi,
+>  
+> I am using linux kernel 2.6.17.1 on ML403 dev board. I am trying to 
+> get the TEMAC to work but with no success. I applied TEMAC patches 
+> from http://source.mvista.com/~ank/paulus-powerpc/20060309/ 
+> <http://source.mvista.com/%7Eank/paulus-powerpc/20060309/>. But the 
+> ethernet interface does not seem to come up. 
+> Is there any other TEMAC patch out there which is known to work with 
+> 2.6 kernel? 
+>  
+> For the BSP I tried using the ML403 EDK Embedded PowerPC reference 
+> design from Xilinx. But it doesn't come with a PLB TEMAC in the 
+> design. I also tried to use xapp902 which has the PLB TEMAC module. 
+> But on running "Generate Libraries and BSPs" it does not generate any 
+> sources code under "drivers" or "arch" folder.
+I do nto beleive Xilinx has released an EDK that includes Linux 2.6 support.
+The patches you linked to should work for a 2.6 kernel with a PLB TEMAC. 
+But you must manually go in and force the speed to whatever you need. 
+The MV driver at your link does nto autonegotiate.
 
-No. Two different modules is the wrong approach. I want to be able to
-build everything in the kernel (no modules) and still boot machines with
-both types.
+I have a combined LL_TEMAC/PLB_TEMAC driver that does autonegotiate. It 
+did work for the LL_TEMAC several iterations ago, but  I have not tested 
+it in some time.
+It does not yet  work for Linux. It is very loosely based on the MV 
+driver, but does nt use the EDK, and is only for the LL_TEMAC and FIFO 
+PLB_TEMAC.
 
-There should be a single implementation. I know bestcomm is fucked by
-design but still.
+There is a link to it in a previous message.
 
-> So the bestcomm modules maintain a list with all task loaded with a name and
-> a index attribute. (The index would be used when there is multiple
-> device with
-> the same name, like "psc". We could use names like "psc1", "psc2". But that
-> would imply string manipulation to "create" the name string ;)
-> 
-> In the case of the "classic" (kernel handles it all), the table of task
-> is just
-> initially empty. But for the "custom" case, it's filled with whatever
-> the fw has
-> passed as infos.
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-A single module should handle all cases though. If, for some reasons, it
-looks like that will cause a lot of additional code, them it can be
-internally split and we can have config options to enable only one way,
-but it should be possible to enable both.
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
 
-Ben.
+
+--------------040300010300090109090503
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Pradeep Sampath wrote:
+<blockquote
+ cite="mid:20061027192025.26161.qmail@web83212.mail.mud.yahoo.com"
+ type="cite">
+  <div>Hi,</div>
+  <div>&nbsp;</div>
+  <div>I am using linux kernel 2.6.17.1 on ML403 dev board. I am trying
+to get the TEMAC to work but with no success. I applied&nbsp;TEMAC patches
+from <a moz-do-not-send="true"
+ href="http://source.mvista.com/%7Eank/paulus-powerpc/20060309/"
+ target="_blank" rel="nofollow" _=""><font color="#003399">http://source.mvista.com/~ank/paulus-powerpc/20060309/</font></a>.
+But the ethernet interface does not seem to come up.&nbsp;<br>
+  </div>
+  <div>Is there any other TEMAC patch out there which is known to work
+with 2.6 kernel?&nbsp;</div>
+  <div>&nbsp;</div>
+  <div>For the BSP I tried using the ML403 EDK Embedded PowerPC
+reference design from Xilinx. But it doesn't come with a PLB TEMAC in
+the design. I also tried to use xapp902 which has the PLB TEMAC module.
+But on running "Generate Libraries and BSPs" it does not generate any
+sources code under "drivers" or "arch" folder.</div>
+</blockquote>
+I do nto beleive Xilinx has released an EDK that includes Linux 2.6
+support.<br>
+The patches you linked to should work for a 2.6 kernel with a PLB
+TEMAC. But you must manually go in and force the speed to whatever you
+need. The MV driver at your link does nto autonegotiate.<br>
+<br>
+I have a combined LL_TEMAC/PLB_TEMAC driver that does autonegotiate. It
+did work for the LL_TEMAC several iterations ago, but&nbsp; I have not
+tested it in some time.<br>
+It does not yet&nbsp; work for Linux. It is very loosely based on the MV
+driver, but does nt use the EDK, and is only for the LL_TEMAC and FIFO
+PLB_TEMAC.<br>
+<br>
+There is a link to it in a previous message.<br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
+</pre>
+</body>
+</html>
+
+--------------040300010300090109090503--
