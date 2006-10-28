@@ -1,20 +1,18 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id BAECC67D51
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 17:23:47 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id 30so754583ugc
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 00:23:45 -0700 (PDT)
-Message-ID: <528646bc0610280023j266b479fjd5e5e7d2f2118720@mail.gmail.com>
-Date: Sat, 28 Oct 2006 01:23:45 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Johannes Berg" <johannes@sipsolutions.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3485067D56
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Oct 2006 17:24:04 +1000 (EST)
 Subject: Re: Is get_property() correct?
-In-Reply-To: <1162019855.14051.15.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <528646bc0610272341s3c655ebbn785b373f148f6174@mail.gmail.com>
 References: <528646bc0610272341s3c655ebbn785b373f148f6174@mail.gmail.com>
-	<1162019855.14051.15.camel@johannes.berg>
+Content-Type: text/plain
+Date: Sat, 28 Oct 2006 17:23:55 +1000
+Message-Id: <1162020235.25682.124.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,29 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bah!  Wack me with the cluestick.  I've got temporary dyslexia tonight.
+On Sat, 2006-10-28 at 00:41 -0600, Grant Likely wrote:
+> Is the implementation of get_property correct?  The comment says it
+> returns the value of a property; but the return statement just returns
+> the property pointer (cast as void*) it got from of_find_property();
+> not the value.
+> 
+> Does the comment or the code need to change?
 
-Sorry.
+Well considering that we don't know the type of the property value, the
+best we can do is return a pointer to it ... 
 
-On 10/28/06, Johannes Berg <johannes@sipsolutions.net> wrote:
->
-> > The comment says it
-> > returns the value of a property
->
-> >  * and return the value.
->
-> >         return pp ? pp->value : NULL;
->
-> ...? Looks like the value to me, unless the property doesn't exist.
->
-> johannes
->
->
->
+The comment might want an update, though it never stroke me as confusing
+but heh :)
 
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> in prom.c:
+> 
+> /*
+>  * Find a property with a given name for a given node
+>  * and return the value.
+>  */
+> const void *get_property(const struct device_node *np, const char *name,
+>                          int *lenp)
+> {
+>         struct property *pp = of_find_property(np,name,lenp);
+>         return pp ? pp->value : NULL;
+> }
+> EXPORT_SYMBOL(get_property);
+> 
+> Cheers,
+> g.
+> 
