@@ -1,19 +1,17 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from amsfep13-int.chello.nl (amsfep17-int.chello.nl [213.46.243.15])
-	by ozlabs.org (Postfix) with ESMTP id 7B84567CDA
+Return-Path: <ssshayagriva@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 4C14967CAC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Oct 2006 20:03:36 +1000 (EST)
-Received: from [192.168.1.10] (really [62.163.250.63])
-	by amsfep19-int.chello.nl
-	(InterMail vM.6.01.04.04 201-2131-118-104-20050224) with ESMTP
-	id <20061028094607.SKFM19957.amsfep19-int.chello.nl@[192.168.1.10]>
-	for <linuxppc-embedded@ozlabs.org>; Sat, 28 Oct 2006 11:46:07 +0200
-Message-ID: <45432676.4050109@chello.nl>
-Date: Sat, 28 Oct 2006 11:44:22 +0200
-From: Theo Gjaltema <gjalt007@chello.nl>
+	Sun, 29 Oct 2006 18:59:16 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id x4so1696604nfb
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 29 Oct 2006 00:59:14 -0700 (PDT)
+Message-ID: <513a5e60610290059o34fc8a1aod0e757c0fc806be@mail.gmail.com>
+Date: Sun, 29 Oct 2006 01:59:14 -0600
+From: "Madhu Saravana Sibi Govindan" <ssshayagriva@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: External Bus on 440GP
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: ELDK 3.1.1 for Solaris
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,10 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi there,
-Has someone ELDK3.1.1 cross development tools compiled for Solaris?
-I saw an impressive list of software to be installed before I can 
-generate it myself.
+Hello all,
 
-Regards,
-   Theo.
+I have a question about linux on 440gp and a custom board.
+
+We use the Universal boot-loader, U-boot, to initialize the board and
+then, boot linux. The flash chip on the board is 4 MB in size.
+
+I'm trying to access the flash chip (attached to the External Bus
+Interface) in a custom device driver running in linux.  The behavior
+I'm seeing is this: when the EBC0_B0CR (Bank Configuration register 0)
+is set to 0xffc5800 (Base address: 0xffc, size = 4 MB, usage: RW and
+width = 8 bits) and when do an ioremap64 to map the physical space of
+the flash chip into the virtual address, all accesses to the flash chip
+are successful.  Please note that the virtual address returned by
+ioremap64 is different from
+0xffc00000.
+
+But, when I do an ioremap first and use the virtual address (the most
+significant 12  bits) to program the EBC0_B0CR, all accesses to the
+flash chip result in a timeout error on the bus.
+The IBM 440GP documentation clearly says that the bits in the EBC0_B0CR
+is used to enable the correct chip select signal. Why am I seeing the
+above behavior?
+
+I'm actually trying to access a custom chip on the EBI bus using the
+same method. I got the same error, so I tried the flash chip....
+
+I'd be thankful if someone could point me to what might be going wrong.
+I'd be glad to provide as much information as necessary.
+
+Thanks in advance,
+G.Sibi
+
+PS: My apologies if this question doesn't belong here....
