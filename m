@@ -1,15 +1,22 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id ECC3967CED
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id E785767D53
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Oct 2006 04:47:25 +1100 (EST)
-Date: 30 Oct 2006 17:47:24 -0000
-Message-ID: <20061030174724.7155.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: nd@bplan-gmbh.de, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support for
-	ARCH=powerpc
-In-Reply-To: <200610292310.k9TNAHXZ013852@post.webmailer.de>
+	Tue, 31 Oct 2006 04:58:59 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so1050957ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 30 Oct 2006 09:58:58 -0800 (PST)
+Message-ID: <528646bc0610300958p627a79abyd84059854a8ca47@mail.gmail.com>
+Date: Mon, 30 Oct 2006 10:58:52 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "David Jander" <david.jander@protonic.nl>
+Subject: Re: Xubuntu and Xenomai on the Lite5200 (IceCube)...
+In-Reply-To: <200610301209.38103.david.jander@protonic.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200610301209.38103.david.jander@protonic.nl>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,125 +27,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In article <200610292310.k9TNAHXZ013852@post.webmailer.de> Nicolas wrote:
-> This patch add MPC52xx Interrupt controller for ARCH=powerpc.
-> 
-> It includes the main code in arch/powerpc/sysdev/ ad well as an header file in
-> include/asm-powerpc.
-> 
-> Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
+On 10/30/06, David Jander <david.jander@protonic.nl> wrote:
+>
+> Hi all,
+>
+> I got the task to help make Linux run on the IceCube, with support for MSCAN,
+> FEC and USB. After a rather exciting jurney I managed to get kernel 2.6.18
+> working with bestcomm DMA and FEC support backported from DENX's git
+> 2.6.19-rcsomething, and Xenomai installed upon that.
+> Btw, before Wolfgang Denk starts complaining why I didn't use his 2.4 kernel,
+> it's because I wasn't smart enough to get USB working. If it does work,
+> please tell me how, I just get errors when plugging in a USB device "kernel:
+> usb.c: USB device not accepting new address=2 (error=-110)".
+> This seems to work fine in 2.6, though.
+> It was not easy, so I wrote everything down (I hope I didn't forget anything
+> important):
+>
+> http://yopesblog.blogspot.com/2006/10/how-to-run-ubuntu-and-xenomai-on.html
 
-Wow, the source code size sure ballooned in this revision.
+Congratulations, that's good work!  Especially the bit about
+documenting what you did!  I've been meaning to play w/ xenomai for a
+while now.
 
-I'd like to see us go the other direction, with something like the
-following (untested code).
+Care to help with the port to arch/powerpc now?  :P
 
--Dale Farnsworth
+g.
 
-(BTW, I sent a patch containing these changes to Nicolas last week.)
-
------------------------
-
-static inline void io_be_setbit(u32 __iomem *addr, int bitno)
-{
-	out_be32(addr, in_be32(addr) | 1 << bitno);
-}
-
-static inline void io_be_clrbit(u32 __iomem *addr, int bitno)
-{
-	out_be32(addr, in_be32(addr) & ~(1 << bitno));
-}
-
-static void mpc52xx_ic_mask(unsigned int virq)
-{
-	u32 val;
-	int irq;
-	int l1irq;
-	int l2irq;
-
-	irq = irq_map[virq].hwirq;
-	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
-
-	pr_debug("%s: irq=%x. l1=%d, l2=%d\n", __func__, irq, l1irq, l2irq);
-
-	switch (l1irq) {
-	case MPC52xx_IRQ_L1_CRIT:
-	case MPC52xx_IRQ_L1_MAIN:
-		if (l2irq <= 3)
-			io_be_clrbit(&intr->ctrl, 11 - l2irq);
-		else
-			io_be_setbit(&intr->main_mask, 16 - l2irq);
-		break;
-
-	case MPC52xx_IRQ_L1_PERP:
-		io_be_setbit(&intr->per_mask, 31 - l2irq);
-		break;
-
-	case MPC52xx_IRQ_L1_SDMA:
-		io_be_setbit(&sdma->IntMask, l2irq);
-		break;
-	}
-}
-
-static void mpc52xx_ic_unmask(unsigned int virq)
-{
-	u32 val;
-	int irq;
-	int l1irq;
-	int l2irq;
-
-	irq = irq_map[virq].hwirq;
-	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
-
-	pr_debug("%s: irq=%x. l1=%d, l2=%d\n", __func__, irq, l1irq, l2irq);
-
-	switch (l1irq) {
-	case MPC52xx_IRQ_L1_CRIT:
-	case MPC52xx_IRQ_L1_MAIN:
-		if (l2irq <= 3)
-			io_be_setbit(&intr->ctrl, 11 - l2irq);
-		else
-			io_be_clrbit(&intr->main, 16 - l2irq);
-		break;
-
-	case MPC52xx_IRQ_L1_PERP:
-		io_be_setbit(&intr->per_mask, 31 - l2irq);
-		break;
-
-	case MPC52xx_IRQ_L1_SDMA:
-		io_be_clrbit(&sdma->IntMask, l2irq);
-		break;
-	}
-}
-
-static void mpc52xx_ic_ack(unsigned int virq)
-{
-	u32 val;
-	int irq;
-	int l1irq;
-	int l2irq;
-
-	irq = irq_map[virq].hwirq;
-	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
-
-	pr_debug("%s: irq=%x. l1=%d, l2=%d\n", __func__, irq, l1irq, l2irq);
-
-	switch (l1irq) {
-	case MPC52xx_IRQ_L1_CRIT:
-	case MPC52xx_IRQ_L1_MAIN:
-		if (l2irq <= 3)
-			io_be_setbit(&intr->ctrl, 27 - l2irq);
-		break;
-
-	case MPC52xx_IRQ_L1_PERP:
-		io_be_clrbit(&intr->per_mask, 31 - l2irq);
-		break;
-
-	case MPC52xx_IRQ_L1_SDMA:
-		out_be32(&sdma->IntPend, 1 << l2irq);
-		break;
-	}
-}
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
