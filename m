@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD53567C62
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 14:02:21 +1100 (EST)
-Subject: Re: glibc-2.5 test suite hangs/crashes the machine
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Fabio Massimo Di Nitto <fabbione@ubuntu.com>
-In-Reply-To: <45419F79.2020300@ubuntu.com>
-References: <45419F79.2020300@ubuntu.com>
-Content-Type: text/plain
-Date: Mon, 30 Oct 2006 14:02:13 +1100
-Message-Id: <1162177334.25682.144.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jeff Bailey <jbailey@ubuntu.com>,
-	Paul Mackerras <paulus@samba.org>, Ben Collins <ben.collins@ubuntu.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17733.31929.136137.129244@cargo.ozlabs.ibm.com>
+Date: Mon, 30 Oct 2006 15:16:57 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [RFC] bootwrapper: prevent fdt from being overwritten by kernel
+In-Reply-To: <20061026225045.GA19839@mag.az.mvista.com>
+References: <20061026225045.GA19839@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Does that patch fixes it ?
+Mark A. Greer writes:
 
-Index: linux-work/arch/powerpc/kernel/traps.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/traps.c	2006-10-23 14:41:37.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/traps.c	2006-10-30 13:59:41.000000000 +1100
-@@ -843,7 +843,7 @@ void __kprobes program_check_exception(s
- 
- void alignment_exception(struct pt_regs *regs)
- {
--	int fixed = 0;
-+	int sig, fixed = 0;
- 
- 	/* we don't implement logging of alignment exceptions */
- 	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS))
-@@ -856,15 +856,11 @@ void alignment_exception(struct pt_regs 
- 	}
- 
- 	/* Operand address was bad */
--	if (fixed == -EFAULT) {
--		if (user_mode(regs))
--			_exception(SIGSEGV, regs, SEGV_ACCERR, regs->dar);
--		else
--			/* Search exception table */
--			bad_page_fault(regs, regs->dar, SIGSEGV);
--		return;
--	}
--	_exception(SIGBUS, regs, BUS_ADRALN, regs->dar);
-+	sig = fixed == -EFAULT ? SIGSEGV : SIGBUS;
-+	if (user_mode(regs))
-+		_exception(sig, regs, SEGV_ACCERR, regs->dar);
-+	else
-+		bad_page_fault(regs, regs->dar, sig);
- }
- 
- void StackOverflow(struct pt_regs *regs)
+> If the fdt that's wrapped in a zImage isn't edited, it will still be
+> sitting in the zImage when the kernel boots
+> (i.e., at 0x400000 + <some offset into the zImage>).
+> 
+> That's okay until you get a large enough kernel (e.g., initramfs)
+> which will overwrite the fdt when the kernel is relocated to 0.
+
+Oops :)
+
+> To handle that, I changed the sandpoint.c:platform_init() to base the
+> simple_alloc heap at the greater of either the end of the zImage or the end
+> of the kernel once its decompressed & relocated to 0.  It then copies
+> the dtb to an area allocated by simple_alloc so I know its safe from
+> being overwritten.
+
+That sounds reasonable.
+
+> In addition, I moved the vmlinux elf header decompress code from
+> prep_kernel() to its own routine and called it before platform_init.
+> I then pass the elf header ptr into platform_init.  That way,
+> platform_init can figure out where the end of the kernel will
+> be and put the dtb beyond it.  The OF code can now change
+> claim_base in platform_init instead of needing the platform_ops.image_hdr
+> hook.
+
+Hmmm.  What if platform_init needs to e.g. turn on caches or do other
+things that need to be done before decompressing?  I think it's
+important to provide some way for the platform code to do things
+really early on.
+
+Paul.
