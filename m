@@ -1,22 +1,27 @@
-Return-Path: <scop@digitel.com.br>
-Received: from cosmos.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
-	by ozlabs.org (Postfix) with ESMTP id 8CD6E67DA9
+Return-Path: <tnt@246tNt.com>
+Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
+	[195.238.5.235])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B54267F2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Oct 2006 09:45:52 +1100 (EST)
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: Vitaly Bordug <vbordug@ru.mvista.com>,
-	Laurent Pinchart <laurent.pinchart@tbox.biz>
-Subject: Re: CPM2 SCC/SMC break handling broken
-Date: Mon, 30 Oct 2006 19:52:00 -0200
-References: <200610261002.44688.laurent.pinchart@tbox.biz>
-	<200610301623.51537.laurent.pinchart@tbox.biz>
-	<20061030184002.35611755@vitb.ru.mvista.com>
-In-Reply-To: <20061030184002.35611755@vitb.ru.mvista.com>
+	Tue, 31 Oct 2006 10:18:13 +1100 (EST)
+Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx008.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k9UNI5nm028054
+	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Oct 2006 00:18:05 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45468828.8010200@246tNt.com>
+Date: Tue, 31 Oct 2006 00:18:00 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Message-Id: <200610301952.00031.scop@digitel.com.br>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+To: Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support
+	for	ARCH=powerpc
+References: <20061030174724.7155.qmail@farnsworth.org>
+In-Reply-To: <20061030174724.7155.qmail@farnsworth.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,80 +32,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Laurent,
-
-On Monday 30 October 2006 13:40, Vitaly Bordug wrote:
-> On Mon, 30 Oct 2006 16:23:51 +0100
+Dale Farnsworth wrote:
+> In article <200610292310.k9TNAHXZ013852@post.webmailer.de> Nicolas wrote:
+>   
+>> This patch add MPC52xx Interrupt controller for ARCH=powerpc.
+>>
+>> It includes the main code in arch/powerpc/sysdev/ ad well as an header
+>> file in include/asm-powerpc.
+>>
+>> Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
+>>     
 >
-> Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
-> > Hi Ricardo,
-> >
-> > > > > > I need to generate a break on a CPM2 SMC serial port (same is=
-sue
-> > > > > > with SCC serial ports).
-> > > > > >
-> > > > > > The tcsendbreak() man page states that the function should
-> > > > > > generate a break between 250ms and 500ms, but testing showed =
-that
-> > > > > > the break is one character long (10 bits in 8N1 mode).
-> > > > >
-> > > > > [snip]
-> > > > >
-> > > > > > CPM_CR_STOP_TX is documented to generate a break of BRKCR
-> > > > > > characters. The BRKCR register is initialized to 1, so only 1
-> > > > > > break character is sent, which won't last between 250ms and
-> > > > > > 500ms.
-> > > > >
-> > > > > [snip]
-> > > > >
-> > > > > > Could anyone think of a proper solution which would not distu=
-rb
-> > > > > > the other drivers too much ?
-> > > > >
-> > > > > Well, one could always set the BRKCR parameter to the maximum
-> > > > > number of break characters permitted by it's size, since the br=
-eak
-> > > > > condition will anyway end as soon as the RESTART TX command is
-> > > > > issued as a consequence of the tty->driver->break_ctl(tty, 0) c=
-all.
-> > > > > But I did not test this.
-> > > >
-> > > > That's a very good idea, but the documentation is a bit misleadin=
-g
-> > > > here. I tested the CPM2 behaviour, and found out that the break w=
-ill
-> > > > last BRKCR characters, even if a RESTART TX command is sent soone=
-r.
-> > > >
-> > > > The user manual states
-> > > >
-> > > > "The SMC sends a programmable number of break characters accordin=
-g to
-> > > > BRKCR and reverts to idle or sends data if a RESTART TRANSMIT is
-> > > > issued before completion."
-> > > >
-> > > > I suppose they meant that, if a RESTART TX command is issued befo=
-re
-> > > > completion of the break sequence, the SMC will send data at the e=
-nd
-> > > > of the break sequence. This is at least the behaviour I noticed a=
-fter
-> > > > trying your idea.
-> > >
-> > > Too bad.... :( One more good idea to the junk bin.
-> > >
-> > > Hmm, just a wild shot you can try, while you're at that: what about
-> > > setting BRKCR to zero and issuing another STOP TRANSMIT, just befor=
-e
-> > > the RESTART TRANSMIT?
-> >
-> > Wow, congratulations. I wouldn't have thought about that.
-Thanks.
+> NAK.
+>
+> Two requests:
+>   1.  Please include patches inline so that they may be easily reviewed.
+>   2.  Please do not remove copyright lines from files you modify.
+>   
+Indeed.
 
-BTW, thank you for trying that out. My fingers are much lazier than my br=
-ain.
 
-Cheers,
 
---=20
-Ricardo Scop.
+Dale Farnsworth wrote:
+> Wow, the source code size sure ballooned in this revision.
+>
+> I'd like to see us go the other direction, with something like the
+> following (untested code).
+>   
+
+Well that's kind of a contradiction with what benh asked (separate IC
+chips).
+
+> static inline void io_be_setbit(u32 __iomem *addr, int bitno)
+> {
+> 	out_be32(addr, in_be32(addr) | 1 << bitno);
+> }
+>
+> static inline void io_be_clrbit(u32 __iomem *addr, int bitno)
+> {
+> 	out_be32(addr, in_be32(addr) & ~(1 << bitno));
+> }
+>   
+Those could still be used to cleanup a little the code.
+
+
+    Sylvain
