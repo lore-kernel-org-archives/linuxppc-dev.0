@@ -1,25 +1,16 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id A8AF767CB5
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 17:21:51 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k9U7gk4v007629
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 00:42:46 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k9U6LhGK011328
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 00:21:44 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] qe_lib: Remove immrbar_virt_to_phys() function
-Date: Mon, 30 Oct 2006 14:22:29 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D2631CD@zch01exm20.fsl.freescale.net>
-In-Reply-To: <17733.28614.62353.822225@cargo.ozlabs.ibm.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 9BA5467CA6
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 18:18:46 +1100 (EST)
+Date: Mon, 30 Oct 2006 18:17:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] Create compat_sys_migrate_pages.
+Message-Id: <20061030181701.23ea7cba.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mm@kvack.org, ak@suse.de, ppc-dev <linuxppc-dev@ozlabs.org>,
+	pj@sgi.com, paulus@samba.org, Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,31 +20,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Paul Mackerras [mailto:paulus@samba.org]
-> Sent: Monday, October 30, 2006 11:22 AM
-> To: Li Yang-r58472
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] qe_lib: Remove immrbar_virt_to_phys() function
->=20
-> Li Yang writes:
->=20
-> > Remove private physical address mapping routine in qe_lib.  Users
-> > of qe_lib should use generic functions like iopa().
-> > The change also addresses a bug found by Timur Tabi that cmd_input
-> > got mapped in qe_issue_cmd().  It should be written to CECDR
-> > unmodified.
->=20
-> Do you mean that the argument to qe_issue_cmd is a physical address?
-> It seems to me that the bug fix you mention is the main thing the
-> patch does, and the removal of immrvar_virt_to_phys is a cleanup on
-> the side that is made possible by the bugfix.
+This is needed on bigendian 64bit architectures.
 
-The argument cmd_input should be offset to the MURAM base.  The cleanup
-is inspired by the bugfix but not result of the bugfix.  There are still
-other users of the immrbar_virt_to_phy() which can be replaced.  The
-bugfix can be covered by the work of removing all users of the routine.
-Or the removal will be depending on the bugfix to complete its work.  Do
-you suggest us to separate the patches?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/compat.h |    4 ++++
+ kernel/compat.c        |   33 +++++++++++++++++++++++++++++++++
+ kernel/sys_ni.c        |    1 +
+ 3 files changed, 38 insertions(+), 0 deletions(-)
 
-- Leo
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index f155319..80b17f4 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -230,5 +230,9 @@ asmlinkage long compat_sys_adjtimex(stru
+ extern int compat_printk(const char *fmt, ...);
+ extern void sigset_from_compat(sigset_t *set, compat_sigset_t *compat);
+ 
++asmlinkage long compat_sys_migrate_pages(compat_pid_t pid,
++		compat_ulong_t maxnode, const compat_ulong_t __user *old_nodes,
++		const compat_ulong_t __user *new_nodes);
++
+ #endif /* CONFIG_COMPAT */
+ #endif /* _LINUX_COMPAT_H */
+diff --git a/kernel/compat.c b/kernel/compat.c
+index d4898aa..6952dd0 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -982,4 +982,37 @@ asmlinkage long compat_sys_move_pages(pi
+ 	}
+ 	return sys_move_pages(pid, nr_pages, pages, nodes, status, flags);
+ }
++
++asmlinkage long compat_sys_migrate_pages(compat_pid_t pid,
++			compat_ulong_t maxnode,
++			const compat_ulong_t __user *old_nodes,
++			const compat_ulong_t __user *new_nodes)
++{
++	unsigned long __user *old = NULL;
++	unsigned long __user *new = NULL;
++	nodemask_t tmp_mask;
++	unsigned long nr_bits;
++	unsigned long size;
++
++	nr_bits = min_t(unsigned long, maxnode - 1, MAX_NUMNODES);
++	size = ALIGN(nr_bits, BITS_PER_LONG) / 8;
++	if (old_nodes) {
++		if (compat_get_bitmap(nodes_addr(tmp_mask), old_nodes, nr_bits))
++			return -EFAULT;
++		old = compat_alloc_user_space(new_nodes ? size * 2 : size);
++		if (new_nodes)
++			new = old + size / sizeof(unsigned long);
++		if (copy_to_user(old, nodes_addr(tmp_mask), size))
++			return -EFAULT;
++	}
++	if (new_nodes) {
++		if (compat_get_bitmap(nodes_addr(tmp_mask), new_nodes, nr_bits))
++			return -EFAULT;
++		if (new == NULL)
++			new = compat_alloc_user_space(size);
++		if (copy_to_user(new, nodes_addr(tmp_mask), size))
++			return -EFAULT;
++	}
++	return sys_migrate_pages(pid, nr_bits + 1, old, new);
++}
+ #endif
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 0e53314..d7306d0 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -135,6 +135,7 @@ cond_syscall(sys_madvise);
+ cond_syscall(sys_mremap);
+ cond_syscall(sys_remap_file_pages);
+ cond_syscall(compat_sys_move_pages);
++cond_syscall(compat_sys_migrate_pages);
+ 
+ /* block-layer dependent */
+ cond_syscall(sys_bdflush);
+-- 
+1.4.3.2
