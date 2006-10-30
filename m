@@ -1,26 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
-	[195.238.5.235])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7B54267F2C
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 95C7067EB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Oct 2006 10:18:13 +1100 (EST)
-Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx008.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k9UNI5nm028054
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Oct 2006 00:18:05 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45468828.8010200@246tNt.com>
-Date: Tue, 31 Oct 2006 00:18:00 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support
-	for	ARCH=powerpc
-References: <20061030174724.7155.qmail@farnsworth.org>
-In-Reply-To: <20061030174724.7155.qmail@farnsworth.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 31 Oct 2006 10:53:17 +1100 (EST)
+To: John W <jmwoo2@yahoo.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Building ELDK 3.0/3.1 from SRPMS 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 29 Oct 2006 19:38:46 PST."
+	<20061030033846.1930.qmail@web50313.mail.yahoo.com>
+Date: Tue, 31 Oct 2006 00:53:15 +0100
+Sender: wd@denx.de
+Message-Id: <20061030235315.7BC2B352658@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -32,48 +24,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dale Farnsworth wrote:
-> In article <200610292310.k9TNAHXZ013852@post.webmailer.de> Nicolas wrote:
->   
->> This patch add MPC52xx Interrupt controller for ARCH=powerpc.
->>
->> It includes the main code in arch/powerpc/sysdev/ ad well as an header
->> file in include/asm-powerpc.
->>
->> Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
->>     
->
-> NAK.
->
-> Two requests:
->   1.  Please include patches inline so that they may be easily reviewed.
->   2.  Please do not remove copyright lines from files you modify.
->   
-Indeed.
+Dear John,
 
+in message <20061030033846.1930.qmail@web50313.mail.yahoo.com> you wrote:
+> Thanks Wolfgang!  Loading RH7.3 and updating
+> everything with YUM seemed to do the trick to building
+> ELDK 3.0!
 
+Out of curiosity: may I ask why you invest efforts in this old
+version?
 
-Dale Farnsworth wrote:
-> Wow, the source code size sure ballooned in this revision.
->
-> I'd like to see us go the other direction, with something like the
-> following (untested code).
->   
+> On a another note, I am also trying to build ELDK
+> 2.1.0 from SRPMS on the same RH7.3 machine, and I am
+> comming across two problems:
+> 1.  The SRPM for mount-2.11g-5a.src.rpm from the
+> Yellowdog 2.3 release seems to have "bad magic" in
+> that when trying to install the SRPM, there is some
+> sort of validation problem.  In remeding this, I am
+> using mount-2.11g-5a.src.rpm from the Yellowdog 2.2
+> release.    It probably isn't safe to to so, but I was
+> wondering how you over came this issue.
 
-Well that's kind of a contradiction with what benh asked (separate IC
-chips).
+Exactly the same way you did :-)
 
-> static inline void io_be_setbit(u32 __iomem *addr, int bitno)
-> {
-> 	out_be32(addr, in_be32(addr) | 1 << bitno);
-> }
->
-> static inline void io_be_clrbit(u32 __iomem *addr, int bitno)
-> {
-> 	out_be32(addr, in_be32(addr) & ~(1 << bitno));
-> }
->   
-Those could still be used to cleanup a little the code.
+> 2.  I'm pretty sure that not all of my applications
+> are building in the ELDK2.1.0 release,  for example
+...
+> /bin/sh: gperf: command not found
+> make[1]: *** [keywords.c] Error 127
+> make[1]: Leaving directory
+> `/opt/eldkv2.1.0/build/ppc-2006-10-27/work/usr/src/de
+> nx/BUILD/modutils-2.4.13/genksyms'
+> make: *** [all] Error 2
+> error: Bad exit status from
+> /opt/eldkv2.1.0/build/ppc-2006-10-27/work/var/tmp/rp
+> m-tmp.26616 (%build)
+> 
+> Does mean that I need to go get gperf?
 
+Sorry, I don't have these old logs online any more. Please drop me  a
+note if you really want to see these, so I can restore the files from
+tape.
 
-    Sylvain
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+How many Unix hacks does it take to change a light bulb?  Let's  see,
+   can you use a shell script for that or does it need a C program?
