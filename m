@@ -1,19 +1,22 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id 6D89567D24
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 06:53:15 +1100 (EST)
-Date: Mon, 30 Oct 2006 11:53:05 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/2] Create compat_sys_migrate_pages.
-In-Reply-To: <20061030181701.23ea7cba.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0610301152040.21342@schroedinger.engr.sgi.com>
-References: <20061030181701.23ea7cba.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-	ak@suse.de, linux-mm@kvack.org, pj@sgi.com, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16CA267D08
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 07:36:58 +1100 (EST)
+Subject: Re: glibc-2.5 test suite hangs/crashes the machine
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Fabio Massimo Di Nitto <fabbione@ubuntu.com>
+In-Reply-To: <4545E38B.5010702@ubuntu.com>
+References: <45419F79.2020300@ubuntu.com>
+	<1162177334.25682.144.camel@localhost.localdomain>
+	<4545E38B.5010702@ubuntu.com>
+Content-Type: text/plain
+Date: Tue, 31 Oct 2006 07:36:50 +1100
+Message-Id: <1162240610.25682.182.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Jeff Bailey <jbailey@ubuntu.com>,
+	Paul Mackerras <paulus@samba.org>, Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,10 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 30 Oct 2006, Stephen Rothwell wrote:
-
-> This is needed on bigendian 64bit architectures.
+On Mon, 2006-10-30 at 12:35 +0100, Fabio Massimo Di Nitto wrote:
+> Benjamin Herrenschmidt wrote:
+> > Does that patch fixes it ?
+> > 
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> tested with kernel .17 and headers from .19 and the build hangs. Still tons of
+> Zl processes around.
+> 
+> On the note building with kernel .19 and .19 headers it all goes smooth.
 
-Acked-by: Christoph Lameter <clameter@sgi.com>
+Ok, so there's a different issue from what I've found. You haven't by
+chance noted what those processes are (which test case typically) ?
+Also, there's a sysrq to get a backtrace of all pending processes,
+though I don't remember which one off the top of my mind, might be
+useful to have a look though.
+
+Ben.
