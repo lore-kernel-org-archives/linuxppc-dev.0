@@ -1,17 +1,28 @@
-Return-Path: <jmwoo2@yahoo.com>
-Received: from web50313.mail.yahoo.com (web50313.mail.yahoo.com
-	[206.190.39.215]) by ozlabs.org (Postfix) with SMTP id 34B0567C1E
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id 4FBB367C86
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Oct 2006 14:38:48 +1100 (EST)
-Message-ID: <20061030033846.1930.qmail@web50313.mail.yahoo.com>
-Date: Sun, 29 Oct 2006 19:38:46 -0800 (PST)
-From: John W <jmwoo2@yahoo.com>
-Subject: Re: Building ELDK 3.0/3.1 from SRPMS 
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20061027211942.B7FEB3535FD@atlas.denx.de>
+	Mon, 30 Oct 2006 19:23:07 +1100 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1GeSQD-0006n0-1i
+	for linuxppc-embedded@ozlabs.org; Mon, 30 Oct 2006 09:23:05 +0100
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
+References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
+	<87ac41esap.fsf@sleipner.barco.com>
+	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
+	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
+	<87ac40vgeo.fsf@sleipner.barco.com>
+	<609d5c8e0610151648x41b0c49cj4d0cda0e3b5bf1e@mail.gmail.com>
+	<87lknadbbl.fsf@sleipner.barco.com>
+	<877iylreca.fsf@sleipner.barco.com> <4542CE8A.9030904@dlasys.net>
+Date: Mon, 30 Oct 2006 09:23:05 +0100
+In-Reply-To: <4542CE8A.9030904@dlasys.net> (David H. Lynch, Jr.'s message of
+	"Fri, 27 Oct 2006 23:29:14 -0400")
+Message-ID: <87pscap5zq.fsf@sleipner.barco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,89 +33,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Wolfgang!  Loading RH7.3 and updating
-everything with YUM seemed to do the trick to building
-ELDK 3.0!
+>>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
 
-On a another note, I am also trying to build ELDK
-2.1.0 from SRPMS on the same RH7.3 machine, and I am
-comming across two problems:
-1.  The SRPM for mount-2.11g-5a.src.rpm from the
-Yellowdog 2.3 release seems to have "bad magic" in
-that when trying to install the SRPM, there is some
-sort of validation problem.  In remeding this, I am
-using mount-2.11g-5a.src.rpm from the Yellowdog 2.2
-release.    It probably isn't safe to to so, but I was
-wondering how you over came this issue.
+David>     There is a substantial time/code difference between the
+David> time ulite_console_setup() is called and the time the platform
+David> device is initiallized.
 
-2.  I'm pretty sure that not all of my applications
-are building in the ELDK2.1.0 release,  for example
-when I check out the log for
-/build/ppc-2006-10-27/logs/ppc_4xx/build_modutils.log,
-it has the following error:
-gperf -a -C -E -g -H is_reserved_hash -k 1,3,$ -N
-is_reserved_word -p -t keyword
-s.gperf > keywords.c.tmp
-/bin/sh: gperf: command not found
-make[1]: *** [keywords.c] Error 127
-make[1]: Leaving directory
-`/opt/eldkv2.1.0/build/ppc-2006-10-27/work/usr/src/de
-nx/BUILD/modutils-2.4.13/genksyms'
-make: *** [all] Error 2
-error: Bad exit status from
-/opt/eldkv2.1.0/build/ppc-2006-10-27/work/var/tmp/rp
-m-tmp.26616 (%build)
+Huh?
 
-Does mean that I need to go get gperf?
+(gdb) br ulite_probe
+Breakpoint 2 at 0xc00f7530: file drivers/serial/uartlite.c, line 397.
+(gdb) br ulite_console_setup
+Breakpoint 3 at 0xc00f7454: file drivers/serial/uartlite.c, line 342.
+(gdb) c
+Continuing.
 
-Thanks for the help!
+Breakpoint 2, ulite_probe (pdev=0xc00ddb50) at drivers/serial/uartlite.c:397
+397                     return -EINVAL;
+(gdb) c
+Continuing.
 
-John Woo
+Breakpoint 3, ulite_console_setup (co=0xc00e2f14, options=0xc00fe00f "115200")
+    at drivers/serial/uartlite.c:342
+342             if (co->index < 0 || co->index >= ULITE_NR_UARTS)
 
+_probe get's called before console_setup, so we have all the
+information to output console data right away.
 
---- Wolfgang Denk <wd@denx.de> wrote:
+David>     But for now, if you are not going to bother making
+David> console_settup() work you might as well not put the rest of the
+David> early serial code in at all.
 
-> Dear John,
-> 
-> in message
-> <20061027182114.24662.qmail@web50315.mail.yahoo.com>
-> you wrote:
-> > 
-> > I having trouble rebuilding ELDK 3.0 & ELDK 3.1
-> from
-> > the source RPMS.  I have spent a great deal of
-> time on
-> > this, and I have a feeling that maybe I=92m just
-> not
-> > doing something correctly (setting up the build
-> > environment, retrieving source/specs from CVS..
-> > etc..).  My build machine is Red Hat 9.0 without
-> any
-> > updates (Kernel 2.4.20-8, the Shrike release).
-> 
-> This will not work; to build ELDK 3.x from scratch
-> you need a  RH-7.3
-> box *with* all updates installed.
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-> 
-> -- 
-> Software Engineering:  Embedded and Realtime
-> Systems,  Embedded Linux
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80
-> Email: wd@denx.de
-> e-credibility: the non-guaranteeable likelihood that
->  the  electronic
-> data you're seeing is genuine rather than somebody's
-> made-up crap.
-> - Karl Lehenbauer
-> 
+Not going to make it work? What doesn't work?
 
-
-
- 
-____________________________________________________________________________________
-Get your email and see which of your friends are online - Right on the New Yahoo.com 
-(http://www.yahoo.com/preview) 
+-- 
+Bye, Peter Korsgaard
