@@ -1,19 +1,21 @@
-Return-Path: <fabbione@ubuntu.com>
-Received: from trider-g7.fabbione.net (trider-g7.fabbione.net [195.22.207.161])
-	by ozlabs.org (Postfix) with ESMTP id 7AA8067CB0
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 22:35:50 +1100 (EST)
-Message-ID: <4545E38B.5010702@ubuntu.com>
-Date: Mon, 30 Oct 2006 12:35:39 +0100
-From: Fabio Massimo Di Nitto <fabbione@ubuntu.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: glibc-2.5 test suite hangs/crashes the machine
-References: <45419F79.2020300@ubuntu.com>
-	<1162177334.25682.144.camel@localhost.localdomain>
-In-Reply-To: <1162177334.25682.144.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Jeff Bailey <jbailey@ubuntu.com>,
-	Paul Mackerras <paulus@samba.org>, Ben Collins <ben.collins@ubuntu.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8779267D32
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 03:49:03 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k9UH2cQj017802
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 10:02:38 -0700 (MST)
+Received: from ld0028-tx32 (ld0028-tx32.am.freescale.net [10.82.19.18])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with SMTP id k9UGn0ST004976
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Oct 2006 10:49:00 -0600 (CST)
+Date: Mon, 30 Oct 2006 10:48:59 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [DTC][PATCH] increment default output blob version from 3 to 16
+Message-Id: <20061030104859.017cb613.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> Does that patch fixes it ?
-> 
+increment default output blob version from 3 to 16
 
-tested with kernel .17 and headers from .19 and the build hangs. Still tons of
-Zl processes around.
+---
+ dtc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-On the note building with kernel .19 and .19 headers it all goes smooth.
-
-Fabio
-
+diff --git a/dtc.c b/dtc.c
+index 646b814..3cb94e6 100644
+--- a/dtc.c
++++ b/dtc.c
+@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
+ 	int opt;
+ 	FILE *inf = NULL;
+ 	FILE *outf = NULL;
+-	int outversion = 3;
++	int outversion = 0x10;
+ 	int reservenum = 1;
+ 	int boot_cpuid_phys = 0xfeedbeef;
+ 
 -- 
-I'm going to make him an offer he can't refuse.
+1.4.2.3
