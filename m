@@ -1,21 +1,23 @@
-Return-Path: <fabbione@ubuntu.com>
-Received: from trider-g7.fabbione.net (trider-g7.fabbione.net [195.22.207.161])
-	by ozlabs.org (Postfix) with ESMTP id D055767C0D
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 20:47:15 +1100 (EST)
-Message-ID: <45471B94.9070606@ubuntu.com>
-Date: Tue, 31 Oct 2006 10:47:00 +0100
-From: Fabio Massimo Di Nitto <fabbione@ubuntu.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D995567C4B
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 20:52:59 +1100 (EST)
+Received: from az33smr01 (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k9V9qwgN024927
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 02:52:58 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01 (8.13.1/8.13.0) with ESMTP id k9V9qurM016894
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 03:52:57 -0600 (CST)
+Message-ID: <45471D26.1050000@freescale.com>
+Date: Tue, 31 Oct 2006 17:53:42 +0800
+From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: glibc-2.5 test suite hangs/crashes the machine
-References: <45419F79.2020300@ubuntu.com>	
-	<1162177334.25682.144.camel@localhost.localdomain>	
-	<4545E38B.5010702@ubuntu.com>
-	<1162240610.25682.182.camel@localhost.localdomain>
-In-Reply-To: <1162240610.25682.182.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Jeff Bailey <jbailey@ubuntu.com>,
-	Paul Mackerras <paulus@samba.org>, Ben Collins <ben.collins@ubuntu.com>
+To: Paul <paulus@samba.org>
+Subject: [PATCH 1/2] qe_lib: qe_issue_cmd writes wrong value to CECDR
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2006-10-30 at 12:35 +0100, Fabio Massimo Di Nitto wrote:
->> Benjamin Herrenschmidt wrote:
->>> Does that patch fixes it ?
->>>
->> tested with kernel .17 and headers from .19 and the build hangs. Still tons of
->> Zl processes around.
->>
->> On the note building with kernel .19 and .19 headers it all goes smooth.
-> 
-> Ok, so there's a different issue from what I've found. You haven't by
-> chance noted what those processes are (which test case typically) ?
-> Also, there's a sysrq to get a backtrace of all pending processes,
-> though I don't remember which one off the top of my mind, might be
-> useful to have a look though.
-> 
-> Ben.
-> 
+From: Timur Tabi <timur@freescale.com>
 
-After discussing with Ben on IRC i applied 69588298188b40ed7f75c98a6fd328d82f23ca21
-to kernel .17 and glibc does build without zombie processes and no hang whatsoever.
+Changed qe_issue_cmd() to write cmd_input to the CECDR unmodified.  It
+was treating cmd_input as a virtual address and tried to convert it to
+a physical address.
 
-I suggest to push this patch back to the stable kernel trees.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-Fabio
-
--- 
-I'm going to make him an offer he can't refuse.
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 2bae632..e422322 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -122,8 +122,7 @@ int qe_issue_cmd(u32 cmd, u32 device, u8
+ 				mcn_shift = QE_CR_MCN_NORMAL_SHIFT;
+ 		}
+ 
+-		out_be32(&qe_immr->cp.cecdr,
+-			 immrbar_virt_to_phys((void *)cmd_input));
++		out_be32(&qe_immr->cp.cecdr, cmd_input);
+ 		out_be32(&qe_immr->cp.cecr,
+ 			 (cmd | QE_CR_FLG | ((u32) device << dev_shift) | (u32)
+ 			  mcn_protocol << mcn_shift));
