@@ -1,28 +1,23 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx015.isp.belgacom.be (outmx015.isp.belgacom.be
-	[195.238.4.87])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 367EF67E9A
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 1EA3367CBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Oct 2006 18:54:58 +1100 (EST)
-Received: from outmx015.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx015.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k9V7sptm005655
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Oct 2006 08:54:51 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH] CPM UART: Fix break generation
-Date: Tue, 31 Oct 2006 08:58:28 +0100
+	Tue, 31 Oct 2006 20:05:03 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so1209159ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 31 Oct 2006 01:04:59 -0800 (PST)
+In-Reply-To: <200610310858.28622.laurent.pinchart@tbox.biz>
 References: <200610261002.44688.laurent.pinchart@tbox.biz>
 	<200610301623.51537.laurent.pinchart@tbox.biz>
 	<20061030184002.35611755@vitb.ru.mvista.com>
-In-Reply-To: <20061030184002.35611755@vitb.ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200610310858.28622.laurent.pinchart@tbox.biz>
+	<200610310858.28622.laurent.pinchart@tbox.biz>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
+Message-Id: <72741853-734F-4931-8567-5FBA3CB6FF42@gmail.com>
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Subject: Re: [PATCH] CPM UART: Fix break generation
+Date: Tue, 31 Oct 2006 11:04:53 +0200
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -34,47 +29,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-When generating a break condition on a serial port, the CPM must be told
-beforehand how long the break should be. Unfortunately, this information is
-not available through the current serial break handling API. This patch works
-around the problem by requesting a 32767 characters break followed by a 0
-characters break after the requested duration. The CPM will stop the first
-break when the second one is requested. This might not work with future CPM
-revisions.
 
-Signed-off-by: Laurent Pinchart <laurent@pclaurent.technotrade>
----
- drivers/serial/cpm_uart/cpm_uart_core.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+On 31 =CE=9F=CE=BA=CF=84 2006, at 9:58 =CE=A0=CE=9C, Laurent Pinchart =
+wrote:
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c 
-b/drivers/serial/cpm_uart/cpm_uart_core.c
-index c29d87d..aa0a284 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -239,14 +239,23 @@ static void cpm_uart_break_ctl(struct ua
- {
- 	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
- 	int line = pinfo - cpm_uart_ports;
-+	volatile u16 *brkcr = IS_SMC(pinfo) ? &pinfo->smcup->smc_brkcr
-+				: &pinfo->sccup->scc_brkcr;
- 
- 	pr_debug("CPM uart[%d]:break ctrl, break_state: %d\n", port->line,
- 		break_state);
- 
- 	if (break_state)
-+	{
-+		*brkcr = 32767;
- 		cpm_line_cr_cmd(line, CPM_CR_STOP_TX);
-+	}
- 	else
-+	{
-+		*brkcr = 0;
-+		cpm_line_cr_cmd(line, CPM_CR_STOP_TX);
- 		cpm_line_cr_cmd(line, CPM_CR_RESTART_TX);
-+	}
- }
- 
- /*
--- 
-1.4.GIT
+> When generating a break condition on a serial port, the CPM must be =20=
+
+> told
+> beforehand how long the break should be. Unfortunately, this =20
+> information is
+> not available through the current serial break handling API. This =20
+> patch works
+> around the problem by requesting a 32767 characters break followed =20
+> by a 0
+> characters break after the requested duration. The CPM will stop =20
+> the first
+> break when the second one is requested. This might not work with =20
+> future CPM
+> revisions.
+>
+
+ACK,
+
+Nice one Laurent ;)
+
+Regards
+
+Pantelis
