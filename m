@@ -1,25 +1,21 @@
-Return-Path: <nd@bplan-gmbh.de>
-Date: Tue, 31 Oct 2006 10:46:02 +0100 (MET)
-Message-ID: <45471B57.6040109@bplan-gmbh.de>
-From: Nicolas DET <nd@bplan-gmbh.de>
+Return-Path: <fabbione@ubuntu.com>
+Received: from trider-g7.fabbione.net (trider-g7.fabbione.net [195.22.207.161])
+	by ozlabs.org (Postfix) with ESMTP id D055767C0D
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 20:47:15 +1100 (EST)
+Message-ID: <45471B94.9070606@ubuntu.com>
+Date: Tue, 31 Oct 2006 10:47:00 +0100
+From: Fabio Massimo Di Nitto <fabbione@ubuntu.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add
-	MPC52xx	Interrupt	controller	support	for	ARCH=powerpc
-References: <200610292310.k9TNAHXZ013852@post.webmailer.de>	
-	<1162268830.25682.271.camel@localhost.localdomain>	
-	<4546F68C.6070900@bplan-gmbh.de>	
-	<1162279296.25682.297.camel@localhost.localdomain>	
-	<45470006.1020004@bplan-gmbh.de>	
-	<1162281518.25682.305.camel@localhost.localdomain>	
-	<4547093E.6070502@bplan-gmbh.de>	
-	<1162284291.25682.323.camel@localhost.localdomain>	
-	<4547119C.3060208@bplan-gmbh.de>
-	<1162285628.25682.326.camel@localhost.localdomain>
-In-Reply-To: <1162285628.25682.326.camel@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------000006040602030902010803"
-Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, sha@pengutronix.de,
-	linuxppc-embedded@ozlabs.org
+Subject: Re: glibc-2.5 test suite hangs/crashes the machine
+References: <45419F79.2020300@ubuntu.com>	
+	<1162177334.25682.144.camel@localhost.localdomain>	
+	<4545E38B.5010702@ubuntu.com>
+	<1162240610.25682.182.camel@localhost.localdomain>
+In-Reply-To: <1162240610.25682.182.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Jeff Bailey <jbailey@ubuntu.com>,
+	Paul Mackerras <paulus@samba.org>, Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,59 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000006040602030902010803
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
 Benjamin Herrenschmidt wrote:
->> Ok. that's why I suggest to keep buggy (or none) firmware board in 
->> platform specific code.
-> 
-> Well, in that case, we have a well defined interface to set the sense
-> code, via the device-tree, and that's much better than having platform
-> code muck around the PIC hardware separately from the PIC driver don't
-> you think ?
-> 
-> Anyway, that's the way it works in Linux/powerpc so there is no need
-> debating that for ever. Just be aware that at one point, there will be a
-> set_type() implementation in this driver and that it will be called
-> based on the polarity information in the device-tree so make sure you
-> got it right.
-> 
-
-Ok. set_type() is scheduled for later on or should it be included right now?
-What's next should be done to finally acked the driver?
-
->>> Of course, if your device-tree has bugs, then adding that feature
->>> afterward will suddenly break efika ...
+> On Mon, 2006-10-30 at 12:35 +0100, Fabio Massimo Di Nitto wrote:
+>> Benjamin Herrenschmidt wrote:
+>>> Does that patch fixes it ?
 >>>
->> Our OpenFirmware is, of course, bugfree ;-)
+>> tested with kernel .17 and headers from .19 and the build hangs. Still tons of
+>> Zl processes around.
+>>
+>> On the note building with kernel .19 and .19 headers it all goes smooth.
 > 
-> :)
+> Ok, so there's a different issue from what I've found. You haven't by
+> chance noted what those processes are (which test case typically) ?
+> Also, there's a sysrq to get a backtrace of all pending processes,
+> though I don't remember which one off the top of my mind, might be
+> useful to have a look though.
+> 
+> Ben.
 > 
 
-You doubt? ;-)
+After discussing with Ben on IRC i applied 69588298188b40ed7f75c98a6fd328d82f23ca21
+to kernel .17 and glibc does build without zombie processes and no hang whatsoever.
 
---------------000006040602030902010803
-Content-Type: text/x-vcard; charset=utf-8;
- name="nd.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="nd.vcf"
+I suggest to push this patch back to the stable kernel trees.
 
-begin:vcard
-fn:Nicolas DET ( bplan GmbH )
-n:DET;Nicolas
-org:bplan GmbH
-adr:;;;;;;Germany
-email;internet:nd@bplan-gmbh.de
-title:Software Entwicklung
-tel;work:+49 6171 9187 - 31
-x-mozilla-html:FALSE
-url:http://www.bplan-gmbh.de
-version:2.1
-end:vcard
+Fabio
 
-
---------------000006040602030902010803--
+-- 
+I'm going to make him an offer he can't refuse.
