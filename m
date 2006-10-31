@@ -1,20 +1,19 @@
 Return-Path: <nd@bplan-gmbh.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id EC4EC67C57
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 19:25:23 +1100 (EST)
-Date: Tue, 31 Oct 2006 09:25:20 +0100 (MET)
-Message-ID: <4547086D.2050808@bplan-gmbh.de>
+Date: Tue, 31 Oct 2006 09:28:49 +0100 (MET)
+Message-ID: <4547093E.6070502@bplan-gmbh.de>
 From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support
-	for	ARCH=powerpc
+Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt
+	controller	support	for	ARCH=powerpc
 References: <200610292310.k9TNAHXZ013852@post.webmailer.de>	
-	<7BDB728E-0CC2-4940-9856-B496022F3482@kernel.crashing.org>	
-	<4546F7DE.6070104@bplan-gmbh.de>
-	<1162280335.25682.302.camel@localhost.localdomain>
-In-Reply-To: <1162280335.25682.302.camel@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------040507020400030608030504"
+	<1162268830.25682.271.camel@localhost.localdomain>	
+	<4546F68C.6070900@bplan-gmbh.de>	
+	<1162279296.25682.297.camel@localhost.localdomain>	
+	<45470006.1020004@bplan-gmbh.de>
+	<1162281518.25682.305.camel@localhost.localdomain>
+In-Reply-To: <1162281518.25682.305.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="------------030801040603020803090208"
 Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, sha@pengutronix.de,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,63 +26,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------040507020400030608030504
+--------------030801040603020803090208
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
 Benjamin Herrenschmidt wrote:
->> Well, on a personal point of view, the only usable mailer I know does 
->> not run on my 'work' OS. I'll copy/paste from an editor ;-)
+> On Tue, 2006-10-31 at 08:49 +0100, Nicolas DET wrote:
 > 
-> And both are ? (mailer and 'work' OS ? :)
+>> In this case: shouldn't the platform init correctly setup the hw instead 
+>> of the Firmware?
 > 
-
-Mailer: SimpleMail. Almost usable a bit buggy.
-'work' OS: Linux PowerPC ;-)
-
->>> +/* MBAR position */
->>> +#define MPC52xx_MBAR        0xf0000000    /* Phys address */
->>> +#define MPC52xx_MBAR_VIRT    0xf0000000    /* Virt address */
->>> +#define MPC52xx_MBAR_SIZE    0x00010000
->>> +
->>> +#define MPC52xx_PA(x)        ((phys_addr_t)(MPC52xx_MBAR + (x)))
->>> +#define MPC52xx_VA(x)        ((void __iomem *)(MPC52xx_MBAR_VIRT + (x)))
->>>
->>> This should be handled dynamically (pulled from the device tree), I 
->>> doubt MBAR will be at the same location for all boards.
->> Well, 0xf000000 seems some kind of 'standart' value. we could have a 
->> global variable 'mpc52xx_mbar' which would be default 0xf0000000 and 
->> modified by each platform.
-> 
-> No. No magic globals. If we need some common code for dealing with some
-> 52xx specific bits, them have a file somewhere, possibly in sysdev,
-> containing those and exposing functions.
+> No. The device-tree contains the polarity information, it gets passed to
+> the PIC driver via set_irq_type() anyway so there is no need in theory
+> to have the HW initialized by the firmware if that is implemented. In
+> the case where it's not, however, you indeed need to make sure the
+> firmware have programmed the same settings in the HW as are exposed in
+> the device-tree.
 > 
 
-Ok. By the way, the mbar is include as property in our OpenFrimware. 
-Moreover, the G2CORE CPU has a new SPR 'MBAR' which is the MBAR ;-). It 
-would maybe make sense to create a new file 
-(arch/powerpc/sysdev/mpc52xx.c) which would contain chip specific code.
+In my point of view, the Firmware main task is to init the HW. I do not 
+think it's a good idea to overwrite firmware hw settings in the common 
+code. In my mind, this should be done in platform specific area.
 
-Like mpc52xx_get_mbar(), mpc52xx_get_ipbfreq(), etc...
+Regards,
 
-I updated a bit the patches. I applied Dale requests.
-My kernel still compiles and boots. ;-)
-
-Should I post the new patches?
-
-About the headers thingy. Should I split them directly in the patch, or 
-this should be done by others later on?
-
-About the serials and USB part. Have anyone already do some work (moving 
-to of_platform, etc...)?
-
-As far as I see, the Efika platform patch did not get any comment, 
-should I assume it is good enough for inclusion in the main stream kernel?
-
-Regards.
-
---------------040507020400030608030504
+--------------030801040603020803090208
 Content-Type: text/x-vcard; charset=utf-8;
  name="nd.vcf"
 Content-Transfer-Encoding: 7bit
@@ -104,4 +71,4 @@ version:2.1
 end:vcard
 
 
---------------040507020400030608030504--
+--------------030801040603020803090208--
