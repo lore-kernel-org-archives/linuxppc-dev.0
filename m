@@ -4,20 +4,20 @@ Received: from excu-mxob-2.symantec.com (excu-mxob-2.symantec.com
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "excu-mxob-2.symantec.com",
 	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6BD6867B8F
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 06:45:16 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8278167B9B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 06:49:16 +1100 (EST)
 Received: from excu-mxob-1.symantec.com (excu-mxob-1.symantec.com
 	[198.6.49.12])
 	by excu-mxob-2.symantec.com (8.13.7/8.13.7) with ESMTP id
-	k9VIeWPW018281
+	k9VIfibb018376
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 10:40:33 -0800
-Date: Tue, 31 Oct 2006 18:40:39 +0000 (GMT)
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 10:41:45 -0800
+Date: Tue, 31 Oct 2006 18:41:51 +0000 (GMT)
 From: Hugh Dickins <hugh@veritas.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/5] ppc64: make high hugepage areas preempt safe
+Subject: [PATCH 3/5] ppc64: make mmiowb's io_sync preempt safe
 In-Reply-To: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0610311839480.26470@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0610311840450.26470@blonde.wat.veritas.com>
 References: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,27 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Checking source for other get_paca()->field preemption dangers found that
-open_high_hpage_areas does a structure copy into its paca while preemption
-is enabled: unsafe however gcc accomplishes it.  Just remove that copy:
-it's done safely afterwards by on_each_cpu, as in open_low_hpage_areas.
+If mmiowb() is always used prior to releasing spinlock as Doc suggests,
+then it's safe against preemption; but I'm not convinced that's always
+the case.  If preemption occurs between sync and get_paca()->io_sync = 0,
+I believe there's no problem.  But in the unlikely event that gcc does
+the store relative to another register than r13 (as it did with current),
+then there's a small danger of setting another cpu's io_sync to 0, after
+it had just set it to 1.  Rewrite ppc64 mmiowb to prevent that.
+
+The remaining io_sync assignments in io.h all get_paca()->io_sync = 1,
+which is harmless even if preempted to the wrong cpu (the context switch
+itself syncs); and those in spinlock.h are while preemption is disabled.
 
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
-I think this patch should go into 2.6.19 (but no reports to justify 18-stable).
+I'm clueless with powerpc and inline asm, this patch is likely to be
+nonsense: more a placeholder to provoke whatever is the correct patch.
+But I think the resulting patch should probably go into 2.6.19.
 
- arch/powerpc/mm/hugetlbpage.c |    3 ---
- 1 file changed, 3 deletions(-)
+ include/asm-powerpc/io.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- 2.6.19-rc4/arch/powerpc/mm/hugetlbpage.c	2006-09-20 04:42:06.000000000 +0100
-+++ linux/arch/powerpc/mm/hugetlbpage.c	2006-10-30 19:27:05.000000000 +0000
-@@ -480,9 +480,6 @@ static int open_high_hpage_areas(struct 
+--- 2.6.19-rc4/include/asm-powerpc/io.h	2006-10-24 04:34:33.000000000 +0100
++++ linux/include/asm-powerpc/io.h	2006-10-30 19:27:05.000000000 +0000
+@@ -163,8 +163,11 @@ extern void _outsl_ns(volatile u32 __iom
  
- 	mm->context.high_htlb_areas |= newareas;
+ static inline void mmiowb(void)
+ {
+-	__asm__ __volatile__ ("sync" : : : "memory");
+-	get_paca()->io_sync = 0;
++	unsigned long tmp;
++
++	__asm__ __volatile__("sync; li %0,0; stb %0,%1(13)"
++	: "=&r" (tmp) : "i" (offsetof(struct paca_struct, io_sync))
++	: "memory");
+ }
  
--	/* update the paca copy of the context struct */
--	get_paca()->context = mm->context;
--
- 	/* the context change must make it to memory before the flush,
- 	 * so that further SLB misses do the right thing. */
- 	mb();
+ /*
