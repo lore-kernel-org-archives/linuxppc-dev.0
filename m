@@ -1,18 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <nd@bplan-gmbh.de>
+Date: Tue, 31 Oct 2006 08:09:04 +0100 (MET)
+Message-ID: <4546F68C.6070900@bplan-gmbh.de>
+From: Nicolas DET <nd@bplan-gmbh.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support
 	for	ARCH=powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <4546F46E.5080202@246tNt.com>
 References: <200610292310.k9TNAHXZ013852@post.webmailer.de>
-	<7BDB728E-0CC2-4940-9856-B496022F3482@kernel.crashing.org>
-	<45468775.8040108@246tNt.com>
-	<96623161-B847-4F61-94AB-D1F1B1767708@kernel.crashing.org>
-	<4546F46E.5080202@246tNt.com>
-Content-Type: text/plain
-Date: Tue, 31 Oct 2006 18:05:20 +1100
-Message-Id: <1162278320.25682.295.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<1162268830.25682.271.camel@localhost.localdomain>
+In-Reply-To: <1162268830.25682.271.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="------------020805090003080903000501"
 Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, sha@pengutronix.de,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,67 +21,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-10-31 at 07:59 +0100, Sylvain Munaut wrote:
+This is a multi-part message in MIME format.
+--------------020805090003080903000501
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> * struct mpc52xx_mmap_ctl;
-> * struct mpc52xx_sdram;
+Benjamin Herrenschmidt wrote:
+> On Mon, 2006-10-30 at 00:10 +0100, Nicolas DET wrote:
 > 
-> Not really used any where that I can see/remember. Except for
-> find_end_of_memory ...
-> It should however be used in several place in the future ... (sleep support
-> would need sdram iirc, ...).
+>> +/*
+>> + * void call to be used for .ack in the irq_chip_ops
+>> + * indeed, some of our irq does noy need ack
+>> + * but the kernel call .ack if it's valid or not
+>> +*/
+>> +
+>> +static void mpc52xx_voidfunc(unsigned int virq)
+>> +{
+>> +#ifdef DEBUG
+>> +       int irq;
+>> +       int l2irq;
+>> +
+>> +       irq = irq_map[virq].hwirq;
+>> +       l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+>> +
+>> +       pr_debug("%s: irq=%x, l2=%d\n", __func__, irq, l2irq);
+>> +#endif
+>> +}
 > 
-> But can be removed for now if it's annoying to have them there ...
+> As I said on IRC, we might be able to get away without that one, but
+> that's not urgent.
 
-Nah, keep them in. It's not like it was bloating the binary anyway :)
-> 
-> * struct mpc52xx_intr;
-> 
-> Was used before in platform support code to set the IRQ type of external
-> IRQ (level/irq) ...
-> but that can be done with set_irq_type. So can be safetly moved to a
-> local mpc52xx_pic.h
-
-Yup.
-
-> * struct mpc52xx_rtc;
-> 
-> Was used before in some common code. When the bootloader didn't pass the
-> bus frequency,
-> we computed it and the rtc was used to do that. Now, with device tree,
-> no need for
-> that anymore. So can be safely removed.
-
-Sounds good.
+Already done.
 
 > 
-> * struct mpc52xx_gpio;
-> * struct mpc52xx_gpio_wkup;
+>> +       irq = irq_map[virq].hwirq;
+>> +       l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+>> +
+>> +       pr_debug("%s: irq=%x, l2=%d\n", __func__, irq, l2irq);
+>> +
+>> +       if (l2irq != 0)
+>> +               BUG();
 > 
-> Port config (pin multiplexing) is in those registers so they should stay
-> there. This is used
-> by several driver and platform code. Beside custom driver could use gpio
-> for different
-> purpose ...
-
-Yup, though beware of concurrent access to GPIO registers... we might
-want a bit of common code with a spinlock in it to "wrap" accesses to
-them.
-
-> It could be placed in a include/asm-powerpc/mpc52xx_gpio.h but that
-> would just make
-> one more file in include/asm-powerpc so it doesn't make much sens imho.
-> It should
-> just stay there.
-
-Yeah, leave it there.
+> Use BUG_ON(l2irq != 0); instead, generates better code (though I don't
+> think you really need to keep those checks once you've verified things
+> work fine).
 > 
-> * struct mpc52xx_xlb;
-> * struct mpc52xx_cdm;
-> * struct mpc52xx_sdma;
+
+Ok.
+
+>> +       set_irq_chip_and_handler(virq, good_irqchip, good_handle);
+>> +       set_irq_type(virq, type);
 > 
-> Used at several place and should really stay there.
+> set_irq_type() does nothing if you haven't hooked a set_type callback to
+> your irq_chip and none of yours does so just drop it for now and look at
+> how this is done in mpic or ipic. If you actually want to implement
+> proper set_type (which you might need to do if you want that code to
+> work without having the firmware pre-initialize interrupts with the
+> right type at boot), you probably want to set the handler in
+> set_irq_type().
+> 
 
-No need to be too anal about removing things from .h files.
+Our Firmware wil lalways preinit correctly the hw. Moreover, chaning the 
+setting would propably rpevent PCI IRQ (as PCI are IRQ[0-3].
 
-Ben.
+So I should just remove the set_irq_type() call?
+
+Regards
+
+--------------020805090003080903000501
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
+
+
+--------------020805090003080903000501--
