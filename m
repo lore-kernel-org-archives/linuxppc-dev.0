@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <1162284176.25682.320.camel@localhost.localdomain>
-References: <200610292310.k9TNAHXZ013852@post.webmailer.de>
-	<7BDB728E-0CC2-4940-9856-B496022F3482@kernel.crashing.org>
-	<4546F7DE.6070104@bplan-gmbh.de>
-	<1162280335.25682.302.camel@localhost.localdomain>
-	<4547086D.2050808@bplan-gmbh.de>
-	<1162284176.25682.320.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3BDF1DB1-94A9-4538-A785-74D16827496D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support
-	for	ARCH=powerpc
-Date: Tue, 31 Oct 2006 08:34:46 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org, sl@bplan-gmbh.de,
-	sha@pengutronix.de
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 98C1667B7C
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 02:22:35 +1100 (EST)
+Date: Wed, 1 Nov 2006 02:22:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: build problems with powerpc allmodconfig
+Message-Id: <20061101022213.0b6bcaf9.sfr@canb.auug.org.au>
+In-Reply-To: <20061031142213.GA9275@lst.de>
+References: <20061031142213.GA9275@lst.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__1_Nov_2006_02_22_13_+1100_uAX8=MLyQ8oHh9Cq"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__1_Nov_2006_02_22_13_+1100_uAX8=MLyQ8oHh9Cq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-On Oct 31, 2006, at 2:42 AM, Benjamin Herrenschmidt wrote:
+On Tue, 31 Oct 2006 15:22:13 +0100 Christoph Hellwig <hch@lst.de> wrote:
+>
+>  - vicocons.c can't be compiled at the same time as CONFIG_VT, but
+>    instead of expressing that in the Kconfig it errors out in that
+>    case.  This should at least be a Kconfig dependency, but long
+>    term viocons must work at the same time as the normal vt code
+>    to have a single ppc64 image
 
-> On Tue, 2006-10-31 at 09:25 +0100, Nicolas DET wrote:
->
->> Ok. By the way, the mbar is include as property in our OpenFrimware.
->> Moreover, the G2CORE CPU has a new SPR 'MBAR' which is the  
->> MBAR ;-). It
->> would maybe make sense to create a new file
->> (arch/powerpc/sysdev/mpc52xx.c) which would contain chip specific  
->> code.
->>
->> Like mpc52xx_get_mbar(), mpc52xx_get_ipbfreq(), etc...
->>
->> I updated a bit the patches. I applied Dale requests.
->> My kernel still compiles and boots. ;-)
->>
->> Should I post the new patches?
->
-> Sure.
->
->> About the headers thingy. Should I split them directly in the  
->> patch, or
->> this should be done by others later on?
->
-> Don't bother that much about splitting the headers. I personally don't
-> mind.
+viocons is deprecated (in favour of hvc_iseries) so we just need Kconfig
+to say to build it only CONFIG_VT is not defined.
 
-I think we should at least split out the interrupt stuff into a arch/ 
-powerpc/sysdev/mpc52xx_pic.h, but we can make the change in the future.
+>  - vioscsi linkage fails because iseries_vscsi.c and rpa_vscsi.c.
+>    This needs some trivial indirection via function vectors, but
+>    how can we find out which one to use from the driver?  Both
+>    seem to look the same in the device tree
 
-- k
+The maintainer suggested that we just don't build vioscsi for iseries
+if we are building the rpa version as it is not often used (in particular,
+it is not used for installations).  We could, however distinguish them
+by changing the "compat" field in the iSeries device tree if we wished.
+
+>  - arch/powerpc/platforms/iseries/setup.c references rd_size
+>    when CONFIG_INITRD is set.  But rd_size is defined drivers/block/rd.c
+>    which can me modular (and is selected by CONFIG_BLK_DEV_RAM).
+>    This same bug is repeated in the arm amd arm26 code, but except
+>    for those no one outside of rd.c uses this symbol.  I don't see
+>    a point why arch code should modify this as it's already big enough.
+
+A fix for this has already been posted
+(http://patchwork.ozlabs.org/linuxppc/patch?id=7523).
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__1_Nov_2006_02_22_13_+1100_uAX8=MLyQ8oHh9Cq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFR2owFdBgD/zoJvwRAtcgAJoC1NHGTO5hZmEzzaXBRW7sg3obnwCfYtW7
+42chS6C4D4ZF8L2HyYy8Rhc=
+=i6NR
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__1_Nov_2006_02_22_13_+1100_uAX8=MLyQ8oHh9Cq--
