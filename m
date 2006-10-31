@@ -1,71 +1,51 @@
-Return-Path: <ryusuke@osrg.net>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E744B67B83
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 23:40:06 +1100 (EST)
-Date: Thu, 30 Nov 2006 21:39:58 +0900 (JST)
-Message-Id: <20061130.213958.46869121.ryusuke@osrg.net>
-To: paulus@samba.org
-Subject: Re: [PATCH 2.6.19-rc6] powerpc: fix of_device __must_check warning
-From: Ryusuke Konishi <ryusuke@osrg.net>
-In-Reply-To: <17773.18027.177795.192632@cargo.ozlabs.ibm.com>
-References: <20061129.140751.48374104.ryusuke@osrg.net>
-	<17773.18027.177795.192632@cargo.ozlabs.ibm.com>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 696E467BDC
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Nov 2006 02:08:17 +1100 (EST)
+Date: Tue, 31 Oct 2006 18:08:16 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] CPM_UART: Fix non-console transmit
+Message-ID: <20061031180816.3d32c285@vitb.ru.mvista.com>
+In-Reply-To: <Pine.OSF.4.61.0610191549130.318096@kosh.hut.fi>
+References: <Pine.OSF.4.61.0610191549130.318096@kosh.hut.fi>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Laurent, linuxppc-embedded@ozlabs.org
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 19 Oct 2006 15:52:11 +0300 (EEST)
+Kalle Pokki <kalle.pokki@iki.fi> wrote:
 
-Paul Mackerras wrote:
-> Your patch also makes a policy change, though, in that without your
-> patch, a failure in creating the "devspec" file in sysfs doesn't
-> prevent of_device_register from performing its main function.  With
-> your patch, of_device_register will fail if we can't create the
-> "devspec" file.
->
-> On the whole, I am inclined to think that it is useful for
-> of_device_register to succeed even if the devspec file can't be
-> created, since nothing in the kernel relies on the devspec file being
-> present.
+> The SMC and SCC hardware transmitter is enabled at the wrong
+> place. Simply writing twice to the non-console port, like
 > 
-> Paul.
+> $ echo asdf > /dev/ttyCPM1
+> $ echo asdf > /dev/ttyCPM1
+> 
+> puts the shell into endless uninterruptible sleep, since the
+> transmitter is stopped after the first write, and is not enabled
+> before the shutdown function of the second write. Thus the transmit
+> buffers are never emptied.
+> 
+> Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
-Yes, you have a point there.
+Paul: please apply. 
 
-For the purpose of reference, I looked into other architectures.
-Then, I found that sparc (and sparc64) had same of_device_register()
-functions, and both are checking the result of device_create_file()
-as follows.
+I am recalling addressing something like the upper, but dunno why it haven't pushed 
+upstream. Something around re-use scc/smc did not feel good with this approach, but it is 
+much less important than the odd behavior expressed.
 
-in function arch/sparc/kernel/of_device.c:
->int of_device_register(struct of_device *ofdev)
->{
->        int rc;
->
->        BUG_ON(ofdev->node == NULL);
->
->        rc = device_register(&ofdev->dev);
->        if (rc)
->                return rc;
->
->        rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
->        if (rc)
->                device_unregister(&ofdev->dev);
->
->        return rc;
->}
-
-But then, I'd like to respect your point of view,
-and I won't stick to this case example.
-
-Ryusuke.
+-- 
+Sincerely, 
+Vitaly
