@@ -1,20 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2767167BE4
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 02:24:59 +1100 (EST)
-Date: Wed, 1 Nov 2006 02:24:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: build problems with powerpc allmodconfig
-Message-Id: <20061101022457.0c684351.sfr@canb.auug.org.au>
-In-Reply-To: <20061101022213.0b6bcaf9.sfr@canb.auug.org.au>
-References: <20061031142213.GA9275@lst.de>
-	<20061101022213.0b6bcaf9.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__1_Nov_2006_02_24_57_+1100_vl6eJHQJMNXzHemY"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 7A2FC67B7C
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 03:24:48 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id 30so1301304ugc
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 08:24:46 -0800 (PST)
+Message-ID: <528646bc0610310824n114b844fv4afb9f0b66070d99@mail.gmail.com>
+Date: Tue, 31 Oct 2006 09:24:44 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Nicolas DET" <nd@bplan-gmbh.de>
+Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support for
+	ARCH=powerpc
+In-Reply-To: <4546F7DE.6070104@bplan-gmbh.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200610292310.k9TNAHXZ013852@post.webmailer.de>
+	<7BDB728E-0CC2-4940-9856-B496022F3482@kernel.crashing.org>
+	<4546F7DE.6070104@bplan-gmbh.de>
+Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, sha@pengutronix.de,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__1_Nov_2006_02_24_57_+1100_vl6eJHQJMNXzHemY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On Wed, 1 Nov 2006 02:22:13 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> On Tue, 31 Oct 2006 15:22:13 +0100 Christoph Hellwig <hch@lst.de> wrote:
+On 10/31/06, Nicolas DET <nd@bplan-gmbh.de> wrote:
+> Kumar Gala wrote:
+> > +/* MBAR position */
+> > +#define MPC52xx_MBAR        0xf0000000    /* Phys address */
+> > +#define MPC52xx_MBAR_VIRT    0xf0000000    /* Virt address */
+> > +#define MPC52xx_MBAR_SIZE    0x00010000
+> > +
+> > +#define MPC52xx_PA(x)        ((phys_addr_t)(MPC52xx_MBAR + (x)))
+> > +#define MPC52xx_VA(x)        ((void __iomem *)(MPC52xx_MBAR_VIRT + (x)))
 > >
-> >  - arch/powerpc/platforms/iseries/setup.c references rd_size
-> >    when CONFIG_INITRD is set.  But rd_size is defined drivers/block/rd.c
-> >    which can me modular (and is selected by CONFIG_BLK_DEV_RAM).
-> >    This same bug is repeated in the arm amd arm26 code, but except
-> >    for those no one outside of rd.c uses this symbol.  I don't see
-> >    a point why arch code should modify this as it's already big enough.
+> > This should be handled dynamically (pulled from the device tree), I
+> > doubt MBAR will be at the same location for all boards.
 >
-> A fix for this has already been posted
-> (http://patchwork.ozlabs.org/linuxppc/patch?id=7523).
+> Well, 0xf000000 seems some kind of 'standart' value. we could have a
+> global variable 'mpc52xx_mbar' which would be default 0xf0000000 and
+> modified by each platform.
 
-This patch is already in the powerpc git tree.
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+In my lite5200 device tree; I've got an "soc5200@f0000000" node which
+provides the MBAR base address.
 
---Signature=_Wed__1_Nov_2006_02_24_57_+1100_vl6eJHQJMNXzHemY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFR2rJFdBgD/zoJvwRAmURAJoCPL73e5hb8co/LxaNNkB4Unb/5gCeLdAv
-HkDHBNZJEGOS4SYyk2AespU=
-=YQ+s
------END PGP SIGNATURE-----
-
---Signature=_Wed__1_Nov_2006_02_24_57_+1100_vl6eJHQJMNXzHemY--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
