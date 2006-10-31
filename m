@@ -1,9 +1,9 @@
 Return-Path: <fabbione@ubuntu.com>
 Received: from trider-g7.fabbione.net (trider-g7.fabbione.net [195.22.207.161])
-	by ozlabs.org (Postfix) with ESMTP id D428D67CE8
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 17:37:32 +1100 (EST)
-Message-ID: <4546EF15.4000604@ubuntu.com>
-Date: Tue, 31 Oct 2006 07:37:09 +0100
+	by ozlabs.org (Postfix) with ESMTP id 8611267D06
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Oct 2006 17:51:57 +1100 (EST)
+Message-ID: <4546F285.6030204@ubuntu.com>
+Date: Tue, 31 Oct 2006 07:51:49 +0100
 From: Fabio Massimo Di Nitto <fabbione@ubuntu.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -37,15 +37,14 @@ Benjamin Herrenschmidt wrote:
 > 
 > Ok, so there's a different issue from what I've found. You haven't by
 > chance noted what those processes are (which test case typically) ?
-
-I uploaded a build log and a ps ax output to
-http://people.ubuntu.com/~fabbione/benh/
-
 > Also, there's a sysrq to get a backtrace of all pending processes,
 > though I don't remember which one off the top of my mind, might be
 > useful to have a look though.
+> 
+> Ben.
+> 
 
-I don't remember them either. Anybody?
+Added also dmesg+sysrq.txt at the same url.
 
 Fabio
 
