@@ -1,19 +1,19 @@
-Return-Path: <nd@bplan-gmbh.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
-	by ozlabs.org (Postfix) with ESMTP id 7606D67CB8
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id E1CB667E82
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Oct 2006 18:10:57 +1100 (EST)
-Date: Tue, 31 Oct 2006 08:10:51 +0100 (MET)
-Message-ID: <4546F6F8.1040001@bplan-gmbh.de>
-From: Nicolas DET <nd@bplan-gmbh.de>
+	Tue, 31 Oct 2006 18:52:14 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Xubuntu and Xenomai on the Lite5200 (IceCube)...
+Date: Tue, 31 Oct 2006 08:54:40 +0100
+References: <200610301209.38103.david.jander@protonic.nl>
+	<528646bc0610300958p627a79abyd84059854a8ca47@mail.gmail.com>
+In-Reply-To: <528646bc0610300958p627a79abyd84059854a8ca47@mail.gmail.com>
 MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support for
-	ARCH=powerpc
-References: <20061030174724.7155.qmail@farnsworth.org>
-In-Reply-To: <20061030174724.7155.qmail@farnsworth.org>
-Content-Type: multipart/mixed; boundary="------------010607080101050607020505"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200610310854.40656.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010607080101050607020505
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Monday 30 October 2006 18:58, Grant Likely wrote:
+>[...]
+>> 
+> Congratulations, that's good work!  Especially the bit about
+> documenting what you did!  I've been meaning to play w/ xenomai for a
+> while now.
 
-Dale Farnsworth wrote:
-> In article <200610292310.k9TNAHXZ013852@post.webmailer.de> Nicolas wrote:
->> This patch add MPC52xx Interrupt controller for ARCH=powerpc.
->>
->> It includes the main code in arch/powerpc/sysdev/ ad well as an header file in
->> include/asm-powerpc.
->>
->> Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
-> 
+Thanks. I hope this makes searching-time shorter for you.
+I wish I could remember more details about what I exactly changed to make the 
+kernel compile after backporting bestcomm and FEC... I vaguely remember 
+adding "#include <platform_device.h>" to at least two files...
 
-> I'd like to see us go the other direction, with something like the
-> following (untested code).
-> 
+> Care to help with the port to arch/powerpc now?  :P
 
-I'll include this and test.
+I would really like to, but I have very limited time to dedicate to such 
+things. If I get the chance to do something about it, I'll do it, I promise. 
+The time will come when I'll have to port our own board-support stuff to 
+arch/powerpc... so...
 
---------------010607080101050607020505
-Content-Type: text/x-vcard; charset=utf-8;
- name="nd.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="nd.vcf"
+Greetings,
 
-begin:vcard
-fn:Nicolas DET ( bplan GmbH )
-n:DET;Nicolas
-org:bplan GmbH
-adr:;;;;;;Germany
-email;internet:nd@bplan-gmbh.de
-title:Software Entwicklung
-tel;work:+49 6171 9187 - 31
-x-mozilla-html:FALSE
-url:http://www.bplan-gmbh.de
-version:2.1
-end:vcard
-
-
---------------010607080101050607020505--
+-- 
+David Jander
