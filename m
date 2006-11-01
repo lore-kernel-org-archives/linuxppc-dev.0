@@ -1,17 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <guij@cn.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A2D9267A03
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 14:11:07 +1100 (EST)
-Subject: [PATCH] powerpc: Make alignment exception always check exception table
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Wed, 01 Nov 2006 14:09:30 +1100
-Message-Id: <1162350571.25682.389.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D3CC667B8F
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 13:51:09 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.5) with ESMTP id kA130snI251526
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Nov 2006 14:00:56 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
+	by sd0208e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kA12rlV0238934
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Nov 2006 13:53:57 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kA12oLDZ032464
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Nov 2006 13:50:21 +1100
+Message-ID: <45480B67.2080904@cn.ltcfwd.linux.ibm.com>
+Date: Wed, 01 Nov 2006 10:50:15 +0800
+From: "Gui,Jian" <guij@cn.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH][kprobe] disallow kprobes on emulate_step and branch_taken
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The alignment exception used to only check the exception table for
--EFAULT, not for other errors. That opens an oops window if we can
-coerce the kernel into getting an alignment exception for other reasons
-in what would normally be a user-protected accessor, which can be done
-via some of the futex ops. This fixes it by always checking the
-exception tables.
+Probing on emulate_step function will crash 2.6.18.1 when it is
+triggered. This problem is powerpc dependent.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+When kprobe is triggered, emulate_step() is on its kernel path and
+will cause recursive kprobe fault. And branch_taken() is called
+in emulate_step(). This patch can disallow kprobes on both of them.
 
-This is 2.6.19 material and should probably go into stable as well.
-(Greg: take it if paulus acks it and it applies :)
 
-Index: linux-work/arch/powerpc/kernel/traps.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/traps.c	2006-10-23 14:41:37.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/traps.c	2006-10-30 13:59:41.000000000 +1100
-@@ -843,7 +843,7 @@ void __kprobes program_check_exception(s
- 
- void alignment_exception(struct pt_regs *regs)
- {
--	int fixed = 0;
-+	int sig, fixed = 0;
- 
- 	/* we don't implement logging of alignment exceptions */
- 	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS))
-@@ -856,15 +856,11 @@ void alignment_exception(struct pt_regs 
- 	}
- 
- 	/* Operand address was bad */
--	if (fixed == -EFAULT) {
--		if (user_mode(regs))
--			_exception(SIGSEGV, regs, SEGV_ACCERR, regs->dar);
--		else
--			/* Search exception table */
--			bad_page_fault(regs, regs->dar, SIGSEGV);
--		return;
--	}
--	_exception(SIGBUS, regs, BUS_ADRALN, regs->dar);
-+	sig = fixed == -EFAULT ? SIGSEGV : SIGBUS;
-+	if (user_mode(regs))
-+		_exception(sig, regs, SEGV_ACCERR, regs->dar);
-+	else
-+		bad_page_fault(regs, regs->dar, sig);
- }
- 
- void StackOverflow(struct pt_regs *regs)
+
+diff -Nur orig/arch/powerpc/lib/sstep.c linux-2.6.18.1/arch/powerpc/lib/sstep.c
+--- orig/arch/powerpc/lib/sstep.c       2006-11-01 08:45:06.000000000 -0500
++++ linux-2.6.18.1/arch/powerpc/lib/sstep.c     2006-11-01 08:50:19.000000000 -0500
+@@ -9,6 +9,7 @@
+   * 2 of the License, or (at your option) any later version.
+   */
+  #include <linux/kernel.h>
++#include <linux/kprobes.h>
+  #include <linux/ptrace.h>
+  #include <asm/sstep.h>
+  #include <asm/processor.h>
+@@ -25,7 +26,7 @@
+  /*
+   * Determine whether a conditional branch instruction would branch.
+   */
+-static int branch_taken(unsigned int instr, struct pt_regs *regs)
++static int __kprobes branch_taken(unsigned int instr, struct pt_regs *regs)
+  {
+         unsigned int bo = (instr >> 21) & 0x1f;
+         unsigned int bi;
+@@ -51,7 +52,7 @@
+   * or -1 if the instruction is one that should not be stepped,
+   * such as an rfid, or a mtmsrd that would clear MSR_RI.
+   */
+-int emulate_step(struct pt_regs *regs, unsigned int instr)
++int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+  {
+         unsigned int opcode, rd;
+         unsigned long int imm;
