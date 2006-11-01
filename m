@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29EEC67A3A
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 14:43:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D6B9D67B8B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 15:13:13 +1100 (EST)
 Subject: [PATCH] powerpc: Make alignment exception always check exception
-	table (#2)
+	table (#3)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
 In-Reply-To: <1162350571.25682.389.camel@localhost.localdomain>
 References: <1162350571.25682.389.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 01 Nov 2006 14:42:20 +1100
-Message-Id: <1162352540.25682.391.camel@localhost.localdomain>
+Date: Wed, 01 Nov 2006 15:11:39 +1100
+Message-Id: <1162354299.25682.394.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -34,40 +34,43 @@ exception tables.
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Paul: this version also fixes arch/ppc
+Paul: this version sets the correct si_code
 
 This is 2.6.19 material and should probably go into stable as well.
 (Greg: take it if paulus acks it and it applies :)
 
 Index: linux-work/arch/powerpc/kernel/traps.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/traps.c	2006-10-23 14:41:37.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/traps.c	2006-10-30 13:59:41.000000000 +1100
+--- linux-work.orig/arch/powerpc/kernel/traps.c	2006-11-01 14:59:07.000000000 +1100
++++ linux-work/arch/powerpc/kernel/traps.c	2006-11-01 15:01:06.000000000 +1100
 @@ -843,7 +843,7 @@ void __kprobes program_check_exception(s
  
  void alignment_exception(struct pt_regs *regs)
  {
 -	int fixed = 0;
-+	int sig, fixed = 0;
++	int sig, code, fixed = 0;
  
  	/* we don't implement logging of alignment exceptions */
  	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS))
-@@ -856,15 +856,11 @@ void alignment_exception(struct pt_regs 
- 	}
+@@ -857,14 +857,16 @@ void alignment_exception(struct pt_regs 
  
  	/* Operand address was bad */
--	if (fixed == -EFAULT) {
+ 	if (fixed == -EFAULT) {
 -		if (user_mode(regs))
 -			_exception(SIGSEGV, regs, SEGV_ACCERR, regs->dar);
 -		else
 -			/* Search exception table */
 -			bad_page_fault(regs, regs->dar, SIGSEGV);
 -		return;
--	}
++		sig = SIGSEGV;
++		code = SEGV_ACCERR;
++	} else {
++		sig = SIGBUS;
++		code = BUS_ADRALN;
+ 	}
 -	_exception(SIGBUS, regs, BUS_ADRALN, regs->dar);
-+	sig = fixed == -EFAULT ? SIGSEGV : SIGBUS;
 +	if (user_mode(regs))
-+		_exception(sig, regs, SEGV_ACCERR, regs->dar);
++		_exception(sig, regs, code, regs->dar);
 +	else
 +		bad_page_fault(regs, regs->dar, sig);
  }
@@ -75,33 +78,36 @@ Index: linux-work/arch/powerpc/kernel/traps.c
  void StackOverflow(struct pt_regs *regs)
 Index: linux-work/arch/ppc/kernel/traps.c
 ===================================================================
---- linux-work.orig/arch/ppc/kernel/traps.c	2006-10-06 13:47:55.000000000 +1000
-+++ linux-work/arch/ppc/kernel/traps.c	2006-11-01 14:39:44.000000000 +1100
+--- linux-work.orig/arch/ppc/kernel/traps.c	2006-11-01 14:59:07.000000000 +1100
++++ linux-work/arch/ppc/kernel/traps.c	2006-11-01 15:01:32.000000000 +1100
 @@ -708,7 +708,7 @@ void single_step_exception(struct pt_reg
  
  void alignment_exception(struct pt_regs *regs)
  {
 -	int fixed;
-+	int sig, fixed = 0;
++	int sig, code, fixed = 0;
  
  	fixed = fix_alignment(regs);
  	if (fixed == 1) {
-@@ -716,15 +716,11 @@ void alignment_exception(struct pt_regs 
- 		emulate_single_step(regs);
+@@ -717,14 +717,16 @@ void alignment_exception(struct pt_regs 
  		return;
  	}
--	if (fixed == -EFAULT) {
+ 	if (fixed == -EFAULT) {
 -		/* fixed == -EFAULT means the operand address was bad */
 -		if (user_mode(regs))
 -			_exception(SIGSEGV, regs, SEGV_ACCERR, regs->dar);
 -		else
 -			bad_page_fault(regs, regs->dar, SIGSEGV);
 -		return;
--	}
++		sig = SIGSEGV;
++		code = SEGV_ACCERR;
++	} else {
++		sig = SIGBUS;
++		code = BUS_ADRALN;
+ 	}
 -	_exception(SIGBUS, regs, BUS_ADRALN, regs->dar);
-+	sig = fixed == -EFAULT ? SIGSEGV : SIGBUS;
 +	if (user_mode(regs))
-+		_exception(sig, regs, SEGV_ACCERR, regs->dar);
++		_exception(sig, regs, code, regs->dar);
 +	else
 +		bad_page_fault(regs, regs->dar, sig);
  }
