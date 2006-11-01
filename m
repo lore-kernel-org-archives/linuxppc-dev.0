@@ -1,12 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17735.61916.194247.973705@cargo.ozlabs.ibm.com>
-Date: Wed, 1 Nov 2006 12:01:16 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] powerpc: Eliminate "exceeds stub group size" linker warning
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] Add MPC52xx Interrupt controller support for
+	ARCH=powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <528646bc0610311508v6d65d4b3t46135123c8e8a1bf@mail.gmail.com>
+References: <200610292310.k9TNAHXZ013852@post.webmailer.de>
+	<4546F7DE.6070104@bplan-gmbh.de>
+	<1162280335.25682.302.camel@localhost.localdomain>
+	<4547086D.2050808@bplan-gmbh.de>
+	<1162284176.25682.320.camel@localhost.localdomain>
+	<454712A4.3000501@bplan-gmbh.de> <4547AC30.3090208@bplan-gmbh.de>
+	<1162331943.25682.358.camel@localhost.localdomain>
+	<528646bc0610311408i3a7a9a7ep11ad54c1779aa4bc@mail.gmail.com>
+	<1162332664.25682.362.camel@localhost.localdomain>
+	<528646bc0610311508v6d65d4b3t46135123c8e8a1bf@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 01 Nov 2006 12:06:14 +1100
+Message-Id: <1162343175.25682.368.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Rigby John-R61273 <jrigby@freescale.com>, sl@bplan-gmbh.de,
+	linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org, sha@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,123 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It turns out that the linker warnings on 64-bit powerpc about "section
-blah exceeds stub group size" were being triggered by conditional
-branches in head_64.S branching to global symbols, whether in
-head_64.S or in other files.  This eliminates the warnings by making
-some global symbols in head_64.S no longer global, and by rearranging
-some branches.
+On Tue, 2006-10-31 at 16:08 -0700, Grant Likely wrote:
+> On 10/31/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > > This definitely needs to be removed.  It's used to figure out which
+> > > driver should drive a PSC (based on function).  We've got a device
+> > > tree to provide this information now.
+> >
+> > Which means we should define how that is presented in the devie-tree and
+> > Nicolas should then update his tree accordingly...
+> 
+> How about this:
+> 
+> <function> := one of [serial, spi, i2s, ac97]
+> 
+> <function>@<psc_offset> {
+>         port-number = <logical port number>;   // so /dev/ttyPSC#
+> connects to something sane
+>         compatible = "mpc5200b-psb\0mpc52xx-psc";
+>         ... other stuff ...
+> };
+> 
+> Function is encoded in the node name, and the compatible property
+> tells linux that it is an mpc52xx-psc in <function> mode.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Linus,
+Looks good to me.
 
-If you think this is 2.6.19 material, feel free to put it in your
-tree.  Otherwise I'll put it in the powerpc.git tree to go in for
-2.6.20.
-
-Paul.
-
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 47fcff1..c005f15 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -505,7 +505,7 @@ BEGIN_FTR_SECTION
- 	rlwimi	r13,r12,16,0x20
- 	mfcr	r12
- 	cmpwi	r13,0x2c
--	beq	.do_stab_bolted_pSeries
-+	beq	do_stab_bolted_pSeries
- 	mtcrf	0x80,r12
- 	mfspr	r12,SPRN_SPRG2
- END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
-@@ -635,7 +635,7 @@ masked_interrupt:
- 	b	.
- 
- 	.align	7
--_GLOBAL(do_stab_bolted_pSeries)
-+do_stab_bolted_pSeries:
- 	mtcrf	0x80,r12
- 	mfspr	r12,SPRN_SPRG2
- 	EXCEPTION_PROLOG_PSERIES(PACA_EXSLB, .do_stab_bolted)
-@@ -1090,7 +1090,7 @@ slb_miss_fault:
- 	li	r5,0
- 	std	r4,_DAR(r1)
- 	std	r5,_DSISR(r1)
--	b	.handle_page_fault
-+	b	handle_page_fault
- 
- unrecov_user_slb:
- 	EXCEPTION_PROLOG_COMMON(0x4200, PACA_EXGEN)
-@@ -1218,12 +1218,13 @@ program_check_common:
- 	.globl fp_unavailable_common
- fp_unavailable_common:
- 	EXCEPTION_PROLOG_COMMON(0x800, PACA_EXGEN)
--	bne	.load_up_fpu		/* if from user, just load it up */
-+	bne	1f			/* if from user, just load it up */
- 	bl	.save_nvgprs
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	ENABLE_INTS
- 	bl	.kernel_fp_unavailable_exception
- 	BUG_OPCODE
-+1:	b	.load_up_fpu
- 
- 	.align	7
- 	.globl altivec_unavailable_common
-@@ -1323,10 +1324,10 @@ _GLOBAL(do_hash_page)
- 	std	r4,_DSISR(r1)
- 
- 	andis.	r0,r4,0xa450		/* weird error? */
--	bne-	.handle_page_fault	/* if not, try to insert a HPTE */
-+	bne-	handle_page_fault	/* if not, try to insert a HPTE */
- BEGIN_FTR_SECTION
- 	andis.	r0,r4,0x0020		/* Is it a segment table fault? */
--	bne-	.do_ste_alloc		/* If so handle it */
-+	bne-	do_ste_alloc		/* If so handle it */
- END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
- 
- 	/*
-@@ -1368,7 +1369,7 @@ BEGIN_FW_FTR_SECTION
- 	 * because ret_from_except_lite will check for and handle pending
- 	 * interrupts if necessary.
- 	 */
--	beq	.ret_from_except_lite
-+	beq	14f
- END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
- #endif
- BEGIN_FW_FTR_SECTION
-@@ -1390,16 +1391,17 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISER
- 	ld	r3,SOFTE(r1)
- 	bl	.local_irq_restore
- 	b	11f
-+14:	b	.ret_from_except_lite
- 
- /* Here we have a page fault that hash_page can't handle. */
--_GLOBAL(handle_page_fault)
-+handle_page_fault:
- 	ENABLE_INTS
- 11:	ld	r4,_DAR(r1)
- 	ld	r5,_DSISR(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	.do_page_fault
- 	cmpdi	r3,0
--	beq+	.ret_from_except_lite
-+	beq+	14b
- 	bl	.save_nvgprs
- 	mr	r5,r3
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-@@ -1417,11 +1419,11 @@ _GLOBAL(handle_page_fault)
- 	b	.ret_from_except
- 
- 	/* here we have a segment miss */
--_GLOBAL(do_ste_alloc)
-+do_ste_alloc:
- 	bl	.ste_allocate		/* try to insert stab entry */
- 	cmpdi	r3,0
--	beq+	fast_exception_return
--	b	.handle_page_fault
-+	bne-	handle_page_fault
-+	b	fast_exception_return
- 
- /*
-  * r13 points to the PACA, r9 contains the saved CR,
+Ben.
