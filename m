@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3E02F67B93
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 16:45:24 +1100 (EST)
-Subject: [PATCH] powerpc: Xserve cpu-meter driver
+	by ozlabs.org (Postfix) with ESMTP id DC46767C06
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Nov 2006 16:45:26 +1100 (EST)
+Subject: [PATCH] powerpc: Make pci_read_irq_line the default
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Wed, 01 Nov 2006 15:51:26 +1100
-Message-Id: <1162356686.25682.402.camel@localhost.localdomain>
+Date: Wed, 01 Nov 2006 16:02:12 +1100
+Message-Id: <1162357332.25682.412.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,671 +21,589 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a small driver for the Xserve G5 CPU-meter blue LEDs on the
-front-panel. It might work on the Xserve G4 as well though that was
-not tested. It's pretty basic and could use some improvements if
-somebody cares doing them :)
+This patch reworks the way IRQs are fixed up on PCI for arch powerpc.
+
+It makes pci_read_irq_line() called by default in the PCI code for
+devices that are probed, and add an optional per-device fixup in
+ppc_md for platforms that really need to correct what they obtain
+from pci_read_irq_line().
+
+It also removes ppc_md.irq_bus_setup which was only used by pSeries
+and should not be needed anymore.
+
+I've also removed the pSeries s7a workaround as it can't work with
+the current interrupt code anyway. I'm trying to get one of these
+machines working so I can test a proper fix for that problem.
+
+I also haven't updated the old-style fixup code from 85xx_cds.c
+because it's actually buggy :) It assigns pci_dev->irq hard coded
+numbers which is no good with the new IRQ mapping code. It should
+at least use irq_create_mapping(NULL, hard_coded_number); and possibly
+also set_irq_type() to set them as level low.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Index: linux-work/drivers/macintosh/rack-meter.c
+This version doesn't touch mpc7448hpc2 which is properly fixed by a
+different patch from Zang Roy. Please apply to powerpc.git, it should
+go early in 2.6.20.
+
+Index: linux-work/arch/powerpc/kernel/pci_32.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/drivers/macintosh/rack-meter.c	2006-11-01 15:47:35.000000000 +1100
-@@ -0,0 +1,612 @@
-+/*
-+ * RackMac vu-meter driver
-+ *
-+ * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
-+ *                    <benh@kernel.crashing.org>
-+ *
-+ * Released under the term of the GNU GPL v2.
-+ *
-+ * Support the CPU-meter LEDs of the Xserve G5
-+ *
-+ * TODO: Implement PWM to do variable intensity and provide userland
-+ * interface for fun. Also, the CPU-meter could be made nicer by being
-+ * a bit less "immediate" but giving instead a more average load over
-+ * time. Patches welcome :-)
-+ *
-+ */
-+#undef DEBUG
-+
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/kernel_stat.h>
-+
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/machdep.h>
-+#include <asm/pmac_feature.h>
-+#include <asm/dbdma.h>
-+#include <asm/dbdma.h>
-+#include <asm/macio.h>
-+#include <asm/keylargo.h>
-+
-+/* Number of samples in a sample buffer */
-+#define SAMPLE_COUNT		256
-+
-+/* CPU meter sampling rate in ms */
-+#define CPU_SAMPLING_RATE	250
-+
-+struct rackmeter_dma {
-+	struct dbdma_cmd	cmd[4]			____cacheline_aligned;
-+	u32			mark			____cacheline_aligned;
-+	u32			buf1[SAMPLE_COUNT]	____cacheline_aligned;
-+	u32			buf2[SAMPLE_COUNT]	____cacheline_aligned;
-+} ____cacheline_aligned;
-+
-+struct rackmeter_cpu {
-+	struct work_struct	sniffer;
-+	cputime64_t		prev_wall;
-+	cputime64_t		prev_idle;
-+	int			zero;
-+} ____cacheline_aligned;
-+
-+struct rackmeter {
-+	struct macio_dev		*mdev;
-+	unsigned int			irq;
-+	struct device_node		*i2s;
-+	u8				*ubuf;
-+	struct dbdma_regs __iomem	*dma_regs;
-+	void __iomem			*i2s_regs;
-+	dma_addr_t			dma_buf_p;
-+	struct rackmeter_dma		*dma_buf_v;
-+	int				stale_irq;
-+	struct rackmeter_cpu		cpu[2];
-+	int				paused;
-+	struct mutex			sem;
-+};
-+
-+/* To be set as a tunable */
-+static int rackmeter_ignore_nice;
-+
-+/* This GPIO is whacked by the OS X driver when initializing */
-+#define RACKMETER_MAGIC_GPIO	0x78
-+
-+/* This is copied from cpufreq_ondemand, maybe we should put it in
-+ * a common header somewhere
-+ */
-+static inline cputime64_t get_cpu_idle_time(unsigned int cpu)
-+{
-+	cputime64_t retval;
-+
-+	retval = cputime64_add(kstat_cpu(cpu).cpustat.idle,
-+			kstat_cpu(cpu).cpustat.iowait);
-+
-+	if (rackmeter_ignore_nice)
-+		retval = cputime64_add(retval, kstat_cpu(cpu).cpustat.nice);
-+
-+	return retval;
-+}
-+
-+static void rackmeter_setup_i2s(struct rackmeter *rm)
-+{
-+	struct macio_chip *macio = rm->mdev->bus->chip;
-+
-+	/* First whack magic GPIO */
-+	pmac_call_feature(PMAC_FTR_WRITE_GPIO, NULL, RACKMETER_MAGIC_GPIO, 5);
-+
-+
-+	/* Call feature code to enable the sound channel and the proper
-+	 * clock sources
-+	 */
-+	pmac_call_feature(PMAC_FTR_SOUND_CHIP_ENABLE, rm->i2s, 0, 1);
-+
-+	/* Power i2s and stop i2s clock. We whack MacIO FCRs directly for now.
-+	 * This is a bit racy, thus we should add new platform functions to
-+	 * handle that. snd-aoa needs that too
-+	 */
-+	MACIO_BIS(KEYLARGO_FCR1, KL1_I2S0_ENABLE);
-+	MACIO_BIC(KEYLARGO_FCR1, KL1_I2S0_CLK_ENABLE_BIT);
-+	(void)MACIO_IN32(KEYLARGO_FCR1);
-+	udelay(10);
-+
-+	/* Then setup i2s. For now, we use the same magic value that
-+	 * the OS X driver seems to use. We might want to play around
-+	 * with the clock divisors later
-+	 */
-+	out_le32(rm->i2s_regs + 0x10, 0x01fa0000);
-+	(void)in_le32(rm->i2s_regs + 0x10);
-+	udelay(10);
-+
-+	/* Fully restart i2s*/
-+	MACIO_BIS(KEYLARGO_FCR1, KL1_I2S0_CELL_ENABLE |
-+		  KL1_I2S0_CLK_ENABLE_BIT);
-+	(void)MACIO_IN32(KEYLARGO_FCR1);
-+	udelay(10);
-+}
-+
-+static void rackmeter_set_default_pattern(struct rackmeter *rm)
-+{
-+	int i;
-+
-+	for (i = 0; i < 16; i++) {
-+		if (i < 8)
-+			rm->ubuf[i] = (i & 1) * 255;
-+		else
-+			rm->ubuf[i] = ((~i) & 1) * 255;
-+	}
-+}
-+
-+static void rackmeter_do_pause(struct rackmeter *rm, int pause)
-+{
-+	struct rackmeter_dma *rdma = rm->dma_buf_v;
-+
-+	pr_debug("rackmeter: %s\n", pause ? "paused" : "started");
-+
-+	rm->paused = pause;
-+	if (pause) {
-+		DBDMA_DO_STOP(rm->dma_regs);
-+		return;
-+	}
-+	memset(rdma->buf1, 0, SAMPLE_COUNT & sizeof(u32));
-+	memset(rdma->buf2, 0, SAMPLE_COUNT & sizeof(u32));
-+
-+	rm->dma_buf_v->mark = 0;
-+
-+	mb();
-+	out_le32(&rm->dma_regs->cmdptr_hi, 0);
-+	out_le32(&rm->dma_regs->cmdptr, rm->dma_buf_p);
-+	out_le32(&rm->dma_regs->control, (RUN << 16) | RUN);
-+}
-+
-+static void rackmeter_setup_dbdma(struct rackmeter *rm)
-+{
-+	struct rackmeter_dma *db = rm->dma_buf_v;
-+	struct dbdma_cmd *cmd = db->cmd;
-+
-+	/* Make sure dbdma is reset */
-+	DBDMA_DO_RESET(rm->dma_regs);
-+
-+	pr_debug("rackmeter: mark offset=0x%lx\n",
-+		 offsetof(struct rackmeter_dma, mark));
-+	pr_debug("rackmeter: buf1 offset=0x%lx\n",
-+		 offsetof(struct rackmeter_dma, buf1));
-+	pr_debug("rackmeter: buf2 offset=0x%lx\n",
-+		 offsetof(struct rackmeter_dma, buf2));
-+
-+	/* Prepare 4 dbdma commands for the 2 buffers */
-+	memset(cmd, 0, 4 * sizeof(struct dbdma_cmd));
-+	st_le16(&cmd->req_count, 4);
-+	st_le16(&cmd->command, STORE_WORD | INTR_ALWAYS | KEY_SYSTEM);
-+	st_le32(&cmd->phy_addr, rm->dma_buf_p +
-+		offsetof(struct rackmeter_dma, mark));
-+	st_le32(&cmd->cmd_dep, 0x02000000);
-+	cmd++;
-+
-+	st_le16(&cmd->req_count, SAMPLE_COUNT * 4);
-+	st_le16(&cmd->command, OUTPUT_MORE);
-+	st_le32(&cmd->phy_addr, rm->dma_buf_p +
-+		offsetof(struct rackmeter_dma, buf1));
-+	cmd++;
-+
-+	st_le16(&cmd->req_count, 4);
-+	st_le16(&cmd->command, STORE_WORD | INTR_ALWAYS | KEY_SYSTEM);
-+	st_le32(&cmd->phy_addr, rm->dma_buf_p +
-+		offsetof(struct rackmeter_dma, mark));
-+	st_le32(&cmd->cmd_dep, 0x01000000);
-+	cmd++;
-+
-+	st_le16(&cmd->req_count, SAMPLE_COUNT * 4);
-+	st_le16(&cmd->command, OUTPUT_MORE | BR_ALWAYS);
-+	st_le32(&cmd->phy_addr, rm->dma_buf_p +
-+		offsetof(struct rackmeter_dma, buf2));
-+	st_le32(&cmd->cmd_dep, rm->dma_buf_p);
-+
-+	rackmeter_do_pause(rm, 0);
-+}
-+
-+static void rackmeter_do_timer(void *data)
-+{
-+	struct rackmeter *rm = data;
-+	unsigned int cpu = smp_processor_id();
-+	struct rackmeter_cpu *rcpu = &rm->cpu[cpu];
-+	cputime64_t cur_jiffies, total_idle_ticks;
-+	unsigned int total_ticks, idle_ticks;
-+	int i, offset, load, cumm, pause;
-+
-+	cur_jiffies = jiffies64_to_cputime64(get_jiffies_64());
-+	total_ticks = (unsigned int)cputime64_sub(cur_jiffies,
-+						  rcpu->prev_wall);
-+	rcpu->prev_wall = cur_jiffies;
-+
-+	total_idle_ticks = get_cpu_idle_time(cpu);
-+	idle_ticks = (unsigned int) cputime64_sub(total_idle_ticks,
-+				rcpu->prev_idle);
-+	rcpu->prev_idle = total_idle_ticks;
-+
-+	/* We do a very dumb calculation to update the LEDs for now,
-+	 * we'll do better once we have actual PWM implemented
-+	 */
-+	load = (9 * (total_ticks - idle_ticks)) / total_ticks;
-+
-+	offset = cpu << 3;
-+	cumm = 0;
-+	for (i = 0; i < 8; i++) {
-+		u8 ub = (load > i) ? 0xff : 0;
-+		rm->ubuf[i + offset] = ub;
-+		cumm |= ub;
-+	}
-+	rcpu->zero = (cumm == 0);
-+
-+	/* Now check if LEDs are all 0, we can stop DMA */
-+	pause = (rm->cpu[0].zero && rm->cpu[1].zero);
-+	if (pause != rm->paused) {
-+		mutex_lock(&rm->sem);
-+		pause = (rm->cpu[0].zero && rm->cpu[1].zero);
-+		rackmeter_do_pause(rm, pause);
-+		mutex_unlock(&rm->sem);
-+	}
-+	schedule_delayed_work_on(cpu, &rcpu->sniffer,
-+				 msecs_to_jiffies(CPU_SAMPLING_RATE));
-+}
-+
-+static void __devinit rackmeter_init_cpu_sniffer(struct rackmeter *rm)
-+{
-+	unsigned int cpu;
-+
-+	/* This driver works only with 1 or 2 CPUs numbered 0 and 1,
-+	 * but that's really all we have on Apple Xserve. It doesn't
-+	 * play very nice with CPU hotplug neither but we don't do that
-+	 * on those machines yet
-+	 */
-+
-+	INIT_WORK(&rm->cpu[0].sniffer, rackmeter_do_timer, rm);
-+	INIT_WORK(&rm->cpu[1].sniffer, rackmeter_do_timer, rm);
-+
-+	for_each_online_cpu(cpu) {
-+		struct rackmeter_cpu *rcpu;
-+
-+		if (cpu > 1)
-+			continue;
-+		rcpu = &rm->cpu[cpu];;
-+		rcpu->prev_idle = get_cpu_idle_time(cpu);
-+		rcpu->prev_wall = jiffies64_to_cputime64(get_jiffies_64());
-+		schedule_delayed_work_on(cpu, &rm->cpu[cpu].sniffer,
-+					 msecs_to_jiffies(CPU_SAMPLING_RATE));
-+	}
-+}
-+
-+static void __devexit rackmeter_stop_cpu_sniffer(struct rackmeter *rm)
-+{
-+	cancel_rearming_delayed_work(&rm->cpu[0].sniffer);
-+	cancel_rearming_delayed_work(&rm->cpu[1].sniffer);
-+}
-+
-+static int rackmeter_setup(struct rackmeter *rm)
-+{
-+	pr_debug("rackmeter: setting up i2s..\n");
-+	rackmeter_setup_i2s(rm);
-+
-+	pr_debug("rackmeter: setting up default pattern..\n");
-+	rackmeter_set_default_pattern(rm);
-+
-+	pr_debug("rackmeter: setting up dbdma..\n");
-+	rackmeter_setup_dbdma(rm);
-+
-+	pr_debug("rackmeter: start CPU measurements..\n");
-+	rackmeter_init_cpu_sniffer(rm);
-+
-+	printk(KERN_INFO "RackMeter initialized\n");
-+
-+	return 0;
-+}
-+
-+/*  XXX FIXME: No PWM yet, this is 0/1 */
-+static u32 rackmeter_calc_sample(struct rackmeter *rm, unsigned int index)
-+{
-+	int led;
-+	u32 sample = 0;
-+
-+	for (led = 0; led < 16; led++) {
-+		sample >>= 1;
-+		sample |= ((rm->ubuf[led] >= 0x80) << 15);
-+	}
-+	return (sample << 17) | (sample >> 15);
-+}
-+
-+static irqreturn_t rackmeter_irq(int irq, void *arg)
-+{
-+	struct rackmeter *rm = arg;
-+	struct rackmeter_dma *db = rm->dma_buf_v;
-+	unsigned int mark, i;
-+	u32 *buf;
-+
-+	/* Flush PCI buffers with an MMIO read. Maybe we could actually
-+	 * check the status one day ... in case things go wrong, though
-+	 * this never happened to me
-+	 */
-+	(void)in_le32(&rm->dma_regs->status);
-+
-+	/* Make sure the CPU gets us in order */
-+	rmb();
-+
-+	/* Read mark */
-+	mark = db->mark;
-+	if (mark != 1 && mark != 2) {
-+		printk(KERN_WARNING "rackmeter: Incorrect DMA mark 0x%08x\n",
-+		       mark);
-+		/* We allow for 3 errors like that (stale DBDMA irqs) */
-+		if (++rm->stale_irq > 3) {
-+			printk(KERN_ERR "rackmeter: Too many errors,"
-+			       " stopping DMA\n");
-+			DBDMA_DO_RESET(rm->dma_regs);
-+		}
-+		return IRQ_HANDLED;
-+	}
-+
-+	/* Next buffer we need to fill is mark value */
-+	buf = mark == 1 ? db->buf1 : db->buf2;
-+
-+	/* Fill it now. This routine converts the 8 bits depth sample array
-+	 * into the PWM bitmap for each LED.
-+	 */
-+	for (i = 0; i < SAMPLE_COUNT; i++)
-+		buf[i] = rackmeter_calc_sample(rm, i);
-+
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int __devinit rackmeter_probe(struct macio_dev* mdev,
-+				     const struct of_device_id *match)
-+{
-+	struct device_node *i2s = NULL, *np = NULL;
-+	struct rackmeter *rm = NULL;
-+	struct resource ri2s, rdma;
-+	int rc = -ENODEV;
-+
-+	pr_debug("rackmeter_probe()\n");
-+
-+	/* Get i2s-a node */
-+	while ((i2s = of_get_next_child(mdev->ofdev.node, i2s)) != NULL)
-+	       if (strcmp(i2s->name, "i2s-a") == 0)
-+		       break;
-+	if (i2s == NULL) {
-+		pr_debug("  i2s-a child not found\n");
-+		goto bail;
-+	}
-+	/* Get lightshow or virtual sound */
-+	while ((np = of_get_next_child(i2s, np)) != NULL) {
-+	       if (strcmp(np->name, "lightshow") == 0)
-+		       break;
-+	       if ((strcmp(np->name, "sound") == 0) &&
-+		   get_property(np, "virtual", NULL) != NULL)
-+		       break;
-+	}
-+	if (np == NULL) {
-+		pr_debug("  lightshow or sound+virtual child not found\n");
-+		goto bail;
-+	}
-+
-+	/* Create and initialize our instance data */
-+	rm = kzalloc(sizeof(struct rackmeter), GFP_KERNEL);
-+	if (rm == NULL) {
-+		printk(KERN_ERR "rackmeter: failed to allocate memory !\n");
-+		rc = -ENOMEM;
-+		goto bail_release;
-+	}
-+	rm->mdev = mdev;
-+	rm->i2s = i2s;
-+	mutex_init(&rm->sem);
-+	dev_set_drvdata(&mdev->ofdev.dev, rm);
-+	/* Check resources availability. We need at least resource 0 and 1 */
-+#if 0 /* Use that when i2s-a is finally an mdev per-se */
-+	if (macio_resource_count(mdev) < 2 || macio_irq_count(mdev) < 2) {
-+		printk(KERN_ERR
-+		       "rackmeter: found match but lacks resources: %s"
-+		       " (%d resources, %d interrupts)\n",
-+		       mdev->ofdev.node->full_name);
-+		rc = -ENXIO;
-+		goto bail_free;
-+	}
-+	if (macio_request_resources(mdev, "rackmeter")) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to request resources: %s\n",
-+		       mdev->ofdev.node->full_name);
-+		rc = -EBUSY;
-+		goto bail_free;
-+	}
-+	rm->irq = macio_irq(mdev, 1);
-+#else
-+	rm->irq = irq_of_parse_and_map(i2s, 1);
-+	if (rm->irq == NO_IRQ ||
-+	    of_address_to_resource(i2s, 0, &ri2s) ||
-+	    of_address_to_resource(i2s, 1, &rdma)) {
-+		printk(KERN_ERR
-+		       "rackmeter: found match but lacks resources: %s",
-+		       mdev->ofdev.node->full_name);
-+		rc = -ENXIO;
-+		goto bail_free;
-+	}
-+#endif
-+
-+	pr_debug("  i2s @0x%08x\n", (unsigned int)ri2s.start);
-+	pr_debug("  dma @0x%08x\n", (unsigned int)rdma.start);
-+	pr_debug("  irq %d\n", rm->irq);
-+
-+	rm->ubuf = (u8 *)__get_free_page(GFP_KERNEL);
-+	if (rm->ubuf == NULL) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to allocate samples page !\n");
-+		rc = -ENOMEM;
-+		goto bail_release;
-+	}
-+
-+	rm->dma_buf_v = dma_alloc_coherent(&macio_get_pci_dev(mdev)->dev,
-+					   sizeof(struct rackmeter_dma),
-+					   &rm->dma_buf_p, GFP_KERNEL);
-+	if (rm->dma_buf_v == NULL) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to allocate dma buffer !\n");
-+		rc = -ENOMEM;
-+		goto bail_free_samples;
-+	}
-+#if 0
-+	rm->i2s_regs = ioremap(macio_resource_start(mdev, 0), 0x1000);
-+#else
-+	rm->i2s_regs = ioremap(ri2s.start, 0x1000);
-+#endif
-+	if (rm->i2s_regs == NULL) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to map i2s registers !\n");
-+		rc = -ENXIO;
-+		goto bail_free_dma;
-+	}
-+#if 0
-+	rm->dma_regs = ioremap(macio_resource_start(mdev, 1), 0x100);
-+#else
-+	rm->dma_regs = ioremap(rdma.start, 0x100);
-+#endif
-+	if (rm->dma_regs == NULL) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to map dma registers !\n");
-+		rc = -ENXIO;
-+		goto bail_unmap_i2s;
-+	}
-+
-+	rc = rackmeter_setup(rm);
-+	if (rc) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to initialize !\n");
-+		rc = -ENXIO;
-+		goto bail_unmap_dma;
-+	}
-+
-+	rc = request_irq(rm->irq, rackmeter_irq, 0, "rackmeter", rm);
-+	if (rc != 0) {
-+		printk(KERN_ERR
-+		       "rackmeter: failed to request interrupt !\n");
-+		goto bail_stop_dma;
-+	}
-+	of_node_put(np);
-+	return 0;
-+
-+ bail_stop_dma:
-+	DBDMA_DO_RESET(rm->dma_regs);
-+ bail_unmap_dma:
-+	iounmap(rm->dma_regs);
-+ bail_unmap_i2s:
-+	iounmap(rm->i2s_regs);
-+ bail_free_dma:
-+	dma_free_coherent(&macio_get_pci_dev(mdev)->dev,
-+			  sizeof(struct rackmeter_dma),
-+			  rm->dma_buf_v, rm->dma_buf_p);
-+ bail_free_samples:
-+	free_page((unsigned long)rm->ubuf);
-+ bail_release:
-+#if 0
-+	macio_release_resources(mdev);
-+#endif
-+ bail_free:
-+	kfree(rm);
-+ bail:
-+	of_node_put(i2s);
-+	of_node_put(np);
-+	dev_set_drvdata(&mdev->ofdev.dev, NULL);
-+	return rc;
-+}
-+
-+static int __devexit rackmeter_remove(struct macio_dev* mdev)
-+{
-+	struct rackmeter *rm = dev_get_drvdata(&mdev->ofdev.dev);
-+
-+	/* Stop CPU sniffer timer & work queues */
-+	rackmeter_stop_cpu_sniffer(rm);
-+
-+	/* Clear reference to private data */
-+	dev_set_drvdata(&mdev->ofdev.dev, NULL);
-+
-+	/* Stop/reset dbdma */
-+	DBDMA_DO_RESET(rm->dma_regs);
-+
-+	/* Release the IRQ */
-+	free_irq(rm->irq, rm);
-+
-+	/* Unmap registers */
-+	iounmap(rm->dma_regs);
-+	iounmap(rm->i2s_regs);
-+
-+	/* Free DMA */
-+	dma_free_coherent(&macio_get_pci_dev(mdev)->dev,
-+			  sizeof(struct rackmeter_dma),
-+			  rm->dma_buf_v, rm->dma_buf_p);
-+
-+	/* Free samples */
-+	free_page((unsigned long)rm->ubuf);
-+
-+#if 0
-+	/* Release resources */
-+	macio_release_resources(mdev);
-+#endif
-+
-+	/* Get rid of me */
-+	kfree(rm);
-+
-+	return 0;
-+}
-+
-+static int rackmeter_shutdown(struct macio_dev* mdev)
-+{
-+	struct rackmeter *rm = dev_get_drvdata(&mdev->ofdev.dev);
-+
-+	if (rm == NULL)
-+		return -ENODEV;
-+
-+	/* Stop CPU sniffer timer & work queues */
-+	rackmeter_stop_cpu_sniffer(rm);
-+
-+	/* Stop/reset dbdma */
-+	DBDMA_DO_RESET(rm->dma_regs);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id rackmeter_match[] = {
-+	{ .name = "i2s" },
-+	{ }
-+};
-+
-+static struct macio_driver rackmeter_drv = {
-+	.name = "rackmeter",
-+	.owner = THIS_MODULE,
-+	.match_table = rackmeter_match,
-+	.probe = rackmeter_probe,
-+	.remove = rackmeter_remove,
-+	.shutdown = rackmeter_shutdown,
-+};
-+
-+
-+static int __init rackmeter_init(void)
-+{
-+	pr_debug("rackmeter_init()\n");
-+
-+	return macio_register_driver(&rackmeter_drv);
-+}
-+
-+static void __exit rackmeter_exit(void)
-+{
-+	pr_debug("rackmeter_exit()\n");
-+
-+	macio_unregister_driver(&rackmeter_drv);
-+}
-+
-+module_init(rackmeter_init);
-+module_exit(rackmeter_exit);
-+
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
-+MODULE_DESCRIPTION("RackMeter: Support vu-meter on XServe front panel");
-Index: linux-work/drivers/macintosh/Kconfig
-===================================================================
---- linux-work.orig/drivers/macintosh/Kconfig	2006-10-06 13:48:04.000000000 +1000
-+++ linux-work/drivers/macintosh/Kconfig	2006-11-01 15:09:23.000000000 +1100
-@@ -228,4 +228,11 @@ config ANSLCD
- 	tristate "Support for ANS LCD display"
- 	depends on ADB_CUDA && PPC_PMAC
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2006-10-23 14:41:37.000000000 +1000
++++ linux-work/arch/powerpc/kernel/pci_32.c	2006-10-30 12:13:32.000000000 +1100
+@@ -1338,6 +1338,7 @@ void __init pcibios_fixup_bus(struct pci
+ 	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
+ 	unsigned long io_offset;
+ 	struct resource *res;
++	struct pci_device *dev;
+ 	int i;
  
-+config PMAC_RACKMETER
-+	tristate "Support for Apple XServe front panel LEDs"
-+	depends on PPC_PMAC
-+	help
-+	  This driver procides some support to control the front panel
-+          blue LEDs "vu-meter" of the XServer macs.
-+
- endmenu
-Index: linux-work/drivers/macintosh/Makefile
-===================================================================
---- linux-work.orig/drivers/macintosh/Makefile	2006-10-06 13:48:04.000000000 +1000
-+++ linux-work/drivers/macintosh/Makefile	2006-11-01 15:09:23.000000000 +1100
-@@ -42,3 +42,4 @@ obj-$(CONFIG_WINDFARM_PM112)	+= windfarm
- 				   windfarm_smu_sensors.o \
- 				   windfarm_max6690_sensor.o \
- 				   windfarm_lm75_sensor.o windfarm_pid.o
-+obj-$(CONFIG_PMAC_RACKMETER)	+= rack-meter.o
-Index: linux-work/include/asm-powerpc/dbdma.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/dbdma.h	2006-01-14 14:43:33.000000000 +1100
-+++ linux-work/include/asm-powerpc/dbdma.h	2006-11-01 15:09:23.000000000 +1100
-@@ -95,7 +95,13 @@ struct dbdma_cmd {
- #define DBDMA_DO_STOP(regs) do {				\
- 	out_le32(&((regs)->control), (RUN|FLUSH)<<16);		\
- 	while(in_le32(&((regs)->status)) & (ACTIVE|FLUSH))	\
--		;						\
-+		; \
-+} while(0)
-+
-+#define DBDMA_DO_RESET(regs) do {				\
-+	out_le32(&((regs)->control), (ACTIVE|DEAD|WAKE|FLUSH|PAUSE|RUN)<<16);\
-+	while(in_le32(&((regs)->status)) & (RUN)) \
-+		; \
- } while(0)
+ 	io_offset = (unsigned long)hose->io_base_virt - isa_io_base;
+@@ -1390,8 +1391,16 @@ void __init pcibios_fixup_bus(struct pci
+ 		}
+ 	}
  
- #endif /* _ASM_DBDMA_H_ */
++	/* Platform specific bus fixups */
+ 	if (ppc_md.pcibios_fixup_bus)
+ 		ppc_md.pcibios_fixup_bus(bus);
++
++	/* Read default IRQs and fixup if necessary */
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		pci_read_irq_line(dev);
++		if (ppc_md.pci_irq_fixup)
++			ppc_md.pci_irq_fixup(dev);
++	}
+ }
+ 
+ char __init *pcibios_setup(char *str)
+Index: linux-work/arch/powerpc/kernel/pci_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_64.c	2006-10-23 14:41:37.000000000 +1000
++++ linux-work/arch/powerpc/kernel/pci_64.c	2006-10-30 12:13:32.000000000 +1100
+@@ -1223,8 +1223,12 @@ static void __devinit do_bus_setup(struc
+ 	list_for_each_entry(dev, &bus->devices, bus_list)
+ 		ppc_md.iommu_dev_setup(dev);
+ 
+-	if (ppc_md.irq_bus_setup)
+-		ppc_md.irq_bus_setup(bus);
++	/* Read default IRQs and fixup if necessary */
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		pci_read_irq_line(dev);
++		if (ppc_md.pci_irq_fixup)
++			ppc_md.pci_irq_fixup(dev);
++	}
+ }
+ 
+ void __devinit pcibios_fixup_bus(struct pci_bus *bus)
+Index: linux-work/arch/powerpc/platforms/pseries/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/pseries/pci.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/pseries/pci.c	2006-10-30 12:13:32.000000000 +1100
+@@ -29,8 +29,6 @@
+ #include <asm/prom.h>
+ #include <asm/ppc-pci.h>
+ 
+-static int __devinitdata s7a_workaround = -1;
+-
+ #if 0
+ void pcibios_name_device(struct pci_dev *dev)
+ {
+@@ -57,39 +55,6 @@ void pcibios_name_device(struct pci_dev 
+ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
+ #endif
+ 
+-static void __devinit check_s7a(void)
+-{
+-	struct device_node *root;
+-	const char *model;
+-
+-	s7a_workaround = 0;
+-	root = of_find_node_by_path("/");
+-	if (root) {
+-		model = get_property(root, "model", NULL);
+-		if (model && !strcmp(model, "IBM,7013-S7A"))
+-			s7a_workaround = 1;
+-		of_node_put(root);
+-	}
+-}
+-
+-void __devinit pSeries_irq_bus_setup(struct pci_bus *bus)
+-{
+-	struct pci_dev *dev;
+-
+-	if (s7a_workaround < 0)
+-		check_s7a();
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		pci_read_irq_line(dev);
+-		if (s7a_workaround) {
+-			if (dev->irq > 16) {
+-				dev->irq -= 3;
+-				pci_write_config_byte(dev, PCI_INTERRUPT_LINE,
+-					dev->irq);
+-			}
+-		}
+-	}
+-}
+-
+ static void __init pSeries_request_regions(void)
+ {
+ 	if (!isa_io_base)
+Index: linux-work/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/pseries/setup.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-work/arch/powerpc/platforms/pseries/setup.c	2006-10-30 12:13:32.000000000 +1100
+@@ -553,7 +553,6 @@ define_machine(pseries) {
+ 	.log_error		= pSeries_log_error,
+ 	.pcibios_fixup		= pSeries_final_fixup,
+ 	.pci_probe_mode		= pSeries_pci_probe_mode,
+-	.irq_bus_setup		= pSeries_irq_bus_setup,
+ 	.restart		= rtas_restart,
+ 	.power_off		= rtas_power_off,
+ 	.halt			= rtas_halt,
+Index: linux-work/include/asm-powerpc/machdep.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/machdep.h	2006-10-09 12:03:34.000000000 +1000
++++ linux-work/include/asm-powerpc/machdep.h	2006-10-30 12:13:32.000000000 +1100
+@@ -86,7 +86,6 @@ struct machdep_calls {
+ 	void		(*tce_flush)(struct iommu_table *tbl);
+ 	void		(*iommu_dev_setup)(struct pci_dev *dev);
+ 	void		(*iommu_bus_setup)(struct pci_bus *bus);
+-	void		(*irq_bus_setup)(struct pci_bus *bus);
+ #endif /* CONFIG_PPC64 */
+ 
+ 	int		(*probe)(void);
+@@ -106,6 +105,7 @@ struct machdep_calls {
+ 	/* Called after scanning the bus, before allocating resources */
+ 	void		(*pcibios_fixup)(void);
+ 	int		(*pci_probe_mode)(struct pci_bus *);
++	void		(*pci_irq_fixup)(struct pci_dev *dev);
+ 
+ 	void		(*restart)(char *cmd);
+ 	void		(*power_off)(void);
+Index: linux-work/include/asm-powerpc/ppc-pci.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/ppc-pci.h	2006-10-06 13:48:24.000000000 +1000
++++ linux-work/include/asm-powerpc/ppc-pci.h	2006-10-30 12:13:32.000000000 +1100
+@@ -47,7 +47,6 @@ unsigned long get_phb_buid (struct devic
+ 
+ /* From pSeries_pci.h */
+ extern void pSeries_final_fixup(void);
+-extern void pSeries_irq_bus_setup(struct pci_bus *bus);
+ 
+ extern unsigned long pci_probe_only;
+ 
+Index: linux-work/arch/powerpc/platforms/cell/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/cell/setup.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/cell/setup.c	2006-10-30 12:13:32.000000000 +1100
+@@ -80,14 +80,6 @@ static void cell_progress(char *s, unsig
+ 	printk("*** %04x : %s\n", hex, s ? s : "");
+ }
+ 
+-static void __init cell_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+-}
+-
+ static void __init cell_init_irq(void)
+ {
+ 	iic_init_IRQ();
+@@ -180,7 +172,6 @@ define_machine(cell) {
+ 	.check_legacy_ioport	= cell_check_legacy_ioport,
+ 	.progress		= cell_progress,
+ 	.init_IRQ       	= cell_init_irq,
+-	.pcibios_fixup		= cell_pcibios_fixup,
+ #ifdef CONFIG_KEXEC
+ 	.machine_kexec		= default_machine_kexec,
+ 	.machine_kexec_prepare	= default_machine_kexec_prepare,
+Index: linux-work/arch/powerpc/platforms/maple/maple.h
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/maple/maple.h	2006-01-14 14:43:22.000000000 +1100
++++ linux-work/arch/powerpc/platforms/maple/maple.h	2006-10-30 12:13:32.000000000 +1100
+@@ -8,5 +8,5 @@ extern void maple_get_rtc_time(struct rt
+ extern unsigned long maple_get_boot_time(void);
+ extern void maple_calibrate_decr(void);
+ extern void maple_pci_init(void);
+-extern void maple_pcibios_fixup(void);
++extern void maple_pci_irq_fixup(struct pci_dev *dev);
+ extern int maple_pci_get_legacy_ide_irq(struct pci_dev *dev, int channel);
+Index: linux-work/arch/powerpc/platforms/maple/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/maple/pci.c	2006-10-13 17:23:48.000000000 +1000
++++ linux-work/arch/powerpc/platforms/maple/pci.c	2006-10-30 12:13:32.000000000 +1100
+@@ -502,38 +502,29 @@ static int __init add_bridge(struct devi
+ }
+ 
+ 
+-void __init maple_pcibios_fixup(void)
++void __devinit maple_pci_irq_fixup(struct pci_dev *dev)
+ {
+-	struct pci_dev *dev = NULL;
++	DBG(" -> maple_pci_irq_fixup\n");
+ 
+-	DBG(" -> maple_pcibios_fixup\n");
+-
+-	for_each_pci_dev(dev) {
+-		/* Fixup IRQ for PCIe host */
+-		if (u4_pcie != NULL && dev->bus->number == 0 &&
+-		    pci_bus_to_host(dev->bus) == u4_pcie) {
+-			printk(KERN_DEBUG "Fixup U4 PCIe IRQ\n");
+-			dev->irq = irq_create_mapping(NULL, 1);
+-			if (dev->irq != NO_IRQ)
+-				set_irq_type(dev->irq, IRQ_TYPE_LEVEL_LOW);
+-			continue;
+-		}
+-
+-		/* Hide AMD8111 IDE interrupt when in legacy mode so
+-		 * the driver calls pci_get_legacy_ide_irq()
+-		 */
+-		if (dev->vendor == PCI_VENDOR_ID_AMD &&
+-		    dev->device == PCI_DEVICE_ID_AMD_8111_IDE &&
+-		    (dev->class & 5) != 5) {
+-			dev->irq = NO_IRQ;
+-			continue;
+-		}
++	/* Fixup IRQ for PCIe host */
++	if (u4_pcie != NULL && dev->bus->number == 0 &&
++	    pci_bus_to_host(dev->bus) == u4_pcie) {
++		printk(KERN_DEBUG "Fixup U4 PCIe IRQ\n");
++		dev->irq = irq_create_mapping(NULL, 1);
++		if (dev->irq != NO_IRQ)
++			set_irq_type(dev->irq, IRQ_TYPE_LEVEL_LOW);
++	}
+ 
+-		/* For all others, map the interrupt from the device-tree */
+-		pci_read_irq_line(dev);
++	/* Hide AMD8111 IDE interrupt when in legacy mode so
++	 * the driver calls pci_get_legacy_ide_irq()
++	 */
++	if (dev->vendor == PCI_VENDOR_ID_AMD &&
++	    dev->device == PCI_DEVICE_ID_AMD_8111_IDE &&
++	    (dev->class & 5) != 5) {
++		dev->irq = NO_IRQ;
+ 	}
+ 
+-	DBG(" <- maple_pcibios_fixup\n");
++	DBG(" <- maple_pci_irq_fixup\n");
+ }
+ 
+ static void __init maple_fixup_phb_resources(void)
+Index: linux-work/arch/powerpc/platforms/maple/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/maple/setup.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/maple/setup.c	2006-10-30 12:13:32.000000000 +1100
+@@ -312,7 +312,7 @@ define_machine(maple_md) {
+ 	.setup_arch		= maple_setup_arch,
+ 	.init_early		= maple_init_early,
+ 	.init_IRQ		= maple_init_IRQ,
+-	.pcibios_fixup		= maple_pcibios_fixup,
++	.pci_irq_fixup		= maple_pci_irq_fixup,
+ 	.pci_get_legacy_ide_irq	= maple_pci_get_legacy_ide_irq,
+ 	.restart		= maple_restart,
+ 	.power_off		= maple_power_off,
+Index: linux-work/arch/powerpc/platforms/powermac/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/pci.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/powermac/pci.c	2006-10-30 12:13:32.000000000 +1100
+@@ -985,30 +985,23 @@ static int __init add_bridge(struct devi
+ 	return 0;
+ }
+ 
+-void __init pmac_pcibios_fixup(void)
++void __devinit pmac_pci_irq_fixup(struct pci_dev *dev)
+ {
+-	struct pci_dev* dev = NULL;
+-
+-	for_each_pci_dev(dev) {
+-		/* Read interrupt from the device-tree */
+-		pci_read_irq_line(dev);
+-
+ #ifdef CONFIG_PPC32
+-		/* Fixup interrupt for the modem/ethernet combo controller.
+-		 * on machines with a second ohare chip.
+-		 * The number in the device tree (27) is bogus (correct for
+-		 * the ethernet-only board but not the combo ethernet/modem
+-		 * board). The real interrupt is 28 on the second controller
+-		 * -> 28+32 = 60.
+-		 */
+-		if (has_second_ohare &&
+-		    dev->vendor == PCI_VENDOR_ID_DEC &&
+-		    dev->device == PCI_DEVICE_ID_DEC_TULIP_PLUS) {
+-			dev->irq = irq_create_mapping(NULL, 60);
+-			set_irq_type(dev->irq, IRQ_TYPE_LEVEL_LOW);
+-		}
+-#endif /* CONFIG_PPC32 */
++	/* Fixup interrupt for the modem/ethernet combo controller.
++	 * on machines with a second ohare chip.
++	 * The number in the device tree (27) is bogus (correct for
++	 * the ethernet-only board but not the combo ethernet/modem
++	 * board). The real interrupt is 28 on the second controller
++	 * -> 28+32 = 60.
++	 */
++	if (has_second_ohare &&
++	    dev->vendor == PCI_VENDOR_ID_DEC &&
++	    dev->device == PCI_DEVICE_ID_DEC_TULIP_PLUS) {
++		dev->irq = irq_create_mapping(NULL, 60);
++		set_irq_type(dev->irq, IRQ_TYPE_LEVEL_LOW);
+ 	}
++#endif /* CONFIG_PPC32 */
+ }
+ 
+ #ifdef CONFIG_PPC64
+Index: linux-work/arch/powerpc/platforms/powermac/pmac.h
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/pmac.h	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/powermac/pmac.h	2006-10-30 12:13:32.000000000 +1100
+@@ -20,7 +20,7 @@ extern void pmac_get_rtc_time(struct rtc
+ extern int pmac_set_rtc_time(struct rtc_time *);
+ extern void pmac_read_rtc_time(void);
+ extern void pmac_calibrate_decr(void);
+-extern void pmac_pcibios_fixup(void);
++extern void pmac_pci_irq_fixup(struct pci_dev *);
+ extern void pmac_pci_init(void);
+ extern unsigned long pmac_ide_get_base(int index);
+ extern void pmac_ide_init_hwif_ports(hw_regs_t *hw,
+Index: linux-work/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/setup.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/powermac/setup.c	2006-10-30 12:13:32.000000000 +1100
+@@ -727,7 +727,7 @@ define_machine(powermac) {
+ 	.show_cpuinfo		= pmac_show_cpuinfo,
+ 	.init_IRQ		= pmac_pic_init,
+ 	.get_irq		= NULL,	/* changed later */
+-	.pcibios_fixup		= pmac_pcibios_fixup,
++	.pci_irq_fixup		= pmac_pci_irq_fixup,
+ 	.restart		= pmac_restart,
+ 	.power_off		= pmac_power_off,
+ 	.halt			= pmac_halt,
+Index: linux-work/arch/powerpc/platforms/pasemi/pasemi.h
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/pasemi/pasemi.h	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/pasemi/pasemi.h	2006-10-30 12:13:32.000000000 +1100
+@@ -3,6 +3,5 @@
+ 
+ extern unsigned long pas_get_boot_time(void);
+ extern void pas_pci_init(void);
+-extern void pas_pcibios_fixup(void);
+ 
+ #endif /* _PASEMI_PASEMI_H */
+Index: linux-work/arch/powerpc/platforms/pasemi/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/pasemi/pci.c	2006-10-11 11:48:41.000000000 +1000
++++ linux-work/arch/powerpc/platforms/pasemi/pci.c	2006-10-30 12:13:32.000000000 +1100
+@@ -148,14 +148,6 @@ static int __init add_bridge(struct devi
+ }
+ 
+ 
+-void __init pas_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+-}
+-
+ static void __init pas_fixup_phb_resources(void)
+ {
+ 	struct pci_controller *hose, *tmp;
+Index: linux-work/arch/powerpc/platforms/pasemi/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/pasemi/setup.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-work/arch/powerpc/platforms/pasemi/setup.c	2006-10-30 12:13:32.000000000 +1100
+@@ -176,7 +176,6 @@ define_machine(pas) {
+ 	.init_early		= pas_init_early,
+ 	.init_IRQ		= pas_init_IRQ,
+ 	.get_irq		= mpic_get_irq,
+-	.pcibios_fixup		= pas_pcibios_fixup,
+ 	.restart		= pas_restart,
+ 	.power_off		= pas_power_off,
+ 	.halt			= pas_halt,
+Index: linux-work/arch/powerpc/platforms/82xx/mpc82xx_ads.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/82xx/mpc82xx_ads.c	2006-10-11 11:48:41.000000000 +1000
++++ linux-work/arch/powerpc/platforms/82xx/mpc82xx_ads.c	2006-10-30 12:13:32.000000000 +1100
+@@ -515,16 +515,6 @@ static int m82xx_pci_exclude_device(u_ch
+ 		return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-static void
+-__init mpc82xx_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	for_each_pci_dev(dev) {
+-		pci_read_irq_line(dev);
+-	}
+-}
+-
+ void __init add_bridge(struct device_node *np)
+ {
+ 	int len;
+@@ -597,9 +587,6 @@ static void __init mpc82xx_ads_setup_arc
+ 		add_bridge(np);
+ 
+ 	of_node_put(np);
+-	ppc_md.pci_map_irq = NULL;
+-	ppc_md.pcibios_fixup = mpc82xx_pcibios_fixup;
+-	ppc_md.pcibios_fixup_bus = NULL;
+ #endif
+ 
+ #ifdef  CONFIG_ROOT_NFS
+Index: linux-work/arch/powerpc/platforms/83xx/mpc834x_itx.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/83xx/mpc834x_itx.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-work/arch/powerpc/platforms/83xx/mpc834x_itx.c	2006-10-30 12:13:32.000000000 +1100
+@@ -122,7 +122,4 @@ define_machine(mpc834x_itx) {
+ 	.time_init		= mpc83xx_time_init,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+-#ifdef CONFIG_PCI
+-	.pcibios_fixup		= mpc83xx_pcibios_fixup,
+-#endif
+ };
+Index: linux-work/arch/powerpc/platforms/83xx/mpc834x_sys.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/83xx/mpc834x_sys.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/83xx/mpc834x_sys.c	2006-10-30 12:13:32.000000000 +1100
+@@ -137,7 +137,4 @@ define_machine(mpc834x_sys) {
+ 	.time_init		= mpc83xx_time_init,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+-#ifdef CONFIG_PCI
+-	.pcibios_fixup		= mpc83xx_pcibios_fixup,
+-#endif
+ };
+Index: linux-work/arch/powerpc/platforms/83xx/mpc83xx.h
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/83xx/mpc83xx.h	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/83xx/mpc83xx.h	2006-10-30 12:13:32.000000000 +1100
+@@ -11,7 +11,6 @@
+ 
+ extern int add_bridge(struct device_node *dev);
+ extern int mpc83xx_exclude_device(u_char bus, u_char devfn);
+-extern void mpc83xx_pcibios_fixup(void);
+ extern void mpc83xx_restart(char *cmd);
+ extern long mpc83xx_time_init(void);
+ 
+Index: linux-work/arch/powerpc/platforms/83xx/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/83xx/pci.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/83xx/pci.c	2006-10-30 12:13:32.000000000 +1100
+@@ -45,15 +45,6 @@ int mpc83xx_exclude_device(u_char bus, u
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-void __init mpc83xx_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	/* map all the PCI irqs */
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+-}
+-
+ int __init add_bridge(struct device_node *dev)
+ {
+ 	int len;
+Index: linux-work/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-work/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c	2006-10-30 12:13:32.000000000 +1100
+@@ -398,15 +398,6 @@ mpc86xx_hpcn_show_cpuinfo(struct seq_fil
+ }
+ 
+ 
+-void __init mpc86xx_hpcn_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+-}
+-
+-
+ /*
+  * Called very early, device-tree isn't unflattened
+  */
+@@ -461,7 +452,6 @@ define_machine(mpc86xx_hpcn) {
+ 	.setup_arch		= mpc86xx_hpcn_setup_arch,
+ 	.init_IRQ		= mpc86xx_hpcn_init_irq,
+ 	.show_cpuinfo		= mpc86xx_hpcn_show_cpuinfo,
+-	.pcibios_fixup		= mpc86xx_hpcn_pcibios_fixup,
+ 	.get_irq		= mpic_get_irq,
+ 	.restart		= mpc86xx_restart,
+ 	.time_init		= mpc86xx_time_init,
+Index: linux-work/arch/powerpc/platforms/chrp/chrp.h
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/chrp/chrp.h	2006-09-08 17:17:10.000000000 +1000
++++ linux-work/arch/powerpc/platforms/chrp/chrp.h	2006-10-30 12:13:32.000000000 +1100
+@@ -9,4 +9,3 @@ extern long chrp_time_init(void);
+ 
+ extern void chrp_find_bridges(void);
+ extern void chrp_event_scan(unsigned long);
+-extern void chrp_pcibios_fixup(void);
+Index: linux-work/arch/powerpc/platforms/chrp/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/chrp/setup.c	2006-10-27 15:39:09.000000000 +1000
++++ linux-work/arch/powerpc/platforms/chrp/setup.c	2006-10-30 12:13:32.000000000 +1100
+@@ -600,7 +600,6 @@ define_machine(chrp) {
+ 	.init			= chrp_init2,
+ 	.show_cpuinfo		= chrp_show_cpuinfo,
+ 	.init_IRQ		= chrp_init_IRQ,
+-	.pcibios_fixup		= chrp_pcibios_fixup,
+ 	.restart		= rtas_restart,
+ 	.power_off		= rtas_power_off,
+ 	.halt			= rtas_halt,
+Index: linux-work/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.c	2006-10-09 12:03:33.000000000 +1000
++++ linux-work/arch/powerpc/platforms/85xx/mpc85xx_ads.c	2006-10-30 12:13:32.000000000 +1100
+@@ -53,15 +53,6 @@ mpc85xx_exclude_device(u_char bus, u_cha
+ 	else
+ 		return PCIBIOS_SUCCESSFUL;
+ }
+-
+-void __init
+-mpc85xx_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+-}
+ #endif /* CONFIG_PCI */
+ 
+ #ifdef CONFIG_CPM2
+@@ -253,8 +244,6 @@ static void __init mpc85xx_ads_setup_arc
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+ 		add_bridge(np);
+-
+-	ppc_md.pcibios_fixup = mpc85xx_pcibios_fixup;
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ 
+Index: linux-work/arch/powerpc/platforms/chrp/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/chrp/pci.c	2006-10-06 13:47:54.000000000 +1000
++++ linux-work/arch/powerpc/platforms/chrp/pci.c	2006-10-30 12:13:32.000000000 +1100
+@@ -156,15 +156,6 @@ hydra_init(void)
+ 	return 1;
+ }
+ 
+-void __init
+-chrp_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+-}
+-
+ #define PRG_CL_RESET_VALID 0x00010000
+ 
+ static void __init
