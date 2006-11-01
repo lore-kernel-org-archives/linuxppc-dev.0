@@ -1,19 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F369067BE2
+Return-Path: <kalle.pokki@iki.fi>
+Received: from host32.eke.fi (host32.eke.fi [194.100.64.32])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 43A8567B5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Nov 2006 22:37:14 +1100 (EST)
-Date: Wed, 1 Nov 2006 14:37:04 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kalle Pokki <kalle.pokki@iki.fi>
-Subject: Re: [PATCH/RFC] FS_ENET: Removed MII bitbang check for TA
-Message-ID: <20061101143704.3c8c47cb@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0611011317280.848@host32.eke.fi>
-References: <Pine.LNX.4.64.0611011317280.848@host32.eke.fi>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI;
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
+	Thu,  2 Nov 2006 00:08:16 +1100 (EST)
+Date: Wed, 1 Nov 2006 15:08:13 +0200 (EET)
+From: Kalle Pokki <kalle.pokki@iki.fi>
+To: linuxppc-embedded@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] CPM_UART: Fix non-console initialisation (v2)
+Message-ID: <Pine.LNX.4.64.0611011457490.3387@host32.eke.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,42 +23,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+This is a cleaned-up version of a patch sent on Oct 19th. The patch is 
+fairly straightforward and does not affect other than the compat mode. As 
+not having this patch renders the cpm_uart driver unusable with a frame 
+buffer console, I think this should be included in 2.6.19.
 
-On Wed, 1 Nov 2006 13:22:17 +0200 (EET)
-Kalle Pokki wrote:
+---
+The cpm_uart driver is initialised incorrectly, if there is a frame buffer
+console, and CONFIG_SERIAL_CPM_CONSOLE is defined. The driver fails to 
+call cpm_uart_init_portdesc() and set_lineif() in this case.
 
-> The PHY abstraction layer expects to receive 0xffff when
-> reading PHY registers if there is no PHY at that address. The
-> all-ones condition is guaranteed by the pull-up in the MDIO line, so
-> there is no need to check for the TA bits.
->=20
-> With this, the PHY layer is able to probe the MDIO bus as it expects.
-> This also removes one board dependency from the fs_enet driver, as
-> there is no need to set the phy_mask bits anymore.
->=20
-> Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
+Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
+---
+  drivers/serial/cpm_uart/cpm_uart.h      |    2 +-
+  drivers/serial/cpm_uart/cpm_uart_core.c |   11 ++++++-----
+  drivers/serial/cpm_uart/cpm_uart_cpm1.c |    2 +-
+  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 +-
+  4 files changed, 9 insertions(+), 8 deletions(-)
 
-At the first sight this it OK.
+diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+index 3b35cb7..19a6ffe 100644
+--- a/drivers/serial/cpm_uart/cpm_uart.h
++++ b/drivers/serial/cpm_uart/cpm_uart.h
+@@ -89,7 +89,7 @@ extern struct uart_cpm_port cpm_uart_por
 
-I'll give it a try, prolly add some bits and forward along with the other=20
-fs_enet stuff residing in todo.=20
+  /* these are located in their respective files */
+  void cpm_line_cr_cmd(int line, int cmd);
+-int cpm_uart_init_portdesc(void);
++int __init cpm_uart_init_portdesc(void);
+  int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con);
+  void cpm_uart_freebuf(struct uart_cpm_port *pinfo);
 
-Thanks,
--Vitaly
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 8f3b3e5..4047530 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1349,11 +1349,10 @@ static int cpm_uart_init(void) {
+  		pr_info("cpm_uart: WARNING: no UART devices found on platform bus!\n");
+  		pr_info(
+  		"cpm_uart: the driver will guess configuration, but this mode is no longer supported.\n");
+-#ifndef CONFIG_SERIAL_CPM_CONSOLE
+-		ret = cpm_uart_init_portdesc();
+-		if (ret)
+-			return ret;
+-#endif
++
++		/* Don't run this again, if the console driver did it already */
++		if (cpm_uart_nr == 0)
++			cpm_uart_init_portdesc();
 
---Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+  		cpm_reg.nr = cpm_uart_nr;
+  		ret = uart_register_driver(&cpm_reg);
+@@ -1365,6 +1364,8 @@ #endif
+  			int con = cpm_uart_port_map[i];
+  			cpm_uart_ports[con].port.line = i;
+  			cpm_uart_ports[con].port.flags = UPF_BOOT_AUTOCONF;
++			if (cpm_uart_ports[con].set_lineif)
++				cpm_uart_ports[con].set_lineif(&cpm_uart_ports[con]);
+  			uart_add_one_port(&cpm_reg, &cpm_uart_ports[con].port);
+  		}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 95afc37..08e55fd 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -184,7 +184,7 @@ void cpm_uart_freebuf(struct uart_cpm_po
+  }
 
-iD8DBQFFSIbhuOg9JvQhSEsRAt6OAJoCegDU8JYr9VEkP7z7Swgwkzl4EgCeNKxP
-74B/rhv7aot6N1H3YnFfUqw=
-=A/eI
------END PGP SIGNATURE-----
+  /* Setup any dynamic params in the uart desc */
+-int cpm_uart_init_portdesc(void)
++int __init cpm_uart_init_portdesc(void)
+  {
+  	pr_debug("CPM uart[-]:init portdesc\n");
 
---Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI--
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index ef3bb47..b392aea 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -252,7 +252,7 @@ void cpm_uart_freebuf(struct uart_cpm_po
+  }
+
+  /* Setup any dynamic params in the uart desc */
+-int cpm_uart_init_portdesc(void)
++int __init cpm_uart_init_portdesc(void)
+  {
+  	pr_debug("CPM uart[-]:init portdesc\n");
+
+-- 
+1.4.1.1
