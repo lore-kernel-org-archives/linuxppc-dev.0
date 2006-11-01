@@ -1,18 +1,19 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from host32.eke.fi (host32.eke.fi [194.100.64.32])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80FB767C66
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id F369067BE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Nov 2006 22:22:24 +1100 (EST)
-Date: Wed, 1 Nov 2006 13:22:17 +0200 (EET)
-From: Kalle Pokki <kalle.pokki@iki.fi>
-To: linuxppc-embedded@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH/RFC] FS_ENET: Removed MII bitbang check for TA
-Message-ID: <Pine.LNX.4.64.0611011317280.848@host32.eke.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed,  1 Nov 2006 22:37:14 +1100 (EST)
+Date: Wed, 1 Nov 2006 14:37:04 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Kalle Pokki <kalle.pokki@iki.fi>
+Subject: Re: [PATCH/RFC] FS_ENET: Removed MII bitbang check for TA
+Message-ID: <20061101143704.3c8c47cb@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0611011317280.848@host32.eke.fi>
+References: <Pine.LNX.4.64.0611011317280.848@host32.eke.fi>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI;
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,61 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The PHY abstraction layer expects to receive 0xffff when
-reading PHY registers if there is no PHY at that address. The
-all-ones condition is guaranteed by the pull-up in the MDIO line, so
-there is no need to check for the TA bits.
+--Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-With this, the PHY layer is able to probe the MDIO bus as it expects.
-This also removes one board dependency from the fs_enet driver, as there
-is no need to set the phy_mask bits anymore.
+On Wed, 1 Nov 2006 13:22:17 +0200 (EET)
+Kalle Pokki wrote:
 
-Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
----
-  drivers/net/fs_enet/mii-bitbang.c |   17 ++---------------
-  1 files changed, 2 insertions(+), 15 deletions(-)
+> The PHY abstraction layer expects to receive 0xffff when
+> reading PHY registers if there is no PHY at that address. The
+> all-ones condition is guaranteed by the pull-up in the MDIO line, so
+> there is no need to check for the TA bits.
+>=20
+> With this, the PHY layer is able to probe the MDIO bus as it expects.
+> This also removes one board dependency from the fs_enet driver, as
+> there is no need to set the phy_mask bits anymore.
+>=20
+> Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
 
-diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
-index 0b9b8b5..af36f3e 100644
---- a/drivers/net/fs_enet/mii-bitbang.c
-+++ b/drivers/net/fs_enet/mii-bitbang.c
-@@ -194,19 +194,6 @@ static int fs_enet_mii_bb_read(struct mi
-  	mdc(bitbang, 1);
-  	mii_delay(bitbang);
+At the first sight this it OK.
 
--	/* check the turnaround bit: the PHY should be driving it to zero */
--	if (mdio_read(bitbang) != 0) {
--		/* PHY didn't drive TA low */
--		for (j = 0; j < 32; j++) {
--			mdc(bitbang, 0);
--			mii_delay(bitbang);
--			mdc(bitbang, 1);
--			mii_delay(bitbang);
--		}
--		ret = -1;
--		goto out;
--	}
--
-  	mdc(bitbang, 0);
-  	mii_delay(bitbang);
+I'll give it a try, prolly add some bits and forward along with the other=20
+fs_enet stuff residing in todo.=20
 
-@@ -229,7 +216,7 @@ static int fs_enet_mii_bb_read(struct mi
-  	mii_delay(bitbang);
+Thanks,
+-Vitaly
 
-  	ret = rdreg;
--out:
-+
-  	return ret;
-  }
+--Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-@@ -338,7 +325,7 @@ static int __devinit fs_enet_mdio_probe(
-  	new_bus->reset = &fs_enet_mii_bb_reset,
-  	new_bus->id = pdev->id;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
--	new_bus->phy_mask = ~0x9;
-+	new_bus->phy_mask = 0;
-  	pdata = (struct fs_mii_bb_platform_info *)pdev->dev.platform_data;
+iD8DBQFFSIbhuOg9JvQhSEsRAt6OAJoCegDU8JYr9VEkP7z7Swgwkzl4EgCeNKxP
+74B/rhv7aot6N1H3YnFfUqw=
+=A/eI
+-----END PGP SIGNATURE-----
 
-  	if (NULL == pdata) {
--- 
-1.4.1.1
+--Sig_SoVTtQDv9aaQ8Ddj5+Rn6LI--
