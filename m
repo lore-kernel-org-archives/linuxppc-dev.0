@@ -1,19 +1,21 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 0A06967DEC
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 546AA67DF9
 	for <linuxppc-embedded@ozlabs.org>;
 	Wed,  1 Nov 2006 19:40:30 +1100 (EST)
 From: Grant Likely <grant.likely@secretlab.ca>
 To: Sylvain Munaut <tnt@246tnt.com>, linuxppc-embedded@ozlabs.org,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] [POWERPC] whitespace cleanup
-Date: Wed,  1 Nov 2006 01:39:53 -0700
-Message-Id: <1162370407105-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <11623704071131-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH] [POWERPC] Move mpc52xx-psc uart driver to of_device from
+	platform_device
+Date: Wed,  1 Nov 2006 01:39:54 -0700
+Message-Id: <11623704073308-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1162370407105-git-send-email-grant.likely@secretlab.ca>
 References: <11623703962380-git-send-email-grant.likely@secretlab.ca>
 	<11623704061869-git-send-email-grant.likely@secretlab.ca>
 	<11623704063907-git-send-email-grant.likely@secretlab.ca>
 	<11623704071131-git-send-email-grant.likely@secretlab.ca>
+	<1162370407105-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,407 +26,296 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Performed here to make the next patch (of_platform support) cleaner...  And,
-yes, I know that whitespace patches are debatable, but I'm being lazy and this
-is easier that trying to take my whitespace changes back out.  :P
+As part of the transition to arch/powerpc, this patch moves the mpc5200 PSC
+driver over to the OF platform bus infrastructure.
+
+This patch is not acceptable for mainline as-is because it breaks arch/ppc
+support for the mpc52xx.  More rework is needed to allow it to compile for
+either arch (or alternately, fork the driver)
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/serial/mpc52xx_uart.c |  114 ++++++++++++++++++++---------------------
- 1 files changed, 56 insertions(+), 58 deletions(-)
+ drivers/serial/mpc52xx_uart.c |  146 +++++++++++++++++++++++++++++------------
+ 1 files changed, 105 insertions(+), 41 deletions(-)
 
 diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index 4f80c5b..29c9300 100644
+index 29c9300..09bf8e0 100644
 --- a/drivers/serial/mpc52xx_uart.c
 +++ b/drivers/serial/mpc52xx_uart.c
-@@ -1,6 +1,4 @@
- /*
-- * drivers/serial/mpc52xx_uart.c
-- *
-  * Driver for the PSC of the Freescale MPC52xx PSCs configured as UARTs.
-  *
-  * FIXME According to the usermanual the status bits in the status register
-@@ -14,18 +12,18 @@
-  *
-  *
-  * Maintainer : Sylvain Munaut <tnt@246tNt.com>
-- * 
-+ *
-  * Some of the code has been inspired/copied from the 2.4 code written
-  * by Dale Farnsworth <dfarnsworth@mvista.com>.
-- * 
-+ *
-  * Copyright (C) 2004-2005 Sylvain Munaut <tnt@246tNt.com>
-  * Copyright (C) 2003 MontaVista, Software, Inc.
-- * 
-+ *
-  * This file is licensed under the terms of the GNU General Public License
-  * version 2. This program is licensed "as is" without any warranty of any
-  * kind, whether express or implied.
+@@ -42,7 +42,8 @@
+  * will be mapped to.
   */
-- 
+ 
+-#include <linux/platform_device.h>
++#define DEBUG
 +
- /* Platform device Usage :
-  *
-  * Since PSCs can have multiple function, the correct driver for each one
-@@ -101,27 +99,27 @@ #endif
- /* UART operations                                                          */
- /* ======================================================================== */
+ #include <linux/module.h>
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+@@ -51,6 +52,7 @@ #include <linux/console.h>
  
--static unsigned int 
-+static unsigned int
- mpc52xx_uart_tx_empty(struct uart_port *port)
- {
- 	int status = in_be16(&PSC(port)->mpc52xx_psc_status);
- 	return (status & MPC52xx_PSC_SR_TXEMP) ? TIOCSER_TEMT : 0;
- }
+ #include <asm/delay.h>
+ #include <asm/io.h>
++#include <asm/of_device.h>
  
--static void 
-+static void
- mpc52xx_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
- {
- 	/* Not implemented */
- }
- 
--static unsigned int 
-+static unsigned int
- mpc52xx_uart_get_mctrl(struct uart_port *port)
- {
- 	/* Not implemented */
- 	return TIOCM_CTS | TIOCM_DSR | TIOCM_CAR;
- }
- 
--static void 
-+static void
- mpc52xx_uart_stop_tx(struct uart_port *port)
- {
- 	/* port->lock taken by caller */
-@@ -129,7 +127,7 @@ mpc52xx_uart_stop_tx(struct uart_port *p
- 	out_be16(&PSC(port)->mpc52xx_psc_imr,port->read_status_mask);
- }
- 
--static void 
-+static void
- mpc52xx_uart_start_tx(struct uart_port *port)
- {
- 	/* port->lock taken by caller */
-@@ -137,12 +135,12 @@ mpc52xx_uart_start_tx(struct uart_port *
- 	out_be16(&PSC(port)->mpc52xx_psc_imr,port->read_status_mask);
- }
- 
--static void 
-+static void
- mpc52xx_uart_send_xchar(struct uart_port *port, char ch)
- {
- 	unsigned long flags;
- 	spin_lock_irqsave(&port->lock, flags);
--	
-+
- 	port->x_char = ch;
- 	if (ch) {
- 		/* Make sure tx interrupts are on */
-@@ -150,7 +148,7 @@ mpc52xx_uart_send_xchar(struct uart_port
- 		port->read_status_mask |= MPC52xx_PSC_IMR_TXRDY;
- 		out_be16(&PSC(port)->mpc52xx_psc_imr,port->read_status_mask);
- 	}
--	
-+
- 	spin_unlock_irqrestore(&port->lock, flags);
- }
- 
-@@ -178,7 +176,7 @@ mpc52xx_uart_break_ctl(struct uart_port 
- 		out_8(&PSC(port)->command,MPC52xx_PSC_START_BRK);
- 	else
- 		out_8(&PSC(port)->command,MPC52xx_PSC_STOP_BRK);
--	
-+
- 	spin_unlock_irqrestore(&port->lock, flags);
- }
- 
-@@ -197,11 +195,11 @@ mpc52xx_uart_startup(struct uart_port *p
- 	/* Reset/activate the port, clear and enable interrupts */
- 	out_8(&psc->command,MPC52xx_PSC_RST_RX);
- 	out_8(&psc->command,MPC52xx_PSC_RST_TX);
--	
-+
- 	out_be32(&psc->sicr,0);	/* UART mode DCD ignored */
- 
- 	out_be16(&psc->mpc52xx_psc_clock_select, 0xdd00); /* /16 prescaler on */
--	
-+
- 	out_8(&psc->rfcntl, 0x00);
- 	out_be16(&psc->rfalarm, 0x1ff);
- 	out_8(&psc->tfcntl, 0x07);
-@@ -209,10 +207,10 @@ mpc52xx_uart_startup(struct uart_port *p
- 
- 	port->read_status_mask |= MPC52xx_PSC_IMR_RXRDY | MPC52xx_PSC_IMR_TXRDY;
- 	out_be16(&psc->mpc52xx_psc_imr,port->read_status_mask);
--	
-+
- 	out_8(&psc->command,MPC52xx_PSC_TX_ENABLE);
- 	out_8(&psc->command,MPC52xx_PSC_RX_ENABLE);
--		
-+
- 	return 0;
- }
- 
-@@ -220,19 +218,19 @@ static void
- mpc52xx_uart_shutdown(struct uart_port *port)
- {
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
--	
-+
- 	/* Shut down the port, interrupt and all */
- 	out_8(&psc->command,MPC52xx_PSC_RST_RX);
- 	out_8(&psc->command,MPC52xx_PSC_RST_TX);
--	
--	port->read_status_mask = 0; 
-+
-+	port->read_status_mask = 0;
- 	out_be16(&psc->mpc52xx_psc_imr,port->read_status_mask);
- 
- 	/* Release interrupt */
- 	free_irq(port->irq, port);
- }
- 
--static void 
-+static void
- mpc52xx_uart_set_termios(struct uart_port *port, struct termios *new,
-                          struct termios *old)
- {
-@@ -241,10 +239,10 @@ mpc52xx_uart_set_termios(struct uart_por
- 	unsigned char mr1, mr2;
- 	unsigned short ctr;
- 	unsigned int j, baud, quot;
--	
-+
- 	/* Prepare what we're gonna write */
- 	mr1 = 0;
--	
-+
- 	switch (new->c_cflag & CSIZE) {
- 		case CS5:	mr1 |= MPC52xx_PSC_MODE_5_BITS;
- 				break;
-@@ -261,8 +259,8 @@ mpc52xx_uart_set_termios(struct uart_por
- 			MPC52xx_PSC_MODE_PARODD : MPC52xx_PSC_MODE_PAREVEN;
- 	} else
- 		mr1 |= MPC52xx_PSC_MODE_PARNONE;
--	
--	
-+
-+
- 	mr2 = 0;
- 
- 	if (new->c_cflag & CSTOPB)
-@@ -276,7 +274,7 @@ mpc52xx_uart_set_termios(struct uart_por
- 	baud = uart_get_baud_rate(port, new, old, 0, port->uartclk/16);
- 	quot = uart_get_divisor(port, baud);
- 	ctr = quot & 0xffff;
--	
-+
- 	/* Get the lock */
- 	spin_lock_irqsave(&port->lock, flags);
- 
-@@ -290,14 +288,14 @@ mpc52xx_uart_set_termios(struct uart_por
- 	 * boot for the console, all stuff is not yet ready to receive at that
- 	 * time and that just makes the kernel oops */
- 	/* while (j-- && mpc52xx_uart_int_rx_chars(port)); */
--	while (!(in_be16(&psc->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXEMP) && 
-+	while (!(in_be16(&psc->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXEMP) &&
- 	       --j)
- 		udelay(1);
- 
- 	if (!j)
- 		printk(	KERN_ERR "mpc52xx_uart.c: "
- 			"Unable to flush RX & TX fifos in-time in set_termios."
--			"Some chars may have been lost.\n" ); 
-+			"Some chars may have been lost.\n" );
- 
- 	/* Reset the TX & RX */
- 	out_8(&psc->command,MPC52xx_PSC_RST_RX);
-@@ -309,7 +307,7 @@ mpc52xx_uart_set_termios(struct uart_por
- 	out_8(&psc->mode,mr2);
- 	out_8(&psc->ctur,ctr >> 8);
- 	out_8(&psc->ctlr,ctr & 0xff);
--	
-+
- 	/* Reenable TX & RX */
- 	out_8(&psc->command,MPC52xx_PSC_TX_ENABLE);
- 	out_8(&psc->command,MPC52xx_PSC_RX_ENABLE);
-@@ -373,7 +371,7 @@ mpc52xx_uart_verify_port(struct uart_por
+ #include <asm/mpc52xx.h>
+ #include <asm/mpc52xx_psc.h>
+@@ -371,7 +373,7 @@ mpc52xx_uart_verify_port(struct uart_por
  
  	if ( (ser->irq != port->irq) ||
  	     (ser->io_type != SERIAL_IO_MEM) ||
--	     (ser->baud_base != port->uartclk)  || 
-+	     (ser->baud_base != port->uartclk)  ||
+-	     (ser->baud_base != port->uartclk)  ||
++	     (ser->baud_base != port->uartclk) ||
  	     (ser->iomem_base != (void*)port->mapbase) ||
  	     (ser->hub6 != 0 ) )
  		return -EINVAL;
-@@ -404,11 +402,11 @@ static struct uart_ops mpc52xx_uart_ops 
- 	.verify_port	= mpc52xx_uart_verify_port
- };
+@@ -561,13 +563,13 @@ mpc52xx_console_get_options(struct uart_
+ 	struct mpc52xx_psc __iomem *psc = PSC(port);
+ 	unsigned char mr1;
  
--	
-+
- /* ======================================================================== */
- /* Interrupt handling                                                       */
- /* ======================================================================== */
--	
-+
- static inline int
- mpc52xx_uart_int_rx_chars(struct uart_port *port)
- {
-@@ -435,11 +433,11 @@ #endif
- 
- 		flag = TTY_NORMAL;
- 		port->icount.rx++;
--	
-+
- 		if ( status & (MPC52xx_PSC_SR_PE |
- 		               MPC52xx_PSC_SR_FE |
- 		               MPC52xx_PSC_SR_RB) ) {
--			
-+
- 			if (status & MPC52xx_PSC_SR_RB) {
- 				flag = TTY_BREAK;
- 				uart_handle_break(port);
-@@ -464,7 +462,7 @@ #endif
- 	}
- 
- 	tty_flip_buffer_push(tty);
--	
-+
- 	return in_be16(&PSC(port)->mpc52xx_psc_status) & MPC52xx_PSC_SR_RXRDY;
- }
- 
-@@ -509,25 +507,25 @@ mpc52xx_uart_int_tx_chars(struct uart_po
- 	return 1;
- }
- 
--static irqreturn_t 
-+static irqreturn_t
- mpc52xx_uart_int(int irq, void *dev_id)
- {
- 	struct uart_port *port = dev_id;
- 	unsigned long pass = ISR_PASS_LIMIT;
- 	unsigned int keepgoing;
- 	unsigned short status;
--	
-+
- 	spin_lock(&port->lock);
--	
-+
- 	/* While we have stuff to do, we continue */
- 	do {
- 		/* If we don't find anything to do, we stop */
--		keepgoing = 0; 
--		
-+		keepgoing = 0;
-+
- 		/* Read status */
- 		status = in_be16(&PSC(port)->mpc52xx_psc_isr);
- 		status &= port->read_status_mask;
--			
-+
- 		/* Do we need to receive chars ? */
- 		/* For this RX interrupts must be on and some chars waiting */
- 		if ( status & MPC52xx_PSC_IMR_RXRDY )
-@@ -537,15 +535,15 @@ mpc52xx_uart_int(int irq, void *dev_id)
- 		/* For this, TX must be ready and TX interrupt enabled */
- 		if ( status & MPC52xx_PSC_IMR_TXRDY )
- 			keepgoing |= mpc52xx_uart_int_tx_chars(port);
--		
-+
- 		/* Limit number of iteration */
- 		if ( !(--pass) )
- 			keepgoing = 0;
- 
- 	} while (keepgoing);
--	
-+
- 	spin_unlock(&port->lock);
--	
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -566,7 +564,7 @@ mpc52xx_console_get_options(struct uart_
++	pr_debug("mpc52xx_console_get_options(port=%p)\n", port);
  	/* Read the mode registers */
  	out_8(&psc->command,MPC52xx_PSC_SEL_MODE_REG_1);
  	mr1 = in_8(&psc->mode);
--	
-+
+ 
  	/* CT{U,L}R are write-only ! */
- 	*baud = __res.bi_baudrate ?
- 		__res.bi_baudrate : CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
-@@ -579,26 +577,26 @@ mpc52xx_console_get_options(struct uart_
- 		case MPC52xx_PSC_MODE_8_BITS:
- 		default:			*bits = 8;
- 	}
--	
-+
- 	if (mr1 & MPC52xx_PSC_MODE_PARNONE)
- 		*parity = 'n';
- 	else
- 		*parity = mr1 & MPC52xx_PSC_MODE_PARODD ? 'o' : 'e';
- }
+-	*baud = __res.bi_baudrate ?
+-		__res.bi_baudrate : CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
++	*baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
  
--static void  
-+static void
- mpc52xx_console_write(struct console *co, const char *s, unsigned int count)
- {
- 	struct uart_port *port = &mpc52xx_uart_ports[co->index];
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
- 	unsigned int i, j;
--	
-+
- 	/* Disable interrupts */
- 	out_be16(&psc->mpc52xx_psc_imr, 0);
- 
- 	/* Wait the TX buffer to be empty */
--	j = 5000000;	/* Maximum wait */	
--	while (!(in_be16(&psc->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXEMP) && 
-+	j = 5000000;	/* Maximum wait */
-+	while (!(in_be16(&psc->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXEMP) &&
- 	       --j)
- 		udelay(1);
- 
-@@ -607,13 +605,13 @@ mpc52xx_console_write(struct console *co
+ 	/* Parse them */
+ 	switch (mr1 & MPC52xx_PSC_MODE_BITS_MASK) {
+@@ -604,10 +606,10 @@ mpc52xx_console_write(struct console *co
+ 	for (i = 0; i < count; i++, s++) {
  		/* Line return handling */
  		if (*s == '\n')
- 			out_8(&psc->mpc52xx_psc_buffer_8, '\r');
--		
-+
+-			out_8(&psc->mpc52xx_psc_buffer_8, '\r');
++			out_8(&psc->buffer.buffer_8, '\r');
+ 
  		/* Send the char */
- 		out_8(&psc->mpc52xx_psc_buffer_8, *s);
+-		out_8(&psc->mpc52xx_psc_buffer_8, *s);
++		out_8(&psc->buffer.buffer_8, *s);
  
  		/* Wait the TX buffer to be empty */
--		j = 20000;	/* Maximum wait */	
--		while (!(in_be16(&psc->mpc52xx_psc_status) & 
-+		j = 20000;	/* Maximum wait */
-+		while (!(in_be16(&psc->mpc52xx_psc_status) &
- 		         MPC52xx_PSC_SR_TXEMP) && --j)
- 			udelay(1);
- 	}
-@@ -634,7 +632,7 @@ mpc52xx_console_setup(struct console *co
+ 		j = 20000;	/* Maximum wait */
+@@ -624,33 +626,74 @@ static int __init
+ mpc52xx_console_setup(struct console *co, char *options)
+ {
+ 	struct uart_port *port = &mpc52xx_uart_ports[co->index];
++	struct device_node *np = NULL;
++	struct device_node *np_idx;
++	const void *pp = NULL;
++	struct resource res;
++	int index = 0;
++	int ret;
  
- 	if (co->index < 0 || co->index >= MPC52xx_PSC_MAXNUM)
- 		return -EINVAL;
--	
+ 	int baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
+ 	int bits = 8;
+ 	int parity = 'n';
+ 	int flow = 'n';
+ 
+-	if (co->index < 0 || co->index >= MPC52xx_PSC_MAXNUM)
++	pr_debug("mpc52xx_console_setup co=%p, options=%s, index=%i\n",
++		 co, options, co->index);
 +
++	while ((np = of_find_compatible_node(np, "serial", "mpc52xx-psc"))) {
++		if (index == co->index)
++			break;
++		index++;
++	}
++
++	if (!np) {
++		pr_debug("PSC%x not found in device tree\n", co->index);
++		return -EINVAL;
++	}
++
++	/* Fetch register locations */
++	if ((ret = of_address_to_resource(np, 0, &res)) != 0) {
++		pr_debug("Could not get resources for PSC%x\n", index);
++		return ret;
++	}
++
++	/* Search for bus-frequency property in this node or a parent */
++	np_idx = np;
++	while (np_idx) {
++		if ((pp = get_property(np_idx, "bus-frequency", NULL)) != NULL)
++			break;
++		np_idx = of_get_parent(np_idx);
++	}
++	if (!pp) {
++		pr_debug("Could not find bus-frequency property!\n");
+ 		return -EINVAL;
++	}
+ 
  	/* Basic port init. Needed since we use some uart_??? func before
  	 * real init for early access */
  	spin_lock_init(&port->lock);
-@@ -669,8 +667,8 @@ static struct console mpc52xx_console = 
- 	.data	= &mpc52xx_uart_driver,
- };
+-	port->uartclk	= __res.bi_ipbfreq / 2; /* Look at CTLR doc */
++	port->uartclk	= *(const u32*)pp / 2;
+ 	port->ops	= &mpc52xx_uart_ops;
+-	port->mapbase	= MPC52xx_PA(MPC52xx_PSCx_OFFSET(co->index+1));
++	port->mapbase = res.start;
++	port->membase = ioremap(res.start, sizeof(struct mpc52xx_psc));
++	port->irq = irq_of_parse_and_map(np, 0);
  
--	
--static int __init 
+-	/* We ioremap ourself */
+-	port->membase = ioremap(port->mapbase, MPC52xx_PSC_SIZE);
+ 	if (port->membase == NULL)
+ 		return -EINVAL;
+ 
++	pr_debug("mpc52xx_psc at %lx mapped to %p; irq=%x freq=%i\n",
++	         port->mapbase, port->membase, port->irq, port->uartclk);
 +
-+static int __init
- mpc52xx_console_init(void)
+ 	/* Setup the port parameters accoding to options */
+ 	if (options)
+ 		uart_parse_options(options, &baud, &parity, &bits, &flow);
+ 	else
+ 		mpc52xx_console_get_options(port, &baud, &parity, &bits, &flow);
+ 
++	pr_debug("Setting console parameters: %i %i%c1 flow=%c\n",
++	         baud, bits, parity, flow);
++
+ 	return uart_set_options(port, co, baud, parity, bits, flow);
+ }
+ 
+@@ -703,28 +746,26 @@ static struct uart_driver mpc52xx_uart_d
+ /* ======================================================================== */
+ 
+ static int __devinit
+-mpc52xx_uart_probe(struct platform_device *dev)
++mpc52xx_uart_probe(struct of_device *op, const struct of_device_id *match)
  {
- 	register_console(&mpc52xx_console);
+-	struct resource *res = dev->resource;
+-
++	static int idx = 0;
+ 	struct uart_port *port = NULL;
+-	int i, idx, ret;
++	struct resource res;
++	int ret;
++
++	printk("Got here!\n");
++	dev_dbg(&op->dev, "mpc52xx_uart_probe(op=%p, match=%p)\n", op, match);
+ 
+ 	/* Check validity & presence */
+-	idx = dev->id;
+-	if (idx < 0 || idx >= MPC52xx_PSC_MAXNUM)
++	if (idx >= MPC52xx_PSC_MAXNUM)
+ 		return -EINVAL;
+ 
+-	if (!mpc52xx_match_psc_function(idx,"uart"))
+-		return -ENODEV;
+-
+ 	/* Init the port structure */
+ 	port = &mpc52xx_uart_ports[idx];
+ 
+ 	memset(port, 0x00, sizeof(struct uart_port));
+ 
+ 	spin_lock_init(&port->lock);
+-	port->uartclk	= __res.bi_ipbfreq / 2; /* Look at CTLR doc */
+ 	port->fifosize	= 512;
+ 	port->iotype	= UPIO_MEM;
+ 	port->flags	= UPF_BOOT_AUTOCONF |
+@@ -733,29 +774,36 @@ mpc52xx_uart_probe(struct platform_devic
+ 	port->ops	= &mpc52xx_uart_ops;
+ 
+ 	/* Search for IRQ and mapbase */
+-	for (i=0 ; i<dev->num_resources ; i++, res++) {
+-		if (res->flags & IORESOURCE_MEM)
+-			port->mapbase = res->start;
+-		else if (res->flags & IORESOURCE_IRQ)
+-			port->irq = res->start;
+-	}
+-	if (!port->irq || !port->mapbase)
++	if ((ret = of_address_to_resource(op->node, 0, &res)) != 0)
++		return ret;
++
++	port->mapbase = res.start;
++	port->membase = ioremap(res.start, sizeof(struct mpc52xx_psc));
++	port->irq = irq_of_parse_and_map(op->node, 0);
++
++	dev_dbg(&op->dev, "mpc52xx-psc UART at %lx. mapped to %p, irq %x\n",
++	         port->mapbase, port->membase, port->irq);
++
++	//if (!port->irq || !port->mapbase) {
++	if (!port->mapbase) {
++		printk(KERN_ERR "Could not allocate resources for PSC\n");
+ 		return -EINVAL;
++	}
+ 
+ 	/* Add the port to the uart sub-system */
+ 	ret = uart_add_one_port(&mpc52xx_uart_driver, port);
+ 	if (!ret)
+-		platform_set_drvdata(dev, (void*)port);
++		dev_set_drvdata(&op->dev, (void*)port);
+ 
++	idx++;
+ 	return ret;
+ }
+ 
+ static int
+-mpc52xx_uart_remove(struct platform_device *dev)
++mpc52xx_uart_remove(struct of_device *op)
+ {
+-	struct uart_port *port = (struct uart_port *) platform_get_drvdata(dev);
+-
+-	platform_set_drvdata(dev, NULL);
++	struct uart_port *port = dev_get_drvdata(&op->dev);
++	dev_set_drvdata(&op->dev, NULL);
+ 
+ 	if (port)
+ 		uart_remove_one_port(&mpc52xx_uart_driver, port);
+@@ -787,7 +835,19 @@ mpc52xx_uart_resume(struct platform_devi
+ }
+ #endif
+ 
+-static struct platform_driver mpc52xx_uart_platform_driver = {
++static struct of_device_id mpc52xx_uart_match[] = {
++	{
++		.name = "serial",
++		.compatible = "mpc52xx-psc",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, mpc52xx_uart_match);
++
++static struct of_platform_driver mpc52xx_uart_of_driver = {
++	.owner		= THIS_MODULE,
++	.name		= "mpc52xx-uart",
++	.match_table	= mpc52xx_uart_match,
+ 	.probe		= mpc52xx_uart_probe,
+ 	.remove		= mpc52xx_uart_remove,
+ #ifdef CONFIG_PM
+@@ -811,20 +871,24 @@ mpc52xx_uart_init(void)
+ 
+ 	printk(KERN_INFO "Serial: MPC52xx PSC driver\n");
+ 
+-	ret = uart_register_driver(&mpc52xx_uart_driver);
+-	if (ret == 0) {
+-		ret = platform_driver_register(&mpc52xx_uart_platform_driver);
+-		if (ret)
+-			uart_unregister_driver(&mpc52xx_uart_driver);
++	if ((ret = uart_register_driver(&mpc52xx_uart_driver)) != 0) {
++		printk(KERN_ERR "Could not register mpc52xx uart driver\n");
++		return ret;
+ 	}
+ 
+-	return ret;
++	if ((ret = of_register_driver(&mpc52xx_uart_of_driver)) != 0) {
++		printk(KERN_ERR "Could not register mpc52xx of driver\n");
++		uart_unregister_driver(&mpc52xx_uart_driver);
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ static void __exit
+ mpc52xx_uart_exit(void)
+ {
+-	platform_driver_unregister(&mpc52xx_uart_platform_driver);
++	of_unregister_driver(&mpc52xx_uart_of_driver);
+ 	uart_unregister_driver(&mpc52xx_uart_driver);
+ }
+ 
 -- 
 1.4.3.rc2.g0503
