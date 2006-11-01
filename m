@@ -1,28 +1,18 @@
-Return-Path: <sjmunroe@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3F33C67A3A
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Nov 2006 09:57:04 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kA1Mv05h019251
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Nov 2006 17:57:00 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kA1Mv0ah240550
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Nov 2006 17:57:00 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kA1Mv0AC024247
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Nov 2006 17:57:00 -0500
-In-Reply-To: <1162420552.25682.471.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DE0A767BE4
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Nov 2006 10:23:39 +1100 (EST)
 Subject: Re: glibc-2.5 test suite hangs/crashes the machine
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF1858F563.F89FF725-ON86257219.007D5B13-86257219.007E0EB5@us.ibm.com>
-From: Steve Munroe <sjmunroe@us.ibm.com>
-Date: Wed, 1 Nov 2006 16:56:53 -0600
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steve Munroe <sjmunroe@us.ibm.com>
+In-Reply-To: <OF1858F563.F89FF725-ON86257219.007D5B13-86257219.007E0EB5@us.ibm.com>
+References: <OF1858F563.F89FF725-ON86257219.007D5B13-86257219.007E0EB5@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 02 Nov 2006 10:22:11 +1100
+Message-Id: <1162423331.25682.480.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Jeff Bailey <jbailey@ubuntu.com>,
 	Fabio Massimo Di Nitto <fabbione@ubuntu.com>,
 	Paul Mackerras <paulus@samba.org>, Ben Collins <ben.collins@ubuntu.com>
@@ -36,57 +26,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+> So I need to delay __ASSUME_SET_ROBUST_LIST to 2.6.18 for __powerpc__ ?
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 11/01/2006
-04:35:52 PM:
+The problem is not so much the headers you build with than the runtime
+checks... I suppose you shouldn't bother as we are trickling down the
+fixes to distros & stable series anyway.
 
->
-> > The tst-robustpi# test are exercising the new PTHREAD_MUXTEX_ROBUST
-api,
-> > with PTHREAD_PRIO_INHERIT attribute.
+> What about __ASSUME_FUTEX_LOCK_PI ?
+
+I don't know, I'm very unfamiliar with that futex stuff. I need to look
+more closely.
+
+> >  - kernel 2.6.18 and current git until yesterday (fix got in today) has
+> > a bug if you manage to pass a wrong futex with a non-aligned atomic
+> > value, it will possibly oops the kernel. With the fix, it will return an
+> > error.
 > >
-> > The fuxtex word seems to include the waiters TID, I don't know if the
-> > kernel cares about this or not.
->
-> Ok, well, we have seen a few issues so far with these. 2 are kernel
-> issues, but one might not be:
->
->  - kernels 2.6.15 .. .17 at least it seems wire the robust futex
-> syscalls on powerpc without properly implementing the support, which can
-> cause hangs in process exit. Do you have any way to "blacklist" kernels
-> in glibc ?
->
->From libc/sysdeps/unix/sysv/linux/kernel-features.h
+> > Now what seems to be a glibc issue:
+> >
+> >  - I've had the tst-robustpi# tests (in fact the very first one, I
+> > haven't tested the others) die on me with a SIGBUS caused by glibc
+> > trying to do a lwarx/starx. on an odd address.
+> >
+> Rayn reminded me of a bug where the new robust code did not account for the
+> fact that the TID was not at the same place as i386. I think Ryan has a
+> patch.
 
-/* Support for inter-process robust mutexes was added in 2.6.17.  */
-#if __LINUX_KERNEL_VERSION >= 0x020611
-# define __ASSUME_SET_ROBUST_LIST       1
-#endif
+Ah ok. Can you give me the details as soon as you get them ? (In
+addition to submitting the fix upstream of course :) ubuntu at least is
+starting to build their next distro on top of glibc-2.5 so it would be
+nice if they had the fix asap.
 
-/* Support for PI futexes was added in 2.6.18.  */
-#if __LINUX_KERNEL_VERSION >= 0x020612
-# define __ASSUME_FUTEX_LOCK_PI 1
-#endif
+Thanks for looking at this !
 
-So I need to delay __ASSUME_SET_ROBUST_LIST to 2.6.18 for __powerpc__ ?
-
-What about __ASSUME_FUTEX_LOCK_PI ?
-
->  - kernel 2.6.18 and current git until yesterday (fix got in today) has
-> a bug if you manage to pass a wrong futex with a non-aligned atomic
-> value, it will possibly oops the kernel. With the fix, it will return an
-> error.
->
-> Now what seems to be a glibc issue:
->
->  - I've had the tst-robustpi# tests (in fact the very first one, I
-> haven't tested the others) die on me with a SIGBUS caused by glibc
-> trying to do a lwarx/starx. on an odd address.
->
-Rayn reminded me of a bug where the new robust code did not account for the
-fact that the TID was not at the same place as i386. I think Ryan has a
-patch.
-
-Steven J. Munroe
-Linux on Power Toolchain Architect
-IBM Corporation, Linux Technology Center
+Cheers,
+Ben.
