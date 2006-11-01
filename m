@@ -1,16 +1,20 @@
-Return-Path: <rdcorle@yahoo.com>
-Received: from web56315.mail.re3.yahoo.com (web56315.mail.re3.yahoo.com
-	[216.252.110.239]) by ozlabs.org (Postfix) with SMTP id A3FB867BB4
+Return-Path: <nd@bplan-gmbh.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
+	by ozlabs.org (Postfix) with ESMTP id 6E65B67CE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Nov 2006 07:33:15 +1100 (EST)
-Message-ID: <20061101203314.2385.qmail@web56315.mail.re3.yahoo.com>
-Date: Wed, 1 Nov 2006 12:33:14 -0800 (PST)
-From: robert corley <rdcorle@yahoo.com>
-Subject: RE: plb_temac w/linux 2.6.18.1 driver init error
-To: David Bolcsfoldi <dbolcsfoldi@gmail.com>
+	Thu,  2 Nov 2006 07:37:31 +1100 (EST)
+Date: Wed, 1 Nov 2006 21:37:28 +0100 (MET)
+Message-ID: <4549056C.6080503@bplan-gmbh.de>
+From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
-Cc: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [POWERPC] Move mpc52xx-psc uart driver to of_device from
+	platform_device
+References: <11623703962380-git-send-email-grant.likely@secretlab.ca>	<11623704061869-git-send-email-grant.likely@secretlab.ca>	<11623704063907-git-send-email-grant.likely@secretlab.ca>	<11623704071131-git-send-email-grant.likely@secretlab.ca>	<1162370407105-git-send-email-grant.likely@secretlab.ca>
+	<11623704073308-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11623704073308-git-send-email-grant.likely@secretlab.ca>
+Content-Type: multipart/mixed; boundary="------------090807000604030002020802"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,27 +25,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Anyone?;=0A=0AThe offending instruction is:=0A=0Aout_be32((volatile unsigne=
-d *) InstancePtr->RegBaseAddress+XPF_V200A_RESET_REG_OFFSET, XPF_V200A_RESE=
-T_FIFO_MASK);=0A=0Acalled vai a #define in "drivers/xilinx_edk/xpacket_fifo=
-_v2_00_a.c"=0A=0AWould anyone care to speculate if the error is in the out_=
-be32 definition or is this a function of a memory access to an incorrect va=
-lue?=0A=0AHere is the latest dump:=0A=0A[    2.702189] xtenet_probe: xtemac=
- 0: IO resources obtained.  IRQ =3D 0, MEM =3D 0x60000000=0A[    2.710095] =
-xtenet_probe: xtemac 0: private data initialized=0A[    2.715872]     remap=
- info =3D> start =3D 0x60000000, end=3D0x60003fff, total=3D16384, virtual d=
-est.=3D0xc5050000=0A[    2.725007] xtenet_probe: TEMAC config lookup succee=
-ded.  Details =3D =0A[    2.731369]         Base address    =3D 0x60000000=
-=0A[    2.735471]         Unique ID       =3D 0x0000=0A[    2.739230]      =
-   RCV FIFO depth  =3D 0x131072=0A[    2.743161]         XMIT FIFO depth =
-=3D 0x131072=0A[    2.747091]         MAC FIFO depth  =3D 0x64=0A[    2.750=
-677]         IPIF/DMA config =3D 0x03=0A[    2.754260]         DCR Host    =
-    =3D 0x0=0A[    2.757759]         DRE Engine?     =3D 0x1=0A[    2.76126=
-0] Initialize : Handlers set up.  Configuring FIFO access...=0A[    2.76770=
-9] XPacketFifoV200a_Initialize : setting FIFO REG base address to 0xC505201=
-0=0A[    2.775548] XPacketFifoV200a_Initialize : setting FIFO DATA base add=
-ress to 0xC5052200=0A[    2.783474] XPacketFifoV200a_Initialize : setting I=
-sReady to 286331153=0A[    2.790011] XPacketFifoV200a_Initialize : resettin=
-g FIFO by writing 0x000A to 0xC5052010=0A[    2.798103] Data machine check =
-in kernel mode.=0A[    2.802544] Oops: machine check, sig: 7 [#1]=0A=0A-cy=
-=0A=0A=0A=0A=0A
+This is a multi-part message in MIME format.
+--------------090807000604030002020802
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Grant Likely wrote:
+> As part of the transition to arch/powerpc, this patch moves the mpc5200 PSC
+> driver over to the OF platform bus infrastructure.
+> 
+> This patch is not acceptable for mainline as-is because it breaks arch/ppc
+> support for the mpc52xx.  More rework is needed to allow it to compile for
+> either arch (or alternately, fork the driver)
+> 
+
+It has been hard to apply on 2.6.19-rc4 but it seems to perform well.
+I add to add some entries in mpc52xx_uart_match[]
+
+In now looks like this:
+static struct of_device_id mpc52xx_uart_match[] = {
+	{
+		.name = "serial",
+		.compatible = "mpc52xx-psc",
+	},
+	{
+		.name = "serial",
+		.compatible = "mpc52xx-serial",
+	},
+	{
+		.name = "serial",
+		.compatible = "mpc5200-psc",
+	},
+	{
+		.name = "serial",
+		.compatible = "mpc5200-serial",
+	},
+	{},
+};
+
+
+By the way, why not using mpc52xx_uart_match[] to also in 
+mpc52xx_console_setup() to track down any devices?
+
+Regards,
+
+--------------090807000604030002020802
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
+
+
+--------------090807000604030002020802--
