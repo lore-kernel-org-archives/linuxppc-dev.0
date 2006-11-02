@@ -2,22 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6C5967C67
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:13:17 +1100 (EST)
-Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
+	by ozlabs.org (Postfix) with ESMTP id 969B067C88
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:20:25 +1100 (EST)
+Subject: Re: [patch 01/16] remove inclusion of asm/processor.h for powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <528646bc0611020755k5be2d2ach388e921a29663bfa@mail.gmail.com>
+To: s.hauer@pengutronix.de
+In-Reply-To: <20061102125624.134898000@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125627.149261000@localhost.localdomain>
-	<528646bc0611020658le3adc94p30f372f3a1a8b07e@mail.gmail.com>
-	<20061102152527.GB4928@localhost.localdomain>
-	<528646bc0611020755k5be2d2ach388e921a29663bfa@mail.gmail.com>
+	<20061102125624.134898000@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 03 Nov 2006 09:13:08 +1100
-Message-Id: <1162505588.10630.27.camel@localhost.localdomain>
+Date: Fri, 03 Nov 2006 09:20:20 +1100
+Message-Id: <1162506020.10630.31.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-11-02 at 13:55 +0100, s.hauer@pengutronix.de wrote:
+> plain text document attachment
+> (drivers-ide-pci-via82xxx-remove-ppc-ifdef.diff)
+> Remove inclusion of asm/processor.h for powerpc. It was used for
+> some ppc specific hook in this file, but the hook is gone
 
-> Then perhaps Efika should also be under platforms/mpc52xx?
+It's not:
 
-Classifying platforms by their processor might not be the best idea... I
-makes some sense when those platforms are basically reference designs
-for the said processor but I yet have to be convinced it's really a good
-thing in the long run :)
+init_hwif_via82cxxx() contains:
 
-There will be a lot of platforms that will consist of basically once
-signle source file. I think we need a directory for those. Maybe
-platform/misc :) Or we could have them at the root of platforms/ in
-fact... 
+#if defined(CONFIG_PPC_CHRP) && defined(CONFIG_PPC32)
+        if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
+                hwif->irq = hwif->channel ? 15 : 14;
+        }
+#endif
 
-Paulus, what is your preference in that area ?
+Now you can replace CONFIG_PPC_MULTIPLATFORM with CONFIG_PPC_CHRP
 
-In the long run, it doesn't really matter in the sense that it's purely
-the file location in the source tree, it has no effect on the content of
-those files (+/- include path) or at runtime. You can still build kernel
-with multiple images if the CPU cores are of the same category etc...
-Thus, in this regard, it's almost cosmetic.
- 
-Cheers,
-Ben.
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> 
+> Index: linux-2.6/drivers/ide/pci/via82cxxx.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/ide/pci/via82cxxx.c
+> +++ linux-2.6/drivers/ide/pci/via82cxxx.c
+> @@ -35,10 +35,6 @@
+>  #include <linux/ide.h>
+>  #include <asm/io.h>
+>  
+> -#ifdef CONFIG_PPC_MULTIPLATFORM
+> -#include <asm/processor.h>
+> -#endif
+> -
+>  #include "ide-timing.h"
+>  
+>  #define DISPLAY_VIA_TIMINGS
+> 
+> --
+>  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+>   Pengutronix - Linux Solutions for Science and Industry
+>     Handelsregister: Amtsgericht Hildesheim, HRA 2686
+>       Hannoversche Str. 2, 31134 Hildesheim, Germany
+>     Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
