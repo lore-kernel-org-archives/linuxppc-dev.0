@@ -1,17 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5A95C67A3B
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Nov 2006 14:46:45 +1100 (EST)
-Subject: iommu_table & it_busno
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-Content-Type: text/plain
-Date: Thu, 02 Nov 2006 14:45:28 +1100
-Message-Id: <1162439128.8514.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] spufs: always map local store non-guarded
+Date: Thu, 2 Nov 2006 13:46:48 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611021346.49473.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, michaele@au1.ibm.com,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,9 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Olof !
+When fixing spufs to map the 'mem' file backing store cacheable,
+I incorrectly set the physical mapping to use both cache-inhibited
+and guarded mapping, which resulted in a serious performance
+degradation.
 
-Do we ever use that it_busno field in there ? Can I remove it ?
+Accessing the real local store memory needs to be cache-inhibited,
+in order to maintain data consistency, but since it is actual
+RAM, there is no point in a guarded mapping.
 
-Cheers,
-Ben.
+Debugged-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
+
+This fixes a regression in 2.6.19, please merge.
+
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+@@ -104,11 +104,11 @@ spufs_mem_mmap_nopage(struct vm_area_str
+ 
+ 	if (ctx->state == SPU_STATE_SAVED) {
+ 		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-					& ~(_PAGE_NO_CACHE | _PAGE_GUARDED));
++							& ~_PAGE_NO_CACHE);
+ 		page = vmalloc_to_page(ctx->csa.lscsa->ls + offset);
+ 	} else {
+ 		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-					| _PAGE_NO_CACHE | _PAGE_GUARDED);
++							| _PAGE_NO_CACHE);
+ 		page = pfn_to_page((ctx->spu->local_store_phys + offset)
+ 				   >> PAGE_SHIFT);
+ 	}
