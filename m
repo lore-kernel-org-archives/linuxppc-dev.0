@@ -1,32 +1,20 @@
-Return-Path: <robin.gilks@tait.co.nz>
-Received: from gatekeeper.tait.co.nz (gatekeeper.tait.co.nz [202.37.96.11])
-	by ozlabs.org (Postfix) with ESMTP id 8B5F967C32
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
+	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3454067B8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Nov 2006 11:25:44 +1100 (EST)
-Received: from gatekeeper.tait.co.nz (localhost.localdomain [127.0.0.1])
-	by localhost.tait.co.nz (Postfix) with ESMTP id 344214675B
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Nov 2006 13:25:44 +1300 (NZDT)
-Received: from sunstrike.tait.co.nz (sunstrike [172.25.40.92])
-	by gatekeeper.tait.co.nz (Postfix) with ESMTP id 20F1146751
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Nov 2006 13:25:44 +1300 (NZDT)
-Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
-	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	id <0J8200D01RM7R800@sunstrike.tait.co.nz>
-	(original mail from robin.gilks@tait.co.nz) for
-	linuxppc-embedded@ozlabs.org; Thu, 02 Nov 2006 13:25:44 +1300 (NZDT)
-Received: from [172.25.140.15] by sunstrike.tait.co.nz
-	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	with ESMTP id <0J82008VRUIVKWF0@sunstrike.tait.co.nz> for
-	linuxppc-embedded@ozlabs.org; Thu, 02 Nov 2006 13:25:43 +1300 (NZDT)
-Date: Thu, 02 Nov 2006 13:25:43 +1300
-From: Robin Gilks <robin.gilks@tait.co.nz>
-Subject: 2.6.18 on mpc859t stuck in __delay
-To: linuxppc-embedded@ozlabs.org
-Message-id: <45493B07.7030806@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
+	Thu,  2 Nov 2006 16:56:50 +1100 (EST)
+Message-ID: <454987B8.4030602@dlasys.net>
+Date: Thu, 02 Nov 2006 00:52:56 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: robert corley <rdcorle@yahoo.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: plb_temac w/linux 2.6.18.1 driver init error
+References: <20061101203314.2385.qmail@web56315.mail.re3.yahoo.com>
+In-Reply-To: <20061101203314.2385.qmail@web56315.mail.re3.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,34 +25,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm sure this is a common one but I'm a bit stuck (like the target is 
-really!!)
+    I am not sure of the problem,
+     but  I think you are using a different variation of the TEMAC than 
+I am.
+    My  TEMAC is configured with a DMA_TYPE of 1 and a DRE TYPE of 0
+   
+    I also thought the  XPacketFifo code was for DMA TYPE 1 which I 
+beleive is the FIFO incarnation of the TEMAC.
+    This driver is supposed to work with your TEMAC - I think.
 
-I'm real confused about what options to enable for a generic 866 series 
-target - I'm got CONFIG_MPC86xADS and CONFIG_FADS enabled in the 
-platform section but I'm not clear as to whether that will cause the 
-startup code to look for an ADS EPROM chip or look for a bd_t struct of 
-data from the bootloader.
+robert corley wrote:
+> Anyone?;
+>
+> The offending instruction is:
+>
+> out_be32((volatile unsigned *) InstancePtr->RegBaseAddress+XPF_V200A_RESET_REG_OFFSET, XPF_V200A_RESET_FIFO_MASK);
+>
+> called vai a #define in "drivers/xilinx_edk/xpacket_fifo_v2_00_a.c"
+>
+> Would anyone care to speculate if the error is in the out_be32 definition or is this a function of a memory access to an incorrect value?
+>
+> Here is the latest dump:
+>
+> [    2.702189] xtenet_probe: xtemac 0: IO resources obtained.  IRQ = 0, MEM = 0x60000000
+> [    2.710095] xtenet_probe: xtemac 0: private data initialized
+> [    2.715872]     remap info => start = 0x60000000, end=0x60003fff, total=16384, virtual dest.=0xc5050000
+> [    2.725007] xtenet_probe: TEMAC config lookup succeeded.  Details = 
+> [    2.731369]         Base address    = 0x60000000
+> [    2.735471]         Unique ID       = 0x0000
+> [    2.739230]         RCV FIFO depth  = 0x131072
+> [    2.743161]         XMIT FIFO depth = 0x131072
+> [    2.747091]         MAC FIFO depth  = 0x64
+> [    2.750677]         IPIF/DMA config = 0x03
+> [    2.754260]         DCR Host        = 0x0
+> [    2.757759]         DRE Engine?     = 0x1
+> [    2.761260] Initialize : Handlers set up.  Configuring FIFO access...
+> [    2.767709] XPacketFifoV200a_Initialize : setting FIFO REG base address to 0xC5052010
+> [    2.775548] XPacketFifoV200a_Initialize : setting FIFO DATA base address to 0xC5052200
+> [    2.783474] XPacketFifoV200a_Initialize : setting IsReady to 286331153
+> [    2.790011] XPacketFifoV200a_Initialize : resetting FIFO by writing 0x000A to 0xC5052010
+> [    2.798103] Data machine check in kernel mode.
+> [    2.802544] Oops: machine check, sig: 7 [#1]
+>
+> -cy
+>
+>
+>
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>   
 
-I've checked the bdinfo at __res and it looks OK (booting from u-boot) 
-with valid CPU, bus and console speeds but I get the impression that the 
-decrementer isn't being started.
 
 -- 
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-=======================================================================
-This email, including any attachments, is only for the intended
-addressee.  It is subject to copyright, is confidential and may be
-the subject of legal or other privilege, none of which is waived or
-lost by reason of this transmission.
-If the receiver is not the intended addressee, please accept our
-apologies, notify us by return, delete all copies and perform no
-other act on the email.
-Unfortunately, we cannot warrant that the email has not been
- altered or corrupted during transmission.
-=======================================================================
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
