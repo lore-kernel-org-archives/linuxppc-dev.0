@@ -1,18 +1,17 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B0D9F67BF4
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 03:00:26 +1100 (EST)
-Date: Thu, 2 Nov 2006 17:00:09 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Stephen Winiecki <stevewin@us.ibm.com>
-Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
-Message-ID: <20061102160009.GC4928@localhost.localdomain>
-References: <528646bc0611020658le3adc94p30f372f3a1a8b07e@mail.gmail.com>
-	<OF4DAC86D4.8F202745-ON8725721A.00550DB9-8525721A.00556835@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF4DAC86D4.8F202745-ON8725721A.00550DB9-8525721A.00556835@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 7F3A367BC1
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 03:10:19 +1100 (EST)
+Date: Thu, 2 Nov 2006 10:09:04 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: iommu_table & it_busno
+Message-ID: <20061102100904.74b86ee9@localhost.localdomain>
+In-Reply-To: <1162439128.8514.3.camel@localhost.localdomain>
+References: <1162439128.8514.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 02, 2006 at 10:32:53AM -0500, Stephen Winiecki wrote:
+On Thu, 02 Nov 2006 14:45:28 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> Hi Olof !
 > 
->    I also have a question about 750xx platforms.  I currently am looking at
->    adding platform code supporting IBM 750GX/CL eval boards.  Where would
->    they go - as well as others like Buckeye/Chestnut if/when they move over
->    to /powerpc?
+> Do we ever use that it_busno field in there ? Can I remove it ?
 
-I don't know - Lets wait for ben and others what they say about this
-approach.
-My intention with this patch is to try and motivate people to
-integrate their machines as a part of the multiplatform support, because
-it doesn't cost a thing.
-The presence of the embedded6xx entry and the entries in the directory
-itself makes people think (me too) that the multiplatform thing is only
-for the big irons. I think it's better to unify the two ways of platform
-support where it's possible.
+It used to be there for debugging reasons, I think. I see no users of
+it any more besides double free debug output. Go for it.
 
-Sascha
 
--- 
- Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
-  Pengutronix - Linux Solutions for Science and Industry
-    Handelsregister: Amtsgericht Hildesheim, HRA 2686
-      Hannoversche Str. 2, 31134 Hildesheim, Germany
-    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+-Olof
