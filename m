@@ -1,13 +1,13 @@
 Return-Path: <sha@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id E6ED067BDC
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 00:23:05 +1100 (EST)
-Message-Id: <20061102125630.211637000@localhost.localdomain>
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 02A4667C4D
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 00:23:07 +1100 (EST)
+Message-Id: <20061102125629.335003000@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-Date: Thu, 02 Nov 2006 13:56:10 +0100
+Date: Thu, 02 Nov 2006 13:56:08 +0100
 From: s.hauer@pengutronix.de
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 15/16] powerpc: clean up usage of boot_dev
+Subject: Re: [patch 13/16] powerpc: make prom_init.o dependent on PPC_OF
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,53 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-dev_t boot_dev is declared in arch/powerpc/kernel/setup_32.c
-and in arch/powerpc/kernel/setup_64.c but not used in these files.
-It is only used in arch/powerpc/platforms/powermac/setup.c, so make
-it static in this file
+prom_init.o is used for OF machines, so make compilation dependent
+on that and not on PPC_MULTIPLATFORM
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-Index: arch/powerpc/kernel/setup_32.c
+Index: arch/powerpc/kernel/Makefile
 ===================================================================
---- a/arch/powerpc/kernel/setup_32.c.orig
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -63,10 +63,6 @@ unsigned int DMA_MODE_WRITE;
- 
- int have_of = 1;
- 
--#ifdef CONFIG_PPC_MULTIPLATFORM
--dev_t boot_dev;
--#endif /* CONFIG_PPC_MULTIPLATFORM */
--
- #ifdef CONFIG_VGA_CONSOLE
- unsigned long vgacon_remap_base;
- #endif
-Index: arch/powerpc/kernel/setup_64.c
-===================================================================
---- a/arch/powerpc/kernel/setup_64.c.orig
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -71,7 +71,6 @@
- 
- int have_of = 1;
- int boot_cpuid = 0;
--dev_t boot_dev;
- u64 ppc64_pft_size;
- 
- /* Pick defaults since we might want to patch instructions
-Index: arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- a/arch/powerpc/platforms/powermac/setup.c.orig
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -361,7 +361,7 @@ char *bootdevice;
- void *boot_host;
- int boot_target;
- int boot_part;
--extern dev_t boot_dev;
-+static dev_t boot_dev;
- 
- #ifdef CONFIG_SCSI
- void __init note_scsi_host(struct device_node *node, void *host)
+--- a/arch/powerpc/kernel/Makefile.orig
++++ b/arch/powerpc/kernel/Makefile
+@@ -21,7 +21,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o binfm
+ obj-$(CONFIG_PPC64)		+= vdso64/
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
+ obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
+-obj-$(CONFIG_PPC_OF)		+= of_device.o prom_parse.o
++obj-$(CONFIG_PPC_OF)		+= of_device.o prom_parse.o prom_init.o
+ procfs-$(CONFIG_PPC64)		:= proc_ppc64.o
+ obj-$(CONFIG_PROC_FS)		+= $(procfs-y)
+ rtaspci-$(CONFIG_PPC64)		:= rtas_pci.o
+@@ -53,7 +53,6 @@ obj-y				+= time.o prom.o traps.o setup-
+ 				   udbg.o misc.o io.o
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
+ obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
+-obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
+ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
 
 --
  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
