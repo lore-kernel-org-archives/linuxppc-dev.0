@@ -1,13 +1,14 @@
 Return-Path: <sha@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id DD7F168501
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 00:31:35 +1100 (EST)
-Message-Id: <20061102125628.027744000@localhost.localdomain>
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 14E0D67CCA
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 00:37:36 +1100 (EST)
+Message-Id: <20061102125629.771962000@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-Date: Thu, 02 Nov 2006 13:56:05 +0100
+Date: Thu, 02 Nov 2006 13:56:09 +0100
 From: s.hauer@pengutronix.de
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 10/16] powerpc: make hash_native_64.o a 64bit-only object
+Subject: Re: [patch 14/16] powerpc: make initialization of OF hooks dependent
+	on PPC_OF
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,23 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make hash_native_64.o dependent on 64bit, not on MULTIPLATFORM
+Make initialization of OF hooks dependent on PPC_OF, not on MULTIPLATFORM
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-Index: arch/powerpc/mm/Makefile
+Index: arch/powerpc/kernel/head_32.S
 ===================================================================
---- a/arch/powerpc/mm/Makefile.orig
-+++ b/arch/powerpc/mm/Makefile
-@@ -8,7 +8,7 @@ endif
- 
- obj-y				:= fault.o mem.o lmb.o
- obj-$(CONFIG_PPC32)		+= init_32.o pgtable_32.o mmu_context_32.o
--hash-$(CONFIG_PPC_MULTIPLATFORM) := hash_native_64.o
-+hash-$(CONFIG_PPC64)		:= hash_native_64.o
- obj-$(CONFIG_PPC64)		+= init_64.o pgtable_64.o mmu_context_64.o \
- 				   hash_utils_64.o hash_low_64.o tlb_64.o \
- 				   slb_low.o slb.o stab.o mmap.o imalloc.o \
+--- a/arch/powerpc/kernel/head_32.S.orig
++++ b/arch/powerpc/kernel/head_32.S
+@@ -119,7 +119,7 @@ __start:
+  * because OF may have I/O devices mapped into that area
+  * (particularly on CHRP).
+  */
+-#ifdef CONFIG_PPC_MULTIPLATFORM
++#ifdef CONFIG_PPC_OF
+ 	cmpwi	0,r5,0
+ 	beq	1f
+ 	bl	prom_init
 
 --
  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
