@@ -1,16 +1,17 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] powerpc: Add of_platform support for OHCI/Bigendian HC
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A95C67A3B
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Nov 2006 14:46:45 +1100 (EST)
+Subject: iommu_table & it_busno
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061101234956.GU6360@austin.ibm.com>
-References: <45490407.1010700@bplan-gmbh.de>
-	<1162419799.25682.466.camel@localhost.localdomain>
-	<20061101234956.GU6360@austin.ibm.com>
+To: Olof Johansson <olof@lixom.net>
 Content-Type: text/plain
-Date: Thu, 02 Nov 2006 11:07:14 +1100
-Message-Id: <1162426034.25682.491.camel@localhost.localdomain>
+Date: Thu, 02 Nov 2006 14:45:28 +1100
+Message-Id: <1162439128.8514.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org, sl@bplan-gmbh.de
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +21,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-11-01 at 17:49 -0600, Linas Vepstas wrote:
-> On Thu, Nov 02, 2006 at 09:23:18AM +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2006-11-01 at 21:31 +0100, Nicolas DET wrote:
-> > 
-> > > +/**+	ohci = hcd_to_ohci(hcd);
->      ^^^
->      ???
-> 
-> Qu'est que c'est?
+Hi Olof !
 
-Probably just me not properly cutting the previous lines :)
+Do we ever use that it_busno field in there ? Can I remove it ?
 
+Cheers,
 Ben.
