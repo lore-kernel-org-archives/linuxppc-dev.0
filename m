@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 969B067C88
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:20:25 +1100 (EST)
-Subject: Re: [patch 01/16] remove inclusion of asm/processor.h for powerpc
+	by ozlabs.org (Postfix) with ESMTP id 5891967F5D
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:20:56 +1100 (EST)
+Subject: Re: [patch 02/16] replace CONFIG_PPC_MULTIPLATFORM with
+	CONFIG_PPC_PMAC in tulip driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: s.hauer@pengutronix.de
-In-Reply-To: <20061102125624.134898000@localhost.localdomain>
+In-Reply-To: <20061102125624.568115000@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125624.134898000@localhost.localdomain>
+	<20061102125624.568115000@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 03 Nov 2006 09:20:20 +1100
-Message-Id: <1162506020.10630.31.camel@localhost.localdomain>
+Date: Fri, 03 Nov 2006 09:20:50 +1100
+Message-Id: <1162506050.10630.33.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,39 +27,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Thu, 2006-11-02 at 13:55 +0100, s.hauer@pengutronix.de wrote:
 > plain text document attachment
-> (drivers-ide-pci-via82xxx-remove-ppc-ifdef.diff)
-> Remove inclusion of asm/processor.h for powerpc. It was used for
-> some ppc specific hook in this file, but the hook is gone
-
-It's not:
-
-init_hwif_via82cxxx() contains:
-
-#if defined(CONFIG_PPC_CHRP) && defined(CONFIG_PPC32)
-        if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
-                hwif->irq = hwif->channel ? 15 : 14;
-        }
-#endif
-
-Now you can replace CONFIG_PPC_MULTIPLATFORM with CONFIG_PPC_CHRP
-
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> (drivers-net-tulip-de4x5-remove-MULTIPLATFORM.diff)
+> replace CONFIG_PPC_MULTIPLATFORM with CONFIG_PPC_PMAC in
+> drivers/net/tulip/de4x5.c. It is needed for a pmac specific hook but
+> has nothing with to do with PPC_MULTIPLATFORM
 > 
-> Index: linux-2.6/drivers/ide/pci/via82cxxx.c
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> Index: linux-2.6/drivers/net/tulip/de4x5.c
 > ===================================================================
-> --- linux-2.6.orig/drivers/ide/pci/via82cxxx.c
-> +++ linux-2.6/drivers/ide/pci/via82cxxx.c
-> @@ -35,10 +35,6 @@
->  #include <linux/ide.h>
->  #include <asm/io.h>
+> --- linux-2.6.orig/drivers/net/tulip/de4x5.c
+> +++ linux-2.6/drivers/net/tulip/de4x5.c
+> @@ -473,9 +473,9 @@
+>  #include <asm/byteorder.h>
+>  #include <asm/unaligned.h>
+>  #include <asm/uaccess.h>
+> -#ifdef CONFIG_PPC_MULTIPLATFORM
+> +#ifdef CONFIG_PPC_PMAC
+>  #include <asm/machdep.h>
+> -#endif /* CONFIG_PPC_MULTIPLATFORM */
+> +#endif /* CONFIG_PPC_PMAC */
+>  
+>  #include "de4x5.h"
+>  
+> @@ -4151,7 +4151,7 @@ get_hw_addr(struct net_device *dev)
+>      /* If possible, try to fix a broken card - SMC only so far */
+>      srom_repair(dev, broken);
 >  
 > -#ifdef CONFIG_PPC_MULTIPLATFORM
-> -#include <asm/processor.h>
-> -#endif
-> -
->  #include "ide-timing.h"
+> +#ifdef CONFIG_PPC_PMAC
+>      /*
+>      ** If the address starts with 00 a0, we have to bit-reverse
+>      ** each byte of the address.
+> @@ -4168,7 +4168,7 @@ get_hw_addr(struct net_device *dev)
+>  		    dev->dev_addr[i] = ((x & 0x55) << 1) + ((x & 0xaa) >> 1);
+>  	    }
+>      }
+> -#endif /* CONFIG_PPC_MULTIPLATFORM */
+> +#endif /* CONFIG_PPC_PMAC */
 >  
->  #define DISPLAY_VIA_TIMINGS
+>      /* Test for a bad enet address */
+>      status = test_bad_enet(dev, status);
 > 
 > --
 >  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
