@@ -1,13 +1,13 @@
 Return-Path: <sha@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id C53EC67C02
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 00:30:29 +1100 (EST)
-Message-Id: <20061102125625.428089000@localhost.localdomain>
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id D2DC167C6E
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 00:30:31 +1100 (EST)
+Message-Id: <20061102125627.149261000@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-Date: Thu, 02 Nov 2006 13:55:59 +0100
+Date: Thu, 02 Nov 2006 13:56:03 +0100
 From: s.hauer@pengutronix.de
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 04/16] powerpc: remove dead code in iommu.h
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,35 +17,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-iommu_setup_pSeries() and iommu_setup_dart() are declared extern but are
-not implemented, so remove them. iommu_free_table() is pSeries specific,
-so #ifdef it with CONFIG_PPC_PSERIES and not CONFIG_PPC_MULTIPLATFORM
+remove EMBEDDED6xx Kconfig entry
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-Index: linux-2.6/include/asm-powerpc/iommu.h
+Index: linux-2.6/arch/powerpc/Kconfig
 ===================================================================
---- linux-2.6.orig/include/asm-powerpc/iommu.h
-+++ linux-2.6/include/asm-powerpc/iommu.h
-@@ -70,16 +70,12 @@ struct iommu_table {
- struct scatterlist;
- struct device_node;
+--- linux-2.6.orig/arch/powerpc/Kconfig
++++ linux-2.6/arch/powerpc/Kconfig
+@@ -338,10 +338,6 @@ config PPC_MULTIPLATFORM
+ 	  RS/6000 machine, an Apple machine, or a PReP, CHRP,
+ 	  Maple or Cell-based machine.
  
--#ifdef CONFIG_PPC_MULTIPLATFORM
+-config EMBEDDED6xx
+-	bool "Embedded 6xx/7xx/7xxx-based board"
+-	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
 -
--/* Walks all buses and creates iommu tables */
--extern void iommu_setup_pSeries(void);
--extern void iommu_setup_dart(void);
-+#ifdef CONFIG_PPC_PSERIES
- 
- /* Frees table for an individual device node */
- extern void iommu_free_table(struct device_node *dn);
- 
--#endif /* CONFIG_PPC_MULTIPLATFORM */
-+#endif /* CONFIG_PPC_PSERIES */
- 
- /* Initializes an iommu_table based in values set in the passed-in
-  * structure
+ config APUS
+ 	bool "Amiga-APUS"
+ 	depends on PPC32 && BROKEN
 
 --
  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
