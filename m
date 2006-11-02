@@ -1,15 +1,20 @@
-Return-Path: <rdcorle@yahoo.com>
-Received: from web56305.mail.re3.yahoo.com (web56305.mail.re3.yahoo.com
-	[216.252.110.229]) by ozlabs.org (Postfix) with SMTP id C277467C1F
+Return-Path: <vwool@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 2B66067B6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Nov 2006 06:32:44 +1100 (EST)
-Message-ID: <20061102193242.28108.qmail@web56305.mail.re3.yahoo.com>
-Date: Thu, 2 Nov 2006 11:32:42 -0800 (PST)
-From: robert corley <rdcorle@yahoo.com>
-Subject: rebuild error for 2.6.18 plb_temac driver from EDK
-To: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
+	Fri,  3 Nov 2006 07:23:43 +1100 (EST)
+Subject: Re: [PATCH] adding ROM chips to device tree
+From: Vitaly Wool <vwool@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <454A4266.8040505@ru.mvista.com>
+References: <20061102145539.f0b8657f.vwool@ru.mvista.com>
+	<1162474237.11351.7.camel@zod.rchland.ibm.com>
+	<454A4266.8040505@ru.mvista.com>
+Content-Type: text/plain
+Date: Thu, 02 Nov 2006 23:23:24 +0300
+Message-Id: <1162499004.2592.2.camel@barja>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,17 +25,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Can anyone help me out with this message?  It must be simple but I just am =
-not familiar enough=0Awith the kernel build process to recognize the error:=
-=0A=0A  CHK     include/linux/version.h=0A  CHK     include/linux/utsreleas=
-e.h=0A  CHK     include/linux/compile.h=0Adnsdomainname: Unknown host=0Amak=
-e[2]: *** No rule to make target `drivers/xilinx_edk/xilinx_syms.o', needed=
- by `drivers/xilinx_edk/built-in.o'.  Stop.=0Amake[1]: *** [drivers/xilinx_=
-edk] Error 2=0Amake: *** [drivers] Error 2=0A=0A# Linux file to EXPORT_SYMB=
-OL all of the Xilinx entries.=0Aobj-$(CONFIG_XILINX_EDK) :=3D xilinx_syms.o=
-=0A#=0A# # The Xilinx OS independent code.=0Aobj-$(CONFIG_XILINX_EDK) +=3D =
-xbasic_types.o \=0A                            xdmav3.o xdmav3_intr.o xdmav=
-3_selftest.o xdmav3_simple.o xdmav3_sg.o \=0A                            xi=
-pif_v1_23_b.o \=0A                            xpacket_fifo_l_v2_00_a.o xpac=
-ket_fifo_v2_00_a.o \=0A                            xutil_memtest.c xversion=
-.o=0A=0A=0A
+
+>     Also remember that we're not describing "physmap" compatible devices only.
+
+No we are. This description fits nothing else but memory-mapped flashes.
+
+Vitaly
