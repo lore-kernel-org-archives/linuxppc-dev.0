@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EE9A967D34
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:23:33 +1100 (EST)
-Subject: Re: [patch 06/16] powerpc: remove _machine
+	by ozlabs.org (Postfix) with ESMTP id 0463267D1B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:25:25 +1100 (EST)
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: s.hauer@pengutronix.de
-In-Reply-To: <20061102125626.263838000@localhost.localdomain>
-References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125626.263838000@localhost.localdomain>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+In-Reply-To: <20061102160009.GC4928@localhost.localdomain>
+References: <528646bc0611020658le3adc94p30f372f3a1a8b07e@mail.gmail.com>
+	<OF4DAC86D4.8F202745-ON8725721A.00550DB9-8525721A.00556835@us.ibm.com>
+	<20061102160009.GC4928@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 03 Nov 2006 09:23:28 +1100
-Message-Id: <1162506208.10630.39.camel@localhost.localdomain>
+Date: Fri, 03 Nov 2006 09:25:19 +1100
+Message-Id: <1162506319.10630.42.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,39 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-11-02 at 13:56 +0100, s.hauer@pengutronix.de wrote:
-> plain text document attachment
-> (powerpc-include-asm-powerpc-processor_h-remove-_machine.diff)
-> The _machine macro was once used for compatibility with ARCH=ppc
-> drivers. It is unused in current kernels
+On Thu, 2006-11-02 at 17:00 +0100, Sascha Hauer wrote:
+> On Thu, Nov 02, 2006 at 10:32:53AM -0500, Stephen Winiecki wrote:
+> > 
+> >    I also have a question about 750xx platforms.  I currently am looking at
+> >    adding platform code supporting IBM 750GX/CL eval boards.  Where would
+> >    they go - as well as others like Buckeye/Chestnut if/when they move over
+> >    to /powerpc?
 > 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> I don't know - Lets wait for ben and others what they say about this
+> approach.
+> My intention with this patch is to try and motivate people to
+> integrate their machines as a part of the multiplatform support, because
+> it doesn't cost a thing.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+And that's a great move :) Thanks for doing that work !
 
-> Index: include/asm-powerpc/processor.h
-> ===================================================================
-> --- a/include/asm-powerpc/processor.h.orig
-> +++ b/include/asm-powerpc/processor.h
-> @@ -53,10 +53,6 @@ extern unsigned char ucBoardRevMaj, ucBo
->  
->  #endif /* CONFIG_PPC_PREP */
->  
-> -#ifndef CONFIG_PPC_MULTIPLATFORM
-> -#define _machine 0
-> -#endif /* CONFIG_PPC_MULTIPLATFORM */
-> -
->  #endif /* defined(__KERNEL__) && defined(CONFIG_PPC32) */
->  
->  /*
-> 
-> --
->  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
->   Pengutronix - Linux Solutions for Science and Industry
->     Handelsregister: Amtsgericht Hildesheim, HRA 2686
->       Hannoversche Str. 2, 31134 Hildesheim, Germany
->     Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> The presence of the embedded6xx entry and the entries in the directory
+> itself makes people think (me too) that the multiplatform thing is only
+> for the big irons. I think it's better to unify the two ways of platform
+> support where it's possible.
+
+Yes. I've been wanting to get rid of it for some time.
+
+As for new platforms, I tend to have no problem if they just create a
+directory of their own (platforms/chesnut, etc...) though in some we
+might want a grab bag for boards that really only need one file...
+
+This could be a plaforms/misc, or platforms/simple, or just have them at
+the root of platforms...
+
+Ben. 
