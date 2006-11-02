@@ -1,15 +1,15 @@
 Return-Path: <nd@bplan-gmbh.de>
-Date: Thu, 2 Nov 2006 21:49:48 +0100 (MET)
-Message-ID: <454A59CC.6070902@bplan-gmbh.de>
+Date: Thu, 2 Nov 2006 21:52:16 +0100 (MET)
+Message-ID: <454A5A61.6080800@bplan-gmbh.de>
 From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] powerpc: Add of_platform support for	OHCI/Bigendian HC
-References: <45490407.1010700@bplan-gmbh.de>	
-	<1162419799.25682.466.camel@localhost.localdomain>
-	<1162423628.25682.489.camel@localhost.localdomain>
-In-Reply-To: <1162423628.25682.489.camel@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------060602060408000809050805"
+Subject: Re: [PATCH/RFC] powerpc: Add Efika platform support
+References: <45490394.8020202@bplan-gmbh.de>	
+	<1162419546.25682.460.camel@localhost.localdomain>
+	<1162423546.25682.486.camel@localhost.localdomain>
+In-Reply-To: <1162423546.25682.486.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="------------020709050007080505020403"
 Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,409 +21,493 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------060602060408000809050805
+--------------020709050007080505020403
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
 Benjamin Herrenschmidt wrote:
-> On Thu, 2006-11-02 at 09:23 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2006-11-02 at 09:19 +1100, Benjamin Herrenschmidt wrote:
+>> On Wed, 2006-11-01 at 21:29 +0100, Nicolas DET wrote:
 > 
-> And in english here too....
+> Ooops ... here's the english version :)
 > 
->> On Wed, 2006-11-01 at 21:31 +0100, Nicolas DET wrote:
+>>> +
+>>> +static void __init efika_init_IRQ(void)
+>>> +{
+>>> +	mpc52xx_init_irq();
+>>> +}
+>> Ya pas moyen que mpc52xx_init_irq() ait le bon prototype pour que tu le
+>> colle directement dans ppc_md. ?
+> 
+> It would be better if mpc52xx_init_irq() had the right prototype so it
+> can be hooked directly from ppc_md.
+
+Well. there was other init done here before. However, I think it's good 
+to have this here, in case more code would be needed or in the 
+ppc_md.init_IRQ is changed. no ?
+
+>>> +
+>>> +	ISA_DMA_THRESHOLD = ~0L;
+>>> +	DMA_MODE_READ = 0x44;
+>>> +	DMA_MODE_WRITE = 0x48;
+>> Ca viens de CHRP ca ? Je suis pas sur que ca soit super utile... mais
+>> bon, ca mange pas de pain.. Au cas ou qqun colle un southbridge ISA sur
+>> le bus PCI :)
+> 
+
+Well. It it doesn't hurt it can stay here. People are a little bit weird 
+today. Maybe they would try to solder a PCI southbridige to get a nice 
+PC speaker beep ;-)
+
+> This comes from CHRP ? I'm not sure it's terribly useful, at least for
+> Efika, though it doesn't hurt. Maybe some day somebody will stick an ISA
+> southbridge on the 5200 PCI bus :)
+> 
+>>> +void __init efika_pcisetup(void)
+>>> +{
+>>> +	const int *bus_range;
+>>> +	int len;
+>>> +	struct pci_controller *hose;
+>>> +	struct device_node *root;
+>>> +	struct device_node *pcictrl;
+>>> +
+>>> +	root = of_find_node_by_path("/");
+>>> +	if (root == NULL) {
+>>> +		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+>>> +		       ": Unable to find the root node\n");
+>>> +		return;
+>>> +	}
+>>> +
+>>> +	for (pcictrl = NULL;;) {
+>>> +		pcictrl = of_get_next_child(root, pcictrl);
+>>> +		if ((pcictrl == NULL) || (strcmp(pcictrl->name, "pci") == 0))
+>>> +			break;
+>>> +	}
+>>> +
+>>> +	if (pcictrl == NULL) {
+>>> +		printk(KERN_WARNING EFIKA_PLATFORM_NAME
+>>> +		       ": Unable to find the PCI bridge node\n");
+>>> +		return;
+>>> +	}
+>>> +
+>>> +	of_node_put(pcictrl);
+>>> +	of_node_put(root);
+>> Euh... non... tu fait pas of_node_put(pcictrl) avant de t'en servir...
+>> tu fait ca quand tu as fini. Ca veut dire probablement changer test
+>> "return" en "goto bail;" ou un truc du genre.
+> 
+> Don't do an of_node_put(pcictrl) before you use that node... Do it when
+> you are done with it, which probably means changing "return" statements
+> into something like "goto bail;"
+> 
+
+I hope I did it right.
+
+>>> +	if (bus_range[1] == bus_range[0])
+>>> +		printk(KERN_INFO EFIKA_PLATFORM_NAME ": PCI bus %d",
+>>> +		       bus_range[0]);
+>>> +	else
+>>> +		printk(KERN_INFO EFIKA_PLATFORM_NAME ": PCI buses %d..%d",
+>>> +		       bus_range[0], bus_range[1]);
+>>> +	printk(" controlled by %s", pcictrl->full_name);
+>>> +	printk("\n");
+>> You really need the above printk's ? 
+> 
+> Ah, that one was good :)
+> 
+
+>> 	hose->arch_data = of_node_get(pcictrl);
 >>
->>> +/**+	ohci = hcd_to_ohci(hcd);
->>> +	ohci->flags |= OHCI_BIG_ENDIAN;
->>> +	ohci_hcd_init(ohci);
->> Bon, c'est pas mal. Le seul truc ici, c'est que je prefererais que
->> big-endian ne soit pas hard-code comme ca mais depende du device-tree.
->> Ce code doit pouvoir etre re-utilise pour des implementations
->> little-endian.
-> 
-> Ok, so it looks good. The only thing here is that I would prefer if the
-> big-endian setting wasn't hard-coded, but set based on the device-tree,
-> so that this code can be re-used for little-endian implementations.
-> 
->>> +	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
->>> +	if (retval == 0)
->>> +		return retval;
->> Pourquoi IRQF_DISABLED ?
-> 
-> Why IRQF_DISABLED ?
-> 
 
-It's like this in ofsoc-ppc. As I am not sure what it does exactly I 
-left it like this. This module performs well here so far.
+Ok
+
+>>> +	hose->first_busno = bus_range[0];
+>>> +	hose->last_busno = bus_range[1];
+>>> +	hose->ops = &rtas_pci_ops;
+>>> +
+>>> +	pci_process_bridge_OF_ranges(hose, pcictrl, 0);
+>>> +}
+>> Le reste est bon.
+>>
+>> On y est presque ! :)
+> 
+> The rest is good, we're almost there :)
+> 
 
 
 
---------------060602060408000809050805
+--------------020709050007080505020403
 Content-Type: text/plain;
- name="archpowerpc_ohciof.patch"
+ name="archpowerpc_efika.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="archpowerpc_ohciof.patch"
+ filename="archpowerpc_efika.patch"
 
---- a/drivers/usb/host/ohci-ppc-of.c	1970-01-01 01:00:00.000000000 +0100
-+++ b/drivers/usb/host/ohci-ppc-of.c	2006-11-02 18:06:02.000000000 +0100
-@@ -0,0 +1,322 @@
+--- a/arch/powerpc/platforms/efika/setup.c	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/powerpc/platforms/efika/setup.c	2006-11-02 17:54:37.000000000 +0100
+@@ -0,0 +1,166 @@
 +/*
-+ * OHCI HCD (Host Controller Driver) for USB.
 + *
-+ * (C) Copyright 1999 Roman Weissgaerber <weissg@vienna.at>
-+ * (C) Copyright 2000-2002 David Brownell <dbrownell@users.sourceforge.net>
-+ * (C) Copyright 2002 Hewlett-Packard Company
-+ * (C) Copyright 2003-2005 MontaVista Software Inc.
++ * Efika 5K2 platform setup
++ * Some code really inspired from the lite5200b platform.
 + * 
-+ * Probe and init OHCI Big endian HC from OpenFirmware device tree
-+ * Tested on Efika 5k2
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
 + *
-+ * Modified by Dale Farnsworth <dale@farnsworth.org> from ohci-sa1111.c
-+ *
-+ * This file is licenced under the GPL.
 + */
 +
-+#include <linux/signal.h>
++#include <linux/errno.h>
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/ptrace.h>
++#include <linux/slab.h>
++#include <linux/user.h>
++#include <linux/interrupt.h>
++#include <linux/reboot.h>
++#include <linux/init.h>
++#include <linux/utsrelease.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/console.h>
++#include <linux/seq_file.h>
++#include <linux/root_dev.h>
++#include <linux/initrd.h>
++#include <linux/module.h>
++#include <linux/timer.h>
 +
-+#include <asm/of_device.h>
++#include <asm/pgtable.h>
 +#include <asm/prom.h>
++#include <asm/dma.h>
++#include <asm/machdep.h>
++#include <asm/irq.h>
++#include <asm/sections.h>
++#include <asm/time.h>
++#include <asm/rtas.h>
++#include <asm/of_device.h>
++#include <asm/mpc52xx.h>
 +
-+/* configure so an HC device and id are always provided */
-+/* always called with process context; sleeping is OK */
++#include "efika.h"
 +
++static void efika_show_cpuinfo(struct seq_file *m)
++{
++	struct device_node *root;
++	const char *revision = NULL;
++	const char *codegendescription = NULL;
++	const char *codegenvendor = NULL;
++
++	root = of_find_node_by_path("/");
++	if (root) {
++		revision = get_property(root, "revision", NULL);
++		codegendescription =
++		    get_property(root, "CODEGEN,description", NULL);
++		codegenvendor = get_property(root, "CODEGEN,vendor", NULL);
++	}
++
++	of_node_put(root);
++
++	if (codegendescription)
++		seq_printf(m, "machine\t\t: %s\n", codegendescription);
++	else
++		seq_printf(m, "machine\t\t: Efika\n");
++
++	if (revision)
++		seq_printf(m, "revision\t: %s\n", revision);
++
++	if (codegenvendor)
++		seq_printf(m, "vendor\t\t: %s\n", codegenvendor);
++}
++
++static void __init efika_setup_arch(void)
++{
++	rtas_initialize();
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	initrd_below_start_ok = 1;
++
++	if (initrd_start)
++		ROOT_DEV = Root_RAM0;
++	else
++#endif
++		ROOT_DEV = Root_SDA2;	/* sda2 (sda1 is for the kernel) */
++
++	efika_pcisetup();
++
++	if (ppc_md.progress)
++		ppc_md.progress("Linux/PPC " UTS_RELEASE " runnung on Efika ;-)\n", 0x0);
++}
++
++static void __init efika_init_IRQ(void)
++{
++	mpc52xx_init_irq();
++}
++
++static void __init efika_init(void)
++{
++	struct device_node *np;
++	struct device_node *cnp = NULL;
++	const u32 *base;
++	char *name;
++
++	/* Find every child of the SOC node and add it to of_platform */
++	np = of_find_node_by_name(NULL, "builtin");
++	if (np) {
++		while ((cnp = of_get_next_child(np, cnp))) {
++			name = kmalloc(BUS_ID_SIZE, GFP_KERNEL);
++			if (name == NULL)
++				continue;
++
++			strcpy(name, cnp->name);
++
++			base = get_property(cnp, "reg", NULL);
++			if (base == NULL) {
++				kfree(name);
++				continue;
++			}
++
++			sprintf(name+strlen(name), "@%x", *base);
++			of_platform_device_create(cnp, name, NULL);
++
++			printk(KERN_INFO ": Added %s (%s) to the known devices\n", name, cnp->full_name);
++		}
++	}
++
++	if (ppc_md.progress)
++		ppc_md.progress("  Have fun with your Efika!    ", 0x7777);
++}
++
++static int __init efika_probe(void)
++{
++	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
++					  "model", NULL);
++
++	if (model == NULL)
++		return 0;
++	if (strcmp(model, "EFIKA5K2"))
++		return 0;
++
++	ISA_DMA_THRESHOLD = ~0L;
++	DMA_MODE_READ = 0x44;
++	DMA_MODE_WRITE = 0x48;
++
++	return 1;
++}
++
++define_machine(efika)
++{
++	.name = EFIKA_PLATFORM_NAME,
++	.probe = efika_probe,
++	.setup_arch = efika_setup_arch,
++	.init = efika_init,
++	.show_cpuinfo = efika_show_cpuinfo,
++	.init_IRQ = efika_init_IRQ,
++	.get_irq = mpc52xx_get_irq,
++	.restart = rtas_restart,
++	.power_off = rtas_power_off,
++	.halt = rtas_halt,
++	.set_rtc_time = rtas_set_rtc_time,
++	.get_rtc_time = rtas_get_rtc_time,
++	.progress = rtas_progress,
++	.get_boot_time = rtas_get_boot_time,
++	.calibrate_decr = generic_calibrate_decr,
++	.phys_mem_access_prot = pci_phys_mem_access_prot,
++};
+--- a/arch/powerpc/platforms/efika/pci.c	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/powerpc/platforms/efika/pci.c	2006-11-02 17:54:37.000000000 +0100
+@@ -0,0 +1,119 @@
++
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/string.h>
++#include <linux/init.h>
++
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/sections.h>
++#include <asm/pci-bridge.h>
++#include <asm/rtas.h>
++
++#include "efika.h"
++
++#ifdef CONFIG_PCI
 +/*
-+ * usb_hcd_ppc_of_probe - initialize On-Chip HCDs
-+ * Context: !in_interrupt()
-+ *
-+ * Allocates basic resources for this USB host controller.
-+ *
-+ * Store this function in the HCD's struct pci_driver as probe().
++ * Access functions for PCI config space using RTAS calls.
 + */
-+static int usb_hcd_ppc_of_probe(const struct hc_driver *driver,
-+			  struct of_device *dev, int is_bigendian)
++static int rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
++			    int len, u32 * val)
 +{
-+	int retval;
-+	struct usb_hcd *hcd;
-+	struct ohci_hcd	*ohci;
-+	struct resource res;
-+	int irq;
-+	int ret;
++	struct pci_controller *hose = bus->sysdata;
++	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
++	    | (((bus->number - hose->first_busno) & 0xff) << 16)
++	    | (hose->index << 24);
++	int ret = -1;
++	int rval;
 +
-+	pr_debug("initializing PPC-OF USB Controller\n");
-+
-+	if ((ret = of_address_to_resource(dev->node, 0, &res)) != 0)
-+		return ret;
-+
-+	hcd = usb_create_hcd(driver, &dev->dev, "PPC-OF USB");
-+	if (!hcd)
-+		return -ENOMEM;
-+	hcd->rsrc_start = res.start;
-+	hcd->rsrc_len = res.end - res.start + 1;
-+
-+	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
-+		pr_debug(__FILE__ ": request_mem_region failed\n");
-+		retval = -EBUSY;
-+		goto err1;
-+	}
-+
-+	irq = irq_of_parse_and_map(dev->node, 0);
-+	if (irq == NO_IRQ) {
-+		retval = -EBUSY;
-+		goto err2;
-+	}
-+
-+	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
-+	if (!hcd->regs) {
-+		pr_debug(__FILE__ ": ioremap failed\n");
-+		retval = -ENOMEM;
-+		goto err2;
-+	}
-+
-+	ohci = hcd_to_ohci(hcd);
-+	if (is_bigendian)
-+		ohci->flags |= OHCI_BIG_ENDIAN;
-+	ohci_hcd_init(ohci);
-+
-+	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
-+	if (retval == 0)
-+		return retval;
-+
-+	pr_debug("Removing PPC-OF USB Controller\n");
-+
-+	iounmap(hcd->regs);
-+ err2:
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+ err1:
-+ 	usb_put_hcd(hcd);
-+	return retval;
++	rval = rtas_call(rtas_token("read-pci-config"), 2, 2, &ret, addr, len);
++	*val = ret;
++	return rval ? PCIBIOS_DEVICE_NOT_FOUND : PCIBIOS_SUCCESSFUL;
 +}
 +
++static int rtas_write_config(struct pci_bus *bus, unsigned int devfn,
++			     int offset, int len, u32 val)
++{
++	struct pci_controller *hose = bus->sysdata;
++	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
++	    | (((bus->number - hose->first_busno) & 0xff) << 16)
++	    | (hose->index << 24);
++	int rval;
 +
-+/* may be called without controller electrically present */
-+/* may be called with controller, bus, and devices active */
++	rval = rtas_call(rtas_token("write-pci-config"), 3, 1, NULL,
++			 addr, len, val);
++	return rval ? PCIBIOS_DEVICE_NOT_FOUND : PCIBIOS_SUCCESSFUL;
++}
 +
++static struct pci_ops rtas_pci_ops = {
++	rtas_read_config,
++	rtas_write_config
++};
++
++void __init efika_pcisetup(void)
++{
++	const int *bus_range;
++	int len;
++	struct pci_controller *hose;
++	struct device_node *root;
++	struct device_node *pcictrl;
++
++	root = of_find_node_by_path("/");
++	if (root == NULL) {
++		printk(KERN_WARNING EFIKA_PLATFORM_NAME
++		       ": Unable to find the root node\n");
++		return;
++	}
++
++	for (pcictrl = NULL;;) {
++		pcictrl = of_get_next_child(root, pcictrl);
++		if ((pcictrl == NULL) || (strcmp(pcictrl->name, "pci") == 0))
++			break;
++	}
++
++	of_node_put(root);
++
++	if (pcictrl == NULL) {
++		printk(KERN_WARNING EFIKA_PLATFORM_NAME
++		       ": Unable to find the PCI bridge node\n");
++		of_node_put(pcictrl);
++		return;
++	}
++
++	bus_range = get_property(pcictrl, "bus-range", &len);
++	if (bus_range == NULL || len < 2 * sizeof(int)) {
++		printk(KERN_WARNING EFIKA_PLATFORM_NAME
++		       ": Can't get bus-range for %s\n", pcictrl->full_name);
++		return;
++	}
++	if (bus_range[1] == bus_range[0])
++		printk(KERN_INFO EFIKA_PLATFORM_NAME ": PCI bus %d",
++		       bus_range[0]);
++	else
++		printk(KERN_INFO EFIKA_PLATFORM_NAME ": PCI buses %d..%d",
++		       bus_range[0], bus_range[1]);
++	printk(" controlled by %s\n", pcictrl->full_name);
++	printk("\n");
++
++	hose = pcibios_alloc_controller();
++	if (!hose) {
++		printk(KERN_WARNING EFIKA_PLATFORM_NAME
++		       ": Can't allocate PCI controller structure for %s\n",
++		       pcictrl->full_name);
++		return;
++	}
++
++	hose->arch_data = of_node_get(pcictrl);
++	hose->first_busno = bus_range[0];
++	hose->last_busno = bus_range[1];
++	hose->ops = &rtas_pci_ops;
++
++	pci_process_bridge_OF_ranges(hose, pcictrl, 0);
++}
++
++#else
++void __init efika_pcisetup(void)
++{}
++#endif
+--- a/arch/powerpc/platforms/efika/efika.h	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/powerpc/platforms/efika/efika.h	2006-11-02 17:54:37.000000000 +0100
+@@ -0,0 +1,19 @@
 +/*
-+ * usb_hcd_ppc_of_remove - shutdown processing for On-Chip HCDs
-+ * @pdev: USB Host Controller being removed
-+ * Context: !in_interrupt()
++ * Efika 5K2 platform setup - Header file
 + *
-+ * Reverses the effect of usb_hcd_ppc_of_probe().
-+ * It is always called from a thread
-+ * context, normally "rmmod", "apmd", or something similar.
++ * Copyright (C) 2006 bplan GmbH
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
 + *
 + */
-+static void usb_hcd_ppc_of_remove(struct usb_hcd *hcd,
-+		struct of_device *op)
-+{
-+	usb_remove_hcd(hcd);
 +
-+	pr_debug("stopping PPC-OF USB Controller\n");
++#ifndef __ARCH_POWERPC_EFIKA__
++#define __ARCH_POWERPC_EFIKA__
 +
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+	usb_put_hcd(hcd);
-+}
++#define EFIKA_PLATFORM_NAME "Efika"
 +
-+static int __devinit
-+ohci_ppc_of_start(struct usb_hcd *hcd)
-+{
-+	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
-+	int		ret;
++extern void __init efika_pcisetup(void);
 +
-+	if ((ret = ohci_init(ohci)) < 0)
-+		return ret;
-+
-+	if ((ret = ohci_run(ohci)) < 0) {
-+		err("can't start %s", ohci_to_hcd(ohci)->self.bus_name);
-+		ohci_stop(hcd);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct hc_driver ohci_ppc_of_hc_driver = {
-+	.description =		hcd_name,
-+	.hcd_priv_size =	sizeof(struct ohci_hcd),
-+
-+	/*
-+	 * generic hardware linkage
-+	 */
-+	.irq =			ohci_irq,
-+	.flags =		HCD_USB11 | HCD_MEMORY,
-+
-+	/*
-+	 * basic lifecycle operations
-+	 */
-+	.start =		ohci_ppc_of_start,
-+	.stop =			ohci_stop,
-+	.shutdown = 		ohci_shutdown,
-+
-+	/*
-+	 * managing i/o requests and associated device resources
-+	 */
-+	.urb_enqueue =		ohci_urb_enqueue,
-+	.urb_dequeue =		ohci_urb_dequeue,
-+	.endpoint_disable =	ohci_endpoint_disable,
-+
-+	/*
-+	 * scheduling support
-+	 */
-+	.get_frame_number =	ohci_get_frame,
-+
-+	/*
-+	 * root hub support
-+	 */
-+	.hub_status_data =	ohci_hub_status_data,
-+	.hub_control =		ohci_hub_control,
-+	.hub_irq_enable =	ohci_rhsc_enable,
-+#ifdef	CONFIG_PM
-+	.bus_suspend =		ohci_bus_suspend,
-+	.bus_resume =		ohci_bus_resume,
 +#endif
-+	.start_port_reset =	ohci_start_port_reset,
-+};
-+
-+
-+
-+static int ohci_hcd_ppc_of_drv_remove(struct of_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+	dev_set_drvdata(&op->dev, NULL);
-+
-+	usb_hcd_ppc_of_remove(hcd, op);
-+	return 0;
-+}
-+
-+static int ohci_hcd_ppc_of_drv_shutdown(struct of_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+
-+        if (hcd->driver->shutdown)
-+                hcd->driver->shutdown(hcd);
-+
-+	return 0;
-+}
-+
-+/*
-+ *
-+*/
-+
-+static struct of_device_id ohci_hcd_ppc_of_match_be[] = {
-+	{
-+		.name = "usb",
-+		.compatible = "ohci-bigendian",
-+	},
-+	{
-+		.name = "usb",
-+		.compatible = "ohci-be",
-+	},
-+	{},
-+};
-+
-+static int __devinit
-+ohci_hcd_ppc_of_drv_probe_be(struct of_device *op, const struct of_device_id *match)
-+{
-+	int ret;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	ret = usb_hcd_ppc_of_probe(&ohci_ppc_of_hc_driver, op, 1);
-+	return ret;
-+}
-+
-+static struct of_platform_driver ohci_hcd_ppc_of_driver_be = {
-+	.name	= "ppc-of-ohci-be",
-+	.match_table	= ohci_hcd_ppc_of_match_be,
-+	.probe		= ohci_hcd_ppc_of_drv_probe_be,
-+	.remove		= ohci_hcd_ppc_of_drv_remove,
-+	.shutdown 	= ohci_hcd_ppc_of_drv_shutdown,
-+#ifdef	CONFIG_PM
-+	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
-+	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
-+#endif
-+	.driver		= {
-+		.name	= "ppc-of-ohci-be",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init ohci_hcd_ppc_of_init_be(void)
-+{
-+	pr_debug(DRIVER_INFO " (PPC OF)\n");
-+	pr_debug("block sizes: ed %d td %d\n", sizeof(struct ed),
-+							sizeof(struct td));
-+	
-+	return of_register_driver(&ohci_hcd_ppc_of_driver_be);    
-+}
-+
-+static void __exit ohci_hcd_ppc_of_cleanup_be(void)
-+{
-+	of_unregister_driver(&ohci_hcd_ppc_of_driver_be);
-+}
-+
-+module_init(ohci_hcd_ppc_of_init_be);
-+module_exit(ohci_hcd_ppc_of_cleanup_be);
-+
-+/*
-+ *
-+*/
-+
-+static struct of_device_id ohci_hcd_ppc_of_match_le[] = {
-+	{
-+		.name = "usb",
-+		.compatible = "ohci-littledian",
-+	},
-+	{
-+		.name = "usb",
-+		.compatible = "ohci-le",
-+	},
-+	{},
-+};
-+
-+static int __devinit
-+ohci_hcd_ppc_of_drv_probe_le(struct of_device *op, const struct of_device_id *match)
-+{
-+	int ret;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	ret = usb_hcd_ppc_of_probe(&ohci_ppc_of_hc_driver, op, 0);
-+	return ret;
-+}
-+
-+
-+static struct of_platform_driver ohci_hcd_ppc_of_driver_le = {
-+	.name	= "ppc-of-ohci-le",
-+	.match_table	= ohci_hcd_ppc_of_match_le,
-+	.probe		= ohci_hcd_ppc_of_drv_probe_le,
-+	.remove		= ohci_hcd_ppc_of_drv_remove,
-+	.shutdown 	= ohci_hcd_ppc_of_drv_shutdown,
-+#ifdef	CONFIG_PM
-+	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
-+	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
-+#endif
-+	.driver		= {
-+		.name	= "ppc-of-ohci-le",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init ohci_hcd_ppc_of_init_le(void)
-+{
-+	pr_debug(DRIVER_INFO " (PPC OF)\n");
-+	pr_debug("block sizes: ed %d td %d\n", sizeof(struct ed),
-+							sizeof(struct td));
-+	
-+	return of_register_driver(&ohci_hcd_ppc_of_driver_le);    
-+}
-+
-+static void __exit ohci_hcd_ppc_of_cleanup_le(void)
-+{
-+	of_unregister_driver(&ohci_hcd_ppc_of_driver_le);
-+}
-+
-+
-+module_init(ohci_hcd_ppc_of_init_le);
-+module_exit(ohci_hcd_ppc_of_cleanup_le);
-+
---- a/drivers/usb/host/Kconfig	2006-11-01 09:18:56.000000000 +0100
-+++ b/drivers/usb/host/Kconfig	2006-11-02 17:54:37.000000000 +0100
-@@ -106,6 +106,15 @@ config USB_OHCI_HCD_PPC_SOC
- 	  Enables support for the USB controller on the MPC52xx or
- 	  STB03xxx processor chip.  If unsure, say Y.
+--- a/arch/powerpc/platforms/efika/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ b/arch/powerpc/platforms/efika/Makefile	2006-11-02 17:55:29.000000000 +0100
+@@ -0,0 +1 @@
++obj-y += setup.o pci.o
+--- a/arch/powerpc/platforms/Makefile	2006-11-01 09:18:43.000000000 +0100
++++ b/arch/powerpc/platforms/Makefile	2006-11-02 17:54:37.000000000 +0100
+@@ -6,6 +6,7 @@ obj-$(CONFIG_PPC_PMAC)		+= powermac/
+ endif
+ endif
+ obj-$(CONFIG_PPC_CHRP)		+= chrp/
++obj-$(CONFIG_PPC_EFIKA)          += efika/
+ obj-$(CONFIG_4xx)		+= 4xx/
+ obj-$(CONFIG_PPC_83xx)		+= 83xx/
+ obj-$(CONFIG_PPC_85xx)		+= 85xx/
+--- a/arch/powerpc/boot/Makefile	2006-11-01 09:18:42.000000000 +0100
++++ b/arch/powerpc/boot/Makefile	2006-10-31 12:31:55.000000000 +0100
+@@ -115,7 +115,7 @@ endif
+ quiet_cmd_wrap	= WRAP    $@
+       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) vmlinux
+ quiet_cmd_wrap_initrd = WRAP    $@
+-      cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
++      cmd_wrap_initrd =$(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+ 				-i $(obj)/ramdisk.image.gz vmlinux
  
-+config USB_OHCI_HCD_PPC_OF
-+	bool "OHCI support for PPC USB controller for OpenFirmware platform"
-+	depends on USB_OHCI_HCD && PPC_OF
+ $(obj)/zImage.chrp: vmlinux $(wrapperbits)
+@@ -155,6 +155,7 @@ image-$(CONFIG_PPC_PSERIES)		+= zImage.p
+ image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
+ image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
+ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
++image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ 
+--- a/arch/powerpc/Kconfig	2006-11-01 09:18:42.000000000 +0100
++++ b/arch/powerpc/Kconfig	2006-11-02 17:55:20.000000000 +0100
+@@ -386,6 +386,14 @@ config PPC_CHRP
+ 	select PPC_UDBG_16550
+ 	default y
+ 
++config PPC_EFIKA
++	bool "bPlan Efika 5k2. MPC5200B based computer"
++	depends on PPC_MULTIPLATFORM && PPC32
++	select PPC_RTAS
++	select RTAS_PROC
++	select PPC_MPC52xx
 +	default y
-+	select USB_OHCI_BIG_ENDIAN
-+	select USB_OHCI_LITTLE_ENDIAN
-+	---help---
-+	  Enables support for the USB controller PowerPC OpenFirmware platform
 +
- config USB_OHCI_HCD_PCI
- 	bool "OHCI support for PCI-bus USB controllers"
- 	depends on USB_OHCI_HCD && PCI && (STB03xxx || PPC_MPC52xx)
---- a/drivers/usb/host/ohci-hcd.c	2006-11-01 09:18:56.000000000 +0100
-+++ b/drivers/usb/host/ohci-hcd.c	2006-11-02 18:06:02.000000000 +0100
-@@ -930,6 +930,12 @@ MODULE_LICENSE ("GPL");
- #include "ohci-ppc-soc.c"
- #endif
- 
-+#ifdef CONFIG_USB_OHCI_HCD_PPC_OF
-+#include "ohci-ppc-of.c"
-+#endif
-+
-+
-+
- #if defined(CONFIG_ARCH_AT91RM9200) || defined(CONFIG_ARCH_AT91SAM9261)
- #include "ohci-at91.c"
- #endif
+ config PPC_PMAC
+ 	bool "Apple PowerMac based machines"
+ 	depends on PPC_MULTIPLATFORM
 
---------------060602060408000809050805
+--------------020709050007080505020403
 Content-Type: text/x-vcard; charset=utf-8;
  name="nd.vcf"
 Content-Transfer-Encoding: 7bit
@@ -444,4 +528,4 @@ version:2.1
 end:vcard
 
 
---------------060602060408000809050805--
+--------------020709050007080505020403--
