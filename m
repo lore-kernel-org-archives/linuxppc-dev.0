@@ -1,31 +1,16 @@
-Return-Path: <stevewin@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E6AA767B6C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 07:49:12 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kA2Kn4Dr013925
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Nov 2006 15:49:04 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kA2Kn4eL350872
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Nov 2006 13:49:04 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kA2Kn4jq001990
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Nov 2006 13:49:04 -0700
-In-Reply-To: <20061102160009.GC4928@localhost.localdomain>
-Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Message-ID: <OF3E950149.B4C8024A-ON8725721A.006D325F-8525721A.007259AD@us.ibm.com>
-From: Stephen Winiecki <stevewin@us.ibm.com>
-Date: Thu, 2 Nov 2006 15:49:01 -0500
+Return-Path: <nd@bplan-gmbh.de>
+Date: Thu, 2 Nov 2006 21:49:48 +0100 (MET)
+Message-ID: <454A59CC.6070902@bplan-gmbh.de>
+From: Nicolas DET <nd@bplan-gmbh.de>
 MIME-Version: 1.0
-Content-type: multipart/alternative;
-	Boundary="0__=08BBF889DFFEB4CF8f9e8a93df938690918c08BBF889DFFEB4CF"
-Cc: linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH/RFC] powerpc: Add of_platform support for	OHCI/Bigendian HC
+References: <45490407.1010700@bplan-gmbh.de>	
+	<1162419799.25682.466.camel@localhost.localdomain>
+	<1162423628.25682.489.camel@localhost.localdomain>
+In-Reply-To: <1162423628.25682.489.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="------------060602060408000809050805"
+Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,132 +20,428 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0__=08BBF889DFFEB4CF8f9e8a93df938690918c08BBF889DFFEB4CF
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: quoted-printable
+This is a multi-part message in MIME format.
+--------------060602060408000809050805
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Benjamin Herrenschmidt wrote:
+> On Thu, 2006-11-02 at 09:23 +1100, Benjamin Herrenschmidt wrote:
+> 
+> And in english here too....
+> 
+>> On Wed, 2006-11-01 at 21:31 +0100, Nicolas DET wrote:
+>>
+>>> +/**+	ohci = hcd_to_ohci(hcd);
+>>> +	ohci->flags |= OHCI_BIG_ENDIAN;
+>>> +	ohci_hcd_init(ohci);
+>> Bon, c'est pas mal. Le seul truc ici, c'est que je prefererais que
+>> big-endian ne soit pas hard-code comme ca mais depende du device-tree.
+>> Ce code doit pouvoir etre re-utilise pour des implementations
+>> little-endian.
+> 
+> Ok, so it looks good. The only thing here is that I would prefer if the
+> big-endian setting wasn't hard-coded, but set based on the device-tree,
+> so that this code can be re-used for little-endian implementations.
+> 
+>>> +	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
+>>> +	if (retval == 0)
+>>> +		return retval;
+>> Pourquoi IRQF_DISABLED ?
+> 
+> Why IRQF_DISABLED ?
+> 
+
+It's like this in ofsoc-ppc. As I am not sure what it does exactly I 
+left it like this. This module performs well here so far.
 
 
 
+--------------060602060408000809050805
+Content-Type: text/plain;
+ name="archpowerpc_ohciof.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="archpowerpc_ohciof.patch"
+
+--- a/drivers/usb/host/ohci-ppc-of.c	1970-01-01 01:00:00.000000000 +0100
++++ b/drivers/usb/host/ohci-ppc-of.c	2006-11-02 18:06:02.000000000 +0100
+@@ -0,0 +1,322 @@
++/*
++ * OHCI HCD (Host Controller Driver) for USB.
++ *
++ * (C) Copyright 1999 Roman Weissgaerber <weissg@vienna.at>
++ * (C) Copyright 2000-2002 David Brownell <dbrownell@users.sourceforge.net>
++ * (C) Copyright 2002 Hewlett-Packard Company
++ * (C) Copyright 2003-2005 MontaVista Software Inc.
++ * 
++ * Probe and init OHCI Big endian HC from OpenFirmware device tree
++ * Tested on Efika 5k2
++ *
++ * Modified by Dale Farnsworth <dale@farnsworth.org> from ohci-sa1111.c
++ *
++ * This file is licenced under the GPL.
++ */
++
++#include <linux/signal.h>
++
++#include <asm/of_device.h>
++#include <asm/prom.h>
++
++/* configure so an HC device and id are always provided */
++/* always called with process context; sleeping is OK */
++
++/*
++ * usb_hcd_ppc_of_probe - initialize On-Chip HCDs
++ * Context: !in_interrupt()
++ *
++ * Allocates basic resources for this USB host controller.
++ *
++ * Store this function in the HCD's struct pci_driver as probe().
++ */
++static int usb_hcd_ppc_of_probe(const struct hc_driver *driver,
++			  struct of_device *dev, int is_bigendian)
++{
++	int retval;
++	struct usb_hcd *hcd;
++	struct ohci_hcd	*ohci;
++	struct resource res;
++	int irq;
++	int ret;
++
++	pr_debug("initializing PPC-OF USB Controller\n");
++
++	if ((ret = of_address_to_resource(dev->node, 0, &res)) != 0)
++		return ret;
++
++	hcd = usb_create_hcd(driver, &dev->dev, "PPC-OF USB");
++	if (!hcd)
++		return -ENOMEM;
++	hcd->rsrc_start = res.start;
++	hcd->rsrc_len = res.end - res.start + 1;
++
++	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
++		pr_debug(__FILE__ ": request_mem_region failed\n");
++		retval = -EBUSY;
++		goto err1;
++	}
++
++	irq = irq_of_parse_and_map(dev->node, 0);
++	if (irq == NO_IRQ) {
++		retval = -EBUSY;
++		goto err2;
++	}
++
++	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
++	if (!hcd->regs) {
++		pr_debug(__FILE__ ": ioremap failed\n");
++		retval = -ENOMEM;
++		goto err2;
++	}
++
++	ohci = hcd_to_ohci(hcd);
++	if (is_bigendian)
++		ohci->flags |= OHCI_BIG_ENDIAN;
++	ohci_hcd_init(ohci);
++
++	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED);
++	if (retval == 0)
++		return retval;
++
++	pr_debug("Removing PPC-OF USB Controller\n");
++
++	iounmap(hcd->regs);
++ err2:
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++ err1:
++ 	usb_put_hcd(hcd);
++	return retval;
++}
++
++
++/* may be called without controller electrically present */
++/* may be called with controller, bus, and devices active */
++
++/*
++ * usb_hcd_ppc_of_remove - shutdown processing for On-Chip HCDs
++ * @pdev: USB Host Controller being removed
++ * Context: !in_interrupt()
++ *
++ * Reverses the effect of usb_hcd_ppc_of_probe().
++ * It is always called from a thread
++ * context, normally "rmmod", "apmd", or something similar.
++ *
++ */
++static void usb_hcd_ppc_of_remove(struct usb_hcd *hcd,
++		struct of_device *op)
++{
++	usb_remove_hcd(hcd);
++
++	pr_debug("stopping PPC-OF USB Controller\n");
++
++	iounmap(hcd->regs);
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++	usb_put_hcd(hcd);
++}
++
++static int __devinit
++ohci_ppc_of_start(struct usb_hcd *hcd)
++{
++	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
++	int		ret;
++
++	if ((ret = ohci_init(ohci)) < 0)
++		return ret;
++
++	if ((ret = ohci_run(ohci)) < 0) {
++		err("can't start %s", ohci_to_hcd(ohci)->self.bus_name);
++		ohci_stop(hcd);
++		return ret;
++	}
++
++	return 0;
++}
++
++static const struct hc_driver ohci_ppc_of_hc_driver = {
++	.description =		hcd_name,
++	.hcd_priv_size =	sizeof(struct ohci_hcd),
++
++	/*
++	 * generic hardware linkage
++	 */
++	.irq =			ohci_irq,
++	.flags =		HCD_USB11 | HCD_MEMORY,
++
++	/*
++	 * basic lifecycle operations
++	 */
++	.start =		ohci_ppc_of_start,
++	.stop =			ohci_stop,
++	.shutdown = 		ohci_shutdown,
++
++	/*
++	 * managing i/o requests and associated device resources
++	 */
++	.urb_enqueue =		ohci_urb_enqueue,
++	.urb_dequeue =		ohci_urb_dequeue,
++	.endpoint_disable =	ohci_endpoint_disable,
++
++	/*
++	 * scheduling support
++	 */
++	.get_frame_number =	ohci_get_frame,
++
++	/*
++	 * root hub support
++	 */
++	.hub_status_data =	ohci_hub_status_data,
++	.hub_control =		ohci_hub_control,
++	.hub_irq_enable =	ohci_rhsc_enable,
++#ifdef	CONFIG_PM
++	.bus_suspend =		ohci_bus_suspend,
++	.bus_resume =		ohci_bus_resume,
++#endif
++	.start_port_reset =	ohci_start_port_reset,
++};
++
++
++
++static int ohci_hcd_ppc_of_drv_remove(struct of_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++	dev_set_drvdata(&op->dev, NULL);
++
++	usb_hcd_ppc_of_remove(hcd, op);
++	return 0;
++}
++
++static int ohci_hcd_ppc_of_drv_shutdown(struct of_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++
++        if (hcd->driver->shutdown)
++                hcd->driver->shutdown(hcd);
++
++	return 0;
++}
++
++/*
++ *
++*/
++
++static struct of_device_id ohci_hcd_ppc_of_match_be[] = {
++	{
++		.name = "usb",
++		.compatible = "ohci-bigendian",
++	},
++	{
++		.name = "usb",
++		.compatible = "ohci-be",
++	},
++	{},
++};
++
++static int __devinit
++ohci_hcd_ppc_of_drv_probe_be(struct of_device *op, const struct of_device_id *match)
++{
++	int ret;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	ret = usb_hcd_ppc_of_probe(&ohci_ppc_of_hc_driver, op, 1);
++	return ret;
++}
++
++static struct of_platform_driver ohci_hcd_ppc_of_driver_be = {
++	.name	= "ppc-of-ohci-be",
++	.match_table	= ohci_hcd_ppc_of_match_be,
++	.probe		= ohci_hcd_ppc_of_drv_probe_be,
++	.remove		= ohci_hcd_ppc_of_drv_remove,
++	.shutdown 	= ohci_hcd_ppc_of_drv_shutdown,
++#ifdef	CONFIG_PM
++	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
++	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
++#endif
++	.driver		= {
++		.name	= "ppc-of-ohci-be",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init ohci_hcd_ppc_of_init_be(void)
++{
++	pr_debug(DRIVER_INFO " (PPC OF)\n");
++	pr_debug("block sizes: ed %d td %d\n", sizeof(struct ed),
++							sizeof(struct td));
++	
++	return of_register_driver(&ohci_hcd_ppc_of_driver_be);    
++}
++
++static void __exit ohci_hcd_ppc_of_cleanup_be(void)
++{
++	of_unregister_driver(&ohci_hcd_ppc_of_driver_be);
++}
++
++module_init(ohci_hcd_ppc_of_init_be);
++module_exit(ohci_hcd_ppc_of_cleanup_be);
++
++/*
++ *
++*/
++
++static struct of_device_id ohci_hcd_ppc_of_match_le[] = {
++	{
++		.name = "usb",
++		.compatible = "ohci-littledian",
++	},
++	{
++		.name = "usb",
++		.compatible = "ohci-le",
++	},
++	{},
++};
++
++static int __devinit
++ohci_hcd_ppc_of_drv_probe_le(struct of_device *op, const struct of_device_id *match)
++{
++	int ret;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	ret = usb_hcd_ppc_of_probe(&ohci_ppc_of_hc_driver, op, 0);
++	return ret;
++}
++
++
++static struct of_platform_driver ohci_hcd_ppc_of_driver_le = {
++	.name	= "ppc-of-ohci-le",
++	.match_table	= ohci_hcd_ppc_of_match_le,
++	.probe		= ohci_hcd_ppc_of_drv_probe_le,
++	.remove		= ohci_hcd_ppc_of_drv_remove,
++	.shutdown 	= ohci_hcd_ppc_of_drv_shutdown,
++#ifdef	CONFIG_PM
++	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
++	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
++#endif
++	.driver		= {
++		.name	= "ppc-of-ohci-le",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init ohci_hcd_ppc_of_init_le(void)
++{
++	pr_debug(DRIVER_INFO " (PPC OF)\n");
++	pr_debug("block sizes: ed %d td %d\n", sizeof(struct ed),
++							sizeof(struct td));
++	
++	return of_register_driver(&ohci_hcd_ppc_of_driver_le);    
++}
++
++static void __exit ohci_hcd_ppc_of_cleanup_le(void)
++{
++	of_unregister_driver(&ohci_hcd_ppc_of_driver_le);
++}
++
++
++module_init(ohci_hcd_ppc_of_init_le);
++module_exit(ohci_hcd_ppc_of_cleanup_le);
++
+--- a/drivers/usb/host/Kconfig	2006-11-01 09:18:56.000000000 +0100
++++ b/drivers/usb/host/Kconfig	2006-11-02 17:54:37.000000000 +0100
+@@ -106,6 +106,15 @@ config USB_OHCI_HCD_PPC_SOC
+ 	  Enables support for the USB controller on the MPC52xx or
+ 	  STB03xxx processor chip.  If unsure, say Y.
+ 
++config USB_OHCI_HCD_PPC_OF
++	bool "OHCI support for PPC USB controller for OpenFirmware platform"
++	depends on USB_OHCI_HCD && PPC_OF
++	default y
++	select USB_OHCI_BIG_ENDIAN
++	select USB_OHCI_LITTLE_ENDIAN
++	---help---
++	  Enables support for the USB controller PowerPC OpenFirmware platform
++
+ config USB_OHCI_HCD_PCI
+ 	bool "OHCI support for PCI-bus USB controllers"
+ 	depends on USB_OHCI_HCD && PCI && (STB03xxx || PPC_MPC52xx)
+--- a/drivers/usb/host/ohci-hcd.c	2006-11-01 09:18:56.000000000 +0100
++++ b/drivers/usb/host/ohci-hcd.c	2006-11-02 18:06:02.000000000 +0100
+@@ -930,6 +930,12 @@ MODULE_LICENSE ("GPL");
+ #include "ohci-ppc-soc.c"
+ #endif
+ 
++#ifdef CONFIG_USB_OHCI_HCD_PPC_OF
++#include "ohci-ppc-of.c"
++#endif
++
++
++
+ #if defined(CONFIG_ARCH_AT91RM9200) || defined(CONFIG_ARCH_AT91SAM9261)
+ #include "ohci-at91.c"
+ #endif
+
+--------------060602060408000809050805
+Content-Type: text/x-vcard; charset=utf-8;
+ name="nd.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="nd.vcf"
+
+begin:vcard
+fn:Nicolas DET ( bplan GmbH )
+n:DET;Nicolas
+org:bplan GmbH
+adr:;;;;;;Germany
+email;internet:nd@bplan-gmbh.de
+title:Software Entwicklung
+tel;work:+49 6171 9187 - 31
+x-mozilla-html:FALSE
+url:http://www.bplan-gmbh.de
+version:2.1
+end:vcard
 
 
-
-Sascha Hauer <s.hauer@pengutronix.de> wrote on 11/02/2006 11:00:09 AM:
-
-> On Thu, Nov 02, 2006 at 10:32:53AM -0500, Stephen Winiecki wrote:
-> >
-> >    I also have a question about 750xx platforms.  I currently am
-looking at
-> >    adding platform code supporting IBM 750GX/CL eval boards.  Where=
-
-would
-> >    they go - as well as others like Buckeye/Chestnut if/when they m=
-ove
-over
-> >    to /powerpc?
->
-> I don't know - Lets wait for ben and others what they say about this
-> approach.
-> My intention with this patch is to try and motivate people to
-> integrate their machines as a part of the multiplatform support, beca=
-use
-> it doesn't cost a thing.
-> The presence of the embedded6xx entry and the entries in the director=
-y
-> itself makes people think (me too) that the multiplatform thing is on=
-ly
-> for the big irons. I think it's better to unify the two ways of platf=
-orm
-> support where it's possible.
->
-What exactly is the intent of PPC_MULTIPLATFORM - the current desc stat=
-es
-"Generic desktop/server/laptop" - which doesn't exactly scream 'embedde=
-d'
-to me either.  I guess I saw embedded6xx as a 'catch-all' for everythin=
-g
-else.
-
-I might be missing something - but when you removed EMBEDDED6xx from
-powerpc/Kconfig in patch 8, and removed MPC7448HPC2 from
-embedded6xx/Kconfig in patch 6 - where did you move the MPC7448HPC2 con=
-fig
-section to?  Is your thought that it will depend on PPC_MULTIPLATFORM n=
-ow
-as well?
-
-This may be slightly off topic - but one other thing I have noticed tha=
-t
-the new boot wrapper script supports specific 'types' of zImage files
-associated w/ 'MUTIPLATFORMS' (PSERIES, CHRP, PREP etc.) and uImage - w=
-hich
-is what I think the majority of 'embedded' platforms will use by defini=
-ng
-CONFIG_DEFAULT_UIMAGE.  For IBM boards with PIBS just 'normal' zImage E=
-LF
-files get loaded - I'm not sure if there should be another type
-defined/supported for boards which don't fit necessarily into a
-PSERIES/CHRP/PREP definition and also don't use uboot -
-CONFIG_DEFAULT_ZIMAGE?
-
-=
-
---0__=08BBF889DFFEB4CF8f9e8a93df938690918c08BBF889DFFEB4CF
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-Content-transfer-encoding: quoted-printable
-
-<html><body>
-<p><tt>Sascha Hauer &lt;s.hauer@pengutronix.de&gt; wrote on 11/02/2006 =
-11:00:09 AM:<br>
-<br>
-&gt; On Thu, Nov 02, 2006 at 10:32:53AM -0500, Stephen Winiecki wrote:<=
-br>
-&gt; &gt; <br>
-&gt; &gt; &nbsp; &nbsp;I also have a question about 750xx platforms. &n=
-bsp;I currently am looking at<br>
-&gt; &gt; &nbsp; &nbsp;adding platform code supporting IBM 750GX/CL eva=
-l boards. &nbsp;Where would<br>
-&gt; &gt; &nbsp; &nbsp;they go - as well as others like Buckeye/Chestnu=
-t if/when they move over<br>
-&gt; &gt; &nbsp; &nbsp;to /powerpc?<br>
-&gt; <br>
-&gt; I don't know - Lets wait for ben and others what they say about th=
-is<br>
-&gt; approach.<br>
-&gt; My intention with this patch is to try and motivate people to<br>
-&gt; integrate their machines as a part of the multiplatform support, b=
-ecause<br>
-&gt; it doesn't cost a thing.<br>
-&gt; The presence of the embedded6xx entry and the entries in the direc=
-tory<br>
-&gt; itself makes people think (me too) that the multiplatform thing is=
- only<br>
-&gt; for the big irons. I think it's better to unify the two ways of pl=
-atform<br>
-&gt; support where it's possible.<br>
-&gt; </tt><br>
-<tt>What exactly is the intent of PPC_MULTIPLATFORM - the current desc =
-states &quot;Generic desktop/server/laptop&quot; - which doesn't exactl=
-y scream 'embedded' to me either. &nbsp;I guess I saw embedded6xx as a =
-'catch-all' for everything else.</tt><br>
-<tt><br>
-I might be missing something - but when you removed EMBEDDED6xx from po=
-werpc/Kconfig in patch 8, and removed MPC7448HPC2 from embedded6xx/Kcon=
-fig in patch 6 - where did you move the MPC7448HPC2 config section to? =
-&nbsp;Is your thought that it will depend on PPC_MULTIPLATFORM now as w=
-ell?</tt><br>
-<br>
-<tt>This may be slightly off topic - but one other thing I have noticed=
- that the new boot wrapper script supports specific 'types' of zImage f=
-iles associated w/ 'MUTIPLATFORMS' (PSERIES, CHRP, PREP etc.) and uImag=
-e - which is what I think the majority of 'embedded' platforms will use=
- by defining CONFIG_DEFAULT_UIMAGE. &nbsp;For IBM boards with PIBS just=
- 'normal' zImage ELF files get loaded - I'm not sure if there should be=
- another type defined/supported for boards which don't fit necessarily =
-into a PSERIES/CHRP/PREP definition and also don't use uboot - CONFIG_D=
-EFAULT_ZIMAGE? </tt><br>
-<br>
-<tt><br>
-</tt></body></html>=
-
---0__=08BBF889DFFEB4CF8f9e8a93df938690918c08BBF889DFFEB4CF--
+--------------060602060408000809050805--
