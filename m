@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 671E267D2A
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:22:52 +1100 (EST)
-Subject: Re: [patch 05/16] powerpc: remove ifdef
+	by ozlabs.org (Postfix) with ESMTP id EE9A967D34
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 09:23:33 +1100 (EST)
+Subject: Re: [patch 06/16] powerpc: remove _machine
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: s.hauer@pengutronix.de
-In-Reply-To: <20061102125625.828393000@localhost.localdomain>
+In-Reply-To: <20061102125626.263838000@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125625.828393000@localhost.localdomain>
+	<20061102125626.263838000@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 03 Nov 2006 09:22:47 +1100
-Message-Id: <1162506167.10630.37.camel@localhost.localdomain>
+Date: Fri, 03 Nov 2006 09:23:28 +1100
+Message-Id: <1162506208.10630.39.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,31 +26,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Thu, 2006-11-02 at 13:56 +0100, s.hauer@pengutronix.de wrote:
 > plain text document attachment
-> (powerpc-include-asm-powerpc-pci_h-remove-ifdef.diff)
-> current kernels always have one of CONFIG_PPC_MULTIPLATFORM
-> or CONFIG_PPC32 defined, so remove bogus ifdef
+> (powerpc-include-asm-powerpc-processor_h-remove-_machine.diff)
+> The _machine macro was once used for compatibility with ARCH=ppc
+> drivers. It is unused in current kernels
 > 
 > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> Index: linux-2.6/include/asm-powerpc/pci.h
+> Index: include/asm-powerpc/processor.h
 > ===================================================================
-> --- linux-2.6.orig/include/asm-powerpc/pci.h
-> +++ linux-2.6/include/asm-powerpc/pci.h
-> @@ -238,12 +238,10 @@ extern pgprot_t	pci_phys_mem_access_prot
->  					 unsigned long size,
->  					 pgprot_t prot);
+> --- a/include/asm-powerpc/processor.h.orig
+> +++ b/include/asm-powerpc/processor.h
+> @@ -53,10 +53,6 @@ extern unsigned char ucBoardRevMaj, ucBo
 >  
-> -#if defined(CONFIG_PPC_MULTIPLATFORM) || defined(CONFIG_PPC32)
->  #define HAVE_ARCH_PCI_RESOURCE_TO_USER
->  extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
->  				 const struct resource *rsrc,
->  				 resource_size_t *start, resource_size_t *end);
-> -#endif /* CONFIG_PPC_MULTIPLATFORM || CONFIG_PPC32 */
+>  #endif /* CONFIG_PPC_PREP */
 >  
->  #endif	/* __KERNEL__ */
->  #endif /* __ASM_POWERPC_PCI_H */
+> -#ifndef CONFIG_PPC_MULTIPLATFORM
+> -#define _machine 0
+> -#endif /* CONFIG_PPC_MULTIPLATFORM */
+> -
+>  #endif /* defined(__KERNEL__) && defined(CONFIG_PPC32) */
+>  
+>  /*
 > 
 > --
 >  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
