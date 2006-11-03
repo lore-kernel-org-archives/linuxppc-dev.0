@@ -1,21 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id E110B67C9C
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 04:47:27 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so428897ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 03 Nov 2006 09:47:26 -0800 (PST)
-Message-ID: <528646bc0611030947l259bb266p32d7df9dd2223c8f@mail.gmail.com>
-Date: Fri, 3 Nov 2006 10:47:26 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "M Ptich" <ptich@hotmail.com>
-Subject: Re: Clear OS / HAL separation
-In-Reply-To: <BAY102-F362BE9713459EAE9EED9FAA9FE0@phx.gbl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <528646bc0611022215qad62c3br4642dfb40d9db8c1@mail.gmail.com>
-	<BAY102-F362BE9713459EAE9EED9FAA9FE0@phx.gbl>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7985667C08
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 07:34:35 +1100 (EST)
+Subject: Re: [patch 13/16] powerpc: make prom_init.o dependent on PPC_OF
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+In-Reply-To: <20061103094745.GE22478@localhost.localdomain>
+References: <20061102125555.252338000@localhost.localdomain>
+	<20061102125629.335003000@localhost.localdomain>
+	<1162506853.10630.55.camel@localhost.localdomain>
+	<20061103094745.GE22478@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 04 Nov 2006 07:34:28 +1100
+Message-Id: <1162586069.10630.84.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/3/06, M Ptich <ptich@hotmail.com> wrote:
-> Hi Grant,
->
-> Thanks a lot for your kind reply. What I meant is inordinate amount of
-> sometimes ifdefs, sometimes call redirection (like ppc_md), pretty messy.
-> But it is mostly in already machine-dependent code, so does not count as bad
-> separation, you're right.
->
-> But I am wondering about your remark that "there is separation between
-> bootloader and
-> kernel responsibilities". I think that on PPC Kernel depends very little on
-> the bootloader - bootloader just needs to set up 5 input parameters (one of
-> them is a pointer to initialized bd_t), and have initial Kernel TLB with
-> IPROT=1. That's it, all the devices (including internal CPU stuff) are
-> initialized in the Kernel. Am I correct ?
 
-If you're looking in arch/ppc, you are 100% correct.  If you are
-looking in arch/powerpc, which is where new development is occuring, a
-device tree is used to pass information about available devices to the
-kernel.  Also, your boot loader *should* (but you don't need to do it
-this way) setup your SOC configuration (gpio, etc).  By doing it this
-way, the device tree can encapsulate most of the differences between
-different boards using the same processor (or SOC).  Board specific
-code is kept to a minimum; or in some cases is non-existent.
-Everything you need can be covered by device drivers and processor
-specific code.
+> I don't know yet where the exact boarders are in the code between real
+> OF and flat device tree. Maybe I can look at it once I have a proper
+> device tree for my board.
+> Out of curiosity I just disabled CONFIG_PPC_OF. There were two undefined
+> references to functions I didn't need at the moment. After commenting
+> them out the kernel compiled and booted. It saved me ~10k kernelsize,
+> but ok, I thought I would still have flat tree support.
 
-However, unless you've got real openfirmware, it is still just a
-handoff from the bootloader to the kernel.  Once the kernel is booted,
-it won't make any calls back to the bootloader.
+Hrm... it's unclear, I think we changed it a couple of times. In fact,
+since the flat DT support is mandatory, I suppose CONFIG_PPC_OF could be
+used as "supports booting from a real OF". But in this case, prom_init
+is really the only thing that should be covered by it.
 
-Cheers,
-g.
+Right now, it's used for bits in pci_32.c which should always be enabled
+for arch/powerpc so ...
 
-BTW, please make sure you include the mailing list when replying
+Also, I think we could safely get rid of the pci_OF_bus_map. I don't
+think it's ever been used and we have the devspec files now.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Ben.
