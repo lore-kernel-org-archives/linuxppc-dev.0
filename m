@@ -1,18 +1,18 @@
 Return-Path: <sha@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 8E82267CBE
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 19:42:42 +1100 (EST)
-Date: Fri, 3 Nov 2006 09:42:38 +0100
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B892767C6F
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 19:47:34 +1100 (EST)
+Date: Fri, 3 Nov 2006 09:47:30 +0100
 From: Sascha Hauer <s.hauer@pengutronix.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 01/16] remove inclusion of asm/processor.h for powerpc
-Message-ID: <20061103084237.GA22478@localhost.localdomain>
+Subject: Re: [patch 04/16] powerpc: remove dead code in iommu.h
+Message-ID: <20061103084730.GB22478@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125624.134898000@localhost.localdomain>
-	<1162506020.10630.31.camel@localhost.localdomain>
+	<20061102125625.428089000@localhost.localdomain>
+	<1162506113.10630.35.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1162506020.10630.31.camel@localhost.localdomain>
+In-Reply-To: <1162506113.10630.35.camel@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,55 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 03, 2006 at 09:20:20AM +1100, Benjamin Herrenschmidt wrote:
+On Fri, Nov 03, 2006 at 09:21:53AM +1100, Benjamin Herrenschmidt wrote:
 > On Thu, 2006-11-02 at 13:55 +0100, s.hauer@pengutronix.de wrote:
 > > plain text document attachment
-> > (drivers-ide-pci-via82xxx-remove-ppc-ifdef.diff)
-> > Remove inclusion of asm/processor.h for powerpc. It was used for
-> > some ppc specific hook in this file, but the hook is gone
+> > (powerpc-include-asm-powerpc-iommu_h-remove-dead-code.diff)
+> > iommu_setup_pSeries() and iommu_setup_dart() are declared extern but are
+> > not implemented, so remove them. iommu_free_table() is pSeries specific,
+> > so #ifdef it with CONFIG_PPC_PSERIES and not CONFIG_PPC_MULTIPLATFORM
+> > 
+> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 > 
-> It's not:
-> 
-> init_hwif_via82cxxx() contains:
-> 
-> #if defined(CONFIG_PPC_CHRP) && defined(CONFIG_PPC32)
->         if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
->                 hwif->irq = hwif->channel ? 15 : 14;
->         }
-> #endif
-> 
-> Now you can replace CONFIG_PPC_MULTIPLATFORM with CONFIG_PPC_CHRP
+> There is no need to #ifdef an extern declaration. Just remove the
+> ifdef's and the two obsolete prototypes alltogether
 > 
 
-Oops, missed that one. Here is an updated version:
+Here we go:
 
-Remove inclusion of asm/processor.h for powerpc. It was used for
-some ppc specific hook in this file, but the hook is gone
+iommu_setup_pSeries() and iommu_setup_dart() are declared extern but are
+not implemented, so remove them. iommu_free_table() is pSeries specific,
+so #ifdef it with CONFIG_PPC_PSERIES and not CONFIG_PPC_MULTIPLATFORM
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-Index: drivers/ide/pci/via82cxxx.c
+Index: include/asm-powerpc/iommu.h
 ===================================================================
---- drivers/ide/pci/via82cxxx.c.orig
-+++ drivers/ide/pci/via82cxxx.c
-@@ -35,7 +35,7 @@
- #include <linux/ide.h>
- #include <asm/io.h>
+--- a/include/asm-powerpc/iommu.h.orig
++++ b/include/asm-powerpc/iommu.h
+@@ -70,17 +70,9 @@ struct iommu_table {
+ struct scatterlist;
+ struct device_node;
  
 -#ifdef CONFIG_PPC_MULTIPLATFORM
-+#ifdef CONFIG_PPC_CHRP
- #include <asm/processor.h>
- #endif
+-
+-/* Walks all buses and creates iommu tables */
+-extern void iommu_setup_pSeries(void);
+-extern void iommu_setup_dart(void);
+-
+ /* Frees table for an individual device node */
+ extern void iommu_free_table(struct device_node *dn);
  
-@@ -442,7 +442,7 @@ static void __devinit init_hwif_via82cxx
- 	hwif->speedproc = &via_set_drive;
- 
- 
--#if defined(CONFIG_PPC_CHRP) && defined(CONFIG_PPC32)
-+#ifdef CONFIG_PPC_CHRP
- 	if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
- 		hwif->irq = hwif->channel ? 15 : 14;
- 	}
+-#endif /* CONFIG_PPC_MULTIPLATFORM */
+-
+ /* Initializes an iommu_table based in values set in the passed-in
+  * structure
+  */
 
 -- 
  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
