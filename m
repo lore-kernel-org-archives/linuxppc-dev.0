@@ -2,21 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7985667C08
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 07:34:35 +1100 (EST)
-Subject: Re: [patch 13/16] powerpc: make prom_init.o dependent on PPC_OF
+	by ozlabs.org (Postfix) with ESMTP id 83D7567C32
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 07:46:20 +1100 (EST)
+Subject: Re: Fw: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-In-Reply-To: <20061103094745.GE22478@localhost.localdomain>
-References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125629.335003000@localhost.localdomain>
-	<1162506853.10630.55.camel@localhost.localdomain>
-	<20061103094745.GE22478@localhost.localdomain>
+To: Stephen Winiecki <stevewin@us.ibm.com>
+In-Reply-To: <OFCD6BEB84.DE407CA1-ON8725721B.00508624-8525721B.00552A5F@us.ibm.com>
+References: <OFCD6BEB84.DE407CA1-ON8725721B.00508624-8525721B.00552A5F@us.ibm.com>
 Content-Type: text/plain
-Date: Sat, 04 Nov 2006 07:34:28 +1100
-Message-Id: <1162586069.10630.84.camel@localhost.localdomain>
+Date: Sat, 04 Nov 2006 07:46:15 +1100
+Message-Id: <1162586775.10630.92.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +24,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> I don't know yet where the exact boarders are in the code between real
-> OF and flat device tree. Maybe I can look at it once I have a proper
-> device tree for my board.
-> Out of curiosity I just disabled CONFIG_PPC_OF. There were two undefined
-> references to functions I didn't need at the moment. After commenting
-> them out the kernel compiled and booted. It saved me ~10k kernelsize,
-> but ok, I thought I would still have flat tree support.
+> OK - so in this sense PPC_MULTIPLATFORM would be used more to help
+> categorize (make ppc platforms depend on it in Kconfig) as opposed to
+> enabling different code/function? (thus some of Sascha's patches
+> getting rid of CONFIG_PPC_MMULTIPLATFORM ifdefs)
 
-Hrm... it's unclear, I think we changed it a couple of times. In fact,
-since the flat DT support is mandatory, I suppose CONFIG_PPC_OF could be
-used as "supports booting from a real OF". But in this case, prom_init
-is really the only thing that should be covered by it.
+I'd rather get rid of it completely.
 
-Right now, it's used for bits in pci_32.c which should always be enabled
-for arch/powerpc so ...
+> I should have more properly said "the majority of the existing
+> 'embedded' platforms (not PSERIES, CHRP, PREP etc.) currently
+> implmented in /power seem to define CONFIG_DEFAULT_UIMAGE"
 
-Also, I think we could safely get rid of the pci_OF_bus_map. I don't
-think it's ever been used and we have the devspec files now.
+Yes. Though I hope we'll see some alternatives to uboot soon
+
+/me looks towards ojn and segher....
+
+> Makes sense.  Specific to the current wrapper though - the boot
+> Makefile currently keys off the following for the different zImage
+> 'types'
+> 
+> image-$(CONFIG_PPC_PSERIES)             += zImage.pseries
+> image-$(CONFIG_PPC_MAPLE)               += zImage.pseries
+> image-$(CONFIG_PPC_IBM_CELL_BLADE)      += zImage.pseries
+> image-$(CONFIG_PPC_CHRP)                += zImage.chrp
+> image-$(CONFIG_PPC_PMAC)                += zImage.pmac
+> image-$(CONFIG_DEFAULT_UIMAGE)          += uImage
+> 
+> My original point really was that if I have a ppc 'embedded' board
+> which I don't want to classify/define as
+> PSERIES/MAPLE/CELL_BLADE/CHRP/PMAC, and I don't want to generate a
+> uImage, I think there needs to be another definition, something like
+> CONFIG_DEFAULT_ZIMAGE (similar to how CONFIG_DEFAULT_UIMAGE is used in
+> some of the existing /power platform defs to create a uImage) which
+> would be used to produce a 'normal' zImage type (zImage.pseries?).
+
+Yeah, that's what the zImage.pseries is :) Bad name I agree.
+
+>   Basically - a definition analogous to the exisiting
+> CONFIG_DEFAULT_UIMAGE, but for zImage.  It would be used in a similar
+> way - where any platform could select in its configuration to result
+> in a 'normal' zImage being created (indeed, could
+> PPC_PSERIES/MAPLE/BLADE just select this more generic definition and
+> the Makefile use it instead?)
 
 Ben.
