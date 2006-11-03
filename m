@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD7D667D14
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 08:28:52 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id kA3LSl3F025499
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Nov 2006 15:28:48 -0600
-Subject: [PATCH/RFC] powerpc: Create PCI busses from of_platform
+	by ozlabs.org (Postfix) with ESMTP id C5B4967D2E
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 08:32:21 +1100 (EST)
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20061103145300.411931b7@localhost.localdomain>
+References: <OFCD6BEB84.DE407CA1-ON8725721B.00508624-8525721B.00552A5F@us.ibm.com>
+	<1162586775.10630.92.camel@localhost.localdomain>
+	<20061103145300.411931b7@localhost.localdomain>
 Content-Type: text/plain
-Date: Sat, 04 Nov 2006 08:28:47 +1100
-Message-Id: <1162589327.10630.125.camel@localhost.localdomain>
+Date: Sat, 04 Nov 2006 08:32:14 +1100
+Message-Id: <1162589534.10630.127.camel@localhost.localdomain>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,266 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds an of_platform_driver that matches against PCI host
-bridges. RTAS's setup_phb() is renamed to rtas_setup_phb() and a
-ppc_md. hook is added for platforms to initialize the newly discovered
-PHBs (cell is set to use rtas since cell will use that new mecanism)
+On Fri, 2006-11-03 at 14:53 -0600, Olof Johansson wrote:
+> On Sat, 04 Nov 2006 07:46:15 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > Yes. Though I hope we'll see some alternatives to uboot soon
+> > 
+> > /me looks towards ojn and segher....
+> 
+> There's already PIBS, isn't there?
 
 
-Index: linux-cell/arch/powerpc/kernel/of_platform.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/of_platform.c	2006-10-26 17:35:36.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/of_platform.c	2006-10-26 17:35:41.000000000 +1000
-@@ -1,6 +1,7 @@
- /*
-  *    Copyright (C) 2006 Benjamin Herrenschmidt, IBM Corp.
-  *			 <benh@kernel.crashing.org>
-+ *    and		 Arnd Bergmann, IBM Corp.
-  *
-  *  This program is free software; you can redistribute it and/or
-  *  modify it under the terms of the GNU General Public License
-@@ -17,12 +18,15 @@
- #include <linux/module.h>
- #include <linux/mod_devicetable.h>
- #include <linux/slab.h>
-+#include <linux/pci.h>
- 
- #include <asm/errno.h>
- #include <asm/dcr.h>
- #include <asm/of_device.h>
- #include <asm/of_platform.h>
- #include <asm/topology.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc-pci.h>
- 
- /*
-  * The list of OF IDs below is used for matching bus types in the
-@@ -378,3 +382,96 @@ struct of_device *of_find_device_by_phan
- 	return NULL;
- }
- EXPORT_SYMBOL(of_find_device_by_phandle);
-+
-+
-+#ifdef CONFIG_PCI
-+
-+static int __devinit of_pci_phb_probe(struct of_device *dev,
-+				      const struct of_device_id *match)
-+{
-+	struct pci_controller *phb;
-+
-+	/* Check if we can do that ... */
-+	if (ppc_md.pci_setup_phb == NULL)
-+		return -ENODEV;
-+
-+	printk(KERN_INFO "Setting up PCI bus %s\n", dev->node->full_name);
-+
-+	/* Alloc and setup PHB data structure */
-+	phb = pcibios_alloc_controller(dev->node);
-+	if (!phb)
-+		return -ENODEV;
-+
-+	/* Setup parent in sysfs */
-+	phb->parent = &dev->dev;
-+
-+	/* Setup the PHB using arch provided callback */
-+	if (ppc_md.pci_setup_phb(phb)) {
-+		pcibios_free_controller(phb);
-+		return -ENODEV;
-+	}
-+
-+	/* Process "ranges" property */
-+	pci_process_bridge_OF_ranges(phb, dev->node, 0);
-+
-+	/* Setup IO space.
-+	 * This will not work properly for ISA IOs, something needs to be done
-+	 * about it if we ever generalize that way of probing PCI brigdes
-+	 */
-+	pci_setup_phb_io_dynamic(phb, 0);
-+
-+	/* Init pci_dn data structures */
-+	pci_devs_phb_init_dynamic(phb);
-+
-+	/* Register devices with EEH */
-+#ifdef CONFIG_EEH
-+	if (dev->node->child)
-+		eeh_add_device_tree_early(dev->node);
-+#endif /* CONFIG_EEH */
-+
-+	/* Scan the bus */
-+	scan_phb(phb);
-+
-+	/* Claim resources. This might need some rework as well depending
-+	 * wether we are doing probe-only or not, like assigning unassigned
-+	 * resources etc...
-+	 */
-+	pcibios_claim_one_bus(phb->bus);
-+
-+	/* Finish EEH setup */
-+#ifdef CONFIG_EEH
-+	eeh_add_device_tree_late(phb->bus);
-+#endif
-+
-+	/* Add probed PCI devices to the device model */
-+	pci_bus_add_devices(phb->bus);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id of_pci_phb_ids[] = {
-+	{ .type = "pci", },
-+	{ .type = "pcix", },
-+	{ .type = "pcie", },
-+	{ .type = "pciex", },
-+	{ .type = "ht", },
-+	{}
-+};
-+
-+static struct of_platform_driver of_pci_phb_driver = {
-+       .name = "of-pci",
-+       .match_table = of_pci_phb_ids,
-+       .probe = of_pci_phb_probe,
-+       .driver = {
-+	       .multithread_probe = 1,
-+       },
-+};
-+
-+static __init int of_pci_phb_init(void)
-+{
-+	return of_register_platform_driver(&of_pci_phb_driver);
-+}
-+
-+device_initcall(of_pci_phb_init);
-+
-+#endif /* CONFIG_PCI */
-Index: linux-cell/arch/powerpc/kernel/pci_64.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/pci_64.c	2006-10-26 17:35:39.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/pci_64.c	2006-10-26 17:35:41.000000000 +1000
-@@ -214,6 +214,10 @@ struct pci_controller * pcibios_alloc_co
- 
- void pcibios_free_controller(struct pci_controller *phb)
- {
-+	spin_lock(&hose_spinlock);
-+	list_del(&phb->list_node);
-+	spin_unlock(&hose_spinlock);
-+
- 	if (phb->is_dynamic)
- 		kfree(phb);
- }
-@@ -1284,6 +1288,11 @@ static void __devinit do_bus_setup(struc
- void __devinit pcibios_fixup_bus(struct pci_bus *bus)
- {
- 	struct pci_dev *dev = bus->self;
-+	struct device_node *np;
-+
-+	np = pci_bus_to_OF_node(bus);
-+
-+	DBG("pcibios_fixup_bus(%s)\n", np ? np->full_name : "<???>");
- 
- 	if (dev && pci_probe_only &&
- 	    (dev->class >> 8) == PCI_CLASS_BRIDGE_PCI) {
-Index: linux-cell/include/asm-powerpc/machdep.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/machdep.h	2006-10-26 17:35:36.000000000 +1000
-+++ linux-cell/include/asm-powerpc/machdep.h	2006-10-26 17:35:41.000000000 +1000
-@@ -26,6 +26,7 @@ struct device_node;
- struct iommu_table;
- struct rtc_time;
- struct file;
-+struct pci_controller;
- #ifdef CONFIG_KEXEC
- struct kimage;
- #endif
-@@ -107,6 +108,9 @@ struct machdep_calls {
- 	int		(*pci_probe_mode)(struct pci_bus *);
- 	void		(*pci_irq_fixup)(struct pci_dev *dev);
- 
-+	/* To setup PHBs when using automatic OF platform driver for PCI */
-+	int		(*pci_setup_phb)(struct pci_controller *host);
-+
- 	void		(*restart)(char *cmd);
- 	void		(*power_off)(void);
- 	void		(*halt)(void);
-Index: linux-cell/arch/powerpc/kernel/rtas_pci.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:35:38.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:35:41.000000000 +1000
-@@ -257,8 +257,10 @@ static int phb_set_bus_ranges(struct dev
- 	return 0;
- }
- 
--int __devinit setup_phb(struct device_node *dev, struct pci_controller *phb)
-+int __devinit rtas_setup_phb(struct pci_controller *phb)
- {
-+	struct device_node *dev = phb->arch_data;
-+
- 	if (is_python(dev))
- 		python_countermeasures(dev);
- 
-@@ -290,7 +292,7 @@ unsigned long __init find_and_init_phbs(
- 		phb = pcibios_alloc_controller(node);
- 		if (!phb)
- 			continue;
--		setup_phb(node, phb);
-+		rtas_setup_phb(phb);
- 		pci_process_bridge_OF_ranges(phb, node, 0);
- 		pci_setup_phb_io(phb, index == 0);
- 		index++;
-@@ -362,7 +364,6 @@ int pcibios_remove_root_bus(struct pci_c
- 		}
- 	}
- 
--	list_del(&phb->list_node);
- 	pcibios_free_controller(phb);
- 
- 	return 0;
-Index: linux-cell/arch/powerpc/platforms/pseries/pci_dlpar.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/pseries/pci_dlpar.c	2006-10-26 17:35:36.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/pseries/pci_dlpar.c	2006-10-26 17:35:41.000000000 +1000
-@@ -195,7 +195,7 @@ struct pci_controller * __devinit init_p
- 	phb = pcibios_alloc_controller(dn);
- 	if (!phb)
- 		return NULL;
--	setup_phb(dn, phb);
-+	rtas_setup_phb(phb);
- 	pci_process_bridge_OF_ranges(phb, dn, 0);
- 
- 	pci_setup_phb_io_dynamic(phb, primary);
-Index: linux-cell/include/asm-powerpc/ppc-pci.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/ppc-pci.h	2006-10-26 17:35:36.000000000 +1000
-+++ linux-cell/include/asm-powerpc/ppc-pci.h	2006-10-26 17:35:41.000000000 +1000
-@@ -36,14 +36,14 @@ typedef void *(*traverse_func)(struct de
- void *traverse_pci_devices(struct device_node *start, traverse_func pre,
- 		void *data);
- 
--void pci_devs_phb_init(void);
--void pci_devs_phb_init_dynamic(struct pci_controller *phb);
--int setup_phb(struct device_node *dev, struct pci_controller *phb);
--void __devinit scan_phb(struct pci_controller *hose);
-+extern void pci_devs_phb_init(void);
-+extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
-+extern void scan_phb(struct pci_controller *hose);
- 
- /* From rtas_pci.h */
--void init_pci_config_tokens (void);
--unsigned long get_phb_buid (struct device_node *);
-+extern void init_pci_config_tokens (void);
-+extern unsigned long get_phb_buid (struct device_node *);
-+extern int rtas_setup_phb(struct pci_controller *phb);
- 
- /* From pSeries_pci.h */
- extern void pSeries_final_fixup(void);
-Index: linux-cell/arch/powerpc/platforms/cell/setup.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/setup.c	2006-10-26 17:35:36.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/setup.c	2006-10-26 17:35:41.000000000 +1000
-@@ -264,6 +264,7 @@ define_machine(cell) {
- 	.check_legacy_ioport	= cell_check_legacy_ioport,
- 	.progress		= cell_progress,
- 	.init_IRQ       	= cell_init_irq,
-+	.pci_setup_phb		= rtas_setup_phb,
- #ifdef CONFIG_KEXEC
- 	.machine_kexec		= default_machine_kexec,
- 	.machine_kexec_prepare	= default_machine_kexec_prepare,
+But that's not a public/opensource thing people use regulary is it ?
+
+Ben.
