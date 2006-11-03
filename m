@@ -1,19 +1,22 @@
 Return-Path: <sha@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id D231E67D75
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 19:52:52 +1100 (EST)
-Date: Fri, 3 Nov 2006 09:52:49 +0100
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 77A4067CA8
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 20:12:43 +1100 (EST)
+Date: Fri, 3 Nov 2006 10:12:38 +0100
 From: Sascha Hauer <s.hauer@pengutronix.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 01/16] remove inclusion of asm/processor.h for powerpc
-Message-ID: <20061103085249.GC22478@localhost.localdomain>
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
+Message-ID: <20061103091238.GD22478@localhost.localdomain>
 References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125624.134898000@localhost.localdomain>
-	<1162506020.10630.31.camel@localhost.localdomain>
+	<20061102125627.149261000@localhost.localdomain>
+	<528646bc0611020658le3adc94p30f372f3a1a8b07e@mail.gmail.com>
+	<20061102152527.GB4928@localhost.localdomain>
+	<528646bc0611020755k5be2d2ach388e921a29663bfa@mail.gmail.com>
+	<1162505588.10630.27.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1162506020.10630.31.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1162505588.10630.27.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I Sent a -p0 patch by accident, forget the last one.
+On Fri, Nov 03, 2006 at 09:13:08AM +1100, Benjamin Herrenschmidt wrote:
+> 
+> > Then perhaps Efika should also be under platforms/mpc52xx?
+> 
+> Classifying platforms by their processor might not be the best idea... I
+> makes some sense when those platforms are basically reference designs
+> for the said processor but I yet have to be convinced it's really a good
+> thing in the long run :)
+> 
+> There will be a lot of platforms that will consist of basically once
+> signle source file. I think we need a directory for those. Maybe
+> platform/misc :) Or we could have them at the root of platforms/ in
+> fact... 
+> 
 
-There is some PPC_CHRP specific code in drivers/ide/pci/via82cxxx.c,
-so #ifdef on CONFIG_PPC_CHRP instead of CONFIG_PPC_MULTIPLATFORM.
+In the embedded world there are many vendors of custom boards, so
+such a directory might become very big, even if there is only one
+file per board. Also I like the idea that I see all affected boards at
+first sight when I change something in lets say the mpc52xx interrupt
+controller.
+I don't know how this performs in the 'big computer world' where vendors
+combine a cpu with different chipsets. In the SoC world where every SoC
+has the very same interrupt controller and device layout this behaves
+quite well. Things become very orthogonal with per SoC directories.
+(I'm more familiar with arm, where directories are organized this way,
+so you might want to look at arch/arch/mach-* to see what I mean)
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-
-Index: drivers/ide/pci/via82cxxx.c
-===================================================================
---- a/drivers/ide/pci/via82cxxx.c.orig
-+++ b/drivers/ide/pci/via82cxxx.c
-@@ -35,7 +35,7 @@
- #include <linux/ide.h>
- #include <asm/io.h>
- 
--#ifdef CONFIG_PPC_MULTIPLATFORM
-+#ifdef CONFIG_PPC_CHRP
- #include <asm/processor.h>
- #endif
- 
-@@ -442,7 +442,7 @@ static void __devinit init_hwif_via82cxx
- 	hwif->speedproc = &via_set_drive;
- 
- 
--#if defined(CONFIG_PPC_CHRP) && defined(CONFIG_PPC32)
-+#ifdef CONFIG_PPC_CHRP
- 	if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
- 		hwif->irq = hwif->channel ? 15 : 14;
- 	}
-
-
+Sascha
 
 -- 
  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
