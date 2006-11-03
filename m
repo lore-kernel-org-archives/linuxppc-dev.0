@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6927367CC7
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 09:56:37 +1100 (EST)
-Subject: Re: [PATCH/RFC] Hookable IO operations
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200611032348.38402.arnd@arndb.de>
-References: <1162588367.10630.100.camel@localhost.localdomain>
-	<200611032320.34762.arnd@arndb.de>
-	<1162593121.10630.132.camel@localhost.localdomain>
-	<200611032348.38402.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sat, 04 Nov 2006 09:56:29 +1100
-Message-Id: <1162594589.10630.135.camel@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 7513F67CA1
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 10:51:01 +1100 (EST)
+Date: Fri, 3 Nov 2006 17:49:48 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
+Message-ID: <20061103174948.34a5afe4@localhost.localdomain>
+In-Reply-To: <1162589534.10630.127.camel@localhost.localdomain>
+References: <OFCD6BEB84.DE407CA1-ON8725721B.00508624-8525721B.00552A5F@us.ibm.com>
+	<1162586775.10630.92.camel@localhost.localdomain>
+	<20061103145300.411931b7@localhost.localdomain>
+	<1162589534.10630.127.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-]
-> Actually I meant all of the I/O pointers, not just these three. When
-> you were describing your idea to me, I was thinking of something like
-> 
-> struct ppc_io {
-> 	void (*writeb)(u8 val);
-> 	void (*writew)(u16 val);
-> 	void (*writel)(u32 val);
-> 	void (*writeq)(u64 val);
-> 	...
-> 	void (*memset_io)(volatile void __iomem *addr, int c,
-> 				 unsigned long n);
-> 	void (*__memcpy_fromio)(void *dest,
-> 			const volatile void __iomem *src, unsigned long n);
-> 	void (*__memcpy_toio)(volatile void __iomem *dest,
-> 			const void *src, unsigned long n);
-> } *ppc_io;
-> 
-> Did you never consider this, or did you make your mind up in the
-> process?
+On Sat, 04 Nov 2006 08:32:14 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I considered this and decided against it while doing the macro since I
-could get the hooks auto-generated easier as globals, but I can still
-change it, it's not that much bloat and might indeed look nicer.
+> But that's not a public/opensource thing people use regulary is it ?
 
-> Is your current code more efficient?
+Might not be. I don't know what AMCC use for their eval boards, if it's
+u-boot or PIBS or something else.
 
-I don't think there is a difference is ppc_io is a global struct rather
-than a pointer, like ppc_md.
 
-Ben.
+-Olof
