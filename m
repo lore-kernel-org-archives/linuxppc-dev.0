@@ -1,14 +1,17 @@
-Return-Path: <ptich@hotmail.com>
-Received: from hotmail.com (bay102-f21.bay102.hotmail.com [64.4.61.31])
-	by ozlabs.org (Postfix) with ESMTP id BA7C967C62
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 14:56:07 +1100 (EST)
-Message-ID: <BAY102-F21F34507B25D8615CACD06A9FE0@phx.gbl>
-From: "M Ptich" <ptich@hotmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Clear OS / HAL separation
-Date: Fri, 03 Nov 2006 03:39:01 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C2E0267C36
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 16:09:01 +1100 (EST)
+Message-ID: <454ACEDD.70309@am.sony.com>
+Date: Thu, 02 Nov 2006 21:08:45 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cell: set ARCH_SPARSEMEM_DEFAULT in Kconfig
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,14 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am porting 2.6 kernel from Freescale onto our PPC platform. This is my 
-first experience with Linux, and I was unpleasantly surprised how poorly OS 
-and platform code are separated. So I have a question: is there a project 
-underway, somewhere, that is trying to separate OS and HAL (or Board Support 
-Package) for the next Linux kernel ?
+The current cell processor support needs sparsemem, so set it as
+the default memory model.
 
-Would highly appreciate any relevant pointers.
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-_________________________________________________________________
-Stay in touch with old friends and meet new ones with Windows Live Spaces 
-http://clk.atdmt.com/MSN/go/msnnkwsp0070000001msn/direct/01/?href=http://spaces.live.com/spacesapi.aspx?wx_action=create&wx_url=/friends.aspx&mkt=en-us
+--
+
+As noted by Benjamin Herrenschmidt.
+
+Index: cell--common--6/arch/powerpc/Kconfig
+===================================================================
+--- cell--common--6.orig/arch/powerpc/Kconfig
++++ cell--common--6/arch/powerpc/Kconfig
+@@ -734,7 +743,7 @@
+ 
+ config ARCH_SPARSEMEM_DEFAULT
+ 	def_bool y
+-	depends on SMP && PPC_PSERIES
++	depends on (SMP && PPC_PSERIES) || PPC_CELL
+ 
+ config ARCH_POPULATES_NODE_MAP
+ 	def_bool y
