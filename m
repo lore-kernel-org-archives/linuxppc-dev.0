@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 03 Nov 2006 18:28:53 +1100
-Subject: [PATCH 1/3] Fix sparse warning in xmon Cell code
-Message-Id: <1162538933.650101.682761686374.qpush@cradle>
+Date: Fri, 03 Nov 2006 18:28:54 +1100
+Subject: [PATCH 2/3] Show state of spus as they're stopped in Cell xmon helper
+In-Reply-To: <1162538933.650101.682761686374.qpush@cradle>
+Message-Id: <20061103072854.7239067CA6@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,73 +15,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-My patch to add spu helpers to xmon (a898497088f46252e6750405504064e2dce53117)
-introduced a few sparse warnings, because I was dereferencing an __iomem
-pointer.
-
-I think the best way to handle it is to actually use the appropriate in_beXX
-functions. Need to rejigger the DUMP macro a little to accomodate that.
+After stopping spus in xmon I often find myself trawling through the
+field dumps to find out which spus were running. The spu stopping
+code actually knows what's running, so let's print it out to save
+the user some futzing.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-
-Arnd, it might be nice to merge this for SDK 2.0 if that's still an option,
-just so that it matches upstream as much as possible.
-
- arch/powerpc/xmon/xmon.c |   22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ arch/powerpc/xmon/xmon.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 Index: cell/arch/powerpc/xmon/xmon.c
 ===================================================================
 --- cell.orig/arch/powerpc/xmon/xmon.c
 +++ cell/arch/powerpc/xmon/xmon.c
-@@ -2746,13 +2746,13 @@ static void restart_spus(void)
- }
+@@ -2700,7 +2700,10 @@ static void stop_spus(void)
+ 			__delay(200);
  
- #define DUMP_WIDTH	23
--#define DUMP_FIELD(obj, format, field)					\
-+#define DUMP_VALUE(format, field, value)				\
- do {									\
- 	if (setjmp(bus_error_jmp) == 0) {				\
- 		catch_memory_errors = 1;				\
- 		sync();							\
- 		printf("  %-*s = "format"\n", DUMP_WIDTH,		\
--				#field, obj->field);			\
-+				#field, value);				\
- 		sync();							\
- 		__delay(200);						\
- 	} else {							\
-@@ -2763,6 +2763,9 @@ do {									\
- 	catch_memory_errors = 0;					\
- } while (0)
- 
-+#define DUMP_FIELD(obj, format, field)	\
-+	DUMP_VALUE(format, field, obj->field)
+ 			spu_info[i].stopped_ok = 1;
+-			printf("Stopped spu %.2d\n", i);
 +
- static void dump_spu_fields(struct spu *spu)
- {
- 	printf("Dumping spu fields at address %p:\n", spu);
-@@ -2791,13 +2794,18 @@ static void dump_spu_fields(struct spu *
- 	DUMP_FIELD(spu, "0x%p", timestamp);
- 	DUMP_FIELD(spu, "0x%lx", problem_phys);
- 	DUMP_FIELD(spu, "0x%p", problem);
--	DUMP_FIELD(spu, "0x%x", problem->spu_runcntl_RW);
--	DUMP_FIELD(spu, "0x%x", problem->spu_status_R);
--	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
-+	DUMP_VALUE("0x%x", problem->spu_runcntl_RW,
-+			in_be32(&spu->problem->spu_runcntl_RW));
-+	DUMP_VALUE("0x%x", problem->spu_status_R,
-+			in_be32(&spu->problem->spu_status_R));
-+	DUMP_VALUE("0x%x", problem->spu_npc_RW,
-+			in_be32(&spu->problem->spu_npc_RW));
- 	DUMP_FIELD(spu, "0x%p", priv1);
- 
--	if (spu->priv1)
--		DUMP_FIELD(spu, "0x%lx", priv1->mfc_sr1_RW);
-+	if (spu->priv1) {
-+		DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
-+				in_be64(&spu->priv1->mfc_sr1_RW));
-+	}
- 
- 	DUMP_FIELD(spu, "0x%p", priv2);
- }
++			printf("Stopped spu %.2d (was %s)\n", i,
++					spu_info[i].saved_spu_runcntl_RW ?
++					"running" : "stopped");
+ 		} else {
+ 			catch_memory_errors = 0;
+ 			printf("*** Error stopping spu %.2d\n", i);
