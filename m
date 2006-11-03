@@ -1,18 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] spufs: always map local store non-guarded
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200611021346.49473.arnd@arndb.de>
-References: <200611021346.49473.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-vMd54lCZzLxY/25hzOPt"
-Date: Fri, 03 Nov 2006 11:28:54 +1100
-Message-Id: <1162513734.8999.11.camel@localhost.localdomain>
+Return-Path: <ptich@hotmail.com>
+Received: from hotmail.com (bay102-f21.bay102.hotmail.com [64.4.61.31])
+	by ozlabs.org (Postfix) with ESMTP id BA7C967C62
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Nov 2006 14:56:07 +1100 (EST)
+Message-ID: <BAY102-F21F34507B25D8615CACD06A9FE0@phx.gbl>
+From: "M Ptich" <ptich@hotmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Clear OS / HAL separation
+Date: Fri, 03 Nov 2006 03:39:01 +0000
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, cbe-oss-dev <cbe-oss-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,72 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I am porting 2.6 kernel from Freescale onto our PPC platform. This is my 
+first experience with Linux, and I was unpleasantly surprised how poorly OS 
+and platform code are separated. So I have a question: is there a project 
+underway, somewhere, that is trying to separate OS and HAL (or Board Support 
+Package) for the next Linux kernel ?
 
---=-vMd54lCZzLxY/25hzOPt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Would highly appreciate any relevant pointers.
 
-On Thu, 2006-11-02 at 13:46 +0100, Arnd Bergmann wrote:
-> When fixing spufs to map the 'mem' file backing store cacheable,
-> I incorrectly set the physical mapping to use both cache-inhibited
-> and guarded mapping, which resulted in a serious performance
-> degradation.
->=20
-> Accessing the real local store memory needs to be cache-inhibited,
-> in order to maintain data consistency, but since it is actual
-> RAM, there is no point in a guarded mapping.
->=20
-> Debugged-by: Michael Ellerman <michael@ellerman.id.au>
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> ---
-
-Looks good, cheers
-
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-
->=20
-> This fixes a regression in 2.6.19, please merge.
->=20
-> Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
-> +++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-> @@ -104,11 +104,11 @@ spufs_mem_mmap_nopage(struct vm_area_str
-> =20
->  	if (ctx->state =3D=3D SPU_STATE_SAVED) {
->  		vma->vm_page_prot =3D __pgprot(pgprot_val(vma->vm_page_prot)
-> -					& ~(_PAGE_NO_CACHE | _PAGE_GUARDED));
-> +							& ~_PAGE_NO_CACHE);
->  		page =3D vmalloc_to_page(ctx->csa.lscsa->ls + offset);
->  	} else {
->  		vma->vm_page_prot =3D __pgprot(pgprot_val(vma->vm_page_prot)
-> -					| _PAGE_NO_CACHE | _PAGE_GUARDED);
-> +							| _PAGE_NO_CACHE);
->  		page =3D pfn_to_page((ctx->spu->local_store_phys + offset)
->  				   >> PAGE_SHIFT);
->  	}
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-vMd54lCZzLxY/25hzOPt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFSo1GdSjSd0sB4dIRApKCAJwJu1pKt4FkpIUdGyOAFwtck02llgCgnz06
-f1GwOynbCVGxnxWO7xwVYcs=
-=zdse
------END PGP SIGNATURE-----
-
---=-vMd54lCZzLxY/25hzOPt--
+_________________________________________________________________
+Stay in touch with old friends and meet new ones with Windows Live Spaces 
+http://clk.atdmt.com/MSN/go/msnnkwsp0070000001msn/direct/01/?href=http://spaces.live.com/spacesapi.aspx?wx_action=create&wx_url=/friends.aspx&mkt=en-us
