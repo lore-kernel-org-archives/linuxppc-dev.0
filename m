@@ -1,21 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-41-71-127.roch.qwest.net [67.41.71.127])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E9A2A67BF3
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Nov 2006 02:40:39 +1100 (EST)
-In-Reply-To: <1162589327.10630.125.camel@localhost.localdomain>
-References: <1162589327.10630.125.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A9F3AC31-AB61-4E39-86D7-B14B96B50B4D@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] powerpc: Create PCI busses from of_platform
-Date: Sat, 4 Nov 2006 16:40:31 +0100
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2AEF367BDC
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Nov 2006 03:18:03 +1100 (EST)
+Subject: Re: FSL vs. IBM BookE
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1162632114.28571.33.camel@localhost.localdomain>
+References: <1162632114.28571.33.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 04 Nov 2006 10:16:40 -0600
+Message-Id: <1162657000.3139.108.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +static struct of_device_id of_pci_phb_ids[] = {
-> +	{ .type = "pci", },
-> +	{ .type = "pcix", },
-> +	{ .type = "pcie", },
-> +	{ .type = "pciex", },
-> +	{ .type = "ht", },
-> +	{}
-> +};
-> +
-> +static struct of_platform_driver of_pci_phb_driver = {
-> +       .name = "of-pci",
-> +       .match_table = of_pci_phb_ids,
-> +       .probe = of_pci_phb_probe,
-> +       .driver = {
-> +	       .multithread_probe = 1,
-> +       },
-> +};
+On Sat, 2006-11-04 at 20:21 +1100, Benjamin Herrenschmidt wrote:
+> Out of curiosity... I noticed we have both head_44x.S and
+> head_fsl_booke.S, the later being a fork of the former with changed from
+> Kumar (and possibly others) to support E200 and E500.
+> 
+> How bad are the differences between those cores ? Would it be possible
+> to reconcile those and IBM 44x into a single processor family ? Or are
+> there some fundamental differences making that impossible ? (even with a
+> bit of CPU feature patching).
 
-Shouldn't you also/only check for compatible=pci?  Or maybe
-that would give too much fallout from all the broken device
-trees out there?
+I'm not sure.  Maybe Kumar knows better since he made the changes to
+head_fsl_booke.S.  I believe FSL can do SMP and has an SPE and some
+other HID registers that 44x does not have.
 
+> 
+> Also, I suppose we should rename head_4xx.S to head_40x.S no ?
 
-Segher
+That would be fine with me.  I can send a patch if you'd like.
+
+josh
