@@ -1,16 +1,21 @@
-Return-Path: <jsurf@heckheck.com>
-Received: from alnrmhc13.comcast.net (alnrmhc13.comcast.net [206.18.177.53])
-	by ozlabs.org (Postfix) with ESMTP id EBB9867BDC
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
+	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 11E8367C0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 06:19:25 +1100 (EST)
-Message-ID: <454CE55C.3040901@heckheck.com>
-Date: Sat, 04 Nov 2006 14:09:16 -0500
-From: Jim Heck <jsurf@heckheck.com>
+	Sun,  5 Nov 2006 10:21:56 +1100 (EST)
+Message-ID: <454D203D.4060908@dlasys.net>
+Date: Sat, 04 Nov 2006 18:20:29 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Kernel oops running 2.6.17 kernel on RPXlite DW involving DP memory
-	in network initialization
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: robert corley <rdcorle@yahoo.com>
+Subject: Re: minor progress with plb_temac v3.00a, EDK 8.2, & 2.6.18.1
+References: <20061104150210.7507.qmail@web56301.mail.re3.yahoo.com>
+In-Reply-To: <20061104150210.7507.qmail@web56301.mail.re3.yahoo.com>
+Content-Type: multipart/alternative;
+	boundary="------------090005000705090800040206"
+Cc: linux linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,234 +26,792 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've been trying to get a 2.6.x kernel working with the RPXlite DW 
-system from Embedded Planet.  I'm getting an oops in the initialization 
-of the network driver.  I have done the basic crash analysis, and it 
-appears to have to do with the allocation of DP Ram for buffer 
-descriptors during initialization of the loopback device.  The address 
-being allocated appears to cause a bus fault.  I was hoping someone more 
-familiar with the 8xx network code (or the RPXlite specifically) might 
-recognize what's going on here.  Find my analysis below.
+This is a multi-part message in MIME format.
+--------------090005000705090800040206
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thanks for any help,
+robert corley wrote:
+> Pradeep;
+>
+> Booting with a ramdisk is a matter of putting the appropriate image in 
+> the arch/ppc/boot/images directory (I obtained mine from the gsrd 
+> design files), adding the root=/dev/ram rw on the command-line boot 
+> options, making the .config changes for ram disk support and initrd 
+> usage, and issuing a make zImage.initrd command.
+>
+> Beware when upgrading to 2.6.18.1 as you may have difficulties with 
+> the adapter.c you obtained previously.  The adapter.c in EDK 8.2 is 
+> not as easy to find.  Using the EDK to generate software components 
+> for linux will not expose the proper adapter.c.  I had to use the path 
+> that Rick Moleres posted earlier to retrieve the adapter.c which I 
+> used for 2.6.18.1 and in my notes.
+>
+> -cy
+>
+    I am booting with a ramdisk using initramfs. Aside from its being 
+somewhat harder to find documentation I beleive it is actually easier.
+   
+    In the simplest form, create a directory on your host that contains 
+exactly what you want on the ramdisk.
+    Enable CONFIG_INITRAMFS
+    and point the CONFIG_INITRAMFS_SOURCE  to that directory.
 
--Jim Heck
-
-I'm using the GCC Powerpc cross compiler and tools from the ELDK 4.0 
-http://www.denx.de/wiki/DULG/ELDK
-
-The kernel source code is stock 2.6.17 from kernel.org, with one 
-modification to the /arch/ppc/platforms/rpxlite.h file to remove the 
-bd_t struct definition and replace it with
-
-#include <asm/ppcboot.h>
-
-This was necessary to get it to work with u-boot.
-
-I also tried the 2.6.15 source code in the ELDK, but had similar 
-symptoms (I debugged only the 2.6.17 code).
-
-*****RPXLite DW Syslog
-
-001c0e74: 6c3a2043 504d2064 72697665 72202452    l: CPM driver $R
-001c0e84: 65766973 696f6e3a 20302e30 3220240a    evision: 0.02 $.
-001c0e94: 3c363e63 706d5f75 6172743a 20574152    <6>cpm_uart: WAR
-001c0ea4: 4e494e47 3a206e6f 20554152 54206465    NING: no UART de
-001c0eb4: 76696365 7320666f 756e6420 6f6e2070    vices found on p
-001c0ec4: 6c617466 6f726d20 62757321 0a3c363e    latform bus!.<6>
-001c0ed4: 63706d5f 75617274 3a207468 65206472    cpm_uart: the dr
-001c0ee4: 69766572 2077696c 6c206775 65737320    iver will guess
-001c0ef4: 636f6e66 69677572 6174696f 6e2c2062    configuration, b
-001c0f04: 75742074 68697320 6d6f6465 20697320    ut this mode is
-001c0f14: 6e6f206c 6f6e6765 72207375 70706f72    no longer suppor
-001c0f24: 7465642e 0a3c343e 52414d44 49534b20    ted..<4>RAMDISK
-001c0f34: 64726976 65722069 6e697469 616c697a    driver initializ
-001c0f44: 65643a20 31362052 414d2064 69736b73    ed: 16 RAM disks
-001c0f54: 206f6620 34303936 4b207369 7a652031     of 4096K size 1
-001c0f64: 30323420 626c6f63 6b73697a 650a3c36    024 blocksize.<6
-001c0f74: 3e6c6f6f 703a206c 6f616465 6420286d    >loop: loaded (m
-001c0f84: 61782038 20646576 69636573 290a3c34    ax 8 devices).<4
-001c0f94: 3e4a4148 2041626f 75742074 6f20646d    >JAH About to dm
-001c0fa4: 615f616c 6c6f635f 636f6865 00000000    a_alloc_cohe....
-001c0fb4: 00000000 00000000 00000000 00000000    ................
-001c0fc4: 00000000 00000000 00000000 343e4a41    ............4>JA
-001c0fd4: 48205265 7475726e 20666972 73742070    H Return first p
-001c0fe4: 6167652e 20416464 72657373 20666631    age. Address ff1
-001c0ff4: 30303030 300a3c34 3e4f6f70 733a206b    00000.<4>Oops: k
-001c1004: 65726e65 6c206163 63657373 206f6620    ernel access of
-001c1014: 62616420 61726561 2c207369 673a2031    bad area, sig: 1
-001c1024: 31205b23 315d0a3c 343e4e49 503a2043    1 [#1].<4>NIP: C
-001c1034: 30314237 38383820 4c523a20 00000000    01B7888 LR: ....
-001c1044: 00000000 00000000 00000000 30303030    ............0000
-001c1054: 30300a3c 343e5245 47533a20 63303238    00.<4>REGS: c028
-001c1064: 62653930 20545241 503a2030 33303020    be90 TRAP: 0300
-001c1074: 20204e6f 74207461 696e7465 64202028      Not tainted  (
-001c1084: 322e362e 31372d31 290a3c34 3e4d5352    2.6.17-1).<4>MSR
-001c1094: 3a203030 30303930 3332203c 45452c4d    : 00009032 <EE,M
-001c10a4: 452c4952 2c44523e 20204352 3a203234    E,IR,DR>  CR: 24
-001c10b4: 30303230 32322020 5845523a 20343030    002022  XER: 400
-001c10c4: 30443037 460a3c34 3e444152 3a203334    0D07F.<4>DAR: 34
-001c10d4: 32303230 30302c20 44534953 523a2043    202000, DSISR: C
-001c10e4: 32303030 3030300a 3c343e54 00000000    2000000.<4>T....
-001c10f4: 00000000 00000000 00000000 00000000    ................
-001c1104: 00000000 00000000 00000000 00000000    ................
-001c1114: 00000000 00000000 00000000 47505230    ............GPR0
-001c1124: 303a2043 30314237 38374320 43303238    0: C01B787C C028
-001c1134: 42463430 20433032 38364145 00000000    BF40 C0286AE....
-001c1144: 00000000 00000000 00000000 00000000    ................
-001c1154: 00000000 00000000 00000000 00000000    ................
-001c1164: 00000000 00000000 00000000 00000000    ................
-001c1174: 00000000 00000000 00000000 00000000    ................
-001c1184: 00000000 00000000 00000000 00000000    ................
-001c1194: 00000000 00000000 00000000 00000000    ................
-001c11a4: 00000000 00000000 00000000 30343030    ............0400
-001c11b4: 30303030 20303038 30303030 30200a3c    0000 00800000 .<
-001c11c4: 363e4750 5231363a 20303346 46463139    6>GPR16: 03FFF19
-001c11d4: 30204646 46464646 46462030 30303030    0 FFFFFFFF 00000
-001c11e4: 30303020 43303138 30303030 20433031    000 C0180000 C01
-001c11f4: 38303030 30204641 32303041 32302046    80000 FA200A20 F
-001c1204: 46464639 30303020 43303330 31453630    FFF9000 C0301E60
-001c1214: 200a3c36 3e475052 32343a20 00000000     .<6>GPR24: ....
-001c1224: 00000000 00000000 00000000 00000000    ................
-001c1234: 00000000 00000000 00000000 44303020    ............D00
-001c1244: 33343230 32303030 20433033 30314539    34202000 C0301E9
-001c1254: 30204646 31303030 30302033 34323032    0 FF100000 34202
-001c1264: 30303020 0a3c343e 43616c6c 20547261    000 .<4>Call Tra
-001c1274: 63653a0a 3c343e5b 43303238 00000000    ce:.<4>[C028....
+    It is pretty much that simple. The linux build process creates a 
+kernel - I use zImage.elf that has the ramdisk compressed and concatentated.
+    Nothing except the Linux kernel itself has to make any accomidations 
+for the ramdisk. The bootloader does not have to deal with another file, 
+or pass pointers to it to Linux, ....
+    It took some time to get it working - mostly because I did nto know 
+what I was doing, but in hindsight it is really easy.
 
 
-***** /arch/ppc/8xx_io/enet.c starting at line 841
 
-    bpd = cep->rx_bd_base;
-    k = 0;
+> ----- Original Message ----
+> From: Pradeep Sampath <pradeepsampath@yahoo.com>
+> To: robert corley <rdcorle@yahoo.com>
+> Sent: Thursday, November 2, 2006 7:57:25 PM
+> Subject: Re: minor progress with plb_temac v3.00a, EDK 8.2, & 2.6.18.1
+>
+> This is great! I played around for a while with the Sysace CF driver 
+> patches and got it to work. Since you are booting with ramdisk image 
+> would you be kind enough to add more text on how to do that? I see 
+> that you are using UART Lite? Does it require any special setting for 
+> the boot logs to show up on the standard hyperterminal.
+>  
+> I am planning on rebuilding the whole system using EDK 8.2 and linux 
+> kernel 2.6.18.1.
+>  
+> -Pradeep
+>
+> */robert corley <rdcorle@yahoo.com>/* wrote:
+>
+>     For those interested, I have acheived some measure of success with
+>     the plb_temac driver.
+>
+>     I have attached a txt file of what I had to do to get it working
+>     under 2.6.18.1
+>
+>     I am using the plb_temac in DMA mode 3
+>
+>     Below you will see the boot dump.
+>
+>     For those able to help, can anyone provide insight as to the
+>     failure of setting PHY link speed?
+>
+>     -cy
+>
+>
+>
+>     ====================
+>     ----------------------------------------------------------------------
+>     2.6.18.1 kernel with all patches
+>     11/02/2006 15:30
+>     plb_temac v3.00a
+>     hard_temac v3.00b
+>
+>
+>     loaded at: 00400000 009F1138
+>     board data at: 009EF120 009EF138
+>     relocated to: 004040B4 004040CC
+>     zimage at: 00404EC7 0057C1F2
+>     initrd at: 0057D000 009EE6FE
+>     avail ram: 009F2000 04000000
+>
+>
+>     Linux/PPC load: console=ttyUL0 single
+>     ip=192.168.1.100:192.168.1.144:192.168.1.1:255.255.255.0:nab::
+>     ramdisk_size=4660000 root=/dev/ram rw
+>
+>     Uncompressing Linux...done.
+>
+>     Now booting the kernel
+>
+>     [ 0.000000] Linux version 2.6.18.1 (rdcorle@athena) (gcc version
+>     3.4.2) #2 Thu Nov 2 21:56:32 UTC 2006
+>     [ 0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
+>     [ 0.000000] Built 1 zonelists. Total pages: 16384
+>     [ 0.000000] Kernel command line: console=ttyUL0 single
+>     ip=192.168.1.100:192.168.1.144:192.168.1.1:255.255.255.0:nab::
+>     ramdisk_size=4660000 root=/dev/ram rw
+>     [ 0.000000] Xilinx INTC #0 at 0xD1000FC0 mapped to 0xFDFFFFC0
+>     [ 0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
+>     [ 0.000158] Console: colour dummy device 80x25
+>     [ 0.000568] Dentry cache hash table entries: 8192 (order: 3, 32768
+>     bytes)
+>     [ 0.001277] Inode-cache hash table entries: 4096 (order: 2, 16384
+>     bytes)
+>     [ 0.012895] Memory: 57060k available (2548k kernel code, 640k
+>     data, 96k init, 0k highmem)
+>     [ 0.104378] Mount-cache hash table entries: 512
+>     [ 0.106721] checking if image is initramfs...it isn't (no cpio
+>     magic); looks like an initrd
+>     [ 2.414242] Freeing initrd memory: 4549k freed
+>     [ 2.418712] NET: Registered protocol family 16
+>     [ 2.427313] NET: Registered protocol family 2
+>     [ 2.464244] IP route cache hash table entries: 512 (order: -1,
+>     2048 bytes)
+>     [ 2.465037] TCP established hash table entries: 2048 (order: 1,
+>     8192 bytes)
+>     [ 2.465205] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+>     [ 2.465296] TCP: Hash tables configured (established 2048 bind 1024)
+>     [ 2.465324] TCP reno registered
+>     [ 2.474633] NTFS driver 2.1.27 [Flags: R/O].
+>     [ 2.475046] JFS: nTxBlock = 481, nTxLock = 3854
+>     [ 2.477623] SGI XFS with no debug enabled
+>     [ 2.479001] io scheduler noop registered
+>     [ 2.479109] io scheduler anticipatory registered
+>     [ 2.479197] io scheduler deadline registered
+>     [ 2.479402] io scheduler cfq registered (default)
+>     [ 2.517627] uartlite.0: ttyUL0 at MMIO 0xa0000000 (irq = 1) is a
+>     uartlite
+>     [ 2.691029] RAMDISK driver initialized: 16 RAM disks of 4660000K
+>     size 1024 blocksize
+>     [ 2.703933] loop: loaded (max 8 devices)
+>     [ 2.709698] XTemac: using sgDMA mode.
+>     [ 2.713493] XTemac: using TxDRE mode
+>     [ 2.717081] XTemac: using RxDRE mode
+>     [ 2.720678] XTemac: buffer descriptor size: 32768 (0x8000)
+>     [ 2.726622] XTemac: (buffer_descriptor_init) phy: 0x580000, virt:
+>     0xff100000, size: 0x8000
+>     [ 2.741073] eth0: Xilinx TEMAC #0 at 0x60000000 mapped to
+>     0xC5050000, irq=0
+>     [ 2.748080] eth0: XTemac id 1.0f, block id 5, type 8
+>     [ 2.753636] mice: PS/2 mouse device common for all mice
+>     [ 2.759529] TCP bic registered
+>     [ 3.264317] eth0: XTemac: Options: 0xb8f2
+>     [ 15.227339] eth0: XTemac: Not able to set the speed to 1000
+>     (status: 0x148)
+>     [ 25.200394] eth0: XTemac: Not able to set the speed to 100
+>     (status: 0x148)
+>     [ 35.173357] eth0: XTemac: Not able to set the speed to 10
+>     (status: 0x148)
+>     [ 35.180122] eth0: XTemac: could not negotiate speed
+>     [ 35.187740] eth0: XTemac: Send Threshold = 16, Receive Threshold = 2
+>     [ 35.194116] eth0: XTemac: Send Wait bound = 1, Receive Wait bound = 1
+>     [ 36.205399] IP-Config: Complete:
+>     [ 36.208459] device=eth0, addr=192.168.1.100, mask=255.255.255.0,
+>     gw=192.168.1.1,
+>     [ 36.216339] host=nab, domain=, nis-domain=(none),
+>     [ 36.221487] bootserver=192.168.1.144, rootserver=192.168.1.144,
+>     rootpath=
+>     [ 36.229826] RAMDISK: Compressed image found at block 0
+>     [ 37.200498] eth0: XTemac: PHY Link carrier lost.
+>     [ 39.097820] VFS: Mounted root (ext2 filesystem).
+>     [ 39.102751] Freeing unused kernel memory: 96k init
+>     [ 39.108356] ulite_startup: UART status = 0x0014
+>     [ 39.124619] ulite_startup: UART status = 0x0014
+>     [ 39.134313] ulite_startup: UART status = 0x0014
+>
+>
+>     BusyBox v1.00-pre9 (2004.04.18-19:53+0000) Built-in shell (ash)
+>     Enter 'help' for a list of built-in commands.
+>
+>     -sh: can't access tty; job control turned off
+>
+>
+>     steps for plb_temac drivers under EDK 8.2.02i (w/SP2.4+0)
+>     Using plb_temac v3.00a & hard_temac v3.00b
+>
+>     Generate s/w libraries
+>
+>     1. copy or ftp the following files from
+>     C:\EDK\sw\ThirdParty\bsp\linux_2_6_v1_00_a\linux\
+>     to the base directory of the linux source tree
+>
+>     USED:
+>     arch\ppc\platforms\4xx\xparameters\xparameters.h
+>
+>     ** UNUSED
+>     arch\ppc\platforms\4xx\virtex.c
+>     arch\ppc\boot\simple\embed_config.c
+>     include\linux\xilinx_devices.h
+>
+>     2. copy
+>     C:\EDK\sw\ThirdParty\bsp\linux_2_6_v1_00_a\drivers\temac_linux_2_6_v2_00_b\src\adapter.c
+>     to
+>     ../drivers/net/xilinx_temac/adapter.c
+>
+>     3. copy or ftp ..\linux\arch\ppc\platforms\xilinx_ocp =>
+>     drivers/xilinx_edk
+>     Note: Remove all old files first *except* Kconfig, xio.h
+>
+>     4. modify drivers/xilinx_edk/Makefile with the following to look
+>     like this:
+>
+>     # Linux file to EXPORT_SYMBOL all of the Xilinx entries.
+>     obj-$(CONFIG_XILINX_EDK) += xilinx_syms.o
+>     #
+>     # # The Xilinx OS independent code.
+>     xilinx_syms-objs := xbasic_types.o \
+>     xdmav3.o xdmav3_intr.o xdmav3_selftest.o xdmav3_simple.o xdmav3_sg.o \
+>     xipif_v1_23_b.o \
+>     xpacket_fifo_l_v2_00_a.o xpacket_fifo_v2_00_a.o \
+>     xversion.o
+>
+>     5. Modify your copied xparameters_ml403.h (see notes below) as
+>     follows:
+>     add these lines after #define XPAR_PLB_TEMAC_0_INCLUDE_RX_CSUM
+>
+>     #define XPAR_TEMAC_0_IPIF_RDFIFO_DEPTH XPAR_PLB_TEMAC_0_RXFIFO_DEPTH
+>     #define XPAR_TEMAC_0_IPIF_WRFIFO_DEPTH XPAR_PLB_TEMAC_0_TXFIFO_DEPTH
+>     #define XPAR_TEMAC_0_MAC_FIFO_DEPTH XPAR_PLB_TEMAC_0_MAC_FIFO_DEPTH
+>     #define XPAR_TEMAC_0_TEMAC_DCR_HOST 0
+>     #define XPAR_TEMAC_0_INCLUDE_DRE 1
+>
+>
+>     6. (optional) modify arch/ppc/platforms/virtex.h to accomodate
+>     RX_CSUM XPAR
+>
+>     struct xtemac_platform_data {
+>     #ifdef XPAR_TEMAC_0_INCLUDE_RX_CSUM
+>     u8 tx_dre;
+>     u8 rx_dre;
+>     u8 tx_csum;
+>     u8 rx_csum;
+>     u8 phy_type;
+>     #endif
+>     u8 dma_mode;
+>     u32 rx_pkt_fifo_depth;
+>     u32 tx_pkt_fifo_depth;
+>     u16 mac_fifo_depth;
+>     u8 dcr_host;
+>     u8 dre;
+>     u8 mac_addr[6];
+>     };
+>
+>     7. Modify ../drivers/net/xilinx_temac/adapter.c to remove #include and
+>     add #include
+>     add #include
+>
+>     ____________________________________________________________________________________
+>     NOTES:
+>     1. Don't forget to copy EDK-generated xparameters.h to
+>     ../arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
+>
+>
+>
+>     =====================================================
+>     Files in latest patch:
+>     ../drivers/net/xilinx_temac =
+>     Makefile
+>     adapter.c
+>     xtemac.c
+>     xtemac_control.c
+>     xtemac_fifo.c
+>     xtemac_intr.c
+>     xtemac_intr_fifo.c
+>     xtemac_intr_sgdma.c
+>     xtemac_l.c
+>     xtemac_sgdma.c
+>     xtemac.h
+>     xtemac_i.h
+>     xtemac_l.h
+>
+>     Files in ..\linux\drivers\net\xilinx_temac => (** = new files)
+>
+>     Makefile
+>     adapter.c
+>     xtemac.c
+>     xtemac_control.c
+>     xtemac_fifo.c
+>     xtemac_g.c**
+>     xtemac_intr.c
+>     xtemac_intr_fifo.c
+>     xtemac_intr_sgdma.c
+>     xtemac_l.c
+>     xtemac_selftest.c**
+>     xtemac_sgdma.c
+>     xtemac_sinit.c**
+>     xtemac_stats.c**
+>     xtemac.h
+>     xtemac_i.h
+>     xtemac_l.h
+>
+>     ============================================================
+>     Files in ../drivers/xilinx_edk =>
+>
+>     Kconfig
+>     Makefile
+>     xbasic_types.c
+>     xdmav2.c
+>     xdmav2_intr.c
+>     xdmav2_sg.c
+>     xdmav2_simple.c
+>     xilinx_syms.c
+>     xpacket_fifo_l_v2_00_a.c
+>     xpacket_fifo_v2_00_a.c
+>     xbasic_types.h
+>     xdmabdv2.h
+>     xdmav2.h
+>     xdmav2_l.h
+>     xio.h
+>     xpacket_fifo_l_v2_00_a.h
+>     xpacket_fifo_v2_00_a.h
+>     xstatus.h
+>
+>     Files in ..\linux\arch\ppc\platforms\xilinx_ocp=>
+>     Makefile
+>     xbasic_types.c
+>     xutil_memtest.c
+>     xpacket_fifo_v2_00_a.c
+>     xdmav3.c
+>     xpacket_fifo_l_v2_00_a.c
+>     xdmav3_intr.c
+>     xipif_v1_23_b.c
+>     xdmav3_selftest.c
+>     xdmav3_sg.c
+>     xdmav3_simple.c
+>     xversion.c
+>     xenv.h
+>     xenv_none.h
+>     xenv_vxworks.h
+>     xdmav3_l.h
+>     xipif_v1_23_b.h
+>     xdmav3.h
+>     xpacket_fifo_l_v2_00_a.h
+>     xdmabdv3.h
+>     xpacket_fifo_v2_00_a.h
+>     xparameters_ml300.h
+>     xstatus.h
+>     xutil.h
+>     xbasic_types.h
+>     xenv_linux.h
+>     xversion.h
+>     _______________________________________________
+>     Linuxppc-embedded mailing list
+>     Linuxppc-embedded@ozlabs.org
+>     https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-    /* JAH Add debug */
-    printk("JAH About to dma_alloc_coherent.\n");
 
-    for (i=0; i<CPM_ENET_RX_PAGES; i++) {
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-            printk("JAH Start first page.\n");
-
-        /* Allocate a page.
-        */
-        ba = (unsigned char *)dma_alloc_coherent(NULL, PAGE_SIZE,
-                &mem_addr, GFP_KERNEL);
-            printk("JAH Return first page. Address %08x\n", ba);
-        /* BUG: no check for failure */
-
-        /* Initialize the BD for every fragment in the page.
-        */
-        for (j=0; j<CPM_ENET_RX_FRPPG; j++) {
-            bdp->cbd_sc = BD_ENET_RX_EMPTY | BD_ENET_RX_INTR;
-            bdp->cbd_bufaddr = mem_addr;
-            cep->rx_vaddr[k++] = ba;
-            mem_addr += CPM_ENET_RX_FRSIZE;
-            ba += CPM_ENET_RX_FRSIZE;
-            bdp++;
-        }
-    }
-
-    /* JAH Add debug */
-    printk("JAH Finished dma_alloc_coherent.\n");
-
-***** from stack stack and disassembly analysis, failure at line
-bdp->cbd_sc = BD_ENET_RX_EMPTY | BD_ENET_RX_INTR;
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
 
 
-*****dissasembly
+--------------090005000705090800040206
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-c01b783c:    4b e6 2c 0d     bl      c001a448 <printk>
-c01b7840:    3b 20 00 00     li      r25,0
-c01b7844:    3e 60 c0 18     lis     r19,-16360
-c01b7848:    3e 80 c0 18     lis     r20,-16360
-c01b784c:    3a c0 90 00     li      r22,-28672
-c01b7850:    3b b7 00 30     addi    r29,r23,48
-c01b7854:    38 73 ef 6c     addi    r3,r19,-4244
-c01b7858:    4b e6 2b f1     bl      c001a448 <printk>
-c01b785c:    38 81 00 08     addi    r4,r1,8
-c01b7860:    38 a0 00 d0     li      r5,208
-c01b7864:    38 60 10 00     li      r3,4096
-c01b7868:    4b e4 de 31     bl      c0005698 <__dma_alloc_coherent>
-c01b786c:    7c 64 1b 78     mr      r4,r3
-c01b7870:    7c 7e 1b 78     mr      r30,r3
-c01b7874:    38 74 ef 84     addi    r3,r20,-4220
-c01b7878:    4b e6 2b d1     bl      c001a448 <printk>
-c01b787c:    7f 9f e3 78     mr      r31,r28
-c01b7880:    39 7d 00 0c     addi    r11,r29,12
-c01b7884:    39 40 00 00     li      r10,0
-c01b7888:    b2 df 00 00     sth     r22,0(r31)
-c01b788c:    80 01 00 08     lwz     r0,8(r1)
-c01b7890:    2f 8a 00 01     cmpwi   cr7,r10,1
-c01b7894:    90 1f 00 04     stw     r0,4(r31)
-c01b7898:    93 cb 00 00     stw     r30,0(r11)
-c01b789c:    81 21 00 08     lwz     r9,8(r1)
-c01b78a0:    3b de 08 00     addi    r30,r30,2048
-c01b78a4:    39 29 08 00     addi    r9,r9,2048
-c01b78a8:    91 21 00 08     stw     r9,8(r1)
-c01b78ac:    3b ff 00 08     addi    r31,r31,8
-c01b78b0:    39 6b 00 04     addi    r11,r11,4
-c01b78b4:    39 4a 00 01     addi    r10,r10,1
-c01b78b8:    40 be ff d0     bne-    cr7,c01b7888 <scc_enet_init+0x264>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+robert corley wrote:
+<blockquote
+ cite="mid:20061104150210.7507.qmail@web56301.mail.re3.yahoo.com"
+ type="cite">
+  <style type="text/css"><!-- DIV {margin:0px;} --></style>
+  <div
+ style="font-family: times new roman,new york,times,serif; font-size: 12pt;">
+  <div
+ style="font-family: times new roman,new york,times,serif; font-size: 12pt;">Pradeep;<br>
+  <br>
+Booting with a ramdisk is a matter of putting the appropriate image in
+the arch/ppc/boot/images directory (I obtained mine from the gsrd
+design files), adding the root=/dev/ram rw on the command-line boot
+options, making the .config changes for ram disk support and initrd
+usage, and issuing a make zImage.initrd command.<br>
+  <br>
+Beware when upgrading to 2.6.18.1 as you may have difficulties with the
+adapter.c you obtained previously.&nbsp; The adapter.c in EDK 8.2 is not as
+easy to find.&nbsp; Using the EDK to generate software components for linux
+will not expose the proper adapter.c.&nbsp; I had to use the path that Rick
+Moleres posted earlier to retrieve the adapter.c which I used for
+2.6.18.1 and in my notes.<br>
+  <br>
+-cy<br>
+  <br>
+  </div>
+  </div>
+</blockquote>
+&nbsp;&nbsp;&nbsp; I am booting with a ramdisk using initramfs. Aside from its being
+somewhat harder to find documentation I beleive it is actually easier.<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; In the simplest form, create a directory on your host that contains
+exactly what you want on the ramdisk.<br>
+&nbsp;&nbsp;&nbsp; Enable CONFIG_INITRAMFS<br>
+&nbsp;&nbsp;&nbsp; and point the CONFIG_INITRAMFS_SOURCE&nbsp; to that directory.<br>
+<br>
+&nbsp;&nbsp;&nbsp; It is pretty much that simple. The linux build process creates a
+kernel - I use zImage.elf that has the ramdisk compressed and
+concatentated.<br>
+&nbsp;&nbsp;&nbsp; Nothing except the Linux kernel itself has to make any
+accomidations for the ramdisk. The bootloader does not have to deal
+with another file, or pass pointers to it to Linux, ....<br>
+&nbsp;&nbsp;&nbsp; It took some time to get it working - mostly because I did nto know
+what I was doing, but in hindsight it is really easy.<br>
+<br>
+<br>
+<br>
+<blockquote
+ cite="mid:20061104150210.7507.qmail@web56301.mail.re3.yahoo.com"
+ type="cite">
+  <div
+ style="font-family: times new roman,new york,times,serif; font-size: 12pt;">
+  <div
+ style="font-family: times new roman,new york,times,serif; font-size: 12pt;">
+  <div
+ style="font-family: times new roman,new york,times,serif; font-size: 12pt;">-----
+Original Message ----<br>
+From: Pradeep Sampath <a class="moz-txt-link-rfc2396E" href="mailto:pradeepsampath@yahoo.com">&lt;pradeepsampath@yahoo.com&gt;</a><br>
+To: robert corley <a class="moz-txt-link-rfc2396E" href="mailto:rdcorle@yahoo.com">&lt;rdcorle@yahoo.com&gt;</a><br>
+Sent: Thursday, November 2, 2006 7:57:25 PM<br>
+Subject: Re: minor progress with plb_temac v3.00a, EDK 8.2, &amp;
+2.6.18.1<br>
+  <br>
+  <div>This is great! I played around for a while with the
+Sysace&nbsp;CF&nbsp;driver patches and got it to work. Since you are booting with
+ramdisk image would you be kind enough to add more text on how to do
+that? I see that you are using UART Lite? Does it require any special
+setting for the boot&nbsp;logs to show up on the standard hyperterminal. </div>
+  <div>&nbsp;</div>
+  <div>I am planning on rebuilding the whole system using EDK 8.2 and
+linux kernel 2.6.18.1.</div>
+  <div>&nbsp;</div>
+  <div>-Pradeep<br>
+  <br>
+  <b><i>robert corley <a class="moz-txt-link-rfc2396E" href="mailto:rdcorle@yahoo.com">&lt;rdcorle@yahoo.com&gt;</a></i></b> wrote:</div>
+  <blockquote class="replbq"
+ style="border-left: 2px solid rgb(16, 16, 255); padding-left: 5px; margin-left: 5px;">For
+those interested, I have acheived some measure of success with the
+plb_temac driver.<br>
+    <br>
+I have attached a txt file of what I had to do to get it working under
+2.6.18.1<br>
+    <br>
+I am using the plb_temac in DMA mode 3<br>
+    <br>
+Below you will see the boot dump.<br>
+    <br>
+For those able to help, can anyone provide insight as to the failure of
+setting PHY link speed?<br>
+    <br>
+-cy<br>
+    <br>
+    <br>
+    <br>
+====================<br>
+----------------------------------------------------------------------<br>
+2.6.18.1 kernel with all patches<br>
+11/02/2006 15:30<br>
+plb_temac v3.00a<br>
+hard_temac v3.00b<br>
+    <br>
+    <br>
+loaded at: 00400000 009F1138<br>
+board data at: 009EF120 009EF138<br>
+relocated to: 004040B4 004040CC<br>
+zimage at: 00404EC7 0057C1F2<br>
+initrd at: 0057D000 009EE6FE<br>
+avail ram: 009F2000 04000000<br>
+    <br>
+    <br>
+Linux/PPC load: console=ttyUL0 single
+ip=192.168.1.100:192.168.1.144:192.168.1.1:255.255.255.0:nab::
+ramdisk_size=4660000 root=/dev/ram rw<br>
+    <br>
+Uncompressing Linux...done.<br>
+    <br>
+Now booting the kernel<br>
+    <br>
+[ 0.000000] Linux version 2.6.18.1 (rdcorle@athena) (gcc version 3.4.2)
+#2 Thu Nov 2 21:56:32 UTC 2006<br>
+[ 0.000000] Xilinx ML403 Reference System (Virtex-4 FX)<br>
+[ 0.000000] Built 1 zonelists. Total pages: 16384<br>
+[ 0.000000] Kernel command line: console=ttyUL0 single
+ip=192.168.1.100:192.168.1.144:192.168.1.1:255.255.255.0:nab::
+ramdisk_size=4660000 root=/dev/ram rw<br>
+[ 0.000000] Xilinx INTC #0 at 0xD1000FC0 mapped to 0xFDFFFFC0<br>
+[ 0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)<br>
+[ 0.000158] Console: colour dummy device 80x25<br>
+[ 0.000568] Dentry cache hash table entries: 8192 (order: 3, 32768
+bytes)<br>
+[ 0.001277] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)<br>
+[ 0.012895] Memory: 57060k available (2548k kernel code, 640k data, 96k
+init, 0k highmem)<br>
+[ 0.104378] Mount-cache hash table entries: 512<br>
+[ 0.106721] checking if image is initramfs...it isn't (no cpio magic);
+looks like an initrd<br>
+[ 2.414242] Freeing initrd memory: 4549k freed<br>
+[ 2.418712] NET: Registered protocol family 16<br>
+[ 2.427313] NET: Registered protocol family 2<br>
+[ 2.464244] IP route cache hash table entries: 512 (order: -1, 2048
+bytes)<br>
+[ 2.465037] TCP established hash table entries: 2048 (order: 1, 8192
+bytes)<br>
+[ 2.465205] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)<br>
+[ 2.465296] TCP: Hash tables configured (established 2048 bind 1024)<br>
+[ 2.465324] TCP reno registered<br>
+[ 2.474633] NTFS driver 2.1.27 [Flags: R/O].<br>
+[ 2.475046] JFS: nTxBlock = 481, nTxLock = 3854<br>
+[ 2.477623] SGI XFS with no debug enabled<br>
+[ 2.479001] io scheduler noop registered<br>
+[ 2.479109] io scheduler anticipatory registered<br>
+[ 2.479197] io scheduler deadline registered<br>
+[ 2.479402] io scheduler cfq registered (default)<br>
+[ 2.517627] uartlite.0: ttyUL0 at MMIO 0xa0000000 (irq = 1) is a
+uartlite<br>
+[ 2.691029] RAMDISK driver initialized: 16 RAM disks of 4660000K size
+1024 blocksize<br>
+[ 2.703933] loop: loaded (max 8 devices)<br>
+[ 2.709698] XTemac: using sgDMA mode.<br>
+[ 2.713493] XTemac: using TxDRE mode<br>
+[ 2.717081] XTemac: using RxDRE mode<br>
+[ 2.720678] XTemac: buffer descriptor size: 32768 (0x8000)<br>
+[ 2.726622] XTemac: (buffer_descriptor_init) phy: 0x580000, virt:
+0xff100000, size: 0x8000<br>
+[ 2.741073] eth0: Xilinx TEMAC #0 at 0x60000000 mapped to 0xC5050000,
+irq=0<br>
+[ 2.748080] eth0: XTemac id 1.0f, block id 5, type 8<br>
+[ 2.753636] mice: PS/2 mouse device common for all mice<br>
+[ 2.759529] TCP bic registered<br>
+[ 3.264317] eth0: XTemac: Options: 0xb8f2<br>
+[ 15.227339] eth0: XTemac: Not able to set the speed to 1000 (status:
+0x148)<br>
+[ 25.200394] eth0: XTemac: Not able to set the speed to 100 (status:
+0x148)<br>
+[ 35.173357] eth0: XTemac: Not able to set the speed to 10 (status:
+0x148)<br>
+[ 35.180122] eth0: XTemac: could not negotiate speed<br>
+[ 35.187740] eth0: XTemac: Send Threshold = 16, Receive Threshold = 2<br>
+[ 35.194116] eth0: XTemac: Send Wait bound = 1, Receive Wait bound = 1<br>
+[ 36.205399] IP-Config: Complete:<br>
+[ 36.208459] device=eth0, addr=192.168.1.100, mask=255.255.255.0,
+gw=192.168.1.1,<br>
+[ 36.216339] host=nab, domain=, nis-domain=(none),<br>
+[ 36.221487] bootserver=192.168.1.144, rootserver=192.168.1.144,
+rootpath=<br>
+[ 36.229826] RAMDISK: Compressed image found at block 0<br>
+[ 37.200498] eth0: XTemac: PHY Link carrier lost.<br>
+[ 39.097820] VFS: Mounted root (ext2 filesystem).<br>
+[ 39.102751] Freeing unused kernel memory: 96k init<br>
+[ 39.108356] ulite_startup: UART status = 0x0014<br>
+[ 39.124619] ulite_startup: UART status = 0x0014<br>
+[ 39.134313] ulite_startup: UART status = 0x0014<br>
+    <br>
+    <br>
+BusyBox v1.00-pre9 (2004.04.18-19:53+0000) Built-in shell (ash)<br>
+Enter 'help' for a list of built-in commands.<br>
+    <br>
+-sh: can't access tty; job control turned off<br>
+    <br>
+    <br>
+steps for plb_temac drivers under EDK 8.2.02i (w/SP2.4+0)<br>
+Using plb_temac v3.00a &amp; hard_temac v3.00b<br>
+    <br>
+Generate s/w libraries<br>
+    <br>
+1. copy or ftp the following files from
+C:\EDK\sw\ThirdParty\bsp\linux_2_6_v1_00_a\linux\<br>
+to the base directory of the linux source tree<br>
+    <br>
+USED:<br>
+arch\ppc\platforms\4xx\xparameters\xparameters.h<br>
+    <br>
+** UNUSED<br>
+arch\ppc\platforms\4xx\virtex.c<br>
+arch\ppc\boot\simple\embed_config.c<br>
+include\linux\xilinx_devices.h<br>
+    <br>
+2. copy
+C:\EDK\sw\ThirdParty\bsp\linux_2_6_v1_00_a\drivers\temac_linux_2_6_v2_00_b\src\adapter.c
+to<br>
+../drivers/net/xilinx_temac/adapter.c<br>
+    <br>
+3. copy or ftp ..\linux\arch\ppc\platforms\xilinx_ocp =&gt;
+drivers/xilinx_edk<br>
+Note: Remove all old files first *except* Kconfig, xio.h<br>
+    <br>
+4. modify drivers/xilinx_edk/Makefile with the following to look like
+this:<br>
+    <br>
+# Linux file to EXPORT_SYMBOL all of the Xilinx entries.<br>
+obj-$(CONFIG_XILINX_EDK) += xilinx_syms.o<br>
+#<br>
+# # The Xilinx OS independent code.<br>
+xilinx_syms-objs := xbasic_types.o \<br>
+xdmav3.o xdmav3_intr.o xdmav3_selftest.o xdmav3_simple.o xdmav3_sg.o \<br>
+xipif_v1_23_b.o \<br>
+xpacket_fifo_l_v2_00_a.o xpacket_fifo_v2_00_a.o \<br>
+xversion.o<br>
+    <br>
+5. Modify your copied xparameters_ml403.h (see notes below) as follows:<br>
+add these lines after #define XPAR_PLB_TEMAC_0_INCLUDE_RX_CSUM<br>
+    <br>
+#define XPAR_TEMAC_0_IPIF_RDFIFO_DEPTH XPAR_PLB_TEMAC_0_RXFIFO_DEPTH<br>
+#define XPAR_TEMAC_0_IPIF_WRFIFO_DEPTH XPAR_PLB_TEMAC_0_TXFIFO_DEPTH<br>
+#define XPAR_TEMAC_0_MAC_FIFO_DEPTH XPAR_PLB_TEMAC_0_MAC_FIFO_DEPTH<br>
+#define XPAR_TEMAC_0_TEMAC_DCR_HOST 0<br>
+#define XPAR_TEMAC_0_INCLUDE_DRE 1<br>
+    <br>
+    <br>
+6. (optional) modify arch/ppc/platforms/virtex.h to accomodate RX_CSUM
+XPAR<br>
+    <br>
+struct xtemac_platform_data {<br>
+#ifdef XPAR_TEMAC_0_INCLUDE_RX_CSUM<br>
+u8 tx_dre;<br>
+u8 rx_dre;<br>
+u8 tx_csum;<br>
+u8 rx_csum;<br>
+u8 phy_type;<br>
+#endif<br>
+u8 dma_mode;<br>
+u32 rx_pkt_fifo_depth;<br>
+u32 tx_pkt_fifo_depth;<br>
+u16 mac_fifo_depth;<br>
+u8 dcr_host;<br>
+u8 dre;<br>
+u8 mac_addr[6];<br>
+};<br>
+    <br>
+7. Modify ../drivers/net/xilinx_temac/adapter.c to remove #include and<br>
+add #include <br>
+add #include <br>
+    <br>
+____________________________________________________________________________________<br>
+NOTES:<br>
+1. Don't forget to copy EDK-generated xparameters.h to
+../arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h<br>
+    <br>
+    <br>
+    <br>
+=====================================================<br>
+Files in latest patch:<br>
+../drivers/net/xilinx_temac =<br>
+Makefile<br>
+adapter.c<br>
+xtemac.c<br>
+xtemac_control.c<br>
+xtemac_fifo.c<br>
+xtemac_intr.c<br>
+xtemac_intr_fifo.c<br>
+xtemac_intr_sgdma.c<br>
+xtemac_l.c<br>
+xtemac_sgdma.c<br>
+xtemac.h<br>
+xtemac_i.h<br>
+xtemac_l.h<br>
+    <br>
+Files in ..\linux\drivers\net\xilinx_temac =&gt; (** = new files)<br>
+    <br>
+Makefile<br>
+adapter.c<br>
+xtemac.c<br>
+xtemac_control.c<br>
+xtemac_fifo.c<br>
+xtemac_g.c**<br>
+xtemac_intr.c<br>
+xtemac_intr_fifo.c<br>
+xtemac_intr_sgdma.c<br>
+xtemac_l.c<br>
+xtemac_selftest.c**<br>
+xtemac_sgdma.c<br>
+xtemac_sinit.c**<br>
+xtemac_stats.c**<br>
+xtemac.h<br>
+xtemac_i.h<br>
+xtemac_l.h<br>
+    <br>
+============================================================<br>
+Files in ../drivers/xilinx_edk =&gt;<br>
+    <br>
+Kconfig<br>
+Makefile<br>
+xbasic_types.c<br>
+xdmav2.c<br>
+xdmav2_intr.c<br>
+xdmav2_sg.c<br>
+xdmav2_simple.c<br>
+xilinx_syms.c<br>
+xpacket_fifo_l_v2_00_a.c<br>
+xpacket_fifo_v2_00_a.c<br>
+xbasic_types.h<br>
+xdmabdv2.h<br>
+xdmav2.h<br>
+xdmav2_l.h<br>
+xio.h<br>
+xpacket_fifo_l_v2_00_a.h<br>
+xpacket_fifo_v2_00_a.h<br>
+xstatus.h<br>
+    <br>
+Files in ..\linux\arch\ppc\platforms\xilinx_ocp=&gt;<br>
+Makefile<br>
+xbasic_types.c<br>
+xutil_memtest.c<br>
+xpacket_fifo_v2_00_a.c<br>
+xdmav3.c<br>
+xpacket_fifo_l_v2_00_a.c<br>
+xdmav3_intr.c<br>
+xipif_v1_23_b.c<br>
+xdmav3_selftest.c<br>
+xdmav3_sg.c<br>
+xdmav3_simple.c<br>
+xversion.c<br>
+xenv.h<br>
+xenv_none.h<br>
+xenv_vxworks.h<br>
+xdmav3_l.h<br>
+xipif_v1_23_b.h<br>
+xdmav3.h<br>
+xpacket_fifo_l_v2_00_a.h<br>
+xdmabdv3.h<br>
+xpacket_fifo_v2_00_a.h<br>
+xparameters_ml300.h<br>
+xstatus.h<br>
+xutil.h<br>
+xbasic_types.h<br>
+xenv_linux.h<br>
+xversion.h<br>
+_______________________________________________<br>
+Linuxppc-embedded mailing list<br>
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br>
+    <span><a moz-do-not-send="true" target="_blank"
+ href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></span></blockquote>
+  <br>
+  </div>
+  <br>
+  </div>
+  </div>
+  <pre wrap="">
+<hr size="4" width="90%">
+_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
+</blockquote>
+<br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
+</pre>
+</body>
+</html>
 
-*****failure based on NIP at c01b7888 in sth at c01b7888
-
-*****value of r31 (bpd in source code) is 34202000
-
-*****cep->rx_bd_base allocated in /arch/ppc/8xx_io/enet.c lines 751-753
-
-    /* Allocate space for the buffer descriptors in the DP ram.
-     * These are relative offsets in the DP ram address space.
-     * Initialize base addresses for the buffer descriptors.
-     */
-    dp_offset = cpm_dpalloc(sizeof(cbd_t) * RX_RING_SIZE, 8);
-    ep->sen_genscc.scc_rbase = dp_offset;
-    cep->rx_bd_base = cpm_dpram_addr(dp_offset);
-
-    dp_offset = cpm_dpalloc(sizeof(cbd_t) * TX_RING_SIZE, 8);
-    ep->sen_genscc.scc_tbase = dp_offset;
-    cep->tx_bd_base = cpm_dpram_addr(dp_offset);
-
-
-*****referring to commproc.c line 441
-
-void *cpm_dpram_addr(uint offset)
-{
-    return ((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem + offset;
-}
-EXPORT_SYMBOL(cpm_dpram_addr);
-
-
-*****The memory at 0x34202000 doesn't map nicely...
-
-u-boot>md 0x34202000 0x100
-34202000:Bus Fault @ 0x03fe9ea0, fixup 0x00000000
-Machine check in kernel mode.
-Caused by (from msr): regs 03faea60 Unknown values in msr
-NIP: 03FE9EA0 XER: 6000D07F LR: 03FE9E74 REGS: 03faea60 TRAP: 0200 DAR: 
-03FF9F0CMSR: 00009002 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 00
-
-GPR00: 03FE9E74 03FAEB50 00000000 00000000 03FAE9FC 00000010 00000001 
-00000030
-GPR08: 00000001 FA202811 FA202808 FA200808 00000000 FFFFEFFD 04000000 
-04FD7000
-GPR16: 03FFF190 FFFFFFFF 00000000 C0180000 03FAEB58 00000100 03FAEB58 
-03FAEB58
-GPR24: 00000004 03FAEB58 00000400 00000010 34202000 03FAEF94 04000A80 
-00000000
-Call backtrace:
-machine check
-
-
-U-Boot 1.1.5 (Oct 24 2006 - 14:28:06)
-
-CPU:   PPC823EZTnnB2 at 48 MHz: 16 kB I-Cache 8 kB D-Cache
-Board: RPXlite_DW
-DRAM:  64 MB
-FLASH: 16 MB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   SCC ETHERNET
-Hit any key to stop autoboot:  0
-u-boot>
+--------------090005000705090800040206--
