@@ -1,22 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1CD3867C04
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 12:06:42 +1100 (EST)
-Subject: Re: [PATCH/RFC] Hookable IO operations
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200611040115.34235.arnd@arndb.de>
-References: <1162588367.10630.100.camel@localhost.localdomain>
-	<200611032348.38402.arnd@arndb.de>
-	<1162594589.10630.135.camel@localhost.localdomain>
-	<200611040115.34235.arnd@arndb.de>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7E32F67C02
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Nov 2006 12:40:29 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kA41eLgC002980
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Nov 2006 20:40:21 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kA41eKCr294498
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Nov 2006 20:40:20 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kA41eKje011431
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Nov 2006 20:40:20 -0500
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20061103174948.34a5afe4@localhost.localdomain>
+References: <OFCD6BEB84.DE407CA1-ON8725721B.00508624-8525721B.00552A5F@us.ibm.com>
+	<1162586775.10630.92.camel@localhost.localdomain>
+	<20061103145300.411931b7@localhost.localdomain>
+	<1162589534.10630.127.camel@localhost.localdomain>
+	<20061103174948.34a5afe4@localhost.localdomain>
 Content-Type: text/plain
-Date: Sat, 04 Nov 2006 12:06:34 +1100
-Message-Id: <1162602394.10630.146.camel@localhost.localdomain>
+Date: Fri, 03 Nov 2006 19:41:13 -0600
+Message-Id: <1162604473.23288.14.camel@crusty.rchland.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,118 +38,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-11-04 at 01:15 +0100, Arnd Bergmann wrote:
-
-> 	void (*outq)(u64 val);
-> 	u64  (*inq)(void);
-
-There is no outq/intq :-) Also, we need the ins{b,w,l}/outs{n,w,l} ones.
-I haven' hooked them yet but we'll need them and we'll need the MMIO
-versions of them which aren't defined properly except with iomap. That
-is 12 more hooks...
-
-> 	void (*memset_io)(volatile void __iomem *addr, int c, unsigned long n);
-> 	void (*memcpy_fromio)(void *dest,
-> 			const volatile void __iomem *src, unsigned long n);
-> 	void (*memcpy_toio)(volatile void __iomem *dest,
-> 			const void *src, unsigned long n);
-> } ppc_io;
+On Fri, 2006-11-03 at 17:49 -0600, Olof Johansson wrote:
+> On Sat, 04 Nov 2006 08:32:14 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> /* all these should be static inline or extern */
-> void direct_writeb(u8 val);
-> void direct_writew(u16 val);
-> void direct_writel(u32 val);
-> void direct_writeq(u64 val);
-> u8   direct_readb(void);
-> u16  direct_readw(void);
-> u32  direct_readl(void);
-> u64  direct_readq(void);
-> void direct_outb(u8 val);
-> void direct_outw(u16 val);
-> void direct_outl(u32 val);
-> void direct_outq(u64 val);
-> u8   direct_inb(void);
-> u16  direct_inw(void);
-> u32  direct_inl(void);
-> u64  direct_inq(void);
-
-Well, I still need to use the EEH version for now so I'd rather stick to
-what my current macros are doing. You are also not passing any
-address :)
-
-> void direct_memset_io(volatile void __iomem *addr, int c,
->                        unsigned long n);
-> void direct_memcpy_fromio(void *dest,
->               const volatile void __iomem *src, unsigned long n);
-> void direct_memcpy_toio(volatile void __iomem *dest,
->                 const void *src, unsigned long n);
+> > But that's not a public/opensource thing people use regulary is it ?
 > 
-> /* a simple indirection more than your code, going
->    through the structure */
-> #ifdef CONFIG_INDIRECT_IO
-> #define ppc_io_indirect(x) ppc_io.x
-> #else
-> #define ppc_io_indirect(x) NULL
-> #endif
-> 
-> #define DEF_IO_OUT(name, arg) \
-> static inline void name(arg val) \
-> { \
-> 	if (ppc_io_indirect(name)) \
-> 		return ppc_io.name(val); \
-> 	else \
-> 		return direct_ ## name(val); \
-> }
+> Might not be. I don't know what AMCC use for their eval boards, if it's
+> u-boot or PIBS or something else.
 
-Address type is different between IO and MMIO too. IO takes unsigned
-long port and MMIO takes void __iomem *, with a const for the read
-versions...
+AMCC uses u-boot on their new boards.  Some of their older ones used
+PIBS.
 
-> #define DEF_IO_IN(name, arg) \
-> static inline arg name(void) \
-> { \
-> 	if (ppc_io_indirect(name)) \
-> 		return ppc_io.name(); \
-> 	else \
-> 		return direct_ ## name(); \
-> }
-> 
-> DEF_IO_OUT(writeb, u8)
-> DEF_IO_OUT(writew, u16)
-> DEF_IO_OUT(writel, u32)
-> DEF_IO_OUT(writeq, u64)
-> DEF_IO_IN(readb, u8)
-> DEF_IO_IN(readw, u16)
-> DEF_IO_IN(readl, u32)
-> DEF_IO_IN(readq, u64)
-> DEF_IO_OUT(outb, u8)
-> DEF_IO_OUT(outw, u16)
-> DEF_IO_OUT(outl, u32)
-> DEF_IO_OUT(outq, u64)
-> DEF_IO_IN(inb, u8)
-> DEF_IO_IN(inw, u16)
-> DEF_IO_IN(inl, u32)
-> DEF_IO_IN(inq, u64)
+PIBS does have an open source type license.  You can download it as part
+of the PPC 970FX eval kit.  Or other eval kits for various boards.
 
-Overall, I still prefer my version :-)
-
-Another thing I can do is to have an io_defs.h that contains basically
-a list of all of them:
-
-PCI_IO_DEF(writeb, u8, MMIO, OUT)
-PCI_IO_DEF(writew, u16, MMIO, OUT)
- .../...
-
-And then have the various .h and .c files #include that file after
-#defining PCI_IO_DEF to different things.
-
-Thus we could have that file included twice: once for the struct
-definiction ppc_io that includes them to define the callbacks and once
-to implement the inline accessors.
-
-If the callbacks are in a struct, I don't have to implement them all
-separately and EXPORT_SYMBOL each of them.
-
-Ben.
-
- 
+josh
