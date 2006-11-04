@@ -1,22 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4BB8967BE3
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Nov 2006 03:56:24 +1100 (EST)
-In-Reply-To: <1162657000.3139.108.camel@vader.jdub.homelinux.org>
-References: <1162632114.28571.33.camel@localhost.localdomain>
-	<1162657000.3139.108.camel@vader.jdub.homelinux.org>
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id E4B8667BD7
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Nov 2006 04:26:24 +1100 (EST)
+In-Reply-To: <BAY102-F21BB220054F2541A7614E4A9FD0@phx.gbl>
+References: <BAY102-F21BB220054F2541A7614E4A9FD0@phx.gbl>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BE9B9CEF-771F-44F7-AEF6-8B3CDE3DDB57@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: FSL vs. IBM BookE
-Date: Sat, 4 Nov 2006 10:56:17 -0600
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Cc: Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Message-Id: <1003DD59-BA95-4277-BCDE-652624C5B126@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: Booting without Uboot on 8548E
+Date: Sat, 4 Nov 2006 12:22:36 -0500
+To: M Ptich <ptich@hotmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +22,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 4, 2006, at 10:16 AM, Josh Boyer wrote:
+On Nov 4, 2006, at 3:52 AM, M Ptich wrote:
 
-> On Sat, 2006-11-04 at 20:21 +1100, Benjamin Herrenschmidt wrote:
->> Out of curiosity... I noticed we have both head_44x.S and
->> head_fsl_booke.S, the later being a fork of the former with  
->> changed from
->> Kumar (and possibly others) to support E200 and E500.
->>
->> How bad are the differences between those cores ? Would it be  
->> possible
->> to reconcile those and IBM 44x into a single processor family ? Or  
->> are
->> there some fundamental differences making that impossible ? (even  
->> with a
->> bit of CPU feature patching).
+> Documentation mentions that the only dependencies between 2.6  
+> Kernel and
+> bootloader are:
 >
-> I'm not sure.  Maybe Kumar knows better since he made the changes to
-> head_fsl_booke.S.  I believe FSL can do SMP and has an SPE and some
-> other HID registers that 44x does not have.
+> 1. 5 input parameters (bd_t pointer, start and end of command line,  
+> start
+> and end of ram disk)
+> 2. bd_t pointer and command line must with within 16MB of Kernel
+> 3. Initial TLB1 entry must have IPROT=1
 
-The big differences are in MMU architectures/programming models  
-between 44x and FSL Book-E.  I tried to move as much common code into  
-macros between the two head_* files.
+I don't know where these are "documented", but there are
+many more dependencies. :-)  Take a look at the cpu initialization
+code from u-boot and you will notice how the TLB CAMs need
+to be initialized with the various memory maps.  All of the local
+bus windows likewise need to be properly set up and match
+the kernel configuration.
 
-- kumar
+> And now we are stuck with apparently another dependency: our Kernel  
+> fails to
+> advance beyond time calibration because jiffies are not getting  
+> incremented,
+
+The time base needs to be enabled in HID0 prior to calling
+the kernel.
+
+All of these "dependencies" are typically things a boot rom is
+going to also need for proper functioning.  We just chose not
+to do it again in the kernel.  You are going to find more.
+
+Thanks.
+
+
+	-- Dan
