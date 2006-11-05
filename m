@@ -1,32 +1,31 @@
 Return-Path: <hnguyen@de.ibm.com>
-Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 90B2F67CC2
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 07:46:33 +1100 (EST)
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B27B367D93
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 07:47:09 +1100 (EST)
 Received: from d06nrmr1407.portsmouth.uk.ibm.com
 	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kA5KkRSO233148
-	for <linuxppc-dev@ozlabs.org>; Sun, 5 Nov 2006 20:46:27 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kA5Kkjl1215830
+	for <linuxppc-dev@ozlabs.org>; Sun, 5 Nov 2006 20:46:45 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
 	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kA5Kn8HJ1978438
-	for <linuxppc-dev@ozlabs.org>; Sun, 5 Nov 2006 20:49:08 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kA5Kk9Wq028084
-	for <linuxppc-dev@ozlabs.org>; Sun, 5 Nov 2006 20:46:10 GMT
+	ESMTP id kA5KnR672568368
+	for <linuxppc-dev@ozlabs.org>; Sun, 5 Nov 2006 20:49:27 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kA5Kkd25014923
+	for <linuxppc-dev@ozlabs.org>; Sun, 5 Nov 2006 20:46:39 GMT
 From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 To: rolandd@cisco.com
-Subject: [PATCH 2.6.19 3/4] ehca: Kconfig: activate scaling code as default to
-	prevent drop packets (UD)
-Date: Sun, 5 Nov 2006 21:42:20 +0100
+Subject: [PATCH 2.6.19 4/4] ehca: ehca_av.c use constant for max mtu
+Date: Sun, 5 Nov 2006 21:42:56 +0100
 MIME-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_sykTF3lLtF5NXBG"
-Message-Id: <200611052142.20577.hnguyen@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, raisch@de.ibm.com, linux-kernel@vger.kernel.org,
+  boundary="Boundary-00=_QzkTFQwVfAgoAV9"
+Message-Id: <200611052142.56722.hnguyen@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,17 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_sykTF3lLtF5NXBG
+--Boundary-00=_QzkTFQwVfAgoAV9
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 Hello Roland!
-Here is a small patch of ehca's Kconfig that activates scaling code as default.
-After several measurements we saw that this feature prevents drop packets (UD)
-in stress situation. Thus, enabling it helps to improve ehca's bandwidth through
-ipoib.
+This is a patch for ehca, mainly a code change to adhere to
+kernel coding style. It defines and uses a constant EHCA_MAX_MTU 
+instead hardcoded value.
 Thanks!
 Nam
 
@@ -56,42 +54,91 @@ Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 ---
 
 
- Kconfig |    1 +
- 1 files changed, 1 insertion(+)
+ ehca_av.c |    5 ++---
+ hipz_hw.h |    2 ++
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
 
-diff --git a/drivers/infiniband/hw/ehca/Kconfig b/drivers/infiniband/hw/ehca/Kconfig
-index 922389b..727b10d 100644
---- a/drivers/infiniband/hw/ehca/Kconfig
-+++ b/drivers/infiniband/hw/ehca/Kconfig
-@@ -10,6 +10,7 @@ config INFINIBAND_EHCA
- config INFINIBAND_EHCA_SCALING
-  bool "Scaling support (EXPERIMENTAL)"
-  depends on IBMEBUS && INFINIBAND_EHCA && HOTPLUG_CPU && EXPERIMENTAL
-+ default y
-  ---help---
-  eHCA scaling support schedules the CQ callbacks to different CPUs.
+diff --git a/drivers/infiniband/hw/ehca/ehca_av.c b/drivers/infiniband/hw/ehca/ehca_av.c
+index 3bac197..214e2fd 100644
+--- a/drivers/infiniband/hw/ehca/ehca_av.c
++++ b/drivers/infiniband/hw/ehca/ehca_av.c
+@@ -118,8 +118,7 @@ struct ib_ah *ehca_create_ah(struct ib_p
+   }
+   memcpy(&av->av.grh.word_1, &gid, sizeof(gid));
+  }
+- /* for the time being we use a hard coded PMTU of 2048 Bytes */
+- av->av.pmtu = 4;
++ av->av.pmtu = EHCA_MAX_MTU;
  
+  /* dgid comes in grh.word_3 */
+  memcpy(&av->av.grh.word_3, &ah_attr->grh.dgid,
+@@ -193,7 +192,7 @@ int ehca_modify_ah(struct ib_ah *ah, str
+   memcpy(&new_ehca_av.grh.word_1, &gid, sizeof(gid));
+  }
+ 
+- new_ehca_av.pmtu = 4; /* see also comment in create_ah() */
++ new_ehca_av.pmtu = EHCA_MAX_MTU;
+ 
+  memcpy(&new_ehca_av.grh.word_3, &ah_attr->grh.dgid,
+         sizeof(ah_attr->grh.dgid));
+diff --git a/drivers/infiniband/hw/ehca/hipz_hw.h b/drivers/infiniband/hw/ehca/hipz_hw.h
+index 3fc92b0..fad9136 100644
+--- a/drivers/infiniband/hw/ehca/hipz_hw.h
++++ b/drivers/infiniband/hw/ehca/hipz_hw.h
+@@ -45,6 +45,8 @@ #define __HIPZ_HW_H__
+ 
+ #include "ehca_tools.h"
+ 
++#define EHCA_MAX_MTU 4
++
+ /* QP Table Entry Memory Map */
+ struct hipz_qptemm {
+  u64 qpx_hcr;
 
---Boundary-00=_sykTF3lLtF5NXBG
+--Boundary-00=_QzkTFQwVfAgoAV9
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="roland_svnehca_0018_kconfig.patch"
+  name="roland_svnehca_0018_maxmtu.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="roland_svnehca_0018_kconfig.patch"
+	filename="roland_svnehca_0018_maxmtu.patch"
 
-diff --git a/drivers/infiniband/hw/ehca/Kconfig b/drivers/infiniband/hw/ehca/Kconfig
-index 922389b..727b10d 100644
---- a/drivers/infiniband/hw/ehca/Kconfig
-+++ b/drivers/infiniband/hw/ehca/Kconfig
-@@ -10,6 +10,7 @@ config INFINIBAND_EHCA
- config INFINIBAND_EHCA_SCALING
- 	bool "Scaling support (EXPERIMENTAL)"
- 	depends on IBMEBUS && INFINIBAND_EHCA && HOTPLUG_CPU && EXPERIMENTAL
-+	default y
- 	---help---
- 	eHCA scaling support schedules the CQ callbacks to different CPUs.
+diff --git a/drivers/infiniband/hw/ehca/ehca_av.c b/drivers/infiniband/hw/ehca/ehca_av.c
+index 3bac197..214e2fd 100644
+--- a/drivers/infiniband/hw/ehca/ehca_av.c
++++ b/drivers/infiniband/hw/ehca/ehca_av.c
+@@ -118,8 +118,7 @@ struct ib_ah *ehca_create_ah(struct ib_p
+ 		}
+ 		memcpy(&av->av.grh.word_1, &gid, sizeof(gid));
+ 	}
+-	/* for the time being we use a hard coded PMTU of 2048 Bytes */
+-	av->av.pmtu = 4;
++	av->av.pmtu = EHCA_MAX_MTU;
  
+ 	/* dgid comes in grh.word_3 */
+ 	memcpy(&av->av.grh.word_3, &ah_attr->grh.dgid,
+@@ -193,7 +192,7 @@ int ehca_modify_ah(struct ib_ah *ah, str
+ 		memcpy(&new_ehca_av.grh.word_1, &gid, sizeof(gid));
+ 	}
+ 
+-	new_ehca_av.pmtu = 4; /* see also comment in create_ah() */
++	new_ehca_av.pmtu = EHCA_MAX_MTU;
+ 
+ 	memcpy(&new_ehca_av.grh.word_3, &ah_attr->grh.dgid,
+ 	       sizeof(ah_attr->grh.dgid));
+diff --git a/drivers/infiniband/hw/ehca/hipz_hw.h b/drivers/infiniband/hw/ehca/hipz_hw.h
+index 3fc92b0..fad9136 100644
+--- a/drivers/infiniband/hw/ehca/hipz_hw.h
++++ b/drivers/infiniband/hw/ehca/hipz_hw.h
+@@ -45,6 +45,8 @@ #define __HIPZ_HW_H__
+ 
+ #include "ehca_tools.h"
+ 
++#define EHCA_MAX_MTU 4
++
+ /* QP Table Entry Memory Map */
+ struct hipz_qptemm {
+ 	u64 qpx_hcr;
 
---Boundary-00=_sykTF3lLtF5NXBG--
+--Boundary-00=_QzkTFQwVfAgoAV9--
