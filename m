@@ -1,18 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] powerpc: Add MPC5200 Interrupt Controller support.
+Subject: Re: [PATCH] Add MPC52xx PIO/ATA support for arch/powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <454D2FEC.3050605@246tNt.com>
-References: <454902F9.20206@bplan-gmbh.de>
-	<1162419138.25682.453.camel@localhost.localdomain>
-	<454A1C37.5050208@bplan-gmbh.de>  <454A5952.6090801@bplan-gmbh.de>
-	<1162683341.28571.82.camel@localhost.localdomain>
-	<454D2FEC.3050605@246tNt.com>
+To: Nicolas DET <nd@bplan-gmbh.de>
+In-Reply-To: <200611041504.kA4F4Ll1029368@post.webmailer.de>
+References: <200611041504.kA4F4Ll1029368@post.webmailer.de>
 Content-Type: text/plain
-Date: Sun, 05 Nov 2006 12:13:46 +1100
-Message-Id: <1162689227.28571.123.camel@localhost.localdomain>
+Date: Sun, 05 Nov 2006 12:27:20 +1100
+Message-Id: <1162690040.28571.126.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org, sl@bplan-gmbh.de
+Cc: akpm@osdl.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	sl@bplqn-gmbh.de, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2006-11-05 at 01:27 +0100, Sylvain Munaut wrote:
-> >> +	picnode = find_mpc52xx_picnode();
-> >> +	sdmanode = find_mpc52xx_sdmanode();
-> >>     
-> >
-> > Any reason why you have those inline 1-line functions and just not put
-> > the actual of_find_* call in here ?
-> >   
-> I think it might be worth creating a
-> arch/powerpc/sysdev/mpc52xx_common.c (we'll probably need it later on
-> anyway)
-> with a helper that would do
-
-> - The find_node
-
-I don't see why we need a helper for that at all in the first place :)
-
->  - get_address / translate /  get_size
-
-That too
-
->  - ioremap
+On Sat, 2006-11-04 at 16:04 +0100, Nicolas DET wrote:
+> This patch add MPC52xx ATA/PIO support.
 > 
-> Something like :
+> It's based on a previous patch:
+> http://patchwork.ozlabs.org/linuxppc/patch?id=4364
 > 
-> intr = mpc52xx_find_and_map("mpc52xx-intr");
-> sdma = mpc52xx_find_and_map("mpc52xx-sdma");
-
-Hrm... I don't care that much but I also don't think we need that
-helper. It's not saving much.
-
-> would be more elegant. Especially since finding and mapping things like
-> intr/sdma/xlb/cdm ... will be done at several place. That would prevent
-> repeating all that code for nothing.
-
-It's not much code to repeat ;) but if you want, I have no big problem
-with that.
-
-> Also, in the Makefile, I would make the compilation conditionnal to
-> CONFIG_PPC_MPC52xx and not CONFIG_PPC_MPC52xx_PIC ...
-> If you're on a 52xx, you most likely want the interrupt controller ...
+> But, it now use of_platform and a of_device_id to match the appropriate device.
 > 
-> But the CONFIG_PPC_MPC52xx option should be in arch/powerpc/Kconfig
-> and not in the platform/embedded6xx/Kconfig
+> Signed-off-by: Nicolas DET <nd@bplqn-gmbh.de>
+
+Very quick look, seems good to me. (Well, the fact that I wrote the
+original version of it might help ! hehehe...)
+
+Could you post it to linux-ide though in case somebody else spots
+something wrong ?
+
+I think it can go in 2.6.20 along with the rest of your platform support
+(once the later is finally ready to go, hopefully soon).
 
 Ben.
