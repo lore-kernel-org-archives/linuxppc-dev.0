@@ -1,34 +1,27 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A581267C92
+Return-Path: <tnt@246tNt.com>
+Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
+	[195.238.5.235])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B59967C7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 12:33:01 +1100 (EST)
-Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 4C37E986D2
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 02:32:59 +0100 (CET)
-Received: from mail.denx.de (p54967501.dip.t-dialin.net [84.150.117.1])
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 371C6925F7
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 02:32:59 +0100 (CET)
-Received: from atlas.denx.de (atlas.denx.de [10.0.0.14])
-	by mail.denx.de (Postfix) with ESMTP id B93CC6D00B2
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 02:32:58 +0100 (CET)
-Received: from atlas.denx.de (localhost.localdomain [127.0.0.1])
-	by atlas.denx.de (Postfix) with ESMTP id 9B7DC352638
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 02:32:58 +0100 (MET)
-To: linuxppc-embedded@ozlabs.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 04 Nov 2006 17:31:19 +0100."
-	<20061104163119.GC69112@server.idefix.loc>
-Date: Sun, 05 Nov 2006 02:32:58 +0100
-Sender: wd@denx.de
-Message-Id: <20061105013258.9B7DC352638@atlas.denx.de>
+	Sun,  5 Nov 2006 12:45:33 +1100 (EST)
+Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx008.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kA51jPbP031650
+	for <linuxppc-embedded@ozlabs.org>; Sun, 5 Nov 2006 02:45:26 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <454D422B.8030003@246tNt.com>
+Date: Sun, 05 Nov 2006 02:45:15 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ppc/powerpc: Fix io.h for config with CONFIG_PCI not set
+References: <11626858382465-git-send-email-tnt@246tNt.com>
+	<1162689134.28571.120.camel@localhost.localdomain>
+In-Reply-To: <1162689134.28571.120.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ML PPC Embedded <linuxppc-embedded@ozlabs.org>, Sven <sl@bplan-gmbh.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,35 +32,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20061104163119.GC69112@server.idefix.loc> you wrote:
-> 
-> I have here a MPC5200 Lite (IceCube/Freescale Lite 5200) and tried to
-> get Xenomai running.
-> 
-> If I use the 2.6 kernel from denx the board boots fine but I am not
+Benjamin Herrenschmidt wrote:
+> On Sun, 2006-11-05 at 01:17 +0100, Sylvain Munaut wrote:
+>   
+>> When CONFIG_PCI option is not set, the variables
+>> pci_dram_offset, isa_io_base and isa_mem_base are not defined.
+>>
+>> Currently, the test is handled in each platform header. This
+>> patch moves the test in io.h once and for all.
+>>     
+>
+> Be careful with _IO_BASE... I'm not 100% sure some platforms don't need
+> it set to something else even when PCI is not present.
+>   
+When I saw in  mpc83xx.h and  mpc85xx.h that they still defined them, I
+wondered.
+But when looking at the code :
+    unsigned long isa_io_base     = 0;
+    unsigned long isa_mem_base    = 0;
+are both defined in pci_{32/64}.c and won't be included if CONFIG_PCI is
+not set.
 
-Note that we explicitely do NOT support the MPC5200 in this tree yet.
 
-> able to patch the kernel with the adeos patch (adeos-patch is for
-> kernel 2.6.18) and the kernel from denx is 2.6.19rc4. I checked the
-> changes and they are to much for me to adapt it.
-
-Then just check out the 2.6.18 version of the tree.  This  is  a  git
-repo, so seeking to any version you like is a matter of seconds.
-
-> What I need now is a patch for kernel 2.6.18 to get all the MPC5200
-> stuff running (priority has the networkchip) or a adeos patch for the
-> denx kernel 2.6.19-rc4.
-
-You do not want this, if you're on a MPC5200. I repeat, this  is  not
-supported.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If I had to live my life again,  I'd  make  the  same  mistakes, only
-sooner.                                          -- Tallulah Bankhead
+    Sylvain
