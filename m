@@ -1,21 +1,15 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 9839667C1A
+Return-Path: <dvbspider@hotmail.com>
+Received: from bay0-omc3-s30.bay0.hotmail.com (bay0-omc3-s30.bay0.hotmail.com
+	[65.54.246.230]) by ozlabs.org (Postfix) with ESMTP id A9CA867C45
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 13:32:13 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so569629ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 04 Nov 2006 18:32:12 -0800 (PST)
-Message-ID: <528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>
-Date: Sat, 4 Nov 2006 20:32:11 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: linuxppc-embedded@ozlabs.org, "Matthias Fechner" <idefix@fechner.net>
-Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
-In-Reply-To: <20061104163119.GC69112@server.idefix.loc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20061104163119.GC69112@server.idefix.loc>
+	Sun,  5 Nov 2006 14:46:37 +1100 (EST)
+Message-ID: <BAY121-F14257B62A0324A08AC99C6A6FC0@phx.gbl>
+From: "jhon scoot" <dvbspider@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: hi, guy's Need help to jtag a PPC405D4
+Date: Sat, 04 Nov 2006 22:46:34 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +20,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/4/06, Matthias Fechner <idefix@fechner.net> wrote:
-> Hi,
->
-> I have here a MPC5200 Lite (IceCube/Freescale Lite 5200) and tried to
-> get Xenomai running.
->
-> If I use the 2.6 kernel from denx the board boots fine but I am not
-> able to patch the kernel with the adeos patch (adeos-patch is for
-> kernel 2.6.18) and the kernel from denx is 2.6.19rc4. I checked the
-> changes and they are to much for me to adapt it.
->
-> What I need now is a patch for kernel 2.6.18 to get all the MPC5200
-> stuff running (priority has the networkchip) or a adeos patch for the
-> denx kernel 2.6.19-rc4.
->
-> Can anyone help me here, please?
+hi,,
 
-Yup, there exists patches for all the functionality that you're
-looking for.  You can find them if you search the list, but I'll send
-you a link to a git tree with all those patches in it later tonight.
+guy,,
 
-Cheers
-g.
+I am trying to read my PPC405D4,, the problem is , my serial cable DB9 to 
+RJ12 is missing , and I need
+to configure my Riscwatch Probe setting up the IP/TCP ,, does some one have 
+, a Riscwatch probe, and and check the serial cable how is configurated, for 
+I can buil'it here.
+
+Example: This is a example...
+RJ12 to DB9 (DCE Male) converter:
+
+		DCD	1  <--------  1	DCD
+		RXD	2  <--------  2	RXD
+	      DTR/RTS	3  -------->  4	DTR
+          |_>  7	RTS
+RJ12		GND	4  ----------  5	GND	DB9
+		TXD	5  -------->  3	TXD
+		CTS	6  <--------  8	CTS
 
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+thnkas
+
+_________________________________________________________________
+Get today's hot entertainment gossip  
+http://movies.msn.com/movies/hotgossip?icid=T002MSN03A07001
