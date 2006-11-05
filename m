@@ -1,15 +1,22 @@
-Return-Path: <nd@bplan-gmbh.de>
-Date: Sun, 5 Nov 2006 12:30:59 +0100 (MET)
-From: Nicolas DET <nd@bplan-gmbh.de>
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 05A7567C82
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Nov 2006 22:37:27 +1100 (EST)
+Message-ID: <454DCCE8.4020402@s5r6.in-berlin.de>
+Date: Sun, 05 Nov 2006 12:37:12 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] powerpc: Add MPC5200 Interrupt Controller support.
-Message-Id: <20061105123101.3cc1696f.nd@bplan-gmbh.de>
-In-Reply-To: <1162723031.28571.228.camel@localhost.localdomain>
-References: <454902F9.20206@bplan-gmbh.de>	<1162419138.25682.453.camel@localhost.localdomain>	<454A1C37.5050208@bplan-gmbh.de>	<454A5952.6090801@bplan-gmbh.de>	<1162683341.28571.82.camel@localhost.localdomain>	<20061105111753.3e41f6b7.nd@bplan-gmbh.de>	<1162723031.28571.228.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>, sl@bplan-gmbh.de,
-	linuxppc-embedded@ozlabs.org
+Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
+References: <454DBFE7.3090800@s5r6.in-berlin.de>
+	<1162724083.28571.235.camel@localhost.localdomain>
+	<454DC985.2020203@s5r6.in-berlin.de>
+In-Reply-To: <454DC985.2020203@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Gioele Barabucci <dev@gioelebarabucci.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 05 Nov 2006 21:37:11 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
+I wrote:
+> Benjamin Herrenschmidt wrote:
+>> The machine check means basically that the chip didn't respond on the
+>> PCI bus. The most probable cause is that something is wrong with the
+>> platform code that switches the chip clock on/off or with the PCI D
+>> state change.
+>>
+>> One thing you can check is wether that's always called properly,
+>> especially when starting the chip.
+[...]
+> How about this patch:
 > 
-> > > You have changed the mapping of L1/L2 but not the device-tree
-> > > representation to match them. Which means that you need the ugly hack
-> > > above. That is not goot. Fix your device-tree instead and do the same
-> > > split in the tree for L1/L2 than you do in the code.
-> > 
-> > There is no option here.
+> --- linux.orig/drivers/ieee1394/ohci1394.c	2006-11-02 22:35:16.000000000 +0100
+> +++ linux/drivers/ieee1394/ohci1394.c	2006-11-05 12:19:52.000000000 +0100
+> @@ -3215,6 +3215,18 @@ static int __devinit ohci1394_pci_probe(
+>  	struct ti_ohci *ohci;	/* shortcut to currently handled device */
+>  	resource_size_t ohci_base;
 > 
-> I don't agree. Your firmware can always be upgraded. There is no way you
-> will impose a broken format on everybody else. Unfortunately, being the
-> first implementation, that's just what you are doing...
-> 
+> +#ifdef CONFIG_PPC_PMAC
+> +	/* Necessary if ohci1394 was loaded and unloaded before */
+> +	if (machine_is(powermac)) {
+> +		struct device_node *of_node = pci_device_to_OF_node(dev);
+> +
+> +		if (of_node)
+> +			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, of_node,
+> +					  0, 1);
+> +			pmac_call_feature(PMAC_FTR_1394_ENABLE, of_node, 0, 1);
+> +	}
+> +#endif /* CONFIG_PPC_PMAC */
+> +
+>          if (pci_enable_device(dev))
+>  		FAIL(-ENXIO, "Failed to enable OHCI hardware");
+>          pci_set_master(dev);
+[...]
 
-As said, no option here. I think there is different way to see how works the PIC. However, from a register point of view. There is just critical, main, peripherals, SDMA.
+Hm. There is the following comment in ohci1394_pci_remove():
 
-Loot at "ICTL Perstat, MainStat, MainStat, CritStat Encoded Register--MBAR + 0x0524"
+	/* On UniNorth, power down the cable and turn off the chip
+	 * clock when the module is removed to save power on
+	 * laptops. Turning it back ON is done by the arch code when
+	 * pci_enable_device() is called */
 
-Page 160 of the MPC5200BUM.pdf.
-
-> At worst, you'll have to do a fixup pass in prom_init.c
-> 
-
-If you really want to change the pic driver, tell me the way to adapt prom_init.c
-However, I do think we do it the right way.
-
-Regards,
+Is this true or wrong in current kernels?
+-- 
+Stefan Richter
+-=====-=-==- =-== --=-=
+http://arcgraph.de/sr/
