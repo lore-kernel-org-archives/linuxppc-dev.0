@@ -1,15 +1,33 @@
-Return-Path: <dvbspider@hotmail.com>
-Received: from bay0-omc3-s30.bay0.hotmail.com (bay0-omc3-s30.bay0.hotmail.com
-	[65.54.246.230]) by ozlabs.org (Postfix) with ESMTP id A9CA867C45
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 591D767C4B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 14:46:37 +1100 (EST)
-Message-ID: <BAY121-F14257B62A0324A08AC99C6A6FC0@phx.gbl>
-From: "jhon scoot" <dvbspider@hotmail.com>
+	Sun,  5 Nov 2006 21:21:49 +1100 (EST)
+Received: from server.idefix.loc (ppp-82-135-90-10.dynamic.mnet-online.de
+	[82.135.90.10]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id kA5ALbN0061436
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Sun, 5 Nov 2006 11:21:42 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.loc with local (Exim 4.63 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1Ggf8D-000LGe-Fl
+	for linuxppc-embedded@ozlabs.org; Sun, 05 Nov 2006 11:21:37 +0100
+Date: Sun, 5 Nov 2006 11:21:37 +0100
+From: Matthias Fechner <idefix@fechner.net>
 To: linuxppc-embedded@ozlabs.org
-Subject: hi, guy's Need help to jtag a PPC405D4
-Date: Sat, 04 Nov 2006 22:46:34 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
+Message-ID: <20061105102137.GG79990@server.idefix.loc>
+References: <20061104163119.GC69112@server.idefix.loc>
+	<20061105013258.9B7DC352638@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061105013258.9B7DC352638@atlas.denx.de>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,30 +38,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi,,
+Hello Wolfgang,
 
-guy,,
+* Wolfgang Denk <wd@denx.de> [05-11-06 02:32]:
+> Then just check out the 2.6.18 version of the tree.  This  is  a  git
+> repo, so seeking to any version you like is a matter of seconds.
 
-I am trying to read my PPC405D4,, the problem is , my serial cable DB9 to 
-RJ12 is missing , and I need
-to configure my Riscwatch Probe setting up the IP/TCP ,, does some one have 
-, a Riscwatch probe, and and check the serial cable how is configurated, for 
-I can buil'it here.
+hm, I did it but was not successfully. What I did was:
+git clone git://www.denx.de/git/linux-2.6-denx.git linux-2.6-denx
+cd linux-2.6-denx
+git checkout -b private2.6.18 v2.6.18
 
-Example: This is a example...
-RJ12 to DB9 (DCE Male) converter:
+Now I had kernel 2.6.18 but without network :(
 
-		DCD	1  <--------  1	DCD
-		RXD	2  <--------  2	RXD
-	      DTR/RTS	3  -------->  4	DTR
-          |_>  7	RTS
-RJ12		GND	4  ----------  5	GND	DB9
-		TXD	5  -------->  3	TXD
-		CTS	6  <--------  8	CTS
+Is that wrong? Sry but git is completely new for me.
+
+> You do not want this, if you're on a MPC5200. I repeat, this  is  not
+> supported.
+
+ok, that is clear but if the kernel boots fine on the board with
+network and I am able to patch it with Xenomai I can live with it.
 
 
-thnkas
+Best regards,
+Matthias
 
-_________________________________________________________________
-Get today's hot entertainment gossip  
-http://movies.msn.com/movies/hotgossip?icid=T002MSN03A07001
+-- 
+
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
