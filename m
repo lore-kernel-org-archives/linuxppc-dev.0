@@ -1,22 +1,21 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E6FCA67BEA
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Nov 2006 23:59:13 +1100 (EST)
-Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
+Subject: Re: [PATCH/RFC] powerpc: Add MPC5200 Interrupt Controller support.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-In-Reply-To: <454DCCE8.4020402@s5r6.in-berlin.de>
-References: <454DBFE7.3090800@s5r6.in-berlin.de>
-	<1162724083.28571.235.camel@localhost.localdomain>
-	<454DC985.2020203@s5r6.in-berlin.de>
-	<454DCCE8.4020402@s5r6.in-berlin.de>
+To: Nicolas DET <nd@bplan-gmbh.de>
+In-Reply-To: <20061105123101.3cc1696f.nd@bplan-gmbh.de>
+References: <454902F9.20206@bplan-gmbh.de>
+	<1162419138.25682.453.camel@localhost.localdomain>
+	<454A1C37.5050208@bplan-gmbh.de>	<454A5952.6090801@bplan-gmbh.de>
+	<1162683341.28571.82.camel@localhost.localdomain>
+	<20061105111753.3e41f6b7.nd@bplan-gmbh.de>
+	<1162723031.28571.228.camel@localhost.localdomain>
+	<20061105123101.3cc1696f.nd@bplan-gmbh.de>
 Content-Type: text/plain
-Date: Sun, 05 Nov 2006 23:59:04 +1100
-Message-Id: <1162731544.28571.237.camel@localhost.localdomain>
+Date: Mon, 06 Nov 2006 00:02:13 +1100
+Message-Id: <1162731733.28571.241.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Gioele Barabucci <dev@gioelebarabucci.com>
+Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>, sl@bplan-gmbh.de,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> Hm. There is the following comment in ohci1394_pci_remove():
+On Sun, 2006-11-05 at 12:30 +0100, Nicolas DET wrote:
+> On Sun, 05 Nov 2006 21:37:11 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> 	/* On UniNorth, power down the cable and turn off the chip
-> 	 * clock when the module is removed to save power on
-> 	 * laptops. Turning it back ON is done by the arch code when
-> 	 * pci_enable_device() is called */
+> > 
+> > > > You have changed the mapping of L1/L2 but not the device-tree
+> > > > representation to match them. Which means that you need the ugly hack
+> > > > above. That is not goot. Fix your device-tree instead and do the same
+> > > > split in the tree for L1/L2 than you do in the code.
+> > > 
+> > > There is no option here.
+> > 
+> > I don't agree. Your firmware can always be upgraded. There is no way you
+> > will impose a broken format on everybody else. Unfortunately, being the
+> > first implementation, that's just what you are doing...
+> > 
 > 
-> Is this true or wrong in current kernels?
+> As said, no option here. I think there is different way to see how works the PIC. However, from a register point of view. There is just critical, main, peripherals, SDMA.
+> 
+> Loot at "ICTL Perstat, MainStat, MainStat, CritStat Encoded Register--MBAR + 0x0524"
 
-Might have bitrotted.... I'll have a look.
+You should have your device-tree match your internal numbering. As you
+noticed, the CRIT interrupt and the EXT interrupts are just the same.
+And you properly folded them under the same level 1... now just make
+the device-tree expose the same informations.
+
+I don't care if you have firmwares in production or whatever... As a
+matter of fact, you guys have been working on this board for long enough
+you could have dealt with that issue long ago :-)
+
+So right now, what you should do is figure out a proper encoding for the
+firmware, and then either fix your device-tree, or do a hack in
+prom_init.c that fixes it up.
 
 Ben.
