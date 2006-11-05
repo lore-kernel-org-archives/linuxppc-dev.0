@@ -1,37 +1,18 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9D73B67CBC
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 78F8C67CD5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 08:24:42 +1100 (EST)
-Received: from server.idefix.loc (ppp-82-135-90-10.dynamic.mnet-online.de
-	[82.135.90.10]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id kA5LOTpW017177
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Sun, 5 Nov 2006 22:24:35 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.loc with local (Exim 4.63 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1GgpTh-0009Os-G1
-	for linuxppc-embedded@ozlabs.org; Sun, 05 Nov 2006 22:24:29 +0100
-Date: Sun, 5 Nov 2006 22:24:29 +0100
-From: Matthias Fechner <idefix@fechner.net>
+	Mon,  6 Nov 2006 08:48:27 +1100 (EST)
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
-Message-ID: <20061105212429.GA35760@server.idefix.loc>
-References: <20061104163119.GC69112@server.idefix.loc>
-	<528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>
-	<20061105102328.GH79990@server.idefix.loc>
-	<454DBE2C.6040506@246tNt.com>
-	<20061105202435.GB30026@server.idefix.loc>
-	<454E4E7D.7090507@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <454E4E7D.7090507@grandegger.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 05 Nov 2006 21:23:36 +0100."
+	<20061105202336.GA30026@server.idefix.loc>
+Date: Sun, 05 Nov 2006 22:48:24 +0100
+Sender: wd@denx.de
+Message-Id: <20061105214824.8FD44353A5F@atlas.denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -42,25 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Wolfgang,
+In message <20061105202336.GA30026@server.idefix.loc> you wrote:
+> 
+> how can I checkout kernel 2.6.18 with denx improvements?
 
-* Wolfgang Grandegger <wg@grandegger.com> [05-11-06 21:50]:
-> I also tried to get Sylvain's patches working on 2.6.18 and gave up 
-> rather frustrated. They do not work "as is" :-(. I can offer you a 
-> solution for Xenomai on 2.6.17, if this is an option for you. That's 
-> what I got working for development.
+run gitk and check where our tree was megred with the Linus tree after
+the v2.6.18 release - you will find that it's commit ID
+dee0eedc749e35f85103f33d9c28bdfcdc1a8fb4
 
-that would be fantastic.
-I only need kernel 2.6 running on MPC5200 with xenomai.
-I can give you access to one of my servers if you want to copy there
-the kernel.
+> I need the system only for development, the targetsystem will run on
+> another board :)
+
+I'm not talking about a specific board, but about MPC5200 in general.
 
 Best regards,
-Matthias
+
+Wolfgang Denk
 
 -- 
-
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+About the use of language: it is impossible to sharpen a pencil  with
+a  blunt  ax.  It is equally vain to try to do it with ten blunt axes
+instead.                                           -- Edsger Dijkstra
