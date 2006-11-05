@@ -1,27 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
-	[195.238.5.235])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2B59967C7C
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 9839667C1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Nov 2006 12:45:33 +1100 (EST)
-Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx008.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kA51jPbP031650
-	for <linuxppc-embedded@ozlabs.org>; Sun, 5 Nov 2006 02:45:26 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <454D422B.8030003@246tNt.com>
-Date: Sun, 05 Nov 2006 02:45:15 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Sun,  5 Nov 2006 13:32:13 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so569629ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 04 Nov 2006 18:32:12 -0800 (PST)
+Message-ID: <528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>
+Date: Sat, 4 Nov 2006 20:32:11 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: linuxppc-embedded@ozlabs.org, "Matthias Fechner" <idefix@fechner.net>
+Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
+In-Reply-To: <20061104163119.GC69112@server.idefix.loc>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] ppc/powerpc: Fix io.h for config with CONFIG_PCI not set
-References: <11626858382465-git-send-email-tnt@246tNt.com>
-	<1162689134.28571.120.camel@localhost.localdomain>
-In-Reply-To: <1162689134.28571.120.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ML PPC Embedded <linuxppc-embedded@ozlabs.org>, Sven <sl@bplan-gmbh.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061104163119.GC69112@server.idefix.loc>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,26 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Sun, 2006-11-05 at 01:17 +0100, Sylvain Munaut wrote:
->   
->> When CONFIG_PCI option is not set, the variables
->> pci_dram_offset, isa_io_base and isa_mem_base are not defined.
->>
->> Currently, the test is handled in each platform header. This
->> patch moves the test in io.h once and for all.
->>     
+On 11/4/06, Matthias Fechner <idefix@fechner.net> wrote:
+> Hi,
 >
-> Be careful with _IO_BASE... I'm not 100% sure some platforms don't need
-> it set to something else even when PCI is not present.
->   
-When I saw in  mpc83xx.h and  mpc85xx.h that they still defined them, I
-wondered.
-But when looking at the code :
-    unsigned long isa_io_base     = 0;
-    unsigned long isa_mem_base    = 0;
-are both defined in pci_{32/64}.c and won't be included if CONFIG_PCI is
-not set.
+> I have here a MPC5200 Lite (IceCube/Freescale Lite 5200) and tried to
+> get Xenomai running.
+>
+> If I use the 2.6 kernel from denx the board boots fine but I am not
+> able to patch the kernel with the adeos patch (adeos-patch is for
+> kernel 2.6.18) and the kernel from denx is 2.6.19rc4. I checked the
+> changes and they are to much for me to adapt it.
+>
+> What I need now is a patch for kernel 2.6.18 to get all the MPC5200
+> stuff running (priority has the networkchip) or a adeos patch for the
+> denx kernel 2.6.19-rc4.
+>
+> Can anyone help me here, please?
+
+Yup, there exists patches for all the functionality that you're
+looking for.  You can find them if you search the list, but I'll send
+you a link to a git tree with all those patches in it later tonight.
+
+Cheers
+g.
 
 
-    Sylvain
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
