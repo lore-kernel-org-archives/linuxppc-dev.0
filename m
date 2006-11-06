@@ -1,22 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 14F7E67D6E
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 03:46:01 +1100 (EST)
-In-Reply-To: <454F5259.3020107@hogyros.de>
-References: <1162767333.28571.254.camel@localhost.localdomain>
-	<454F5259.3020107@hogyros.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8BC8EB4A-7010-446B-8605-BAB2404AE840@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: APUS and IOs question
-Date: Mon, 6 Nov 2006 17:45:43 +0100
-To: Simon Richter <Simon.Richter@hogyros.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 08BCC67C4B
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 03:50:55 +1100 (EST)
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
+	block in 64k page mode
+References: <200611052140.38445.hnguyen@de.ibm.com>
+	<200611060045.59074.arnd@arndb.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 06 Nov 2006 08:50:44 -0800
+In-Reply-To: <200611060045.59074.arnd@arndb.de> (Arnd Bergmann's message of
+	"Mon, 6 Nov 2006 00:45:58 +0100")
+Message-ID: <adaslgwo6xn.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> That, and that the 604e+ probably doesn't reorder accesses that much
-> anyway that the barriers would do any good here. :-)
+ > I'd simply move the memset into the alloc function and get rid of the
+ > constructor here.
 
-Is there any reason though to have APUS-specific I/O accessors
-instead of using the generic stuff (except for perhaps a minor
-performance hit)?
+Slightly better still would be to use kmem_cache_zalloc() (save a tiny
+bit of text by getting rid of the call to memset).
 
-
-Segher
+ - R.
