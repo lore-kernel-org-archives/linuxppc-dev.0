@@ -1,23 +1,22 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1791A67C47
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 18:55:33 +1100 (EST)
-Message-ID: <454EEA69.3080208@garzik.org>
-Date: Mon, 06 Nov 2006 02:55:21 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH 2.6.19-rc4 1/3] ehea: Nullpointer dereferencation fix
-References: <200611031747.21667.osstklei@de.ibm.com>
-In-Reply-To: <200611031747.21667.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 00F8C67C68
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 19:09:04 +1100 (EST)
+Subject: Re: Can't build drivers/infiniband/hw/ipath/ipath_keys.c on
+	arch/powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1162798399.8175.24.camel@localhost.localdomain>
+References: <1162798399.8175.24.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 06 Nov 2006 19:06:48 +1100
+Message-Id: <1162800409.28571.298.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: support@pathscale.com, Andrew Morton <akpm@osdl.org>,
+	openib-general <openib-general@openib.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,4 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-applied 1-3
+On Mon, 2006-11-06 at 18:33 +1100, Michael Ellerman wrote:
+> Hi,
+> 
+> Just a heads-up, drivers/infiniband/hw/ipath/ipath_keys.c doesn't build
+> on powerpc because we have don't have bus_to_virt().
+> 
+> (Actually you can't select CONFIG_INFINIBAND_IPATH on mainline because
+> powerpc doesn't enable PCI_MSI, but we will real soon now, and when we
+> do this will start breaking people's all modconfig builds).
+
+I'm surprised that something as recent as infiniband requires a
+long-deprecated function bus_to_virt().
+
+What is it trying to do there that needs that call ?
+
+Ben.
