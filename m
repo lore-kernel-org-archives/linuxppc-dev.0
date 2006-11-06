@@ -1,21 +1,19 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from host32.eke.fi (host32.eke.fi [194.100.64.32])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F1CAF67C2F
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A920567C37
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Nov 2006 07:49:57 +1100 (EST)
-Date: Mon, 6 Nov 2006 22:49:49 +0200 (EET)
-From: Kalle Pokki <kalle.pokki@iki.fi>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
-In-Reply-To: <20061106205543.43b2aacb@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0611062237300.16727@host32.eke.fi>
-References: <Pine.LNX.4.64.0611061523360.12023@host32.eke.fi>
-	<20061106205543.43b2aacb@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-embedded@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	Tue,  7 Nov 2006 10:32:52 +1100 (EST)
+To: Manjunath AM <Manjunath.AM@Lntemsys.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Please give your feedback 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 06 Nov 2006 12:27:24 +0530."
+	<OF6157E3D5.6B060538-ON6525721E.00258EC0-6525721E.00261A01@lntemsys.com>
+Date: Tue, 07 Nov 2006 00:32:49 +0100
+Sender: wd@denx.de
+Message-Id: <20061106233249.E7F75353A5F@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 6 Nov 2006, Vitaly Bordug wrote:
+In message <OF6157E3D5.6B060538-ON6525721E.00258EC0-6525721E.00261A01@lntemsys.com> you wrote:
+> 
+> Please suggest me where i can download the toolchain to  use u-boot1.1.3 
 
->> This patch renames these the two existing resources, and introduces a
->> new one, "pram_base", which is a pointer to the parameter RAM. The
->> parameter RAM for SMC1 and SMC2 is put in the first 128 bytes of the
->> DPRAM. This memory was already reserved from the DPRAM memory
->> allocator for this purpose.
->>
-> Well just one objection. pram_base should not be a device unless it applies to all the stuff of
-> SoC family which is not the case.
->
-> For this aim, I'd put what you need into the platform_data, or follow the same approach 8xx stuff having.
+See for example http://www.denx.de/wiki/view/DULG/ELDKAvailability
 
-I'm not sure I follow you now. "pram_base" is not a device by itself, but 
-it's just another resource in the PQ2 version of the SMC devices in the 
-platform_data. So the resource is only present when it is needed, and for 
-other platform devices that don't have this resource, the cpm_uart code 
-does nothing (as it should not).
+Best regards,
 
-The only difference to the 8xx version is the new "pram_base" resource, 
-and it is required with PQ2, right?
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Real programmers don't comment their code. It was hard to  write,  it
+should be hard to understand.
