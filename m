@@ -1,29 +1,23 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 7E87567CD6
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 137BB67C62
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Nov 2006 02:44:20 +1100 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1Gh6e0-0006HR-So
-	for linuxppc-embedded@ozlabs.org; Mon, 06 Nov 2006 16:44:16 +0100
-From: Peter Korsgaard <jacmet@sunsite.dk>
+	Tue,  7 Nov 2006 03:54:44 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so784603ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 06 Nov 2006 08:54:42 -0800 (PST)
+Message-ID: <528646bc0611060854u7a6627b0y567fa8e40ee74c6@mail.gmail.com>
+Date: Mon, 6 Nov 2006 09:54:42 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx UART Lite 2.6.18 driver
-References: <609d5c8e0610101349w64cdd4ecjc5359ad8d1f5d635@mail.gmail.com>
-	<87ac41esap.fsf@sleipner.barco.com>
-	<609d5c8e0610121412o1288ef6i667b908597bf3d76@mail.gmail.com>
-	<609d5c8e0610122221i7c5e5049n4db5fcf3f61bd132@mail.gmail.com>
-	<87ac40vgeo.fsf@sleipner.barco.com>
-	<609d5c8e0610151648x41b0c49cj4d0cda0e3b5bf1e@mail.gmail.com>
-	<87lknadbbl.fsf@sleipner.barco.com>
-	<877iylreca.fsf@sleipner.barco.com>
-	<609d5c8e0610301145y30d058afs467d27d344149936@mail.gmail.com>
-Date: Mon, 06 Nov 2006 16:44:16 +0100
-In-Reply-To: <609d5c8e0610301145y30d058afs467d27d344149936@mail.gmail.com>
-	(David Bolcsfoldi's message of "Mon, 30 Oct 2006 11:45:45 -0800")
-Message-ID: <87u01czijz.fsf@sleipner.barco.com>
+Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
+In-Reply-To: <20061105102328.GH79990@server.idefix.loc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061104163119.GC69112@server.idefix.loc>
+	<528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>
+	<20061105102328.GH79990@server.idefix.loc>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,138 +28,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David Bolcsfoldi <dbolcsfoldi@gmail.com> writes:
+On 11/5/06, Matthias Fechner <idefix@fechner.net> wrote:
+> Hello Grant,
+>
+> * Grant Likely <grant.likely@secretlab.ca> [04-11-06 20:32]:
+> > Yup, there exists patches for all the functionality that you're
+> > looking for.  You can find them if you search the list, but I'll send
+> > you a link to a git tree with all those patches in it later tonight.
+>
+> you maybe mean:
+> http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git
+>
+> I tried that repository but here I was not able to patch the tree with
+> Xenomai.
 
-Hi,
->> This doesn't help much as you don't use the com_port argument in
->> the other functions.
+Yup, that's the tree I was referring to; and yes you would need to do
+some work to get all the patches to play nice together.  :)
 
-David> True, it's utterly useless. I was planning on having an array
-David> with base addresses which would be used to support the com_port
-David> argument.  But it didn't make it in this patch although I have
-David> version that does this now.
+> But if you have another link it would be a pleasure for me to receive
+> the link :)
 
-You don't even need an array - you can use use the base address as the
-com_port cookie, E.G.:
+Unfortunately, I've had some technical issues on my end, so I haven't
+been able to get a tree together for you yet.
 
---- /dev/null
-+++ linux-trunk/arch/ppc/boot/simple/uartlite_tty.c
-@@ -0,0 +1,86 @@
-+/*
-+ * Boot support for Xilinx uartlite
-+ *
-+ * Copyright (C) 2006 David Bolcsfoldi <dbolcsfoldi@gmail.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <asm/io.h>
-+#include <linux/serial_uartlite.h>
-+#include <platforms/4xx/xparameters/xparameters.h>
-+
-+unsigned long serial_init(int chan, void *ignored)
-+{
-+	unsigned long com_port = 0;
-+
-+	switch (chan)  {
-+#ifdef XPAR_UARTLITE_0_BASEADDR
-+	case 0:
-+		com_port = XPAR_UARTLITE_0_BASEADDR + 3;
-+		break;
-+#endif
-+#ifdef XPAR_UARTLITE_1_BASEADDR
-+	case 1:
-+		com_port = XPAR_UARTLITE_1_BASEADDR + 3;
-+		break;
-+#endif
-+#ifdef XPAR_UARTLITE_2_BASEADDR
-+	case 2:
-+		com_port = XPAR_UARTLITE_2_BASEADDR + 3;
-+		break;
-+#endif
-+#ifdef XPAR_UARTLITE_3_BASEADDR
-+	case 3:
-+		com_port = XPAR_UARTLITE_3_BASEADDR + 3;
-+		break;
-+#endif
-+	default:
-+		break;
-+	}
-+
-+	if (com_port) {
-+		void __iomem *base = (void __iomem*)com_port;
-+		writeb(0, base + ULITE_CONTROL);
-+		writeb(ULITE_CONTROL_RST_RX | ULITE_CONTROL_RST_TX,
-+		       base + ULITE_CONTROL);
-+		writeb(0, base + ULITE_CONTROL);
-+	}
-+
-+	return com_port;
-+}
-+
-+
-+int serial_tstc(unsigned long com_port)
-+{
-+	void __iomem *base = (void __iomem*)com_port;
-+
-+	if (base)
-+		return readb(base + ULITE_STATUS) & ULITE_STATUS_RXVALID;
-+	else
-+		return 0;
-+}
-+
-+void serial_putc(unsigned long com_port, unsigned char c)
-+{
-+	void __iomem *base = (void __iomem*)com_port;
-+
-+	if (base) {
-+		while (readb(base + ULITE_STATUS) & ULITE_STATUS_TXFULL);
-+		writeb(c, base + ULITE_TX);
-+	}
-+}
-+
-+unsigned char serial_getc(unsigned long com_port)
-+{
-+	void __iomem *base = (void __iomem*)com_port;
-+
-+	if (base) {
-+		while (!serial_tstc(com_port));
-+		return readb(base + ULITE_RX);
-+	}
-+	else
-+		return 0;
-+}
-
-
->> Where did you get the XPAR_XUL_UART_ defines from? Our
->> xparameters.h seem to contain XPAR_UARTLITE_ defines instead.
-
-David> I think that name is picked up from the name of the device in your
-David> design, the defines get names XPAR_NNN_ and mine are called
-David> XUL_UART.
-
-Crap - Ok, then people just have to add linux-compatible defines to
-the end of their xparameters.h - E.G
-#define XPAR_UARTLITE_0_BASEADDR XPAR_XUL_UART_BASEADDR
-
->> You can always use the ppc_md.progress() stuff for really early
->> debugging if needed. I would prefer to keep this workaround out of
->> uartlite.c if it isn't needed.
-
-David> I am pretty certain probe won't get called until ppc_sys_init has been
-David> called which is fairly far into the booting process and even if
-David> it did the platform_bus hasn't been initialized before the
-David> ppc_sys_init is called, at least not with any of the devices
-David> exported by ppc_sys_devices.
-
-True. For really early stuff you'll need to use ppc_md.progress() (or
-some additional hacking)
-
-David> Thanks for the review!  David
-
-You're welcome.
+Sorry,
+g.
 
 -- 
-Bye, Peter Korsgaard
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
