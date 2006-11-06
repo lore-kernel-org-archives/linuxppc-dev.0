@@ -1,20 +1,28 @@
-Return-Path: <prakash.org@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id 6A48D67C84
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 05E7567CD6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 21:29:15 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id n29so1374077nfc
+	Mon,  6 Nov 2006 22:21:05 +1100 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 6E4D6989CB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 06 Nov 2006 02:29:13 -0800 (PST)
-Message-ID: <348caa310611060229x2baae881n67cf0d4e085e32c6@mail.gmail.com>
-Date: Mon, 6 Nov 2006 15:59:12 +0530
-From: "Prakash Ramaraju" <prakash.gnu@gmail.com>
-Sender: prakash.org@gmail.com
-To: linuxppc-embedded@ozlabs.org
-Subject: Clock Modification of MPC885 for USB Host Functionality
+	Mon,  6 Nov 2006 12:21:03 +0100 (CET)
+Received: from [10.0.30.2] (p5497E080.dip.t-dialin.net [84.151.224.128])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 4625592687
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  6 Nov 2006 12:21:03 +0100 (CET)
+Message-ID: <454F1AB9.8050609@grandegger.com>
+Date: Mon, 06 Nov 2006 12:21:29 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_63336_24929328.1162808952701"
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
+References: <20061104163119.GC69112@server.idefix.loc>	<528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>	<20061105102328.GH79990@server.idefix.loc>	<454DBE2C.6040506@246tNt.com>	<20061105202435.GB30026@server.idefix.loc>	<454E4E7D.7090507@grandegger.com>
+	<20061105212429.GA35760@server.idefix.loc>
+In-Reply-To: <20061105212429.GA35760@server.idefix.loc>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,47 +33,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_63336_24929328.1162808952701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello Matthias,
 
-Greetings
+Matthias Fechner wrote:
+> Hello Wolfgang,
+> 
+> * Wolfgang Grandegger <wg@grandegger.com> [05-11-06 21:50]:
+>> I also tried to get Sylvain's patches working on 2.6.18 and gave up 
+>> rather frustrated. They do not work "as is" :-(. I can offer you a 
+>> solution for Xenomai on 2.6.17, if this is an option for you. That's 
+>> what I got working for development.
+> 
+> that would be fantastic.
+> I only need kernel 2.6 running on MPC5200 with xenomai.
+> I can give you access to one of my servers if you want to copy there
+> the kernel.
 
-Currently I have a MPC885 based board running at 50MHz. I want USB host
-working at full speed with internal clock. Assuming I need to change the
-General System Clock Frequency (GCLK2) to 48MHz, I got this calculation with
-input frequency of 10MHz from an u-boot script.
+Some time ago I got the MPC5200 patches from the Pengutronix's OSELAS
+project working for DENX Linux 2.6.17. In the meantime they have update
+to 2.6.18. Take OSELAS.BSP-Phytec-phyCORE-MPC5200B-tiny-4.tar.gz from
+http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/, 
 
-pdf mfi mfn mfd s dbrmo     dpref    dpgdck     jdbck     gclk2 exact?
---- --- --- --- - -----     -----    ------     -----     ----- ------
-  0   9   3   4 1     0  10000000 192000000  96000000  48000000    YES
-  0   9   6   9 1     0  10000000 192000000  96000000  48000000    YES
-  0   9   9  14 1     0  10000000 192000000  96000000  48000000    YES
-  0   9  12  19 1     0  10000000 192000000  96000000  48000000    YES
+unpack it and apply the relevant patches from the kernel-patches-target
+diretory to linux-2.6-denx#v2.6.18. I think the following patches should
+be sufficient (in that order):
 
-I modified CFG_PLPRCR (to 19194000) in u-boot config file to match this. But
-I'm getting only 45MHz output clock (not exactly 48MHz which is needed for
-USB to work)
+   fec_mpc52xx_bestcomm.diff
+   fec_mpc52xx.diff
+   drivers_serial_mpc52xx_uart_fix.diff
+   mpc5200_physmap.diff
 
-If anyone can shed some info making the USB work on MPC885 with internal
-clock or changing the clock freq to exact 48MHz, it will be helpful.
+You can find the most recent Xenomai patch 2.6.18-ppc-1.05.00 at
+"ftp://ftp.denx.de/xenomai". I'm going to test them later today with 
+Xenomai.
 
-Thanks
+Good luck.
 
--- 
-With best regards,
-Prakash
-
-------=_Part_63336_24929328.1162808952701
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Greetings<br><br>Currently I have a MPC885 based board running at 50MHz. I want USB host working at full speed with internal clock. Assuming I need to change the General System Clock Frequency (GCLK2) to 48MHz, I got this calculation with input frequency of 10MHz from an u-boot script.
-<br><br>pdf mfi mfn mfd s dbrmo&nbsp;&nbsp;&nbsp;&nbsp; dpref&nbsp;&nbsp;&nbsp; dpgdck&nbsp;&nbsp;&nbsp;&nbsp; jdbck&nbsp;&nbsp;&nbsp;&nbsp; gclk2 exact?<br>--- --- --- --- - -----&nbsp;&nbsp;&nbsp;&nbsp; -----&nbsp;&nbsp;&nbsp; ------&nbsp;&nbsp;&nbsp;&nbsp; -----&nbsp;&nbsp;&nbsp;&nbsp; ----- ------<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp;&nbsp; 3&nbsp;&nbsp; 4 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES
-<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp;&nbsp; 6&nbsp;&nbsp; 9 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp;&nbsp; 9&nbsp; 14 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp; 12&nbsp; 19 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES
-<br><br clear="all">I modified CFG_PLPRCR (to 19194000) in u-boot config file to match this. But I'm getting only 45MHz output clock (not exactly 48MHz which is needed for USB to work) <br><br>If anyone can shed some info making the USB work on MPC885 with internal clock or changing the clock freq to exact 48MHz, it will be helpful.
-<br><br>Thanks<br><br>-- <br>With best regards,<br>Prakash
-
-------=_Part_63336_24929328.1162808952701--
+Wolfgang.
