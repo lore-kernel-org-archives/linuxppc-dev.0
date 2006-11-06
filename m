@@ -1,15 +1,24 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <200611061035.kA6AZtGZ018329@post.webmailer.de>
-References: <200611061035.kA6AZtGZ018329@post.webmailer.de>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 46FF767C58
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 06:27:54 +1100 (EST)
+In-Reply-To: <20061106164542.GA30762@gate.crashing.org>
+References: <1162783045.28571.283.camel@localhost.localdomain>
+	<1162784661.19697.4.camel@crusty.rchland.ibm.com>
+	<1162786162.28571.286.camel@localhost.localdomain>
+	<1162786580.19697.9.camel@crusty.rchland.ibm.com>
+	<20061106164542.GA30762@gate.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9580D2CE-BD68-440F-A1FD-09E882D93231@kernel.crashing.org>
+Message-Id: <69D0AFB1-C730-4544-8858-29E4707D1124@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add of_platform support for OHCI/Bigendian HC
-Date: Mon, 6 Nov 2006 13:24:22 -0600
-To: Nicolas DET <nd@bplan-gmbh.de>
-Cc: "akpm@osdl.org" <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Subject: Re: fixup_bigphys_addr and ioremap64 question
+Date: Mon, 6 Nov 2006 13:27:43 -0600
+To: Matt Porter <mporter@embeddedalley.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +29,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 6, 2006, at 4:35 AM, Nicolas DET wrote:
+On Nov 6, 2006, at 10:45 AM, Matt Porter wrote:
 
-> This patch use of_platform device to probe and install OHCI big  
-> endian HC.
+> On Sun, Nov 05, 2006 at 10:16:20PM -0600, Josh Boyer wrote:
+>> On Mon, 2006-11-06 at 15:09 +1100, Benjamin Herrenschmidt wrote:
+>>>>> So why do we have both ioremap and ioremap64 knowing that the  
+>>>>> former is
+>>>>> defined to take a phys_addr_t argument ?
+>>>>>
+>>>>> Currently, we have both, with the only difference being that  
+>>>>> ioremap
+>>>>> calls ioremap64 but also passes the argument through a
+>>>>> fixup_bigphys_addr() function first.
+>>>>>
+>>>>> It took me a while to find it ... it's not defined in generic  
+>>>>> code but
+>>>>> in platform code (ugh !). In fact, the only version of it we  
+>>>>> have in
+>>>>> arch/powerpc is in the 85xx support and does:
+>>>>
+>>>> It's in arch/ppc/syslib/44x_common.c and it's used to trap the  
+>>>> least
+>>>> significant 32 bits of an address and set the right ERPN for io  
+>>>> space on
+>>>> 44x.  Something like that might be needed when 44x merges to
+>>>> arch/powerpc.
+>>>
+>>> Well, my point is that since nowadays we have 64 bits struct  
+>>> resource
+>>> and 64 bits phys_addr_t passed to ioremap, do we still need  
+>>> that ? In
+>>> fact, in my upcoming patch merging io.h for 32 and 64 bits in
+>>> asm-powerpc, I've simply removed that hook and ioremap64 :-) I  
+>>> can add
+>>> it back still, but so far, I yet have to be convinced there is  
+>>> still a
+>>> good reason for that hook.
+>>
+>> Hm.. that might be ok.  I'm hoping to get back to working on  
+>> something
+>> soon so I'll be able to tell more later.  Maybe Matt knows for sure.
 >
-> PS: I did not success to properly inline the file using thrunderbird.
+> Yes, that's the right way to go.  The history on this is that when
+> the 64-bit resource change came relatively recently, ioremap64 and
+> friends weren't killed off in arch/ppc.  ioremap64 only existed  
+> because
+> a long time ago several people blocked the idea of 64-bit resources
+> (on 32-bit platforms) and we needed a way around it plus all the
+> fixup garbage. Going forward, we now can handle everything through
+> ioremap() with no fixup stuff. There's a related issue with mmap and
+> 64-bits but that's a separate issue yet that should now be addressed.
+>
+>> It'll probably break out-of-tree drivers though once the merge  
+>> happens
+>> for 4xx.  Could we leave ioremap64 around for a bit with a  
+>> deprecation
+>> warning?
+>
+> The kernel APIs break all the time. Every out of tree driver has to
+> have that built into their expectation when moving to a new kernel
+> so I don't see a good reason for making a special case here.
 
-You really copy the USB maintainers on this.  Also, why bother with  
-the Kconfig for USB_OHCI_HCD_PPC_OF_BE/USB_OHCI_HCD_PPC_OF_LE?
+On 85xx I just put the place holder in for handling the larger  
+address space, but we never did anything real with it.  Now that we  
+have 64-bit resources I'm happy to see ioremap() fixed and ioremap64  
+go away.
 
-- kumar
-
-[snip]
+- k
