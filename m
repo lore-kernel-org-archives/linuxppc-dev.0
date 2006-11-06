@@ -1,15 +1,14 @@
-Return-Path: <akpm@osdl.org>
-Date: Mon, 6 Nov 2006 14:46:48 -0800
-From: Andrew Morton <akpm@osdl.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add of_platform support for OHCI/Bigendian HC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Nicolas DET <nd@bplan-gmbh.de>
-Subject: Re: [PATCH] powerpc: Add Efika platform support
-Message-Id: <20061106144648.801c9441.akpm@osdl.org>
-In-Reply-To: <20061105111118.ccffccfe.nd@bplan-gmbh.de>
-References: <20061105111118.ccffccfe.nd@bplan-gmbh.de>
+In-Reply-To: <200611061101.kA6B1qWe002251@post.webmailer.de>
+References: <200611061101.kA6B1qWe002251@post.webmailer.de>
+Content-Type: text/plain
+Date: Tue, 07 Nov 2006 09:55:44 +1100
+Message-Id: <1162853744.28571.363.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de,
-	Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,11 +18,356 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 5 Nov 2006 12:57:16 +0100 (MET)
-Nicolas DET <nd@bplan-gmbh.de> wrote:
+On Mon, 2006-11-06 at 12:01 +0100, Nicolas DET wrote:
+> This patch use of_platform device to probe and install OHCI big endian HC.
+> 
+> PS: I did not success to properly inline the file using thrunderbird.
 
-> Add Efika (http://www.bplan-gmbh.de/efika_spec_en.html) platform support for arch/powerpc
+It looks ok to me, inlined and all... make sure you use the "Preformat"
+style in thunderbird.
 
-Who (if anyone) is the maintainer for this sort of thing?
+Ben.
 
-Thanks.
+> Signed-off-by: Nicolas DET <nd@bplan-gmbh.de> 
+> ---
+> --- a/drivers/usb/host/ohci-ppc-of.c	1970-01-01 01:00:00.000000000 +0100
+> +++ b/drivers/usb/host/ohci-ppc-of.c	2006-11-06 11:10:29.000000000 +0100
+> @@ -0,0 +1,283 @@
+> +/*
+> + * OHCI HCD (Host Controller Driver) for USB.
+> + *
+> + * (C) Copyright 1999 Roman Weissgaerber <weissg@vienna.at>
+> + * (C) Copyright 2000-2002 David Brownell <dbrownell@users.sourceforge.net>
+> + * (C) Copyright 2002 Hewlett-Packard Company
+> + * (C) Copyright 2003-2005 MontaVista Software Inc.
+> + * 
+> + * Probe and init OHCI Big endian HC from OpenFirmware device tree
+> + * Tested on Efika 5k2
+> + *
+> + * Modified by Dale Farnsworth <dale@farnsworth.org> from ohci-sa1111.c
+> + *
+> + * This file is licenced under the GPL.
+> + */
+> +
+> +#include <linux/signal.h>
+> +
+> +#include <asm/of_device.h>
+> +#include <asm/prom.h>
+> +
+> +/* configure so an HC device and id are always provided */
+> +/* always called with process context; sleeping is OK */
+> +
+> +/*
+> + * usb_hcd_ppc_of_probe - initialize On-Chip HCDs
+> + * Context: !in_interrupt()
+> + *
+> + * Allocates basic resources for this USB host controller.
+> + *
+> + * Store this function in the HCD's struct pci_driver as probe().
+> + */
+> +static int usb_hcd_ppc_of_probe(const struct hc_driver *driver,
+> +			  struct of_device *dev, int is_bigendian)
+> +{
+> +	int retval;
+> +	struct usb_hcd *hcd;
+> +	struct ohci_hcd	*ohci;
+> +	struct resource res;
+> +	int irq;
+> +	int ret;
+> +
+> +	pr_debug("initializing PPC-OF USB Controller\n");
+> +
+> +	if ((ret = of_address_to_resource(dev->node, 0, &res)) != 0)
+> +		return ret;
+> +
+> +	hcd = usb_create_hcd(driver, &dev->dev, "PPC-OF USB");
+> +	if (!hcd)
+> +		return -ENOMEM;
+> +
+> +	hcd->rsrc_start = res.start;
+> +	hcd->rsrc_len = res.end - res.start + 1;
+> +
+> +	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
+> +		pr_debug(__FILE__ ": request_mem_region failed\n");
+> +		retval = -EBUSY;
+> +		goto err1;
+> +	}
+> +
+> +	irq = irq_of_parse_and_map(dev->node, 0);
+> +	if (irq == NO_IRQ) {
+> +		retval = -EBUSY;
+> +		goto err2;
+> +	}
+> +
+> +	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
+> +	if (!hcd->regs) {
+> +		pr_debug(__FILE__ ": ioremap failed\n");
+> +		retval = -ENOMEM;
+> +		goto err2;
+> +	}
+> +
+> +	ohci = hcd_to_ohci(hcd);
+> +	if (is_bigendian)
+> +		ohci->flags |= OHCI_BIG_ENDIAN;
+> +
+> +	ohci_hcd_init(ohci);
+> +
+> +	retval = usb_add_hcd(hcd, irq, 0);
+> +	if (retval == 0)
+> +		return retval;
+> +
+> +	pr_debug("Removing PPC-OF USB Controller\n");
+> +
+> +	iounmap(hcd->regs);
+> + err2:
+> +	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
+> + err1:
+> + 	usb_put_hcd(hcd);
+> +	return retval;
+> +}
+> +
+> +
+> +/* may be called without controller electrically present */
+> +/* may be called with controller, bus, and devices active */
+> +
+> +/*
+> + * usb_hcd_ppc_of_remove - shutdown processing for On-Chip HCDs
+> + * @pdev: USB Host Controller being removed
+> + * Context: !in_interrupt()
+> + *
+> + * Reverses the effect of usb_hcd_ppc_of_probe().
+> + * It is always called from a thread
+> + * context, normally "rmmod", "apmd", or something similar.
+> + *
+> + */
+> +static void usb_hcd_ppc_of_remove(struct usb_hcd *hcd,
+> +		struct of_device *op)
+> +{
+> +	usb_remove_hcd(hcd);
+> +
+> +	pr_debug("stopping PPC-OF USB Controller\n");
+> +
+> +	iounmap(hcd->regs);
+> +	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
+> +	usb_put_hcd(hcd);
+> +}
+> +
+> +static int __devinit
+> +ohci_ppc_of_start(struct usb_hcd *hcd)
+> +{
+> +	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
+> +	int		ret;
+> +
+> +	if ((ret = ohci_init(ohci)) < 0)
+> +		return ret;
+> +
+> +	if ((ret = ohci_run(ohci)) < 0) {
+> +		err("can't start %s", ohci_to_hcd(ohci)->self.bus_name);
+> +		ohci_stop(hcd);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct hc_driver ohci_ppc_of_hc_driver = {
+> +	.description =		hcd_name,
+> +	.hcd_priv_size =	sizeof(struct ohci_hcd),
+> +
+> +	/*
+> +	 * generic hardware linkage
+> +	 */
+> +	.irq =			ohci_irq,
+> +	.flags =		HCD_USB11 | HCD_MEMORY,
+> +
+> +	/*
+> +	 * basic lifecycle operations
+> +	 */
+> +	.start =		ohci_ppc_of_start,
+> +	.stop =			ohci_stop,
+> +	.shutdown = 		ohci_shutdown,
+> +
+> +	/*
+> +	 * managing i/o requests and associated device resources
+> +	 */
+> +	.urb_enqueue =		ohci_urb_enqueue,
+> +	.urb_dequeue =		ohci_urb_dequeue,
+> +	.endpoint_disable =	ohci_endpoint_disable,
+> +
+> +	/*
+> +	 * scheduling support
+> +	 */
+> +	.get_frame_number =	ohci_get_frame,
+> +
+> +	/*
+> +	 * root hub support
+> +	 */
+> +	.hub_status_data =	ohci_hub_status_data,
+> +	.hub_control =		ohci_hub_control,
+> +	.hub_irq_enable =	ohci_rhsc_enable,
+> +#ifdef	CONFIG_PM
+> +	.bus_suspend =		ohci_bus_suspend,
+> +	.bus_resume =		ohci_bus_resume,
+> +#endif
+> +	.start_port_reset =	ohci_start_port_reset,
+> +};
+> +
+> +
+> +
+> +static int ohci_hcd_ppc_of_drv_remove(struct of_device *op)
+> +{
+> +	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
+> +	dev_set_drvdata(&op->dev, NULL);
+> +
+> +	usb_hcd_ppc_of_remove(hcd, op);
+> +	return 0;
+> +}
+> +
+> +static int ohci_hcd_ppc_of_drv_shutdown(struct of_device *op)
+> +{
+> +	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
+> +
+> +        if (hcd->driver->shutdown)
+> +                hcd->driver->shutdown(hcd);
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + *
+> +*/
+> +
+> +static struct of_device_id ohci_hcd_ppc_of_match[] = {
+> +#ifdef CONFIG_USB_OHCI_HCD_PPC_OF_BE
+> +	{
+> +		.name = "usb",
+> +		.compatible = "ohci-bigendian",
+> +	},
+> +	{
+> +		.name = "usb",
+> +		.compatible = "ohci-be",
+> +	},
+> +#endif
+> +#ifdef CONFIG_USB_OHCI_HCD_PPC_OF_LE
+> +	{
+> +		.name = "usb",
+> +		.compatible = "ohci-littledian",
+> +	},
+> +	{
+> +		.name = "usb",
+> +		.compatible = "ohci-le",
+> +	},
+> +#endif
+> +	{},
+> +};
+> +
+> +static int __devinit
+> +ohci_hcd_ppc_of_drv_probe(struct of_device *op, const struct of_device_id *match)
+> +{
+> +	struct device_node *dev;
+> +	int ret;
+> +	int is_bigendian;
+> +
+> +	if (usb_disabled())
+> +		return -ENODEV;
+> +
+> +	dev = op->node;
+> +	is_bigendian = 0;
+> +
+> +	if ( device_is_compatible(dev, "ohci-bigendian") )
+> +		is_bigendian = 1;
+> +
+> +	if ( device_is_compatible(dev, "ohci-be") )
+> +		is_bigendian = 1;	
+> +
+> +	ret = usb_hcd_ppc_of_probe(&ohci_ppc_of_hc_driver, op, is_bigendian);
+> +	return ret;
+> +}
+> +
+> +static struct of_platform_driver ohci_hcd_ppc_of_driver = {
+> +	.name	= "ppc-of-ohci",
+> +	.match_table	= ohci_hcd_ppc_of_match,
+> +	.probe		= ohci_hcd_ppc_of_drv_probe,
+> +	.remove		= ohci_hcd_ppc_of_drv_remove,
+> +	.shutdown 	= ohci_hcd_ppc_of_drv_shutdown,
+> +#ifdef	CONFIG_PM
+> +	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
+> +	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
+> +#endif
+> +	.driver		= {
+> +		.name	= "ppc-of-ohci",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init ohci_hcd_ppc_of_init(void)
+> +{
+> +	pr_debug(DRIVER_INFO " (PPC OF)\n");
+> +	pr_debug("block sizes: ed %d td %d\n", sizeof(struct ed),
+> +							sizeof(struct td));
+> +	
+> +	return of_register_driver(&ohci_hcd_ppc_of_driver);    
+> +}
+> +
+> +static void __exit ohci_hcd_ppc_of_cleanup(void)
+> +{
+> +	of_unregister_driver(&ohci_hcd_ppc_of_driver);
+> +}
+> +
+> +module_init(ohci_hcd_ppc_of_init);
+> +module_exit(ohci_hcd_ppc_of_cleanup);
+> --- a/drivers/usb/host/Kconfig	2006-11-01 09:18:56.000000000 +0100
+> +++ b/drivers/usb/host/Kconfig	2006-11-06 11:10:29.000000000 +0100
+> @@ -106,6 +106,25 @@ config USB_OHCI_HCD_PPC_SOC
+>  	  Enables support for the USB controller on the MPC52xx or
+>  	  STB03xxx processor chip.  If unsure, say Y.
+>  
+> +config USB_OHCI_HCD_PPC_OF
+> +	bool "OHCI support for PPC USB controller for OpenFirmware platform"
+> +	depends on USB_OHCI_HCD && PPC_OF
+> +	default y
+> +	---help---
+> +	  Enables support for the USB controller PowerPC OpenFirmware platform
+> +
+> +config USB_OHCI_HCD_PPC_OF_BE
+> +	bool "Support big endian HC"
+> +	depends on USB_OHCI_HCD_PPC_OF
+> +	default y
+> +	select USB_OHCI_BIG_ENDIAN
+> +
+> +config USB_OHCI_HCD_PPC_OF_LE
+> +	bool "Support little endian HC"
+> +	depends on USB_OHCI_HCD_PPC_OF
+> +	default n
+> +	select USB_OHCI_LITTLE_ENDIAN
+> +
+>  config USB_OHCI_HCD_PCI
+>  	bool "OHCI support for PCI-bus USB controllers"
+>  	depends on USB_OHCI_HCD && PCI && (STB03xxx || PPC_MPC52xx)
+> --- a/drivers/usb/host/ohci-hcd.c	2006-11-01 09:18:56.000000000 +0100
+> +++ b/drivers/usb/host/ohci-hcd.c	2006-11-06 11:10:29.000000000 +0100
+> @@ -930,6 +930,10 @@ MODULE_LICENSE ("GPL");
+>  #include "ohci-ppc-soc.c"
+>  #endif
+>  
+> +#ifdef CONFIG_USB_OHCI_HCD_PPC_OF
+> +#include "ohci-ppc-of.c"
+> +#endif
+> +
+>  #if defined(CONFIG_ARCH_AT91RM9200) || defined(CONFIG_ARCH_AT91SAM9261)
+>  #include "ohci-at91.c"
+>  #endif
+> @@ -950,6 +954,8 @@ MODULE_LICENSE ("GPL");
+>        || defined (CONFIG_ARCH_AT91RM9200) \
+>        || defined (CONFIG_ARCH_AT91SAM9261) \
+>        || defined (CONFIG_ARCH_PNX4008) \
+> +      || defined (CONFIG_USB_OHCI_HCD_PPC_OF_LE) \
+> +      || defined (CONFIG_USB_OHCI_HCD_PPC_OF_BE) \
+>  	)
+>  #error "missing bus glue for ohci-hcd"
+>  #endif
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
