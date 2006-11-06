@@ -1,33 +1,12 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7BAE567C53
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:26:51 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kA6LQkVi112674
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 21:26:46 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kA6LTSpv2191366
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 21:29:28 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kA6LQj1R015169
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 21:26:45 GMT
-From: Hoang-Nam Ngyuen <hnguyen@linux.vnet.ibm.com>
-To: rolandd@cisco.com
-Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
-	block in 64k page mode
-Date: Mon, 6 Nov 2006 22:26:44 +0100
+Return-Path: <edi@linux.vnet.ibm.com>
+Message-ID: <454FC362.9070608@linux.vnet.ibm.com>
+Date: Mon, 06 Nov 2006 18:21:06 -0500
+From: Edi Shmueli <edi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200611062226.44939.hnguyen@linux.vnet.ibm.com>
-Cc: arnd@arndb.de, linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/1]  PPC32 : Huge-page support for ppc440
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,428 +16,493 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Roland!
-Below is the patch with the "ctor" bug fix and Heiko's improvement
-to assure ehca_alloc_fw_ctrlblock() always returns (void*).
-Hope it is in proper format.
-Thanks!
-Nam
+From: Edi Shmueli edi@linux.vnet.ibm.com
 
-This is a patch of ehca that assures 4k alignment for firmware control block
-in 64k page mode, because kzalloc()'s result address might not be 4k aligned 
-if kernel's 64k page is enabled. Thus, we introduced wrappers called
-ehca_alloc/free_fw_ctrlblock(), which use a slab cache for objects with
-4k length and 4k alignment in order to alloc/free firmware control blocks
-in 64k page mode. In 4k page mode those wrappers just are defines of
-get_zeroed_page() and free_page().
+This patch enables applications to exploit the PPC440 TLB support for 
+huge-page mapping, to minimize TLB thrashing.
+Applications with large memory footprint that exploit this support, 
+experience minimal TLB misses, and boost in performance.
+NAS benchmarks performed with this patch indicate hundreds of percent of 
+improvement in performance for some application.
+Known limitations: because each PMD covers 2MB of the process address 
+space, the minimal huge-page size supported by this patch is 2M.
+
+Signed-off-by: Edi Shmueli edi@linux.vnet.ibm.com
+-----
+
+Benchmarks and Implementation comments
+======================================
+Below is the NAS IS benchmark results, executing under Linux, with and 
+without this huge-page mapping support.
+IS Benchmark        4KB pages    16MB pages
+==============================================
+ Class        =    A                                A
+ Size        =    8388608    8388608
+ Iterations    =    10        10
+ Time in seconds =    24.44        6.38
+ Mop/s total    =    3.43         13.15
+ Operation type    =    keys ranked         keys ranked
+ Verification    =    SUCCESSFUL    SUCCESSFUL
+Implementation details:
+====================
+This patch is ppc440 architecture-specific. It enables the use of 
+huge-pages by processes executing under the 2.6.16 kernel on the ppc440 
+processors.
+Huge-pages are accessible to user processes using either the hugetlbfs 
+or using shared memory. See Documentation/vs/hugetlbpage.txt.
+This patch supports huge-pages of size 16MB and 256MB.
+==
+The ppc 32bit kernel uses 64bit PTEs (set by CONFIG_PTE_64BIT).
+I exploit a "hole" of 4 unused bits in the PTE MS word (bits 24-27) and 
+code the page size information in those bits.
+I then modified the TLB miss handler (head_44x.S) to stop using the 
+constant PPC44x_TLB_4K to set the page size in the TLB,
+Instead, when a TLB miss happens, the miss handler reads the size 
+information from the PTE and sets that size in the TLB entry.
+This way, different TLB entries get to map different page sizes (e.g., 
+4KB or 16MB).
+The TLB replacement policy remains RR. This means that a huge-page entry 
+in the TLB may be overwritten if not used for a long time, but when 
+accessed it will be set again by the TLB miss handler, with the correct 
+size, as set in the PTE.
+==
+In arch/ppc/mm/hugetlbpage.c is where page table entries are set to map 
+huge pages:
+By default , each process has two-level page-tables.
+It has 2048, 32bit PMD (or PGD) entries at the higher-level, each maps 
+2MB of the process address spase, and 512, 64bit PTE entries in each 
+lower-level page table.
+When a TLB miss happens and no PTE is found by the miss handler to offer 
+the translation, a check is made (memory.c) on whether the faulting 
+address belongs to a huge-page VM region.
+If so, the code in set_huge_pte_at()  will set 8 PMD (8 x 2M=16MB, for 
+the 16MB page case) entries. All will point to the *same* lower-level 
+PTE page table.
+It will also set all 512 PTEs in that page table to point to the *same* 
+physical huge-page. All these PTEs will be *identical* and have 16MB 
+size coded in their MS word as described above.
+==
+Once the TLB miss handler copies the mapping (and the size) from the PTE 
+into on of the TLB entries, the process will not suffer any TLB misses 
+for that huge-page.
+If the mapping was overwritten by the TLB RR replacement policy, it will 
+be re-loaded again (possibly in a different TLB entry) when the process 
+re-access that huge-page.
+Because all 8 PMDs point to the same PTE page-table, and all 512 PTEs 
+point to the same physical address, it makes no difference where the 
+process accesses that huge-page.
+For any address in this huge-pages, the process will get the same 
+translation in the TLB.
 
 
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
 
-
- ehca_hca.c    |   17 +++++++++--------
- ehca_irq.c    |   17 ++++++++---------
- ehca_iverbs.h |    8 ++++++++
- ehca_main.c   |   56 +++++++++++++++++++++++++++++++++++++++++++++++---------
- ehca_mrmw.c   |    8 ++++----
- ehca_qp.c     |   12 +++++++-----
- 6 files changed, 83 insertions(+), 35 deletions(-)
-
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
-index 5eae6ac..f77e626 100644
---- a/drivers/infiniband/hw/ehca/ehca_hca.c
-+++ b/drivers/infiniband/hw/ehca/ehca_hca.c
-@@ -40,6 +40,7 @@
-  */
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/arch/ppc/kernel/head_44x.S 
+my_linux/arch/ppc/kernel/head_44x.S
+--- linux-2.6.16.29-vanilla/arch/ppc/kernel/head_44x.S    2006-09-12 
+14:02:10.000000000 -0400
++++ my_linux/arch/ppc/kernel/head_44x.S    2006-11-06 17:43:46.575443395 
+-0500
+@@ -23,12 +23,14 @@
+  *            debbie_chu@mvista.com
+  *    Copyright 2002-2005 MontaVista Software, Inc.
+  *      PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
++ *    Copyright (C) 2006 Edi Shmueli, IBM Corporation.
++ *    PowerPC 44x handling of huge-page misses.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+  * option) any later version.
+- */
++*/
  
- #include "ehca_tools.h"
-+#include "ehca_iverbs.h"
- #include "hcp_if.h"
+ #include <linux/config.h>
+ #include <asm/processor.h>
+@@ -657,19 +659,22 @@ finish_tlb_load:
+     lis    r11, tlb_44x_index@ha
+     stw    r13, tlb_44x_index@l(r11)
  
- int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
-@@ -49,7 +50,7 @@ int ehca_query_device(struct ib_device *
- 					      ib_device);
- 	struct hipz_query_hca *rblock;
+-    lwz    r11, 0(r12)            /* Get MS word of PTE */
+-    lwz    r12, 4(r12)            /* Get LS word of PTE */
+-    rlwimi    r11, r12, 0, 0 , 19        /* Insert RPN */
+-    tlbwe    r11, r13, PPC44x_TLB_XLAT    /* Write XLAT */
+-
++    /*huge-page support*/
+     /*
+      * Create PAGEID. This is the faulting address,
+      * page size, and valid flag.
+-     */
+-    li    r11, PPC44x_TLB_VALID | PPC44x_TLB_4K
+-    rlwimi    r10, r11, 0, 20, 31        /* Insert valid and page size */
++    */
++    lwz    r11, 0(r12)            /* Get MS word of PTE */       
++    andi.   r11, r11, 0x000000F0        /* Leave only the size */
++    ori     r11, r11, PPC44x_TLB_VALID | PPC44x_TLB_4K /* Insert valid 
+and page size */
++    rlwimi    r10, r11, 0, 20, 31        /* Combine EA from r10 with 
+flags from r11 */
+     tlbwe    r10, r13, PPC44x_TLB_PAGEID    /* Write PAGEID */
  
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (struct hipz_query_hca*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -96,7 +97,7 @@ int ehca_query_device(struct ib_device *
- 		= min_t(int, rblock->max_total_mcast_qp_attach, INT_MAX);
- 
- query_device1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-@@ -109,7 +110,7 @@ int ehca_query_port(struct ib_device *ib
- 					      ib_device);
- 	struct hipz_query_port *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (struct hipz_query_port*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -162,7 +163,7 @@ int ehca_query_port(struct ib_device *ib
- 	props->active_speed    = 0x1;
- 
- query_port1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-@@ -178,7 +179,7 @@ int ehca_query_pkey(struct ib_device *ib
- 		return -EINVAL;
- 	}
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (struct hipz_query_port*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device,  "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -193,7 +194,7 @@ int ehca_query_pkey(struct ib_device *ib
- 	memcpy(pkey, &rblock->pkey_entries + index, sizeof(u16));
- 
- query_pkey1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-@@ -211,7 +212,7 @@ int ehca_query_gid(struct ib_device *ibd
- 		return -EINVAL;
- 	}
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (struct hipz_query_port*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -227,7 +228,7 @@ int ehca_query_gid(struct ib_device *ibd
- 	memcpy(&gid->raw[8], &rblock->guid_entries[index], sizeof(u64));
- 
- query_gid1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index 048cc44..01b66d7 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -45,6 +45,7 @@ #include "ehca_iverbs.h"
- #include "ehca_tools.h"
- #include "hcp_if.h"
- #include "hipz_fns.h"
-+#include "ipz_pt_fn.h"
- 
- #define EQE_COMPLETION_EVENT   EHCA_BMASK_IBM(1,1)
- #define EQE_CQ_QP_NUMBER       EHCA_BMASK_IBM(8,31)
-@@ -137,38 +138,36 @@ int ehca_error_data(struct ehca_shca *sh
- 	u64 *rblock;
- 	unsigned long block_count;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (u64*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Cannot allocate rblock memory.");
- 		ret = -ENOMEM;
- 		goto error_data1;
- 	}
- 
-+	/* rblock must be 4K aligned and should be 4K large */
- 	ret = hipz_h_error_data(shca->ipz_hca_handle,
- 				resource,
- 				rblock,
- 				&block_count);
- 
--	if (ret == H_R_STATE) {
-+	if (ret == H_R_STATE)
- 		ehca_err(&shca->ib_device,
- 			 "No error data is available: %lx.", resource);
--	}
- 	else if (ret == H_SUCCESS) {
- 		int length;
- 
- 		length = EHCA_BMASK_GET(ERROR_DATA_LENGTH, rblock[0]);
- 
--		if (length > PAGE_SIZE)
--			length = PAGE_SIZE;
-+		if (length > EHCA_PAGESIZE)
-+			length = EHCA_PAGESIZE;
- 
- 		print_error_data(shca, data, rblock, length);
--	}
--	else {
-+	} else
- 		ehca_err(&shca->ib_device,
- 			 "Error data could not be fetched: %lx", resource);
--	}
- 
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- error_data1:
- 	return ret;
-diff --git a/drivers/infiniband/hw/ehca/ehca_iverbs.h b/drivers/infiniband/hw/ehca/ehca_iverbs.h
-index 319c39d..7011aba 100644
---- a/drivers/infiniband/hw/ehca/ehca_iverbs.h
-+++ b/drivers/infiniband/hw/ehca/ehca_iverbs.h
-@@ -179,4 +179,12 @@ int ehca_mmap_register(u64 physical,void
- 
- int ehca_munmap(unsigned long addr, size_t len);
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+void *ehca_alloc_fw_ctrlblock(void);
-+void ehca_free_fw_ctrlblock(void *ptr);
-+#else
-+#define ehca_alloc_fw_ctrlblock() ((void*)get_zeroed_page(GFP_KERNEL))
-+#define ehca_free_fw_ctrlblock(ptr) free_page((unsigned long)(ptr))
-+#endif
++    lwz    r11, 0(r12)            /* Get MS word of PTE */
++    lwz    r12, 4(r12)            /* Get LS word of PTE */
++    rlwimi    r11, r12, 0, 0 , 19        /* Insert RPN */
++    tlbwe    r11, r13, PPC44x_TLB_XLAT    /* Write XLAT */
 +
- #endif
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index 024d511..a40871f 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -40,6 +40,9 @@
-  * POSSIBILITY OF SUCH DAMAGE.
-  */
- 
-+#ifdef CONFIG_PPC_64K_PAGES
+     li    r10, PPC44x_TLB_SR@l        /* Set SR */
+     rlwimi    r10, r12, 0, 30, 30        /* Set SW = _PAGE_RW */
+     rlwimi    r10, r12, 29, 29, 29        /* SX = _PAGE_HWEXEC */
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/arch/ppc/mm/hugetlbpage.c 
+my_linux/arch/ppc/mm/hugetlbpage.c
+--- linux-2.6.16.29-vanilla/arch/ppc/mm/hugetlbpage.c    1969-12-31 
+19:00:00.000000000 -0500
++++ my_linux/arch/ppc/mm/hugetlbpage.c    2006-11-06 17:50:51.714786630 
+-0500
+@@ -0,0 +1,186 @@
++/*
++ * PPC32 (440) Huge TLB Page Support for Kernel.
++ *
++ * Copyright (C) 2006 Edi Shmueli, IBM Corporation.
++ *
++ * Based on the IA-32 version:
++ * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
++ *
++ */
++
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/mm.h>
++#include <linux/hugetlb.h>
++#include <linux/pagemap.h>
++#include <linux/smp_lock.h>
 +#include <linux/slab.h>
-+#endif
- #include "ehca_classes.h"
- #include "ehca_iverbs.h"
- #include "ehca_mrmw.h"
-@@ -49,7 +52,7 @@ #include "hcp_if.h"
- MODULE_LICENSE("Dual BSD/GPL");
- MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
- MODULE_DESCRIPTION("IBM eServer HCA InfiniBand Device Driver");
--MODULE_VERSION("SVNEHCA_0017");
-+MODULE_VERSION("SVNEHCA_0018");
- 
- int ehca_open_aqp1     = 0;
- int ehca_debug_level   = 0;
-@@ -94,11 +97,31 @@ spinlock_t ehca_cq_idr_lock;
- DEFINE_IDR(ehca_qp_idr);
- DEFINE_IDR(ehca_cq_idr);
- 
++#include <linux/err.h>
++#include <linux/sysctl.h>
++#include <asm/mman.h>
++#include <asm/tlb.h>
++#include <asm/tlbflush.h>
 +
- static struct list_head shca_list; /* list of all registered ehcas */
- static spinlock_t shca_list_lock;
- 
- static struct timer_list poll_eqs_timer;
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+static struct kmem_cache *ctblk_cache = NULL;
-+
-+void *ehca_alloc_fw_ctrlblock(void)
++pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
 +{
-+	void *ret = kmem_cache_zalloc(ctblk_cache, SLAB_KERNEL);
-+	if (!ret)
-+		ehca_gen_err("Out of memory for ctblk");
-+	return ret;
++  pgd_t *pgd;
++  pud_t *pud;
++  pmd_t *pmd=NULL;
++  pte_t *ptep=NULL;
++
++  pgd = pgd_offset(mm, addr);
++
++  pud = pud_offset(pgd, addr);
++  if(!pud)
++    return NULL;
++
++  pmd = pmd_offset(pud, addr);
++  if(!pmd)
++    return NULL;
++
++  ptep = pte_offset_map(pmd, addr); /*also check pte_offset_map_lock()*/
++ 
++  return ptep;
 +}
 +
-+void ehca_free_fw_ctrlblock(void *ptr)
++pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
 +{
-+	if (ptr)
-+		kmem_cache_free(ctblk_cache, ptr);
++    pgd_t *pgd;
++    pud_t *pud;
++    pmd_t *pmd; //my
++    pte_t *pte = NULL;
 +
++    pgd = pgd_offset(mm, addr);
++
++    pud = pud_alloc(mm, pgd, addr);
++    if (!pud)
++      return NULL;
++   
++    pmd = pmd_alloc(mm, pud, addr);
++    if (!pmd)
++      return NULL;
++
++    pte = pte_alloc_map(mm, pmd, addr); /* also sets pmd !!!*/
++    if (!pte)
++      return NULL;
++
++   
++    BUG_ON(pte && !pte_none(*pte) && !pte_huge(*pte));
++     
++    return pte;
++}
++
++#ifdef ARCH_HAS_SETCLEAR_HUGE_PTE
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t 
+*ptep, pte_t pte){
++  pgd_t *pgd;
++  pud_t *pud;
++  pmd_t *pmd;
++  pmd_t pmd_val;
++  int i;
++
++  /* For the cow case, we overwrite '*ptep' (which points to the orig 
+huge-page) with 'pte' (which points to the new page). */
++  /* Cow is detected after the TLB exception handler has already wrote 
+a TLB entry that points to the "orig" page but       */
++  /* this entry does not have the user write permission set (UW), so 
+when the process tries the write, we get exception.    */
++  /* As we reach this call to overwrite the PTEs to point to the new 
+huge-page, the TLB contains                            */
++  /* translation for the old huge-page. By invalidating the TLB, we 
+ensure the TLB exception handler will re-fill           */
++  /* the entry from the updated page tables */
++  if (pte_present(*ptep)) {
++    flush_tlb_pending();
++  }
++
++  ptep = (pte_t *)((unsigned long)ptep & PAGE_MASK); /* point to base 
+pte (idx=0) */
++ 
++  /* update all (512) pte entries, starting with ptep with value from 
+pte */
++  for(i=0;i< ( 0x1 << PTE_SHIFT );i++){
++    set_pte_at(mm, addr, ptep, pte);
++    ptep++;
++  }
++
++  /* next, we set all pmd's that cover the huge-page to point to the 
+above PTEs table. */
++  /* 'pmd' that mapps 'addr', was already set when hugetlb_fault() 
+called huge_pte_alloc() */
++  /* we start by locating it... */
++  pgd = pgd_offset(mm, addr);
++  pud = pud_offset(pgd, addr);
++  pmd = pmd_offset(pud, addr); /*this pmd already points to the PTEs 
+table. It was set be the call to huge_pte_alloc()  */
++  pmd_val=*pmd;
++
++  /* find the first pmd that mapps the huge page  */
++  addr=addr & HPAGE_MASK;
++  pgd = pgd_offset(mm, addr);
++  pud = pud_offset(pgd, addr);
++  pmd = pmd_offset(pud, addr);
++  
++  for(i=0;i< (HPAGE_SIZE >> PMD_SHIFT);i++){
++    *pmd=pmd_val;
++    pmd++;
++  }
++}
++
++pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, 
+pte_t *ptep){
++  pgd_t *pgd;
++  pud_t *pud;
++  pmd_t *pmd;
++  pte_t pte;
++  int i;
++  pmd_t pmd_val;
++
++  BUG_ON( (unsigned long)ptep & ~PAGE_MASK ); /* make sure ptep point 
+to index 0 in the PTE table */
++
++  /*Clean all (512) pte's in this page-table, starting with ptep */
++  for(i=0;i< ( 0x1 << PTE_SHIFT );i++){
++    pte=ptep_get_and_clear(mm, addr, ptep);
++    ptep++;
++  }
++
++  addr=addr & HPAGE_MASK; /* point to the base of the huge-page that 
+contains addr */
++  pgd = pgd_offset(mm, addr);
++  pud = pud_offset(pgd, addr);
++  pmd = pmd_offset(pud, addr);
++
++  pmd_val=*pmd; //this is the first pmd that mappes the huge page;
++
++  pmd++; /* leave it... page cache will delete it */
++ 
++  for(i=1;i< (HPAGE_SIZE >> PMD_SHIFT);i++){
++    pmd_clear(pmd);
++    pmd++;
++  }
++
++  return pte; /*all pte's are the same, except maybe dirty bit*/
 +}
 +#endif
 +
- static int ehca_create_slab_caches(void)
++int is_aligned_hugepage_range(unsigned long addr, unsigned long len)
++{
++  if (len & ~HPAGE_MASK)
++    return -EINVAL;
++  if (addr & ~HPAGE_MASK)
++    return -EINVAL;
++  return 0;
++}
++
++struct page *
++follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
++{
++  pte_t *pte;
++  struct page *page;
++
++  pte = huge_pte_offset(mm, address);
++  page = pte_page(*pte);
++  return page;
++}
++
++int pmd_huge(pmd_t pmd)
++{
++  return 0;
++}
++
++struct page *
++follow_huge_pmd(struct mm_struct *mm, unsigned long address,
++        pmd_t *pmd, int write)
++{
++   return NULL;
++}
++
++
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/arch/ppc/mm/Makefile my_linux/arch/ppc/mm/Makefile
+--- linux-2.6.16.29-vanilla/arch/ppc/mm/Makefile    2006-09-12 
+14:02:10.000000000 -0400
++++ my_linux/arch/ppc/mm/Makefile    2006-11-06 09:52:41.000000000 -0500
+@@ -9,3 +9,4 @@ obj-$(CONFIG_PPC_STD_MMU)    += hashtable.o
+ obj-$(CONFIG_40x)        += 4xx_mmu.o
+ obj-$(CONFIG_44x)        += 44x_mmu.o
+ obj-$(CONFIG_FSL_BOOKE)        += fsl_booke_mmu.o
++obj-$(CONFIG_HUGETLB_PAGE)      += hugetlbpage.o
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/fs/Kconfig my_linux/fs/Kconfig
+--- linux-2.6.16.29-vanilla/fs/Kconfig    2006-09-12 14:02:10.000000000 
+-0400
++++ my_linux/fs/Kconfig    2006-08-21 12:54:46.000000000 -0400
+@@ -840,7 +840,7 @@ config TMPFS
+ 
+ config HUGETLBFS
+     bool "HugeTLB file system support"
+-    depends X86 || IA64 || PPC64 || SPARC64 || SUPERH || BROKEN
++    depends X86 || IA64 || PPC || PPC64 || SPARC64 || SUPERH || BROKEN
+ 
+ config HUGETLB_PAGE
+     def_bool HUGETLBFS
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/include/asm-ppc/page.h 
+my_linux/include/asm-ppc/page.h
+--- linux-2.6.16.29-vanilla/include/asm-ppc/page.h    2006-09-12 
+14:02:10.000000000 -0400
++++ my_linux/include/asm-ppc/page.h    2006-09-07 15:55:55.000000000 -0400
+@@ -8,6 +8,12 @@
+ #define PAGE_SHIFT    12
+ #define PAGE_SIZE    (ASM_CONST(1) << PAGE_SHIFT)
+ 
++#ifdef CONFIG_HUGETLB_PAGE
++#define HPAGE_SHIFT     24
++#define HPAGE_SIZE      ((1UL) << HPAGE_SHIFT)
++#define HPAGE_MASK      (~(HPAGE_SIZE - 1))
++#define HUGETLB_PAGE_ORDER      (HPAGE_SHIFT - PAGE_SHIFT)
++#endif
+ /*
+  * Subtle: this is an int (not an unsigned long) and so it
+  * gets extended to 64 bits the way want (i.e. with 1s).  -- paulus
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/include/asm-ppc/pgtable.h 
+my_linux/include/asm-ppc/pgtable.h
+--- linux-2.6.16.29-vanilla/include/asm-ppc/pgtable.h    2006-09-12 
+14:02:10.000000000 -0400
++++ my_linux/include/asm-ppc/pgtable.h    2006-09-19 17:47:45.000000000 
+-0400
+@@ -264,6 +264,24 @@ extern unsigned long ioremap_bot, iorema
+ #define    _PAGE_NO_CACHE    0x00000400        /* H: I bit */
+ #define    _PAGE_WRITETHRU    0x00000800        /* H: W bit */
+ 
++#if   HPAGE_SHIFT == 10
++#define _PAGE_HUGE      0x0000000000000000ULL   /* H: SIZE=1K bytes */
++#elif HPAGE_SHIFT == 12
++#define _PAGE_HUGE      0x0000001000000000ULL   /* H: SIZE=4K bytes */
++#elif HPAGE_SHIFT == 14
++#define _PAGE_HUGE      0x0000002000000000ULL   /* H: SIZE=16K bytes */
++#elif HPAGE_SHIFT == 16
++#define _PAGE_HUGE      0x0000003000000000ULL   /* H: SIZE=64K bytes */
++#elif HPAGE_SHIFT == 18
++#define _PAGE_HUGE      0x0000004000000000ULL   /* H: SIZE=256K bytes */
++#elif HPAGE_SHIFT == 20
++#define _PAGE_HUGE      0x0000005000000000ULL   /* H: SIZE=1M bytes */
++#elif HPAGE_SHIFT == 24
++#define _PAGE_HUGE      0x0000007000000000ULL   /* H: SIZE=16M bytes */
++#elif HPAGE_SHIFT == 28
++#define _PAGE_HUGE      0x0000009000000000ULL   /* H: SIZE=256M bytes */
++#endif
++
+ /* TODO: Add large page lowmem mapping support */
+ #define _PMD_PRESENT    0
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+@@ -491,7 +509,12 @@ extern unsigned long bad_call_to_PMD_PAG
+ #define PFN_SHIFT_OFFSET    (PAGE_SHIFT)
+ #endif
+ 
+-#define pte_pfn(x)        (pte_val(x) >> PFN_SHIFT_OFFSET)
++/*                                                                                    
+v             */
++/* huge-page fix:  since now the PTE (MS) contains the size of the page 
+e.g., 0x0000007000000000ULL */
++/* which was once assumed to be 0, we must zero it, otherwise we get 
+extreamly huge (and wrong) pfn */
++//#define pte_pfn(x)        ( pte_val(x) >> PFN_SHIFT_OFFSET )
++#define pte_pfn(x)        ( ( pte_val(x) & 0x0000000fffffffffULL ) >> 
+PFN_SHIFT_OFFSET )
++
+ #define pte_page(x)        pfn_to_page(pte_pfn(x))
+ 
+ #define pfn_pte(pfn, prot)    __pte(((pte_basic_t)(pfn) << 
+PFN_SHIFT_OFFSET) |\
+@@ -540,6 +563,7 @@ static inline int pte_exec(pte_t pte)        {
+ static inline int pte_dirty(pte_t pte)        { return pte_val(pte) & 
+_PAGE_DIRTY; }
+ static inline int pte_young(pte_t pte)        { return pte_val(pte) & 
+_PAGE_ACCESSED; }
+ static inline int pte_file(pte_t pte)        { return pte_val(pte) & 
+_PAGE_FILE; }
++static inline int pte_huge(pte_t pte)           { return (pte_val(pte) 
+& _PAGE_HUGE)?1:0; }
+ 
+ static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= 
+_PAGE_NO_CACHE; }
+ static inline void pte_cache(pte_t pte)         { pte_val(pte) &= 
+~_PAGE_NO_CACHE; }
+@@ -565,6 +589,8 @@ static inline pte_t pte_mkdirty(pte_t pt
+     pte_val(pte) |= _PAGE_DIRTY; return pte; }
+ static inline pte_t pte_mkyoung(pte_t pte) {
+     pte_val(pte) |= _PAGE_ACCESSED; return pte; }
++static inline pte_t pte_mkhuge(pte_t pte) {
++        pte_val(pte) |= _PAGE_HUGE; return pte; }
+ 
+ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
  {
- 	int ret;
-@@ -133,6 +156,17 @@ static int ehca_create_slab_caches(void)
- 		goto create_slab_caches5;
- 	}
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/include/linux/hugetlb.h 
+my_linux/include/linux/hugetlb.h
+--- linux-2.6.16.29-vanilla/include/linux/hugetlb.h    2006-09-12 
+14:02:10.000000000 -0400
++++ my_linux/include/linux/hugetlb.h    2006-09-07 15:55:07.000000000 -0400
+@@ -2,6 +2,7 @@
+ #define _LINUX_HUGETLB_H
  
-+#ifdef CONFIG_PPC_64K_PAGES
-+	ctblk_cache = kmem_cache_create("ehca_cache_ctblk",
-+					EHCA_PAGESIZE, H_CB_ALIGNMENT,
-+					SLAB_HWCACHE_ALIGN,
-+					NULL, NULL);
-+	if (!ctblk_cache) {
-+		ehca_gen_err("Cannot create ctblk SLAB cache.");
-+		ehca_cleanup_mrmw_cache();
-+		goto create_slab_caches5;
-+	}
-+#endif
- 	return 0;
+ #ifdef CONFIG_HUGETLB_PAGE
++#define ARCH_HAS_SETCLEAR_HUGE_PTE
  
- create_slab_caches5:
-@@ -157,6 +191,10 @@ static void ehca_destroy_slab_caches(voi
- 	ehca_cleanup_qp_cache();
- 	ehca_cleanup_cq_cache();
- 	ehca_cleanup_pd_cache();
-+#ifdef CONFIG_PPC_64K_PAGES
-+	if (ctblk_cache)
-+		kmem_cache_destroy(ctblk_cache);
-+#endif
- }
+ #include <linux/mempolicy.h>
+ #include <asm/tlbflush.h>
+diff -uprP -X linux-2.6.16.29-vanilla/Documentation/dontdiff 
+linux-2.6.16.29-vanilla/include/linux/mmzone.h 
+my_linux/include/linux/mmzone.h
+--- linux-2.6.16.29-vanilla/include/linux/mmzone.h    2006-09-12 
+14:02:10.000000000 -0400
++++ my_linux/include/linux/mmzone.h    2006-08-22 15:26:28.000000000 -0400
+@@ -17,7 +17,7 @@
  
- #define EHCA_HCAAVER  EHCA_BMASK_IBM(32,39)
-@@ -168,7 +206,7 @@ int ehca_sense_attributes(struct ehca_sh
- 	u64 h_ret;
- 	struct hipz_query_hca *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (struct hipz_query_hca*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_gen_err("Cannot allocate rblock memory.");
- 		return -ENOMEM;
-@@ -211,7 +249,7 @@ int ehca_sense_attributes(struct ehca_sh
- 	shca->sport[1].rate = IB_RATE_30_GBPS;
- 
- num_ports1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 	return ret;
- }
- 
-@@ -220,7 +258,7 @@ static int init_node_guid(struct ehca_sh
- 	int ret = 0;
- 	struct hipz_query_hca *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = (struct hipz_query_hca*)ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -235,7 +273,7 @@ static int init_node_guid(struct ehca_sh
- 	memcpy(&shca->ib_device.node_guid, &rblock->node_guid, sizeof(u64));
- 
- init_node_guid1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 	return ret;
- }
- 
-@@ -431,7 +469,7 @@ static ssize_t  ehca_show_##name(struct 
- 									   \
- 	shca = dev->driver_data;					   \
- 									   \
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);			   \
-+	rblock = (struct hipz_query_hca*)ehca_alloc_fw_ctrlblock();	   \
- 	if (!rblock) {						           \
- 		dev_err(dev, "Can't allocate rblock memory.");		   \
- 		return 0;						   \
-@@ -439,12 +477,12 @@ static ssize_t  ehca_show_##name(struct 
- 									   \
- 	if (hipz_h_query_hca(shca->ipz_hca_handle, rblock) != H_SUCCESS) { \
- 		dev_err(dev, "Can't query device properties");	   	   \
--		kfree(rblock);					   	   \
-+		ehca_free_fw_ctrlblock(rblock);			   	   \
- 		return 0;					   	   \
- 	}								   \
- 									   \
- 	data = rblock->name;                                               \
--	kfree(rblock);                                                     \
-+	ehca_free_fw_ctrlblock(rblock);                                    \
- 									   \
- 	if ((strcmp(#name, "num_ports") == 0) && (ehca_nr_ports == 1))	   \
- 		return snprintf(buf, 256, "1\n");			   \
-@@ -752,7 +790,7 @@ int __init ehca_module_init(void)
- 	int ret;
- 
- 	printk(KERN_INFO "eHCA Infiniband Device Driver "
--	                 "(Rel.: SVNEHCA_0017)\n");
-+	                 "(Rel.: SVNEHCA_0018)\n");
- 	idr_init(&ehca_qp_idr);
- 	idr_init(&ehca_cq_idr);
- 	spin_lock_init(&ehca_qp_idr_lock);
-diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-index 5ca6544..1b77ac7 100644
---- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -1013,7 +1013,7 @@ int ehca_reg_mr_rpages(struct ehca_shca 
- 	u32 i;
- 	u64 *kpage;
- 
--	kpage = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	kpage = (u64*)ehca_alloc_fw_ctrlblock();
- 	if (!kpage) {
- 		ehca_err(&shca->ib_device, "kpage alloc failed");
- 		ret = -ENOMEM;
-@@ -1092,7 +1092,7 @@ int ehca_reg_mr_rpages(struct ehca_shca 
- 
- 
- ehca_reg_mr_rpages_exit1:
--	kfree(kpage);
-+	ehca_free_fw_ctrlblock(kpage);
- ehca_reg_mr_rpages_exit0:
- 	if (ret)
- 		ehca_err(&shca->ib_device, "ret=%x shca=%p e_mr=%p pginfo=%p "
-@@ -1124,7 +1124,7 @@ inline int ehca_rereg_mr_rereg1(struct e
- 	ehca_mrmw_map_acl(acl, &hipz_acl);
- 	ehca_mrmw_set_pgsize_hipz_acl(&hipz_acl);
- 
--	kpage = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	kpage = (u64*)ehca_alloc_fw_ctrlblock();
- 	if (!kpage) {
- 		ehca_err(&shca->ib_device, "kpage alloc failed");
- 		ret = -ENOMEM;
-@@ -1181,7 +1181,7 @@ inline int ehca_rereg_mr_rereg1(struct e
- 	}
- 
- ehca_rereg_mr_rereg1_exit1:
--	kfree(kpage);
-+	ehca_free_fw_ctrlblock(kpage);
- ehca_rereg_mr_rereg1_exit0:
- 	if ( ret && (ret != -EAGAIN) )
- 		ehca_err(&shca->ib_device, "ret=%x lkey=%x rkey=%x "
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index 4394123..3768d8d 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -811,8 +811,9 @@ static int internal_modify_qp(struct ib_
- 	unsigned long spl_flags = 0;
- 
- 	/* do query_qp to obtain current attr values */
--	mqpcb = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
--	if (mqpcb == NULL) {
-+	mqpcb = (struct hcp_modify_qp_control_block*)
-+		ehca_alloc_fw_ctrlblock();
-+	if (!mqpcb) {
- 		ehca_err(ibqp->device, "Could not get zeroed page for mqpcb "
- 			 "ehca_qp=%p qp_num=%x ", my_qp, ibqp->qp_num);
- 		return -ENOMEM;
-@@ -1225,7 +1226,7 @@ modify_qp_exit2:
- 	}
- 
- modify_qp_exit1:
--	kfree(mqpcb);
-+	ehca_free_fw_ctrlblock(mqpcb);
- 
- 	return ret;
- }
-@@ -1277,7 +1278,8 @@ int ehca_query_qp(struct ib_qp *qp,
- 		return -EINVAL;
- 	}
- 
--	qpcb = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL );
-+	qpcb = (struct hcp_modify_qp_control_block*)
-+		ehca_alloc_fw_ctrlblock();
- 	if (!qpcb) {
- 		ehca_err(qp->device,"Out of memory for qpcb "
- 			 "ehca_qp=%p qp_num=%x", my_qp, qp->qp_num);
-@@ -1401,7 +1403,7 @@ int ehca_query_qp(struct ib_qp *qp,
- 		ehca_dmp(qpcb, 4*70, "qp_num=%x", qp->qp_num);
- 
- query_qp_exit1:
--	kfree(qpcb);
-+	ehca_free_fw_ctrlblock(qpcb);
- 
- 	return ret;
- }
+ /* Free memory management - zoned buddy allocator.  */
+ #ifndef CONFIG_FORCE_MAX_ZONEORDER
+-#define MAX_ORDER 11
++#define MAX_ORDER 13
+ #else
+ #define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
+ #endif
