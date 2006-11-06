@@ -1,20 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id EF19C67C0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:36:08 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Hoang-Nam Ngyuen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
-	block in 64k page mode
-Date: Mon, 6 Nov 2006 22:35:28 +0100
-References: <200611062226.44939.hnguyen@linux.vnet.ibm.com>
-In-Reply-To: <200611062226.44939.hnguyen@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611062235.28667.arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+Return-Path: <judith@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BFA7A67C23
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:37:19 +1100 (EST)
+Date: Mon, 6 Nov 2006 13:36:36 -0800
+From: Judith Lebzelter <judith@osdl.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] 2.6.19-rc4-mm2 iseries net_device compile issue
+Message-ID: <20061106213636.GA1339@shell0.pdx.osdl.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: akpm@osdl.org, paulus@au.ibm.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 06 November 2006 22:26, Hoang-Nam Ngyuen wrote:
-> -=A0=A0=A0=A0=A0=A0=A0rblock =3D kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> +=A0=A0=A0=A0=A0=A0=A0rblock =3D (struct hipz_query_hca*)ehca_alloc_fw_ct=
-rlblock();
+Hi,
 
-> =A0
-> -=A0=A0=A0=A0=A0=A0=A0rblock =3D kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-> +=A0=A0=A0=A0=A0=A0=A0rblock =3D (struct hipz_query_port*)ehca_alloc_fw_c=
-trlblock();
+2.6.19-rc4-mm2 has this error for 'powerpc' allmodconfig:
 
-The point Heiko made in his comment is that with ehca_alloc_fw_ctrlblock
-returning a void*, you can (and _should_) remove the casts to other
-pointer types.
+drivers/net/iseries_veth.c: In function 'veth_probe_one':
+drivers/net/iseries_veth.c:1103: error: 'struct net_device' has no member named 'class_dev'
 
-	Arnd <><
+This patch fixes the error.
+
+Signed-off-by: Judith Lebzelter <judith@osdl.org>
+---
+Files edited:
+drivers/net/iseries_veth.c
+---
+
+Index: linux/drivers/net/iseries_veth.c
+===================================================================
+--- linux.orig/drivers/net/iseries_veth.c	2006-11-02 13:59:38.000000000 -0800
++++ linux/drivers/net/iseries_veth.c	2006-11-02 14:05:44.000000000 -0800
+@@ -1100,7 +1100,7 @@
+ 	}
+ 
+ 	kobject_init(&port->kobject);
+-	port->kobject.parent = &dev->class_dev.kobj;
++	port->kobject.parent = &dev->dev.kobj;
+ 	port->kobject.ktype  = &veth_port_ktype;
+ 	kobject_set_name(&port->kobject, "veth_port");
+ 	if (0 != kobject_add(&port->kobject))
