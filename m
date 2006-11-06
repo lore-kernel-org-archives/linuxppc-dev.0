@@ -1,19 +1,16 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F1C8367C2D
+Return-Path: <junijoseph@yahoo.co.in>
+Received: from web8415.mail.in.yahoo.com (web8415.mail.in.yahoo.com
+	[202.43.219.103]) by ozlabs.org (Postfix) with SMTP id 19CBF67C23
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Nov 2006 04:56:02 +1100 (EST)
-Date: Mon, 6 Nov 2006 20:55:43 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kalle Pokki <kalle.pokki@iki.fi>
-Subject: Re: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
-Message-ID: <20061106205543.43b2aacb@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0611061523360.12023@host32.eke.fi>
-References: <Pine.LNX.4.64.0611061523360.12023@host32.eke.fi>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_joSueqHRa=+4FzutCCFcZqR";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
+	Tue,  7 Nov 2006 06:00:12 +1100 (EST)
+Message-ID: <20061106190010.58059.qmail@web8415.mail.in.yahoo.com>
+Date: Tue, 7 Nov 2006 00:30:10 +0530 (IST)
+From: agnel juni <junijoseph@yahoo.co.in>
+Subject: Re: System ACE driver - for 2.6 kernel - issue resolved
+To: Ameet Patil <ammubhai@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-499964483-1162839610=:56369"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,143 +21,168 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_joSueqHRa=+4FzutCCFcZqR
-Content-Type: text/plain; charset=US-ASCII
+--0-499964483-1162839610=:56369
+Content-Type: text/plain; charset=ascii
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 6 Nov 2006 15:29:47 +0200 (EET)
-Kalle Pokki wrote:
+Hi Ameet,=0A=0AWe were able to get over with the unstability in the driver =
+with the following fix in the code=0A=0AInstead of fixing the number of sec=
+tors to be 2 in the loop, we are actually doing a read based on the kernel =
+request  like this :=0A=0A for(i =3D xsa_cur_req->current_nr_sectors; i > 0=
+; i-=3Dxsa_cur_req->current_nr_sectors ){=0A                        xsa_dev=
+ice.req_done =3D 1;=0A                        while ((stat =3D cur_req(&Sys=
+Ace, sector,=0A                                        xsa_cur_req->current=
+_nr_sectors ,=0A                                        buffer)) =3D=3D XST=
+_DEVICE_BUSY)=0A                                xsa_short_delay();=0A=0A=0A=
+Now the driver is stable with all the filesystem commands.=0A=0APlease test=
+ this out and if appropriate patch this to the driver code.=0A=0AThanks=0AJ=
+unita=0A=0A----- Original Message ----=0AFrom: Ameet Patil <ammubhai@gmail.=
+com>=0ATo: agnel juni <junijoseph@yahoo.co.in>=0ACc: linuxppc-embedded@ozla=
+bs.org=0ASent: Thursday, 26 October, 2006 1:00:48 AM=0ASubject: Re: System =
+ACE driver - for 2.6 kernel - need help to understand xsa_thread=0A=0AHi Ju=
+nita,=0A    Its a hack really! When I was developing/porting the SysAce dri=
+ver =0Ato 2.6 I tried to maintain the code as is from the 2.4 kernel driver=
+. In =0Adoing so I found that there is a slight difference between the two =
+=0Akernels. i.e. I am not sure why, but the sysace device can only handle =
+=0Arequests for 2 sectors at a time. This was fine in the 2.4 as the kernel=
+ =0Aalways requested 2 sectors. However, in 2.6 I found that this is =0Adif=
+ferent: the requests are 8 secs. or more. I tried to fix this in vain =0Aby=
+ changing several parameters of the driver during initialization. =0AAnyway=
+, due to several issues I didn't try hard to fix it at that time.=0A=0AHenc=
+e this hack: No matter how many sec. req. I get from the kernel, I =0Ause a=
+ loop to req. only 2 secs. at a time. The xsa_device.req_done is =0Aused as=
+ a flag and reset in the XSA IRQ IIRC.=0A=0AIf you find a better approach, =
+please do update me. Hope this helps!=0A=0Acheers,=0A-Ameet=0A=0Aagnel juni=
+ wrote:=0A> =0A> Hello all=0A> =0A> I am trying to understand the parameter=
+s that are sent through "cur_req" =0A> function used in funtion xsa_thread =
+in System ACE driver.=0A> =0A> In xsa_thread function in the System ACE dri=
+ver ,=0A> =0A> In 2.4 kernel:=0A> --------------------=0A> while ((stat =3D=
+ cur_req(&SysAce, sector,=0A>                                        CURREN=
+T->current_nr_sectors,=0A>                                        CURRENT->=
+buffer)) =3D=3D XST_DEVICE_BUSY)=0A>                         xsa_short_dela=
+y();=0A> =0A>  =0A> Where as in 2.6 kernel this is changed to=0A> ---------=
+------------------------------------------------------=0A> =0A> for(i =3D x=
+sa_cur_req->current_nr_sectors; i > 0; i-=3D2){=0A>                        =
+ xsa_device.req_done =3D 1;=0A>                         while ((stat =3D cu=
+r_req(&SysAce, sector,=0A>                                         2,=0A>  =
+                                       buffer)) =3D=3D XST_DEVICE_BUSY)=0A>=
+                                 xsa_short_delay();=0A> #endif=0A> =0A> Ame=
+et , could you help me understand the impact of the parameters, =0A> especa=
+illy the 3rd paramter which is hardcoded in 2.6 kernel.It would be =0A> gre=
+at if you could clarify this in regard to 'mount' command.=0A> =0A> Thanks =
+in advance=0A> Junita=0A> =0A> =0A> =0A> ----------------------------------=
+--------------------------------------=0A> Find out what India is talking a=
+bout on - Yahoo! Answers India =0A> <http://us.rd.yahoo.com/mail/in/yanswer=
+s/*http://in.answers.yahoo.com/>=0A> Send FREE SMS to your friend's mobile =
+from Yahoo! Messenger Version 8. =0A> Get it NOW =0A> <http://us.rd.yahoo.c=
+om/mail/in/messengertagline/*http://in.messenger.yahoo.com> =0A> =0A=0A=0A=
+=0A=0A=0A=0A=0A=09=09=0A___________________________________________________=
+_______=0AYahoo! India Answers: Share what you know. Learn something new=0A=
+http://in.answers.yahoo.com/
+--0-499964483-1162839610=:56369
+Content-Type: text/html; charset=ascii
+Content-Transfer-Encoding: quoted-printable
 
-> SMC handling is broken in two places when using then platform device
-> approach with CPM2 devices.
->=20
-> 1. The resources in pq2_devices are not named "regs" and "pram", thus
-> they are not found in cpm_uart_drv_get_platform_data().
->=20
-> 2. The code in cpm_uart_drv_get_platform_data() assumes the parameter
-> RAM is at "pram". With SMCs of CPM2 devices, "pram" is just a pointer
-> to the actual parameter RAM, which the code should reserve somewhere
-> in DPRAM.
->=20
-Right, since I had nothing to probe with pq2/smc, that part of code remain =
-intact since creation.
-Nice to see this stuff tuned finally :)
-
-> This patch renames these the two existing resources, and introduces a
-> new one, "pram_base", which is a pointer to the parameter RAM. The
-> parameter RAM for SMC1 and SMC2 is put in the first 128 bytes of the
-> DPRAM. This memory was already reserved from the DPRAM memory
-> allocator for this purpose.
->=20
-Well just one objection. pram_base should not be a device unless it applies=
- to all the stuff of=20
-SoC family which is not the case.
-
-For this aim, I'd put what you need into the platform_data, or follow the s=
-ame approach 8xx stuff having.
-
-Thanks, Vitaly
-
-> Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
-> ---
->   arch/ppc/syslib/pq2_devices.c           |   24
-> ++++++++++++++++++------ drivers/serial/cpm_uart/cpm_uart_core.c |
-> 8 +++++++- 2 files changed, 25 insertions(+), 7 deletions(-)
->=20
-> diff --git a/arch/ppc/syslib/pq2_devices.c
-> b/arch/ppc/syslib/pq2_devices.c index fefbc21..e8f7ba2 100644
-> --- a/arch/ppc/syslib/pq2_devices.c
-> +++ b/arch/ppc/syslib/pq2_devices.c
-> @@ -286,16 +286,22 @@ struct platform_device ppc_sys_platform_
->   	[MPC82xx_CPM_SMC1] =3D {
->   		.name =3D "fsl-cpm-smc",
->   		.id	=3D 1,
-> -		.num_resources	 =3D 3,
-> +		.num_resources	 =3D 4,
->   		.resource =3D (struct resource[]) {
->   			{
-> -				.name	=3D "smc_mem",
-> +				.name	=3D "regs",
->   				.start	=3D 0x11A80,
->   				.end	=3D 0x11A8F,
->   				.flags	=3D IORESOURCE_MEM,
->   			},
->   			{
-> -				.name	=3D "smc_pram",
-> +				.name	=3D "pram",
-> +				.start	=3D PROFF_SMC1,
-> +				.end	=3D PROFF_SMC1 + 63,
-> +				.flags	=3D IORESOURCE_MEM,
-> +			},
-> +			{
-> +				.name	=3D "pram_base",
->   				.start	=3D 0x87fc,
->   				.end	=3D 0x87fd,
->   				.flags	=3D IORESOURCE_MEM,
-> @@ -310,16 +316,22 @@ struct platform_device ppc_sys_platform_
->   	[MPC82xx_CPM_SMC2] =3D {
->   		.name =3D "fsl-cpm-smc",
->   		.id	=3D 2,
-> -		.num_resources	 =3D 3,
-> +		.num_resources	 =3D 4,
->   		.resource =3D (struct resource[]) {
->   			{
-> -				.name	=3D "smc_mem",
-> +				.name	=3D "regs",
->   				.start	=3D 0x11A90,
->   				.end	=3D 0x11A9F,
->   				.flags	=3D IORESOURCE_MEM,
->   			},
->   			{
-> -				.name	=3D "smc_pram",
-> +				.name	=3D "pram",
-> +				.start	=3D PROFF_SMC2,
-> +				.end	=3D PROFF_SMC2 + 63,
-> +				.flags	=3D IORESOURCE_MEM,
-> +			},
-> +			{
-> +				.name	=3D "pram_base",
->   				.start	=3D 0x88fc,
->   				.end	=3D 0x88fd,
->   				.flags	=3D IORESOURCE_MEM,
-> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
-> b/drivers/serial/cpm_uart/cpm_uart_core.c index 4047530..55419b1
-> 100644 --- a/drivers/serial/cpm_uart/cpm_uart_core.c
-> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-> @@ -1024,7 +1024,7 @@ int cpm_uart_drv_get_platform_data(struc
->   	int idx =3D pdata->fs_no;	/* It is UART_SMCx or
-> UART_SCCx index */ struct uart_cpm_port *pinfo;
->   	int line;
-> -	u32 mem, pram;
-> +	u32 mem, pram, pram_base;
->=20
->   	line =3D cpm_uart_id2nr(idx);
->   	if(line < 0) {
-> @@ -1049,6 +1049,12 @@ int cpm_uart_drv_get_platform_data(struc
->   		return -EINVAL;
->   	pram =3D r->start;
->=20
-> +	r =3D platform_get_resource_byname(pdev, IORESOURCE_MEM,
-> "pram_base");
-> +	if (r) {
-> +		pram_base =3D r->start;
-> +		out_be16((u16 *)pram_base, pram & 0xffff);
-> +	}
-> +
->   	if(idx > fsid_smc2_uart) {
->   		pinfo->sccp =3D (scc_t *)mem;
->   		pinfo->sccup =3D (scc_uart_t *)pram;
-
---Sig_joSueqHRa=+4FzutCCFcZqR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFT3cfuOg9JvQhSEsRAskTAJ99riOLRt83yzLOZOuHjtpq+q9HUQCfZvo6
-oXI6Ci2Q/HA9Tu9U2pxR/w8=
-=ODGt
------END PGP SIGNATURE-----
-
---Sig_joSueqHRa=+4FzutCCFcZqR--
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
+font-size:12pt"><div style=3D"font-family: times new roman,new york,times,s=
+erif; font-size: 12pt;">Hi Ameet,<br><br>We were able to get over with the =
+unstability in the driver with the following fix in the code<br><br>Instead=
+ of fixing the number of sectors to be 2 in the loop, we are actually doing=
+ a read based on the kernel request&nbsp; like this :<br><br>&nbsp;for(i =
+=3D xsa_cur_req-&gt;current_nr_sectors; i &gt; 0; i-=3D<span style=3D"font-=
+weight: bold;">xsa_cur_req-&gt;current_nr_sectors </span>){<br>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xsa_device.req_done =3D=
+ 1;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; whil=
+e ((stat =3D
+ cur_req(&amp;SysAce, sector,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style=3D"font-weight: bold=
+;">xsa_cur_req-&gt;current_nr_sectors</span> ,<br>&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buffer)) =3D=3D=
+ XST_DEVICE_BUSY)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xsa_short_delay()=
+;<br><br><br>Now the driver is stable with all the filesystem commands.<br>=
+<br>Please test this out and if appropriate patch this to the driver
+ code.<br><br>Thanks<br>Junita<br><br><div style=3D"font-family: times new =
+roman,new york,times,serif; font-size: 12pt;">----- Original Message ----<b=
+r>From: Ameet Patil &lt;ammubhai@gmail.com&gt;<br>To: agnel juni &lt;junijo=
+seph@yahoo.co.in&gt;<br>Cc: linuxppc-embedded@ozlabs.org<br>Sent: Thursday,=
+ 26 October, 2006 1:00:48 AM<br>Subject: Re: System ACE driver - for 2.6 ke=
+rnel - need help to understand xsa_thread<br><br><div>Hi Junita,<br>&nbsp;&=
+nbsp;&nbsp;&nbsp;Its a hack really! When I was developing/porting the SysAc=
+e driver <br>to 2.6 I tried to maintain the code as is from the 2.4 kernel =
+driver. In <br>doing so I found that there is a slight difference between t=
+he two <br>kernels. i.e. I am not sure why, but the sysace device can only =
+handle <br>requests for 2 sectors at a time. This was fine in the 2.4 as th=
+e kernel <br>always requested 2 sectors. However, in 2.6 I found that this =
+is <br>different: the requests are 8 secs. or more. I tried to fix this in =
+vain <br>by
+ changing several parameters of the driver during initialization. <br>Anywa=
+y, due to several issues I didn't try hard to fix it at that time.<br><br>H=
+ence this hack: No matter how many sec. req. I get from the kernel, I <br>u=
+se a loop to req. only 2 secs. at a time. The xsa_device.req_done is <br>us=
+ed as a flag and reset in the XSA IRQ IIRC.<br><br>If you find a better app=
+roach, please do update me. Hope this helps!<br><br>cheers,<br>-Ameet<br><b=
+r>agnel juni wrote:<br>&gt; <br>&gt; Hello all<br>&gt; <br>&gt; I am trying=
+ to understand the parameters that are sent through "cur_req" <br>&gt; func=
+tion used in funtion xsa_thread in System ACE driver.<br>&gt; <br>&gt; In x=
+sa_thread function in the System ACE driver ,<br>&gt; <br>&gt; In 2.4 kerne=
+l:<br>&gt; --------------------<br>&gt; while ((stat =3D cur_req(&amp;SysAc=
+e,
+ sector,<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CURRENT-&gt;current_nr_sectors,<br>&gt;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;CURRENT-&gt;buffer)) =3D=3D XST_DEVICE_BUSY)<br>&gt;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xsa_short_delay();=
+<br>&gt; <br>&gt;&nbsp;&nbsp;<br>&gt; Where as in 2.6 kernel this is change=
+d to<br>&gt; --------------------------------------------------------------=
+-<br>&gt; <br>&gt; for(i =3D xsa_cur_req-&gt;current_nr_sectors; i &gt; 0;
+ i-=3D2){<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp; xsa_device.req_done =3D 1;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while ((stat =3D cur_req(&amp;SysA=
+ce, sector,<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2,<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buffer)) =3D=
+=3D
+ XST_DEVICE_BUSY)<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xsa_sho=
+rt_delay();<br>&gt; #endif<br>&gt; <br>&gt; Ameet , could you help me under=
+stand the impact of the parameters, <br>&gt; especailly the 3rd paramter wh=
+ich is hardcoded in 2.6 kernel.It would be <br>&gt; great if you could clar=
+ify this in regard to 'mount' command.<br>&gt; <br>&gt; Thanks in advance<b=
+r>&gt; Junita<br>&gt; <br>&gt; <br>&gt; <br>&gt; --------------------------=
+----------------------------------------------<br>&gt; Find out what India =
+is talking about on - Yahoo! Answers India <br>&gt; &lt;<a target=3D"_blank=
+" href=3D"http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.=
+com/">http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/=
+</a>&gt;<br>&gt; Send FREE SMS to your friend's mobile from Yahoo! Messenge=
+r Version 8.
+ <br>&gt; Get it NOW <br>&gt; &lt;<a target=3D"_blank" href=3D"http://us.rd=
+.yahoo.com/mail/in/messengertagline/*http://in.messenger.yahoo.com">http://=
+us.rd.yahoo.com/mail/in/messengertagline/*http://in.messenger.yahoo.com</a>=
+&gt; <br>&gt; <br></div></div><br></div></div><br>=0A=09=0A=0A=09=0A=09=09<=
+hr size=3D1></hr> =0AFind out what India is talking about on  - <a href=3D"=
+http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/">Yaho=
+o! Answers India</a> <BR> =0ASend FREE SMS to your friend's mobile from Yah=
+oo! Messenger Version 8. <a href=3D"http://us.rd.yahoo.com/mail/in/messenge=
+rtagline/*http://in.messenger.yahoo.com">Get it NOW</a></body></html>
+--0-499964483-1162839610=:56369--
