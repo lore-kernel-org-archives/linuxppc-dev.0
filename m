@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 59B0C67C26
+Return-Path: <luong.ngo@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id 6090C67C30
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Nov 2006 10:43:54 +1100 (EST)
-To: tran vanle <vantranbk@yahoo.com.au>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Ramdisk of ELDK 3.1.1 not run 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 07 Nov 2006 01:26:04 +1100."
-	<20061106142604.14632.qmail@web33012.mail.mud.yahoo.com>
-Date: Tue, 07 Nov 2006 00:43:51 +0100
-Sender: wd@denx.de
-Message-Id: <20061106234351.EB8DF353A5F@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  7 Nov 2006 10:51:28 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id x19so582364pyg
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 06 Nov 2006 15:51:27 -0800 (PST)
+Message-ID: <1b2aacd80611061551t78cc4f1aoef66377e82c2daed@mail.gmail.com>
+Date: Mon, 6 Nov 2006 15:51:24 -0800
+From: "Luong Ngo" <luong.ngo@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: ethernet interface problem with kernel 2.6.14 on MPC8343E
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_80599_20402720.1162857084866"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,36 +24,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20061106142604.14632.qmail@web33012.mail.mud.yahoo.com> you wrote:
->
-> I had used kernel of ELDK 3.1.1 and Ramdisk of ELDK 4.0 on board MPC8xxL .It run ok but I see it will meet trouble :D
+------=_Part_80599_20402720.1162857084866
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Yes, this is to be expected. The ELDK 4.0 ramdisk built  with  a  2.6
-kernel in mind.
+Hello,
 
-> When I use kernel and Ramdisk of ELDK 3.1.1 for MPC8xxL (I only rebuild Kernel use oldconfig and use uRamdisk in source (not rebuild )) but I receive error
-...
-> Kernel command line: 
+I am having a problem with the interfaces eth0 and eth1 when running
+2.6.14kernel on a board with MPC8343E. The problem I encounters is
+only one of the
+eth interface is really working. Only the one that is configured first,
+using "ifconfig eth[0/1] 192.168.1.1 netmask 255.255.255.0" can ping and be
+pinged from another host. I wonder if there is setup difference between the
+TSEC1 and TSEC2 or this is not related to hardware but rather something in
+the kernel. When I ping from other host, from within the Gianfar driver, I
+can see the packet is received on both interfaces but only one responds.
+When pinging from the system itself, only the working interface sending out
+packet, the other interface does not send anything. Please advise me what I
+am doing wrong or missing.
 
-You don't pass any boot arguments here.
+Thank you,
+L. Ngo
 
-> What I miss?May i correct it 
+------=_Part_80599_20402720.1162857084866
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-You obviously missed to read the documentation. Please see
-http://www.denx.de/wiki/view/DULG/LinuxKernelArgs
+Hello,<br><br>I am having a problem with the interfaces eth0 and eth1 when running 2.6.14 kernel on a board with MPC8343E. The problem I encounters is only one of the eth interface is really working. Only the one that is configured first, using &quot;ifconfig eth[0/1] 
+<a href="http://192.168.1.1">192.168.1.1</a> netmask <a href="http://255.255.255.0">255.255.255.0</a>&quot; can ping and be pinged from another host. I wonder if there is setup difference between the TSEC1 and TSEC2 or this is not related to hardware but rather something in the kernel. When I ping from other host, from within the Gianfar driver, I can see the packet is received on both interfaces but only one responds. When pinging from the system itself, only the working interface sending out packet, the other interface does not send anything. Please advise me what I am doing wrong or missing.
+<br><br>Thank you,<br>L. Ngo<br>
 
-> I also build kernel Linux 2.6.11.7 use tosati patch and config ,but when I want this kernel support virtual terminal it hang.May I correct it?
-
-You probably missed to define correct boot arguments, especially a
-correct console device; note that 2.6 uses ttyCPM0 instead of ttyS0,
-etc.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I don't know if it's what you want, but it's what you get.  :-)
-                      - Larry Wall in <10502@jpl-devvax.JPL.NASA.GOV>
+------=_Part_80599_20402720.1162857084866--
