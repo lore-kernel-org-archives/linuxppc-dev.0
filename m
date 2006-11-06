@@ -1,10 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 06 Nov 2006 18:05:57 +1100
-Subject: [PATCH 26/27] powerpc: Merge 32 and 64 bits asm-powerpc/io.h
+Date: Mon, 06 Nov 2006 18:05:58 +1100
+Subject: [PATCH 27/27] powerpc: EMAC of_platform_device support for Cell using
+	Axon
 In-Reply-To: <1162796738.274582.277491064706.qpush@grosgo>
-Message-Id: <20061106070713.A8F7A67DE7@ozlabs.org>
+Message-Id: <20061106070714.89ADA67E2E@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,1028 +15,2159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The rework on io.h done for the new hookable accessors made it easier,
-so I just finished the work and merged 32 and 64 bits io.h for arch/powerpc.
+This patch adds of_platform probing and basic dt support to ibm_emac.
 
-arch/ppc still uses the old version in asm-ppc, there is just too much gunk
-in there that I really can't be bothered trying to cleanup.
+It can still use some significant cleanup, along with a couple of bug
+fixes that are still pending for some FIFO size issues, but it should
+give in its current form an idea of the kind of transition we can expect
+from arch/ppc to arch/powerpc for 4xx type devices
 
+The patch is initially from Shaun Wetzstein with various changes of my
+own. It's still not a finished work as I really need to create proper
+of_platform_device/drivers for RGII and ZMII to avoid some of the ugliest
+hacks in the current one. 
+
+It might also be of some intersest to note how the main EMAC driver
+"waits" for the other sub drivers to show up using multithreaded device
+probing. It's handy, but it also means that stable interface numbering
+will be near to impossible :(
+
+The code should take advantage of the new bus device notifier thingy
+too in order to sleep instead of poll when doing this wait.
+
+Signed-off-by: Shaun Wetzstein <shaun@vnet.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/kernel/Makefile            |    2 
- arch/powerpc/kernel/io.c                |   87 ++++++++++
- arch/powerpc/kernel/iomap.c             |    2 
- arch/powerpc/kernel/pci_32.c            |   34 ---
- arch/powerpc/kernel/rtas_pci.c          |    1 
- arch/powerpc/kernel/traps.c             |    8 
- arch/powerpc/mm/pgtable_32.c            |   22 --
- arch/powerpc/mm/pgtable_64.c            |   16 -
- arch/powerpc/platforms/chrp/setup.c     |    1 
- arch/powerpc/platforms/iseries/setup.c  |    4 
- arch/powerpc/platforms/powermac/setup.c |    2 
- include/asm-powerpc/eeh.h               |   95 -----------
- include/asm-powerpc/io-defs.h           |    9 -
- include/asm-powerpc/io.h                |  273 +++++++++++++++++++++++++++-----
- include/asm-powerpc/machdep.h           |    4 
- 15 files changed, 358 insertions(+), 202 deletions(-)
+ arch/powerpc/Kconfig                   |    1 
+ drivers/net/Kconfig                    |   16 
+ drivers/net/ibm_emac/ibm_emac.h        |   32 +
+ drivers/net/ibm_emac/ibm_emac_busdev.h |   37 ++
+ drivers/net/ibm_emac/ibm_emac_compat.h |   72 ++++
+ drivers/net/ibm_emac/ibm_emac_core.c   |  566 ++++++++++++++++++++++++---------
+ drivers/net/ibm_emac/ibm_emac_core.h   |   12 
+ drivers/net/ibm_emac/ibm_emac_mal.c    |  220 ++++++++++--
+ drivers/net/ibm_emac/ibm_emac_mal.h    |    6 
+ drivers/net/ibm_emac/ibm_emac_phy.c    |    4 
+ drivers/net/ibm_emac/ibm_emac_rgmii.c  |  137 +++++--
+ drivers/net/ibm_emac/ibm_emac_rgmii.h  |   22 -
+ drivers/net/ibm_emac/ibm_emac_tah.h    |    1 
+ drivers/net/ibm_emac/ibm_emac_zmii.c   |  151 +++++---
+ drivers/net/ibm_emac/ibm_emac_zmii.h   |   35 +-
+ 15 files changed, 972 insertions(+), 340 deletions(-)
 
-Index: linux-cell/arch/powerpc/kernel/Makefile
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_mal.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/Makefile	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/Makefile	2006-11-06 16:38:20.000000000 +1100
-@@ -73,7 +73,7 @@ obj-$(CONFIG_AUDIT)		+= audit.o
- obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_mal.c	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_mal.c	2006-11-06 16:38:27.000000000 +1100
+@@ -27,7 +27,9 @@
+ #include <linux/interrupt.h>
+ #include <linux/dma-mapping.h>
  
- ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
--pci64-$(CONFIG_PPC64)		+= iomap.o
-+obj-y				+= iomap.o
- endif
- 
- ifeq ($(CONFIG_PPC_ISERIES),y)
-Index: linux-cell/arch/powerpc/kernel/io.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/io.c	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/io.c	2006-11-06 16:38:20.000000000 +1100
-@@ -117,3 +117,90 @@ void _outsl_ns(volatile u32 __iomem *por
- 	asm volatile("sync");
- }
- EXPORT_SYMBOL(_outsl_ns);
-+
-+#define IO_CHECK_ALIGN(v,a) ((((unsigned long)(v)) & ((a) - 1)) == 0)
-+
-+void _memset_io(volatile void __iomem *addr, int c, unsigned long n)
-+{
-+	void *p = (void __force *)addr;
-+	u32 lc = c;
-+	lc |= lc << 8;
-+	lc |= lc << 16;
-+
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+	while(n && !IO_CHECK_ALIGN(p, 4)) {
-+		*((volatile u8 *)p) = c;
-+		p++;
-+		n--;
-+	}
-+	while(n >= 4) {
-+		*((volatile u32 *)p) = lc;
-+		p += 4;
-+		n -= 4;
-+	}
-+	while(n) {
-+		*((volatile u8 *)p) = c;
-+		p++;
-+		n--;
-+	}
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+}
-+EXPORT_SYMBOL(_memset_io);
-+
-+void _memcpy_fromio(void *dest, const volatile void __iomem *src,
-+		    unsigned long n)
-+{
-+	void *vsrc = (void __force *) src;
-+
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+	while(n && (!IO_CHECK_ALIGN(vsrc, 4) || !IO_CHECK_ALIGN(dest, 4))) {
-+		*((u8 *)dest) = *((volatile u8 *)vsrc);
-+		__asm__ __volatile__ ("eieio" : : : "memory");
-+		vsrc++;
-+		dest++;
-+		n--;
-+	}
-+	while(n > 4) {
-+		*((u32 *)dest) = *((volatile u32 *)vsrc);
-+		__asm__ __volatile__ ("eieio" : : : "memory");
-+		vsrc += 4;
-+		dest += 4;
-+		n -= 4;
-+	}
-+	while(n) {
-+		*((u8 *)dest) = *((volatile u8 *)vsrc);
-+		__asm__ __volatile__ ("eieio" : : : "memory");
-+		vsrc++;
-+		dest++;
-+		n--;
-+	}
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+}
-+EXPORT_SYMBOL(_memcpy_fromio);
-+
-+void _memcpy_toio(volatile void __iomem *dest, const void *src, unsigned long n)
-+{
-+	void *vdest = (void __force *) dest;
-+
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+	while(n && (!IO_CHECK_ALIGN(vdest, 4) || !IO_CHECK_ALIGN(src, 4))) {
-+		*((volatile u8 *)vdest) = *((u8 *)src);
-+		src++;
-+		vdest++;
-+		n--;
-+	}
-+	while(n > 4) {
-+		*((volatile u32 *)vdest) = *((volatile u32 *)src);
-+		src += 4;
-+		vdest += 4;
-+		n-=4;
-+	}
-+	while(n) {
-+		*((volatile u8 *)vdest) = *((u8 *)src);
-+		src++;
-+		vdest++;
-+		n--;
-+	}
-+	__asm__ __volatile__ ("sync" : : : "memory");
-+}
-+EXPORT_SYMBOL(_memcpy_toio);
-Index: linux-cell/include/asm-powerpc/eeh.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/eeh.h	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/include/asm-powerpc/eeh.h	2006-11-06 16:38:20.000000000 +1100
-@@ -169,104 +169,19 @@ static inline u64 eeh_readq_be(const vol
- 	return val;
- }
- 
--#define EEH_CHECK_ALIGN(v,a) \
--	((((unsigned long)(v)) & ((a) - 1)) == 0)
--
--static inline void eeh_memset_io(volatile void __iomem *addr, int c,
--				 unsigned long n)
--{
--	void *p = (void __force *)addr;
--	u32 lc = c;
--	lc |= lc << 8;
--	lc |= lc << 16;
--
--	__asm__ __volatile__ ("sync" : : : "memory");
--	while(n && !EEH_CHECK_ALIGN(p, 4)) {
--		*((volatile u8 *)p) = c;
--		p++;
--		n--;
--	}
--	while(n >= 4) {
--		*((volatile u32 *)p) = lc;
--		p += 4;
--		n -= 4;
--	}
--	while(n) {
--		*((volatile u8 *)p) = c;
--		p++;
--		n--;
--	}
--	__asm__ __volatile__ ("sync" : : : "memory");
--}
--static inline void eeh_memcpy_fromio(void *dest, const volatile void __iomem *src,
-+static inline void eeh_memcpy_fromio(void *dest, const
-+				     volatile void __iomem *src,
- 				     unsigned long n)
- {
--	void *vsrc = (void __force *) src;
--	void *destsave = dest;
--	unsigned long nsave = n;
--
--	__asm__ __volatile__ ("sync" : : : "memory");
--	while(n && (!EEH_CHECK_ALIGN(vsrc, 4) || !EEH_CHECK_ALIGN(dest, 4))) {
--		*((u8 *)dest) = *((volatile u8 *)vsrc);
--		__asm__ __volatile__ ("eieio" : : : "memory");
--		vsrc++;
--		dest++;
--		n--;
--	}
--	while(n > 4) {
--		*((u32 *)dest) = *((volatile u32 *)vsrc);
--		__asm__ __volatile__ ("eieio" : : : "memory");
--		vsrc += 4;
--		dest += 4;
--		n -= 4;
--	}
--	while(n) {
--		*((u8 *)dest) = *((volatile u8 *)vsrc);
--		__asm__ __volatile__ ("eieio" : : : "memory");
--		vsrc++;
--		dest++;
--		n--;
--	}
--	__asm__ __volatile__ ("sync" : : : "memory");
-+	_memcpy_fromio(dest, src, n);
- 
- 	/* Look for ffff's here at dest[n].  Assume that at least 4 bytes
- 	 * were copied. Check all four bytes.
- 	 */
--	if ((nsave >= 4) &&
--		(EEH_POSSIBLE_ERROR((*((u32 *) destsave+nsave-4)), u32))) {
--		eeh_check_failure(src, (*((u32 *) destsave+nsave-4)));
--	}
--}
--
--static inline void eeh_memcpy_toio(volatile void __iomem *dest, const void *src,
--				   unsigned long n)
--{
--	void *vdest = (void __force *) dest;
--
--	__asm__ __volatile__ ("sync" : : : "memory");
--	while(n && (!EEH_CHECK_ALIGN(vdest, 4) || !EEH_CHECK_ALIGN(src, 4))) {
--		*((volatile u8 *)vdest) = *((u8 *)src);
--		src++;
--		vdest++;
--		n--;
--	}
--	while(n > 4) {
--		*((volatile u32 *)vdest) = *((volatile u32 *)src);
--		src += 4;
--		vdest += 4;
--		n-=4;
--	}
--	while(n) {
--		*((volatile u8 *)vdest) = *((u8 *)src);
--		src++;
--		vdest++;
--		n--;
--	}
--	__asm__ __volatile__ ("sync" : : : "memory");
-+	if (n >= 4 && EEH_POSSIBLE_ERROR(*((u32 *)(dest + n - 4)), u32))
-+		eeh_check_failure(src, *((u32 *)(dest + n - 4)));
- }
- 
--#undef EEH_CHECK_ALIGN
--
- /* in-string eeh macros */
- static inline void eeh_readsb(const volatile void __iomem *addr, void * buf,
- 			      int ns)
-Index: linux-cell/include/asm-powerpc/io-defs.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/io-defs.h	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/include/asm-powerpc/io-defs.h	2006-11-06 16:38:20.000000000 +1100
-@@ -3,17 +3,20 @@
- DEF_PCI_AC_RET(readb, u8, (const PCI_IO_ADDR addr), (addr))
- DEF_PCI_AC_RET(readw, u16, (const PCI_IO_ADDR addr), (addr))
- DEF_PCI_AC_RET(readl, u32, (const PCI_IO_ADDR addr), (addr))
--DEF_PCI_AC_RET(readq, u64, (const PCI_IO_ADDR addr), (addr))
- DEF_PCI_AC_RET(readw_be, u16, (const PCI_IO_ADDR addr), (addr))
- DEF_PCI_AC_RET(readl_be, u32, (const PCI_IO_ADDR addr), (addr))
--DEF_PCI_AC_RET(readq_be, u64, (const PCI_IO_ADDR addr), (addr))
- DEF_PCI_AC_NORET(writeb, (u8 val, PCI_IO_ADDR addr), (val, addr))
- DEF_PCI_AC_NORET(writew, (u16 val, PCI_IO_ADDR addr), (val, addr))
- DEF_PCI_AC_NORET(writel, (u32 val, PCI_IO_ADDR addr), (val, addr))
--DEF_PCI_AC_NORET(writeq, (u64 val, PCI_IO_ADDR addr), (val, addr))
- DEF_PCI_AC_NORET(writew_be, (u16 val, PCI_IO_ADDR addr), (val, addr))
- DEF_PCI_AC_NORET(writel_be, (u32 val, PCI_IO_ADDR addr), (val, addr))
-+
-+#ifdef __powerpc64__
-+DEF_PCI_AC_RET(readq, u64, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readq_be, u64, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_NORET(writeq, (u64 val, PCI_IO_ADDR addr), (val, addr))
- DEF_PCI_AC_NORET(writeq_be, (u64 val, PCI_IO_ADDR addr), (val, addr))
-+#endif /* __powerpc64__ */
- 
- DEF_PCI_AC_RET(inb, u8, (unsigned long port), (port))
- DEF_PCI_AC_RET(inw, u16, (unsigned long port), (port))
-Index: linux-cell/include/asm-powerpc/io.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/io.h	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/include/asm-powerpc/io.h	2006-11-06 16:38:20.000000000 +1100
-@@ -13,24 +13,51 @@
- extern int check_legacy_ioport(unsigned long base_port);
- #define PNPBIOS_BASE	0xf000	/* only relevant for PReP */
- 
--#ifndef CONFIG_PPC64
--#include <asm-ppc/io.h>
--#else
--
- #include <linux/compiler.h>
- #include <asm/page.h>
- #include <asm/byteorder.h>
--#include <asm/paca.h>
- #include <asm/synch.h>
- #include <asm/delay.h>
-+#include <asm/mmu.h>
- 
- #include <asm-generic/iomap.h>
- 
-+#ifdef CONFIG_PPC64
-+#include <asm/paca.h>
+-#include <asm/ocp.h>
++#ifndef CONFIG_IBM_EMAC_OCP
++#include <asm/of_platform.h>
 +#endif
+ 
+ #include "ibm_emac_core.h"
+ #include "ibm_emac_mal.h"
+@@ -400,31 +402,12 @@ void *mal_dump_regs(struct ibm_ocp_mal *
+ 	return regs + 1;
+ }
+ 
+-static int __init mal_probe(struct ocp_device *ocpdev)
++static int __init mal_setup(struct ibm_ocp_mal *mal,
++			    struct ocp_func_mal_data *maldata,
++			    struct emac_subdev *dev)
+ {
+-	struct ibm_ocp_mal *mal;
+-	struct ocp_func_mal_data *maldata;
+ 	int err = 0, i, bd_size;
+ 
+-	MAL_DBG("%d: probe" NL, ocpdev->def->index);
+-
+-	maldata = ocpdev->def->additions;
+-	if (maldata == NULL) {
+-		printk(KERN_ERR "mal%d: missing additional data!\n",
+-		       ocpdev->def->index);
+-		return -ENODEV;
+-	}
+-
+-	mal = kzalloc(sizeof(struct ibm_ocp_mal), GFP_KERNEL);
+-	if (!mal) {
+-		printk(KERN_ERR
+-		       "mal%d: out of memory allocating MAL structure!\n",
+-		       ocpdev->def->index);
+-		return -ENOMEM;
+-	}
+-	mal->dcrbase = maldata->dcr_base;
+-	mal->def = ocpdev->def;
+-
+ 	INIT_LIST_HEAD(&mal->poll_list);
+ 	set_bit(__LINK_STATE_START, &mal->poll_dev.state);
+ 	mal->poll_dev.weight = CONFIG_IBM_EMAC_POLL_WEIGHT;
+@@ -450,7 +433,7 @@ static int __init mal_probe(struct ocp_d
+ 	    (NUM_TX_BUFF * maldata->num_tx_chans +
+ 	     NUM_RX_BUFF * maldata->num_rx_chans);
+ 	mal->bd_virt =
+-	    dma_alloc_coherent(&ocpdev->dev, bd_size, &mal->bd_dma, GFP_KERNEL);
++	    dma_alloc_coherent(&dev->dev, bd_size, &mal->bd_dma, GFP_KERNEL);
+ 
+ 	if (!mal->bd_virt) {
+ 		printk(KERN_ERR
+@@ -471,19 +454,19 @@ static int __init mal_probe(struct ocp_d
+ 			     sizeof(struct mal_descriptor) *
+ 			     mal_rx_bd_offset(mal, i));
+ 
+-	err = request_irq(maldata->serr_irq, mal_serr, 0, "MAL SERR", mal);
++	err = request_irq(maldata->serr_irq, mal_serr, IRQF_PROBE_SHARED|IRQF_SHARED, "MAL SERR", mal);
+ 	if (err)
+ 		goto fail2;
+-	err = request_irq(maldata->txde_irq, mal_txde, 0, "MAL TX DE", mal);
++	err = request_irq(maldata->txde_irq, mal_txde, IRQF_PROBE_SHARED|IRQF_SHARED, "MAL TX DE", mal);
+ 	if (err)
+ 		goto fail3;
+-	err = request_irq(maldata->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
++	err = request_irq(maldata->txeob_irq, mal_txeob, IRQF_PROBE_SHARED|IRQF_SHARED, "MAL TX EOB", mal);
+ 	if (err)
+ 		goto fail4;
+-	err = request_irq(maldata->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
++	err = request_irq(maldata->rxde_irq, mal_rxde, IRQF_PROBE_SHARED|IRQF_SHARED, "MAL RX DE", mal);
+ 	if (err)
+ 		goto fail5;
+-	err = request_irq(maldata->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
++	err = request_irq(maldata->rxeob_irq, mal_rxeob, IRQF_PROBE_SHARED|IRQF_SHARED, "MAL RX EOB", mal);
+ 	if (err)
+ 		goto fail6;
+ 
+@@ -491,7 +474,7 @@ static int __init mal_probe(struct ocp_d
+ 	set_mal_dcrn(mal, MAL_IER, MAL_IER_EVENTS);
+ 
+ 	/* Advertise this instance to the rest of the world */
+-	ocp_set_drvdata(ocpdev, mal);
++	bus_set_drvdata(dev, mal);
+ 
+ 	mal_dbg_register(mal->def->index, mal);
+ 
+@@ -499,24 +482,141 @@ static int __init mal_probe(struct ocp_d
+ 	       mal->def->index, maldata->num_tx_chans, maldata->num_rx_chans);
+ 	return 0;
+ 
+-      fail6:
++ fail6:
+ 	free_irq(maldata->rxde_irq, mal);
+-      fail5:
++ fail5:
+ 	free_irq(maldata->txeob_irq, mal);
+-      fail4:
++ fail4:
+ 	free_irq(maldata->txde_irq, mal);
+-      fail3:
++ fail3:
+ 	free_irq(maldata->serr_irq, mal);
+-      fail2:
+-	dma_free_coherent(&ocpdev->dev, bd_size, mal->bd_virt, mal->bd_dma);
+-      fail:
++ fail2:
++	dma_free_coherent(&dev->dev, bd_size, mal->bd_virt, mal->bd_dma);
++ fail:
++	return err;
++}
 +
- #define SIO_CONFIG_RA	0x398
- #define SIO_CONFIG_RD	0x399
- 
- #define SLOW_DOWN_IO
- 
-+/* 32 bits uses slightly different variables for the various IO
-+ * bases. Most of this file only uses _IO_BASE though which we
-+ * define properly based on the platform
-+ */
-+#ifdef CONFIG_PCI
-+#define _IO_BASE	0
-+#define _ISA_MEM_BASE	0
-+#define PCI_DRAM_OFFSET 0
-+#elif defined(CONFIG_PPC32)
-+#define _IO_BASE	isa_io_base
-+#define _ISA_MEM_BASE	isa_mem_base
-+#define PCI_DRAM_OFFSET	pci_dram_offset
++
++#ifdef CONFIG_IBM_EMAC_OCP
++static int __init mal_probe(struct emac_subdev *dev)
++{
++	struct ibm_ocp_mal *mal;
++	struct ocp_func_mal_data *maldata;
++	int err = 0;
++
++	MAL_DBG("%d: probe" NL, dev->def->index);
++
++	maldata = dev->def->additions;
++	if (maldata == NULL) {
++		printk(KERN_ERR "mal%d: missing additional data!\n",
++		       dev->def->index);
++		return -ENODEV;
++	}
++
++	mal = kzalloc(sizeof(struct ibm_ocp_mal), GFP_KERNEL);
++	if (!mal) {
++		printk(KERN_ERR
++		       "mal%d: out of memory allocating MAL structure!\n",
++		       dev->def->index);
++		return -ENOMEM;
++	}
++	mal->dcrbase = maldata->dcr_base;
++	mal->def = dev->def;
++
++	err = mal_setup(mal, maldata, dev);
++	if (err != 0)
++		goto fail;
++	return 0;
++ fail:
++	kfree(mal);
++}
++
 +#else
-+#define _IO_BASE	pci_io_base
-+#define _ISA_MEM_BASE	0
-+#define PCI_DRAM_OFFSET	0
++static int __init mal_probe(struct emac_subdev *dev,
++			    const struct of_device_id *match)
++{
++	struct ibm_ocp_mal *mal;
++	struct ocp_func_mal_data *maldata;
++	int err = 0;
++
++	static int index = 0;
++	u32 *data;
++
++	MAL_DBG("%d: probe" NL, index);
++
++	mal = kzalloc(sizeof(struct ibm_ocp_mal) +
++		      sizeof(struct ocp_def) +
++ 		      sizeof(struct ocp_func_mal_data), GFP_KERNEL);
++	if (!mal) {
++		printk(KERN_ERR
++		       "mal%d: out of memory allocating MAL structure!\n",
++		       index);
++		return -ENOMEM;
++	}
++	mal->def = (struct ocp_def *)(mal + 1);
++	mal->def->additions = (void *)(mal->def + 1);
++	mal->def->index = index++;
++	maldata = mal->def->additions;
++
++	data = (u32 *)get_property(dev->node, "num-tx-chans", NULL);
++	if (data == NULL) {
++		printk(KERN_ERR
++		       "mal%d: can't find MAL num-tx-chans property!\n",
++		       mal->def->index);
++		err = -ENODEV;
++		goto fail;
++	}
++	maldata->num_tx_chans = data[0];
++
++	data = (u32 *)get_property(dev->node, "num-rx-chans", NULL);
++	if (data == NULL) {
++		printk(KERN_ERR
++		       "mal%d: can't find MAL num-rx-chans property!\n",
++		       mal->def->index);
++		err = -ENODEV;
++		goto fail;
++	}
++	maldata->num_rx_chans = data[0];
++
++	maldata->dcr_base = dcr_resource_start(dev->node, 0);
++	if (maldata->dcr_base == 0) {
++		printk(KERN_ERR
++		       "mal%d: can't find DCR resource!\n", mal->def->index);
++		err = -ENODEV;
++		goto fail;
++	}
++	mal->dcrbase = maldata->dcr_base;
++        mal->dcrhost = dcr_map(dev->node, mal->dcrbase, 0x100);
++	if (!DCR_MAP_OK(mal->dcrhost)) {
++		printk(KERN_ERR
++		       "emac%d: can't map DCRs!\n", mal->def->index);
++		err = -ENODEV;
++		goto fail;
++	}
++
++	maldata->txeob_irq = irq_of_parse_and_map(dev->node, 2);
++	maldata->rxeob_irq = irq_of_parse_and_map(dev->node, 3);
++	maldata->serr_irq = irq_of_parse_and_map(dev->node, 4);
++	maldata->txde_irq = irq_of_parse_and_map(dev->node, 5);
++	maldata->rxde_irq = irq_of_parse_and_map(dev->node, 6);
++
++	err = mal_setup(mal, maldata, dev);
++	if (err != 0)
++		goto fail_unmap;
++	return 0;
++
++ fail_unmap:
++	dcr_unmap(mal->dcrhost, mal->dcrbase, 0x100);
++ fail:
+ 	kfree(mal);
++
+ 	return err;
+ }
 +#endif
-+
-+extern unsigned long isa_io_base;
-+extern unsigned long isa_mem_base;
-+extern unsigned long pci_io_base;
-+extern unsigned long pci_dram_offset;
-+
-+#if defined(CONFIG_PPC32) && defined(CONFIG_PPC_INDIRECT_IO)
-+#error CONFIG_PPC_INDIRECT_IO is not yet support on 32 bits
-+#endif
-+
- /*
-  *
-  * Low level MMIO accessors
-@@ -53,7 +80,11 @@ extern int check_legacy_ioport(unsigned 
-  *
-  */
  
-+#ifdef CONFIG_PPC64
- #define IO_SET_SYNC_FLAG()	do { get_paca()->io_sync = 1; } while(0)
+-static void __exit mal_remove(struct ocp_device *ocpdev)
++static int __exit mal_remove(struct emac_subdev *dev)
+ {
+-	struct ibm_ocp_mal *mal = ocp_get_drvdata(ocpdev);
++	struct ibm_ocp_mal *mal = bus_get_drvdata(dev);
+ 	struct ocp_func_mal_data *maldata = mal->def->additions;
+ 
+ 	MAL_DBG("%d: remove" NL, mal->def->index);
+@@ -534,7 +634,7 @@ static void __exit mal_remove(struct ocp
+ 		       mal->def->index);
+ 	}
+ 
+-	ocp_set_drvdata(ocpdev, NULL);
++	bus_set_drvdata(dev, NULL);
+ 
+ 	free_irq(maldata->serr_irq, mal);
+ 	free_irq(maldata->txde_irq, mal);
+@@ -546,15 +646,20 @@ static void __exit mal_remove(struct ocp
+ 
+ 	mal_dbg_register(mal->def->index, NULL);
+ 
+-	dma_free_coherent(&ocpdev->dev,
++	dma_free_coherent(&dev->dev,
+ 			  sizeof(struct mal_descriptor) *
+ 			  (NUM_TX_BUFF * maldata->num_tx_chans +
+ 			   NUM_RX_BUFF * maldata->num_rx_chans), mal->bd_virt,
+ 			  mal->bd_dma);
+ 
+ 	kfree(mal);
++
++#ifndef CONFIG_IBM_EMAC_OCP
++	return 0;
++#endif
+ }
+ 
++#ifdef CONFIG_IBM_EMAC_OCP
+ /* Structure for a device driver */
+ static struct ocp_device_id mal_ids[] = {
+ 	{ .vendor = OCP_VENDOR_IBM, .function = OCP_FUNC_MAL },
+@@ -568,15 +673,46 @@ static struct ocp_driver mal_driver = {
+ 	.probe = mal_probe,
+ 	.remove = mal_remove,
+ };
 +#else
-+#define IO_SET_SYNC_FLAG()
-+#endif
- 
- #define DEF_MMIO_IN(name, type, insn)					\
- static inline type name(const volatile type __iomem *addr)		\
-@@ -86,17 +117,19 @@ static inline void name(volatile type __
- DEF_MMIO_IN_BE(in_8,     8, lbz);
- DEF_MMIO_IN_BE(in_be16, 16, lhz);
- DEF_MMIO_IN_BE(in_be32, 32, lwz);
--DEF_MMIO_IN_BE(in_be64, 64, ld);
- DEF_MMIO_IN_LE(in_le16, 16, lhbrx);
- DEF_MMIO_IN_LE(in_le32, 32, lwbrx);
- 
- DEF_MMIO_OUT_BE(out_8,     8, stb);
- DEF_MMIO_OUT_BE(out_be16, 16, sth);
- DEF_MMIO_OUT_BE(out_be32, 32, stw);
--DEF_MMIO_OUT_BE(out_be64, 64, std);
- DEF_MMIO_OUT_LE(out_le16, 16, sthbrx);
- DEF_MMIO_OUT_LE(out_le32, 32, stwbrx);
- 
-+#ifdef __powerpc64__
-+DEF_MMIO_OUT_BE(out_be64, 64, std);
-+DEF_MMIO_IN_BE(in_be64, 64, ld);
-+
- /* There is no asm instructions for 64 bits reverse loads and stores */
- static inline u64 in_le64(const volatile u64 __iomem *addr)
- {
-@@ -107,6 +140,7 @@ static inline void out_le64(volatile u64
- {
- 	out_be64(addr, cpu_to_le64(val));
- }
-+#endif /* __powerpc64__ */
- 
- /*
-  * Low level IO stream instructions are defined out of line for now
-@@ -126,6 +160,17 @@ extern void _outsl_ns(volatile u32 __iom
- #define _outsw	_outsw_ns
- #define _outsl	_outsl_ns
- 
-+
-+/*
-+ * memset_io, memcpy_toio, memcpy_fromio base implementations are out of line
-+ */
-+
-+extern void _memset_io(volatile void __iomem *addr, int c, unsigned long n);
-+extern void _memcpy_fromio(void *dest, const volatile void __iomem *src,
-+			   unsigned long n);
-+extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
-+			 unsigned long n);
-+
- /*
-  *
-  * PCI and standard ISA accessors
-@@ -140,9 +185,6 @@ extern void _outsl_ns(volatile u32 __iom
-  * of the accessors.
-  */
- 
--extern unsigned long isa_io_base;
--extern unsigned long pci_io_base;
--
- 
- /*
-  * Non ordered and non-swapping "raw" accessors
-@@ -160,10 +202,6 @@ static inline unsigned int __raw_readl(c
- {
- 	return *(volatile unsigned int __force *)addr;
- }
--static inline unsigned long __raw_readq(const volatile void __iomem *addr)
--{
--	return *(volatile unsigned long __force *)addr;
--}
- static inline void __raw_writeb(unsigned char v, volatile void __iomem *addr)
- {
- 	*(volatile unsigned char __force *)addr = v;
-@@ -176,11 +214,17 @@ static inline void __raw_writel(unsigned
- {
- 	*(volatile unsigned int __force *)addr = v;
- }
-+
-+#ifdef __powerpc64__
-+static inline unsigned long __raw_readq(const volatile void __iomem *addr)
++static struct of_device_id mal_platform_match[] =
 +{
-+	return *(volatile unsigned long __force *)addr;
-+}
- static inline void __raw_writeq(unsigned long v, volatile void __iomem *addr)
- {
- 	*(volatile unsigned long __force *)addr = v;
- }
--
-+#endif /* __powerpc64__ */
- 
- /*
-  *
-@@ -188,7 +232,13 @@ static inline void __raw_writeq(unsigned
-  *
-  */
- 
-+/*
-+ * Include the EEH definitions when EEH is enabled only so they don't get
-+ * in the way when building for 32 bits
-+ */
-+#ifdef CONFIG_EEH
- #include <asm/eeh.h>
++	{
++		.type		= "mal",
++	},
++	{},
++};
++
++static struct of_platform_driver mal_of_driver = {
++	.name = "mal",
++	.match_table = mal_platform_match,
++
++	.probe = mal_probe,
++	.remove = mal_remove,
++};
 +#endif
  
- /* Shortcut to the MMIO argument pointer */
- #define PCI_IO_ADDR	volatile void __iomem *
-@@ -196,7 +246,7 @@ static inline void __raw_writeq(unsigned
- /* Indirect IO address tokens:
-  *
-  * When CONFIG_PPC_INDIRECT_IO is set, the platform can provide hooks
-- * on all IOs.
-+ * on all IOs. (Note that this is all 64 bits only for now)
-  *
-  * To help platforms who may need to differenciate MMIO addresses in
-  * their hooks, a bitfield is reserved for use by the platform near the
-@@ -241,6 +291,70 @@ do {								\
- #define PCI_FIX_ADDR(addr) (addr)
- #endif
- 
-+/*
-+ * On 32 bits, PIO operations have a recovery mechanism in case they trigger
-+ * machine checks (which they occasionally do when probing non existing
-+ * IO ports on some platforms, like PowerMac and 8xx).
-+ * I always found it to be of dubious reliability and I am tempted to get
-+ * rid of it one of these days. So if you think it's important to keep it,
-+ * please voice up asap. We never had it for 64 bits and I do not intend
-+ * to port it over
-+ */
+ int __init mal_init(void)
+ {
++	int rc;
 +
-+#ifdef CONFIG_PPC32
+ 	MAL_DBG(": init" NL);
+-	return ocp_register_driver(&mal_driver);
 +
-+#define __do_in_asm(name, op)				\
-+extern __inline__ unsigned int name(unsigned int port)	\
-+{							\
-+	unsigned int x;					\
-+	__asm__ __volatile__(				\
-+		"sync\n"				\
-+		"0:"	op "	%0,0,%1\n"		\
-+		"1:	twi	0,%0,0\n"		\
-+		"2:	isync\n"			\
-+		"3:	nop\n"				\
-+		"4:\n"					\
-+		".section .fixup,\"ax\"\n"		\
-+		"5:	li	%0,-1\n"		\
-+		"	b	4b\n"			\
-+		".previous\n"				\
-+		".section __ex_table,\"a\"\n"		\
-+		"	.align	2\n"			\
-+		"	.long	0b,5b\n"		\
-+		"	.long	1b,5b\n"		\
-+		"	.long	2b,5b\n"		\
-+		"	.long	3b,5b\n"		\
-+		".previous"				\
-+		: "=&r" (x)				\
-+		: "r" (port + _IO_BASE));		\
-+	return x;					\
-+}
-+
-+#define __do_out_asm(name, op)				\
-+extern __inline__ void name(unsigned int val, unsigned int port) \
-+{							\
-+	__asm__ __volatile__(				\
-+		"sync\n"				\
-+		"0:" op " %0,0,%1\n"			\
-+		"1:	sync\n"				\
-+		"2:\n"					\
-+		".section __ex_table,\"a\"\n"		\
-+		"	.align	2\n"			\
-+		"	.long	0b,2b\n"		\
-+		"	.long	1b,2b\n"		\
-+		".previous"				\
-+		: : "r" (val), "r" (port + _IO_BASE));	\
-+}
-+
-+__do_in_asm(_rec_inb, "lbzx")
-+__do_in_asm(_rec_inw, "lhbrx")
-+__do_in_asm(_rec_inl, "lwbrx")
-+__do_out_asm(_rec_outb, "stbx")
-+__do_out_asm(_rec_outw, "sthbrx")
-+__do_out_asm(_rec_outl, "stwbrx")
-+
-+#endif /* CONFIG_PPC32 */
-+
- /* The "__do_*" operations below provide the actual "base" implementation
-  * for each of the defined acccessor. Some of them use the out_* functions
-  * directly, some of them still use EEH, though we might change that in the
-@@ -263,6 +377,8 @@ do {								\
- #define __do_writew_be(val, addr) out_be16(PCI_FIX_ADDR(addr), val)
- #define __do_writel_be(val, addr) out_be32(PCI_FIX_ADDR(addr), val)
- #define __do_writeq_be(val, addr) out_be64(PCI_FIX_ADDR(addr), val)
-+
-+#ifdef CONFIG_EEH
- #define __do_readb(addr)	eeh_readb(PCI_FIX_ADDR(addr))
- #define __do_readw(addr)	eeh_readw(PCI_FIX_ADDR(addr))
- #define __do_readl(addr)	eeh_readl(PCI_FIX_ADDR(addr))
-@@ -270,33 +386,61 @@ do {								\
- #define __do_readw_be(addr)	eeh_readw_be(PCI_FIX_ADDR(addr))
- #define __do_readl_be(addr)	eeh_readl_be(PCI_FIX_ADDR(addr))
- #define __do_readq_be(addr)	eeh_readq_be(PCI_FIX_ADDR(addr))
-+#else /* CONFIG_EEH */
-+#define __do_readb(addr)	in_8(PCI_FIX_ADDR(addr))
-+#define __do_readw(addr)	in_le16(PCI_FIX_ADDR(addr))
-+#define __do_readl(addr)	in_le32(PCI_FIX_ADDR(addr))
-+#define __do_readq(addr)	in_le64(PCI_FIX_ADDR(addr))
-+#define __do_readw_be(addr)	in_be16(PCI_FIX_ADDR(addr))
-+#define __do_readl_be(addr)	in_be32(PCI_FIX_ADDR(addr))
-+#define __do_readq_be(addr)	in_be64(PCI_FIX_ADDR(addr))
-+#endif /* !defined(CONFIG_EEH) */
-+
-+#ifdef CONFIG_PPC32
-+#define __do_outb(val, port)	_rec_outb(val, port)
-+#define __do_outw(val, port)	_rec_outw(val, port)
-+#define __do_outl(val, port)	_rec_outl(val, port)
-+#define __do_inb(port)		_rec_inb(port)
-+#define __do_inw(port)		_rec_inw(port)
-+#define __do_inl(port)		_rec_inl(port)
-+#else /* CONFIG_PPC32 */
-+#define __do_outb(val, port)	writeb(val,(PCI_IO_ADDR)_IO_BASE+port);
-+#define __do_outw(val, port)	writew(val,(PCI_IO_ADDR)_IO_BASE+port);
-+#define __do_outl(val, port)	writel(val,(PCI_IO_ADDR)_IO_BASE+port);
-+#define __do_inb(port)		readb((PCI_IO_ADDR)_IO_BASE + port);
-+#define __do_inw(port)		readw((PCI_IO_ADDR)_IO_BASE + port);
-+#define __do_inl(port)		readl((PCI_IO_ADDR)_IO_BASE + port);
-+#endif /* !CONFIG_PPC32 */
- 
--#define __do_outb(val, port)	writeb(val,(PCI_IO_ADDR)pci_io_base+port);
--#define __do_outw(val, port)	writew(val,(PCI_IO_ADDR)pci_io_base+port);
--#define __do_outl(val, port)	writel(val,(PCI_IO_ADDR)pci_io_base+port);
--#define __do_inb(port)		readb((PCI_IO_ADDR)pci_io_base + port);
--#define __do_inw(port)		readw((PCI_IO_ADDR)pci_io_base + port);
--#define __do_inl(port)		readl((PCI_IO_ADDR)pci_io_base + port);
--
-+#ifdef CONFIG_EEH
- #define __do_readsb(a, b, n)	eeh_readsb((a), (b), (n))
- #define __do_readsw(a, b, n)	eeh_readsw((a), (b), (n))
- #define __do_readsl(a, b, n)	eeh_readsl((a), (b), (n))
-+#else /* CONFIG_EEH */
-+#define __do_readsb(a, b, n)	_insb((a), (b), (n))
-+#define __do_readsw(a, b, n)	_insw((a), (b), (n))
-+#define __do_readsl(a, b, n)	_insl((a), (b), (n))
-+#endif /* !CONFIG_EEH */
- #define __do_writesb(a, b, n)	_outsb((a),(b),(n))
- #define __do_writesw(a, b, n)	_outsw((a),(b),(n))
- #define __do_writesl(a, b, n)	_outsl((a),(b),(n))
- 
--#define __do_insb(p, b, n)	readsb((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
--#define __do_insw(p, b, n)	readsw((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
--#define __do_insl(p, b, n)	readsl((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
--#define __do_outsb(p, b, n)	writesb((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
--#define __do_outsw(p, b, n)	writesw((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
--#define __do_outsl(p, b, n)	writesl((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
-+#define __do_insb(p, b, n)	readsb((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
-+#define __do_insw(p, b, n)	readsw((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
-+#define __do_insl(p, b, n)	readsl((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
-+#define __do_outsb(p, b, n)	writesb((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
-+#define __do_outsw(p, b, n)	writesw((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
-+#define __do_outsl(p, b, n)	writesl((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
-+
-+#define __do_memset_io(addr, c, n)	_memset_io(PCI_FIX_ADDR(addr), c, n)
-+#define __do_memcpy_toio(dst, src, n)	_memcpy_toio(PCI_FIX_ADDR(dst), src, n)
- 
--#define __do_memset_io(addr, c, n)	eeh_memset_io(PCI_FIX_ADDR(addr), c, n)
-+#ifdef CONFIG_EEH
- #define __do_memcpy_fromio(dst, src, n)	eeh_memcpy_fromio(dst, \
- 						PCI_FIX_ADDR(src), n)
--#define __do_memcpy_toio(dst, src, n)	eeh_memcpy_toio(PCI_FIX_ADDR(dst), \
--						src, n)
-+#else /* CONFIG_EEH */
-+#define __do_memcpy_fromio(dst, src, n)	_memcpy_fromio(dst,PCI_FIX_ADDR(src),n)
-+#endif /* !CONFIG_EEH */
- 
- #ifdef CONFIG_PPC_INDIRECT_IO
- #define DEF_PCI_HOOK(x)		x
-@@ -340,12 +484,22 @@ static inline void name at					\
- #undef DEF_PCI_AC_RET
- #undef DEF_PCI_AC_NORET
- 
--/* Nothing to do */
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+
-+#define dma_cache_inv(_start,_size) \
-+	invalidate_dcache_range(_start, (_start + _size))
-+#define dma_cache_wback(_start,_size) \
-+	clean_dcache_range(_start, (_start + _size))
-+#define dma_cache_wback_inv(_start,_size) \
-+	flush_dcache_range(_start, (_start + _size))
-+
-+#else /* CONFIG_NOT_COHERENT_CACHE */
- 
- #define dma_cache_inv(_start,_size)		do { } while (0)
- #define dma_cache_wback(_start,_size)		do { } while (0)
- #define dma_cache_wback_inv(_start,_size)	do { } while (0)
- 
-+#endif /* !CONFIG_NOT_COHERENT_CACHE */
- 
- /*
-  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-@@ -366,6 +520,9 @@ static inline void name at					\
- #define readl_relaxed(addr) readl(addr)
- #define readq_relaxed(addr) readq(addr)
- 
-+#ifdef CONFIG_PPC32
-+#define mmiowb()
++#ifdef CONFIG_IBM_EMAC_OCP
++	rc = ocp_register_driver(&mal_driver);
++	if (rc) return rc;
 +#else
- /*
-  * Enforce synchronisation of stores vs. spin_unlock
-  * (this does it explicitely, though our implementation of spin_unlock
-@@ -379,6 +536,7 @@ static inline void mmiowb(void)
- 	: "=&r" (tmp) : "i" (offsetof(struct paca_struct, io_sync))
- 	: "memory");
++	of_register_platform_driver(&mal_of_driver);
++	rc = 0;
++#endif
++	return rc;
  }
-+#endif /* !CONFIG_PPC32 */
  
- static inline void iosync(void)
+ void __exit mal_exit(void)
  {
-@@ -447,22 +605,29 @@ static inline void iosync(void)
-  *   be hooked (but can be used by a hook on iounmap)
-  *
-  */
--extern void __iomem *ioremap(unsigned long address, unsigned long size);
--extern void __iomem *ioremap_flags(unsigned long address, unsigned long size,
-+extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
-+extern void __iomem *ioremap_flags(phys_addr_t address, unsigned long size,
- 				   unsigned long flags);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
--extern void iounmap(void __iomem *addr);
-+extern void iounmap(volatile void __iomem *addr);
- 
--extern void __iomem *__ioremap(unsigned long address, unsigned long size,
-+extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
- 			       unsigned long flags);
--extern void __iounmap(void __iomem *addr);
-+extern void __iounmap(volatile void __iomem *addr);
- 
--extern int __ioremap_explicit(unsigned long p_addr, unsigned long v_addr,
-+extern int __ioremap_explicit(phys_addr_t p_addr, unsigned long v_addr,
- 		     	      unsigned long size, unsigned long flags);
--extern int __iounmap_explicit(void __iomem *start, unsigned long size);
-+extern int __iounmap_explicit(volatile void __iomem *start,
-+			      unsigned long size);
- 
- extern void __iomem * reserve_phb_iospace(unsigned long size);
- 
-+/* Those are more 32 bits only functions */
-+extern unsigned long iopa(unsigned long addr);
-+extern unsigned long mm_ptov(unsigned long addr) __attribute_const__;
-+extern void io_block_mapping(unsigned long virt, phys_addr_t phys,
-+			     unsigned int size, int flags);
-+
- 
- /*
-  * When CONFIG_PPC_INDIRECT_IO is set, we use the generic iomap implementation
-@@ -532,7 +697,33 @@ static inline void * phys_to_virt(unsign
-  */
- #define BIO_VMERGE_BOUNDARY	0
- 
-+/*
-+ * 32 bits still uses virt_to_bus() for it's implementation of DMA
-+ * mappings se we have to keep it defined here. We also have some old
-+ * drivers (shame shame shame) that use bus_to_virt() and haven't been
-+ * fixed yet so I need to define it here.
-+ */
-+#ifdef CONFIG_PPC32
-+
-+static inline unsigned long virt_to_bus(volatile void * address)
-+{
-+        if (address == NULL)
-+		return 0;
-+        return __pa(address) + PCI_DRAM_OFFSET;
-+}
-+
-+static inline void * bus_to_virt(unsigned long address)
-+{
-+        if (address == 0)
-+		return NULL;
-+        return __va(address - PCI_DRAM_OFFSET);
-+}
-+
-+#define page_to_bus(page)	(page_to_phys(page) + PCI_DRAM_OFFSET)
-+
-+#endif /* CONFIG_PPC32 */
-+
-+
- #endif /* __KERNEL__ */
- 
--#endif /* CONFIG_PPC64 */
- #endif /* _ASM_POWERPC_IO_H */
-Index: linux-cell/arch/powerpc/kernel/traps.c
+ 	MAL_DBG(": exit" NL);
++#ifdef CONFIG_IBM_EMAC_OCP
+ 	ocp_unregister_driver(&mal_driver);
++#else
++	of_unregister_platform_driver(&mal_of_driver);
++#endif
+ }
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_mal.h
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/traps.c	2006-11-06 16:36:56.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/traps.c	2006-11-06 16:38:20.000000000 +1100
-@@ -53,10 +53,6 @@
- #endif
- #include <asm/kexec.h>
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_mal.h	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_mal.h	2006-11-06 16:38:27.000000000 +1100
+@@ -26,6 +26,10 @@
+ #include <asm/io.h>
+ #include <asm/dcr.h>
  
--#ifdef CONFIG_PPC64	/* XXX */
--#define _IO_BASE	pci_io_base
++#ifndef CONFIG_IBM_EMAC_OCP
++#include "ibm_emac_compat.h"
++#endif
++
+ /*
+  * These MAL "versions" probably aren't the real versions IBM uses for these 
+  * MAL cores, I assigned them just to make #ifdefs in this file nicer and 
+@@ -35,7 +39,7 @@
+     defined(CONFIG_440EP) || defined(CONFIG_440GR) || defined(CONFIG_NP405H)
+ #define MAL_VERSION		1
+ #elif defined(CONFIG_440GP) || defined(CONFIG_440GX) || defined(CONFIG_440SP) || \
+-      defined(CONFIG_440SPE)
++      defined(CONFIG_440SPE) || defined(CONFIG_PPC_CELL)
+ #define MAL_VERSION		2
+ #else
+ #error "Unknown SoC, please check chip manual and choose MAL 'version'"
+Index: linux-cell/drivers/net/Kconfig
+===================================================================
+--- linux-cell.orig/drivers/net/Kconfig	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/Kconfig	2006-11-06 16:38:27.000000000 +1100
+@@ -1201,11 +1201,19 @@ config IBMVETH
+ 
+ config IBM_EMAC
+ 	tristate "PowerPC 4xx on-chip Ethernet support"
+-	depends on 4xx
++	depends on NET_ETHERNET && PPC_DCR
+ 	help
+ 	  This driver supports the PowerPC 4xx EMAC family of on-chip
+           Ethernet controllers.
+ 
++config IBM_EMAC_OCP
++	bool "On-Chip Peripheral bus support (PPC32 only)"
++	depends on IBM_EMAC && 4xx && !PPC_MERGE
++	default y
++	help
++	  Adds support for OCP bus probing.  Selecting 'No' here
++	  causes the driver to use OF platform bus probing.
++
+ config IBM_EMAC_RXB
+ 	int "Number of receive buffers"
+ 	depends on IBM_EMAC
+@@ -1256,14 +1264,14 @@ config IBM_EMAC_DEBUG
+ 
+ config IBM_EMAC_ZMII
+ 	bool
+-	depends on IBM_EMAC && (NP405H || NP405L || 44x)
++	depends on IBM_EMAC && (NP405H || NP405L || 44x || PPC_CELL)
+ 	default y
+ 
+ config IBM_EMAC_RGMII
+ 	bool
+-	depends on IBM_EMAC && 440GX
++	depends on IBM_EMAC && (440GX || PPC_CELL)
+ 	default y
+-		
++
+ config IBM_EMAC_TAH
+ 	bool
+ 	depends on IBM_EMAC && 440GX
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac.h
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac.h	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac.h	2006-11-06 16:38:27.000000000 +1100
+@@ -22,14 +22,6 @@
+ 
+ #include <linux/types.h>
+ 
+-/* This is a simple check to prevent use of this driver on non-tested SoCs */
+-#if !defined(CONFIG_405GP) && !defined(CONFIG_405GPR) && !defined(CONFIG_405EP) && \
+-    !defined(CONFIG_440GP) && !defined(CONFIG_440GX) && !defined(CONFIG_440SP) && \
+-    !defined(CONFIG_440EP) && !defined(CONFIG_NP405H) && !defined(CONFIG_440SPE) && \
+-    !defined(CONFIG_440GR)
+-#error	"Unknown SoC. Please, check chip user manual and make sure EMAC defines are OK"
 -#endif
 -
- #ifdef CONFIG_DEBUGGER
- int (*__debugger)(struct pt_regs *regs);
- int (*__debugger_ipi)(struct pt_regs *regs);
-@@ -241,7 +237,7 @@ void system_reset_exception(struct pt_re
+ /* EMAC registers 		Write Access rules */
+ struct emac_regs {
+ 	u32 mr0;		/* special 	*/
+@@ -112,10 +104,16 @@ struct emac_regs {
+ #define EMAC_MR1_MWSW_001		0x00000000
+ #define EMAC_MR1_BASE(opb)		(EMAC_MR1_TFS_2K | EMAC_MR1_TR0_MULT)
+ #else
++#define EMAC_MR1_RFS_2K			0x00100000
+ #define EMAC_MR1_RFS_4K			0x00180000
+ #define EMAC_MR1_RFS_16K		0x00280000
++#if defined(CONFIG_PPC_CELL)
++#define EMAC_RX_FIFO_SIZE(gige)		2048
++#else
+ #define EMAC_RX_FIFO_SIZE(gige)		((gige) ? 16384 : 4096)
++#endif
+ #define EMAC_MR1_TFS_2K			0x00020000
++#define EMAC_MR1_TFS_4K			0x00030000
+ #define EMAC_MR1_TR			0x00008000
+ #define EMAC_MR1_MWSW_001		0x00001000
+ #define EMAC_MR1_JPSM			0x00000800
+@@ -129,9 +127,14 @@ struct emac_regs {
+ 					 (freq) <= 66  ? EMAC_MR1_OBCI_66 : \
+ 					 (freq) <= 83  ? EMAC_MR1_OBCI_83 : \
+ 					 (freq) <= 100 ? EMAC_MR1_OBCI_100 : EMAC_MR1_OBCI_100P)
++#if defined(CONFIG_PPC_CELL)
++#define EMAC_MR1_BASE(opb)		(EMAC_MR1_TFS_4K | EMAC_MR1_TR | \
++					 EMAC_MR1_OBCI(opb))
++#else
+ #define EMAC_MR1_BASE(opb)		(EMAC_MR1_TFS_2K | EMAC_MR1_TR | \
+ 					 EMAC_MR1_OBCI(opb))
+ #endif
++#endif
+ 
+ /* EMACx_TMR0 */
+ #define EMAC_TMR0_GNP			0x80000000
+@@ -227,9 +230,17 @@ struct emac_regs {
+ #define EMAC_STACR_PHYD_SHIFT		16
+ #define EMAC_STACR_OC			0x00008000
+ #define EMAC_STACR_PHYE			0x00004000
+-#define EMAC_STACR_STAC_MASK		0x00003000
+ #define EMAC_STACR_STAC_READ		0x00001000
++
++/* XXX FIXME */
++#if defined(CONFIG_PPC_CELL)
++#define EMAC_STACR_STAC_MASK		0x00001800
++#define EMAC_STACR_STAC_WRITE		0x00000800
++#else
++#define EMAC_STACR_STAC_MASK		0x00003000
+ #define EMAC_STACR_STAC_WRITE		0x00002000
++#endif
++
+ #if !defined(CONFIG_IBM_EMAC4)
+ #define EMAC_STACR_OPBC_MASK		0x00000C00
+ #define EMAC_STACR_OPBC_50		0x00000000
+@@ -250,8 +261,9 @@ struct emac_regs {
+ /*
+  * For the 440SPe, AMCC inexplicably changed the polarity of
+  * the "operation complete" bit in the MII control register.
++ * XXX FIXME
   */
- static inline int check_io_access(struct pt_regs *regs)
+-#if defined(CONFIG_440SPE)
++#if defined(CONFIG_440SPE) || defined(CONFIG_PPC_CELL)
+ static inline int emac_phy_done(u32 stacr)
  {
--#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
-+#ifdef CONFIG_PPC32
- 	unsigned long msr = regs->msr;
- 	const struct exception_table_entry *entry;
- 	unsigned int *nip = (unsigned int *)regs->nip;
-@@ -274,7 +270,7 @@ static inline int check_io_access(struct
- 			return 1;
+ 	return !(stacr & EMAC_STACR_OC);
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_core.h
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_core.h	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_core.h	2006-11-06 16:38:27.000000000 +1100
+@@ -22,7 +22,6 @@
+ 
+ #include <linux/netdevice.h>
+ #include <linux/dma-mapping.h>
+-#include <asm/ocp.h>
+ 
+ #include "ibm_emac.h"
+ #include "ibm_emac_phy.h"
+@@ -30,6 +29,10 @@
+ #include "ibm_emac_rgmii.h"
+ #include "ibm_emac_mal.h"
+ #include "ibm_emac_tah.h"
++#include "ibm_emac_busdev.h"
++#ifndef CONFIG_IBM_EMAC_OCP
++#include "ibm_emac_compat.h"
++#endif
+ 
+ #define NUM_TX_BUFF			CONFIG_IBM_EMAC_TXB
+ #define NUM_RX_BUFF			CONFIG_IBM_EMAC_RXB
+@@ -168,7 +171,7 @@ struct ocp_enet_private {
+ 	int				rx_sync_size;
+ 
+ 	struct ibm_emac_stats 		stats;
+-	struct ocp_device		*tah_dev;
++	struct emac_subdev		*tah_dev;
+ 
+ 	struct ibm_ocp_mal		*mal;
+ 	struct mal_commac		commac;
+@@ -176,10 +179,11 @@ struct ocp_enet_private {
+ 	struct sk_buff			*tx_skb[NUM_TX_BUFF];
+ 	struct sk_buff			*rx_skb[NUM_RX_BUFF];
+ 
+-	struct ocp_device		*zmii_dev;
++	struct emac_subdev		*zmii_dev;
+ 	int				zmii_input;
+ 	struct ocp_enet_private		*mdio_dev;
+-	struct ocp_device		*rgmii_dev;
++
++	struct emac_subdev		*rgmii_dev;
+ 	int				rgmii_input;
+ 
+ 	struct ocp_def			*def;
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_zmii.h
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_zmii.h	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_zmii.h	2006-11-06 16:38:27.000000000 +1100
+@@ -20,7 +20,8 @@
+ #define _IBM_EMAC_ZMII_H_
+ 
+ #include <linux/init.h>
+-#include <asm/ocp.h>
++
++#include "ibm_emac_busdev.h"
+ 
+ /* ZMII bridge registers */
+ struct zmii_regs {
+@@ -40,35 +41,35 @@ struct ibm_ocp_zmii {
+ #ifdef CONFIG_IBM_EMAC_ZMII
+ int zmii_attach(void *emac) __init;
+ 
+-void __zmii_fini(struct ocp_device *ocpdev, int input) __exit;
+-static inline void zmii_fini(struct ocp_device *ocpdev, int input)
++void __zmii_fini(struct emac_subdev *dev, int input) __exit;
++static inline void zmii_fini(struct emac_subdev *dev, int input)
+ {
+-	if (ocpdev)
+-		__zmii_fini(ocpdev, input);
++	if (dev)
++		__zmii_fini(dev, input);
+ }
+ 
+-void __zmii_enable_mdio(struct ocp_device *ocpdev, int input);
+-static inline void zmii_enable_mdio(struct ocp_device *ocpdev, int input)
++void __zmii_enable_mdio(struct emac_subdev *dev, int input);
++static inline void zmii_enable_mdio(struct emac_subdev *dev, int input)
+ {
+-	if (ocpdev)
+-		__zmii_enable_mdio(ocpdev, input);
++	if (dev)
++		__zmii_enable_mdio(dev, input);
+ }
+ 
+-void __zmii_set_speed(struct ocp_device *ocpdev, int input, int speed);
+-static inline void zmii_set_speed(struct ocp_device *ocpdev, int input,
++void __zmii_set_speed(struct emac_subdev *dev, int input, int speed);
++static inline void zmii_set_speed(struct emac_subdev *dev, int input,
+ 				  int speed)
+ {
+-	if (ocpdev)
+-		__zmii_set_speed(ocpdev, input, speed);
++	if (dev)
++		__zmii_set_speed(dev, input, speed);
+ }
+ 
+-int __zmii_get_regs_len(struct ocp_device *ocpdev);
+-static inline int zmii_get_regs_len(struct ocp_device *ocpdev)
++int __zmii_get_regs_len(struct emac_subdev *dev);
++static inline int zmii_get_regs_len(struct emac_subdev *dev)
+ {
+-	return ocpdev ? __zmii_get_regs_len(ocpdev) : 0;
++	return dev ? __zmii_get_regs_len(dev) : 0;
+ }
+ 
+-void *zmii_dump_regs(struct ocp_device *ocpdev, void *buf);
++void *zmii_dump_regs(struct emac_subdev *dev, void *buf);
+ 
+ #else
+ # define zmii_attach(x)		0
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_tah.h
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_tah.h	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_tah.h	2006-11-06 16:38:27.000000000 +1100
+@@ -18,7 +18,6 @@
+ #define _IBM_EMAC_TAH_H
+ 
+ #include <linux/init.h>
+-#include <asm/ocp.h>
+ 
+ /* TAH */
+ struct tah_regs {
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_core.c
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_core.c	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_core.c	2006-11-06 16:38:27.000000000 +1100
+@@ -41,7 +41,11 @@
+ #include <asm/io.h>
+ #include <asm/dma.h>
+ #include <asm/uaccess.h>
+-#include <asm/ocp.h>
++#include <asm/dcr.h>
++
++#ifndef CONFIG_IBM_EMAC_OCP
++#include <asm/of_platform.h>
++#endif
+ 
+ #include "ibm_emac_core.h"
+ #include "ibm_emac_debug.h"
+@@ -72,6 +76,10 @@ MODULE_AUTHOR
+     ("Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>");
+ MODULE_LICENSE("GPL");
+ 
++#ifdef CONFIG_PPC64
++#define cacheable_memcpy(d,s,n) memcpy((d),(s),(n))
++#endif
++
+ /* minimum number of free TX descriptors required to wake up TX process */
+ #define EMAC_TX_WAKEUP_THRESH		(NUM_TX_BUFF / 4)
+ 
+@@ -386,7 +394,11 @@ static inline u32 emac_iff2rmr(struct ne
+ 
+ static inline int emac_opb_mhz(void)
+ {
++#ifdef FIX_ME
+ 	return (ocp_sys_info.opb_bus_freq + 500000) / 1000000;
++#else
++	return 133;
++#endif
+ }
+ 
+ /* BHs disabled */
+@@ -421,7 +433,12 @@ static int emac_configure(struct ocp_ene
+ 			out_be32(&p->ipcr, 0xdeadbeef);
+ 		} else
+ 			r |= EMAC_MR1_MF_1000;
++
++#if defined(CONFIG_PPC_CELL)
++		r |= EMAC_MR1_RFS_2K;
++#else
+ 		r |= EMAC_MR1_RFS_16K;
++#endif
+ 		gige = 1;
+ 
+ 		if (dev->ndev->mtu > ETH_DATA_LEN) {
+@@ -435,7 +452,11 @@ static int emac_configure(struct ocp_ene
+ 		dev->stop_timeout = STOP_TIMEOUT_100;
+ 		/* Fall through */
+ 	default:
++#if defined(CONFIG_PPC_CELL)
++		r |= EMAC_MR1_RFS_2K;
++#else
+ 		r |= EMAC_MR1_RFS_4K;
++#endif
+ 		gige = 0;
+ 		break;
+ 	}
+@@ -552,6 +573,16 @@ static void emac_full_tx_reset(struct ne
+ 	netif_wake_queue(ndev);
+ }
+ 
++static void mii_enable_mdio(struct ocp_enet_private *dev)
++{
++       if (dev) {
++               if (dev->zmii_dev)
++                       zmii_enable_mdio(dev->zmii_dev, dev->zmii_input);
++               else
++                       rgmii_enable_mdio(dev->rgmii_dev, dev->rgmii_input);
++       }
++}
++
+ static int __emac_mdio_read(struct ocp_enet_private *dev, u8 id, u8 reg)
+ {
+ 	struct emac_regs __iomem *p = dev->emacp;
+@@ -561,7 +592,7 @@ static int __emac_mdio_read(struct ocp_e
+ 	DBG2("%d: mdio_read(%02x,%02x)" NL, dev->def->index, id, reg);
+ 
+ 	/* Enable proper MDIO port */
+-	zmii_enable_mdio(dev->zmii_dev, dev->zmii_input);
++	mii_enable_mdio(dev);
+ 
+ 	/* Wait for management interface to become idle */
+ 	n = 10;
+@@ -610,7 +641,7 @@ static void __emac_mdio_write(struct ocp
+ 	     val);
+ 
+ 	/* Enable proper MDIO port */
+-	zmii_enable_mdio(dev->zmii_dev, dev->zmii_input);
++	mii_enable_mdio(dev);
+ 
+ 	/* Wait for management interface to be idle */
+ 	n = 10;
+@@ -1240,6 +1271,7 @@ static void emac_parse_tx_error(struct o
+ static void emac_poll_tx(void *param)
+ {
+ 	struct ocp_enet_private *dev = param;
++
+ 	DBG2("%d: poll_tx, %d %d" NL, dev->def->index, dev->tx_cnt,
+ 	     dev->ack_slot);
+ 
+@@ -1612,24 +1644,28 @@ static struct net_device_stats *emac_sta
+ 	return nst;
+ }
+ 
+-static void emac_remove(struct ocp_device *ocpdev)
++static int emac_remove(struct emac_subdev *dev)
+ {
+-	struct ocp_enet_private *dev = ocp_get_drvdata(ocpdev);
++	struct ocp_enet_private *edev = bus_get_drvdata(dev);
+ 
+-	DBG("%d: remove" NL, dev->def->index);
++ 	DBG("%d: remove" NL, edev->def->index);
+ 
+-	ocp_set_drvdata(ocpdev, NULL);
+-	unregister_netdev(dev->ndev);
++ 	bus_set_drvdata(dev, 0);
++ 	unregister_netdev(edev->ndev);
+ 
+-	tah_fini(dev->tah_dev);
+-	rgmii_fini(dev->rgmii_dev, dev->rgmii_input);
+-	zmii_fini(dev->zmii_dev, dev->zmii_input);
++  	tah_fini(dev->tah_dev);
++ 	rgmii_fini(edev->rgmii_dev, edev->rgmii_input);
++ 	zmii_fini(edev->zmii_dev, edev->zmii_input);
+ 
+-	emac_dbg_register(dev->def->index, NULL);
++ 	emac_dbg_register(edev->def->index, 0);
+ 
+-	mal_unregister_commac(dev->mal, &dev->commac);
+-	iounmap(dev->emacp);
+-	kfree(dev->ndev);
++ 	mal_unregister_commac(edev->mal, &edev->commac);
++ 	iounmap((void *)edev->emacp);
++ 	kfree(edev->ndev);
++
++#ifndef CONFIG_IBM_EMAC_OCP
++ 	return 0;
++#endif
+ }
+ 
+ static struct mal_commac_ops emac_commac_ops = {
+@@ -1938,119 +1974,61 @@ static int emac_ioctl(struct net_device 
+ 	}
+ }
+ 
+-static int __init emac_probe(struct ocp_device *ocpdev)
++static int __init emac_setup(struct net_device *ndev,
++			     struct ocp_func_emac_data *emacdata,
++			     struct emac_subdev *dev)
+ {
+-	struct ocp_func_emac_data *emacdata = ocpdev->def->additions;
+-	struct net_device *ndev;
+-	struct ocp_device *maldev;
+-	struct ocp_enet_private *dev;
++	struct ocp_enet_private *edev = ndev->priv;
+ 	int err, i;
+ 
+-	DBG("%d: probe" NL, ocpdev->def->index);
+-
+-	if (!emacdata) {
+-		printk(KERN_ERR "emac%d: Missing additional data!\n",
+-		       ocpdev->def->index);
+-		return -ENODEV;
+-	}
+-
+-	/* Allocate our net_device structure */
+-	ndev = alloc_etherdev(sizeof(struct ocp_enet_private));
+-	if (!ndev) {
+-		printk(KERN_ERR "emac%d: could not allocate ethernet device!\n",
+-		       ocpdev->def->index);
+-		return -ENOMEM;
+-	}
+-	dev = ndev->priv;
+-	dev->ndev = ndev;
+-	dev->ldev = &ocpdev->dev;
+-	dev->def = ocpdev->def;
+-	SET_MODULE_OWNER(ndev);
+-
+-	/* Find MAL device we are connected to */
+-	maldev =
+-	    ocp_find_device(OCP_VENDOR_IBM, OCP_FUNC_MAL, emacdata->mal_idx);
+-	if (!maldev) {
+-		printk(KERN_ERR "emac%d: unknown mal%d device!\n",
+-		       dev->def->index, emacdata->mal_idx);
+-		err = -ENODEV;
+-		goto out;
+-	}
+-	dev->mal = ocp_get_drvdata(maldev);
+-	if (!dev->mal) {
+-		printk(KERN_ERR "emac%d: mal%d hasn't been initialized yet!\n",
+-		       dev->def->index, emacdata->mal_idx);
+-		err = -ENODEV;
+-		goto out;
+-	}
++	printk("emac_setup, commac @%p\n", &edev->commac);
+ 
+ 	/* Register with MAL */
+-	dev->commac.ops = &emac_commac_ops;
+-	dev->commac.dev = dev;
+-	dev->commac.tx_chan_mask = MAL_CHAN_MASK(emacdata->mal_tx_chan);
+-	dev->commac.rx_chan_mask = MAL_CHAN_MASK(emacdata->mal_rx_chan);
+-	err = mal_register_commac(dev->mal, &dev->commac);
++	edev->commac.ops = &emac_commac_ops;
++	edev->commac.dev = edev;
++	edev->commac.tx_chan_mask = MAL_CHAN_MASK(emacdata->mal_tx_chan);
++	edev->commac.rx_chan_mask = MAL_CHAN_MASK(emacdata->mal_rx_chan);
++	err = mal_register_commac(edev->mal, &edev->commac);
+ 	if (err) {
+ 		printk(KERN_ERR "emac%d: failed to register with mal%d!\n",
+-		       dev->def->index, emacdata->mal_idx);
++		       edev->def->index, emacdata->mal_idx);
+ 		goto out;
+ 	}
+-	dev->rx_skb_size = emac_rx_skb_size(ndev->mtu);
+-	dev->rx_sync_size = emac_rx_sync_size(ndev->mtu);
++	edev->rx_skb_size = emac_rx_skb_size(ndev->mtu);
++	edev->rx_sync_size = emac_rx_sync_size(ndev->mtu);
+ 
+ 	/* Get pointers to BD rings */
+-	dev->tx_desc =
+-	    dev->mal->bd_virt + mal_tx_bd_offset(dev->mal,
++	edev->tx_desc =
++	    edev->mal->bd_virt + mal_tx_bd_offset(edev->mal,
+ 						 emacdata->mal_tx_chan);
+-	dev->rx_desc =
+-	    dev->mal->bd_virt + mal_rx_bd_offset(dev->mal,
++	edev->rx_desc =
++	    edev->mal->bd_virt + mal_rx_bd_offset(edev->mal,
+ 						 emacdata->mal_rx_chan);
+ 
+-	DBG("%d: tx_desc %p" NL, ocpdev->def->index, dev->tx_desc);
+-	DBG("%d: rx_desc %p" NL, ocpdev->def->index, dev->rx_desc);
++	DBG("%d: tx_desc %p" NL, edev->def->index, edev->tx_desc);
++	DBG("%d: rx_desc %p" NL, edev->def->index, edev->rx_desc);
+ 
+ 	/* Clean rings */
+-	memset(dev->tx_desc, 0, NUM_TX_BUFF * sizeof(struct mal_descriptor));
+-	memset(dev->rx_desc, 0, NUM_RX_BUFF * sizeof(struct mal_descriptor));
+-
+-	/* If we depend on another EMAC for MDIO, check whether it was probed already */
+-	if (emacdata->mdio_idx >= 0 && emacdata->mdio_idx != ocpdev->def->index) {
+-		struct ocp_device *mdiodev =
+-		    ocp_find_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC,
+-				    emacdata->mdio_idx);
+-		if (!mdiodev) {
+-			printk(KERN_ERR "emac%d: unknown emac%d device!\n",
+-			       dev->def->index, emacdata->mdio_idx);
+-			err = -ENODEV;
+-			goto out2;
+-		}
+-		dev->mdio_dev = ocp_get_drvdata(mdiodev);
+-		if (!dev->mdio_dev) {
+-			printk(KERN_ERR
+-			       "emac%d: emac%d hasn't been initialized yet!\n",
+-			       dev->def->index, emacdata->mdio_idx);
+-			err = -ENODEV;
+-			goto out2;
+-		}
+-	}
++	memset(edev->tx_desc, 0, NUM_TX_BUFF * sizeof(struct mal_descriptor));
++	memset(edev->rx_desc, 0, NUM_RX_BUFF * sizeof(struct mal_descriptor));
+ 
+ 	/* Attach to ZMII, if needed */
+-	if ((err = zmii_attach(dev)) != 0)
++	if ((err = zmii_attach(edev)) != 0)
+ 		goto out2;
+ 
+ 	/* Attach to RGMII, if needed */
+-	if ((err = rgmii_attach(dev)) != 0)
++	if ((err = rgmii_attach(edev)) != 0)
+ 		goto out3;
+ 
+ 	/* Attach to TAH, if needed */
+-	if ((err = tah_attach(dev)) != 0)
++	if ((err = tah_attach(edev)) != 0)
+ 		goto out4;
+ 
+ 	/* Map EMAC regs */
+-	dev->emacp = ioremap(dev->def->paddr, sizeof(struct emac_regs));
+-	if (!dev->emacp) {
++	edev->emacp = ioremap(edev->def->paddr, sizeof(struct emac_regs));
++	if (!edev->emacp) {
+ 		printk(KERN_ERR "emac%d: could not ioremap device registers!\n",
+-		       dev->def->index);
++		       edev->def->index);
+ 		err = -ENOMEM;
+ 		goto out5;
+ 	}
+@@ -2060,43 +2038,43 @@ static int __init emac_probe(struct ocp_
+ 		ndev->dev_addr[i] = emacdata->mac_addr[i];
+ 
+ 	/* Set some link defaults before we can find out real parameters */
+-	dev->phy.speed = SPEED_100;
+-	dev->phy.duplex = DUPLEX_FULL;
+-	dev->phy.autoneg = AUTONEG_DISABLE;
+-	dev->phy.pause = dev->phy.asym_pause = 0;
+-	dev->stop_timeout = STOP_TIMEOUT_100;
+-	init_timer(&dev->link_timer);
+-	dev->link_timer.function = emac_link_timer;
+-	dev->link_timer.data = (unsigned long)dev;
++	edev->phy.speed = SPEED_100;
++	edev->phy.duplex = DUPLEX_FULL;
++	edev->phy.autoneg = AUTONEG_DISABLE;
++	edev->phy.pause = edev->phy.asym_pause = 0;
++	edev->stop_timeout = STOP_TIMEOUT_100;
++	init_timer(&edev->link_timer);
++	edev->link_timer.function = emac_link_timer;
++	edev->link_timer.data = (unsigned long)edev;
+ 
+ 	/* Find PHY if any */
+-	dev->phy.dev = ndev;
+-	dev->phy.mode = emacdata->phy_mode;
++	edev->phy.dev = ndev;
++	edev->phy.mode = emacdata->phy_mode;
+ 	if (emacdata->phy_map != 0xffffffff) {
+ 		u32 phy_map = emacdata->phy_map | busy_phy_map;
+ 		u32 adv;
+ 
+-		DBG("%d: PHY maps %08x %08x" NL, dev->def->index,
++		DBG("%d: PHY maps %08x %08x" NL, edev->def->index,
+ 		    emacdata->phy_map, busy_phy_map);
+ 
+-		EMAC_RX_CLK_TX(dev->def->index);
++		EMAC_RX_CLK_TX(edev->def->index);
+ 
+-		dev->phy.mdio_read = emac_mdio_read;
+-		dev->phy.mdio_write = emac_mdio_write;
++		edev->phy.mdio_read = emac_mdio_read;
++		edev->phy.mdio_write = emac_mdio_write;
+ 
+ 		/* Configure EMAC with defaults so we can at least use MDIO
+ 		 * This is needed mostly for 440GX
+ 		 */
+-		if (emac_phy_gpcs(dev->phy.mode)) {
++		if (emac_phy_gpcs(edev->phy.mode)) {
+ 			/* XXX
+ 			 * Make GPCS PHY address equal to EMAC index.
+ 			 * We probably should take into account busy_phy_map
+ 			 * and/or phy_map here.
+ 			 */
+-			dev->phy.address = dev->def->index;
++			edev->phy.address = edev->def->index;
+ 		}
+ 		
+-		emac_configure(dev);
++		emac_configure(edev);
+ 
+ 		for (i = 0; i < 0x20; phy_map >>= 1, ++i)
+ 			if (!(phy_map & 1)) {
+@@ -2104,35 +2082,35 @@ static int __init emac_probe(struct ocp_
+ 				busy_phy_map |= 1 << i;
+ 
+ 				/* Quick check if there is a PHY at the address */
+-				r = emac_mdio_read(dev->ndev, i, MII_BMCR);
++				r = emac_mdio_read(edev->ndev, i, MII_BMCR);
+ 				if (r == 0xffff || r < 0)
+ 					continue;
+-				if (!mii_phy_probe(&dev->phy, i))
++				if (!mii_phy_probe(&edev->phy, i))
+ 					break;
+ 			}
+ 		if (i == 0x20) {
+ 			printk(KERN_WARNING "emac%d: can't find PHY!\n",
+-			       dev->def->index);
++			       edev->def->index);
+ 			goto out6;
+ 		}
+ 
+ 		/* Init PHY */
+-		if (dev->phy.def->ops->init)
+-			dev->phy.def->ops->init(&dev->phy);
++		if (edev->phy.def->ops->init)
++			edev->phy.def->ops->init(&edev->phy);
+ 		
+ 		/* Disable any PHY features not supported by the platform */
+-		dev->phy.def->features &= ~emacdata->phy_feat_exc;
++		edev->phy.def->features &= ~emacdata->phy_feat_exc;
+ 
+ 		/* Setup initial link parameters */
+-		if (dev->phy.features & SUPPORTED_Autoneg) {
+-			adv = dev->phy.features;
++		if (edev->phy.features & SUPPORTED_Autoneg) {
++			adv = edev->phy.features;
+ #if !defined(CONFIG_40x)
+ 			adv |= ADVERTISED_Pause | ADVERTISED_Asym_Pause;
+ #endif
+ 			/* Restart autonegotiation */
+-			dev->phy.def->ops->setup_aneg(&dev->phy, adv);
++			edev->phy.def->ops->setup_aneg(&edev->phy, adv);
+ 		} else {
+-			u32 f = dev->phy.def->features;
++			u32 f = edev->phy.def->features;
+ 			int speed = SPEED_10, fd = DUPLEX_HALF;
+ 
+ 			/* Select highest supported speed/duplex */
+@@ -2150,22 +2128,22 @@ static int __init emac_probe(struct ocp_
+ 				fd = DUPLEX_FULL;
+ 
+ 			/* Force link parameters */
+-			dev->phy.def->ops->setup_forced(&dev->phy, speed, fd);
++			edev->phy.def->ops->setup_forced(&edev->phy, speed, fd);
+ 		}
+ 	} else {
+-		emac_reset(dev);
++		emac_reset(edev);
+ 
+ 		/* PHY-less configuration.
+ 		 * XXX I probably should move these settings to emacdata
+ 		 */
+-		dev->phy.address = -1;
+-		dev->phy.features = SUPPORTED_100baseT_Full | SUPPORTED_MII;
+-		dev->phy.pause = 1;
++		edev->phy.address = -1;
++		edev->phy.features = SUPPORTED_100baseT_Full | SUPPORTED_MII;
++		edev->phy.pause = 1;
+ 	}
+ 
+ 	/* Fill in the driver function table */
+ 	ndev->open = &emac_open;
+-	if (dev->tah_dev) {
++	if (edev->tah_dev) {
+ 		ndev->hard_start_xmit = &emac_start_xmit_sg;
+ 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+ 	} else
+@@ -2178,7 +2156,7 @@ static int __init emac_probe(struct ocp_
+ 	ndev->do_ioctl = &emac_ioctl;
+ 	if (emac_phy_supports_gige(emacdata->phy_mode)) {
+ 		ndev->change_mtu = &emac_change_mtu;
+-		dev->commac.ops = &emac_commac_sg_ops;
++		edev->commac.ops = &emac_commac_sg_ops;
+ 	}
+ 	SET_ETHTOOL_OPS(ndev, &emac_ethtool_ops);
+ 
+@@ -2188,39 +2166,295 @@ static int __init emac_probe(struct ocp_
+ 	err = register_netdev(ndev);
+ 	if (err) {
+ 		printk(KERN_ERR "emac%d: failed to register net device (%d)!\n",
+-		       dev->def->index, err);
++		       edev->def->index, err);
+ 		goto out6;
+ 	}
+ 
+-	ocp_set_drvdata(ocpdev, dev);
++	bus_set_drvdata(dev, edev);
+ 
+ 	printk("%s: emac%d, MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+-	       ndev->name, dev->def->index,
++	       ndev->name, edev->def->index,
+ 	       ndev->dev_addr[0], ndev->dev_addr[1], ndev->dev_addr[2],
+ 	       ndev->dev_addr[3], ndev->dev_addr[4], ndev->dev_addr[5]);
+ 
+-	if (dev->phy.address >= 0)
++	if (edev->phy.address >= 0)
+ 		printk("%s: found %s PHY (0x%02x)\n", ndev->name,
+-		       dev->phy.def->name, dev->phy.address);
++		       edev->phy.def->name, edev->phy.address);
+ 
+-	emac_dbg_register(dev->def->index, dev);
++	emac_dbg_register(edev->def->index, edev);
+ 
+ 	return 0;
+-      out6:
+-	iounmap(dev->emacp);
+-      out5:
+-	tah_fini(dev->tah_dev);
+-      out4:
+-	rgmii_fini(dev->rgmii_dev, dev->rgmii_input);
+-      out3:
+-	zmii_fini(dev->zmii_dev, dev->zmii_input);
+-      out2:
+-	mal_unregister_commac(dev->mal, &dev->commac);
+-      out:
++ out6:
++	iounmap(edev->emacp);
++ out5:
++	tah_fini(edev->tah_dev);
++ out4:
++	rgmii_fini(edev->rgmii_dev, edev->rgmii_input);
++ out3:
++	zmii_fini(edev->zmii_dev, edev->zmii_input);
++ out2:
++	mal_unregister_commac(edev->mal, &edev->commac);
++ out:
++	return err;
++}
++
++#ifdef CONFIG_IBM_EMAC_OCP
++static int __init emac_probe(struct ocp_device *dev)
++{
++	struct ocp_func_emac_data *emacdata = dev->def->additions;
++	struct emac_subdev *maldev;
++	struct net_device *ndev;
++	struct ocp_enet_private *edev;
++	int err, i;
++
++	DBG("%d: probe" NL, dev->def->index);
++
++	if (!emacdata) {
++		printk(KERN_ERR "emac%d: Missing additional data!\n",
++		       dev->def->index);
++		return -ENODEV;
++	}
++
++	/* Allocate our net_device structure */
++	ndev = alloc_etherdev(sizeof(struct ocp_enet_private));
++	if (!ndev) {
++		printk(KERN_ERR "emac%d: could not allocate ethernet device!\n",
++		       ocpdev->def->index);
++		return -ENOMEM;
++	}
++	dev = ndev->priv;
++	dev->ndev = ndev;
++	dev->ldev = &ocpdev->dev;
++	dev->def = ocpdev->def;
++	SET_MODULE_OWNER(ndev);
++
++	/* If we depend on another EMAC for MDIO, check whether it was probed already */
++	if (emacdata->mdio_idx >= 0 && emacdata->mdio_idx != edev->def->index) {
++		struct ocp_device *mdiodev =
++		    ocp_find_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC,
++				    emacdata->mdio_idx);
++		if (!mdiodev) {
++			printk(KERN_ERR "emac%d: unknown emac%d device!\n",
++			       edev->def->index, emacdata->mdio_idx);
++			err = -ENODEV;
++			goto out;
++		}
++		edev->mdio_dev = bus_get_drvdata(mdiodev);
++		if (!edev->mdio_dev) {
++			printk(KERN_ERR
++			       "emac%d: emac%d hasn't been initialized yet!\n",
++			       edev->def->index, emacdata->mdio_idx);
++			err = -ENODEV;
++			goto out;
++		}
++	}
++
++	maldev = ocp_find_device(OCP_VENDOR_IBM, OCP_FUNC_MAL,
++				 emacdata->mal_idx);
++	if (!maldev) {
++		printk(KERN_ERR "emac%d: unknown mal%d device!\n",
++		       edev->def->index, emacdata->mal_idx);
++		err = -ENODEV;
++		goto out;
++	}
++	edev->mal = bus_get_drvdata(maldev);
++	if (!edev->mal) {
++		printk(KERN_ERR "emac%d: mal%d hasn't been initialized yet!\n",
++		       edev->def->index, emacdata->mal_idx);
++		err = -ENODEV;
++		goto out;
++	}
++
++	err = emac_setup(ndev, emacdata, dev);
++	if (err != 0)
++		goto out;
++	return 0;
++ out:
+ 	kfree(ndev);
++
+ 	return err;
+ }
+ 
++#else
++static unsigned int * ibm_emac_get_property(int dev_nr,
++			 	      struct device_node * node,
++				      const char * name)
++{
++	unsigned int * ret = (unsigned int *)get_property(node, name, NULL);
++	if (!ret) {
++		printk(KERN_ERR
++		       "emac%d: can't find EMAC %s property!\n",
++		       dev_nr, name);
++	}
++	return ret;
++}
++
++static struct emac_subdev *emac_wait_subdev(struct device_node *np)
++{
++	struct emac_subdev *sd;
++	int timeout = 10;
++
++	while(timeout--) {
++		sd = of_find_device_by_node(np);
++		if (sd != NULL && bus_get_drvdata(sd) != NULL)
++			return sd;
++		of_dev_put(sd);
++		msleep(1);
++	}
++	printk(KERN_ERR "emac: timed out waiting for %s driver\n",
++	       np->full_name);
++	return NULL;
++}
++
++static int __init emac_probe(struct of_device *dev,
++			     const struct of_device_id *match)
++{
++	struct ocp_func_emac_data *emacdata = NULL;
++ 	struct net_device *ndev = NULL;
++ 	struct emac_subdev *maldev;
++ 	struct ocp_enet_private *edev;
++	struct device_node *malnode;
++ 	int err = -ENODEV;
++ 	static int index = 0;
++	struct resource r;
++ 	const u32 *phy_dev, *phy_port, *data;
++
++ 	emacdata = kzalloc(sizeof(struct ocp_func_emac_data) +
++ 			   sizeof(struct ocp_def), GFP_KERNEL);
++ 	if (!emacdata) {
++ 		printk(KERN_ERR
++ 		       "emac%d: could not allocate EMAC data structure!\n",
++ 		       index);
++ 		return -ENOMEM;
++ 	}
++
++ 	emacdata->rgmii_idx = -1;
++ 	emacdata->zmii_idx = -1;
++ 	emacdata->mdio_idx = -1;
++ 	emacdata->mal_idx = -1;
++ 	emacdata->tah_idx = -1;
++
++	data = ibm_emac_get_property(index, dev->node, "phy-map");
++	if (!data) goto out;
++	emacdata->phy_map = *data;
++
++	data = ibm_emac_get_property(index, dev->node, "phy-mode");
++	if (!data) goto out;
++	emacdata->phy_mode = *data;
++
++	phy_dev = ibm_emac_get_property(index, dev->node, "phy-device");
++	if (!phy_dev) goto out;
++	phy_port = ibm_emac_get_property(index, dev->node, "phy-port");
++	if (!phy_port) goto out;
++
++	switch (emacdata->phy_mode) {
++		case PHY_MODE_RGMII :
++		case PHY_MODE_GMII :
++		case PHY_MODE_TBI :
++		case PHY_MODE_RTBI :
++			emacdata->rgmii_idx = *phy_dev;
++			emacdata->rgmii_mux = *phy_port;
++			break;
++		case PHY_MODE_MII :
++		case PHY_MODE_RMII :
++ 		case PHY_MODE_SMII :
++		case PHY_MODE_NA :
++ 			emacdata->zmii_idx = *phy_dev;
++			emacdata->zmii_mux = *phy_port;
++		default :
++			printk(KERN_ERR
++			       "emac%d: invalid EMAC phy-mode value %d!\n",
++ 			       index, emacdata->phy_mode);
++			goto out;
++	}
++	data = ibm_emac_get_property(index, dev->node, "mal-device");
++	if (!data) goto out;
++	emacdata->mal_idx = *data;
++
++	data = ibm_emac_get_property(index, dev->node, "mal-rx-channel");
++	if (!data) goto out;
++	emacdata->mal_rx_chan = *data;
++
++	data = ibm_emac_get_property(index, dev->node, "mal-tx-channel");
++	if (!data) goto out;
++	emacdata->mal_tx_chan = *data;
++
++	data = ibm_emac_get_property(index, dev->node, "local-mac-address");
++	if (!data) goto out;
++	memcpy(emacdata->mac_addr, (u8 *)data, sizeof emacdata->mac_addr);
++
++	if (of_address_to_resource(dev->node, 0, &r)) {
++		printk(KERN_ERR
++		       "emac%d: can't find EMAC register property!\n",
++		       index);
++		goto out;
++	}
++
++	/* Allocate our net_device structure */
++	ndev = alloc_etherdev(sizeof(struct ocp_enet_private));
++	if (!ndev) {
++		printk(KERN_ERR
++		       "emac%d: could not allocate ethernet device!\n",
++		       index);
++		kfree(emacdata);
++		err = -ENOMEM;
++		goto out;
++	}
++	edev = ndev->priv;
++	memset(edev, 0, sizeof(struct ocp_enet_private));
++
++	edev->ndev = ndev;
++	edev->ldev = &dev->dev;
++	edev->def = (struct ocp_def *)(emacdata + 1);
++	edev->def->additions = emacdata;
++	edev->def->index = index++;
++	edev->def->paddr = r.start;
++	edev->def->irq = irq_of_parse_and_map(dev->node, 0);
++	SET_MODULE_OWNER(ndev);
++
++  	/* Find MAL device we are connected to */
++	data = get_property(dev->node, "mal-device", NULL);
++	if (data == NULL) {
++		printk(KERN_ERR "emac%d: can't find mal-device property !\n",
++		      edev->def->index);
++		goto out;
++	}
++	malnode = of_find_node_by_phandle(*data);
++	if (malnode == NULL) {
++		printk(KERN_ERR "emac%d: can't locate MAL device !\n",
++		       edev->def->index);
++		goto out;
++	}
++	maldev = emac_wait_subdev(malnode);
++	if (!maldev) {
++		printk(KERN_ERR "emac%d: unknown mal%d device!\n",
++		       edev->def->index, emacdata->mal_idx);
++		err = -ENODEV;
++		goto out;
++	}
++	edev->mal = bus_get_drvdata(maldev);
++	if (!edev->mal) {
++		printk(KERN_ERR "emac%d: mal%d hasn't been initialized yet!\n",
++		       edev->def->index, emacdata->mal_idx);
++		err = -ENODEV;
++		goto out;
++	}
++
++	err = emac_setup(ndev, emacdata, dev);
++	if (err != 0)
++		goto out;
++	return 0;
++
++ out:
++	kfree(ndev);
++	kfree(emacdata);
++
++	return err;
++}
++
++#endif
++
++#ifdef CONFIG_IBM_EMAC_OCP
+ static struct ocp_device_id emac_ids[] = {
+ 	{ .vendor = OCP_VENDOR_IBM, .function = OCP_FUNC_EMAC },
+ 	{ .vendor = OCP_VENDOR_INVALID}
+@@ -2232,6 +2466,28 @@ static struct ocp_driver emac_driver = {
+ 	.probe = emac_probe,
+ 	.remove = emac_remove,
+ };
++#else
++static struct of_device_id emac_platform_match[] =
++{
++	{
++		.name		= "ethernet",
++		.type		= "network",
++	},
++	{},
++};
++
++static struct of_platform_driver emac_driver = {
++	.name = "emac",
++	.match_table = emac_platform_match,
++
++	.probe = emac_probe,
++	.remove = emac_remove,
++
++	.driver = {
++		.multithread_probe = 1,
++	},
++};
++#endif
+ 
+ static int __init emac_init(void)
+ {
+@@ -2243,12 +2499,16 @@ static int __init emac_init(void)
+ 		return -ENODEV;
+ 
+ 	EMAC_CLK_INTERNAL;
++#ifdef CONFIG_IBM_EMAC_OCP
+ 	if (ocp_register_driver(&emac_driver)) {
+ 		EMAC_CLK_EXTERNAL;
+ 		ocp_unregister_driver(&emac_driver);
+ 		mal_exit();
+ 		return -ENODEV;
+ 	}
++#else
++	of_register_platform_driver(&emac_driver);
++#endif
+ 	EMAC_CLK_EXTERNAL;
+ 
+ 	emac_init_debug();
+@@ -2258,7 +2518,11 @@ static int __init emac_init(void)
+ static void __exit emac_exit(void)
+ {
+ 	DBG(": exit" NL);
++#ifdef CONFIG_IBM_EMAC_OCP
+ 	ocp_unregister_driver(&emac_driver);
++#else
++	of_unregister_platform_driver(&emac_driver);
++#endif
+ 	mal_exit();
+ 	emac_fini_debug();
+ }
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_rgmii.c
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_rgmii.c	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_rgmii.c	2006-11-06 16:38:27.000000000 +1100
+@@ -20,10 +20,20 @@
+ #include <linux/ethtool.h>
+ #include <asm/io.h>
+ 
++#ifndef CONFIG_IBM_EMAC_OCP
++#include <asm/of_platform.h>
++#endif
++
++#include "ibm_emac_busdev.h"
+ #include "ibm_emac_core.h"
+ #include "ibm_emac_debug.h"
+ 
+-/* RGMIIx_FER */
++/* RGMIIx_FER XXXX  */
++#if defined(CONFIG_PPC_CELL)
++#define RGMII_FER_MDI(idx)	(0x80000000 >> ((idx) + 12))
++#define RGMII_FER_MDI_ALL	(RGMII_FER_MDI(0) | RGMII_FER_MDI(1) | \
++				 RGMII_FER_MDI(2) | RGMII_FER_MDI(3))
++#endif
+ #define RGMII_FER_MASK(idx)	(0x7 << ((idx) * 4))
+ #define RGMII_FER_RTBI(idx)	(0x4 << ((idx) * 4))
+ #define RGMII_FER_RGMII(idx)	(0x5 << ((idx) * 4))
+@@ -58,6 +68,8 @@ static inline const char *rgmii_mode_nam
+ 	default:
+ 		BUG();
+ 	}
++
++	return NULL;
+ }
+ 
+ static inline u32 rgmii_mode_mask(int mode, int input)
+@@ -74,49 +86,62 @@ static inline u32 rgmii_mode_mask(int mo
+ 	default:
+ 		BUG();
+ 	}
++
++	return 0;
+ }
+ 
+-static int __init rgmii_init(struct ocp_device *ocpdev, int input, int mode)
++static int __init rgmii_init(struct emac_subdev *dev, int input, int mode)
+ {
+-	struct ibm_ocp_rgmii *dev = ocp_get_drvdata(ocpdev);
++	struct ibm_ocp_rgmii *rdev = bus_get_drvdata(dev);
+ 	struct rgmii_regs *p;
++	struct resource r;
+ 
+-	RGMII_DBG("%d: init(%d, %d)" NL, ocpdev->def->index, input, mode);
++	RGMII_DBG(": init(%d, %d)" NL, input, mode);
+ 
+-	if (!dev) {
+-		dev = kzalloc(sizeof(struct ibm_ocp_rgmii), GFP_KERNEL);
+-		if (!dev) {
++	if (!rdev) {
++		rdev = kzalloc(sizeof(struct ibm_ocp_rgmii), GFP_KERNEL);
++		if (!rdev) {
+ 			printk(KERN_ERR
+-			       "rgmii%d: couldn't allocate device structure!\n",
+-			       ocpdev->def->index);
++			       "rgmii: couldn't allocate device structure!\n");
+ 			return -ENOMEM;
+ 		}
+ 
+-		p = (struct rgmii_regs *)ioremap(ocpdev->def->paddr,
++#ifdef CONFIG_IBM_EMAC_OCP
++		p = (struct rgmii_regs *)ioremap(dev->def->paddr,
+ 						 sizeof(struct rgmii_regs));
++#else
++		if (of_address_to_resource(dev->node, 0, &r)) {
++			of_node_put(dev->node);
++			printk(KERN_ERR
++			       "rgmii: can't find RGMII register property!\n");
++			kfree(rdev);
++			return -EINVAL;
++		}
++		p = (struct rgmii_regs *)ioremap(r.start, sizeof *p);
++#endif
+ 		if (!p) {
+ 			printk(KERN_ERR
+-			       "rgmii%d: could not ioremap device registers!\n",
+-			       ocpdev->def->index);
+-			kfree(dev);
++			       "rgmii: could not ioremap device registers!\n");
++			kfree(rdev);
+ 			return -ENOMEM;
+ 		}
+ 
+-		dev->base = p;
+-		ocp_set_drvdata(ocpdev, dev);
++		rdev->base = p;
++
++		bus_set_drvdata(dev, rdev);
+ 
+ 		/* Disable all inputs by default */
+ 		out_be32(&p->fer, 0);
+ 	} else
+-		p = dev->base;
++		p = rdev->base;
+ 
+ 	/* Enable this input */
+ 	out_be32(&p->fer, in_be32(&p->fer) | rgmii_mode_mask(mode, input));
+ 
+-	printk(KERN_NOTICE "rgmii%d: input %d in %s mode\n",
+-	       ocpdev->def->index, input, rgmii_mode_name(mode));
++	printk(KERN_NOTICE "rgmii: input %d in %s mode\n",
++	       input, rgmii_mode_name(mode));
+ 
+-	++dev->users;
++	++rdev->users;
+ 	return 0;
+ }
+ 
+@@ -127,74 +152,102 @@ int __init rgmii_attach(void *emac)
+ 
+ 	/* Check if we need to attach to a RGMII */
+ 	if (emacdata->rgmii_idx >= 0 && rgmii_valid_mode(emacdata->phy_mode)) {
+-		dev->rgmii_input = emacdata->rgmii_mux;
++#ifdef CONFIG_IBM_EMAC_OCP
+ 		dev->rgmii_dev =
+ 		    ocp_find_device(OCP_VENDOR_IBM, OCP_FUNC_RGMII,
+ 				    emacdata->rgmii_idx);
++#else
++		struct device_node * node =
++			of_find_node_by_phandle(emacdata->rgmii_idx);
++		if (!node) {
++			printk(KERN_ERR
++			       "emac%d: rgmii%d can't find PHY device node!\n",
++			       dev->def->index, emacdata->rgmii_idx);
++			return -ENODEV;
++		}
++		dev->rgmii_dev = of_find_device_by_node(node);
++#endif
++		dev->rgmii_input = emacdata->rgmii_mux;
++
+ 		if (!dev->rgmii_dev) {
+ 			printk(KERN_ERR "emac%d: unknown rgmii%d!\n",
+ 			       dev->def->index, emacdata->rgmii_idx);
+ 			return -ENODEV;
+ 		}
++
+ 		if (rgmii_init
+ 		    (dev->rgmii_dev, dev->rgmii_input, emacdata->phy_mode)) {
+ 			printk(KERN_ERR
+-			       "emac%d: rgmii%d initialization failed!\n",
+-			       dev->def->index, emacdata->rgmii_idx);
++			       "emac: rgmii%d initialization failed!\n",
++			       emacdata->rgmii_idx);
+ 			return -ENODEV;
  		}
  	}
--#endif /* CONFIG_PPC_PMAC && CONFIG_PPC32 */
-+#endif /* CONFIG_PPC32 */
  	return 0;
  }
  
-Index: linux-cell/arch/powerpc/kernel/rtas_pci.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/rtas_pci.c	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/rtas_pci.c	2006-11-06 16:38:20.000000000 +1100
-@@ -38,6 +38,7 @@
- #include <asm/rtas.h>
- #include <asm/mpic.h>
- #include <asm/ppc-pci.h>
-+#include <asm/eeh.h>
- 
- /* RTAS tokens */
- static int read_pci_config;
-Index: linux-cell/arch/powerpc/platforms/chrp/setup.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/chrp/setup.c	2006-11-06 16:38:19.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/chrp/setup.c	2006-11-06 16:38:20.000000000 +1100
-@@ -588,7 +588,6 @@ static int __init chrp_probe(void)
- 	ISA_DMA_THRESHOLD = ~0L;
- 	DMA_MODE_READ = 0x44;
- 	DMA_MODE_WRITE = 0x48;
--	isa_io_base = CHRP_ISA_IO_BASE;		/* default value */
- 
- 	return 1;
- }
-Index: linux-cell/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/powermac/setup.c	2006-11-06 16:38:19.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/powermac/setup.c	2006-11-06 16:38:20.000000000 +1100
-@@ -677,8 +677,6 @@ static int __init pmac_probe(void)
- 
- #ifdef CONFIG_PPC32
- 	/* isa_io_base gets set in pmac_pci_init */
--	isa_mem_base = PMAC_ISA_MEM_BASE;
--	pci_dram_offset = PMAC_PCI_DRAM_OFFSET;
- 	ISA_DMA_THRESHOLD = ~0L;
- 	DMA_MODE_READ = 1;
- 	DMA_MODE_WRITE = 2;
-Index: linux-cell/arch/powerpc/mm/pgtable_32.c
-===================================================================
---- linux-cell.orig/arch/powerpc/mm/pgtable_32.c	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/mm/pgtable_32.c	2006-11-06 16:38:20.000000000 +1100
-@@ -149,6 +149,13 @@ ioremap(phys_addr_t addr, unsigned long 
- EXPORT_SYMBOL(ioremap);
- 
- void __iomem *
-+ioremap_flags(phys_addr_t addr, unsigned long size, unsigned long flags)
+-void rgmii_set_speed(struct ocp_device *ocpdev, int input, int speed)
++void rgmii_enable_mdio(struct emac_subdev *dev, int input)
 +{
-+	return __ioremap(addr, size, flags);
-+}
-+EXPORT_SYMBOL(ioremap_flags);
++	struct ibm_ocp_rgmii *rdev = bus_get_drvdata(dev);
++	u32 fer = in_be32(&rdev->base->fer) & ~RGMII_FER_MDI_ALL;
 +
-+void __iomem *
- __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
++	RGMII_DBG2(": mdio(%d)" NL, input);
++
++	out_be32(&rdev->base->fer, fer | RGMII_FER_MDI(input));
++}
++
++void rgmii_set_speed(struct emac_subdev *dev, int input, int speed)
  {
- 	unsigned long v, i;
-@@ -247,20 +254,7 @@ void iounmap(volatile void __iomem *addr
- }
- EXPORT_SYMBOL(iounmap);
+-	struct ibm_ocp_rgmii *dev = ocp_get_drvdata(ocpdev);
+-	u32 ssr = in_be32(&dev->base->ssr) & ~RGMII_SSR_MASK(input);
++	struct ibm_ocp_rgmii *rdev = bus_get_drvdata(dev);
++	u32 ssr = in_be32(&rdev->base->ssr) & ~RGMII_SSR_MASK(input);
  
--void __iomem *ioport_map(unsigned long port, unsigned int len)
--{
--	return (void __iomem *) (port + _IO_BASE);
--}
--
--void ioport_unmap(void __iomem *addr)
--{
--	/* Nothing to do */
--}
--EXPORT_SYMBOL(ioport_map);
--EXPORT_SYMBOL(ioport_unmap);
--
--int
--map_page(unsigned long va, phys_addr_t pa, int flags)
-+int map_page(unsigned long va, phys_addr_t pa, int flags)
+-	RGMII_DBG("%d: speed(%d, %d)" NL, ocpdev->def->index, input, speed);
++	RGMII_DBG(": speed(%d, %d)" NL, input, speed);
+ 
+ 	if (speed == SPEED_1000)
+ 		ssr |= RGMII_SSR_1000(input);
+ 	else if (speed == SPEED_100)
+ 		ssr |= RGMII_SSR_100(input);
+ 
+-	out_be32(&dev->base->ssr, ssr);
++	out_be32(&rdev->base->ssr, ssr);
+ }
+ 
+-void __exit __rgmii_fini(struct ocp_device *ocpdev, int input)
++void __exit __rgmii_fini(struct emac_subdev *dev, int input)
  {
- 	pmd_t *pd;
- 	pte_t *pg;
-Index: linux-cell/arch/powerpc/mm/pgtable_64.c
+-	struct ibm_ocp_rgmii *dev = ocp_get_drvdata(ocpdev);
+-	BUG_ON(!dev || dev->users == 0);
++	struct ibm_ocp_rgmii *rdev = bus_get_drvdata(dev);
++	BUG_ON(!rdev || rdev->users == 0);
+ 
+-	RGMII_DBG("%d: fini(%d)" NL, ocpdev->def->index, input);
++	RGMII_DBG(": fini(%d)" NL, input);
+ 
+ 	/* Disable this input */
+-	out_be32(&dev->base->fer,
+-		 in_be32(&dev->base->fer) & ~RGMII_FER_MASK(input));
++	out_be32(&rdev->base->fer,
++		 in_be32(&rdev->base->fer) & ~RGMII_FER_MASK(input));
+ 
+-	if (!--dev->users) {
++	if (!--rdev->users) {
+ 		/* Free everything if this is the last user */
+-		ocp_set_drvdata(ocpdev, NULL);
+-		iounmap((void *)dev->base);
+-		kfree(dev);
++		bus_set_drvdata(dev, NULL);
++		iounmap((void *)rdev->base);
++		kfree(rdev);
+ 	}
+ }
+ 
+-int __rgmii_get_regs_len(struct ocp_device *ocpdev)
++int __rgmii_get_regs_len(struct emac_subdev *dev)
+ {
+ 	return sizeof(struct emac_ethtool_regs_subhdr) +
+ 	    sizeof(struct rgmii_regs);
+ }
+ 
+-void *rgmii_dump_regs(struct ocp_device *ocpdev, void *buf)
++void *rgmii_dump_regs(struct emac_subdev *dev, void *buf)
+ {
+-	struct ibm_ocp_rgmii *dev = ocp_get_drvdata(ocpdev);
++	struct ibm_ocp_rgmii *rdev = bus_get_drvdata(dev);
+ 	struct emac_ethtool_regs_subhdr *hdr = buf;
+ 	struct rgmii_regs *regs = (struct rgmii_regs *)(hdr + 1);
+ 
+ 	hdr->version = 0;
+-	hdr->index = ocpdev->def->index;
+-	memcpy_fromio(regs, dev->base, sizeof(struct rgmii_regs));
++#ifdef CONFIG_IBM_EMAC_OCP
++	hdr->index = pdev->def->index;
++#else
++	hdr->index = 0;
++#endif
++	memcpy_fromio(regs, rdev->base, sizeof(struct rgmii_regs));
+ 	return regs + 1;
+ }
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_rgmii.h
 ===================================================================
---- linux-cell.orig/arch/powerpc/mm/pgtable_64.c	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/mm/pgtable_64.c	2006-11-06 16:38:20.000000000 +1100
-@@ -113,7 +113,7 @@ static int map_io_page(unsigned long ea,
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_rgmii.h	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_rgmii.h	2006-11-06 16:38:27.000000000 +1100
+@@ -21,6 +21,7 @@
+ #ifndef _IBM_EMAC_RGMII_H_
+ #define _IBM_EMAC_RGMII_H_
+ 
++#include "ibm_emac_busdev.h"
+ 
+ /* RGMII bridge */
+ struct rgmii_regs {
+@@ -37,22 +38,23 @@ struct ibm_ocp_rgmii {
+ #ifdef CONFIG_IBM_EMAC_RGMII
+ int rgmii_attach(void *emac) __init;
+ 
+-void __rgmii_fini(struct ocp_device *ocpdev, int input) __exit;
+-static inline void rgmii_fini(struct ocp_device *ocpdev, int input)
++void __rgmii_fini(struct emac_subdev *dev, int input) __exit;
++static inline void rgmii_fini(struct emac_subdev *dev, int input)
+ {
+-	if (ocpdev)
+-		__rgmii_fini(ocpdev, input);
++	if (dev)
++		__rgmii_fini(dev, input);
  }
  
- 
--static void __iomem * __ioremap_com(unsigned long addr, unsigned long pa,
-+static void __iomem * __ioremap_com(phys_addr_t addr, unsigned long pa,
- 			    unsigned long ea, unsigned long size,
- 			    unsigned long flags)
+-void rgmii_set_speed(struct ocp_device *ocpdev, int input, int speed);
+-
+-int __rgmii_get_regs_len(struct ocp_device *ocpdev);
+-static inline int rgmii_get_regs_len(struct ocp_device *ocpdev)
++int __rgmii_get_regs_len(struct emac_subdev *dev);
++static inline int rgmii_get_regs_len(struct emac_subdev *dev)
  {
-@@ -129,7 +129,7 @@ static void __iomem * __ioremap_com(unsi
- 	return (void __iomem *) (ea + (addr & ~PAGE_MASK));
+-	return ocpdev ? __rgmii_get_regs_len(ocpdev) : 0;
++	return dev ? __rgmii_get_regs_len(dev) : 0;
  }
  
--void __iomem * __ioremap(unsigned long addr, unsigned long size,
-+void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
- 			 unsigned long flags)
- {
- 	unsigned long pa, ea;
-@@ -169,7 +169,7 @@ void __iomem * __ioremap(unsigned long a
+-void *rgmii_dump_regs(struct ocp_device *ocpdev, void *buf);
++void rgmii_set_speed(struct emac_subdev *dev, int input, int speed);
++void rgmii_enable_mdio(struct emac_subdev *dev, int input);
++void *rgmii_dump_regs(struct emac_subdev *dev, void *buf);
++
+ #else
+ # define rgmii_attach(x)	0
+ # define rgmii_fini(x,y)	((void)0)
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_zmii.c
+===================================================================
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_zmii.c	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_zmii.c	2006-11-06 16:38:27.000000000 +1100
+@@ -20,6 +20,10 @@
+ #include <linux/ethtool.h>
+ #include <asm/io.h>
+ 
++#ifndef CONFIG_IBM_EMAC_OCP
++#include <asm/of_platform.h>
++#endif
++
+ #include "ibm_emac_core.h"
+ #include "ibm_emac_debug.h"
+ 
+@@ -60,6 +64,8 @@ static inline const char *zmii_mode_name
+ 	default:
+ 		BUG();
+ 	}
++
++	return NULL;
  }
  
- 
--void __iomem * ioremap(unsigned long addr, unsigned long size)
-+void __iomem * ioremap(phys_addr_t addr, unsigned long size)
- {
- 	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
- 
-@@ -178,7 +178,7 @@ void __iomem * ioremap(unsigned long add
- 	return __ioremap(addr, size, flags);
+ static inline u32 zmii_mode_mask(int mode, int input)
+@@ -76,41 +82,53 @@ static inline u32 zmii_mode_mask(int mod
+ 	}
  }
  
--void __iomem * ioremap_flags(unsigned long addr, unsigned long size,
-+void __iomem * ioremap_flags(phys_addr_t addr, unsigned long size,
- 			     unsigned long flags)
+-static int __init zmii_init(struct ocp_device *ocpdev, int input, int *mode)
++static int __init zmii_init(struct emac_subdev *dev, int input, int *mode)
  {
- 	if (ppc_md.ioremap)
-@@ -189,7 +189,7 @@ void __iomem * ioremap_flags(unsigned lo
+-	struct ibm_ocp_zmii *dev = ocp_get_drvdata(ocpdev);
++	struct ibm_ocp_zmii *zdev = bus_get_drvdata(dev);
+ 	struct zmii_regs __iomem *p;
++	unsigned long *reg;
  
- #define IS_PAGE_ALIGNED(_val) ((_val) == ((_val) & PAGE_MASK))
+-	ZMII_DBG("%d: init(%d, %d)" NL, ocpdev->def->index, input, *mode);
++	ZMII_DBG(": init(%d, %d)" NL, input, *mode);
  
--int __ioremap_explicit(unsigned long pa, unsigned long ea,
-+int __ioremap_explicit(phys_addr_t pa, unsigned long ea,
- 		       unsigned long size, unsigned long flags)
- {
- 	struct vm_struct *area;
-@@ -244,7 +244,7 @@ int __ioremap_explicit(unsigned long pa,
-  *
-  * XXX	what about calls before mem_init_done (ie python_countermeasures())
-  */
--void __iounmap(void __iomem *token)
-+void __iounmap(volatile void __iomem *token)
- {
- 	void *addr;
+-	if (!dev) {
+-		dev = kzalloc(sizeof(struct ibm_ocp_zmii), GFP_KERNEL);
+-		if (!dev) {
++	if (!zdev) {
++		zdev = kzalloc(sizeof(struct ibm_ocp_zmii), GFP_KERNEL);
++		if (!zdev) {
+ 			printk(KERN_ERR
+-			       "zmii%d: couldn't allocate device structure!\n",
+-			       ocpdev->def->index);
++			       "zmii: couldn't allocate device structure!\n");
+ 			return -ENOMEM;
+ 		}
+-		dev->mode = PHY_MODE_NA;
++		zdev->mode = PHY_MODE_NA;
  
-@@ -256,7 +256,7 @@ void __iounmap(void __iomem *token)
- 	im_free(addr);
- }
++#ifdef CONFIG_IBM_EMAC_OCP
+ 		p = ioremap(ocpdev->def->paddr, sizeof(struct zmii_regs));
++#else
++		reg = (unsigned long *)get_property(dev->node, "reg", NULL);
++ 		if (reg == NULL) {
++ 			of_node_put(dev->node);
++ 			printk(KERN_ERR
++ 			       "rgmii: can't find ZMII register property!\n");
++ 			kfree(zdev);
++ 			return -EINVAL;
++ 		}
++
++ 		p = (struct zmii_regs *)ioremap(reg[0], reg[1]);
++#endif
+ 		if (!p) {
+ 			printk(KERN_ERR
+-			       "zmii%d: could not ioremap device registers!\n",
+-			       ocpdev->def->index);
+-			kfree(dev);
++			       "zmii: could not ioremap device registers!\n");
++			kfree(zdev);
+ 			return -ENOMEM;
+ 		}
+-		dev->base = p;
+-		ocp_set_drvdata(ocpdev, dev);
++		zdev->base = p;
++		bus_set_drvdata(dev, dev);
+ 		
+ 		/* We may need FER value for autodetection later */
+-		dev->fer_save = in_be32(&p->fer);
++		zdev->fer_save = in_be32(&p->fer);
  
--void iounmap(void __iomem *token)
-+void iounmap(volatile void __iomem *token)
- {
- 	if (ppc_md.iounmap)
- 		ppc_md.iounmap(token);
-@@ -282,7 +282,7 @@ static int iounmap_subset_regions(unsign
+ 		/* Disable all inputs by default */
+ 		out_be32(&p->fer, 0);
+ 	} else
+-		p = dev->base;
++		p = zdev->base;
+ 
+ 	if (!zmii_valid_mode(*mode)) {
+ 		/* Probably an EMAC connected to RGMII, 
+@@ -124,30 +142,29 @@ static int __init zmii_init(struct ocp_d
+ 	 * Please, always specify PHY mode in your board port to avoid
+ 	 * any surprises.
+ 	 */
+-	if (dev->mode == PHY_MODE_NA) {
++	if (zdev->mode == PHY_MODE_NA) {
+ 		if (*mode == PHY_MODE_NA) {
+-			u32 r = dev->fer_save;
++			u32 r = zdev->fer_save;
+ 
+-			ZMII_DBG("%d: autodetecting mode, FER = 0x%08x" NL,
+-				 ocpdev->def->index, r);
++			ZMII_DBG(": autodetecting mode, FER = 0x%08x" NL, r);
+ 			
+ 			if (r & (ZMII_FER_MII(0) | ZMII_FER_MII(1)))
+-				dev->mode = PHY_MODE_MII;
++				zdev->mode = PHY_MODE_MII;
+ 			else if (r & (ZMII_FER_RMII(0) | ZMII_FER_RMII(1)))
+-				dev->mode = PHY_MODE_RMII;
++				zdev->mode = PHY_MODE_RMII;
+ 			else
+-				dev->mode = PHY_MODE_SMII;
++				zdev->mode = PHY_MODE_SMII;
+ 		} else
+-			dev->mode = *mode;
++			zdev->mode = *mode;
+ 
+-		printk(KERN_NOTICE "zmii%d: bridge in %s mode\n",
+-		       ocpdev->def->index, zmii_mode_name(dev->mode));
++		printk(KERN_NOTICE "zmii: bridge in %s mode\n",
++		       zmii_mode_name(zdev->mode));
+ 	} else {
+ 		/* All inputs must use the same mode */
+-		if (*mode != PHY_MODE_NA && *mode != dev->mode) {
++		if (*mode != PHY_MODE_NA && *mode != zdev->mode) {
+ 			printk(KERN_ERR
+-			       "zmii%d: invalid mode %d specified for input %d\n",
+-			       ocpdev->def->index, *mode, input);
++			       "zmii: invalid mode %d specified for input %d\n",
++			       *mode, input);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -155,12 +172,12 @@ static int __init zmii_init(struct ocp_d
+ 	/* Report back correct PHY mode, 
+ 	 * it may be used during PHY initialization.
+ 	 */
+-	*mode = dev->mode;
++	*mode = zdev->mode;
+ 
+ 	/* Enable this input */
+-	out_be32(&p->fer, in_be32(&p->fer) | zmii_mode_mask(dev->mode, input));
++	out_be32(&p->fer, in_be32(&p->fer) | zmii_mode_mask(zdev->mode, input));
+       out:
+-	++dev->users;
++	++zdev->users;
  	return 0;
  }
  
--int __iounmap_explicit(void __iomem *start, unsigned long size)
-+int __iounmap_explicit(volatile void __iomem *start, unsigned long size)
- {
- 	struct vm_struct *area;
- 	unsigned long addr;
-Index: linux-cell/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/iseries/setup.c	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/iseries/setup.c	2006-11-06 16:38:20.000000000 +1100
-@@ -649,13 +649,13 @@ static void iseries_dedicated_idle(void)
- void __init iSeries_init_IRQ(void) { }
- #endif
+@@ -170,10 +187,24 @@ int __init zmii_attach(void *emac)
+ 	struct ocp_func_emac_data *emacdata = dev->def->additions;
  
--static void __iomem *iseries_ioremap(unsigned long address, unsigned long size,
-+static void __iomem *iseries_ioremap(phys_addr_t address, unsigned long size,
- 				     unsigned long flags)
- {
- 	return (void __iomem *)address;
+ 	if (emacdata->zmii_idx >= 0) {
+-		dev->zmii_input = emacdata->zmii_mux;
++#ifdef CONFIG_IBM_EMAC_OCP
+ 		dev->zmii_dev =
+ 		    ocp_find_device(OCP_VENDOR_IBM, OCP_FUNC_ZMII,
+ 				    emacdata->zmii_idx);
++#else
++ 		struct device_node * node =
++ 			of_find_node_by_phandle(emacdata->zmii_idx);
++ 		if (!node || strcmp(node->type, "zmii")) {
++ 			printk(KERN_ERR
++ 			       "emac: zmii%d can't find PHY device node!\n",
++ 			       emacdata->zmii_idx);
++ 			return -ENODEV;
++ 		}
++
++ 		dev->zmii_dev = of_find_device_by_node(node);
++#endif
++ 		dev->zmii_input = emacdata->zmii_mux;
++
+ 		if (!dev->zmii_dev) {
+ 			printk(KERN_ERR "emac%d: unknown zmii%d!\n",
+ 			       dev->def->index, emacdata->zmii_idx);
+@@ -190,64 +221,68 @@ int __init zmii_attach(void *emac)
+ 	return 0;
  }
  
--static void iseries_iounmap(void __iomem *token)
-+static void iseries_iounmap(volatile void __iomem *token)
+-void __zmii_enable_mdio(struct ocp_device *ocpdev, int input)
++void __zmii_enable_mdio(struct emac_subdev *dev, int input)
  {
+-	struct ibm_ocp_zmii *dev = ocp_get_drvdata(ocpdev);
+-	u32 fer = in_be32(&dev->base->fer) & ~ZMII_FER_MDI_ALL;
++	struct ibm_ocp_zmii *zdev = bus_get_drvdata(dev);
++	u32 fer = in_be32(&zdev->base->fer) & ~ZMII_FER_MDI_ALL;
+ 
+-	ZMII_DBG2("%d: mdio(%d)" NL, ocpdev->def->index, input);
++	ZMII_DBG2(": mdio(%d)" NL, input);
+ 
+-	out_be32(&dev->base->fer, fer | ZMII_FER_MDI(input));
++	out_be32(&zdev->base->fer, fer | ZMII_FER_MDI(input));
  }
  
-Index: linux-cell/include/asm-powerpc/machdep.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/machdep.h	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/include/asm-powerpc/machdep.h	2006-11-06 16:38:20.000000000 +1100
-@@ -88,9 +88,9 @@ struct machdep_calls {
- 	void		(*pci_dma_dev_setup)(struct pci_dev *dev);
- 	void		(*pci_dma_bus_setup)(struct pci_bus *bus);
+-void __zmii_set_speed(struct ocp_device *ocpdev, int input, int speed)
++void __zmii_set_speed(struct emac_subdev *dev, int input, int speed)
+ {
+-	struct ibm_ocp_zmii *dev = ocp_get_drvdata(ocpdev);
+-	u32 ssr = in_be32(&dev->base->ssr);
++	struct ibm_ocp_zmii *zdev = bus_get_drvdata(dev);
++	u32 ssr = in_be32(&zdev->base->ssr);
  
--	void __iomem *	(*ioremap)(unsigned long addr, unsigned long size,
-+	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
- 				   unsigned long flags);
--	void		(*iounmap)(void __iomem *token);
-+	void		(*iounmap)(volatile void __iomem *token);
- #endif /* CONFIG_PPC64 */
+-	ZMII_DBG("%d: speed(%d, %d)" NL, ocpdev->def->index, input, speed);
++	ZMII_DBG(": speed(%d, %d)" NL, input, speed);
  
- 	int		(*probe)(void);
-Index: linux-cell/arch/powerpc/kernel/pci_32.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/pci_32.c	2006-11-06 16:38:20.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/pci_32.c	2006-11-06 16:38:20.000000000 +1100
-@@ -1561,7 +1561,7 @@ static struct resource *__pci_mmap_make_
- 		*offset += hose->pci_mem_offset;
- 		res_bit = IORESOURCE_MEM;
- 	} else {
--		io_offset = hose->io_base_virt - ___IO_BASE;
-+		io_offset = hose->io_base_virt - (void __iomem *)_IO_BASE;
- 		*offset += io_offset;
- 		res_bit = IORESOURCE_IO;
+ 	if (speed == SPEED_100)
+ 		ssr |= ZMII_SSR_SP(input);
+ 	else
+ 		ssr &= ~ZMII_SSR_SP(input);
+ 
+-	out_be32(&dev->base->ssr, ssr);
++	out_be32(&zdev->base->ssr, ssr);
+ }
+ 
+-void __exit __zmii_fini(struct ocp_device *ocpdev, int input)
++void __exit __zmii_fini(struct emac_subdev *dev, int input)
+ {
+-	struct ibm_ocp_zmii *dev = ocp_get_drvdata(ocpdev);
+-	BUG_ON(!dev || dev->users == 0);
++	struct ibm_ocp_zmii *zdev = bus_get_drvdata(dev);
++	BUG_ON(!zdev || zdev->users == 0);
+ 
+-	ZMII_DBG("%d: fini(%d)" NL, ocpdev->def->index, input);
++	ZMII_DBG(": fini(%d)" NL, input);
+ 
+ 	/* Disable this input */
+-	out_be32(&dev->base->fer,
+-		 in_be32(&dev->base->fer) & ~zmii_mode_mask(dev->mode, input));
++	out_be32(&zdev->base->fer,
++		 in_be32(&zdev->base->fer) & ~zmii_mode_mask(zdev->mode, input));
+ 
+-	if (!--dev->users) {
++	if (!--zdev->users) {
+ 		/* Free everything if this is the last user */
+-		ocp_set_drvdata(ocpdev, NULL);
+-		iounmap(dev->base);
+-		kfree(dev);
++		bus_set_drvdata(dev, NULL);
++		iounmap(zdev->base);
++		kfree(zdev);
  	}
-@@ -1816,7 +1816,8 @@ void pci_resource_to_user(const struct p
- 		return;
- 
- 	if (rsrc->flags & IORESOURCE_IO)
--		offset = ___IO_BASE - hose->io_base_virt + hose->io_base_phys;
-+		offset = (void __iomem *)_IO_BASE - hose->io_base_virt
-+			+ hose->io_base_phys;
- 
- 	*start = rsrc->start + offset;
- 	*end = rsrc->end + offset;
-@@ -1835,35 +1836,6 @@ pci_init_resource(struct resource *res, 
- 	res->child = NULL;
  }
  
--void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
--{
--	unsigned long start = pci_resource_start(dev, bar);
--	unsigned long len = pci_resource_len(dev, bar);
--	unsigned long flags = pci_resource_flags(dev, bar);
--
--	if (!len)
--		return NULL;
--	if (max && len > max)
--		len = max;
--	if (flags & IORESOURCE_IO)
--		return ioport_map(start, len);
--	if (flags & IORESOURCE_MEM)
--		/* Not checking IORESOURCE_CACHEABLE because PPC does
--		 * not currently distinguish between ioremap and
--		 * ioremap_nocache.
--		 */
--		return ioremap(start, len);
--	/* What? */
--	return NULL;
--}
--
--void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
--{
--	/* Nothing to do */
--}
--EXPORT_SYMBOL(pci_iomap);
--EXPORT_SYMBOL(pci_iounmap);
--
- unsigned long pci_address_to_pio(phys_addr_t address)
+-int __zmii_get_regs_len(struct ocp_device *ocpdev)
++int __zmii_get_regs_len(struct emac_subdev *dev)
  {
- 	struct pci_controller* hose = hose_head;
-Index: linux-cell/arch/powerpc/kernel/iomap.c
+ 	return sizeof(struct emac_ethtool_regs_subhdr) +
+ 	    sizeof(struct zmii_regs);
+ }
+ 
+-void *zmii_dump_regs(struct ocp_device *ocpdev, void *buf)
++void *zmii_dump_regs(struct emac_subdev *dev, void *buf)
+ {
+-	struct ibm_ocp_zmii *dev = ocp_get_drvdata(ocpdev);
++	struct ibm_ocp_zmii *zdev = bus_get_drvdata(dev);
+ 	struct emac_ethtool_regs_subhdr *hdr = buf;
+ 	struct zmii_regs *regs = (struct zmii_regs *)(hdr + 1);
+ 
+ 	hdr->version = 0;
+-	hdr->index = ocpdev->def->index;
+-	memcpy_fromio(regs, dev->base, sizeof(struct zmii_regs));
++#ifdef CONFIG_IBM_EMAC_OCP
++	hdr->index = dev->def->index;
++#else
++	hdr->index = 0;
++#endif
++	memcpy_fromio(regs, zdev->base, sizeof(struct zmii_regs));
+ 	return regs + 1;
+ }
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_phy.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/iomap.c	2006-11-06 16:36:56.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/iomap.c	2006-11-06 16:38:20.000000000 +1100
-@@ -106,7 +106,7 @@ EXPORT_SYMBOL(iowrite32_rep);
+--- linux-cell.orig/drivers/net/ibm_emac/ibm_emac_phy.c	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_phy.c	2006-11-06 16:38:27.000000000 +1100
+@@ -20,7 +20,11 @@
+ #include <linux/ethtool.h>
+ #include <linux/delay.h>
  
- void __iomem *ioport_map(unsigned long port, unsigned int len)
- {
--	return (void __iomem *) (port+pci_io_base);
-+	return (void __iomem *) (port + _IO_BASE);
- }
++#ifdef CONFIG_IBM_EMAC_OCP
+ #include <asm/ocp.h>
++#else
++#include "ibm_emac_compat.h"
++#endif
  
- void ioport_unmap(void __iomem *addr)
+ #include "ibm_emac_phy.h"
+ 
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_compat.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_compat.h	2006-11-06 16:38:27.000000000 +1100
+@@ -0,0 +1,72 @@
++#ifndef __IBM_EMAC_COMPAT_H_
++#define __IBM_EMAC_COMPAT_H_
++
++#include <linux/types.h>
++
++/*
++ * Definitions in this file are used for compatability when compiling
++ * the driver without the OCP bus type.  Once arch/ppc merges with
++ * arch/powerpc, the OCP residue could be removed. -swetz
++ */
++
++/*
++ * OCP device definition.
++ *
++ * Minimal definition needed to compile without ocp.h
++ *
++ */
++struct ocp_def {
++	int		index;
++	phys_addr_t	paddr;
++	int	  	irq;
++	void		*additions;
++};
++
++/*
++ * Additional MAL platform data obtained from the device-tree.
++ */
++struct ocp_func_mal_data {
++	int	num_tx_chans;	/* Number of TX channels */
++	int	num_rx_chans;	/* Number of RX channels */
++	int 	txeob_irq;	/* TX End Of Buffer IRQ  */
++	int 	rxeob_irq;	/* RX End Of Buffer IRQ  */
++	int	txde_irq;	/* TX Descriptor Error IRQ */
++	int	rxde_irq;	/* RX Descriptor Error IRQ */
++	int	serr_irq;	/* MAL System Error IRQ    */
++	int	dcr_base;	/* MALx_CFG DCR number   */
++};
++
++/*
++ * Additional EMAC platform data obtained from the device-tree.
++ */
++struct ocp_func_emac_data {
++	int	rgmii_idx;	/* RGMII device index or -1 */
++	int	rgmii_mux;	/* RGMII input of this EMAC */
++	int	zmii_idx;	/* ZMII device index or -1 */
++	int	zmii_mux;	/* ZMII input of this EMAC */
++	int	mal_idx;	/* MAL device index */
++	int	mal_rx_chan;	/* MAL rx channel number */
++	int	mal_tx_chan;	/* MAL tx channel number */
++	int	wol_irq;	/* WOL interrupt */
++	int	mdio_idx;	/* EMAC idx of MDIO master or -1 */
++	int	tah_idx;	/* TAH device index or -1 */
++	int	phy_mode;	/* PHY type or configurable mode */
++	u8	mac_addr[6];	/* EMAC mac address */
++	u32	phy_map;	/* EMAC phy map */
++	u32	phy_feat_exc;	/* Excluded PHY features */
++};
++
++/*
++ * PHY mode settings (EMAC <-> ZMII/RGMII bridge <-> PHY)
++ */
++#define PHY_MODE_NA	0
++#define PHY_MODE_MII	1
++#define PHY_MODE_RMII	2
++#define PHY_MODE_SMII	3
++#define PHY_MODE_RGMII	4
++#define PHY_MODE_TBI	5
++#define PHY_MODE_GMII	6
++#define PHY_MODE_RTBI	7
++#define PHY_MODE_SGMII	8
++
++#endif /* __IBM_EMAC_COMPAT_H_ */
+Index: linux-cell/drivers/net/ibm_emac/ibm_emac_busdev.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/drivers/net/ibm_emac/ibm_emac_busdev.h	2006-11-06 16:38:27.000000000 +1100
+@@ -0,0 +1,37 @@
++#ifndef __IBM_EMAC_BUSDEV_H_
++#define __IBM_EMAC_BUSDEV_H_
++
++#include <linux/types.h>
++
++#ifdef CONFIG_IBM_EMAC_OCP
++#include <asm/ocp.h>
++
++#define emac_subdev ocp_device
++
++static inline void * bus_get_drvdata (struct emac_subdev *dev)
++{
++	return ocp_get_drvdata(dev);
++}
++
++static inline void bus_set_drvdata (struct emac_subdev *dev, void *data)
++{
++	ocp_set_drvdata(dev, data);
++}
++#else
++#include <asm/of_device.h>
++
++#define emac_subdev of_device
++
++static inline void * bus_get_drvdata (struct emac_subdev *dev)
++{
++	return dev_get_drvdata(&dev->dev);
++}
++
++static inline void bus_set_drvdata (struct emac_subdev *dev, void *data)
++{
++	dev_set_drvdata(&dev->dev, data);
++}
++#endif
++
++#endif /* __IBM_EMAC_BUSDEV_H_ */
++
+Index: linux-cell/arch/powerpc/Kconfig
+===================================================================
+--- linux-cell.orig/arch/powerpc/Kconfig	2006-11-06 16:38:24.000000000 +1100
++++ linux-cell/arch/powerpc/Kconfig	2006-11-06 16:38:27.000000000 +1100
+@@ -481,6 +481,7 @@ config PPC_IBM_CELL_BLADE
+ 	select MMIO_NVRAM
+ 	select PPC_UDBG_16550
+ 	select UDBG_RTAS_CONSOLE
++	select IBM_EMAC4
+ 
+ config UDBG_RTAS_CONSOLE
+ 	bool "RTAS based debug console"
