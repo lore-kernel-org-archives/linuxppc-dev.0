@@ -1,17 +1,20 @@
-Return-Path: <judith@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BFA7A67C23
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:37:19 +1100 (EST)
-Date: Mon, 6 Nov 2006 13:36:36 -0800
-From: Judith Lebzelter <judith@osdl.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] 2.6.19-rc4-mm2 iseries net_device compile issue
-Message-ID: <20061106213636.GA1339@shell0.pdx.osdl.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D906D67C51
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:39:19 +1100 (EST)
+Subject: Re: Booting without Uboot on 8548E
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andy Fleming <afleming@freescale.com>
+In-Reply-To: <C508D5D4-125D-47FD-81D2-2DE6545A240F@freescale.com>
+References: <BAY102-F634C51A5AEEB25090456BA9FD0@phx.gbl>
+	<C508D5D4-125D-47FD-81D2-2DE6545A240F@freescale.com>
+Content-Type: text/plain
+Date: Tue, 07 Nov 2006 08:38:10 +1100
+Message-Id: <1162849091.28571.348.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: akpm@osdl.org, paulus@au.ibm.com, linux-kernel@vger.kernel.org
+Cc: M Ptich <ptich@hotmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-2.6.19-rc4-mm2 has this error for 'powerpc' allmodconfig:
+> But moving to arch/powerpc (while a good idea) is not going to solve  
+> your problems.  There are bound to be a large number of things the  
+> kernel expects to have done for it by the firmware.  In arch/powerpc,  
+> the 8548 kernel expects PCI to be set up, for instance (We plan to  
+> fix that, but it involves porting some code that only exists in arch/ 
+> ppc).
 
-drivers/net/iseries_veth.c: In function 'veth_probe_one':
-drivers/net/iseries_veth.c:1103: error: 'struct net_device' has no member named 'class_dev'
+I hope you don't mean porting pci-auto over :)
 
-This patch fixes the error.
+While It was good to have back then, we should really fix out PCI layer
+to properly assign unassigned devices itself.
 
-Signed-off-by: Judith Lebzelter <judith@osdl.org>
----
-Files edited:
-drivers/net/iseries_veth.c
----
+There is much work to do to cleanup ppc32, ppc64 and core PCI so they
+can deal with all the various setups around, but it's probably a
+worthwhile goal.
 
-Index: linux/drivers/net/iseries_veth.c
-===================================================================
---- linux.orig/drivers/net/iseries_veth.c	2006-11-02 13:59:38.000000000 -0800
-+++ linux/drivers/net/iseries_veth.c	2006-11-02 14:05:44.000000000 -0800
-@@ -1100,7 +1100,7 @@
- 	}
- 
- 	kobject_init(&port->kobject);
--	port->kobject.parent = &dev->class_dev.kobj;
-+	port->kobject.parent = &dev->dev.kobj;
- 	port->kobject.ktype  = &veth_port_ktype;
- 	kobject_set_name(&port->kobject, "veth_port");
- 	if (0 != kobject_add(&port->kobject))
+Ben.
