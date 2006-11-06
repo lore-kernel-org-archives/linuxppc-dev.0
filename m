@@ -1,16 +1,20 @@
-Return-Path: <Manjunath.AM@Lntemsys.com>
-Received: from mail87.messagelabs.com (mail87.messagelabs.com [216.82.250.19])
-	by ozlabs.org (Postfix) with SMTP id 1D54967CB4
+Return-Path: <prakash.org@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id 6A48D67C84
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 17:53:47 +1100 (EST)
+	Mon,  6 Nov 2006 21:29:15 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id n29so1374077nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 06 Nov 2006 02:29:13 -0800 (PST)
+Message-ID: <348caa310611060229x2baae881n67cf0d4e085e32c6@mail.gmail.com>
+Date: Mon, 6 Nov 2006 15:59:12 +0530
+From: "Prakash Ramaraju" <prakash.gnu@gmail.com>
+Sender: prakash.org@gmail.com
 To: linuxppc-embedded@ozlabs.org
-Subject: Please give your feedback
+Subject: Clock Modification of MPC885 for USB Host Functionality
 MIME-Version: 1.0
-Message-ID: <OF6157E3D5.6B060538-ON6525721E.00258EC0-6525721E.00261A01@lntemsys.com>
-From: Manjunath AM <Manjunath.AM@Lntemsys.com>
-Date: Mon, 6 Nov 2006 12:27:24 +0530
 Content-Type: multipart/alternative;
-	boundary="=_alternative 002619FE6525721E_="
+	boundary="----=_Part_63336_24929328.1162808952701"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,55 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 002619FE6525721E_=
-Content-Type: text/plain; charset="US-ASCII"
+------=_Part_63336_24929328.1162808952701
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi, am Manjunath AM,
+Greetings
 
-We are using PQ2FADS dev board for our development, I have following 
-questions, please give your valuable reply
+Currently I have a MPC885 based board running at 50MHz. I want USB host
+working at full speed with internal clock. Assuming I need to change the
+General System Clock Frequency (GCLK2) to 48MHz, I got this calculation with
+input frequency of 10MHz from an u-boot script.
 
-1. I am using toolchain which support u-boot 1.1.1 and i could not get 
-toolchain that support u-boot 1.1.3 and above in the net as well as in 
-Freescale site,
-Please suggest me where i can download the toolchain to  use u-boot1.1.3 
+pdf mfi mfn mfd s dbrmo     dpref    dpgdck     jdbck     gclk2 exact?
+--- --- --- --- - -----     -----    ------     -----     ----- ------
+  0   9   3   4 1     0  10000000 192000000  96000000  48000000    YES
+  0   9   6   9 1     0  10000000 192000000  96000000  48000000    YES
+  0   9   9  14 1     0  10000000 192000000  96000000  48000000    YES
+  0   9  12  19 1     0  10000000 192000000  96000000  48000000    YES
 
+I modified CFG_PLPRCR (to 19194000) in u-boot config file to match this. But
+I'm getting only 45MHz output clock (not exactly 48MHz which is needed for
+USB to work)
 
+If anyone can shed some info making the USB work on MPC885 with internal
+clock or changing the clock freq to exact 48MHz, it will be helpful.
 
+Thanks
 
-Thanks & Regards
- MANJUNATH AM
- Senior Software Engineer
- Emsys
- Larsen & Toubro Limited
- Mysore-570018
- Mobile:9886375926
+-- 
+With best regards,
+Prakash
 
---=_alternative 002619FE6525721E_=
-Content-Type: text/html; charset="US-ASCII"
+------=_Part_63336_24929328.1162808952701
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Greetings<br><br>Currently I have a MPC885 based board running at 50MHz. I want USB host working at full speed with internal clock. Assuming I need to change the General System Clock Frequency (GCLK2) to 48MHz, I got this calculation with input frequency of 10MHz from an u-boot script.
+<br><br>pdf mfi mfn mfd s dbrmo&nbsp;&nbsp;&nbsp;&nbsp; dpref&nbsp;&nbsp;&nbsp; dpgdck&nbsp;&nbsp;&nbsp;&nbsp; jdbck&nbsp;&nbsp;&nbsp;&nbsp; gclk2 exact?<br>--- --- --- --- - -----&nbsp;&nbsp;&nbsp;&nbsp; -----&nbsp;&nbsp;&nbsp; ------&nbsp;&nbsp;&nbsp;&nbsp; -----&nbsp;&nbsp;&nbsp;&nbsp; ----- ------<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp;&nbsp; 3&nbsp;&nbsp; 4 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES
+<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp;&nbsp; 6&nbsp;&nbsp; 9 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp;&nbsp; 9&nbsp; 14 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES<br>&nbsp; 0&nbsp;&nbsp; 9&nbsp; 12&nbsp; 19 1&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp; 10000000 192000000&nbsp; 96000000&nbsp; 48000000&nbsp;&nbsp;&nbsp; YES
+<br><br clear="all">I modified CFG_PLPRCR (to 19194000) in u-boot config file to match this. But I'm getting only 45MHz output clock (not exactly 48MHz which is needed for USB to work) <br><br>If anyone can shed some info making the USB work on MPC885 with internal clock or changing the clock freq to exact 48MHz, it will be helpful.
+<br><br>Thanks<br><br>-- <br>With best regards,<br>Prakash
 
-<br><font size=2 face="sans-serif">Hi, am Manjunath AM,</font>
-<br>
-<br><font size=2 face="sans-serif">We are using PQ2FADS dev board for our
-development, I have following questions, please give your valuable reply</font>
-<br>
-<br><font size=2 face="sans-serif">1. I am using toolchain which support
-u-boot 1.1.1 and i could not get toolchain that support u-boot 1.1.3 and
-above in the net as well as in Freescale site,</font>
-<br><font size=2 face="sans-serif">Please suggest me where i can download
-the toolchain to &nbsp;use u-boot1.1.3 </font>
-<br>
-<br>
-<br>
-<br>
-<br><font size=2 face="sans-serif">Thanks &amp; Regards<br>
- MANJUNATH AM<br>
- Senior Software Engineer<br>
- Emsys<br>
- Larsen &amp; Toubro Limited<br>
- Mysore-570018<br>
- Mobile:9886375926<br>
-</font>
---=_alternative 002619FE6525721E_=--
+------=_Part_63336_24929328.1162808952701--
