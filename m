@@ -1,33 +1,21 @@
-Return-Path: <HNGUYEN@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6998D67C94
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 20:57:20 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id kA69vDL3188244
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 09:57:13 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kA6A0FAf3129522
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 11:00:15 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kA69v6uM032456
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 10:57:06 +0100
-In-Reply-To: <200611060045.59074.arnd@arndb.de>
-Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
-	block in 64k page mode
-To: Arnd Bergmann <arnd@arndb.de>
-Message-ID: <OF478DD9AF.FCA98729-ONC125721E.0031F840-C125721E.0036A811@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Mon, 6 Nov 2006 11:00:00 +0100
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id CF35C67C6C
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 21:19:13 +1100 (EST)
+Date: Mon, 6 Nov 2006 11:19:08 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 04/16] powerpc: remove dead code in iommu.h
+Message-ID: <20061106101907.GI6318@localhost.localdomain>
+References: <20061102125555.252338000@localhost.localdomain>
+	<20061102125625.428089000@localhost.localdomain>
+	<1162506113.10630.35.camel@localhost.localdomain>
+	<20061103084730.GB22478@localhost.localdomain>
+	<1162709223.28571.213.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Christoph Raisch <raisch@de.ibm.com>,
-	linux-kernel@vger.kernel.org, openib-general@openib.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1162709223.28571.213.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,13 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Arnd,
-> This seems broken. You have a constructor for newly allocated objects,
-but
-> there is no destructor and it seems that objects passed to
-> ehca_free_fw_ctrlblock are not guaranteed to be initialized either.
-> I'd simply move the memset into the alloc function and get rid of the
-> constructor here.
-Yep, I was not aware that ctor is not called for every
-kmem_cache_alloc(). Thx for pointing this out.
-Nam
+Subject: powerpc: remove dead code in iommu.h
+From: Sascha Hauer <s.hauer@pengutronix.de>
+
+iommu_setup_pSeries() and iommu_setup_dart() are declared extern but are
+not implemented, so remove them. Remove ifdef around extern function
+declaration.
+
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+
+Index: include/asm-powerpc/iommu.h
+===================================================================
+--- a/include/asm-powerpc/iommu.h.orig
++++ b/include/asm-powerpc/iommu.h
+@@ -70,17 +70,9 @@ struct iommu_table {
+ struct scatterlist;
+ struct device_node;
+ 
+-#ifdef CONFIG_PPC_MULTIPLATFORM
+-
+-/* Walks all buses and creates iommu tables */
+-extern void iommu_setup_pSeries(void);
+-extern void iommu_setup_dart(void);
+-
+ /* Frees table for an individual device node */
+ extern void iommu_free_table(struct device_node *dn);
+ 
+-#endif /* CONFIG_PPC_MULTIPLATFORM */
+-
+ /* Initializes an iommu_table based in values set in the passed-in
+  * structure
+  */
+
+-- 
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
