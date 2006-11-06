@@ -2,9 +2,9 @@ Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Mon, 06 Nov 2006 18:05:54 +1100
-Subject: [PATCH 21/27] powerpc: Cell fixup DMA offset for new southbridge
+Subject: [PATCH 22/27] s2io ppc64 fix for readq/writeq
 In-Reply-To: <1162796738.274582.277491064706.qpush@grosgo>
-Message-Id: <20061106070709.ECFC567E68@ozlabs.org>
+Message-Id: <20061106070710.ACCF167E00@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,85 +14,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes the Cell DMA code work on both the Spider and the Axon
-south bridges by turning cell_dma_valid into a variable instead of a
-constant. This is a temporary patch until we have full iommu support.
+ppc642io driver is redefining it's own readq/writeq based on
+readl/writel when the platform doesn't provide native ones. However, it
+currently does so by testing #ifndef readq. While that works for now, we
+are about to change ppc64 to use inline functions rather that macros for
+all those IO accessors which will break that test. This fixes it. I
+don't have anything less ugly at hand unfortunately.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/platforms/cell/iommu.c |   14 +++++++++++---
- arch/powerpc/platforms/cell/iommu.h |    8 +++++---
- 2 files changed, 16 insertions(+), 6 deletions(-)
+ drivers/net/s2io.h |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Index: linux-cell/arch/powerpc/platforms/cell/iommu.c
+Index: linux-cell/drivers/net/s2io.h
 ===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/iommu.c	2006-10-27 15:42:15.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/iommu.c	2006-10-27 15:55:13.000000000 +1000
-@@ -46,6 +46,8 @@
+--- linux-cell.orig/drivers/net/s2io.h	2006-10-13 17:23:49.000000000 +1000
++++ linux-cell/drivers/net/s2io.h	2006-11-06 13:19:32.000000000 +1100
+@@ -862,8 +862,10 @@ struct s2io_nic {
+ #define RESET_ERROR 1;
+ #define CMD_ERROR   2;
  
- #include "iommu.h"
- 
-+static dma_addr_t cell_dma_valid = SPIDER_DMA_VALID;
-+
- static inline unsigned long 
- get_iopt_entry(unsigned long real_address, unsigned long ioid,
- 			 unsigned long prot)
-@@ -423,7 +425,7 @@ static void *cell_alloc_coherent(struct 
- 	ret = (void *)__get_free_pages(flag, get_order(size));
- 	if (ret != NULL) {
- 		memset(ret, 0, size);
--		*dma_handle = virt_to_abs(ret) | CELL_DMA_VALID;
-+		*dma_handle = virt_to_abs(ret) | cell_dma_valid;
- 	}
- 	return ret;
- }
-@@ -437,7 +439,7 @@ static void cell_free_coherent(struct de
- static dma_addr_t cell_map_single(struct device *hwdev, void *ptr,
- 		size_t size, enum dma_data_direction direction)
+-/*  OS related system calls */
+-#ifndef readq
++/* OS related system calls. Note that ppc64 has readq defined as
++ * an inline, not a macro
++ */
++#if !defined(CONFIG_PPC64) && !defined(readq)
+ static inline u64 readq(void __iomem *addr)
  {
--	return virt_to_abs(ptr) | CELL_DMA_VALID;
-+	return virt_to_abs(ptr) | cell_dma_valid;
+ 	u64 ret = 0;
+@@ -875,7 +877,7 @@ static inline u64 readq(void __iomem *ad
  }
+ #endif
  
- static void cell_unmap_single(struct device *hwdev, dma_addr_t dma_addr,
-@@ -452,7 +454,7 @@ static int cell_map_sg(struct device *hw
- 
- 	for (i = 0; i < nents; i++, sg++) {
- 		sg->dma_address = (page_to_phys(sg->page) + sg->offset)
--					| CELL_DMA_VALID;
-+					| cell_dma_valid;
- 		sg->dma_length = sg->length;
- 	}
- 
-@@ -483,6 +485,12 @@ void cell_init_iommu(void)
+-#ifndef writeq
++#if !defined(CONFIG_PPC64) && !defined(writeq)
+ static inline void writeq(u64 val, void __iomem *addr)
  {
- 	int setup_bus = 0;
- 
-+	/* If we have an Axon bridge, clear the DMA valid mask. This is fairly
-+	 * hackish but will work well enough until we have proper iommu code.
-+	 */
-+	if (of_find_node_by_name(NULL, "axon"))
-+		cell_dma_valid = 0;
-+
- 	if (of_find_node_by_path("/mambo")) {
- 		pr_info("Not using iommu on systemsim\n");
- 	} else {
-Index: linux-cell/arch/powerpc/platforms/cell/iommu.h
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/iommu.h	2006-10-27 15:49:10.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/iommu.h	2006-10-27 15:52:19.000000000 +1000
-@@ -53,9 +53,11 @@ enum {
- 	IOC_ST_ORIGIN     = 0x918,
- 	IOC_CONF	  = 0x930,
- 
--	/* The high bit needs to be set on every DMA address,
--	   only 2GB are addressable */
--	CELL_DMA_VALID	  = 0x80000000,
-+	/* The high bit needs to be set on every DMA address when using
-+	 * a spider bridge and only 2GB are addressable with the current
-+	 * iommu code.
-+	 */
-+	SPIDER_DMA_VALID  = 0x80000000,
- 	CELL_DMA_MASK	  = 0x7fffffff,
- };
- 
+ 	writel((u32) (val), addr);
