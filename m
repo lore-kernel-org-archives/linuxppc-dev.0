@@ -1,33 +1,16 @@
-Return-Path: <afleming@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A4EB367C32
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 10:13:18 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	kA6NR3C9004845
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 16:27:03 -0700 (MST)
-Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
-	[10.82.65.62])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id kA6NDFtM004562
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 17:13:16 -0600 (CST)
-Received: from ld0175-tx32.am.freescale.net (ld0175-tx32 [10.82.19.125])
-	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	kA6MwnBK026412
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 16:58:49 -0600 (CST)
-Received: from ld0175-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0175-tx32.am.freescale.net (Postfix) with ESMTP id B5BF4AB028
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 17:13:14 -0600 (CST)
-Received: from localhost (afleming@localhost)
-	by ld0175-tx32.am.freescale.net (8.12.11/8.12.11/Submit) with ESMTP id
-	kA6NDEQI010881
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 17:13:14 -0600
-Date: Mon, 6 Nov 2006 17:13:13 -0600 (CST)
-From: Andy Fleming <afleming@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] of_irq_to_resource now returns the virq
-Message-ID: <Pine.LNX.4.61.0611061711510.10818@ld0175-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add Efika platform support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20061106144648.801c9441.akpm@osdl.org>
+References: <20061105111118.ccffccfe.nd@bplan-gmbh.de>
+	<20061106144648.801c9441.akpm@osdl.org>
+Content-Type: text/plain
+Date: Tue, 07 Nov 2006 10:19:24 +1100
+Message-Id: <1162855164.28571.367.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org, sl@bplan-gmbh.de,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,40 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2006-11-06 at 14:46 -0800, Andrew Morton wrote:
+> On Sun, 5 Nov 2006 12:57:16 +0100 (MET)
+> Nicolas DET <nd@bplan-gmbh.de> wrote:
+> 
+> > Add Efika (http://www.bplan-gmbh.de/efika_spec_en.html) platform support for arch/powerpc
+> 
+> Who (if anyone) is the maintainer for this sort of thing?
 
-Mostly this is to allow for error checking (check the return for NO_IRQ)
+It's powerpc, it will go through paulus tree I suppose. You can host
+them in -mm if you like until the merge window.
 
-Signed-off-by: Andrew Fleming <afleming@freescale.com>
----
-For 2.6.20
+In the specific case of Efika, I'm doing the ACK'ing/NACK'ing of the
+patches. At this point, the platform patch and interrupt patches are
+good to go.
 
- include/asm-powerpc/prom.h |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 933ba27..e9226e3 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -334,10 +334,17 @@ extern int of_irq_map_one(struct device_
- struct pci_dev;
- extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
- 
--static inline void of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
-+static inline int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
- {
--	r->start = r->end = irq_of_parse_and_map(dev, index);
--	r->flags = IORESOURCE_IRQ;
-+	int irq = irq_of_parse_and_map(dev, index);
-+
-+	/* Only dereference the resource if the irq is valid. */
-+	if (irq != NO_IRQ) {
-+		r->start = r->end = irq;
-+		r->flags = IORESOURCE_IRQ;
-+	}
-+
-+	return irq;
- }
- 
- 
--- 
-1.4.2.3
+Cheers,
+Ben.
