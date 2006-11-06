@@ -1,21 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id BA67967C5E
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 03:53:47 +1100 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Can't build drivers/infiniband/hw/ipath/ipath_keys.c on
-	arch/powerpc
-References: <1162798399.8175.24.camel@localhost.localdomain>
-	<1162800409.28571.298.camel@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 06 Nov 2006 08:52:45 -0800
-In-Reply-To: <1162800409.28571.298.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Mon, 06 Nov 2006 19:06:48 +1100")
-Message-ID: <adak628o6ua.fsf@cisco.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id 01FD567C7C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 04:13:37 +1100 (EST)
+Date: Mon, 6 Nov 2006 17:58:35 +0100 (MET)
+From: Olaf Hering <olaf@aepfle.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
+Message-ID: <20061106165752.GA25595@aepfle.de>
+References: <454DBFE7.3090800@s5r6.in-berlin.de>
+	<1162724083.28571.235.camel@localhost.localdomain>
+	<454DC985.2020203@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: support@pathscale.com, openib-general <openib-general@openib.org>,
-	Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <454DC985.2020203@s5r6.in-berlin.de>
+Cc: Gioele Barabucci <dev@gioelebarabucci.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,9 +23,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > I'm surprised that something as recent as infiniband requires a
- > long-deprecated function bus_to_virt().
- > 
- > What is it trying to do there that needs that call ?
+On Sun, Nov 05, Stefan Richter wrote:
 
-Don't ask -- just enjoy the fact that you don't know about this...
+> Yes, PowerBook G3 Pismo seems affected.
+> https://bugzilla.novell.com/show_bug.cgi?id=115228
+
+This patch does not help. Doing an ip link set dev eth0 up makes no
+difference.
