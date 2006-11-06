@@ -1,18 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 78F8C67CD5
+Return-Path: <Basavaraju.Rammohan@lntinfotech.com>
+Received: from mail46.messagelabs.com (mail46.messagelabs.com [216.82.241.227])
+	by ozlabs.org (Postfix) with SMTP id 032A967C37
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 08:48:27 +1100 (EST)
+	Mon,  6 Nov 2006 16:34:36 +1100 (EST)
+In-Reply-To: <mailman.3.1162774802.3433.linuxppc-embedded@ozlabs.org>
 To: linuxppc-embedded@ozlabs.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 05 Nov 2006 21:23:36 +0100."
-	<20061105202336.GA30026@server.idefix.loc>
-Date: Sun, 05 Nov 2006 22:48:24 +0100
-Sender: wd@denx.de
-Message-Id: <20061105214824.8FD44353A5F@atlas.denx.de>
+Subject: Re: Linuxppc-embedded Digest, Vol 27, Issue 25
+MIME-Version: 1.0
+Message-ID: <OF86268480.639AB2AA-ON6525721E.001E8A6E-6525721E.001E9F05@lntinfotech.com>
+From: Basavaraju.Rammohan@lntinfotech.com
+Date: Mon, 6 Nov 2006 11:08:19 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 001E9F016525721E_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +22,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20061105202336.GA30026@server.idefix.loc> you wrote:
-> 
-> how can I checkout kernel 2.6.18 with denx improvements?
+This is a multipart message in MIME format.
+--=_alternative 001E9F016525721E_=
+Content-Type: text/plain; charset="US-ASCII"
 
-run gitk and check where our tree was megred with the Linus tree after
-the v2.6.18 release - you will find that it's commit ID
-dee0eedc749e35f85103f33d9c28bdfcdc1a8fb4
+Hi 
 
-> I need the system only for development, the targetsystem will run on
-> another board :)
+        this Forum is simply superb... keep on going & thanks a lot
 
-I'm not talking about a specific board, but about MPC5200 in general.
+______________________________________________________________________
+--=_alternative 001E9F016525721E_=
+Content-Type: text/html; charset="US-ASCII"
 
-Best regards,
 
-Wolfgang Denk
+<br><font size=2 face="sans-serif">Hi </font>
+<br>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; this
+Forum is simply superb... keep on going &amp; thanks a lot</font>
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-About the use of language: it is impossible to sharpen a pencil  with
-a  blunt  ax.  It is equally vain to try to do it with ten blunt axes
-instead.                                           -- Edsger Dijkstra
+<BR>
+______________________________________________________________________<BR>
+
+--=_alternative 001E9F016525721E_=--
