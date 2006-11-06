@@ -1,17 +1,20 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6800067C48
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:17:11 +1100 (EST)
-In-Reply-To: <BAY102-F634C51A5AEEB25090456BA9FD0@phx.gbl>
-References: <BAY102-F634C51A5AEEB25090456BA9FD0@phx.gbl>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C508D5D4-125D-47FD-81D2-2DE6545A240F@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: Booting without Uboot on 8548E
-Date: Mon, 6 Nov 2006 15:16:55 -0600
-To: M Ptich <ptich@hotmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id EF19C67C0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 08:36:08 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Hoang-Nam Ngyuen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
+	block in 64k page mode
+Date: Mon, 6 Nov 2006 22:35:28 +0100
+References: <200611062226.44939.hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <200611062226.44939.hnguyen@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611062235.28667.arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 06 November 2006 22:26, Hoang-Nam Ngyuen wrote:
+> -=A0=A0=A0=A0=A0=A0=A0rblock =3D kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
+> +=A0=A0=A0=A0=A0=A0=A0rblock =3D (struct hipz_query_hca*)ehca_alloc_fw_ct=
+rlblock();
 
-On Nov 4, 2006, at 03:28, M Ptich wrote:
+> =A0
+> -=A0=A0=A0=A0=A0=A0=A0rblock =3D kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
+> +=A0=A0=A0=A0=A0=A0=A0rblock =3D (struct hipz_query_port*)ehca_alloc_fw_c=
+trlblock();
 
->> You should seriously think about porting
->> over to arch/powerpc instead.
->
-> 8548E is E500v2 core. Our Kernel is from Freescale, it is using  
-> arch/ppc. I
-> am not sure how well (if at all) E500 is supported in the arch/ 
-> powerpc from
-> the FSF ditribution.
+The point Heiko made in his comment is that with ehca_alloc_fw_ctrlblock
+returning a void*, you can (and _should_) remove the casts to other
+pointer types.
 
-
-The 8548 is supported in arch/powerpc as of 2.6.18.
-
-But moving to arch/powerpc (while a good idea) is not going to solve  
-your problems.  There are bound to be a large number of things the  
-kernel expects to have done for it by the firmware.  In arch/powerpc,  
-the 8548 kernel expects PCI to be set up, for instance (We plan to  
-fix that, but it involves porting some code that only exists in arch/ 
-ppc).
-
-Andy
+	Arnd <><
