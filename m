@@ -1,21 +1,21 @@
 Return-Path: <rdreier@cisco.com>
 Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id 08BCC67C4B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 03:50:55 +1100 (EST)
-To: Arnd Bergmann <arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id 6C94B67C46
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 03:51:58 +1100 (EST)
+To: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
 Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
 	block in 64k page mode
-References: <200611052140.38445.hnguyen@de.ibm.com>
-	<200611060045.59074.arnd@arndb.de>
+References: <OF69697CF5.13DC8781-ONC125721E.0039CD42-C125721E.003A3D50@de.ibm.com>
 From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 06 Nov 2006 08:50:44 -0800
-In-Reply-To: <200611060045.59074.arnd@arndb.de> (Arnd Bergmann's message of
-	"Mon, 6 Nov 2006 00:45:58 +0100")
-Message-ID: <adaslgwo6xn.fsf@cisco.com>
+Date: Mon, 06 Nov 2006 08:51:53 -0800
+In-Reply-To: <OF69697CF5.13DC8781-ONC125721E.0039CD42-C125721E.003A3D50@de.ibm.com>
+	(Hoang-Nam Nguyen's message of "Mon, 6 Nov 2006 11:39:09 +0100")
+Message-ID: <adaodrko6vq.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > I'd simply move the memset into the alloc function and get rid of the
- > constructor here.
+ > As Arnd stated I need to fix this ctor issue. Do you prefer me to resend
+ > all patches in proper format (non-mangled inline) or just this one bug fix?
 
-Slightly better still would be to use kmem_cache_zalloc() (save a tiny
-bit of text by getting rid of the call to memset).
+I have the rest of the patches, so you just need to resend a fixed
+version of this one.  BTW see my previous response about
+kmem_cache_zalloc() -- I think that's the best way to fix this.
 
- - R.
+In the future though if you can make a patch-sending script or
+something that lets you avoid the attachments that would be great.
