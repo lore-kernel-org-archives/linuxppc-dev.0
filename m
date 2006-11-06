@@ -1,20 +1,33 @@
-Return-Path: <tnt@246tNt.com>
-Message-ID: <454EF4DF.7000808@246tNt.com>
-Date: Mon, 06 Nov 2006 09:39:59 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <HNGUYEN@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6998D67C94
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Nov 2006 20:57:20 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id kA69vDL3188244
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 09:57:13 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id kA6A0FAf3129522
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 11:00:15 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kA69v6uM032456
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 10:57:06 +0100
+In-Reply-To: <200611060045.59074.arnd@arndb.de>
+Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
+	block in 64k page mode
+To: Arnd Bergmann <arnd@arndb.de>
+Message-ID: <OF478DD9AF.FCA98729-ONC125721E.0031F840-C125721E.0036A811@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Mon, 6 Nov 2006 11:00:00 +0100
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH/RFC] powerpc: Add MPC5200 Interrupt Controller support.
-References: <454902F9.20206@bplan-gmbh.de>	
-	<1162419138.25682.453.camel@localhost.localdomain>	
-	<454A1C37.5050208@bplan-gmbh.de> <454A5952.6090801@bplan-gmbh.de>	
-	<1162683341.28571.82.camel@localhost.localdomain>	
-	<454D2FEC.3050605@246tNt.com>	
-	<1162689227.28571.123.camel@localhost.localdomain>
-	<528646bc0611052228j20a4c197x94da47467dce8d67@mail.gmail.com>
-In-Reply-To: <528646bc0611052228j20a4c197x94da47467dce8d67@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org, sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Christoph Raisch <raisch@de.ibm.com>,
+	linux-kernel@vger.kernel.org, openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +37,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 11/4/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->> On Sun, 2006-11-05 at 01:27 +0100, Sylvain Munaut wrote:
->> > with a helper that would do
->> > - The find_node
->> >  - get_address / translate /  get_size
->> >  - ioremap
->> >
->> > Something like :
->> >
->> > intr = mpc52xx_find_and_map("mpc52xx-intr");
->> > sdma = mpc52xx_find_and_map("mpc52xx-sdma");
->>
->> Hrm... I don't care that much but I also don't think we need that
->> helper. It's not saving much.
->
-> While on this topic... if a helper is added, what about it is 52xx
-> specific?  Wouldn't the same code apply to all platforms?
->
-> g.
->
-The code would look like what I included at the end (untested). Not that
-I used
-of_find_by_name and not find_compatible. We can fix a naming convention
-for those units ...
-
-I think it does save quite a few lines and variable. It also simplifies the
-error path ... granted it's not an exceptionnal reduction but still
-worth it.
-If it's not included now it's not that bad, I'll probably submitt a
-patch later
-when it's used in more places than mpc52xx_pic.c ...
-
-About the use on other platform, maybe but do other platform need that a
-lot ?
-Here we have several unit that need to be mapped at different places ...
-
-
-Sylvain
-
-
----
-
-void __iomem *mpc52xx_find_and_map(const char *name)
-{
-        struct device_node *ofn;
-        const u32 *regaddr_p;
-        u64 regaddr64, size64;
-
-        ofn = of_find_by_name(NULL, name);
-        if (!ofn)
-                return NULL;
-
-        regaddr_p = of_get_address(ofn, 0, &size64, NULL);
-        if (!regaddr_p) {
-                of_node_put(ofn);
-                return NULL;
-        }
-
-        regaddr64 = of_translate_address(ofn, regaddr_p);
-
-        of_node_put(ofn);
-
-        return ioremap((u32)regaddr64, (u32)size64);
-}
+Hi Arnd,
+> This seems broken. You have a constructor for newly allocated objects,
+but
+> there is no destructor and it seems that objects passed to
+> ehca_free_fw_ctrlblock are not guaranteed to be initialized either.
+> I'd simply move the memset into the alloc function and get rid of the
+> constructor here.
+Yep, I was not aware that ctor is not called for every
+kmem_cache_alloc(). Thx for pointing this out.
+Nam
