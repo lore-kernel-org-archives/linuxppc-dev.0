@@ -2,20 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B125067C43
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 09:18:07 +1100 (EST)
-Subject: Re: [PATCH] PowerPC: remove broken vsyscall code
+	by ozlabs.org (Postfix) with ESMTP id BDBF567C0F
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 09:19:39 +1100 (EST)
+Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: john stultz <johnstul@us.ibm.com>
-In-Reply-To: <1162850967.29826.62.camel@localhost>
-References: <200611062359.10404.sshtylyov@ru.mvista.com>
-	<1162849587.28571.356.camel@localhost.localdomain>
-	<1162850967.29826.62.camel@localhost>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20061106165752.GA25595@aepfle.de>
+References: <454DBFE7.3090800@s5r6.in-berlin.de>
+	<1162724083.28571.235.camel@localhost.localdomain>
+	<454DC985.2020203@s5r6.in-berlin.de> <20061106165752.GA25595@aepfle.de>
 Content-Type: text/plain
-Date: Tue, 07 Nov 2006 09:18:00 +1100
-Message-Id: <1162851480.28571.358.camel@localhost.localdomain>
+Date: Tue, 07 Nov 2006 09:19:29 +1100
+Message-Id: <1162851570.28571.361.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
+Cc: linuxppc-dev@ozlabs.org, Gioele Barabucci <dev@gioelebarabucci.com>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-11-06 at 14:09 -0800, john stultz wrote:
-> On Tue, 2006-11-07 at 08:46 +1100, Benjamin Herrenschmidt wrote:
-> > On Mon, 2006-11-06 at 23:59 +0300, Sergei Shtylyov wrote:
-> > > Remove vsyscalls that were broken by the PowerPC generic TOD patch, also
-> > > fixing the build breakage due to its bad rebase.
-> > > 
-> > > The patch has been tested on PPC32 only. I had to preserve the data that
-> > > are made visible to userland via /proc/ppc64/systemcfg on PPC64, however
-> > > now there are only zeroes there and their affect isn't known to me...
-> > > 
-> > > Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> > 
-> > There is simply no way this will happen !
+On Mon, 2006-11-06 at 17:58 +0100, Olaf Hering wrote:
+> On Sun, Nov 05, Stefan Richter wrote:
 > 
-> I believe this is just a short-term fix so the ppc tod/rt code can be
-> tested. I do plan on getting the ppc vsyscall working before we push any
-> ppc tod changes to mainline.
+> > Yes, PowerBook G3 Pismo seems affected.
+> > https://bugzilla.novell.com/show_bug.cgi?id=115228
+> 
+> This patch does not help. Doing an ip link set dev eth0 up makes no
+> difference.
 
-Ok.
+What about trying to add a delay between the pmac clock code and the
+init of the controller ? does that help ?
+
+(You need to have a cable plug and the interface up for the power
+management bits not to get in the way btw)
 
 Ben.
