@@ -1,20 +1,20 @@
 Return-Path: <wg@grandegger.com>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 05E7567CD6
+	by ozlabs.org (Postfix) with ESMTP id EAD0667D39
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 22:21:05 +1100 (EST)
+	Mon,  6 Nov 2006 22:24:50 +1100 (EST)
 Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 6E4D6989CB
+	by mail-out.m-online.net (Postfix) with ESMTP id B7CA398201
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 12:21:03 +0100 (CET)
+	Mon,  6 Nov 2006 12:24:49 +0100 (CET)
 Received: from [10.0.30.2] (p5497E080.dip.t-dialin.net [84.151.224.128])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 4625592687
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 87C1991632
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Nov 2006 12:21:03 +0100 (CET)
-Message-ID: <454F1AB9.8050609@grandegger.com>
-Date: Mon, 06 Nov 2006 12:21:29 +0100
+	Mon,  6 Nov 2006 12:24:49 +0100 (CET)
+Message-ID: <454F1B9D.5090705@grandegger.com>
+Date: Mon, 06 Nov 2006 12:25:17 +0100
 From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
@@ -49,23 +49,21 @@ Matthias Fechner wrote:
 > I can give you access to one of my servers if you want to copy there
 > the kernel.
 
-Some time ago I got the MPC5200 patches from the Pengutronix's OSELAS
-project working for DENX Linux 2.6.17. In the meantime they have update
+Some time ago I got the MPC5200 patches from the Pengutronix's OSELAS 
+project working for DENX Linux 2.6.17. In the meantime they have update 
 to 2.6.18. Take OSELAS.BSP-Phytec-phyCORE-MPC5200B-tiny-4.tar.gz from
 http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/, 
-
-unpack it and apply the relevant patches from the kernel-patches-target
-diretory to linux-2.6-denx#v2.6.18. I think the following patches should
-be sufficient (in that order):
+unpack it and apply the relevant patches from the kernel-patches-target 
+directory to linux-2.6-denx#v2.6.18. I think the following patches 
+should be sufficient (in that order):
 
    fec_mpc52xx_bestcomm.diff
    fec_mpc52xx.diff
    drivers_serial_mpc52xx_uart_fix.diff
    mpc5200_physmap.diff
 
-You can find the most recent Xenomai patch 2.6.18-ppc-1.05.00 at
-"ftp://ftp.denx.de/xenomai". I'm going to test them later today with 
-Xenomai.
+You can find the most recent Xenomai patch 2.6.18-ppc-1.05.00 at 
+ftp://ftp.denx.de/xenomai. I'm going to test them later today with Xenomai.
 
 Good luck.
 
