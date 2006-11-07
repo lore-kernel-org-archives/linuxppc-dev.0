@@ -1,23 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 929A067CD4
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5C0E767C8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Nov 2006 01:48:01 +1100 (EST)
-Date: Tue, 7 Nov 2006 17:47:41 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kalle Pokki <kalle.pokki@iki.fi>
-Subject: Re: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
-Message-ID: <20061107174741.3d837e19@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0611071451130.3291@host32.eke.fi>
-References: <Pine.LNX.4.64.0611061523360.12023@host32.eke.fi>
-	<20061106205543.43b2aacb@localhost.localdomain>
-	<Pine.LNX.4.64.0611062237300.16727@host32.eke.fi>
-	<20061107150842.6ac9e8ce@vitb.ru.mvista.com>
-	<Pine.LNX.4.64.0611071451130.3291@host32.eke.fi>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_IJkRtr3EQvQEC5=ee1SpURR";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: Paul, linuxppc-embedded@ozlabs.org, Mackerras <paulus@samba.org>
+	Wed,  8 Nov 2006 02:27:43 +1100 (EST)
+Message-ID: <4550A5E6.50409@ru.mvista.com>
+Date: Tue, 07 Nov 2006 18:27:34 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Vitaly Wool <vwool@ru.mvista.com>
+Subject: Re: [PATCH] adding ROM chips to device tree: respin
+References: <20061107141923.16b2d2f1.vwool@ru.mvista.com>
+In-Reply-To: <20061107141923.16b2d2f1.vwool@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,85 +23,137 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_IJkRtr3EQvQEC5=ee1SpURR
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hello.
 
-On Tue, 7 Nov 2006 15:21:00 +0200 (EET)
-Kalle Pokki wrote:
+Vitaly Wool wrote:
 
-> On Tue, 7 Nov 2006, Vitaly Bordug wrote:
->=20
-> > Well, yes, but are you _sure_ pram_base will be the same across all
-> > the 82xx PQ2, that happen to have smc wired to Ethernet?
-> >
-> > If not I am considering storing it in the platform_data is better
-> > approach.
->=20
-> Yes, pram_base is always 0x87fc for SMC1 and 0x88fc for SMC2. This is
-> for all PowerQUICC II families (8260, 8272, and 8280). I'm not sure
-> how PQ2 Pro and PQ3 and handled, but I suspect they don't share these=20
-> definitions.
->=20
-ok
-> Anyway, I'm only extending the already existing conventions to the=20
-> platform device approach. These same decisions have already been made
-> in the past and are used in the cpm_uart compat mode. It may be that=20
-> Freescale someday releases a microcode patch that relocates the SMC=20
-> parameter RAM, but even in this case it would be better to use the
-> same approach with compat mode and platform device mode to avoid
-> confusion.
->=20
-> I could have used the numerical address offsets in the resource=20
-> definition, but I wanted to emphasize the fact that the offsets are=20
-> already defined by the DPRAM memory allocator (this is a little
-> hackish, yes) instead of hardware directly requiring these exact
-> values.
->=20
+> inlined below is the patch which adds support for flash device descriptions to the OF device tree. It's inspired by and partially borrowed from Sergei's patch which can be found at http://patchwork.ozlabs.org/linuxppc/patch?id=6526 but arranges things in a different way.
+> It should be used together with the corresponding MTD layer extension the current version of which was recently posted to linux-mtd list for discussion and can be found at http://lists.infradead.org/pipermail/linux-mtd/2006-November/016700.html.
+> In fact, currently this description can handle only flash devices mapped into memory in a linear way.
+> This patch is a respin of the patch which can be found at http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025013.html with comments from Sergei and Josh taken into account.
+> 
+>  Documentation/powerpc/booting-without-of.txt |   37 +++++++++++++++++++++++++++
+>  arch/powerpc/sysdev/Makefile                 |    1 
+>  arch/powerpc/sysdev/rom.c                    |   31 ++++++++++++++++++++++
+>  3 files changed, 69 insertions(+)
+>  
+> Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
+> 
+> Index: powerpc/Documentation/powerpc/booting-without-of.txt
+> ===================================================================
+> --- powerpc.orig/Documentation/powerpc/booting-without-of.txt
+> +++ powerpc/Documentation/powerpc/booting-without-of.txt
+> @@ -6,6 +6,8 @@
+>      IBM Corp.
+>  (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
+>      Freescale Semiconductor, FSL SOC and 32-bit additions
+> +(c) 2006 MontaVista Software, Inc.
+> +    Flash chip node definition
+>  
+>     May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
+>  
+> @@ -1693,6 +1695,41 @@ platforms are moved over to use the flat
+>  		};
+>  	};
+>  
+> +    g) Flash chip nodes
+> +
+> +    Flash chips (Memory Technology Devices) are often used for solid state
+> +    file systems on embedded devices.
+> +
+> +    Required properties:
+> +
+> +     - device_type : has to be "rom"
+> +     - compatible : Should be the name of the MTD driver. Currently, this is
+> +       most likely to be "physmap".
+> +     - memory_space : Offset and length of the register set for the device.
 
-Aha, I recall now. There was nearly exactly the same discussion in the past=
-.=20
-The recap was since ppc_platform_devices[] approach is not flexible enough,=
- revisit issue from the=20
-arch/powerpc POV.=20
+    NAK. There's no need to define an extra property where "reg" should be used.
 
-> This snippet is from cpm2.h:
->=20
->  	/* Dual Port RAM addresses.  The first 16K is available for
-> almost
->  	 * any CPM use, so we put the BDs there.  The first 128
-> bytes are
->  	 * used for SMC1 and SMC2 parameter RAM, so we start
-> allocating
->  	 * BDs above that.  All of this must change when we start
->  	 * downloading RAM microcode.
->  	 */
->  	#define CPM_DATAONLY_BASE       ((uint)128)
->=20
-> My patch puts pram_base exactly here.
->=20
->=20
+> +     - bank-width : Width of the flash data bus in bytes. Required
+> +       for the NOR flashes (compatible == "physmap" and others) ONLY.
 
-I know, the questionable thing was if there is enough "value" to add yet an=
-other platform device for that.
+    Then it can not be called a *required* property I think.
 
-Since it improves current ppc being and sort of puts a note for powerpc por=
-t, I'm inclined to ACK.
+> +
+> +    Recommended properties :
+> +
+> +     - partitions : Several pairs of 32-bit values where the first value is
+> +       partition's offset from the start of the MTD device and the second
+> +       one is partition size in bytes with LSB used to signify a read only
+> +       partititon (so, the parition size should always be an even number).
+> +     - partition-names : The list of concatenated zero terminated strings
+> +       representing the partition names.
+> +
+> +   Example:
+> +
+> + 	flash@ff000000 {
+> + 		device_type = "rom";
+> + 		compatible = "physmap";
+> + 		memory_space = <ff000000 01000000>;
+> + 		bank-width = <4>;
+> + 		partitions = <00000000 00f80000
+> + 			      00f80000 00080001>;
+> + 		partition-names = "fs\0firmware";
+> + 	};
+> +
+>     More devices will be defined as this spec matures.
+>  
+>  
+> Index: powerpc/arch/powerpc/sysdev/Makefile
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/sysdev/Makefile
+> +++ powerpc/arch/powerpc/sysdev/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+>  obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+>  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+>  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+> +obj-$(CONFIG_MTD)		+= rom.o
+>  
+>  ifeq ($(CONFIG_PPC_MERGE),y)
+>  obj-$(CONFIG_PPC_I8259)		+= i8259.o
+> Index: powerpc/arch/powerpc/sysdev/rom.c
+> ===================================================================
+> --- /dev/null
+> +++ powerpc/arch/powerpc/sysdev/rom.c
+> @@ -0,0 +1,31 @@
+> +/*
+> + * arch/powerpc/sysdev/flash.c
+> + *
+> + * Flash memory registration
+> + *
+> + * (C) 2006 MontaVista Software, Inc. This file is licensed under
+> + * the terms of the GNU General Public License version 2. This program
+> + * is licensed "as is" without any warranty of any kind, whether express
+> + * or implied.
+> + */
+> +
+> +#include <asm/of_device.h>
+> +
+> +static int __init powerpc_flash_init(void)
+> +{
+> +	struct device_node *node = NULL;
+> +	int num = 0;
+> +
+> +	/*
+> +	 * We care only about physmap devices now as there's no
+> +	 * description defined for other ROM types yet
+> +	 */
 
-Thanks,
+    Not true. The description only says that it's *most probably* compatible 
+with "physmap", that's all. I don't see why we have to limit ourselves here.
 
--Vitaly
+> +	while ((node = of_find_compatible_node(node, "rom", "physmap"))
+> +			!= NULL) {
+> +		of_platform_device_create(node, "physmap-flash", NULL);
+> +		++num;
 
---Sig_IJkRtr3EQvQEC5=ee1SpURR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+    Why are you counting them, can you say?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+> +	}
+> +	return 0;
+> +}
+> +
+> +arch_initcall(powerpc_flash_init);
 
-iD8DBQFFUJyOuOg9JvQhSEsRAoR1AKCQygzAjQ8dAWJ2vMb4obSXGZHrUQCgo3vO
-R9F+Wdaf0LkDmNAlZ3P5yRs=
-=oGmL
------END PGP SIGNATURE-----
-
---Sig_IJkRtr3EQvQEC5=ee1SpURR--
+WBR, Sergei
