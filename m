@@ -1,11 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 07 Nov 2006 18:22:49 +1100
-Subject: [PATCH 18/31] powerpc: Resolve the BUID fir RTAS PCI config space
-	accesses
+Date: Tue, 07 Nov 2006 18:22:50 +1100
+Subject: [PATCH 19/31] powerpc: Add "parent" struct device for PCI host bridges
 In-Reply-To: <1162884150.435786.961370643810.qpush@grosgo>
-Message-Id: <20061107072406.BEA99682A3@ozlabs.org>
+Message-Id: <20061107072407.D016167D42@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,55 +14,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The BUID is the first entry of a PCI host bridge "reg" property.
+Add a "parent" struct device to our PCI host bridge data structure so that
+PCI can be rooted off another device in sysfs.
 
-Now that PCI busses can be anywhere in the device-tree, we need to
-fully translate the value there to a CPU physical address before
-we can use it with RTAS.
+Note that arch/ppc doesn't use it, only arch/powerpc, though it's available
+for both 32 and 64 bits.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org> 
 
- arch/powerpc/kernel/rtas_pci.c |   27 ++++-----------------------
- 1 file changed, 4 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/pci_32.c     |    5 ++++-
+ arch/powerpc/kernel/pci_64.c     |    2 +-
+ include/asm-powerpc/pci-bridge.h |    1 +
+ include/asm-ppc/pci-bridge.h     |    1 +
+ 4 files changed, 7 insertions(+), 2 deletions(-)
 
-Index: linux-cell/arch/powerpc/kernel/rtas_pci.c
+Index: linux-cell/arch/powerpc/kernel/pci_32.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:32:35.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:34:21.000000000 +1000
-@@ -231,32 +231,13 @@ void __init init_pci_config_tokens (void
+--- linux-cell.orig/arch/powerpc/kernel/pci_32.c	2006-11-06 15:18:38.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/pci_32.c	2006-11-06 15:19:51.000000000 +1100
+@@ -1269,7 +1269,10 @@ pcibios_init(void)
+ 		if (pci_assign_all_buses)
+ 			hose->first_busno = next_busno;
+ 		hose->last_busno = 0xff;
+-		bus = pci_scan_bus(hose->first_busno, hose->ops, hose);
++		bus = pci_scan_bus_parented(hose->parent, hose->first_busno,
++					    hose->ops, hose);
++		if (bus)
++			pci_bus_add_devices(bus);
+ 		hose->last_busno = bus->subordinate;
+ 		if (pci_assign_all_buses || next_busno <= hose->last_busno)
+ 			next_busno = hose->last_busno + pcibios_assign_bus_offset;
+Index: linux-cell/arch/powerpc/kernel/pci_64.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/pci_64.c	2006-11-06 15:19:45.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/pci_64.c	2006-11-06 15:19:56.000000000 +1100
+@@ -519,7 +519,7 @@ void __devinit scan_phb(struct pci_contr
  
- unsigned long __devinit get_phb_buid (struct device_node *phb)
- {
--	int addr_cells;
--	const unsigned int *buid_vals;
--	unsigned int len;
--	unsigned long buid;
--
--	if (ibm_read_pci_config == -1) return 0;
-+	struct resource r;
+ 	DBG("Scanning PHB %s\n", node ? node->full_name : "<NO NAME>");
  
--	/* PHB's will always be children of the root node,
--	 * or so it is promised by the current firmware. */
--	if (phb->parent == NULL)
--		return 0;
--	if (phb->parent->parent)
-+	if (ibm_read_pci_config == -1)
- 		return 0;
--
--	buid_vals = get_property(phb, "reg", &len);
--	if (buid_vals == NULL)
-+	if (of_address_to_resource(phb, 0, &r))
- 		return 0;
--
--	addr_cells = prom_n_addr_cells(phb);
--	if (addr_cells == 1) {
--		buid = (unsigned long) buid_vals[0];
--	} else {
--		buid = (((unsigned long)buid_vals[0]) << 32UL) |
--			(((unsigned long)buid_vals[1]) & 0xffffffff);
--	}
--	return buid;
-+	return r.start;
- }
+-	bus = pci_create_bus(NULL, hose->first_busno, hose->ops, node);
++	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, node);
+ 	if (bus == NULL) {
+ 		printk(KERN_ERR "Failed to create bus for PCI domain %04x\n",
+ 		       hose->global_number);
+Index: linux-cell/include/asm-powerpc/pci-bridge.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/pci-bridge.h	2006-11-06 15:19:38.000000000 +1100
++++ linux-cell/include/asm-powerpc/pci-bridge.h	2006-11-06 15:19:51.000000000 +1100
+@@ -25,6 +25,7 @@ struct pci_controller {
+ 	int node;
+ 	void *arch_data;
+ 	struct list_head list_node;
++	struct device *parent;
  
- static int phb_set_bus_ranges(struct device_node *dev,
+ 	int first_busno;
+ 	int last_busno;
+Index: linux-cell/include/asm-ppc/pci-bridge.h
+===================================================================
+--- linux-cell.orig/include/asm-ppc/pci-bridge.h	2006-11-06 15:18:38.000000000 +1100
++++ linux-cell/include/asm-ppc/pci-bridge.h	2006-11-06 15:19:51.000000000 +1100
+@@ -43,6 +43,7 @@ struct pci_controller {
+ 	struct pci_controller *next;
+         struct pci_bus *bus;
+ 	void *arch_data;
++	struct device *parent;
+ 
+ 	int first_busno;
+ 	int last_busno;
