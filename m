@@ -1,36 +1,15 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8FB6867C3B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 10:56:50 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id kA6NufRA280868
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Nov 2006 23:56:41 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kA6NxhI92781282
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Nov 2006 00:59:43 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kA6Nue3Z000774
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Nov 2006 00:56:40 +0100
-From: Hoang-Nam Ngyuen <hnguyen@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>, rolandd@cisco.com
-Subject: Re: [PATCH 2.6.19 1/4] ehca: assure 4k alignment for firmware control
-	block in 64k page mode
-Date: Tue, 7 Nov 2006 00:56:39 +0100
-References: <200611062226.44939.hnguyen@linux.vnet.ibm.com>
-	<200611062235.28667.arnd@arndb.de>
-In-Reply-To: <200611062235.28667.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611070056.39994.hnguyen@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, raisch@de.ibm.com, linux-kernel@vger.kernel.org,
-	openib-general@openib.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 5E99F67BEC
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 11:34:40 +1100 (EST)
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Sylvain Munaut <tnt@246tnt.com>, linuxppc-dev@ozlabs.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, nd@bplan-gmbh.de
+Subject: [PATCH 1/5] Add Lite5200B device tree
+Date: Mon,  6 Nov 2006 17:34:21 -0700
+Message-Id: <11628596751096-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11628596653052-git-send-email-grant.likely@secretlab.ca>
+References: <11628596653052-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,425 +19,291 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The point Heiko made in his comment is that with ehca_alloc_fw_ctrlblock
-> returning a void*, you can (and _should_) remove the casts to other
-> pointer types.
-Hm, my bad. Should not happen that I totally ignored the whole sentence
-from Heiko.
-Roland, please throw the previous away. Here is eventually/hopefully 
-the proper one.
-Thanks
-Nam
-
-
-This is a patch of ehca that assures 4k alignment for firmware control block
-in 64k page mode, because kzalloc()'s result address might not be 4k aligned
-if kernel's 64k page is enabled. Thus, we introduced wrappers called
-ehca_alloc/free_fw_ctrlblock(), which use a slab cache for objects with
-4k length and 4k alignment in order to alloc/free firmware control blocks
-in 64k page mode. In 4k page mode those wrappers just are defines of
-get_zeroed_page() and free_page().
-
-
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
+ arch/powerpc/boot/dts/lite5200b.dts |  275 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 275 insertions(+), 0 deletions(-)
 
-
- ehca_hca.c    |   17 +++++++++--------
- ehca_irq.c    |   17 ++++++++---------
- ehca_iverbs.h |    8 ++++++++
- ehca_main.c   |   56 +++++++++++++++++++++++++++++++++++++++++++++++---------
- ehca_mrmw.c   |    8 ++++----
- ehca_qp.c     |   10 +++++-----
- 6 files changed, 81 insertions(+), 35 deletions(-)
-
-
-
-diff -Nurp roland_git_orig/drivers/infiniband/hw/ehca/ehca_hca.c roland_git_work/drivers/infiniband/hw/ehca/ehca_hca.c
---- roland_git_orig/drivers/infiniband/hw/ehca/ehca_hca.c	2006-11-02 10:47:04.000000000 +0100
-+++ roland_git_work/drivers/infiniband/hw/ehca/ehca_hca.c	2006-11-07 00:03:03.000000000 +0100
-@@ -40,6 +40,7 @@
-  */
- 
- #include "ehca_tools.h"
-+#include "ehca_iverbs.h"
- #include "hcp_if.h"
- 
- int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
-@@ -49,7 +50,7 @@ int ehca_query_device(struct ib_device *
- 					      ib_device);
- 	struct hipz_query_hca *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -96,7 +97,7 @@ int ehca_query_device(struct ib_device *
- 		= min_t(int, rblock->max_total_mcast_qp_attach, INT_MAX);
- 
- query_device1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-@@ -109,7 +110,7 @@ int ehca_query_port(struct ib_device *ib
- 					      ib_device);
- 	struct hipz_query_port *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -162,7 +163,7 @@ int ehca_query_port(struct ib_device *ib
- 	props->active_speed    = 0x1;
- 
- query_port1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-@@ -178,7 +179,7 @@ int ehca_query_pkey(struct ib_device *ib
- 		return -EINVAL;
- 	}
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device,  "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -193,7 +194,7 @@ int ehca_query_pkey(struct ib_device *ib
- 	memcpy(pkey, &rblock->pkey_entries + index, sizeof(u16));
- 
- query_pkey1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-@@ -211,7 +212,7 @@ int ehca_query_gid(struct ib_device *ibd
- 		return -EINVAL;
- 	}
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -227,7 +228,7 @@ int ehca_query_gid(struct ib_device *ibd
- 	memcpy(&gid->raw[8], &rblock->guid_entries[index], sizeof(u64));
- 
- query_gid1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- 	return ret;
- }
-diff -Nurp roland_git_orig/drivers/infiniband/hw/ehca/ehca_irq.c roland_git_work/drivers/infiniband/hw/ehca/ehca_irq.c
---- roland_git_orig/drivers/infiniband/hw/ehca/ehca_irq.c	2006-11-02 10:47:04.000000000 +0100
-+++ roland_git_work/drivers/infiniband/hw/ehca/ehca_irq.c	2006-11-07 00:03:03.000000000 +0100
-@@ -45,6 +45,7 @@
- #include "ehca_tools.h"
- #include "hcp_if.h"
- #include "hipz_fns.h"
-+#include "ipz_pt_fn.h"
- 
- #define EQE_COMPLETION_EVENT   EHCA_BMASK_IBM(1,1)
- #define EQE_CQ_QP_NUMBER       EHCA_BMASK_IBM(8,31)
-@@ -137,38 +138,36 @@ int ehca_error_data(struct ehca_shca *sh
- 	u64 *rblock;
- 	unsigned long block_count;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Cannot allocate rblock memory.");
- 		ret = -ENOMEM;
- 		goto error_data1;
- 	}
- 
-+	/* rblock must be 4K aligned and should be 4K large */
- 	ret = hipz_h_error_data(shca->ipz_hca_handle,
- 				resource,
- 				rblock,
- 				&block_count);
- 
--	if (ret == H_R_STATE) {
-+	if (ret == H_R_STATE)
- 		ehca_err(&shca->ib_device,
- 			 "No error data is available: %lx.", resource);
--	}
- 	else if (ret == H_SUCCESS) {
- 		int length;
- 
- 		length = EHCA_BMASK_GET(ERROR_DATA_LENGTH, rblock[0]);
- 
--		if (length > PAGE_SIZE)
--			length = PAGE_SIZE;
-+		if (length > EHCA_PAGESIZE)
-+			length = EHCA_PAGESIZE;
- 
- 		print_error_data(shca, data, rblock, length);
--	}
--	else {
-+	} else
- 		ehca_err(&shca->ib_device,
- 			 "Error data could not be fetched: %lx", resource);
--	}
- 
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 
- error_data1:
- 	return ret;
-diff -Nurp roland_git_orig/drivers/infiniband/hw/ehca/ehca_iverbs.h roland_git_work/drivers/infiniband/hw/ehca/ehca_iverbs.h
---- roland_git_orig/drivers/infiniband/hw/ehca/ehca_iverbs.h	2006-11-02 10:47:04.000000000 +0100
-+++ roland_git_work/drivers/infiniband/hw/ehca/ehca_iverbs.h	2006-11-07 00:03:03.000000000 +0100
-@@ -179,4 +179,12 @@ int ehca_mmap_register(u64 physical,void
- 
- int ehca_munmap(unsigned long addr, size_t len);
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+void *ehca_alloc_fw_ctrlblock(void);
-+void ehca_free_fw_ctrlblock(void *ptr);
-+#else
-+#define ehca_alloc_fw_ctrlblock() ((void*)get_zeroed_page(GFP_KERNEL))
-+#define ehca_free_fw_ctrlblock(ptr) free_page((unsigned long)(ptr))
-+#endif
+diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+new file mode 100644
+index 0000000..eff10b7
+--- /dev/null
++++ b/arch/powerpc/boot/dts/lite5200b.dts
+@@ -0,0 +1,275 @@
++/*
++ * Lite5200b board Device Tree Source
++ *
++ * Copyright 2006 Secret Lab Technologies Ltd.
++ * Grant Likely <grant.likely@secretlab.ca>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
- #endif
-diff -Nurp roland_git_orig/drivers/infiniband/hw/ehca/ehca_main.c roland_git_work/drivers/infiniband/hw/ehca/ehca_main.c
---- roland_git_orig/drivers/infiniband/hw/ehca/ehca_main.c	2006-11-02 10:47:04.000000000 +0100
-+++ roland_git_work/drivers/infiniband/hw/ehca/ehca_main.c	2006-11-07 00:03:03.000000000 +0100
-@@ -40,6 +40,9 @@
-  * POSSIBILITY OF SUCH DAMAGE.
-  */
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+#include <linux/slab.h>
-+#endif
- #include "ehca_classes.h"
- #include "ehca_iverbs.h"
- #include "ehca_mrmw.h"
-@@ -49,7 +52,7 @@
- MODULE_LICENSE("Dual BSD/GPL");
- MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
- MODULE_DESCRIPTION("IBM eServer HCA InfiniBand Device Driver");
--MODULE_VERSION("SVNEHCA_0017");
-+MODULE_VERSION("SVNEHCA_0018");
- 
- int ehca_open_aqp1     = 0;
- int ehca_debug_level   = 0;
-@@ -94,11 +97,31 @@ spinlock_t ehca_cq_idr_lock;
- DEFINE_IDR(ehca_qp_idr);
- DEFINE_IDR(ehca_cq_idr);
- 
++/ {
++	model = "Lite5200b";
++	compatible = "mpc5200b\0mpc52xx";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
- static struct list_head shca_list; /* list of all registered ehcas */
- static spinlock_t shca_list_lock;
- 
- static struct timer_list poll_eqs_timer;
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+static struct kmem_cache *ctblk_cache = NULL;
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+void *ehca_alloc_fw_ctrlblock(void)
-+{
-+	void *ret = kmem_cache_zalloc(ctblk_cache, SLAB_KERNEL);
-+	if (!ret)
-+		ehca_gen_err("Out of memory for ctblk");
-+	return ret;
-+}
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <4000>;		// L1, 16K
++			i-cache-size = <4000>;		// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++			32-bit;
++		};
++	};
 +
-+void ehca_free_fw_ctrlblock(void *ptr)
-+{
-+	if (ptr)
-+		kmem_cache_free(ctblk_cache, ptr);
++	memory {
++		device_type = "memory";
++		reg = <00000000 10000000>;	// 256MB
++	};
 +
-+}
-+#endif
++	soc5200@f0000000 {
++		#interrupt-cells = <3>;
++		device_type = "soc";
++		ranges = <0 f0000000 f0010000>;
++		reg = <f0000000 00010000>;
++		bus-frequency = <0>;		// from bootloader
 +
- static int ehca_create_slab_caches(void)
- {
- 	int ret;
-@@ -133,6 +156,17 @@ static int ehca_create_slab_caches(void)
- 		goto create_slab_caches5;
- 	}
- 
-+#ifdef CONFIG_PPC_64K_PAGES
-+	ctblk_cache = kmem_cache_create("ehca_cache_ctblk",
-+					EHCA_PAGESIZE, H_CB_ALIGNMENT,
-+					SLAB_HWCACHE_ALIGN,
-+					NULL, NULL);
-+	if (!ctblk_cache) {
-+		ehca_gen_err("Cannot create ctblk SLAB cache.");
-+		ehca_cleanup_mrmw_cache();
-+		goto create_slab_caches5;
-+	}
-+#endif
- 	return 0;
- 
- create_slab_caches5:
-@@ -157,6 +191,10 @@ static void ehca_destroy_slab_caches(voi
- 	ehca_cleanup_qp_cache();
- 	ehca_cleanup_cq_cache();
- 	ehca_cleanup_pd_cache();
-+#ifdef CONFIG_PPC_64K_PAGES
-+	if (ctblk_cache)
-+		kmem_cache_destroy(ctblk_cache);
-+#endif
- }
- 
- #define EHCA_HCAAVER  EHCA_BMASK_IBM(32,39)
-@@ -168,7 +206,7 @@ int ehca_sense_attributes(struct ehca_sh
- 	u64 h_ret;
- 	struct hipz_query_hca *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_gen_err("Cannot allocate rblock memory.");
- 		return -ENOMEM;
-@@ -211,7 +249,7 @@ int ehca_sense_attributes(struct ehca_sh
- 	shca->sport[1].rate = IB_RATE_30_GBPS;
- 
- num_ports1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 	return ret;
- }
- 
-@@ -220,7 +258,7 @@ static int init_node_guid(struct ehca_sh
- 	int ret = 0;
- 	struct hipz_query_hca *rblock;
- 
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	rblock = ehca_alloc_fw_ctrlblock();
- 	if (!rblock) {
- 		ehca_err(&shca->ib_device, "Can't allocate rblock memory.");
- 		return -ENOMEM;
-@@ -235,7 +273,7 @@ static int init_node_guid(struct ehca_sh
- 	memcpy(&shca->ib_device.node_guid, &rblock->node_guid, sizeof(u64));
- 
- init_node_guid1:
--	kfree(rblock);
-+	ehca_free_fw_ctrlblock(rblock);
- 	return ret;
- }
- 
-@@ -431,7 +469,7 @@ static ssize_t  ehca_show_##name(struct 
- 									   \
- 	shca = dev->driver_data;					   \
- 									   \
--	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);			   \
-+	rblock = ehca_alloc_fw_ctrlblock();				   \
- 	if (!rblock) {						           \
- 		dev_err(dev, "Can't allocate rblock memory.");		   \
- 		return 0;						   \
-@@ -439,12 +477,12 @@ static ssize_t  ehca_show_##name(struct 
- 									   \
- 	if (hipz_h_query_hca(shca->ipz_hca_handle, rblock) != H_SUCCESS) { \
- 		dev_err(dev, "Can't query device properties");	   	   \
--		kfree(rblock);					   	   \
-+		ehca_free_fw_ctrlblock(rblock);			   	   \
- 		return 0;					   	   \
- 	}								   \
- 									   \
- 	data = rblock->name;                                               \
--	kfree(rblock);                                                     \
-+	ehca_free_fw_ctrlblock(rblock);                                    \
- 									   \
- 	if ((strcmp(#name, "num_ports") == 0) && (ehca_nr_ports == 1))	   \
- 		return snprintf(buf, 256, "1\n");			   \
-@@ -752,7 +790,7 @@ int __init ehca_module_init(void)
- 	int ret;
- 
- 	printk(KERN_INFO "eHCA Infiniband Device Driver "
--	                 "(Rel.: SVNEHCA_0017)\n");
-+	                 "(Rel.: SVNEHCA_0018)\n");
- 	idr_init(&ehca_qp_idr);
- 	idr_init(&ehca_cq_idr);
- 	spin_lock_init(&ehca_qp_idr_lock);
-diff -Nurp roland_git_orig/drivers/infiniband/hw/ehca/ehca_mrmw.c roland_git_work/drivers/infiniband/hw/ehca/ehca_mrmw.c
---- roland_git_orig/drivers/infiniband/hw/ehca/ehca_mrmw.c	2006-11-02 10:47:04.000000000 +0100
-+++ roland_git_work/drivers/infiniband/hw/ehca/ehca_mrmw.c	2006-11-07 00:03:03.000000000 +0100
-@@ -1013,7 +1013,7 @@ int ehca_reg_mr_rpages(struct ehca_shca 
- 	u32 i;
- 	u64 *kpage;
- 
--	kpage = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	kpage = ehca_alloc_fw_ctrlblock();
- 	if (!kpage) {
- 		ehca_err(&shca->ib_device, "kpage alloc failed");
- 		ret = -ENOMEM;
-@@ -1092,7 +1092,7 @@ int ehca_reg_mr_rpages(struct ehca_shca 
- 
- 
- ehca_reg_mr_rpages_exit1:
--	kfree(kpage);
-+	ehca_free_fw_ctrlblock(kpage);
- ehca_reg_mr_rpages_exit0:
- 	if (ret)
- 		ehca_err(&shca->ib_device, "ret=%x shca=%p e_mr=%p pginfo=%p "
-@@ -1124,7 +1124,7 @@ inline int ehca_rereg_mr_rereg1(struct e
- 	ehca_mrmw_map_acl(acl, &hipz_acl);
- 	ehca_mrmw_set_pgsize_hipz_acl(&hipz_acl);
- 
--	kpage = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	kpage = ehca_alloc_fw_ctrlblock();
- 	if (!kpage) {
- 		ehca_err(&shca->ib_device, "kpage alloc failed");
- 		ret = -ENOMEM;
-@@ -1181,7 +1181,7 @@ inline int ehca_rereg_mr_rereg1(struct e
- 	}
- 
- ehca_rereg_mr_rereg1_exit1:
--	kfree(kpage);
-+	ehca_free_fw_ctrlblock(kpage);
- ehca_rereg_mr_rereg1_exit0:
- 	if ( ret && (ret != -EAGAIN) )
- 		ehca_err(&shca->ib_device, "ret=%x lkey=%x rkey=%x "
-diff -Nurp roland_git_orig/drivers/infiniband/hw/ehca/ehca_qp.c roland_git_work/drivers/infiniband/hw/ehca/ehca_qp.c
---- roland_git_orig/drivers/infiniband/hw/ehca/ehca_qp.c	2006-11-02 10:47:04.000000000 +0100
-+++ roland_git_work/drivers/infiniband/hw/ehca/ehca_qp.c	2006-11-07 00:03:03.000000000 +0100
-@@ -811,8 +811,8 @@ static int internal_modify_qp(struct ib_
- 	unsigned long spl_flags = 0;
- 
- 	/* do query_qp to obtain current attr values */
--	mqpcb = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
--	if (mqpcb == NULL) {
-+	mqpcb = ehca_alloc_fw_ctrlblock();
-+	if (!mqpcb) {
- 		ehca_err(ibqp->device, "Could not get zeroed page for mqpcb "
- 			 "ehca_qp=%p qp_num=%x ", my_qp, ibqp->qp_num);
- 		return -ENOMEM;
-@@ -1225,7 +1225,7 @@ modify_qp_exit2:
- 	}
- 
- modify_qp_exit1:
--	kfree(mqpcb);
-+	ehca_free_fw_ctrlblock(mqpcb);
- 
- 	return ret;
- }
-@@ -1277,7 +1277,7 @@ int ehca_query_qp(struct ib_qp *qp,
- 		return -EINVAL;
- 	}
- 
--	qpcb = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL );
-+	qpcb = ehca_alloc_fw_ctrlblock();
- 	if (!qpcb) {
- 		ehca_err(qp->device,"Out of memory for qpcb "
- 			 "ehca_qp=%p qp_num=%x", my_qp, qp->qp_num);
-@@ -1401,7 +1401,7 @@ int ehca_query_qp(struct ib_qp *qp,
- 		ehca_dmp(qpcb, 4*70, "qp_num=%x", qp->qp_num);
- 
- query_qp_exit1:
--	kfree(qpcb);
-+	ehca_free_fw_ctrlblock(qpcb);
- 
- 	return ret;
- }
++		pic@500 {
++			// 5200 interrupts are encoded into two levels;
++			// Level 1 is 2 bits; [CRIT=0,MAIN=1,PERF=2,SDMA=3]
++			// Level 2 is 6 bits
++			// The levels are encoded into the lower byte of
++			// a single cell; // in binary: 1122 2222
++			linux,phandle = <500>;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			device_type = "interrupt-controller";
++			compatible = "mpc5200b-pic\0mpc5200-pic\0mpc52xx-pic";
++			reg = <500 80>;
++			built-in;
++		};
++
++		gpt@600 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <600 10>;
++			interrupts = <1 9 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@610 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <610 10>;
++			interrupts = <1 a 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@620 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <620 10>;
++			interrupts = <1 b 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@630 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <630 10>;
++			interrupts = <1 c 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@640 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <640 10>;
++			interrupts = <1 d 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@650 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <650 10>;
++			interrupts = <1 e 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@660 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <660 10>;
++			interrupts = <1 f 2>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@670 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <670 10>;
++			interrupts = <1 10 2>;
++			interrupt-parent = <500>;
++		};
++
++		rtc@800 {	// Real time clock
++			compatible = "mpc5200b-rtc\0mpc52xx-rtc";
++			device_type = "rtc";
++			reg = <800 100>;
++			interrupts = <1 5 2 1 6 2>;
++			interrupt-parent = <500>;
++		};
++
++		mscan@900 {
++			device_type = "mscan";
++			compatible = "mpc5200b-mscan\0mpc52xx-mscan";
++			interrupts = <2 11 2>;
++			interrupt-parent = <500>;
++			reg = <900 80>;
++		};
++
++		mscan@980 {
++			device_type = "mscan";
++			compatible = "mpc5200b-mscan\0mpc52xx-mscan";
++			interrupts = <1 12 2>;
++			interrupt-parent = <500>;
++			reg = <980 80>;
++		};
++
++		pci@0d00 {
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			compatible = "mpc5200b-pci\0mpc52xx-pci";
++			// I actually know very little about setting up PCI,
++			// so anything here would just be pulled out of my
++			// butt.  Instead I'll leave these placeholders until
++			// I figure out what it should be
++			//
++			// interrupt-map-mask = <>;
++			// interrupt-map = <>;
++			// bus-range = <>;
++			// ranges = <>;
++			//
++			clock-frequency = <3f940aa>;
++			interrupts = <2 8 2 2 9 2 2 a 2>;
++			interrupt-parent = <500>;
++		};
++
++		spi@f00 {
++			device_type = "spi";
++			compatible = "mpc5200b-spi\0mpc52xx-spi";
++			reg = <f00 20>;
++			interrupts = <2 d 2 2 e 2>;
++			interrupt-parent = <500>;
++		};
++
++		bestcomm@1200 {
++			device_type = "dma-controller";
++			compatible = "mpc5200b-bestcomm\0mpc5200-bestcomm\0mpc52xx-bestcomm";
++			reg = <1200 80>;
++		};
++
++		serial@2000 {		// PSC1
++			device_type = "serial";
++			compatible = "mpc5200b-psc-serial\0mpc52xx-psc-serial";
++			port-number = <0>;  // Logical port assignment
++			reg = <2000 100>;
++			interrupts = <2 1 2>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC2 in spi mode example
++		spi@2200 {		// PSC2
++			device_type = "spi";
++			compatible = "mpc5200b-psc-spi\0mpc52xx-psc-spi";
++			reg = <2200 100>;
++			interrupts = <2 2 2>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC3 in CODEC mode example
++		i2s@2400 {		// PSC3
++			device_type = "i2s";
++			compatible = "mpc5200b-psc-i2s\0mpc52xx-psc-i2s";
++			reg = <2400 100>;
++			interrupts = <2 3 2>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC4 unconfigured
++		//serial@2600 {		// PSC4
++		//	device_type = "serial";
++		//	compatible = "mpc5200b-psc-serial\0mpc52xx-psc-serial";
++		//	reg = <2600 100>;
++		//	interrupts = <2 b 2>;
++		//	interrupt-parent = <500>;
++		//};
++
++		// PSC5 unconfigured
++		//serial@2800 {		// PSC5
++		//	device_type = "serial";
++		//	compatible = "mpc5200b-psc-serial\0mpc52xx-psc-serial";
++		//	reg = <2800 100>;
++		//	interrupts = <2 c 2>;
++		//	interrupt-parent = <500>;
++		//};
++
++		// PSC6 in AC97 mode example
++		ac97@2c00 {		// PSC6
++			device_type = "ac97";
++			compatible = "mpc5200b-psc-ac97\0mpc52xx-psc-ac97";
++			reg = <2c00 100>;
++			interrupts = <2 4 2>;
++			interrupt-parent = <500>;
++		};
++
++		ethernet@3000 {
++			device_type = "network";
++			compatible = "mpc5200b-fec\0mpc52xx-fec";
++			reg = <3000 800>;
++			mac-address = [ 02 03 04 05 06 07 ]; // Bad!
++			interrupts = <2 5 2>;
++			interrupt-parent = <500>;
++		};
++
++		ata@3a00 {
++			device_type = "ata";
++			compatible = "mpc5200b-ata\0mpc52xx-ata";
++			reg = <3a00 100>;
++			interrupts = <2 7 2>;
++			interrupt-parent = <500>;
++		};
++
++		i2c@3d00 {
++			device_type = "i2c";
++			compatible = "mpc5200b-i2c\0mpc52xx-i2c";
++			reg = <3d00 40>;
++			interrupts = <2 f 2>;
++			interrupt-parent = <500>;
++		};
++
++		i2c@3d40 {
++			device_type = "i2c";
++			compatible = "mpc5200b-i2c\0mpc52xx-i2c";
++			reg = <3d40 40>;
++			interrupts = <2 10 2>;
++			interrupt-parent = <500>;
++		};
++	};
++};
+-- 
+1.4.3.rc2.g0503
