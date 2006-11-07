@@ -1,26 +1,16 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D50B67D08
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 07:44:36 +1100 (EST)
-Date: Tue, 7 Nov 2006 13:44:32 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Russell King <rmk-pci@arm.linux.org.uk>
-Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
-Message-ID: <20061107204432.GZ27140@parisc-linux.org>
-References: <1162884080.585336.70559261997.qpush@cradle>
-	<20061107072125.68E9F67CA7@ozlabs.org>
-	<20061107200730.GY27140@parisc-linux.org>
-	<20061107201436.GE9533@flint.arm.linux.org.uk>
+Return-Path: <tnt@246tNt.com>
+Message-ID: <4550F221.9060604@246tNt.com>
+Date: Tue, 07 Nov 2006 21:52:49 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061107201436.GE9533@flint.arm.linux.org.uk>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	"Eric W.Biederman" <ebiederm@xmission.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S.Miller" <davem@davemloft.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH/RFC] powerpc: Add MPC5200 Interrupt Controller support.
+References: <200611071040.kA7Aeea6006482@post.webmailer.de>	
+	<455063C6.6070205@246tNt.com>
+	<528646bc0611070830u2d490d79v5843de918c54b05f@mail.gmail.com>
+In-Reply-To: <528646bc0611070830u2d490d79v5843de918c54b05f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, sven@genesi-usa.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,22 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 07, 2006 at 08:14:36PM +0000, Russell King wrote:
-> On Tue, Nov 07, 2006 at 01:07:30PM -0700, Matthew Wilcox wrote:
-> > We have the per-irq void *chip_data; could this be the right place to
-> > keep it instead?  That way, it won't take up space in the pci_dev for
-> > devices which don't use MSI.
-> 
-> Bah.  chip_data is supposed to be __iomem.  I bet if you build ARM
-> with sparse it'll kick out lots of warnings as a result of that loss.
+Grant Likely wrote:
+> On 11/7/06, Sylvain Munaut <tnt@246tnt.com> wrote:
+>> Nicolas DET wrote:
+>>
+>> > This patch add MPC52xx Interrupt controller for ARCH=powerpc.
+>> >
+>> > It includes the main code in arch/powerpc/sysdev/ ad well as an
+>> header file in
+>> > include/asm-powerpc.
+>> >
+>> > The header file has now distinct section for the struct and the IRQ
+>> mapping/enconding define
+>> >
+>> > Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
+>> Acked-by: Sylvain Munaut <tnt@246tNt.com>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>
+OOps ... sorry NAK ...
 
-Erm, since when?  When I introduced it (back in January 2005 [1]), it
-was called handler_data and pointed to a struct which is chip-type
-dependent.  One of the items in that struct is an IO address, but we
-need more than that.
+All your strings got screwed up ... all your \n got replaced by just n ...
 
-Now we have something else called handler_data, and I must
-admit to being quite confused what the difference is.  The comment in
-the header files and the DocBook genericirq leave me quite confused.
+And while your at it there is two extraneous whitespace, might be a good
+time to get rid
+of them. One in the comment header and one after a "size64".
 
-[1] http://git.kernel.org/git/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commit;h=1dd15c35b6bc179cd9c2a47e13360052c1e938a3
+
+    Sylvain
