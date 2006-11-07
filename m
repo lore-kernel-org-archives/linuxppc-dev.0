@@ -1,18 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 5C0E767C8B
+Return-Path: <mchaffin@microsatsystems.com>
+Received: from [63.150.173.66] (itnmail.itnes.com [63.150.173.66])
+	by ozlabs.org (Postfix) with ESMTP id 778FE67CDC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Nov 2006 02:27:43 +1100 (EST)
-Message-ID: <4550A5E6.50409@ru.mvista.com>
-Date: Tue, 07 Nov 2006 18:27:34 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Wed,  8 Nov 2006 04:18:36 +1100 (EST)
 MIME-Version: 1.0
-To: Vitaly Wool <vwool@ru.mvista.com>
-Subject: Re: [PATCH] adding ROM chips to device tree: respin
-References: <20061107141923.16b2d2f1.vwool@ru.mvista.com>
-In-Reply-To: <20061107141923.16b2d2f1.vwool@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7028F.25D232CD"
+Subject: Problem connecting a Ti TUSB2077a hub to Cypress SL811 host
+Date: Tue, 7 Nov 2006 10:07:04 -0700
+Message-ID: <B9D56A48380DF34CA0922A7C2450D4797B2E8C@itnmail1.itnes.com>
+From: "Chaffin, Michael" <mchaffin@microsatsystems.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: "Mouw, Jamie" <jmouw@microsatsystems.com>, "Newman,
+	David" <dnewman@microsatsystems.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,137 +23,307 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+This is a multi-part message in MIME format.
 
-Vitaly Wool wrote:
+------_=_NextPart_001_01C7028F.25D232CD
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> inlined below is the patch which adds support for flash device descriptions to the OF device tree. It's inspired by and partially borrowed from Sergei's patch which can be found at http://patchwork.ozlabs.org/linuxppc/patch?id=6526 but arranges things in a different way.
-> It should be used together with the corresponding MTD layer extension the current version of which was recently posted to linux-mtd list for discussion and can be found at http://lists.infradead.org/pipermail/linux-mtd/2006-November/016700.html.
-> In fact, currently this description can handle only flash devices mapped into memory in a linear way.
-> This patch is a respin of the patch which can be found at http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025013.html with comments from Sergei and Josh taken into account.
-> 
->  Documentation/powerpc/booting-without-of.txt |   37 +++++++++++++++++++++++++++
->  arch/powerpc/sysdev/Makefile                 |    1 
->  arch/powerpc/sysdev/rom.c                    |   31 ++++++++++++++++++++++
->  3 files changed, 69 insertions(+)
->  
-> Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
-> 
-> Index: powerpc/Documentation/powerpc/booting-without-of.txt
-> ===================================================================
-> --- powerpc.orig/Documentation/powerpc/booting-without-of.txt
-> +++ powerpc/Documentation/powerpc/booting-without-of.txt
-> @@ -6,6 +6,8 @@
->      IBM Corp.
->  (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
->      Freescale Semiconductor, FSL SOC and 32-bit additions
-> +(c) 2006 MontaVista Software, Inc.
-> +    Flash chip node definition
->  
->     May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
->  
-> @@ -1693,6 +1695,41 @@ platforms are moved over to use the flat
->  		};
->  	};
->  
-> +    g) Flash chip nodes
-> +
-> +    Flash chips (Memory Technology Devices) are often used for solid state
-> +    file systems on embedded devices.
-> +
-> +    Required properties:
-> +
-> +     - device_type : has to be "rom"
-> +     - compatible : Should be the name of the MTD driver. Currently, this is
-> +       most likely to be "physmap".
-> +     - memory_space : Offset and length of the register set for the device.
+I have a running 2.4.26 Linux kernel (penguinppc.org) on a commercial
+built embedded PPC405 (Xilinx VirtexII Pro) attached to a Cypress SL811
+shown to work, I am now trying to attach a Texas Instruments TUSB2077a
+Hub chip. When I first attach the hub to the host on Data +/- (pins 7 &
+8) the host recognizes the hub and then reports "USB device not
+accepting new address (error=3D-110)
 
-    NAK. There's no need to define an extra property where "reg" should be used.
+** SNIP **
+		/dev # cd /mnt
+		/mnt # insmod usbcore.o -f
+		Warning: kernel-module version mismatch
+			usbcore.o was compiled for kernel version
+2.4.26-msi
+			while this kernel is version 2.4.26-pre3
+		Warning: loading usbcore.o will taint the kernel: forced
+load
+		  See http://www.tux.org/lkml/#export-tainted for
+information about tainted modules
+		Module usbcore loaded, with warnings
+		/mnt # insmod -f sl__
+		/mnt # insmod -f sl811.o _[J
+		Warning: kernel-module version mismatch
+			sl811.o was compiled for kernel version
+2.4.26-msi
+			while this kernel is version 2.4.26-pre3
+		Warning: loading sl811.o will taint the kernel: no
+license
+		  See http://www.tux.org/lkml/#export-tainted for
+information about tainted modules
+		Warning: loading sl811.o will taint the kernel: forced
+load
+		Module sl811 loaded, with warnings
+		/mnt #=20
+		; MSC - External Hub is identified=20
+		; MSC - And reports over-current on three of the four
+available ports
+		hub.c: port 2 over-current change
+		hub.c: port 3 over-current change
+		hub.c: port 4 over-current change
+		; MSC - Host controller unable to set USB address on new
+HUB
+		; Hub is disconnected and un-reachable from this point
+on
+		hub.c: USB device not accepting new address (error=3D-110)
+		hub.c: error resetting hub 2 - disconnecting
+** SNIP **
 
-> +     - bank-width : Width of the flash data bus in bytes. Required
-> +       for the NOR flashes (compatible == "physmap" and others) ONLY.
+At this point the hub is completely un-responsive, but re-plugging the
+hub will return the same results. If I have a thumb drive attached to
+the hub, before I plug the hub into the host controller, I see the thumb
+drive properly but exit with the same error "USB device not accepting
+new address (error=3D-110).
 
-    Then it can not be called a *required* property I think.
+** SNIP **
+		usb.c: USB device 2 (vend/prod 0x781/0x7104) is not
+claimed by any active driver.
 
-> +
-> +    Recommended properties :
-> +
-> +     - partitions : Several pairs of 32-bit values where the first value is
-> +       partition's offset from the start of the MTD device and the second
-> +       one is partition size in bytes with LSB used to signify a read only
-> +       partititon (so, the parition size should always be an even number).
-> +     - partition-names : The list of concatenated zero terminated strings
-> +       representing the partition names.
-> +
-> +   Example:
-> +
-> + 	flash@ff000000 {
-> + 		device_type = "rom";
-> + 		compatible = "physmap";
-> + 		memory_space = <ff000000 01000000>;
-> + 		bank-width = <4>;
-> + 		partitions = <00000000 00f80000
-> + 			      00f80000 00080001>;
-> + 		partition-names = "fs\0firmware";
-> + 	};
-> +
->     More devices will be defined as this spec matures.
->  
->  
-> Index: powerpc/arch/powerpc/sysdev/Makefile
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/sysdev/Makefile
-> +++ powerpc/arch/powerpc/sysdev/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
->  obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
->  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
->  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-> +obj-$(CONFIG_MTD)		+= rom.o
->  
->  ifeq ($(CONFIG_PPC_MERGE),y)
->  obj-$(CONFIG_PPC_I8259)		+= i8259.o
-> Index: powerpc/arch/powerpc/sysdev/rom.c
-> ===================================================================
-> --- /dev/null
-> +++ powerpc/arch/powerpc/sysdev/rom.c
-> @@ -0,0 +1,31 @@
-> +/*
-> + * arch/powerpc/sysdev/flash.c
-> + *
-> + * Flash memory registration
-> + *
-> + * (C) 2006 MontaVista Software, Inc. This file is licensed under
-> + * the terms of the GNU General Public License version 2. This program
-> + * is licensed "as is" without any warranty of any kind, whether express
-> + * or implied.
-> + */
-> +
-> +#include <asm/of_device.h>
-> +
-> +static int __init powerpc_flash_init(void)
-> +{
-> +	struct device_node *node = NULL;
-> +	int num = 0;
-> +
-> +	/*
-> +	 * We care only about physmap devices now as there's no
-> +	 * description defined for other ROM types yet
-> +	 */
+		; MSC - Thumb drive is enumberated
+		  Length              =3D 18
+		  DescriptorType      =3D 01
+		  USB version         =3D 2.00
+		  Vendor:Product      =3D 0781:7104
+		  MaxPacketSize0      =3D 64
+		  NumConfigurations   =3D 1
+		  Device version      =3D 10.33
+		  Device Class:SubClass:Protocol =3D 00:00:00
+		    Per-interface classes
 
-    Not true. The description only says that it's *most probably* compatible 
-with "physmap", that's all. I don't see why we have to limit ourselves here.
+		Configuration:
+		  bLength             =3D    9
+		. . . . .=20
+		  bInterval           =3D   00
 
-> +	while ((node = of_find_compatible_node(node, "rom", "physmap"))
-> +			!= NULL) {
-> +		of_platform_device_create(node, "physmap-flash", NULL);
-> +		++num;
+		; MSC - Host controller unable to set USB address on new
+HUB
+		; Hub is disconnected and un-reachable from this point
+on
+		hub.c: USB device not accepting new address (error=3D-110)
+		hub.c: error resetting hub 127 - disconnecting
+** SNIP **
 
-    Why are you counting them, can you say?
+What am I doing wrong?
 
-> +	}
-> +	return 0;
-> +}
-> +
-> +arch_initcall(powerpc_flash_init);
+Michael S. Chaffin
+Satellite Test Engineer
+MicroSat Systems, Inc.
+microsatsystems.com
 
-WBR, Sergei
+------_=_NextPart_001_01C7028F.25D232CD
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>Problem connecting a Ti TUSB2077a hub to Cypress SL811 =
+host</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I have a running 2.4.26 Linux kernel =
+(penguinppc.org) on a commercial built embedded PPC405 (Xilinx VirtexII =
+Pro) attached to a Cypress SL811 shown to work, I am now trying to =
+attach a Texas Instruments TUSB2077a Hub chip. When I first attach the =
+hub to the host on Data +/- (pins 7 &amp; 8) the host recognizes the hub =
+and then reports &quot;USB device not accepting new address =
+(error=3D-110)</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">** SNIP **</FONT>
+<UL><UL>
+<P><I><FONT SIZE=3D2 FACE=3D"Courier New">/dev # cd /mnt</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">/mnt # insmod usbcore.o =
+-f</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Warning: kernel-module =
+version mismatch</FONT></I>
+
+<BR><I>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">usbcore.o was compiled for kernel version =
+2.4.26-msi</FONT></I>
+
+<BR><I>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">while this kernel is version 2.4.26-pre3</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Warning: loading usbcore.o =
+will taint the kernel: forced load</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; See </FONT></I><A =
+HREF=3D"http://www.tux.org/lkml/#export-tainted"><I><U><FONT =
+COLOR=3D"#0000FF" SIZE=3D2 FACE=3D"Courier =
+New">http://www.tux.org/lkml/#export-tainted</FONT></U></I></A><I><FONT =
+SIZE=3D2 FACE=3D"Courier New"> for information about tainted =
+modules</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Module usbcore loaded, with =
+warnings</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">/mnt # insmod -f =
+sl__</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">/mnt # insmod -f sl811.o =
+_[J</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Warning: kernel-module =
+version mismatch</FONT></I>
+
+<BR><I>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">sl811.o was compiled for kernel version =
+2.4.26-msi</FONT></I>
+
+<BR><I>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">while this kernel is version 2.4.26-pre3</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Warning: loading sl811.o will =
+taint the kernel: no license</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; See </FONT></I><A =
+HREF=3D"http://www.tux.org/lkml/#export-tainted"><I><U><FONT =
+COLOR=3D"#0000FF" SIZE=3D2 FACE=3D"Courier =
+New">http://www.tux.org/lkml/#export-tainted</FONT></U></I></A><I><FONT =
+SIZE=3D2 FACE=3D"Courier New"> for information about tainted =
+modules</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Warning: loading sl811.o will =
+taint the kernel: forced load</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">Module sl811 loaded, with =
+warnings</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">/mnt # </FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">; MSC - External Hub is =
+identified </FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">; MSC - And reports =
+over-current on three of the four available ports</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: port 2 over-current =
+change</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: port 3 over-current =
+change</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: port 4 over-current =
+change</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">; MSC &#8211; Host controller =
+unable to set USB address on new HUB</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">; Hub is disconnected and =
+un-reachable from this point on</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: USB device not =
+accepting new address (error=3D-110)</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: error resetting hub 2 =
+- disconnecting</FONT></I>
+</UL></UL>
+<P><FONT SIZE=3D2 FACE=3D"Arial">** SNIP **</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">At this point the hub is completely =
+un-responsive, but re-plugging the hub will return the same results. If =
+I have a thumb drive attached to the hub, before I plug the hub into the =
+host controller, I see the thumb drive properly but exit with the same =
+error &quot;USB device not accepting new address =
+(error=3D-110).</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">** SNIP **</FONT>
+<UL><UL>
+<P><I><FONT SIZE=3D2 FACE=3D"Courier New">usb.c: USB device 2 (vend/prod =
+0x781/0x7104) is not claimed by any active driver.</FONT></I>
+</P>
+
+<P><I><FONT SIZE=3D2 FACE=3D"Courier New">; MSC &#8211; Thumb drive is =
+enumberated</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+Length&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp; =3D 18</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+DescriptorType&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D 01</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; USB =
+version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =
+2.00</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+Vendor:Product&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D 0781:7104</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+MaxPacketSize0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D 64</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+NumConfigurations&nbsp;&nbsp; =3D 1</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; Device =
+version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D 10.33</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; Device =
+Class:SubClass:Protocol =3D 00:00:00</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp;&nbsp;&nbsp; =
+Per-interface classes</FONT></I>
+</P>
+
+<P><I><FONT SIZE=3D2 FACE=3D"Courier New">Configuration:</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+bLength&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp; =3D&nbsp;&nbsp;&nbsp; 9</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">. . . . . </FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp; =
+bInterval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+=3D&nbsp;&nbsp; 00</FONT></I>
+</P>
+
+<P><I><FONT SIZE=3D2 FACE=3D"Courier New">; MSC &#8211; Host controller =
+unable to set USB address on new HUB</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">; Hub is disconnected and =
+un-reachable from this point on</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: USB device not =
+accepting new address (error=3D-110)</FONT></I>
+
+<BR><I><FONT SIZE=3D2 FACE=3D"Courier New">hub.c: error resetting hub =
+127 - disconnecting</FONT></I>
+</UL></UL>
+<P><FONT SIZE=3D2 FACE=3D"Arial">** SNIP **</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">What am I doing wrong?</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Michael S. Chaffin</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Satellite Test Engineer</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">MicroSat Systems, Inc.</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">microsatsystems.com</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C7028F.25D232CD--
