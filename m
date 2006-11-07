@@ -1,22 +1,39 @@
-Return-Path: <suneel.reddy@motorola.com>
-Received: from mail119.messagelabs.com (mail119.messagelabs.com
-	[216.82.241.179]) by ozlabs.org (Postfix) with SMTP id EF1F867C30
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D402D67C1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Nov 2006 17:32:00 +1100 (EST)
-Received: from az33exr03.mot.com (az33exr03.mot.com [10.64.251.233])
-	by motgate.mot.com (Motorola/Motorola) with ESMTP id kA76VtfU010317
-	for <linuxppc-embedded@ozlabs.org>; Mon, 6 Nov 2006 23:31:56 -0700 (MST)
-Received: from ZMY16EXM66.ds.mot.com (zmy16exm66.ap.mot.com [10.179.4.26])
-	by az33exr03.mot.com (8.13.1/8.13.0) with ESMTP id kA76Vsgs028458
-	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Nov 2006 00:31:55 -0600 (CST)
+	Tue,  7 Nov 2006 20:00:26 +1100 (EST)
+Received: from server.idefix.loc (ppp-82-135-90-10.dynamic.mnet-online.de
+	[82.135.90.10]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id kA790DI4099368
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Nov 2006 10:00:18 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.loc with local (Exim 4.63 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1GhMoX-00060F-9b
+	for linuxppc-embedded@ozlabs.org; Tue, 07 Nov 2006 10:00:13 +0100
+Date: Tue, 7 Nov 2006 10:00:13 +0100
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
+Message-ID: <20061107090012.GA17066@server.idefix.loc>
+References: <20061104163119.GC69112@server.idefix.loc>
+	<528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>
+	<20061105102328.GH79990@server.idefix.loc>
+	<454DBE2C.6040506@246tNt.com>
+	<20061105202435.GB30026@server.idefix.loc>
+	<454E4E7D.7090507@grandegger.com>
+	<20061105212429.GA35760@server.idefix.loc>
+	<454F1AB9.8050609@grandegger.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C70236.656B94BD"
-Subject: Error in compiling the linux kernel 
-Date: Tue, 7 Nov 2006 14:31:45 +0800
-Message-ID: <405ECA8A30557F439A723E52D50838F90104DC4D@ZMY16EXM66.ds.mot.com>
-From: "Reddy Suneel-ASR125" <suneel.reddy@motorola.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <454F1AB9.8050609@grandegger.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,78 +44,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hello Wolfgang,
 
-------_=_NextPart_001_01C70236.656B94BD
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+* Wolfgang Grandegger <wg@grandegger.com> [06-11-06 12:21]:
+> unpack it and apply the relevant patches from the kernel-patches-target
+> diretory to linux-2.6-denx#v2.6.18. I think the following patches should
+> be sufficient (in that order):
+> 
+>    fec_mpc52xx_bestcomm.diff
+>    fec_mpc52xx.diff
+>    drivers_serial_mpc52xx_uart_fix.diff
+>    mpc5200_physmap.diff
 
-Hi
-=20
-I applied the gcov patch for Linux 2.6 and I try to compile it.  I am
-getting the following error.
-=20
-arch/ppc/kernel/built-in.o(.text+0x8f8): In function `_switch':
-arch/ppc/kernel/entry.S: relocation truncated to fit: R_PPC_REL14
-against symbol `do_syscall_trace' defined in .text section in
-arch/ppc/kernel/built-in.o
-make: *** [.tmp_vmlinux1] Error 1
-=20
-Linux kernel is cpmpiled for MPC8548 Powerpc processor.
-=20
-Can anybody knows the root cause of this problem?
-=20
-suneel   =20
-=20
+ok, my boards boots fine after that.
 
-------_=_NextPart_001_01C70236.656B94BD
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> You can find the most recent Xenomai patch 2.6.18-ppc-1.05.00 at
+> "ftp://ftp.denx.de/xenomai". I'm going to test them later today with 
+> Xenomai.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<TITLE>Message</TITLE>
+I applied now everything and Xenomai builds fine.
+I configured now my kernel, build it but the board do not boot or at
+least the console has gone.
 
-<META content=3D"MSHTML 6.00.2800.1561" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006>Hi</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D208482506-07112006>I =
-applied the gcov=20
-patch for Linux 2.6 and I try to compile it.&nbsp; I am getting the =
-following=20
-error.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006>arch/ppc/kernel/built-in.o(.text+0x8f8): In =
-function=20
-`_switch':<BR>arch/ppc/kernel/entry.S: relocation truncated to fit: =
-R_PPC_REL14=20
-against symbol `do_syscall_trace' defined in .text section in=20
-arch/ppc/kernel/built-in.o<BR>make: *** [.tmp_vmlinux1] Error=20
-1</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D208482506-07112006>Linux =
-kernel is=20
-cpmpiled for MPC8548 Powerpc processor.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D208482506-07112006>Can =
-anybody knows=20
-the root cause of this problem?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006>suneel&nbsp;&nbsp;&nbsp; </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D208482506-07112006></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
+Which bootargs you use in u-boot to boot the Xenomai kernel?
+My bootargs are:
+bootargs=root=/dev/nfs rw
+ nfsroot=192.168.0.151:/usr/local/eldk/ppc_6xx
+ ip=192.168.0.101:192.168.0.151:192.168.0.151:255.255.255.0:icecube::off
+ console=ttyPSC0
 
-------_=_NextPart_001_01C70236.656B94BD--
+You can find what I did on:
+http://wiki.idefix.fechner.net/index.php/Xenomai
+
+Thx for tips.
+
+
+Best regards,
+Matthias
+
+-- 
+
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
