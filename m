@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 56DF467DAD
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 10:04:56 +1100 (EST)
-Subject: Re: [PATCH] PowerPC: clockevents and HRT support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <45510C58.3010707@ru.mvista.com>
-References: <200611080005.08633.sshtylyov@ru.mvista.com>
-	<1162938997.28571.534.camel@localhost.localdomain>
-	<45510C58.3010707@ru.mvista.com>
-Content-Type: text/plain
-Date: Wed, 08 Nov 2006 10:04:44 +1100
-Message-Id: <1162940684.28571.537.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
+Return-Path: <enorm@126.com>
+Received: from m15-111.126.com (m15-111.126.com [220.181.15.111])
+	by ozlabs.org (Postfix) with SMTP id 8E7B367CEE
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 00:47:16 +1100 (EST)
+Message-ID: <002801c7026f$019536d0$8709a8c0@class>
+From: "enorm" <enorm@126.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: why need disable icache
+Date: Tue, 7 Nov 2006 21:16:58 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0025_01C702B2.0F4123F0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
->     That's not equivalent. What I wanted to cover with this option was 970 
-> weirdness of the decrementer interrupts being level triggered and effectively 
-> tied to the MSB of the decremeneter register...
->     Also, 40x decrementer is not Book E compatible.
+------=_NextPart_000_0025_01C702B2.0F4123F0
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-Well... Is this specific to the 970 or also happens on all
-POWER4..5..6 ? (I don't remember off the top of my head). It should
-probably be a runtime check then.
+SGksIGFsbA0KSSBoYXZlIGJlZW4gY29uZnVzZWQgYnkgY2FjaGUgcmVjZW50bHkuDQoxLiB3aHkg
+bmVlZCB3ZSBkaXNhYmxlIGljYWNoZSBhbmQgZGNhY2hlIGF0IHRoZSBiZWdpbm5pbmcgb2YgdGhl
+IHUtYm9vdCBjb2RlPw0KMi4gd2hlbiBjYW4gd2UgZW5hYmxlIHRoZW0gPw0KDQpZb3VyIGFuc3dl
+cnMgd2lsbCBiZSBob25lc3RseSB3ZWxjb21lZC4NCg0KQmVzdCByZWdhcmRzDQpFbm9ybQ==
 
-> > Also, what's the problem with ppc64 deterministic accounting that you
-> > can't fix it ?
-> 
->     Arch-specific accounting hooks which this feature makes use of can't be 
-> called from the generic clockevents code.
+------=_NextPart_000_0025_01C702B2.0F4123F0
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-Then the generic clockevent code will have to be fixed or powerpc not
-ported to it.
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
+MC4yOTAwLjI5NjMiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
+Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj5IaSwgYWxsPC9GT05UPjwv
+RElWPg0KPERJVj48Rk9OVCBzaXplPTI+SSBoYXZlIGJlZW4gY29uZnVzZWQgYnkgY2FjaGUgcmVj
+ZW50bHkuPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+MS4gd2h5IG5lZWQgd2UgZGlz
+YWJsZSBpY2FjaGUgYW5kIGRjYWNoZSBhdCB0aGUgYmVnaW5uaW5nIG9mIA0KdGhlIHUtYm9vdCBj
+b2RlPzwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjIuIHdoZW4gY2FuIHdlIGVuYWJs
+ZSB0aGVtID88L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9E
+SVY+DQo8RElWPjxGT05UIHNpemU9Mj5Zb3VyIGFuc3dlcnMgd2lsbCBiZSBob25lc3RseSB3ZWxj
+b21lZC48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+
+DQo8RElWPjxGT05UIHNpemU9Mj5CZXN0IHJlZ2FyZHM8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05U
+IHNpemU9Mj5Fbm9ybTwvRk9OVD48L0RJVj48L0JPRFk+PC9IVE1MPg0K
 
-Ben.
+------=_NextPart_000_0025_01C702B2.0F4123F0--
