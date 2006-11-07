@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 07 Nov 2006 18:21:24 +1100
-Subject: [RFC/PATCH 6/7] MPIC MSI backend
+Date: Tue, 07 Nov 2006 18:21:25 +1100
+Subject: [RFC/PATCH 7/7] Enable MSI on Powerpc
 In-Reply-To: <1162884080.585336.70559261997.qpush@cradle>
-Message-Id: <20061107072126.C586067CD6@ozlabs.org>
+Message-Id: <20061107072127.D589667D06@ozlabs.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
 	Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
 	"David S. Miller" <davem@davemloft.net>
@@ -17,176 +17,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MPIC MSI backend. Based on code from Segher, heavily hacked by me.
-This version discovers the magic address by reading the config space.
-Still slightly hacky in that we reuse pdev->irq, pending an irq
-allocator for MPIC.
+Allow PCI_MSI to build on Powerpc. Hook up a few platforms to use
+the appropriate MSI backend.
 
-Tested, succesfully getting MSIs from the tg3 via HT/PCI-X on a JS21
-running SLOF.
+We still need CONFIG_POWERPC.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/msi-mpic.c |  138 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/msi.h      |    2 
- 2 files changed, 140 insertions(+)
+ arch/powerpc/kernel/Makefile           |    6 ++++++
+ arch/powerpc/platforms/maple/setup.c   |    3 +++
+ arch/powerpc/platforms/powermac/pic.c  |    3 +++
+ arch/powerpc/platforms/pseries/setup.c |    3 +++
+ drivers/pci/Kconfig                    |    2 +-
+ drivers/pci/Makefile                   |    4 +++-
+ 6 files changed, 19 insertions(+), 2 deletions(-)
 
-Index: msi/arch/powerpc/kernel/msi-mpic.c
+Index: msi/arch/powerpc/kernel/Makefile
 ===================================================================
---- /dev/null
-+++ msi/arch/powerpc/kernel/msi-mpic.c
-@@ -0,0 +1,138 @@
-+/*
-+ * Copyright (C) 2006 Segher Boessenkool, IBM Corp.
-+ * Copyright (C) 2006 Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the
-+ * License.
-+ *
-+ */
+--- msi.orig/arch/powerpc/kernel/Makefile
++++ msi/arch/powerpc/kernel/Makefile
+@@ -66,6 +66,12 @@ pci64-$(CONFIG_PPC64)		+= pci_64.o pci_d
+ 				   pci_direct_iommu.o iomap.o
+ pci32-$(CONFIG_PPC32)		:= pci_32.o
+ obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
 +
-+#undef DEBUG
++msiobj-y			:= msi.o
++msiobj-$(CONFIG_PPC_RTAS)	+= msi-rtas.o
++msiobj-$(CONFIG_MPIC)		+= msi-mpic.o
++obj-$(CONFIG_PCI_MSI)		+= $(msiobj-y)
 +
-+#include <linux/irq.h>
+ kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
+ kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
+Index: msi/arch/powerpc/platforms/maple/setup.c
+===================================================================
+--- msi.orig/arch/powerpc/platforms/maple/setup.c
++++ msi/arch/powerpc/platforms/maple/setup.c
+@@ -61,6 +61,7 @@
+ #include <asm/lmb.h>
+ #include <asm/mpic.h>
+ #include <asm/udbg.h>
 +#include <asm/msi.h>
-+#include <asm/hw_irq.h>
-+#include <asm/ppc-pci.h>
+ 
+ #include "maple.h"
+ 
+@@ -275,6 +276,8 @@ static void __init maple_init_IRQ(void)
+ 	ppc_md.get_irq = mpic_get_irq;
+ 	of_node_put(mpic_node);
+ 	of_node_put(root);
 +
-+static unsigned int find_ht_msi_capability(struct pci_dev *pdev)
-+{
-+	u8 subcap;
-+	unsigned int pos = pci_find_capability(pdev, PCI_CAP_ID_HT);
-+
-+	while (pos) {
-+		pci_read_config_byte(pdev, pos + HT_SUBCAP_OFFSET, &subcap);
-+		if (subcap == HT_CAPTYPE_MSI_MAPPING)
-+			return pos;
-+		pos = pci_find_next_capability(pdev, pos, PCI_CAP_ID_HT);
-+	}
-+
-+	return 0;
-+}
-+
-+static u64 read_ht_magic_addr(struct pci_dev *pdev, unsigned int pos)
-+{
-+	u8 flags;
-+	u32 tmp;
-+	u64 addr;
-+
-+	pci_read_config_byte(pdev, pos + HT_MSI_FLAGS, &flags);
-+
-+	if (flags & HT_MSI_FLAGS_FIXED)
-+		return HT_MSI_FIXED_ADDR;
-+
-+	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_LO, &tmp);
-+	addr = tmp & HT_MSI_ADDR_LO_MASK;
-+	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_HI, &tmp);
-+	addr = addr | ((u64)tmp << 32);
-+
-+	return addr;
-+}
-+
-+static u64 find_ht_magic_addr(struct pci_dev *pdev)
-+{
-+	struct pci_bus *bus;
-+	unsigned int pos;
-+
-+	for (bus = pdev->bus; bus; bus = bus->parent) {
-+		pos = find_ht_msi_capability(bus->self);
-+		if (pos)
-+			return read_ht_magic_addr(bus->self, pos);
-+	}
-+
-+	return 0;
-+}
-+
-+static int msi_mpic_check(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	/* We need an irq allocator before we can support multi-MSI & MSI-X */
-+	if (num != 1 || type == PCI_CAP_ID_MSIX) {
-+		msi_debug("precondition failure for %s\n", pci_name(pdev));
-+		return 1;
-+	}
-+
-+	/* If we can't find a magic address then MSI ain't gonna work */
-+	if (find_ht_magic_addr(pdev) == 0) {
-+		msi_debug("no magic address found for %s\n", pci_name(pdev));
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static void msi_mpic_free(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	/* We borrowed the LSI irq, so don't unmap it! */
-+	return;
-+}
-+
-+static int msi_mpic_alloc(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	/* For now we reuse the assigned LSI, this is a hack. */
-+	set_irq_type(pdev->irq, IRQ_TYPE_EDGE_RISING);
-+	entries[0].vector = pdev->irq;
-+
-+	return 0;
-+}
-+
-+static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
-+		struct msix_entry *entry, struct msi_msg *msg, int type)
-+{
-+	u64 addr;
-+
-+	addr = find_ht_magic_addr(pdev);
-+	msg->address_lo = addr & 0xFFFFFFFF;
-+	msg->address_hi = addr >> 32;
-+	msg->data = irq_map[pdev->irq].hwirq;
-+
-+	msi_debug("allocated irq %d at 0x%lx for %s\n", pdev->irq,
-+			addr, pci_name(pdev));
-+
-+	return 0;
-+}
-+
-+static struct ppc_msi_ops mpic_msi_ops = {
-+	.check = msi_mpic_check,
-+	.alloc = msi_mpic_alloc,
-+	.free = msi_mpic_free,
-+	.enable = msi_raw_enable,
-+	.disable = msi_raw_disable,
-+	.setup_msi_msg = msi_mpic_setup_msi_msg,
-+};
-+
-+static struct ppc_msi_ops *mpic_get_msi_ops(struct pci_dev *pdev)
-+{
-+	return &mpic_msi_ops;
-+}
-+
-+int msi_mpic_init(void)
-+{
-+	pr_debug("mpic_msi_init: Registering MPIC MSI ops.\n");
-+	ppc_md.get_msi_ops = mpic_get_msi_ops;
-+
-+	return 0;
-+}
-Index: msi/include/asm-powerpc/msi.h
++	msi_mpic_init();
+ }
+ 
+ static void __init maple_progress(char *s, unsigned short hex)
+Index: msi/arch/powerpc/platforms/powermac/pic.c
 ===================================================================
---- msi.orig/include/asm-powerpc/msi.h
-+++ msi/include/asm-powerpc/msi.h
-@@ -170,8 +170,10 @@ extern void msi_raw_disable(struct pci_d
+--- msi.orig/arch/powerpc/platforms/powermac/pic.c
++++ msi/arch/powerpc/platforms/powermac/pic.c
+@@ -34,6 +34,7 @@
+ #include <asm/time.h>
+ #include <asm/pmac_feature.h>
+ #include <asm/mpic.h>
++#include <asm/msi.h>
  
- #ifdef CONFIG_PCI_MSI
- extern int msi_rtas_init(void);
-+extern int msi_mpic_init(void);
- #else
- static inline int msi_rtas_init(void) { return -1; };
-+static inline int msi_mpic_init(void) { return -1; };
+ #include "pmac.h"
+ 
+@@ -562,6 +563,8 @@ static int __init pmac_pic_probe_mpic(vo
+ 	set_irq_data(cascade, mpic2);
+ 	set_irq_chained_handler(cascade, pmac_u3_cascade);
+ 
++	msi_mpic_init();
++
+ 	of_node_put(slave);
+ 	return 0;
+ }
+Index: msi/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- msi.orig/arch/powerpc/platforms/pseries/setup.c
++++ msi/arch/powerpc/platforms/pseries/setup.c
+@@ -65,6 +65,7 @@
+ #include <asm/i8259.h>
+ #include <asm/udbg.h>
+ #include <asm/smp.h>
++#include <asm/msi.h>
+ 
+ #include "plpar_wrappers.h"
+ #include "ras.h"
+@@ -275,6 +276,7 @@ static void __init pseries_discover_pic(
+ #ifdef CONFIG_SMP
+ 			smp_init_pseries_mpic();
  #endif
++			msi_mpic_init();
+ 			return;
+ 		} else if (strstr(typep, "ppc-xicp")) {
+ 			ppc_md.init_IRQ       = xics_init_IRQ;
+@@ -284,6 +286,7 @@ static void __init pseries_discover_pic(
+ #ifdef CONFIG_SMP
+ 			smp_init_pseries_xics();
+ #endif
++			msi_rtas_init();
+ 			return;
+ 		}
+ 	}
+Index: msi/drivers/pci/Kconfig
+===================================================================
+--- msi.orig/drivers/pci/Kconfig
++++ msi/drivers/pci/Kconfig
+@@ -4,7 +4,7 @@
+ config PCI_MSI
+ 	bool "Message Signaled Interrupts (MSI and MSI-X)"
+ 	depends on PCI
+-	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64
++	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64 || PPC_MERGE
+ 	help
+ 	   This allows device drivers to enable MSI (Message Signaled
+ 	   Interrupts).  Message Signaled Interrupts enable a device to
+Index: msi/drivers/pci/Makefile
+===================================================================
+--- msi.orig/drivers/pci/Makefile
++++ msi/drivers/pci/Makefile
+@@ -14,8 +14,10 @@ obj-$(CONFIG_HOTPLUG) += hotplug.o
+ # Build the PCI Hotplug drivers if we were asked to
+ obj-$(CONFIG_HOTPLUG_PCI) += hotplug/
  
- #endif /* __ASSEMBLY__ */
+-# Build the PCI MSI interrupt support
++# Build the PCI MSI interrupt support, but not for arch/powerpc
++ifndef CONFIG_PPC_MERGE
+ obj-$(CONFIG_PCI_MSI) += msi.o
++endif
+ 
+ # Build the Hypertransport interrupt support
+ obj-$(CONFIG_HT_IRQ) += htirq.o
