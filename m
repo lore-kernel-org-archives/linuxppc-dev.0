@@ -1,18 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/1]  PPC32 : Huge-page support for ppc440
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland Dreier <rdreier@cisco.com>
-In-Reply-To: <ada1wogj5s0.fsf@cisco.com>
-References: <454FC362.9070608@linux.vnet.ibm.com>
-	<1162864834.3809.21.camel@zod.rchland.ibm.com>
-	<1162866287.28571.392.camel@localhost.localdomain>
-	<ada1wogj5s0.fsf@cisco.com>
-Content-Type: text/plain
-Date: Tue, 07 Nov 2006 14:45:22 +1100
-Message-Id: <1162871122.28571.396.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
-	Edi Shmueli <edi@linux.vnet.ibm.com>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id DE90E67C1A
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 15:01:00 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so923103ugf
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Nov 2006 20:00:55 -0800 (PST)
+Message-ID: <528646bc0611062000p53e49762s9bf0c7eebcf284ec@mail.gmail.com>
+Date: Mon, 6 Nov 2006 21:00:54 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] [RFC] Add support for lite5200b to arch/powerpc
+In-Reply-To: <1162865073.28571.390.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <11628596653052-git-send-email-grant.likely@secretlab.ca>
+	<11628596751096-git-send-email-grant.likely@secretlab.ca>
+	<11628596753992-git-send-email-grant.likely@secretlab.ca>
+	<1162865073.28571.390.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-11-06 at 19:26 -0800, Roland Dreier wrote:
->  > Also, while it's great to have somebody do this work, I doubt there is
->  > much interest in merging it for arch/ppc... 
-> 
-> On that subject, what's the latest on moving ppc4xx to arch/powerpc?
-> At the kernel summit you told me to chill out and wait, but I'll
-> repeat my offer to help out....
+On 11/6/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> > +static int __init lite5200_probe(void)
+> > +{
+> > +     unsigned long node = of_get_flat_dt_root();
+> > +     const char *model = of_get_flat_dt_prop(node, "model", NULL);
+> > +
+> > +     if (!of_flat_dt_is_compatible(node, "mpc52xx"))
+> > +             return 0;
+> > +     pr_debug("%s board w/ mpc52xx found\n", model ? model : "unknown");
+> > +
+> > +     return 1;
+> > +}
+>
+> Are you creating a "generic" mpc52xx machine or a "lite5200b" machine ?
+>
+> If you do the former, it will try to match on any board with that
+> compatible propery, thus any mpc52xx based board. That is probably not
+> what you want.
 
-Well, I told you that Matt Porter was about to do it :-) Now I haven't
-heard from him since. Feel free to jump in, just make sure you keep in
-sync with Josh and Matt.
+Heh, I got lazy.  I'll fix this.
 
-One of the reason waiting was a good idea too is that we didn't have a
-proper mecanism for stuffing device-trees in zImage wrappers, which we 
-have now.
+g.
 
-Also, I've started doing some work around 4xx devices used on MMIO
-platforms (like the Axon southbridge on Cell), and while doing that,
-started moving EMAC to be an of_platform_device (or rather a set of them
-since EMAC is made of multiple devices). (Based on initial work by
-Shaun).
-
-You can see some of that stuff in the big patch set I posted to the list
-yesterday, though I already fixed various issues in some of those
-patches, so I suppose I'll have to post a new one soon :)
-
-Cheers,
-Ben.
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
