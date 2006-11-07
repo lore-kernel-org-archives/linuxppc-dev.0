@@ -1,19 +1,23 @@
-Return-Path: <federicosibilio@tiscali.it>
-Received: from mrqout2.tiscali.it (mrqout2a.tiscali.it [195.130.225.14])
-	by ozlabs.org (Postfix) with ESMTP id BC55967CAE
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 929A067CD4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Nov 2006 00:53:51 +1100 (EST)
-Received: from ps8 (10.39.75.78) by mail-8.mail.tiscali.sys (7.3.110.2)
-	id 45420C2F0001C7CD for linuxppc-embedded@ozlabs.org;
-	Tue, 7 Nov 2006 14:38:28 +0100
-Message-ID: <32912319.1162906708248.JavaMail.root@ps8>
-Date: Tue, 7 Nov 2006 14:38:28 +0100 (CET)
-From: "federicosibilio@tiscali.it" <federicosibilio@tiscali.it>
-To: linuxppc-embedded@ozlabs.org
-Subject: Installing u-boot on sbc8260 via ethernet using minicom
-MIME-Version: 1.0
-Content-Type: text/plain;charset="UTF-8"
-Reply-To: "federicosibilio@tiscali.it" <federicosibilio@tiscali.it>
+	Wed,  8 Nov 2006 01:48:01 +1100 (EST)
+Date: Tue, 7 Nov 2006 17:47:41 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Kalle Pokki <kalle.pokki@iki.fi>
+Subject: Re: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
+Message-ID: <20061107174741.3d837e19@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0611071451130.3291@host32.eke.fi>
+References: <Pine.LNX.4.64.0611061523360.12023@host32.eke.fi>
+	<20061106205543.43b2aacb@localhost.localdomain>
+	<Pine.LNX.4.64.0611062237300.16727@host32.eke.fi>
+	<20061107150842.6ac9e8ce@vitb.ru.mvista.com>
+	<Pine.LNX.4.64.0611071451130.3291@host32.eke.fi>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_IJkRtr3EQvQEC5=ee1SpURR";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: Paul, linuxppc-embedded@ozlabs.org, Mackerras <paulus@samba.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +28,85 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-i've tryed to install u-boot using minicom, but i'm not able to=20
-configure in shell boot params,=20
-using this...
+--Sig_IJkRtr3EQvQEC5=ee1SpURR
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-boot device          : motfcc
-unit number          : 0
-processor number     : 0
-host name            : motfcc0
-inet on ethernet (e) : 192.168.0.4
-inet on backplane (b): 192.168.0.4
-host inet (h)        : 192.168.0.3
-gateway inet (g)     : 192.168.0.3
-flags (f)            : 0x80
-target name (tn)     : sbc8260
+On Tue, 7 Nov 2006 15:21:00 +0200 (EET)
+Kalle Pokki wrote:
 
-when i reboot target it appears in minicom the message below:
+> On Tue, 7 Nov 2006, Vitaly Bordug wrote:
+>=20
+> > Well, yes, but are you _sure_ pram_base will be the same across all
+> > the 82xx PQ2, that happen to have smc wired to Ethernet?
+> >
+> > If not I am considering storing it in the platform_data is better
+> > approach.
+>=20
+> Yes, pram_base is always 0x87fc for SMC1 and 0x88fc for SMC2. This is
+> for all PowerQUICC II families (8260, 8272, and 8280). I'm not sure
+> how PQ2 Pro and PQ3 and handled, but I suspect they don't share these=20
+> definitions.
+>=20
+ok
+> Anyway, I'm only extending the already existing conventions to the=20
+> platform device approach. These same decisions have already been made
+> in the past and are used in the cpm_uart compat mode. It may be that=20
+> Freescale someday releases a microcode patch that relocates the SMC=20
+> parameter RAM, but even in this case it would be better to use the
+> same approach with compat mode and platform device mode to avoid
+> confusion.
+>=20
+> I could have used the numerical address offsets in the resource=20
+> definition, but I wanted to emphasize the fact that the offsets are=20
+> already defined by the DPRAM memory allocator (this is a little
+> hackish, yes) instead of hardware directly requiring these exact
+> values.
+>=20
 
-AT S7=3D45 S0=3D0 L1 V1 X4 &c1 E1 Q0
-0x1f058b0 (tBoot): miiPhyInit check cable connection
-Attached TCP/IP interface to motfcc0.
-Warning: no netmask specified.
-Attaching network interface lo0... done.
-Loading... Erroneous header read
+Aha, I recall now. There was nearly exactly the same discussion in the past=
+.=20
+The recap was since ppc_platform_devices[] approach is not flexible enough,=
+ revisit issue from the=20
+arch/powerpc POV.=20
 
-Error loading file: errno =3D 0x610001.
-Can't load boot file!!
-=C3=BC
+> This snippet is from cpm2.h:
+>=20
+>  	/* Dual Port RAM addresses.  The first 16K is available for
+> almost
+>  	 * any CPM use, so we put the BDs there.  The first 128
+> bytes are
+>  	 * used for SMC1 and SMC2 parameter RAM, so we start
+> allocating
+>  	 * BDs above that.  All of this must change when we start
+>  	 * downloading RAM microcode.
+>  	 */
+>  	#define CPM_DATAONLY_BASE       ((uint)128)
+>=20
+> My patch puts pram_base exactly here.
+>=20
+>=20
 
-my questions are?
-what file must i put into target?(u-boot.bin?)
-in which way can i upload it?(using tftp with 192.168.0.4 and using=20
-put command, it gives timeout for transmission, but ping to=20
-192.168.0.3=20
-works normally until in minicom appears error message)
+I know, the questionable thing was if there is enough "value" to add yet an=
+other platform device for that.
 
-Please help me to configure and install u-boot
-thanks very much!!!
+Since it improves current ppc being and sort of puts a note for powerpc por=
+t, I'm inclined to ACK.
 
+Thanks,
 
-Naviga e telefona senza limiti con Tiscali    =20
-Scopri le promozioni Tiscali adsl: navighi e telefoni senza canone Telecom
+-Vitaly
 
-http://abbonati.tiscali.it/adsl/
+--Sig_IJkRtr3EQvQEC5=ee1SpURR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFUJyOuOg9JvQhSEsRAoR1AKCQygzAjQ8dAWJ2vMb4obSXGZHrUQCgo3vO
+R9F+Wdaf0LkDmNAlZ3P5yRs=
+=oGmL
+-----END PGP SIGNATURE-----
+
+--Sig_IJkRtr3EQvQEC5=ee1SpURR--
