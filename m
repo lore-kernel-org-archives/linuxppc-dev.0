@@ -1,23 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id DE90E67C1A
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 15:01:00 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so923103ugf
-	for <linuxppc-dev@ozlabs.org>; Mon, 06 Nov 2006 20:00:55 -0800 (PST)
-Message-ID: <528646bc0611062000p53e49762s9bf0c7eebcf284ec@mail.gmail.com>
-Date: Mon, 6 Nov 2006 21:00:54 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] [RFC] Add support for lite5200b to arch/powerpc
-In-Reply-To: <1162865073.28571.390.camel@localhost.localdomain>
+Return-Path: <olaf@aepfle.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	by ozlabs.org (Postfix) with ESMTP id 1E57667C1C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 18:08:43 +1100 (EST)
+Date: Tue, 7 Nov 2006 08:08:36 +0100 (MET)
+From: Olaf Hering <olaf@aepfle.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
+Message-ID: <20061107070839.GA31460@aepfle.de>
+References: <454DBFE7.3090800@s5r6.in-berlin.de>
+	<1162724083.28571.235.camel@localhost.localdomain>
+	<454DC985.2020203@s5r6.in-berlin.de>
+	<20061106165752.GA25595@aepfle.de>
+	<1162851570.28571.361.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11628596653052-git-send-email-grant.likely@secretlab.ca>
-	<11628596751096-git-send-email-grant.likely@secretlab.ca>
-	<11628596753992-git-send-email-grant.likely@secretlab.ca>
-	<1162865073.28571.390.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1162851570.28571.361.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Gioele Barabucci <dev@gioelebarabucci.com>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/6/06, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> > +static int __init lite5200_probe(void)
-> > +{
-> > +     unsigned long node = of_get_flat_dt_root();
-> > +     const char *model = of_get_flat_dt_prop(node, "model", NULL);
-> > +
-> > +     if (!of_flat_dt_is_compatible(node, "mpc52xx"))
-> > +             return 0;
-> > +     pr_debug("%s board w/ mpc52xx found\n", model ? model : "unknown");
-> > +
-> > +     return 1;
-> > +}
->
-> Are you creating a "generic" mpc52xx machine or a "lite5200b" machine ?
->
-> If you do the former, it will try to match on any board with that
-> compatible propery, thus any mpc52xx based board. That is probably not
-> what you want.
+On Tue, Nov 07, Benjamin Herrenschmidt wrote:
 
-Heh, I got lazy.  I'll fix this.
+> On Mon, 2006-11-06 at 17:58 +0100, Olaf Hering wrote:
+> > On Sun, Nov 05, Stefan Richter wrote:
+> > 
+> > > Yes, PowerBook G3 Pismo seems affected.
+> > > https://bugzilla.novell.com/show_bug.cgi?id=115228
+> > 
+> > This patch does not help. Doing an ip link set dev eth0 up makes no
+> > difference.
+> 
+> What about trying to add a delay between the pmac clock code and the
+> init of the controller ? does that help ?
 
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+no. and it is the rmmod, not the insmod, that hangs the pismo.
+Adding some mdelay to the remove function doesnt help either.
