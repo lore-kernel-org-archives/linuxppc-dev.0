@@ -1,17 +1,21 @@
-Return-Path: <judith@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4652F67D1F
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 05:10:03 +1100 (EST)
-Date: Tue, 7 Nov 2006 10:09:37 -0800
-From: Judith Lebzelter <judith@osdl.org>
-To: sfr@canb.auug.org.au
-Subject: Re: build problems with powerpc allmodconfig
-Message-ID: <20061107180937.GB1339@shell0.pdx.osdl.net>
-Mime-Version: 1.0
+Return-Path: <rdreier@cisco.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1]  PPC32 : Huge-page support for ppc440
+References: <454FC362.9070608@linux.vnet.ibm.com>
+	<1162864834.3809.21.camel@zod.rchland.ibm.com>
+	<1162866287.28571.392.camel@localhost.localdomain>
+	<ada1wogj5s0.fsf@cisco.com>
+	<1162871122.28571.396.camel@localhost.localdomain>
+	<1162900338.19697.20.camel@crusty.rchland.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 07 Nov 2006 10:55:13 -0800
+In-Reply-To: <1162900338.19697.20.camel@crusty.rchland.ibm.com> (Josh Boyer's
+	message of "Tue, 07 Nov 2006 05:52:18 -0600")
+Message-ID: <ada7iy7hysu.fsf@cisco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-embedded@ozlabs.org, Edi Shmueli <edi@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>  - vioscsi linkage fails because iseries_vscsi.c and rpa_vscsi.c.
->>    This needs some trivial indirection via function vectors, but
->>    how can we find out which one to use from the driver?  Both
->>    seem to look the same in the device tree
->
-> The maintainer suggested that we just don't build vioscsi for iseries
-> if we are building the rpa version as it is not often used (in particular,
-> it is not used for installations).  We could, however distinguish them
-> by changing the "compat" field in the iSeries device tree if we wished.
->
+Is this 44x work at the point where having more people would help?  I
+have a 440SPe eval board that I'd like to get going with
+arch/powerpc.  I could work on PCI Express or something like that...
 
-How about just adding an 'ifndef' in the Makefile, as in the patch below?
-This compiles ibmvscsic.o fine.
+On the other hand, I'm happy to wait and work on other stuff...
 
-Judith Lebzelter
-
----
-Index: linux/drivers/scsi/ibmvscsi/Makefile
-===================================================================
---- linux.orig/drivers/scsi/ibmvscsi/Makefile	2006-11-06 16:52:09.000000000 -0800
-+++ linux/drivers/scsi/ibmvscsi/Makefile	2006-11-07 09:35:34.019969437 -0800
-@@ -1,7 +1,9 @@
- obj-$(CONFIG_SCSI_IBMVSCSI)	+= ibmvscsic.o
- 
- ibmvscsic-y			+= ibmvscsi.o
-+ifndef CONFIG_PPC_PSERIES
- ibmvscsic-$(CONFIG_PPC_ISERIES)	+= iseries_vscsi.o 
-+endif
- ibmvscsic-$(CONFIG_PPC_PSERIES)	+= rpa_vscsi.o 
- 
- obj-$(CONFIG_SCSI_IBMVSCSIS)	+= ibmvstgt.o
+ - R.
