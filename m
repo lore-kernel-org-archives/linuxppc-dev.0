@@ -1,13 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 285E667C9E
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 13:08:39 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2DD4767D05
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 10:24:46 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1ac327mer.fsf@ebiederm.dsl.xmission.com>
 References: <1162884080.585336.70559261997.qpush@cradle>
 	<20061107072125.68E9F67CA7@ozlabs.org>
 	<20061107200730.GY27140@parisc-linux.org>
@@ -17,13 +17,12 @@ References: <1162884080.585336.70559261997.qpush@cradle>
 	<20061107210202.GA27140@parisc-linux.org>
 	<20061107222514.GG9533@flint.arm.linux.org.uk>
 	<1162938562.28571.531.camel@localhost.localdomain>
-	<m1mz727syy.fsf@ebiederm.dsl.xmission.com>
-	<1162944905.28571.551.camel@localhost.localdomain>
-	<m1ac327mer.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Wed, 08 Nov 2006 13:08:00 +1100
-Message-Id: <1162951680.28571.627.camel@localhost.localdomain>
-Mime-Version: 1.0
+Date: Tue, 07 Nov 2006 16:11:17 -0700
+In-Reply-To: <1162938562.28571.531.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Wed, 08 Nov 2006 09:29:22 +1100")
+Message-ID: <m1mz727syy.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: Matthew Wilcox <matthew@wil.cx>, Greg Kroah-Hartman <greg@kroah.com>,
 	Ingo Molnar <mingo@elte.hu>,
 	Russell King <rmk-pci@arm.linux.org.uk>, linuxppc-dev@ozlabs.org,
@@ -38,28 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-11-07 at 18:33 -0700, Eric W. Biederman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> >> For message signalled interrupts and hyptertransport interrupts we probably
-> > want
-> >> to add an additional field for pointing to their per irq state.  Per device
-> >> interrupt controllers are truly peculiar.
-> >
-> > A per-irq addition field for the MSI data might indeed be useful. I
-> > still want to store it in the pci_dev, but it would be good to have a
-> > pointer to it in the irq_desc.
-> 
-> The msi_info in pci_dev is reasonable.  But storing all 4096 possible
-> msi_desc's in pci_dev seems a little much.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-My initial idea was that the msi_info structure would have a variable
-lenght, that is, would end with msi_desc[0] and would be allocated to
-the the right size, but it might suck a bit :-)
+>> I guess we'll just have to add __force casts all over the code. ;(
+>
+> Or just do it in a single accessor function/macro...
 
-> Hopefully I can look at this a little more this evening and see what we
-> need to do to harmonize the two msi implementations.
+Or treat struct irq_desc like struct page and have a members that
+depend on features that you enable or disable depending on the architecture
+dependent tradeoffs.
 
-Thanks !
+We already have a few members depend on things like SMP.
 
-Ben.
+With the cache line alignment of each array entry we take up a fair amount of
+space, so we don't have to micro optimize just do a decent job of not having
+anything to terrible.
+
+For message signalled interrupts and hyptertransport interrupts we probably want
+to add an additional field for pointing to their per irq state.  Per device
+interrupt controllers are truly peculiar.
+
+Eric
