@@ -2,9 +2,9 @@ Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Tue, 07 Nov 2006 18:22:58 +1100
-Subject: [PATCH 24/31] powerpc: spider uses low level BE MMIO accessors
+Subject: [PATCH 25/31] powerpc: Add an optional offset to direct DMA on 64 bits
 In-Reply-To: <1162884150.435786.961370643810.qpush@grosgo>
-Message-Id: <20061107072415.3446D68337@ozlabs.org>
+Message-Id: <20061107072416.61B3168337@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,49 +14,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We use the powerpc specific low level MMIO accessor variants instead
-of readl() or readl_be() because we know spidernet is not a real PCI
-device and we can thus avoid the performance hit caused by the PCI
-workarounds.
+This patch adds an optional global offset that can be added to DMA addresses
+when using the direct DMA operations.
+
+That brings it a step closer to the 32 bits direct DMA operations, and makes
+it useable on Cell when the MMU is disabled and we are using a spider
+southbridge.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- drivers/net/spider_net.c |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/dma_64.c      |   11 ++++++++---
+ include/asm-powerpc/dma-mapping.h |    2 ++
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
-Index: linux-cell/drivers/net/spider_net.c
+Index: linux-cell/arch/powerpc/kernel/dma_64.c
 ===================================================================
---- linux-cell.orig/drivers/net/spider_net.c	2006-11-07 15:10:08.000000000 +1100
-+++ linux-cell/drivers/net/spider_net.c	2006-11-07 15:11:26.000000000 +1100
-@@ -88,12 +88,11 @@ MODULE_DEVICE_TABLE(pci, spider_net_pci_
- static inline u32
- spider_net_read_reg(struct spider_net_card *card, u32 reg)
+--- linux-cell.orig/arch/powerpc/kernel/dma_64.c	2006-11-06 16:38:19.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/dma_64.c	2006-11-07 16:43:23.000000000 +1100
+@@ -134,7 +134,11 @@ EXPORT_SYMBOL(dma_iommu_ops);
+ 
+ /*
+  * Generic direct DMA implementation
++ *
++ * This implementation supports a global offset that can be applied if
++ * the address at which memory is visible to devices is not 0.
+  */
++unsigned long dma_direct_offset;
+ 
+ static void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *dma_handle, gfp_t flag)
+@@ -145,7 +149,7 @@ static void *dma_direct_alloc_coherent(s
+ 	ret = (void *)__get_free_pages(flag, get_order(size));
+ 	if (ret != NULL) {
+ 		memset(ret, 0, size);
+-		*dma_handle = virt_to_abs(ret);
++		*dma_handle = virt_to_abs(ret) | dma_direct_offset;
+ 	}
+ 	return ret;
+ }
+@@ -160,7 +164,7 @@ static dma_addr_t dma_direct_map_single(
+ 					size_t size,
+ 					enum dma_data_direction direction)
  {
--	u32 value;
--
--	value = readl(card->regs + reg);
--	value = le32_to_cpu(value);
--
--	return value;
-+	/* We use the powerpc specific variants instead of readl_be() because
-+	 * we know spidernet is not a real PCI device and we can thus avoid the
-+	 * performance hit caused by the PCI workarounds.
-+	 */
-+	return in_be32(card->regs + reg);
+-	return virt_to_abs(ptr);
++	return virt_to_abs(ptr) | dma_direct_offset;
  }
  
- /**
-@@ -105,8 +104,11 @@ spider_net_read_reg(struct spider_net_ca
- static inline void
- spider_net_write_reg(struct spider_net_card *card, u32 reg, u32 value)
- {
--	value = cpu_to_le32(value);
--	writel(value, card->regs + reg);
-+	/* We use the powerpc specific variants instead of writel_be() because
-+	 * we know spidernet is not a real PCI device and we can thus avoid the
-+	 * performance hit caused by the PCI workarounds.
-+	 */
-+	out_be32(card->regs + reg, value);
- }
+ static void dma_direct_unmap_single(struct device *dev, dma_addr_t dma_addr,
+@@ -175,7 +179,8 @@ static int dma_direct_map_sg(struct devi
+ 	int i;
  
- /** spider_net_write_phy - write to phy register
+ 	for (i = 0; i < nents; i++, sg++) {
+-		sg->dma_address = page_to_phys(sg->page) + sg->offset;
++		sg->dma_address = (page_to_phys(sg->page) + sg->offset) |
++			dma_direct_offset;
+ 		sg->dma_length = sg->length;
+ 	}
+ 
+Index: linux-cell/include/asm-powerpc/dma-mapping.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/dma-mapping.h	2006-11-06 16:38:19.000000000 +1100
++++ linux-cell/include/asm-powerpc/dma-mapping.h	2006-11-07 16:23:21.000000000 +1100
+@@ -192,6 +192,8 @@ static inline void dma_unmap_sg(struct d
+ extern struct dma_mapping_ops dma_iommu_ops;
+ extern struct dma_mapping_ops dma_direct_ops;
+ 
++extern unsigned long dma_direct_offset;
++
+ #else /* CONFIG_PPC64 */
+ 
+ #define dma_supported(dev, mask)	(1)
