@@ -1,16 +1,19 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
-	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 9DB5967C7A
+Return-Path: <vwool@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A577667CF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Nov 2006 07:02:09 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: No RTC interrupt for PPC440EP board.
-Date: Tue, 7 Nov 2006 11:49:57 -0800
-Message-ID: <406A31B117F2734987636D6CCC93EE3C74973C@ehost011-3.exch011.intermedia.net>
-From: "Leonid" <Leonid@a-k-a.net>
-To: <linuxppc-embedded@ozlabs.org>
+	Wed,  8 Nov 2006 08:17:02 +1100 (EST)
+Subject: Re: [PATCH] adding ROM chips to device tree: respin
+From: Vitaly Wool <vwool@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <4550A5E6.50409@ru.mvista.com>
+References: <20061107141923.16b2d2f1.vwool@ru.mvista.com>
+	<4550A5E6.50409@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 08 Nov 2006 00:17:01 +0300
+Message-Id: <1162934221.2680.2.camel@barja>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,44 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi:
+> > +     - memory_space : Offset and length of the register set for the device.
+> 
+>     NAK. There's no need to define an extra property where "reg" should be used.
 
-I have PPC440EP board, derived from AMCC Yosemite evaluation board. My
-board has Dallas DS1743 NVRAM/RTC chip, connected to local bus (CS2). I
-believe, I made necessary initializations for TODC structures (I had to
-add CONFIG_GEN_RTC and CONFIG_GEN_RTC_X to my kernel configuration) - I
-used bamboo board as an example. Initialization goes OK and I even can
-access RTC via proc interface:
+The register set is actually not there and depends on flash chip type.
+So using regs here is misleading.
 
-~ # cat /proc/driver/rtc
-rtc_time        : -8:-1:-51
-rtc_date        : 1970-01--14232
-rtc_epoch       : 1900
-alarm           : 00:00:00
-DST_enable      : no
-BCD             : yes
-24hr            : yes
-square_wave     : no
-alarm_IRQ       : no
-update_IRQ      : no
-periodic_IRQ    : no
-periodic_freq   : 0
-batt_status     : okay
+> > +
+> > +	/*
+> > +	 * We care only about physmap devices now as there's no
+> > +	 * description defined for other ROM types yet
+> > +	 */
+> 
+>     Not true. The description only says that it's *most probably* compatible 
+> with "physmap", that's all. I don't see why we have to limit ourselves here.
 
-However when I'm using RTC test application, suggested by Paul Gortmaker
-in Documentation/rtc.txt, it gets blocked on read operation:
+Effectively we care about NOR chips and similar which are
+memory-mapped. 
 
-~ # rtctest
-
-                        RTC Driver Test Example.
-
-Counting 5 update (1/sec) interrupts from reading /dev/rtc:
-
-Looks like interrupts don't arrive from device so I don't think this
-device by itself would generate any interrupts. Any ideas what I'm doing
-wrong? May be this test application is obsolete and I should use another
-one? Some missing definitions in my kernel config file?
-
-Thanks,
-
-Leonid.
+Vitaly
