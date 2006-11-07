@@ -1,13 +1,10 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 07 Nov 2006 18:21:25 +1100
-Subject: [RFC/PATCH 7/7] Enable MSI on Powerpc
-In-Reply-To: <1162884080.585336.70559261997.qpush@cradle>
-Message-Id: <20061107072127.D589667D06@ozlabs.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-	Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-	"David S. Miller" <davem@davemloft.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 07 Nov 2006 18:22:30 +1100
+Subject: [PATCH 0/31] My current serie of patches for 2.6.20 for review
+In-Reply-To: <benh@kernel.crashing.org>
+Message-Id: <1162884150.435786.961370643810.qpush@grosgo>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,135 +14,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Allow PCI_MSI to build on Powerpc. Hook up a few platforms to use
-the appropriate MSI backend.
+[ I'm re-posting it today as there have been a number of significant
+  changes. I expect that unless I get a lot of feedback, however,
+  your mailboxes will be safe from such another flood for the next
+  few days as I'll be working on a couple of other things I have
+  pending and I'm fairly happy with the patches in their current
+  shape
+]
 
-We still need CONFIG_POWERPC.
+This is the whole of my current patch set that I intend to merge
+as soon as 2.6.20 merge window opens. I'm posting them here for
+review, some of them already had a few iterations on the list by
+their own, some didn't show up publically at all yet.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+Note that the first 4 ones require specific comments:
 
- arch/powerpc/kernel/Makefile           |    6 ++++++
- arch/powerpc/platforms/maple/setup.c   |    3 +++
- arch/powerpc/platforms/powermac/pic.c  |    3 +++
- arch/powerpc/platforms/pseries/setup.c |    3 +++
- drivers/pci/Kconfig                    |    2 +-
- drivers/pci/Makefile                   |    4 +++-
- 6 files changed, 19 insertions(+), 2 deletions(-)
+- powerpc-ibmveth-remove-liobn.diff should already be queued with
+  Jeff Garzik
 
-Index: msi/arch/powerpc/kernel/Makefile
-===================================================================
---- msi.orig/arch/powerpc/kernel/Makefile
-+++ msi/arch/powerpc/kernel/Makefile
-@@ -66,6 +66,12 @@ pci64-$(CONFIG_PPC64)		+= pci_64.o pci_d
- 				   pci_direct_iommu.o iomap.o
- pci32-$(CONFIG_PPC32)		:= pci_32.o
- obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
-+
-+msiobj-y			:= msi.o
-+msiobj-$(CONFIG_PPC_RTAS)	+= msi-rtas.o
-+msiobj-$(CONFIG_MPIC)		+= msi-mpic.o
-+obj-$(CONFIG_PCI_MSI)		+= $(msiobj-y)
-+
- kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
- kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
-Index: msi/arch/powerpc/platforms/maple/setup.c
-===================================================================
---- msi.orig/arch/powerpc/platforms/maple/setup.c
-+++ msi/arch/powerpc/platforms/maple/setup.c
-@@ -61,6 +61,7 @@
- #include <asm/lmb.h>
- #include <asm/mpic.h>
- #include <asm/udbg.h>
-+#include <asm/msi.h>
- 
- #include "maple.h"
- 
-@@ -275,6 +276,8 @@ static void __init maple_init_IRQ(void)
- 	ppc_md.get_irq = mpic_get_irq;
- 	of_node_put(mpic_node);
- 	of_node_put(root);
-+
-+	msi_mpic_init();
- }
- 
- static void __init maple_progress(char *s, unsigned short hex)
-Index: msi/arch/powerpc/platforms/powermac/pic.c
-===================================================================
---- msi.orig/arch/powerpc/platforms/powermac/pic.c
-+++ msi/arch/powerpc/platforms/powermac/pic.c
-@@ -34,6 +34,7 @@
- #include <asm/time.h>
- #include <asm/pmac_feature.h>
- #include <asm/mpic.h>
-+#include <asm/msi.h>
- 
- #include "pmac.h"
- 
-@@ -562,6 +563,8 @@ static int __init pmac_pic_probe_mpic(vo
- 	set_irq_data(cascade, mpic2);
- 	set_irq_chained_handler(cascade, pmac_u3_cascade);
- 
-+	msi_mpic_init();
-+
- 	of_node_put(slave);
- 	return 0;
- }
-Index: msi/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- msi.orig/arch/powerpc/platforms/pseries/setup.c
-+++ msi/arch/powerpc/platforms/pseries/setup.c
-@@ -65,6 +65,7 @@
- #include <asm/i8259.h>
- #include <asm/udbg.h>
- #include <asm/smp.h>
-+#include <asm/msi.h>
- 
- #include "plpar_wrappers.h"
- #include "ras.h"
-@@ -275,6 +276,7 @@ static void __init pseries_discover_pic(
- #ifdef CONFIG_SMP
- 			smp_init_pseries_mpic();
- #endif
-+			msi_mpic_init();
- 			return;
- 		} else if (strstr(typep, "ppc-xicp")) {
- 			ppc_md.init_IRQ       = xics_init_IRQ;
-@@ -284,6 +286,7 @@ static void __init pseries_discover_pic(
- #ifdef CONFIG_SMP
- 			smp_init_pseries_xics();
- #endif
-+			msi_rtas_init();
- 			return;
- 		}
- 	}
-Index: msi/drivers/pci/Kconfig
-===================================================================
---- msi.orig/drivers/pci/Kconfig
-+++ msi/drivers/pci/Kconfig
-@@ -4,7 +4,7 @@
- config PCI_MSI
- 	bool "Message Signaled Interrupts (MSI and MSI-X)"
- 	depends on PCI
--	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64
-+	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64 || PPC_MERGE
- 	help
- 	   This allows device drivers to enable MSI (Message Signaled
- 	   Interrupts).  Message Signaled Interrupts enable a device to
-Index: msi/drivers/pci/Makefile
-===================================================================
---- msi.orig/drivers/pci/Makefile
-+++ msi/drivers/pci/Makefile
-@@ -14,8 +14,10 @@ obj-$(CONFIG_HOTPLUG) += hotplug.o
- # Build the PCI Hotplug drivers if we were asked to
- obj-$(CONFIG_HOTPLUG_PCI) += hotplug/
- 
--# Build the PCI MSI interrupt support
-+# Build the PCI MSI interrupt support, but not for arch/powerpc
-+ifndef CONFIG_PPC_MERGE
- obj-$(CONFIG_PCI_MSI) += msi.o
-+endif
- 
- # Build the Hypertransport interrupt support
- obj-$(CONFIG_HT_IRQ) += htirq.o
+- platform-notify-remove-change.diff
+- device-notifier.diff should both be already queued with Greg KH
+
+- iomap-arch-accessors.diff was written by Linus but is not merged
+  yet. He asked me to resend it when needed, so I'll include it with
+  the other patches when the merge window opens.
+
+This patch set started its life as the support for the new "Axon"
+southbridge for cell (which includes such things as MMIO mapped DCR
+and 4xx-type devices). However, as things evolved, I ended up doing
+a lot more than just the basic support. Among other highlights of
+this patch serie are:
+
+ - Generic DCR support for both 4xx-type DCRs and MMIO mapped DCR and
+MPIC & EMAC changes to work with that
+
+ - Souped up of_platform_driver to make it easier to register entire
+trees of devices at once, along with PCI host bridge detection support
+for 64 bits architectures. Note that some name changes might break
+compile of some platforms. I hope to have fixed everything before I
+merge but don't forget to tell me if I missed something.
+
+ - Completely reworked 64 bits DMA operations
+
+ - Possibility to "hook" on PCI MMIO and PCI operations from the platform
+code for use by iSeries, Cell and possibly others who have to deal with
+weird hypervisor or PCI host bridge erratas. Currently supported only on
+64 bits but would be easy to make it work on 32 bits if ever needed.
+
+ - Merged 32 and 64 bits io.h. ARCH=powerpc now uses asm-powerpc/io.h
+for both. ARCH=ppc still uses the old one in asm-ppc as I really don't
+feel like dealing with some of the cruft in there.
+
+ - As a consequence of the 2 above, new accessors are available that match
+what is done by other architectures: {read,write}{w,l,q}_be for big endian
+PCI MMIO accesses, {read,write}s{b,w,l} for MMIO "repeat" operations, and
+a significant cleanup of the EEH stuff.
+
+ - Cell IOMMU support (mostly written by Jeremy Kerr)
