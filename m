@@ -1,18 +1,16 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 85A1C67CD6
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
+	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 9DB5967C7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Nov 2006 06:53:42 +1100 (EST)
-In-Reply-To: <1b2aacd80611061551t78cc4f1aoef66377e82c2daed@mail.gmail.com>
-References: <1b2aacd80611061551t78cc4f1aoef66377e82c2daed@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2E3AE2D7-49C3-40BB-B939-7FE821EA8C2A@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: ethernet interface problem with kernel 2.6.14 on MPC8343E
-Date: Tue, 7 Nov 2006 13:53:38 -0600
-To: Luong Ngo <luong.ngo@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  8 Nov 2006 07:02:09 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: No RTC interrupt for PPC440EP board.
+Date: Tue, 7 Nov 2006 11:49:57 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3C74973C@ehost011-3.exch011.intermedia.net>
+From: "Leonid" <Leonid@a-k-a.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,34 +21,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi:
 
-On Nov 6, 2006, at 17:51, Luong Ngo wrote:
+I have PPC440EP board, derived from AMCC Yosemite evaluation board. My
+board has Dallas DS1743 NVRAM/RTC chip, connected to local bus (CS2). I
+believe, I made necessary initializations for TODC structures (I had to
+add CONFIG_GEN_RTC and CONFIG_GEN_RTC_X to my kernel configuration) - I
+used bamboo board as an example. Initialization goes OK and I even can
+access RTC via proc interface:
 
-> Hello,
->
-> I am having a problem with the interfaces eth0 and eth1 when  
-> running 2.6.14 kernel on a board with MPC8343E. The problem I  
-> encounters is only one of the eth interface is really working. Only  
-> the one that is configured first, using "ifconfig eth[0/1]  
-> 192.168.1.1 netmask 255.255.255.0" can ping and be pinged from  
-> another host. I wonder if there is setup difference between the  
-> TSEC1 and TSEC2 or this is not related to hardware but rather  
-> something in the kernel. When I ping from other host, from within  
-> the Gianfar driver, I can see the packet is received on both  
-> interfaces but only one responds. When pinging from the system  
-> itself, only the working interface sending out packet, the other  
-> interface does not send anything. Please advise me what I am doing  
-> wrong or missing.
->
+~ # cat /proc/driver/rtc
+rtc_time        : -8:-1:-51
+rtc_date        : 1970-01--14232
+rtc_epoch       : 1900
+alarm           : 00:00:00
+DST_enable      : no
+BCD             : yes
+24hr            : yes
+square_wave     : no
+alarm_IRQ       : no
+update_IRQ      : no
+periodic_IRQ    : no
+periodic_freq   : 0
+batt_status     : okay
 
-It sounds like both work for you, but not at the same time?
+However when I'm using RTC test application, suggested by Paul Gortmaker
+in Documentation/rtc.txt, it gets blocked on read operation:
 
-If you set them both to the same IP address, it won't work.   
-Actually, it won't work if you set them to different IP addresses on  
-the same subnet (as defined by their netmasks).
+~ # rtctest
 
-I think you are trying to get Linux to do something that it doesn't  
-do.  Try setting them to different IP addresses, like 192.168.1.1 and  
-192.168.2.1
+                        RTC Driver Test Example.
 
-Andy
+Counting 5 update (1/sec) interrupts from reading /dev/rtc:
+
+Looks like interrupts don't arrive from device so I don't think this
+device by itself would generate any interrupts. Any ideas what I'm doing
+wrong? May be this test application is obsolete and I should use another
+one? Some missing definitions in my kernel config file?
+
+Thanks,
+
+Leonid.
