@@ -1,18 +1,22 @@
-Return-Path: <greg@kroah.com>
-Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id 8122B67C4F
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 19:04:42 +1100 (EST)
-Date: Tue, 7 Nov 2006 17:02:57 +0900
-From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 0/7] Powerpc MSI Implementation
-Message-ID: <20061107080257.GA5874@kroah.com>
-References: <1162884080.585336.70559261997.qpush@cradle>
-	<1162885276.28571.444.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1162885276.28571.444.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 072B667D1F
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 19:27:54 +1100 (EST)
+In-Reply-To: <20061107072126.C586067CD6@ozlabs.org>
+References: <20061107072126.C586067CD6@ozlabs.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <93F89F52-7ED9-48F3-AE7A-15CDF5AB8E25@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 6/7] MPIC MSI backend
+Date: Tue, 7 Nov 2006 09:27:35 +0100
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
 	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,27 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 07, 2006 at 06:41:16PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> >  * Moved msi_info into the pci_dev. This is ugly, but not sure where else
-> >    we can put it, pci_dn is no longer an option.
-> 
-> It's only ugly because it's currently powerpc specific (and thus needs
-> an ifdef). It's the right way to go in the long run for the generic
-> code. 
-> 
-> Now the question is wether Eric is interested in our work and thus
-> wether it's worth trying to port the intel & altix MSI stuff to our
-> infrastructure, in which case there is no more reason not to add the
-> msi_info to pci_dev without any ifdef (just define it as an empty struct
-> if CONFIG_PCI_MSI is not set).
+Looks lovely, thanks Michael!
 
-I have no objection to taking this core change, and I do think the intel
-and altix stuff should be moved over to this new model.
+> +static unsigned int find_ht_msi_capability(struct pci_dev *pdev)
+> +{
+> +	u8 subcap;
+> +	unsigned int pos = pci_find_capability(pdev, PCI_CAP_ID_HT);
+> +
+> +	while (pos) {
+> +		pci_read_config_byte(pdev, pos + HT_SUBCAP_OFFSET, &subcap);
+> +		if (subcap == HT_CAPTYPE_MSI_MAPPING)
+> +			return pos;
+> +		pos = pci_find_next_capability(pdev, pos, PCI_CAP_ID_HT);
+> +	}
+> +
+> +	return 0;
+> +}
 
-Oh, and I think your first two patches can be applied now to the tree
-(header file changes).  Any objection to me doing this?
+It would be nice to have a generic find_ht_capability(pdev, type).
 
-thanks,
+> +static void msi_mpic_free(struct pci_dev *pdev, int num,
+> +			struct msix_entry *entries, int type)
+> +{
+> +	/* We borrowed the LSI irq, so don't unmap it! */
+> +	return;
+> +}
+> +
+> +static int msi_mpic_alloc(struct pci_dev *pdev, int num,
+> +			struct msix_entry *entries, int type)
+> +{
+> +	/* For now we reuse the assigned LSI, this is a hack. */
+> +	set_irq_type(pdev->irq, IRQ_TYPE_EDGE_RISING);
+> +	entries[0].vector = pdev->irq;
+> +
+> +	return 0;
+> +}
 
-greg k-h
+If msi_mpic_alloc() changes the sense/polarity, msi_mpic_free()
+should set it back.  This doesn't actually matter on CPC925/945,
+as LSI interrupts are rising edge as well (on the MPIC); maybe
+the sense/polarity should be configurable per MPIC controller
+somewhere (or just mark the code as "FIXME: only correct for
+some MPICs").
+
+> ++static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
+> +		struct msix_entry *entry, struct msi_msg *msg, int type)
+> +{
+> +	u64 addr;
+> +
+> +	addr = find_ht_magic_addr(pdev);
+> +	msg->address_lo = addr & 0xFFFFFFFF;
+> +	msg->address_hi = addr >> 32;
+
+You don't seem the check whether the "magic address" is outside
+of 32-bit range and the device can do 32-bit only?
+
+
+Segher
