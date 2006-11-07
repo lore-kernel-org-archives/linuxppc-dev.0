@@ -1,39 +1,18 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D402D67C1A
+Return-Path: <vwool@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id F187967D26
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Nov 2006 20:00:26 +1100 (EST)
-Received: from server.idefix.loc (ppp-82-135-90-10.dynamic.mnet-online.de
-	[82.135.90.10]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id kA790DI4099368
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Nov 2006 10:00:18 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.loc with local (Exim 4.63 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1GhMoX-00060F-9b
-	for linuxppc-embedded@ozlabs.org; Tue, 07 Nov 2006 10:00:13 +0100
-Date: Tue, 7 Nov 2006 10:00:13 +0100
-From: Matthias Fechner <idefix@fechner.net>
+	Tue,  7 Nov 2006 22:19:13 +1100 (EST)
+Received: from dev.rtsoft.ru. ([10.150.0.9])
+	by buildserver.ru.mvista.com (8.11.6/8.11.6) with SMTP id kA7BJBi19936
+	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Nov 2006 15:19:11 +0400
+Date: Tue, 7 Nov 2006 14:19:23 +0300
+From: Vitaly Wool <vwool@ru.mvista.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Has anyone 2.6 kernel with Xenomai and MPC5200 Lite running?
-Message-ID: <20061107090012.GA17066@server.idefix.loc>
-References: <20061104163119.GC69112@server.idefix.loc>
-	<528646bc0611041832j327c8391i9d3401782529073d@mail.gmail.com>
-	<20061105102328.GH79990@server.idefix.loc>
-	<454DBE2C.6040506@246tNt.com>
-	<20061105202435.GB30026@server.idefix.loc>
-	<454E4E7D.7090507@grandegger.com>
-	<20061105212429.GA35760@server.idefix.loc>
-	<454F1AB9.8050609@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <454F1AB9.8050609@grandegger.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] adding ROM chips to device tree: respin
+Message-Id: <20061107141923.16b2d2f1.vwool@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -44,47 +23,120 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Wolfgang,
+Hello folks,
 
-* Wolfgang Grandegger <wg@grandegger.com> [06-11-06 12:21]:
-> unpack it and apply the relevant patches from the kernel-patches-target
-> diretory to linux-2.6-denx#v2.6.18. I think the following patches should
-> be sufficient (in that order):
-> 
->    fec_mpc52xx_bestcomm.diff
->    fec_mpc52xx.diff
->    drivers_serial_mpc52xx_uart_fix.diff
->    mpc5200_physmap.diff
+inlined below is the patch which adds support for flash device descriptions to the OF device tree. It's inspired by and partially borrowed from Sergei's patch which can be found at http://patchwork.ozlabs.org/linuxppc/patch?id=6526 but arranges things in a different way.
+It should be used together with the corresponding MTD layer extension the current version of which was recently posted to linux-mtd list for discussion and can be found at http://lists.infradead.org/pipermail/linux-mtd/2006-November/016700.html.
+In fact, currently this description can handle only flash devices mapped into memory in a linear way.
+This patch is a respin of the patch which can be found at http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025013.html with comments from Sergei and Josh taken into account.
 
-ok, my boards boots fine after that.
+ Documentation/powerpc/booting-without-of.txt |   37 +++++++++++++++++++++++++++
+ arch/powerpc/sysdev/Makefile                 |    1 
+ arch/powerpc/sysdev/rom.c                    |   31 ++++++++++++++++++++++
+ 3 files changed, 69 insertions(+)
+ 
+Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
 
-> You can find the most recent Xenomai patch 2.6.18-ppc-1.05.00 at
-> "ftp://ftp.denx.de/xenomai". I'm going to test them later today with 
-> Xenomai.
-
-I applied now everything and Xenomai builds fine.
-I configured now my kernel, build it but the board do not boot or at
-least the console has gone.
-
-Which bootargs you use in u-boot to boot the Xenomai kernel?
-My bootargs are:
-bootargs=root=/dev/nfs rw
- nfsroot=192.168.0.151:/usr/local/eldk/ppc_6xx
- ip=192.168.0.101:192.168.0.151:192.168.0.151:255.255.255.0:icecube::off
- console=ttyPSC0
-
-You can find what I did on:
-http://wiki.idefix.fechner.net/index.php/Xenomai
-
-Thx for tips.
-
-
-Best regards,
-Matthias
-
--- 
-
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+Index: powerpc/Documentation/powerpc/booting-without-of.txt
+===================================================================
+--- powerpc.orig/Documentation/powerpc/booting-without-of.txt
++++ powerpc/Documentation/powerpc/booting-without-of.txt
+@@ -6,6 +6,8 @@
+     IBM Corp.
+ (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
+     Freescale Semiconductor, FSL SOC and 32-bit additions
++(c) 2006 MontaVista Software, Inc.
++    Flash chip node definition
+ 
+    May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
+ 
+@@ -1693,6 +1695,41 @@ platforms are moved over to use the flat
+ 		};
+ 	};
+ 
++    g) Flash chip nodes
++
++    Flash chips (Memory Technology Devices) are often used for solid state
++    file systems on embedded devices.
++
++    Required properties:
++
++     - device_type : has to be "rom"
++     - compatible : Should be the name of the MTD driver. Currently, this is
++       most likely to be "physmap".
++     - memory_space : Offset and length of the register set for the device.
++     - bank-width : Width of the flash data bus in bytes. Required
++       for the NOR flashes (compatible == "physmap" and others) ONLY.
++
++    Recommended properties :
++
++     - partitions : Several pairs of 32-bit values where the first value is
++       partition's offset from the start of the MTD device and the second
++       one is partition size in bytes with LSB used to signify a read only
++       partititon (so, the parition size should always be an even number).
++     - partition-names : The list of concatenated zero terminated strings
++       representing the partition names.
++
++   Example:
++
++ 	flash@ff000000 {
++ 		device_type = "rom";
++ 		compatible = "physmap";
++ 		memory_space = <ff000000 01000000>;
++ 		bank-width = <4>;
++ 		partitions = <00000000 00f80000
++ 			      00f80000 00080001>;
++ 		partition-names = "fs\0firmware";
++ 	};
++
+    More devices will be defined as this spec matures.
+ 
+ 
+Index: powerpc/arch/powerpc/sysdev/Makefile
+===================================================================
+--- powerpc.orig/arch/powerpc/sysdev/Makefile
++++ powerpc/arch/powerpc/sysdev/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
++obj-$(CONFIG_MTD)		+= rom.o
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+Index: powerpc/arch/powerpc/sysdev/rom.c
+===================================================================
+--- /dev/null
++++ powerpc/arch/powerpc/sysdev/rom.c
+@@ -0,0 +1,31 @@
++/*
++ * arch/powerpc/sysdev/flash.c
++ *
++ * Flash memory registration
++ *
++ * (C) 2006 MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <asm/of_device.h>
++
++static int __init powerpc_flash_init(void)
++{
++	struct device_node *node = NULL;
++	int num = 0;
++
++	/*
++	 * We care only about physmap devices now as there's no
++	 * description defined for other ROM types yet
++	 */
++	while ((node = of_find_compatible_node(node, "rom", "physmap"))
++			!= NULL) {
++		of_platform_device_create(node, "physmap-flash", NULL);
++		++num;
++	}
++	return 0;
++}
++
++arch_initcall(powerpc_flash_init);
