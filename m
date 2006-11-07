@@ -1,20 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 072B667D1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 19:27:54 +1100 (EST)
-In-Reply-To: <20061107072126.C586067CD6@ozlabs.org>
-References: <20061107072126.C586067CD6@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <93F89F52-7ED9-48F3-AE7A-15CDF5AB8E25@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 485C567D47
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 19:43:02 +1100 (EST)
 Subject: Re: [RFC/PATCH 6/7] MPIC MSI backend
-Date: Tue, 7 Nov 2006 09:27:35 +0100
-To: Michael Ellerman <michael@ellerman.id.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <93F89F52-7ED9-48F3-AE7A-15CDF5AB8E25@kernel.crashing.org>
+References: <20061107072126.C586067CD6@ozlabs.org>
+	<93F89F52-7ED9-48F3-AE7A-15CDF5AB8E25@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 07 Nov 2006 19:42:43 +1100
+Message-Id: <1162888963.28571.459.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
 	"Eric W. Biederman" <ebiederm@xmission.com>,
 	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
@@ -27,60 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Looks lovely, thanks Michael!
 
-> +static unsigned int find_ht_msi_capability(struct pci_dev *pdev)
-> +{
-> +	u8 subcap;
-> +	unsigned int pos = pci_find_capability(pdev, PCI_CAP_ID_HT);
-> +
-> +	while (pos) {
-> +		pci_read_config_byte(pdev, pos + HT_SUBCAP_OFFSET, &subcap);
-> +		if (subcap == HT_CAPTYPE_MSI_MAPPING)
-> +			return pos;
-> +		pos = pci_find_next_capability(pdev, pos, PCI_CAP_ID_HT);
-> +	}
-> +
-> +	return 0;
-> +}
+> It would be nice to have a generic find_ht_capability(pdev, type).
 
-It would be nice to have a generic find_ht_capability(pdev, type).
+Agreed, though I prefer the naming to be ht_find_capability().
 
-> +static void msi_mpic_free(struct pci_dev *pdev, int num,
-> +			struct msix_entry *entries, int type)
-> +{
-> +	/* We borrowed the LSI irq, so don't unmap it! */
-> +	return;
-> +}
-> +
-> +static int msi_mpic_alloc(struct pci_dev *pdev, int num,
-> +			struct msix_entry *entries, int type)
-> +{
-> +	/* For now we reuse the assigned LSI, this is a hack. */
-> +	set_irq_type(pdev->irq, IRQ_TYPE_EDGE_RISING);
-> +	entries[0].vector = pdev->irq;
-> +
-> +	return 0;
-> +}
+> If msi_mpic_alloc() changes the sense/polarity, msi_mpic_free()
+> should set it back.  This doesn't actually matter on CPC925/945,
+> as LSI interrupts are rising edge as well (on the MPIC); maybe
+> the sense/polarity should be configurable per MPIC controller
+> somewhere (or just mark the code as "FIXME: only correct for
+> some MPICs").
 
-If msi_mpic_alloc() changes the sense/polarity, msi_mpic_free()
-should set it back.  This doesn't actually matter on CPC925/945,
-as LSI interrupts are rising edge as well (on the MPIC); maybe
-the sense/polarity should be configurable per MPIC controller
-somewhere (or just mark the code as "FIXME: only correct for
-some MPICs").
+Yes, I will do a cleanup pass on the MPIC code there. I think it should
+only program the chip for polarity/sense in startup() and thus can
+"override" the native LSI setting of that vector when the interrupt is
+flagged as MSI without actually losing the original information.
 
-> ++static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
-> +		struct msix_entry *entry, struct msi_msg *msg, int type)
-> +{
-> +	u64 addr;
-> +
-> +	addr = find_ht_magic_addr(pdev);
-> +	msg->address_lo = addr & 0xFFFFFFFF;
-> +	msg->address_hi = addr >> 32;
+Right now, as you noticed, it's a non-issue for MSIs coming off HT, as
+both HT interrupts and MSIs are programmed to be edge in the MPIC
+itself, however, this is not ok with interrupts from the PCIe slot fow
+which, according to the device-tree on my Quad G5, the LSI is level low.
 
-You don't seem the check whether the "magic address" is outside
-of 32-bit range and the device can do 32-bit only?
+Something else I'd like to do is add a generic IRQF_MSI purely for the
+sake of displaying "MSI" instead of "Edge" in /proc/interrupts :-)
+Though it might be useful for some backends to track what interrupts
+have been configured as MSI too.
+  
+> > ++static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
+> > +		struct msix_entry *entry, struct msi_msg *msg, int type)
+> > +{
+> > +	u64 addr;
+> > +
+> > +	addr = find_ht_magic_addr(pdev);
+> > +	msg->address_lo = addr & 0xFFFFFFFF;
+> > +	msg->address_hi = addr >> 32;
+> 
+> You don't seem the check whether the "magic address" is outside
+> of 32-bit range and the device can do 32-bit only?
 
+Good point. It happens not to be on our chipset / firmware but we should
+probably check in the check() callback. If it's the case, then we refuse
+to enable MSI for that device.
 
-Segher
+Cheers,
+Ben.
