@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 07 Nov 2006 18:22:30 +1100
-Subject: [PATCH 0/31] My current serie of patches for 2.6.20 for review
-In-Reply-To: <benh@kernel.crashing.org>
-Message-Id: <1162884150.435786.961370643810.qpush@grosgo>
+Date: Tue, 07 Nov 2006 18:22:32 +1100
+Subject: [PATCH 1/31] ibmveth: Remove ibmveth "liobn" field
+In-Reply-To: <1162884150.435786.961370643810.qpush@grosgo>
+Message-Id: <20061107072349.8841D67C8A@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,60 +14,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[ I'm re-posting it today as there have been a number of significant
-  changes. I expect that unless I get a lot of feedback, however,
-  your mailboxes will be safe from such another flood for the next
-  few days as I'll be working on a couple of other things I have
-  pending and I'm fairly happy with the patches in their current
-  shape
-]
+Remove the now unused "liobn" field in ibmveth which also avoids
+having insider knowledge of the iommu table in that driver.
 
-This is the whole of my current patch set that I intend to merge
-as soon as 2.6.20 merge window opens. I'm posting them here for
-review, some of them already had a few iterations on the list by
-their own, some didn't show up publically at all yet.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Santiago Leon <santil@us.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-Note that the first 4 ones require specific comments:
+Already in Jeff's queue.
 
-- powerpc-ibmveth-remove-liobn.diff should already be queued with
-  Jeff Garzik
+ drivers/net/ibmveth.c |    4 ----
+ drivers/net/ibmveth.h |    1 -
+ 2 files changed, 5 deletions(-)
 
-- platform-notify-remove-change.diff
-- device-notifier.diff should both be already queued with Greg KH
-
-- iomap-arch-accessors.diff was written by Linus but is not merged
-  yet. He asked me to resend it when needed, so I'll include it with
-  the other patches when the merge window opens.
-
-This patch set started its life as the support for the new "Axon"
-southbridge for cell (which includes such things as MMIO mapped DCR
-and 4xx-type devices). However, as things evolved, I ended up doing
-a lot more than just the basic support. Among other highlights of
-this patch serie are:
-
- - Generic DCR support for both 4xx-type DCRs and MMIO mapped DCR and
-MPIC & EMAC changes to work with that
-
- - Souped up of_platform_driver to make it easier to register entire
-trees of devices at once, along with PCI host bridge detection support
-for 64 bits architectures. Note that some name changes might break
-compile of some platforms. I hope to have fixed everything before I
-merge but don't forget to tell me if I missed something.
-
- - Completely reworked 64 bits DMA operations
-
- - Possibility to "hook" on PCI MMIO and PCI operations from the platform
-code for use by iSeries, Cell and possibly others who have to deal with
-weird hypervisor or PCI host bridge erratas. Currently supported only on
-64 bits but would be easy to make it work on 32 bits if ever needed.
-
- - Merged 32 and 64 bits io.h. ARCH=powerpc now uses asm-powerpc/io.h
-for both. ARCH=ppc still uses the old one in asm-ppc as I really don't
-feel like dealing with some of the cruft in there.
-
- - As a consequence of the 2 above, new accessors are available that match
-what is done by other architectures: {read,write}{w,l,q}_be for big endian
-PCI MMIO accesses, {read,write}s{b,w,l} for MMIO "repeat" operations, and
-a significant cleanup of the EEH stuff.
-
- - Cell IOMMU support (mostly written by Jeremy Kerr)
+Index: linux-cell/drivers/net/ibmveth.c
+===================================================================
+--- linux-cell.orig/drivers/net/ibmveth.c	2006-10-23 14:41:38.000000000 +1000
++++ linux-cell/drivers/net/ibmveth.c	2006-10-25 14:12:05.000000000 +1000
+@@ -50,7 +50,6 @@
+ #include <asm/semaphore.h>
+ #include <asm/hvcall.h>
+ #include <asm/atomic.h>
+-#include <asm/iommu.h>
+ #include <asm/vio.h>
+ #include <asm/uaccess.h>
+ #include <linux/seq_file.h>
+@@ -1000,8 +999,6 @@ static int __devinit ibmveth_probe(struc
+ 	adapter->mac_addr = 0;
+ 	memcpy(&adapter->mac_addr, mac_addr_p, 6);
+ 
+-	adapter->liobn = dev->iommu_table->it_index;
+-
+ 	netdev->irq = dev->irq;
+ 	netdev->open               = ibmveth_open;
+ 	netdev->poll               = ibmveth_poll;
+@@ -1115,7 +1112,6 @@ static int ibmveth_seq_show(struct seq_f
+ 	seq_printf(seq, "%s %s\n\n", ibmveth_driver_string, ibmveth_driver_version);
+ 
+ 	seq_printf(seq, "Unit Address:    0x%x\n", adapter->vdev->unit_address);
+-	seq_printf(seq, "LIOBN:           0x%lx\n", adapter->liobn);
+ 	seq_printf(seq, "Current MAC:     %02X:%02X:%02X:%02X:%02X:%02X\n",
+ 		   current_mac[0], current_mac[1], current_mac[2],
+ 		   current_mac[3], current_mac[4], current_mac[5]);
+Index: linux-cell/drivers/net/ibmveth.h
+===================================================================
+--- linux-cell.orig/drivers/net/ibmveth.h	2006-10-06 13:48:09.000000000 +1000
++++ linux-cell/drivers/net/ibmveth.h	2006-10-25 14:10:39.000000000 +1000
+@@ -118,7 +118,6 @@ struct ibmveth_adapter {
+     struct net_device_stats stats;
+     unsigned int mcastFilterSize;
+     unsigned long mac_addr;
+-    unsigned long liobn;
+     void * buffer_list_addr;
+     void * filter_list_addr;
+     dma_addr_t buffer_list_dma;
