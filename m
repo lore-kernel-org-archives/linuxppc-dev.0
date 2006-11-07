@@ -1,22 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B890667C4C
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 20:04:46 +1100 (EST)
-In-Reply-To: <1162888963.28571.459.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CCB4167D22
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 20:16:24 +1100 (EST)
+Subject: Re: [RFC/PATCH 6/7] MPIC MSI backend
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <3210FBE5-5F22-4759-A728-A98175A435D6@kernel.crashing.org>
 References: <20061107072126.C586067CD6@ozlabs.org>
 	<93F89F52-7ED9-48F3-AE7A-15CDF5AB8E25@kernel.crashing.org>
 	<1162888963.28571.459.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3210FBE5-5F22-4759-A728-A98175A435D6@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 6/7] MPIC MSI backend
-Date: Tue, 7 Nov 2006 10:04:24 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	<3210FBE5-5F22-4759-A728-A98175A435D6@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 07 Nov 2006 20:16:03 +1100
+Message-Id: <1162890963.28571.465.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
 	"Eric W. Biederman" <ebiederm@xmission.com>,
 	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
@@ -29,66 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Agreed, though I prefer the naming to be ht_find_capability().
 
-Of course, I just took "_msi" out of the name here ;-)
+> > Yes, I will do a cleanup pass on the MPIC code there. I think it  
+> > should
+> > only program the chip for polarity/sense in startup() and thus can
+> > "override" the native LSI setting of that vector when the interrupt is
+> > flagged as MSI without actually losing the original information.
+> 
+> You mean when we (in the future) reserve a range of vectors
+> for MSI allocation at MPIC startup?  Sure, that works.
 
-> Yes, I will do a cleanup pass on the MPIC code there. I think it  
-> should
-> only program the chip for polarity/sense in startup() and thus can
-> "override" the native LSI setting of that vector when the interrupt is
-> flagged as MSI without actually losing the original information.
+Not only, even with the current code... basically keep the
+sense/polarity flags of the LSI intact in the irq_desc, just add the
+IRQF_MSI bit to "override" them when we configure the interrupt to be an
+MSI. Then, irq_chip->startup() instead of set_irq_type() does the actual
+configuration of the MPIC and, seeing the IRQF_MSI flags, does the right
+thing.
 
-You mean when we (in the future) reserve a range of vectors
-for MSI allocation at MPIC startup?  Sure, that works.
+That way, when restoring the IRQ back to LSI, we just clear IRQF_MSI and
+the old sense/polarity settings will still be there in the descriptor
+and MPIC will do the right thing on the next startup().
 
-> Right now, as you noticed, it's a non-issue for MSIs coming off HT, as
-> both HT interrupts and MSIs are programmed to be edge in the MPIC
-> itself, however, this is not ok with interrupts from the PCIe slot fow
-> which, according to the device-tree on my Quad G5, the LSI is level  
-> low.
+> ["The PCIe slot" == the 16x PCIe slot on PowerMacs here, for
+> the record; it isn't connected over a bridge to HT, but is
+> directly connected to the CPC945 (U4) chip.]
 
-["The PCIe slot" == the 16x PCIe slot on PowerMacs here, for
-the record; it isn't connected over a bridge to HT, but is
-directly connected to the CPC945 (U4) chip.]
+Yup, the Attu if you prefer :-)
 
-There are more problems there (with this current code): the LSI
-IRQ will always be #3, which cannot be used as an MSI IRQ; and
-the MSI address to use can not be found on a parent HT bridge
-(as there is none, duh).  That last problem makes the patch
-perfectly safe for the CPC945 PCIe port though :-)
+> There are more problems there (with this current code): the LSI
+> IRQ will always be #3, which cannot be used as an MSI IRQ;
 
-> Something else I'd like to do is add a generic IRQF_MSI purely for the
-> sake of displaying "MSI" instead of "Edge" in /proc/interrupts :-)
+Are you sure about that ? In this case, we need a special kludge for
+now. I though the MSI stuff could override any of the MPIC vectors, but
+you might well be right there, it might not work with the U4 internal
+ones.
 
-Yes definitely.
+> and the MSI address to use can not be found on a parent HT bridge
+> (as there is none, duh).  That last problem makes the patch
+> perfectly safe for the CPC945 PCIe port though :-)
 
-> Though it might be useful for some backends to track what interrupts
-> have been configured as MSI too.
+Yes, I know :-) We need specific code to discover that a device is
+hanging off the Attu instead of HT. I already explained it all to
+Michael, it shouldn't be too hard. I even have a card setup to test it,
+just didn't have time to do it just yet.
 
-That, too.
+> Can't we just check here?  If not, what's the point of having
+> a return code here?  although doing the check in check() might
+> be conceptually nicer, sure.
 
->>> ++static int msi_mpic_setup_msi_msg(struct pci_dev *pdev,
->>> +		struct msix_entry *entry, struct msi_msg *msg, int type)
->>> +{
->>> +	u64 addr;
->>> +
->>> +	addr = find_ht_magic_addr(pdev);
->>> +	msg->address_lo = addr & 0xFFFFFFFF;
->>> +	msg->address_hi = addr >> 32;
->>
->> You don't seem the check whether the "magic address" is outside
->> of 32-bit range and the device can do 32-bit only?
->
-> Good point. It happens not to be on our chipset / firmware but we  
-> should
-> probably check in the check() callback. If it's the case, then we  
-> refuse
-> to enable MSI for that device.
+Yes, nicer and avoids going all the way to allocating stuff and then
+having to de-allocate.
 
-Can't we just check here?  If not, what's the point of having
-a return code here?  although doing the check in check() might
-be conceptually nicer, sure.
-
-
-Segher
+Ben.
