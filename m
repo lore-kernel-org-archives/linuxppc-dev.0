@@ -1,10 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 07 Nov 2006 18:22:47 +1100
-Subject: [PATCH 15/31] powerpc: PCI use new bus device notifier
+Date: Tue, 07 Nov 2006 18:22:48 +1100
+Subject: [PATCH 16/31] powerpc: Add DMA ops support for of_plaform_device to
+	Cell
 In-Reply-To: <1162884150.435786.961370643810.qpush@grosgo>
-Message-Id: <20061107072405.0995468265@ozlabs.org>
+Message-Id: <20061107072405.96E9B68286@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,105 +15,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes the PCI code on 64 bits use the new bus device notifier
-introduced by the 3rd patch of that queue instead of the old style
-platform notify callbacks, for handling destruction of the device
-extension for PCI devices.
+This patch adds a bus device notifier to the of_platform bus type on
+cell to setup the DMA operations for of_platform_devices. We currently
+use the PCI operations as Cell use a special version of them that
+happens to be suitable for our needs.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
- 
- arch/powerpc/kernel/pci_64.c   |   47 ++++++++++++++++++++++-------------------
- arch/powerpc/kernel/setup_64.c |    4 ---
- 2 files changed, 26 insertions(+), 25 deletions(-)
 
-Index: linux-cell/arch/powerpc/kernel/setup_64.c
+ arch/powerpc/platforms/cell/setup.c |   45 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 42 insertions(+), 3 deletions(-)
+
+Index: linux-cell/arch/powerpc/platforms/cell/setup.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/setup_64.c	2006-10-26 16:43:32.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/setup_64.c	2006-10-26 16:44:09.000000000 +1000
-@@ -531,10 +531,6 @@ void __init setup_arch(char **cmdline_p)
- 	conswitchp = &dummy_con;
- #endif
- 
--#ifdef CONFIG_PCI
--	platform_notify = pci_platform_notify;
--	platform_notify_remove = pci_platform_notify_remove;
--#endif
- 	ppc_md.setup_arch();
- 
- 	paging_init();
-Index: linux-cell/arch/powerpc/kernel/pci_64.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/pci_64.c	2006-10-26 16:43:32.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/pci_64.c	2006-10-26 16:44:09.000000000 +1000
-@@ -22,6 +22,7 @@
- #include <linux/list.h>
- #include <linux/syscalls.h>
- #include <linux/irq.h>
+--- linux-cell.orig/arch/powerpc/platforms/cell/setup.c	2006-10-26 16:42:30.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/cell/setup.c	2006-10-26 16:45:00.000000000 +1000
+@@ -30,6 +30,7 @@
+ #include <linux/console.h>
+ #include <linux/mutex.h>
+ #include <linux/memory_hotplug.h>
 +#include <linux/notifier.h>
  
+ #include <asm/mmu.h>
  #include <asm/processor.h>
- #include <asm/io.h>
-@@ -554,6 +555,29 @@ void __devinit scan_phb(struct pci_contr
- 		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
+@@ -82,10 +83,49 @@ static void cell_progress(char *s, unsig
+ 	printk("*** %04x : %s\n", hex, s ? s : "");
  }
  
-+static int ppc_pci_dev_notify(struct notifier_block *nb, unsigned long action,
++static int cell_of_bus_notify(struct notifier_block *nb, unsigned long action,
 +			      void *data)
 +{
 +	struct device *dev = data;
 +	struct device_ext *dext;
 +
-+	if (action == BUS_NOTIFY_DEL_DEVICE) {
-+		dext = device_get_ext(dev);
++	if (action != BUS_NOTIFY_ADD_DEVICE)
++		return 0;
 +
-+		DBG("%s:%s platform notify remove !\n",
-+		    dev_driver_string(dev), dev->bus_id);
-+
-+		device_set_ext(dev, NULL);
-+		kfree(dext);
++	dext = device_get_ext(dev);
++	if (dext == NULL) {
++		dev_printk(KERN_ERR, dev,
++			   "OF platform device with extension !\n");
++		return 0;
 +	}
 +
-+	return 0;
++	/* For now, we just use the PCI DMA ops for everything, though
++	 * we'll need something better when we have a real iommu
++	 * implementation.
++	 */
++	dext->dma_ops = pci_dma_ops;
++
++       return 0;
 +}
 +
-+static struct notifier_block ppc_pci_dev_notifier = {
-+	.notifier_call = ppc_pci_dev_notify
++static struct notifier_block cell_of_bus_notifier = {
++	.notifier_call = cell_of_bus_notify
 +};
 +
- static int __init pcibios_init(void)
- {
- 	struct pci_controller *hose, *tmp;
-@@ -566,6 +590,8 @@ static int __init pcibios_init(void)
- 	if (firmware_has_feature(FW_FEATURE_ISERIES))
- 		iSeries_pcibios_init();
- 
-+	register_bus_notifier(&pci_bus_type, &ppc_pci_dev_notifier);
 +
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware\n");
- 
- 	/* Scan all of the recorded PCI controllers.  */
-@@ -1458,24 +1484,3 @@ int pcibus_to_node(struct pci_bus *bus)
- EXPORT_SYMBOL(pcibus_to_node);
+ static int __init cell_publish_devices(void)
+ {
+-	if (machine_is(cell))
+-		of_platform_bus_probe(NULL, NULL, NULL);
++	if (!machine_is(cell))
++		return 0;
++
++	/* Register callbacks on OF platform device addition/removal
++	 * to handle linking them to the right DMA operations
++	 */
++	register_bus_notifier(&of_platform_bus_type, &cell_of_bus_notifier);
++
++	/* Publish OF platform devices for southbridge IOs */
++	of_platform_bus_probe(NULL, NULL, NULL);
++
+ 	return 0;
+ }
+ device_initcall(cell_publish_devices);
+@@ -154,7 +194,6 @@ static void __init cell_setup_arch(void)
+ #ifdef CONFIG_SMP
+ 	smp_init_cell();
  #endif
+-
+ 	/* init to some ~sane value until calibrate_delay() runs */
+ 	loops_per_jiffy = 50000000;
  
--int pci_platform_notify(struct device * dev)
--{
--	return 0;
--}
--
--int pci_platform_notify_remove(struct device * dev)
--{
--	struct device_ext *dext = device_get_ext(dev);
--
--	DBG("%s:%s platform notify remove !\n",
--	    dev_driver_string(dev), dev->bus_id);
--
--	if (dev->bus != &pci_bus_type)
--		return 0;
--
--	device_set_ext(dev, NULL);
--	mb();
--	kfree(dext);
--
--	return 0;
--}
