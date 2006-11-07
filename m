@@ -1,21 +1,20 @@
 Return-Path: <rdreier@cisco.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1]  PPC32 : Huge-page support for ppc440
-References: <454FC362.9070608@linux.vnet.ibm.com>
-	<1162864834.3809.21.camel@zod.rchland.ibm.com>
-	<1162866287.28571.392.camel@localhost.localdomain>
-	<ada1wogj5s0.fsf@cisco.com>
-	<1162871122.28571.396.camel@localhost.localdomain>
-	<1162900338.19697.20.camel@crusty.rchland.ibm.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
+	by ozlabs.org (Postfix) with ESMTP id EBBF067CC4
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 06:25:13 +1100 (EST)
+To: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+Subject: Re: [PATCH 2.6.19 2/4] ehca: hcp_phyp.c: correct page mapping in 64k
+	page mode
+References: <200611052141.29030.hnguyen@de.ibm.com>
 From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 07 Nov 2006 10:55:13 -0800
-In-Reply-To: <1162900338.19697.20.camel@crusty.rchland.ibm.com> (Josh Boyer's
-	message of "Tue, 07 Nov 2006 05:52:18 -0600")
-Message-ID: <ada7iy7hysu.fsf@cisco.com>
+Date: Tue, 07 Nov 2006 11:25:12 -0800
+In-Reply-To: <200611052141.29030.hnguyen@de.ibm.com> (Hoang-Nam Nguyen's
+	message of "Sun, 5 Nov 2006 21:41:28 +0100")
+Message-ID: <aday7qngiuf.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org, Edi Shmueli <edi@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Is this 44x work at the point where having more people would help?  I
-have a 440SPe eval board that I'd like to get going with
-arch/powerpc.  I could work on PCI Express or something like that...
+ > -	*mapaddr = (u64)(ioremap(physaddr, EHCA_PAGESIZE));
+ > +	*mapaddr = (u64)ioremap((physaddr & PAGE_MASK), PAGE_SIZE) +
+ > +		(physaddr & (~PAGE_MASK));
 
-On the other hand, I'm happy to wait and work on other stuff...
+I'm confused -- shouldn't ioremap() do the right thing even if
+physaddr isn't page-aligned?  Why is this needed?
 
  - R.
