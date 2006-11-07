@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 07 Nov 2006 18:21:21 +1100
-Subject: [RFC/PATCH 2/7] Make some MSI-X #defines generic
+Date: Tue, 07 Nov 2006 18:21:22 +1100
+Subject: [RFC/PATCH 3/7] Rip out the existing powerpc msi stubs
 In-Reply-To: <1162884080.585336.70559261997.qpush@cradle>
-Message-Id: <20061107072123.CF52F67C35@ozlabs.org>
+Message-Id: <20061107072124.C635667C6F@ozlabs.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
 	Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
 	"David S. Miller" <davem@davemloft.net>
@@ -17,49 +17,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move some MSI-X #defines into pci_regs.h so they can be used
-outside of drivers/pci.
+Rip out the existing powerpc msi stubs. These were the start of an
+implementation based on ppc_md calls, but were never used.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- drivers/pci/msi.h        |    8 --------
- include/linux/pci_regs.h |    6 ++++++
- 2 files changed, 6 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/irq.c     |   28 ----------------------------
+ include/asm-powerpc/machdep.h |    5 -----
+ 2 files changed, 33 deletions(-)
 
-Index: msi/drivers/pci/msi.h
+Index: msi/arch/powerpc/kernel/irq.c
 ===================================================================
---- msi.orig/drivers/pci/msi.h
-+++ msi/drivers/pci/msi.h
-@@ -6,14 +6,6 @@
- #ifndef MSI_H
- #define MSI_H
+--- msi.orig/arch/powerpc/kernel/irq.c
++++ msi/arch/powerpc/kernel/irq.c
+@@ -871,34 +871,6 @@ arch_initcall(irq_late_init);
  
--/*
-- * MSI-X Address Register
-- */
--#define PCI_MSIX_FLAGS_QSIZE		0x7FF
--#define PCI_MSIX_FLAGS_ENABLE		(1 << 15)
--#define PCI_MSIX_FLAGS_BIRMASK		(7 << 0)
--#define PCI_MSIX_FLAGS_BITMASK		(1 << 0)
+ #endif /* CONFIG_PPC_MERGE */
+ 
+-#ifdef CONFIG_PCI_MSI
+-int pci_enable_msi(struct pci_dev * pdev)
+-{
+-	if (ppc_md.enable_msi)
+-		return ppc_md.enable_msi(pdev);
+-	else
+-		return -1;
+-}
+-EXPORT_SYMBOL(pci_enable_msi);
 -
- #define PCI_MSIX_ENTRY_SIZE			16
- #define  PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET	0
- #define  PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET	4
-Index: msi/include/linux/pci_regs.h
+-void pci_disable_msi(struct pci_dev * pdev)
+-{
+-	if (ppc_md.disable_msi)
+-		ppc_md.disable_msi(pdev);
+-}
+-EXPORT_SYMBOL(pci_disable_msi);
+-
+-void pci_scan_msi_device(struct pci_dev *dev) {}
+-int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec) {return -1;}
+-void pci_disable_msix(struct pci_dev *dev) {}
+-void msi_remove_pci_irq_vectors(struct pci_dev *dev) {}
+-void disable_msi_mode(struct pci_dev *dev, int pos, int type) {}
+-void pci_no_msi(void) {}
+-EXPORT_SYMBOL(pci_enable_msix);
+-EXPORT_SYMBOL(pci_disable_msix);
+-
+-#endif
+-
+ #ifdef CONFIG_PPC64
+ static int __init setup_noirqdistrib(char *str)
+ {
+Index: msi/include/asm-powerpc/machdep.h
 ===================================================================
---- msi.orig/include/linux/pci_regs.h
-+++ msi/include/linux/pci_regs.h
-@@ -292,6 +292,12 @@
- #define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
- #define PCI_MSI_MASK_BIT	16	/* Mask bits register */
+--- msi.orig/include/asm-powerpc/machdep.h
++++ msi/include/asm-powerpc/machdep.h
+@@ -239,11 +239,6 @@ struct machdep_calls {
+ 	 */
+ 	void (*machine_kexec)(struct kimage *image);
+ #endif /* CONFIG_KEXEC */
+-
+-#ifdef CONFIG_PCI_MSI
+-	int (*enable_msi)(struct pci_dev *pdev);
+-	void (*disable_msi)(struct pci_dev *pdev);
+-#endif /* CONFIG_PCI_MSI */
+ };
  
-+/* MSI-X registers (these are at offset PCI_MSI_FLAGS) */
-+#define PCI_MSIX_FLAGS_QSIZE	0x7FF
-+#define PCI_MSIX_FLAGS_ENABLE	(1 << 15)
-+#define PCI_MSIX_FLAGS_BIRMASK	(7 << 0)
-+#define PCI_MSIX_FLAGS_BITMASK	(1 << 0)
-+
- /* CompactPCI Hotswap Register */
- 
- #define PCI_CHSWP_CSR		2	/* Control and Status Register */
+ extern void power4_idle(void);
