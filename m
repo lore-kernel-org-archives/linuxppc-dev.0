@@ -1,21 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 1D36467CAE
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 03:30:22 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1065725ugf
-	for <linuxppc-dev@ozlabs.org>; Tue, 07 Nov 2006 08:30:21 -0800 (PST)
-Message-ID: <528646bc0611070830u2d490d79v5843de918c54b05f@mail.gmail.com>
-Date: Tue, 7 Nov 2006 09:30:05 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Sylvain Munaut" <tnt@246tnt.com>
-Subject: Re: [PATCH/RFC] powerpc: Add MPC5200 Interrupt Controller support.
-In-Reply-To: <455063C6.6070205@246tNt.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200611071040.kA7Aeea6006482@post.webmailer.de>
-	<455063C6.6070205@246tNt.com>
-Cc: linuxppc-dev@ozlabs.org, sven@genesi-usa.com, linuxppc-embedded@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <454FC539.2050900@246tNt.com>
+References: <200611061035.kA6AZtGZ018329@post.webmailer.de>
+	<9580D2CE-BD68-440F-A1FD-09E882D93231@kernel.crashing.org>
+	<454FC539.2050900@246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <754FECA8-A7B4-44FE-A08D-89019F9005A8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add of_platform support for OHCI/Bigendian HC
+Date: Tue, 7 Nov 2006 10:46:38 -0600
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/7/06, Sylvain Munaut <tnt@246tnt.com> wrote:
-> Nicolas DET wrote:
->
-> > This patch add MPC52xx Interrupt controller for ARCH=powerpc.
-> >
-> > It includes the main code in arch/powerpc/sysdev/ ad well as an header file in
-> > include/asm-powerpc.
-> >
-> > The header file has now distinct section for the struct and the IRQ mapping/enconding define
-> >
-> > Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
-> Acked-by: Sylvain Munaut <tnt@246tNt.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+On Nov 6, 2006, at 5:28 PM, Sylvain Munaut wrote:
+
+> Kumar Gala wrote:
+>> On Nov 6, 2006, at 4:35 AM, Nicolas DET wrote:
+>>
+>>
+>>> This patch use of_platform device to probe and install OHCI big
+>>> endian HC.
+>>>
+>>> PS: I did not success to properly inline the file using  
+>>> thrunderbird.
+>>>
+>>
+>> You really copy the USB maintainers on this.  Also, why bother with
+>> the Kconfig for USB_OHCI_HCD_PPC_OF_BE/USB_OHCI_HCD_PPC_OF_LE?
+>>
+> I think it's a good idea to use those :
+>  - Just including both when PPC_OF is used is overkill because it  
+> makes
+> all USB
+> perform useless tests if you never intend to use the LE version for  
+> example.
+>  - Using the already defined symbol USB_OHCI_BIG_ENDIAN would force
+> other ohci user to select BE/LE and they may not want to expose this.
+
+Maybe I'm missing something, but it looks like the _OF_LE & _OF_BE  
+are just configuring what matches may occur.  This seems like a one  
+time event.
+
+> However in this bus glue test :
+>
+> +      || defined (CONFIG_USB_OHCI_HCD_PPC_OF_LE) \
+> +      || defined (CONFIG_USB_OHCI_HCD_PPC_OF_BE) \
+>
+> I would just test for CONFIG_USB_OHCI_HCD_PPC_OF to keep things the  
+> same
+> betwenn all the bus glues. (Sure it would be stupid to select  
+> PPC_OF and neither
+> LE nor BE ...)
+>
+> But that's just me and if the usb maintainer is ok with it, it's  
+> his call.
+>
+>
+> So otherwise, looks good to me. Haven't tested in hw yet ... I'll  
+> report asap.
+>
+>
+> Sylvain
