@@ -1,30 +1,20 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5431D67D6D
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 09:25:34 +1100 (EST)
-Date: Tue, 7 Nov 2006 22:25:14 +0000
-From: Russell King <rmk-pci@arm.linux.org.uk>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
-Message-ID: <20061107222514.GG9533@flint.arm.linux.org.uk>
-References: <1162884080.585336.70559261997.qpush@cradle>
-	<20061107072125.68E9F67CA7@ozlabs.org>
-	<20061107200730.GY27140@parisc-linux.org>
-	<20061107201436.GE9533@flint.arm.linux.org.uk>
-	<20061107204432.GZ27140@parisc-linux.org>
-	<20061107204853.GF9533@flint.arm.linux.org.uk>
-	<20061107210202.GA27140@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061107210202.GA27140@parisc-linux.org>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	"Eric W.Biederman" <ebiederm@xmission.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S.Miller" <davem@davemloft.net>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id EDBA868065
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 10:21:39 +1100 (EST)
+Message-ID: <455114F9.2010503@ru.mvista.com>
+Date: Wed, 08 Nov 2006 02:21:29 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: clockevents and HRT support
+References: <200611080005.08633.sshtylyov@ru.mvista.com>	
+	<1162938997.28571.534.camel@localhost.localdomain>	
+	<45510C58.3010707@ru.mvista.com>
+	<1162940684.28571.537.camel@localhost.localdomain>
+In-Reply-To: <1162940684.28571.537.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,48 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 07, 2006 at 02:02:02PM -0700, Matthew Wilcox wrote:
-> On Tue, Nov 07, 2006 at 08:48:53PM +0000, Russell King wrote:
-> > On Tue, Nov 07, 2006 at 01:44:32PM -0700, Matthew Wilcox wrote:
-> > > On Tue, Nov 07, 2006 at 08:14:36PM +0000, Russell King wrote:
-> > > > Bah.  chip_data is supposed to be __iomem.  I bet if you build ARM
-> > > > with sparse it'll kick out lots of warnings as a result of that loss.
-> > > 
-> > > Erm, since when?  When I introduced it (back in January 2005 [1]), it
-> > > was called handler_data and pointed to a struct which is chip-type
-> > > dependent.
-> > 
-> > Since before the generic irq merge.  If I was more expert with git
-> > I'd post a URL, but I'm not so I won't.  But I'm sure you can find
-> > it - look at the history of include/asm-arm/mach/irq.h.
-> 
-> OK.  Looks like the first mention of this is in 
-> 4a2581a080098ca3a0c4e416d7a282e96c75ebf8 from July 2006
-> which is signed-off by you, Ingo Molnar and Thomas Gleixner:
-> 
-> -       void __iomem    *base;
-> [...]
-> +#define set_irq_chipdata(irq, d)       set_irq_chip_data(irq, d)
-> +#define get_irq_chipdata(irq)          get_irq_chip_data(irq)
-> -#define set_irq_chipdata(irq,d)                        do { irq_desc[irq].base = d; } while (0)
-> -#define get_irq_chipdata(irq)                  (irq_desc[irq].base)
+Hello.
 
-Yes and now I'm regretting having switched ARM over to the generic IRQ
-stuff - the old stuff did _precisely_ what we wanted the way we wanted.
-None of these compromises.
+Benjamin Herrenschmidt wrote:
+>>    That's not equivalent. What I wanted to cover with this option was 970 
+>>weirdness of the decrementer interrupts being level triggered and effectively 
+>>tied to the MSB of the decremeneter register...
+>>    Also, 40x decrementer is not Book E compatible.
 
-> As other architectures, you could embed the iomem pointer in a
-> struct (would it be useful to you to have more than an iomem pointer
-> in your handlers?), or you could put the cast adding __iomem in
-> get_irq_chipdata().
+> Well... Is this specific to the 970 or also happens on all
+> POWER4..5..6 ? (I don't remember off the top of my head). It should
+> probably be a runtime check then.
 
-That's extremely wasteful - the only way to do that would be to kmalloc
-some memory, and that's 32 bytes minimum, just to store 4 bytes of
-pointer.  There's no other information which needs to be stored.
+    I don't have the docs on POWER[456], so can't say anything.
 
-I guess we'll just have to add __force casts all over the code. ;(
+>>>Also, what's the problem with ppc64 deterministic accounting that you
+>>>can't fix it ?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+>>    Arch-specific accounting hooks which this feature makes use of can't be 
+>>called from the generic clockevents code.
+
+> Then the generic clockevent code will have to be fixed or powerpc not
+> ported to it.
+
+    Whatever. I don't care about that feature. I did my best to solve this 
+gracefully.
+
+> Ben.
+
+WBR, Sergei
