@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 07 Nov 2006 18:21:20 +1100
-Subject: [RFC/PATCH 0/7] Powerpc MSI Implementation
-Message-Id: <1162884080.585336.70559261997.qpush@cradle>
+Date: Tue, 07 Nov 2006 18:21:21 +1100
+Subject: [RFC/PATCH 1/7] Add #defines for Hypertransport MSI fields
+In-Reply-To: <1162884080.585336.70559261997.qpush@cradle>
+Message-Id: <20061107072123.4463F67C29@ozlabs.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
 	Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
 	"David S. Miller" <davem@davemloft.net>
@@ -16,20 +17,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Another cut at a Powerpc MSI implementation. This is working with the MPIC
-backend, still haven't tested the RTAS backend.
+Add a few #defines for grabbing and working with the address fields
+in a HT_CAPTYPE_MSI_MAPPING capability. All from the HT spec v3.00.
 
-Things I remember changing since last time:
- * Fixed a few bugs pointed out by Jake.
- * We discover the MPIC magic address via the PCI config space rather than
-   hard coding it.
- * We reuse pdev->irq in the MPIC backend for now. This is nasty but works.
- * Moved msi_info into the pci_dev. This is ugly, but not sure where else
-   we can put it, pci_dn is no longer an option.
- * Added a place holder msi_info->msix_base pointer.
- * Still haven't implement raw MSIX enabled, todo.
- * Removed the msi_info->priv. No on was using it, can always put it back.
- * Added lots of debugging in anticipation of getting some firware to test on.
- ...
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-cheers
+ include/linux/pci_regs.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: msi/include/linux/pci_regs.h
+===================================================================
+--- msi.orig/include/linux/pci_regs.h
++++ msi/include/linux/pci_regs.h
+@@ -480,6 +480,13 @@
+ #define HT_CAPTYPE_UNITID_CLUMP	0x90	/* Unit ID clumping */
+ #define HT_CAPTYPE_EXTCONF	0x98	/* Extended Configuration Space Access */
+ #define HT_CAPTYPE_MSI_MAPPING	0xA8	/* MSI Mapping Capability */
++#define  HT_MSI_FLAGS		0x02		/* Offset to flags */
++#define  HT_MSI_FLAGS_ENABLE	0x1		/* Mapping enable */
++#define  HT_MSI_FLAGS_FIXED	0x2		/* Fixed mapping only */
++#define  HT_MSI_FIXED_ADDR	0x0000000FEE0000ULL	/* Fixed addr */
++#define  HT_MSI_ADDR_LO		0x04		/* Offset to low addr bits */
++#define  HT_MSI_ADDR_LO_MASK	0xFFF00000	/* Low address bit mask */
++#define  HT_MSI_ADDR_HI		0x08		/* Offset to high addr bits */
+ #define HT_CAPTYPE_DIRECT_ROUTE	0xB0	/* Direct routing configuration */
+ #define HT_CAPTYPE_VCSET	0xB8	/* Virtual Channel configuration */
+ #define HT_CAPTYPE_ERROR_RETRY	0xC0	/* Retry on error configuration */
