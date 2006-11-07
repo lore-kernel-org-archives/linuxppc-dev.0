@@ -1,15 +1,25 @@
-Return-Path: <enorm@126.com>
-Received: from m15-111.126.com (m15-111.126.com [220.181.15.111])
-	by ozlabs.org (Postfix) with SMTP id 8E7B367CEE
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 00:47:16 +1100 (EST)
-Message-ID: <002801c7026f$019536d0$8709a8c0@class>
-From: "enorm" <enorm@126.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: why need disable icache
-Date: Tue, 7 Nov 2006 21:16:58 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0025_01C702B2.0F4123F0"
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 49D7567CE2
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 07:14:53 +1100 (EST)
+Date: Tue, 7 Nov 2006 20:14:36 +0000
+From: Russell King <rmk-pci@arm.linux.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
+Message-ID: <20061107201436.GE9533@flint.arm.linux.org.uk>
+References: <1162884080.585336.70559261997.qpush@cradle>
+	<20061107072125.68E9F67CA7@ozlabs.org>
+	<20061107200730.GY27140@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061107200730.GY27140@parisc-linux.org>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
+	"Eric W.Biederman" <ebiederm@xmission.com>,
+	linux-pci@atrey.karlin.mff.cuni.cz, "David S.Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,36 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, Nov 07, 2006 at 01:07:30PM -0700, Matthew Wilcox wrote:
+> On Tue, Nov 07, 2006 at 06:21:23PM +1100, Michael Ellerman wrote:
+> > We currently (ab)use the pci_dev to store our msi_info structure. We
+> > were hoping to stash it in the pci_dn, but that's not a goer, so the
+> > pci_dev seems like the right place, even though it seems naughty to
+> > bloat generic structs.
+> 
+> We have the per-irq void *chip_data; could this be the right place to
+> keep it instead?  That way, it won't take up space in the pci_dev for
+> devices which don't use MSI.
 
-------=_NextPart_000_0025_01C702B2.0F4123F0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Bah.  chip_data is supposed to be __iomem.  I bet if you build ARM
+with sparse it'll kick out lots of warnings as a result of that loss.
 
-SGksIGFsbA0KSSBoYXZlIGJlZW4gY29uZnVzZWQgYnkgY2FjaGUgcmVjZW50bHkuDQoxLiB3aHkg
-bmVlZCB3ZSBkaXNhYmxlIGljYWNoZSBhbmQgZGNhY2hlIGF0IHRoZSBiZWdpbm5pbmcgb2YgdGhl
-IHUtYm9vdCBjb2RlPw0KMi4gd2hlbiBjYW4gd2UgZW5hYmxlIHRoZW0gPw0KDQpZb3VyIGFuc3dl
-cnMgd2lsbCBiZSBob25lc3RseSB3ZWxjb21lZC4NCg0KQmVzdCByZWdhcmRzDQpFbm9ybQ==
+Grumble, generic irq, pah.  Grumble.
 
-------=_NextPart_000_0025_01C702B2.0F4123F0
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjI5NjMiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
-Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj5IaSwgYWxsPC9GT05UPjwv
-RElWPg0KPERJVj48Rk9OVCBzaXplPTI+SSBoYXZlIGJlZW4gY29uZnVzZWQgYnkgY2FjaGUgcmVj
-ZW50bHkuPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+MS4gd2h5IG5lZWQgd2UgZGlz
-YWJsZSBpY2FjaGUgYW5kIGRjYWNoZSBhdCB0aGUgYmVnaW5uaW5nIG9mIA0KdGhlIHUtYm9vdCBj
-b2RlPzwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjIuIHdoZW4gY2FuIHdlIGVuYWJs
-ZSB0aGVtID88L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9E
-SVY+DQo8RElWPjxGT05UIHNpemU9Mj5Zb3VyIGFuc3dlcnMgd2lsbCBiZSBob25lc3RseSB3ZWxj
-b21lZC48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+
-DQo8RElWPjxGT05UIHNpemU9Mj5CZXN0IHJlZ2FyZHM8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05U
-IHNpemU9Mj5Fbm9ybTwvRk9OVD48L0RJVj48L0JPRFk+PC9IVE1MPg0K
-
-------=_NextPart_000_0025_01C702B2.0F4123F0--
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
