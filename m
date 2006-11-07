@@ -1,24 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 94F4067BFE
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 18:17:57 +1100 (EST)
-Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olaf@aepfle.de>
-In-Reply-To: <20061107070839.GA31460@aepfle.de>
-References: <454DBFE7.3090800@s5r6.in-berlin.de>
-	<1162724083.28571.235.camel@localhost.localdomain>
-	<454DC985.2020203@s5r6.in-berlin.de> <20061106165752.GA25595@aepfle.de>
-	<1162851570.28571.361.camel@localhost.localdomain>
-	<20061107070839.GA31460@aepfle.de>
-Content-Type: text/plain
-Date: Tue, 07 Nov 2006 18:17:45 +1100
-Message-Id: <1162883865.28571.439.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Gioele Barabucci <dev@gioelebarabucci.com>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 07 Nov 2006 18:21:20 +1100
+Subject: [RFC/PATCH 0/7] Powerpc MSI Implementation
+Message-Id: <1162884080.585336.70559261997.qpush@cradle>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +16,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-11-07 at 08:08 +0100, Olaf Hering wrote:
-> On Tue, Nov 07, Benjamin Herrenschmidt wrote:
-> 
-> > On Mon, 2006-11-06 at 17:58 +0100, Olaf Hering wrote:
-> > > On Sun, Nov 05, Stefan Richter wrote:
-> > > 
-> > > > Yes, PowerBook G3 Pismo seems affected.
-> > > > https://bugzilla.novell.com/show_bug.cgi?id=115228
-> > > 
-> > > This patch does not help. Doing an ip link set dev eth0 up makes no
-> > > difference.
-> > 
-> > What about trying to add a delay between the pmac clock code and the
-> > init of the controller ? does that help ?
-> 
-> no. and it is the rmmod, not the insmod, that hangs the pismo.
-> Adding some mdelay to the remove function doesnt help either.
+Another cut at a Powerpc MSI implementation. This is working with the MPIC
+backend, still haven't tested the RTAS backend.
 
-Tried not calling the pmac feature stuff at all in the rmmod ?
+Things I remember changing since last time:
+ * Fixed a few bugs pointed out by Jake.
+ * We discover the MPIC magic address via the PCI config space rather than
+   hard coding it.
+ * We reuse pdev->irq in the MPIC backend for now. This is nasty but works.
+ * Moved msi_info into the pci_dev. This is ugly, but not sure where else
+   we can put it, pci_dn is no longer an option.
+ * Added a place holder msi_info->msix_base pointer.
+ * Still haven't implement raw MSIX enabled, todo.
+ * Removed the msi_info->priv. No on was using it, can always put it back.
+ * Added lots of debugging in anticipation of getting some firware to test on.
+ ...
 
-I reckon there might be a problem with the cable power control on some
-old models like... the pismo :-)
-
-Ben.
+cheers
