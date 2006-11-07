@@ -1,14 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1]  PPC32 : Huge-page support for ppc440
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Edi Shmueli <edi@linux.vnet.ibm.com>
-In-Reply-To: <454FC362.9070608@linux.vnet.ibm.com>
-References: <454FC362.9070608@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D028667C1B
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 13:04:43 +1100 (EST)
+Subject: Re: [PATCH 2/5] [RFC] Add support for lite5200b to arch/powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <11628596753992-git-send-email-grant.likely@secretlab.ca>
+References: <11628596653052-git-send-email-grant.likely@secretlab.ca>
+	<11628596751096-git-send-email-grant.likely@secretlab.ca>
+	<11628596753992-git-send-email-grant.likely@secretlab.ca>
 Content-Type: text/plain
-Date: Mon, 06 Nov 2006 20:00:33 -0600
-Message-Id: <1162864834.3809.21.camel@zod.rchland.ibm.com>
+Date: Tue, 07 Nov 2006 13:04:32 +1100
+Message-Id: <1162865073.28571.390.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Edi,
 
-On Mon, 2006-11-06 at 18:21 -0500, Edi Shmueli wrote:
-> From: Edi Shmueli edi@linux.vnet.ibm.com
-> 
-> This patch enables applications to exploit the PPC440 TLB support for 
-> huge-page mapping, to minimize TLB thrashing.
-> Applications with large memory footprint that exploit this support, 
-> experience minimal TLB misses, and boost in performance.
-> NAS benchmarks performed with this patch indicate hundreds of percent of 
-> improvement in performance for some application.
-> Known limitations: because each PMD covers 2MB of the process address 
-> space, the minimal huge-page size supported by this patch is 2M.
-> 
-> Signed-off-by: Edi Shmueli edi@linux.vnet.ibm.com
+> +static int __init lite5200_probe(void)
+> +{
+> +	unsigned long node = of_get_flat_dt_root();
+> +	const char *model = of_get_flat_dt_prop(node, "model", NULL);
+> +
+> +	if (!of_flat_dt_is_compatible(node, "mpc52xx"))
+> +		return 0;
+> +	pr_debug("%s board w/ mpc52xx found\n", model ? model : "unknown");
+> +
+> +	return 1;
+> +}
 
-Your patch is line wrapped and the whitespace has been corrupted.  It's
-also against a bit older version of the kernel.
+Are you creating a "generic" mpc52xx machine or a "lite5200b" machine ?
 
-Could you try to fixup these issues and resubmit?  Paul's powerpc.git
-tree would probably be best to diff against.
+If you do the former, it will try to match on any board with that
+compatible propery, thus any mpc52xx based board. That is probably not
+what you want.
 
-josh
+Put something like model "lite5200b" compatible "lite5200" "lite5200b"
+in your / and check for that. Call you board lite5200, not mpc52xx.
+
+Ben.
