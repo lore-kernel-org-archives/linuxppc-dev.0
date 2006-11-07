@@ -1,18 +1,15 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 267C167DA0
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 09:44:50 +1100 (EST)
-Message-ID: <45510C58.3010707@ru.mvista.com>
-Date: Wed, 08 Nov 2006 01:44:40 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 1893567CED
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 09:57:46 +1100 (EST)
+Date: Tue, 7 Nov 2006 16:57:22 -0600 (CST)
+From: Andy Fleming <afleming@freescale.com>
+To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] of_irq_to_resource now returns the virq
+Message-ID: <Pine.LNX.4.61.0611071505001.6936@ld0175-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] PowerPC: clockevents and HRT support
-References: <200611080005.08633.sshtylyov@ru.mvista.com>
-	<1162938997.28571.534.camel@localhost.localdomain>
-In-Reply-To: <1162938997.28571.534.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Benjamin Herrenschmidt wrote:
+Mostly this is to allow for error checking (check the return for NO_IRQ)
+Added a check that the resource is non-NULL, too
 
->>+#ifdef CONFIG_PPC_MULTIPLATFORM
->>+	/*
->>+	 * We must write a positive value to the decrementer to clear
->>+	 * the interrupt on the IBM 970 CPU series.  In periodic mode,
->>+	 * this happens when the decrementer gets reloaded later, but
->>+	 * in one-shot mode, we have to do it here since an event handler
->>+	 * may skip loading the new value...
->>+	 */
->>+	if (per_cpu(decrementers, cpu).mode != CLOCK_EVT_PERIODIC)
->>+		set_dec(DECREMENTER_MAX);
->>+#endif
+Signed-off-by: Andrew Fleming <afleming@freescale.com>
+---
+ include/asm-powerpc/prom.h |   14 +++++++++++---
+ 1 files changed, 11 insertions(+), 3 deletions(-)
 
-> PPC_MULTIPLATFORM is going away soon (or will be set for all CPU types
-> in arch/powerpc). Just make up a macro at the top of the file around the
-> lines of
-
-> #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-> #define PPC_BOOKE_DECREMENTER
-> #endif
-
-> And use #if(n)def PPC_BOOKE_DECREMENTER in the rest of the code.
-
-    That's not equivalent. What I wanted to cover with this option was 970 
-weirdness of the decrementer interrupts being level triggered and effectively 
-tied to the MSB of the decremeneter register...
-    Also, 40x decrementer is not Book E compatible.
-
-> Also, what's the problem with ppc64 deterministic accounting that you
-> can't fix it ?
-
-    Arch-specific accounting hooks which this feature makes use of can't be 
-called from the generic clockevents code.
-
-> Ben.
-
-WBR, Sergei
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index 933ba27..0afee17 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -334,10 +334,18 @@ extern int of_irq_map_one(struct device_
+ struct pci_dev;
+ extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
+ 
+-static inline void of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
++static inline int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
+ {
+-	r->start = r->end = irq_of_parse_and_map(dev, index);
+-	r->flags = IORESOURCE_IRQ;
++	int irq = irq_of_parse_and_map(dev, index);
++
++	/* Only dereference the resource if both the
++	 * resource and the irq are valid. */
++	if (r && irq != NO_IRQ) {
++		r->start = r->end = irq;
++		r->flags = IORESOURCE_IRQ;
++	}
++
++	return irq;
+ }
+ 
+ 
+-- 
+1.4.2.3
