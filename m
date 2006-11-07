@@ -1,19 +1,15 @@
-Return-Path: <luong.ngo@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
-	by ozlabs.org (Postfix) with ESMTP id 6160167C46
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 11:14:38 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id x19so586099pyg
-	for <linuxppc-dev@ozlabs.org>; Mon, 06 Nov 2006 16:14:34 -0800 (PST)
-Message-ID: <1b2aacd80611061614l1a793947yb57f091fc5ea18b3@mail.gmail.com>
-Date: Mon, 6 Nov 2006 16:14:33 -0800
-From: "Luong Ngo" <luong.ngo@gmail.com>
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-Subject: ethernet interface problem with kernel 2.6.14 on MPC8343E
-In-Reply-To: <1b2aacd80611061551t78cc4f1aoef66377e82c2daed@mail.gmail.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 690FF67C35
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Nov 2006 11:20:25 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: <linuxppc-dev@ozlabs.org>
+Subject: 2 problems with the i2c-mpc.c driver 
+Date: Tue, 7 Nov 2006 01:20:18 +0100
+Message-ID: <023a01c70202$818dea20$020120ac@Jocke>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_80867_21007541.1162858473397"
-References: <1b2aacd80611061551t78cc4f1aoef66377e82c2daed@mail.gmail.com>
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_80867_21007541.1162858473397
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+1) Master I2C address
+  Can't find how/where the controllers master I2C address is set.
+  Seems like it is inherited from whatever the boot(u-boot in this case)
+  was using. Seems a bit fragile to me.
 
-Hello,
+2) Disturbance disables the I2C controller.
+  Noticed that a disturbance on the I2C bus sometimes disables the
+  the controller, will only recover after a reboot.
+  Adding the following seems to cure the problem: 
+ static void mpc_i2c_start(struct mpc_i2c *i2c)
+{
+        /* Clear arbitration */
+        writeb(0, i2c->base + MPC_I2C_SR);
++       writeccr(i2c, 0);
++       udelay(5);
+        /* Start with MEN */
+        writeccr(i2c, CCR_MEN);
+}
+ I don't this this is the right fix, since it introduces an delay of 5 us.
+ Any ideas?
 
-I am having a problem with the interfaces eth0 and eth1 when running
-2.6.14kernel on a board with MPC8343E. The problem I encounters is
-only one of the
-eth interface is really working. Only the one that is configured first,
-using "ifconfig eth[0/1] 192.168.1.1 netmask 255.255.255.0" can ping and be
-pinged from another host. I wonder if there is setup difference between the
-TSEC1 and TSEC2 or this is not related to hardware but rather something in
-the kernel. When I ping from other host, from within the Gianfar driver, I
-can see the packet is received on both interfaces but only one responds.
-When pinging from the system itself, only the working interface sending out
-packet, the other interface does not send anything. Please advise me what I
-am doing wrong or missing.
-
-Thank you,
-L. Ngo
-
-------=_Part_80867_21007541.1162858473397
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<span class="gmail_quote"></span>Hello,<br><br>I am having a problem with the interfaces eth0 and eth1 when running 2.6.14 kernel on a board with MPC8343E. The problem I encounters is only one of the eth interface is really working. Only the one that is configured first, using &quot;ifconfig eth[0/1] 
-<a href="http://192.168.1.1" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">192.168.1.1</a> netmask <a href="http://255.255.255.0" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">
-255.255.255.0</a>&quot; can ping and be pinged from another host. I wonder if there is setup difference between the TSEC1 and TSEC2 or this is not related to hardware but rather something in the kernel. When I ping from other host, from within the Gianfar driver, I can see the packet is received on both interfaces but only one responds. When pinging from the system itself, only the working interface sending out packet, the other interface does not send anything. Please advise me what I am doing wrong or missing.
-<br><br>Thank you,<br>L. Ngo<br>
-
-
-------=_Part_80867_21007541.1162858473397--
+ Jocke
