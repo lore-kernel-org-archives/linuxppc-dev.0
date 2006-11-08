@@ -1,19 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6E70667CB2
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 11:59:07 +1100 (EST)
-Date: Wed, 8 Nov 2006 11:58:58 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Judith Lebzelter <judith@osdl.org>
-Subject: Re: build problems with powerpc allmodconfig
-Message-Id: <20061108115858.4171a760.sfr@canb.auug.org.au>
-In-Reply-To: <20061107180937.GB1339@shell0.pdx.osdl.net>
-References: <20061107180937.GB1339@shell0.pdx.osdl.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__8_Nov_2006_11_58_58_+1100_XEwNbrnxURdIxn+i"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id F282167C74
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 12:20:33 +1100 (EST)
+Date: Tue, 7 Nov 2006 18:19:31 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: clockevents and HRT support
+Message-ID: <20061108011930.GA18955@mag.az.mvista.com>
+References: <200611080005.08633.sshtylyov@ru.mvista.com>
+	<1162938997.28571.534.camel@localhost.localdomain>
+	<45510C58.3010707@ru.mvista.com>
+	<1162940684.28571.537.camel@localhost.localdomain>
+	<455114F9.2010503@ru.mvista.com>
+	<1162945131.28571.553.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1162945131.28571.553.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__8_Nov_2006_11_58_58_+1100_XEwNbrnxURdIxn+i
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Wed, Nov 08, 2006 at 11:18:51AM +1100, Benjamin Herrenschmidt wrote:
+> 
+> >     Whatever. I don't care about that feature. I did my best to solve this 
+> > gracefully.
+> 
+> Very typical of Montavista to not care about doing the right thing.
+> 
+> Ben
 
-On Tue, 7 Nov 2006 10:09:37 -0800 Judith Lebzelter <judith@osdl.org> wrote:
->
-> How about just adding an 'ifndef' in the Makefile, as in the patch below?
-> This compiles ibmvscsic.o fine.
-
-Looks good.  Please resend with a comment (both for the commit and in the
-Makefile) and a Signed-off-by line.
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__8_Nov_2006_11_58_58_+1100_XEwNbrnxURdIxn+i
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFUSvSFdBgD/zoJvwRAhpRAJ9Nt4iQEw5SEQuYfJrrUCjU+JxeqACfQqrm
-T3S8M48uUXtqEUYIPwECfQM=
-=lUmH
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Nov_2006_11_58_58_+1100_XEwNbrnxURdIxn+i--
+Hmmm...
