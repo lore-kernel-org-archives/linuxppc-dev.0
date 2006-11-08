@@ -1,20 +1,14 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 5D81167CC4
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 09:06:45 +1100 (EST)
-To: Christoph Raisch <RAISCH@de.ibm.com>
-Subject: Re: [PATCH 2.6.19 2/4] ehca: hcp_phyp.c: correct page mapping in 64k
-	page mode
-References: <OF60EFC2CD.F8FB1D23-ONC1257220.00315F90-C1257220.0038B8E3@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 08 Nov 2006 14:06:42 -0800
-In-Reply-To: <OF60EFC2CD.F8FB1D23-ONC1257220.00315F90-C1257220.0038B8E3@de.ibm.com>
-	(Christoph Raisch's message of "Wed, 8 Nov 2006 11:22:27 +0100")
-Message-ID: <adaejsdfv9p.fsf@cisco.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	openib-general@openib.org
+Message-ID: <17746.21876.387969.557614@cargo.ozlabs.ibm.com>
+Date: Thu, 9 Nov 2006 09:08:52 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Jake Moilanen <moilanen@austin.ibm.com>
+Subject: Re: [PATCH] client-architecture termination
+In-Reply-To: <1163016748.9913.273.camel@goblue>
+References: <1163016748.9913.273.camel@goblue>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,11 +18,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > We plan to change that as soon as the base kernel can handle mixed
- > pagesizes in a more official way.
+Jake Moilanen writes:
 
-OK, so this is just a temporary workaround for powerpc's broken ioremap()?
+> Firmware is crashing during CAS parsing.  It appears that a portion of
+> Will's patch got dropped.
 
-I'll apply for 2.6.19, and I hope we can back this out in 2.6.20.
+Indeed it got dropped, because it would make the contents of our
+ibm_architecture_vec incorrect according to PAPR.  The platform
+architects confirmed some time ago that what we have is correct, and
+the bug is in firmware - and this was communicated to the firmware
+developers.
 
- - R.
+This came up a while ago; I'm surprised that firmware hasn't fixed
+their bug yet.  What firmware level are you seeing this problem with?
+
+Paul.
