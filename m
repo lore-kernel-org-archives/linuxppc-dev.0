@@ -1,25 +1,24 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3E14167C25
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 21:29:33 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: michael@ellerman.id.au
-Subject: Re: [RFC/PATCH 0/7] Powerpc MSI Implementation
-References: <1162884080.585336.70559261997.qpush@cradle>
-	<1162885276.28571.444.camel@localhost.localdomain>
-	<20061107080257.GA5874@kroah.com>
-	<1162963101.20271.18.camel@localhost.localdomain>
-Date: Wed, 08 Nov 2006 03:26:47 -0700
-In-Reply-To: <1162963101.20271.18.camel@localhost.localdomain> (Michael
-	Ellerman's message of "Wed, 08 Nov 2006 16:18:21 +1100")
-Message-ID: <m1fycu5j4o.fsf@ebiederm.dsl.xmission.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 44D6967C7D
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 01:14:52 +1100 (EST)
+Message-ID: <4551E651.1060007@ru.mvista.com>
+Date: Wed, 08 Nov 2006 17:14:41 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: clockevents and HRT support
+References: <200611080005.08633.sshtylyov@ru.mvista.com>	
+	<1162938997.28571.534.camel@localhost.localdomain>	
+	<45510C58.3010707@ru.mvista.com>	
+	<1162940684.28571.537.camel@localhost.localdomain>	
+	<455114F9.2010503@ru.mvista.com>	
+	<1162945131.28571.553.camel@localhost.localdomain>	
+	<20061108011930.GA18955@mag.az.mvista.com>
+	<1162951594.28571.625.camel@localhost.localdomain>
+In-Reply-To: <1162951594.28571.625.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael@ellerman.id.au> writes:
+Hello.
 
->> Oh, and I think your first two patches can be applied now to the tree
->> (header file changes).  Any objection to me doing this?
->
-> There's a trivial bug in 1/7 (HT #defines), so hold back on that one
-> until I resend. The movement of MSI-X #defines is good to go. I also
-> sent you the patch to add HT_SUBCAP_OFFSET yesterday that I think is
-> ready to merge.
+Benjamin Herrenschmidt wrote:
 
-Actually now that I am thinking about it I'm not at all certain about
-the HT_SUBCAP_OFFSET patch.  The basic issue is that it suggests that
-the field that specifies which type of hypertransport capability has a
-fixed number of bits.  While in reality the encoding is variable
-length.
+>>>>    Whatever. I don't care about that feature. I did my best to solve this 
+>>>>gracefully.
 
-Eric
+>>>Very typical of Montavista to not care about doing the right thing.
+
+    We also have schedule to follow.
+
+>>Hmmm...
+
+> Yeah, ok, maybe not -everybody- there :-)
+
+    I think I'm among the least deserving such compliments here.
+
+> Ben.
+
+WBR, Sergei
