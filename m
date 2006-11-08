@@ -1,34 +1,11 @@
-Return-Path: <johnrose@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F417E67D04
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 03:07:12 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kA8G7AKo025882
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 11:07:10 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kA8G79ig354694
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 09:07:09 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kA8G78Fg014194
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 09:07:09 -0700
-Subject: Re: [PATCH] powerpc: force 4k update_flash block and list sizes
-From: John Rose <johnrose@austin.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <945.1162960744@neuling.org>
-References: <1162943615.13499.15.camel@sinatra.austin.ibm.com>
-	<20286.1162951582@neuling.org>
-	<1162960202.14254.3.camel@sinatra.austin.ibm.com>
-	<945.1162960744@neuling.org>
-Content-Type: text/plain
-Message-Id: <1163002050.15534.4.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-Date: Wed, 08 Nov 2006 10:07:30 -0600
-Cc: External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <nd@bplan-gmbh.de>
+From: Nicolas DET <nd@bplan-gmbh.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Add MPC5200 Interrupt Controller support.
+Date: Wed,  8 Nov 2006 17:14:43 +0100
+Message-Id: <1163002483146-git-send-email-nd@bplan-gmbh.de>
+Cc: ML PPC dev <linuxppc-dev@ozlabs.org>,
+	ML PPC embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,158 +15,868 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch add MPC52xx Interrupt controller for ARCH=powerpc.
 
-> Arrh, did anything change?
+It includes the main code in arch/powerpc/sysdev/ ad well as an header file in
+include/asm-powerpc.
 
-Sorry, attached the wrong thing!  That's what I get for trying to submit
-code after 10PM :)
-
-The enablement of 64k pages on POWER platforms exposed a quirk in the RTAS
-mechanism for updating firmware.  RTAS assumes 4k for flash block and list
-sizes, and use of any other sizes results in a failure.
-
-This patch changes the rtas_flash module to force the use of 4k memory block
-and list sizes when preparing and sending a firmware image to RTAS.  It also
-changes rtas_flash to use a slab cache to ensure 4k alignment of flash block
-data.  Such alignment is a documented requirement.
-
-Signed-off-by: John Rose <johnrose@austin.ibm.com>
-
+Signed-off-by: Nicolas DET <nd@bplan-gmbh.de>
+Acked-by: Sylvain Munaut <tnt@246tNt.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 ---
+ arch/powerpc/sysdev/Makefile      |    1 
+ arch/powerpc/sysdev/mpc52xx_pic.c |  538 +++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mpc52xx.h     |  287 ++++++++++++++++++++
+ 3 files changed, 826 insertions(+), 0 deletions(-)
 
- uf_4k-johnrose/arch/powerpc/kernel/rtas_flash.c |   47 ++++++++++++++++++------
- 1 files changed, 37 insertions(+), 10 deletions(-)
-
-diff -puN arch/powerpc/kernel/rtas_flash.c~uf_4k_alt2 arch/powerpc/kernel/rtas_flash.c
---- uf_4k/arch/powerpc/kernel/rtas_flash.c~uf_4k_alt2	2006-11-06 16:59:27.000000000 -0600
-+++ uf_4k-johnrose/arch/powerpc/kernel/rtas_flash.c	2006-11-07 22:29:52.000000000 -0600
-@@ -72,6 +72,10 @@
- #define VALIDATE_BUF_SIZE 4096    
- #define RTAS_MSG_MAXLEN   64
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index f15af0e..5b87f7b 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
++obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_pic.o
  
-+/* Quirk - RTAS requires 4k list length and block size */
-+#define RTAS_BLKLIST_LENGTH 4096
-+#define RTAS_BLK_SIZE 4096
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+diff --git a/arch/powerpc/sysdev/mpc52xx_pic.c b/arch/powerpc/sysdev/mpc52xx_pic.c
+new file mode 100644
+index 0000000..6df51f0
+--- /dev/null
++++ b/arch/powerpc/sysdev/mpc52xx_pic.c
+@@ -0,0 +1,538 @@
++/*
++ *
++ * Programmable Interrupt Controller functions for the Freescale MPC52xx.
++ *
++ * Copyright (C) 2006 bplan GmbH
++ *
++ * Based on the code from the 2.4 kernel by
++ * Dale Farnsworth <dfarnsworth@mvista.com> and Kent Borg.
++ *
++ * Copyright (C) 2004 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003 Montavista Software, Inc
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ *
++ */
 +
- struct flash_block {
- 	char *data;
- 	unsigned long length;
-@@ -83,7 +87,7 @@ struct flash_block {
-  * into a version/length and translate the pointers
-  * to absolute.
-  */
--#define FLASH_BLOCKS_PER_NODE ((PAGE_SIZE - 16) / sizeof(struct flash_block))
-+#define FLASH_BLOCKS_PER_NODE ((RTAS_BLKLIST_LENGTH - 16) / sizeof(struct flash_block))
- struct flash_block_list {
- 	unsigned long num_blocks;
- 	struct flash_block_list *next;
-@@ -96,6 +100,9 @@ struct flash_block_list_header { /* just
- 
- static struct flash_block_list_header rtas_firmware_flash_list = {0, NULL};
- 
-+/* Use slab cache to guarantee 4k alignment */
-+static kmem_cache_t *flash_block_cache = NULL;
++#undef DEBUG
 +
- #define FLASH_BLOCK_LIST_VERSION (1UL)
- 
- /* Local copy of the flash block list.
-@@ -153,7 +160,7 @@ static int flash_list_valid(struct flash
- 				return FLASH_IMG_NULL_DATA;
- 			}
- 			block_size = f->blocks[i].length;
--			if (block_size <= 0 || block_size > PAGE_SIZE) {
-+			if (block_size <= 0 || block_size > RTAS_BLK_SIZE) {
- 				return FLASH_IMG_BAD_LEN;
- 			}
- 			image_size += block_size;
-@@ -177,9 +184,9 @@ static void free_flash_list(struct flash
- 
- 	while (f) {
- 		for (i = 0; i < f->num_blocks; i++)
--			free_page((unsigned long)(f->blocks[i].data));
-+			kmem_cache_free(flash_block_cache, f->blocks[i].data);
- 		next = f->next;
--		free_page((unsigned long)f);
-+		kmem_cache_free(flash_block_cache, f);
- 		f = next;
- 	}
- }
-@@ -278,6 +285,12 @@ static ssize_t rtas_flash_read(struct fi
- 	return msglen;
- }
- 
-+/* constructor for flash_block_cache */
-+void rtas_block_ctor(void *ptr, kmem_cache_t *cache, unsigned long flags)
++#include <linux/stddef.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/signal.h>
++#include <linux/stddef.h>
++#include <linux/delay.h>
++#include <linux/irq.h>
++#include <linux/hardirq.h>
++
++#include <asm/io.h>
++#include <asm/processor.h>
++#include <asm/system.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/mpc52xx.h>
++
++/*
++ *
++*/
++
++static struct mpc52xx_intr __iomem *intr;
++static struct mpc52xx_sdma __iomem *sdma;
++static struct irq_host *mpc52xx_irqhost = NULL;
++
++static unsigned char mpc52xx_map_senses[4] = {
++	IRQ_TYPE_LEVEL_HIGH,
++	IRQ_TYPE_EDGE_RISING,
++	IRQ_TYPE_EDGE_FALLING,
++	IRQ_TYPE_LEVEL_LOW,
++};
++
++/*
++ *
++*/
++
++static inline void io_be_setbit(u32 __iomem * addr, int bitno)
 +{
-+	memset(ptr, 0, RTAS_BLK_SIZE);
++	out_be32(addr, in_be32(addr) | (1 << bitno));
 +}
 +
- /* We could be much more efficient here.  But to keep this function
-  * simple we allocate a page to the block list no matter how small the
-  * count is.  If the system is low on memory it will be just as well
-@@ -302,7 +315,7 @@ static ssize_t rtas_flash_write(struct f
- 	 * proc file
- 	 */
- 	if (uf->flist == NULL) {
--		uf->flist = (struct flash_block_list *) get_zeroed_page(GFP_KERNEL);
-+		uf->flist = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
- 		if (!uf->flist)
- 			return -ENOMEM;
- 	}
-@@ -313,21 +326,21 @@ static ssize_t rtas_flash_write(struct f
- 	next_free = fl->num_blocks;
- 	if (next_free == FLASH_BLOCKS_PER_NODE) {
- 		/* Need to allocate another block_list */
--		fl->next = (struct flash_block_list *)get_zeroed_page(GFP_KERNEL);
-+		fl->next = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
- 		if (!fl->next)
- 			return -ENOMEM;
- 		fl = fl->next;
- 		next_free = 0;
- 	}
- 
--	if (count > PAGE_SIZE)
--		count = PAGE_SIZE;
--	p = (char *)get_zeroed_page(GFP_KERNEL);
-+	if (count > RTAS_BLK_SIZE)
-+		count = RTAS_BLK_SIZE;
-+	p = kmem_cache_alloc(flash_block_cache, GFP_KERNEL);
- 	if (!p)
- 		return -ENOMEM;
- 	
- 	if(copy_from_user(p, buffer, count)) {
--		free_page((unsigned long)p);
-+		kmem_cache_free(flash_block_cache, p);
- 		return -EFAULT;
- 	}
- 	fl->blocks[next_free].data = p;
-@@ -791,6 +804,16 @@ int __init rtas_flash_init(void)
- 		goto cleanup;
- 
- 	rtas_flash_term_hook = rtas_flash_firmware;
++static inline void io_be_clrbit(u32 __iomem * addr, int bitno)
++{
++	out_be32(addr, in_be32(addr) & ~(1 << bitno));
++}
 +
-+	flash_block_cache = kmem_cache_create("rtas_flash_cache",
-+				RTAS_BLK_SIZE, RTAS_BLK_SIZE, 0,
-+				rtas_block_ctor, NULL);
-+	if (!flash_block_cache) {
-+		printk(KERN_ERR "%s: failed to create block cache\n",
-+				__FUNCTION__);
-+		rc = -ENOMEM;
-+		goto cleanup;
++/*
++ * IRQ[0-3] interrupt irq_chip
++*/
++
++static void mpc52xx_extirq_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_clrbit(&intr->ctrl, 11 - l2irq);
++}
++
++static void mpc52xx_extirq_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&intr->ctrl, 11 - l2irq);
++}
++
++static void mpc52xx_extirq_ack(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&intr->ctrl, 27 - l2irq);
++}
++
++static struct irq_chip mpc52xx_extirq_irqchip = {
++	.typename = " MPC52xx IRQ[0-3] ",
++	.mask = mpc52xx_extirq_mask,
++	.unmask = mpc52xx_extirq_unmask,
++	.ack = mpc52xx_extirq_ack,
++};
++
++/*
++ * Main interrupt irq_chip
++*/
++
++static void mpc52xx_main_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&intr->main_mask, 15 - l2irq);
++}
++
++static void mpc52xx_main_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_clrbit(&intr->main_mask, 15 - l2irq);
++}
++
++static struct irq_chip mpc52xx_main_irqchip = {
++	.typename = "MPC52xx Main",
++	.mask = mpc52xx_main_mask,
++	.mask_ack = mpc52xx_main_mask,
++	.unmask = mpc52xx_main_unmask,
++};
++
++/*
++ * Peripherals interrupt irq_chip
++*/
++
++static void mpc52xx_periph_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&intr->per_mask, 31 - l2irq);
++}
++
++static void mpc52xx_periph_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_clrbit(&intr->per_mask, 31 - l2irq);
++}
++
++static struct irq_chip mpc52xx_periph_irqchip = {
++	.typename = "MPC52xx Peripherals",
++	.mask = mpc52xx_periph_mask,
++	.mask_ack = mpc52xx_periph_mask,
++	.unmask = mpc52xx_periph_unmask,
++};
++
++/*
++ * SDMA interrupt irq_chip
++*/
++
++static void mpc52xx_sdma_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&sdma->IntMask, l2irq);
++}
++
++static void mpc52xx_sdma_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_clrbit(&sdma->IntMask, l2irq);
++}
++
++static void mpc52xx_sdma_ack(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	out_be32(&sdma->IntPend, 1 << l2irq);
++}
++
++static struct irq_chip mpc52xx_sdma_irqchip = {
++	.typename = "MPC52xx SDMA",
++	.mask = mpc52xx_sdma_mask,
++	.unmask = mpc52xx_sdma_unmask,
++	.ack = mpc52xx_sdma_ack,
++};
++
++/*
++ * irq_host
++*/
++
++static int mpc52xx_irqhost_match(struct irq_host *h, struct device_node *node)
++{
++	pr_debug("%s: node=%p\n", __func__, node);
++	return mpc52xx_irqhost->host_data == node;
++}
++
++static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node *ct,
++				 u32 * intspec, unsigned int intsize,
++				 irq_hw_number_t * out_hwirq,
++				 unsigned int *out_flags)
++{
++	int intrvect_l1;
++	int intrvect_l2;
++	int intrvect_type;
++	int intrvect_linux;
++
++	if (intsize != 3)
++		return -1;
++
++	intrvect_l1 = (int)intspec[0];
++	intrvect_l2 = (int)intspec[1];
++	intrvect_type = (int)intspec[2];
++
++	intrvect_linux =
++	    (intrvect_l1 << MPC52xx_IRQ_L1_OFFSET) & MPC52xx_IRQ_L1_MASK;
++	intrvect_linux |=
++	    (intrvect_l2 << MPC52xx_IRQ_L2_OFFSET) & MPC52xx_IRQ_L2_MASK;
++
++	pr_debug("return %x, l1=%d, l2=%d\n", intrvect_linux, intrvect_l1,
++		 intrvect_l2);
++
++	*out_hwirq = intrvect_linux;
++	*out_flags = mpc52xx_map_senses[intrvect_type];
++
++	return 0;
++}
++
++/*
++ * this function retrieves the correct IRQ type out
++ * of the MPC regs
++ * Only externals IRQs needs this
++*/
++static int mpc52xx_irqx_gettype(int irq)
++{
++	int type;
++	u32 ctrl_reg;
++
++	ctrl_reg = in_be32(&intr->ctrl);
++	type = (ctrl_reg >> (22 - irq * 2)) & 0x3;
++
++	return mpc52xx_map_senses[type];
++}
++
++static int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t irq)
++{
++	int l1irq;
++	int l2irq;
++	struct irq_chip *good_irqchip;
++	void *good_handle;
++	int type;
++
++	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	/*
++	 * Most of ours IRQs will be level low
++	 * Only external IRQs on some platform may be others
++	 */
++	type = IRQ_TYPE_LEVEL_LOW;
++
++	switch (l1irq) {
++	case MPC52xx_IRQ_L1_CRIT:
++		pr_debug("%s: Critical. l2=%x\n", __func__, l2irq);
++
++		BUG_ON(l2irq != 0);
++
++		type = mpc52xx_irqx_gettype(l2irq);
++		good_irqchip = &mpc52xx_extirq_irqchip;
++		break;
++
++	case MPC52xx_IRQ_L1_MAIN:
++		pr_debug("%s: Main IRQ[1-3] l2=%x\n", __func__, l2irq);
++
++		if ((l2irq >= 1) && (l2irq <= 3)) {
++			type = mpc52xx_irqx_gettype(l2irq);
++			good_irqchip = &mpc52xx_extirq_irqchip;
++		} else {
++			good_irqchip = &mpc52xx_main_irqchip;
++		}
++		break;
++
++	case MPC52xx_IRQ_L1_PERP:
++		pr_debug("%s: Peripherals. l2=%x\n", __func__, l2irq);
++		good_irqchip = &mpc52xx_periph_irqchip;
++		break;
++
++	case MPC52xx_IRQ_L1_SDMA:
++		pr_debug("%s: SDMA. l2=%x\n", __func__, l2irq);
++		good_irqchip = &mpc52xx_sdma_irqchip;
++		break;
++
++	default:
++		pr_debug("%s: Error, unknown L1 IRQ (0x%x)\n", __func__, l1irq);
++		printk(KERN_ERR "Unknow IRQ!\n");
++		return -EINVAL;
 +	}
- 	return 0;
- 
- cleanup:
-@@ -805,6 +828,10 @@ cleanup:
- void __exit rtas_flash_cleanup(void)
- {
- 	rtas_flash_term_hook = NULL;
 +
-+	if (flash_block_cache)
-+		kmem_cache_destroy(flash_block_cache);
++	switch (type) {
++	case IRQ_TYPE_EDGE_FALLING:
++	case IRQ_TYPE_EDGE_RISING:
++		good_handle = handle_edge_irq;
++		break;
++	default:
++		good_handle = handle_level_irq;
++	}
 +
- 	remove_flash_pde(firmware_flash_pde);
- 	remove_flash_pde(firmware_update_pde);
- 	remove_flash_pde(validate_pde);
-
-_
++	set_irq_chip_and_handler(virq, good_irqchip, good_handle);
++
++	pr_debug("%s: virq=%x, hw=%x. type=%x\n", __func__, virq,
++		 (int)irq, type);
++
++	return 0;
++}
++
++static struct irq_host_ops mpc52xx_irqhost_ops = {
++	.match = mpc52xx_irqhost_match,
++	.xlate = mpc52xx_irqhost_xlate,
++	.map = mpc52xx_irqhost_map,
++};
++
++/*
++ * init (public)
++*/
++
++void __init mpc52xx_init_irq(void)
++{
++	struct device_node *picnode = NULL;
++	int picnode_regsize;
++	u32 picnode_regoffset;
++
++	struct device_node *sdmanode = NULL;
++	int sdmanode_regsize;
++	u32 sdmanode_regoffset;
++
++	u64 size64;
++	int flags;
++
++	u32 intr_ctrl;
++
++	picnode = of_find_compatible_node(NULL, "interrupt-controller",
++						"mpc5200-pic");
++	if (picnode == NULL) {
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to find the interrupt controller "
++			"in the OpenFirmware device tree\n");
++		goto end;
++	}
++
++	sdmanode = of_find_compatible_node(NULL, "dma-controller",
++						 "mpc5200-bestcomm");
++	if (sdmanode == NULL) {
++		printk(KERN_ERR "MPC52xx PIC"
++			"Unable to find the Bestcomm DMA controller device "
++			"in the OpenFirmware device tree\n");
++		goto end;
++	}
++
++	/* Retrieve PIC ressources */
++	picnode_regoffset = (u32) of_get_address(picnode, 0, &size64, &flags);
++	if (picnode_regoffset == 0) {
++		printk(KERN_ERR "MPC52xx PIC"
++			"Unable to get the interrupt controller address\n");
++		goto end;
++	}
++
++	picnode_regoffset =
++		of_translate_address(picnode, (u32 *) picnode_regoffset);
++	picnode_regsize = (int)size64;
++
++	/* Retrieve SDMA ressources */
++	sdmanode_regoffset = (u32) of_get_address(sdmanode, 0, &size64, &flags);
++	if (sdmanode_regoffset == 0) {
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to get the Bestcomm DMA controller address\n");
++		goto end;
++	}
++
++	sdmanode_regoffset =
++	    of_translate_address(sdmanode, (u32 *) sdmanode_regoffset);
++	sdmanode_regsize = (int)size64;
++
++	/* Remap the necessary zones */
++	intr = ioremap(picnode_regoffset, picnode_regsize);
++	if (intr == NULL) {
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to ioremap interrupt controller registers!\n");
++		goto end;
++	}
++
++	sdma = ioremap(sdmanode_regoffset, sdmanode_regsize);
++	if (sdma == NULL) {
++		iounmap(intr);
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to ioremap Bestcomm DMA registers!\n");
++		goto end;
++	}
++
++	printk(KERN_INFO "MPC52xx PIC: MPC52xx PIC Remapped at 0x%8.8x\n",
++		picnode_regoffset);
++	printk(KERN_INFO "MPC52xx PIC: MPC52xx SDMA Remapped at 0x%8.8x\n",
++		sdmanode_regoffset);
++
++	/* Disable all interrupt sources. */
++	out_be32(&sdma->IntPend, 0xffffffff);	/* 1 means clear pending */
++	out_be32(&sdma->IntMask, 0xffffffff);	/* 1 means disabled */
++	out_be32(&intr->per_mask, 0x7ffffc00);	/* 1 means disabled */
++	out_be32(&intr->main_mask, 0x00010fff);	/* 1 means disabled */
++	intr_ctrl = in_be32(&intr->ctrl);
++	intr_ctrl &= 0x00ff0000;	/* Keeps IRQ[0-3] config */
++	intr_ctrl |=	0x0f000000 |	/* clear IRQ 0-3 */
++			0x00001000 |	/* MEE master external enable */
++			0x00000000 |	/* 0 means disable IRQ 0-3 */
++			0x00000001;	/* CEb route critical normally */
++	out_be32(&intr->ctrl, intr_ctrl);
++
++	/* Zero a bunch of the priority settings. */
++	out_be32(&intr->per_pri1, 0);
++	out_be32(&intr->per_pri2, 0);
++	out_be32(&intr->per_pri3, 0);
++	out_be32(&intr->main_pri1, 0);
++	out_be32(&intr->main_pri2, 0);
++
++	/*
++	 * As last step, add an irq host to translate the real
++	 * hw irq information provided by the ofw to linux virq
++	 */
++
++	mpc52xx_irqhost =
++	    irq_alloc_host(IRQ_HOST_MAP_LINEAR, MPC52xx_IRQ_HIGHTESTHWIRQ,
++			   &mpc52xx_irqhost_ops, -1);
++
++	if (mpc52xx_irqhost) {
++		mpc52xx_irqhost->host_data = picnode;
++		printk(KERN_INFO "MPC52xx PIC is up and running!\n");
++	} else {
++		printk(KERN_ERR
++			"MPC52xx PIC: Unable to allocate the IRQ host\n");
++	}
++
++end:
++	of_node_put(picnode);
++	of_node_put(sdmanode);
++}
++
++/*
++ * get_irq (public)
++*/
++unsigned int mpc52xx_get_irq(void)
++{
++	u32 status;
++	int irq = NO_IRQ_IGNORE;
++
++	status = in_be32(&intr->enc_status);
++	if (status & 0x00000400) {	/* critical */
++		irq = (status >> 8) & 0x3;
++		if (irq == 2)	/* high priority peripheral */
++			goto peripheral;
++		irq |=	(MPC52xx_IRQ_L1_CRIT << MPC52xx_IRQ_L1_OFFSET) &
++			MPC52xx_IRQ_L1_MASK;
++	} else if (status & 0x00200000) {	/* main */
++		irq = (status >> 16) & 0x1f;
++		if (irq == 4)	/* low priority peripheral */
++			goto peripheral;
++		irq |=	(MPC52xx_IRQ_L1_MAIN << MPC52xx_IRQ_L1_OFFSET) &
++			MPC52xx_IRQ_L1_MASK;
++	} else if (status & 0x20000000) {	/* peripheral */
++	      peripheral:
++		irq = (status >> 24) & 0x1f;
++		if (irq == 0) {	/* bestcomm */
++			status = in_be32(&sdma->IntPend);
++			irq = ffs(status) - 1;
++			irq |=	(MPC52xx_IRQ_L1_SDMA << MPC52xx_IRQ_L1_OFFSET) &
++				MPC52xx_IRQ_L1_MASK;
++		} else
++			irq |=	(MPC52xx_IRQ_L1_PERP << MPC52xx_IRQ_L1_OFFSET) &
++				MPC52xx_IRQ_L1_MASK;
++	}
++
++	pr_debug("%s: irq=%x. virq=%d\n", __func__, irq,
++		 irq_linear_revmap(mpc52xx_irqhost, irq));
++
++	return irq_linear_revmap(mpc52xx_irqhost, irq);
++}
++
+diff --git a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
+new file mode 100644
+index 0000000..e9aa622
+--- /dev/null
++++ b/include/asm-powerpc/mpc52xx.h
+@@ -0,0 +1,287 @@
++/*
++ * Prototypes, etc. for the Freescale MPC52xx embedded cpu chips
++ * May need to be cleaned as the port goes on ...
++ *
++ * Copyright (C) 2004-2005 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003 MontaVista, Software, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef __ASM_POWERPC_MPC52xx_H__
++#define __ASM_POWERPC_MPC52xx_H__
++
++#ifndef __ASSEMBLY__
++#include <asm/types.h>
++#include <asm/prom.h>
++#endif /* __ASSEMBLY__ */
++
++
++/* ======================================================================== */
++/* HW IRQ mapping                                                           */
++/* ======================================================================== */
++
++#define MPC52xx_IRQ_L1_CRIT		(0)
++#define MPC52xx_IRQ_L1_MAIN		(1)
++#define MPC52xx_IRQ_L1_PERP		(2)
++#define MPC52xx_IRQ_L1_SDMA		(3)
++
++#define MPC52xx_IRQ_L1_OFFSET		(6)
++#define MPC52xx_IRQ_L1_MASK		(0xc0)
++
++#define MPC52xx_IRQ_L2_OFFSET		(0)
++#define MPC52xx_IRQ_L2_MASK		(0x3f)
++
++#define MPC52xx_IRQ_HIGHTESTHWIRQ	(0xd0)
++
++
++/* ======================================================================== */
++/* Structures mapping of some unit register set                             */
++/* ======================================================================== */
++
++#ifndef __ASSEMBLY__
++
++/* Interrupt controller Register set */
++struct mpc52xx_intr {
++	u32 per_mask;		/* INTR + 0x00 */
++	u32 per_pri1;		/* INTR + 0x04 */
++	u32 per_pri2;		/* INTR + 0x08 */
++	u32 per_pri3;		/* INTR + 0x0c */
++	u32 ctrl;		/* INTR + 0x10 */
++	u32 main_mask;		/* INTR + 0x14 */
++	u32 main_pri1;		/* INTR + 0x18 */
++	u32 main_pri2;		/* INTR + 0x1c */
++	u32 reserved1;		/* INTR + 0x20 */
++	u32 enc_status;		/* INTR + 0x24 */
++	u32 crit_status;	/* INTR + 0x28 */
++	u32 main_status;	/* INTR + 0x2c */
++	u32 per_status;		/* INTR + 0x30 */
++	u32 reserved2;		/* INTR + 0x34 */
++	u32 per_error;		/* INTR + 0x38 */
++};
++
++/* Memory Mapping Control */
++struct mpc52xx_mmap_ctl {
++	u32 mbar;		/* MMAP_CTRL + 0x00 */
++
++	u32 cs0_start;		/* MMAP_CTRL + 0x04 */
++	u32 cs0_stop;		/* MMAP_CTRL + 0x08 */
++	u32 cs1_start;		/* MMAP_CTRL + 0x0c */
++	u32 cs1_stop;		/* MMAP_CTRL + 0x10 */
++	u32 cs2_start;		/* MMAP_CTRL + 0x14 */
++	u32 cs2_stop;		/* MMAP_CTRL + 0x18 */
++	u32 cs3_start;		/* MMAP_CTRL + 0x1c */
++	u32 cs3_stop;		/* MMAP_CTRL + 0x20 */
++	u32 cs4_start;		/* MMAP_CTRL + 0x24 */
++	u32 cs4_stop;		/* MMAP_CTRL + 0x28 */
++	u32 cs5_start;		/* MMAP_CTRL + 0x2c */
++	u32 cs5_stop;		/* MMAP_CTRL + 0x30 */
++
++	u32 sdram0;		/* MMAP_CTRL + 0x34 */
++	u32 sdram1;		/* MMAP_CTRL + 0X38 */
++
++	u32 reserved[4];	/* MMAP_CTRL + 0x3c .. 0x48 */
++
++	u32 boot_start;		/* MMAP_CTRL + 0x4c */
++	u32 boot_stop;		/* MMAP_CTRL + 0x50 */
++
++	u32 ipbi_ws_ctrl;	/* MMAP_CTRL + 0x54 */
++
++	u32 cs6_start;		/* MMAP_CTRL + 0x58 */
++	u32 cs6_stop;		/* MMAP_CTRL + 0x5c */
++	u32 cs7_start;		/* MMAP_CTRL + 0x60 */
++	u32 cs7_stop;		/* MMAP_CTRL + 0x64 */
++};
++
++/* SDRAM control */
++struct mpc52xx_sdram {
++	u32 mode;		/* SDRAM + 0x00 */
++	u32 ctrl;		/* SDRAM + 0x04 */
++	u32 config1;		/* SDRAM + 0x08 */
++	u32 config2;		/* SDRAM + 0x0c */
++};
++
++/* SDMA */
++struct mpc52xx_sdma {
++	u32 taskBar;		/* SDMA + 0x00 */
++	u32 currentPointer;	/* SDMA + 0x04 */
++	u32 endPointer;		/* SDMA + 0x08 */
++	u32 variablePointer;	/* SDMA + 0x0c */
++
++	u8 IntVect1;		/* SDMA + 0x10 */
++	u8 IntVect2;		/* SDMA + 0x11 */
++	u16 PtdCntrl;		/* SDMA + 0x12 */
++
++	u32 IntPend;		/* SDMA + 0x14 */
++	u32 IntMask;		/* SDMA + 0x18 */
++
++	u16 tcr[16];		/* SDMA + 0x1c .. 0x3a */
++
++	u8 ipr[32];		/* SDMA + 0x3c .. 0x5b */
++
++	u32 cReqSelect;		/* SDMA + 0x5c */
++	u32 task_size0;		/* SDMA + 0x60 */
++	u32 task_size1;		/* SDMA + 0x64 */
++	u32 MDEDebug;		/* SDMA + 0x68 */
++	u32 ADSDebug;		/* SDMA + 0x6c */
++	u32 Value1;		/* SDMA + 0x70 */
++	u32 Value2;		/* SDMA + 0x74 */
++	u32 Control;		/* SDMA + 0x78 */
++	u32 Status;		/* SDMA + 0x7c */
++	u32 PTDDebug;		/* SDMA + 0x80 */
++};
++
++/* GPT */
++struct mpc52xx_gpt {
++	u32 mode;		/* GPTx + 0x00 */
++	u32 count;		/* GPTx + 0x04 */
++	u32 pwm;		/* GPTx + 0x08 */
++	u32 status;		/* GPTx + 0X0c */
++};
++
++/* GPIO */
++struct mpc52xx_gpio {
++	u32 port_config;	/* GPIO + 0x00 */
++	u32 simple_gpioe;	/* GPIO + 0x04 */
++	u32 simple_ode;		/* GPIO + 0x08 */
++	u32 simple_ddr;		/* GPIO + 0x0c */
++	u32 simple_dvo;		/* GPIO + 0x10 */
++	u32 simple_ival;	/* GPIO + 0x14 */
++	u8 outo_gpioe;		/* GPIO + 0x18 */
++	u8 reserved1[3];	/* GPIO + 0x19 */
++	u8 outo_dvo;		/* GPIO + 0x1c */
++	u8 reserved2[3];	/* GPIO + 0x1d */
++	u8 sint_gpioe;		/* GPIO + 0x20 */
++	u8 reserved3[3];	/* GPIO + 0x21 */
++	u8 sint_ode;		/* GPIO + 0x24 */
++	u8 reserved4[3];	/* GPIO + 0x25 */
++	u8 sint_ddr;		/* GPIO + 0x28 */
++	u8 reserved5[3];	/* GPIO + 0x29 */
++	u8 sint_dvo;		/* GPIO + 0x2c */
++	u8 reserved6[3];	/* GPIO + 0x2d */
++	u8 sint_inten;		/* GPIO + 0x30 */
++	u8 reserved7[3];	/* GPIO + 0x31 */
++	u16 sint_itype;		/* GPIO + 0x34 */
++	u16 reserved8;		/* GPIO + 0x36 */
++	u8 gpio_control;	/* GPIO + 0x38 */
++	u8 reserved9[3];	/* GPIO + 0x39 */
++	u8 sint_istat;		/* GPIO + 0x3c */
++	u8 sint_ival;		/* GPIO + 0x3d */
++	u8 bus_errs;		/* GPIO + 0x3e */
++	u8 reserved10;		/* GPIO + 0x3f */
++};
++
++#define MPC52xx_GPIO_PSC_CONFIG_UART_WITHOUT_CD	4
++#define MPC52xx_GPIO_PSC_CONFIG_UART_WITH_CD	5
++#define MPC52xx_GPIO_PCI_DIS			(1<<15)
++
++/* GPIO with WakeUp*/
++struct mpc52xx_gpio_wkup {
++	u8 wkup_gpioe;		/* GPIO_WKUP + 0x00 */
++	u8 reserved1[3];	/* GPIO_WKUP + 0x03 */
++	u8 wkup_ode;		/* GPIO_WKUP + 0x04 */
++	u8 reserved2[3];	/* GPIO_WKUP + 0x05 */
++	u8 wkup_ddr;		/* GPIO_WKUP + 0x08 */
++	u8 reserved3[3];	/* GPIO_WKUP + 0x09 */
++	u8 wkup_dvo;		/* GPIO_WKUP + 0x0C */
++	u8 reserved4[3];	/* GPIO_WKUP + 0x0D */
++	u8 wkup_inten;		/* GPIO_WKUP + 0x10 */
++	u8 reserved5[3];	/* GPIO_WKUP + 0x11 */
++	u8 wkup_iinten;		/* GPIO_WKUP + 0x14 */
++	u8 reserved6[3];	/* GPIO_WKUP + 0x15 */
++	u16 wkup_itype;		/* GPIO_WKUP + 0x18 */
++	u8 reserved7[2];	/* GPIO_WKUP + 0x1A */
++	u8 wkup_maste;		/* GPIO_WKUP + 0x1C */
++	u8 reserved8[3];	/* GPIO_WKUP + 0x1D */
++	u8 wkup_ival;		/* GPIO_WKUP + 0x20 */
++	u8 reserved9[3];	/* GPIO_WKUP + 0x21 */
++	u8 wkup_istat;		/* GPIO_WKUP + 0x24 */
++	u8 reserved10[3];	/* GPIO_WKUP + 0x25 */
++};
++
++/* XLB Bus control */
++struct mpc52xx_xlb {
++	u8 reserved[0x40];
++	u32 config;		/* XLB + 0x40 */
++	u32 version;		/* XLB + 0x44 */
++	u32 status;		/* XLB + 0x48 */
++	u32 int_enable;		/* XLB + 0x4c */
++	u32 addr_capture;	/* XLB + 0x50 */
++	u32 bus_sig_capture;	/* XLB + 0x54 */
++	u32 addr_timeout;	/* XLB + 0x58 */
++	u32 data_timeout;	/* XLB + 0x5c */
++	u32 bus_act_timeout;	/* XLB + 0x60 */
++	u32 master_pri_enable;	/* XLB + 0x64 */
++	u32 master_priority;	/* XLB + 0x68 */
++	u32 base_address;	/* XLB + 0x6c */
++	u32 snoop_window;	/* XLB + 0x70 */
++};
++
++#define MPC52xx_XLB_CFG_PLDIS		(1 << 31)
++#define MPC52xx_XLB_CFG_SNOOP		(1 << 15)
++
++/* Clock Distribution control */
++struct mpc52xx_cdm {
++	u32 jtag_id;		/* CDM + 0x00  reg0 read only */
++	u32 rstcfg;		/* CDM + 0x04  reg1 read only */
++	u32 breadcrumb;		/* CDM + 0x08  reg2 */
++
++	u8 mem_clk_sel;		/* CDM + 0x0c  reg3 byte0 */
++	u8 xlb_clk_sel;		/* CDM + 0x0d  reg3 byte1 read only */
++	u8 ipb_clk_sel;		/* CDM + 0x0e  reg3 byte2 */
++	u8 pci_clk_sel;		/* CDM + 0x0f  reg3 byte3 */
++
++	u8 ext_48mhz_en;	/* CDM + 0x10  reg4 byte0 */
++	u8 fd_enable;		/* CDM + 0x11  reg4 byte1 */
++	u16 fd_counters;	/* CDM + 0x12  reg4 byte2,3 */
++
++	u32 clk_enables;	/* CDM + 0x14  reg5 */
++
++	u8 osc_disable;		/* CDM + 0x18  reg6 byte0 */
++	u8 reserved0[3];	/* CDM + 0x19  reg6 byte1,2,3 */
++
++	u8 ccs_sleep_enable;	/* CDM + 0x1c  reg7 byte0 */
++	u8 osc_sleep_enable;	/* CDM + 0x1d  reg7 byte1 */
++	u8 reserved1;		/* CDM + 0x1e  reg7 byte2 */
++	u8 ccs_qreq_test;	/* CDM + 0x1f  reg7 byte3 */
++
++	u8 soft_reset;		/* CDM + 0x20  u8 byte0 */
++	u8 no_ckstp;		/* CDM + 0x21  u8 byte0 */
++	u8 reserved2[2];	/* CDM + 0x22  u8 byte1,2,3 */
++
++	u8 pll_lock;		/* CDM + 0x24  reg9 byte0 */
++	u8 pll_looselock;	/* CDM + 0x25  reg9 byte1 */
++	u8 pll_sm_lockwin;	/* CDM + 0x26  reg9 byte2 */
++	u8 reserved3;		/* CDM + 0x27  reg9 byte3 */
++
++	u16 reserved4;		/* CDM + 0x28  reg10 byte0,1 */
++	u16 mclken_div_psc1;	/* CDM + 0x2a  reg10 byte2,3 */
++
++	u16 reserved5;		/* CDM + 0x2c  reg11 byte0,1 */
++	u16 mclken_div_psc2;	/* CDM + 0x2e  reg11 byte2,3 */
++
++	u16 reserved6;		/* CDM + 0x30  reg12 byte0,1 */
++	u16 mclken_div_psc3;	/* CDM + 0x32  reg12 byte2,3 */
++
++	u16 reserved7;		/* CDM + 0x34  reg13 byte0,1 */
++	u16 mclken_div_psc6;	/* CDM + 0x36  reg13 byte2,3 */
++};
++
++#endif /* __ASSEMBLY__ */
++
++
++/* ========================================================================= */
++/* Prototypes for MPC52xx sysdev                                             */
++/* ========================================================================= */
++
++#ifndef __ASSEMBLY__
++
++extern void mpc52xx_init_irq(void);
++extern unsigned int mpc52xx_get_irq(void);
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __ASM_POWERPC_MPC52xx_H__ */
++
+-- 
+1.4.2
