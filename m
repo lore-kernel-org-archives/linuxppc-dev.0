@@ -3,8 +3,8 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D003767C71
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 12:34:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 024F367CC2
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 13:44:22 +1100 (EST)
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
@@ -19,10 +19,12 @@ References: <1162884080.585336.70559261997.qpush@cradle>
 	<1162938562.28571.531.camel@localhost.localdomain>
 	<m1mz727syy.fsf@ebiederm.dsl.xmission.com>
 	<1162944905.28571.551.camel@localhost.localdomain>
-Date: Tue, 07 Nov 2006 18:33:00 -0700
-In-Reply-To: <1162944905.28571.551.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Wed, 08 Nov 2006 11:15:04 +1100")
-Message-ID: <m1ac327mer.fsf@ebiederm.dsl.xmission.com>
+	<m1ac327mer.fsf@ebiederm.dsl.xmission.com>
+	<1162951680.28571.627.camel@localhost.localdomain>
+Date: Tue, 07 Nov 2006 19:43:15 -0700
+In-Reply-To: <1162951680.28571.627.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Wed, 08 Nov 2006 13:08:00 +1100")
+Message-ID: <m1wt6664l8.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Matthew Wilcox <matthew@wil.cx>, Greg Kroah-Hartman <greg@kroah.com>,
@@ -41,19 +43,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
->> For message signalled interrupts and hyptertransport interrupts we probably
-> want
->> to add an additional field for pointing to their per irq state.  Per device
->> interrupt controllers are truly peculiar.
+> My initial idea was that the msi_info structure would have a variable
+> lenght, that is, would end with msi_desc[0] and would be allocated to
+> the the right size, but it might suck a bit :-)
+
+That could work.  The whole array of interrupts thing allocated on
+device probe, I question a little bit.  I can just about see allocating
+another interrupt if you can when a network device start getting another
+flow through it.  But it is working well enough at the moment it doesn't
+appear time to run out and change the drivers.
+
+>> Hopefully I can look at this a little more this evening and see what we
+>> need to do to harmonize the two msi implementations.
 >
-> A per-irq addition field for the MSI data might indeed be useful. I
-> still want to store it in the pci_dev, but it would be good to have a
-> pointer to it in the irq_desc.
+> Thanks !
 
-The msi_info in pci_dev is reasonable.  But storing all 4096 possible
-msi_desc's in pci_dev seems a little much.
+I'm still having a hard time wrapping my head around the sanity of not letting
+the kernel touch the hardware in the presence of a hypervisor.  How do you cope
+with hardware that follows a specification the hypervisor is not aware of?
 
-Hopefully I can look at this a little more this evening and see what we
-need to do to harmonize the two msi implementations.
+This seems to be a violation of the principle that the driver knows the hardware
+better than some generic layer.
 
 Eric
