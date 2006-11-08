@@ -1,16 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17745.14911.693171.717979@cargo.ozlabs.ibm.com>
-Date: Wed, 8 Nov 2006 13:00:31 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] PowerPC: clockevents and HRT support
-In-Reply-To: <45510C58.3010707@ru.mvista.com>
-References: <200611080005.08633.sshtylyov@ru.mvista.com>
-	<1162938997.28571.534.camel@localhost.localdomain>
-	<45510C58.3010707@ru.mvista.com>
-Cc: tglx@linutronix.de, greg.weeks@timesys.com, linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+To: John Rose <johnrose@austin.ibm.com>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: force 4k update_flash block and list sizes 
+In-reply-to: <1162943615.13499.15.camel@sinatra.austin.ibm.com> 
+References: <1162943615.13499.15.camel@sinatra.austin.ibm.com>
+Date: Wed, 08 Nov 2006 13:06:22 +1100
+Message-ID: <20286.1162951582@neuling.org>
+Sender: mikey@neuling.org
+Cc: External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +17,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov writes:
+> +
+> +	if (flash_block_cache) {
+> +		rc = kmem_cache_destroy(flash_block_cache);
+> +		if (rc)
+> +			printk(KERN_WARNING "%s: cache memory leak\n",
+> +					__FUNCTION__);
+> +	}
 
->     Arch-specific accounting hooks which this feature makes use of can't be 
-> called from the generic clockevents code.
+kmem_cache_destroy doesn't return anything.  Hence we get:
 
-Which hooks specifically?
+arch/powerpc/kernel/rtas_flash.c: In function 'rtas_flash_cleanup':
+arch/powerpc/kernel/rtas_flash.c:835: error: void value not ignored as it ought to be
 
-The deterministic accounting is an essential feature; there's no way
-I'll accept a patch which disables it.
-
-Paul.
+Mikey
