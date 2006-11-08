@@ -1,13 +1,13 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 024F367CC2
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 13:44:22 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 240DE67C99
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 14:03:26 +1100 (EST)
 Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <m1wt6664l8.fsf@ebiederm.dsl.xmission.com>
 References: <1162884080.585336.70559261997.qpush@cradle>
 	<20061107072125.68E9F67CA7@ozlabs.org>
 	<20061107200730.GY27140@parisc-linux.org>
@@ -21,12 +21,11 @@ References: <1162884080.585336.70559261997.qpush@cradle>
 	<1162944905.28571.551.camel@localhost.localdomain>
 	<m1ac327mer.fsf@ebiederm.dsl.xmission.com>
 	<1162951680.28571.627.camel@localhost.localdomain>
-Date: Tue, 07 Nov 2006 19:43:15 -0700
-In-Reply-To: <1162951680.28571.627.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Wed, 08 Nov 2006 13:08:00 +1100")
-Message-ID: <m1wt6664l8.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	<m1wt6664l8.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Wed, 08 Nov 2006 14:02:45 +1100
+Message-Id: <1162954965.28571.644.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: Matthew Wilcox <matthew@wil.cx>, Greg Kroah-Hartman <greg@kroah.com>,
 	Ingo Molnar <mingo@elte.hu>,
 	Russell King <rmk-pci@arm.linux.org.uk>, linuxppc-dev@ozlabs.org,
@@ -41,28 +40,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> My initial idea was that the msi_info structure would have a variable
-> lenght, that is, would end with msi_desc[0] and would be allocated to
-> the the right size, but it might suck a bit :-)
+> I'm still having a hard time wrapping my head around the sanity of not letting
+> the kernel touch the hardware in the presence of a hypervisor.  How do you cope
+> with hardware that follows a specification the hypervisor is not aware of?
 
-That could work.  The whole array of interrupts thing allocated on
-device probe, I question a little bit.  I can just about see allocating
-another interrupt if you can when a network device start getting another
-flow through it.  But it is working well enough at the moment it doesn't
-appear time to run out and change the drivers.
+We don't cope :-)
 
->> Hopefully I can look at this a little more this evening and see what we
->> need to do to harmonize the two msi implementations.
->
-> Thanks !
+> This seems to be a violation of the principle that the driver knows the hardware
+> better than some generic layer.
 
-I'm still having a hard time wrapping my head around the sanity of not letting
-the kernel touch the hardware in the presence of a hypervisor.  How do you cope
-with hardware that follows a specification the hypervisor is not aware of?
+Well, we got at least the HV folks to change their interfaces so we
+could explicitely tell them wether we want MSI or MSI-X ... in the
+initial definition of that stuff, we couldn't (the HV did what it
+wanted) and we didn't even know what it did (we still don't, but at
+least we can now request specifically MSI or MSI-X).
 
-This seems to be a violation of the principle that the driver knows the hardware
-better than some generic layer.
-
-Eric
+Ben.
