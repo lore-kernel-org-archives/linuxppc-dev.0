@@ -1,21 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 8 Nov 2006 17:28:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [Cbe-oss-dev] [PATCH] cell: abstract spu management routines
-Message-Id: <20061108172830.d1762199.sfr@canb.auug.org.au>
-In-Reply-To: <45517325.3090808@am.sony.com>
-References: <455161D2.3090004@am.sony.com>
-	<1162962074.20271.16.camel@localhost.localdomain>
-	<45516A0C.5050607@am.sony.com>
-	<1162965270.20271.22.camel@localhost.localdomain>
-	<45517325.3090808@am.sony.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__8_Nov_2006_17_28_30_+1100_aNDN6+1bR8BIw.yQ"
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from ns6.sony.co.jp (NS6.Sony.CO.JP [137.153.0.32])
+	by ozlabs.org (Postfix) with ESMTP id EFC8667D14
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 19:24:41 +1100 (EST)
+Received: from mail2.sony.co.jp (localhost [127.0.0.1])
+	by mail2.sony.co.jp (R8/Sony) with ESMTP id kA88OdXG007577
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 17:24:39 +0900 (JST)
+Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
+	by mail2.sony.co.jp (R8/Sony) with SMTP id kA88OdqY007555
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 17:24:39 +0900 (JST)
+Message-ID: <45519440.7060106@am.sony.com>
+Date: Wed, 08 Nov 2006 00:24:32 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: check for null init_early routine
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__8_Nov_2006_17_28_30_+1100_aNDN6+1bR8BIw.yQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Add a check for a null ppc_md.init_early to allow platforms that
+don't require an init_early routine to just set this member to null.
 
-On Tue, 07 Nov 2006 22:03:17 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
->
-> Michael Ellerman wrote:
-> > On Tue, 2006-11-07 at 21:24 -0800, Geoff Levand wrote:
-> >> Michael Ellerman wrote:
-> >> >> +static struct platform_data *platform_data(struct spu *spu)
-> >> >> +{
-> >> >> +	BUG_ON(!spu->platform_data);
-> >> >> +	return (struct platform_data*)spu->platform_data;
-                       ^^^^^^^^^^^^^^^^^^^^^^^
-Since platform_data is a void *, you don't need (or want) this explicit cast.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
---Signature=_Wed__8_Nov_2006_17_28_30_+1100_aNDN6+1bR8BIw.yQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFUXkOFdBgD/zoJvwRAk4iAKCRF9jhn8trEemx8esOptxbH0riSwCdG9RG
-pWWp+xfZapnEmqiQ7piT5aM=
-=D7gV
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Nov_2006_17_28_30_+1100_aNDN6+1bR8BIw.yQ--
+---
+Index: cell--common--6/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- cell--common--6.orig/arch/powerpc/kernel/setup_64.c
++++ cell--common--6/arch/powerpc/kernel/setup_64.c
+@@ -392,7 +392,8 @@
+ 	 * setting up the hash table pointers. It also sets up some interrupt-mapping
+ 	 * related options that will be used by finish_device_tree()
+ 	 */
+-	ppc_md.init_early();
++	if (ppc_md.init_early)
++		ppc_md.init_early();
+ 
+  	/*
+ 	 * We can discover serial ports now since the above did setup the
