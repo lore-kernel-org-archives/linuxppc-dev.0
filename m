@@ -1,16 +1,15 @@
-Return-Path: <pradeepsampath@yahoo.com>
-Received: from web83215.mail.mud.yahoo.com (web83215.mail.mud.yahoo.com
-	[216.252.101.71]) by ozlabs.org (Postfix) with SMTP id 2351267D14
+Return-Path: <bharthik2004@yahoo.com>
+Received: from web50810.mail.yahoo.com (web50810.mail.yahoo.com
+	[206.190.38.253]) by ozlabs.org (Postfix) with SMTP id 8614B67D1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Nov 2006 19:44:16 +1100 (EST)
-Message-ID: <20061108084414.7448.qmail@web83215.mail.mud.yahoo.com>
-Date: Wed, 8 Nov 2006 00:44:14 -0800 (PST)
-From: Pradeep Sampath <pradeepsampath@yahoo.com>
-Subject: Re: minor progress with plb_temac v3.00a, EDK 8.2, & 2.6.18.1
-To: robert corley <rdcorle@yahoo.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <20061107183700.62673.qmail@web56307.mail.re3.yahoo.com>
+	Wed,  8 Nov 2006 21:17:40 +1100 (EST)
+Message-ID: <20061108101058.42357.qmail@web50810.mail.yahoo.com>
+Date: Wed, 8 Nov 2006 02:10:58 -0800 (PST)
+From: bharathi kandimalla <bharthik2004@yahoo.com>
+Subject: Mpc860T rebooting problem
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1253998032-1162975454=:6913"
+Content-Type: multipart/alternative; boundary="0-1726535906-1162980658=:41076"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,48 +20,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1253998032-1162975454=:6913
+--0-1726535906-1162980658=:41076
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 
-Robert,
+hi
+  I am working on powerpc(Mpc860T) with linux-2.4 kernnel,
+As I am developping  application using spi and with irqs: 
+For each one millisec I am getting siu interrupt,In the 
+interrupt handler I have to load frequency(using spi communication)
+I am able to write it (I am able load the frequency also)
+  All other interrupts I am using are  cpm interrupts(smc2.timer2,spi),one 
+siu interrupt for the present ,
+I am facing the following problems:
+1.system rebooting: case-if i tried to write continuously to externel hardware through spi ,in externel (siu)intrrupt handler,and timer2(cpm)intrrupt handler,
+2. if I limited number of times of write to hardware system not getting rebooted.
+  
+  I  observed that the problem occured due to passing of control signals to externel hardware (those are memory mapped signals) in irqs.how can i solve this with getting rebooted.
+ thanks to all ...
+  Bharathi
+
  
- I now created the BSP from scratch and its lot better than attempting to upgrade an existing design. I patched "xilinx_temac" and "xilinx_common" , but i am running into another error. I guess i have to start patching the code all over again.
- Please take a look if you can comment on it...
- psampath@psampath-test:~/kernel2.6.18$ make ARCH=ppc zImage.initrd
-   CHK     include/linux/version.h
-   CHK     include/linux/utsrelease.h
-   CC      arch/ppc/kernel/asm-offsets.s
- In file included from include/asm/ibm4xx.h:54,
-                  from include/asm/io.h:28,
-                  from include/asm/pgtable.h:14,
-                  from include/linux/mm.h:38,
-                  from include/linux/mman.h:14,
-                  from arch/ppc/kernel/asm-offsets.c:19:
- arch/ppc/platforms/4xx/xilinx_ml403.h:33: error: two or more data types in declaration of `bd_t'
- make[1]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
- make: *** [prepare0] Error 2
- psampath@psampath-test:~/kernel2.6.18$
- 
--Pradeep
- 
-robert corley <rdcorle@yahoo.com> wrote: Pradeep;
+---------------------------------
+Sponsored Link
 
-I found the process of "uprading" the xapp902 reference design to be troublesome when I removed the GMII loop-back; as
-such, I aborted the process and just started from scratch.
-
-I am currently debugging my design and have a functional plb_temac but only at 10Mbps speeds.
-
--R. Corley
-
-
-
-
---0-1253998032-1162975454=:6913
+Degrees online in as fast as 1 Yr - MBA, Bachelor's, Master's, Associate - Click now to apply
+--0-1726535906-1162980658=:41076
 Content-Type: text/html; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 
-Robert,<br> <br> I now created the BSP from scratch and its lot better than attempting to upgrade an existing design. I patched "xilinx_temac" and "xilinx_common" , but i am running into another error. I guess i have to start patching the code all over again.<br> Please take a look if you can comment on it...<br> psampath@psampath-test:~/kernel2.6.18$ make ARCH=ppc zImage.initrd<br> &nbsp; CHK&nbsp;&nbsp;&nbsp;&nbsp; include/linux/version.h<br> &nbsp; CHK&nbsp;&nbsp;&nbsp;&nbsp; include/linux/utsrelease.h<br> &nbsp; CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arch/ppc/kernel/asm-offsets.s<br> In file included from include/asm/ibm4xx.h:54,<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from include/asm/io.h:28,<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from include/asm/pgtable.h:14,<br>
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from include/linux/mm.h:38,<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from include/linux/mman.h:14,<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from arch/ppc/kernel/asm-offsets.c:19:<br> arch/ppc/platforms/4xx/xilinx_ml403.h:33: error: two or more data types in declaration of `bd_t'<br> make[1]: *** [arch/ppc/kernel/asm-offsets.s] Error 1<br> make: *** [prepare0] Error 2<br> psampath@psampath-test:~/kernel2.6.18$<br> <br>-Pradeep<br> <br><b><i>robert corley &lt;rdcorle@yahoo.com&gt;</i></b> wrote:<blockquote class="replbq" style="border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; padding-left: 5px;"> <style type="text/css"><!-- DIV {margin:0px;} --></style><div style="font-family: times new roman,new york,times,serif; font-size: 12pt;"><div
- style="font-family: times new roman,new york,times,serif; font-size: 12pt;">Pradeep;<br><br>I found the process of "uprading" the xapp902 reference design to be troublesome when I removed the GMII loop-back; as<br>such, I aborted the process and just started from scratch.<br><br>I am currently debugging my design and have a functional plb_temac but only at 10Mbps speeds.<br><br>-R. Corley<br></div></div></blockquote><br>
---0-1253998032-1162975454=:6913--
+<div>hi</div>  <div>I am working on powerpc(Mpc860T) with linux-2.4 kernnel,<BR>As I am developping&nbsp; application using spi and with irqs: <BR>For each one millisec I am getting siu interrupt,In the <BR>interrupt handler I have to load frequency(using spi communication)<BR>I am able to write it (I am able load the frequency also)</div>  <div>All other interrupts I am using are&nbsp; cpm interrupts(smc2.timer2,spi),one&nbsp;<BR>siu interrupt for the present&nbsp;,<BR>I am facing the following problems:<BR>1.system rebooting: case-if i tried to write continuously to externel hardware through spi ,in externel (siu)intrrupt handler,and timer2(cpm)intrrupt handler,<BR>2. if I limited number of times of write to hardware system not getting rebooted.</div>  <div><BR>&nbsp;&nbsp;I &nbsp;observed that the problem occured due to passing of control signals to externel hardware (those are memory mapped signals) in irqs.how can i solve this with getting rebooted.<BR>&nbsp;thanks to
+ all ...</div>  <div>Bharathi</div><p>&#32;
+
+
+<hr size=1>Sponsored Link<br><br>
+Degrees online in as fast as 1 Yr - MBA, Bachelor's, Master's, Associate - <a href="http://online.degrees.info/forms/form.jsp?ADEL=D3sPPz6WYLD7%2FD1DxMxP%2BbXooR4YcdmONmTWaUizNjh6q2wGRcnxuw%3D%3D&PI=y_mail_textlink">Click now to apply</a>
+--0-1726535906-1162980658=:41076--
