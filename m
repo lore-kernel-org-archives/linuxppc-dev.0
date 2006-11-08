@@ -1,21 +1,21 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from ns6.sony.co.jp (NS6.Sony.CO.JP [137.153.0.32])
-	by ozlabs.org (Postfix) with ESMTP id EFC8667D14
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 19:24:41 +1100 (EST)
+Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
+	by ozlabs.org (Postfix) with ESMTP id 82A5167E71
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 19:44:31 +1100 (EST)
 Received: from mail2.sony.co.jp (localhost [127.0.0.1])
-	by mail2.sony.co.jp (R8/Sony) with ESMTP id kA88OdXG007577
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 17:24:39 +0900 (JST)
+	by mail2.sony.co.jp (R8/Sony) with ESMTP id kA88iUXG000253
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 17:44:30 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail2.sony.co.jp (R8/Sony) with SMTP id kA88OdqY007555
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 17:24:39 +0900 (JST)
-Message-ID: <45519440.7060106@am.sony.com>
-Date: Wed, 08 Nov 2006 00:24:32 -0800
+	by mail2.sony.co.jp (R8/Sony) with SMTP id kA88iTqY000242
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 17:44:29 +0900 (JST)
+Message-ID: <455198E7.8030201@am.sony.com>
+Date: Wed, 08 Nov 2006 00:44:23 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: check for null init_early routine
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cell: replace spu.nid with spu.node
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a check for a null ppc_md.init_early to allow platforms that
-don't require an init_early routine to just set this member to null.
+Replace the use of the platform specific variable spu.nid with the
+platform independednt variable spu.node.
 
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
-Index: cell--common--6/arch/powerpc/kernel/setup_64.c
+Index: cell--common--6/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- cell--common--6.orig/arch/powerpc/kernel/setup_64.c
-+++ cell--common--6/arch/powerpc/kernel/setup_64.c
-@@ -392,7 +392,8 @@
- 	 * setting up the hash table pointers. It also sets up some interrupt-mapping
- 	 * related options that will be used by finish_device_tree()
- 	 */
--	ppc_md.init_early();
-+	if (ppc_md.init_early)
-+		ppc_md.init_early();
+--- cell--common--6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ cell--common--6/arch/powerpc/platforms/cell/spu_base.c
+@@ -810,14 +810,14 @@
+ 		return ret;
+ 	}
  
-  	/*
- 	 * We can discover serial ports now since the above did setup the
+-	sysfs_add_device_to_node(&spu->sysdev, spu->nid);
++	sysfs_add_device_to_node(&spu->sysdev, spu->node);
+ 
+ 	return 0;
+ }
+ 
+ static void spu_destroy_sysdev(struct spu *spu)
+ {
+-	sysfs_remove_device_from_node(&spu->sysdev, spu->nid);
++	sysfs_remove_device_from_node(&spu->sysdev, spu->node);
+ 	sysdev_unregister(&spu->sysdev);
+ }
+ 
