@@ -1,32 +1,16 @@
-Return-Path: <moilanen@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A47A67CD0
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 07:16:22 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kA8KGJfE009359
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 15:16:19 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kA8KGJNp261124
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 15:16:19 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kA8KGFWV014578
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Nov 2006 15:16:16 -0500
-Subject: Re: [RFC/PATCH 5/7] RTAS MSI implementation
-From: Jake Moilanen <moilanen@austin.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <20061107072126.2EE7167CC6@ozlabs.org>
-References: <20061107072126.2EE7167CC6@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 08 Nov 2006 14:16:00 -0600
-Message-Id: <1163016960.9913.276.camel@goblue>
-Mime-Version: 1.0
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5232667CD5
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 07:37:40 +1100 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: tglx@linutronix.de
+Subject: [PATCH] PowerPC: dynamic tick support
+Date: Thu, 9 Nov 2006 00:37:28 +0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200611082337.28710.sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, greg.weeks@timesys.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,37 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-11-07 at 18:21 +1100, Michael Ellerman wrote:
-> Powerpc MSI support via RTAS. Based on Jake's code.
-> 
+Add dynamic tick support for PowerPC.
 
-Missing the CAS flags to indicate to firmware that we support MSI.
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
+---
+This patch is reworked against 2.6.18-hrt-dyntick2 patchset.
 
-Index: git/arch/powerpc/kernel/prom_init.c
+Known issues:
+1) with 2.6.18-hrt-dyntick2, dynamic tick mode causes bootup slowdown after the
+    HRT mode is entered (it seems to return to normal shortly);
+2) with 2.6.18-rt7 (plus an extra patch to make it actually working :-) in the
+   kernel preemption mode other than RT, that slowdown seems permanent (this
+   was not happening with 2.6.18-rt6).
+
+I don't have time to investigate now, so anybody interested is welcome to...
+or I may even return to this if/when the time permits. :-)
+
+ arch/powerpc/kernel/idle.c |    4 ++++
+ 1 files changed, 4 insertions(+)
+
+Index: linux-2.6/arch/powerpc/kernel/idle.c
 ===================================================================
---- git.orig/arch/powerpc/kernel/prom_init.c
-+++ git/arch/powerpc/kernel/prom_init.c
-@@ -634,6 +634,12 @@ static void __init early_cmdline_parse(v
- /* ibm,dynamic-reconfiguration-memory property supported */
- #define OV5_DRCONF_MEMORY	0x20
- #define OV5_LARGE_PAGES		0x10	/* large pages supported */
-+/* PCIe/MSI support. Without MSI full PCIe is not supported */
-+#ifdef CONFIG_PCI_MSI
-+#define OV5_MSI			0x01	/* PCIe/MSI supported */
-+#else
-+#define OV5_MSI			0x00
-+#endif
+--- linux-2.6.orig/arch/powerpc/kernel/idle.c
++++ linux-2.6/arch/powerpc/kernel/idle.c
+@@ -49,6 +49,8 @@ void cpu_idle(void)
  
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-@@ -677,7 +683,7 @@ static unsigned char ibm_architecture_ve
- 	/* option vector 5: PAPR/OF options */
- 	3 - 1,				/* length */
- 	0,				/* don't ignore, don't halt */
--	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES,
-+	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_MSI,
- };
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 	while (1) {
++		hrtimer_stop_sched_tick();
++
+ 		while (!need_resched() && !cpu_should_die()) {
+ 			ppc64_runlatch_off();
  
- /* Old method - ELF header with PT_NOTE sections */
+@@ -82,6 +84,8 @@ void cpu_idle(void)
+ 		ppc64_runlatch_on();
+ 		if (cpu_should_die())
+ 			cpu_die();
++
++		hrtimer_restart_sched_tick();
+ 		preempt_enable_no_resched();
+ 		schedule();
+ 		preempt_disable();
