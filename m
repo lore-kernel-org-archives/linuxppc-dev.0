@@ -3,8 +3,8 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2DD4767D05
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 10:24:46 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D003767C71
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2006 12:34:00 +1100 (EST)
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC/PATCH 4/7] Powerpc MSI implementation
@@ -17,10 +17,12 @@ References: <1162884080.585336.70559261997.qpush@cradle>
 	<20061107210202.GA27140@parisc-linux.org>
 	<20061107222514.GG9533@flint.arm.linux.org.uk>
 	<1162938562.28571.531.camel@localhost.localdomain>
-Date: Tue, 07 Nov 2006 16:11:17 -0700
-In-Reply-To: <1162938562.28571.531.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Wed, 08 Nov 2006 09:29:22 +1100")
-Message-ID: <m1mz727syy.fsf@ebiederm.dsl.xmission.com>
+	<m1mz727syy.fsf@ebiederm.dsl.xmission.com>
+	<1162944905.28571.551.camel@localhost.localdomain>
+Date: Tue, 07 Nov 2006 18:33:00 -0700
+In-Reply-To: <1162944905.28571.551.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Wed, 08 Nov 2006 11:15:04 +1100")
+Message-ID: <m1ac327mer.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Matthew Wilcox <matthew@wil.cx>, Greg Kroah-Hartman <greg@kroah.com>,
@@ -39,22 +41,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
->> I guess we'll just have to add __force casts all over the code. ;(
+>> For message signalled interrupts and hyptertransport interrupts we probably
+> want
+>> to add an additional field for pointing to their per irq state.  Per device
+>> interrupt controllers are truly peculiar.
 >
-> Or just do it in a single accessor function/macro...
+> A per-irq addition field for the MSI data might indeed be useful. I
+> still want to store it in the pci_dev, but it would be good to have a
+> pointer to it in the irq_desc.
 
-Or treat struct irq_desc like struct page and have a members that
-depend on features that you enable or disable depending on the architecture
-dependent tradeoffs.
+The msi_info in pci_dev is reasonable.  But storing all 4096 possible
+msi_desc's in pci_dev seems a little much.
 
-We already have a few members depend on things like SMP.
-
-With the cache line alignment of each array entry we take up a fair amount of
-space, so we don't have to micro optimize just do a decent job of not having
-anything to terrible.
-
-For message signalled interrupts and hyptertransport interrupts we probably want
-to add an additional field for pointing to their per irq state.  Per device
-interrupt controllers are truly peculiar.
+Hopefully I can look at this a little more this evening and see what we
+need to do to harmonize the two msi implementations.
 
 Eric
