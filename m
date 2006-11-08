@@ -1,18 +1,18 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 871E767C47
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 01:22:00 +1100 (EST)
-Message-ID: <4551E7FF.8010209@ru.mvista.com>
-Date: Wed, 08 Nov 2006 17:21:51 +0300
+	by ozlabs.org (Postfix) with ESMTP id AF09067C51
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 03:01:10 +1100 (EST)
+Message-ID: <4551FF39.70701@ru.mvista.com>
+Date: Wed, 08 Nov 2006 19:00:57 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] PowerPC: clockevents and HRT support
-References: <200611080005.08633.sshtylyov@ru.mvista.com>	<1162938997.28571.534.camel@localhost.localdomain>	<45510C58.3010707@ru.mvista.com>
-	<17745.14911.693171.717979@cargo.ozlabs.ibm.com>
-In-Reply-To: <17745.14911.693171.717979@cargo.ozlabs.ibm.com>
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH] Changed gianfar device tree definition to make it more
+	flexible
+References: <Pine.LNX.4.61.0611071707520.6936@ld0175-tx32.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.61.0611071707520.6936@ld0175-tx32.am.freescale.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: tglx@linutronix.de, greg.weeks@timesys.com, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +24,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello.
 
-Paul Mackerras wrote:
+Andy Fleming wrote:
 
->>    Arch-specific accounting hooks which this feature makes use of can't be 
->>called from the generic clockevents code.
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index 27b457c..bb1a402 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1193,6 +1193,7 @@ platforms are moved over to use the flat
+>  
+>      - device_type : Should be "network"
+>      - model : Model of the device.  Can be "TSEC", "eTSEC", or "FEC"
+> +      (This is deprecated in favor of the feature bits)
+>      - compatible : Should be "gianfar"
+>      - reg : Offset and length of the register set for the device
+>      - mac-address : List of bytes representing the ethernet address of
+> @@ -1206,6 +1207,30 @@ platforms are moved over to use the flat
+>        services interrupts for this device.
+>      - phy-handle : The phandle for the PHY connected to this ethernet
+>        controller.
+> +    - interface : The interface this ethernet is using.  Current options are:
+> +        GMII, MII, RGMII, SGMII, TBI, RMII, and RTBI
+> +
+> +  Optional properties (features):
+> +    - gigabit : Indicates support for 1000 Mbit operation
 
-> Which hooks specifically?
-
-    You aren't saying you don't know your own code?
-    Specifically, it's local account_process_time() function being called 
-instead of updated_process_times() with CONFIG_VIRT_CPU_ACCOUNTING option on.
-
-> The deterministic accounting is an essential feature; there's no way
-> I'll accept a patch which disables it.
-
-    I'm not talking you into accepting it in any way, this is just to keep 
-people informed.
-    And I left people a choice: they can either have fancy accounting or HRT, 
-just not both at once. What's wrong with that?
-
-> Paul.
+    There's standard "supported-network-type" property listing supported
+speeds/connectors already, why introduce another one?
 
 WBR, Sergei
