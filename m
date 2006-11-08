@@ -1,24 +1,18 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 44D6967C7D
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 01:14:52 +1100 (EST)
-Message-ID: <4551E651.1060007@ru.mvista.com>
-Date: Wed, 08 Nov 2006 17:14:41 +0300
+	by ozlabs.org (Postfix) with ESMTP id 871E767C47
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 01:22:00 +1100 (EST)
+Message-ID: <4551E7FF.8010209@ru.mvista.com>
+Date: Wed, 08 Nov 2006 17:21:51 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH] PowerPC: clockevents and HRT support
-References: <200611080005.08633.sshtylyov@ru.mvista.com>	
-	<1162938997.28571.534.camel@localhost.localdomain>	
-	<45510C58.3010707@ru.mvista.com>	
-	<1162940684.28571.537.camel@localhost.localdomain>	
-	<455114F9.2010503@ru.mvista.com>	
-	<1162945131.28571.553.camel@localhost.localdomain>	
-	<20061108011930.GA18955@mag.az.mvista.com>
-	<1162951594.28571.625.camel@localhost.localdomain>
-In-Reply-To: <1162951594.28571.625.camel@localhost.localdomain>
+References: <200611080005.08633.sshtylyov@ru.mvista.com>	<1162938997.28571.534.camel@localhost.localdomain>	<45510C58.3010707@ru.mvista.com>
+	<17745.14911.693171.717979@cargo.ozlabs.ibm.com>
+In-Reply-To: <17745.14911.693171.717979@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, greg.weeks@timesys.com
+Cc: tglx@linutronix.de, greg.weeks@timesys.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +24,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello.
 
-Benjamin Herrenschmidt wrote:
+Paul Mackerras wrote:
 
->>>>    Whatever. I don't care about that feature. I did my best to solve this 
->>>>gracefully.
+>>    Arch-specific accounting hooks which this feature makes use of can't be 
+>>called from the generic clockevents code.
 
->>>Very typical of Montavista to not care about doing the right thing.
+> Which hooks specifically?
 
-    We also have schedule to follow.
+    You aren't saying you don't know your own code?
+    Specifically, it's local account_process_time() function being called 
+instead of updated_process_times() with CONFIG_VIRT_CPU_ACCOUNTING option on.
 
->>Hmmm...
+> The deterministic accounting is an essential feature; there's no way
+> I'll accept a patch which disables it.
 
-> Yeah, ok, maybe not -everybody- there :-)
+    I'm not talking you into accepting it in any way, this is just to keep 
+people informed.
+    And I left people a choice: they can either have fancy accounting or HRT, 
+just not both at once. What's wrong with that?
 
-    I think I'm among the least deserving such compliments here.
-
-> Ben.
+> Paul.
 
 WBR, Sergei
