@@ -1,18 +1,24 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 2/2] Oprofile-on-Cell prereqs: Export hrtimer_forward
-Date: Thu, 9 Nov 2006 19:14:50 +0100
-References: <200611090858.11590.kevcorry@us.ibm.com>
-	<200611090902.39714.kevcorry@us.ibm.com>
-In-Reply-To: <200611090902.39714.kevcorry@us.ibm.com>
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 957B767C86
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 05:33:25 +1100 (EST)
+Date: Thu, 9 Nov 2006 19:33:07 +0100
+From: Olaf Hering <olh@suse.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: ppc32 PIO recovery mecanism
+Message-ID: <20061109183307.GA22683@suse.de>
+References: <1162773695.28571.260.camel@localhost.localdomain>
+	<1162775915.3415.2.camel@shinybook.infradead.org>
+	<20061106061148.GA4361@suse.de>
+	<1162794242.3415.28.camel@shinybook.infradead.org>
+	<20061106062559.GB4361@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611091914.51783.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Kevin Corry <kevcorry@us.ibm.com>,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061106062559.GB4361@suse.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 09 November 2006 16:02, Kevin Corry wrote:
-> Add a symbol-export for kernel/hrtimer.c::hrtimer_forward(). This routine
-> is needed by the upcoming Oprofile-for-Cell patches, since Oprofile can
-> be built as a module.
+On Mon, Nov 06, Olaf Hering wrote:
+
+> On Mon, Nov 06, David Woodhouse wrote:
 > 
-> Signed-Off-By: Kevin Corry <kevcorry@us.ibm.com>
+> > Did ISAPnP get fixed?
+> 
+> I have to check, only PReP systems have ISA slots.
 
-Applied, thanks. I'll forward it along with the other patches when
-the set is complete.
+isapnp_init() has your change. I loaded all the ISA network drivers,
+none of them crashed the pismo.
 
-	Arnd <><
+Also, I do not plan to reenable CONFIG_ISA. And there is no autoprobing
+for ISA hardware, so I dont think it will cause any trouble if distros
+ship stuff like aha1542.ko for 32bit kernels.
