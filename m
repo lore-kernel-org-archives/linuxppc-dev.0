@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 8 Nov 2006 17:50:44 -0700
+Date: Wed, 8 Nov 2006 17:52:25 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Remove dtb file created by wrapper script
-Message-ID: <20061109005043.GA10072@mag.az.mvista.com>
+Subject: [PATCH] powerpc: Remove arch/powerpc/boot/zImage file.
+Message-ID: <20061109005225.GB10072@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
@@ -16,27 +16,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When the wrapper script is passed a dts file, it runs 'dtc' to create
-a dtb file.  This patch deletes that dtb file once its no longer needed.
+The bootwrapper Makefile does not clean up the 'zImage' file that
+may be left laying around.  This patch removes it when cleaning that
+directory.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
- wrapper |    3 +++
- 1 file changed, 3 insertions(+)
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 ---
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index b5fb1fe..024e4d4 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -184,6 +184,9 @@ fi
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index df1e1df..f077ef8 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -76,7 +76,7 @@ $(obj)/zImage.lds $(obj)/zImage.coff.lds
+ 	@cp $< $@
  
- if [ -n "$dtb" ]; then
-     addsec $tmp "$dtb" .kernel:dtb
-+    if [ -n "$dts" ]; then
-+	rm $dtb
-+    fi
- fi
+ clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
+-		empty.c zImage.coff.lds zImage.lds zImage.sandpoint
++		empty.c zImage zImage.coff.lds zImage.lds zImage.sandpoint
  
- if [ "$platform" != "miboot" ]; then
+ quiet_cmd_bootcc = BOOTCC  $@
+       cmd_bootcc = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTCFLAGS) -c -o $@ $<
