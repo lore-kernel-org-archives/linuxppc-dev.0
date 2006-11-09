@@ -1,14 +1,18 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id D3D8F67C7D
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 04:53:55 +1100 (EST)
-Date: Thu, 9 Nov 2006 18:53:52 +0100 (MET)
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix compile warnings with CONFIG_PM=n
-Message-ID: <20061109175352.GA25289@aepfle.de>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH 2/2] Oprofile-on-Cell prereqs: Export hrtimer_forward
+Date: Thu, 9 Nov 2006 19:14:50 +0100
+References: <200611090858.11590.kevcorry@us.ibm.com>
+	<200611090902.39714.kevcorry@us.ibm.com>
+In-Reply-To: <200611090902.39714.kevcorry@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611091914.51783.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Kevin Corry <kevcorry@us.ibm.com>,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,43 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 09 November 2006 16:02, Kevin Corry wrote:
+> Add a symbol-export for kernel/hrtimer.c::hrtimer_forward(). This routine
+> is needed by the upcoming Oprofile-for-Cell patches, since Oprofile can
+> be built as a module.
+> 
+> Signed-Off-By: Kevin Corry <kevcorry@us.ibm.com>
 
-Fix compile warnings with CONFIG_PM=n
+Applied, thanks. I'll forward it along with the other patches when
+the set is complete.
 
-arch/powerpc/platforms/powermac/feature.c:489: warning: 'save_gpio_levels' defined but not used
-arch/powerpc/platforms/powermac/feature.c:490: warning: 'save_gpio_extint' defined but not used
-arch/powerpc/platforms/powermac/feature.c:491: warning: 'save_gpio_normal' defined but not used
-arch/powerpc/platforms/powermac/feature.c:492: warning: 'save_unin_clock_ctl' defined but not used
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- arch/powerpc/platforms/powermac/feature.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/arch/powerpc/platforms/powermac/feature.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/powermac/feature.c
-+++ linux-2.6/arch/powerpc/platforms/powermac/feature.c
-@@ -486,10 +486,6 @@ static long heathrow_sound_enable(struct
- 
- static u32 save_fcr[6];
- static u32 save_mbcr;
--static u32 save_gpio_levels[2];
--static u8 save_gpio_extint[KEYLARGO_GPIO_EXTINT_CNT];
--static u8 save_gpio_normal[KEYLARGO_GPIO_CNT];
--static u32 save_unin_clock_ctl;
- static struct dbdma_regs save_dbdma[13];
- static struct dbdma_regs save_alt_dbdma[13];
- 
-@@ -1548,6 +1544,10 @@ void g5_phy_disable_cpu1(void)
- 
- 
- #ifdef CONFIG_PM
-+static u32 save_gpio_levels[2];
-+static u8 save_gpio_extint[KEYLARGO_GPIO_EXTINT_CNT];
-+static u8 save_gpio_normal[KEYLARGO_GPIO_CNT];
-+static u32 save_unin_clock_ctl;
- 
- static void keylargo_shutdown(struct macio_chip *macio, int sleep_mode)
- {
+	Arnd <><
