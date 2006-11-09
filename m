@@ -1,21 +1,20 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Received: from kleinhenz.com (static.88-198-202-190.clients.your-server.de
-	[88.198.202.190]) by ozlabs.org (Postfix) with ESMTP id 422B467C4D
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 01:34:58 +1100 (EST)
-Message-ID: <45533C79.70404@hogyros.de>
-Date: Thu, 09 Nov 2006 15:34:33 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5621E67C5E
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 02:04:42 +1100 (EST)
+Message-ID: <4553436D.30601@shadowen.org>
+Date: Thu, 09 Nov 2006 15:04:13 +0000
+From: Andy Whitcroft <apw@shadowen.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: APUS and IOs question
-References: <1162767333.28571.254.camel@localhost.localdomain>	
-	<454F5259.3020107@hogyros.de> <454F5E44.4040301@genesi-usa.com>	
-	<1162844529.28571.327.camel@localhost.localdomain>	
-	<455081AC.3010301@hogyros.de>
-	<1162931605.28571.491.camel@localhost.localdomain>
-In-Reply-To: <1162931605.28571.491.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org
+To: Andrew Morton <akpm@osdl.org>, Nicolas DET <nd@bplan-gmbh.de>
+Subject: Re: 2.6.19-rc5-mm1 -- ppc64 ohci-hdc.c compile failure
+References: <20061108015452.a2bb40d2.akpm@osdl.org>
+In-Reply-To: <20061108015452.a2bb40d2.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Steve Fox <drfickle@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+We are seeing compile failures on ppc64 in ohci-hcd.c as below:
 
-Benjamin Herrenschmidt schrieb:
+In file included from drivers/usb/host/ohci-hcd.c:949:
+drivers/usb/host/ohci-ppc-of.c: In function `ohci_hcd_ppc_of_init':
+drivers/usb/host/ohci-ppc-of.c:272: warning: int format, different type
+arg (arg 2)
+drivers/usb/host/ohci-ppc-of.c:272: warning: int format, different type
+arg (arg 3)
+drivers/usb/host/ohci-ppc-of.c: At top level:
+drivers/usb/host/ohci-ppc-of.c:282: error: redefinition of `__inittest'
+drivers/usb/host/ohci-pci.c:252: error: `__inittest' previously defined here
+drivers/usb/host/ohci-ppc-of.c:282: error: redefinition of `init_module'
+drivers/usb/host/ohci-pci.c:252: error: `init_module' previously defined
+here
+drivers/usb/host/ohci-ppc-of.c:283: error: redefinition of `__exittest'
+drivers/usb/host/ohci-pci.c:260: error: `__exittest' previously defined here
+drivers/usb/host/ohci-ppc-of.c:283: error: redefinition of `cleanup_module'
+drivers/usb/host/ohci-pci.c:260: error: `cleanup_module' previously
+defined here
 
-> Can you give me a proper explanation of the whole memory map story on it
-> so I get a better idea of how invasive handling it would be ?
+Seems that the patch below has introduced USB_OHCI_HCD_PPC_OF enabled by
+default.  When it and CONFIG_USB_OHCI_HCD_PPC_SOC are enabled which
+occured by default on my config then we end up with two module_init()
+calls, which is illegal.
 
-On APUS systems, you have two (major) kinds of memory, that on the Amiga
-board and that on the CPU board. The former is generally mapped at
-address zero, but you don't want to use it except as DMA buffers when
-talking to the internal hardware (because the internal hardware doesn't
-see the memory on the CPU board).
+  powerpc-add-of_platform-support-for-ohci-bigendian-hc
 
-The memory on the CPU board is the "main" memory for Linux (because
-there is more of it, and the access is faster), but its location is
-assigned dynamically during the boot process, and depends on the size of
-the memory and on other boards installed.
+I am guessing that we are only meant to be able to have one of these
+defined at a time?  I changed the default to n for this and I could at
+least compile the kernel, but I am sure thats not the right fix.
 
-My plan for moving APUS to arch/powerpc involves writing a new
-bootloader (I'm currently hacking binutils to support AmigaOS binaries)
-that builds a proper flattened device tree and calls the kernel, but I'm
-not sure where the kernel virtual mapping that allows the kernel to run
-from a fixed address should be set up -- if in the bootloader, the
-kernel needs to be aware that changing the MMU settings will yield
-interesting results, and if in the kernel, we need some platform
-specific init code to handle that.
+Nicolas?
 
-   Simon
+-apw
