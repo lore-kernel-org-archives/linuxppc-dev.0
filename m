@@ -1,20 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA23167CD5
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 09:32:51 +1100 (EST)
-In-Reply-To: <11631085643554-git-send-email-timur@freescale.com>
-References: <11631085643554-git-send-email-timur@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <872BB6C6-FF0A-45BB-A403-FA945DC30210@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Optimize qe_brg struct to use an array
-Date: Thu, 9 Nov 2006 16:32:49 -0600
-To: timur@freescale.com
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id A7B4767CD9
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 09:43:48 +1100 (EST)
+Subject: Re: 2.6.19-rc5-mm1 -- ppc64 ohci-hdc.c compile failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <4553436D.30601@shadowen.org>
+References: <20061108015452.a2bb40d2.akpm@osdl.org>
+	<4553436D.30601@shadowen.org>
+Content-Type: text/plain
+Date: Fri, 10 Nov 2006 09:43:47 +1100
+Message-Id: <1163112227.4982.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, Steve Fox <drfickle@us.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +27,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 9, 2006, at 3:42 PM, timur@freescale.com wrote:
+> Seems that the patch below has introduced USB_OHCI_HCD_PPC_OF enabled by
+> default.  When it and CONFIG_USB_OHCI_HCD_PPC_SOC are enabled which
+> occured by default on my config then we end up with two module_init()
+> calls, which is illegal.
+> 
+>   powerpc-add-of_platform-support-for-ohci-bigendian-hc
+> 
+> I am guessing that we are only meant to be able to have one of these
+> defined at a time?  I changed the default to n for this and I could at
+> least compile the kernel, but I am sure thats not the right fix.
 
-> From: Timur Tabi <timur@freescale.com>
->
-> The qe_brg structure manually defined each of the 16 BRG registers,  
-> which
-> made any code that used them cumbersome.  This patch replaces the  
-> fields
-> with a single 16-element array.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+Paul, which patch did you merge ? I rejected the initial one that was
+doing 2 drivers/probe routines and Nicolas did a new one.. You may have
+taken the wrong one.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Cheers.
+Ben.
