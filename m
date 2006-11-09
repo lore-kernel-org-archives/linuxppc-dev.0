@@ -1,20 +1,14 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5621E67C5E
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 02:04:42 +1100 (EST)
-Message-ID: <4553436D.30601@shadowen.org>
-Date: Thu, 09 Nov 2006 15:04:13 +0000
-From: Andy Whitcroft <apw@shadowen.org>
+Return-Path: <olaf@aepfle.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id D3D8F67C7D
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 04:53:55 +1100 (EST)
+Date: Thu, 9 Nov 2006 18:53:52 +0100 (MET)
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix compile warnings with CONFIG_PM=n
+Message-ID: <20061109175352.GA25289@aepfle.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, Nicolas DET <nd@bplan-gmbh.de>
-Subject: Re: 2.6.19-rc5-mm1 -- ppc64 ohci-hdc.c compile failure
-References: <20061108015452.a2bb40d2.akpm@osdl.org>
-In-Reply-To: <20061108015452.a2bb40d2.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Steve Fox <drfickle@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We are seeing compile failures on ppc64 in ohci-hcd.c as below:
 
-In file included from drivers/usb/host/ohci-hcd.c:949:
-drivers/usb/host/ohci-ppc-of.c: In function `ohci_hcd_ppc_of_init':
-drivers/usb/host/ohci-ppc-of.c:272: warning: int format, different type
-arg (arg 2)
-drivers/usb/host/ohci-ppc-of.c:272: warning: int format, different type
-arg (arg 3)
-drivers/usb/host/ohci-ppc-of.c: At top level:
-drivers/usb/host/ohci-ppc-of.c:282: error: redefinition of `__inittest'
-drivers/usb/host/ohci-pci.c:252: error: `__inittest' previously defined here
-drivers/usb/host/ohci-ppc-of.c:282: error: redefinition of `init_module'
-drivers/usb/host/ohci-pci.c:252: error: `init_module' previously defined
-here
-drivers/usb/host/ohci-ppc-of.c:283: error: redefinition of `__exittest'
-drivers/usb/host/ohci-pci.c:260: error: `__exittest' previously defined here
-drivers/usb/host/ohci-ppc-of.c:283: error: redefinition of `cleanup_module'
-drivers/usb/host/ohci-pci.c:260: error: `cleanup_module' previously
-defined here
+Fix compile warnings with CONFIG_PM=n
 
-Seems that the patch below has introduced USB_OHCI_HCD_PPC_OF enabled by
-default.  When it and CONFIG_USB_OHCI_HCD_PPC_SOC are enabled which
-occured by default on my config then we end up with two module_init()
-calls, which is illegal.
+arch/powerpc/platforms/powermac/feature.c:489: warning: 'save_gpio_levels' defined but not used
+arch/powerpc/platforms/powermac/feature.c:490: warning: 'save_gpio_extint' defined but not used
+arch/powerpc/platforms/powermac/feature.c:491: warning: 'save_gpio_normal' defined but not used
+arch/powerpc/platforms/powermac/feature.c:492: warning: 'save_unin_clock_ctl' defined but not used
 
-  powerpc-add-of_platform-support-for-ohci-bigendian-hc
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-I am guessing that we are only meant to be able to have one of these
-defined at a time?  I changed the default to n for this and I could at
-least compile the kernel, but I am sure thats not the right fix.
+---
+ arch/powerpc/platforms/powermac/feature.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Nicolas?
-
--apw
+Index: linux-2.6/arch/powerpc/platforms/powermac/feature.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/feature.c
++++ linux-2.6/arch/powerpc/platforms/powermac/feature.c
+@@ -486,10 +486,6 @@ static long heathrow_sound_enable(struct
+ 
+ static u32 save_fcr[6];
+ static u32 save_mbcr;
+-static u32 save_gpio_levels[2];
+-static u8 save_gpio_extint[KEYLARGO_GPIO_EXTINT_CNT];
+-static u8 save_gpio_normal[KEYLARGO_GPIO_CNT];
+-static u32 save_unin_clock_ctl;
+ static struct dbdma_regs save_dbdma[13];
+ static struct dbdma_regs save_alt_dbdma[13];
+ 
+@@ -1548,6 +1544,10 @@ void g5_phy_disable_cpu1(void)
+ 
+ 
+ #ifdef CONFIG_PM
++static u32 save_gpio_levels[2];
++static u8 save_gpio_extint[KEYLARGO_GPIO_EXTINT_CNT];
++static u8 save_gpio_normal[KEYLARGO_GPIO_CNT];
++static u32 save_unin_clock_ctl;
+ 
+ static void keylargo_shutdown(struct macio_chip *macio, int sleep_mode)
+ {
