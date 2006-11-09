@@ -1,28 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BF35067C59
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Nov 2006 18:37:09 +1100 (EST)
-In-Reply-To: <1163028836.7630.16.camel@localhost.localdomain>
-References: <1162884080.585336.70559261997.qpush@cradle>
-	<1162885276.28571.444.camel@localhost.localdomain>
-	<20061107080257.GA5874@kroah.com>
-	<1162963101.20271.18.camel@localhost.localdomain>
-	<m1fycu5j4o.fsf@ebiederm.dsl.xmission.com>
-	<1163028836.7630.16.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FF34858D-1D40-4B5E-9B49-D6B9476D66DB@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 0/7] Powerpc MSI Implementation
-Date: Thu, 9 Nov 2006 08:36:30 +0100
-To: michael@ellerman.id.au
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@ozlabs.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
+Return-Path: <Simon.Richter@hogyros.de>
+Received: from kleinhenz.com (static.88-198-202-190.clients.your-server.de
+	[88.198.202.190]) by ozlabs.org (Postfix) with ESMTP id 422B467C4D
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 01:34:58 +1100 (EST)
+Message-ID: <45533C79.70404@hogyros.de>
+Date: Thu, 09 Nov 2006 15:34:33 +0100
+From: Simon Richter <Simon.Richter@hogyros.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: APUS and IOs question
+References: <1162767333.28571.254.camel@localhost.localdomain>	
+	<454F5259.3020107@hogyros.de> <454F5E44.4040301@genesi-usa.com>	
+	<1162844529.28571.327.camel@localhost.localdomain>	
+	<455081AC.3010301@hogyros.de>
+	<1162931605.28571.491.camel@localhost.localdomain>
+In-Reply-To: <1162931605.28571.491.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,29 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Looking closer most of them are 5 bits, the high 5 bits, and happen to
-> sit next to reserved fields (which must be zero), so reading the byte
-> should work in practice. But for a few of them you'll get cruft in the
-> low bits.
->
-> I don't know what they were thinking when they decided to have 3 and 5
-> bit capability fields, and then specify some of them as being a byte
-> wide as well. Perhaps the spec committee had a big night out ;)
->
-> I was going to write a generic version of pci_find_ht_capability() (as
-> suggested by Segher), so along with that I'll clean up the #defines to
-> just be the 3 or 5 bit capability codes, and then have a shift for
-> getting the capability out of the byte.
->
-> Users will still need to know if they're looking for a 3 or 5 bit
-> capability, but we can encapsulate that in pci_find_ht_capability()  
-> and
-> hopefully most people won't have to see the difference.
+Hi,
 
-Keep the defines the full 8 bits and put all the knowledge
-about which bits are relevant into pci_find_ht_capability()?
-If you do shifting you can get clashes (say, 0b00110 vs. 0b110),
-and this would make for simpler code, too.
+Benjamin Herrenschmidt schrieb:
 
+> Can you give me a proper explanation of the whole memory map story on it
+> so I get a better idea of how invasive handling it would be ?
 
-Segher
+On APUS systems, you have two (major) kinds of memory, that on the Amiga
+board and that on the CPU board. The former is generally mapped at
+address zero, but you don't want to use it except as DMA buffers when
+talking to the internal hardware (because the internal hardware doesn't
+see the memory on the CPU board).
+
+The memory on the CPU board is the "main" memory for Linux (because
+there is more of it, and the access is faster), but its location is
+assigned dynamically during the boot process, and depends on the size of
+the memory and on other boards installed.
+
+My plan for moving APUS to arch/powerpc involves writing a new
+bootloader (I'm currently hacking binutils to support AmigaOS binaries)
+that builds a proper flattened device tree and calls the kernel, but I'm
+not sure where the kernel virtual mapping that allows the kernel to run
+from a fixed address should be set up -- if in the bootloader, the
+kernel needs to be aware that changing the MMU settings will yield
+interesting results, and if in the kernel, we need some platform
+specific init code to handle that.
+
+   Simon
