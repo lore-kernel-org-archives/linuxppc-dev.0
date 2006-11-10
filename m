@@ -1,18 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1CF7C67F54
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:42:02 +1100 (EST)
-Subject: Re: [PATCH 1/16] powerpc: add virq_to_hw accessor routine
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 66E6F67E35
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 08:23:55 +1100 (EST)
+Date: Fri, 10 Nov 2006 15:23:10 -0600
+From: Olof Johansson <olof@lixom.net>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4554DAB1.6050903@am.sony.com>
-References: <4554DAB1.6050903@am.sony.com>
-Content-Type: text/plain
-Date: Sat, 11 Nov 2006 07:41:48 +1100
-Message-Id: <1163191308.4982.170.camel@localhost.localdomain>
+Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
+Message-ID: <20061110152310.7419ef3e@pb15>
+In-Reply-To: <4554DACB.8060809@am.sony.com>
+References: <4554DACB.8060809@am.sony.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,12 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-11-10 at 12:01 -0800, Geoff Levand wrote:
-> This adds an accessor routine virq_to_hw() to the
-> virq routines which hides the implementation details
-> of the virq to hwirq map.
+Hi,
+
+Just a couple of small comments, I haven't had time to get deeper into
+the patchset yet. :-)
+
+On Fri, 10 Nov 2006 12:02:19 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
+
+> This adds the core platform support for the PS3 game console and other
+> platforms using the PS3 Platform hypervisor.
 > 
 > 
 > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> 
+> ---
+>  MAINTAINERS                             |    7 
+>  arch/powerpc/Kconfig                    |   11 
+>  arch/powerpc/platforms/Makefile         |    1 
+>  arch/powerpc/platforms/ps3pf/Kconfig    |   32 +
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Why are you naming the platform "platform" as in "this is the ps3pf
+platform" which expands to "this is the ps3 platform platform"? ps3 is
+quite adequate as the platform name. :-)
+
+> +config PS3PF_HTAB_SIZE
+> +	depends on PS3PF
+> +	int "PS3 Platform pagetable size"
+> +	range 18 20
+> +	default 20
+> +	help
+> +	  This option is only for experts who may have the desire to fine
+> +	  tune the pagetable size on their system.  The value here is
+> +	  expressed as the log2 of the page table size.  Valid values are
+> +	  18, 19, and 20, corresponding to 256KB, 512KB and 1MB respectively.
+> +
+> +	  If unsure, choose the default (20) with the confidence that your
+> +	  system will have optimal runtime performance.
+
+Wouldn't it be more understandable if you had a "small/medium/large"
+memory config options (that in itself sets the values) instead of
+having people pick numbers?
+
+> +	result = dma_region_create(r);
+> +
+> +	if (result) {
+> +		pr_debug("%s:%d: ps3pf_dma_region_create failed\n",
+> +			__func__, __LINE__);
+> +		BUG();
+> +	}
+
+You have lots of these. please do BUG_ON(result) instead. :-)
+
+
+-Olof
