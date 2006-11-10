@@ -1,18 +1,25 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id B71B767CB9
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 11:13:12 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so347584ugf
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Nov 2006 16:13:10 -0800 (PST)
-Message-ID: <528646bc0611091613i6f96128bjffed2cfe2f5f2b8b@mail.gmail.com>
-Date: Thu, 9 Nov 2006 17:13:09 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>,
-	"Nicolas DET" <nd@bplan-gmbh.de>, "Sylvain Munaut" <tnt@246tnt.com>
-Subject: Git trees for MPC52xx development
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id C24A467C88
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 13:07:50 +1100 (EST)
+Date: Fri, 10 Nov 2006 02:39:26 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: APUS and IOs question
+In-Reply-To: <1163112519.4982.50.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0611100238050.28657@pademelon.sonytel.be>
+References: <1162767333.28571.254.camel@localhost.localdomain>
+	<454F5259.3020107@hogyros.de>  <454F5E44.4040301@genesi-usa.com>
+	<1162844529.28571.327.camel@localhost.localdomain>
+	<455081AC.3010301@hogyros.de>
+	<1162931605.28571.491.camel@localhost.localdomain>
+	<45533C79.70404@hogyros.de>
+	<1163112519.4982.50.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For those who are interested;
+On Fri, 10 Nov 2006, Benjamin Herrenschmidt wrote:
+> > My plan for moving APUS to arch/powerpc involves writing a new
+> > bootloader (I'm currently hacking binutils to support AmigaOS binaries)
+> > that builds a proper flattened device tree and calls the kernel, but I'm
+> > not sure where the kernel virtual mapping that allows the kernel to run
+> > from a fixed address should be set up -- if in the bootloader, the
+> > kernel needs to be aware that changing the MMU settings will yield
+> > interesting results, and if in the kernel, we need some platform
+> > specific init code to handle that.
+> 
+> Well, the problem is that you basially have to hack the linear mapping,
+> thus hitting anything that relies on __pa/__va or operating in real mode
+> indeed.
+> 
+> How do you do for exception vectors ? Since those have to be either at 0
+> or at ff* ? You stick branches at 0 to jump to where the kernel
+> resides ?
 
-Sylvain and I are both maintaining git trees for the port of mpc52xx
-support into arch/powerpc.  Once things are more mature, we'll break
-up the changes into patches and post them for comment.
+IIRC (Roman please correct me if I'm wrong), APUS has them at ff* because the
+memory at adress 0 is slower.
 
-You can view the trees at:
-http://git.secretlab.ca/
-http://gitbits.246tnt.com/
+Gr{oetje,eeting}s,
 
-Comments and patches are, of course, welcome.
+						Geert
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
