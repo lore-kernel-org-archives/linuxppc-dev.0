@@ -1,15 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17748.17364.884083.164844@cargo.ozlabs.ibm.com>
-Date: Fri, 10 Nov 2006 20:18:12 +1100
+Message-ID: <17748.19234.278295.476881@cargo.ozlabs.ibm.com>
+Date: Fri, 10 Nov 2006 20:49:22 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 4/5] ppc64: make soft_enabled irqs preempt safe
-In-Reply-To: <Pine.LNX.4.64.0610311841570.26470@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0610311841570.26470@blonde.wat.veritas.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.19-rc5-mm1 -- ppc64 ohci-hdc.c compile failure
+In-Reply-To: <1163112227.4982.44.camel@localhost.localdomain>
+References: <20061108015452.a2bb40d2.akpm@osdl.org>
+	<4553436D.30601@shadowen.org>
+	<1163112227.4982.44.camel@localhost.localdomain>
+Cc: Andrew Morton <akpm@osdl.org>, Steve Fox <drfickle@us.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,17 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hugh Dickins writes:
+Benjamin Herrenschmidt writes:
 
-> local_irq_restore be careful to access hard_enabled and lppaca before
-> setting soft_enabled, which may well permit preemption.  Use local_paca
+> > Seems that the patch below has introduced USB_OHCI_HCD_PPC_OF enabled by
+> > default.  When it and CONFIG_USB_OHCI_HCD_PPC_SOC are enabled which
+> > occured by default on my config then we end up with two module_init()
+> > calls, which is illegal.
+> > 
+> >   powerpc-add-of_platform-support-for-ohci-bigendian-hc
+> > 
+> > I am guessing that we are only meant to be able to have one of these
+> > defined at a time?  I changed the default to n for this and I could at
+> > least compile the kernel, but I am sure thats not the right fix.
+> 
+> Paul, which patch did you merge ? I rejected the initial one that was
+> doing 2 drivers/probe routines and Nicolas did a new one.. You may have
+> taken the wrong one.
 
-The reason for testing hard_enabled *after* setting soft_enabled is to
-avoid a race.  If we load hard_enabled first, as your patch does, then
-an interrupt could come in between that load and the store that sets
-soft_enabled, and we would miss that and not hard-enable as we should.
-
-I'm not sure what the solution is.  I suppose we could disable
-preemption, although I'd rather something lighter-weight if possible.
+I didn't merge either of them.
 
 Paul.
