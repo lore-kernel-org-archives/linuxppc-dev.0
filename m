@@ -1,21 +1,21 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
-	by ozlabs.org (Postfix) with ESMTP id 69ED868589
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:03:51 +1100 (EST)
-Received: from mail6.sony.co.jp (localhost [127.0.0.1])
-	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAAK3oKL013961
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:50 +0900 (JST)
+Received: from ns5.sony.co.jp (NS5.Sony.CO.JP [137.153.0.45])
+	by ozlabs.org (Postfix) with ESMTP id 2795569202
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:04:03 +1100 (EST)
+Received: from mail2.sony.co.jp (localhost [127.0.0.1])
+	by mail2.sony.co.jp (R8/Sony) with ESMTP id kAAK42XG001329
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:04:02 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail6.sony.co.jp (R8/Sony) with SMTP id kAAK3ocs013952
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:50 +0900 (JST)
-Message-ID: <4554DB20.9020200@am.sony.com>
-Date: Fri, 10 Nov 2006 12:03:44 -0800
+	by mail2.sony.co.jp (R8/Sony) with SMTP id kAAK42qY001325
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:04:02 +0900 (JST)
+Message-ID: <4554DB2C.1000002@am.sony.com>
+Date: Fri, 10 Nov 2006 12:03:56 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 14/16] powerpc: add ps3 platform OS params support
+Subject: [PATCH 15/16] cell: add ps3 platform spu support
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add support to access the parameter data from the ps3pf other OS area of flash
-memory.  The parameter data mainly holds user preferences like static ip
-address, etc.
+Adds spu support for the PS3 Platform.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- arch/powerpc/platforms/ps3pf/Makefile  |    2 
- arch/powerpc/platforms/ps3pf/os-area.c |  245 +++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/ps3pf/setup.c   |    1 
- 3 files changed, 247 insertions(+), 1 deletion(-)
+
+This patch requires my previous patch which split the existing spu support into
+platform specific and platform independent parts.
+
+ arch/powerpc/platforms/ps3pf/Makefile   |    3 
+ arch/powerpc/platforms/ps3pf/platform.h |    8 
+ arch/powerpc/platforms/ps3pf/setup.c    |    2 
+ arch/powerpc/platforms/ps3pf/spu.c      |  625 ++++++++++++++++++++++++++++++++
+ 4 files changed, 638 insertions(+)
 
 Index: cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
 ===================================================================
 --- cell--common--6.orig/arch/powerpc/platforms/ps3pf/Makefile
 +++ cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
-@@ -1,2 +1,2 @@
+@@ -1,2 +1,5 @@
  obj-$(CONFIG_PS3PF) += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
--obj-$(CONFIG_PS3PF) += interrupt.o exports.o
-+obj-$(CONFIG_PS3PF) += interrupt.o exports.o os-area.o
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/os-area.c
+ obj-$(CONFIG_PS3PF) += interrupt.o exports.o os-area.o
++
++spu-base-$(CONFIG_PS3PF) += spu.o
++obj-$(CONFIG_SPU_BASE) += $(spu-base-y)
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
+===================================================================
+--- cell--common--6.orig/arch/powerpc/platforms/ps3pf/platform.h
++++ cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
+@@ -56,4 +56,12 @@
+ int __init ps3pf_os_area_init(void);
+ u64 ps3pf_os_area_rtc_diff(void);
+ 
++/* spu */
++
++#if defined(CONFIG_SPU_BASE)
++void ps3pf_spu_set_platform (void);
++#else
++static inline void ps3pf_spu_set_platform (void) {}
++#endif
++
+ #endif
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/setup.c
+===================================================================
+--- cell--common--6.orig/arch/powerpc/platforms/ps3pf/setup.c
++++ cell--common--6/arch/powerpc/platforms/ps3pf/setup.c
+@@ -76,6 +76,8 @@
+ {
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 
++	ps3pf_spu_set_platform();
++
+ 	ps3pf_map_htab();
+ 
+ #if defined(CONFIG_BLK_DEV_INITRD)
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/spu.c
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/os-area.c
-@@ -0,0 +1,245 @@
++++ cell--common--6/arch/powerpc/platforms/ps3pf/spu.c
+@@ -0,0 +1,625 @@
 +/*
-+ * os-area.c - PS3 Platform OS data area.
++ * spu.c - PS3 Platform spu routines.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -73,237 +108,605 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/os-area.c
 +#undef DEBUG
 +
 +#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mmzone.h>
 +#include <linux/io.h>
++#include <linux/mm.h>
 +
-+#include <asm/lmb.h>
++#include <asm/spu.h>
++#include <asm/spu_priv1.h>
 +#include <asm/ps3pf.h>
++#include <asm/lv1call.h>
 +
-+#include "platform.h"
++/* spu_management_ops */
 +
-+enum {
-+	segment_size = 0x200,
-+	ldr_format_raw = 0,
-+	ldr_format_gzip = 1,
-+	boot_flag_game_os = 0,
-+	boot_flag_other_os = 1,
-+	av_multi_out_ntsc = 0,
-+	av_multi_out_pal_rgb = 1,
-+	av_multi_out_pal_ycbcr = 2,
-+	av_multi_out_secam = 3,
-+	ctrl_button_o_is_yes = 0,
-+	ctrl_button_x_is_yes = 1,
++/**
++ * enum spe_type - Type of spe to create.
++ * @spe_type_logical: Standard logical spe.
++ *
++ * For use with lv1_construct_logical_spe().  The current HV does not support
++ * any types other than those listed.
++ */
++
++enum spe_type {
++	spe_type_logical = 0,
 +};
 +
 +/**
-+ * struct header - os area header segment.
-+ * @magic_num: Always 'cell_ext_os_area'.
-+ * @hdr_version: Header format version number.
-+ * @os_region_offset: Segment number of os region.
-+ * @bootloader_offset: Segment number of bootloader image.
-+ * @ldr_format: ldr_format flag.
-+ * @ldr_size: Size of bootloader image in bytes.
++ * struct spe_shadow - logical spe shadow register area.
++ *
++ * Read-only shadow of spe registers.
 + */
 +
-+struct header {
-+	s8 magic_num[16];
-+	u32 hdr_version;
-+	u32 os_image_offset;
-+	u32 bootloader_offset;
-+	u32 _reserved_1;
-+	u32 ldr_format;
-+	u32 ldr_size;
-+	u32 _reserved_2[6];
++struct spe_shadow {
++	u8 padding_0000[0x0140];
++	u64 int_status_class0_RW;       /* 0x0140 */
++	u64 int_status_class1_RW;       /* 0x0148 */
++	u64 int_status_class2_RW;       /* 0x0150 */
++	u8 padding_0158[0x0610-0x0158];
++	u64 mfc_dsisr_RW;               /* 0x0610 */
++	u8 padding_0618[0x0620-0x0618];
++	u64 mfc_dar_RW;                 /* 0x0620 */
++	u8 padding_0628[0x0800-0x0628];
++	u64 mfc_dsipr_R;                /* 0x0800 */
++	u8 padding_0808[0x0810-0x0808];
++	u64 mfc_lscrr_R;                /* 0x0810 */
++	u8 padding_0818[0x0c00-0x0818];
++	u64 mfc_cer_R;                  /* 0x0c00 */
++	u8 padding_0c08[0x0f00-0x0c08];
++	u64 spe_execution_status;       /* 0x0f00 */
++	u8 padding_0f08[0x1000-0x0f08];
 +} __attribute__ ((packed));
 +
-+/**
-+ * struct params - os area params segment.
-+ * @boot_flag: User preference of operating system.
-+ * @num_params: Number of params in this (params) segment.
-+ * @rtc_diff: Difference in seconds between 1970 and the ps3pf rtc value.
-+ * @av_multi_out: User preference of AV output.
-+ * @ctrl_button: User preference of controller button config.
-+ * @static_ip_addr: User preference of static IP address.
-+ * @network_mask: User preference of static network mask.
-+ * @default_gateway: User preference of static default gateway.
-+ * @dns_primary: User preference of static primary dns server.
-+ * @dns_secondary: User preference of static secondary dns server.
-+ *
-+ * User preference of zero for static_ip_addr means use dhcp.
-+ */
-+
-+struct params {
-+	u32 boot_flag;
-+	u32 _reserved_1[3];
-+	u32 num_params;
-+	u32 _reserved_2[3];
-+	/* param 0 */
-+	s64 rtc_diff;
-+	u8 av_multi_out;
-+	u8 ctrl_button;
-+	u8 _reserved_3[6];
-+	/* param 1 */
-+	u8 static_ip_addr[4];
-+	u8 network_mask[4];
-+	u8 default_gateway[4];
-+	u8 _reserved_4[4];
-+	/* param 2 */
-+	u8 dns_primary[4];
-+	u8 dns_secondary[4];
-+	u8 _reserved_5[8];
-+} __attribute__ ((packed));
 +
 +/**
-+ * struct os_params - Static working copies of data from the os area.
++ * enum spe_ex_state - Logical spe execution state.
++ * @spe_ex_state_unexecutable: Uninitialized.
++ * @spe_ex_state_executable: Enabled, not ready.
++ * @spe_ex_state_executed: Ready for use.
 + *
-+ * For the convinience of the guest, the HV makes a copy of the os area in
-+ * flash to a high address in the boot memory region and then puts that RAM
-+ * address and the byte count into the repository for retreval by the guest.
-+ * We copy the data we want into a static variable and allow the memory setup
-+ * by the HV to be claimed by the lmb manager.
++ * The execution state (status) of the logical spe as reported in
++ * struct spe_shadow:spe_execution_status.
 + */
 +
-+struct os_params {
-+	/* param 0 */
-+	s64 rtc_diff;
-+	unsigned int av_multi_out;
-+	unsigned int ctrl_button;
-+	/* param 1 */
-+	u8 static_ip_addr[4];
-+	u8 network_mask[4];
-+	u8 default_gateway[4];
-+	/* param 2 */
-+	u8 dns_primary[4];
-+	u8 dns_secondary[4];
-+} static os_params;
++enum spe_ex_state {
++	spe_ex_state_unexecutable = 0,
++	spe_ex_state_executable = 2,
++	spe_ex_state_executed = 3,
++};
 +
-+#define dump_header(_a) _dump_header(_a, __func__, __LINE__)
-+static void _dump_header(const struct header __iomem *h, const char* func,
-+	int line)
++/**
++ * struct priv1_cache - Cached values of priv1 registers.
++ * @masks[]: Array of cached spe interrupt masks, indexed by class.
++ * @sr1: Cached mfc_sr1 register.
++ * @tclass_id: Cached mfc_tclass_id register.
++ */
++
++struct priv1_cache {
++	u64 masks[3];
++	u64 sr1;
++	u64 tclass_id;
++};
++
++/**
++ * struct spu_pdata - Platform state variables.
++ * @spe_id: HV spe id returned by lv1_construct_logical_spe().
++ * @resource_id: HV spe resource id returned by
++ * 	ps3pf_repository_read_spe_resource_id().
++ * @priv2_addr: lpar address of spe priv2 area returned by
++ * 	lv1_construct_logical_spe().
++ * @shadow_addr: lpar address of spe register shadow area returned by
++ * 	lv1_construct_logical_spe().
++ * @shadow: Virtual (ioremap) address of spe register shadow area.
++ * @cache: Cached values of priv1 registers.
++ */
++
++struct spu_pdata {
++	u64 spe_id;
++	u64 resource_id;
++	u64 priv2_addr;
++	u64 shadow_addr;
++	struct spe_shadow __iomem *shadow;
++	struct priv1_cache cache;
++};
++
++static struct spu_pdata *spu_pdata(struct spu *spu)
 +{
-+	pr_debug("%s:%d: h.magic_num:         '%s'\n", func, line,
-+		h->magic_num);
-+	pr_debug("%s:%d: h.hdr_version:       %u\n", func, line,
-+		h->hdr_version);
-+	pr_debug("%s:%d: h.os_image_offset:   %u\n", func, line,
-+		h->os_image_offset);
-+	pr_debug("%s:%d: h.bootloader_offset: %u\n", func, line,
-+		h->bootloader_offset);
-+	pr_debug("%s:%d: h.ldr_format:        %u\n", func, line,
-+		h->ldr_format);
-+	pr_debug("%s:%d: h.ldr_size:          %xh\n", func, line,
-+		h->ldr_size);
++	return spu->pdata;
 +}
 +
-+#define dump_params(_a) _dump_params(_a, __func__, __LINE__)
-+static void _dump_params(const struct params __iomem *p, const char* func,
-+	int line)
++#define dump_areas(_a, _b, _c, _d, _e) \
++	_dump_areas(_a, _b, _c, _d, _e, __func__, __LINE__)
++static void _dump_areas(unsigned int spe_id, unsigned long priv2,
++	unsigned long problem, unsigned long ls, unsigned long shadow,
++	const char* func, int line)
 +{
-+	pr_debug("%s:%d: p.boot_flag:       %u\n", func, line, p->boot_flag);
-+	pr_debug("%s:%d: p.num_params:      %u\n", func, line, p->num_params);
-+	pr_debug("%s:%d: p.rtc_diff         %ld\n", func, line, p->rtc_diff);
-+	pr_debug("%s:%d: p.av_multi_out     %u\n", func, line, p->av_multi_out);
-+	pr_debug("%s:%d: p.ctrl_button:     %u\n", func, line, p->ctrl_button);
-+	pr_debug("%s:%d: p.static_ip_addr:  %u.%u.%u.%u\n", func, line,
-+		p->static_ip_addr[0], p->static_ip_addr[1],
-+		p->static_ip_addr[2], p->static_ip_addr[3]);
-+	pr_debug("%s:%d: p.network_mask:    %u.%u.%u.%u\n", func, line,
-+		p->network_mask[0], p->network_mask[1],
-+		p->network_mask[2], p->network_mask[3]);
-+	pr_debug("%s:%d: p.default_gateway: %u.%u.%u.%u\n", func, line,
-+		p->default_gateway[0], p->default_gateway[1],
-+		p->default_gateway[2], p->default_gateway[3]);
-+	pr_debug("%s:%d: p.dns_primary:     %u.%u.%u.%u\n", func, line,
-+		p->dns_primary[0], p->dns_primary[1],
-+		p->dns_primary[2], p->dns_primary[3]);
-+	pr_debug("%s:%d: p.dns_secondary:   %u.%u.%u.%u\n", func, line,
-+		p->dns_secondary[0], p->dns_secondary[1],
-+		p->dns_secondary[2], p->dns_secondary[3]);
++	pr_debug("%s:%d: spe_id:  %xh (%u)\n", func, line, spe_id, spe_id);
++	pr_debug("%s:%d: priv2:   %lxh\n", func, line, priv2);
++	pr_debug("%s:%d: problem: %lxh\n", func, line, problem);
++	pr_debug("%s:%d: ls:      %lxh\n", func, line, ls);
++	pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
 +}
 +
-+static int __init verify_header(const struct header *header)
++static unsigned long get_vas_id(void)
 +{
-+	if (memcmp(header->magic_num, "cell_ext_os_area", 16)) {
-+		pr_debug("%s:%d magic_num failed\n", __func__, __LINE__);
-+		return -1;
-+	}
++	unsigned long id;
 +
-+	if (header->hdr_version != 1) {
-+		pr_debug("%s:%d hdr_version failed\n", __func__, __LINE__);
-+		return -1;
-+	}
++	lv1_get_logical_ppe_id(&id);
++	lv1_get_virtual_address_space_id_of_ppe(id, &id);
 +
-+	if (header->os_image_offset > header->bootloader_offset) {
-+		pr_debug("%s:%d offsets failed\n", __func__, __LINE__);
-+		return -1;
-+	}
-+
-+	return 0;
++	return id;
 +}
 +
-+int __init ps3pf_os_area_init(void)
++static int __init construct_spu(struct spu *spu)
 +{
 +	int result;
-+	u64 lpar_addr;
-+	unsigned int size;
-+	struct header *header;
-+	struct params *params;
++	unsigned long unused;
 +
-+	result = ps3pf_repository_read_boot_dat_info(&lpar_addr, &size);
++	result = lv1_construct_logical_spe(PAGE_SHIFT, PAGE_SHIFT, PAGE_SHIFT,
++		PAGE_SHIFT, PAGE_SHIFT, get_vas_id(), spe_type_logical,
++		&spu_pdata(spu)->priv2_addr, &spu->problem_phys,
++		&spu->local_store_phys, &unused,
++		&spu_pdata(spu)->shadow_addr,
++		&spu_pdata(spu)->spe_id);
 +
 +	if (result) {
-+		pr_debug("%s:%d ps3pf_repository_read_boot_dat_info failed\n",
-+			__func__, __LINE__);
++		pr_debug("%s:%d: lv1_construct_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
 +		return result;
-+	}
-+
-+	header = (struct header *)__va(lpar_addr);
-+	params = (struct params *)__va(lpar_addr + segment_size);
-+
-+	result = verify_header(header);
-+
-+	if (result) {
-+		pr_debug("%s:%d verify_header failed\n", __func__, __LINE__);
-+		dump_header(header);
-+		return -EIO;
-+	}
-+
-+	dump_header(header);
-+	dump_params(params);
-+
-+	os_params.rtc_diff = params->rtc_diff;
-+	os_params.av_multi_out = params->av_multi_out;
-+	if (0) { /* currently not used */
-+		os_params.ctrl_button = params->ctrl_button;
-+		memcpy(os_params.static_ip_addr, params->static_ip_addr, 4);
-+		memcpy(os_params.network_mask, params->network_mask, 4);
-+		memcpy(os_params.default_gateway, params->default_gateway, 4);
-+		memcpy(os_params.dns_secondary, params->dns_secondary, 4);
 +	}
 +
 +	return result;
 +}
 +
-+/**
-+ * ps3pf_os_area_rtc_diff - Returns the ps3pf rtc diff value.
-+ *
-+ * The ps3pf rtc maintains a value that approximates seconds since
-+ * 2000-01-01 00:00:00 UTC.  Returns the exact number of seconds from 1970 to
-+ * 2000 when os_params.rtc_diff has not been properly set up.
-+ */
-+
-+u64 ps3pf_os_area_rtc_diff(void)
++static int __init add_spu_pages(unsigned long start_addr, unsigned long size)
 +{
-+	return os_params.rtc_diff ? os_params.rtc_diff : 946684800UL;
++	int result;
++	unsigned long start_pfn;
++	unsigned long nr_pages;
++	struct pglist_data *pgdata;
++	struct zone *zone;
++
++	BUG_ON(!mem_init_done);
++
++	start_pfn = start_addr >> PAGE_SHIFT;
++	nr_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	pgdata = NODE_DATA(0);
++	zone = pgdata->node_zones;
++
++	result = __add_pages(zone, start_pfn, nr_pages);
++
++	if (result)
++		pr_debug("%s:%d: __add_pages failed: (%d)\n",
++			__func__, __LINE__, result);
++
++	return result;
 +}
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/setup.c
-===================================================================
---- cell--common--6.orig/arch/powerpc/platforms/ps3pf/setup.c
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/setup.c
-@@ -115,6 +115,7 @@
- 
- 	powerpc_firmware_features |= FW_FEATURE_LPAR;
- 
-+	ps3pf_os_area_init();
- 	ps3pf_mm_init();
- 	ps3pf_mm_vas_create(&htab_size);
- 	ps3pf_hpte_init(htab_size);
++
++static void spu_unmap(struct spu *spu)
++{
++	iounmap(spu->priv2);
++	iounmap(spu->problem);
++	iounmap((__force u8 __iomem *)spu->local_store);
++	iounmap(spu_pdata(spu)->shadow);
++}
++
++static int __init setup_areas(struct spu *spu)
++{
++	struct table {char* name; unsigned long addr; unsigned long size;};
++	int result;
++
++	/* setup pages */
++
++	result = add_spu_pages(spu->local_store_phys, LS_SIZE);
++	if (result)
++		goto fail_add;
++
++	result = add_spu_pages(spu->problem_phys, sizeof(struct spu_problem));
++	if (result)
++		goto fail_add;
++
++	/* ioremap */
++
++	spu_pdata(spu)->shadow = __ioremap(
++		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
++		PAGE_READONLY | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	if (!spu_pdata(spu)->shadow) {
++		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
++	if (!spu->local_store) {
++		pr_debug("%s:%d: ioremap local_store failed\n",
++			__func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->problem = ioremap(spu->problem_phys,
++		sizeof(struct spu_problem));
++	if (!spu->problem) {
++		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
++		sizeof(struct spu_priv2));
++	if (!spu->priv2) {
++		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	dump_areas(spu_pdata(spu)->spe_id, spu_pdata(spu)->priv2_addr,
++		spu->problem_phys, spu->local_store_phys,
++		spu_pdata(spu)->shadow_addr);
++	dump_areas(spu_pdata(spu)->spe_id, (unsigned long)spu->priv2,
++		(unsigned long)spu->problem, (unsigned long)spu->local_store,
++		(unsigned long)spu_pdata(spu)->shadow);
++
++	return 0;
++
++fail_ioremap:
++	spu_unmap(spu);
++fail_add:
++	return result;
++}
++
++static int __init setup_interrupts(struct spu *spu)
++{
++	int result;
++
++	result = ps3pf_alloc_spe_irq(spu_pdata(spu)->spe_id, 0,
++		&spu->irqs[0]);
++
++	if (result)
++		goto fail_alloc_0;
++
++	result = ps3pf_alloc_spe_irq(spu_pdata(spu)->spe_id, 1,
++		&spu->irqs[1]);
++
++	if (result)
++		goto fail_alloc_1;
++
++	result = ps3pf_alloc_spe_irq(spu_pdata(spu)->spe_id, 2,
++		&spu->irqs[2]);
++
++	if (result)
++		goto fail_alloc_2;
++
++	return result;
++
++fail_alloc_2:
++	ps3pf_free_spe_irq(spu->irqs[1]);
++fail_alloc_1:
++	ps3pf_free_spe_irq(spu->irqs[0]);
++fail_alloc_0:
++	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
++	return result;
++}
++
++static int __init enable_spu(struct spu *spu)
++{
++	int result;
++
++	result = lv1_enable_logical_spe(spu_pdata(spu)->spe_id,
++		spu_pdata(spu)->resource_id);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_enable_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		goto fail_enable;
++	}
++
++	result = setup_areas(spu);
++
++	if (result)
++		goto fail_areas;
++
++	result = setup_interrupts(spu);
++
++	if (result)
++		goto fail_interrupts;
++
++	return 0;
++
++fail_interrupts:
++	spu_unmap(spu);
++fail_areas:
++	lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
++fail_enable:
++	return result;
++}
++
++static int ps3pf_destroy_spu(struct spu *spu)
++{
++	int result;
++
++	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++
++	result = lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_disable_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		BUG();
++	}
++
++	ps3pf_free_spe_irq(spu->irqs[2]);
++	ps3pf_free_spe_irq(spu->irqs[1]);
++	ps3pf_free_spe_irq(spu->irqs[0]);
++
++	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
++
++	spu_unmap(spu);
++
++	result = lv1_destruct_logical_spe(spu_pdata(spu)->spe_id);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_destruct_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		BUG();
++	}
++
++	kfree(spu->pdata);
++	spu->pdata = NULL;
++
++	return 0;
++}
++
++static int __init ps3pf_create_spu(struct spu *spu, void *data)
++{
++	int result;
++
++	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++
++	spu->pdata = kzalloc(sizeof(struct spu_pdata),
++		GFP_KERNEL);
++
++	if (!spu->pdata) {
++		result = -ENOMEM;
++		goto fail_malloc;
++	}
++
++	spu_pdata(spu)->resource_id = (unsigned long)data;
++
++	/* Init cached reg values to HV defaults. */
++
++	spu_pdata(spu)->cache.sr1 = 0x33;
++
++	result = construct_spu(spu);
++
++	if (result)
++		goto fail_construct;
++
++	/* For now, just go ahead and enable it. */
++
++	result = enable_spu(spu);
++
++	if (result)
++		goto fail_enable;
++
++	/* Make sure the spu is in spe_ex_state_executed. */
++
++	/* need something better here!!! */
++	while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status)
++		!= spe_ex_state_executed)
++		(void)0;
++
++	return result;
++
++fail_enable:
++fail_construct:
++	ps3pf_destroy_spu(spu);
++fail_malloc:
++	return result;
++}
++
++static int __init ps3pf_enumerate_spus(int (*fn)(void *data))
++{
++	int result;
++	unsigned int num_resource_id;
++	unsigned int i;
++
++	result = ps3pf_repository_read_num_spu_resource_id(&num_resource_id);
++
++	pr_debug("%s:%d: num_resource_id %u\n", __func__, __LINE__,
++		num_resource_id);
++
++	/*
++	 * For now, just create logical spus equal to the number
++	 * of physical spus reserved for the partition.
++	 */
++
++	for (i = 0; i < num_resource_id; i++) {
++		enum ps3pf_spu_resource_type resource_type;
++		unsigned int resource_id;
++
++		result = ps3pf_repository_read_spu_resource_id(i,
++			&resource_type, &resource_id);
++
++		if (result)
++			break;
++
++		if (resource_type == ps3pf_spu_resource_type_exclusive) {
++			result = fn((void*)(unsigned long)resource_id);
++
++			if (result)
++				break;
++		}
++	}
++
++	if (result)
++		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
++			__func__, __LINE__);
++
++	return result;
++}
++
++const struct spu_management_ops spu_management_ps3pf_ops = {
++	.enumerate_spus = ps3pf_enumerate_spus,
++	.create_spu = ps3pf_create_spu,
++	.destroy_spu = ps3pf_destroy_spu,
++};
++
++/* spu_priv1_ops */
++
++static void int_mask_and(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++
++	/* are these serialized by caller??? */
++	old_mask = spu_int_mask_get(spu, class);
++	spu_int_mask_set(spu, class, old_mask & mask);
++}
++
++static void int_mask_or(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++
++	old_mask = spu_int_mask_get(spu, class);
++	spu_int_mask_set(spu, class, old_mask | mask);
++}
++
++static void int_mask_set(struct spu *spu, int class, u64 mask)
++{
++	spu_pdata(spu)->cache.masks[class] = mask;
++	lv1_set_spe_interrupt_mask(spu_pdata(spu)->spe_id, class,
++		spu_pdata(spu)->cache.masks[class]);
++}
++
++static u64 int_mask_get(struct spu *spu, int class)
++{
++	return spu_pdata(spu)->cache.masks[class];
++}
++
++static void int_stat_clear(struct spu *spu, int class, u64 stat)
++{
++	/* Note that MFC_DSISR will be cleared when class1[MF] is set. */
++
++	lv1_clear_spe_interrupt_status(spu_pdata(spu)->spe_id, class,
++		stat, 0);
++}
++
++static u64 int_stat_get(struct spu *spu, int class)
++{
++	u64 stat;
++
++	lv1_get_spe_interrupt_status(spu_pdata(spu)->spe_id, class, &stat);
++	return stat;
++}
++
++static void cpu_affinity_set(struct spu *spu, int cpu)
++{
++	/* No support. */
++}
++
++static u64 mfc_dar_get(struct spu *spu)
++{
++	return in_be64(&spu_pdata(spu)->shadow->mfc_dar_RW);
++}
++
++static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
++{
++	/* Nothing to do, cleared in int_stat_clear(). */
++}
++
++static u64 mfc_dsisr_get(struct spu *spu)
++{
++	return in_be64(&spu_pdata(spu)->shadow->mfc_dsisr_RW);
++}
++
++static void mfc_sdr_setup(struct spu *spu)
++{
++	/* Nothing to do. */
++}
++
++static void mfc_sr1_set(struct spu *spu, u64 sr1)
++{
++	/* Check bits allowed by HV. */
++
++	static const u64 allowed = ~(MFC_STATE1_LOCAL_STORAGE_DECODE_MASK
++		| MFC_STATE1_PROBLEM_STATE_MASK);
++
++	BUG_ON((sr1 & allowed) != (spu_pdata(spu)->cache.sr1 & allowed));
++
++	spu_pdata(spu)->cache.sr1 = sr1;
++	lv1_set_spe_privilege_state_area_1_register(
++		spu_pdata(spu)->spe_id,
++		offsetof(struct spu_priv1, mfc_sr1_RW),
++		spu_pdata(spu)->cache.sr1);
++}
++
++static u64 mfc_sr1_get(struct spu *spu)
++{
++	return spu_pdata(spu)->cache.sr1;
++}
++
++static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
++{
++	spu_pdata(spu)->cache.tclass_id = tclass_id;
++	lv1_set_spe_privilege_state_area_1_register(
++		spu_pdata(spu)->spe_id,
++		offsetof(struct spu_priv1, mfc_tclass_id_RW),
++		spu_pdata(spu)->cache.tclass_id);
++}
++
++static u64 mfc_tclass_id_get(struct spu *spu)
++{
++	return spu_pdata(spu)->cache.tclass_id;
++}
++
++static void tlb_invalidate(struct spu *spu)
++{
++	/* Nothing to do. */
++}
++
++static void resource_allocation_groupID_set(struct spu *spu, u64 id)
++{
++	/* No support. */
++}
++
++static u64 resource_allocation_groupID_get(struct spu *spu)
++{
++	return 0; /* No support. */
++}
++
++static void resource_allocation_enable_set(struct spu *spu, u64 enable)
++{
++	/* No support. */
++}
++
++static u64 resource_allocation_enable_get(struct spu *spu)
++{
++	return 0; /* No support. */
++}
++
++const struct spu_priv1_ops spu_priv1_ps3pf_ops = {
++	.int_mask_and = int_mask_and,
++	.int_mask_or = int_mask_or,
++	.int_mask_set = int_mask_set,
++	.int_mask_get = int_mask_get,
++	.int_stat_clear = int_stat_clear,
++	.int_stat_get = int_stat_get,
++	.cpu_affinity_set = cpu_affinity_set,
++	.mfc_dar_get = mfc_dar_get,
++	.mfc_dsisr_set = mfc_dsisr_set,
++	.mfc_dsisr_get = mfc_dsisr_get,
++	.mfc_sdr_setup = mfc_sdr_setup,
++	.mfc_sr1_set = mfc_sr1_set,
++	.mfc_sr1_get = mfc_sr1_get,
++	.mfc_tclass_id_set = mfc_tclass_id_set,
++	.mfc_tclass_id_get = mfc_tclass_id_get,
++	.tlb_invalidate = tlb_invalidate,
++	.resource_allocation_groupID_set = resource_allocation_groupID_set,
++	.resource_allocation_groupID_get = resource_allocation_groupID_get,
++	.resource_allocation_enable_set = resource_allocation_enable_set,
++	.resource_allocation_enable_get = resource_allocation_enable_get,
++};
++
++void ps3pf_spu_set_platform(void)
++{
++	spu_priv1_ops = &spu_priv1_ps3pf_ops;
++	spu_management_ops = &spu_management_ps3pf_ops;
++}
