@@ -1,33 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B396D67DD9
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 00:14:58 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAADEsdq005730
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:14:54 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAADEsdK307664
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:14:54 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAADEsjF002884
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:14:54 -0500
-Subject: Re: ipr SATA support is causing problems
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 1BC6067DA2
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 01:08:50 +1100 (EST)
+Message-ID: <455487E2.9040701@ru.mvista.com>
+Date: Fri, 10 Nov 2006 17:08:34 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17748.27504.715056.565983@cargo.ozlabs.ibm.com>
-References: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>
-	<1163159326.19697.23.camel@crusty.rchland.ibm.com>
-	<17748.27504.715056.565983@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 10 Nov 2006 07:14:59 -0600
-Message-Id: <1163164499.4168.3.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: akpm@osdl.org, James Bottomley <jejb@mulgrave.il.steeleye.com>,
-	linuxppc-dev@ozlabs.org, torvalds@osdl.org, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] PowerPC: clockevents and HRT support
+References: <200611080005.08633.sshtylyov@ru.mvista.com>	<1162938997.28571.534.camel@localhost.localdomain>	<45510C58.3010707@ru.mvista.com>	<17745.14911.693171.717979@cargo.ozlabs.ibm.com>	<4551E7FF.8010209@ru.mvista.com>
+	<17748.14621.231956.561842@cargo.ozlabs.ibm.com>
+In-Reply-To: <17748.14621.231956.561842@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: tglx@linutronix.de, greg.weeks@timesys.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,19 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-11-10 at 23:07 +1100, Paul Mackerras wrote:
-> Josh Boyer writes:
-> 
-> > John Rose reported this a few days ago.  Brian responded with this:
-> > 
-> > http://marc.theaimsgroup.com/?l=linux-ide&m=116169938407596&w=2
-> 
-> Didn't John say he still saw the crash with that change?
+Hello.
 
-He did on my suggestion, which technically wasn't correct.  I haven't
-seen anything from him after Brian replied with a real patch.
+Paul Mackerras wrote:
+> Sergei Shtylyov writes:
 
-I know I helped debug a crash that looked very much like that on a P5
-box with a 2.6.19-rcX kernel and Brian's patch fixed it.
+>>    And I left people a choice: they can either have fancy accounting or HRT, 
+>>just not both at once. What's wrong with that?
 
-josh
+> _I_ want both at once. :)
+
+    I think the usual rule is: "you want it, you do it". ;-)
+
+    Seriously, we have neither time, not hardware, nor docs for the h/w this 
+accounting option applies to. And coercing the generic clcokevents/hrtimers 
+code into calling the arch hooks is serious design decision which I felt is 
+better to be left to Thomas as a maintainer...
+
+> Paul.
+
+WBR, Sergei
