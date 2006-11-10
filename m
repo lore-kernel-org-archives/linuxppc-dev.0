@@ -1,19 +1,19 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from ns5.sony.co.jp (NS5.Sony.CO.JP [137.153.0.45])
-	by ozlabs.org (Postfix) with ESMTP id 3B4DB68CBF
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:03:15 +1100 (EST)
-Received: from mail6.sony.co.jp (localhost [127.0.0.1])
-	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAAK3EKL012487
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:14 +0900 (JST)
+Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
+	by ozlabs.org (Postfix) with ESMTP id 0AE2668DD7
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:03:27 +1100 (EST)
+Received: from mail3.sony.co.jp (localhost [127.0.0.1])
+	by mail3.sony.co.jp (R8/Sony) with ESMTP id kAAK3QbC021874
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:26 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail6.sony.co.jp (R8/Sony) with SMTP id kAAK3Ecs012483
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:14 +0900 (JST)
-Message-ID: <4554DAFC.1070804@am.sony.com>
-Date: Fri, 10 Nov 2006 12:03:08 -0800
+	by mail3.sony.co.jp (R8/Sony) with SMTP id kAAK3Ql5021869
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:26 +0900 (JST)
+Message-ID: <4554DB08.6050804@am.sony.com>
+Date: Fri, 10 Nov 2006 12:03:20 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 11/16] powerpc: add ps3 platform repository support
+Subject: [PATCH 12/16] powerpc: add ps3 platform interrupt support
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,23 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds support for the PS3 Platform repository.
-
+Adds routines to interface with the ps3pf interrupt services.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- arch/powerpc/platforms/ps3pf/repository.c |  842 ++++++++++++++++++++++++++++++
- include/asm-powerpc/ps3pf.h               |  139 ++++
- 2 files changed, 981 insertions(+)
+ arch/powerpc/platforms/ps3pf/interrupt.c |  583 +++++++++++++++++++++++++++++++
+ 1 file changed, 583 insertions(+)
 
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/repository.c
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/interrupt.c
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/repository.c
-@@ -0,0 +1,842 @@
++++ cell--common--6/arch/powerpc/platforms/ps3pf/interrupt.c
+@@ -0,0 +1,583 @@
 +/*
-+ * repository.c - PS3 Platform repository routines.
++ * interrupt.c - PS3 Platform interrupt routines.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -60,973 +58,566 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/repository.c
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#undef DEBUG
++#define DEBUG 1
 +
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/irq.h>
++
++#include <asm/machdep.h>
++#include <asm/udbg.h>
 +#include <asm/ps3pf.h>
 +#include <asm/lv1call.h>
 +
-+enum ps3pf_vendor_id {
-+	ps3pf_vendor_id_none = 0,
-+	ps3pf_vendor_id_sony = 0x8000000000000000UL,
-+};
++#include "platform.h"
 +
-+enum ps3pf_lpar_id {
-+	ps3pf_lpar_id_current = 0,
-+	ps3pf_lpar_id_pme = 1,
-+};
-+
-+#define dump_field(_a, _b) _dump_field(_a, _b, __func__, __LINE__)
-+static void _dump_field(const char *hdr, u64 n, const char* func, int line)
-+{
 +#if defined(DEBUG)
-+	char s[16];
-+	const char *const in = (const char *)&n;
-+	unsigned int i;
-+
-+	for (i = 0; i < 8; i++)
-+		s[i] = (in[i] <= 126 && in[i] >= 32) ? in[i] : '.';
-+	s[i] = 0;
-+
-+	pr_debug("%s:%d: %s%016lx : %s\n", func, line, hdr, n, s);
++#undef pr_debug
++#define pr_debug(fmt...) udbg_printf(fmt)
 +#endif
-+}
 +
-+#define dump_node_name(_a, _b, _c, _d, _e) \
-+	_dump_node_name(_a, _b, _c, _d, _e, __func__, __LINE__)
-+static void _dump_node_name (unsigned int lpar_id, u64 n1, u64 n2, u64 n3,
-+	u64 n4, const char* func, int line)
++unsigned long ps3pf_legacy_virq_to_outlet(unsigned int virq)
 +{
-+	pr_debug("%s:%d: lpar: %u\n", func, line, lpar_id);
-+	_dump_field("n1: ", n1, func, line);
-+	_dump_field("n2: ", n2, func, line);
-+	_dump_field("n3: ", n3, func, line);
-+	_dump_field("n4: ", n4, func, line);
-+}
-+
-+#define dump_node(_a, _b, _c, _d, _e, _f, _g) \
-+	_dump_node(_a, _b, _c, _d, _e, _f, _g, __func__, __LINE__)
-+static void _dump_node(unsigned int lpar_id, u64 n1, u64 n2, u64 n3, u64 n4,
-+	u64 v1, u64 v2, const char* func, int line)
-+{
-+	pr_debug("%s:%d: lpar: %u\n", func, line, lpar_id);
-+	_dump_field("n1: ", n1, func, line);
-+	_dump_field("n2: ", n2, func, line);
-+	_dump_field("n3: ", n3, func, line);
-+	_dump_field("n4: ", n4, func, line);
-+	pr_debug("%s:%d: v1: %016lx\n", func, line, v1);
-+	pr_debug("%s:%d: v2: %016lx\n", func, line, v2);
++	return virq_to_hw(virq);
 +}
 +
 +/**
-+ * make_first_field - Make the first field of a repository node name.
-+ * @text: Text portion of the field.
-+ * @index: Numeric index portion of the field.  Use zero for 'don't care'.
++ * ps3pf_alloc_io_irq - Assign a virq to a system bus device.
++ * interrupt_id: The device interrupt id read from the system repository.
++ * @virq: The assigned Linux virq.
 + *
-+ * This routine sets the vendor id to zero (non-vendor specific).
-+ * Returns field value.
++ * An io irq represents a non-virtualized device interrupt.  interrupt_id
++ * coresponds to the interrupt number of the interrupt controller.
 + */
 +
-+static u64 make_first_field(const char *text, u64 index)
-+{
-+	u64 n;
-+
-+	strncpy((char *)&n, text, 8);
-+	return ps3pf_vendor_id_none + (n >> 32) + index;
-+}
-+
-+/**
-+ * make_field - Make subsequent fields of a repository node name.
-+ * @text: Text portion of the field.  Use "" for 'don't care'.
-+ * @index: Numeric index portion of the field.  Use zero for 'don't care'.
-+ *
-+ * Returns field value.
-+ */
-+
-+static u64 make_field(const char *text, u64 index)
-+{
-+	u64 n;
-+
-+	strncpy((char *)&n, text, 8);
-+	return n + index;
-+}
-+
-+/**
-+ * read_node - Read a repository node from raw fields.
-+ * @n1: First field of node name.
-+ * @n2: Second field of node name.  Use zero for 'don't care'.
-+ * @n3: Third field of node name.  Use zero for 'don't care'.
-+ * @n4: Fourth field of node name.  Use zero for 'don't care'.
-+ * @v1: First repository value (high word).
-+ * @v2: Second repository value (low word).  Optional parameter, use zero
-+ *      for 'don't care'.
-+ */
-+
-+static int read_node(unsigned int lpar_id, u64 n1, u64 n2, u64 n3, u64 n4,
-+	u64 *_v1, u64 *_v2)
++int ps3pf_alloc_io_irq(unsigned int interrupt_id, unsigned int *virq)
 +{
 +	int result;
-+	u64 v1;
-+	u64 v2;
++	unsigned long outlet;
 +
-+	if (lpar_id == ps3pf_lpar_id_current) {
-+		u64 id;
-+		lv1_get_logical_partition_id(&id);
-+		lpar_id = id;
-+	}
-+
-+	result = lv1_get_repository_node_value(lpar_id, n1, n2, n3, n4, &v1,
-+		&v2);
++	result = lv1_construct_io_irq_outlet(interrupt_id, &outlet);
 +
 +	if (result) {
-+		pr_debug("%s:%d: lv1_get_repository_node_value failed: %s\n",
++		pr_debug("%s:%d: lv1_construct_io_irq_outlet failed: %s\n",
 +			__func__, __LINE__, ps3pf_result(result));
-+		dump_node_name(lpar_id, n1, n2, n3, n4);
 +		return result;
 +	}
 +
-+	dump_node(lpar_id, n1, n2, n3, n4, v1, v2);
++	*virq = irq_create_mapping(NULL, outlet);
 +
-+	if (_v1)
-+		*_v1 = v1;
-+	if (_v2)
-+		*_v2 = v2;
++	pr_debug("%s:%d: interrupt_id %u => outlet %lu, virq %u\n",
++		__func__, __LINE__, interrupt_id, outlet, *virq);
 +
-+	if (v1 && !_v1)
-+		pr_debug("%s:%d: warning: discarding non-zero v1: %016lx\n",
-+			__func__, __LINE__, v1);
-+	if (v2 && !_v2)
-+		pr_debug("%s:%d: warning: discarding non-zero v2: %016lx\n",
-+			__func__, __LINE__, v2);
-+
-+	return result;
++	return 0;
 +}
 +
-+int ps3pf_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
-+	u64 *value)
-+{
-+	return read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field(bus_str, 0),
-+		0, 0,
-+		value, 0);
-+}
-+
-+int ps3pf_repository_read_bus_id(unsigned int bus_index, unsigned int *bus_id)
++int ps3pf_free_io_irq(unsigned int virq)
 +{
 +	int result;
-+	u64 v1;
-+	u64 v2; /* unused */
 +
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("id", 0),
-+		0, 0,
-+		&v1, &v2);
-+	*bus_id = v1;
++	result = lv1_destruct_io_irq_outlet(virq_to_hw(virq));
++
++	if (!result)
++		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++
++	irq_dispose_mapping(virq);
++
 +	return result;
 +}
 +
-+int ps3pf_repository_read_bus_type(unsigned int bus_index,
-+	enum ps3pf_bus_type *bus_type)
++/**
++ * ps3pf_alloc_event_irq - Allocate a virq for use with a system event.
++ * @virq: The assigned Linux virq.
++ *
++ * The virq can be used with lv1_connect_interrupt_event_receive_port() to
++ * arrange to receive events, or with ps3pf_send_event_locally() to signal
++ * events.
++ */
++
++int ps3pf_alloc_event_irq(unsigned int *virq)
 +{
 +	int result;
-+	u64 v1;
++	unsigned long outlet;
 +
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("type", 0),
-+		0, 0,
-+		&v1, 0);
-+	*bus_type = v1;
-+	return result;
-+}
++	result = lv1_construct_event_receive_port(&outlet);
 +
-+int ps3pf_repository_read_bus_num_dev(unsigned int bus_index,
-+	unsigned int *num_dev)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("num_dev", 0),
-+		0, 0,
-+		&v1, 0);
-+	*num_dev = v1;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_dev_str(unsigned int bus_index,
-+	unsigned int dev_index, const char *dev_str, u64 *value)
-+{
-+	return read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("dev", dev_index),
-+		make_field(dev_str, 0),
-+		0,
-+		value, 0);
-+}
-+
-+int ps3pf_repository_read_dev_id(unsigned int bus_index, unsigned int dev_index,
-+	unsigned int *dev_id)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("dev", dev_index),
-+		make_field("id", 0),
-+		0,
-+		&v1, 0);
-+	*dev_id = v1;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_dev_type(unsigned int bus_index,
-+	unsigned int dev_index, enum ps3pf_dev_type *dev_type)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("dev", dev_index),
-+		make_field("type", 0),
-+		0,
-+		&v1, 0);
-+	*dev_type = v1;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_dev_intr(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int intr_index,
-+	unsigned int *intr_type, unsigned int* interrupt_id)
-+{
-+	int result;
-+	u64 v1;
-+	u64 v2;
-+
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("dev", dev_index),
-+		make_field("intr", intr_index),
-+		0,
-+		&v1, &v2);
-+	*intr_type = v1;
-+	*interrupt_id = v2;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_dev_reg_type(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int reg_index, unsigned int *reg_type)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("dev", dev_index),
-+		make_field("reg", reg_index),
-+		make_field("type", 0),
-+		&v1, 0);
-+	*reg_type = v1;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_dev_reg_addr(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int reg_index, u64 *bus_addr, u64 *len)
-+{
-+	return read_node(ps3pf_lpar_id_pme,
-+		make_first_field("bus", bus_index),
-+		make_field("dev", dev_index),
-+		make_field("reg", reg_index),
-+		make_field("data", 0),
-+		bus_addr, len);
-+}
-+
-+int ps3pf_repository_read_dev_reg(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int reg_index, unsigned int *reg_type,
-+	u64 *bus_addr, u64 *len)
-+{
-+	int result = ps3pf_repository_read_dev_reg_type(bus_index, dev_index,
-+		reg_index, reg_type);
-+	return result ? result
-+		: ps3pf_repository_read_dev_reg_addr(bus_index, dev_index,
-+		reg_index, bus_addr, len);
-+}
-+
-+#if defined(DEBUG)
-+int ps3pf_repository_dump_resource_info(unsigned int bus_index,
-+	unsigned int dev_index)
-+{
-+	int result = 0;
-+	unsigned int res_index;
-+
-+	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
-+		bus_index, dev_index);
-+
-+	for (res_index = 0; res_index < 10; res_index++) {
-+		enum ps3pf_interrupt_type intr_type;
-+		unsigned int interrupt_id;
-+
-+		result = ps3pf_repository_read_dev_intr(bus_index, dev_index,
-+			res_index, &intr_type, &interrupt_id);
-+
-+		if (result) {
-+			if (result !=  LV1_NO_ENTRY)
-+				pr_debug("%s:%d ps3pf_repository_read_dev_intr"
-+					" (%u:%u) failed\n", __func__, __LINE__,
-+					bus_index, dev_index);
-+			break;
-+		}
-+
-+		pr_debug("%s:%d (%u:%u) intr_type %u, interrupt_id %u\n",
-+			__func__, __LINE__, bus_index, dev_index, intr_type,
-+			interrupt_id);
++	if (result) {
++		pr_debug("%s:%d: lv1_construct_event_receive_port failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		*virq = NO_IRQ;
++		return result;
 +	}
 +
-+	for (res_index = 0; res_index < 10; res_index++) {
-+		enum ps3pf_region_type reg_type;
-+		u64 bus_addr;
-+		u64 len;
++	*virq = irq_create_mapping(NULL, outlet);
 +
-+		result = ps3pf_repository_read_dev_reg(bus_index, dev_index,
-+			res_index, &reg_type, &bus_addr, &len);
++	pr_debug("%s:%d: outlet %lu, virq %u\n", __func__, __LINE__, outlet,
++		*virq);
 +
-+		if (result) {
-+			if (result !=  LV1_NO_ENTRY)
-+				pr_debug("%s:%d ps3pf_repository_read_dev_reg"
-+					" (%u:%u) failed\n", __func__, __LINE__,
-+					bus_index, dev_index);
-+			break;
-+		}
-+
-+		pr_debug("%s:%d (%u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
-+			__func__, __LINE__, bus_index, dev_index, reg_type,
-+			bus_addr, len);
-+	}
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
++	return 0;
 +}
 +
-+static int dump_device_info(unsigned int bus_index, unsigned int num_dev)
++int ps3pf_free_event_irq(unsigned int virq)
 +{
-+	int result = 0;
-+	unsigned int dev_index;
-+
-+	pr_debug(" -> %s:%d: bus_%u\n", __func__, __LINE__, bus_index);
-+
-+	for (dev_index = 0; dev_index < num_dev; dev_index++) {
-+		enum ps3pf_dev_type dev_type;
-+		unsigned int dev_id;
-+
-+		result = ps3pf_repository_read_dev_type(bus_index, dev_index,
-+			&dev_type);
-+
-+		if (result) {
-+			pr_debug("%s:%d ps3pf_repository_read_dev_type"
-+				" (%u:%u) failed\n", __func__, __LINE__,
-+				bus_index, dev_index);
-+			break;
-+		}
-+
-+		result = ps3pf_repository_read_dev_id(bus_index, dev_index,
-+			&dev_id);
-+
-+		if (result) {
-+			pr_debug("%s:%d ps3pf_repository_read_dev_id"
-+				" (%u:%u) failed\n", __func__, __LINE__,
-+				bus_index, dev_index);
-+			continue;
-+		}
-+
-+		pr_debug("%s:%d  (%u:%u): dev_type %u, dev_id %u\n", __func__,
-+			__LINE__, bus_index, dev_index, dev_type, dev_id);
-+
-+		ps3pf_repository_dump_resource_info(bus_index, dev_index);
-+	}
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+int ps3pf_repository_dump_bus_info(void)
-+{
-+	int result = 0;
-+	unsigned int bus_index;
++	int result;
 +
 +	pr_debug(" -> %s:%d\n", __func__, __LINE__);
 +
-+	for (bus_index = 0; bus_index < 10; bus_index++) {
-+		enum ps3pf_bus_type bus_type;
-+		unsigned int bus_id;
-+		unsigned int num_dev;
++	result = lv1_destruct_event_receive_port(virq_to_hw(virq));
 +
-+		result = ps3pf_repository_read_bus_type(bus_index, &bus_type);
++	if (result)
++		pr_debug("%s:%d: lv1_destruct_event_receive_port failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
 +
-+		if (result) {
-+			pr_debug("%s:%d read_bus_type(%u) failed\n",
-+				__func__, __LINE__, bus_index);
-+			break;
-+		}
-+
-+		result = ps3pf_repository_read_bus_id(bus_index, &bus_id);
-+
-+		if (result) {
-+			pr_debug("%s:%d read_bus_id(%u) failed\n",
-+				__func__, __LINE__, bus_index);
-+			continue;
-+		}
-+
-+		if (bus_index != bus_id)
-+			pr_debug("%s:%d bus_index != bus_id\n",
-+				__func__, __LINE__);
-+
-+		result = ps3pf_repository_read_bus_num_dev(bus_index, &num_dev);
-+
-+		if (result) {
-+			pr_debug("%s:%d read_bus_num_dev(%u) failed\n",
-+				__func__, __LINE__, bus_index);
-+			continue;
-+		}
-+
-+		pr_debug("%s:%d bus_%u: bus_type %u, bus_id %u, num_dev %u\n",
-+			__func__, __LINE__, bus_index, bus_type, bus_id,
-+			num_dev);
-+
-+		dump_device_info(bus_index, num_dev);
-+	}
++	irq_dispose_mapping(virq);
 +
 +	pr_debug(" <- %s:%d\n", __func__, __LINE__);
 +	return result;
 +}
++
++int ps3pf_send_event_locally(unsigned int virq)
++{
++	return lv1_send_event_locally(virq_to_hw(virq));
++}
++
++/**
++ * ps3pf_connect_event_irq - Assign a virq to a system bus device.
++ * @did: The HV device identifier read from the system repository.
++ * @interrupt_id: The device interrupt id read from the system repository.
++ * @virq: The assigned Linux virq.
++ *
++ * An event irq represents a virtual device interrupt.  The interrupt_id
++ * coresponds to the software interrupt number.
++ */
++
++int ps3pf_connect_event_irq(const struct ps3pf_device_id *did,
++	unsigned int interrupt_id, unsigned int *virq)
++{
++	int result;
++
++	result = ps3pf_alloc_event_irq(virq);
++
++	if (result)
++		return result;
++
++	result = lv1_connect_interrupt_event_receive_port(did->bus_id,
++		did->dev_id, virq_to_hw(*virq), interrupt_id);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_connect_interrupt_event_receive_port"
++			" failed: %s\n", __func__, __LINE__,
++			ps3pf_result(result));
++		ps3pf_free_event_irq(*virq);
++		*virq = NO_IRQ;
++		return result;
++	}
++
++	pr_debug("%s:%d: interrupt_id %u, virq %u\n", __func__, __LINE__,
++		interrupt_id, *virq);
++
++	return 0;
++}
++
++int ps3pf_disconnect_event_irq(const struct ps3pf_device_id *did,
++	unsigned int interrupt_id, unsigned int virq)
++{
++	int result;
++
++	pr_debug(" -> %s:%d: interrupt_id %u, virq %u\n", __func__, __LINE__,
++		interrupt_id, virq);
++
++	result = lv1_disconnect_interrupt_event_receive_port(did->bus_id,
++		did->dev_id, virq_to_hw(virq), interrupt_id);
++
++	if (result)
++		pr_debug("%s:%d: lv1_disconnect_interrupt_event_receive_port"
++			" failed: %s\n", __func__, __LINE__,
++			ps3pf_result(result));
++
++	ps3pf_free_event_irq(virq);
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++/**
++ * ps3pf_alloc_vuart_irq - Configure the system virtual uart virq.
++ * @virt_addr_bmp: The caller supplied virtual uart interrupt bitmap.
++ * @virq: The assigned Linux virq.
++ *
++ * The system supports only a single virtual uart, so multiple calls without
++ * freeing the interrupt will return a wrong state error.
++ */
++
++int ps3pf_alloc_vuart_irq(void* virt_addr_bmp, unsigned int *virq)
++{
++	int result;
++	unsigned long outlet;
++	unsigned long lpar_addr;
++
++	BUG_ON(!is_kernel_addr((unsigned long)virt_addr_bmp));
++
++	lpar_addr = ps3pf_mm_phys_to_lpar(__pa(virt_addr_bmp));
++
++	result = lv1_configure_virtual_uart_irq(lpar_addr, &outlet);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_configure_virtual_uart_irq failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		return result;
++	}
++
++	*virq = irq_create_mapping(NULL, outlet);
++
++	pr_debug("%s:%d: outlet %lu, virq %u\n", __func__, __LINE__,
++		outlet, *virq);
++
++	return 0;
++}
++
++int ps3pf_free_vuart_irq(unsigned int virq)
++{
++	int result;
++
++	result = lv1_deconfigure_virtual_uart_irq();
++
++	if (result) {
++		pr_debug("%s:%d: lv1_configure_virtual_uart_irq failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		return result;
++	}
++
++	irq_dispose_mapping(virq);
++
++	return result;
++}
++
++/**
++ * ps3pf_alloc_spe_irq - Configure an spe virq.
++ * @spe_id: The spe_id returned from lv1_construct_logical_spe().
++ * @class: The spe interrupt class {0,1,2}.
++ * @virq: The assigned Linux virq.
++ *
++ */
++
++int ps3pf_alloc_spe_irq(unsigned long spe_id, unsigned int class,
++	unsigned int *virq)
++{
++	int result;
++	unsigned long outlet;
++
++	BUG_ON(class > 2);
++
++	result = lv1_get_spe_irq_outlet(spe_id, class, &outlet);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_get_spe_irq_outlet failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		return result;
++	}
++
++	*virq = irq_create_mapping(NULL, outlet);
++
++	pr_debug("%s:%d: spe_id %lu, class %u, outlet %lu, virq %u\n",
++		__func__, __LINE__, spe_id, class, outlet, *virq);
++
++	return 0;
++}
++
++int ps3pf_free_spe_irq(unsigned int virq)
++{
++	irq_dispose_mapping(virq);
++	return 0;
++}
++
++#define PS3PF_INVALID_OUTLET ((irq_hw_number_t)-1)
++#define PS3PF_PLUG_MAX 63
++
++/**
++ * struct bmp - a per cpu irq status and mask bitmap structure
++ * @status: 256 bit status bitmap indexed by plug
++ * @unused_1:
++ * @mask: 256 bit mask bitmap indexed by plug
++ * @unused_2:
++ * @lock:
++ * @ipi_debug_brk_mask:
++ *
++ * The HV mantains per SMT thread mappings of HV outlet to HV plug on
++ * behalf of the guest.  These mappings are implemented as 256 bit guest
++ * supplied bitmaps indexed by plug number.  The address of the bitmaps are
++ * registered with the HV through lv1_configure_irq_state_bitmap().
++ *
++ * The HV supports 256 plugs per thread, assigned as {0..255}, for a total
++ * of 512 plugs supported on a processor.  To simplify the logic this
++ * implementation equates HV plug value to linux virq value, constrains each
++ * interrupt to have a system wide unique plug number, and limits the range
++ * of the plug values to map into the first dword of the bitmaps.  This
++ * gives a usable range of plug values of  {NUM_ISA_INTERRUPTS..63}.  Note
++ * that there is no constraint on how many in this set an individual thread
++ * can aquire.
++ */
++
++struct bmp {
++	struct {
++		unsigned long status;
++		unsigned long unused_1[3];
++		unsigned long mask;
++		unsigned long unused_2[3];
++	} __attribute__ ((packed));
++	spinlock_t lock;
++	unsigned long ipi_debug_brk_mask;
++};
++
++/**
++ * struct private - a per cpu data structure
++ * @node: HV node id
++ * @cpu: HV thread id
++ * @bmp: an HV bmp structure
++ */
++
++struct private {
++	unsigned long node;
++	unsigned int cpu;
++	struct bmp bmp;
++};
++
++#if defined(DEBUG)
++static void _dump_64_bmp(const char *header, const unsigned long *p, unsigned cpu,
++	const char* func, int line)
++{
++	pr_debug("%s:%d: %s %u {%04lx_%04lx_%04lx_%04lx}\n",
++		func, line, header, cpu,
++		*p >> 48, (*p >> 32) & 0xffff, (*p >> 16) & 0xffff,
++		*p & 0xffff);
++}
++
++static void _dump_256_bmp(const char *header, const unsigned long *p, unsigned cpu,
++	const char* func, int line)
++{
++	pr_debug("%s:%d: %s %u {%016lx:%016lx:%016lx:%016lx}\n",
++		func, line, header, cpu, p[0], p[1], p[2], p[3]);
++}
++
++#define dump_bmp(_x) _dump_bmp(_x, __func__, __LINE__)
++static void _dump_bmp(struct private* pd, const char* func, int line)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&pd->bmp.lock, flags);
++	_dump_64_bmp("stat", &pd->bmp.status, pd->cpu, func, line);
++	_dump_64_bmp("mask", &pd->bmp.mask, pd->cpu, func, line);
++	spin_unlock_irqrestore(&pd->bmp.lock, flags);
++}
++
++#define dump_mask(_x) _dump_mask(_x, __func__, __LINE__)
++static void _dump_mask(struct private* pd, const char* func, int line)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&pd->bmp.lock, flags);
++	_dump_64_bmp("mask", &pd->bmp.mask, pd->cpu, func, line);
++	spin_unlock_irqrestore(&pd->bmp.lock, flags);
++}
++#else
++static void dump_bmp(struct private* pd) {};
++static void dump_mask(struct private* pd) {};
 +#endif /* defined(DEBUG) */
 +
-+static int find_device(unsigned int bus_index, unsigned int num_dev,
-+	unsigned int start_dev_index, enum ps3pf_dev_type dev_type,
-+	struct ps3pf_repository_device *dev)
++static void chip_mask(unsigned int virq)
 +{
-+	int result = 0;
-+	unsigned int dev_index;
++	unsigned long flags;
++	struct private *pd = get_irq_chip_data(virq);
 +
-+	pr_debug("%s:%d: find dev_type %u\n", __func__, __LINE__, dev_type);
++	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
 +
-+	dev->dev_index = UINT_MAX;
++	BUG_ON(virq < NUM_ISA_INTERRUPTS);
++	BUG_ON(virq > PS3PF_PLUG_MAX);
 +
-+	for (dev_index = start_dev_index; dev_index < num_dev; dev_index++) {
-+		enum ps3pf_dev_type x;
++	spin_lock_irqsave(&pd->bmp.lock, flags);
++	pd->bmp.mask &= ~(0x8000000000000000UL >> virq);
++	spin_unlock_irqrestore(&pd->bmp.lock, flags);
 +
-+		result = ps3pf_repository_read_dev_type(bus_index, dev_index,
-+			&x);
++	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
++}
 +
-+		if (result) {
-+			pr_debug("%s:%d read_dev_type failed\n",
-+				__func__, __LINE__);
-+			return result;
-+		}
++static void chip_unmask(unsigned int virq)
++{
++	unsigned long flags;
++	struct private *pd = get_irq_chip_data(virq);
 +
-+		if (x == dev_type)
-+			break;
-+	}
++	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
 +
-+	BUG_ON(dev_index == num_dev);
++	BUG_ON(virq < NUM_ISA_INTERRUPTS);
++	BUG_ON(virq > PS3PF_PLUG_MAX);
 +
-+	pr_debug("%s:%d: found dev_type %u at dev_index %u\n",
-+		__func__, __LINE__, dev_type, dev_index);
++	spin_lock_irqsave(&pd->bmp.lock, flags);
++	pd->bmp.mask |= (0x8000000000000000UL >> virq);
++	spin_unlock_irqrestore(&pd->bmp.lock, flags);
 +
-+	result = ps3pf_repository_read_dev_id(bus_index, dev_index,
-+		&dev->did.dev_id);
++	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
++}
++
++static void chip_eoi(unsigned int virq)
++{
++	lv1_end_of_interrupt(virq);
++}
++
++static struct irq_chip irq_chip = {
++	.name = "ps3pf",
++	.mask = chip_mask,
++	.unmask = chip_unmask,
++	.eoi = chip_eoi,
++};
++
++static void host_unmap(struct irq_host *h, unsigned int virq)
++{
++	int result;
++
++	pr_debug("%s:%d: virq %d\n", __func__, __LINE__, virq);
++
++	lv1_disconnect_irq_plug(virq);
++
++	result = set_irq_chip_data(virq, NULL);
++	BUG_ON(result);
++}
++
++static DEFINE_PER_CPU(struct private, private);
++
++static int host_map(struct irq_host *h, unsigned int virq,
++	irq_hw_number_t hwirq)
++{
++	int result;
++	unsigned int cpu;
++
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++	pr_debug("%s:%d: hwirq %lu => virq %u\n", __func__, __LINE__, hwirq,
++		virq);
++
++	/* bind this virq to a cpu */
++
++	preempt_disable();
++	cpu = smp_processor_id();
++	result = lv1_connect_irq_plug(virq, hwirq);
++	preempt_enable();
 +
 +	if (result) {
-+		pr_debug("%s:%d read_dev_id failed\n",
-+			__func__, __LINE__);
-+		return result;
++		pr_info("%s:%d: lv1_connect_irq_plug failed:"
++			" %s\n", __func__, __LINE__, ps3pf_result(result));
++		return -EPERM;
 +	}
 +
-+	dev->dev_index = dev_index;
++	result = set_irq_chip_data(virq, &per_cpu(private, cpu));
++	BUG_ON(result);
 +
-+	pr_debug("%s:%d found: dev_id %u\n", __func__, __LINE__,
-+		dev->did.dev_id);
++	set_irq_chip_and_handler(virq, &irq_chip, handle_fasteoi_irq);
 +
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
 +	return result;
 +}
 +
-+int ps3pf_repository_find_device (enum ps3pf_bus_type bus_type,
-+	enum ps3pf_dev_type dev_type,
-+	const struct ps3pf_repository_device *start_dev,
-+	struct ps3pf_repository_device *dev)
++static struct irq_host_ops host_ops = {
++	.map = host_map,
++	.unmap = host_unmap,
++};
++
++void __init ps3pf_register_ipi_debug_brk(unsigned int cpu, unsigned int virq)
 +{
-+	int result = 0;
-+	unsigned int bus_index;
-+	unsigned int num_dev;
++	struct private *pd = &per_cpu(private, cpu);
 +
-+	pr_debug("%s:%d: find bus_type %u, dev_type %u\n", __func__, __LINE__,
-+		bus_type, dev_type);
++	pd->bmp.ipi_debug_brk_mask = 0x8000000000000000UL >> virq;
 +
-+	dev->bus_index = UINT_MAX;
-+
-+	for (bus_index = start_dev ? start_dev->bus_index : 0; bus_index < 10;
-+		bus_index++) {
-+		enum ps3pf_bus_type x;
-+
-+		result = ps3pf_repository_read_bus_type(bus_index, &x);
-+
-+		if (result) {
-+			pr_debug("%s:%d read_bus_type failed\n",
-+				__func__, __LINE__);
-+			return result;
-+		}
-+		if (x == bus_type)
-+			break;
-+	}
-+
-+	BUG_ON(bus_index == 10);
-+
-+	pr_debug("%s:%d: found bus_type %u at bus_index %u\n",
-+		__func__, __LINE__, bus_type, bus_index);
-+
-+	result = ps3pf_repository_read_bus_num_dev(bus_index, &num_dev);
-+
-+	if (result) {
-+		pr_debug("%s:%d read_bus_num_dev failed\n",
-+			__func__, __LINE__);
-+		return result;
-+	}
-+
-+	result = find_device(bus_index, num_dev, start_dev
-+		? start_dev->dev_index + 1 : 0, dev_type, dev);
-+
-+	if (result) {
-+		pr_debug("%s:%d get_did failed\n", __func__, __LINE__);
-+		return result;
-+	}
-+
-+	result = ps3pf_repository_read_bus_id(bus_index, &dev->did.bus_id);
-+
-+	if (result) {
-+		pr_debug("%s:%d read_bus_id failed\n",
-+			__func__, __LINE__);
-+		return result;
-+	}
-+
-+	dev->bus_index = bus_index;
-+
-+	pr_debug("%s:%d found: bus_id %u, dev_id %u\n",
-+		__func__, __LINE__, dev->did.bus_id, dev->did.dev_id);
-+
-+	return result;
++	pr_debug("%s:%d: cpu %u, virq %u, mask %lxh\n", __func__, __LINE__,
++		cpu, virq, pd->bmp.ipi_debug_brk_mask);
 +}
 +
-+int ps3pf_repository_find_interrupt(const struct ps3pf_repository_device *dev,
-+	enum ps3pf_interrupt_type intr_type, unsigned int *interrupt_id)
++static int bmp_get_and_clear_status_bit(struct bmp *m)
 +{
-+	int result = 0;
-+	unsigned int res_index;
++	unsigned long flags;
++	unsigned int bit;
++	unsigned long x;
 +
-+	pr_debug("%s:%d: find intr_type %u\n", __func__, __LINE__, intr_type);
++	spin_lock_irqsave(&m->lock, flags);
 +
-+	*interrupt_id = UINT_MAX;
++	/* check for ipi break first to stop this cpu ASAP */
 +
-+	for (res_index = 0; res_index < 10; res_index++) {
-+		enum ps3pf_interrupt_type t;
-+		unsigned int id;
++	if (m->status & m->ipi_debug_brk_mask) {
++		m->status &= ~m->ipi_debug_brk_mask;
++		spin_unlock_irqrestore(&m->lock, flags);
++		return __ilog2(m->ipi_debug_brk_mask);
++	}
 +
-+		result = ps3pf_repository_read_dev_intr(dev->bus_index,
-+			dev->dev_index, res_index, &t, &id);
++	x = (m->status & m->mask);
 +
-+		if (result) {
-+			pr_debug("%s:%d read_dev_intr failed\n",
-+				__func__, __LINE__);
-+			return result;
++	for (bit = NUM_ISA_INTERRUPTS, x <<= bit; x; bit++, x <<= 1)
++		if (x & 0x8000000000000000UL) {
++			m->status &= ~(0x8000000000000000UL >> bit);
++			spin_unlock_irqrestore(&m->lock, flags);
++			return bit;
 +		}
 +
-+		if (t == intr_type) {
-+			*interrupt_id = id;
-+			break;
-+		}
++	spin_unlock_irqrestore(&m->lock, flags);
++
++	pr_debug("%s:%d: not found\n", __func__, __LINE__);
++	return -1;
++}
++
++unsigned int ps3pf_get_irq(void)
++{
++	int plug;
++
++	struct private *pd = &__get_cpu_var(private);
++
++	plug = bmp_get_and_clear_status_bit(&pd->bmp);
++
++	if (plug < 1) {
++		pr_debug("%s:%d: no plug found: cpu %u\n", __func__, __LINE__,
++			pd->cpu);
++		dump_bmp(&per_cpu(private, 0));
++		dump_bmp(&per_cpu(private, 1));
++		return NO_IRQ;
 +	}
 +
-+	BUG_ON(res_index == 10);
-+
-+	pr_debug("%s:%d: found intr_type %u at res_index %u\n",
-+		__func__, __LINE__, intr_type, res_index);
-+
-+	return result;
++#if defined(DEBUG)
++	if (plug < NUM_ISA_INTERRUPTS || plug > PS3PF_PLUG_MAX) {
++		pr_debug("%s:%d: bad plug number: %u \n", __func__, __LINE__,
++			plug);
++		dump_bmp(&per_cpu(private, 0));
++		dump_bmp(&per_cpu(private, 1));
++		BUG();
++	}
++#endif
++	return plug;
 +}
 +
-+int ps3pf_repository_find_region(const struct ps3pf_repository_device *dev,
-+	enum ps3pf_region_type reg_type, u64 *bus_addr, u64 *len)
++void __init ps3pf_init_IRQ(void)
 +{
-+	int result = 0;
-+	unsigned int res_index;
++	int result;
++	unsigned long node;
++	unsigned cpu;
++	struct irq_host *host;
 +
-+	pr_debug("%s:%d: find reg_type %u\n", __func__, __LINE__, reg_type);
++	lv1_get_logical_ppe_id(&node);
 +
-+	*bus_addr = *len = 0;
++	host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0, &host_ops,
++		PS3PF_INVALID_OUTLET);
++	irq_set_default_host(host);
++	irq_set_virq_count(PS3PF_PLUG_MAX + 1);
 +
-+	for (res_index = 0; res_index < 10; res_index++) {
-+		enum ps3pf_region_type t;
-+		u64 a;
-+		u64 l;
++	for_each_possible_cpu(cpu) {
++		struct private *pd = &per_cpu(private, cpu);
 +
-+		result = ps3pf_repository_read_dev_reg(dev->bus_index,
-+			dev->dev_index, res_index, &t, &a, &l);
++		pd->node = node;
++		pd->cpu = cpu;
++		spin_lock_init(&pd->bmp.lock);
 +
-+		if (result) {
-+			pr_debug("%s:%d read_dev_reg failed\n",
-+				__func__, __LINE__);
-+			return result;
-+		}
++		result = lv1_configure_irq_state_bitmap(node, cpu,
++			ps3pf_mm_phys_to_lpar(__pa(&pd->bmp.status)));
 +
-+		if (t == reg_type) {
-+			*bus_addr = a;
-+			*len = l;
-+			break;
-+		}
++		if (result)
++			pr_debug("%s:%d: lv1_configure_irq_state_bitmap failed:"
++				" %s\n", __func__, __LINE__,
++				ps3pf_result(result));
 +	}
 +
-+	BUG_ON(res_index == 10);
-+
-+	pr_debug("%s:%d: found reg_type %u at res_index %u\n",
-+		__func__, __LINE__, reg_type, res_index);
-+
-+	return result;
++	ppc_md.get_irq = ps3pf_get_irq;
 +}
-+
-+int ps3pf_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size)
-+{
-+	return read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("pu", 0),
-+		ppe_id,
-+		make_field("rm_size", 0),
-+		rm_size, 0);
-+}
-+
-+int ps3pf_repository_read_region_total(u64 *region_total)
-+{
-+	return read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("rgntotal", 0),
-+		0, 0,
-+		region_total, 0);
-+}
-+
-+/**
-+ * ps3pf_repository_read_mm_info - Read mm info for single pu system.
-+ * @rm_base: Real mode memory base address.
-+ * @rm_size: Real mode memory size.
-+ * @region_total: Maximum memory region size.
-+ */
-+
-+int ps3pf_repository_read_mm_info(u64 *rm_base, u64 *rm_size, u64 *region_total)
-+{
-+	int result;
-+	u64 ppe_id;
-+
-+	lv1_get_logical_ppe_id(&ppe_id);
-+	*rm_base = 0;
-+	result = ps3pf_repository_read_rm_size(ppe_id, rm_size);
-+	return result ? result
-+		: ps3pf_repository_read_region_total(region_total);
-+}
-+
-+/**
-+ * ps3pf_repository_read_num_spu_reserved - Number of physical spus reserved.
-+ * @num_spu: Number of physical spus.
-+ */
-+
-+int ps3pf_repository_read_num_spu_reserved(unsigned int *num_spu_reserved)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("spun", 0),
-+		0, 0,
-+		&v1, 0);
-+	*num_spu_reserved = v1;
-+	return result;
-+}
-+
-+/**
-+ * ps3pf_repository_read_num_spu_resource_id - Number of spu resource reservations.
-+ * @num_resource_id: Number of spu resource ids.
-+ */
-+
-+int ps3pf_repository_read_num_spu_resource_id(unsigned int *num_resource_id)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("spursvn", 0),
-+		0, 0,
-+		&v1, 0);
-+	*num_resource_id = v1;
-+	return result;
-+}
-+
-+/**
-+ * ps3pf_repository_read_spu_resource_id - spu resource reservation id value.
-+ * @res_index: Resource reservation index.
-+ * @resource_type: Resource reservation type.
-+ * @resource_id: Resource reservation id.
-+ */
-+
-+int ps3pf_repository_read_spu_resource_id(unsigned int res_index,
-+	enum ps3pf_spu_resource_type* resource_type, unsigned int *resource_id)
-+{
-+	int result;
-+	u64 v1;
-+	u64 v2;
-+
-+	result = read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("spursv", 0),
-+		res_index,
-+		0,
-+		&v1, &v2);
-+	*resource_type = v1;
-+	*resource_id = v2;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_boot_dat_address(u64 *address)
-+{
-+	return read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("boot_dat", 0),
-+		make_field("address", 0),
-+		0,
-+		address, 0);
-+}
-+
-+int ps3pf_repository_read_boot_dat_size(unsigned int *size)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_current,
-+		make_first_field("bi", 0),
-+		make_field("boot_dat", 0),
-+		make_field("size", 0),
-+		0,
-+		&v1, 0);
-+	*size = v1;
-+	return result;
-+}
-+
-+/**
-+  * ps3pf_repository_read_boot_dat_info - Get address and size of cell_ext_os_area.
-+  * address: lpar address of cell_ext_os_area
-+  * @size: size of cell_ext_os_area
-+  */
-+
-+int ps3pf_repository_read_boot_dat_info(u64 *lpar_addr, unsigned int *size)
-+{
-+	int result;
-+
-+	*size = 0;
-+	result = ps3pf_repository_read_boot_dat_address(lpar_addr);
-+	return result ? result
-+		: ps3pf_repository_read_boot_dat_size(size);
-+}
-+
-+int ps3pf_repository_read_num_be(unsigned int *num_be)
-+{
-+	int result;
-+	u64 v1;
-+
-+	result = read_node(ps3pf_lpar_id_pme,
-+		make_first_field("ben", 0),
-+		0,
-+		0,
-+		0,
-+		&v1, 0);
-+	*num_be = v1;
-+	return result;
-+}
-+
-+int ps3pf_repository_read_be_node_id(unsigned int be_index, u64 *node_id)
-+{
-+	return read_node(ps3pf_lpar_id_pme,
-+		make_first_field("be", be_index),
-+		0,
-+		0,
-+		0,
-+		node_id, 0);
-+}
-+
-+int ps3pf_repository_read_tb_freq(u64 node_id, u64 *tb_freq)
-+{
-+	return read_node(ps3pf_lpar_id_pme,
-+		make_first_field("be", 0),
-+		node_id,
-+		make_field("clock", 0),
-+		0,
-+		tb_freq, 0);
-+}
-+
-+int ps3pf_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq)
-+{
-+	int result;
-+	u64 node_id;
-+
-+	*tb_freq = 0;
-+	result = ps3pf_repository_read_be_node_id(0, &node_id);
-+	return result ? result
-+		: ps3pf_repository_read_tb_freq(node_id, tb_freq);
-+}
-Index: cell--common--6/include/asm-powerpc/ps3pf.h
-===================================================================
---- cell--common--6.orig/include/asm-powerpc/ps3pf.h
-+++ cell--common--6/include/asm-powerpc/ps3pf.h
-@@ -237,4 +237,143 @@
- #endif
- }
- 
-+/* repository bus info */
-+
-+enum ps3pf_bus_type {
-+	ps3pf_bus_type_sb = 4,
-+	ps3pf_bus_type_storage = 5,
-+};
-+
-+enum ps3pf_dev_type {
-+	ps3pf_dev_type_sb_gelic = 3,
-+	ps3pf_dev_type_sb_usb = 4,
-+	ps3pf_dev_type_sb_gpio = 6,
-+};
-+
-+int ps3pf_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
-+	u64 *value);
-+int ps3pf_repository_read_bus_id(unsigned int bus_index, unsigned int *bus_id);
-+int ps3pf_repository_read_bus_type(unsigned int bus_index,
-+	enum ps3pf_bus_type *bus_type);
-+int ps3pf_repository_read_bus_num_dev(unsigned int bus_index,
-+	unsigned int *num_dev);
-+
-+/* repository bus device info */
-+
-+enum ps3pf_interrupt_type {
-+	ps3pf_interrupt_type_event_port = 2,
-+	ps3pf_interrupt_type_sb_ohci = 3,
-+	ps3pf_interrupt_type_sb_ehci = 4,
-+	ps3pf_interrupt_type_other = 5,
-+};
-+
-+enum ps3pf_region_type {
-+	ps3pf_region_type_sb_ohci = 3,
-+	ps3pf_region_type_sb_ehci = 4,
-+	ps3pf_region_type_sb_gpio = 5,
-+};
-+
-+int ps3pf_repository_read_dev_str(unsigned int bus_index,
-+	unsigned int dev_index, const char *dev_str, u64 *value);
-+int ps3pf_repository_read_dev_id(unsigned int bus_index, unsigned int dev_index,
-+	unsigned int *dev_id);
-+int ps3pf_repository_read_dev_type(unsigned int bus_index,
-+	unsigned int dev_index, enum ps3pf_dev_type *dev_type);
-+int ps3pf_repository_read_dev_intr(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int intr_index,
-+	enum ps3pf_interrupt_type *intr_type, unsigned int *interrupt_id);
-+int ps3pf_repository_read_dev_reg_type(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int reg_index,
-+	enum ps3pf_region_type *reg_type);
-+int ps3pf_repository_read_dev_reg_addr(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int reg_index, u64 *bus_addr,
-+	u64 *len);
-+int ps3pf_repository_read_dev_reg(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int reg_index,
-+	enum ps3pf_region_type *reg_type, u64 *bus_addr, u64 *len);
-+
-+/* repository bus enumerators */
-+
-+struct ps3pf_repository_device {
-+	unsigned int bus_index;
-+	unsigned int dev_index;
-+	struct ps3pf_device_id did;
-+};
-+
-+int ps3pf_repository_find_device(enum ps3pf_bus_type bus_type,
-+	enum ps3pf_dev_type dev_type,
-+	const struct ps3pf_repository_device *start_dev,
-+	struct ps3pf_repository_device *dev);
-+static inline int ps3pf_repository_find_first_device(
-+	enum ps3pf_bus_type bus_type, enum ps3pf_dev_type dev_type,
-+	struct ps3pf_repository_device *dev)
-+{
-+	return ps3pf_repository_find_device(bus_type, dev_type, NULL, dev);
-+}
-+int ps3pf_repository_find_interrupt(const struct ps3pf_repository_device *dev,
-+	enum ps3pf_interrupt_type intr_type, unsigned int *interrupt_id);
-+int ps3pf_repository_find_region(const struct ps3pf_repository_device *dev,
-+	enum ps3pf_region_type reg_type, u64 *bus_addr, u64 *len);
-+
-+/* repository block device info */
-+
-+int ps3pf_repository_read_dev_port(unsigned int bus_index,
-+	unsigned int dev_index, u64 *port);
-+int ps3pf_repository_read_dev_blk_size(unsigned int bus_index,
-+	unsigned int dev_index, u64 *blk_size);
-+int ps3pf_repository_read_dev_num_blocks(unsigned int bus_index,
-+	unsigned int dev_index, u64 *num_blocks);
-+int ps3pf_repository_read_dev_num_regions(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int *num_regions);
-+int ps3pf_repository_read_dev_region_id(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int region_index,
-+	unsigned int *region_id);
-+int ps3pf_repository_read_dev_region_size(unsigned int bus_index,
-+	unsigned int dev_index,	unsigned int region_index, u64 *region_size);
-+int ps3pf_repository_read_dev_region_start(unsigned int bus_index,
-+	unsigned int dev_index, unsigned int region_index, u64 *region_start);
-+
-+/* repository pu and memory info */
-+
-+int ps3pf_repository_read_num_pu(unsigned int *num_pu);
-+int ps3pf_repository_read_ppe_id(unsigned int *pu_index, unsigned int *ppe_id);
-+int ps3pf_repository_read_rm_base(unsigned int ppe_id, u64 *rm_base);
-+int ps3pf_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
-+int ps3pf_repository_read_region_total(u64 *region_total);
-+int ps3pf_repository_read_mm_info(u64 *rm_base, u64 *rm_size,
-+	u64 *region_total);
-+
-+/* repository pme info */
-+
-+int ps3pf_repository_read_num_be(unsigned int *num_be);
-+int ps3pf_repository_read_be_node_id(unsigned int be_index, u64 *node_id);
-+int ps3pf_repository_read_tb_freq(u64 node_id, u64 *tb_freq);
-+int ps3pf_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq);
-+
-+/* repository other OS area */
-+
-+int ps3pf_repository_read_boot_dat_addr(u64 *lpar_addr);
-+int ps3pf_repository_read_boot_dat_size(unsigned int *size);
-+int ps3pf_repository_read_boot_dat_info(u64 *lpar_addr, unsigned int *size);
-+
-+/* repository spu info */
-+
-+/**
-+ * enum spu_resource_type - Type of spu resource.
-+ * @spu_resource_type_shared: Logical spu is shared with other partions.
-+ * @spu_resource_type_exclusive: Logical spu is not shared with other partions.
-+ *
-+ * Returned by ps3pf_repository_read_spu_resource_id().
-+ */
-+
-+enum ps3pf_spu_resource_type {
-+	ps3pf_spu_resource_type_shared = 0,
-+	ps3pf_spu_resource_type_exclusive = 0x8000000000000000UL,
-+};
-+
-+int ps3pf_repository_read_num_spu_reserved(unsigned int *num_spu_reserved);
-+int ps3pf_repository_read_num_spu_resource_id(unsigned int *num_resource_id);
-+int ps3pf_repository_read_spu_resource_id(unsigned int res_index,
-+	enum ps3pf_spu_resource_type* resource_type, unsigned int *resource_id);
-+
- #endif
