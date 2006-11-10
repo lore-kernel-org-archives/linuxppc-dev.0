@@ -1,26 +1,28 @@
-Return-Path: <stefanr@s5r6.in-berlin.de>
-Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+Return-Path: <cel@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.vr.in-berlin.de",
-	Issuer "IN-Berlin Server CA (G2)" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 354BB67EE5
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 09:45:12 +1100 (EST)
-Date: Fri, 10 Nov 2006 23:44:32 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2/2] ieee1394: ohci1394: reformat PPC_PMAC platform code
-To: linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.ab4351ec984c9a0c@s5r6.in-berlin.de>
-Message-ID: <tkrat.9f00c7946b5b61c0@s5r6.in-berlin.de>
-References: <454DBFE7.3090800@s5r6.in-berlin.de>
-	<1162724083.28571.235.camel@localhost.localdomain>
-	<454DC985.2020203@s5r6.in-berlin.de>
-	<454DCCE8.4020402@s5r6.in-berlin.de>
-	<1162731544.28571.237.camel@localhost.localdomain>
-	<tkrat.ab4351ec984c9a0c@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Gioele Barabucci <dev@gioelebarabucci.com>,
-	Olaf Hering <olaf@aepfle.de>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 983FB67EEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 09:57:18 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAAMvFUD013145
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 17:57:15 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAAMvF3m264024
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 15:57:15 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAAMvFTI029768
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 15:57:15 -0700
+Subject: Help with an MMIO register read function
+From: Carl Love <cel@us.ibm.com>
+To: linuxppc-dev@ozlabs.org, cel@us.ibm.com
+Content-Type: text/plain
+Date: Fri, 10 Nov 2006 14:57:14 -0800
+Message-Id: <1163199434.30540.13.camel@dyn9047021226.beaverton.ibm.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,80 +32,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adjust whitespace and line lengths
+I am trying to print the value of the debug bus signal routing
+registers to debug a potential issue in the RTAS call.  There are a
+number of MMIO addresses that I need to read and print.  I was given a
+little code segment to start with (see the example in the code below).
+Based on that I wrote a function to read the 64 bit MMIO registers.  The
+issue that I have is the data is almost correct.  Here is the output:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/ohci1394.c |   34 ++++++++++++++--------------------
- 1 files changed, 14 insertions(+), 20 deletions(-)
+Print the pass through registers
+L2_debug_1 addr 0x500858, value = 600000000000000
+CIU_DR1 addr 0x500958, value = 4
+on_ramp_trace 0x509c98, value = 100000000
+MBL Debug addr 0x50a010, value = 80000
+SBI_PMCR (MFC0) 0x4003c8, value = 200000000
+SBI_PMCR (MFC1) 0x4023c8, value = 200000000
+SBI_PMCR (MFC2) 0x4043c8, value = 200000000
+SBI_PMCR (MFC3) 0x4063c8, value = 200000000
+SBI_PMCR (MFC4) 0x4083c8, value = 200000000
+SBI_PMCR (MFC5) 0x40a3c8, value = 200000000
+SBI_PMCR (MFC6) 0x40c3c8, value = 200000000
+SBI_PMCR (MFC7) 0x40e3c8, value = 200000000
 
-Index: linux/drivers/ieee1394/ohci1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/ohci1394.c	2006-11-10 23:25:04.000000000 +0100
-+++ linux/drivers/ieee1394/ohci1394.c	2006-11-10 23:26:12.000000000 +0100
-@@ -3218,12 +3218,11 @@ static int __devinit ohci1394_pci_probe(
- #ifdef CONFIG_PPC_PMAC
- 	/* Necessary on some machines if ohci1394 was loaded/ unloaded before */
- 	if (machine_is(powermac)) {
--		struct device_node *of_node = pci_device_to_OF_node(dev);
-+		struct device_node *ofn = pci_device_to_OF_node(dev);
- 
--		if (of_node)
--			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, of_node,
--					  0, 1);
--			pmac_call_feature(PMAC_FTR_1394_ENABLE, of_node, 0, 1);
-+		if (ofn)
-+			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, ofn, 0, 1);
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 1);
- 	}
- #endif /* CONFIG_PPC_PMAC */
- 
-@@ -3518,12 +3517,11 @@ static void ohci1394_pci_remove(struct p
- 	/* On UniNorth, power down the cable and turn off the chip clock
- 	 * to save power on laptops */
- 	{
--		struct device_node* of_node;
-+		struct device_node* ofn = pci_device_to_OF_node(ohci->dev);
- 
--		of_node = pci_device_to_OF_node(ohci->dev);
--		if (of_node) {
--			pmac_call_feature(PMAC_FTR_1394_ENABLE, of_node, 0, 0);
--			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, of_node, 0, 0);
-+		if (ofn) {
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
-+			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, ofn, 0, 0);
- 		}
- 	}
- #endif /* CONFIG_PPC_PMAC */
-@@ -3583,12 +3581,10 @@ static int ohci1394_pci_suspend(struct p
- /* PowerMac suspend code comes last */
- #ifdef CONFIG_PPC_PMAC
- 	if (machine_is(powermac)) {
--		struct device_node *of_node;
-+		struct device_node *ofn = pci_device_to_OF_node(pdev);
- 
--		/* Disable 1394 */
--		of_node = pci_device_to_OF_node (pdev);
--		if (of_node)
--			pmac_call_feature(PMAC_FTR_1394_ENABLE, of_node, 0, 0);
-+		if (ofn)
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
- 	}
- #endif /* CONFIG_PPC_PMAC */
- 
-@@ -3610,12 +3606,10 @@ static int ohci1394_pci_resume(struct pc
- /* PowerMac resume code comes first */
- #ifdef CONFIG_PPC_PMAC
- 	if (machine_is(powermac)) {
--		struct device_node *of_node;
-+		struct device_node *ofn = pci_device_to_OF_node(pdev);
- 
--		/* Re-enable 1394 */
--		of_node = pci_device_to_OF_node (pdev);
--		if (of_node)
--			pmac_call_feature (PMAC_FTR_1394_ENABLE, of_node, 0, 1);
-+		if (ofn)
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 1);
- 	}
- #endif /* CONFIG_PPC_PMAC */
- 
+I expect the SBI values to be 0x2000000  not 0x200000000.  The L2 debug
+value should be 0x6 not 0x600000000000000.  It seems like the bits are
+there but shifted from where I would expect them to be.  Anyone have any
+thoughts as to what is wrong? 
+
+               Carl Love
+
+static void dump_mmio_addr()
+{
+  // need to include io.h
+  unsigned long *base;
+  unsigned long temp1;
+  unsigned offset;
+  struct device_node *node;
+  void __iomem *tmcu_regs;
+
+  //  Example
+  //  node = of_find_node_by_type(NULL, "cpu");
+  //  base = (unsigned long *) get_property(node, "bp-base", NULL);
+  //  tmcu_regs = ioremap(*base+0x509800, 0xB000);
+  //  temp1 = readq(tmcu_regs + 0x0);
+
+
+  printk("Print the pass through registers\n");
+
+  node = of_find_node_by_type(NULL, "cpu");
+  base = (unsigned long *) get_property(node, "bp-base", NULL);
+
+  offset = 0x500858;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("L2_debug_1 addr 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x500958;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("CIU_DR1 addr 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x509c98;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("on_ramp_trace 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x50A010;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("MBL Debug addr 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x4003c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC0) 0x%x, value = %lx\n", offset, temp1);
+
+
+  offset = 0x4023c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC1) 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x4043c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC2) 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x4063c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC3) 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x4083c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC4) 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x40A3c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC5) 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x40C3c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC6) 0x%x, value = %lx\n", offset, temp1);
+
+  offset = 0x40E3c8;
+  tmcu_regs = ioremap(*base+offset, 0xB000);
+  temp1 = readq(tmcu_regs + 0x0);
+  printk("SBI_PMCR (MFC7) 0x%x, value = %lx\n", offset, temp1);
+
+}
