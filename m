@@ -1,32 +1,28 @@
-Return-Path: <brking@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <linas@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 443EF67DFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 02:24:07 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAAFO229009534
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 10:24:02 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAAFO2w0358416
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:24:02 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAAFO1cV001212
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:24:02 -0700
-Message-ID: <45549962.108@us.ibm.com>
-Date: Fri, 10 Nov 2006 09:23:14 -0600
-From: Brian King <brking@us.ibm.com>
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2453F67DA6
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:23:08 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAAIN5e7009812
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 13:23:05 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAAIN5Wm149832
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 13:23:05 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAAIMuTb009819
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 13:22:56 -0500
+Date: Fri, 10 Nov 2006 12:22:53 -0600
+To: paulus@samba.org
+Subject: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
+Message-ID: <20061110182253.GV30625@austin.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: ipr SATA support is causing problems
-References: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>
-In-Reply-To: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
-	James Bottomley <jejb@mulgrave.il.steeleye.com>
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Brian,
-> 
-> Today I compiled up a kernel from Linus' git tree and tried it on a
-> POWER6 partition.  First I found that my config no longer had the ipr
-> driver, because I didn't have CONFIG_ATA and ipr now depends on
-> CONFIG_ATA.  So I enabled CONFIG_ATA without enabling any of the ATA
-> chip drivers, which seems a little weird, and re-enabled ipr.
 
-I'm not sure what the best way to fix this one is... The ideal way is to
-change ipr to select CONFIG_ATA, but kconfig currently doesn't handle
-that and complains about recursive dependencies since IPR depends on
-CONFIG_SCSI and CONFIG_ATA selects CONFIG_SCSI. I'm guessing the
-libsas SATA usage has similar problems. Right now we both use a depends
-CONFIG_ATA statement. Ideally, kconfig should be fixed to handle this.
 
-Brian
+Paul,
 
--- 
-Brian King
-eServer Storage I/O
-IBM Linux Technology Center
+I presume this looks reasonable, please apply.
+
+--linas
+
+
+There are a variety of code paths that lead to rtas_stop_self()
+being called, primarily through cpu_die(). However, rtas_stop_self() 
+has a BUG_ON(rtas_args->token == RTAS_UNKNOWN_SERVICE); in it, and
+this rtas token is only set up if CONFIG_HOTPLUG_CPU is defined.
+
+Rather than wrapping all of the callers of rtas_stop_self()
+with CONFIG_HOTPLUG_CPU, it seems wiser to just unwrap the token
+definition.
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ arch/powerpc/kernel/rtas.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+Index: linux-2.6.19-rc4-git3/arch/powerpc/kernel/rtas.c
+===================================================================
+--- linux-2.6.19-rc4-git3.orig/arch/powerpc/kernel/rtas.c	2006-11-10 12:13:17.000000000 -0600
++++ linux-2.6.19-rc4-git3/arch/powerpc/kernel/rtas.c	2006-11-10 12:13:40.000000000 -0600
+@@ -879,9 +879,7 @@ void __init rtas_initialize(void)
+ #endif
+ 	rtas_rmo_buf = lmb_alloc_base(RTAS_RMOBUF_MAX, PAGE_SIZE, rtas_region);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+ 	rtas_stop_self_args.token = rtas_token("stop-self");
+-#endif
+ #ifdef CONFIG_RTAS_ERROR_LOGGING
+ 	rtas_last_error_token = rtas_token("rtas-last-error");
+ #endif
