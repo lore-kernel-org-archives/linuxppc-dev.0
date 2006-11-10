@@ -1,10 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 10 Nov 2006 18:44:59 +1100
-Subject: [PATCH 18/32] powerpc: Resolve the parent address of a PCI bus range
+Date: Fri, 10 Nov 2006 18:45:00 +1100
+Subject: [PATCH 19/32] powerpc: Resolve the BUID fir RTAS PCI config space
+	accesses
 In-Reply-To: <1163144683.554182.685908332811.qpush@grosgo>
-Message-Id: <20061110074502.A88E567ED2@ozlabs.org>
+Message-Id: <20061110074503.6388367DC5@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,33 +15,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When parsing the OF "ranges" properties of PCI host busses to determine
-the mapping of a PCI bus, we need to translate the "parent" address using
-the prom_parse.c routines in order to obtain a CPU physical address.
+The BUID is the first entry of a PCI host bridge "reg" property.
 
-This wasn't necessary while PCI busses were always at the root of the
-device-tree but this is no longer the case on Cell where they can be
-anywhere in the tree.
+Now that PCI busses can be anywhere in the device-tree, we need to
+fully translate the value there to a CPU physical address before
+we can use it with RTAS.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/kernel/pci_64.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ arch/powerpc/kernel/rtas_pci.c |   27 ++++-----------------------
+ 1 file changed, 4 insertions(+), 23 deletions(-)
 
-Index: linux-cell/arch/powerpc/kernel/pci_64.c
+Index: linux-cell/arch/powerpc/kernel/rtas_pci.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/pci_64.c	2006-11-10 16:26:34.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/pci_64.c	2006-11-10 16:40:42.000000000 +1100
-@@ -975,11 +975,7 @@ void __devinit pci_process_bridge_OF_ran
- 		res = NULL;
- 		pci_space = ranges[0];
- 		pci_addr = ((unsigned long)ranges[1] << 32) | ranges[2];
+--- linux-cell.orig/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:32:35.000000000 +1000
++++ linux-cell/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:34:21.000000000 +1000
+@@ -231,32 +231,13 @@ void __init init_pci_config_tokens (void
+ 
+ unsigned long __devinit get_phb_buid (struct device_node *phb)
+ {
+-	int addr_cells;
+-	const unsigned int *buid_vals;
+-	unsigned int len;
+-	unsigned long buid;
 -
--		cpu_phys_addr = ranges[3];
--		if (na >= 2)
--			cpu_phys_addr = (cpu_phys_addr << 32) | ranges[4];
+-	if (ibm_read_pci_config == -1) return 0;
++	struct resource r;
+ 
+-	/* PHB's will always be children of the root node,
+-	 * or so it is promised by the current firmware. */
+-	if (phb->parent == NULL)
+-		return 0;
+-	if (phb->parent->parent)
++	if (ibm_read_pci_config == -1)
+ 		return 0;
 -
-+		cpu_phys_addr = of_translate_address(dev, &ranges[3]);
- 		size = ((unsigned long)ranges[na+3] << 32) | ranges[na+4];
- 		ranges += np;
- 		if (size == 0)
+-	buid_vals = get_property(phb, "reg", &len);
+-	if (buid_vals == NULL)
++	if (of_address_to_resource(phb, 0, &r))
+ 		return 0;
+-
+-	addr_cells = prom_n_addr_cells(phb);
+-	if (addr_cells == 1) {
+-		buid = (unsigned long) buid_vals[0];
+-	} else {
+-		buid = (((unsigned long)buid_vals[0]) << 32UL) |
+-			(((unsigned long)buid_vals[1]) & 0xffffffff);
+-	}
+-	return buid;
++	return r.start;
+ }
+ 
+ static int phb_set_bus_ranges(struct device_node *dev,
