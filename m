@@ -1,15 +1,26 @@
-Return-Path: <ptich@hotmail.com>
-Received: from bay0-omc2-s24.bay0.hotmail.com (bay0-omc2-s24.bay0.hotmail.com
-	[65.54.246.160]) by ozlabs.org (Postfix) with ESMTP id ABAFA67EC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 08:59:45 +1100 (EST)
-Message-ID: <BAY102-F260C6217DCCCD84D5B4BAA9F70@phx.gbl>
-In-Reply-To: <28501EDE-38C4-45FB-8B23-7E01A1815407@kernel.crashing.org>
-From: "M Ptich" <ptich@hotmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: KGDB support in 2.6.18 for 85xx platforms
-Date: Fri, 10 Nov 2006 21:59:39 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EA5B267CC5
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 09:40:39 +1100 (EST)
+Date: Fri, 10 Nov 2006 23:39:14 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe cycle]
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1162883865.28571.439.camel@localhost.localdomain>
+Message-ID: <tkrat.bedb19657ae90fd7@s5r6.in-berlin.de>
+References: <454DBFE7.3090800@s5r6.in-berlin.de>
+	<1162724083.28571.235.camel@localhost.localdomain>
+	<454DC985.2020203@s5r6.in-berlin.de> <20061106165752.GA25595@aepfle.de>
+	<1162851570.28571.361.camel@localhost.localdomain>
+	<20061107070839.GA31460@aepfle.de>
+	<1162883865.28571.439.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	Gioele Barabucci <dev@gioelebarabucci.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,13 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PPC_GEN550 config does not seem to be supported for 85xx in arch/powepc of 
-2.6.18 kernel. Does it mean that KGDB and early blocking output will not 
-work there ?
+On  7 Nov, Benjamin Herrenschmidt wrote:
+> On Tue, 2006-11-07 at 08:08 +0100, Olaf Hering wrote:
+[...]
+>> and it is the rmmod, not the insmod, that hangs the pismo.
+>> Adding some mdelay to the remove function doesnt help either.
+> 
+> Tried not calling the pmac feature stuff at all in the rmmod ?
 
-Ptich
+Olaf?
 
-_________________________________________________________________
-Get FREE company branded e-mail accounts and business Web site from 
-Microsoft Office Live 
-http://clk.atdmt.com/MRT/go/mcrssaub0050001411mrt/direct/01/
+> I reckon there might be a problem with the cable power control on some
+> old models like... the pismo :-)
+
+Is there a way to detect affected machines or at least to blacklist
+known broken machines?
+-- 
+Stefan Richter
+-=====-=-==- =-== -=-=-
+http://arcgraph.de/sr/
