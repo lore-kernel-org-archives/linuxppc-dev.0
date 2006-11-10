@@ -1,20 +1,20 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id 8204768B71
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:03:03 +1100 (EST)
+Received: from ns5.sony.co.jp (NS5.Sony.CO.JP [137.153.0.45])
+	by ozlabs.org (Postfix) with ESMTP id 3B4DB68CBF
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 07:03:15 +1100 (EST)
 Received: from mail6.sony.co.jp (localhost [127.0.0.1])
-	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAAK31KL011948
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:01 +0900 (JST)
+	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAAK3EKL012487
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:14 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail6.sony.co.jp (R8/Sony) with SMTP id kAAK31cs011916
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:01 +0900 (JST)
-Message-ID: <4554DAEF.9070406@am.sony.com>
-Date: Fri, 10 Nov 2006 12:02:55 -0800
+	by mail6.sony.co.jp (R8/Sony) with SMTP id kAAK3Ecs012483
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 05:03:14 +0900 (JST)
+Message-ID: <4554DAFC.1070804@am.sony.com>
+Date: Fri, 10 Nov 2006 12:03:08 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 10/16] powerpc: add ps3 platform htab routines
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH 11/16] powerpc: add ps3 platform repository support
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,21 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds the pagetable management routines for the PS3 Platform.
+This adds support for the PS3 Platform repository.
+
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- arch/powerpc/platforms/ps3pf/htab.c |  288 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 288 insertions(+)
+ arch/powerpc/platforms/ps3pf/repository.c |  842 ++++++++++++++++++++++++++++++
+ include/asm-powerpc/ps3pf.h               |  139 ++++
+ 2 files changed, 981 insertions(+)
 
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/htab.c
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/repository.c
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/htab.c
-@@ -0,0 +1,288 @@
++++ cell--common--6/arch/powerpc/platforms/ps3pf/repository.c
+@@ -0,0 +1,842 @@
 +/*
-+ * htab.c - PS3 Platform pagetable management.
++ * repository.c - PS3 Platform repository routines.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -60,269 +62,971 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/htab.c
 +
 +#undef DEBUG
 +
-+#include <linux/kernel.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/lmb.h>
-+#include <asm/udbg.h>
 +#include <asm/ps3pf.h>
 +#include <asm/lv1call.h>
 +
-+#include "platform.h"
++enum ps3pf_vendor_id {
++	ps3pf_vendor_id_none = 0,
++	ps3pf_vendor_id_sony = 0x8000000000000000UL,
++};
 +
-+#if defined(DEBUG)
-+#undef pr_debug
-+#define pr_debug(fmt...) udbg_printf(fmt)
-+#endif
++enum ps3pf_lpar_id {
++	ps3pf_lpar_id_current = 0,
++	ps3pf_lpar_id_pme = 1,
++};
 +
-+static hpte_t *htab;
-+static unsigned long htab_addr;
-+static unsigned char *bolttab;
-+static unsigned char *inusetab;
-+
-+static spinlock_t ps3pf_bolttab_lock = SPIN_LOCK_UNLOCKED;
-+
-+#define debug_dump_hpte(_a, _b, _c, _d, _e, _f, _g) \
-+	_debug_dump_hpte(_a, _b, _c, _d, _e, _f, _g, __func__, __LINE__)
-+static void _debug_dump_hpte(unsigned long pa, unsigned long va,
-+	unsigned long group, unsigned long bitmap, hpte_t lhpte, int psize,
-+	unsigned long slot, const char* func, int line)
++#define dump_field(_a, _b) _dump_field(_a, _b, __func__, __LINE__)
++static void _dump_field(const char *hdr, u64 n, const char* func, int line)
 +{
-+	pr_debug("%s:%d: pa     = %lxh\n", func, line, pa);
-+	pr_debug("%s:%d: lpar   = %lxh\n", func, line,
-+		ps3pf_mm_phys_to_lpar(pa));
-+	pr_debug("%s:%d: va     = %lxh\n", func, line, va);
-+	pr_debug("%s:%d: group  = %lxh\n", func, line, group);
-+	pr_debug("%s:%d: bitmap = %lxh\n", func, line, bitmap);
-+	pr_debug("%s:%d: hpte.v = %lxh\n", func, line, lhpte.v);
-+	pr_debug("%s:%d: hpte.r = %lxh\n", func, line, lhpte.r);
-+	pr_debug("%s:%d: psize  = %xh\n", func, line, psize);
-+	pr_debug("%s:%d: slot   = %lxh\n", func, line, slot);
++#if defined(DEBUG)
++	char s[16];
++	const char *const in = (const char *)&n;
++	unsigned int i;
++
++	for (i = 0; i < 8; i++)
++		s[i] = (in[i] <= 126 && in[i] >= 32) ? in[i] : '.';
++	s[i] = 0;
++
++	pr_debug("%s:%d: %s%016lx : %s\n", func, line, hdr, n, s);
++#endif
 +}
 +
-+static long ps3pf_hpte_insert(unsigned long hpte_group, unsigned long va,
-+	unsigned long pa, unsigned long rflags, unsigned long vflags, int psize)
++#define dump_node_name(_a, _b, _c, _d, _e) \
++	_dump_node_name(_a, _b, _c, _d, _e, __func__, __LINE__)
++static void _dump_node_name (unsigned int lpar_id, u64 n1, u64 n2, u64 n3,
++	u64 n4, const char* func, int line)
 +{
-+	unsigned long slot;
-+	hpte_t lhpte;
-+	int secondary = 0;
-+	unsigned long result;
-+	unsigned long bitmap;
-+	unsigned long flags;
-+	unsigned long p_pteg, s_pteg, b_index, b_mask, cb, ci;
++	pr_debug("%s:%d: lpar: %u\n", func, line, lpar_id);
++	_dump_field("n1: ", n1, func, line);
++	_dump_field("n2: ", n2, func, line);
++	_dump_field("n3: ", n3, func, line);
++	_dump_field("n4: ", n4, func, line);
++}
 +
-+	vflags &= ~HPTE_V_SECONDARY; /* this bit is ignored */
++#define dump_node(_a, _b, _c, _d, _e, _f, _g) \
++	_dump_node(_a, _b, _c, _d, _e, _f, _g, __func__, __LINE__)
++static void _dump_node(unsigned int lpar_id, u64 n1, u64 n2, u64 n3, u64 n4,
++	u64 v1, u64 v2, const char* func, int line)
++{
++	pr_debug("%s:%d: lpar: %u\n", func, line, lpar_id);
++	_dump_field("n1: ", n1, func, line);
++	_dump_field("n2: ", n2, func, line);
++	_dump_field("n3: ", n3, func, line);
++	_dump_field("n4: ", n4, func, line);
++	pr_debug("%s:%d: v1: %016lx\n", func, line, v1);
++	pr_debug("%s:%d: v2: %016lx\n", func, line, v2);
++}
 +
-+	lhpte.v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
-+	lhpte.r = hpte_encode_r(ps3pf_mm_phys_to_lpar(pa), psize) | rflags;
++/**
++ * make_first_field - Make the first field of a repository node name.
++ * @text: Text portion of the field.
++ * @index: Numeric index portion of the field.  Use zero for 'don't care'.
++ *
++ * This routine sets the vendor id to zero (non-vendor specific).
++ * Returns field value.
++ */
 +
-+	p_pteg = hpte_group / HPTES_PER_GROUP;
-+	s_pteg = ~p_pteg & htab_hash_mask;
++static u64 make_first_field(const char *text, u64 index)
++{
++	u64 n;
 +
-+	spin_lock_irqsave(&ps3pf_bolttab_lock, flags);
++	strncpy((char *)&n, text, 8);
++	return ps3pf_vendor_id_none + (n >> 32) + index;
++}
 +
-+	if (bolttab[p_pteg] == 0xff && bolttab[s_pteg] == 0xff) {
-+		pr_debug("%s:%d: htab full\n", __func__, __LINE__);
-+		BUG();
++/**
++ * make_field - Make subsequent fields of a repository node name.
++ * @text: Text portion of the field.  Use "" for 'don't care'.
++ * @index: Numeric index portion of the field.  Use zero for 'don't care'.
++ *
++ * Returns field value.
++ */
++
++static u64 make_field(const char *text, u64 index)
++{
++	u64 n;
++
++	strncpy((char *)&n, text, 8);
++	return n + index;
++}
++
++/**
++ * read_node - Read a repository node from raw fields.
++ * @n1: First field of node name.
++ * @n2: Second field of node name.  Use zero for 'don't care'.
++ * @n3: Third field of node name.  Use zero for 'don't care'.
++ * @n4: Fourth field of node name.  Use zero for 'don't care'.
++ * @v1: First repository value (high word).
++ * @v2: Second repository value (low word).  Optional parameter, use zero
++ *      for 'don't care'.
++ */
++
++static int read_node(unsigned int lpar_id, u64 n1, u64 n2, u64 n3, u64 n4,
++	u64 *_v1, u64 *_v2)
++{
++	int result;
++	u64 v1;
++	u64 v2;
++
++	if (lpar_id == ps3pf_lpar_id_current) {
++		u64 id;
++		lv1_get_logical_partition_id(&id);
++		lpar_id = id;
 +	}
 +
-+	bitmap = (inusetab[p_pteg] << 8) | inusetab[s_pteg];
-+
-+	if (bitmap == 0xffff) {
-+		/*
-+		 * PTEG is full. Search for victim.
-+		 */
-+		bitmap &= ~((bolttab[p_pteg] << 8) | bolttab[s_pteg]);
-+		do {
-+			ci = mftb() & 15;
-+			cb = 0x8000UL >> ci;
-+		} while ((cb & bitmap) == 0);
-+	} else {
-+		/*
-+		 * search free slot in hardware order
-+		 *	[primary]	0, 2, 4, 6, 1, 3, 5, 7
-+		 *	[secondary]	0, 2, 4, 6, 1, 3, 5, 7
-+		 */
-+		for (ci = 0; ci < HPTES_PER_GROUP; ci += 2) {
-+			cb = 0x8000UL >> ci;
-+			if ((cb & bitmap) == 0)
-+				goto found;
-+		}
-+		for (ci = 1; ci < HPTES_PER_GROUP; ci += 2) {
-+			cb = 0x8000UL >> ci;
-+			if ((cb & bitmap) == 0)
-+				goto found;
-+		}
-+		for (ci = HPTES_PER_GROUP; ci < HPTES_PER_GROUP*2; ci += 2) {
-+			cb = 0x8000UL >> ci;
-+			if ((cb & bitmap) == 0)
-+				goto found;
-+		}
-+		for (ci = HPTES_PER_GROUP+1; ci < HPTES_PER_GROUP*2; ci += 2) {
-+			cb = 0x8000UL >> ci;
-+			if ((cb & bitmap) == 0)
-+				goto found;
-+		}
-+	}
-+
-+found:
-+	if (ci < HPTES_PER_GROUP) {
-+		slot = p_pteg * HPTES_PER_GROUP + ci;
-+	} else {
-+		slot = s_pteg * HPTES_PER_GROUP + (ci & 7);
-+		/* lhpte.dw0.dw0.h = 1; */
-+		vflags |= HPTE_V_SECONDARY;
-+		lhpte.v |= HPTE_V_SECONDARY;
-+	}
-+
-+	result = lv1_write_htab_entry(0, slot, lhpte.v, lhpte.r);
++	result = lv1_get_repository_node_value(lpar_id, n1, n2, n3, n4, &v1,
++		&v2);
 +
 +	if (result) {
-+		pr_debug("%s:%d: lv1_write_htab_entry failed: %s\n",
++		pr_debug("%s:%d: lv1_get_repository_node_value failed: %s\n",
 +			__func__, __LINE__, ps3pf_result(result));
-+		debug_dump_hpte(pa, va, hpte_group, bitmap, lhpte, psize,
-+			slot);
-+		BUG();
++		dump_node_name(lpar_id, n1, n2, n3, n4);
++		return result;
 +	}
 +
-+	/*
-+	 * If used slot is not in primary HPTE group,
-+	 * the slot should be in secondary HPTE group.
-+	 */
++	dump_node(lpar_id, n1, n2, n3, n4, v1, v2);
 +
-+	if ((hpte_group ^ slot) & ~(HPTES_PER_GROUP - 1)) {
-+		secondary = 1;
-+		b_index = s_pteg;
-+	} else {
-+		secondary = 0;
-+		b_index = p_pteg;
++	if (_v1)
++		*_v1 = v1;
++	if (_v2)
++		*_v2 = v2;
++
++	if (v1 && !_v1)
++		pr_debug("%s:%d: warning: discarding non-zero v1: %016lx\n",
++			__func__, __LINE__, v1);
++	if (v2 && !_v2)
++		pr_debug("%s:%d: warning: discarding non-zero v2: %016lx\n",
++			__func__, __LINE__, v2);
++
++	return result;
++}
++
++int ps3pf_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
++	u64 *value)
++{
++	return read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field(bus_str, 0),
++		0, 0,
++		value, 0);
++}
++
++int ps3pf_repository_read_bus_id(unsigned int bus_index, unsigned int *bus_id)
++{
++	int result;
++	u64 v1;
++	u64 v2; /* unused */
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("id", 0),
++		0, 0,
++		&v1, &v2);
++	*bus_id = v1;
++	return result;
++}
++
++int ps3pf_repository_read_bus_type(unsigned int bus_index,
++	enum ps3pf_bus_type *bus_type)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("type", 0),
++		0, 0,
++		&v1, 0);
++	*bus_type = v1;
++	return result;
++}
++
++int ps3pf_repository_read_bus_num_dev(unsigned int bus_index,
++	unsigned int *num_dev)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("num_dev", 0),
++		0, 0,
++		&v1, 0);
++	*num_dev = v1;
++	return result;
++}
++
++int ps3pf_repository_read_dev_str(unsigned int bus_index,
++	unsigned int dev_index, const char *dev_str, u64 *value)
++{
++	return read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field(dev_str, 0),
++		0,
++		value, 0);
++}
++
++int ps3pf_repository_read_dev_id(unsigned int bus_index, unsigned int dev_index,
++	unsigned int *dev_id)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("id", 0),
++		0,
++		&v1, 0);
++	*dev_id = v1;
++	return result;
++}
++
++int ps3pf_repository_read_dev_type(unsigned int bus_index,
++	unsigned int dev_index, enum ps3pf_dev_type *dev_type)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("type", 0),
++		0,
++		&v1, 0);
++	*dev_type = v1;
++	return result;
++}
++
++int ps3pf_repository_read_dev_intr(unsigned int bus_index,
++	unsigned int dev_index, unsigned int intr_index,
++	unsigned int *intr_type, unsigned int* interrupt_id)
++{
++	int result;
++	u64 v1;
++	u64 v2;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("intr", intr_index),
++		0,
++		&v1, &v2);
++	*intr_type = v1;
++	*interrupt_id = v2;
++	return result;
++}
++
++int ps3pf_repository_read_dev_reg_type(unsigned int bus_index,
++	unsigned int dev_index, unsigned int reg_index, unsigned int *reg_type)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("reg", reg_index),
++		make_field("type", 0),
++		&v1, 0);
++	*reg_type = v1;
++	return result;
++}
++
++int ps3pf_repository_read_dev_reg_addr(unsigned int bus_index,
++	unsigned int dev_index, unsigned int reg_index, u64 *bus_addr, u64 *len)
++{
++	return read_node(ps3pf_lpar_id_pme,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("reg", reg_index),
++		make_field("data", 0),
++		bus_addr, len);
++}
++
++int ps3pf_repository_read_dev_reg(unsigned int bus_index,
++	unsigned int dev_index, unsigned int reg_index, unsigned int *reg_type,
++	u64 *bus_addr, u64 *len)
++{
++	int result = ps3pf_repository_read_dev_reg_type(bus_index, dev_index,
++		reg_index, reg_type);
++	return result ? result
++		: ps3pf_repository_read_dev_reg_addr(bus_index, dev_index,
++		reg_index, bus_addr, len);
++}
++
++#if defined(DEBUG)
++int ps3pf_repository_dump_resource_info(unsigned int bus_index,
++	unsigned int dev_index)
++{
++	int result = 0;
++	unsigned int res_index;
++
++	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
++		bus_index, dev_index);
++
++	for (res_index = 0; res_index < 10; res_index++) {
++		enum ps3pf_interrupt_type intr_type;
++		unsigned int interrupt_id;
++
++		result = ps3pf_repository_read_dev_intr(bus_index, dev_index,
++			res_index, &intr_type, &interrupt_id);
++
++		if (result) {
++			if (result !=  LV1_NO_ENTRY)
++				pr_debug("%s:%d ps3pf_repository_read_dev_intr"
++					" (%u:%u) failed\n", __func__, __LINE__,
++					bus_index, dev_index);
++			break;
++		}
++
++		pr_debug("%s:%d (%u:%u) intr_type %u, interrupt_id %u\n",
++			__func__, __LINE__, bus_index, dev_index, intr_type,
++			interrupt_id);
 +	}
 +
-+	b_mask = (lhpte.v & HPTE_V_BOLTED) ? 1 << 7 : 0 << 7;
-+	bolttab[b_index] |= b_mask >> (slot & 7);
-+	b_mask = 1 << 7;
-+	inusetab[b_index] |= b_mask >> (slot & 7);
-+	spin_unlock_irqrestore(&ps3pf_bolttab_lock, flags);
++	for (res_index = 0; res_index < 10; res_index++) {
++		enum ps3pf_region_type reg_type;
++		u64 bus_addr;
++		u64 len;
 +
-+	return (slot & 7) | (secondary << 3);
-+}
++		result = ps3pf_repository_read_dev_reg(bus_index, dev_index,
++			res_index, &reg_type, &bus_addr, &len);
 +
-+static long ps3pf_hpte_remove(unsigned long hpte_group)
-+{
-+	panic("ps3pf_hpte_remove() not implemented");
-+	return 0;
-+}
++		if (result) {
++			if (result !=  LV1_NO_ENTRY)
++				pr_debug("%s:%d ps3pf_repository_read_dev_reg"
++					" (%u:%u) failed\n", __func__, __LINE__,
++					bus_index, dev_index);
++			break;
++		}
 +
-+static long ps3pf_hpte_updatepp(unsigned long slot, unsigned long newpp,
-+	unsigned long va, int psize, int local)
-+{
-+	unsigned long flags;
-+	unsigned long result;
-+	unsigned long pteg, bit;
-+	unsigned long hpte_v, want_v;
-+
-+	want_v = hpte_encode_v(va, psize);
-+
-+	spin_lock_irqsave(&ps3pf_bolttab_lock, flags);
-+
-+	hpte_v = htab[slot].v;
-+	if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID)) {
-+		spin_unlock_irqrestore(&ps3pf_bolttab_lock, flags);
-+
-+		/* ps3pf_hpte_insert() will be used to update PTE */
-+		return -1;
++		pr_debug("%s:%d (%u:%u) reg_type %u, bus_addr %lxh, len %lxh\n",
++			__func__, __LINE__, bus_index, dev_index, reg_type,
++			bus_addr, len);
 +	}
 +
-+	result = lv1_write_htab_entry(0, slot, 0, 0);
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
 +
-+	if (result != 0) {
-+		pr_debug("%s: result = %ld (0x%lx)\n",
-+		       __func__, result, result);
-+		pr_debug("va=%lx slot=%lx psize=%d\n",
-+		       va, slot, psize);
-+		BUG();
++static int dump_device_info(unsigned int bus_index, unsigned int num_dev)
++{
++	int result = 0;
++	unsigned int dev_index;
++
++	pr_debug(" -> %s:%d: bus_%u\n", __func__, __LINE__, bus_index);
++
++	for (dev_index = 0; dev_index < num_dev; dev_index++) {
++		enum ps3pf_dev_type dev_type;
++		unsigned int dev_id;
++
++		result = ps3pf_repository_read_dev_type(bus_index, dev_index,
++			&dev_type);
++
++		if (result) {
++			pr_debug("%s:%d ps3pf_repository_read_dev_type"
++				" (%u:%u) failed\n", __func__, __LINE__,
++				bus_index, dev_index);
++			break;
++		}
++
++		result = ps3pf_repository_read_dev_id(bus_index, dev_index,
++			&dev_id);
++
++		if (result) {
++			pr_debug("%s:%d ps3pf_repository_read_dev_id"
++				" (%u:%u) failed\n", __func__, __LINE__,
++				bus_index, dev_index);
++			continue;
++		}
++
++		pr_debug("%s:%d  (%u:%u): dev_type %u, dev_id %u\n", __func__,
++			__LINE__, bus_index, dev_index, dev_type, dev_id);
++
++		ps3pf_repository_dump_resource_info(bus_index, dev_index);
 +	}
 +
-+	pteg = slot / HPTES_PER_GROUP;
-+	bit = slot % HPTES_PER_GROUP;
-+	inusetab[pteg] &= ~(0x80 >> bit);
-+
-+	spin_unlock_irqrestore(&ps3pf_bolttab_lock, flags);
-+
-+	/* ps3pf_hpte_insert() will be used to update PTE */
-+	return -1;
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
 +}
 +
-+static void ps3pf_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
-+	int psize)
++int ps3pf_repository_dump_bus_info(void)
 +{
-+	panic("ps3pf_hpte_updateboltedpp() not implemented");
-+}
-+
-+static void ps3pf_hpte_invalidate(unsigned long slot, unsigned long va,
-+	int psize, int local)
-+{
-+	unsigned long flags;
-+	unsigned long result;
-+	unsigned long pteg, bit;
-+
-+	spin_lock_irqsave(&ps3pf_bolttab_lock, flags);
-+	result = lv1_write_htab_entry(0, slot, 0, 0);
-+
-+	if (result != 0) {
-+		pr_debug("%s: result = %ld (0x%lx)\n",
-+		       __func__, result, result);
-+		pr_debug("va=%lx slot=%lx psize=%d\n",
-+		       va, slot, psize);
-+		BUG();
-+	}
-+
-+	pteg = slot / HPTES_PER_GROUP;
-+	bit = slot % HPTES_PER_GROUP;
-+	inusetab[pteg] &= ~(0x80 >> bit);
-+	spin_unlock_irqrestore(&ps3pf_bolttab_lock, flags);
-+}
-+
-+static void ps3pf_hpte_clear(void)
-+{
-+	lv1_unmap_htab(htab_addr);
-+}
-+
-+void __init ps3pf_hpte_init(unsigned long htab_size)
-+{
-+	long bitmap_size;
++	int result = 0;
++	unsigned int bus_index;
 +
 +	pr_debug(" -> %s:%d\n", __func__, __LINE__);
 +
-+	ppc_md.hpte_invalidate = ps3pf_hpte_invalidate;
-+	ppc_md.hpte_updatepp = ps3pf_hpte_updatepp;
-+	ppc_md.hpte_updateboltedpp = ps3pf_hpte_updateboltedpp;
-+	ppc_md.hpte_insert = ps3pf_hpte_insert;
-+	ppc_md.hpte_remove = ps3pf_hpte_remove;
-+	ppc_md.hpte_clear_all = ps3pf_hpte_clear;
++	for (bus_index = 0; bus_index < 10; bus_index++) {
++		enum ps3pf_bus_type bus_type;
++		unsigned int bus_id;
++		unsigned int num_dev;
 +
-+	ppc64_pft_size = __ilog2(htab_size);
++		result = ps3pf_repository_read_bus_type(bus_index, &bus_type);
 +
-+	bitmap_size = htab_size / sizeof(hpte_t) / 8;
++		if (result) {
++			pr_debug("%s:%d read_bus_type(%u) failed\n",
++				__func__, __LINE__, bus_index);
++			break;
++		}
 +
-+	bolttab = __va(lmb_alloc(bitmap_size, 1));
-+	inusetab = __va(lmb_alloc(bitmap_size, 1));
++		result = ps3pf_repository_read_bus_id(bus_index, &bus_id);
 +
-+	memset(bolttab, 0, bitmap_size);
-+	memset(inusetab, 0, bitmap_size);
++		if (result) {
++			pr_debug("%s:%d read_bus_id(%u) failed\n",
++				__func__, __LINE__, bus_index);
++			continue;
++		}
++
++		if (bus_index != bus_id)
++			pr_debug("%s:%d bus_index != bus_id\n",
++				__func__, __LINE__);
++
++		result = ps3pf_repository_read_bus_num_dev(bus_index, &num_dev);
++
++		if (result) {
++			pr_debug("%s:%d read_bus_num_dev(%u) failed\n",
++				__func__, __LINE__, bus_index);
++			continue;
++		}
++
++		pr_debug("%s:%d bus_%u: bus_type %u, bus_id %u, num_dev %u\n",
++			__func__, __LINE__, bus_index, bus_type, bus_id,
++			num_dev);
++
++		dump_device_info(bus_index, num_dev);
++	}
 +
 +	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
 +}
++#endif /* defined(DEBUG) */
 +
-+void __init ps3pf_map_htab(void)
++static int find_device(unsigned int bus_index, unsigned int num_dev,
++	unsigned int start_dev_index, enum ps3pf_dev_type dev_type,
++	struct ps3pf_repository_device *dev)
 +{
-+	long result;
-+	unsigned long htab_size = (1UL << ppc64_pft_size);
++	int result = 0;
++	unsigned int dev_index;
 +
-+	result = lv1_map_htab(0, &htab_addr);
++	pr_debug("%s:%d: find dev_type %u\n", __func__, __LINE__, dev_type);
 +
-+	htab = (hpte_t *)__ioremap(htab_addr, htab_size, PAGE_READONLY_X);
++	dev->dev_index = UINT_MAX;
 +
-+	pr_debug("%s:%d: lpar %016lxh, virt %016lxh\n", __func__, __LINE__,
-+		htab_addr, (unsigned long)htab);
++	for (dev_index = start_dev_index; dev_index < num_dev; dev_index++) {
++		enum ps3pf_dev_type x;
++
++		result = ps3pf_repository_read_dev_type(bus_index, dev_index,
++			&x);
++
++		if (result) {
++			pr_debug("%s:%d read_dev_type failed\n",
++				__func__, __LINE__);
++			return result;
++		}
++
++		if (x == dev_type)
++			break;
++	}
++
++	BUG_ON(dev_index == num_dev);
++
++	pr_debug("%s:%d: found dev_type %u at dev_index %u\n",
++		__func__, __LINE__, dev_type, dev_index);
++
++	result = ps3pf_repository_read_dev_id(bus_index, dev_index,
++		&dev->did.dev_id);
++
++	if (result) {
++		pr_debug("%s:%d read_dev_id failed\n",
++			__func__, __LINE__);
++		return result;
++	}
++
++	dev->dev_index = dev_index;
++
++	pr_debug("%s:%d found: dev_id %u\n", __func__, __LINE__,
++		dev->did.dev_id);
++
++	return result;
 +}
++
++int ps3pf_repository_find_device (enum ps3pf_bus_type bus_type,
++	enum ps3pf_dev_type dev_type,
++	const struct ps3pf_repository_device *start_dev,
++	struct ps3pf_repository_device *dev)
++{
++	int result = 0;
++	unsigned int bus_index;
++	unsigned int num_dev;
++
++	pr_debug("%s:%d: find bus_type %u, dev_type %u\n", __func__, __LINE__,
++		bus_type, dev_type);
++
++	dev->bus_index = UINT_MAX;
++
++	for (bus_index = start_dev ? start_dev->bus_index : 0; bus_index < 10;
++		bus_index++) {
++		enum ps3pf_bus_type x;
++
++		result = ps3pf_repository_read_bus_type(bus_index, &x);
++
++		if (result) {
++			pr_debug("%s:%d read_bus_type failed\n",
++				__func__, __LINE__);
++			return result;
++		}
++		if (x == bus_type)
++			break;
++	}
++
++	BUG_ON(bus_index == 10);
++
++	pr_debug("%s:%d: found bus_type %u at bus_index %u\n",
++		__func__, __LINE__, bus_type, bus_index);
++
++	result = ps3pf_repository_read_bus_num_dev(bus_index, &num_dev);
++
++	if (result) {
++		pr_debug("%s:%d read_bus_num_dev failed\n",
++			__func__, __LINE__);
++		return result;
++	}
++
++	result = find_device(bus_index, num_dev, start_dev
++		? start_dev->dev_index + 1 : 0, dev_type, dev);
++
++	if (result) {
++		pr_debug("%s:%d get_did failed\n", __func__, __LINE__);
++		return result;
++	}
++
++	result = ps3pf_repository_read_bus_id(bus_index, &dev->did.bus_id);
++
++	if (result) {
++		pr_debug("%s:%d read_bus_id failed\n",
++			__func__, __LINE__);
++		return result;
++	}
++
++	dev->bus_index = bus_index;
++
++	pr_debug("%s:%d found: bus_id %u, dev_id %u\n",
++		__func__, __LINE__, dev->did.bus_id, dev->did.dev_id);
++
++	return result;
++}
++
++int ps3pf_repository_find_interrupt(const struct ps3pf_repository_device *dev,
++	enum ps3pf_interrupt_type intr_type, unsigned int *interrupt_id)
++{
++	int result = 0;
++	unsigned int res_index;
++
++	pr_debug("%s:%d: find intr_type %u\n", __func__, __LINE__, intr_type);
++
++	*interrupt_id = UINT_MAX;
++
++	for (res_index = 0; res_index < 10; res_index++) {
++		enum ps3pf_interrupt_type t;
++		unsigned int id;
++
++		result = ps3pf_repository_read_dev_intr(dev->bus_index,
++			dev->dev_index, res_index, &t, &id);
++
++		if (result) {
++			pr_debug("%s:%d read_dev_intr failed\n",
++				__func__, __LINE__);
++			return result;
++		}
++
++		if (t == intr_type) {
++			*interrupt_id = id;
++			break;
++		}
++	}
++
++	BUG_ON(res_index == 10);
++
++	pr_debug("%s:%d: found intr_type %u at res_index %u\n",
++		__func__, __LINE__, intr_type, res_index);
++
++	return result;
++}
++
++int ps3pf_repository_find_region(const struct ps3pf_repository_device *dev,
++	enum ps3pf_region_type reg_type, u64 *bus_addr, u64 *len)
++{
++	int result = 0;
++	unsigned int res_index;
++
++	pr_debug("%s:%d: find reg_type %u\n", __func__, __LINE__, reg_type);
++
++	*bus_addr = *len = 0;
++
++	for (res_index = 0; res_index < 10; res_index++) {
++		enum ps3pf_region_type t;
++		u64 a;
++		u64 l;
++
++		result = ps3pf_repository_read_dev_reg(dev->bus_index,
++			dev->dev_index, res_index, &t, &a, &l);
++
++		if (result) {
++			pr_debug("%s:%d read_dev_reg failed\n",
++				__func__, __LINE__);
++			return result;
++		}
++
++		if (t == reg_type) {
++			*bus_addr = a;
++			*len = l;
++			break;
++		}
++	}
++
++	BUG_ON(res_index == 10);
++
++	pr_debug("%s:%d: found reg_type %u at res_index %u\n",
++		__func__, __LINE__, reg_type, res_index);
++
++	return result;
++}
++
++int ps3pf_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size)
++{
++	return read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("pu", 0),
++		ppe_id,
++		make_field("rm_size", 0),
++		rm_size, 0);
++}
++
++int ps3pf_repository_read_region_total(u64 *region_total)
++{
++	return read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("rgntotal", 0),
++		0, 0,
++		region_total, 0);
++}
++
++/**
++ * ps3pf_repository_read_mm_info - Read mm info for single pu system.
++ * @rm_base: Real mode memory base address.
++ * @rm_size: Real mode memory size.
++ * @region_total: Maximum memory region size.
++ */
++
++int ps3pf_repository_read_mm_info(u64 *rm_base, u64 *rm_size, u64 *region_total)
++{
++	int result;
++	u64 ppe_id;
++
++	lv1_get_logical_ppe_id(&ppe_id);
++	*rm_base = 0;
++	result = ps3pf_repository_read_rm_size(ppe_id, rm_size);
++	return result ? result
++		: ps3pf_repository_read_region_total(region_total);
++}
++
++/**
++ * ps3pf_repository_read_num_spu_reserved - Number of physical spus reserved.
++ * @num_spu: Number of physical spus.
++ */
++
++int ps3pf_repository_read_num_spu_reserved(unsigned int *num_spu_reserved)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("spun", 0),
++		0, 0,
++		&v1, 0);
++	*num_spu_reserved = v1;
++	return result;
++}
++
++/**
++ * ps3pf_repository_read_num_spu_resource_id - Number of spu resource reservations.
++ * @num_resource_id: Number of spu resource ids.
++ */
++
++int ps3pf_repository_read_num_spu_resource_id(unsigned int *num_resource_id)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("spursvn", 0),
++		0, 0,
++		&v1, 0);
++	*num_resource_id = v1;
++	return result;
++}
++
++/**
++ * ps3pf_repository_read_spu_resource_id - spu resource reservation id value.
++ * @res_index: Resource reservation index.
++ * @resource_type: Resource reservation type.
++ * @resource_id: Resource reservation id.
++ */
++
++int ps3pf_repository_read_spu_resource_id(unsigned int res_index,
++	enum ps3pf_spu_resource_type* resource_type, unsigned int *resource_id)
++{
++	int result;
++	u64 v1;
++	u64 v2;
++
++	result = read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("spursv", 0),
++		res_index,
++		0,
++		&v1, &v2);
++	*resource_type = v1;
++	*resource_id = v2;
++	return result;
++}
++
++int ps3pf_repository_read_boot_dat_address(u64 *address)
++{
++	return read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("boot_dat", 0),
++		make_field("address", 0),
++		0,
++		address, 0);
++}
++
++int ps3pf_repository_read_boot_dat_size(unsigned int *size)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_current,
++		make_first_field("bi", 0),
++		make_field("boot_dat", 0),
++		make_field("size", 0),
++		0,
++		&v1, 0);
++	*size = v1;
++	return result;
++}
++
++/**
++  * ps3pf_repository_read_boot_dat_info - Get address and size of cell_ext_os_area.
++  * address: lpar address of cell_ext_os_area
++  * @size: size of cell_ext_os_area
++  */
++
++int ps3pf_repository_read_boot_dat_info(u64 *lpar_addr, unsigned int *size)
++{
++	int result;
++
++	*size = 0;
++	result = ps3pf_repository_read_boot_dat_address(lpar_addr);
++	return result ? result
++		: ps3pf_repository_read_boot_dat_size(size);
++}
++
++int ps3pf_repository_read_num_be(unsigned int *num_be)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(ps3pf_lpar_id_pme,
++		make_first_field("ben", 0),
++		0,
++		0,
++		0,
++		&v1, 0);
++	*num_be = v1;
++	return result;
++}
++
++int ps3pf_repository_read_be_node_id(unsigned int be_index, u64 *node_id)
++{
++	return read_node(ps3pf_lpar_id_pme,
++		make_first_field("be", be_index),
++		0,
++		0,
++		0,
++		node_id, 0);
++}
++
++int ps3pf_repository_read_tb_freq(u64 node_id, u64 *tb_freq)
++{
++	return read_node(ps3pf_lpar_id_pme,
++		make_first_field("be", 0),
++		node_id,
++		make_field("clock", 0),
++		0,
++		tb_freq, 0);
++}
++
++int ps3pf_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq)
++{
++	int result;
++	u64 node_id;
++
++	*tb_freq = 0;
++	result = ps3pf_repository_read_be_node_id(0, &node_id);
++	return result ? result
++		: ps3pf_repository_read_tb_freq(node_id, tb_freq);
++}
+Index: cell--common--6/include/asm-powerpc/ps3pf.h
+===================================================================
+--- cell--common--6.orig/include/asm-powerpc/ps3pf.h
++++ cell--common--6/include/asm-powerpc/ps3pf.h
+@@ -237,4 +237,143 @@
+ #endif
+ }
+ 
++/* repository bus info */
++
++enum ps3pf_bus_type {
++	ps3pf_bus_type_sb = 4,
++	ps3pf_bus_type_storage = 5,
++};
++
++enum ps3pf_dev_type {
++	ps3pf_dev_type_sb_gelic = 3,
++	ps3pf_dev_type_sb_usb = 4,
++	ps3pf_dev_type_sb_gpio = 6,
++};
++
++int ps3pf_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
++	u64 *value);
++int ps3pf_repository_read_bus_id(unsigned int bus_index, unsigned int *bus_id);
++int ps3pf_repository_read_bus_type(unsigned int bus_index,
++	enum ps3pf_bus_type *bus_type);
++int ps3pf_repository_read_bus_num_dev(unsigned int bus_index,
++	unsigned int *num_dev);
++
++/* repository bus device info */
++
++enum ps3pf_interrupt_type {
++	ps3pf_interrupt_type_event_port = 2,
++	ps3pf_interrupt_type_sb_ohci = 3,
++	ps3pf_interrupt_type_sb_ehci = 4,
++	ps3pf_interrupt_type_other = 5,
++};
++
++enum ps3pf_region_type {
++	ps3pf_region_type_sb_ohci = 3,
++	ps3pf_region_type_sb_ehci = 4,
++	ps3pf_region_type_sb_gpio = 5,
++};
++
++int ps3pf_repository_read_dev_str(unsigned int bus_index,
++	unsigned int dev_index, const char *dev_str, u64 *value);
++int ps3pf_repository_read_dev_id(unsigned int bus_index, unsigned int dev_index,
++	unsigned int *dev_id);
++int ps3pf_repository_read_dev_type(unsigned int bus_index,
++	unsigned int dev_index, enum ps3pf_dev_type *dev_type);
++int ps3pf_repository_read_dev_intr(unsigned int bus_index,
++	unsigned int dev_index, unsigned int intr_index,
++	enum ps3pf_interrupt_type *intr_type, unsigned int *interrupt_id);
++int ps3pf_repository_read_dev_reg_type(unsigned int bus_index,
++	unsigned int dev_index, unsigned int reg_index,
++	enum ps3pf_region_type *reg_type);
++int ps3pf_repository_read_dev_reg_addr(unsigned int bus_index,
++	unsigned int dev_index, unsigned int reg_index, u64 *bus_addr,
++	u64 *len);
++int ps3pf_repository_read_dev_reg(unsigned int bus_index,
++	unsigned int dev_index, unsigned int reg_index,
++	enum ps3pf_region_type *reg_type, u64 *bus_addr, u64 *len);
++
++/* repository bus enumerators */
++
++struct ps3pf_repository_device {
++	unsigned int bus_index;
++	unsigned int dev_index;
++	struct ps3pf_device_id did;
++};
++
++int ps3pf_repository_find_device(enum ps3pf_bus_type bus_type,
++	enum ps3pf_dev_type dev_type,
++	const struct ps3pf_repository_device *start_dev,
++	struct ps3pf_repository_device *dev);
++static inline int ps3pf_repository_find_first_device(
++	enum ps3pf_bus_type bus_type, enum ps3pf_dev_type dev_type,
++	struct ps3pf_repository_device *dev)
++{
++	return ps3pf_repository_find_device(bus_type, dev_type, NULL, dev);
++}
++int ps3pf_repository_find_interrupt(const struct ps3pf_repository_device *dev,
++	enum ps3pf_interrupt_type intr_type, unsigned int *interrupt_id);
++int ps3pf_repository_find_region(const struct ps3pf_repository_device *dev,
++	enum ps3pf_region_type reg_type, u64 *bus_addr, u64 *len);
++
++/* repository block device info */
++
++int ps3pf_repository_read_dev_port(unsigned int bus_index,
++	unsigned int dev_index, u64 *port);
++int ps3pf_repository_read_dev_blk_size(unsigned int bus_index,
++	unsigned int dev_index, u64 *blk_size);
++int ps3pf_repository_read_dev_num_blocks(unsigned int bus_index,
++	unsigned int dev_index, u64 *num_blocks);
++int ps3pf_repository_read_dev_num_regions(unsigned int bus_index,
++	unsigned int dev_index, unsigned int *num_regions);
++int ps3pf_repository_read_dev_region_id(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id);
++int ps3pf_repository_read_dev_region_size(unsigned int bus_index,
++	unsigned int dev_index,	unsigned int region_index, u64 *region_size);
++int ps3pf_repository_read_dev_region_start(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index, u64 *region_start);
++
++/* repository pu and memory info */
++
++int ps3pf_repository_read_num_pu(unsigned int *num_pu);
++int ps3pf_repository_read_ppe_id(unsigned int *pu_index, unsigned int *ppe_id);
++int ps3pf_repository_read_rm_base(unsigned int ppe_id, u64 *rm_base);
++int ps3pf_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
++int ps3pf_repository_read_region_total(u64 *region_total);
++int ps3pf_repository_read_mm_info(u64 *rm_base, u64 *rm_size,
++	u64 *region_total);
++
++/* repository pme info */
++
++int ps3pf_repository_read_num_be(unsigned int *num_be);
++int ps3pf_repository_read_be_node_id(unsigned int be_index, u64 *node_id);
++int ps3pf_repository_read_tb_freq(u64 node_id, u64 *tb_freq);
++int ps3pf_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq);
++
++/* repository other OS area */
++
++int ps3pf_repository_read_boot_dat_addr(u64 *lpar_addr);
++int ps3pf_repository_read_boot_dat_size(unsigned int *size);
++int ps3pf_repository_read_boot_dat_info(u64 *lpar_addr, unsigned int *size);
++
++/* repository spu info */
++
++/**
++ * enum spu_resource_type - Type of spu resource.
++ * @spu_resource_type_shared: Logical spu is shared with other partions.
++ * @spu_resource_type_exclusive: Logical spu is not shared with other partions.
++ *
++ * Returned by ps3pf_repository_read_spu_resource_id().
++ */
++
++enum ps3pf_spu_resource_type {
++	ps3pf_spu_resource_type_shared = 0,
++	ps3pf_spu_resource_type_exclusive = 0x8000000000000000UL,
++};
++
++int ps3pf_repository_read_num_spu_reserved(unsigned int *num_spu_reserved);
++int ps3pf_repository_read_num_spu_resource_id(unsigned int *num_resource_id);
++int ps3pf_repository_read_spu_resource_id(unsigned int res_index,
++	enum ps3pf_spu_resource_type* resource_type, unsigned int *resource_id);
++
+ #endif
