@@ -1,18 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17748.14621.231956.561842@cargo.ozlabs.ibm.com>
-Date: Fri, 10 Nov 2006 19:32:29 +1100
+Message-ID: <17748.15442.906060.210242@cargo.ozlabs.ibm.com>
+Date: Fri, 10 Nov 2006 19:46:10 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] PowerPC: clockevents and HRT support
-In-Reply-To: <4551E7FF.8010209@ru.mvista.com>
-References: <200611080005.08633.sshtylyov@ru.mvista.com>
-	<1162938997.28571.534.camel@localhost.localdomain>
-	<45510C58.3010707@ru.mvista.com>
-	<17745.14911.693171.717979@cargo.ozlabs.ibm.com>
-	<4551E7FF.8010209@ru.mvista.com>
-Cc: tglx@linutronix.de, greg.weeks@timesys.com, linuxppc-dev@ozlabs.org
+To: Christoph Raisch <RAISCH@de.ibm.com>
+Subject: Re: [openib-general] [PATCH 2.6.19 2/4] ehca: hcp_phyp.c: correct page
+	mapping in 64k page mode
+In-Reply-To: <OF75FFAC00.E43450CA-ONC1257222.002A402A-C1257222.002AB9BD@de.ibm.com>
+References: <adaodrgb7uq.fsf@cisco.com>
+	<OF75FFAC00.E43450CA-ONC1257222.002A402A-C1257222.002AB9BD@de.ibm.com>
+Cc: openib-general-bounces@openib.org, linuxppc-dev@ozlabs.org,
+	Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+	openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,11 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov writes:
+Christoph Raisch writes:
 
->     And I left people a choice: they can either have fancy accounting or HRT, 
-> just not both at once. What's wrong with that?
+> The patch is needed. We've seen it on the real system. We did fix it on the
+> real system.
 
-_I_ want both at once. :)
+I disagree that the ioremap change is needed.
+
+> ...and it conforms to theory... although theory is a bit confusing here.
+> 
+> let me try to summarize:
+> ioremap checks for 64k boundary (actually page boundary)
+
+Actually, ioremap itself already does the calculations that your patch
+adds - that is, it generates the offset within the page and the
+physical address of the start of the page, does the mapping using the
+latter, then adds on the offset to the virtual address of the page and
+returns that.
 
 Paul.
