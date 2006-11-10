@@ -1,17 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7099067CB9
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 15:11:29 +1100 (EST)
-Subject: [PATCH] powerpc: Fix cell "new style" mapping and add debug
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 10 Nov 2006 15:11:20 +1100
-Message-Id: <1163131880.4982.107.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Fri, 10 Nov 2006 18:44:43 +1100
+Subject: [PATCH 0/32] My current serie of patches for 2.6.20 for review
+Message-Id: <1163144683.554182.685908332811.qpush@grosgo>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,97 +13,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes a typo in the "new style" code for mapping SPE
-resources, which causes it to try to map 4 times the same resource.
+This should be ready for merge in powerpc tree
 
-It also adds some pr_debug's that are useful to track down issues with
-the firmware when bringinh up new machines.
+This is the whole of my current patch set that I intend to merge
+as soon as 2.6.20 merge window opens. I'm posting them here for
+review, some of them already had a few iterations on the list by
+their own, some didn't show up publically at all yet.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Note that the first 5 ones require specific comments:
 
-The bug is in 2.6.19 so we should merge that asap.
+* ibmveth: Remove ibmveth "liobn" field
 
-Index: linux-cell/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spu_base.c	2006-10-23 14:41:37.000000000 +1000
-+++ linux-cell/arch/powerpc/platforms/cell/spu_base.c	2006-11-10 15:08:40.000000000 +1100
-@@ -655,14 +655,19 @@ static int __init spu_map_interrupts(str
- 
- 	for (i=0; i < 3; i++) {
- 		ret = of_irq_map_one(np, i, &oirq);
--		if (ret)
-+		if (ret) {
-+			pr_debug("spu_new: failed to get irq %d\n", i);
- 			goto err;
--
-+		}
- 		ret = -EINVAL;
-+		pr_debug("  irq %d no 0x%x on %s\n", i, oirq.specifier[0],
-+			 oirq.controller->full_name);
- 		spu->irqs[i] = irq_create_of_mapping(oirq.controller,
- 					oirq.specifier, oirq.size);
--		if (spu->irqs[i] == NO_IRQ)
-+		if (spu->irqs[i] == NO_IRQ) {
-+			pr_debug("spu_new: failed to map it !\n");
- 			goto err;
-+		}
- 	}
- 	return 0;
- 
-@@ -681,7 +686,7 @@ static int spu_map_resource(struct devic
- 	struct resource resource = { };
- 	int ret;
- 
--	ret = of_address_to_resource(node, 0, &resource);
-+	ret = of_address_to_resource(node, nr, &resource);
- 	if (ret)
- 		goto out;
- 
-@@ -704,22 +709,42 @@ static int __init spu_map_device(struct 
- 
- 	ret = spu_map_resource(node, 0, (void __iomem**)&spu->local_store,
- 					&spu->local_store_phys);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 0\n",
-+			 node->full_name);
- 		goto out;
-+	}
- 	ret = spu_map_resource(node, 1, (void __iomem**)&spu->problem,
- 					&spu->problem_phys);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 1\n",
-+			 node->full_name);
- 		goto out_unmap;
-+	}
- 	ret = spu_map_resource(node, 2, (void __iomem**)&spu->priv2,
- 					NULL);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 2\n",
-+			 node->full_name);
- 		goto out_unmap;
-+	}
- 
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
- 		ret = spu_map_resource(node, 3, (void __iomem**)&spu->priv1,
- 					NULL);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 3\n",
-+			 node->full_name);
- 		goto out_unmap;
-+	}
-+	pr_debug("spu_new: %s maps:\n", node->full_name);
-+	pr_debug("  local store   : 0x%016lx -> 0x%p\n",
-+		 spu->local_store_phys, spu->local_store);
-+	pr_debug("  problem state : 0x%016lx -> 0x%p\n",
-+		 spu->problem_phys, spu->problem);
-+	pr_debug("  priv2         :                       0x%p\n", spu->priv2);
-+	pr_debug("  priv1         :                       0x%p\n", spu->priv1);
-+
- 	return 0;
- 
- out_unmap:
+  is already queued with Jeff Garzik and will get in 2.6.20
+  via his merge tree
+
+* Call platform_notify_remove later
+
+  is queued in -mm and Andrew sent it to Greg, I expect greg to
+  merge it in 2.6.20
+
+* Driver core: add notification of bus events
+
+  is queued in Greg's tree and scheduled for merge in 2.6.20
+
+* arch provides generic iomap missing accessors
+
+  was written by Linus but is not merged yet. He asked me to
+  resend it when needed, so I'll include it with the other patches
+  when the merge window opens.
+
+* Add arch specific dev_sysdata to struct device
+
+  this is under discussion. I haven't had much comment yet, a few
+  postitives though. I hope it will make 2.6.20 without problem,
+  but we'll know in the upcoming couple of days.
+
+* Change ACPI to use dev_sysdata instead of firmware_data
+
+  this is a patch that goes along the previous one (though not actually
+  necessary). It doesn't actually need to go in powerpc.git nor 2.6.20,
+  I included it in this serie for completeness
+
+This patch set started its life as the support for the new "Axon"
+southbridge for cell (which includes such things as MMIO mapped DCR
+and 4xx-type devices). However, as things evolved, I ended up doing
+a lot more than just the basic support. Among other highlights of
+this patch serie are:
+
+ - Generic DCR support for both 4xx-type DCRs and MMIO mapped DCR and
+MPIC & EMAC changes to work with that
+
+ - Souped up of_platform_driver to make it easier to register entire
+trees of devices at once, along with PCI host bridge detection support
+for 64 bits architectures. Note that some name changes might break
+compile of some platforms. I hope to have fixed everything before I
+merge but don't forget to tell me if I missed something.
+
+ - Completely reworked 64 bits DMA operations
+
+ - Possibility to "hook" on PCI MMIO and PCI operations from the platform
+code for use by iSeries, Cell and possibly others who have to deal with
+weird hypervisor or PCI host bridge erratas. Currently supported only on
+64 bits but would be easy to make it work on 32 bits if ever needed.
+
+ - Merged 32 and 64 bits io.h. ARCH=powerpc now uses asm-powerpc/io.h
+for both. ARCH=ppc still uses the old one in asm-ppc as I really don't
+feel like dealing with some of the cruft in there.
+
+ - As a consequence of the 2 above, new accessors are available that match
+what is done by other architectures: {read,write}{w,l,q}_be for big endian
+PCI MMIO accesses, {read,write}s{b,w,l} for MMIO "repeat" operations, and
+a significant cleanup of the EEH stuff.
+
+ - Cell IOMMU support (mostly written by Jeremy Kerr)
+
+And more ...
