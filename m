@@ -1,36 +1,32 @@
 Return-Path: <brking@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 38E0767DF8
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 02:08:41 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAAF8a6a024444
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 10:08:39 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAAF8Nfg181192
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 10:08:30 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAAF8M9i025107
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 10:08:23 -0500
-Message-ID: <455495B7.4050701@us.ibm.com>
-Date: Fri, 10 Nov 2006 09:07:35 -0600
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 443EF67DFF
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 02:24:07 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAAFO229009534
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 10:24:02 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAAFO2w0358416
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:24:02 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAAFO1cV001212
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 08:24:02 -0700
+Message-ID: <45549962.108@us.ibm.com>
+Date: Fri, 10 Nov 2006 09:23:14 -0600
 From: Brian King <brking@us.ibm.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: ipr SATA support is causing problems
-References: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>	
-	<1163159326.19697.23.camel@crusty.rchland.ibm.com>	
-	<17748.27504.715056.565983@cargo.ozlabs.ibm.com>
-	<1163164499.4168.3.camel@zod.rchland.ibm.com>
-In-Reply-To: <1163164499.4168.3.camel@zod.rchland.ibm.com>
+References: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>
+In-Reply-To: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: akpm@osdl.org, James Bottomley <jejb@mulgrave.il.steeleye.com>,
-	John H Rose <johnrose@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	torvalds@osdl.org, Paul Mackerras <paulus@samba.org>,
-	Jeff Garzik <jgarzik@pobox.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
+	James Bottomley <jejb@mulgrave.il.steeleye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,31 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Fri, 2006-11-10 at 23:07 +1100, Paul Mackerras wrote:
->> Josh Boyer writes:
->>
->>> John Rose reported this a few days ago.  Brian responded with this:
->>>
->>> http://marc.theaimsgroup.com/?l=linux-ide&m=116169938407596&w=2
->> Didn't John say he still saw the crash with that change?
+Paul Mackerras wrote:
+> Brian,
 > 
-> He did on my suggestion, which technically wasn't correct.  I haven't
-> seen anything from him after Brian replied with a real patch.
-> 
-> I know I helped debug a crash that looked very much like that on a P5
-> box with a 2.6.19-rcX kernel and Brian's patch fixed it.
+> Today I compiled up a kernel from Linus' git tree and tried it on a
+> POWER6 partition.  First I found that my config no longer had the ipr
+> driver, because I didn't have CONFIG_ATA and ipr now depends on
+> CONFIG_ATA.  So I enabled CONFIG_ATA without enabling any of the ATA
+> chip drivers, which seems a little weird, and re-enabled ipr.
 
-Paul,
-
-The backtrace you posted is identical to the problem fixed by the patch
-that Josh pointed you to. The patch has been submitted to Jeff. I asked
-Jeff two days ago if this could be pulled in for 2.6.19. I verified the
-bug and the fix on my machine. As far as I know, John still has not tried
-the actual patch pointed to above. Just to clarify, without this patch,
-any monolithic kernel will not work on pseries, but modular kernels will
-still work. If someone can reproduce any problem with the libata patch
-above applied, please let me know.
+I'm not sure what the best way to fix this one is... The ideal way is to
+change ipr to select CONFIG_ATA, but kconfig currently doesn't handle
+that and complains about recursive dependencies since IPR depends on
+CONFIG_SCSI and CONFIG_ATA selects CONFIG_SCSI. I'm guessing the
+libsas SATA usage has similar problems. Right now we both use a depends
+CONFIG_ATA statement. Ideally, kconfig should be fixed to handle this.
 
 Brian
 
