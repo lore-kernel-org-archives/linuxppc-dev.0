@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3F09F67CDA
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 09:48:31 +1100 (EST)
-Subject: Re: APUS and IOs question
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Simon Richter <Simon.Richter@hogyros.de>
-In-Reply-To: <45533C79.70404@hogyros.de>
-References: <1162767333.28571.254.camel@localhost.localdomain>
-	<454F5259.3020107@hogyros.de>  <454F5E44.4040301@genesi-usa.com>
-	<1162844529.28571.327.camel@localhost.localdomain>
-	<455081AC.3010301@hogyros.de>
-	<1162931605.28571.491.camel@localhost.localdomain>
-	<45533C79.70404@hogyros.de>
-Content-Type: text/plain
-Date: Fri, 10 Nov 2006 09:48:39 +1100
-Message-Id: <1163112519.4982.50.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id B71B767CB9
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 11:13:12 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so347584ugf
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Nov 2006 16:13:10 -0800 (PST)
+Message-ID: <528646bc0611091613i6f96128bjffed2cfe2f5f2b8b@mail.gmail.com>
+Date: Thu, 9 Nov 2006 17:13:09 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>,
+	"Nicolas DET" <nd@bplan-gmbh.de>, "Sylvain Munaut" <tnt@246tnt.com>
+Subject: Git trees for MPC52xx development
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> My plan for moving APUS to arch/powerpc involves writing a new
-> bootloader (I'm currently hacking binutils to support AmigaOS binaries)
-> that builds a proper flattened device tree and calls the kernel, but I'm
-> not sure where the kernel virtual mapping that allows the kernel to run
-> from a fixed address should be set up -- if in the bootloader, the
-> kernel needs to be aware that changing the MMU settings will yield
-> interesting results, and if in the kernel, we need some platform
-> specific init code to handle that.
+For those who are interested;
 
-Well, the problem is that you basially have to hack the linear mapping,
-thus hitting anything that relies on __pa/__va or operating in real mode
-indeed.
+Sylvain and I are both maintaining git trees for the port of mpc52xx
+support into arch/powerpc.  Once things are more mature, we'll break
+up the changes into patches and post them for comment.
 
-How do you do for exception vectors ? Since those have to be either at 0
-or at ff* ? You stick branches at 0 to jump to where the kernel
-resides ?
+You can view the trees at:
+http://git.secretlab.ca/
+http://gitbits.246tnt.com/
 
-Ben.
+Comments and patches are, of course, welcome.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
