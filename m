@@ -1,16 +1,14 @@
-Return-Path: <rimas@cnmat.berkeley.edu>
-Received: from cnmat.berkeley.edu (cnmat.CNMAT.Berkeley.EDU [128.32.122.12])
-	by ozlabs.org (Postfix) with ESMTP id A5BA267CCD
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Nov 2006 13:55:28 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <37DEF3E4-EBAB-46FA-A922-D72582474F3D@cnmat.berkeley.edu>
-From: rimas <rimas@cnmat.berkeley.edu>
-Subject: Re: minor progress with plb_temac v3.00a, EDK 8.2, & 2.6.18.1
-Date: Thu, 9 Nov 2006 17:55:25 -0800
-To: linuxppc-embedded@ozlabs.org
-Cc: robert corley <rdcorle@yahoo.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17748.21645.621069.105453@cargo.ozlabs.ibm.com>
+Date: Fri, 10 Nov 2006 21:29:33 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kalle Pokki <kalle.pokki@iki.fi>
+Subject: Re: [PATCH] CPM_UART: Fix non-console initialisation (v2)
+In-Reply-To: <Pine.LNX.4.64.0611011457490.3387@host32.eke.fi>
+References: <Pine.LNX.4.64.0611011457490.3387@host32.eke.fi>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +19,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-i had problems getting the plb_temac driver to work at speeds higher  
-than 10 mbps until i modified the adapter.c
-file to have the correct PHY address for my setup (i am using the  
-avnet V4FX12 mini-module board and the correct value was 4).
-the phy address is usually determined by pullup/pulldowns on certain  
-pins on the gig phy chip.
+Kalle Pokki writes:
 
-this was under 2.4, but i looked at the adapter.c for the 2.6  
-xilinx_temac driver and it appears to just set this value to 0
+> This is a cleaned-up version of a patch sent on Oct 19th. The patch is 
+> fairly straightforward and does not affect other than the compat mode. As 
+> not having this patch renders the cpm_uart driver unusable with a frame 
+> buffer console, I think this should be included in 2.6.19.
 
-look at line 2905 of adapter.c:
+The last hunk, i.e. the change to drivers/serial/cpm_uart/cpm_uart_cpm2.c,
+doesn't apply because cpm_uart_init_portdesc now looks different to the
+context in your patch, so I dropped that hunk (it looked to be pretty
+much independent of the other changes).
 
-	/* Assume the PHY to be at address 0x00 */
-	lp->gmii_addr = 0;
+Also, the whitespace is damaged throughout this and your other
+patches.  I fixed it up this time, but please fix your mailer not to
+munge the whitespace.  Specifically, where a line begins with a space
+character, your mailer removes it if there is nothing else on the
+line, or turns it into two spaces otherwise. :P
 
-you should change that to reflect the address of your hardware setup.
-
-hope this helps
-
--rimas
-
-> Pradeep;
->
-> I found the process of "uprading" the xapp902 reference design to  
-> be troublesome when I removed the GMII loop-back; as
-> such, I aborted the process and just started from scratch.
->
-> I am currently debugging my design and have a functional plb_temac  
-> but only at 10Mbps speeds.
->
-> -R. Corley
->
->
+Paul.
