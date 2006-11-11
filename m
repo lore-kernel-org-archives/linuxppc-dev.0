@@ -2,17 +2,17 @@ Return-Path: <hch@lst.de>
 Received: from mail.lst.de (verein.lst.de [213.95.11.210])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1883E67F42
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 22:22:45 +1100 (EST)
-Date: Sat, 11 Nov 2006 12:22:39 +0100
+	by ozlabs.org (Postfix) with ESMTP id CCD7C67FAA
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 22:24:09 +1100 (EST)
+Date: Sat, 11 Nov 2006 12:24:03 +0100
 From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 8/16] powerpc: add ps3 platform hvcalls
-Message-ID: <20061111112239.GB24288@lst.de>
-References: <4554DAD7.2090709@am.sony.com> <200611110313.40940.arnd@arndb.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
+Message-ID: <20061111112403.GC24288@lst.de>
+References: <4554DACB.8060809@am.sony.com> <20061111112125.GA24288@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200611110313.40940.arnd@arndb.de>
+In-Reply-To: <20061111112125.GA24288@lst.de>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,17 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Nov 11, 2006 at 03:13:40AM +0100, Arnd Bergmann wrote:
-> On Friday 10 November 2006 21:02, Geoff Levand wrote:
-> > Adds the ps3pf hvcalls.
-> > 
-> > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+On Sat, Nov 11, 2006 at 12:21:25PM +0100, Christoph Hellwig wrote:
+> On Fri, Nov 10, 2006 at 12:02:19PM -0800, Geoff Levand wrote:
+> > This adds the core platform support for the PS3 game console and other
+> > platforms using the PS3 Platform hypervisor.
 > 
-> This one reminds of the inline hcall abstraction layer I did
-> some time ago. The implementation in your patch is a lot
-> less elegant than both the pseries in its current incarnation
-> and the one that I did (IMHO). Any opinions on how we should
-> proceed here?
+> Please give the port a less confusing name.  I'd expect platforms/ps3
+> to be the bare metal port once people have revere-engineered the
+> hardware, so your crappy hipervisor code should make it very clear what
+> it is.  sonyhv or ps3hv would suite I think.
 
-Please try to reuse Arnd's code as much as possible.  What's in
-this patch is more than ugly.
+Any while we're at it it probably shouldn't be it's own directory
+under platforms, as platforms/cell contains a lot of generic cell
+stuff.  We should rather have platforms/cell for all cell stuff
+and then sub-platform prefixed bits.  Especially as e.g. the cpbw and
+native cell port will probably share a lot of code.
