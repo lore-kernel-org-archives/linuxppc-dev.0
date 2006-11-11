@@ -1,11 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 11 Nov 2006 17:25:10 +1100
-Subject: [PATCH 23/32] powerpc: Allow hooking of PCI MMIO & PIO accessors on
-	64 bits
+Date: Sat, 11 Nov 2006 17:25:12 +1100
+Subject: [PATCH 24/32] powerpc: Cell "Spider" MMIO workarounds
 In-Reply-To: <1163226282.72526.823314634857.qpush@butch>
-Message-Id: <20061111062541.97B4B683F4@ozlabs.org>
+Message-Id: <20061111062542.A88C06802E@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,1869 +14,395 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch reworks the way iSeries hooks on PCI IO operations (both MMIO
-and PIO) and provides a generic way for other platforms to do so (we
-have need to do that for various other platforms).
+This is totally untested, I just put it together quickly, but gives an
+example of how the hooks can be used which is why I introduced it in
+this serie. Hopefully, I'll test & fix it up properly this week.
 
-While reworking the IO ops, I ended up doing some spring cleaning in
-io.h and eeh.h which I might want to split into 2 or 3 patches (among
-others, eeh.h had a lot of useless stuff in it).
-
-A side effect is that EEH for PIO should work now (it used to pass IO
-ports down to the eeh address check functions which is bogus).
-
-Also, new are MMIO "repeat" ops, which other archs like ARM already had,
-and that we have too now: readsb, readsw, readsl, writesb, writesw,
-writesl.
-
-In the long run, I might also make EEH use the hooks instead
-of wrapping at the toplevel, which would make things even cleaner and
-relegate EEH completely in platforms/iseries, but we have to measure the
-performance impact there (though it's really only on MMIO reads)
-
-Since I also need to hook on ioremap, I shuffled the functions a bit
-there. I introduced ioremap_flags() to use by drivers who want to pass
-explicit flags to ioremap (and it can be hooked). The old __ioremap() is
-still there as a low level and cannot be hooked, thus drivers who use it
-should migrate unless they know they want the low level version.
-
-The patch "arch provides generic iomap missing accessors" (should be
-number 4 in this series) is a pre-requisite to provide full iomap
-API support with this patch.
+This patch implements a workaround for a Spider PCI host bridge bug
+where it doesn't enforce some of the PCI ordering rules unless some
+manual manipulation of a special register is done. In order to be
+fully compliant with the PCI spec, I do this on every MMIO read
+operation.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/Kconfig                   |   10 
- arch/powerpc/kernel/Makefile           |    6 
- arch/powerpc/kernel/io.c               |   18 
- arch/powerpc/kernel/pci_64.c           |    2 
- arch/powerpc/kernel/setup_64.c         |    7 
- arch/powerpc/mm/pgtable_64.c           |   46 +-
- arch/powerpc/platforms/iseries/pci.c   |  370 +++++++-----------
- arch/powerpc/platforms/iseries/setup.c |   12 
- include/asm-powerpc/eeh.h              |  118 +-----
- include/asm-powerpc/ide.h              |    7 
- include/asm-powerpc/io-defs.h          |   56 ++
- include/asm-powerpc/io.h               |  645 +++++++++++++++++++--------------
- include/asm-powerpc/machdep.h          |    4 
- include/asm-ppc/io.h                   |   12 
- 14 files changed, 703 insertions(+), 610 deletions(-)
+ arch/powerpc/Kconfig                         |    1 
+ arch/powerpc/platforms/cell/Makefile         |    3 
+ arch/powerpc/platforms/cell/io-workarounds.c |  346 +++++++++++++++++++++++++++
+ 3 files changed, 349 insertions(+), 1 deletion(-)
 
-Index: linux-cell/include/asm-powerpc/io.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/io.h	2006-11-04 14:35:03.000000000 +1100
-+++ linux-cell/include/asm-powerpc/io.h	2006-11-11 14:58:00.000000000 +1100
-@@ -31,57 +31,122 @@
- 
- #define SLOW_DOWN_IO
- 
-+/*
-+ *
-+ * Low level MMIO accessors
-+ *
-+ * This provides the non-bus specific accessors to MMIO. Those are PowerPC
-+ * specific and thus shouldn't be used in generic code. The accessors
-+ * provided here are:
-+ *
-+ *	in_8, in_le16, in_be16, in_le32, in_be32, in_le64, in_be64
-+ *	out_8, out_le16, out_be16, out_le32, out_be32, out_le64, out_be64
-+ *	_insb, _insw_ns, _insl_ns, _outsb, _outsw_ns, _outsl_ns
-+ *
-+ * Those operate directly on a kernel virtual address. Note that the prototype
-+ * for the out_* accessors has the arguments in opposite order from the usual
-+ * linux PCI accessors. Unlike those, they take the address first and the value
-+ * next.
-+ *
-+ * Note: I might drop the _ns suffix on the stream operations soon as it is
-+ * simply normal for stream operations to not swap in the first place.
-+ *
-+ */
-+
-+#define IO_SET_SYNC_FLAG()	do { get_paca()->io_sync = 1; } while(0)
-+
-+#define DEF_MMIO_IN(name, type, insn)					\
-+static inline type name(const volatile type __iomem *addr)		\
-+{									\
-+	type ret;							\
-+	__asm__ __volatile__("sync;" insn ";twi 0,%0,0;isync"		\
-+ 		: "=r" (ret) : "r" (addr), "m" (*addr));		\
-+	return ret;							\
-+}
-+
-+#define DEF_MMIO_OUT(name, type, insn)					\
-+static inline void name(volatile type __iomem *addr, type val)		\
-+{									\
-+	__asm__ __volatile__("sync;" insn				\
-+ 		: "=m" (*addr) : "r" (val), "r" (addr));		\
-+	IO_SET_SYNC_FLAG();					\
-+}
-+
-+
-+#define DEF_MMIO_IN_BE(name, size, insn) \
-+	DEF_MMIO_IN(name, u##size, __stringify(insn)"%U2%X2 %0,%2")
-+#define DEF_MMIO_IN_LE(name, size, insn) \
-+	DEF_MMIO_IN(name, u##size, __stringify(insn)" %0,0,%1")
-+
-+#define DEF_MMIO_OUT_BE(name, size, insn) \
-+	DEF_MMIO_OUT(name, u##size, __stringify(insn)"%U0%X0 %1,%0")
-+#define DEF_MMIO_OUT_LE(name, size, insn) \
-+	DEF_MMIO_OUT(name, u##size, __stringify(insn)" %1,0,%2")
-+
-+DEF_MMIO_IN_BE(in_8,     8, lbz);
-+DEF_MMIO_IN_BE(in_be16, 16, lhz);
-+DEF_MMIO_IN_BE(in_be32, 32, lwz);
-+DEF_MMIO_IN_BE(in_be64, 64, ld);
-+DEF_MMIO_IN_LE(in_le16, 16, lhbrx);
-+DEF_MMIO_IN_LE(in_le32, 32, lwbrx);
-+
-+DEF_MMIO_OUT_BE(out_8,     8, stb);
-+DEF_MMIO_OUT_BE(out_be16, 16, sth);
-+DEF_MMIO_OUT_BE(out_be32, 32, stw);
-+DEF_MMIO_OUT_BE(out_be64, 64, std);
-+DEF_MMIO_OUT_LE(out_le16, 16, sthbrx);
-+DEF_MMIO_OUT_LE(out_le32, 32, stwbrx);
-+
-+/* There is no asm instructions for 64 bits reverse loads and stores */
-+static inline u64 in_le64(const volatile u64 __iomem *addr)
-+{
-+	return le64_to_cpu(in_be64(addr));
-+}
-+
-+static inline void out_le64(volatile u64 __iomem *addr, u64 val)
-+{
-+	out_be64(addr, cpu_to_le64(val));
-+}
-+
-+/*
-+ * Low level IO stream instructions are defined out of line for now
-+ */
-+extern void _insb(const volatile u8 __iomem *addr, void *buf, long count);
-+extern void _outsb(volatile u8 __iomem *addr,const void *buf,long count);
-+extern void _insw_ns(const volatile u16 __iomem *addr, void *buf, long count);
-+extern void _outsw_ns(volatile u16 __iomem *addr, const void *buf, long count);
-+extern void _insl_ns(const volatile u32 __iomem *addr, void *buf, long count);
-+extern void _outsl_ns(volatile u32 __iomem *addr, const void *buf, long count);
-+
-+/* The _ns naming is historical and will be removed. For now, just #define
-+ * the non _ns equivalent names
-+ */
-+#define _insw	_insw_ns
-+#define _insl	_insl_ns
-+#define _outsw	_outsw_ns
-+#define _outsl	_outsl_ns
-+
-+/*
-+ *
-+ * PCI and standard ISA accessors
-+ *
-+ * Those are globally defined linux accessors for devices on PCI or ISA
-+ * busses. They follow the Linux defined semantics. The current implementation
-+ * for PowerPC is as close as possible to the x86 version of these, and thus
-+ * provides fairly heavy weight barriers for the non-raw versions
-+ *
-+ * In addition, they support a hook mechanism when CONFIG_PPC_INDIRECT_IO
-+ * allowing the platform to provide its own implementation of some or all
-+ * of the accessors.
-+ */
-+
- extern unsigned long isa_io_base;
- extern unsigned long pci_io_base;
- 
--#ifdef CONFIG_PPC_ISERIES
- 
--extern int in_8(const volatile unsigned char __iomem *addr);
--extern void out_8(volatile unsigned char __iomem *addr, int val);
--extern int in_le16(const volatile unsigned short __iomem *addr);
--extern int in_be16(const volatile unsigned short __iomem *addr);
--extern void out_le16(volatile unsigned short __iomem *addr, int val);
--extern void out_be16(volatile unsigned short __iomem *addr, int val);
--extern unsigned in_le32(const volatile unsigned __iomem *addr);
--extern unsigned in_be32(const volatile unsigned __iomem *addr);
--extern void out_le32(volatile unsigned __iomem *addr, int val);
--extern void out_be32(volatile unsigned __iomem *addr, int val);
--extern unsigned long in_le64(const volatile unsigned long __iomem *addr);
--extern unsigned long in_be64(const volatile unsigned long __iomem *addr);
--extern void out_le64(volatile unsigned long __iomem *addr, unsigned long val);
--extern void out_be64(volatile unsigned long __iomem *addr, unsigned long val);
--
--extern unsigned char __raw_readb(const volatile void __iomem *addr);
--extern unsigned short __raw_readw(const volatile void __iomem *addr);
--extern unsigned int __raw_readl(const volatile void __iomem *addr);
--extern unsigned long __raw_readq(const volatile void __iomem *addr);
--extern void __raw_writeb(unsigned char v, volatile void __iomem *addr);
--extern void __raw_writew(unsigned short v, volatile void __iomem *addr);
--extern void __raw_writel(unsigned int v, volatile void __iomem *addr);
--extern void __raw_writeq(unsigned long v, volatile void __iomem *addr);
--
--extern void memset_io(volatile void __iomem *addr, int c, unsigned long n);
--extern void memcpy_fromio(void *dest, const volatile void __iomem *src,
--                                 unsigned long n);
--extern void memcpy_toio(volatile void __iomem *dest, const void *src,
--                                 unsigned long n);
--
--#else /* CONFIG_PPC_ISERIES */
--
--#define in_8(addr)		__in_8((addr))
--#define out_8(addr, val)	__out_8((addr), (val))
--#define in_le16(addr)		__in_le16((addr))
--#define in_be16(addr)		__in_be16((addr))
--#define out_le16(addr, val)	__out_le16((addr), (val))
--#define out_be16(addr, val)	__out_be16((addr), (val))
--#define in_le32(addr)		__in_le32((addr))
--#define in_be32(addr)		__in_be32((addr))
--#define out_le32(addr, val)	__out_le32((addr), (val))
--#define out_be32(addr, val)	__out_be32((addr), (val))
--#define in_le64(addr)		__in_le64((addr))
--#define in_be64(addr)		__in_be64((addr))
--#define out_le64(addr, val)	__out_le64((addr), (val))
--#define out_be64(addr, val)	__out_be64((addr), (val))
-+/*
-+ * Non ordered and non-swapping "raw" accessors
-+ */
- 
- static inline unsigned char __raw_readb(const volatile void __iomem *addr)
- {
-@@ -115,52 +180,203 @@
- {
- 	*(volatile unsigned long __force *)addr = v;
- }
--#define memset_io(a,b,c)	eeh_memset_io((a),(b),(c))
--#define memcpy_fromio(a,b,c)	eeh_memcpy_fromio((a),(b),(c))
--#define memcpy_toio(a,b,c)	eeh_memcpy_toio((a),(b),(c))
--
--#endif /* CONFIG_PPC_ISERIES */
--
--/*
-- * The insw/outsw/insl/outsl macros don't do byte-swapping.
-- * They are only used in practice for transferring buffers which
-- * are arrays of bytes, and byte-swapping is not appropriate in
-- * that case.  - paulus */
--#define insb(port, buf, ns)	eeh_insb((port), (buf), (ns))
--#define insw(port, buf, ns)	eeh_insw_ns((port), (buf), (ns))
--#define insl(port, buf, nl)	eeh_insl_ns((port), (buf), (nl))
--
--#define outsb(port, buf, ns)  _outsb((u8 __iomem *)((port)+pci_io_base), (buf), (ns))
--#define outsw(port, buf, ns)  _outsw_ns((u16 __iomem *)((port)+pci_io_base), (buf), (ns))
--#define outsl(port, buf, nl)  _outsl_ns((u32 __iomem *)((port)+pci_io_base), (buf), (nl))
--
--#define readb(addr)		eeh_readb(addr)
--#define readw(addr)		eeh_readw(addr)
--#define readl(addr)		eeh_readl(addr)
--#define readq(addr)		eeh_readq(addr)
--#define writeb(data, addr)	eeh_writeb((data), (addr))
--#define writew(data, addr)	eeh_writew((data), (addr))
--#define writel(data, addr)	eeh_writel((data), (addr))
--#define writeq(data, addr)	eeh_writeq((data), (addr))
--#define inb(port)		eeh_inb((unsigned long)port)
--#define outb(val, port)		eeh_outb(val, (unsigned long)port)
--#define inw(port)		eeh_inw((unsigned long)port)
--#define outw(val, port)		eeh_outw(val, (unsigned long)port)
--#define inl(port)		eeh_inl((unsigned long)port)
--#define outl(val, port)		eeh_outl(val, (unsigned long)port)
- 
-+
-+/*
-+ *
-+ * PCI PIO and MMIO accessors.
-+ *
-+ */
-+
-+#include <asm/eeh.h>
-+
-+/* Shortcut to the MMIO argument pointer */
-+#define PCI_IO_ADDR	volatile void __iomem *
-+
-+/* Indirect IO address tokens:
-+ *
-+ * When CONFIG_PPC_INDIRECT_IO is set, the platform can provide hooks
-+ * on all IOs.
-+ *
-+ * To help platforms who may need to differenciate MMIO addresses in
-+ * their hooks, a bitfield is reserved for use by the platform near the
-+ * top of MMIO addresses (not PIO, those have to cope the hard way).
-+ *
-+ * This bit field is 12 bits and is at the top of the IO virtual
-+ * addresses PCI_IO_INDIRECT_TOKEN_MASK.
-+ *
-+ * The kernel virtual space is thus:
-+ *
-+ *  0xD000000000000000		: vmalloc
-+ *  0xD000080000000000		: PCI PHB IO space
-+ *  0xD000080080000000		: ioremap
-+ *  0xD0000fffffffffff		: end of ioremap region
-+ *
-+ * Since the top 4 bits are reserved as the region ID, we use thus
-+ * the next 12 bits and keep 4 bits available for the future if the
-+ * virtual address space is ever to be extended.
-+ *
-+ * The direct IO mapping operations will then mask off those bits
-+ * before doing the actual access, though that only happen when
-+ * CONFIG_PPC_INDIRECT_IO is set, thus be careful when you use that
-+ * mechanism
-+ */
-+
-+#ifdef CONFIG_PPC_INDIRECT_IO
-+#define PCI_IO_IND_TOKEN_MASK	0x0fff000000000000ul
-+#define PCI_IO_IND_TOKEN_SHIFT	48
-+#define PCI_FIX_ADDR(addr)						\
-+	((PCI_IO_ADDR)(((unsigned long)(addr)) & ~PCI_IO_IND_TOKEN_MASK))
-+#define PCI_GET_ADDR_TOKEN(addr)					\
-+	(((unsigned long)(addr) & PCI_IO_IND_TOKEN_MASK) >> 		\
-+		PCI_IO_IND_TOKEN_SHIFT)
-+#define PCI_SET_ADDR_TOKEN(addr, token) 				\
-+do {									\
-+	unsigned long __a = (unsigned long)(addr);			\
-+	__a &= ~PCI_IO_IND_TOKEN_MASK;					\
-+	__a |= ((unsigned long)(token)) << PCI_IO_IND_TOKEN_SHIFT;	\
-+	(addr) = (void __iomem *)__a;					\
-+} while(0)
-+#else
-+#define PCI_FIX_ADDR(addr) (addr)
-+#endif
-+
-+/* The "__do_*" operations below provide the actual "base" implementation
-+ * for each of the defined acccessor. Some of them use the out_* functions
-+ * directly, some of them still use EEH, though we might change that in the
-+ * future. Those macros below provide the necessary argument swapping and
-+ * handling of the IO base for PIO.
-+ *
-+ * They are themselves used by the macros that define the actual accessors
-+ * and can be used by the hooks if any.
-+ *
-+ * Note that PIO operations are always defined in terms of their corresonding
-+ * MMIO operations. That allows platforms like iSeries who want to modify the
-+ * behaviour of both to only hook on the MMIO version and get both. It's also
-+ * possible to hook directly at the toplevel PIO operation if they have to
-+ * be handled differently
-+ */
-+#define __do_writeb(val, addr)	out_8(PCI_FIX_ADDR(addr), val)
-+#define __do_writew(val, addr)	out_le16(PCI_FIX_ADDR(addr), val)
-+#define __do_writel(val, addr)	out_le32(PCI_FIX_ADDR(addr), val)
-+#define __do_writeq(val, addr)	out_le64(PCI_FIX_ADDR(addr), val)
-+#define __do_writew_be(val, addr) out_be16(PCI_FIX_ADDR(addr), val)
-+#define __do_writel_be(val, addr) out_be32(PCI_FIX_ADDR(addr), val)
-+#define __do_writeq_be(val, addr) out_be64(PCI_FIX_ADDR(addr), val)
-+#define __do_readb(addr)	eeh_readb(PCI_FIX_ADDR(addr))
-+#define __do_readw(addr)	eeh_readw(PCI_FIX_ADDR(addr))
-+#define __do_readl(addr)	eeh_readl(PCI_FIX_ADDR(addr))
-+#define __do_readq(addr)	eeh_readq(PCI_FIX_ADDR(addr))
-+#define __do_readw_be(addr)	eeh_readw_be(PCI_FIX_ADDR(addr))
-+#define __do_readl_be(addr)	eeh_readl_be(PCI_FIX_ADDR(addr))
-+#define __do_readq_be(addr)	eeh_readq_be(PCI_FIX_ADDR(addr))
-+
-+#define __do_outb(val, port)	writeb(val,(PCI_IO_ADDR)pci_io_base+port);
-+#define __do_outw(val, port)	writew(val,(PCI_IO_ADDR)pci_io_base+port);
-+#define __do_outl(val, port)	writel(val,(PCI_IO_ADDR)pci_io_base+port);
-+#define __do_inb(port)		readb((PCI_IO_ADDR)pci_io_base + port);
-+#define __do_inw(port)		readw((PCI_IO_ADDR)pci_io_base + port);
-+#define __do_inl(port)		readl((PCI_IO_ADDR)pci_io_base + port);
-+
-+#define __do_readsb(a, b, n)	eeh_readsb(PCI_FIX_ADDR(a), (b), (n))
-+#define __do_readsw(a, b, n)	eeh_readsw(PCI_FIX_ADDR(a), (b), (n))
-+#define __do_readsl(a, b, n)	eeh_readsl(PCI_FIX_ADDR(a), (b), (n))
-+#define __do_writesb(a, b, n)	_outsb(PCI_FIX_ADDR(a),(b),(n))
-+#define __do_writesw(a, b, n)	_outsw(PCI_FIX_ADDR(a),(b),(n))
-+#define __do_writesl(a, b, n)	_outsl(PCI_FIX_ADDR(a),(b),(n))
-+
-+#define __do_insb(p, b, n)	readsb((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
-+#define __do_insw(p, b, n)	readsw((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
-+#define __do_insl(p, b, n)	readsl((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
-+#define __do_outsb(p, b, n)	writesb((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
-+#define __do_outsw(p, b, n)	writesw((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
-+#define __do_outsl(p, b, n)	writesl((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
-+
-+#define __do_memset_io(addr, c, n)	eeh_memset_io(PCI_FIX_ADDR(addr), c, n)
-+#define __do_memcpy_fromio(dst, src, n)	eeh_memcpy_fromio(dst, \
-+						PCI_FIX_ADDR(src), n)
-+#define __do_memcpy_toio(dst, src, n)	eeh_memcpy_toio(PCI_FIX_ADDR(dst), \
-+						src, n)
-+
-+#ifdef CONFIG_PPC_INDIRECT_IO
-+#define DEF_PCI_HOOK(x)		x
-+#else
-+#define DEF_PCI_HOOK(x)		NULL
-+#endif
-+
-+/* Structure containing all the hooks */
-+extern struct ppc_pci_io {
-+
-+#define DEF_PCI_AC_RET(name, ret, at, al)	ret (*name) at;
-+#define DEF_PCI_AC_NORET(name, at, al)		void (*name) at;
-+
-+#include <asm/io-defs.h>
-+
-+#undef DEF_PCI_AC_RET
-+#undef DEF_PCI_AC_NORET
-+
-+} ppc_pci_io;
-+
-+/* The inline wrappers */
-+#define DEF_PCI_AC_RET(name, ret, at, al)			\
-+static inline ret name at					\
-+{								\
-+	if (DEF_PCI_HOOK(ppc_pci_io.name) != NULL)		\
-+		return ppc_pci_io.name al;			\
-+	return __do_##name al;					\
-+}
-+
-+#define DEF_PCI_AC_NORET(name, at, al)				\
-+static inline void name at					\
-+{								\
-+	if (DEF_PCI_HOOK(ppc_pci_io.name) != NULL)		\
-+		ppc_pci_io.name al;				\
-+	else							\
-+		__do_##name al;					\
-+}
-+
-+#include <asm/io-defs.h>
-+
-+#undef DEF_PCI_AC_RET
-+#undef DEF_PCI_AC_NORET
-+
-+/* Some drivers check for the presence of readq & writeq with
-+ * a #ifdef, so we make them happy here.
-+ */
-+#define readq	readq
-+#define writeq	writeq
-+
-+/* Nothing to do for cache stuff x*/
-+
-+#define dma_cache_inv(_start,_size)		do { } while (0)
-+#define dma_cache_wback(_start,_size)		do { } while (0)
-+#define dma_cache_wback_inv(_start,_size)	do { } while (0)
-+
-+
-+/*
-+ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-+ * access
-+ */
-+#define xlate_dev_mem_ptr(p)	__va(p)
-+
-+/*
-+ * Convert a virtual cached pointer to an uncached pointer
-+ */
-+#define xlate_dev_kmem_ptr(p)	p
-+
-+/*
-+ * We don't do relaxed operations yet, at least not with this semantic
-+ */
- #define readb_relaxed(addr) readb(addr)
- #define readw_relaxed(addr) readw(addr)
- #define readl_relaxed(addr) readl(addr)
- #define readq_relaxed(addr) readq(addr)
- 
--extern void _insb(volatile u8 __iomem *port, void *buf, long count);
--extern void _outsb(volatile u8 __iomem *port, const void *buf, long count);
--extern void _insw_ns(volatile u16 __iomem *port, void *buf, long count);
--extern void _outsw_ns(volatile u16 __iomem *port, const void *buf, long count);
--extern void _insl_ns(volatile u32 __iomem *port, void *buf, long count);
--extern void _outsl_ns(volatile u32 __iomem *port, const void *buf, long count);
--
-+/*
-+ * Enforce synchronisation of stores vs. spin_unlock
-+ * (this does it explicitely, though our implementation of spin_unlock
-+ * does it implicitely too)
-+ */
- static inline void mmiowb(void)
- {
- 	unsigned long tmp;
-@@ -170,6 +386,23 @@
- 	: "memory");
- }
- 
-+static inline void iosync(void)
-+{
-+        __asm__ __volatile__ ("sync" : : : "memory");
-+}
-+
-+/* Enforce in-order execution of data I/O.
-+ * No distinction between read/write on PPC; use eieio for all three.
-+ * Those are fairly week though. They don't provide a barrier between
-+ * MMIO and cacheable storage nor do they provide a barrier vs. locks,
-+ * they only provide barriers between 2 __raw MMIO operations and
-+ * possibly break write combining.
-+ */
-+#define iobarrier_rw() eieio()
-+#define iobarrier_r()  eieio()
-+#define iobarrier_w()  eieio()
-+
-+
- /*
-  * output pause versions need a delay at least for the
-  * w83c105 ide controller in a p610.
-@@ -185,11 +418,6 @@
- #define IO_SPACE_LIMIT ~(0UL)
- 
- 
--extern int __ioremap_explicit(unsigned long p_addr, unsigned long v_addr,
--		     	      unsigned long size, unsigned long flags);
--extern void __iomem *__ioremap(unsigned long address, unsigned long size,
--		       unsigned long flags);
--
- /**
-  * ioremap     -   map bus memory into CPU space
-  * @address:   bus address of the memory
-@@ -200,14 +428,70 @@
-  * writew/writel functions and the other mmio helpers. The returned
-  * address is not guaranteed to be usable directly as a virtual
-  * address.
-+ *
-+ * We provide a few variations of it:
-+ *
-+ * * ioremap is the standard one and provides non-cacheable guarded mappings
-+ *   and can be hooked by the platform via ppc_md
-+ *
-+ * * ioremap_flags allows to specify the page flags as an argument and can
-+ *   also be hooked by the platform via ppc_md
-+ *
-+ * * ioremap_nocache is identical to ioremap
-+ *
-+ * * iounmap undoes such a mapping and can be hooked
-+ *
-+ * * __ioremap_explicit (and the pending __iounmap_explicit) are low level
-+ *   functions to create hand-made mappings for use only by the PCI code
-+ *   and cannot currently be hooked.
-+ *
-+ * * __ioremap is the low level implementation used by ioremap and
-+ *   ioremap_flags and cannot be hooked (but can be used by a hook on one
-+ *   of the previous ones)
-+ *
-+ * * __iounmap, is the low level implementation used by iounmap and cannot
-+ *   be hooked (but can be used by a hook on iounmap)
-+ *
-  */
- extern void __iomem *ioremap(unsigned long address, unsigned long size);
--
-+extern void __iomem *ioremap_flags(unsigned long address, unsigned long size,
-+				   unsigned long flags);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
--extern int iounmap_explicit(volatile void __iomem *addr, unsigned long size);
--extern void iounmap(volatile void __iomem *addr);
-+extern void iounmap(void __iomem *addr);
-+
-+extern void __iomem *__ioremap(unsigned long address, unsigned long size,
-+			       unsigned long flags);
-+extern void __iounmap(void __iomem *addr);
-+
-+extern int __ioremap_explicit(unsigned long p_addr, unsigned long v_addr,
-+		     	      unsigned long size, unsigned long flags);
-+extern int __iounmap_explicit(void __iomem *start, unsigned long size);
-+
- extern void __iomem * reserve_phb_iospace(unsigned long size);
- 
-+
-+/*
-+ * When CONFIG_PPC_INDIRECT_IO is set, we use the generic iomap implementation
-+ * which needs some additional definitions here. They basically allow PIO
-+ * space overall to be 1GB. This will work as long as we never try to use
-+ * iomap to map MMIO below 1GB which should be fine on ppc64
-+ */
-+#define HAVE_ARCH_PIO_SIZE		1
-+#define PIO_OFFSET			0x00000000UL
-+#define PIO_MASK			0x3fffffffUL
-+#define PIO_RESERVED			0x40000000UL
-+
-+#define mmio_read16be(addr)		readw_be(addr)
-+#define mmio_read32be(addr)		readl_be(addr)
-+#define mmio_write16be(val, addr)	writew_be(val, addr)
-+#define mmio_write32be(val, addr)	writel_be(val, addr)
-+#define mmio_insb(addr, dst, count)	readsb(addr, dst, count)
-+#define mmio_insw(addr, dst, count)	readsw(addr, dst, count)
-+#define mmio_insl(addr, dst, count)	readsl(addr, dst, count)
-+#define mmio_outsb(addr, src, count)	writesb(addr, src, count)
-+#define mmio_outsw(addr, src, count)	writesw(addr, src, count)
-+#define mmio_outsl(addr, src, count)	writesl(addr, src, count)
-+
- /**
-  *	virt_to_phys	-	map virtual addresses to physical
-  *	@address: address to remap
-@@ -254,177 +538,6 @@
-  */
- #define BIO_VMERGE_BOUNDARY	0
- 
--static inline void iosync(void)
--{
--        __asm__ __volatile__ ("sync" : : : "memory");
--}
--
--/* Enforce in-order execution of data I/O. 
-- * No distinction between read/write on PPC; use eieio for all three.
-- */
--#define iobarrier_rw() eieio()
--#define iobarrier_r()  eieio()
--#define iobarrier_w()  eieio()
--
--/*
-- * 8, 16 and 32 bit, big and little endian I/O operations, with barrier.
-- * These routines do not perform EEH-related I/O address translation,
-- * and should not be used directly by device drivers.  Use inb/readb
-- * instead.
-- */
--static inline int __in_8(const volatile unsigned char __iomem *addr)
--{
--	int ret;
--
--	__asm__ __volatile__("sync; lbz%U1%X1 %0,%1; twi 0,%0,0; isync"
--			     : "=r" (ret) : "m" (*addr));
--	return ret;
--}
--
--static inline void __out_8(volatile unsigned char __iomem *addr, int val)
--{
--	__asm__ __volatile__("sync; stb%U0%X0 %1,%0"
--			     : "=m" (*addr) : "r" (val));
--	get_paca()->io_sync = 1;
--}
--
--static inline int __in_le16(const volatile unsigned short __iomem *addr)
--{
--	int ret;
--
--	__asm__ __volatile__("sync; lhbrx %0,0,%1; twi 0,%0,0; isync"
--			     : "=r" (ret) : "r" (addr), "m" (*addr));
--	return ret;
--}
--
--static inline int __in_be16(const volatile unsigned short __iomem *addr)
--{
--	int ret;
--
--	__asm__ __volatile__("sync; lhz%U1%X1 %0,%1; twi 0,%0,0; isync"
--			     : "=r" (ret) : "m" (*addr));
--	return ret;
--}
--
--static inline void __out_le16(volatile unsigned short __iomem *addr, int val)
--{
--	__asm__ __volatile__("sync; sthbrx %1,0,%2"
--			     : "=m" (*addr) : "r" (val), "r" (addr));
--	get_paca()->io_sync = 1;
--}
--
--static inline void __out_be16(volatile unsigned short __iomem *addr, int val)
--{
--	__asm__ __volatile__("sync; sth%U0%X0 %1,%0"
--			     : "=m" (*addr) : "r" (val));
--	get_paca()->io_sync = 1;
--}
--
--static inline unsigned __in_le32(const volatile unsigned __iomem *addr)
--{
--	unsigned ret;
--
--	__asm__ __volatile__("sync; lwbrx %0,0,%1; twi 0,%0,0; isync"
--			     : "=r" (ret) : "r" (addr), "m" (*addr));
--	return ret;
--}
--
--static inline unsigned __in_be32(const volatile unsigned __iomem *addr)
--{
--	unsigned ret;
--
--	__asm__ __volatile__("sync; lwz%U1%X1 %0,%1; twi 0,%0,0; isync"
--			     : "=r" (ret) : "m" (*addr));
--	return ret;
--}
--
--static inline void __out_le32(volatile unsigned __iomem *addr, int val)
--{
--	__asm__ __volatile__("sync; stwbrx %1,0,%2" : "=m" (*addr)
--			     : "r" (val), "r" (addr));
--	get_paca()->io_sync = 1;
--}
--
--static inline void __out_be32(volatile unsigned __iomem *addr, int val)
--{
--	__asm__ __volatile__("sync; stw%U0%X0 %1,%0"
--			     : "=m" (*addr) : "r" (val));
--	get_paca()->io_sync = 1;
--}
--
--static inline unsigned long __in_le64(const volatile unsigned long __iomem *addr)
--{
--	unsigned long tmp, ret;
--
--	__asm__ __volatile__(
--			     "sync\n"
--			     "ld %1,0(%2)\n"
--			     "twi 0,%1,0\n"
--			     "isync\n"
--			     "rldimi %0,%1,5*8,1*8\n"
--			     "rldimi %0,%1,3*8,2*8\n"
--			     "rldimi %0,%1,1*8,3*8\n"
--			     "rldimi %0,%1,7*8,4*8\n"
--			     "rldicl %1,%1,32,0\n"
--			     "rlwimi %0,%1,8,8,31\n"
--			     "rlwimi %0,%1,24,16,23\n"
--			     : "=r" (ret) , "=r" (tmp) : "b" (addr) , "m" (*addr));
--	return ret;
--}
--
--static inline unsigned long __in_be64(const volatile unsigned long __iomem *addr)
--{
--	unsigned long ret;
--
--	__asm__ __volatile__("sync; ld%U1%X1 %0,%1; twi 0,%0,0; isync"
--			     : "=r" (ret) : "m" (*addr));
--	return ret;
--}
--
--static inline void __out_le64(volatile unsigned long __iomem *addr, unsigned long val)
--{
--	unsigned long tmp;
--
--	__asm__ __volatile__(
--			     "rldimi %0,%1,5*8,1*8\n"
--			     "rldimi %0,%1,3*8,2*8\n"
--			     "rldimi %0,%1,1*8,3*8\n"
--			     "rldimi %0,%1,7*8,4*8\n"
--			     "rldicl %1,%1,32,0\n"
--			     "rlwimi %0,%1,8,8,31\n"
--			     "rlwimi %0,%1,24,16,23\n"
--			     "sync\n"
--			     "std %0,0(%3)"
--			     : "=&r" (tmp) , "=&r" (val) : "1" (val) , "b" (addr) , "m" (*addr));
--	get_paca()->io_sync = 1;
--}
--
--static inline void __out_be64(volatile unsigned long __iomem *addr, unsigned long val)
--{
--	__asm__ __volatile__("sync; std%U0%X0 %1,%0" : "=m" (*addr) : "r" (val));
--	get_paca()->io_sync = 1;
--}
--
--#include <asm/eeh.h>
--
--/* Nothing to do */
--
--#define dma_cache_inv(_start,_size)		do { } while (0)
--#define dma_cache_wback(_start,_size)		do { } while (0)
--#define dma_cache_wback_inv(_start,_size)	do { } while (0)
--
--
--/*
-- * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-- * access
-- */
--#define xlate_dev_mem_ptr(p)	__va(p)
--
--/*
-- * Convert a virtual cached pointer to an uncached pointer
-- */
--#define xlate_dev_kmem_ptr(p)	p
--
- #endif /* __KERNEL__ */
- 
- #endif /* CONFIG_PPC64 */
 Index: linux-cell/arch/powerpc/Kconfig
 ===================================================================
---- linux-cell.orig/arch/powerpc/Kconfig	2006-11-11 14:55:00.000000000 +1100
-+++ linux-cell/arch/powerpc/Kconfig	2006-11-11 14:58:16.000000000 +1100
-@@ -394,6 +394,7 @@
- config PPC_ISERIES
- 	bool "IBM Legacy iSeries"
- 	depends on PPC_MULTIPLATFORM && PPC64
+--- linux-cell.orig/arch/powerpc/Kconfig	2006-11-08 15:18:10.000000000 +1100
++++ linux-cell/arch/powerpc/Kconfig	2006-11-09 17:29:40.000000000 +1100
+@@ -468,6 +468,7 @@ config PPC_CELL_NATIVE
+ 	select PPC_CELL
+ 	select PPC_DCR_MMIO
+ 	select PPC_OF_PLATFORM_PCI
 +	select PPC_INDIRECT_IO
- 
- config PPC_CHRP
- 	bool "Common Hardware Reference Platform (CHRP) based machines"
-@@ -540,6 +541,15 @@
- 	bool
+ 	select MPIC
  	default n
  
-+config PPC_INDIRECT_IO
-+	bool
-+	select GENERIC_IOMAP
-+	default n
-+
-+config GENERIC_IOMAP
-+	bool
-+	default n
-+
- source "drivers/cpufreq/Kconfig"
- 
- config CPU_FREQ_PMAC
-Index: linux-cell/arch/powerpc/kernel/setup_64.c
+Index: linux-cell/arch/powerpc/platforms/cell/Makefile
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/setup_64.c	2006-11-11 14:44:58.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/setup_64.c	2006-11-11 14:58:08.000000000 +1100
-@@ -599,3 +599,10 @@
- 	}
- }
- #endif
-+
-+
-+#ifdef CONFIG_PPC_INDIRECT_IO
-+struct ppc_pci_io ppc_pci_io;
-+EXPORT_SYMBOL(ppc_pci_io);
-+#endif /* CONFIG_PPC_INDIRECT_IO */
-+
-Index: linux-cell/arch/powerpc/platforms/iseries/pci.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/iseries/pci.c	2006-11-11 14:44:58.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/iseries/pci.c	2006-11-11 14:59:04.000000000 +1100
-@@ -156,53 +156,6 @@
- }
+--- linux-cell.orig/arch/powerpc/platforms/cell/Makefile	2006-11-08 15:18:10.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/Makefile	2006-11-08 15:21:34.000000000 +1100
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_PPC_CELL_NATIVE)		+= interrupt.o iommu.o setup.o \
+-					   cbe_regs.o spider-pic.o pervasive.o
++					   cbe_regs.o spider-pic.o \
++					   pervasive.o io-workarounds.o
+ obj-$(CONFIG_CBE_RAS)			+= ras.o
  
- /*
-- * iSeries_pcibios_init
-- *
-- * Description:
-- *   This function checks for all possible system PCI host bridges that connect
-- *   PCI buses.  The system hypervisor is queried as to the guest partition
-- *   ownership status.  A pci_controller is built for any bus which is partially
-- *   owned or fully owned by this guest partition.
-- */
--void iSeries_pcibios_init(void)
--{
--	struct pci_controller *phb;
--	struct device_node *root = of_find_node_by_path("/");
--	struct device_node *node = NULL;
--
--	if (root == NULL) {
--		printk(KERN_CRIT "iSeries_pcibios_init: can't find root "
--				"of device tree\n");
--		return;
--	}
--	while ((node = of_get_next_child(root, node)) != NULL) {
--		HvBusNumber bus;
--		const u32 *busp;
--
--		if ((node->type == NULL) || (strcmp(node->type, "pci") != 0))
--			continue;
--
--		busp = get_property(node, "bus-range", NULL);
--		if (busp == NULL)
--			continue;
--		bus = *busp;
--		printk("bus %d appears to exist\n", bus);
--		phb = pcibios_alloc_controller(node);
--		if (phb == NULL)
--			continue;
--
--		phb->pci_mem_offset = phb->local_number = bus;
--		phb->first_busno = bus;
--		phb->last_busno = bus;
--		phb->ops = &iSeries_pci_ops;
--	}
--
--	of_node_put(root);
--
--	pci_devs_phb_init();
--}
--
--/*
-  * iSeries_pci_final_fixup(void)
-  */
- void __init iSeries_pci_final_fixup(void)
-@@ -438,11 +391,7 @@
- /*
-  * Read MM I/O Instructions for the iSeries
-  * On MM I/O error, all ones are returned and iSeries_pci_IoError is cal
-- * else, data is returned in big Endian format.
-- *
-- * iSeries_Read_Byte = Read Byte  ( 8 bit)
-- * iSeries_Read_Word = Read Word  (16 bit)
-- * iSeries_Read_Long = Read Long  (32 bit)
-+ * else, data is returned in Big Endian format.
-  */
- static u8 iSeries_Read_Byte(const volatile void __iomem *IoAddress)
- {
-@@ -462,14 +411,15 @@
- 			num_printed = 0;
- 		}
- 		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_Read_Byte: invalid access at IO address %p\n", IoAddress);
-+			printk(KERN_ERR "iSeries_Read_Byte: invalid access at IO address %p\n",
-+			       IoAddress);
- 		return 0xff;
- 	}
- 	do {
- 		HvCall3Ret16(HvCallPciBarLoad8, &ret, dsa, BarOffset, 0);
- 	} while (CheckReturnCode("RDB", DevNode, &retry, ret.rc) != 0);
- 
--	return (u8)ret.value;
-+	return ret.value;
- }
- 
- static u16 iSeries_Read_Word(const volatile void __iomem *IoAddress)
-@@ -490,7 +440,8 @@
- 			num_printed = 0;
- 		}
- 		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_Read_Word: invalid access at IO address %p\n", IoAddress);
-+			printk(KERN_ERR "iSeries_Read_Word: invalid access at IO address %p\n",
-+			       IoAddress);
- 		return 0xffff;
- 	}
- 	do {
-@@ -498,7 +449,7 @@
- 				BarOffset, 0);
- 	} while (CheckReturnCode("RDW", DevNode, &retry, ret.rc) != 0);
- 
--	return swab16((u16)ret.value);
-+	return ret.value;
- }
- 
- static u32 iSeries_Read_Long(const volatile void __iomem *IoAddress)
-@@ -519,7 +470,8 @@
- 			num_printed = 0;
- 		}
- 		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_Read_Long: invalid access at IO address %p\n", IoAddress);
-+			printk(KERN_ERR "iSeries_Read_Long: invalid access at IO address %p\n",
-+			       IoAddress);
- 		return 0xffffffff;
- 	}
- 	do {
-@@ -527,15 +479,12 @@
- 				BarOffset, 0);
- 	} while (CheckReturnCode("RDL", DevNode, &retry, ret.rc) != 0);
- 
--	return swab32((u32)ret.value);
-+	return ret.value;
- }
- 
- /*
-  * Write MM I/O Instructions for the iSeries
-  *
-- * iSeries_Write_Byte = Write Byte (8 bit)
-- * iSeries_Write_Word = Write Word(16 bit)
-- * iSeries_Write_Long = Write Long(32 bit)
-  */
- static void iSeries_Write_Byte(u8 data, volatile void __iomem *IoAddress)
- {
-@@ -581,11 +530,12 @@
- 			num_printed = 0;
- 		}
- 		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_Write_Word: invalid access at IO address %p\n", IoAddress);
-+			printk(KERN_ERR "iSeries_Write_Word: invalid access at IO address %p\n",
-+			       IoAddress);
- 		return;
- 	}
- 	do {
--		rc = HvCall4(HvCallPciBarStore16, dsa, BarOffset, swab16(data), 0);
-+		rc = HvCall4(HvCallPciBarStore16, dsa, BarOffset, data, 0);
- 	} while (CheckReturnCode("WWW", DevNode, &retry, rc) != 0);
- }
- 
-@@ -607,231 +557,221 @@
- 			num_printed = 0;
- 		}
- 		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_Write_Long: invalid access at IO address %p\n", IoAddress);
-+			printk(KERN_ERR "iSeries_Write_Long: invalid access at IO address %p\n",
-+			       IoAddress);
- 		return;
- 	}
- 	do {
--		rc = HvCall4(HvCallPciBarStore32, dsa, BarOffset, swab32(data), 0);
-+		rc = HvCall4(HvCallPciBarStore32, dsa, BarOffset, data, 0);
- 	} while (CheckReturnCode("WWL", DevNode, &retry, rc) != 0);
- }
- 
--extern unsigned char __raw_readb(const volatile void __iomem *addr)
--{
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	return *(volatile unsigned char __force *)addr;
--}
--EXPORT_SYMBOL(__raw_readb);
--
--extern unsigned short __raw_readw(const volatile void __iomem *addr)
-+static u8 iseries_readb(const volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	return *(volatile unsigned short __force *)addr;
-+	return iSeries_Read_Byte(addr);
- }
--EXPORT_SYMBOL(__raw_readw);
- 
--extern unsigned int __raw_readl(const volatile void __iomem *addr)
-+static u16 iseries_readw(const volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	return *(volatile unsigned int __force *)addr;
-+	return le16_to_cpu(iSeries_Read_Word(addr));
- }
--EXPORT_SYMBOL(__raw_readl);
- 
--extern unsigned long __raw_readq(const volatile void __iomem *addr)
-+static u32 iseries_readl(const volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	return *(volatile unsigned long __force *)addr;
-+	return le32_to_cpu(iSeries_Read_Long(addr));
- }
--EXPORT_SYMBOL(__raw_readq);
- 
--extern void __raw_writeb(unsigned char v, volatile void __iomem *addr)
-+static u16 iseries_readw_be(const volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	*(volatile unsigned char __force *)addr = v;
-+	return iSeries_Read_Word(addr);
- }
--EXPORT_SYMBOL(__raw_writeb);
- 
--extern void __raw_writew(unsigned short v, volatile void __iomem *addr)
-+static u32 iseries_readl_be(const volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	*(volatile unsigned short __force *)addr = v;
-+	return iSeries_Read_Long(addr);
- }
--EXPORT_SYMBOL(__raw_writew);
- 
--extern void __raw_writel(unsigned int v, volatile void __iomem *addr)
-+static void iseries_writeb(u8 data, volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	*(volatile unsigned int __force *)addr = v;
-+	iSeries_Write_Byte(data, addr);
- }
--EXPORT_SYMBOL(__raw_writel);
- 
--extern void __raw_writeq(unsigned long v, volatile void __iomem *addr)
-+static void iseries_writew(u16 data, volatile void __iomem *addr)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	*(volatile unsigned long __force *)addr = v;
-+	iSeries_Write_Word(cpu_to_le16(data), addr);
- }
--EXPORT_SYMBOL(__raw_writeq);
- 
--int in_8(const volatile unsigned char __iomem *addr)
-+static void iseries_writel(u32 data, volatile void __iomem *addr)
- {
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return iSeries_Read_Byte(addr);
--	return __in_8(addr);
-+	iSeries_Write_Long(cpu_to_le32(data), addr);
- }
--EXPORT_SYMBOL(in_8);
- 
--void out_8(volatile unsigned char __iomem *addr, int val)
-+static void iseries_writew_be(u16 data, volatile void __iomem *addr)
- {
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		iSeries_Write_Byte(val, addr);
--	else
--		__out_8(addr, val);
-+	iSeries_Write_Word(data, addr);
- }
--EXPORT_SYMBOL(out_8);
- 
--int in_le16(const volatile unsigned short __iomem *addr)
-+static void iseries_writel_be(u32 data, volatile void __iomem *addr)
- {
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return iSeries_Read_Word(addr);
--	return __in_le16(addr);
-+	iSeries_Write_Long(data, addr);
- }
--EXPORT_SYMBOL(in_le16);
- 
--int in_be16(const volatile unsigned short __iomem *addr)
-+static void iseries_readsb(const volatile void __iomem *addr, void *buf,
-+			   unsigned long count)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	return __in_be16(addr);
-+	u8 *dst = buf;
-+	while(count-- > 0)
-+		*(dst++) = iSeries_Read_Byte(addr);
- }
--EXPORT_SYMBOL(in_be16);
- 
--void out_le16(volatile unsigned short __iomem *addr, int val)
-+static void iseries_readsw(const volatile void __iomem *addr, void *buf,
-+			   unsigned long count)
- {
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		iSeries_Write_Word(val, addr);
--	else
--		__out_le16(addr, val);
-+	u16 *dst = buf;
-+	while(count-- > 0)
-+		*(dst++) = iSeries_Read_Word(addr);
- }
--EXPORT_SYMBOL(out_le16);
- 
--void out_be16(volatile unsigned short __iomem *addr, int val)
-+static void iseries_readsl(const volatile void __iomem *addr, void *buf,
-+			   unsigned long count)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	__out_be16(addr, val);
-+	u32 *dst = buf;
-+	while(count-- > 0)
-+		*(dst++) = iSeries_Read_Long(addr);
- }
--EXPORT_SYMBOL(out_be16);
- 
--unsigned in_le32(const volatile unsigned __iomem *addr)
-+static void iseries_writesb(volatile void __iomem *addr, const void *buf,
-+			    unsigned long count)
- {
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return iSeries_Read_Long(addr);
--	return __in_le32(addr);
-+	const u8 *src = buf;
-+	while(count-- > 0)
-+		iSeries_Write_Byte(*(src++), addr);
- }
--EXPORT_SYMBOL(in_le32);
- 
--unsigned in_be32(const volatile unsigned __iomem *addr)
-+static void iseries_writesw(volatile void __iomem *addr, const void *buf,
-+			    unsigned long count)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
--	return __in_be32(addr);
-+	const u16 *src = buf;
-+	while(count-- > 0)
-+		iSeries_Write_Word(*(src++), addr);
- }
--EXPORT_SYMBOL(in_be32);
- 
--void out_le32(volatile unsigned __iomem *addr, int val)
-+static void iseries_writesl(volatile void __iomem *addr, const void *buf,
-+			    unsigned long count)
- {
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		iSeries_Write_Long(val, addr);
--	else
--		__out_le32(addr, val);
-+	const u32 *src = buf;
-+	while(count-- > 0)
-+		iSeries_Write_Long(*(src++), addr);
- }
--EXPORT_SYMBOL(out_le32);
- 
--void out_be32(volatile unsigned __iomem *addr, int val)
-+static void iseries_memset_io(volatile void __iomem *addr, int c,
-+			      unsigned long n)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
-+	volatile char __iomem *d = addr;
- 
--	__out_be32(addr, val);
-+	while (n-- > 0)
-+		iSeries_Write_Byte(c, d++);
- }
--EXPORT_SYMBOL(out_be32);
- 
--unsigned long in_le64(const volatile unsigned long __iomem *addr)
-+static void iseries_memcpy_fromio(void *dest, const volatile void __iomem *src,
-+				  unsigned long n)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
-+	char *d = dest;
-+	const volatile char __iomem *s = src;
- 
--	return __in_le64(addr);
-+	while (n-- > 0)
-+		*d++ = iSeries_Read_Byte(s++);
- }
--EXPORT_SYMBOL(in_le64);
- 
--unsigned long in_be64(const volatile unsigned long __iomem *addr)
-+static void iseries_memcpy_toio(volatile void __iomem *dest, const void *src,
-+				unsigned long n)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
-+	const char *s = src;
-+	volatile char __iomem *d = dest;
- 
--	return __in_be64(addr);
-+	while (n-- > 0)
-+		iSeries_Write_Byte(*s++, d++);
- }
--EXPORT_SYMBOL(in_be64);
--
--void out_le64(volatile unsigned long __iomem *addr, unsigned long val)
--{
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
- 
--	__out_le64(addr, val);
--}
--EXPORT_SYMBOL(out_le64);
-+/* We only set MMIO ops. The default PIO ops will be default
-+ * to the MMIO ops + pci_io_base which is 0 on iSeries as
-+ * expected so both should work.
-+ *
-+ * Note that we don't implement the readq/writeq versions as
-+ * I don't know of an HV call for doing so. Thus, the default
-+ * operation will be used instead, which will fault a the value
-+ * return by iSeries for MMIO addresses always hits a non mapped
-+ * area. This is as good as the BUG() we used to have there.
-+ */
-+static struct ppc_pci_io __initdata iseries_pci_io = {
-+	.readb = iseries_readb,
-+	.readw = iseries_readw,
-+	.readl = iseries_readl,
-+	.readw_be = iseries_readw_be,
-+	.readl_be = iseries_readl_be,
-+	.writeb = iseries_writeb,
-+	.writew = iseries_writew,
-+	.writel = iseries_writel,
-+	.writew_be = iseries_writew_be,
-+	.writel_be = iseries_writel_be,
-+	.readsb = iseries_readsb,
-+	.readsw = iseries_readsw,
-+	.readsl = iseries_readsl,
-+	.writesb = iseries_writesb,
-+	.writesw = iseries_writesw,
-+	.writesl = iseries_writesl,
-+	.memset_io = iseries_memset_io,
-+	.memcpy_fromio = iseries_memcpy_fromio,
-+	.memcpy_toio = iseries_memcpy_toio,
-+};
- 
--void out_be64(volatile unsigned long __iomem *addr, unsigned long val)
-+/*
-+ * iSeries_pcibios_init
-+ *
-+ * Description:
-+ *   This function checks for all possible system PCI host bridges that connect
-+ *   PCI buses.  The system hypervisor is queried as to the guest partition
-+ *   ownership status.  A pci_controller is built for any bus which is partially
-+ *   owned or fully owned by this guest partition.
-+ */
-+void __init iSeries_pcibios_init(void)
- {
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
-+	struct pci_controller *phb;
-+	struct device_node *root = of_find_node_by_path("/");
-+	struct device_node *node = NULL;
- 
--	__out_be64(addr, val);
--}
--EXPORT_SYMBOL(out_be64);
-+	/* Install IO hooks */
-+	ppc_pci_io = iseries_pci_io;
- 
--void memset_io(volatile void __iomem *addr, int c, unsigned long n)
--{
--	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
--		volatile char __iomem *d = addr;
-+	if (root == NULL) {
-+		printk(KERN_CRIT "iSeries_pcibios_init: can't find root "
-+				"of device tree\n");
-+		return;
-+	}
-+	while ((node = of_get_next_child(root, node)) != NULL) {
-+		HvBusNumber bus;
-+		const u32 *busp;
- 
--		while (n-- > 0) {
--			iSeries_Write_Byte(c, d++);
--		}
--	} else
--		eeh_memset_io(addr, c, n);
--}
--EXPORT_SYMBOL(memset_io);
-+		if ((node->type == NULL) || (strcmp(node->type, "pci") != 0))
-+			continue;
- 
--void memcpy_fromio(void *dest, const volatile void __iomem *src,
--                                 unsigned long n)
--{
--	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
--		char *d = dest;
--		const volatile char __iomem *s = src;
-+		busp = get_property(node, "bus-range", NULL);
-+		if (busp == NULL)
-+			continue;
-+		bus = *busp;
-+		printk("bus %d appears to exist\n", bus);
-+		phb = pcibios_alloc_controller(node);
-+		if (phb == NULL)
-+			continue;
- 
--		while (n-- > 0) {
--			*d++ = iSeries_Read_Byte(s++);
--		}
--	} else
--		eeh_memcpy_fromio(dest, src, n);
--}
--EXPORT_SYMBOL(memcpy_fromio);
-+		phb->pci_mem_offset = phb->local_number = bus;
-+		phb->first_busno = bus;
-+		phb->last_busno = bus;
-+		phb->ops = &iSeries_pci_ops;
-+	}
- 
--void memcpy_toio(volatile void __iomem *dest, const void *src, unsigned long n)
--{
--	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
--		const char *s = src;
--		volatile char __iomem *d = dest;
-+	of_node_put(root);
- 
--		while (n-- > 0) {
--			iSeries_Write_Byte(*s++, d++);
--		}
--	} else
--		eeh_memcpy_toio(dest, src, n);
-+	pci_devs_phb_init();
- }
--EXPORT_SYMBOL(memcpy_toio);
-+
-Index: linux-cell/include/asm-powerpc/eeh.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/eeh.h	2006-09-17 17:06:29.000000000 +1000
-+++ linux-cell/include/asm-powerpc/eeh.h	2006-11-11 14:58:00.000000000 +1100
-@@ -120,10 +120,6 @@
- 		return eeh_check_failure(addr, val);
- 	return val;
- }
--static inline void eeh_writeb(u8 val, volatile void __iomem *addr)
--{
--	out_8(addr, val);
--}
- 
- static inline u16 eeh_readw(const volatile void __iomem *addr)
- {
-@@ -132,21 +128,6 @@
- 		return eeh_check_failure(addr, val);
- 	return val;
- }
--static inline void eeh_writew(u16 val, volatile void __iomem *addr)
--{
--	out_le16(addr, val);
--}
--static inline u16 eeh_raw_readw(const volatile void __iomem *addr)
--{
--	u16 val = in_be16(addr);
--	if (EEH_POSSIBLE_ERROR(val, u16))
--		return eeh_check_failure(addr, val);
--	return val;
--}
--static inline void eeh_raw_writew(u16 val, volatile void __iomem *addr) {
--	volatile u16 __iomem *vaddr = (volatile u16 __iomem *) addr;
--	out_be16(vaddr, val);
--}
- 
- static inline u32 eeh_readl(const volatile void __iomem *addr)
- {
-@@ -155,44 +136,38 @@
- 		return eeh_check_failure(addr, val);
- 	return val;
- }
--static inline void eeh_writel(u32 val, volatile void __iomem *addr)
--{
--	out_le32(addr, val);
--}
--static inline u32 eeh_raw_readl(const volatile void __iomem *addr)
-+
-+static inline u64 eeh_readq(const volatile void __iomem *addr)
- {
--	u32 val = in_be32(addr);
--	if (EEH_POSSIBLE_ERROR(val, u32))
-+	u64 val = in_le64(addr);
-+	if (EEH_POSSIBLE_ERROR(val, u64))
- 		return eeh_check_failure(addr, val);
- 	return val;
- }
--static inline void eeh_raw_writel(u32 val, volatile void __iomem *addr)
--{
--	out_be32(addr, val);
--}
- 
--static inline u64 eeh_readq(const volatile void __iomem *addr)
-+static inline u16 eeh_readw_be(const volatile void __iomem *addr)
- {
--	u64 val = in_le64(addr);
--	if (EEH_POSSIBLE_ERROR(val, u64))
-+	u16 val = in_be16(addr);
-+	if (EEH_POSSIBLE_ERROR(val, u16))
- 		return eeh_check_failure(addr, val);
- 	return val;
- }
--static inline void eeh_writeq(u64 val, volatile void __iomem *addr)
-+
-+static inline u32 eeh_readl_be(const volatile void __iomem *addr)
- {
--	out_le64(addr, val);
-+	u32 val = in_be32(addr);
-+	if (EEH_POSSIBLE_ERROR(val, u32))
-+		return eeh_check_failure(addr, val);
-+	return val;
- }
--static inline u64 eeh_raw_readq(const volatile void __iomem *addr)
-+
-+static inline u64 eeh_readq_be(const volatile void __iomem *addr)
- {
- 	u64 val = in_be64(addr);
- 	if (EEH_POSSIBLE_ERROR(val, u64))
- 		return eeh_check_failure(addr, val);
- 	return val;
- }
--static inline void eeh_raw_writeq(u64 val, volatile void __iomem *addr)
--{
--	out_be64(addr, val);
--}
- 
- #define EEH_CHECK_ALIGN(v,a) \
- 	((((unsigned long)(v)) & ((a) - 1)) == 0)
-@@ -292,68 +267,29 @@
- 
- #undef EEH_CHECK_ALIGN
- 
--static inline u8 eeh_inb(unsigned long port)
--{
--	u8 val;
--	val = in_8((u8 __iomem *)(port+pci_io_base));
--	if (EEH_POSSIBLE_ERROR(val, u8))
--		return eeh_check_failure((void __iomem *)(port), val);
--	return val;
--}
--
--static inline void eeh_outb(u8 val, unsigned long port)
--{
--	out_8((u8 __iomem *)(port+pci_io_base), val);
--}
--
--static inline u16 eeh_inw(unsigned long port)
--{
--	u16 val;
--	val = in_le16((u16 __iomem *)(port+pci_io_base));
--	if (EEH_POSSIBLE_ERROR(val, u16))
--		return eeh_check_failure((void __iomem *)(port), val);
--	return val;
--}
--
--static inline void eeh_outw(u16 val, unsigned long port)
--{
--	out_le16((u16 __iomem *)(port+pci_io_base), val);
--}
--
--static inline u32 eeh_inl(unsigned long port)
--{
--	u32 val;
--	val = in_le32((u32 __iomem *)(port+pci_io_base));
--	if (EEH_POSSIBLE_ERROR(val, u32))
--		return eeh_check_failure((void __iomem *)(port), val);
--	return val;
--}
--
--static inline void eeh_outl(u32 val, unsigned long port)
--{
--	out_le32((u32 __iomem *)(port+pci_io_base), val);
--}
--
- /* in-string eeh macros */
--static inline void eeh_insb(unsigned long port, void * buf, int ns)
-+static inline void eeh_readsb(const volatile void __iomem *addr, void * buf,
-+			      int ns)
- {
--	_insb((u8 __iomem *)(port+pci_io_base), buf, ns);
-+	_insb(addr, buf, ns);
- 	if (EEH_POSSIBLE_ERROR((*(((u8*)buf)+ns-1)), u8))
--		eeh_check_failure((void __iomem *)(port), *(u8*)buf);
-+		eeh_check_failure(addr, *(u8*)buf);
- }
- 
--static inline void eeh_insw_ns(unsigned long port, void * buf, int ns)
-+static inline void eeh_readsw(const volatile void __iomem *addr, void * buf,
-+			      int ns)
- {
--	_insw_ns((u16 __iomem *)(port+pci_io_base), buf, ns);
-+	_insw(addr, buf, ns);
- 	if (EEH_POSSIBLE_ERROR((*(((u16*)buf)+ns-1)), u16))
--		eeh_check_failure((void __iomem *)(port), *(u16*)buf);
-+		eeh_check_failure(addr, *(u16*)buf);
- }
- 
--static inline void eeh_insl_ns(unsigned long port, void * buf, int nl)
-+static inline void eeh_readsl(const volatile void __iomem *addr, void * buf,
-+			      int nl)
- {
--	_insl_ns((u32 __iomem *)(port+pci_io_base), buf, nl);
-+	_insl(addr, buf, nl);
- 	if (EEH_POSSIBLE_ERROR((*(((u32*)buf)+nl-1)), u32))
--		eeh_check_failure((void __iomem *)(port), *(u32*)buf);
-+		eeh_check_failure(addr, *(u32*)buf);
- }
- 
- #endif /* __KERNEL__ */
-Index: linux-cell/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/Makefile	2006-11-11 14:44:58.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/Makefile	2006-11-11 14:58:00.000000000 +1100
-@@ -63,7 +63,7 @@
- module-$(CONFIG_PPC64)		+= module_64.o
- obj-$(CONFIG_MODULES)		+= $(module-y)
- 
--pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o iomap.o
-+pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o
- pci32-$(CONFIG_PPC32)		:= pci_32.o
- obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
- kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
-@@ -72,6 +72,10 @@
- obj-$(CONFIG_AUDIT)		+= audit.o
- obj64-$(CONFIG_AUDIT)		+= compat_audit.o
- 
-+ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
-+pci64-$(CONFIG_PPC64)		+= iomap.o
-+endif
-+
- ifeq ($(CONFIG_PPC_ISERIES),y)
- $(obj)/head_64.o: $(obj)/lparmap.s
- AFLAGS_head_64.o += -I$(obj)
-Index: linux-cell/arch/powerpc/mm/pgtable_64.c
-===================================================================
---- linux-cell.orig/arch/powerpc/mm/pgtable_64.c	2006-10-21 16:36:50.000000000 +1000
-+++ linux-cell/arch/powerpc/mm/pgtable_64.c	2006-11-11 14:58:00.000000000 +1100
-@@ -129,22 +129,12 @@
- 	return (void __iomem *) (ea + (addr & ~PAGE_MASK));
- }
- 
--
--void __iomem *
--ioremap(unsigned long addr, unsigned long size)
--{
--	return __ioremap(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED);
--}
--
- void __iomem * __ioremap(unsigned long addr, unsigned long size,
- 			 unsigned long flags)
- {
- 	unsigned long pa, ea;
- 	void __iomem *ret;
- 
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return (void __iomem *)addr;
--
- 	/*
- 	 * Choose an address to map it to.
- 	 * Once the imalloc system is running, we use it.
-@@ -178,6 +168,25 @@
- 	return ret;
- }
- 
-+
-+void __iomem * ioremap(unsigned long addr, unsigned long size)
-+{
-+	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
-+
-+	if (ppc_md.ioremap)
-+		return ppc_md.ioremap(addr, size, flags);
-+	return __ioremap(addr, size, flags);
-+}
-+
-+void __iomem * ioremap_flags(unsigned long addr, unsigned long size,
-+			     unsigned long flags)
-+{
-+	if (ppc_md.ioremap)
-+		return ppc_md.ioremap(addr, size, flags);
-+	return __ioremap(addr, size, flags);
-+}
-+
-+
- #define IS_PAGE_ALIGNED(_val) ((_val) == ((_val) & PAGE_MASK))
- 
- int __ioremap_explicit(unsigned long pa, unsigned long ea,
-@@ -235,13 +244,10 @@
-  *
-  * XXX	what about calls before mem_init_done (ie python_countermeasures())
-  */
--void iounmap(volatile void __iomem *token)
-+void __iounmap(void __iomem *token)
- {
- 	void *addr;
- 
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return;
--
- 	if (!mem_init_done)
- 		return;
- 	
-@@ -250,6 +256,14 @@
- 	im_free(addr);
- }
- 
-+void iounmap(void __iomem *token)
-+{
-+	if (ppc_md.iounmap)
-+		ppc_md.iounmap(token);
-+	else
-+		__iounmap(token);
-+}
-+
- static int iounmap_subset_regions(unsigned long addr, unsigned long size)
- {
- 	struct vm_struct *area;
-@@ -268,7 +282,7 @@
- 	return 0;
- }
- 
--int iounmap_explicit(volatile void __iomem *start, unsigned long size)
-+int __iounmap_explicit(void __iomem *start, unsigned long size)
- {
- 	struct vm_struct *area;
- 	unsigned long addr;
-@@ -303,8 +317,10 @@
- }
- 
- EXPORT_SYMBOL(ioremap);
-+EXPORT_SYMBOL(ioremap_flags);
- EXPORT_SYMBOL(__ioremap);
- EXPORT_SYMBOL(iounmap);
-+EXPORT_SYMBOL(__iounmap);
- 
- void __iomem * reserve_phb_iospace(unsigned long size)
- {
-Index: linux-cell/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/iseries/setup.c	2006-11-04 14:35:02.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/iseries/setup.c	2006-11-11 14:58:00.000000000 +1100
-@@ -649,6 +649,16 @@
- void __init iSeries_init_IRQ(void) { }
- #endif
- 
-+static void __iomem *iseries_ioremap(unsigned long address, unsigned long size,
-+				     unsigned long flags)
-+{
-+	return (void __iomem *)address;
-+}
-+
-+static void iseries_iounmap(void __iomem *token)
-+{
-+}
-+
- /*
-  * iSeries has no legacy IO, anything calling this function has to
-  * fail or bad things will happen
-@@ -687,6 +697,8 @@
- 	.progress	= iSeries_progress,
- 	.probe		= iseries_probe,
- 	.check_legacy_ioport	= iseries_check_legacy_ioport,
-+	.ioremap	= iseries_ioremap,
-+	.iounmap	= iseries_iounmap,
- 	/* XXX Implement enable_pmcs for iSeries */
- };
- 
-Index: linux-cell/include/asm-powerpc/io-defs.h
+ ifeq ($(CONFIG_SMP),y)
+Index: linux-cell/arch/powerpc/platforms/cell/io-workarounds.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-cell/include/asm-powerpc/io-defs.h	2006-11-11 14:58:00.000000000 +1100
-@@ -0,0 +1,56 @@
-+/* This file is meant to be include multiple times by other headers */
++++ linux-cell/arch/powerpc/platforms/cell/io-workarounds.c	2006-11-09 17:30:11.000000000 +1100
+@@ -0,0 +1,346 @@
++/*
++ *  Copyright (C) 2006 Benjamin Herrenschmidt <benh@kernel.crashing.org>
++ *		       IBM, Corp.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#undef DEBUG
 +
-+DEF_PCI_AC_RET(readb, u8, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readw, u16, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readl, u32, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readq, u64, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readw_be, u16, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readl_be, u32, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_RET(readq_be, u64, (const PCI_IO_ADDR addr), (addr))
-+DEF_PCI_AC_NORET(writeb, (u8 val, PCI_IO_ADDR addr), (val, addr))
-+DEF_PCI_AC_NORET(writew, (u16 val, PCI_IO_ADDR addr), (val, addr))
-+DEF_PCI_AC_NORET(writel, (u32 val, PCI_IO_ADDR addr), (val, addr))
-+DEF_PCI_AC_NORET(writeq, (u64 val, PCI_IO_ADDR addr), (val, addr))
-+DEF_PCI_AC_NORET(writew_be, (u16 val, PCI_IO_ADDR addr), (val, addr))
-+DEF_PCI_AC_NORET(writel_be, (u32 val, PCI_IO_ADDR addr), (val, addr))
-+DEF_PCI_AC_NORET(writeq_be, (u64 val, PCI_IO_ADDR addr), (val, addr))
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/pci.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
 +
-+DEF_PCI_AC_RET(inb, u8, (unsigned long port), (port))
-+DEF_PCI_AC_RET(inw, u16, (unsigned long port), (port))
-+DEF_PCI_AC_RET(inl, u32, (unsigned long port), (port))
-+DEF_PCI_AC_NORET(outb, (u8 val, unsigned long port), (val, port))
-+DEF_PCI_AC_NORET(outw, (u16 val, unsigned long port), (val, port))
-+DEF_PCI_AC_NORET(outl, (u32 val, unsigned long port), (val, port))
 +
-+DEF_PCI_AC_NORET(readsb, (const PCI_IO_ADDR a, void *b, unsigned long c), \
-+		 (a, b, c))
-+DEF_PCI_AC_NORET(readsw, (const PCI_IO_ADDR a, void *b, unsigned long c), \
-+		 (a, b, c))
-+DEF_PCI_AC_NORET(readsl, (const PCI_IO_ADDR a, void *b, unsigned long c), \
-+		 (a, b, c))
-+DEF_PCI_AC_NORET(writesb, (PCI_IO_ADDR a, const void *b, unsigned long c), \
-+		 (a, b, c))
-+DEF_PCI_AC_NORET(writesw, (PCI_IO_ADDR a, const void *b, unsigned long c), \
-+		 (a, b, c))
-+DEF_PCI_AC_NORET(writesl, (PCI_IO_ADDR a, const void *b, unsigned long c), \
-+		 (a, b, c))
++#define SPIDER_PCI_REG_BASE		0xd000
++#define SPIDER_PCI_VCI_CNTL_STAT	0x0110
++#define SPIDER_PCI_DUMMY_READ		0x0810
++#define SPIDER_PCI_DUMMY_READ_BASE	0x0814
 +
-+DEF_PCI_AC_NORET(insb, (unsigned long p, void *b, unsigned long c), \
-+		 (p, b, c))
-+DEF_PCI_AC_NORET(insw, (unsigned long p, void *b, unsigned long c), \
-+		 (p, b, c))
-+DEF_PCI_AC_NORET(insl, (unsigned long p, void *b, unsigned long c), \
-+		 (p, b, c))
-+DEF_PCI_AC_NORET(outsb, (unsigned long p, const void *b, unsigned long c), \
-+		 (p, b, c))
-+DEF_PCI_AC_NORET(outsw, (unsigned long p, const void *b, unsigned long c), \
-+		 (p, b, c))
-+DEF_PCI_AC_NORET(outsl, (unsigned long p, const void *b, unsigned long c), \
-+		 (p, b, c))
++/* Undefine that to re-enable bogus prefetch
++ *
++ * Without that workaround, the chip will do bogus prefetch past
++ * page boundary from system memory. This setting will disable that,
++ * though the documentation is unclear as to the consequences of doing
++ * so, either purely performances, or possible misbehaviour... It's not
++ * clear wether the chip can handle unaligned accesses at all without
++ * prefetching enabled.
++ *
++ * For now, things appear to be behaving properly with that prefetching
++ * disabled and IDE, possibly because IDE isn't doing any unaligned
++ * access.
++ */
++#define SPIDER_DISABLE_PREFETCH
 +
-+DEF_PCI_AC_NORET(memset_io, (PCI_IO_ADDR a, int c, unsigned long n),	   \
-+		 (a, c, n))
-+DEF_PCI_AC_NORET(memcpy_fromio,(void *d,const PCI_IO_ADDR s,unsigned long n), \
-+		 (d, s, n))
-+DEF_PCI_AC_NORET(memcpy_toio,(PCI_IO_ADDR d,const void *s,unsigned long n),   \
-+		 (d, s, n))
-Index: linux-cell/include/asm-powerpc/machdep.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/machdep.h	2006-11-11 14:55:00.000000000 +1100
-+++ linux-cell/include/asm-powerpc/machdep.h	2006-11-11 14:58:00.000000000 +1100
-@@ -87,6 +87,10 @@
- 	void		(*tce_flush)(struct iommu_table *tbl);
- 	void		(*pci_dma_dev_setup)(struct pci_dev *dev);
- 	void		(*pci_dma_bus_setup)(struct pci_bus *bus);
++#define MAX_SPIDERS	2
 +
-+	void __iomem *	(*ioremap)(unsigned long addr, unsigned long size,
-+				   unsigned long flags);
-+	void		(*iounmap)(void __iomem *token);
- #endif /* CONFIG_PPC64 */
- 
- 	int		(*probe)(void);
-Index: linux-cell/arch/powerpc/kernel/pci_64.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/pci_64.c	2006-11-11 14:55:00.000000000 +1100
-+++ linux-cell/arch/powerpc/kernel/pci_64.c	2006-11-11 14:55:04.000000000 +1100
-@@ -1145,7 +1145,7 @@
- 	
- 	if (get_bus_io_range(bus, &start_phys, &start_virt, &size))
- 		return 1;
--	if (iounmap_explicit((void __iomem *) start_virt, size))
-+	if (__iounmap_explicit((void __iomem *) start_virt, size))
- 		return 1;
- 
- 	return 0;
-Index: linux-cell/arch/powerpc/kernel/io.c
-===================================================================
---- linux-cell.orig/arch/powerpc/kernel/io.c	2006-10-21 16:36:50.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/io.c	2006-11-11 14:58:00.000000000 +1100
-@@ -25,13 +25,11 @@
- #include <asm/firmware.h>
- #include <asm/bug.h>
- 
--void _insb(volatile u8 __iomem *port, void *buf, long count)
-+void _insb(const volatile u8 __iomem *port, void *buf, long count)
- {
- 	u8 *tbuf = buf;
- 	u8 tmp;
- 
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
- 	if (unlikely(count <= 0))
- 		return;
- 	asm volatile("sync");
-@@ -48,8 +46,6 @@
- {
- 	const u8 *tbuf = buf;
- 
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
- 	if (unlikely(count <= 0))
- 		return;
- 	asm volatile("sync");
-@@ -60,13 +56,11 @@
- }
- EXPORT_SYMBOL(_outsb);
- 
--void _insw_ns(volatile u16 __iomem *port, void *buf, long count)
-+void _insw_ns(const volatile u16 __iomem *port, void *buf, long count)
- {
- 	u16 *tbuf = buf;
- 	u16 tmp;
- 
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
- 	if (unlikely(count <= 0))
- 		return;
- 	asm volatile("sync");
-@@ -83,8 +77,6 @@
- {
- 	const u16 *tbuf = buf;
- 
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
- 	if (unlikely(count <= 0))
- 		return;
- 	asm volatile("sync");
-@@ -95,13 +87,11 @@
- }
- EXPORT_SYMBOL(_outsw_ns);
- 
--void _insl_ns(volatile u32 __iomem *port, void *buf, long count)
-+void _insl_ns(const volatile u32 __iomem *port, void *buf, long count)
- {
- 	u32 *tbuf = buf;
- 	u32 tmp;
- 
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
- 	if (unlikely(count <= 0))
- 		return;
- 	asm volatile("sync");
-@@ -118,8 +108,6 @@
- {
- 	const u32 *tbuf = buf;
- 
--	BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
--
- 	if (unlikely(count <= 0))
- 		return;
- 	asm volatile("sync");
-Index: linux-cell/include/asm-powerpc/ide.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/ide.h	2006-10-21 16:37:07.000000000 +1000
-+++ linux-cell/include/asm-powerpc/ide.h	2006-11-11 14:58:00.000000000 +1100
-@@ -22,10 +22,17 @@
- #endif
- #endif
- 
-+#ifdef __powerpc64__
-+#define __ide_mm_insw(p, a, c)	readsw((void __iomem *)(p), (a), (c))
-+#define __ide_mm_insl(p, a, c)	readsl((void __iomem *)(p), (a), (c))
-+#define __ide_mm_outsw(p, a, c)	writesw((void __iomem *)(p), (a), (c))
-+#define __ide_mm_outsl(p, a, c)	writesl((void __iomem *)(p), (a), (c))
-+#else
- #define __ide_mm_insw(p, a, c)	_insw_ns((volatile u16 __iomem *)(p), (a), (c))
- #define __ide_mm_insl(p, a, c)	_insl_ns((volatile u32 __iomem *)(p), (a), (c))
- #define __ide_mm_outsw(p, a, c)	_outsw_ns((volatile u16 __iomem *)(p), (a), (c))
- #define __ide_mm_outsl(p, a, c)	_outsl_ns((volatile u32 __iomem *)(p), (a), (c))
++static struct spider_pci_bus {
++	void __iomem	*regs;
++	unsigned long	mmio_start;
++	unsigned long	mmio_end;
++	unsigned long	pio_vstart;
++	unsigned long	pio_vend;
++} spider_pci_busses[MAX_SPIDERS];
++static int spider_pci_count;
++
++static struct spider_pci_bus *spider_pci_find(unsigned long vaddr,
++					      unsigned long paddr)
++{
++	int i;
++
++	for (i = 0; i < spider_pci_count; i++) {
++		struct spider_pci_bus *bus = &spider_pci_busses[i];
++		if (paddr && paddr >= bus->mmio_start && paddr < bus->mmio_end)
++			return bus;
++		if (vaddr && vaddr >= bus->pio_vstart && vaddr < bus->pio_vend)
++			return bus;
++	}
++	return NULL;
++}
++
++static void spider_io_flush(const volatile void __iomem *addr)
++{
++	struct spider_pci_bus *bus;
++	int token;
++
++	/* Get platform token (set by ioremap) from address */
++	token = PCI_GET_ADDR_TOKEN(addr);
++
++	/* Fast path if we have a non-0 token, it indicates which bus we
++	 * are on.
++	 *
++	 * If the token is 0, that means either the the ioremap was done
++	 * before we initialized this layer, or it's a PIO operation. We
++	 * fallback to a low path in this case. Hopefully, internal devices
++	 * which are ioremap'ed early should use in_XX/out_XX functions
++	 * instead of the PCI ones and thus not suffer from the slowdown.
++	 *
++	 * Also note that currently, the workaround will not work for areas
++	 * that are not mapped with PTEs (bolted in the hash table). This
++	 * is the case for ioremaps done very early at boot (before
++	 * mem_init_done) and includes the mapping of the ISA IO space.
++	 *
++	 * Fortunately, none of the affected devices is expected to do DMA
++	 * and thus there should be no problem in practice.
++	 *
++	 * In order to improve performances, we only do the PTE search for
++	 * addresses falling in the PHB IO space area. That means it will
++	 * not work for hotplug'ed PHBs but those don't exist with Spider.
++	 */
++	if (token && token <= spider_pci_count)
++		bus = &spider_pci_busses[token - 1];
++	else {
++		unsigned long vaddr, paddr;
++		pte_t *ptep;
++
++		/* Fixup physical address */
++		vaddr = (unsigned long)PCI_FIX_ADDR(addr);
++
++		/* Check if it's in allowed range for  PIO */
++		if (vaddr < PHBS_IO_BASE || vaddr >= IMALLOC_BASE)
++			return;
++
++		/* Try to find a PTE. If not, clear the paddr, we'll do
++		 * a vaddr only lookup (PIO only)
++		 */
++		ptep = find_linux_pte(init_mm.pgd, vaddr);
++		if (ptep == NULL)
++			paddr = 0;
++		else
++			paddr = pte_pfn(*ptep) << PAGE_SHIFT;
++
++		bus = spider_pci_find(vaddr, paddr);
++		if (bus == NULL)
++			return;
++	}
++
++	/* Now do the workaround
++	 */
++	(void)in_be32(bus->regs + SPIDER_PCI_DUMMY_READ);
++}
++
++static u8 spider_readb(const volatile void __iomem *addr)
++{
++	u8 val = __do_readb(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static u16 spider_readw(const volatile void __iomem *addr)
++{
++	u16 val = __do_readw(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static u32 spider_readl(const volatile void __iomem *addr)
++{
++	u32 val = __do_readl(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static u64 spider_readq(const volatile void __iomem *addr)
++{
++	u64 val = __do_readq(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static u16 spider_readw_be(const volatile void __iomem *addr)
++{
++	u16 val = __do_readw_be(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static u32 spider_readl_be(const volatile void __iomem *addr)
++{
++	u32 val = __do_readl_be(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static u64 spider_readq_be(const volatile void __iomem *addr)
++{
++	u64 val = __do_readq_be(addr);
++	spider_io_flush(addr);
++	return val;
++}
++
++static void spider_readsb(const volatile void __iomem *addr, void *buf,
++			  unsigned long count)
++{
++	__do_readsb(addr, buf, count);
++	spider_io_flush(addr);
++}
++
++static void spider_readsw(const volatile void __iomem *addr, void *buf,
++			  unsigned long count)
++{
++	__do_readsw(addr, buf, count);
++	spider_io_flush(addr);
++}
++
++static void spider_readsl(const volatile void __iomem *addr, void *buf,
++			  unsigned long count)
++{
++	__do_readsl(addr, buf, count);
++	spider_io_flush(addr);
++}
++
++static void spider_memcpy_fromio(void *dest, const volatile void __iomem *src,
++				 unsigned long n)
++{
++	__do_memcpy_fromio(dest, src, n);
++	spider_io_flush(src);
++}
++
++
++static void __iomem * spider_ioremap(unsigned long addr, unsigned long size,
++				     unsigned long flags)
++{
++	struct spider_pci_bus *bus;
++	void __iomem *res = __ioremap(addr, size, flags);
++	int busno;
++
++	pr_debug("spider_ioremap(0x%lx, 0x%lx, 0x%lx) -> 0x%p\n",
++		 addr, size, flags, res);
++
++	bus = spider_pci_find(0, addr);
++	if (bus != NULL) {
++		busno = bus - spider_pci_busses;
++		pr_debug(" found bus %d, setting token\n", busno);
++		PCI_SET_ADDR_TOKEN(res, busno + 1);
++	}
++	pr_debug(" result=0x%p\n", res);
++
++	return res;
++}
++
++static void __init spider_pci_setup_chip(struct spider_pci_bus *bus)
++{
++#ifdef SPIDER_DISABLE_PREFETCH
++	u32 val = in_be32(bus->regs + SPIDER_PCI_VCI_CNTL_STAT);
++	pr_debug(" PVCI_Control_Status was 0x%08x\n", val);
++	out_be32(bus->regs + SPIDER_PCI_VCI_CNTL_STAT, val | 0x8);
 +#endif
- 
- #ifndef  __powerpc64__
- #include <linux/hdreg.h>
-Index: linux-cell/include/asm-ppc/io.h
-===================================================================
---- linux-cell.orig/include/asm-ppc/io.h	2006-10-21 16:37:07.000000000 +1000
-+++ linux-cell/include/asm-ppc/io.h	2006-11-11 14:55:04.000000000 +1100
-@@ -327,12 +327,12 @@
- #define inl_p(port)		inl((port))
- #define outl_p(val, port)	outl((val), (port))
- 
--extern void _insb(volatile u8 __iomem *port, void *buf, long count);
--extern void _outsb(volatile u8 __iomem *port, const void *buf, long count);
--extern void _insw_ns(volatile u16 __iomem *port, void *buf, long count);
--extern void _outsw_ns(volatile u16 __iomem *port, const void *buf, long count);
--extern void _insl_ns(volatile u32 __iomem *port, void *buf, long count);
--extern void _outsl_ns(volatile u32 __iomem *port, const void *buf, long count);
-+extern void _insb(const volatile u8 __iomem *addr, void *buf, long count);
-+extern void _outsb(volatile u8 __iomem *addr,const void *buf,long count);
-+extern void _insw_ns(const volatile u16 __iomem *addr, void *buf, long count);
-+extern void _outsw_ns(volatile u16 __iomem *addr, const void *buf, long count);
-+extern void _insl_ns(const volatile u32 __iomem *addr, void *buf, long count);
-+extern void _outsl_ns(volatile u32 __iomem *addr, const void *buf, long count);
- 
- 
- #define IO_SPACE_LIMIT ~0
++
++	/* Configure the dummy address for the workaround */
++	out_be32(bus->regs + SPIDER_PCI_DUMMY_READ_BASE, 0x80000000);
++}
++
++static void __init spider_pci_add_one(struct pci_controller *phb)
++{
++	struct spider_pci_bus *bus = &spider_pci_busses[spider_pci_count];
++	struct device_node *np = phb->arch_data;
++	struct resource rsrc;
++	void __iomem *regs;
++
++	if (spider_pci_count >= MAX_SPIDERS) {
++		printk(KERN_ERR "Too many spider bridges, workarounds"
++		       " disabled for %s\n", np->full_name);
++		return;
++	}
++
++	/* Get the registers for the beast */
++	if (of_address_to_resource(np, 0, &rsrc)) {
++		printk(KERN_ERR "Failed to get registers for spider %s"
++		       " workarounds disabled\n", np->full_name);
++		return;
++	}
++
++	/* Mask out some useless bits in there to get to the base of the
++	 * spider chip
++	 */
++	rsrc.start &= ~0xfffffffful;
++
++	/* Map them */
++	regs = ioremap(rsrc.start + SPIDER_PCI_REG_BASE, 0x1000);
++	if (regs == NULL) {
++		printk(KERN_ERR "Failed to map registers for spider %s"
++		       " workarounds disabled\n", np->full_name);
++		return;
++	}
++
++	spider_pci_count++;
++
++	/* We assume spiders only have one MMIO resource */
++	bus->mmio_start = phb->mem_resources[0].start;
++	bus->mmio_end = phb->mem_resources[0].end + 1;
++
++	bus->pio_vstart = (unsigned long)phb->io_base_virt;
++	bus->pio_vend = bus->pio_vstart + phb->pci_io_size;
++
++	bus->regs = regs;
++
++	printk(KERN_INFO "PCI: Spider MMIO workaround for %s\n",np->full_name);
++
++	pr_debug(" mmio (P) = 0x%016lx..0x%016lx\n",
++		 bus->mmio_start, bus->mmio_end);
++	pr_debug("  pio (V) = 0x%016lx..0x%016lx\n",
++		 bus->pio_vstart, bus->pio_vend);
++	pr_debug(" regs (P) = 0x%016lx (V) = 0x%p\n",
++		 rsrc.start + SPIDER_PCI_REG_BASE, bus->regs);
++
++	spider_pci_setup_chip(bus);
++}
++
++static struct ppc_pci_io __initdata spider_pci_io = {
++	.readb = spider_readb,
++	.readw = spider_readw,
++	.readl = spider_readl,
++	.readq = spider_readq,
++	.readw_be = spider_readw_be,
++	.readl_be = spider_readl_be,
++	.readq_be = spider_readq_be,
++	.readsb = spider_readsb,
++	.readsw = spider_readsw,
++	.readsl = spider_readsl,
++	.memcpy_fromio = spider_memcpy_fromio,
++};
++
++static int __init spider_pci_workaround_init(void)
++{
++	struct pci_controller *phb;
++
++	if (!machine_is(cell))
++		return 0;
++
++	/* Find spider bridges. We assume they have been all probed
++	 * in setup_arch(). If that was to change, we would need to
++	 * update this code to cope with dynamically added busses
++	 */
++	list_for_each_entry(phb, &hose_list, list_node) {
++		struct device_node *np = phb->arch_data;
++		const char *model = get_property(np, "model", NULL);
++
++		/* If no model property or name isn't exactly "pci", skip */
++		if (model == NULL || strcmp(np->name, "pci"))
++			continue;
++		/* If model is not "Spider", skip */
++		if (strcmp(model, "Spider"))
++			continue;
++		spider_pci_add_one(phb);
++	}
++
++	/* No Spider PCI found, exit */
++	if (spider_pci_count == 0)
++		return 0;
++
++	/* Setup IO callbacks. We only setup MMIO reads. PIO reads will
++	 * fallback to MMIO reads (though without a token, thus slower)
++	 */
++	ppc_pci_io = spider_pci_io;
++
++	/* Setup ioremap callback */
++	ppc_md.ioremap = spider_ioremap;
++
++	return 0;
++}
++arch_initcall(spider_pci_workaround_init);
