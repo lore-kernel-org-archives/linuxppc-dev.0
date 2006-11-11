@@ -1,11 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 11 Nov 2006 17:25:06 +1100
-Subject: [PATCH 19/32] powerpc: Resolve the BUID fir RTAS PCI config space
-	accesses
+Date: Sat, 11 Nov 2006 17:25:09 +1100
+Subject: [PATCH 22/32] powerpc: Cell fixup DMA offset for new southbridge
 In-Reply-To: <1163226282.72526.823314634857.qpush@butch>
-Message-Id: <20061111062536.E0B36681C6@ozlabs.org>
+Message-Id: <20061111062539.BA241683BD@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,55 +14,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The BUID is the first entry of a PCI host bridge "reg" property.
-
-Now that PCI busses can be anywhere in the device-tree, we need to
-fully translate the value there to a CPU physical address before
-we can use it with RTAS.
+This patch makes the Cell DMA code work on both the Spider and the Axon
+south bridges by turning cell_dma_valid into a variable instead of a
+constant. This is a temporary patch until we have full iommu support.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/kernel/rtas_pci.c |   27 ++++-----------------------
- 1 file changed, 4 insertions(+), 23 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |   14 +++++++++++---
+ arch/powerpc/platforms/cell/iommu.h |    8 +++++---
+ 2 files changed, 16 insertions(+), 6 deletions(-)
 
-Index: linux-cell/arch/powerpc/kernel/rtas_pci.c
+Index: linux-cell/arch/powerpc/platforms/cell/iommu.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:32:35.000000000 +1000
-+++ linux-cell/arch/powerpc/kernel/rtas_pci.c	2006-10-26 17:34:21.000000000 +1000
-@@ -231,32 +231,13 @@ void __init init_pci_config_tokens (void
+--- linux-cell.orig/arch/powerpc/platforms/cell/iommu.c	2006-10-27 15:42:15.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/cell/iommu.c	2006-10-27 15:55:13.000000000 +1000
+@@ -46,6 +46,8 @@
  
- unsigned long __devinit get_phb_buid (struct device_node *phb)
+ #include "iommu.h"
+ 
++static dma_addr_t cell_dma_valid = SPIDER_DMA_VALID;
++
+ static inline unsigned long 
+ get_iopt_entry(unsigned long real_address, unsigned long ioid,
+ 			 unsigned long prot)
+@@ -423,7 +425,7 @@ static void *cell_alloc_coherent(struct 
+ 	ret = (void *)__get_free_pages(flag, get_order(size));
+ 	if (ret != NULL) {
+ 		memset(ret, 0, size);
+-		*dma_handle = virt_to_abs(ret) | CELL_DMA_VALID;
++		*dma_handle = virt_to_abs(ret) | cell_dma_valid;
+ 	}
+ 	return ret;
+ }
+@@ -437,7 +439,7 @@ static void cell_free_coherent(struct de
+ static dma_addr_t cell_map_single(struct device *hwdev, void *ptr,
+ 		size_t size, enum dma_data_direction direction)
  {
--	int addr_cells;
--	const unsigned int *buid_vals;
--	unsigned int len;
--	unsigned long buid;
--
--	if (ibm_read_pci_config == -1) return 0;
-+	struct resource r;
- 
--	/* PHB's will always be children of the root node,
--	 * or so it is promised by the current firmware. */
--	if (phb->parent == NULL)
--		return 0;
--	if (phb->parent->parent)
-+	if (ibm_read_pci_config == -1)
- 		return 0;
--
--	buid_vals = get_property(phb, "reg", &len);
--	if (buid_vals == NULL)
-+	if (of_address_to_resource(phb, 0, &r))
- 		return 0;
--
--	addr_cells = prom_n_addr_cells(phb);
--	if (addr_cells == 1) {
--		buid = (unsigned long) buid_vals[0];
--	} else {
--		buid = (((unsigned long)buid_vals[0]) << 32UL) |
--			(((unsigned long)buid_vals[1]) & 0xffffffff);
--	}
--	return buid;
-+	return r.start;
+-	return virt_to_abs(ptr) | CELL_DMA_VALID;
++	return virt_to_abs(ptr) | cell_dma_valid;
  }
  
- static int phb_set_bus_ranges(struct device_node *dev,
+ static void cell_unmap_single(struct device *hwdev, dma_addr_t dma_addr,
+@@ -452,7 +454,7 @@ static int cell_map_sg(struct device *hw
+ 
+ 	for (i = 0; i < nents; i++, sg++) {
+ 		sg->dma_address = (page_to_phys(sg->page) + sg->offset)
+-					| CELL_DMA_VALID;
++					| cell_dma_valid;
+ 		sg->dma_length = sg->length;
+ 	}
+ 
+@@ -483,6 +485,12 @@ void cell_init_iommu(void)
+ {
+ 	int setup_bus = 0;
+ 
++	/* If we have an Axon bridge, clear the DMA valid mask. This is fairly
++	 * hackish but will work well enough until we have proper iommu code.
++	 */
++	if (of_find_node_by_name(NULL, "axon"))
++		cell_dma_valid = 0;
++
+ 	if (of_find_node_by_path("/mambo")) {
+ 		pr_info("Not using iommu on systemsim\n");
+ 	} else {
+Index: linux-cell/arch/powerpc/platforms/cell/iommu.h
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/iommu.h	2006-10-27 15:49:10.000000000 +1000
++++ linux-cell/arch/powerpc/platforms/cell/iommu.h	2006-10-27 15:52:19.000000000 +1000
+@@ -53,9 +53,11 @@ enum {
+ 	IOC_ST_ORIGIN     = 0x918,
+ 	IOC_CONF	  = 0x930,
+ 
+-	/* The high bit needs to be set on every DMA address,
+-	   only 2GB are addressable */
+-	CELL_DMA_VALID	  = 0x80000000,
++	/* The high bit needs to be set on every DMA address when using
++	 * a spider bridge and only 2GB are addressable with the current
++	 * iommu code.
++	 */
++	SPIDER_DMA_VALID  = 0x80000000,
+ 	CELL_DMA_MASK	  = 0x7fffffff,
+ };
+ 
