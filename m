@@ -1,23 +1,19 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx026.isp.belgacom.be (outmx026.isp.belgacom.be
-	[195.238.4.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E68BB680A6
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 20:53:46 +1100 (EST)
-Received: from outmx026.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx026.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kAB9rdmS027535
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 10:53:39 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45559D8F.50602@246tNt.com>
-Date: Sat, 11 Nov 2006 10:53:19 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] ppc/powerpc: Fix io.h for config with CONFIG_PCI not set
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 2DD7067F13
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 22:21:35 +1100 (EST)
+Date: Sat, 11 Nov 2006 12:21:25 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
+Message-ID: <20061111112125.GA24288@lst.de>
+References: <4554DACB.8060809@am.sony.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4554DACB.8060809@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,122 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When CONFIG_PCI option is not set, the variables
-pci_dram_offset, isa_io_base and isa_mem_base are not defined.
+On Fri, Nov 10, 2006 at 12:02:19PM -0800, Geoff Levand wrote:
+> This adds the core platform support for the PS3 game console and other
+> platforms using the PS3 Platform hypervisor.
 
-Currently, the test is handled in each platform header. This
-patch moves the test in io.h once and for all.
-
-Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
----
- include/asm-powerpc/mpc85xx.h |    8 --------
- include/asm-ppc/io.h          |    8 +-------
- include/asm-ppc/mpc52xx.h     |   11 -----------
- include/asm-ppc/mpc83xx.h     |    8 --------
- include/asm-ppc/mpc85xx.h     |    8 --------
- 5 files changed, 1 insertions(+), 42 deletions(-)
-
-diff --git a/include/asm-powerpc/mpc85xx.h b/include/asm-powerpc/mpc85xx.h
-index ccdb8a2..5414299 100644
---- a/include/asm-powerpc/mpc85xx.h
-+++ b/include/asm-powerpc/mpc85xx.h
-@@ -31,14 +31,6 @@ #ifdef CONFIG_MPC85xx_CDS
- #include <platforms/85xx/mpc85xx_cds.h>
- #endif
- 
--#define _IO_BASE        isa_io_base
--#define _ISA_MEM_BASE   isa_mem_base
--#ifdef CONFIG_PCI
--#define PCI_DRAM_OFFSET pci_dram_offset
--#else
--#define PCI_DRAM_OFFSET 0
--#endif
--
- /* Let modules/drivers get at CCSRBAR */
- extern phys_addr_t get_ccsrbar(void);
- 
-diff --git a/include/asm-ppc/io.h b/include/asm-ppc/io.h
-index a4c411b..b744baf 100644
---- a/include/asm-ppc/io.h
-+++ b/include/asm-ppc/io.h
-@@ -26,17 +26,11 @@ #define PREP_PCI_DRAM_OFFSET 	0x80000000
- 
- #if defined(CONFIG_4xx)
- #include <asm/ibm4xx.h>
--#elif defined(CONFIG_PPC_MPC52xx)
--#include <asm/mpc52xx.h>
- #elif defined(CONFIG_8xx)
- #include <asm/mpc8xx.h>
- #elif defined(CONFIG_8260)
- #include <asm/mpc8260.h>
--#elif defined(CONFIG_83xx)
--#include <asm/mpc83xx.h>
--#elif defined(CONFIG_85xx)
--#include <asm/mpc85xx.h>
--#elif defined(CONFIG_APUS)
-+#elif defined(CONFIG_APUS) || !defined(CONFIG_PCI)
- #define _IO_BASE	0
- #define _ISA_MEM_BASE	0
- #define PCI_DRAM_OFFSET 0
-diff --git a/include/asm-ppc/mpc52xx.h b/include/asm-ppc/mpc52xx.h
-index 64c8874..d9d21aa 100644
---- a/include/asm-ppc/mpc52xx.h
-+++ b/include/asm-ppc/mpc52xx.h
-@@ -29,17 +29,6 @@ struct pt_regs;
- #endif /* __ASSEMBLY__ */
- 
- 
--#ifdef CONFIG_PCI
--#define _IO_BASE	isa_io_base
--#define _ISA_MEM_BASE	isa_mem_base
--#define PCI_DRAM_OFFSET	pci_dram_offset
--#else
--#define _IO_BASE	0
--#define _ISA_MEM_BASE	0
--#define PCI_DRAM_OFFSET	0
--#endif
--
--
- /* ======================================================================== */
- /* PPC Sys devices definition                                               */
- /* ======================================================================== */
-diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
-index 02ed2c3..c306197 100644
---- a/include/asm-ppc/mpc83xx.h
-+++ b/include/asm-ppc/mpc83xx.h
-@@ -25,14 +25,6 @@ #ifdef CONFIG_MPC834x_SYS
- #include <platforms/83xx/mpc834x_sys.h>
- #endif
- 
--#define _IO_BASE        isa_io_base
--#define _ISA_MEM_BASE   isa_mem_base
--#ifdef CONFIG_PCI
--#define PCI_DRAM_OFFSET pci_dram_offset
--#else
--#define PCI_DRAM_OFFSET 0
--#endif
--
- /*
-  * The "residual" board information structure the boot loader passes
-  * into the kernel.
-diff --git a/include/asm-ppc/mpc85xx.h b/include/asm-ppc/mpc85xx.h
-index 9b48511..d7e4a79 100644
---- a/include/asm-ppc/mpc85xx.h
-+++ b/include/asm-ppc/mpc85xx.h
-@@ -44,14 +44,6 @@ #if defined(CONFIG_TQM8540) || defined(C
- #include <platforms/85xx/tqm85xx.h>
- #endif
- 
--#define _IO_BASE        isa_io_base
--#define _ISA_MEM_BASE   isa_mem_base
--#ifdef CONFIG_PCI
--#define PCI_DRAM_OFFSET pci_dram_offset
--#else
--#define PCI_DRAM_OFFSET 0
--#endif
--
- /*
-  * The "residual" board information structure the boot loader passes
-  * into the kernel.
--- 
-1.4.2
+Please give the port a less confusing name.  I'd expect platforms/ps3
+to be the bare metal port once people have revere-engineered the
+hardware, so your crappy hipervisor code should make it very clear what
+it is.  sonyhv or ps3hv would suite I think.
