@@ -1,10 +1,23 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 11 Nov 2006 17:25:22 +1100
-Subject: [PATCH 32/32] powerpc: Fix a typo in new style SPE mapping code
-In-Reply-To: <1163226282.72526.823314634857.qpush@butch>
-Message-Id: <20061111062553.AF0616812D@ozlabs.org>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx026.isp.belgacom.be (outmx026.isp.belgacom.be
+	[195.238.4.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E68BB680A6
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 20:53:46 +1100 (EST)
+Received: from outmx026.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx026.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kAB9rdmS027535
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 10:53:39 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45559D8F.50602@246tNt.com>
+Date: Sat, 11 Nov 2006 10:53:19 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] ppc/powerpc: Fix io.h for config with CONFIG_PCI not set
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,100 +27,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes a typo in the "new style" code for mapping SPE
-resources, which causes it to try to map 4 times the same resource.
+When CONFIG_PCI option is not set, the variables
+pci_dram_offset, isa_io_base and isa_mem_base are not defined.
 
-It also adds some pr_debug's that are useful to track down issues with
-the firmware when bringinh up new machines.
+Currently, the test is handled in each platform header. This
+patch moves the test in io.h once and for all.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
+ include/asm-powerpc/mpc85xx.h |    8 --------
+ include/asm-ppc/io.h          |    8 +-------
+ include/asm-ppc/mpc52xx.h     |   11 -----------
+ include/asm-ppc/mpc83xx.h     |    8 --------
+ include/asm-ppc/mpc85xx.h     |    8 --------
+ 5 files changed, 1 insertions(+), 42 deletions(-)
 
-The bug is in 2.6.19 so we should merge that asap.
-
- arch/powerpc/platforms/cell/spu_base.c |   41 ++++++++++++++++++++++++++-------
- 1 file changed, 33 insertions(+), 8 deletions(-)
-
-Index: linux-cell/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spu_base.c	2006-11-11 14:57:59.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spu_base.c	2006-11-11 15:01:52.000000000 +1100
-@@ -655,14 +655,19 @@
+diff --git a/include/asm-powerpc/mpc85xx.h b/include/asm-powerpc/mpc85xx.h
+index ccdb8a2..5414299 100644
+--- a/include/asm-powerpc/mpc85xx.h
++++ b/include/asm-powerpc/mpc85xx.h
+@@ -31,14 +31,6 @@ #ifdef CONFIG_MPC85xx_CDS
+ #include <platforms/85xx/mpc85xx_cds.h>
+ #endif
  
- 	for (i=0; i < 3; i++) {
- 		ret = of_irq_map_one(np, i, &oirq);
--		if (ret)
-+		if (ret) {
-+			pr_debug("spu_new: failed to get irq %d\n", i);
- 			goto err;
+-#define _IO_BASE        isa_io_base
+-#define _ISA_MEM_BASE   isa_mem_base
+-#ifdef CONFIG_PCI
+-#define PCI_DRAM_OFFSET pci_dram_offset
+-#else
+-#define PCI_DRAM_OFFSET 0
+-#endif
 -
-+		}
- 		ret = -EINVAL;
-+		pr_debug("  irq %d no 0x%x on %s\n", i, oirq.specifier[0],
-+			 oirq.controller->full_name);
- 		spu->irqs[i] = irq_create_of_mapping(oirq.controller,
- 					oirq.specifier, oirq.size);
--		if (spu->irqs[i] == NO_IRQ)
-+		if (spu->irqs[i] == NO_IRQ) {
-+			pr_debug("spu_new: failed to map it !\n");
- 			goto err;
-+		}
- 	}
- 	return 0;
+ /* Let modules/drivers get at CCSRBAR */
+ extern phys_addr_t get_ccsrbar(void);
  
-@@ -681,7 +686,7 @@
- 	struct resource resource = { };
- 	int ret;
+diff --git a/include/asm-ppc/io.h b/include/asm-ppc/io.h
+index a4c411b..b744baf 100644
+--- a/include/asm-ppc/io.h
++++ b/include/asm-ppc/io.h
+@@ -26,17 +26,11 @@ #define PREP_PCI_DRAM_OFFSET 	0x80000000
  
--	ret = of_address_to_resource(node, 0, &resource);
-+	ret = of_address_to_resource(node, nr, &resource);
- 	if (ret)
- 		goto out;
+ #if defined(CONFIG_4xx)
+ #include <asm/ibm4xx.h>
+-#elif defined(CONFIG_PPC_MPC52xx)
+-#include <asm/mpc52xx.h>
+ #elif defined(CONFIG_8xx)
+ #include <asm/mpc8xx.h>
+ #elif defined(CONFIG_8260)
+ #include <asm/mpc8260.h>
+-#elif defined(CONFIG_83xx)
+-#include <asm/mpc83xx.h>
+-#elif defined(CONFIG_85xx)
+-#include <asm/mpc85xx.h>
+-#elif defined(CONFIG_APUS)
++#elif defined(CONFIG_APUS) || !defined(CONFIG_PCI)
+ #define _IO_BASE	0
+ #define _ISA_MEM_BASE	0
+ #define PCI_DRAM_OFFSET 0
+diff --git a/include/asm-ppc/mpc52xx.h b/include/asm-ppc/mpc52xx.h
+index 64c8874..d9d21aa 100644
+--- a/include/asm-ppc/mpc52xx.h
++++ b/include/asm-ppc/mpc52xx.h
+@@ -29,17 +29,6 @@ struct pt_regs;
+ #endif /* __ASSEMBLY__ */
  
-@@ -704,22 +709,42 @@
  
- 	ret = spu_map_resource(node, 0, (void __iomem**)&spu->local_store,
- 					&spu->local_store_phys);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 0\n",
-+			 node->full_name);
- 		goto out;
-+	}
- 	ret = spu_map_resource(node, 1, (void __iomem**)&spu->problem,
- 					&spu->problem_phys);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 1\n",
-+			 node->full_name);
- 		goto out_unmap;
-+	}
- 	ret = spu_map_resource(node, 2, (void __iomem**)&spu->priv2,
- 					NULL);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 2\n",
-+			 node->full_name);
- 		goto out_unmap;
-+	}
+-#ifdef CONFIG_PCI
+-#define _IO_BASE	isa_io_base
+-#define _ISA_MEM_BASE	isa_mem_base
+-#define PCI_DRAM_OFFSET	pci_dram_offset
+-#else
+-#define _IO_BASE	0
+-#define _ISA_MEM_BASE	0
+-#define PCI_DRAM_OFFSET	0
+-#endif
+-
+-
+ /* ======================================================================== */
+ /* PPC Sys devices definition                                               */
+ /* ======================================================================== */
+diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
+index 02ed2c3..c306197 100644
+--- a/include/asm-ppc/mpc83xx.h
++++ b/include/asm-ppc/mpc83xx.h
+@@ -25,14 +25,6 @@ #ifdef CONFIG_MPC834x_SYS
+ #include <platforms/83xx/mpc834x_sys.h>
+ #endif
  
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
- 		ret = spu_map_resource(node, 3, (void __iomem**)&spu->priv1,
- 					NULL);
--	if (ret)
-+	if (ret) {
-+		pr_debug("spu_new: failed to map %s resource 3\n",
-+			 node->full_name);
- 		goto out_unmap;
-+	}
-+	pr_debug("spu_new: %s maps:\n", node->full_name);
-+	pr_debug("  local store   : 0x%016lx -> 0x%p\n",
-+		 spu->local_store_phys, spu->local_store);
-+	pr_debug("  problem state : 0x%016lx -> 0x%p\n",
-+		 spu->problem_phys, spu->problem);
-+	pr_debug("  priv2         :                       0x%p\n", spu->priv2);
-+	pr_debug("  priv1         :                       0x%p\n", spu->priv1);
-+
- 	return 0;
+-#define _IO_BASE        isa_io_base
+-#define _ISA_MEM_BASE   isa_mem_base
+-#ifdef CONFIG_PCI
+-#define PCI_DRAM_OFFSET pci_dram_offset
+-#else
+-#define PCI_DRAM_OFFSET 0
+-#endif
+-
+ /*
+  * The "residual" board information structure the boot loader passes
+  * into the kernel.
+diff --git a/include/asm-ppc/mpc85xx.h b/include/asm-ppc/mpc85xx.h
+index 9b48511..d7e4a79 100644
+--- a/include/asm-ppc/mpc85xx.h
++++ b/include/asm-ppc/mpc85xx.h
+@@ -44,14 +44,6 @@ #if defined(CONFIG_TQM8540) || defined(C
+ #include <platforms/85xx/tqm85xx.h>
+ #endif
  
- out_unmap:
+-#define _IO_BASE        isa_io_base
+-#define _ISA_MEM_BASE   isa_mem_base
+-#ifdef CONFIG_PCI
+-#define PCI_DRAM_OFFSET pci_dram_offset
+-#else
+-#define PCI_DRAM_OFFSET 0
+-#endif
+-
+ /*
+  * The "residual" board information structure the boot loader passes
+  * into the kernel.
+-- 
+1.4.2
