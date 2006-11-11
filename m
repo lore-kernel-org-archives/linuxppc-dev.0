@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 11 Nov 2006 17:24:46 +1100
-Subject: [PATCH 4/32] arch provides generic iomap missing accessors
+Date: Sat, 11 Nov 2006 17:24:48 +1100
+Subject: [PATCH 5/32] Add arch specific dev_archdata to struct device
 In-Reply-To: <1163226282.72526.823314634857.qpush@butch>
-Message-Id: <20061111062518.445C6680E1@ozlabs.org>
+Message-Id: <20061111062519.484DE6811F@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,115 +14,376 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Linus Torvalds <torvalds@osdl.org>
+Adds an arch specific struct dev_arch to struct device. This enables
+architecture to add specific fields to every device in the system, like
+DMA operation pointers, NUMA node ID, firmware specific data, etc...
 
-Allow architectures to provide their own implementation of the big endian MMIO
-accessors and "repeat" MMIO accessors for use by the generic iomap.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-More-or-less-tested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ include/asm-alpha/device.h     |    7 +++++++
+ include/asm-arm/device.h       |    7 +++++++
+ include/asm-arm26/device.h     |    7 +++++++
+ include/asm-avr32/device.h     |    7 +++++++
+ include/asm-cris/device.h      |    7 +++++++
+ include/asm-frv/device.h       |    7 +++++++
+ include/asm-generic/device.h   |   12 ++++++++++++
+ include/asm-h8300/device.h     |    7 +++++++
+ include/asm-i386/device.h      |    7 +++++++
+ include/asm-ia64/device.h      |    7 +++++++
+ include/asm-m32r/device.h      |    7 +++++++
+ include/asm-m68k/device.h      |    7 +++++++
+ include/asm-m68knommu/device.h |    7 +++++++
+ include/asm-mips/device.h      |    7 +++++++
+ include/asm-parisc/device.h    |    7 +++++++
+ include/asm-powerpc/device.h   |    7 +++++++
+ include/asm-ppc/device.h       |    7 +++++++
+ include/asm-s390/device.h      |    7 +++++++
+ include/asm-sh/device.h        |    7 +++++++
+ include/asm-sh64/device.h      |    7 +++++++
+ include/asm-sparc/device.h     |    7 +++++++
+ include/asm-sparc64/device.h   |    7 +++++++
+ include/asm-um/device.h        |    7 +++++++
+ include/asm-v850/device.h      |    7 +++++++
+ include/asm-x86_64/device.h    |    7 +++++++
+ include/asm-xtensa/device.h    |    7 +++++++
+ include/linux/device.h         |    3 +++
+ 27 files changed, 190 insertions(+)
 
----
- lib/iomap.c |   32 ++++++++++++++++++++++++++++----
- 1 file changed, 28 insertions(+), 4 deletions(-)
-
-Index: linux-cell/lib/iomap.c
+Index: linux-cell/include/asm-alpha/device.h
 ===================================================================
---- linux-cell.orig/lib/iomap.c	2006-11-05 16:19:32.000000000 +1100
-+++ linux-cell/lib/iomap.c	2006-11-05 16:19:40.000000000 +1100
-@@ -50,6 +50,16 @@
- 	}							\
- } while (0)
- 
-+#ifndef pio_read16be
-+#define pio_read16be(port) swab16(inw(port))
-+#define pio_read32be(port) swab32(inl(port))
-+#endif
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-alpha/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
 +
-+#ifndef mmio_read16be
-+#define mmio_read16be(addr) be16_to_cpu(__raw_readw(addr))
-+#define mmio_read32be(addr) be32_to_cpu(__raw_readl(addr))
-+#endif
+Index: linux-cell/include/asm-arm/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-arm/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
 +
- unsigned int fastcall ioread8(void __iomem *addr)
- {
- 	IO_COND(addr, return inb(port), return readb(addr));
-@@ -60,7 +70,7 @@
- }
- unsigned int fastcall ioread16be(void __iomem *addr)
- {
--	IO_COND(addr, return inw(port), return be16_to_cpu(__raw_readw(addr)));
-+	IO_COND(addr, return pio_read16be(port), return mmio_read16be(addr));
- }
- unsigned int fastcall ioread32(void __iomem *addr)
- {
-@@ -68,7 +78,7 @@
- }
- unsigned int fastcall ioread32be(void __iomem *addr)
- {
--	IO_COND(addr, return inl(port), return be32_to_cpu(__raw_readl(addr)));
-+	IO_COND(addr, return pio_read32be(port), return mmio_read32be(addr));
- }
- EXPORT_SYMBOL(ioread8);
- EXPORT_SYMBOL(ioread16);
-@@ -76,6 +86,16 @@
- EXPORT_SYMBOL(ioread32);
- EXPORT_SYMBOL(ioread32be);
- 
-+#ifndef pio_write16be
-+#define pio_write16be(val,port) outw(swab16(val),port)
-+#define pio_write32be(val,port) outl(swab32(val),port)
-+#endif
+Index: linux-cell/include/asm-arm26/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-arm26/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
 +
-+#ifndef mmio_write16be
-+#define mmio_write16be(val,port) __raw_writew(be16_to_cpu(val),port)
-+#define mmio_write32be(val,port) __raw_writel(be32_to_cpu(val),port)
-+#endif
+Index: linux-cell/include/asm-avr32/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-avr32/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
 +
- void fastcall iowrite8(u8 val, void __iomem *addr)
- {
- 	IO_COND(addr, outb(val,port), writeb(val, addr));
-@@ -86,7 +106,7 @@
- }
- void fastcall iowrite16be(u16 val, void __iomem *addr)
- {
--	IO_COND(addr, outw(val,port), __raw_writew(cpu_to_be16(val), addr));
-+	IO_COND(addr, pio_write16be(val,port), mmio_write16be(val, addr));
- }
- void fastcall iowrite32(u32 val, void __iomem *addr)
- {
-@@ -94,7 +114,7 @@
- }
- void fastcall iowrite32be(u32 val, void __iomem *addr)
- {
--	IO_COND(addr, outl(val,port), __raw_writel(cpu_to_be32(val), addr));
-+	IO_COND(addr, pio_write32be(val,port), mmio_write32be(val, addr));
- }
- EXPORT_SYMBOL(iowrite8);
- EXPORT_SYMBOL(iowrite16);
-@@ -108,6 +128,7 @@
-  * convert to CPU byte order. We write in "IO byte
-  * order" (we also don't have IO barriers).
-  */
-+#ifndef mmio_insb
- static inline void mmio_insb(void __iomem *addr, u8 *dst, int count)
- {
- 	while (--count >= 0) {
-@@ -132,7 +153,9 @@
- 		dst++;
- 	}
- }
-+#endif
+Index: linux-cell/include/asm-cris/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-cris/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-frv/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-frv/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-generic/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-generic/device.h	2006-11-11 14:29:36.000000000 +1100
+@@ -0,0 +1,12 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#ifndef _ASM_GENERIC_DEVICE_H
++#define _ASM_GENERIC_DEVICE_H
++
++struct dev_archdata {
++};
++
++#endif /* _ASM_GENERIC_DEVICE_H */
+Index: linux-cell/include/asm-h8300/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-h8300/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-i386/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-i386/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-ia64/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-ia64/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-m32r/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-m32r/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-m68k/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-m68k/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-m68knommu/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-m68knommu/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-mips/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-mips/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-parisc/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-parisc/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-powerpc/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-powerpc/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-ppc/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-ppc/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-s390/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-s390/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-sh/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-sh/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-sh64/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-sh64/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-sparc/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-sparc/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-sparc64/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-sparc64/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-um/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-um/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-v850/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-v850/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-x86_64/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-x86_64/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/asm-xtensa/device.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/include/asm-xtensa/device.h	2006-11-11 14:28:46.000000000 +1100
+@@ -0,0 +1,7 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++#include <asm-generic/device.h>
++
+Index: linux-cell/include/linux/device.h
+===================================================================
+--- linux-cell.orig/include/linux/device.h	2006-11-11 14:25:07.000000000 +1100
++++ linux-cell/include/linux/device.h	2006-11-11 14:30:00.000000000 +1100
+@@ -21,6 +21,7 @@
+ #include <linux/pm.h>
+ #include <asm/semaphore.h>
+ #include <asm/atomic.h>
++#include <asm/device.h>
  
-+#ifndef mmio_outsb
- static inline void mmio_outsb(void __iomem *addr, const u8 *src, int count)
- {
- 	while (--count >= 0) {
-@@ -154,6 +177,7 @@
- 		src++;
- 	}
- }
-+#endif
+ #define DEVICE_NAME_SIZE	50
+ #define DEVICE_NAME_HALF	__stringify(20)	/* Less than half to accommodate slop */
+@@ -382,6 +383,8 @@
  
- void fastcall ioread8_rep(void __iomem *addr, void *dst, unsigned long count)
- {
+ 	struct dma_coherent_mem	*dma_mem; /* internal for coherent mem
+ 					     override */
++	/* arch specific additions */
++	struct dev_archdata	archdata;
+ 
+ 	/* class_device migration path */
+ 	struct list_head	node;
