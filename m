@@ -1,17 +1,17 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from host32.eke.fi (unknown [194.100.36.62])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 559D3680AC
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Nov 2006 21:09:44 +1100 (EST)
-Date: Sat, 11 Nov 2006 12:09:39 +0200 (EET)
-From: Kalle Pokki <kalle.pokki@iki.fi>
-To: linuxppc-embedded@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] 8xx: Off-by-one fixes to SCC parameter RAM definitions
-Message-ID: <Pine.LNX.4.64.0611111201001.8062@host32.eke.fi>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17749.46096.241328.470093@cargo.ozlabs.ibm.com>
+Date: Sat, 11 Nov 2006 22:29:20 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kalle Pokki <kalle.pokki@iki.fi>
+Subject: Re: [PATCH] CPM_UART: Fix non-console initialisation (v2)
+In-Reply-To: <Pine.LNX.4.64.0611101359200.25024@host32.eke.fi>
+References: <Pine.LNX.4.64.0611011457490.3387@host32.eke.fi>
+	<17748.21645.621069.105453@cargo.ozlabs.ibm.com>
+	<a425f86c0611100345h40b104cchdb766e35f1767656@mail.gmail.com>
+	<Pine.LNX.4.64.0611101359200.25024@host32.eke.fi>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,60 +22,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Kalle Pokki writes:
 
-Please apply this trivial fix.
+> Hmm, it seems you already pushed the changes. This should apply to the 
+> current 'merge' branch.
 
+That on its own is hard to justify as a bug fix, isn't it?
 
-
-The SCC parameter RAM areas are mapped wrong in MPC8xx device descriptions. All
-memory areas overlap with the next one, so that I2C, SPI, SMC1 and SMC2 cannot
-be enabled if the four SCCs are.
-
-Signed-off-by: Kalle Pokki <kalle.pokki@iki.fi>
----
- arch/ppc/syslib/mpc8xx_devices.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
-index cf5ab47..31fb565 100644
---- a/arch/ppc/syslib/mpc8xx_devices.c
-+++ b/arch/ppc/syslib/mpc8xx_devices.c
-@@ -78,7 +78,7 @@ struct platform_device ppc_sys_platform_
- 			{
- 				.name 	= "pram",
- 				.start 	= 0x3c00,
--				.end 	= 0x3c80,
-+				.end 	= 0x3c7f,
- 				.flags 	= IORESOURCE_MEM,
- 			},
- 			{
-@@ -103,7 +103,7 @@ struct platform_device ppc_sys_platform_
- 			{
- 				.name 	= "pram",
- 				.start 	= 0x3d00,
--				.end 	= 0x3d80,
-+				.end 	= 0x3d7f,
- 				.flags 	= IORESOURCE_MEM,
- 			},
- 
-@@ -129,7 +129,7 @@ struct platform_device ppc_sys_platform_
- 			{
- 				.name 	= "pram",
- 				.start 	= 0x3e00,
--				.end 	= 0x3e80,
-+				.end 	= 0x3e7f,
- 				.flags 	= IORESOURCE_MEM,
- 			},
- 
-@@ -155,7 +155,7 @@ struct platform_device ppc_sys_platform_
- 			{
- 				.name 	= "pram",
- 				.start 	= 0x3f00,
--				.end 	= 0x3f80,
-+				.end 	= 0x3f7f,
- 				.flags 	= IORESOURCE_MEM,
- 			},
- 
--- 
-1.4.1.1
+Paul.
