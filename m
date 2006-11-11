@@ -1,32 +1,29 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A0B2667F38
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 12:01:12 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAB119ES031253
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 20:01:09 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAB119O9507348
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 18:01:09 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAB119SI024208
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Nov 2006 18:01:09 -0700
-Date: Fri, 10 Nov 2006 19:01:08 -0600
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
-Message-ID: <20061111010108.GX30625@austin.ibm.com>
-References: <20061110182253.GV30625@austin.ibm.com>
-	<20061110200152.GC23089@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061110200152.GC23089@localdomain>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9544367F10
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 12:31:42 +1100 (EST)
+Subject: Re: [Fwd: [Bug 7431] New: ohci1394 Oops after a rmmod/modprobe	cycle]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <45551185.8080704@s5r6.in-berlin.de>
+References: <454DBFE7.3090800@s5r6.in-berlin.de>
+	<1162724083.28571.235.camel@localhost.localdomain>
+	<454DC985.2020203@s5r6.in-berlin.de> <20061106165752.GA25595@aepfle.de>
+	<1162851570.28571.361.camel@localhost.localdomain>
+	<20061107070839.GA31460@aepfle.de>
+	<1162883865.28571.439.camel@localhost.localdomain>
+	<tkrat.bedb19657ae90fd7@s5r6.in-berlin.de>
+	<tkrat.fa66c98c1012e645@s5r6.in-berlin.de>
+	<1163200208.4982.193.camel@localhost.localdomain>
+	<45551185.8080704@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Sat, 11 Nov 2006 12:31:32 +1100
+Message-Id: <1163208692.4982.199.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	Gioele Barabucci <dev@gioelebarabucci.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,33 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 10, 2006 at 02:01:52PM -0600, Nathan Lynch wrote:
-> Linas Vepstas wrote:
-> > 
-> > There are a variety of code paths that lead to rtas_stop_self()
-> > being called, primarily through cpu_die(). However, rtas_stop_self() 
-> > has a BUG_ON(rtas_args->token == RTAS_UNKNOWN_SERVICE); in it, and
-> > this rtas token is only set up if CONFIG_HOTPLUG_CPU is defined.
-> > 
-> > Rather than wrapping all of the callers of rtas_stop_self()
-> > with CONFIG_HOTPLUG_CPU, it seems wiser to just unwrap the token
-> > definition.
+On Sat, 2006-11-11 at 00:55 +0100, Stefan Richter wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Sat, 2006-11-11 at 00:07 +0100, Stefan Richter wrote:
+> >> Actually, shouldn't ohci1394_pci_remove enlcose the platform code into
+> >>
+> >> 	if (machine_is(powermac)) {
 > 
-> Is there actually a code path that calls rtas_stop_self with
-> CONFIG_HOTPLUG_CPU=n?  That would be a bug, I think.
+> > Yes.
+> 
+> And how does this expression evaluate on PowerBook G3 "Pismo"?
 
-Yeah, that was my first reaction too, right next to "user error". 
-But then I started tracing the code paths, and after they multiplied
-a bit, it was clear that the answer wouldn't be clear. 
+This will be true on all powerpc based apple machines, so it will be
+true there too.
 
-So then I philosophized a bit: if the code cannot be called
-unless CONFIG_HOTPLUG_CPU=y, then I should add #ifdef CONFIG_HOTPLUG_CPU
-to make sure that the code doesn't even get compiled in.
-
-Well, there used to be such ifdefs (according to Joel) but someone 
-removed the ifdefs. I'm guessing that these got removed during the
-powerpc tree migration.
-
-So... Rather than wrapping all of the callers of rtas_stop_self() ...
-
---linas
+Ben.
