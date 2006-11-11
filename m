@@ -1,18 +1,9 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 2FFD567F5C
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 13:13:50 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 8/16] powerpc: add ps3 platform hvcalls
-Date: Sat, 11 Nov 2006 03:13:40 +0100
-References: <4554DAD7.2090709@am.sony.com>
-In-Reply-To: <4554DAD7.2090709@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611110313.40940.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sat, 11 Nov 2006 17:24:13 +1100
+Subject: [PATCH 0/32] My current serie of patches for 2.6.20 for review
+Message-Id: <1163226253.732808.924875685103.qpush@butch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +13,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 10 November 2006 21:02, Geoff Levand wrote:
-> Adds the ps3pf hvcalls.
-> 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+This should be ready for merge in powerpc tree and 2.6.20 as soon
+as the merge window opens.
 
-This one reminds of the inline hcall abstraction layer I did
-some time ago. The implementation in your patch is a lot
-less elegant than both the pseries in its current incarnation
-and the one that I did (IMHO). Any opinions on how we should
-proceed here?
+One prerequisite is Geoff's patch testing ppc_md.init_early for
+NULL before calling it as I removed pasemi's init_early (now
+empty) with the DMA patch.
 
-I can dig out my patch again in the version I did for the
-ps3 hypervisor, if there is demand, or I could help moving
-over so code that is more like the pseries one. Unfortunately
-the calling conventions are very different from pseries 
-(the hcall number is passed in r11, not in one of the argument
-registers), so that would not be as nice as Anton's implementation.
+[Note: Differences since the last version are the renaming of
+dev_sysdata to dev_archdata along with a few more cosmetic
+mostly changes to that patch, adapting the others to that change,
+a bug fix for iseries, and pasemi was missing from the DMA changes,
+this version fixes it]
 
-	Arnd <><
+Note that the first 5 ones require specific comments:
+
+* ibmveth: Remove ibmveth "liobn" field
+
+  is already queued with Jeff Garzik and will get in 2.6.20
+  via his merge tree
+
+* Call platform_notify_remove later
+
+  is queued in -mm and Andrew sent it to Greg, I expect greg to
+  merge it in 2.6.20
+
+* Driver core: add notification of bus events
+
+  is queued in Greg's tree and scheduled for merge in 2.6.20
+
+* arch provides generic iomap missing accessors
+
+  was written by Linus but is not merged yet. He asked me to
+  resend it when needed, so I'll include it with the other patches
+  when the merge window opens.
+
+* Add arch specific dev_archdata to struct device
+
+  this seems to be generally accepted and should be merged by Greg
+  or Andrew in 2.6.20
+
+* Change ACPI to use dev_archdata instead of firmware_data
+
+  this is a patch that goes along the previous one (though not actually
+  necessary). It doesn't actually need to go in powerpc.git nor 2.6.20,
+  I included it in this serie for completeness
+
+This patch set started its life as the support for the new "Axon"
+southbridge for cell (which includes such things as MMIO mapped DCR
+and 4xx-type devices). However, as things evolved, I ended up doing
+a lot more than just the basic support. Among other highlights of
+this patch serie are:
+
+ - Generic DCR support for both 4xx-type DCRs and MMIO mapped DCR and
+MPIC & EMAC changes to work with that
+
+ - Souped up of_platform_driver to make it easier to register entire
+trees of devices at once, along with PCI host bridge detection support
+for 64 bits architectures. Note that some name changes might break
+compile of some platforms. I hope to have fixed everything before I
+merge but don't forget to tell me if I missed something.
+
+ - Completely reworked 64 bits DMA operations
+
+ - Possibility to "hook" on PCI MMIO and PCI operations from the platform
+code for use by iSeries, Cell and possibly others who have to deal with
+weird hypervisor or PCI host bridge erratas. Currently supported only on
+64 bits but would be easy to make it work on 32 bits if ever needed.
+
+ - Merged 32 and 64 bits io.h. ARCH=powerpc now uses asm-powerpc/io.h
+for both. ARCH=ppc still uses the old one in asm-ppc as I really don't
+feel like dealing with some of the cruft in there.
+
+ - As a consequence of the 2 above, new accessors are available that match
+what is done by other architectures: {read,write}{w,l,q}_be for big endian
+PCI MMIO accesses, {read,write}s{b,w,l} for MMIO "repeat" operations, and
+a significant cleanup of the EEH stuff.
+
+ - Cell IOMMU support (mostly written by Jeremy Kerr)
+
+And more ...
