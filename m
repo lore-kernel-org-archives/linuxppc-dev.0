@@ -1,9 +1,9 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 11 Nov 2006 17:24:13 +1100
+Date: Sat, 11 Nov 2006 17:24:30 +1100
 Subject: [PATCH 0/32] My current serie of patches for 2.6.20 for review
-Message-Id: <1163226253.732808.924875685103.qpush@butch>
+Message-Id: <1163226270.294179.909862846775.qpush@butch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
