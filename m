@@ -1,26 +1,38 @@
-Return-Path: <kallepokki@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 4E87C68026
+Return-Path: <robin.gilks@tait.co.nz>
+Received: from gatekeeper.tait.co.nz (gatekeeper.tait.co.nz [202.37.96.11])
+	by ozlabs.org (Postfix) with ESMTP id 78CBE67D6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Nov 2006 01:15:25 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id p76so532909pyb
+	Mon, 13 Nov 2006 07:43:49 +1100 (EST)
+Received: from gatekeeper.tait.co.nz (localhost.localdomain [127.0.0.1])
+	by localhost.tait.co.nz (Postfix) with ESMTP id E8742467C6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Nov 2006 06:15:21 -0800 (PST)
-Message-ID: <a425f86c0611110615r5b5d1daeydd6007a657548f96@mail.gmail.com>
-Date: Sat, 11 Nov 2006 16:15:19 +0200
-From: "Kalle Pokki" <kalle.pokki@iki.fi>
-Sender: kallepokki@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [PATCH] CPM_UART: Fix non-console initialisation (v2)
-In-Reply-To: <17749.46096.241328.470093@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <Pine.LNX.4.64.0611011457490.3387@host32.eke.fi>
-	<17748.21645.621069.105453@cargo.ozlabs.ibm.com>
-	<a425f86c0611100345h40b104cchdb766e35f1767656@mail.gmail.com>
-	<Pine.LNX.4.64.0611101359200.25024@host32.eke.fi>
-	<17749.46096.241328.470093@cargo.ozlabs.ibm.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 13 Nov 2006 09:43:48 +1300 (NZDT)
+Received: from sunstrike.tait.co.nz (sunstrike [172.25.40.92])
+	by gatekeeper.tait.co.nz (Postfix) with ESMTP id D6EE046751
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 13 Nov 2006 09:43:48 +1300 (NZDT)
+Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	id <0J8M00201WTO6G00@sunstrike.tait.co.nz>
+	(original mail from robin.gilks@tait.co.nz) for
+	linuxppc-embedded@ozlabs.org; Mon, 13 Nov 2006 09:43:48 +1300 (NZDT)
+Received: from [172.25.140.15] by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	with ESMTP id <0J8M000S6XKZ8720@sunstrike.tait.co.nz> for
+	linuxppc-embedded@ozlabs.org; Mon, 13 Nov 2006 09:43:47 +1300 (NZDT)
+Date: Mon, 13 Nov 2006 09:43:47 +1300
+From: Robin Gilks <robin.gilks@tait.co.nz>
+Subject: Re: Freescale combined ethernet driver
+In-reply-to: <47D6F8FB-261B-42C3-8494-6897AF14B132@freescale.com>
+To: ppc embedded list <linuxppc-embedded@ozlabs.org>
+Message-id: <45578783.2060400@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+References: <45515913.3080206@tait.co.nz>
+	<20061109174947.415c7f7f@vitb.ru.mvista.com>
+	<45538F14.5020205@tait.co.nz>
+	<47D6F8FB-261B-42C3-8494-6897AF14B132@freescale.com>
+Reply-To: robin.gilks@tait.co.nz
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,27 +43,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/11/06, Paul Mackerras <paulus@samba.org> wrote:
-> Kalle Pokki writes:
->
-> > Hmm, it seems you already pushed the changes. This should apply to the
-> > current 'merge' branch.
->
-> That on its own is hard to justify as a bug fix, isn't it?
+Andy Fleming wrote:
 
-Sure, but since you removed the last hunk of the patch that became
-0091cf5a6ae6e52fc95ceb53200975ef2c81c206, we now have a little
-inconsistent definitions:
+> 
+> Documentation/driver-model/*
+> 
 
-in cpm_uart.h
-int __init cpm_uart_init_portdesc(void);
+Duh!!
 
-in cpm_uart_cpm1.c
-int __init cpm_uart_init_portdesc(void)
-{
-}
-
-in cpm_uart_cpm2.c
-int cpm_uart_init_portdesc(void)
-{
-}
+=======================================================================
+This email, including any attachments, is only for the intended
+addressee.  It is subject to copyright, is confidential and may be
+the subject of legal or other privilege, none of which is waived or
+lost by reason of this transmission.
+If the receiver is not the intended addressee, please accept our
+apologies, notify us by return, delete all copies and perform no
+other act on the email.
+Unfortunately, we cannot warrant that the email has not been
+ altered or corrupted during transmission.
+=======================================================================
