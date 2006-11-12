@@ -1,33 +1,19 @@
-Return-Path: <brking@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EC8A367DD2
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 14:56:05 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAC3tvQe025613
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 22:55:58 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAC3tvRM231302
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 22:55:57 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAC3tv55024943
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Nov 2006 22:55:57 -0500
-Message-ID: <45569B17.20405@us.ibm.com>
-Date: Sat, 11 Nov 2006 21:55:03 -0600
-From: Brian King <brking@us.ibm.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 9349667D53
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 05:28:43 +1100 (EST)
+Message-ID: <45576835.8000605@ru.mvista.com>
+Date: Sun, 12 Nov 2006 21:30:13 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: ipr SATA support is causing problems
-References: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>	<45549962.108@us.ibm.com>
-	<17749.1504.630761.341652@cargo.ozlabs.ibm.com>	<4556631C.1070308@us.ibm.com>
-	<1163292641.4982.249.camel@localhost.localdomain>
-In-Reply-To: <1163292641.4982.249.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: James.Bottomley@SteelEye.com, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
-	Paul Mackerras <paulus@samba.org>, akpm@osdl.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] PowerPC: clockevents and HRT support
+References: <200611080005.08633.sshtylyov@ru.mvista.com>	<1162938997.28571.534.camel@localhost.localdomain>	<45510C58.3010707@ru.mvista.com>	<17745.14911.693171.717979@cargo.ozlabs.ibm.com>	<4551E7FF.8010209@ru.mvista.com>	<17748.14621.231956.561842@cargo.ozlabs.ibm.com>	<455487E2.9040701@ru.mvista.com>
+	<17749.4257.415783.451756@cargo.ozlabs.ibm.com>
+In-Reply-To: <17749.4257.415783.451756@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: tglx@linutronix.de, greg.weeks@timesys.com,
+	John Stultz <johnstul@us.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,47 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Sat, 2006-11-11 at 17:56 -0600, Brian King wrote:
->> Paul Mackerras wrote:
->>> How hard would it be to make the SATA bits conditionally compiled in,
->>> depending on CONFIG_ATA?
->> I took a look at doing this. It got a bit messy with a bunch of ifdefs,
->> then I realized that doing this would break module dependencies. If
->> ipr does not depend on CONFIG_ATA, then libata will not automatically
->> get loaded (or built into initrd's) when ipr is needed.
->>
->> The best way I can see to accomplish your desired goal is to do something
->> like the fusion driver did and separate out the sas bits from the scsi
->> bits and essentially end up with multiple ipr modules. Unfortunately,
->> this is not 2.6.19 material, but I could start working on it if you
->> thought it sounded like a reasonable direction.
-> 
-> Yeah, something like
-> 
->                     /--- SATA sub-modules (depends on CONFIG_ATA)
->  - core IPR module /
->                    \
->                     \--- SAS sub-module (depends on CONFIG_SCSI)
->                      \ 
->                       \--- SCSI sub-module (depends on CONFIG_SCSI)
-> 
-> 
-> Or do you need SAS and SATA to be one and only one ?
+Hello.
 
-SAS and SATA need to be one and only one. Splitting them is where
-the complication comes in. So that would mean we would have
-something like:
+Paul Mackerras wrote:
 
-                     /--- SCSI sub-module
-  - core IPR module /
-     (depends on    \
-       CONFIG_SCSI)  \--- SAS/SATA sub-module (depends on CONFIG_ATA)
+>>    I think the usual rule is: "you want it, you do it". ;-)
 
+> Sure!  And I will, at some point, if someone else doesn't do it
+> first.
 
-Brian
+> My point is simply that as maintainer I won't accept a patch that
+> breaks an important feature, even if it adds another important
+> feature.
 
--- 
-Brian King
-eServer Storage I/O
-IBM Linux Technology Center
+    It's too early to talk about the mainline acceptance of this patch ATM, 
+while TOD vsyscalls are broken/removed by the GENERIC_TIME support patches 
+(which are aboslutely needed for HRT as well).  We'll try to return to getting 
+them straight when the time permits, but for now the HRT patchset is still in 
+better form than it was for several months before that (not even compilable, 
+and vsyscalls broken)...
+
+>>    Seriously, we have neither time, not hardware, nor docs for the h/w this 
+>>accounting option applies to.
+
+> Really?  You're working on machines that don't have a timebase
+> register?  What powerpc chip doesn't have a timebase register, other
+> than the really old 601? :)  The timebase is all the hardware that is
+> needed.
+
+    If you look at arch/powerpc/Kconfig, you'll see that this option depends 
+on PPC64 which basically says it all:  we have only 32-bit targets to care 
+about ATM.  When it comes to 64-bit ones, we'll see... :-)
+
+>>And coercing the generic clcokevents/hrtimers 
+>>code into calling the arch hooks is serious design decision which I felt is 
+>>better to be left to Thomas as a maintainer...
+
+> CONFIG_VIRT_CPU_ACCOUNTING is used, and needed, on powerpc and s390,
+> both of which also want to do dynticks.  If the current framework
+> can't cope with that, then it needs to be extended.
+
+    Well, why not make Linus "extend" update_process_times() for starters? :-)
+
+> Paul.
+
+WBR, Sergei
