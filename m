@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B8FC67DCF
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 11:47:03 +1100 (EST)
-Subject: Re: [PATCH 8/16] powerpc: add ps3 platform hvcalls
+	by ozlabs.org (Postfix) with ESMTP id EFD1267DCE
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 11:50:51 +1100 (EST)
+Subject: Re: ipr SATA support is causing problems
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20061111112239.GB24288@lst.de>
-References: <4554DAD7.2090709@am.sony.com>
-	<200611110313.40940.arnd@arndb.de>  <20061111112239.GB24288@lst.de>
+To: Brian King <brking@us.ibm.com>
+In-Reply-To: <4556631C.1070308@us.ibm.com>
+References: <17748.25705.543922.486456@cargo.ozlabs.ibm.com>
+	<45549962.108@us.ibm.com>
+	<17749.1504.630761.341652@cargo.ozlabs.ibm.com>
+	<4556631C.1070308@us.ibm.com>
 Content-Type: text/plain
-Date: Sun, 12 Nov 2006 11:46:53 +1100
-Message-Id: <1163292413.4982.243.camel@localhost.localdomain>
+Date: Sun, 12 Nov 2006 11:50:41 +1100
+Message-Id: <1163292641.4982.249.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>
+Cc: James.Bottomley@SteelEye.com, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
+	Paul Mackerras <paulus@samba.org>, akpm@osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-11-11 at 12:22 +0100, Christoph Hellwig wrote:
-> On Sat, Nov 11, 2006 at 03:13:40AM +0100, Arnd Bergmann wrote:
-> > On Friday 10 November 2006 21:02, Geoff Levand wrote:
-> > > Adds the ps3pf hvcalls.
-> > > 
-> > > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> > 
-> > This one reminds of the inline hcall abstraction layer I did
-> > some time ago. The implementation in your patch is a lot
-> > less elegant than both the pseries in its current incarnation
-> > and the one that I did (IMHO). Any opinions on how we should
-> > proceed here?
+On Sat, 2006-11-11 at 17:56 -0600, Brian King wrote:
+> Paul Mackerras wrote:
+> > How hard would it be to make the SATA bits conditionally compiled in,
+> > depending on CONFIG_ATA?
 > 
-> Please try to reuse Arnd's code as much as possible.  What's in
-> this patch is more than ugly.
+> I took a look at doing this. It got a bit messy with a bunch of ifdefs,
+> then I realized that doing this would break module dependencies. If
+> ipr does not depend on CONFIG_ATA, then libata will not automatically
+> get loaded (or built into initrd's) when ipr is needed.
+> 
+> The best way I can see to accomplish your desired goal is to do something
+> like the fusion driver did and separate out the sas bits from the scsi
+> bits and essentially end up with multiple ipr modules. Unfortunately,
+> this is not 2.6.19 material, but I could start working on it if you
+> thought it sounded like a reasonable direction.
 
-Last I heard, there wasn't complete agreement between Paulus and Arnd
-about how those Hcalls should look like and Arnd patch, I think,
-conflicts with something else (though it's not off the top of my mind, I
-haven't paid too much attention there).
+Yeah, something like
 
-I asked Paulus and we agreed that Geoff should keep his current macros
-for now, and we'll look into a general consolidation once it's in and
-the Toshiba stuff is in too (it should be posted next week).
+                    /--- SATA sub-modules (depends on CONFIG_ATA)
+ - core IPR module /
+                   \
+                    \--- SAS sub-module (depends on CONFIG_SCSI)
+                     \ 
+                      \--- SCSI sub-module (depends on CONFIG_SCSI)
 
+
+Or do you need SAS and SATA to be one and only one ?
+
+Cheers,
 Ben.
