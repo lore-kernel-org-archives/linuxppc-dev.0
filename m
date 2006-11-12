@@ -1,19 +1,17 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 4229E67D3B
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 08:24:38 +1100 (EST)
-Received: from wasted.dev.rtsoft.ru (unknown [10.150.0.9])
-	by imap.sh.mvista.com (Postfix) with ESMTP id EDC8F3EC9
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 13:24:35 -0800 (PST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Fwd: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t in
-	latency_trace.c
-Date: Mon, 13 Nov 2006 00:26:17 +0300
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611130026.17204.sshtylyov@ru.mvista.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5151F67D3D
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 09:27:46 +1100 (EST)
+Subject: [PATCH 31/32-fix] powerpc: Merge 32 and 64 bits asm-powerpc/io.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Mon, 13 Nov 2006 09:27:39 +1100
+Message-Id: <1163370460.4982.268.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +21,1054 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+powerpc: Merge 32 and 64 bits asm-powerpc/io.h
 
-   Ugh, got the linuxppc-dev address wrong in the original mail...
+The rework on io.h done for the new hookable accessors made it easier,
+so I just finished the work and merged 32 and 64 bits io.h for arch/powerpc.
 
-WBR, Sergei
+arch/ppc still uses the old version in asm-ppc, there is just too much gunk
+in there that I really can't be bothered trying to cleanup.
 
-----------  Forwarded Message  ----------
-
-Subject: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t in latency_trace.c
-Date: Monday 13 November 2006 00:23
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@linux-mips.org, dwalker@mvista.com, khilman@mvista.com
-
-In addition to clock wrap check being falsely triggered with 32-bit cycles_t,
-as noticed to Kevin Hilman, there's another issue: using %Lx format to print
-32-bit values warrants erroneous values on 32-bit machines like ARM and
- PPC32.
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-PPC32 actually has 64-bit timebase counter, so could provide for 64-bit
-cycles_t -- maybe it's worth to rewrite get_cycles() to read both lower and
-upper registers?
 
-Index: linux-2.6/kernel/latency_trace.c
+Fixes a typo causing various problems mostly with PCI IO space. Change from
+previous version is in io.h, near the top,
+ 
+#ifdef CONFIG_PCI -> #ifndef CONFIG_PCI
+
+Thanks to Guennadi Liakhovetski for spotting it.
+
+Index: linux-cell/arch/powerpc/kernel/Makefile
 ===================================================================
---- linux-2.6.orig/kernel/latency_trace.c
-+++ linux-2.6/kernel/latency_trace.c
-@@ -1623,8 +1623,8 @@ check_critical_timing(int cpu, struct cp
- #ifndef CONFIG_CRITICAL_LATENCY_HIST
- 	if (!preempt_thresh && preempt_max_latency > delta) {
- 		printk("bug: updating %016Lx > %016Lx?\n",
--			preempt_max_latency, delta);
--		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
-+			(u64)preempt_max_latency, (u64)delta);
-+		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
- 	}
+--- linux-cell.orig/arch/powerpc/kernel/Makefile	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/Makefile	2006-11-13 09:23:13.000000000 +1100
+@@ -73,7 +73,7 @@
+ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ 
+ ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
+-pci64-$(CONFIG_PPC64)		+= iomap.o
++obj-y				+= iomap.o
+ endif
+ 
+ ifeq ($(CONFIG_PPC_ISERIES),y)
+Index: linux-cell/arch/powerpc/kernel/io.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/io.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/io.c	2006-11-13 09:23:13.000000000 +1100
+@@ -117,3 +117,90 @@
+ 	asm volatile("sync");
+ }
+ EXPORT_SYMBOL(_outsl_ns);
++
++#define IO_CHECK_ALIGN(v,a) ((((unsigned long)(v)) & ((a) - 1)) == 0)
++
++void _memset_io(volatile void __iomem *addr, int c, unsigned long n)
++{
++	void *p = (void __force *)addr;
++	u32 lc = c;
++	lc |= lc << 8;
++	lc |= lc << 16;
++
++	__asm__ __volatile__ ("sync" : : : "memory");
++	while(n && !IO_CHECK_ALIGN(p, 4)) {
++		*((volatile u8 *)p) = c;
++		p++;
++		n--;
++	}
++	while(n >= 4) {
++		*((volatile u32 *)p) = lc;
++		p += 4;
++		n -= 4;
++	}
++	while(n) {
++		*((volatile u8 *)p) = c;
++		p++;
++		n--;
++	}
++	__asm__ __volatile__ ("sync" : : : "memory");
++}
++EXPORT_SYMBOL(_memset_io);
++
++void _memcpy_fromio(void *dest, const volatile void __iomem *src,
++		    unsigned long n)
++{
++	void *vsrc = (void __force *) src;
++
++	__asm__ __volatile__ ("sync" : : : "memory");
++	while(n && (!IO_CHECK_ALIGN(vsrc, 4) || !IO_CHECK_ALIGN(dest, 4))) {
++		*((u8 *)dest) = *((volatile u8 *)vsrc);
++		__asm__ __volatile__ ("eieio" : : : "memory");
++		vsrc++;
++		dest++;
++		n--;
++	}
++	while(n > 4) {
++		*((u32 *)dest) = *((volatile u32 *)vsrc);
++		__asm__ __volatile__ ("eieio" : : : "memory");
++		vsrc += 4;
++		dest += 4;
++		n -= 4;
++	}
++	while(n) {
++		*((u8 *)dest) = *((volatile u8 *)vsrc);
++		__asm__ __volatile__ ("eieio" : : : "memory");
++		vsrc++;
++		dest++;
++		n--;
++	}
++	__asm__ __volatile__ ("sync" : : : "memory");
++}
++EXPORT_SYMBOL(_memcpy_fromio);
++
++void _memcpy_toio(volatile void __iomem *dest, const void *src, unsigned long n)
++{
++	void *vdest = (void __force *) dest;
++
++	__asm__ __volatile__ ("sync" : : : "memory");
++	while(n && (!IO_CHECK_ALIGN(vdest, 4) || !IO_CHECK_ALIGN(src, 4))) {
++		*((volatile u8 *)vdest) = *((u8 *)src);
++		src++;
++		vdest++;
++		n--;
++	}
++	while(n > 4) {
++		*((volatile u32 *)vdest) = *((volatile u32 *)src);
++		src += 4;
++		vdest += 4;
++		n-=4;
++	}
++	while(n) {
++		*((volatile u8 *)vdest) = *((u8 *)src);
++		src++;
++		vdest++;
++		n--;
++	}
++	__asm__ __volatile__ ("sync" : : : "memory");
++}
++EXPORT_SYMBOL(_memcpy_toio);
+Index: linux-cell/include/asm-powerpc/eeh.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/eeh.h	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/include/asm-powerpc/eeh.h	2006-11-13 09:23:13.000000000 +1100
+@@ -169,104 +169,19 @@
+ 	return val;
+ }
+ 
+-#define EEH_CHECK_ALIGN(v,a) \
+-	((((unsigned long)(v)) & ((a) - 1)) == 0)
+-
+-static inline void eeh_memset_io(volatile void __iomem *addr, int c,
+-				 unsigned long n)
+-{
+-	void *p = (void __force *)addr;
+-	u32 lc = c;
+-	lc |= lc << 8;
+-	lc |= lc << 16;
+-
+-	__asm__ __volatile__ ("sync" : : : "memory");
+-	while(n && !EEH_CHECK_ALIGN(p, 4)) {
+-		*((volatile u8 *)p) = c;
+-		p++;
+-		n--;
+-	}
+-	while(n >= 4) {
+-		*((volatile u32 *)p) = lc;
+-		p += 4;
+-		n -= 4;
+-	}
+-	while(n) {
+-		*((volatile u8 *)p) = c;
+-		p++;
+-		n--;
+-	}
+-	__asm__ __volatile__ ("sync" : : : "memory");
+-}
+-static inline void eeh_memcpy_fromio(void *dest, const volatile void __iomem *src,
++static inline void eeh_memcpy_fromio(void *dest, const
++				     volatile void __iomem *src,
+ 				     unsigned long n)
+ {
+-	void *vsrc = (void __force *) src;
+-	void *destsave = dest;
+-	unsigned long nsave = n;
+-
+-	__asm__ __volatile__ ("sync" : : : "memory");
+-	while(n && (!EEH_CHECK_ALIGN(vsrc, 4) || !EEH_CHECK_ALIGN(dest, 4))) {
+-		*((u8 *)dest) = *((volatile u8 *)vsrc);
+-		__asm__ __volatile__ ("eieio" : : : "memory");
+-		vsrc++;
+-		dest++;
+-		n--;
+-	}
+-	while(n > 4) {
+-		*((u32 *)dest) = *((volatile u32 *)vsrc);
+-		__asm__ __volatile__ ("eieio" : : : "memory");
+-		vsrc += 4;
+-		dest += 4;
+-		n -= 4;
+-	}
+-	while(n) {
+-		*((u8 *)dest) = *((volatile u8 *)vsrc);
+-		__asm__ __volatile__ ("eieio" : : : "memory");
+-		vsrc++;
+-		dest++;
+-		n--;
+-	}
+-	__asm__ __volatile__ ("sync" : : : "memory");
++	_memcpy_fromio(dest, src, n);
+ 
+ 	/* Look for ffff's here at dest[n].  Assume that at least 4 bytes
+ 	 * were copied. Check all four bytes.
+ 	 */
+-	if ((nsave >= 4) &&
+-		(EEH_POSSIBLE_ERROR((*((u32 *) destsave+nsave-4)), u32))) {
+-		eeh_check_failure(src, (*((u32 *) destsave+nsave-4)));
+-	}
+-}
+-
+-static inline void eeh_memcpy_toio(volatile void __iomem *dest, const void *src,
+-				   unsigned long n)
+-{
+-	void *vdest = (void __force *) dest;
+-
+-	__asm__ __volatile__ ("sync" : : : "memory");
+-	while(n && (!EEH_CHECK_ALIGN(vdest, 4) || !EEH_CHECK_ALIGN(src, 4))) {
+-		*((volatile u8 *)vdest) = *((u8 *)src);
+-		src++;
+-		vdest++;
+-		n--;
+-	}
+-	while(n > 4) {
+-		*((volatile u32 *)vdest) = *((volatile u32 *)src);
+-		src += 4;
+-		vdest += 4;
+-		n-=4;
+-	}
+-	while(n) {
+-		*((volatile u8 *)vdest) = *((u8 *)src);
+-		src++;
+-		vdest++;
+-		n--;
+-	}
+-	__asm__ __volatile__ ("sync" : : : "memory");
++	if (n >= 4 && EEH_POSSIBLE_ERROR(*((u32 *)(dest + n - 4)), u32))
++		eeh_check_failure(src, *((u32 *)(dest + n - 4)));
+ }
+ 
+-#undef EEH_CHECK_ALIGN
+-
+ /* in-string eeh macros */
+ static inline void eeh_readsb(const volatile void __iomem *addr, void * buf,
+ 			      int ns)
+Index: linux-cell/include/asm-powerpc/io-defs.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/io-defs.h	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/include/asm-powerpc/io-defs.h	2006-11-13 09:23:13.000000000 +1100
+@@ -3,17 +3,20 @@
+ DEF_PCI_AC_RET(readb, u8, (const PCI_IO_ADDR addr), (addr))
+ DEF_PCI_AC_RET(readw, u16, (const PCI_IO_ADDR addr), (addr))
+ DEF_PCI_AC_RET(readl, u32, (const PCI_IO_ADDR addr), (addr))
+-DEF_PCI_AC_RET(readq, u64, (const PCI_IO_ADDR addr), (addr))
+ DEF_PCI_AC_RET(readw_be, u16, (const PCI_IO_ADDR addr), (addr))
+ DEF_PCI_AC_RET(readl_be, u32, (const PCI_IO_ADDR addr), (addr))
+-DEF_PCI_AC_RET(readq_be, u64, (const PCI_IO_ADDR addr), (addr))
+ DEF_PCI_AC_NORET(writeb, (u8 val, PCI_IO_ADDR addr), (val, addr))
+ DEF_PCI_AC_NORET(writew, (u16 val, PCI_IO_ADDR addr), (val, addr))
+ DEF_PCI_AC_NORET(writel, (u32 val, PCI_IO_ADDR addr), (val, addr))
+-DEF_PCI_AC_NORET(writeq, (u64 val, PCI_IO_ADDR addr), (val, addr))
+ DEF_PCI_AC_NORET(writew_be, (u16 val, PCI_IO_ADDR addr), (val, addr))
+ DEF_PCI_AC_NORET(writel_be, (u32 val, PCI_IO_ADDR addr), (val, addr))
++
++#ifdef __powerpc64__
++DEF_PCI_AC_RET(readq, u64, (const PCI_IO_ADDR addr), (addr))
++DEF_PCI_AC_RET(readq_be, u64, (const PCI_IO_ADDR addr), (addr))
++DEF_PCI_AC_NORET(writeq, (u64 val, PCI_IO_ADDR addr), (val, addr))
+ DEF_PCI_AC_NORET(writeq_be, (u64 val, PCI_IO_ADDR addr), (val, addr))
++#endif /* __powerpc64__ */
+ 
+ DEF_PCI_AC_RET(inb, u8, (unsigned long port), (port))
+ DEF_PCI_AC_RET(inw, u16, (unsigned long port), (port))
+Index: linux-cell/include/asm-powerpc/io.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/io.h	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/include/asm-powerpc/io.h	2006-11-13 09:23:45.000000000 +1100
+@@ -13,24 +13,51 @@
+ extern int check_legacy_ioport(unsigned long base_port);
+ #define PNPBIOS_BASE	0xf000	/* only relevant for PReP */
+ 
+-#ifndef CONFIG_PPC64
+-#include <asm-ppc/io.h>
+-#else
+-
+ #include <linux/compiler.h>
+ #include <asm/page.h>
+ #include <asm/byteorder.h>
+-#include <asm/paca.h>
+ #include <asm/synch.h>
+ #include <asm/delay.h>
++#include <asm/mmu.h>
+ 
+ #include <asm-generic/iomap.h>
+ 
++#ifdef CONFIG_PPC64
++#include <asm/paca.h>
++#endif
++
+ #define SIO_CONFIG_RA	0x398
+ #define SIO_CONFIG_RD	0x399
+ 
+ #define SLOW_DOWN_IO
+ 
++/* 32 bits uses slightly different variables for the various IO
++ * bases. Most of this file only uses _IO_BASE though which we
++ * define properly based on the platform
++ */
++#ifndef CONFIG_PCI
++#define _IO_BASE	0
++#define _ISA_MEM_BASE	0
++#define PCI_DRAM_OFFSET 0
++#elif defined(CONFIG_PPC32)
++#define _IO_BASE	isa_io_base
++#define _ISA_MEM_BASE	isa_mem_base
++#define PCI_DRAM_OFFSET	pci_dram_offset
++#else
++#define _IO_BASE	pci_io_base
++#define _ISA_MEM_BASE	0
++#define PCI_DRAM_OFFSET	0
++#endif
++
++extern unsigned long isa_io_base;
++extern unsigned long isa_mem_base;
++extern unsigned long pci_io_base;
++extern unsigned long pci_dram_offset;
++
++#if defined(CONFIG_PPC32) && defined(CONFIG_PPC_INDIRECT_IO)
++#error CONFIG_PPC_INDIRECT_IO is not yet supported on 32 bits
++#endif
++
+ /*
+  *
+  * Low level MMIO accessors
+@@ -53,7 +80,11 @@
+  *
+  */
+ 
++#ifdef CONFIG_PPC64
+ #define IO_SET_SYNC_FLAG()	do { get_paca()->io_sync = 1; } while(0)
++#else
++#define IO_SET_SYNC_FLAG()
++#endif
+ 
+ #define DEF_MMIO_IN(name, type, insn)					\
+ static inline type name(const volatile type __iomem *addr)		\
+@@ -86,17 +117,19 @@
+ DEF_MMIO_IN_BE(in_8,     8, lbz);
+ DEF_MMIO_IN_BE(in_be16, 16, lhz);
+ DEF_MMIO_IN_BE(in_be32, 32, lwz);
+-DEF_MMIO_IN_BE(in_be64, 64, ld);
+ DEF_MMIO_IN_LE(in_le16, 16, lhbrx);
+ DEF_MMIO_IN_LE(in_le32, 32, lwbrx);
+ 
+ DEF_MMIO_OUT_BE(out_8,     8, stb);
+ DEF_MMIO_OUT_BE(out_be16, 16, sth);
+ DEF_MMIO_OUT_BE(out_be32, 32, stw);
+-DEF_MMIO_OUT_BE(out_be64, 64, std);
+ DEF_MMIO_OUT_LE(out_le16, 16, sthbrx);
+ DEF_MMIO_OUT_LE(out_le32, 32, stwbrx);
+ 
++#ifdef __powerpc64__
++DEF_MMIO_OUT_BE(out_be64, 64, std);
++DEF_MMIO_IN_BE(in_be64, 64, ld);
++
+ /* There is no asm instructions for 64 bits reverse loads and stores */
+ static inline u64 in_le64(const volatile u64 __iomem *addr)
+ {
+@@ -107,6 +140,7 @@
+ {
+ 	out_be64(addr, cpu_to_le64(val));
+ }
++#endif /* __powerpc64__ */
+ 
+ /*
+  * Low level IO stream instructions are defined out of line for now
+@@ -126,6 +160,17 @@
+ #define _outsw	_outsw_ns
+ #define _outsl	_outsl_ns
+ 
++
++/*
++ * memset_io, memcpy_toio, memcpy_fromio base implementations are out of line
++ */
++
++extern void _memset_io(volatile void __iomem *addr, int c, unsigned long n);
++extern void _memcpy_fromio(void *dest, const volatile void __iomem *src,
++			   unsigned long n);
++extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
++			 unsigned long n);
++
+ /*
+  *
+  * PCI and standard ISA accessors
+@@ -140,9 +185,6 @@
+  * of the accessors.
+  */
+ 
+-extern unsigned long isa_io_base;
+-extern unsigned long pci_io_base;
+-
+ 
+ /*
+  * Non ordered and non-swapping "raw" accessors
+@@ -160,10 +202,6 @@
+ {
+ 	return *(volatile unsigned int __force *)addr;
+ }
+-static inline unsigned long __raw_readq(const volatile void __iomem *addr)
+-{
+-	return *(volatile unsigned long __force *)addr;
+-}
+ static inline void __raw_writeb(unsigned char v, volatile void __iomem *addr)
+ {
+ 	*(volatile unsigned char __force *)addr = v;
+@@ -176,11 +214,17 @@
+ {
+ 	*(volatile unsigned int __force *)addr = v;
+ }
++
++#ifdef __powerpc64__
++static inline unsigned long __raw_readq(const volatile void __iomem *addr)
++{
++	return *(volatile unsigned long __force *)addr;
++}
+ static inline void __raw_writeq(unsigned long v, volatile void __iomem *addr)
+ {
+ 	*(volatile unsigned long __force *)addr = v;
+ }
+-
++#endif /* __powerpc64__ */
+ 
+ /*
+  *
+@@ -188,7 +232,13 @@
+  *
+  */
+ 
++/*
++ * Include the EEH definitions when EEH is enabled only so they don't get
++ * in the way when building for 32 bits
++ */
++#ifdef CONFIG_EEH
+ #include <asm/eeh.h>
++#endif
+ 
+ /* Shortcut to the MMIO argument pointer */
+ #define PCI_IO_ADDR	volatile void __iomem *
+@@ -196,7 +246,7 @@
+ /* Indirect IO address tokens:
+  *
+  * When CONFIG_PPC_INDIRECT_IO is set, the platform can provide hooks
+- * on all IOs.
++ * on all IOs. (Note that this is all 64 bits only for now)
+  *
+  * To help platforms who may need to differenciate MMIO addresses in
+  * their hooks, a bitfield is reserved for use by the platform near the
+@@ -241,6 +291,70 @@
+ #define PCI_FIX_ADDR(addr) (addr)
  #endif
-
--------------------------------------------------------
+ 
++/*
++ * On 32 bits, PIO operations have a recovery mechanism in case they trigger
++ * machine checks (which they occasionally do when probing non existing
++ * IO ports on some platforms, like PowerMac and 8xx).
++ * I always found it to be of dubious reliability and I am tempted to get
++ * rid of it one of these days. So if you think it's important to keep it,
++ * please voice up asap. We never had it for 64 bits and I do not intend
++ * to port it over
++ */
++
++#ifdef CONFIG_PPC32
++
++#define __do_in_asm(name, op)				\
++extern __inline__ unsigned int name(unsigned int port)	\
++{							\
++	unsigned int x;					\
++	__asm__ __volatile__(				\
++		"sync\n"				\
++		"0:"	op "	%0,0,%1\n"		\
++		"1:	twi	0,%0,0\n"		\
++		"2:	isync\n"			\
++		"3:	nop\n"				\
++		"4:\n"					\
++		".section .fixup,\"ax\"\n"		\
++		"5:	li	%0,-1\n"		\
++		"	b	4b\n"			\
++		".previous\n"				\
++		".section __ex_table,\"a\"\n"		\
++		"	.align	2\n"			\
++		"	.long	0b,5b\n"		\
++		"	.long	1b,5b\n"		\
++		"	.long	2b,5b\n"		\
++		"	.long	3b,5b\n"		\
++		".previous"				\
++		: "=&r" (x)				\
++		: "r" (port + _IO_BASE));		\
++	return x;					\
++}
++
++#define __do_out_asm(name, op)				\
++extern __inline__ void name(unsigned int val, unsigned int port) \
++{							\
++	__asm__ __volatile__(				\
++		"sync\n"				\
++		"0:" op " %0,0,%1\n"			\
++		"1:	sync\n"				\
++		"2:\n"					\
++		".section __ex_table,\"a\"\n"		\
++		"	.align	2\n"			\
++		"	.long	0b,2b\n"		\
++		"	.long	1b,2b\n"		\
++		".previous"				\
++		: : "r" (val), "r" (port + _IO_BASE));	\
++}
++
++__do_in_asm(_rec_inb, "lbzx")
++__do_in_asm(_rec_inw, "lhbrx")
++__do_in_asm(_rec_inl, "lwbrx")
++__do_out_asm(_rec_outb, "stbx")
++__do_out_asm(_rec_outw, "sthbrx")
++__do_out_asm(_rec_outl, "stwbrx")
++
++#endif /* CONFIG_PPC32 */
++
+ /* The "__do_*" operations below provide the actual "base" implementation
+  * for each of the defined acccessor. Some of them use the out_* functions
+  * directly, some of them still use EEH, though we might change that in the
+@@ -263,6 +377,8 @@
+ #define __do_writew_be(val, addr) out_be16(PCI_FIX_ADDR(addr), val)
+ #define __do_writel_be(val, addr) out_be32(PCI_FIX_ADDR(addr), val)
+ #define __do_writeq_be(val, addr) out_be64(PCI_FIX_ADDR(addr), val)
++
++#ifdef CONFIG_EEH
+ #define __do_readb(addr)	eeh_readb(PCI_FIX_ADDR(addr))
+ #define __do_readw(addr)	eeh_readw(PCI_FIX_ADDR(addr))
+ #define __do_readl(addr)	eeh_readl(PCI_FIX_ADDR(addr))
+@@ -270,33 +386,64 @@
+ #define __do_readw_be(addr)	eeh_readw_be(PCI_FIX_ADDR(addr))
+ #define __do_readl_be(addr)	eeh_readl_be(PCI_FIX_ADDR(addr))
+ #define __do_readq_be(addr)	eeh_readq_be(PCI_FIX_ADDR(addr))
++#else /* CONFIG_EEH */
++#define __do_readb(addr)	in_8(PCI_FIX_ADDR(addr))
++#define __do_readw(addr)	in_le16(PCI_FIX_ADDR(addr))
++#define __do_readl(addr)	in_le32(PCI_FIX_ADDR(addr))
++#define __do_readq(addr)	in_le64(PCI_FIX_ADDR(addr))
++#define __do_readw_be(addr)	in_be16(PCI_FIX_ADDR(addr))
++#define __do_readl_be(addr)	in_be32(PCI_FIX_ADDR(addr))
++#define __do_readq_be(addr)	in_be64(PCI_FIX_ADDR(addr))
++#endif /* !defined(CONFIG_EEH) */
++
++#ifdef CONFIG_PPC32
++#define __do_outb(val, port)	_rec_outb(val, port)
++#define __do_outw(val, port)	_rec_outw(val, port)
++#define __do_outl(val, port)	_rec_outl(val, port)
++#define __do_inb(port)		_rec_inb(port)
++#define __do_inw(port)		_rec_inw(port)
++#define __do_inl(port)		_rec_inl(port)
++#else /* CONFIG_PPC32 */
++#define __do_outb(val, port)	writeb(val,(PCI_IO_ADDR)_IO_BASE+port);
++#define __do_outw(val, port)	writew(val,(PCI_IO_ADDR)_IO_BASE+port);
++#define __do_outl(val, port)	writel(val,(PCI_IO_ADDR)_IO_BASE+port);
++#define __do_inb(port)		readb((PCI_IO_ADDR)_IO_BASE + port);
++#define __do_inw(port)		readw((PCI_IO_ADDR)_IO_BASE + port);
++#define __do_inl(port)		readl((PCI_IO_ADDR)_IO_BASE + port);
++#endif /* !CONFIG_PPC32 */
+ 
+-#define __do_outb(val, port)	writeb(val,(PCI_IO_ADDR)pci_io_base+port);
+-#define __do_outw(val, port)	writew(val,(PCI_IO_ADDR)pci_io_base+port);
+-#define __do_outl(val, port)	writel(val,(PCI_IO_ADDR)pci_io_base+port);
+-#define __do_inb(port)		readb((PCI_IO_ADDR)pci_io_base + port);
+-#define __do_inw(port)		readw((PCI_IO_ADDR)pci_io_base + port);
+-#define __do_inl(port)		readl((PCI_IO_ADDR)pci_io_base + port);
+-
++#ifdef CONFIG_EEH
+ #define __do_readsb(a, b, n)	eeh_readsb(PCI_FIX_ADDR(a), (b), (n))
+ #define __do_readsw(a, b, n)	eeh_readsw(PCI_FIX_ADDR(a), (b), (n))
+ #define __do_readsl(a, b, n)	eeh_readsl(PCI_FIX_ADDR(a), (b), (n))
++#else /* CONFIG_EEH */
++#define __do_readsb(a, b, n)	_insb(PCI_FIX_ADDR(a), (b), (n))
++#define __do_readsw(a, b, n)	_insw(PCI_FIX_ADDR(a), (b), (n))
++#define __do_readsl(a, b, n)	_insl(PCI_FIX_ADDR(a), (b), (n))
++#endif /* !CONFIG_EEH */
+ #define __do_writesb(a, b, n)	_outsb(PCI_FIX_ADDR(a),(b),(n))
+ #define __do_writesw(a, b, n)	_outsw(PCI_FIX_ADDR(a),(b),(n))
+ #define __do_writesl(a, b, n)	_outsl(PCI_FIX_ADDR(a),(b),(n))
+ 
+-#define __do_insb(p, b, n)	readsb((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
+-#define __do_insw(p, b, n)	readsw((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
+-#define __do_insl(p, b, n)	readsl((PCI_IO_ADDR)pci_io_base+(p), (b), (n))
+-#define __do_outsb(p, b, n)	writesb((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
+-#define __do_outsw(p, b, n)	writesw((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
+-#define __do_outsl(p, b, n)	writesl((PCI_IO_ADDR)pci_io_base+(p),(b),(n))
+-
+-#define __do_memset_io(addr, c, n)	eeh_memset_io(PCI_FIX_ADDR(addr), c, n)
+-#define __do_memcpy_fromio(dst, src, n)	eeh_memcpy_fromio(dst, \
+-						PCI_FIX_ADDR(src), n)
+-#define __do_memcpy_toio(dst, src, n)	eeh_memcpy_toio(PCI_FIX_ADDR(dst), \
+-						src, n)
++#define __do_insb(p, b, n)	readsb((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
++#define __do_insw(p, b, n)	readsw((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
++#define __do_insl(p, b, n)	readsl((PCI_IO_ADDR)_IO_BASE+(p), (b), (n))
++#define __do_outsb(p, b, n)	writesb((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
++#define __do_outsw(p, b, n)	writesw((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
++#define __do_outsl(p, b, n)	writesl((PCI_IO_ADDR)_IO_BASE+(p),(b),(n))
++
++#define __do_memset_io(addr, c, n)	\
++				_memset_io(PCI_FIX_ADDR(addr), c, n)
++#define __do_memcpy_toio(dst, src, n)	\
++				_memcpy_toio(PCI_FIX_ADDR(dst), src, n)
++
++#ifdef CONFIG_EEH
++#define __do_memcpy_fromio(dst, src, n)	\
++				eeh_memcpy_fromio(dst, PCI_FIX_ADDR(src), n)
++#else /* CONFIG_EEH */
++#define __do_memcpy_fromio(dst, src, n)	\
++				_memcpy_fromio(dst,PCI_FIX_ADDR(src),n)
++#endif /* !CONFIG_EEH */
+ 
+ #ifdef CONFIG_PPC_INDIRECT_IO
+ #define DEF_PCI_HOOK(x)		x
+@@ -343,15 +490,27 @@
+ /* Some drivers check for the presence of readq & writeq with
+  * a #ifdef, so we make them happy here.
+  */
++#ifdef __powerpc64__
+ #define readq	readq
+ #define writeq	writeq
++#endif
+ 
+-/* Nothing to do for cache stuff x*/
++#ifdef CONFIG_NOT_COHERENT_CACHE
++
++#define dma_cache_inv(_start,_size) \
++	invalidate_dcache_range(_start, (_start + _size))
++#define dma_cache_wback(_start,_size) \
++	clean_dcache_range(_start, (_start + _size))
++#define dma_cache_wback_inv(_start,_size) \
++	flush_dcache_range(_start, (_start + _size))
++
++#else /* CONFIG_NOT_COHERENT_CACHE */
+ 
+ #define dma_cache_inv(_start,_size)		do { } while (0)
+ #define dma_cache_wback(_start,_size)		do { } while (0)
+ #define dma_cache_wback_inv(_start,_size)	do { } while (0)
+ 
++#endif /* !CONFIG_NOT_COHERENT_CACHE */
+ 
+ /*
+  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+@@ -372,6 +531,9 @@
+ #define readl_relaxed(addr) readl(addr)
+ #define readq_relaxed(addr) readq(addr)
+ 
++#ifdef CONFIG_PPC32
++#define mmiowb()
++#else
+ /*
+  * Enforce synchronisation of stores vs. spin_unlock
+  * (this does it explicitely, though our implementation of spin_unlock
+@@ -385,6 +547,7 @@
+ 	: "=&r" (tmp) : "i" (offsetof(struct paca_struct, io_sync))
+ 	: "memory");
+ }
++#endif /* !CONFIG_PPC32 */
+ 
+ static inline void iosync(void)
+ {
+@@ -453,22 +616,29 @@
+  *   be hooked (but can be used by a hook on iounmap)
+  *
+  */
+-extern void __iomem *ioremap(unsigned long address, unsigned long size);
+-extern void __iomem *ioremap_flags(unsigned long address, unsigned long size,
++extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
++extern void __iomem *ioremap_flags(phys_addr_t address, unsigned long size,
+ 				   unsigned long flags);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+-extern void iounmap(void __iomem *addr);
++extern void iounmap(volatile void __iomem *addr);
+ 
+-extern void __iomem *__ioremap(unsigned long address, unsigned long size,
++extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
+ 			       unsigned long flags);
+-extern void __iounmap(void __iomem *addr);
++extern void __iounmap(volatile void __iomem *addr);
+ 
+-extern int __ioremap_explicit(unsigned long p_addr, unsigned long v_addr,
++extern int __ioremap_explicit(phys_addr_t p_addr, unsigned long v_addr,
+ 		     	      unsigned long size, unsigned long flags);
+-extern int __iounmap_explicit(void __iomem *start, unsigned long size);
++extern int __iounmap_explicit(volatile void __iomem *start,
++			      unsigned long size);
+ 
+ extern void __iomem * reserve_phb_iospace(unsigned long size);
+ 
++/* Those are more 32 bits only functions */
++extern unsigned long iopa(unsigned long addr);
++extern unsigned long mm_ptov(unsigned long addr) __attribute_const__;
++extern void io_block_mapping(unsigned long virt, phys_addr_t phys,
++			     unsigned int size, int flags);
++
+ 
+ /*
+  * When CONFIG_PPC_INDIRECT_IO is set, we use the generic iomap implementation
+@@ -538,7 +708,33 @@
+  */
+ #define BIO_VMERGE_BOUNDARY	0
+ 
++/*
++ * 32 bits still uses virt_to_bus() for it's implementation of DMA
++ * mappings se we have to keep it defined here. We also have some old
++ * drivers (shame shame shame) that use bus_to_virt() and haven't been
++ * fixed yet so I need to define it here.
++ */
++#ifdef CONFIG_PPC32
++
++static inline unsigned long virt_to_bus(volatile void * address)
++{
++        if (address == NULL)
++		return 0;
++        return __pa(address) + PCI_DRAM_OFFSET;
++}
++
++static inline void * bus_to_virt(unsigned long address)
++{
++        if (address == 0)
++		return NULL;
++        return __va(address - PCI_DRAM_OFFSET);
++}
++
++#define page_to_bus(page)	(page_to_phys(page) + PCI_DRAM_OFFSET)
++
++#endif /* CONFIG_PPC32 */
++
++
+ #endif /* __KERNEL__ */
+ 
+-#endif /* CONFIG_PPC64 */
+ #endif /* _ASM_POWERPC_IO_H */
+Index: linux-cell/arch/powerpc/kernel/traps.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/traps.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/traps.c	2006-11-13 09:23:13.000000000 +1100
+@@ -53,10 +53,6 @@
+ #endif
+ #include <asm/kexec.h>
+ 
+-#ifdef CONFIG_PPC64	/* XXX */
+-#define _IO_BASE	pci_io_base
+-#endif
+-
+ #ifdef CONFIG_DEBUGGER
+ int (*__debugger)(struct pt_regs *regs);
+ int (*__debugger_ipi)(struct pt_regs *regs);
+@@ -241,7 +237,7 @@
+  */
+ static inline int check_io_access(struct pt_regs *regs)
+ {
+-#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
++#ifdef CONFIG_PPC32
+ 	unsigned long msr = regs->msr;
+ 	const struct exception_table_entry *entry;
+ 	unsigned int *nip = (unsigned int *)regs->nip;
+@@ -274,7 +270,7 @@
+ 			return 1;
+ 		}
+ 	}
+-#endif /* CONFIG_PPC_PMAC && CONFIG_PPC32 */
++#endif /* CONFIG_PPC32 */
+ 	return 0;
+ }
+ 
+Index: linux-cell/arch/powerpc/kernel/rtas_pci.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/rtas_pci.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/rtas_pci.c	2006-11-13 09:23:13.000000000 +1100
+@@ -38,6 +38,7 @@
+ #include <asm/rtas.h>
+ #include <asm/mpic.h>
+ #include <asm/ppc-pci.h>
++#include <asm/eeh.h>
+ 
+ /* RTAS tokens */
+ static int read_pci_config;
+Index: linux-cell/arch/powerpc/platforms/chrp/setup.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/chrp/setup.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/chrp/setup.c	2006-11-13 09:23:13.000000000 +1100
+@@ -588,7 +588,6 @@
+ 	ISA_DMA_THRESHOLD = ~0L;
+ 	DMA_MODE_READ = 0x44;
+ 	DMA_MODE_WRITE = 0x48;
+-	isa_io_base = CHRP_ISA_IO_BASE;		/* default value */
+ 
+ 	return 1;
+ }
+Index: linux-cell/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/powermac/setup.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/powermac/setup.c	2006-11-13 09:23:13.000000000 +1100
+@@ -677,8 +677,6 @@
+ 
+ #ifdef CONFIG_PPC32
+ 	/* isa_io_base gets set in pmac_pci_init */
+-	isa_mem_base = PMAC_ISA_MEM_BASE;
+-	pci_dram_offset = PMAC_PCI_DRAM_OFFSET;
+ 	ISA_DMA_THRESHOLD = ~0L;
+ 	DMA_MODE_READ = 1;
+ 	DMA_MODE_WRITE = 2;
+Index: linux-cell/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/mm/pgtable_32.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/mm/pgtable_32.c	2006-11-13 09:23:13.000000000 +1100
+@@ -149,6 +149,13 @@
+ EXPORT_SYMBOL(ioremap);
+ 
+ void __iomem *
++ioremap_flags(phys_addr_t addr, unsigned long size, unsigned long flags)
++{
++	return __ioremap(addr, size, flags);
++}
++EXPORT_SYMBOL(ioremap_flags);
++
++void __iomem *
+ __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
+ 	unsigned long v, i;
+@@ -247,20 +254,7 @@
+ }
+ EXPORT_SYMBOL(iounmap);
+ 
+-void __iomem *ioport_map(unsigned long port, unsigned int len)
+-{
+-	return (void __iomem *) (port + _IO_BASE);
+-}
+-
+-void ioport_unmap(void __iomem *addr)
+-{
+-	/* Nothing to do */
+-}
+-EXPORT_SYMBOL(ioport_map);
+-EXPORT_SYMBOL(ioport_unmap);
+-
+-int
+-map_page(unsigned long va, phys_addr_t pa, int flags)
++int map_page(unsigned long va, phys_addr_t pa, int flags)
+ {
+ 	pmd_t *pd;
+ 	pte_t *pg;
+Index: linux-cell/arch/powerpc/mm/pgtable_64.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/mm/pgtable_64.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/mm/pgtable_64.c	2006-11-13 09:23:13.000000000 +1100
+@@ -113,7 +113,7 @@
+ }
+ 
+ 
+-static void __iomem * __ioremap_com(unsigned long addr, unsigned long pa,
++static void __iomem * __ioremap_com(phys_addr_t addr, unsigned long pa,
+ 			    unsigned long ea, unsigned long size,
+ 			    unsigned long flags)
+ {
+@@ -129,7 +129,7 @@
+ 	return (void __iomem *) (ea + (addr & ~PAGE_MASK));
+ }
+ 
+-void __iomem * __ioremap(unsigned long addr, unsigned long size,
++void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
+ 			 unsigned long flags)
+ {
+ 	unsigned long pa, ea;
+@@ -169,7 +169,7 @@
+ }
+ 
+ 
+-void __iomem * ioremap(unsigned long addr, unsigned long size)
++void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+ {
+ 	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
+ 
+@@ -178,7 +178,7 @@
+ 	return __ioremap(addr, size, flags);
+ }
+ 
+-void __iomem * ioremap_flags(unsigned long addr, unsigned long size,
++void __iomem * ioremap_flags(phys_addr_t addr, unsigned long size,
+ 			     unsigned long flags)
+ {
+ 	if (ppc_md.ioremap)
+@@ -189,7 +189,7 @@
+ 
+ #define IS_PAGE_ALIGNED(_val) ((_val) == ((_val) & PAGE_MASK))
+ 
+-int __ioremap_explicit(unsigned long pa, unsigned long ea,
++int __ioremap_explicit(phys_addr_t pa, unsigned long ea,
+ 		       unsigned long size, unsigned long flags)
+ {
+ 	struct vm_struct *area;
+@@ -244,7 +244,7 @@
+  *
+  * XXX	what about calls before mem_init_done (ie python_countermeasures())
+  */
+-void __iounmap(void __iomem *token)
++void __iounmap(volatile void __iomem *token)
+ {
+ 	void *addr;
+ 
+@@ -256,7 +256,7 @@
+ 	im_free(addr);
+ }
+ 
+-void iounmap(void __iomem *token)
++void iounmap(volatile void __iomem *token)
+ {
+ 	if (ppc_md.iounmap)
+ 		ppc_md.iounmap(token);
+@@ -282,7 +282,7 @@
+ 	return 0;
+ }
+ 
+-int __iounmap_explicit(void __iomem *start, unsigned long size)
++int __iounmap_explicit(volatile void __iomem *start, unsigned long size)
+ {
+ 	struct vm_struct *area;
+ 	unsigned long addr;
+Index: linux-cell/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/iseries/setup.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/iseries/setup.c	2006-11-13 09:23:13.000000000 +1100
+@@ -649,13 +649,13 @@
+ void __init iSeries_init_IRQ(void) { }
+ #endif
+ 
+-static void __iomem *iseries_ioremap(unsigned long address, unsigned long size,
++static void __iomem *iseries_ioremap(phys_addr_t address, unsigned long size,
+ 				     unsigned long flags)
+ {
+ 	return (void __iomem *)address;
+ }
+ 
+-static void iseries_iounmap(void __iomem *token)
++static void iseries_iounmap(volatile void __iomem *token)
+ {
+ }
+ 
+Index: linux-cell/include/asm-powerpc/machdep.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/machdep.h	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/include/asm-powerpc/machdep.h	2006-11-13 09:23:13.000000000 +1100
+@@ -88,9 +88,9 @@
+ 	void		(*pci_dma_dev_setup)(struct pci_dev *dev);
+ 	void		(*pci_dma_bus_setup)(struct pci_bus *bus);
+ 
+-	void __iomem *	(*ioremap)(unsigned long addr, unsigned long size,
++	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
+ 				   unsigned long flags);
+-	void		(*iounmap)(void __iomem *token);
++	void		(*iounmap)(volatile void __iomem *token);
+ #endif /* CONFIG_PPC64 */
+ 
+ 	int		(*probe)(void);
+Index: linux-cell/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/pci_32.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/pci_32.c	2006-11-13 09:23:13.000000000 +1100
+@@ -1561,7 +1561,7 @@
+ 		*offset += hose->pci_mem_offset;
+ 		res_bit = IORESOURCE_MEM;
+ 	} else {
+-		io_offset = hose->io_base_virt - ___IO_BASE;
++		io_offset = hose->io_base_virt - (void __iomem *)_IO_BASE;
+ 		*offset += io_offset;
+ 		res_bit = IORESOURCE_IO;
+ 	}
+@@ -1816,7 +1816,8 @@
+ 		return;
+ 
+ 	if (rsrc->flags & IORESOURCE_IO)
+-		offset = ___IO_BASE - hose->io_base_virt + hose->io_base_phys;
++		offset = (void __iomem *)_IO_BASE - hose->io_base_virt
++			+ hose->io_base_phys;
+ 
+ 	*start = rsrc->start + offset;
+ 	*end = rsrc->end + offset;
+@@ -1835,35 +1836,6 @@
+ 	res->child = NULL;
+ }
+ 
+-void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max)
+-{
+-	unsigned long start = pci_resource_start(dev, bar);
+-	unsigned long len = pci_resource_len(dev, bar);
+-	unsigned long flags = pci_resource_flags(dev, bar);
+-
+-	if (!len)
+-		return NULL;
+-	if (max && len > max)
+-		len = max;
+-	if (flags & IORESOURCE_IO)
+-		return ioport_map(start, len);
+-	if (flags & IORESOURCE_MEM)
+-		/* Not checking IORESOURCE_CACHEABLE because PPC does
+-		 * not currently distinguish between ioremap and
+-		 * ioremap_nocache.
+-		 */
+-		return ioremap(start, len);
+-	/* What? */
+-	return NULL;
+-}
+-
+-void pci_iounmap(struct pci_dev *dev, void __iomem *addr)
+-{
+-	/* Nothing to do */
+-}
+-EXPORT_SYMBOL(pci_iomap);
+-EXPORT_SYMBOL(pci_iounmap);
+-
+ unsigned long pci_address_to_pio(phys_addr_t address)
+ {
+ 	struct pci_controller* hose = hose_head;
+Index: linux-cell/arch/powerpc/kernel/iomap.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/iomap.c	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/iomap.c	2006-11-13 09:23:13.000000000 +1100
+@@ -106,7 +106,7 @@
+ 
+ void __iomem *ioport_map(unsigned long port, unsigned int len)
+ {
+-	return (void __iomem *) (port+pci_io_base);
++	return (void __iomem *) (port + _IO_BASE);
+ }
+ 
+ void ioport_unmap(void __iomem *addr)
+Index: linux-cell/include/asm-powerpc/ide.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/ide.h	2006-11-13 09:23:10.000000000 +1100
++++ linux-cell/include/asm-powerpc/ide.h	2006-11-13 09:23:13.000000000 +1100
+@@ -22,17 +22,10 @@
+ #endif
+ #endif
+ 
+-#ifdef __powerpc64__
+ #define __ide_mm_insw(p, a, c)	readsw((void __iomem *)(p), (a), (c))
+ #define __ide_mm_insl(p, a, c)	readsl((void __iomem *)(p), (a), (c))
+ #define __ide_mm_outsw(p, a, c)	writesw((void __iomem *)(p), (a), (c))
+ #define __ide_mm_outsl(p, a, c)	writesl((void __iomem *)(p), (a), (c))
+-#else
+-#define __ide_mm_insw(p, a, c)	_insw_ns((volatile u16 __iomem *)(p), (a), (c))
+-#define __ide_mm_insl(p, a, c)	_insl_ns((volatile u32 __iomem *)(p), (a), (c))
+-#define __ide_mm_outsw(p, a, c)	_outsw_ns((volatile u16 __iomem *)(p), (a), (c))
+-#define __ide_mm_outsl(p, a, c)	_outsl_ns((volatile u32 __iomem *)(p), (a), (c))
+-#endif
+ 
+ #ifndef  __powerpc64__
+ #include <linux/hdreg.h>
