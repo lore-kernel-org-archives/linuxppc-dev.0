@@ -1,32 +1,18 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3E6CA67D72
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 17:21:15 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAD6L7xp023926
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 01:21:07 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAD6L7ql527604
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 23:21:07 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAD6L6Ip028256
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 23:21:07 -0700
-Message-ID: <45580ED0.7000704@austin.ibm.com>
-Date: Mon, 13 Nov 2006 00:21:04 -0600
-From: jschopp <jschopp@austin.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 50A7A67D92
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 17:52:08 +1100 (EST)
+Date: Mon, 13 Nov 2006 07:23:16 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 12/16] powerpc: add ps3 platform interrupt support
+In-Reply-To: <4554DB08.6050804@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0611130720040.16998@pademelon.sonytel.be>
+References: <4554DB08.6050804@am.sony.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
-References: <20061110182253.GV30625@austin.ibm.com>	<20061110200152.GC23089@localdomain>	<20061111010108.GX30625@austin.ibm.com>
-	<1163377944.7410.12.camel@localhost.localdomain>
-In-Reply-To: <1163377944.7410.12.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,22 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I can only find one caller? Is it called via a #define or something?
-> 
-> Wouldn't it be preferable to just change rtas.h like so:
-> 
-> #ifdef CONFIG_HOTPLUG_CPU
-> extern void rtas_stop_self(void);
-> #else
-> static inline void rtas_stop_self(void) { }
-> #endif
-> 
+	Hi Geoff,
 
-There seem to be a couple problems here.  First I'm guessing the file you said there was 
-catting into was the online attribute, which shouldn't appear, or at least shouldn't do 
-anything, if cpu hotplug isn't configured.  It's a stupid thing to do, but it shouldn't 
-crash the kernel.  I guess one of us should fix that, though it probably doesn't merit 
-2.6.19 consideration.
+On Fri, 10 Nov 2006, Geoff Levand wrote:
+> +static struct irq_chip irq_chip = {
+> +	.name = "ps3pf",
+> +	.mask = chip_mask,
+> +	.unmask = chip_unmask,
+> +	.eoi = chip_eoi,
+> +};
 
-The second problem is rtas_stop_self shouldn't be defined or called either.  Michael's 
-solution above seems best for that to me.  Care to give us a patch Michael?
+For 2.6.19, you have to set .typename, not .name, else /proc/interrupts prints
+`<NULL>'.
+
+Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+Index: linux-ps3-geert/arch/powerpc/platforms/ps3pf/interrupt.c
+===================================================================
+--- linux-ps3-geert.orig/arch/powerpc/platforms/ps3pf/interrupt.c	2006-11-10 16:56:32.000000000 +0900
++++ linux-ps3-geert/arch/powerpc/platforms/ps3pf/interrupt.c	2006-11-13 14:52:31.000000000 +0900
+@@ -423,7 +423,7 @@ chip_eoi (unsigned int virq)
+ 
+ static struct irq_chip irq_chip =
+ {
+-	.name = "ps3pf",
++	.typename = "ps3pf",
+ 	.mask = chip_mask,
+ 	.unmask = chip_unmask,
+ 	.eoi = chip_eoi,
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
