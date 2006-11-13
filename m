@@ -1,19 +1,16 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id BEA1567E4B
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 05:57:17 +1100 (EST)
-Date: Mon, 13 Nov 2006 12:57:04 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
-Message-ID: <20061113185704.GA8253@localdomain>
-References: <20061110182253.GV30625@austin.ibm.com>
-	<17749.4445.46239.450000@cargo.ozlabs.ibm.com>
-	<20061111005248.GW30625@austin.ibm.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5E31967E7B
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 06:03:52 +1100 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: mingo@elte.hu
+Subject: [PATCH] 2.6.18-rt7: Calculate cpu_khz for PowerPC
+Date: Mon, 13 Nov 2006 22:05:21 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061111005248.GW30625@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200611132205.29049.sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas wrote:
-> On Sat, Nov 11, 2006 at 10:55:09AM +1100, Paul Mackerras wrote:
-> > Linas Vepstas writes:
-> > 
-> > > I presume this looks reasonable, please apply.
-> > 
-> > OK, is this a fix for a bug that needs to be fixed before 2.6.19 is
-> > release?
-> 
-> Probably not. This was uncovered during "unusual" testing, with user
-> catting values int sysfs files.  Since you need to be root to do this,
-> I don't think its a security flaw.
+Actually calculate PowerPC cpu_khz value for the latency tracing code.
 
-I'm still not clear on what problem this patch is intended to address.
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-If the 'online' cpu attribute in sysfs can be used to attempt an
-offline operation on a kernel with CONFIG_HOTPLUG_CPU=n, that's what
-needs to be fixed.
+Index: linux-2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/time.c
++++ linux-2.6/arch/powerpc/kernel/time.c
+@@ -736,6 +736,7 @@ void __init time_init(void)
+ 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
+ 	tb_ticks_per_sec = ppc_tb_freq;
+ 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
++	cpu_khz  = ppc_tb_freq / 1000;
+ 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
+ 	calc_cputime_factors();
+ 
