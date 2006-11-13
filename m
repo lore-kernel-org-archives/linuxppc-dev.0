@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 522AA67D54
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:44:37 +1100 (EST)
-Date: Mon, 13 Nov 2006 14:44:40 +1100
+	by ozlabs.org (Postfix) with ESMTP id 6430E67D13
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:46:05 +1100 (EST)
+Date: Mon, 13 Nov 2006 14:46:04 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [POWERPC] iSeries: fix irq.c for combined build
-Message-Id: <20061113144440.cc6bb0fe.sfr@canb.auug.org.au>
+Subject: [POWERPC] iSeries: fix sysfs.c for combined build
+Message-Id: <20061113144604.237d3862.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,32 +22,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/irq.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/sysfs.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index eb9fc62..e173c76 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -267,13 +267,12 @@ void do_IRQ(struct pt_regs *regs)
-         irq_exit();
- 	set_irq_regs(old_regs);
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index cda21a2..22123a0 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -200,10 +200,9 @@ static void register_cpu_online(unsigned
+ 	struct cpu *c = &per_cpu(cpu_devices, cpu);
+ 	struct sys_device *s = &c->sysdev;
  
--#ifdef CONFIG_PPC_ISERIES
--	if (get_lppaca()->int_dword.fields.decr_int) {
-+	if (firmware_has_feature(FW_FEATURE_ISERIES) &&
-+			get_lppaca()->int_dword.fields.decr_int) {
- 		get_lppaca()->int_dword.fields.decr_int = 0;
- 		/* Signal a fake decrementer interrupt */
- 		timer_interrupt(regs);
- 	}
+-#ifndef CONFIG_PPC_ISERIES
+-	if (cpu_has_feature(CPU_FTR_SMT))
++	if (!firmware_has_feature(FW_FEATURE_ISERIES) &&
++			cpu_has_feature(CPU_FTR_SMT))
+ 		sysdev_create_file(s, &attr_smt_snooze_delay);
 -#endif
- }
  
- void __init init_IRQ(void)
+ 	/* PMC stuff */
+ 
+@@ -242,10 +241,9 @@ static void unregister_cpu_online(unsign
+ 
+ 	BUG_ON(c->no_control);
+ 
+-#ifndef CONFIG_PPC_ISERIES
+-	if (cpu_has_feature(CPU_FTR_SMT))
++	if (!firmware_has_feature(FW_FEATURE_ISERIES) &&
++			cpu_has_feature(CPU_FTR_SMT))
+ 		sysdev_remove_file(s, &attr_smt_snooze_delay);
+-#endif
+ 
+ 	/* PMC stuff */
+ 
 -- 
 1.4.3.3
