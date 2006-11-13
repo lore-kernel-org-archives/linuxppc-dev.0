@@ -1,18 +1,17 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 14/16] powerpc: add ps3 platform OS params support
+Subject: Re: [PATCH 6/16] cell: abstract spu management routines
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4557E45C.10703@am.sony.com>
-References: <4554DB20.9020200@am.sony.com>
-	<1163381393.7410.39.camel@localhost.localdomain>
-	<4557E45C.10703@am.sony.com>
+In-Reply-To: <4554DA9C.9040102@am.sony.com>
+References: <4554DA9C.9040102@am.sony.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-JHm6JdQCln6H/EEKgkIW"
-Date: Mon, 13 Nov 2006 15:02:16 +1100
-Message-Id: <1163390536.7410.61.camel@localhost.localdomain>
+	boundary="=-UZn5SO+a5lGEcosiGr6A"
+Date: Mon, 13 Nov 2006 15:11:21 +1100
+Message-Id: <1163391081.7410.65.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,77 +23,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-JHm6JdQCln6H/EEKgkIW
+--=-UZn5SO+a5lGEcosiGr6A
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2006-11-12 at 19:19 -0800, Geoff Levand wrote:
-> > Is it an offset (from something) or a segment number?
-> >=20
-> >> + * @ldr_format: ldr_format flag.
-> >> + * @ldr_size: Size of bootloader image in bytes.
-> >=20
-> > If these three all describe the same thing, the bootloader, it'd be goo=
-d
-> > if the names were similar, eg: bootloader_offset, bootloader_format,
-> > bootloader_size.
+On Fri, 2006-11-10 at 12:01 -0800, Geoff Levand wrote:
+> This adds a platform specific spu management abstraction and the corespon=
+ding
+> routines to support the IBM Cell Blade.  It also removes the hypervisor o=
+nly
+> resources that were included in struct spu.
 >=20
+> Three new platform specific routines are introduced, spu_enumerate_spus()=
+,
+> spu_create_spu() and spu_destroy_spu().  The underlining design uses a ne=
+w
+> type, struct spu_management_ops, to hold function pointers that the platf=
+orm
+> setup code is expected to initialize to instances appropriate to that pla=
+tform.
 >=20
-> These names came from the docs.  I think it would be best to keep them th=
-e
-> same to avoid confusion.
+> For the IBM Cell Blade support, I put the hypervisor only resources that =
+were
+> in struct spu into a platform specific data structure struct spu_pdata.
 
-I'm not sure I like that argument, if we followed it throughout the
-kernel we'd have one unholy mess, but I'm not that fussed.
+As far as I can see you haven't posted your HV-backed management ops, is
+that right?
 
->=20
-> It is not so convenient to view, but the other os area is documented in t=
-he
-> iso image CELL-Linux-CL_20061110-ADDON.iso at
-> http://ftp.uk.linux.org/pub/linux/Sony-PS3/.
-
-Any chance we can get that in some sort of non-insane format? Like a
-PDF? :)
-=20
-> >> +static int __init verify_header(const struct header *header)
-> >> +{
-> >> +	if (memcmp(header->magic_num, "cell_ext_os_area", 16)) {
-> >> +		pr_debug("%s:%d magic_num failed\n", __func__, __LINE__);
-> >> +		return -1;
-> >> +	}
-> >> +
-> >> +	if (header->hdr_version !=3D 1) {
-> >> +		pr_debug("%s:%d hdr_version failed\n", __func__, __LINE__);
-> >> +		return -1;
-> >> +	}
-> >=20
-> > Is version 2 not going to be backward compatible? Could it be >=3D 1 ?
->=20
->=20
-> I have absolutely no clue what the next version number will be, nor the
-> compatibility, etc.  I'll set this when the version changes.
-
-Except you'll have trouble changing it on the installed base of millions
-of PS3s running Linux :) - At the moment if firmware bump the version on
-you, you've got an unbootable system until the user does a kernel
-upgrade. But it's your baby.
-
->=20
->=20
-> >> +	dump_header(header);
-> >> +	dump_params(params);
-> >> +
-> >> +	os_params.rtc_diff =3D params->rtc_diff;
-> >> +	os_params.av_multi_out =3D params->av_multi_out;
-> >> +	if (0) { /* currently not used */
-> >=20
-> > Why not?
->=20
->=20
-> The drivers aren't ported yet.  I suppose I could take this out though.
-
-Not fussed, but if you leave it in, expand the comment so no one else
-needs to ask :)
+Why can't your PS3 platform code fake-up device nodes for SPUs? It seems
+that would simplify this quite a lot.
 
 cheers
 
@@ -108,16 +65,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-JHm6JdQCln6H/EEKgkIW
+--=-UZn5SO+a5lGEcosiGr6A
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBFV+5IdSjSd0sB4dIRAr+PAJwJLsUm4ppQRKypaeg8qPWl9ZbxjwCeNabe
-hmrUtJvsL+vW3VfG60/BxaE=
-=y8Ro
+iD8DBQBFV/BpdSjSd0sB4dIRAgZ1AJ93+BSzteEmVTDZxYGp28ckyvMQwQCfcEA/
+1ViGkr2w3Fmic5ucWm13Us0=
+=wfdW
 -----END PGP SIGNATURE-----
 
---=-JHm6JdQCln6H/EEKgkIW--
+--=-UZn5SO+a5lGEcosiGr6A--
