@@ -1,25 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH 0/7] Powerpc MSI Implementation
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <FF34858D-1D40-4B5E-9B49-D6B9476D66DB@kernel.crashing.org>
-References: <1162884080.585336.70559261997.qpush@cradle>
-	<1162885276.28571.444.camel@localhost.localdomain>
-	<20061107080257.GA5874@kroah.com>
-	<1162963101.20271.18.camel@localhost.localdomain>
-	<m1fycu5j4o.fsf@ebiederm.dsl.xmission.com>
-	<1163028836.7630.16.camel@localhost.localdomain>
-	<FF34858D-1D40-4B5E-9B49-D6B9476D66DB@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-HvawTaMEbIZmxcC+gEuX"
-Date: Mon, 13 Nov 2006 17:05:31 +1100
-Message-Id: <1163397931.7410.86.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Greg KH <greg@kroah.com>, linuxppc-dev@ozlabs.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3E6CA67D72
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 17:21:15 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAD6L7xp023926
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 01:21:07 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAD6L7ql527604
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 23:21:07 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAD6L6Ip028256
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Nov 2006 23:21:07 -0700
+Message-ID: <45580ED0.7000704@austin.ibm.com>
+Date: Mon, 13 Nov 2006 00:21:04 -0600
+From: jschopp <jschopp@austin.ibm.com>
+MIME-Version: 1.0
+To: michael@ellerman.id.au
+Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
+References: <20061110182253.GV30625@austin.ibm.com>	<20061110200152.GC23089@localdomain>	<20061111010108.GX30625@austin.ibm.com>
+	<1163377944.7410.12.camel@localhost.localdomain>
+In-Reply-To: <1163377944.7410.12.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,60 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> I can only find one caller? Is it called via a #define or something?
+> 
+> Wouldn't it be preferable to just change rtas.h like so:
+> 
+> #ifdef CONFIG_HOTPLUG_CPU
+> extern void rtas_stop_self(void);
+> #else
+> static inline void rtas_stop_self(void) { }
+> #endif
+> 
 
---=-HvawTaMEbIZmxcC+gEuX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+There seem to be a couple problems here.  First I'm guessing the file you said there was 
+catting into was the online attribute, which shouldn't appear, or at least shouldn't do 
+anything, if cpu hotplug isn't configured.  It's a stupid thing to do, but it shouldn't 
+crash the kernel.  I guess one of us should fix that, though it probably doesn't merit 
+2.6.19 consideration.
 
-On Thu, 2006-11-09 at 08:36 +0100, Segher Boessenkool wrote:
-> > Looking closer most of them are 5 bits, the high 5 bits, and happen to
-> > sit next to reserved fields (which must be zero), so reading the byte
-> > should work in practice. But for a few of them you'll get cruft in the
-> > low bits.
-> >
-> > I don't know what they were thinking when they decided to have 3 and 5
-> > bit capability fields, and then specify some of them as being a byte
-> > wide as well. Perhaps the spec committee had a big night out ;)
-> >
-> > I was going to write a generic version of pci_find_ht_capability() (as
-> > suggested by Segher), so along with that I'll clean up the #defines to
-> > just be the 3 or 5 bit capability codes, and then have a shift for
-> > getting the capability out of the byte.
-> >
-> > Users will still need to know if they're looking for a 3 or 5 bit
-> > capability, but we can encapsulate that in pci_find_ht_capability() =20
-> > and
-> > hopefully most people won't have to see the difference.
->=20
-> Keep the defines the full 8 bits and put all the knowledge
-> about which bits are relevant into pci_find_ht_capability()?
-> If you do shifting you can get clashes (say, 0b00110 vs. 0b110),
-> and this would make for simpler code, too.
-
-That's what I did .. I think? :)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-HvawTaMEbIZmxcC+gEuX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFWAsrdSjSd0sB4dIRAufEAKCS8Wl0MTZaUpnZrVDUDhSEBZJsWwCcCeEN
-3pxkvAAwFbSPJcXpbwGW5gk=
-=ABWq
------END PGP SIGNATURE-----
-
---=-HvawTaMEbIZmxcC+gEuX--
+The second problem is rtas_stop_self shouldn't be defined or called either.  Michael's 
+solution above seems best for that to me.  Care to give us a patch Michael?
