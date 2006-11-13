@@ -1,34 +1,20 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7207D67EAA
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 05:05:08 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kADI51ix006318
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 13:05:01 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kADI51ha279834
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 13:05:01 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kADI51NM031776
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 13:05:01 -0500
-Date: Mon, 13 Nov 2006 12:05:00 -0600
-To: jschopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
-Message-ID: <20061113180500.GB4307@austin.ibm.com>
-References: <20061110182253.GV30625@austin.ibm.com>
-	<20061110200152.GC23089@localdomain>
-	<20061111010108.GX30625@austin.ibm.com>
-	<1163377944.7410.12.camel@localhost.localdomain>
-	<45580ED0.7000704@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45580ED0.7000704@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 505E167E82
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 05:32:09 +1100 (EST)
+Subject: patch pci-make-some-msi-x-defines-generic.patch added to gregkh-2.6
+	tree
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+	davem@davemloft.net, ebiederm@xmission.com, greg@kroah.com,
+	gregkh@suse.de, michael@ellerman.id.au, moilanen@austin.ibm.com,
+	segher@kernel.crashing.org
+From: <gregkh@suse.de>
+Date: Mon, 13 Nov 2006 10:31:04 -0800
+In-Reply-To: <20061107072123.CF52F67C35@ozlabs.org>
+Message-Id: <20061113183157.5942C9D3091@imap.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,35 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 13, 2006 at 12:21:04AM -0600, jschopp wrote:
-> >I can only find one caller? Is it called via a #define or something?
 
-Right. I was looking at pSeries_mach_cpu_die(), which is called
-as md.cpu_die from many places.
+This is a note to let you know that I've just added the patch titled
 
-> >Wouldn't it be preferable to just change rtas.h like so:
-> >
-> >#ifdef CONFIG_HOTPLUG_CPU
-> >extern void rtas_stop_self(void);
-> >#else
-> >static inline void rtas_stop_self(void) { }
-> >#endif
+     Subject: PCI: Make some MSI-X #defines generic
 
-Well, the problem is that this would just pass the BUG() to 
-the next level, in pSeries_mach_cpu_die():
+to my gregkh-2.6 tree.  Its filename is
 
-static void pSeries_mach_cpu_die(void)
-{
-   local_irq_disable();
-   idle_task_exit();
-   xics_teardown_cpu(0);
-   rtas_stop_self();
-   /* Should never get here... */
-   BUG();
-   for(;;);
-}
+     pci-make-some-msi-x-defines-generic.patch
 
-so does that mean that CONFIG_HOTPLUG_CPU should also be used to 
-stop the complation of pSeries_mach_cpu_die() ? 
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
---linas
+
+>From michael@ozlabs.org Mon Nov  6 23:21:30 2006
+To: <linuxppc-dev@ozlabs.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Greg Kroah-Hartman <greg@kroah.com>,
+	linux-pci@atrey.karlin.mff.cuni.cz,
+	Jake Moilanen <moilanen@austin.ibm.com>,
+	Segher Boessenkool <segher@kernel.crashing.org>,
+	Eric W. Biederman <ebiederm@xmission.com>,
+	David S. Miller <davem@davemloft.net>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 07 Nov 2006 18:21:21 +1100
+Subject: PCI: Make some MSI-X #defines generic
+Message-Id: <20061107072123.CF52F67C35@ozlabs.org>
+
+Move some MSI-X #defines into pci_regs.h so they can be used
+outside of drivers/pci.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/pci/msi.h        |    8 --------
+ include/linux/pci_regs.h |    6 ++++++
+ 2 files changed, 6 insertions(+), 8 deletions(-)
+
+--- gregkh-2.6.orig/drivers/pci/msi.h
++++ gregkh-2.6/drivers/pci/msi.h
+@@ -6,14 +6,6 @@
+ #ifndef MSI_H
+ #define MSI_H
+ 
+-/*
+- * MSI-X Address Register
+- */
+-#define PCI_MSIX_FLAGS_QSIZE		0x7FF
+-#define PCI_MSIX_FLAGS_ENABLE		(1 << 15)
+-#define PCI_MSIX_FLAGS_BIRMASK		(7 << 0)
+-#define PCI_MSIX_FLAGS_BITMASK		(1 << 0)
+-
+ #define PCI_MSIX_ENTRY_SIZE			16
+ #define  PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET	0
+ #define  PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET	4
+--- gregkh-2.6.orig/include/linux/pci_regs.h
++++ gregkh-2.6/include/linux/pci_regs.h
+@@ -292,6 +292,12 @@
+ #define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
+ #define PCI_MSI_MASK_BIT	16	/* Mask bits register */
+ 
++/* MSI-X registers (these are at offset PCI_MSI_FLAGS) */
++#define PCI_MSIX_FLAGS_QSIZE	0x7FF
++#define PCI_MSIX_FLAGS_ENABLE	(1 << 15)
++#define PCI_MSIX_FLAGS_BIRMASK	(7 << 0)
++#define PCI_MSIX_FLAGS_BITMASK	(1 << 0)
++
+ /* CompactPCI Hotswap Register */
+ 
+ #define PCI_CHSWP_CSR		2	/* Control and Status Register */
+
+
+Patches currently in gregkh-2.6 which might be from linuxppc-dev@ozlabs.org are
+
+pci/pci-make-some-msi-x-defines-generic.patch
