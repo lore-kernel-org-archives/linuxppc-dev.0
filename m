@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BC07B67D99
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:51:42 +1100 (EST)
-Date: Mon, 13 Nov 2006 14:51:46 +1100
+	by ozlabs.org (Postfix) with ESMTP id 1952E67DA2
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:52:30 +1100 (EST)
+Date: Mon, 13 Nov 2006 14:52:42 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [POWERPC] Add the thread topolgy to sysfs
-Message-Id: <20061113145146.6a775e39.sfr@canb.auug.org.au>
+Subject: [POWERPC] Wire up sys_move_pages
+Message-Id: <20061113145242.b5e10cfd.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,36 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the /sys/devices/system/cpu/*/topology/thread_siblings
-files.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/asm-powerpc/topology.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ include/asm-powerpc/systbl.h |    1 +
+ include/asm-powerpc/unistd.h |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/include/asm-powerpc/topology.h b/include/asm-powerpc/topology.h
-index 8f7ee16..9fe7894 100644
---- a/include/asm-powerpc/topology.h
-+++ b/include/asm-powerpc/topology.h
-@@ -96,7 +96,13 @@ static inline void sysfs_remove_device_f
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index eac85ce..d9919a0 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -304,3 +304,4 @@ SYSCALL_SPU(fchmodat)
+ SYSCALL_SPU(faccessat)
+ COMPAT_SYS_SPU(get_robust_list)
+ COMPAT_SYS_SPU(set_robust_list)
++COMPAT_SYS(move_pages)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 464a48c..b07d91c 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -323,10 +323,11 @@
+ #define __NR_faccessat		298
+ #define __NR_get_robust_list	299
+ #define __NR_set_robust_list	300
++#define __NR_move_pages		301
  
- #ifdef CONFIG_SMP
- #include <asm/cputable.h>
--#define smt_capable() 		(cpu_has_feature(CPU_FTR_SMT))
-+#define smt_capable()		(cpu_has_feature(CPU_FTR_SMT))
-+
-+#ifdef CONFIG_PPC64
-+#include <asm/smp.h>
-+
-+#define topology_thread_siblings(cpu)	(cpu_sibling_map[cpu])
-+#endif
- #endif
+ #ifdef __KERNEL__
  
- #endif /* __KERNEL__ */
+-#define __NR_syscalls		301
++#define __NR_syscalls		302
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
 -- 
 1.4.3.3
