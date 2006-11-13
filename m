@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2495767D08
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:47:38 +1100 (EST)
-Date: Mon, 13 Nov 2006 14:47:36 +1100
+	by ozlabs.org (Postfix) with ESMTP id 1F82567D4E
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:49:11 +1100 (EST)
+Date: Mon, 13 Nov 2006 14:49:18 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [POWERPC] iSeries: fix time.c for combined build
-Message-Id: <20061113144736.beb61f98.sfr@canb.auug.org.au>
+Subject: [POWERPC] iSeries: fix slb.c for combined build
+Message-Id: <20061113144918.84647810.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,46 +22,71 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/time.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/slb.c |   39 +++++++++++++++++++--------------------
+ 1 files changed, 19 insertions(+), 20 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index a1b5e4b..ab35854 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -630,9 +630,8 @@ void timer_interrupt(struct pt_regs * re
- 	profile_tick(CPU_PROFILING);
- 	calculate_steal_time();
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index d373391..06c0055 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -23,6 +23,7 @@
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+ #include <asm/smp.h>
++#include <asm/firmware.h>
+ #include <linux/compiler.h>
  
--#ifdef CONFIG_PPC_ISERIES
--	get_lppaca()->int_dword.fields.decr_int = 0;
--#endif
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		get_lppaca()->int_dword.fields.decr_int = 0;
+ #ifdef DEBUG
+@@ -227,28 +228,26 @@ void slb_initialize(void)
  
- 	while ((ticks = tb_ticks_since(per_cpu(last_jiffy, cpu)))
- 	       >= tb_ticks_per_jiffy) {
-@@ -674,7 +673,7 @@ void timer_interrupt(struct pt_regs * re
- 	set_dec(next_dec);
+ 	/* On iSeries the bolted entries have already been set up by
+ 	 * the hypervisor from the lparMap data in head.S */
+-#ifndef CONFIG_PPC_ISERIES
+- {
+-	unsigned long lflags, vflags;
++	if (!firmware_has_feature(FW_FEATURE_ISERIES)) {
++		unsigned long lflags, vflags;
  
- #ifdef CONFIG_PPC_ISERIES
--	if (hvlpevent_is_pending())
-+	if (firmware_has_feature(FW_FEATURE_ISERIES) && hvlpevent_is_pending())
- 		process_hvlpevents();
- #endif
+-	lflags = SLB_VSID_KERNEL | linear_llp;
+-	vflags = SLB_VSID_KERNEL | vmalloc_llp;
++		lflags = SLB_VSID_KERNEL | linear_llp;
++		vflags = SLB_VSID_KERNEL | vmalloc_llp;
++
++		/* Invalidate the entire SLB (even slot 0) & all the ERATS */
++		asm volatile("isync":::"memory");
++		asm volatile("slbmte  %0,%0"::"r" (0) : "memory");
++		asm volatile("isync; slbia; isync":::"memory");
++		create_shadowed_slbe(PAGE_OFFSET, lflags, 0);
  
-@@ -774,7 +773,7 @@ int do_settimeofday(struct timespec *tv)
- 	 * settimeofday to perform this operation.
- 	 */
- #ifdef CONFIG_PPC_ISERIES
--	if (first_settimeofday) {
-+	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
- 		iSeries_tb_recal();
- 		first_settimeofday = 0;
- 	}
+-	/* Invalidate the entire SLB (even slot 0) & all the ERATS */
+-	asm volatile("isync":::"memory");
+-	asm volatile("slbmte  %0,%0"::"r" (0) : "memory");
+-	asm volatile("isync; slbia; isync":::"memory");
+-	create_shadowed_slbe(PAGE_OFFSET, lflags, 0);
+-
+-	create_shadowed_slbe(VMALLOC_START, vflags, 1);
+-
+-	/* We don't bolt the stack for the time being - we're in boot,
+-	 * so the stack is in the bolted segment.  By the time it goes
+-	 * elsewhere, we'll call _switch() which will bolt in the new
+-	 * one. */
+-	asm volatile("isync":::"memory");
+- }
+-#endif /* CONFIG_PPC_ISERIES */
++		create_shadowed_slbe(VMALLOC_START, vflags, 1);
++
++		/* We don't bolt the stack for the time being - we're in boot,
++		 * so the stack is in the bolted segment.  By the time it goes
++		 * elsewhere, we'll call _switch() which will bolt in the new
++		 * one. */
++		asm volatile("isync":::"memory");
++	}
+ 
+ 	get_paca()->stab_rr = SLB_NUM_BOLTED;
+ }
 -- 
 1.4.3.3
