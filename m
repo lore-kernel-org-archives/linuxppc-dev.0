@@ -1,33 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6929667EA5
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 06:39:53 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kADJdfmg027671
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:39:41 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kADJdfWE135168
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:39:41 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kADJdfwb010646
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 14:39:41 -0500
-Date: Mon, 13 Nov 2006 13:39:40 -0600
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
-Message-ID: <20061113193940.GA8395@austin.ibm.com>
-References: <20061110182253.GV30625@austin.ibm.com>
-	<17749.4445.46239.450000@cargo.ozlabs.ibm.com>
-	<20061111005248.GW30625@austin.ibm.com>
-	<20061113185704.GA8253@localdomain>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 9177D67EFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 06:51:23 +1100 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: mingo@elte.hu
+Subject: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t in
+	latency_trace.c (take 3)
+Date: Mon, 13 Nov 2006 22:52:58 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061113185704.GA8253@localdomain>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611132252.58818.sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, khilman@mvista.com, linux-kernel@vger.kernel.org,
+	dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,33 +22,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 13, 2006 at 12:57:04PM -0600, Nathan Lynch wrote:
-> 
-> I'm still not clear on what problem this patch is intended to address.
+In addition to the clock jump-back check being falsely triggered by clock wrap
+with 32-bit cycles_t, as noticed by Kevin Hilman, there's another issue: using
+%Lx format to print 32-bit values warrants erroneous values on 32-bit machines
+like ARM and PPC32...
 
-There's a code path that is compiled unconditonally, that expects 
-this token to be defined. 
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-> If the 'online' cpu attribute in sysfs can be used to attempt an
-> offline operation on a kernel with CONFIG_HOTPLUG_CPU=n, that's what
-> needs to be fixed.
+---
+There's a lot more of this cr*p with CONFIG_LATENCY_TRACE enabled, hence is
+take 3 on this patch...
 
-There are many places where cpu_die() might be called, and
-I am sufficiently lazy to not want to audit them to make sure
-that none of these code paths are taken if CONFIG_HOTPLUG_CPU=n.
+ kernel/latency_trace.c |   42 +++++++++++++++++++++---------------------
+ 1 files changed, 21 insertions(+), 21 deletions(-)
 
-Besides, if I audit all of these code paths today, and find
-that none of them are ever called when  CONFIG_HOTPLUG_CPU=n,
-I still have no assurance that someone might not unwittingly
-change one of the code paths in the future. 
-
-Code that might fail because someone makes an unwitting change
-in the future is "brittle". The goal of my patch was to remove
-the brittleness.
-
-Besides, I notice that platforms/powermac/smp.c defines
-cpu_die() as well, which tells me that there are code paths
-that lead to its being called, even if CONFIG_HOTPLUG_CPU=n.
-That would seem to conclude the audit, right?
-
---linas
+Index: linux-2.6/kernel/latency_trace.c
+===================================================================
+--- linux-2.6.orig/kernel/latency_trace.c
++++ linux-2.6/kernel/latency_trace.c
+@@ -989,30 +989,30 @@ static void update_out_trace(void)
+ 			tmp_max = max_tr.traces + cpu;
+ 			entries = min(tmp_max->trace_idx, MAX_TRACE-1);
+ 			printk("CPU%d: %016Lx (%016Lx) ... #%d (%016Lx) %016Lx\n", cpu,
+-				tmp_max->trace[0].timestamp,
+-				tmp_max->trace[1].timestamp,
++				(u64)tmp_max->trace[0].timestamp,
++				(u64)tmp_max->trace[1].timestamp,
+ 				entries,
+-				tmp_max->trace[entries-2].timestamp,
+-				tmp_max->trace[entries-1].timestamp);
++				(u64)tmp_max->trace[entries-2].timestamp,
++				(u64)tmp_max->trace[entries-1].timestamp);
+ 		}
+ 		tmp_max = max_tr.traces + max_tr.cpu;
+ 		entries = min(tmp_max->trace_idx, MAX_TRACE-1);
+ 
+ 		printk("CPU%d entries: %d\n", max_tr.cpu, entries);
+-		printk("first stamp: %016Lx\n", first_stamp);
+-		printk(" last stamp: %016Lx\n", first_stamp);
++		printk("first stamp: %016Lx\n", (u64)first_stamp);
++		printk(" last stamp: %016Lx\n", (u64)first_stamp);
+ 	}
+ 
+ #if 0
+-	printk("first_stamp: %Ld [%016Lx]\n", first_stamp, first_stamp);
+-	printk(" last_stamp: %Ld [%016Lx]\n", last_stamp, last_stamp);
++	printk("first_stamp: %Ld [%016Lx]\n", (u64)first_stamp, (u64)first_stamp);
++	printk(" last_stamp: %Ld [%016Lx]\n", (u64)last_stamp, (u64)last_stamp);
+ 	printk("   +1 stamp: %Ld [%016Lx]\n",
+-		tmp_max->trace[entries].timestamp,
+-		tmp_max->trace[entries].timestamp);
++		(u64)tmp_max->trace[entries].timestamp,
++		(u64)tmp_max->trace[entries].timestamp);
+ 	printk("   +2 stamp: %Ld [%016Lx]\n",
+-		tmp_max->trace[entries+1].timestamp,
+-		tmp_max->trace[entries+1].timestamp);
+-	printk("      delta: %Ld\n", last_stamp-first_stamp);
++		(u64)tmp_max->trace[entries+1].timestamp,
++		(u64)tmp_max->trace[entries+1].timestamp);
++	printk("      delta: %Ld\n", (u64)(last_stamp-first_stamp));
+ 	printk("    entries: %d\n", entries);
+ #endif
+ 
+@@ -1240,7 +1240,7 @@ static int notrace l_show_fn(struct seq_
+ 			pid_to_cmdline(entry->pid),
+ 			entry->pid, entry->cpu, entry->flags,
+ 			entry->preempt_count, trace_idx,
+-			entry->timestamp, abs_usecs/1000,
++			(u64)entry->timestamp, abs_usecs/1000,
+ 			abs_usecs % 1000, rel_usecs/1000, rel_usecs % 1000);
+ 		print_name_offset(m, entry->u.fn.eip);
+ 		seq_puts(m, " (");
+@@ -1623,8 +1623,8 @@ check_critical_timing(int cpu, struct cp
+ #ifndef CONFIG_CRITICAL_LATENCY_HIST
+ 	if (!preempt_thresh && preempt_max_latency > delta) {
+ 		printk("bug: updating %016Lx > %016Lx?\n",
+-			preempt_max_latency, delta);
+-		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
++			(u64)preempt_max_latency, (u64)delta);
++		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+ 	}
+ #endif
+ 
+@@ -2006,7 +2006,7 @@ check_wakeup_timing(struct cpu_trace *tr
+ 	____trace(smp_processor_id(), TRACE_FN, tr, CALLER_ADDR0, parent_eip, 0, 0, 0, *flags);
+ 	T2 = get_cycles();
+ 	if (T2 < T1)
+-		printk("bug2: %016Lx < %016Lx!\n", T2, T1);
++		printk("bug2: %016Lx < %016Lx!\n", (u64)T2, (u64)T1);
+ 	delta = T2-T0;
+ 
+ 	latency = cycles_to_usecs(delta);
+@@ -2023,8 +2023,8 @@ check_wakeup_timing(struct cpu_trace *tr
+ #ifndef CONFIG_WAKEUP_LATENCY_HIST
+ 	if (!preempt_thresh && preempt_max_latency > delta) {
+ 		printk("bug2: updating %016Lx > %016Lx?\n",
+-			preempt_max_latency, delta);
+-		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
++			(u64)preempt_max_latency, (u64)delta);
++		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+ 	}
+ #endif
+ 
+@@ -2273,8 +2273,8 @@ long user_trace_stop(void)
+ 		if (!preempt_thresh && preempt_max_latency > delta) {
+ 			local_irq_restore(flags);
+ 			printk("bug3: updating %016Lx > %016Lx [%016Lx]?\n",
+-				preempt_max_latency, delta, tmp0);
+-			printk("  [%016Lx %016Lx]\n", T0, T1);
++				(u64)preempt_max_latency, (u64)delta, tmp0);
++			printk("  [%016Lx %016Lx]\n", (u64)T0, (u64)T1);
+ 			local_irq_save(flags);
+ 		}
+ 
