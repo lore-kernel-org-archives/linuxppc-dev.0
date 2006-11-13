@@ -1,21 +1,33 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id CF71C67E03
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 03:40:58 +1100 (EST)
-To: Christoph Raisch <RAISCH@de.ibm.com>
-Subject: Re: [openib-general] [PATCH 2.6.19 2/4] ehca: hcp_phyp.c: correct
-	page mapping in 64k page mode
-References: <OFEBD51474.F7DD1031-ONC1257225.0032352E-C1257225.005B569D@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 13 Nov 2006 08:40:48 -0800
-In-Reply-To: <OFEBD51474.F7DD1031-ONC1257225.0032352E-C1257225.005B569D@de.ibm.com>
-	(Christoph Raisch's message of "Mon, 13 Nov 2006 17:40:52 +0100")
-Message-ID: <adabqnb5mgf.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, openib-general-bounces@openib.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	openib-general@openib.org
+Return-Path: <cel@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4609C67DD8
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 04:06:09 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kADH66DW031412
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 12:06:06 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kADH65vr338178
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 10:06:06 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kADH65Xg030930
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 10:06:05 -0700
+Subject: Re: Help with an MMIO register read function
+From: Carl Love <cel@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1163209606.4982.201.camel@localhost.localdomain>
+References: <1163199434.30540.13.camel@dyn9047021226.beaverton.ibm.com>
+	<200611110010.28788.arnd@arndb.de>
+	<1163209606.4982.201.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 13 Nov 2006 09:06:04 -0800
+Message-Id: <1163437564.30540.21.camel@dyn9047021226.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,8 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > So Roland, feel free to ignore that line where we do the calculation.
+Ben:
 
-OK, ignore the email I just sent.  I'll drop the patch.
+Changing to the in_be64 function fixed the problem.  Thanks for you help
+on this.  Using the dump function, we have been able to isolate the
+problem with the RTAS call.  
 
-thanks
+             Carl Love
+
+
+On Sat, 2006-11-11 at 12:46 +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2006-11-11 at 00:10 +0100, Arnd Bergmann wrote:
+> > On Friday 10 November 2006 23:57, Carl Love wrote:
+> > > I expect the SBI values to be 0x2000000  not 0x200000000.  The L2 debug
+> > > value should be 0x6 not 0x600000000000000.  It seems like the bits are
+> > > there but shifted from where I would expect them to be.  Anyone have any
+> > > thoughts as to what is wrong?
+> > 
+> > Hmm, maybe you confused the bit order in the specification? IBM
+> > counts the MSB as bit 0, while everyone else counts the LSB as
+> > bit 0.
+> 
+> I think in this case the problem is that he's using readq() which
+> byteswaps.
+> 
+> Ben.
+> 
+> 
