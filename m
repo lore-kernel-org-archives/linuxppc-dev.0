@@ -1,26 +1,17 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id E586367D74
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 15:45:57 +1100 (EST)
-Received: from mail5.sony.co.jp (localhost [127.0.0.1])
-	by mail5.sony.co.jp (R8/Sony) with ESMTP id kAD4jusa026675
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 13:45:56 +0900 (JST)
-Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail5.sony.co.jp (R8/Sony) with SMTP id kAD4judI026663
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 13:45:56 +0900 (JST)
-Message-ID: <4557F87D.6040908@am.sony.com>
-Date: Sun, 12 Nov 2006 20:45:49 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 14/16] powerpc: add ps3 platform OS params support
-References: <4554DB20.9020200@am.sony.com>	
-	<1163381393.7410.39.camel@localhost.localdomain>	
-	<4557E45C.10703@am.sony.com>
-	<1163390536.7410.61.camel@localhost.localdomain>
-In-Reply-To: <1163390536.7410.61.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BD98A67D79
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 16:20:35 +1100 (EST)
+Subject: [RFC] make sys_pciconfig_iobase lethal to calling processes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Mon, 13 Nov 2006 16:20:28 +1100
+Message-Id: <1163395228.4982.281.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
->> It is not so convenient to view, but the other os area is documented in the
->> iso image CELL-Linux-CL_20061110-ADDON.iso at
->> http://ftp.uk.linux.org/pub/linux/Sony-PS3/.
-> 
-> Any chance we can get that in some sort of non-insane format? Like a
-> PDF? :)
+Hi !
 
-OK, I put it here for you:
+I'm fixing various bugs (oops... some are even my faul) in powerpc's
+implementation of mmap of PCI resources via /proc and /sys. While there,
+I noticed that we have some nasty issues with the sys_pciconfig_iobase
+syscall.
 
- http://67.117.136.164/pub/cell/linux-20061110-docs/BootLinuxAndInstallation.html
+We introduced that syscall in a distant past to let apps like X retreive
+the physical address at which they could find PCI IOs when
+using /dev/mem to access PCI cards.
 
-The coverage of the other os area is not so good, but more complete
-documentation should be provided sometime in the future.
+There are several problems with it however, though the main one is that
+it returns that base address as the syscall result, which means it's
+limited to 32 bits for 32 bits processes, while on pSeries machines,
+among others, PCI sits way above that.
 
+So basically, it really only works for PowerMacs.
 
->> >> +	if (header->hdr_version != 1) {
->> >> +		pr_debug("%s:%d hdr_version failed\n", __func__, __LINE__);
->> >> +		return -1;
->> >> +	}
->> > 
->> > Is version 2 not going to be backward compatible? Could it be >= 1 ?
->> 
->> 
->> I have absolutely no clue what the next version number will be, nor the
->> compatibility, etc.  I'll set this when the version changes.
-> 
-> Except you'll have trouble changing it on the installed base of millions
-> of PS3s running Linux :) - At the moment if firmware bump the version on
-> you, you've got an unbootable system until the user does a kernel
-> upgrade. But it's your baby.
+The other nasty problem is that the only user I know of (and -please-
+let me know asap if you know of anything else using it), X.org, will not
+only not test for errors from that syscall (and happily try to mmap -1 +
+BAR value via /dev/mem and whack that), but also, 32 bits X on 64 bits
+machine will truncate the top 32 bits of PCI addresses and then try to
+access them via /dev/mem...
 
-Good point.  Actually, you'll just have a little inaccuracy in your clock
-for this version, but I'll change it.
+So basically, this syscall being called by a 32 bits process, means
+that:
 
+ - if the PCI host bridge has the IO and MMIO below 32 bits, there is a
+chance that things will work, so proceed as before (+/- a bug where we
+might not get the right bus but I'm trying to fix that).
 
--Geoff
+ - if the PCI host bridge has IO or MMIO above 32 bits, then there is no
+way the calling process will work since we'll return a truncated value.
+In fact, we know that (at least I think) the only caller is X and it
+will do very bad things to /dev/mem and ignore errors. So the sanest
+things we can do in this case is to kill the calling process with
+force_sig (what about SIGSEGV for that ?). If we don't do that, we'll
+end up with random levels of memory corruption due to X whacking things
+in /dev/mem at completely wrong addresses.
+
+If the caller is a 64 bits process, things can work so we don't do
+anything special. The syscall is deprecated anyway, so once X gets fixed
+to properly use /sysfs or /proc, it won't use it anymore and thus won't
+trigger that killswitch.
+
+Any objection ? Does anybody knows of another legitimate user of that
+syscall that might deserve to survive calling it in 32 bits mode on a 64
+bits machine with PCI IO or MMIO above 32 bits ?
+
+Cheers,
+Ben.
