@@ -1,20 +1,18 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 505E167E82
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 05:32:09 +1100 (EST)
-Subject: patch pci-make-some-msi-x-defines-generic.patch added to gregkh-2.6
-	tree
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
-	davem@davemloft.net, ebiederm@xmission.com, greg@kroah.com,
-	gregkh@suse.de, michael@ellerman.id.au, moilanen@austin.ibm.com,
-	segher@kernel.crashing.org
-From: <gregkh@suse.de>
-Date: Mon, 13 Nov 2006 10:31:04 -0800
-In-Reply-To: <20061107072123.CF52F67C35@ozlabs.org>
-Message-Id: <20061113183157.5942C9D3091@imap.suse.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 500A267E82
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 05:32:10 +1100 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: mingo@elte.hu
+Subject: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t in
+	latency_trace.c (take 2)
+Date: Mon, 13 Nov 2006 21:33:40 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611132133.40091.sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, khilman@mvista.com, linux-kernel@vger.kernel.org,
+	dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,78 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In addition to the clock jump-back check being falsely triggered by clock wrap
+with 32-bit cycles_t, as noticed by Kevin Hilman, there's another issue: using
+%Lx format to print 32-bit values warrants erroneous values on 32-bit machines
+like ARM and PPC32...
 
-This is a note to let you know that I've just added the patch titled
-
-     Subject: PCI: Make some MSI-X #defines generic
-
-to my gregkh-2.6 tree.  Its filename is
-
-     pci-make-some-msi-x-defines-generic.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From michael@ozlabs.org Mon Nov  6 23:21:30 2006
-To: <linuxppc-dev@ozlabs.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Greg Kroah-Hartman <greg@kroah.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	Jake Moilanen <moilanen@austin.ibm.com>,
-	Segher Boessenkool <segher@kernel.crashing.org>,
-	Eric W. Biederman <ebiederm@xmission.com>,
-	David S. Miller <davem@davemloft.net>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 07 Nov 2006 18:21:21 +1100
-Subject: PCI: Make some MSI-X #defines generic
-Message-Id: <20061107072123.CF52F67C35@ozlabs.org>
-
-Move some MSI-X #defines into pci_regs.h so they can be used
-outside of drivers/pci.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
 ---
- drivers/pci/msi.h        |    8 --------
- include/linux/pci_regs.h |    6 ++++++
- 2 files changed, 6 insertions(+), 8 deletions(-)
+PPC32 actually has 64-bit timebase counter, so could provide for 64-bit
+cycles_t -- maybe it's worth to rewrite get_cycles() to read both lower and
+upper registers?
 
---- gregkh-2.6.orig/drivers/pci/msi.h
-+++ gregkh-2.6/drivers/pci/msi.h
-@@ -6,14 +6,6 @@
- #ifndef MSI_H
- #define MSI_H
+ kernel/latency_trace.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/kernel/latency_trace.c
+===================================================================
+--- linux-2.6.orig/kernel/latency_trace.c
++++ linux-2.6/kernel/latency_trace.c
+@@ -1623,8 +1623,8 @@ check_critical_timing(int cpu, struct cp
+ #ifndef CONFIG_CRITICAL_LATENCY_HIST
+ 	if (!preempt_thresh && preempt_max_latency > delta) {
+ 		printk("bug: updating %016Lx > %016Lx?\n",
+-			preempt_max_latency, delta);
+-		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
++			(u64)preempt_max_latency, (u64)delta);
++		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+ 	}
+ #endif
  
--/*
-- * MSI-X Address Register
-- */
--#define PCI_MSIX_FLAGS_QSIZE		0x7FF
--#define PCI_MSIX_FLAGS_ENABLE		(1 << 15)
--#define PCI_MSIX_FLAGS_BIRMASK		(7 << 0)
--#define PCI_MSIX_FLAGS_BITMASK		(1 << 0)
--
- #define PCI_MSIX_ENTRY_SIZE			16
- #define  PCI_MSIX_ENTRY_LOWER_ADDR_OFFSET	0
- #define  PCI_MSIX_ENTRY_UPPER_ADDR_OFFSET	4
---- gregkh-2.6.orig/include/linux/pci_regs.h
-+++ gregkh-2.6/include/linux/pci_regs.h
-@@ -292,6 +292,12 @@
- #define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
- #define PCI_MSI_MASK_BIT	16	/* Mask bits register */
+@@ -2006,7 +2006,7 @@ check_wakeup_timing(struct cpu_trace *tr
+ 	____trace(smp_processor_id(), TRACE_FN, tr, CALLER_ADDR0, parent_eip, 0, 0, 0, *flags);
+ 	T2 = get_cycles();
+ 	if (T2 < T1)
+-		printk("bug2: %016Lx < %016Lx!\n", T2, T1);
++		printk("bug2: %016Lx < %016Lx!\n", (u64)T2, (u64)T1);
+ 	delta = T2-T0;
  
-+/* MSI-X registers (these are at offset PCI_MSI_FLAGS) */
-+#define PCI_MSIX_FLAGS_QSIZE	0x7FF
-+#define PCI_MSIX_FLAGS_ENABLE	(1 << 15)
-+#define PCI_MSIX_FLAGS_BIRMASK	(7 << 0)
-+#define PCI_MSIX_FLAGS_BITMASK	(1 << 0)
-+
- /* CompactPCI Hotswap Register */
+ 	latency = cycles_to_usecs(delta);
+@@ -2023,8 +2023,8 @@ check_wakeup_timing(struct cpu_trace *tr
+ #ifndef CONFIG_WAKEUP_LATENCY_HIST
+ 	if (!preempt_thresh && preempt_max_latency > delta) {
+ 		printk("bug2: updating %016Lx > %016Lx?\n",
+-			preempt_max_latency, delta);
+-		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
++			(u64)preempt_max_latency, (u64)delta);
++		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+ 	}
+ #endif
  
- #define PCI_CHSWP_CSR		2	/* Control and Status Register */
-
-
-Patches currently in gregkh-2.6 which might be from linuxppc-dev@ozlabs.org are
-
-pci/pci-make-some-msi-x-defines-generic.patch
