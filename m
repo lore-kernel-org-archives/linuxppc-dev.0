@@ -1,16 +1,16 @@
-Return-Path: <pradeepsampath@yahoo.com>
-Received: from web83204.mail.mud.yahoo.com (web83204.mail.mud.yahoo.com
-	[216.252.101.48]) by ozlabs.org (Postfix) with SMTP id A947F67DF7
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	by ozlabs.org (Postfix) with ESMTP id CDD7367D7F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Nov 2006 04:42:16 +1100 (EST)
-Message-ID: <20061113174214.56102.qmail@web83204.mail.mud.yahoo.com>
-Date: Mon, 13 Nov 2006 09:42:14 -0800 (PST)
-From: Pradeep Sampath <pradeepsampath@yahoo.com>
-Subject: PLB TEMAC, irq issue
-To: robert corley <rdcorle@yahoo.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <20061110152840.12653.qmail@web56301.mail.re3.yahoo.com>
+	Tue, 14 Nov 2006 05:02:23 +1100 (EST)
+To: mporter@kernel.crashing.org
+Subject: [PATCH] [POWERPC] Add support for Rev. B of PowerPC 440SPe
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 13 Nov 2006 09:55:53 -0800
+Message-ID: <adalkmf44eu.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1463345045-1163439734=:55734"
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,93 +21,484 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1463345045-1163439734=:55734
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+This is mostly updating the PCI Express code to work with the new core
+in the Rev. B chip, which unfortunately has different undocumented
+restrictions on the PLB addresses that can be used from the Rev. A core.
 
-Robert,
-   
-  Hope you had a chance to look at my earlier email. 
-   
-    I see that xtenet_init is getting called. But xtenet_probe function is not getting called in adapter.c. How do i make sure that the device is getting registered with the OS. Or the OS is recognizing the presence of the plb TEMAC device? I see that the IRQ is getting generated on line 1 for the uartlite. But my guess is its not getting generated on line 0 for the Xilinx TEMAC. How should i bebug this problem? 
-  
-# Start Loading the 2.6.18.1 Linux Kernel
-loaded at:     00400000 006A2138
-board data at: 006A0120 006A0138
-relocated to:  00404060 00404078
-zimage at:     00404E15 0050861B
-initrd at:     00509000 0069F280
-avail ram:     006A3000 04000000
-  Linux/PPC load: console=ttyUL0 single ip=onfiltered=/dev/ram rw
-Uncompressing Linux...done.
-Now booting the kernel
-[    0.000000] Linux version 2.6.18.1 (psampath@psampath-test) (gcc version 3.4.
-1) #9 Sat Nov 11 20:36:43 PST 2006
-[    0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
-[    0.000000] Built 1 zonelists.  Total pages: 16384
-[    0.000000] Kernel command line: console=ttyUL0 single ip=onfiltered=/dev/ram rw
-[    0.000000] Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000
-[    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
-[    0.000326] Console: colour dummy device 80x25
-[    0.001389] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-[    0.002932] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-[    0.029900] Memory: 60884k available (1688k kernel code, 600k data, 84k init,
- 0k highmem)
-[    0.216360] Security Framework v1.0.0 initialized
-[    0.216473] SELinux:  Disabled at boot.
-[    0.216704] Mount-cache hash table entries: 512
-[    0.221480] checking if image is initramfs...it isn't (no cpio magic); looks
-like an initrd
-[    1.342111] Freeing initrd memory: 1624k freed
-[    1.349021] NET: Registered protocol family 16
-[    1.369816] NET: Registered protocol family 2
-[    1.436868] IP route cache hash table entries: 512 (order: -1, 2048 bytes)
-[    1.438739] TCP established hash table entries: 2048 (order: 1, 8192 bytes)
-[    1.439039] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-[    1.439195] TCP: Hash tables configured (established 2048 bind 1024)
-[    1.439231] TCP reno registered
-[    1.456095] audit: initializing netlink socket (disabled)
-[    1.456377] audit(1.456:1): initialized
-[    1.459462] VFS: Disk quotas dquot_6.5.1
-[    1.460253] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-[    1.461601] Initializing Cryptographic API
-[    1.461733] io scheduler noop registered
-[    1.461902] io scheduler anticipatory registered
-[    1.461998] io scheduler deadline registered
-[    1.462188] io scheduler cfq registered (default)
-[    2.724917] uartlite.0: ttyUL0 at MMIO 0x40600000 (irq = 1) is a uartlite
-[    2.928511] RAMDISK driver initialized: 16 RAM disks of 65536K size 1024 bloc
-ksize
-[    2.948314] loop: loaded (max 8 devices)
-[    2.954686] Entering xtenet_init
-[    2.963619] i8042.c: No controller found.
-[    2.969055] TCP bic registered
-[    2.972280] NET: Registered protocol family 8
-[    2.976663] NET: Registered protocol family 20
-[    2.983519] RAMDISK: Compressed image found at block 0
-[    4.588127] VFS: Mounted root (ext2 filesystem).
-[    4.593419] Freeing unused kernel memory: 84k init
-  
-BusyBox v1.1.0 (2006.09.30-21:14+0000) Built-in shell (ash)
-Enter 'help' for a list of built-in commands.
-  -sh: can't access tty; job control turned off
-#
-   
-  -Pradeep
-   
-     
+Also, when adding the cputable entry for 440SPe Rev. B, we need to
+adjust the entry for 440SP Rev. A so that it looks at more bits of the
+PVR.  The 440SPe Rev. B has PVR 53421891, which would have matched the
+old 440SP pattern of 53xxx891.
 
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+Matt, please queue for a 2.6.20 merge.
 
+ arch/powerpc/kernel/cputable.c           |   21 ++-
+ arch/ppc/platforms/4xx/davinci_sc.c      |    5 -
+ arch/ppc/syslib/ppc440spe_pcie.c         |  258 ++++++++++++++++++++++--------
+ drivers/infiniband/hw/mthca/mthca_main.c |    4 +-
+ 4 files changed, 206 insertions(+), 82 deletions(-)
 
---0-1463345045-1163439734=:55734
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div>Robert,</div>  <div>&nbsp;</div>  <div>Hope you had a chance to look at my earlier email. </div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial"><?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p>&nbsp;</o:p></SPAN></div>  <div>  <div>I see that xtenet_init is getting called. But xtenet_probe function is not getting called in adapter.c. How do i make sure that the device is getting registered with the OS. Or the OS is recognizing the presence of the plb TEMAC device?&nbsp;I see that the IRQ is getting&nbsp;generated on line 1&nbsp;for the uartlite. But&nbsp;my guess is its&nbsp;not getting generated on line 0 for the Xilinx TEMAC. How should i bebug this problem?&nbsp;</div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt; LINE-HEIGHT: 14.4pt"><SPAN style="FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: Arial"><BR># Start Loading the 2.6.18.1 Linux Kernel<BR>loaded
- at:&nbsp;&nbsp;&nbsp;&nbsp; 00400000 006A2138<BR>board data at: 006A0120 006A0138<BR>relocated to:&nbsp; 00404060 00404078<BR>zimage at:&nbsp;&nbsp;&nbsp;&nbsp; 00404E15 0050861B<BR>initrd at:&nbsp;&nbsp;&nbsp;&nbsp; 00509000 0069F280<BR>avail ram:&nbsp;&nbsp;&nbsp;&nbsp; 006A3000 04000000<o:p></o:p></SPAN></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt; LINE-HEIGHT: 14.4pt"><SPAN style="FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: Arial">Linux/PPC load: console=ttyUL0 single ip=onfiltered=/dev/ram rw<BR>Uncompressing Linux...done.<BR>Now booting the kernel<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Linux version 2.6.18.1 (<A href="http://us.f832.mail.yahoo.com/ym/Compose?To=psampath@psampath-test" target=_blank _>psampath@psampath-test</A>) (gcc version 3.4.<BR>1) #9 Sat Nov 11 20:36:43 PST 2006<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Xilinx ML403 Reference System (Virtex-4 FX)<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Built 1 zonelists.&nbsp; Total pages: 16384<BR>[&nbsp;&nbsp;&nbsp;
- 0.000000] Kernel command line: console=ttyUL0 single ip=onfiltered=/dev/ram rw<BR>[&nbsp;&nbsp;&nbsp; 0.000000] Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000<BR>[&nbsp;&nbsp;&nbsp; 0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.000326] Console: colour dummy device 80x25<BR>[&nbsp;&nbsp;&nbsp; 0.001389] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.002932] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)<BR>[&nbsp;&nbsp;&nbsp; 0.029900] Memory: 60884k available (1688k kernel code, 600k data, 84k init,<BR>&nbsp;0k highmem)<BR>[&nbsp;&nbsp;&nbsp; 0.216360] Security Framework v1.0.0 initialized<BR>[&nbsp;&nbsp;&nbsp; 0.216473] SELinux:&nbsp; Disabled at boot.<BR>[&nbsp;&nbsp;&nbsp; 0.216704] Mount-cache hash table entries: 512<BR>[&nbsp;&nbsp;&nbsp; 0.221480] checking if image is initramfs...it isn't (no cpio magic); looks<BR>like an initrd<BR>[&nbsp;&nbsp;&nbsp; 1.342111] Freeing
- initrd memory: 1624k freed<BR>[&nbsp;&nbsp;&nbsp; 1.349021] NET: Registered protocol family 16<BR>[&nbsp;&nbsp;&nbsp; 1.369816] NET: Registered protocol family 2<BR>[&nbsp;&nbsp;&nbsp; 1.436868] IP route cache hash table entries: 512 (order: -1, 2048 bytes)<BR>[&nbsp;&nbsp;&nbsp; 1.438739] TCP established hash table entries: 2048 (order: 1, 8192 bytes)<BR>[&nbsp;&nbsp;&nbsp; 1.439039] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)<BR>[&nbsp;&nbsp;&nbsp; 1.439195] TCP: Hash tables configured (established 2048 bind 1024)<BR>[&nbsp;&nbsp;&nbsp; 1.439231] TCP <?xml:namespace prefix = st1 ns = "urn:schemas-microsoft-com:office:smarttags" /><st1:City w:st="on"><st1:place w:st="on">reno</st1:place></st1:City> registered<BR>[&nbsp;&nbsp;&nbsp; 1.456095] audit: initializing netlink socket (disabled)<BR>[&nbsp;&nbsp;&nbsp; 1.456377] audit(1.456:1): initialized<BR>[&nbsp;&nbsp;&nbsp; 1.459462] VFS: Disk quotas dquot_6.5.1<BR>[&nbsp;&nbsp;&nbsp; 1.460253] Dquot-cache hash
- table entries: 1024 (order 0, 4096 bytes)<BR>[&nbsp;&nbsp;&nbsp; 1.461601] Initializing Cryptographic API<BR>[&nbsp;&nbsp;&nbsp; 1.461733] io scheduler noop registered<BR>[&nbsp;&nbsp;&nbsp; 1.461902] io scheduler anticipatory registered<BR>[&nbsp;&nbsp;&nbsp; 1.461998] io scheduler deadline registered<BR>[&nbsp;&nbsp;&nbsp; 1.462188] io scheduler cfq registered (default)<BR>[&nbsp;&nbsp;&nbsp; 2.724917] uartlite.0: ttyUL0 at MMIO 0x40600000 (irq = 1) is a uartlite<BR>[&nbsp;&nbsp;&nbsp; 2.928511] RAMDISK driver initialized: 16 RAM disks of 65536K size 1024 bloc<BR>ksize<BR>[&nbsp;&nbsp;&nbsp; 2.948314] loop: loaded (max 8 devices)<BR>[&nbsp;&nbsp;&nbsp; 2.954686] Entering xtenet_init<BR>[&nbsp;&nbsp;&nbsp; 2.963619] i8042.c: No controller found.<BR>[&nbsp;&nbsp;&nbsp; 2.969055] TCP bic registered<BR>[&nbsp;&nbsp;&nbsp; 2.972280] NET: Registered protocol family 8<BR>[&nbsp;&nbsp;&nbsp; 2.976663] NET: Registered protocol family 20<BR>[&nbsp;&nbsp;&nbsp; 2.983519] RAMDISK:
- Compressed image found at block 0<BR>[&nbsp;&nbsp;&nbsp; 4.588127] VFS: Mounted root (ext2 filesystem).<BR>[&nbsp;&nbsp;&nbsp; 4.593419] Freeing unused kernel memory: 84k init<o:p></o:p></SPAN></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt; LINE-HEIGHT: 14.4pt"><SPAN style="FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: Arial"><BR>BusyBox v1.1.0 (2006.09.30-21:14+0000) Built-in shell (ash)<BR>Enter 'help' for a list of built-in commands.<o:p></o:p></SPAN></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt; LINE-HEIGHT: 14.4pt"><SPAN style="FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: Arial">-sh: can't access tty; job control turned off<BR>#<o:p></o:p></SPAN></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt; LINE-HEIGHT: 14.4pt"><SPAN style="FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: Arial"><o:p>&nbsp;</o:p></SPAN></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt; LINE-HEIGHT: 14.4pt"><SPAN style="FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY:
- Arial"><o:p>-Pradeep</o:p></SPAN></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial"><o:p>&nbsp;</o:p></SPAN></div>  <div>  <div>&nbsp;</div></div></div>
---0-1463345045-1163439734=:55734--
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index bfd499e..04559be 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1073,8 +1073,8 @@ #ifdef CONFIG_44x
+ 		.platform		= "ppc440",
+ 	},
+ 	{ /* 440SP Rev. A */
+-		.pvr_mask		= 0xff000fff,
+-		.pvr_value		= 0x53000891,
++		.pvr_mask		= 0xfff00fff,
++		.pvr_value		= 0x53200891,
+ 		.cpu_name		= "440SP Rev. A",
+ 		.cpu_features		= CPU_FTRS_44X,
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
+@@ -1083,9 +1083,20 @@ #ifdef CONFIG_44x
+ 		.platform		= "ppc440",
+ 	},
+ 	{ /* 440SPe Rev. A */
+-		.pvr_mask		= 0xff000fff,
+-		.pvr_value		= 0x53000890,
+-		.cpu_name		= "440SPe Rev. A",
++		.pvr_mask               = 0xfff00fff,
++		.pvr_value              = 0x53400890,
++		.cpu_name               = "440SPe Rev. A",
++		.cpu_features           = CPU_FTR_SPLIT_ID_CACHE |
++			CPU_FTR_USE_TB,
++		.cpu_user_features      = COMMON_USER_BOOKE,
++		.icache_bsize           = 32,
++		.dcache_bsize           = 32,
++		.platform               = "ppc440",
++	},
++	{ /* 440SPe Rev. B */
++		.pvr_mask		= 0xfff00fff,
++		.pvr_value		= 0x53400891,
++		.cpu_name		= "440SPe Rev. B",
+ 		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
+ 			CPU_FTR_USE_TB,
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
+diff --git a/arch/ppc/platforms/4xx/davinci_sc.c b/arch/ppc/platforms/4xx/davinci_sc.c
+index 623988f..3dbedda 100644
+--- a/arch/ppc/platforms/4xx/davinci_sc.c
++++ b/arch/ppc/platforms/4xx/davinci_sc.c
+@@ -172,11 +172,6 @@ davinci_sc_setup_hoses(void)
+ 	char name[20];
+ 	int i;
+ 
+-	if (0 && ppc440spe_init_pcie()) {
+-		printk(KERN_WARNING "PPC440SPe PCI Express initialization failed\n");
+-		return;
+-	}
+-
+ 	for (i = 0; i <= 2; ++i) {
+ 		if (!davinci_sc_pcie_card_present(i))
+ 			continue;
+diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
+index dd5d4b9..7ae14d2 100644
+--- a/arch/ppc/syslib/ppc440spe_pcie.c
++++ b/arch/ppc/syslib/ppc440spe_pcie.c
+@@ -19,16 +19,23 @@ #include <asm/ibm44x.h>
+ 
+ #include "ppc440spe_pcie.h"
+ 
++static enum {
++	REV_A,
++	REV_B
++} core_rev;
++
+ static int
+ pcie_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 		     int len, u32 *val)
+ {
+ 	struct pci_controller *hose = bus->sysdata;
+ 
+-	if (PCI_SLOT(devfn) != 1)
++	/* 440SPE implements only one function per port */
++	if (PCI_SLOT(devfn) != 1 || PCI_FUNC(devfn) != 0)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	offset += devfn << 12;
++	if (core_rev == REV_A)
++		offset += devfn << 12;
+ 
+ 	/*
+ 	 * Note: the caller has already checked that offset is
+@@ -57,10 +64,11 @@ pcie_write_config(struct pci_bus *bus, u
+ {
+ 	struct pci_controller *hose = bus->sysdata;
+ 
+-	if (PCI_SLOT(devfn) != 1)
++	if (PCI_SLOT(devfn) != 1 || PCI_FUNC(devfn) != 0)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	offset += devfn << 12;
++	if (core_rev == REV_A)
++		offset += devfn << 12;
+ 
+ 	switch (len) {
+ 	case 1:
+@@ -153,6 +161,20 @@ static void check_error(void)
+  */
+ int ppc440spe_init_pcie(void)
+ {
++	int i;
++
++	switch (PVR_REV(mfspr(SPRN_PVR))) {
++	case 0x1890: core_rev = REV_A; break;
++	case 0x1891: core_rev = REV_B; break;
++	default:
++		printk(KERN_ERR "PCIE: Unknown PVR rev. %lx\n",
++		       PVR_REV(mfspr(SPRN_PVR)));
++		return -1;
++	}
++
++	printk(KERN_INFO "PCIE: core rev %c detected\n",
++	       core_rev == REV_A ? 'A' : 'B');
++
+ 	/* Set PLL clock receiver to LVPECL */
+ 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) | 1 << 28);
+ 
+@@ -168,21 +190,78 @@ int ppc440spe_init_pcie(void)
+ 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) & ~(1 << 24));
+ 	udelay(3);
+ 
++	for (i = 0; i < 100; ++i) {
++		if (SDR_READ(PESDR0_PLLLCT3) & 0x10000000)
++			goto pll_ok;
++
++		udelay(1);
++	}
++
++	printk(KERN_INFO "PCIE: VCO output not locked: %x\n",
++	       SDR_READ(PESDR0_PLLLCT3));
++	return -1;
++
++pll_ok:
+ 	return 0;
+ }
+ 
++static void ppc440spe_setup_utl(int port)
++{
++	void __iomem *utl_base;
++
++	/*
++	 * Map UTL registers at 0xc_1000_0n00
++	 */
++	switch (port) {
++	case 0:
++		mtdcr(DCRN_PEGPL_REGBAH(PCIE0), 0x0000000c);
++		mtdcr(DCRN_PEGPL_REGBAL(PCIE0), 0x10000000);
++		mtdcr(DCRN_PEGPL_REGMSK(PCIE0), 0x00007001);
++		mtdcr(DCRN_PEGPL_SPECIAL(PCIE0), 0x68782800);
++		break;
++
++	case 1:
++		mtdcr(DCRN_PEGPL_REGBAH(PCIE1), 0x0000000c);
++		mtdcr(DCRN_PEGPL_REGBAL(PCIE1), 0x10001000);
++		mtdcr(DCRN_PEGPL_REGMSK(PCIE1), 0x00007001);
++		mtdcr(DCRN_PEGPL_SPECIAL(PCIE1), 0x68782800);
++		break;
++
++	case 2:
++		mtdcr(DCRN_PEGPL_REGBAH(PCIE2), 0x0000000c);
++		mtdcr(DCRN_PEGPL_REGBAL(PCIE2), 0x10002000);
++		mtdcr(DCRN_PEGPL_REGMSK(PCIE2), 0x00007001);
++		mtdcr(DCRN_PEGPL_SPECIAL(PCIE2), 0x68782800);
++	}
++
++	utl_base = ioremap64(0xc10000000ull + 0x1000 * port, 0x100);
++
++	/*
++	 * Set buffer allocations and then assert VRB and TXE.
++	 */
++	out_be32(utl_base + PEUTL_OUTTR,   0x08000000);
++	out_be32(utl_base + PEUTL_INTR,    0x02000000);
++	out_be32(utl_base + PEUTL_OPDBSZ,  0x10000000);
++	out_be32(utl_base + PEUTL_PBBSZ,   0x53000000);
++	out_be32(utl_base + PEUTL_IPHBSZ,  0x08000000);
++	out_be32(utl_base + PEUTL_IPDBSZ,  0x10000000);
++	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
++	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
++
++	iounmap(utl_base);
++}
++
+ int ppc440spe_init_pcie_rootport(int port)
+ {
+ 	static int core_init;
+-	void __iomem *utl_base;
+ 	u32 val = 0;
+ 	int i;
+ 
+ 	if (!core_init) {
+-		++core_init;
+ 		i = ppc440spe_init_pcie();
+ 		if (i)
+ 			return i;
++		++core_init;
+ 	}
+ 
+ 	/*
+@@ -193,13 +272,19 @@ int ppc440spe_init_pcie_rootport(int por
+ 	 * - Set up UTL configuration.
+ 	 * - Increase SERDES drive strength to levels suggested by AMCC.
+ 	 * - De-assert RSTPYN, RSTDL and RSTGU.
++	 *
++	 * For rev. B chips, we don't set PESDRn_UTLSET2, but just
++	 * leave it with default setting 0x11310000. The register has
++	 * new fields, PESDRn_UTLSET2[LKINE] in particular: clearing
++	 * it leads to a PCIe core hang.
+ 	 */
+ 	switch (port) {
+ 	case 0:
+ 		SDR_WRITE(PESDR0_DLPSET, PTYPE_ROOT_PORT << 20 | LNKW_X8 << 12);
+ 
+ 		SDR_WRITE(PESDR0_UTLSET1, 0x21222222);
+-		SDR_WRITE(PESDR0_UTLSET2, 0x11000000);
++		if (core_rev == REV_A)
++			SDR_WRITE(PESDR0_UTLSET2, 0x11000000);
+ 
+ 		SDR_WRITE(PESDR0_HSSL0SET1, 0x35000000);
+ 		SDR_WRITE(PESDR0_HSSL1SET1, 0x35000000);
+@@ -218,7 +303,8 @@ int ppc440spe_init_pcie_rootport(int por
+ 		SDR_WRITE(PESDR1_DLPSET, PTYPE_ROOT_PORT << 20 | LNKW_X4 << 12);
+ 
+ 		SDR_WRITE(PESDR1_UTLSET1, 0x21222222);
+-		SDR_WRITE(PESDR1_UTLSET2, 0x11000000);
++		if (core_rev == REV_A)
++			SDR_WRITE(PESDR1_UTLSET2, 0x11000000);
+ 
+ 		SDR_WRITE(PESDR1_HSSL0SET1, 0x35000000);
+ 		SDR_WRITE(PESDR1_HSSL1SET1, 0x35000000);
+@@ -233,7 +319,8 @@ int ppc440spe_init_pcie_rootport(int por
+ 		SDR_WRITE(PESDR2_DLPSET, PTYPE_ROOT_PORT << 20 | LNKW_X4 << 12);
+ 
+ 		SDR_WRITE(PESDR2_UTLSET1, 0x21222222);
+-		SDR_WRITE(PESDR2_UTLSET2, 0x11000000);
++		if (core_rev == REV_A)
++			SDR_WRITE(PESDR2_UTLSET2, 0x11000000);
+ 
+ 		SDR_WRITE(PESDR2_HSSL0SET1, 0x35000000);
+ 		SDR_WRITE(PESDR2_HSSL1SET1, 0x35000000);
+@@ -255,78 +342,81 @@ int ppc440spe_init_pcie_rootport(int por
+ 
+ 	if (!(val & (1 << 20)))
+ 		printk(KERN_INFO "PCIE%d: PGRST inactive\n", port);
+-	else
+-		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n", port, val);
+-
+-	switch (port) {
+-	case 0: printk(KERN_INFO "PCIE0: LOOP %08x\n", SDR_READ(PESDR0_LOOP)); break;
+-	case 1: printk(KERN_INFO "PCIE1: LOOP %08x\n", SDR_READ(PESDR1_LOOP)); break;
+-	case 2: printk(KERN_INFO "PCIE2: LOOP %08x\n", SDR_READ(PESDR2_LOOP)); break;
++	else {
++		printk(KERN_WARNING "PCIE%d: PGRST failed %08x\n", port, val);
++		return -1;
+ 	}
+ 
+-	/*
+-	 * Map UTL registers at 0xc_1000_0n00
+-	 */
+ 	switch (port) {
+-	case 0:
+-		mtdcr(DCRN_PEGPL_REGBAH(PCIE0), 0x0000000c);
+-		mtdcr(DCRN_PEGPL_REGBAL(PCIE0), 0x10000000);
+-		mtdcr(DCRN_PEGPL_REGMSK(PCIE0), 0x00007001);
+-		mtdcr(DCRN_PEGPL_SPECIAL(PCIE0), 0x68782800);
+-		break;
+-
+-	case 1:
+-		mtdcr(DCRN_PEGPL_REGBAH(PCIE1), 0x0000000c);
+-		mtdcr(DCRN_PEGPL_REGBAL(PCIE1), 0x10001000);
+-		mtdcr(DCRN_PEGPL_REGMSK(PCIE1), 0x00007001);
+-		mtdcr(DCRN_PEGPL_SPECIAL(PCIE1), 0x68782800);
+-		break;
+-
+-	case 2:
+-		mtdcr(DCRN_PEGPL_REGBAH(PCIE2), 0x0000000c);
+-		mtdcr(DCRN_PEGPL_REGBAL(PCIE2), 0x10002000);
+-		mtdcr(DCRN_PEGPL_REGMSK(PCIE2), 0x00007001);
+-		mtdcr(DCRN_PEGPL_SPECIAL(PCIE2), 0x68782800);
++	case 0: val = SDR_READ(PESDR0_LOOP); break;
++	case 1: val = SDR_READ(PESDR1_LOOP); break;
++	case 2: val = SDR_READ(PESDR2_LOOP); break;
+ 	}
+ 
+-	utl_base = ioremap64(0xc10000000ull + 0x1000 * port, 0x100);
++	if (val & 0x1000)
++		printk(KERN_INFO "PCIE%d: link up\n", port);
++	else {
++		printk(KERN_WARNING "PCIE%d: link down %08x\n", port, val);
++		return -1;
++	}
+ 
+ 	/*
+-	 * Set buffer allocations and then assert VRB and TXE.
++	 * Setup UTL registers - but only on rev. A!
++	 * Just leave rev. B with default settings.
+ 	 */
+-	out_be32(utl_base + PEUTL_OUTTR,   0x08000000);
+-	out_be32(utl_base + PEUTL_INTR,    0x02000000);
+-	out_be32(utl_base + PEUTL_OPDBSZ,  0x10000000);
+-	out_be32(utl_base + PEUTL_PBBSZ,   0x53000000);
+-	out_be32(utl_base + PEUTL_IPHBSZ,  0x08000000);
+-	out_be32(utl_base + PEUTL_IPDBSZ,  0x10000000);
+-	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
+-	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
+-
+-	iounmap(utl_base);
++	if (core_rev == REV_A)
++		ppc440spe_setup_utl(port);
+ 
+ 	/*
+ 	 * We map PCI Express configuration access into the 512MB regions
++	 *
++	 * Rev. B is very strict about PLB real addressess and ranges
++	 * to be mapped for config space; it seems to only work with
++	 * 0xd_nnnn_nnnn range (the core hangs on config transaction
++	 * attempts when set otherwise), while rev. A only works with
++	 * 0xc_nnnn_nnnn.  So we use the following ranges:
++	 *
++	 * Rev. A:
+ 	 *     PCIE0: 0xc_4000_0000
+ 	 *     PCIE1: 0xc_8000_0000
+ 	 *     PCIE2: 0xc_c000_0000
++	 *
++	 * Rev. B:
++	 *     PCIE0: 0xd_0000_0000
++	 *     PCIE1: 0xd_2000_0000
++	 *     PCIE2: 0xd_4000_0000
+ 	 */
+ 	switch (port) {
+ 	case 0:
+-		mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000c);
+-		mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x40000000);
++		if (core_rev == REV_A) {
++			mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000c);
++			mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x40000000);
++		} else {
++			mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000d);
++			mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x00000000);
++		}
+ 		mtdcr(DCRN_PEGPL_CFGMSK(PCIE0), 0xe0000001); /* 512MB region, valid */
+ 		break;
+ 
+ 	case 1:
+-		mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000c);
+-		mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x80000000);
++		if (core_rev == REV_A) {
++			mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000c);
++			mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x80000000);
++		} else {
++			mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000d);
++			mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x20000000);
++		}
+ 		mtdcr(DCRN_PEGPL_CFGMSK(PCIE1), 0xe0000001); /* 512MB region, valid */
+ 		break;
+ 
+ 	case 2:
+-		mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000c);
+-		mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0xc0000000);
++		if (core_rev == REV_A) {
++			mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000c);
++			mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0xc0000000);
++		} else {
++			mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000d);
++			mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0x40000000);
++		}
+ 		mtdcr(DCRN_PEGPL_CFGMSK(PCIE2), 0xe0000001); /* 512MB region, valid */
+ 		break;
+ 	}
+@@ -336,18 +426,24 @@ int ppc440spe_init_pcie_rootport(int por
+ 	 */
+ 	switch (port) {
+ 	case 0:
+-		if (!(SDR_READ(PESDR0_RCSSTS) & (1 << 16)))
++		if (!(SDR_READ(PESDR0_RCSSTS) & (1 << 16))) {
+ 			printk(KERN_WARNING "PCIE0: VC0 not active\n");
++			return -1;
++		}
+ 		SDR_WRITE(PESDR0_RCSSET, SDR_READ(PESDR0_RCSSET) | 1 << 20);
+ 		break;
+ 	case 1:
+-		if (!(SDR_READ(PESDR1_RCSSTS) & (1 << 16)))
+-			printk(KERN_WARNING "PCIE0: VC0 not active\n");
++		if (!(SDR_READ(PESDR1_RCSSTS) & (1 << 16))) {
++			printk(KERN_WARNING "PCIE1: VC0 not active\n");
++			return -1;
++		}
+ 		SDR_WRITE(PESDR1_RCSSET, SDR_READ(PESDR1_RCSSET) | 1 << 20);
+ 		break;
+ 	case 2:
+-		if (!(SDR_READ(PESDR2_RCSSTS) & (1 << 16)))
+-			printk(KERN_WARNING "PCIE0: VC0 not active\n");
++		if (!(SDR_READ(PESDR2_RCSSTS) & (1 << 16))) {
++			printk(KERN_WARNING "PCIE2: VC0 not active\n");
++			return -1;
++		}
+ 		SDR_WRITE(PESDR2_RCSSET, SDR_READ(PESDR2_RCSSET) | 1 << 20);
+ 		break;
+ 	}
+@@ -375,19 +471,42 @@ void ppc440spe_setup_pcie(struct pci_con
+ {
+ 	void __iomem *mbase;
+ 
+-	/*
+-	 * Map 16MB, which is enough for 4 bits of bus #
+-	 */
+-	hose->cfg_data = ioremap64(0xc40000000ull + port * 0x40000000,
+-				   1 << 24);
++	if (core_rev == REV_A) {
++		/*
++		 * Map 16MB, which is enough for 4 bits of bus #
++		 */
++		hose->cfg_data = ioremap64(0xc40000000ull + port * 0x40000000,
++					   1 << 24);
++
++		mbase = ioremap64(0xc50000000ull + port * 0x40000000, 0x1000);
++	} else {
++		/*
++		 * Rev. B is very strict about PLB real addressess and
++		 * sizes to be mapped for config space; the core hangs
++		 * on config transaction attempt if not set to
++		 * 0xd_0010_0000, 0xd_2010_0000, 0xd_4010_0000
++		 * respectively.
++		 */
++		hose->cfg_data = ioremap64(0xd00100000ull + port * 0x20000000,
++					   0x400);
++
++		/* for accessing Local Config space we need to set A[35] */
++		mbase = ioremap64(0xd10000000ull + port * 0x20000000, 0x400);
++	}
++
+ 	hose->ops = &pcie_pci_ops;
+ 
+ 	/*
+ 	 * Set bus numbers on our root port
+ 	 */
+-	mbase = ioremap64(0xc50000000ull + port * 0x40000000, 4096);
+-	out_8(mbase + PCI_PRIMARY_BUS, 0);
+-	out_8(mbase + PCI_SECONDARY_BUS, 0);
++	if (core_rev == REV_A) {
++		out_8(mbase + PCI_PRIMARY_BUS, 0);
++		out_8(mbase + PCI_SECONDARY_BUS, 0);
++	} else {
++		out_8(mbase + PCI_PRIMARY_BUS, 0);
++		out_8(mbase + PCI_SECONDARY_BUS, 1);
++		out_8(mbase + PCI_SUBORDINATE_BUS, 1);
++	}
+ 
+ 	/*
+ 	 * Set up outbound translation to hose->mem_space from PLB
+@@ -412,7 +531,6 @@ void ppc440spe_setup_pcie(struct pci_con
+ 		mtdcr(DCRN_PEGPL_OMR1MSKH(PCIE1), 0x7fffffff);
+ 		mtdcr(DCRN_PEGPL_OMR1MSKL(PCIE1),
+ 		      ~(hose->mem_space.end - hose->mem_space.start) | 3);
+-
+ 		break;
+ 	case 2:
+ 		mtdcr(DCRN_PEGPL_OMR1BAH(PCIE2),  0x0000000d);
+-- 
+1.4.3.2
