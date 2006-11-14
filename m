@@ -2,17 +2,13 @@ Return-Path: <michael@ellerman.id.au>
 Subject: Re: [PATCH 6/16] cell: abstract spu management routines
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <45593060.10602@am.sony.com>
+In-Reply-To: <4554DA9C.9040102@am.sony.com>
 References: <4554DA9C.9040102@am.sony.com>
-	<1163391081.7410.65.camel@localhost.localdomain>
-	<4557F5C5.7080604@am.sony.com>
-	<1163469714.8048.54.camel@localhost.localdomain>
-	<45593060.10602@am.sony.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-3IRv4FZxhGxCJfcUqMkJ"
-Date: Tue, 14 Nov 2006 14:13:08 +1100
-Message-Id: <1163473988.8048.70.camel@localhost.localdomain>
+	boundary="=-ccaV2JRH9G4b7T/eyUYl"
+Date: Tue, 14 Nov 2006 14:44:40 +1100
+Message-Id: <1163475880.8048.78.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Arnd Bergmann <arnd@arndb.de>
@@ -27,70 +23,75 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-3IRv4FZxhGxCJfcUqMkJ
+--=-ccaV2JRH9G4b7T/eyUYl
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2006-11-13 at 18:56 -0800, Geoff Levand wrote:
-> Michael Ellerman wrote:
-> >> > Why can't your PS3 platform code fake-up device nodes for SPUs? It s=
-eems
-> >> > that would simplify this quite a lot.
-> >>=20
-> >>=20
-> >> Seems like a hack to me.  My concern is that I just have to keep addin=
-g some
-> >> extra hack for every new spu feature that comes out.  I would prefer t=
-o make
-> >> a proper design from the start, but if anyone can be more convincing I=
- am
-> >> open to suggestions.
-> >=20
-> > Well the whole thrust of the flattened-device-tree model, is that we do
-> > as much platform-specific hackery in a boot-loader/early-init, and
-> > present the hardware in as standard a way as possible to the kernel via
+On Fri, 2006-11-10 at 12:01 -0800, Geoff Levand wrote:
+> This adds a platform specific spu management abstraction and the corespon=
+ding
+> routines to support the IBM Cell Blade.  It also removes the hypervisor o=
+nly
+> resources that were included in struct spu.
+>=20
+> Three new platform specific routines are introduced, spu_enumerate_spus()=
+,
+> spu_create_spu() and spu_destroy_spu().  The underlining design uses a ne=
+w
+> type, struct spu_management_ops, to hold function pointers that the platf=
+orm
+> setup code is expected to initialize to instances appropriate to that pla=
+tform.
+>=20
+> For the IBM Cell Blade support, I put the hypervisor only resources that =
+were
+> in struct spu into a platform specific data structure struct spu_pdata.
 >=20
 >=20
-> The thing is that the spus are visualized, so to create one takes up
-> HV resources, mainly HV memory.  Creating spus in the bootloader has
-> several problems.  One is that you could be allocating HV memory that wou=
-ld
-> never be used if the kernel is not configured for spu support, and this
-> is memory could be used for other HV support.  Another problem is the
-> management of those HV resources across kernel reloads, with kexec for
-> example.  If the management is split then both entities need to have
-> knowledge of the other, which complicates things.
-
-Yeah I knew you were going to say that :)  How much memory does it take
-in the HV to create a "logical spu"?
-
-Kexec might complicate things, is it really high on your feature list?
-
-> > The hope is that this isolates most of the kernel from platform specifi=
-c
-> > details, as far as is possible - there will always be some things that
-> > need to be abstracted out - for that we have ppc_md and a few other
-> > callbacks.
-> >=20
-> > The priv1_ops serve that purpose, providing callbacks, and there's
-> > really no way around that - you can't tap the priv1 area when you're
-> > running under a HV - fine. But for just finding the spus it strikes me
-> > that it would be _nicer_, perhaps not easier :), to have your
-> > "enumerate_spus" populate the flat device tree early on - which would
-> > leave more of the spu code untouched by the hv/bare-metal issue.
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 >=20
+> ---
 >=20
-> And how many would you like to find? 1? 5? 400? Although there is
-> a current limitation in the HV implementation, these are logical
-> spus.  It would seem the kernel could create spus based on the need,
-> and thus better balance resource usage, but this is not at all how
-> the current spu code works though.  I don't plan to do any work on
-> this, but it would be nice to keep it open.
+> Michael,
+>=20
+> Unfortunately, for your xmon spu support, your DUMP_FIELD is setup in suc=
+h a
+> way that it is not easy to change to use from inside spu_priv1_mmio.c, so=
+ I
+> left of_dump_pdata_fields() empty.  We'll need to work on something usabl=
+e
+> there, or make some other way to abstract those platform specific spu
+> variables.
 
-Actually I'd like 8, or is it 7. I don't see why having more "logical
-spus" than "physical spus" is useful - the kernel can already schedule
-many spu contexts over a smaller number of physical spus. As far as
-giving unused spus back to the HV .. I'll believe it when I see it :)
+OK, back to the task at hand :)  For the moment I'd rather see you leave
+out dump_data_fields(), as neither HV or baremetal implementations do
+anything. Just put the offending xmon code inside an #ifdef
+CONFIG_PPC_CELL_NATIVE. eg:
+
+Index: cell/arch/powerpc/xmon/xmon.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- cell.orig/arch/powerpc/xmon/xmon.c  2006-11-14 14:43:11.000000000 +1100
++++ cell/arch/powerpc/xmon/xmon.c       2006-11-14 14:42:35.000000000 +1100
+@@ -2807,12 +2807,11 @@ static void dump_spu_fields(struct spu *
+                        in_be32(&spu->problem->spu_status_R));
+        DUMP_VALUE("0x%x", problem->spu_npc_RW,
+                        in_be32(&spu->problem->spu_npc_RW));
++#ifdef CONFIG_PPC_CELL_NATIVE
+        DUMP_FIELD(spu, "0x%p", priv1);
+-
+-       if (spu->priv1) {
+-               DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
+-                               in_be64(&spu->priv1->mfc_sr1_RW));
+-       }
++       DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
++                       in_be64(&spu->priv1->mfc_sr1_RW));
++#endif
+=20
+        DUMP_FIELD(spu, "0x%p", priv2);
+ }
+
 
 cheers
 
@@ -104,16 +105,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-3IRv4FZxhGxCJfcUqMkJ
+--=-ccaV2JRH9G4b7T/eyUYl
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBFWTREdSjSd0sB4dIRAvr6AJ4uQS2RxnRFflJquOdaM1IhHdCmzgCeNiDD
-5hi1sKC3GG4uvC69GB8gtWA=
-=se0R
+iD8DBQBFWTuodSjSd0sB4dIRAhaPAKCOay+lmdhonXOsemktQNgUzlWqDQCfXYj9
+lA4u8ytDZynbBhZSQ4sPACQ=
+=A+zU
 -----END PGP SIGNATURE-----
 
---=-3IRv4FZxhGxCJfcUqMkJ--
+--=-ccaV2JRH9G4b7T/eyUYl--
