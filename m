@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6075667D2A
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 439F467BCE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Nov 2006 22:47:46 +1100 (EST)
-Date: Tue, 14 Nov 2006 01:01:02 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH v2 -- fixed changelog] [POWERPC] Add support for Rev. B of
-	PowerPC 440SPe
-Message-ID: <20061114090102.GA16520@gate.ebshome.net>
-References: <adalkmf44eu.fsf@cisco.com> <adaac2v2d2g.fsf@cisco.com>
+	Tue, 14 Nov 2006 23:33:46 +1100 (EST)
+Date: Tue, 14 Nov 2006 15:33:13 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+Subject: Re: CPM_UART: tcdrain() is broken
+Message-ID: <20061114153313.37513a39@vitb.ru.mvista.com>
+In-Reply-To: <200611140928.00406.laurent.pinchart@tbox.biz>
+References: <200611131656.23580.laurent.pinchart@tbox.biz>
+	<3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
+	<200611140928.00406.laurent.pinchart@tbox.biz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adaac2v2d2g.fsf@cisco.com>
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,114 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 13, 2006 at 02:31:51PM -0800, Roland Dreier wrote:
-> This is mostly updating the PCI Express code to work with the new core
-> in the Rev. B chip, which unfortunately has different undocumented
-> restrictions on the PLB addresses that can be used from the Rev. A core.
+On Tue, 14 Nov 2006 09:28:00 +0100
+Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
+
+> Hi Dan,
 > 
-> Also, when adding the cputable entry for 440SPe Rev. B, we need to
-> adjust the entry for 440SP Rev. A so that it looks at more bits of the
-> PVR.  The 440SPe Rev. B has PVR 53421891, which would have matched the
-> old 440SP pattern of 53xxx891.
+> > > There is, however, a problem left. The SCC controllers have a 32-
+> > > byte FIFO between the buffer descriptors and the wires.
+> > > cpm_uart_tx_empty() checks if all buffer descriptors have been processed,
+> > > but doesn't check if the transmit FIFO is actually empty.
+> >
+> > There is no way to determine if the hardware FIFO is empty.
+> > It's buried under the CPM microcode.
 > 
-> This is a cleaned up version of the original work done by Rafal
-> Jaworowski <raj@semihalf.com>, who actually suffered through figuring
-> out how to avoid the Rev. B chip locking up when using PCIe.
+> I was hoping the information would be somewhere in the parameter RAM :-(
 > 
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+> > > .....  I can't figure out how to do so from the datasheet.
+> > > Does anyone have an idea ?
+> >
+> > The original versions of the SCC UART driver used to have a
+> > timeout based on the maximum depth of this FIFO and baud rate.
+> > After the last BD was empty, it would further wait this amount of
+> > time.  Lots of these little details seem to have been lost over
+> > the years of making a "better" driver :-)
+> 
+> That's a solution, but we might wait longer than necessary then. Vitaly, 
+> what's your opinion ? We should at least set fifosize to a proper value (see 
+> my previous mail). I'll submit a patch after we agree on the need for an 
+> additional delay.
+> 
 
-[snip]
+Well, I also bothered Dan with the same question some time ago, getting the same answer :)
+I think here we aught to have this delay ported, but under Kconfig option, so that those who are happy with current being, do not suffer from additional delays.
 
-> +static void ppc440spe_setup_utl(int port)
-> +{
-> +	void __iomem *utl_base;
-> +
-> +	/*
-> +	 * Map UTL registers at 0xc_1000_0n00
-> +	 */
-> +	switch (port) {
-> +	case 0:
-> +		mtdcr(DCRN_PEGPL_REGBAH(PCIE0), 0x0000000c);
-> +		mtdcr(DCRN_PEGPL_REGBAL(PCIE0), 0x10000000);
-> +		mtdcr(DCRN_PEGPL_REGMSK(PCIE0), 0x00007001);
-> +		mtdcr(DCRN_PEGPL_SPECIAL(PCIE0), 0x68782800);
-> +		break;
-> +
-> +	case 1:
-> +		mtdcr(DCRN_PEGPL_REGBAH(PCIE1), 0x0000000c);
-> +		mtdcr(DCRN_PEGPL_REGBAL(PCIE1), 0x10001000);
-> +		mtdcr(DCRN_PEGPL_REGMSK(PCIE1), 0x00007001);
-> +		mtdcr(DCRN_PEGPL_SPECIAL(PCIE1), 0x68782800);
-> +		break;
-> +
-> +	case 2:
-> +		mtdcr(DCRN_PEGPL_REGBAH(PCIE2), 0x0000000c);
-> +		mtdcr(DCRN_PEGPL_REGBAL(PCIE2), 0x10002000);
-> +		mtdcr(DCRN_PEGPL_REGMSK(PCIE2), 0x00007001);
-> +		mtdcr(DCRN_PEGPL_SPECIAL(PCIE2), 0x68782800);
-> +	}
-
-Can this be collapsed into 4 writes instead of 12? DCR accessors 
-have supported run-time specified parameters for quite some time.
-
-[snip]
-
-> +	case 0: val = SDR_READ(PESDR0_LOOP); break;
-> +	case 1: val = SDR_READ(PESDR1_LOOP); break;
-> +	case 2: val = SDR_READ(PESDR2_LOOP); break;
-
-I'm curious, why do we need a switch here? 
-SDR_READ() also supports run-time parameters.
-
-
-[snip]
-
->  	switch (port) {
->  	case 0:
-> -		mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000c);
-> -		mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x40000000);
-> +		if (core_rev == REV_A) {
-> +			mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000c);
-> +			mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x40000000);
-> +		} else {
-> +			mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000d);
-> +			mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x00000000);
-> +		}
->  		mtdcr(DCRN_PEGPL_CFGMSK(PCIE0), 0xe0000001); /* 512MB region, valid */
->  		break;
->  
->  	case 1:
-> -		mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000c);
-> -		mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x80000000);
-> +		if (core_rev == REV_A) {
-> +			mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000c);
-> +			mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x80000000);
-> +		} else {
-> +			mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000d);
-> +			mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x20000000);
-> +		}
->  		mtdcr(DCRN_PEGPL_CFGMSK(PCIE1), 0xe0000001); /* 512MB region, valid */
->  		break;
->  
->  	case 2:
-> -		mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000c);
-> -		mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0xc0000000);
-> +		if (core_rev == REV_A) {
-> +			mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000c);
-> +			mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0xc0000000);
-> +		} else {
-> +			mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000d);
-> +			mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0x40000000);
-> +		}
->  		mtdcr(DCRN_PEGPL_CFGMSK(PCIE2), 0xe0000001); /* 512MB region, valid */
->  		break;
->  	}
-
-
-Can we get rid of this switch as well?
-
-There are other places like this in the patch but I think you got my 
-idea :).
-
+Patch appreciated :)
 -- 
-Eugene
+Sincerely, 
+Vitaly
