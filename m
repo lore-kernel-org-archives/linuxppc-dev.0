@@ -1,18 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 6/16] cell: abstract spu management routines
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4554DA9C.9040102@am.sony.com>
-References: <4554DA9C.9040102@am.sony.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ccaV2JRH9G4b7T/eyUYl"
-Date: Tue, 14 Nov 2006 14:44:40 +1100
-Message-Id: <1163475880.8048.78.camel@localhost.localdomain>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 36E6667D1A
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 15:19:58 +1100 (EST)
+Received: from az33smr01 (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	kAE4Jux6025163
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 21:19:56 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr01 (8.13.1/8.13.0) with ESMTP id kAE4JkOp003117
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 22:19:50 -0600 (CST)
+Subject: Re: [PATCH 7/32] powerpc: Make pci_read_irq_line the default
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20061111062522.34CAC68047@ozlabs.org>
+References: <20061111062522.34CAC68047@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1163478030.3472.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>
-Reply-To: michael@ellerman.id.au
+Date: 14 Nov 2006 12:20:30 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,99 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2006-11-11 at 14:24, Benjamin Herrenschmidt wrote:
+> This patch reworks the way IRQs are fixed up on PCI for arch powerpc.
+> 
+> It makes pci_read_irq_line() called by default in the PCI code for
+> devices that are probed, and add an optional per-device fixup in
+> ppc_md for platforms that really need to correct what they obtain
+> from pci_read_irq_line().
+> 
+> It also removes ppc_md.irq_bus_setup which was only used by pSeries
+> and should not be needed anymore.
+> 
+> I've also removed the pSeries s7a workaround as it can't work with
+> the current interrupt code anyway. I'm trying to get one of these
+> machines working so I can test a proper fix for that problem.
+> 
+> I also haven't updated the old-style fixup code from 85xx_cds.c
+> because it's actually buggy :) It assigns pci_dev->irq hard coded
+> numbers which is no good with the new IRQ mapping code. It should
+> at least use irq_create_mapping(NULL, hard_coded_number); and possibly
+> also set_irq_type() to set them as level low.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
 
---=-ccaV2JRH9G4b7T/eyUYl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2006-11-10 at 12:01 -0800, Geoff Levand wrote:
-> This adds a platform specific spu management abstraction and the corespon=
-ding
-> routines to support the IBM Cell Blade.  It also removes the hypervisor o=
-nly
-> resources that were included in struct spu.
->=20
-> Three new platform specific routines are introduced, spu_enumerate_spus()=
-,
-> spu_create_spu() and spu_destroy_spu().  The underlining design uses a ne=
-w
-> type, struct spu_management_ops, to hold function pointers that the platf=
-orm
-> setup code is expected to initialize to instances appropriate to that pla=
-tform.
->=20
-> For the IBM Cell Blade support, I put the hypervisor only resources that =
-were
-> in struct spu into a platform specific data structure struct spu_pdata.
->=20
->=20
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
->=20
-> ---
->=20
-> Michael,
->=20
-> Unfortunately, for your xmon spu support, your DUMP_FIELD is setup in suc=
-h a
-> way that it is not easy to change to use from inside spu_priv1_mmio.c, so=
- I
-> left of_dump_pdata_fields() empty.  We'll need to work on something usabl=
-e
-> there, or make some other way to abstract those platform specific spu
-> variables.
-
-OK, back to the task at hand :)  For the moment I'd rather see you leave
-out dump_data_fields(), as neither HV or baremetal implementations do
-anything. Just put the offending xmon code inside an #ifdef
-CONFIG_PPC_CELL_NATIVE. eg:
-
-Index: cell/arch/powerpc/xmon/xmon.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- cell.orig/arch/powerpc/xmon/xmon.c  2006-11-14 14:43:11.000000000 +1100
-+++ cell/arch/powerpc/xmon/xmon.c       2006-11-14 14:42:35.000000000 +1100
-@@ -2807,12 +2807,11 @@ static void dump_spu_fields(struct spu *
-                        in_be32(&spu->problem->spu_status_R));
-        DUMP_VALUE("0x%x", problem->spu_npc_RW,
-                        in_be32(&spu->problem->spu_npc_RW));
-+#ifdef CONFIG_PPC_CELL_NATIVE
-        DUMP_FIELD(spu, "0x%p", priv1);
--
--       if (spu->priv1) {
--               DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
--                               in_be64(&spu->priv1->mfc_sr1_RW));
--       }
-+       DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
-+                       in_be64(&spu->priv1->mfc_sr1_RW));
-+#endif
-=20
-        DUMP_FIELD(spu, "0x%p", priv2);
- }
+>  arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   16 ++-----
+>  
 
 
-cheers
+Paul
+	I checked your updated git tree just now.
+	I have seen that you applied Ben's patch on mpc7448hpc2 platform about
+the "pci_read_irq_line".
+	Could you discard this part in Ben's patch and apply mine:
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ccaV2JRH9G4b7T/eyUYl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFWTuodSjSd0sB4dIRAhaPAKCOay+lmdhonXOsemktQNgUzlWqDQCfXYj9
-lA4u8ytDZynbBhZSQ4sPACQ=
-=A+zU
------END PGP SIGNATURE-----
-
---=-ccaV2JRH9G4b7T/eyUYl--
+http://ozlabs.org/pipermail/linuxppc-dev/2006-October/027295.html
+http://ozlabs.org/pipermail/linuxppc-dev/2006-October/027340.html
+	
+	Ben must forget this part of patch in his new serial patches.
+	Thanks.
+Roy
