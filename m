@@ -1,25 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABD9467D55
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 16:46:05 +1100 (EST)
-Subject: Re: [PATCH] Powerpc: Make pci_read_irq_line the default: on
-	mpc7448hpc2 board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1163482111.3748.15.camel@localhost.localdomain>
-References: <1161141538.24931.9.camel@localhost.localdomain>
-	<1161949906.25263.19.camel@localhost.localdomain>
-	<1161960682.25801.4.camel@localhost.localdomain>
-	<1163482111.3748.15.camel@localhost.localdomain>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 4868167D56
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 16:46:38 +1100 (EST)
+Received: from az33smr01 (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	kAE5kadD019742
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 22:46:36 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr01 (8.13.1/8.13.0) with ESMTP id kAE5kQN4012442
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 23:46:30 -0600 (CST)
+Subject: Re: [PATCH 7/32] powerpc: Make pci_read_irq_line the default
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20061110074452.BBF6167D13@ozlabs.org>
+References: <20061110074452.BBF6167D13@ozlabs.org>
 Content-Type: text/plain
-Date: Tue, 14 Nov 2006 16:45:52 +1100
-Message-Id: <1163483152.5940.106.camel@localhost.localdomain>
+Message-Id: <1163483230.3906.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	"Alexandre.Bounine@tundra.com" <Alexandre.Bounine@tundra.com>
+Date: 14 Nov 2006 13:47:10 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Good. Same comments as with Vitaly though :-)
+On Fri, 2006-11-10 at 15:44, Benjamin Herrenschmidt wrote:
 
-> +static void pci_irq_host_unmap(struct irq_host *h, unsigned int virq)
-> +{
-> +	/* Make sure irq is masked in hardware */
-> +	
-> +	tsi108_pci_int_mask(virq);
-> +
-> +	/* remove chip and handler */
-> +	set_irq_chip_and_handler(virq, NULL, NULL);
-> +
-> +	/* Make sure it's completed */
-> +	synchronize_irq(virq);
-> +}
-
-You probably don't need that... the generic code should do the above
-just fine unless something is wrong in which case we should fix it.
-
-> +static int pci_irq_host_match(struct irq_host *h, struct device_node *node)
-> +{
-> +	return pci_irq_node == NULL || pci_irq_node == node;
-> +}
-
-You probably don't want the NULL test here.
-
-Cheers,
-Ben.
+> I also haven't updated the old-style fixup code from 85xx_cds.c
+> because it's actually buggy :) It assigns pci_dev->irq hard coded
+> numbers which is no good with the new IRQ mapping code. It should
+> at least use irq_create_mapping(NULL, hard_coded_number); and possibly
+> also set_irq_type() to set them as level low.
+> 
+85xx cds is a little more complex. There are hardware revises.
+Hope to fix it soon :-).
+Roy 
