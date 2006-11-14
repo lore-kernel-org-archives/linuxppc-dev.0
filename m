@@ -1,18 +1,20 @@
-Return-Path: <rlrevell@joe-job.com>
-Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
-	by ozlabs.org (Postfix) with SMTP id 8259067C45
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 1548767CC0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 05:21:11 +1100 (EST)
-Subject: Re: Perl
-From: Lee Revell <rlrevell@joe-job.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <4559F7F9.4070008@grandegger.com>
-References: <1163458589.5313.71.camel@mindpipe>
-	<4559F7F9.4070008@grandegger.com>
-Content-Type: text/plain
-Date: Tue, 14 Nov 2006 13:20:35 -0500
-Message-Id: <1163528436.14674.22.camel@mindpipe>
-Mime-Version: 1.0
+	Wed, 15 Nov 2006 05:39:17 +1100 (EST)
+In-Reply-To: <200611141345.21260.laurent.pinchart@tbox.biz>
+References: <200611131656.23580.laurent.pinchart@tbox.biz>
+	<200611140928.00406.laurent.pinchart@tbox.biz>
+	<20061114153313.37513a39@vitb.ru.mvista.com>
+	<200611141345.21260.laurent.pinchart@tbox.biz>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <81CD4A4A-7F68-4874-A273-0D3BF9233B16@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: CPM_UART: tcdrain() is broken
+Date: Tue, 14 Nov 2006 13:32:38 -0500
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,30 +26,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-11-14 at 18:08 +0100, Wolfgang Grandegger wrote:
-> Lee Revell wrote:
-> > I've been trying to cross compile Perl for a PPC440 board and it just
-> > isn't happening.  Perl is probably the least amenable application to
-> > cross compiling I've found.
-> > 
-> > I tried the instructions in the Cross/ directory of the Perl distro but
-> > they don't work - "sh Configure" fails on my target because it expects a
-> > full C development environment, which won't fit.
-> > 
-> > Is there any easy solution?  Can someone send me a binary?
-> 
-> Configure and make perl natively on your target platform. I have done it 
-> some time ago with the ELDK.
-> 
 
-I've almost got the cross compile method described in INSTALL to work
-(using SSH to the target).  But it just hangs forever at "Checking how
-to flush all pending stdio output...".  Argh.
+On Nov 14, 2006, at 7:45 AM, Laurent Pinchart wrote:
 
-Compiling natively on the target is not an option, the perl build
-process has too many dependencies.  It depends on stuff fron GNU
-coreutils like /bin/comm that is not available in busybox.
+>>> I was hoping the information would be somewhere in the parameter  
+>>> RAM :-(
 
-Does no one out there have a binary they are willing to send me?
+There is lots (well some :-)) of hardware support
+for these serial interfaces.  It's not all CPM software
+that has to track and process everything.
 
-Lee
+> There might be another way. Setting TxBD[CR] to 1 will generate the TX
+> interrupt only when the stop bit of the last character in the  
+> buffer begins
+> transmission.
+
+I don't see this happening, because this is only functional
+when you program up all of the CTS support as well.  But,
+I'm willing to be proven wrong :-)
+
+Have fun!
+
+
+	-- Dan
