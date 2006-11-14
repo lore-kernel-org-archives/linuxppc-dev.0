@@ -1,23 +1,18 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from ns6.sony.co.jp (NS6.Sony.CO.JP [137.153.0.32])
-	by ozlabs.org (Postfix) with ESMTP id 4286B67E61
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 11:11:20 +1100 (EST)
-Received: from mail3.sony.co.jp (localhost [127.0.0.1])
-	by mail3.sony.co.jp (R8/Sony) with ESMTP id kAE0BFbC008243
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 09:11:15 +0900 (JST)
-Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail3.sony.co.jp (R8/Sony) with SMTP id kAE0BFl5008233
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 09:11:15 +0900 (JST)
-Message-ID: <4559099A.6060805@am.sony.com>
-Date: Mon, 13 Nov 2006 16:11:06 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
-References: <4554DACB.8060809@am.sony.com> <20061110152310.7419ef3e@pb15>
-In-Reply-To: <20061110152310.7419ef3e@pb15>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
+	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 034C667E73
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 12:04:36 +1100 (EST)
+Date: Mon, 13 Nov 2006 16:31:38 -0800 (PST)
+Message-Id: <20061113.163138.98554015.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH/RFC] powerpc: Fix mmap of PCI resource with hack for X
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1163405790.4982.289.camel@localhost.localdomain>
+References: <1163405790.4982.289.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: idr@us.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, anton@samba.org, airlied@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
-> Hi,
-> 
-> Just a couple of small comments, I haven't had time to get deeper into
-> the patchset yet. :-)
-> 
-> On Fri, 10 Nov 2006 12:02:19 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
-> 
->> This adds the core platform support for the PS3 game console and other
->> platforms using the PS3 Platform hypervisor.
->> 
->> 
->> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
->> 
->> ---
->>  MAINTAINERS                             |    7 
->>  arch/powerpc/Kconfig                    |   11 
->>  arch/powerpc/platforms/Makefile         |    1 
->>  arch/powerpc/platforms/ps3pf/Kconfig    |   32 +
-> 
-> Why are you naming the platform "platform" as in "this is the ps3pf
-> platform" which expands to "this is the ps3 platform platform"? ps3 is
-> quite adequate as the platform name. :-)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 13 Nov 2006 19:16:30 +1100
 
-I had it as ps3, but I was told to change it to ps3pf.  I don't
-like that name though.
+> The powerpc version of pci_resource_to_user() and associated hooks
+> used by /proc/bus/pci and /sys/bus/pci mmap have been broken for some
+> time on machines that don't have a 1:1 mapping of devices (basically
+> on non-PowerMacs) and have PCI devices above 32 bits.
+> 
+> This attempts to fix it as well as possible. 
+> 
+> The rule is supposed to be that pci_resource_to_user() always converts
+> the resources back into a BAR values since that's what the /proc
+> interface was supposed to deal with. However, for X to work on platforms
+> where PCI MMIO is not mapped 1:1, it became a habit of platforms like
+> sparc or powerpc to pass "fixed up" values there sinve X expects to
+> be able to use values from /proc/bus/pci/devices as offsets to mmap
+> of /dev/mem...
 
--Geoff
+Not on Sparc.  /dev/mem mmap()'s are basically verbotten on Sparc,
+period.
+
+That's the whole reason I created /proc/bus/pci mmap().  So that
+X could simply read a BAR, open /proc/bus/pci/${DEVICE} and
+mmap() with some range within the BAR as the offset/size tuple.
+
+If an application wants all of I/O space (to poke at VGA addresses for
+a domain, for example), it finds the root bridge for that domain and
+you can mmap()'s it's I/O space that way on platforms the implement
+I/O space via memory accesses.
+
+The only thing X was (unfortunately) still using the "devices" file
+for is device existence, and this is obviously broken because there is
+zero domain information in that procfs file so it's impossible to use
+correctly. :-)
+
+> X is still broken when built 32 bits on machines where PCI MMIO can be
+> above 32 bits space unfortunately. It looks like somebody (DaveM ?)
+> hacked a fix in X to handle long long resources and had the good idea
+> to wrap it in #ifdef __sparc__ :-(
+
+Sorry, it was the only 32/64 platform at the time that old X code was
+written and the X maintainers at the time were unbelievably anal :-/
+
+So the gist of your change is that X isn't obtaining BAR values
+in the correct context on powerpc, and so you're going to hack up
+the "devices" files output to "help" X out.
+
+This doesn't sound sane to me.
+
+What sounds better to me is that X does the right thing, which is
+obtain the BAR from the PCI config space to determine what values to
+pass in to /proc/bus/pci mmap() calls.  And if it wants raw addresses
+to pass in to /dev/mem mmap()'s on platforms where that works (ie. not
+Sparc, to begin with) it should obtain those values from the "devices"
+file which must be values suitable as /dev/mem offsets.
+
+I strongly look forward to Ian's new X code, that is for sure :-)
