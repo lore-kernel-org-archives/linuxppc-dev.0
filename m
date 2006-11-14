@@ -1,21 +1,27 @@
-Return-Path: <kallepokki@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.203])
-	by ozlabs.org (Postfix) with ESMTP id E2D9F67D42
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx009.isp.belgacom.be (outmx009.isp.belgacom.be
+	[195.238.5.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0E76967D3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Nov 2006 18:41:13 +1100 (EST)
-Received: by nz-out-0102.google.com with SMTP id v1so133051nzb
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Nov 2006 23:41:11 -0800 (PST)
-Message-ID: <a425f86c0611132341h7d534ee8m6874e64c9e8cb336@mail.gmail.com>
-Date: Tue, 14 Nov 2006 09:41:10 +0200
-From: "Kalle Pokki" <kalle.pokki@iki.fi>
-Sender: kallepokki@gmail.com
-To: "tran vanle" <vantranbk@yahoo.com.au>
-Subject: Re: telnet error
-In-Reply-To: <20061113143248.31649.qmail@web33001.mail.mud.yahoo.com>
+	Tue, 14 Nov 2006 19:28:28 +1100 (EST)
+Received: from outmx009.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx009.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kAE8SJ7E019554
+	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Nov 2006 09:28:21 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: Dan Malek <dan@embeddedalley.com>
+Subject: Re: CPM_UART: tcdrain() is broken
+Date: Tue, 14 Nov 2006 09:28:00 +0100
+References: <200611131656.23580.laurent.pinchart@tbox.biz>
+	<3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
+In-Reply-To: <3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20061113143248.31649.qmail@web33001.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611140928.00406.laurent.pinchart@tbox.biz>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,15 +33,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/13/06, tran vanle <vantranbk@yahoo.com.au> wrote:
-> Hi all
-> I use kernel 2.6.11.7 and Ramdisk in ELDK 4.0 (I just use ,not rebuild
-> Ramdisk). But when I telnet to this board ,i receive
->
-> telnetd: All network ports in use!
+Hi Dan,
 
-I vaguely remember trying the same thing with a MPC860 target and
-having the same error messages. If I remember it right, the message
-was caused by missing PAM libraries or something like that. I can't
-give you any specific instructions, but you might want to google for
-PAM and telnet to get some more directions.
+> > There is, however, a problem left. The SCC controllers have a 32-
+> > byte FIFO between the buffer descriptors and the wires.
+> > cpm_uart_tx_empty() checks if all buffer descriptors have been processed,
+> > but doesn't check if the transmit FIFO is actually empty.
+>
+> There is no way to determine if the hardware FIFO is empty.
+> It's buried under the CPM microcode.
+
+I was hoping the information would be somewhere in the parameter RAM :-(
+
+> > .....  I can't figure out how to do so from the datasheet.
+> > Does anyone have an idea ?
+>
+> The original versions of the SCC UART driver used to have a
+> timeout based on the maximum depth of this FIFO and baud rate.
+> After the last BD was empty, it would further wait this amount of
+> time.  Lots of these little details seem to have been lost over
+> the years of making a "better" driver :-)
+
+That's a solution, but we might wait longer than necessary then. Vitaly, 
+what's your opinion ? We should at least set fifosize to a proper value (see 
+my previous mail). I'll submit a patch after we agree on the need for an 
+additional delay.
+
+Cheers,
+
+Laurent Pinchart
