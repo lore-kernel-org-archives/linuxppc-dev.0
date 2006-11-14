@@ -1,28 +1,15 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx009.isp.belgacom.be (outmx009.isp.belgacom.be
-	[195.238.5.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0E76967D3E
+Return-Path: <domen.puncer@telargo.com>
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id C284267D1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Nov 2006 19:28:28 +1100 (EST)
-Received: from outmx009.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx009.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kAE8SJ7E019554
-	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Nov 2006 09:28:21 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: CPM_UART: tcdrain() is broken
-Date: Tue, 14 Nov 2006 09:28:00 +0100
-References: <200611131656.23580.laurent.pinchart@tbox.biz>
-	<3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
-In-Reply-To: <3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
+	Tue, 14 Nov 2006 21:14:44 +1100 (EST)
+Date: Tue, 14 Nov 2006 11:02:35 +0100
+From: Domen Puncer <domen.puncer@telargo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: lite5200b low power mode and self refresh
+Message-ID: <20061114100235.GA7694@domen-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611140928.00406.laurent.pinchart@tbox.biz>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,32 +20,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dan,
+Hi!
 
-> > There is, however, a problem left. The SCC controllers have a 32-
-> > byte FIFO between the buffer descriptors and the wires.
-> > cpm_uart_tx_empty() checks if all buffer descriptors have been processed,
-> > but doesn't check if the transmit FIFO is actually empty.
->
-> There is no way to determine if the hardware FIFO is empty.
-> It's buried under the CPM microcode.
+I'm trying to implement low power mode on lite5200b board
+(everything but sdram is powered off), and I seem to have
+problems with putting ram to self-refresh.
 
-I was hoping the information would be somewhere in the parameter RAM :-(
+As far as I can tell I'm following datasheets, but if it
+sleeps for a day or so, contents of RAM get cleared to
+zeroes (I get 0x02800100 and similar patterns).
 
-> > .....  I can't figure out how to do so from the datasheet.
-> > Does anyone have an idea ?
->
-> The original versions of the SCC UART driver used to have a
-> timeout based on the maximum depth of this FIFO and baud rate.
-> After the last BD was empty, it would further wait this amount of
-> time.  Lots of these little details seem to have been lost over
-> the years of making a "better" driver :-)
+Any ideas, tips, comments... anything really, is appreaciated.
 
-That's a solution, but we might wait longer than necessary then. Vitaly, 
-what's your opinion ? We should at least set fifosize to a proper value (see 
-my previous mail). I'll submit a patch after we agree on the need for an 
-additional delay.
+I'm also interested in mpc5200 "deep sleep", anyone had any
+success?
 
-Cheers,
 
-Laurent Pinchart
+Thanks!
+
+	Domen
+
+
+Code for low power mode via "QT" chip. It is ran from flash,
+since sdram isn't accessible after this.
+
+        // put sdram into self-refresh
+        lis     r5, 0xf000
+        ori     r5, r5, 0x100
+        lwz     r4, 0x4(r5)
+        oris    r4, r4, 0x8000
+        stw     r4, 0x4(r5)     // mode_en
+        sync
+
+        ori     r4, r4, 0x0002  // setup soft_pre
+
+        lis     r6, 0xbfff
+        ori     r6, r6, 0xffff
+        and     r6, r4, r6      // setup !cke
+        oris    r6, r6, 0x1000  // setup ref_en
+
+        stw     r4, 0x4(r5)     // soft_pre
+        sync
+
+        stw     r6, 0x4(r5)     // ref_en !cke
+        sync
+
+        clrlwi  r6, r6, 1       // !mode_en
+        stw     r6, 0x4(r5)
+        sync
+
+        // turn off with QT chip
+        lis     r3, 0xf000
+        ori     r3, r3, 0x0c00
+        li      r4, 0x02
+        stb     r4, 0(r3)       // enable gpio_wkup1
+        sync
+        stb     r4, 8(r3)       // output
+        sync
+        stb     r4, 0xc(r3)     // output high
+        sync
+
+        lis     r5, 0x0001
+delay_10us:
+        addi    r5, r5, -1
+        cmpi    cr7, r5, 0
+        bne     cr7, delay_10us
+        sync
+
+        // turn off
+        li      r4, 0
+        stb     r4, 0xc(r3)     // output low
+        sync
