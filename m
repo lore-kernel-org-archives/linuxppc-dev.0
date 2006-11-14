@@ -1,18 +1,19 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 642B467C93
+Return-Path: <rlrevell@joe-job.com>
+Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
+	by ozlabs.org (Postfix) with SMTP id 374C367CB9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 04:40:01 +1100 (EST)
-In-Reply-To: <45593537.1010604@tait.co.nz>
-References: <45593537.1010604@tait.co.nz>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3F51F683-985D-461F-99B1-3F729388B6CD@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Possibly OT: bdi2000 virtual memory on 2.6 kernel
-Date: Tue, 14 Nov 2006 12:39:57 -0500
-To: robin.gilks@tait.co.nz
-Cc: ppc embedded list <linuxppc-embedded@ozlabs.org>
+	Wed, 15 Nov 2006 04:43:34 +1100 (EST)
+Subject: Re: Perl
+From: Lee Revell <rlrevell@joe-job.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+In-Reply-To: <4559F7F9.4070008@grandegger.com>
+References: <1163458589.5313.71.camel@mindpipe>
+	<4559F7F9.4070008@grandegger.com>
+Content-Type: text/plain
+Date: Tue, 14 Nov 2006 12:42:58 -0500
+Message-Id: <1163526178.14674.16.camel@mindpipe>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2006-11-14 at 18:08 +0100, Wolfgang Grandegger wrote:
+> Lee Revell wrote:
+> > I've been trying to cross compile Perl for a PPC440 board and it just
+> > isn't happening.  Perl is probably the least amenable application to
+> > cross compiling I've found.
+> > 
+> > I tried the instructions in the Cross/ directory of the Perl distro but
+> > they don't work - "sh Configure" fails on my target because it expects a
+> > full C development environment, which won't fit.
+> > 
+> > Is there any easy solution?  Can someone send me a binary?
+> 
+> Configure and make perl natively on your target platform. I have done it 
+> some time ago with the ELDK.
 
-On Nov 13, 2006, at 10:17 PM, Robin Gilks wrote:
+I don't think this is an option, the perl build has too many
+dependencies.
 
-> Debugging a 2.6.18 kernel on a powerpc target
-
-Which processor, specifically?
-What do your MMU XLAT and PTBASE configuration
-lines look like?
-
-Thanks.
-
-	-- Dan
+Lee
