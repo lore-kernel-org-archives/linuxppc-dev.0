@@ -1,19 +1,22 @@
-Return-Path: <rlrevell@joe-job.com>
-Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
-	by ozlabs.org (Postfix) with SMTP id 374C367CB9
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8D78367CA7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 04:43:34 +1100 (EST)
-Subject: Re: Perl
-From: Lee Revell <rlrevell@joe-job.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <4559F7F9.4070008@grandegger.com>
-References: <1163458589.5313.71.camel@mindpipe>
-	<4559F7F9.4070008@grandegger.com>
-Content-Type: text/plain
-Date: Tue, 14 Nov 2006 12:42:58 -0500
-Message-Id: <1163526178.14674.16.camel@mindpipe>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 15 Nov 2006 04:55:26 +1100 (EST)
+Received: from [72.183.106.80] (helo=[192.168.1.101])
+	by nommos.sslcatacombnetworking.com with esmtp (Exim 4.52)
+	id 1Gk2VH-0006uu-ML
+	for linuxppc-embedded@ozlabs.org; Tue, 14 Nov 2006 11:55:23 -0600
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Message-Id: <F6E84D87-6208-4A94-88D6-2947FDBE8927@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: "linuxppc-embedded ((((E-Mail))))" <linuxppc-embedded@ozlabs.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: RFC: embedded ppc rootfs?
+Date: Tue, 14 Nov 2006 11:55:39 -0600
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-11-14 at 18:08 +0100, Wolfgang Grandegger wrote:
-> Lee Revell wrote:
-> > I've been trying to cross compile Perl for a PPC440 board and it just
-> > isn't happening.  Perl is probably the least amenable application to
-> > cross compiling I've found.
-> > 
-> > I tried the instructions in the Cross/ directory of the Perl distro but
-> > they don't work - "sh Configure" fails on my target because it expects a
-> > full C development environment, which won't fit.
-> > 
-> > Is there any easy solution?  Can someone send me a binary?
-> 
-> Configure and make perl natively on your target platform. I have done it 
-> some time ago with the ELDK.
+I was wondering what people are using for their projects as  
+"distro's" for their root file systems.  I spent this weekend trying  
+to get several of the alternatives I could find working on a ppc64  
+host system with out much success.
 
-I don't think this is an option, the perl build has too many
-dependencies.
+I'm interested in two aspects of this question.  One, are their  
+projects that I missed that people are using on ppc (eldk, buildroot,  
+lfs, ltib).  Two, is there an need for a better open source embedded  
+distro for ppc?  And if so, do people have the ability to pitch in  
+some effort towards producing a better distro?
 
-Lee
+- kumar
