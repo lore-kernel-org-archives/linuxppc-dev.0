@@ -1,17 +1,17 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 4FE9967CA8
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 98D2867CB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 02:57:56 +1100 (EST)
-Message-ID: <4559E7E5.3000305@ru.mvista.com>
-Date: Tue, 14 Nov 2006 18:59:33 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Vitaly Wool <vwool@ru.mvista.com>
-Subject: Re: [PATCH] adding ROM chips to device tree: respin
-References: <20061114184740.05742788.vwool@ru.mvista.com>
-In-Reply-To: <20061114184740.05742788.vwool@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 15 Nov 2006 03:28:46 +1100 (EST)
+Date: Tue, 14 Nov 2006 10:28:43 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Lee Revell <rlrevell@joe-job.com>
+Subject: Re: Perl
+Message-Id: <20061114102843.4c81b599.kim.phillips@freescale.com>
+In-Reply-To: <1163458589.5313.71.camel@mindpipe>
+References: <1163458589.5313.71.camel@mindpipe>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,131 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vitaly Wool wrote:
-> Hello folks,
+On Mon, 13 Nov 2006 17:56:28 -0500
+Lee Revell <rlrevell@joe-job.com> wrote:
+
+> I've been trying to cross compile Perl for a PPC440 board and it just
+<snip>
+> Is there any easy solution?  Can someone send me a binary?
 > 
-> inlined below is the patch which adds support for flash device descriptions to the OF device tree. It's inspired by and partially borrowed from Sergei's patch which can be found at http://patchwork.ozlabs.org/linuxppc/patch?id=6526 but arranges things in a different way.
-> This patch is a respin of the patch which can be found at http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025013.html with comments from Sergei and Josh taken into account and with "compatible" property changed to "direct-mapped" from "physmap" not to be Linux-biased :)
+ltib works for me:
 
-> Index: powerpc/Documentation/powerpc/booting-without-of.txt
-> ===================================================================
-> --- powerpc.orig/Documentation/powerpc/booting-without-of.txt
-> +++ powerpc/Documentation/powerpc/booting-without-of.txt
-> @@ -6,6 +6,8 @@
->      IBM Corp.
->  (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
->      Freescale Semiconductor, FSL SOC and 32-bit additions
-> +(c) 2006 MontaVista Software, Inc.
-> +    Flash chip node definition
->  
->     May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
->  
-> @@ -1693,6 +1695,43 @@ platforms are moved over to use the flat
->  		};
->  	};
->  
-> +    g) Flash chip nodes
-> +
-> +    Flash chips (Memory Technology Devices) are often used for solid state
-> +    file systems on embedded devices.
-> +
-> +    Required properties:
-> +
-> +     - device_type : has to be "rom"
-> +     - compatible : Should be the name of the MTD driver. Currently, this is
+http://savannah.nongnu.org/projects/ltib/
 
-    Erm, that first sentense is no longer true. Let's just drop it.
-
-> +       most likely to be "direct-mapped" (which corresponds to the MTD
-> +       physmap mapping driver).
-> +     - regs : Offset and length of the register set (or memory mapping) for
-> +       the device.
-> +
-> +    Recommended properties :
-> +
-> +     - bank-width : Width of the flash data bus in bytes. Required
-> +       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
-> +     - partitions : Several pairs of 32-bit values where the first value is
-> +       partition's offset from the start of the MTD device and the second
-
-    Probably we need to drop references to MTD now as we changed "device_type" 
-to "rom".
-
-> +       one is partition size in bytes with LSB used to signify a read only
-> +       partititon (so, the parition size should always be an even number).
-> +     - partition-names : The list of concatenated zero terminated strings
-> +       representing the partition names.
-> +
-> +   Example:
-> +
-> + 	flash@ff000000 {
-> + 		device_type = "rom";
-> + 		compatible = "direct-mapped";
-> + 		regs = <ff000000 01000000>;
-> + 		bank-width = <4>;
-> + 		partitions = <00000000 00f80000
-> + 			      00f80000 00080001>;
-> + 		partition-names = "fs\0firmware";
-> + 	};
-> +
->     More devices will be defined as this spec matures.
->  
->  
-> Index: powerpc/arch/powerpc/sysdev/Makefile
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/sysdev/Makefile
-> +++ powerpc/arch/powerpc/sysdev/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
->  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
->  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
->  obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_pic.o
-> +obj-$(CONFIG_MTD)		+= rom.o
->  
->  ifeq ($(CONFIG_PPC_MERGE),y)
->  obj-$(CONFIG_PPC_I8259)		+= i8259.o
-> Index: powerpc/arch/powerpc/sysdev/rom.c
-> ===================================================================
-> --- /dev/null
-> +++ powerpc/arch/powerpc/sysdev/rom.c
-> @@ -0,0 +1,33 @@
-> +/*
-> + * arch/powerpc/sysdev/flash.c
-> + *
-> + * Flash memory registration
-
-    Er, please also update this...
-
-> + *
-> + * (C) 2006 MontaVista Software, Inc. This file is licensed under
-> + * the terms of the GNU General Public License version 2. This program
-> + * is licensed "as is" without any warranty of any kind, whether express
-> + * or implied.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <asm/of_device.h>
-> +
-> +static int __init powerpc_flash_init(void)
-> +{
-> +	struct device_node *node = NULL;
-> +
-> +	/*
-> +	 * Register all the devices which type is "rom"
-> +	 */
-> +	while ((node = of_find_node_by_type(node, "rom")) != NULL) {
-> +		if (node->name == NULL) {
-> +			printk(KERN_WARNING "powerpc_flash_init: found 'rom' "
-> +				"device, but with no name, skipping...\n");
-> +			continue;
-> +		}
-
-    That's unlikely to happen, but well..
-
-> +		of_platform_device_create(node, node->name, NULL);
-> +	}
-> +	return 0;
-> +}
-> +
-> +arch_initcall(powerpc_flash_init);
-
-WBR, Sergei
+Kim
