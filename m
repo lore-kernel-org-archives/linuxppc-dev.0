@@ -1,20 +1,18 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
-	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 1548767CC0
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 900CC67C7D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 05:39:17 +1100 (EST)
-In-Reply-To: <200611141345.21260.laurent.pinchart@tbox.biz>
-References: <200611131656.23580.laurent.pinchart@tbox.biz>
-	<200611140928.00406.laurent.pinchart@tbox.biz>
-	<20061114153313.37513a39@vitb.ru.mvista.com>
-	<200611141345.21260.laurent.pinchart@tbox.biz>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <81CD4A4A-7F68-4874-A273-0D3BF9233B16@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: CPM_UART: tcdrain() is broken
-Date: Tue, 14 Nov 2006 13:32:38 -0500
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+	Wed, 15 Nov 2006 08:07:24 +1100 (EST)
+To: Lee Revell <rlrevell@joe-job.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Perl 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 13 Nov 2006 17:56:28 EST."
+	<1163458589.5313.71.camel@mindpipe>
+Date: Tue, 14 Nov 2006 22:07:22 +0100
+Sender: wd@denx.de
+Message-Id: <20061114210722.763A7353B9A@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,26 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <1163458589.5313.71.camel@mindpipe> you wrote:
+> I've been trying to cross compile Perl for a PPC440 board and it just
+> isn't happening.  Perl is probably the least amenable application to
+> cross compiling I've found.
 
-On Nov 14, 2006, at 7:45 AM, Laurent Pinchart wrote:
+Agreed.
 
->>> I was hoping the information would be somewhere in the parameter  
->>> RAM :-(
+> Is there any easy solution?  Can someone send me a binary?
 
-There is lots (well some :-)) of hardware support
-for these serial interfaces.  It's not all CPM software
-that has to track and process everything.
+Compile natively on the board, using a NFS root environment.
 
-> There might be another way. Setting TxBD[CR] to 1 will generate the TX
-> interrupt only when the stop bit of the last character in the  
-> buffer begins
-> transmission.
+Best regards,
 
-I don't see this happening, because this is only functional
-when you program up all of the CTS support as well.  But,
-I'm willing to be proven wrong :-)
+Wolfgang Denk
 
-Have fun!
-
-
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Es ist nicht genug zu wissen, man muﬂ auch anwenden; es ist nicht ge-
+nug zu wollen, man muﬂ auch tun.   -- Goethe, Maximen und Reflexionen
