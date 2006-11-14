@@ -1,21 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 14/16] powerpc: add ps3 platform OS params support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4557F87D.6040908@am.sony.com>
-References: <4554DB20.9020200@am.sony.com>
-	<1163381393.7410.39.camel@localhost.localdomain>
-	<4557E45C.10703@am.sony.com>
-	<1163390536.7410.61.camel@localhost.localdomain>
-	<4557F87D.6040908@am.sony.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-dfFHvjt4Lj2E5F6DWAb5"
-Date: Tue, 14 Nov 2006 12:54:53 +1100
-Message-Id: <1163469293.8048.46.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 912C567EB4
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 12:57:48 +1100 (EST)
+Date: Tue, 14 Nov 2006 12:57:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] iSeries: fix slb.c for combined build
+Message-Id: <20061114125738.8c1dad0d.sfr@canb.auug.org.au>
+In-Reply-To: <20061113010330.1d821876@pb15>
+References: <20061113144918.84647810.sfr@canb.auug.org.au>
+	<20061113010330.1d821876@pb15>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +23,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-dfFHvjt4Lj2E5F6DWAb5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/mm/slb.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
-On Sun, 2006-11-12 at 20:45 -0800, Geoff Levand wrote:
-> Michael Ellerman wrote:
-> >> It is not so convenient to view, but the other os area is documented i=
-n the
-> >> iso image CELL-Linux-CL_20061110-ADDON.iso at
-> >> http://ftp.uk.linux.org/pub/linux/Sony-PS3/.
-> >=20
-> > Any chance we can get that in some sort of non-insane format? Like a
-> > PDF? :)
->=20
-> OK, I put it here for you:
->=20
->  http://67.117.136.164/pub/cell/linux-20061110-docs/BootLinuxAndInstallat=
-ion.html
->=20
-> The coverage of the other os area is not so good, but more complete
-> documentation should be provided sometime in the future.
+This version takes into account Olof's comment.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks. It refers to
-http://www.playstation.com/ps3-openplatform/index.html, which isn't live
-yet. Any ETA on that, other than RSN?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-dfFHvjt4Lj2E5F6DWAb5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFWSHtdSjSd0sB4dIRAmeFAJ9lUFesFioYrlOoYezzV+D9z5zAoQCcDAH9
-P/k36NjS1G4lr+EGuZ9KM7E=
-=LHGR
------END PGP SIGNATURE-----
-
---=-dfFHvjt4Lj2E5F6DWAb5--
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index d373391..224e960 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -23,6 +23,7 @@
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+ #include <asm/smp.h>
++#include <asm/firmware.h>
+ #include <linux/compiler.h>
+ 
+ #ifdef DEBUG
+@@ -193,6 +194,7 @@ static inline void patch_slb_encoding(un
+ void slb_initialize(void)
+ {
+ 	unsigned long linear_llp, vmalloc_llp, io_llp;
++	unsigned long lflags, vflags;
+ 	static int slb_encoding_inited;
+ 	extern unsigned int *slb_miss_kernel_load_linear;
+ 	extern unsigned int *slb_miss_kernel_load_io;
+@@ -225,11 +227,12 @@ void slb_initialize(void)
+ #endif
+ 	}
+ 
++	get_paca()->stab_rr = SLB_NUM_BOLTED;
++
+ 	/* On iSeries the bolted entries have already been set up by
+ 	 * the hypervisor from the lparMap data in head.S */
+-#ifndef CONFIG_PPC_ISERIES
+- {
+-	unsigned long lflags, vflags;
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return;
+ 
+ 	lflags = SLB_VSID_KERNEL | linear_llp;
+ 	vflags = SLB_VSID_KERNEL | vmalloc_llp;
+@@ -247,8 +250,4 @@ void slb_initialize(void)
+ 	 * elsewhere, we'll call _switch() which will bolt in the new
+ 	 * one. */
+ 	asm volatile("isync":::"memory");
+- }
+-#endif /* CONFIG_PPC_ISERIES */
+-
+-	get_paca()->stab_rr = SLB_NUM_BOLTED;
+ }
+-- 
+1.4.3.3
