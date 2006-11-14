@@ -1,18 +1,17 @@
-Return-Path: <rlrevell@joe-job.com>
-Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
-	by ozlabs.org (Postfix) with SMTP id 3B2F567D1D
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id B774567CE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 03:40:30 +1100 (EST)
+	Wed, 15 Nov 2006 04:07:01 +1100 (EST)
+Message-ID: <4559F7F9.4070008@grandegger.com>
+Date: Tue, 14 Nov 2006 18:08:09 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Lee Revell <rlrevell@joe-job.com>
 Subject: Re: Perl
-From: Lee Revell <rlrevell@joe-job.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20061114102843.4c81b599.kim.phillips@freescale.com>
 References: <1163458589.5313.71.camel@mindpipe>
-	<20061114102843.4c81b599.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Tue, 14 Nov 2006 11:39:55 -0500
-Message-Id: <1163522395.14674.6.camel@mindpipe>
-Mime-Version: 1.0
+In-Reply-To: <1163458589.5313.71.camel@mindpipe>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,21 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-11-14 at 10:28 -0600, Kim Phillips wrote:
-> On Mon, 13 Nov 2006 17:56:28 -0500
-> Lee Revell <rlrevell@joe-job.com> wrote:
+Lee Revell wrote:
+> I've been trying to cross compile Perl for a PPC440 board and it just
+> isn't happening.  Perl is probably the least amenable application to
+> cross compiling I've found.
 > 
-> > I've been trying to cross compile Perl for a PPC440 board and it just
-> <snip>
-> > Is there any easy solution?  Can someone send me a binary?
-> > 
-> ltib works for me:
+> I tried the instructions in the Cross/ directory of the Perl distro but
+> they don't work - "sh Configure" fails on my target because it expects a
+> full C development environment, which won't fit.
 > 
-> http://savannah.nongnu.org/projects/ltib/
-> 
+> Is there any easy solution?  Can someone send me a binary?
 
-How do I build a perl binary with it?  I'm not looking to replace my
-toolchain or create a full BSP or anything.  I just need a /usr/bin/perl
-that will run on PPC440.
+Configure and make perl natively on your target platform. I have done it 
+some time ago with the ELDK.
 
-Lee
+Wolfgang.
