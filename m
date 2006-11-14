@@ -1,15 +1,23 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id C284267D1B
+Return-Path: <kallepokki@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id 7C54967CDA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Nov 2006 21:14:44 +1100 (EST)
-Date: Tue, 14 Nov 2006 11:02:35 +0100
-From: Domen Puncer <domen.puncer@telargo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: lite5200b low power mode and self refresh
-Message-ID: <20061114100235.GA7694@domen-desktop>
+	Tue, 14 Nov 2006 22:26:34 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id p76so1181182pyb
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Nov 2006 03:26:24 -0800 (PST)
+Message-ID: <a425f86c0611140326g2270e758x4619d2a193aade02@mail.gmail.com>
+Date: Tue, 14 Nov 2006 13:26:23 +0200
+From: "Kalle Pokki" <kalle.pokki@iki.fi>
+Sender: kallepokki@gmail.com
+To: "Dan Malek" <dan@embeddedalley.com>
+Subject: Re: CPM_UART: tcdrain() is broken
+In-Reply-To: <3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200611131656.23580.laurent.pinchart@tbox.biz>
+	<3E143C92-0F1E-429C-861A-40566E7EF374@embeddedalley.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,74 +28,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+On 11/13/06, Dan Malek <dan@embeddedalley.com> wrote:
+>
+> On Nov 13, 2006, at 10:56 AM, Laurent Pinchart wrote:
+>
+> > There is, however, a problem left. The SCC controllers have a 32-
+> > byte FIFO
+> > between the buffer descriptors and the wires. cpm_uart_tx_empty()
+> > checks if
+> > all buffer descriptors have been processed, but doesn't check if
+> > the transmit
+> > FIFO is actually empty.
+>
+> There is no way to determine if the hardware FIFO is empty.
+> It's buried under the CPM microcode.
 
-I'm trying to implement low power mode on lite5200b board
-(everything but sdram is powered off), and I seem to have
-problems with putting ram to self-refresh.
-
-As far as I can tell I'm following datasheets, but if it
-sleeps for a day or so, contents of RAM get cleared to
-zeroes (I get 0x02800100 and similar patterns).
-
-Any ideas, tips, comments... anything really, is appreaciated.
-
-I'm also interested in mpc5200 "deep sleep", anyone had any
-success?
-
-
-Thanks!
-
-	Domen
-
-
-Code for low power mode via "QT" chip. It is ran from flash,
-since sdram isn't accessible after this.
-
-        // put sdram into self-refresh
-        lis     r5, 0xf000
-        ori     r5, r5, 0x100
-        lwz     r4, 0x4(r5)
-        oris    r4, r4, 0x8000
-        stw     r4, 0x4(r5)     // mode_en
-        sync
-
-        ori     r4, r4, 0x0002  // setup soft_pre
-
-        lis     r6, 0xbfff
-        ori     r6, r6, 0xffff
-        and     r6, r4, r6      // setup !cke
-        oris    r6, r6, 0x1000  // setup ref_en
-
-        stw     r4, 0x4(r5)     // soft_pre
-        sync
-
-        stw     r6, 0x4(r5)     // ref_en !cke
-        sync
-
-        clrlwi  r6, r6, 1       // !mode_en
-        stw     r6, 0x4(r5)
-        sync
-
-        // turn off with QT chip
-        lis     r3, 0xf000
-        ori     r3, r3, 0x0c00
-        li      r4, 0x02
-        stb     r4, 0(r3)       // enable gpio_wkup1
-        sync
-        stb     r4, 8(r3)       // output
-        sync
-        stb     r4, 0xc(r3)     // output high
-        sync
-
-        lis     r5, 0x0001
-delay_10us:
-        addi    r5, r5, -1
-        cmpi    cr7, r5, 0
-        bne     cr7, delay_10us
-        sync
-
-        // turn off
-        li      r4, 0
-        stb     r4, 0xc(r3)     // output low
-        sync
+One might enable the RTS signal and check if it is asserted to see
+what the SCC is doing. Unfortunately, the signal may or may not be
+used depending on the board.
