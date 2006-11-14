@@ -1,22 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH]: PowerPC: make sure the rtas stop-self token is defined.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061113180500.GB4307@austin.ibm.com>
-References: <20061110182253.GV30625@austin.ibm.com>
-	<20061110200152.GC23089@localdomain>
-	<20061111010108.GX30625@austin.ibm.com>
-	<1163377944.7410.12.camel@localhost.localdomain>
-	<45580ED0.7000704@austin.ibm.com>
-	<20061113180500.GB4307@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-QEsnfq2umNAtqpyp/vmH"
-Date: Tue, 14 Nov 2006 12:17:44 +1100
-Message-Id: <1163467065.8048.37.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <jcrigby@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id BC51667EC3
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 12:41:06 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id n15so76131nfc
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 17:41:04 -0800 (PST)
+Message-ID: <4b73d43f0611131741v59f1f780i827f4e95000decdf@mail.gmail.com>
+Date: Mon, 13 Nov 2006 18:41:04 -0700
+From: "John Rigby" <jrigby@freescale.com>
+Sender: jcrigby@gmail.com
+To: "Kim Phillips" <kim.phillips@freescale.com>
+Subject: Re: [RFC] Draft mpc52xx device tree specification
+In-Reply-To: <20061113135609.601647b0.kim.phillips@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_90167_31961934.1163468464507"
+References: <528646bc0611130047v107e7171h804c674534ef8058@mail.gmail.com>
+	<20061113135609.601647b0.kim.phillips@freescale.com>
+Cc: jrigby@gmail.com, linuxppc-dev@ozlabs.org
+Reply-To: jcrigby@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,67 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_90167_31961934.1163468464507
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---=-QEsnfq2umNAtqpyp/vmH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I agree with Kim.  I would like to see some kind of merge of this an
+booting-without-of.
 
-On Mon, 2006-11-13 at 12:05 -0600, Linas Vepstas wrote:
-> On Mon, Nov 13, 2006 at 12:21:04AM -0600, jschopp wrote:
-> > >I can only find one caller? Is it called via a #define or something?
->=20
-> Right. I was looking at pSeries_mach_cpu_die(), which is called
-> as md.cpu_die from many places.
->=20
-> > >Wouldn't it be preferable to just change rtas.h like so:
-> > >
-> > >#ifdef CONFIG_HOTPLUG_CPU
-> > >extern void rtas_stop_self(void);
-> > >#else
-> > >static inline void rtas_stop_self(void) { }
-> > >#endif
->=20
-> Well, the problem is that this would just pass the BUG() to=20
-> the next level, in pSeries_mach_cpu_die():
->=20
-> static void pSeries_mach_cpu_die(void)
-> {
->    local_irq_disable();
->    idle_task_exit();
->    xics_teardown_cpu(0);
->    rtas_stop_self();
->    /* Should never get here... */
->    BUG();
->    for(;;);
-> }
->=20
-> so does that mean that CONFIG_HOTPLUG_CPU should also be used to=20
-> stop the complation of pSeries_mach_cpu_die() ?=20
+On 11/13/06, Kim Phillips <kim.phillips@freescale.com> wrote:
+>
+> On Mon, 13 Nov 2006 01:47:29 -0700
+> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+>
+> >
+> > This document specifies the requirements on the device-tree for mpc52xx
+> > based boards.  These requirements are above and beyond the details
+> > specified in the booting-without-of.txt document.
+>
+> well, the definition of the compatible property has a different bias.  I'm
+> not saying the definition in booting-without-of is necessarily better (I
+> know the document is too linux- and freescale-specific in places), I'm just
+> saying that this document has good ideas, but is creating an unnecessary
+> diversion, and amending booting-without-of would help maintain consistency
+> with other platforms' efforts.
+>
+> Kim
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Yes. And its connection to ppc_md.cpu_die.
+------=_Part_90167_31961934.1163468464507
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-cheers
+I agree with Kim.&nbsp; I would like to see some kind of merge of this an booting-without-of.<br><br><div><span class="gmail_quote">On 11/13/06, <b class="gmail_sendername">Kim Phillips</b> &lt;<a href="mailto:kim.phillips@freescale.com">
+kim.phillips@freescale.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">On Mon, 13 Nov 2006 01:47:29 -0700<br>&quot;Grant Likely&quot; &lt;
+<a href="mailto:grant.likely@secretlab.ca">grant.likely@secretlab.ca</a>&gt; wrote:<br><br>&gt;<br>&gt; This document specifies the requirements on the device-tree for mpc52xx<br>&gt; based boards.&nbsp;&nbsp;These requirements are above and beyond the details
+<br>&gt; specified in the booting-without-of.txt document.<br><br>well, the definition of the compatible property has a different bias.&nbsp;&nbsp;I'm not saying the definition in booting-without-of is necessarily better (I know the document is too linux- and freescale-specific in places), I'm just saying that this document has good ideas, but is creating an unnecessary diversion, and amending booting-without-of would help maintain consistency with other platforms' efforts.
+<br><br>Kim<br>_______________________________________________<br>Linuxppc-dev mailing list<br><a href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev">
+https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br></blockquote></div><br>
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-QEsnfq2umNAtqpyp/vmH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFWRk4dSjSd0sB4dIRAlF3AKC36RC0lj2yEz5xhj5PvkG3DZlXXQCgp6BG
-oK4x+e31PlP3zgRbLA1XXxA=
-=MiWz
------END PGP SIGNATURE-----
-
---=-QEsnfq2umNAtqpyp/vmH--
+------=_Part_90167_31961934.1163468464507--
