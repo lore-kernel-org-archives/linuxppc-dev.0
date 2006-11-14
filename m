@@ -1,20 +1,28 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) by ozlabs.org (Postfix) with ESMTP id 01C2567D4D
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 16:07:41 +1100 (EST)
-Date: Mon, 13 Nov 2006 21:07:50 -0800 (PST)
-Message-Id: <20061113.210750.66175955.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH/RFC] powerpc: Fix mmap of PCI resource with hack for X
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1163469594.5940.42.camel@localhost.localdomain>
-References: <1163405790.4982.289.camel@localhost.localdomain>
-	<20061113.163138.98554015.davem@davemloft.net>
-	<1163469594.5940.42.camel@localhost.localdomain>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DCCCA67D51
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 16:13:21 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	kAE6YnJp022085
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 23:34:49 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kAE5DHPC028673
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Nov 2006 23:13:19 -0600 (CST)
+Subject: Re: [PATCH 7/32] powerpc: Make pci_read_irq_line the default
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1163479316.5940.96.camel@localhost.localdomain>
+References: <20061111062522.34CAC68047@ozlabs.org>
+	<1163478030.3472.9.camel@localhost.localdomain>
+	<1163479316.5940.96.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1163481241.3748.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: idr@us.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, anton@samba.org, airlied@gmail.com
+Date: 14 Nov 2006 13:14:01 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 14 Nov 2006 12:59:54 +1100
-
-> If I "fix" the kernel to do the right thing, that is pass BAR values in
-> devices and expect BAR values in mmap, then I will break existing X
-> setups on machines where PCI is not mapped 1:1 (that is mostly CHRP
-> machines).
+On Tue, 2006-11-14 at 12:41, Benjamin Herrenschmidt wrote:
+> > Paul
+> >       I checked your updated git tree just now.
+> >       I have seen that you applied Ben's patch on mpc7448hpc2
+> platform about
+> > the "pci_read_irq_line".
+> >       Could you discard this part in Ben's patch and apply mine:
+> > 
+> > http://ozlabs.org/pipermail/linuxppc-dev/2006-October/027295.html
+> > http://ozlabs.org/pipermail/linuxppc-dev/2006-October/027340.html
+> >       
+> >       Ben must forget this part of patch in his new serial patches.
+> >       Thanks.
 > 
-> The problem I'm fixing in this patch is that while we were providing the
-> hacked up value in "devices", we were expecting the BAR value in mmap,
-> and there are apps expecting us to be consistent between the two, thus
-> the breakage.
-
-Ok, I don't see much alternatives for you then.  I have no real
-objections to your patch.
+> Can you instead send a patch that change my code into yours ?
+> 
+OK, I will provide it soon.
+Roy
