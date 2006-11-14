@@ -1,19 +1,21 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from localhost.localdomain (cdma-40-144.msk.skylink.ru
-	[83.217.40.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7695D6812D
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 13:00:01 +1100 (EST)
-To: Paul Mackerras <paulus@samba.org>
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
-Date: Tue, 14 Nov 2006 04:28:16 +0300
-Message-Id: <20061114012816.17455.12059.stgit@localhost.localdomain>
-In-Reply-To: <20061114012504.17455.13833.stgit@localhost.localdomain>
-References: <20061114012504.17455.13833.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 34DAB6817A
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 13:00:06 +1100 (EST)
+Subject: Re: [PATCH/RFC] powerpc: Fix mmap of PCI resource with hack for X
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20061113.163138.98554015.davem@davemloft.net>
+References: <1163405790.4982.289.camel@localhost.localdomain>
+	<20061113.163138.98554015.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 14 Nov 2006 12:59:54 +1100
+Message-Id: <1163469594.5940.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: idr@us.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, anton@samba.org, airlied@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,632 +25,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Not on Sparc.  /dev/mem mmap()'s are basically verbotten on Sparc,
+> period.
+> 
+> That's the whole reason I created /proc/bus/pci mmap().  So that
+> X could simply read a BAR, open /proc/bus/pci/${DEVICE} and
+> mmap() with some range within the BAR as the offset/size tuple.
 
-Including support for non-coherent cache, some mm-related things +
-relevant field in Kconfig and Makefiles. Also included rheap.o compilaiton
-if 8xx is defined.
+Ok, well, that would be lovely if that API was followed by X for more
+than just sparc :-) Basically, I started by fixing ppc to properly
+accept BAR values in /proc/bus/pci/${DEVICE} and provide BAR values
+in /proc/bus/pci/devices and that broke X.
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
----
+The problem is that X expects a value in "devices" that it can pass
+to /dev/mem :-( At least on ppc and other non-sparc platforms. Thus I
+need to have /proc/bus/pci/devices provide "fixed" up values in
+processor bus address space instead of BAR values, and what I provide in
+that file is also what mmap expects as an offset for ${DEVICE} files,
+thus I'm screwed... Unless I "disconnect" the two (possibly by passing
+an argument to pci_resource_to_user() ...)
 
- arch/powerpc/Kconfig              |   11 +
- arch/powerpc/kernel/Makefile      |    1 
- arch/powerpc/kernel/dma-mapping.c |  442 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/lib/Makefile         |    1 
- arch/powerpc/mm/fault.c           |   99 ++++++++
- 5 files changed, 552 insertions(+), 2 deletions(-)
+> If an application wants all of I/O space (to poke at VGA addresses for
+> a domain, for example), it finds the root bridge for that domain and
+> you can mmap()'s it's I/O space that way on platforms the implement
+> I/O space via memory accesses.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1d71aff..42c2b6b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -158,6 +158,11 @@ config PPC_86xx
- 	help
- 	  The Freescale E600 SoCs have 74xx cores.
- 
-+config PPC_8xx
-+	bool "Freescale 8xx"
-+	select FSL_SOC
-+	select 8xx
-+
- config 40x
- 	bool "AMCC 40x"
- 	select PPC_DCR_NATIVE
-@@ -166,8 +171,6 @@ config 44x
- 	bool "AMCC 44x"
- 	select PPC_DCR_NATIVE
- 
--config 8xx
--	bool "Freescale 8xx"
- 
- config E200
- 	bool "Freescale e200"
-@@ -196,6 +199,10 @@ config 6xx
- 	bool
- 
- # this is temp to handle compat with arch=ppc
-+config 8xx
-+	bool
-+
-+# this is temp to handle compat with arch=ppc
- config 83xx
- 	bool
- 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index f9ce5d7..98111ee 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -61,6 +61,7 @@ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_s
- 
- module-$(CONFIG_PPC64)		+= module_64.o
- obj-$(CONFIG_MODULES)		+= $(module-y)
-+obj-$(CONFIG_NOT_COHERENT_CACHE)	+= dma-mapping.o
- 
- pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o
- pci32-$(CONFIG_PPC32)		:= pci_32.o
-diff --git a/arch/powerpc/kernel/dma-mapping.c b/arch/powerpc/kernel/dma-mapping.c
-new file mode 100644
-index 0000000..10fec73
---- /dev/null
-+++ b/arch/powerpc/kernel/dma-mapping.c
-@@ -0,0 +1,442 @@
-+/*
-+ *  PowerPC version derived from arch/arm/mm/consistent.c
-+ *    Copyright (C) 2001 Dan Malek (dmalek@jlc.net)
-+ *
-+ *  Copyright (C) 2000 Russell King
-+ *
-+ * Consistent memory allocators.  Used for DMA devices that want to
-+ * share uncached memory with the processor core.  The function return
-+ * is the virtual address and 'dma_handle' is the physical address.
-+ * Mostly stolen from the ARM port, with some changes for PowerPC.
-+ *						-- Dan
-+ *
-+ * Reorganized to get rid of the arch-specific consistent_* functions
-+ * and provide non-coherent implementations for the DMA API. -Matt
-+ *
-+ * Added in_interrupt() safe dma_alloc_coherent()/dma_free_coherent()
-+ * implementation. This is pulled straight from ARM and barely
-+ * modified. -Matt
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/ptrace.h>
-+#include <linux/mman.h>
-+#include <linux/mm.h>
-+#include <linux/swap.h>
-+#include <linux/stddef.h>
-+#include <linux/vmalloc.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/bootmem.h>
-+#include <linux/highmem.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/hardirq.h>
-+
-+#include <asm/pgalloc.h>
-+#include <asm/prom.h>
-+#include <asm/io.h>
-+#include <asm/mmu_context.h>
-+#include <asm/pgtable.h>
-+#include <asm/mmu.h>
-+#include <asm/uaccess.h>
-+#include <asm/smp.h>
-+#include <asm/machdep.h>
-+
-+int map_page(unsigned long va, phys_addr_t pa, int flags);
-+
-+#include <asm/tlbflush.h>
-+
-+/*
-+ * This address range defaults to a value that is safe for all
-+ * platforms which currently set CONFIG_NOT_COHERENT_CACHE. It
-+ * can be further configured for specific applications under
-+ * the "Advanced Setup" menu. -Matt
-+ */
-+#define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
-+#define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
-+#define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
-+
-+/*
-+ * This is the page table (2MB) covering uncached, DMA consistent allocations
-+ */
-+static pte_t *consistent_pte;
-+static DEFINE_SPINLOCK(consistent_lock);
-+
-+/*
-+ * VM region handling support.
-+ *
-+ * This should become something generic, handling VM region allocations for
-+ * vmalloc and similar (ioremap, module space, etc).
-+ *
-+ * I envisage vmalloc()'s supporting vm_struct becoming:
-+ *
-+ *  struct vm_struct {
-+ *    struct vm_region	region;
-+ *    unsigned long	flags;
-+ *    struct page	**pages;
-+ *    unsigned int	nr_pages;
-+ *    unsigned long	phys_addr;
-+ *  };
-+ *
-+ * get_vm_area() would then call vm_region_alloc with an appropriate
-+ * struct vm_region head (eg):
-+ *
-+ *  struct vm_region vmalloc_head = {
-+ *	.vm_list	= LIST_HEAD_INIT(vmalloc_head.vm_list),
-+ *	.vm_start	= VMALLOC_START,
-+ *	.vm_end		= VMALLOC_END,
-+ *  };
-+ *
-+ * However, vmalloc_head.vm_start is variable (typically, it is dependent on
-+ * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
-+ * would have to initialise this each time prior to calling vm_region_alloc().
-+ */
-+struct vm_region {
-+	struct list_head	vm_list;
-+	unsigned long		vm_start;
-+	unsigned long		vm_end;
-+};
-+
-+static struct vm_region consistent_head = {
-+	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
-+	.vm_start	= CONSISTENT_BASE,
-+	.vm_end		= CONSISTENT_END,
-+};
-+
-+static struct vm_region *
-+vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
-+{
-+	unsigned long addr = head->vm_start, end = head->vm_end - size;
-+	unsigned long flags;
-+	struct vm_region *c, *new;
-+
-+	new = kmalloc(sizeof(struct vm_region), gfp);
-+	if (!new)
-+		goto out;
-+
-+	spin_lock_irqsave(&consistent_lock, flags);
-+
-+	list_for_each_entry(c, &head->vm_list, vm_list) {
-+		if ((addr + size) < addr)
-+			goto nospc;
-+		if ((addr + size) <= c->vm_start)
-+			goto found;
-+		addr = c->vm_end;
-+		if (addr > end)
-+			goto nospc;
-+	}
-+
-+ found:
-+	/*
-+	 * Insert this entry _before_ the one we found.
-+	 */
-+	list_add_tail(&new->vm_list, &c->vm_list);
-+	new->vm_start = addr;
-+	new->vm_end = addr + size;
-+
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+	return new;
-+
-+ nospc:
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+	kfree(new);
-+ out:
-+	return NULL;
-+}
-+
-+static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
-+{
-+	struct vm_region *c;
-+
-+	list_for_each_entry(c, &head->vm_list, vm_list) {
-+		if (c->vm_start == addr)
-+			goto out;
-+	}
-+	c = NULL;
-+ out:
-+	return c;
-+}
-+
-+/*
-+ * Allocate DMA-coherent memory space and return both the kernel remapped
-+ * virtual and bus address for that space.
-+ */
-+void *
-+__dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
-+{
-+	struct page *page;
-+	struct vm_region *c;
-+	unsigned long order;
-+	u64 mask = 0x00ffffff, limit; /* ISA default */
-+
-+	if (!consistent_pte) {
-+		printk(KERN_ERR "%s: not initialised\n", __func__);
-+		dump_stack();
-+		return NULL;
-+	}
-+
-+	size = PAGE_ALIGN(size);
-+	limit = (mask + 1) & ~mask;
-+	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
-+		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
-+		       size, mask);
-+		return NULL;
-+	}
-+
-+	order = get_order(size);
-+
-+	if (mask != 0xffffffff)
-+		gfp |= GFP_DMA;
-+
-+	page = alloc_pages(gfp, order);
-+	if (!page)
-+		goto no_page;
-+
-+	/*
-+	 * Invalidate any data that might be lurking in the
-+	 * kernel direct-mapped region for device DMA.
-+	 */
-+	{
-+		unsigned long kaddr = (unsigned long)page_address(page);
-+		memset(page_address(page), 0, size);
-+		flush_dcache_range(kaddr, kaddr + size);
-+	}
-+
-+	/*
-+	 * Allocate a virtual address in the consistent mapping region.
-+	 */
-+	c = vm_region_alloc(&consistent_head, size,
-+			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
-+	if (c) {
-+		unsigned long vaddr = c->vm_start;
-+		pte_t *pte = consistent_pte + CONSISTENT_OFFSET(vaddr);
-+		struct page *end = page + (1 << order);
-+
-+		split_page(page, order);
-+
-+		/*
-+		 * Set the "dma handle"
-+		 */
-+		*handle = page_to_bus(page);
-+
-+		do {
-+			BUG_ON(!pte_none(*pte));
-+
-+			SetPageReserved(page);
-+			set_pte_at(&init_mm, vaddr,
-+				   pte, mk_pte(page, pgprot_noncached(PAGE_KERNEL)));
-+			page++;
-+			pte++;
-+			vaddr += PAGE_SIZE;
-+		} while (size -= PAGE_SIZE);
-+
-+		/*
-+		 * Free the otherwise unused pages.
-+		 */
-+		while (page < end) {
-+			__free_page(page);
-+			page++;
-+		}
-+
-+		return (void *)c->vm_start;
-+	}
-+
-+	if (page)
-+		__free_pages(page, order);
-+ no_page:
-+	return NULL;
-+}
-+EXPORT_SYMBOL(__dma_alloc_coherent);
-+
-+/*
-+ * free a page as defined by the above mapping.
-+ */
-+void __dma_free_coherent(size_t size, void *vaddr)
-+{
-+	struct vm_region *c;
-+	unsigned long flags, addr;
-+	pte_t *ptep;
-+
-+	size = PAGE_ALIGN(size);
-+
-+	spin_lock_irqsave(&consistent_lock, flags);
-+
-+	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
-+	if (!c)
-+		goto no_area;
-+
-+	if ((c->vm_end - c->vm_start) != size) {
-+		printk(KERN_ERR "%s: freeing wrong coherent size (%ld != %d)\n",
-+		       __func__, c->vm_end - c->vm_start, size);
-+		dump_stack();
-+		size = c->vm_end - c->vm_start;
-+	}
-+
-+	ptep = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
-+	addr = c->vm_start;
-+	do {
-+		pte_t pte = ptep_get_and_clear(&init_mm, addr, ptep);
-+		unsigned long pfn;
-+
-+		ptep++;
-+		addr += PAGE_SIZE;
-+
-+		if (!pte_none(pte) && pte_present(pte)) {
-+			pfn = pte_pfn(pte);
-+
-+			if (pfn_valid(pfn)) {
-+				struct page *page = pfn_to_page(pfn);
-+				ClearPageReserved(page);
-+
-+				__free_page(page);
-+				continue;
-+			}
-+		}
-+
-+		printk(KERN_CRIT "%s: bad page in kernel page table\n",
-+		       __func__);
-+	} while (size -= PAGE_SIZE);
-+
-+	flush_tlb_kernel_range(c->vm_start, c->vm_end);
-+
-+	list_del(&c->vm_list);
-+
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+
-+	kfree(c);
-+	return;
-+
-+ no_area:
-+	spin_unlock_irqrestore(&consistent_lock, flags);
-+	printk(KERN_ERR "%s: trying to free invalid coherent area: %p\n",
-+	       __func__, vaddr);
-+	dump_stack();
-+}
-+EXPORT_SYMBOL(__dma_free_coherent);
-+
-+/*
-+ * Initialise the consistent memory allocation.
-+ */
-+static int __init dma_alloc_init(void)
-+{
-+	pgd_t *pgd;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	int ret = 0;
-+
-+	do {
-+		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
-+		pmd = pmd_alloc(&init_mm, pgd, CONSISTENT_BASE);
-+		if (!pmd) {
-+			printk(KERN_ERR "%s: no pmd tables\n", __func__);
-+			ret = -ENOMEM;
-+			break;
-+		}
-+		WARN_ON(!pmd_none(*pmd));
-+
-+		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
-+		if (!pte) {
-+			printk(KERN_ERR "%s: no pte tables\n", __func__);
-+			ret = -ENOMEM;
-+			break;
-+		}
-+
-+		consistent_pte = pte;
-+	} while (0);
-+
-+	return ret;
-+}
-+
-+core_initcall(dma_alloc_init);
-+
-+/*
-+ * make an area consistent.
-+ */
-+void __dma_sync(void *vaddr, size_t size, int direction)
-+{
-+	unsigned long start = (unsigned long)vaddr;
-+	unsigned long end   = start + size;
-+
-+	switch (direction) {
-+	case DMA_NONE:
-+		BUG();
-+	case DMA_FROM_DEVICE:	/* invalidate only */
-+		invalidate_dcache_range(start, end);
-+		break;
-+	case DMA_TO_DEVICE:		/* writeback only */
-+		clean_dcache_range(start, end);
-+		break;
-+	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
-+		flush_dcache_range(start, end);
-+		break;
-+	}
-+}
-+EXPORT_SYMBOL(__dma_sync);
-+
-+#ifdef CONFIG_HIGHMEM
-+/*
-+ * __dma_sync_page() implementation for systems using highmem.
-+ * In this case, each page of a buffer must be kmapped/kunmapped
-+ * in order to have a virtual address for __dma_sync(). This must
-+ * not sleep so kmap_atomic()/kunmap_atomic() are used.
-+ *
-+ * Note: yes, it is possible and correct to have a buffer extend
-+ * beyond the first page.
-+ */
-+static inline void __dma_sync_page_highmem(struct page *page,
-+		unsigned long offset, size_t size, int direction)
-+{
-+	size_t seg_size = min((size_t)(PAGE_SIZE - offset), size);
-+	size_t cur_size = seg_size;
-+	unsigned long flags, start, seg_offset = offset;
-+	int nr_segs = 1 + ((size - seg_size) + PAGE_SIZE - 1)/PAGE_SIZE;
-+	int seg_nr = 0;
-+
-+	local_irq_save(flags);
-+
-+	do {
-+		start = (unsigned long)kmap_atomic(page + seg_nr,
-+				KM_PPC_SYNC_PAGE) + seg_offset;
-+
-+		/* Sync this buffer segment */
-+		__dma_sync((void *)start, seg_size, direction);
-+		kunmap_atomic((void *)start, KM_PPC_SYNC_PAGE);
-+		seg_nr++;
-+
-+		/* Calculate next buffer segment size */
-+		seg_size = min((size_t)PAGE_SIZE, size - cur_size);
-+
-+		/* Add the segment size to our running total */
-+		cur_size += seg_size;
-+		seg_offset = 0;
-+	} while (seg_nr < nr_segs);
-+
-+	local_irq_restore(flags);
-+}
-+#endif /* CONFIG_HIGHMEM */
-+
-+/*
-+ * __dma_sync_page makes memory consistent. identical to __dma_sync, but
-+ * takes a struct page instead of a virtual address
-+ */
-+void __dma_sync_page(struct page *page, unsigned long offset,
-+	size_t size, int direction)
-+{
-+#ifdef CONFIG_HIGHMEM
-+	__dma_sync_page_highmem(page, offset, size, direction);
-+#else
-+	unsigned long start = (unsigned long)page_address(page) + offset;
-+	__dma_sync((void *)start, size, direction);
-+#endif
-+}
-+EXPORT_SYMBOL(__dma_sync_page);
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index a0360ae..ad5c30b 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -24,5 +24,6 @@ endif
- 
- # Temporary hack until we have migrated to asm-powerpc
- ifeq ($(CONFIG_PPC_MERGE),y)
-+obj-$(CONFIG_8xx)	+= rheap.o
- obj-$(CONFIG_CPM2)	+= rheap.o
- endif
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 03aeb3a..539917f 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -447,3 +447,102 @@ void bad_page_fault(struct pt_regs *regs
- 
- 	die("Kernel access of bad area", regs, sig);
- }
-+
-+#ifdef CONFIG_8xx
-+
-+/* The pgtable.h claims some functions generically exist, but I
-+ * can't find them......
-+ */
-+pte_t *va_to_pte(unsigned long address)
-+{
-+	pgd_t *dir;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+
-+	if (address < TASK_SIZE)
-+		return NULL;
-+
-+	dir = pgd_offset(&init_mm, address);
-+	if (dir) {
-+		pmd = pmd_offset(dir, address & PAGE_MASK);
-+		if (pmd && pmd_present(*pmd)) {
-+			pte = pte_offset_kernel(pmd, address & PAGE_MASK);
-+			if (pte && pte_present(*pte))
-+				return(pte);
-+		}
-+	}
-+	return NULL;
-+}
-+
-+unsigned long va_to_phys(unsigned long address)
-+{
-+	pte_t *pte;
-+
-+	pte = va_to_pte(address);
-+	if (pte)
-+		return(((unsigned long)(pte_val(*pte)) & PAGE_MASK) | (address & ~(PAGE_MASK)));
-+	return (0);
-+}
-+
-+void
-+print_8xx_pte(struct mm_struct *mm, unsigned long addr)
-+{
-+        pgd_t * pgd;
-+        pmd_t * pmd;
-+        pte_t * pte;
-+
-+        printk(" pte @ 0x%8lx: ", addr);
-+        pgd = pgd_offset(mm, addr & PAGE_MASK);
-+        if (pgd) {
-+                pmd = pmd_offset(pgd, addr & PAGE_MASK);
-+                if (pmd && pmd_present(*pmd)) {
-+                        pte = pte_offset_kernel(pmd, addr & PAGE_MASK);
-+                        if (pte) {
-+                                printk(" (0x%08lx)->(0x%08lx)->0x%08lx\n",
-+                                        (long)pgd, (long)pte, (long)pte_val(*pte));
-+#define pp ((long)pte_val(*pte))
-+				printk(" RPN: %05lx PP: %lx SPS: %lx SH: %lx "
-+				       "CI: %lx v: %lx\n",
-+				       pp>>12,    /* rpn */
-+				       (pp>>10)&3, /* pp */
-+				       (pp>>3)&1, /* small */
-+				       (pp>>2)&1, /* shared */
-+				       (pp>>1)&1, /* cache inhibit */
-+				       pp&1       /* valid */
-+				       );
-+#undef pp
-+                        }
-+                        else {
-+                                printk("no pte\n");
-+                        }
-+                }
-+                else {
-+                        printk("no pmd\n");
-+                }
-+        }
-+        else {
-+                printk("no pgd\n");
-+        }
-+}
-+
-+int
-+get_8xx_pte(struct mm_struct *mm, unsigned long addr)
-+{
-+        pgd_t * pgd;
-+        pmd_t * pmd;
-+        pte_t * pte;
-+        int     retval = 0;
-+
-+        pgd = pgd_offset(mm, addr & PAGE_MASK);
-+        if (pgd) {
-+                pmd = pmd_offset(pgd, addr & PAGE_MASK);
-+                if (pmd && pmd_present(*pmd)) {
-+                        pte = pte_offset_kernel(pmd, addr & PAGE_MASK);
-+                        if (pte) {
-+				retval = (int)pte_val(*pte);
-+                        }
-+                }
-+        }
-+        return(retval);
-+}
-+#endif /* CONFIG_8xx */
+Yeah, that's what X should do on ppc too, right now it doesn't. There's
+Ian patches to completely overhaul X PCI that should fix all of that,
+but in the meantime, I think I should look into turning all those ifdef
+__sparc__ into if defined(__sparc__) || defined(__powerpc__) in X ! I'll
+have a deeper look this week.
+
+> The only thing X was (unfortunately) still using the "devices" file
+> for is device existence, and this is obviously broken because there is
+> zero domain information in that procfs file so it's impossible to use
+> correctly. :-)
+
+Yes, it's screwed when you start having domains. It also uses it to do
+that horrible mmap trick I explained above. It basically takes a BAR
+value, then reads the devices file entry for the device, and iterate the
+BARs, reading them from the card to compare them to the value passed in,
+and returning the base address in "devices" for use by mmap to /dev/mem.
+
+> > X is still broken when built 32 bits on machines where PCI MMIO can be
+> > above 32 bits space unfortunately. It looks like somebody (DaveM ?)
+> > hacked a fix in X to handle long long resources and had the good idea
+> > to wrap it in #ifdef __sparc__ :-(
+> 
+> Sorry, it was the only 32/64 platform at the time that old X code was
+> written and the X maintainers at the time were unbelievably anal :-/
+
+Yeah, I remember.
+
+> So the gist of your change is that X isn't obtaining BAR values
+> in the correct context on powerpc, and so you're going to hack up
+> the "devices" files output to "help" X out.
+>
+> This doesn't sound sane to me.
+
+Well, we've been hacking up the "devices" file for some time. I fact, it
+seems like X code is written with the expectation that all archs do that
+by providing a "fixed" value there, it seems to be the whole point of
+the xf86GetPciOffsetFromOS() and xf86GetOSOffsetFromPCI() functions in
+there. They do what I explained above, convering a BAR value into
+something that can be passed to /dev/mem. This is broken, but this is
+the only way to get X to work
+
+If I "fix" the kernel to do the right thing, that is pass BAR values in
+devices and expect BAR values in mmap, then I will break existing X
+setups on machines where PCI is not mapped 1:1 (that is mostly CHRP
+machines).
+
+The problem I'm fixing in this patch is that while we were providing the
+hacked up value in "devices", we were expecting the BAR value in mmap,
+and there are apps expecting us to be consistent between the two, thus
+the breakage.
+
+> What sounds better to me is that X does the right thing, which is
+> obtain the BAR from the PCI config space to determine what values to
+> pass in to /proc/bus/pci mmap() calls.  And if it wants raw addresses
+> to pass in to /dev/mem mmap()'s on platforms where that works (ie. not
+> Sparc, to begin with) it should obtain those values from the "devices"
+> file which must be values suitable as /dev/mem offsets.
+
+Ok so you think I should stick to my old code that is passing "fixed"
+values in "devices" and expect BAR values in mmap ? The problem if you
+do that is that you break /sys then. Look at what pci-sysfs.c does:
+
+         /* pci_mmap_page_range() expects the same kind of entry as coming
+         * from /proc/bus/pci/ which is a "user visible" value. If this is
+         * different from the resource itself, arch will do necessary fixup.
+         */
+        pci_resource_to_user(pdev, i, res, &start, &end);
+        vma->vm_pgoff += start >> PAGE_SHIFT;
+
+It calls pci_resource_to_user() which is the function used to display
+the resouces both in /sys/*/resource and /proc/bus/pci/devices, and adds
+that base to the offset before calling the arch pci_mmap_page_range()
+function.
+
+That function expects the same values as /proc/ mmap offsets. Thus that
+means that /proc/ mmap offets haev to be the same as what
+pci_resource_to_user() return which is also... waht is
+in /proc/bus/pci/devices ! yuck !
+
+The only way to actually get things right -and-
+have /proc/bus/pci/devices expose "fixed up" values that can be used
+with /dev/mem would be to add an argument to pci_resource_to_user() that
+would be set differently depending on wether it's called by the /proc
+code to populate "devices" or wether it's called by syfs to do the fixup
+above.
+
+> I strongly look forward to Ian's new X code, that is for sure :-)
+
+Me too :-)
+
+Cheers,
+Ben.
