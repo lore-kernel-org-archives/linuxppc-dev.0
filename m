@@ -1,29 +1,15 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx006.isp.belgacom.be (outmx006.isp.belgacom.be
-	[195.238.4.99])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED28767C0A
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33009.mail.mud.yahoo.com (web33009.mail.mud.yahoo.com
+	[209.191.69.124]) by ozlabs.org (Postfix) with SMTP id EEFBA67CB9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Nov 2006 23:45:57 +1100 (EST)
-Received: from outmx006.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx006.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kAECjn05030611
-	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Nov 2006 13:45:50 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: CPM_UART: tcdrain() is broken
-Date: Tue, 14 Nov 2006 13:45:21 +0100
-References: <200611131656.23580.laurent.pinchart@tbox.biz>
-	<200611140928.00406.laurent.pinchart@tbox.biz>
-	<20061114153313.37513a39@vitb.ru.mvista.com>
-In-Reply-To: <20061114153313.37513a39@vitb.ru.mvista.com>
+	Wed, 15 Nov 2006 01:25:40 +1100 (EST)
+Message-ID: <20061114142538.81112.qmail@web33009.mail.mud.yahoo.com>
+Date: Wed, 15 Nov 2006 01:25:38 +1100 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: Telnet still error
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611141345.21260.laurent.pinchart@tbox.biz>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-2115380243-1163514338=:80283"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,42 +20,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--0-2115380243-1163514338=:80283
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-> > > > There is, however, a problem left. The SCC controllers have a 32-
-> > > > byte FIFO between the buffer descriptors and the wires.
-> > > > cpm_uart_tx_empty() checks if all buffer descriptors have been
-> > > > processed, but doesn't check if the transmit FIFO is actually empty.
-> > >
-> > > There is no way to determine if the hardware FIFO is empty.
-> > > It's buried under the CPM microcode.
-> >
-> > I was hoping the information would be somewhere in the parameter RAM :-(
-> >
-> > > > .....  I can't figure out how to do so from the datasheet.
-> > > > Does anyone have an idea ?
-> > >
-> > > The original versions of the SCC UART driver used to have a
-> > > timeout based on the maximum depth of this FIFO and baud rate.
-> > > After the last BD was empty, it would further wait this amount of
-> > > time.  Lots of these little details seem to have been lost over
-> > > the years of making a "better" driver :-)
-> >
-> > That's a solution, but we might wait longer than necessary then. Vitaly,
-> > what's your opinion ? We should at least set fifosize to a proper value
-> > (see my previous mail). I'll submit a patch after we agree on the need
-> > for an additional delay.
->
-> Well, I also bothered Dan with the same question some time ago, getting the
-> same answer :) I think here we aught to have this delay ported, but under
-> Kconfig option, so that those who are happy with current being, do not
-> suffer from additional delays.
+I use kernel 2.6.11.7 and Ramdisk in ELDK 4.0 (I only edit Ramdisk of ELDK 4.0 for login (use ttyCPM0) ).
+   - If I run  telnetd(of busybox) daemon  in /sbin/telnetd
+        when I telnet to this board ,i receive
+        telnetd: bind: Address already in use 
+   - If I run  telnetd daemon  in /usr/sbin/in.telnetd 
+        when I telnet to this board ,i receive
+        telnetd: All network ports in use!
+I receive reply mail of  "Kalle Pokki" <kalle.pokki@iki.fi>
 
-There might be another way. Setting TxBD[CR] to 1 will generate the TX 
-interrupt only when the stop bit of the last character in the buffer begins 
-transmission. I still have to find out if it applies to the time when the CPM 
-clears TxBD[R] as well. If so, this would be better than a fixed delay, but 
-it would also prevent buffers from being sent back-to-back (3 bits of idle 
-are sent between consecutive buffers).
+>I vaguely remember trying the same thing with a MPC860 target and
+>having the same error messages. If I remember it right, the message
+>was caused by missing PAM libraries or something like that. I can't
+>give you any specific instructions, but you might want to google for
+>PAM and telnet to get some more directions.
 
-Laurent Pinchart
+
+and I configured PAM as the following:(base on )
+/etc/pam.d/telnet
+
+auth       requisite  pam_securetty.so
+auth       required   pam_unix.so
+account    required   pam_unix.so
+password   required   pam_unix.so md5
+session    required   pam_unix.so
+
+
+but still receive the same
+
+What cause this error ?
+Thanks a lot    
+
+
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-2115380243-1163514338=:80283
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+I use kernel 2.6.11.7 and Ramdisk in ELDK 4.0 (I only edit Ramdisk of ELDK 4.0 for login (use ttyCPM0) ).<br>&nbsp;&nbsp; - If I run&nbsp; telnetd(of busybox) daemon&nbsp; in /sbin/telnetd<br>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;when I telnet to this board ,i receive<br>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;telnetd: bind: Address already in use <br>&nbsp;&nbsp; - If I run&nbsp; telnetd daemon&nbsp; in /usr/sbin/in.telnetd <br>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;when I telnet to this board ,i receive<br>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;telnetd: All network ports in use!<br>I receive reply mail of&nbsp; "Kalle Pokki" &lt;kalle.pokki@iki.fi&gt;<br><br>&gt;I vaguely remember trying the same thing with a MPC860 target and<br>&gt;having the same error messages. If I remember it right, the message<br>&gt;was caused by missing PAM libraries or something like that. I can't<br>&gt;give you any specific instructions, but you might want to google for<br>&gt;PAM and telnet to
+ get some more directions.<br><br><br>and I configured PAM as the following:(base on )<br>/etc/pam.d/telnet<br><br>auth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; requisite&nbsp; pam_securetty.so<br>auth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; required&nbsp;&nbsp; pam_unix.so<br>account&nbsp;&nbsp;&nbsp; required&nbsp;&nbsp; pam_unix.so<br>password&nbsp;&nbsp; required&nbsp;&nbsp; pam_unix.so md5<br>session&nbsp;&nbsp;&nbsp; required&nbsp;&nbsp; pam_unix.so<br><br><br>but still receive the same<br><br>What cause this error ?<br>Thanks a lot&nbsp;&nbsp; &nbsp;<br><br><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-2115380243-1163514338=:80283--
