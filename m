@@ -1,21 +1,21 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from ns4.sony.co.jp (NS4.Sony.CO.JP [137.153.0.44])
-	by ozlabs.org (Postfix) with ESMTP id 15F1D67CB1
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 01:01:37 +1100 (EST)
-Received: from mail6.sony.co.jp (localhost [127.0.0.1])
-	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAEE1VKL020132
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 23:01:31 +0900 (JST)
+Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
+	by ozlabs.org (Postfix) with ESMTP id A7E0167CE2
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 01:25:48 +1100 (EST)
+Received: from mail5.sony.co.jp (localhost [127.0.0.1])
+	by mail5.sony.co.jp (R8/Sony) with ESMTP id kAEEPksa023727
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 23:25:46 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail6.sony.co.jp (R8/Sony) with SMTP id kAEE1Vcs020105
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 23:01:31 +0900 (JST)
-Message-ID: <4559CC1A.4020106@am.sony.com>
-Date: Tue, 14 Nov 2006 06:00:58 -0800
+	by mail5.sony.co.jp (R8/Sony) with SMTP id kAEEPkdI023708
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Nov 2006 23:25:46 +0900 (JST)
+Message-ID: <4559D1C9.60702@am.sony.com>
+Date: Tue, 14 Nov 2006 06:25:13 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
+To: Olof Johansson <olof@lixom.net>
 Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
-References: <4554DACB.8060809@am.sony.com> <200611111250.59279.arnd@arndb.de>
-In-Reply-To: <200611111250.59279.arnd@arndb.de>
+References: <4554DACB.8060809@am.sony.com> <20061110152310.7419ef3e@pb15>
+In-Reply-To: <20061110152310.7419ef3e@pb15>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,36 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-QXJuZCBCZXJnbWFubiB3cm90ZToNCj4gT24gRnJpZGF5IDEwIE5vdmVtYmVyIDIwMDYgMjE6MDIs
-IEdlb2ZmIExldmFuZCB3cm90ZToNCj4+IEBAIC04NzYsNyArODg1LDcgQEANCj4+IO+/ve+/ve+/
-ve+/ve+/ve+/ve+/ve+/vWJvb2wgIlBDSSBzdXBwb3J0IiBpZiA0MHggfHwgQ1BNMiB8fCBQUENf
-ODN4eCB8fCBQUENfODV4eCB8fCBQUENfODZ4eCBcDQo+PiDvv73vv73vv73vv73vv73vv73vv73v
-v73vv73vv73vv73vv73vv73vv73vv73vv718fCBQUENfTVBDNTJ4eCB8fCAoRU1CRURERUQgJiYg
-UFBDX0lTRVJJRVMpIHx8IE1QQzc0NDhIUEMyDQo+PiDvv73vv73vv73vv73vv73vv73vv73vv71k
-ZWZhdWx0IHkgaWYgITQweCAmJiAhQ1BNMiAmJiAhOHh4ICYmICFBUFVTICYmICFQUENfODN4eCBc
-DQo+PiAt77+977+977+977+977+977+977+977+977+977+977+977+977+977+977+9JiYgIVBQ
-Q184NXh4ICYmICFQUENfODZ4eA0KPj4gK++/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/
-ve+/ve+/ve+/ve+/vSYmICFQUENfODV4eCAmJiAhUFBDXzg2eHggJiYgIVBTM1BGDQo+PiDvv73v
-v73vv73vv73vv73vv73vv73vv71kZWZhdWx0IFBDSV9QRVJNRURJQSBpZiAhNHh4ICYmICFDUE0y
-ICYmICE4eHggJiYgQVBVUw0KPj4g77+977+977+977+977+977+977+977+9ZGVmYXVsdCBQQ0lf
-UVNQQU4gaWYgITR4eCAmJiAhQ1BNMiAmJiA4eHgNCj4+IO+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/
-vWhlbHANCj4gDQo+IFRoaXMgY2hhbmdlIGNhdXNlcyB0cm91YmxlIHdoZW4gdHJ5aW5nIHRvIGJ1
-aWxkIGEgbXVsdGlwbGF0Zm9ybSBrZXJuZWwNCj4gdGhhdCBpbmNsdWRlcyBQUzNQRiBhbmQgb3Ro
-ZXJzIGF0IHRoZSBzYW1lIHRpbWUsIGJlY2F1c2UgUENJIGdldHMNCj4gZGlzYWJsZWQgdW5jb25k
-aXRpb25hbGx5IHdoZW4gUFMzUEYgaXMgc2VsZWN0ZWQuIEFzIGEgc2hvcnQtdGVybQ0KPiBmaXgs
-IEknZCBjaGFuZ2UgdGhpcyB0byBkbw0KPiANCj4gICAgICAgICBib29sICJQQ0kgc3VwcG9ydCIg
-aWYgNDB4IHx8IENQTTIgfHwgUFBDXzgzeHggfHwgUFBDXzg1eHggfHwgUFBDXzg2eHggXA0KPiAt
-ICAgICAgICAgICAgICAgfHwgUFBDX01QQzUyeHggfHwgKEVNQkVEREVEICYmIFBQQ19JU0VSSUVT
-KSB8fCBNUEM3NDQ4SFBDMg0KPiArICAgICAgICAgICAgICAgfHwgUFBDX01QQzUyeHggfHwgKEVN
-QkVEREVEICYmIFBQQ19JU0VSSUVTKSB8fCBNUEM3NDQ4SFBDMiBcDQo+ICsgICAgICAgICAgICAg
-ICB8fCBQUzNQRg0KPiAgICAgICAgIGRlZmF1bHQgeSBpZiAhNDB4ICYmICFDUE0yICYmICE4eHgg
-JiYgIUFQVVMgJiYgIVBQQ184M3h4IFwNCj4gICAgICAgICAgICAgICAgJiYgIVBQQ184NXh4ICYm
-ICFQUENfODZ4eA0KPiANCj4gV2hpY2ggbWFrZXMgUENJIHN1cHBvcnQgb3B0aW9uYWwgd2hlbiBQ
-UzNQRiBpcyBzZWxlY3RlZC4NCg0KDQpUaGlzIHdvcmtzIE9LLiAgWW91IGFyZSBub3cgZ2l2ZW4g
-dGhlIG9wdGlvbiB0byBlbmFibGUgUENJIHdpdGggUFMzUEYuDQoNCg0KPiBIb3dldmVyLCB0aGlz
-IHN0aWxsDQo+IG1lYW5zIHRoYXQgeW91IGNhbiBjaG9vc2UgYnJva2VuIGNvbmZpZ3VyYXRpb25z
-IChlLmcuIFBTRVJJRVM9eSwgUFMzUEY9eSwNCj4gUENJPW4pLg0KPiANCj4gVGhlIHJlYWwgZml4
-IHNob3VsZCBiZSB0byBnZXQgcmlkIG9mIHRoZSBsb25nIGNvbmRpdGlvbmFsIGZvciBDT05GSUdf
-UENJLA0KPiBhbmQgaGF2ZSBQQ0kgc2VsZWN0ZWQgYnkgdGhlIHBsYXRmb3JtcyB0aGVtc2VsdmVz
-Og0KPiANCj4gY29uZmlnIFBQQ19QU0VSSUVTDQo+IAlzZWxlY3QgUENJDQoNCg0KWWVzLCB0aGF0
-IHNlZW1zIHRoZSB3YXkgdG8gZ28uDQoNCi1HZW9mZg0K
+Olof Johansson wrote:
+>> +config PS3PF_HTAB_SIZE
+>> +	depends on PS3PF
+>> +	int "PS3 Platform pagetable size"
+>> +	range 18 20
+>> +	default 20
+>> +	help
+>> +	  This option is only for experts who may have the desire to fine
+>> +	  tune the pagetable size on their system.  The value here is
+>> +	  expressed as the log2 of the page table size.  Valid values are
+>> +	  18, 19, and 20, corresponding to 256KB, 512KB and 1MB respectively.
+>> +
+>> +	  If unsure, choose the default (20) with the confidence that your
+>> +	  system will have optimal runtime performance.
+> 
+> Wouldn't it be more understandable if you had a "small/medium/large"
+> memory config options (that in itself sets the values) instead of
+> having people pick numbers?
+
+In general you'll want the max, 1MB, which is actually small.  This
+was intended for tuning embedded systems where it is expected the
+user understands the ramifications of pagetable size selection
+and the log2 values will be familiar.
+
+The trouble I see with having the options you suggest is that if a
+future version of the HV supports different sizes, then how do you
+map those into your "small/medium/large" scheme?  With numbers it
+falls out naturally.
+
+-Geoff
