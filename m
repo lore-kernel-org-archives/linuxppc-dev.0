@@ -2,20 +2,20 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 47EAB67D75
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 20:47:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3CC2067DCD
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 20:49:21 +1100 (EST)
 Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
-	by imx12.toshiba.co.jp  with ESMTP id kAF9lE4X024277
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:47:14 +0900 (JST)
-Received: (from root@localhost) by wall11.toshiba.co.jp  id kAF9lEMd007635
-	for linuxppc-dev@ozlabs.org; Wed, 15 Nov 2006 18:47:14 +0900 (JST)
+	by imx12.toshiba.co.jp  with ESMTP id kAF9nH2M024937
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:49:17 +0900 (JST)
+Received: (from root@localhost) by wall11.toshiba.co.jp  id kAF9nHbo009177
+	for linuxppc-dev@ozlabs.org; Wed, 15 Nov 2006 18:49:17 +0900 (JST)
 Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id kAF9lDod014876
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:47:14 +0900 (JST)
-Date: Wed, 15 Nov 2006 18:47:10 +0900 (JST)
-Message-Id: <200611150947.kAF9lDMi007946@toshiba.co.jp>
+	by ovp11.toshiba.co.jp  with ESMTP id kAF9nGGW016318
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:49:16 +0900 (JST)
+Date: Wed, 15 Nov 2006 18:49:15 +0900 (JST)
+Message-Id: <200611150949.kAF9nGUY009229@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/16] IOMMU on Celleb
+Subject: [PATCH 11/16] PATA driver for Celleb
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,29 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch creates Celleb platform depend file to support iommu.
+This patch adds PATA driver for Celleb platform.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-2.6.19/arch/powerpc/platforms/celleb/iommu.c
-diff -u /dev/null linux-2.6.19/arch/powerpc/platforms/celleb/iommu.c:1.2
---- /dev/null	Thu Nov  9 18:40:50 2006
-+++ linux-2.6.19/arch/powerpc/platforms/celleb/iommu.c	Mon Nov  6 20:26:20 2006
-@@ -0,0 +1,448 @@
+Index: linux-2.6.19/drivers/ide/Kconfig
+diff -u linux-2.6.19/drivers/ide/Kconfig:1.1.1.1 linux-2.6.19/drivers/ide/Kconfig:1.2
+--- linux-2.6.19/drivers/ide/Kconfig:1.1.1.1	Fri Oct  6 10:41:06 2006
++++ linux-2.6.19/drivers/ide/Kconfig	Fri Oct  6 12:26:35 2006
+@@ -773,6 +773,14 @@
+ 	  to transfer data to and from memory.  Saying Y is safe and improves
+ 	  performance.
+ 
++config BLK_DEV_IDE_CELLEB
++	bool "Toshiba's Cell Reference Set IDE support"
++	depends on PPC_CELLEB
++	help
++	  This driver provides support for the built-in IDE controller on
++	  Toshiba Cell Reference Board.
++	  If unsure, say Y.
++
+ config BLK_DEV_IDE_SWARM
+ 	tristate "IDE for Sibyte evaluation boards"
+ 	depends on SIBYTE_SB1xxx_SOC
+Index: linux-2.6.19/drivers/ide/Makefile
+diff -u linux-2.6.19/drivers/ide/Makefile:1.1.1.1 linux-2.6.19/drivers/ide/Makefile:1.2
+--- linux-2.6.19/drivers/ide/Makefile:1.1.1.1	Fri Oct  6 10:41:06 2006
++++ linux-2.6.19/drivers/ide/Makefile	Fri Oct  6 12:26:35 2006
+@@ -36,6 +36,7 @@
+ # built-in only drivers from ppc/
+ ide-core-$(CONFIG_BLK_DEV_MPC8xx_IDE)	+= ppc/mpc8xx.o
+ ide-core-$(CONFIG_BLK_DEV_IDE_PMAC)	+= ppc/pmac.o
++ide-core-$(CONFIG_BLK_DEV_IDE_CELLEB)	+= ppc/scc_pata.o
+ 
+ # built-in only drivers from h8300/
+ ide-core-$(CONFIG_H8300)		+= h8300/ide-h8300.o
+Index: linux-2.6.19/drivers/ide/ppc/scc_pata.c
+diff -u /dev/null linux-2.6.19/drivers/ide/ppc/scc_pata.c:1.1
+--- /dev/null	Thu Nov  9 18:40:51 2006
++++ linux-2.6.19/drivers/ide/ppc/scc_pata.c	Tue Oct 10 10:23:19 2006
+@@ -0,0 +1,812 @@
 +/*
-+ * Support for IOMMU on Celleb platform.
++ * Support for IDE interfaces on Celleb platform
 + *
 + * (C) Copyright 2006 TOSHIBA CORPORATION
 + *
-+ * This code is based on arch/powerpc/platforms/cell/iommu.c:
-+ * Copyright (C) 2005 IBM Deutschland Entwicklung GmbH,
-+ *			 Arnd Bergmann <arndb@de.ibm.com>
-+ *
-+ * and arch/powerpc/platforms/pseries/iommu.c:
-+ * Copyright (C) 2001 Mike Corrigan & Dave Engebretsen, IBM Corporation
-+ * Copyright (C) 2004 Olof Johansson <olof@lixom.net>, IBM Corporation
-+ * Copyright (C) 2006 Olof Johansson <olof@lixom.net>
++ * This code is based on drivers/ide/pci/siimage.c:
++ * Copyright (C) 2001-2002	Andre Hedrick <andre@linux-ide.org>
++ * Copyright (C) 2003		Red Hat <alan@redhat.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -67,422 +93,791 @@ diff -u /dev/null linux-2.6.19/arch/powerpc/platforms/celleb/iommu.c:1.2
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#define DEBUG
-+
-+#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/module.h>
 +#include <linux/pci.h>
 +#include <linux/delay.h>
-+#include <linux/string.h>
++#include <linux/hdreg.h>
++#include <linux/ide.h>
 +#include <linux/init.h>
-+#include <linux/bootmem.h>
-+#include <linux/mm.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/kernel.h>
-+#include <linux/compiler.h>
 +
-+#include <asm/sections.h>
-+#include <asm/iommu.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/machdep.h>
-+#include <asm/pmac_feature.h>
-+#include <asm/abs_addr.h>
-+#include <asm/system.h>
-+#include <asm/ppc-pci.h>
-+#include <asm/udbg.h>
-+#include <asm/lmb.h>
++#define PCI_DEVICE_ID_TOSHIBA_SCC_ATA            0x01b4
 +
-+#include "beat.h"
-+#include "ioif.h"
++#define SCC_PATA_NAME           "scc IDE"
 +
++#define TDVHSEL_MASTER          0x00000001
++#define TDVHSEL_SLAVE           0x00000004
 +
-+static void iommu_dev_setup_null(struct pci_dev *d)
-+{
-+}
-+static void iommu_bus_setup_null(struct pci_bus *b)
-+{
-+}
++#define MODE_JCUSFEN            0x00000080
 +
-+struct celleb_iommu_dmap {
-+	unsigned long real_addr;
-+	unsigned long dma_addr;
-+	unsigned long size;
++#define CCKCTRL_ATARESET        0x00040000
++#define CCKCTRL_BUFCNT          0x00020000
++#define CCKCTRL_CRST            0x00010000
++#define CCKCTRL_OCLKEN          0x00000100
++#define CCKCTRL_ATACLKOEN       0x00000002
++#define CCKCTRL_LCLKEN          0x00000001
++
++#define QCHCD_IOS_SS		0x00000001
++
++#define QCHSD_STPDIAG		0x00020000
++
++#define INTMASK_MSK             0xD1000012
++#define INTSTS_SERROR		0x80000000
++#define INTSTS_PRERR		0x40000000
++#define INTSTS_RERR		0x10000000
++#define INTSTS_ICERR		0x01000000
++#define INTSTS_BMSINT		0x00000010
++#define INTSTS_BMHE		0x00000008
++#define INTSTS_IOIRQS           0x00000004
++#define INTSTS_INTRQ            0x00000002
++#define INTSTS_ACTEINT          0x00000001
++
++#define ECMODE_VALUE 0x01
++
++static struct scc_ports {
++	unsigned long ctl, dma;
++	unsigned char hwif_id;  /* for removing hwif from system */
++} scc_ports[MAX_HWIFS];
++
++/* PIO transfer mode  table */
++/* JCHST */
++static unsigned long JCHSTtbl[2][7] = {
++	{0x0E, 0x05, 0x02, 0x03, 0x02, 0x00, 0x00},   /* 100MHz */
++	{0x13, 0x07, 0x04, 0x04, 0x03, 0x00, 0x00}    /* 133MHz */
 +};
 +
-+struct celleb_iommu {
-+	struct iommu_table tbl;    /* should be the first member */
-+	unsigned long io_space_id;
-+	unsigned long ioid;	   /* IOPTE parameter */
-+	unsigned long io_address;  /* start DMA address */
-+	unsigned long io_size;
-+	unsigned long io_page_size;
-+	unsigned long flags;       /* IOPTE parameter */
-+	unsigned long dmap_size;   /* size of direct map ==
-+	                                start address of the rest */
-+	unsigned long dmap_regions;/* == number of actual lmb regions */
-+	struct celleb_iommu_dmap *dmap;
++/* JCHHT */
++static unsigned long JCHHTtbl[2][7] = {
++	{0x0E, 0x02, 0x02, 0x02, 0x02, 0x00, 0x00},   /* 100MHz */
++	{0x13, 0x03, 0x03, 0x03, 0x03, 0x00, 0x00}    /* 133MHz */
++};
++
++/* JCHCT */
++static unsigned long JCHCTtbl[2][7] = {
++	{0x1D, 0x1D, 0x1C, 0x0B, 0x06, 0x00, 0x00},   /* 100MHz */
++	{0x27, 0x26, 0x26, 0x0E, 0x09, 0x00, 0x00}    /* 133MHz */
 +};
 +
 +
-+/* initialize the iommu to support a simple linear mapping
-+ * for each DMA window used by any device.
++/* DMA transfer mode  table */
++/* JCHDCTM/JCHDCTS */
++static unsigned long JCHDCTxtbl[2][7] = {
++	{0x0A, 0x06, 0x04, 0x03, 0x01, 0x00, 0x00},   /* 100MHz */
++	{0x0E, 0x09, 0x06, 0x04, 0x02, 0x01, 0x00}    /* 133MHz */
++};
++
++/* JCSTWTM/JCSTWTS  */
++static unsigned long JCSTWTxtbl[2][7] = {
++	{0x06, 0x04, 0x03, 0x02, 0x02, 0x02, 0x00},   /* 100MHz */
++	{0x09, 0x06, 0x04, 0x02, 0x02, 0x02, 0x02}    /* 133MHz */
++};
++
++/* JCTSS */
++static unsigned long JCTSStbl[2][7] = {
++	{0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x00},   /* 100MHz */
++	{0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05}    /* 133MHz */
++};
++
++/* JCENVT */
++static unsigned long JCENVTtbl[2][7] = {
++	{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00},   /* 100MHz */
++	{0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02}    /* 133MHz */
++};
++
++/* JCACTSELS/JCACTSELM */
++static unsigned long JCACTSELtbl[2][7] = {
++	{0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00},   /* 100MHz */
++	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}    /* 133MHz */
++};
++
++
++static u8 scc_ide_inb(unsigned long port)
++{
++	u32 data = in_be32((void*)port);
++	return (u8)data;
++}
++
++static u16 scc_ide_inw(unsigned long port)
++{
++	u32 data = in_be32((void*)port);
++	return (u16)data;
++}
++
++static u32 scc_ide_inl(unsigned long port)
++{
++	u32 data = in_be32((void*)port);
++	return data;
++}
++
++static void scc_ide_insw(unsigned long port, void *addr, u32 count)
++{
++	u16 *ptr = (u16 *)addr;
++	while (count--) {
++		*ptr++ = le16_to_cpu(in_be32((void*)port));
++	}
++}
++
++static void scc_ide_insl(unsigned long port, void *addr, u32 count)
++{
++	u16 *ptr = (u16 *)addr;
++	while (count--) {
++		*ptr++ = le16_to_cpu(in_be32((void*)port));
++		*ptr++ = le16_to_cpu(in_be32((void*)port));
++	}
++}
++
++static void scc_ide_outb(u8 addr, unsigned long port)
++{
++	out_be32((void*)port, addr);
++}
++
++static void scc_ide_outw(u16 addr, unsigned long port)
++{
++	out_be32((void*)port, addr);
++}
++
++static void scc_ide_outl(u32 addr, unsigned long port)
++{
++	out_be32((void*)port, addr);
++}
++
++static void
++scc_ide_outbsync(ide_drive_t * drive, u8 addr, unsigned long port)
++{
++	ide_hwif_t *hwif = HWIF(drive);
++	
++	out_be32((void*)port, addr);
++	__asm__ __volatile__("eieio":::"memory");	
++	in_be32((void*)(hwif->dma_base + 0x01c));
++	__asm__ __volatile__("eieio":::"memory");
++}
++
++static void
++scc_ide_outsw(unsigned long port, void *addr, u32 count)
++{
++	u16 *ptr = (u16 *)addr;
++	while (count--) {
++		out_be32((void*)port, cpu_to_le16(*ptr++));
++	}
++}
++
++static void
++scc_ide_outsl(unsigned long port, void *addr, u32 count)
++{
++	u16 *ptr = (u16 *)addr;
++	while (count--) {
++		out_be32((void*)port, cpu_to_le16(*ptr++));
++		out_be32((void*)port, cpu_to_le16(*ptr++));
++	}
++}
++
++/**
++ *	scc_ratemask	-	Compute available modes
++ *	@drive: IDE drive
++ *
++ *	Compute the available speeds for the devices on the interface.
++ *	Enforce UDMA33 as a limit if there is no 80pin cable present.
 + */
-+static void celleb_do_map_iommu_direct(struct celleb_iommu *iommu)
++ 
++static u8 scc_ratemask(ide_drive_t *drive)
 +{
-+	unsigned long io_address, real_address;
-+	unsigned long old_address, old_ioid, old_flags;
-+	int i;
++	u8 mode = 4;
++	
++	if (!eighty_ninty_three(drive))
++		mode = min(mode, (u8)1);
++	return mode;
++}
 +
-+	iommu->dmap =
-+	    kmalloc(sizeof(struct celleb_iommu_dmap) * lmb.memory.cnt,
-+		    GFP_KERNEL);
-+	if (!iommu->dmap) {
-+		return;
++/**
++ *	scc_tuneproc	-	tune a drive PIO mode
++ *	@drive: drive to tune
++ *	@mode_wanted: the target operating mode
++ *
++ *	Load the timing settings for this device mode into the
++ *	controller.
++ */
++ 
++static void scc_tuneproc(ide_drive_t *drive, byte mode_wanted)
++{
++	ide_hwif_t *hwif = HWIF(drive);
++	struct scc_ports *ports = ide_get_hwifdata(hwif);
++	unsigned long ctl_base = ports->ctl;
++	unsigned long cckctrl_port = ctl_base + 0xff0;
++	unsigned long piosht_port = ctl_base + 0x000;
++	unsigned long pioct_port = ctl_base + 0x004;
++	unsigned long reg;
++	unsigned char speed = XFER_PIO_0;
++	int offset;
++	
++	mode_wanted = ide_get_best_pio_mode(drive, mode_wanted, 4, NULL);
++	switch (mode_wanted) {
++	case 4:	
++		speed = XFER_PIO_4;
++		break;
++	case 3:	
++		speed = XFER_PIO_3;
++		break;
++	case 2:	
++		speed = XFER_PIO_2;
++		break;
++	case 1:		
++		speed = XFER_PIO_1;
++		break;
++	case 0:
++	default:
++		speed = XFER_PIO_0;
++		break;
 +	}
-+	iommu->dmap_regions = lmb.memory.cnt;
++	
++	reg = hwif->INL(cckctrl_port);
++	if (reg & CCKCTRL_ATACLKOEN) {
++		offset = 1; /* 133MHz */
++	} else {
++		offset = 0; /* 100MHz */
++	}
++	reg = JCHSTtbl[offset][mode_wanted] << 16 | JCHHTtbl[offset][mode_wanted];
++	hwif->OUTL(reg, piosht_port);
++	reg = JCHCTtbl[offset][mode_wanted];
++	hwif->OUTL(reg, pioct_port);
++	
++	ide_config_drive_speed(drive, speed);
++}
 +
-+	iommu->dmap_size = 0;
-+	io_address = iommu->io_address;
-+	for (i = 0; i < iommu->dmap_regions; i++) {
-+		iommu->dmap[i].real_addr = lmb.memory.region[i].base;
-+		if (io_address >= iommu->io_address + iommu->io_size) {
-+			/* no more DMA address, ignore this memory region */
-+			iommu->dmap[i].dma_addr = DMA_ERROR_CODE;
-+			iommu->dmap[i].size = 0;
++/**
++ *	scc_tune_chipset	-	tune a drive DMA mode
++ *	@drive: Drive to set up
++ *	@xferspeed: speed we want to achieve
++ *
++ *	Load the timing settings for this device mode into the
++ *	controller.
++ */
++ 
++static int scc_tune_chipset(ide_drive_t *drive, byte xferspeed)
++{
++	ide_hwif_t *hwif = HWIF(drive);
++	u8 speed = ide_rate_filter(scc_ratemask(drive), xferspeed);
++	struct scc_ports *ports = ide_get_hwifdata(hwif);
++	unsigned long ctl_base = ports->ctl;
++	unsigned long cckctrl_port = ctl_base + 0xff0;
++	unsigned long mdmact_port = ctl_base + 0x008;
++	unsigned long mcrcst_port = ctl_base + 0x00c;
++	unsigned long sdmact_port = ctl_base + 0x010;
++	unsigned long scrcst_port = ctl_base + 0x014;
++	unsigned long udenvt_port = ctl_base + 0x018;
++	unsigned long tdvhsel_port   = ctl_base + 0x020;
++	int is_slave = (&hwif->drives[1] == drive);
++	int offset, idx;
++	unsigned long reg;
++	unsigned long jcactsel;    
++	
++	reg = hwif->INL(cckctrl_port);
++	if (reg & CCKCTRL_ATACLKOEN) {
++		offset = 1; /* 133MHz */
++	} else {
++		offset = 0; /* 100MHz */
++	}
++	
++	switch (speed) {
++	case XFER_UDMA_6:
++		idx = 6;
++		break;
++	case XFER_UDMA_5:
++		idx = 5;
++		break;
++	case XFER_UDMA_4:
++		idx = 4;
++		break;
++	case XFER_UDMA_3:
++		idx = 3;
++		break;
++	case XFER_UDMA_2:
++		idx = 2;
++		break;
++	case XFER_UDMA_1:
++		idx = 1;
++		break;
++	case XFER_UDMA_0:
++		idx = 0;
++		break;
++	default:
++		return 1;
++	}
++	
++	jcactsel = JCACTSELtbl[offset][idx];
++	if (is_slave) {
++		hwif->OUTL(JCHDCTxtbl[offset][idx], sdmact_port);
++		hwif->OUTL(JCSTWTxtbl[offset][idx], scrcst_port);
++		jcactsel = jcactsel << 2 ;
++		hwif->OUTL( (hwif->INL( tdvhsel_port ) & ~TDVHSEL_SLAVE) | jcactsel, tdvhsel_port );
++	} else {
++		hwif->OUTL(JCHDCTxtbl[offset][idx], mdmact_port);
++		hwif->OUTL(JCSTWTxtbl[offset][idx], mcrcst_port);
++		hwif->OUTL( (hwif->INL( tdvhsel_port ) & ~TDVHSEL_MASTER) | jcactsel, tdvhsel_port );
++	}
++	reg = JCTSStbl[offset][idx] << 16 | JCENVTtbl[offset][idx];
++	hwif->OUTL(reg, udenvt_port);
++	
++	return ide_config_drive_speed(drive, speed);
++}
++
++/**
++ *	scc_config_chipset_for_dma	-	configure for DMA
++ *	@drive: drive to configure
++ *
++ *	Called by scc_config_drive_for_dma().
++ */
++ 
++static int scc_config_chipset_for_dma(ide_drive_t *drive)
++{
++	u8 speed = ide_dma_speed(drive, scc_ratemask(drive));
++	
++	if (!speed)
++		return 0;
++	
++	if (ide_set_xfer_rate(drive, speed))
++		return 0;
++	
++	if (!drive->init_speed)
++		drive->init_speed = speed;
++	
++	return ide_dma_enable(drive);
++}
++
++/**
++ *	scc_configure_drive_for_dma	-	set up for DMA transfers
++ *	@drive: drive we are going to set up
++ *
++ *	Set up the drive for DMA, tune the controller and drive as 
++ *	required. 
++ *      If the drive isn't suitable for DMA or we hit other problems
++ *      then we will drop down to PIO and set up PIO appropriately.
++ *      (return 1)
++ */
++ 
++static int scc_config_drive_for_dma(ide_drive_t *drive)
++{
++	ide_hwif_t *hwif = HWIF(drive);
++	struct hd_driveid *id = drive->id;
++  
++	if ((id->capability & 1) != 0 && drive->autodma) {
++		if (ide_use_dma(drive)) {
++			if (scc_config_chipset_for_dma(drive))
++				return hwif->ide_dma_on(drive);
++		}
++		goto fast_ata_pio;
++	} else if ((id->capability & 8) || (id->field_valid & 2)) {
++	fast_ata_pio:
++		hwif->tuneproc(drive, 4);
++		hwif->ide_dma_off_quietly(drive);
++	}
++	return 1; /* DMA is not supported */
++}
++
++/**
++ *	scc_ide_dma_end	-	Stop DMA
++ *	@drive: IDE drive
++ *
++ *	Check and clear INT Status register.
++ *      Then call __ide_dma_end().
++ */
++
++static int scc_ide_dma_end(ide_drive_t * drive)
++{
++	ide_hwif_t *hwif = HWIF(drive);
++	unsigned long intsts_port = hwif->dma_base + 0x014;
++	u32 reg;
++	
++	while (1) {
++		reg = hwif->INL(intsts_port);
++		
++		if (reg & INTSTS_SERROR) {
++			printk(KERN_WARNING "%s: SERROR\n", SCC_PATA_NAME);
++			hwif->OUTL(INTSTS_SERROR|INTSTS_BMSINT, intsts_port);
++			
++			hwif->OUTB(hwif->INB(hwif->dma_command) & ~QCHCD_IOS_SS,
++				   hwif->dma_command);
 +			continue;
 +		}
-+		if ( (lmb.memory.region[i].base &
-+		       ((1UL << iommu->io_page_size) - 1))
-+		    || (lmb.memory.region[i].size &
-+		       ((1UL << iommu->io_page_size) - 1))) {
-+			/* page size mismatch, ignore this memory region */
-+			iommu->dmap[i].dma_addr = DMA_ERROR_CODE;
-+			iommu->dmap[i].size = 0;
++		
++		if (reg & INTSTS_PRERR) {
++			u32 maea0, maec0;
++			unsigned long ctl_base = hwif->config_data;
++			
++			maea0 = hwif->INL(ctl_base + 0xF50);
++			maec0 = hwif->INL(ctl_base + 0xF54);
++			
++			printk(KERN_WARNING "%s: PRERR [addr:%x cmd:%x]\n", SCC_PATA_NAME, maea0, maec0);
++			
++			hwif->OUTL(INTSTS_PRERR|INTSTS_BMSINT, intsts_port);
++			
++			hwif->OUTB(hwif->INB(hwif->dma_command) & ~QCHCD_IOS_SS,
++				   hwif->dma_command);
 +			continue;
 +		}
-+		iommu->dmap[i].dma_addr = io_address;
-+		iommu->dmap[i].size = lmb.memory.region[i].size;
-+
-+		for (real_address = iommu->dmap[i].real_addr;
-+		     real_address <
-+		     iommu->dmap[i].real_addr + iommu->dmap[i].size;
-+		     real_address += 1UL << iommu->io_page_size,
-+		     io_address += 1UL << iommu->io_page_size) {
-+			if (beat_put_iopte
-+			    (iommu->io_space_id, io_address, (void *)real_address,
-+			     iommu->ioid, iommu->flags, (void **)&old_address,
-+			     &old_ioid, &old_flags) != 0) {
-+				break;
-+			}
++		
++		if (reg & INTSTS_RERR) {
++			printk(KERN_WARNING "%s: Response Error\n", SCC_PATA_NAME);
++			hwif->OUTL(INTSTS_RERR|INTSTS_BMSINT, intsts_port);
++			
++			hwif->OUTB(hwif->INB(hwif->dma_command) & ~QCHCD_IOS_SS,
++				   hwif->dma_command);
++			continue;
 +		}
-+		if (real_address - iommu->dmap[i].real_addr <
-+		    iommu->dmap[i].size) {
-+			iommu->dmap[i].size =
-+			    real_address - iommu->dmap[i].real_addr;
++		
++		if (reg & INTSTS_ICERR) {
++			hwif->OUTB(hwif->INB(hwif->dma_command) & ~QCHCD_IOS_SS,
++				   hwif->dma_command);
++			
++			printk(KERN_WARNING "%s: Illegal Configuration\n", SCC_PATA_NAME);
++			hwif->OUTL(INTSTS_ICERR|INTSTS_BMSINT, intsts_port);
++			continue;
++		}
++		
++		if (reg & INTSTS_BMSINT) {
++			printk(KERN_WARNING "%s: Internal Bus Error\n", SCC_PATA_NAME);
++			hwif->OUTL(INTSTS_BMSINT, intsts_port);
++			
++			ide_do_reset(drive);
++			continue;
 +		}
 +
-+		iommu->dmap_size += iommu->dmap[i].size;
++		if (reg & INTSTS_BMHE) {
++			hwif->OUTL(INTSTS_BMHE, intsts_port);
++			continue;
++		}
++		
++		if (reg & INTSTS_ACTEINT) {
++			hwif->OUTL(INTSTS_ACTEINT, intsts_port);
++			continue;
++		}
++		
++		if (reg & INTSTS_IOIRQS) {
++			hwif->OUTL(INTSTS_IOIRQS, intsts_port);
++			continue;
++		}
++		break;
 +	}
++	
++	return __ide_dma_end(drive);
 +}
 +
-+static void iommu_bus_setup_celleb(struct pci_bus *b)
++/**
++ *	setup_mmio_scc	-	map CTRL/BMID region
++ *	@dev: PCI device we are configuring
++ *	@name: device name
++ *
++ */
++ 
++static int setup_mmio_scc (struct pci_dev *dev, const char *name)
 +{
-+	struct device_node *dn = (struct device_node *) b->sysdata;
-+	struct device_node *pdn;
-+	struct pci_dn *pdn_pci;
-+	struct ioif *ioif;
-+	const char *ctype, *ptype;
-+	unsigned long *dma_window = NULL;
-+	struct celleb_iommu *iommu;
-+	struct iommu_table **iommu_set_c, **iommu_set_p;
-+
-+	ctype = get_property(dn, "device_type", NULL);
-+	if (!ctype) {
-+		pr_debug("bus type not defined.\n");
-+		return ;
-+	}
-+	if (strncmp(ctype,"pci",3) == 0) {
-+		iommu_set_c = &(PCI_DN(dn)->iommu_table);
-+	} else if (strncmp(ctype,"ioif",4) == 0) {
-+		iommu_set_c = &((struct ioif *)dn->data)->iommu_table;
-+	} else {
-+		pr_debug("unknown bus type\n");
-+		return ;
-+	}
-+
-+
-+	for (pdn = dn; pdn != NULL; pdn = pdn->parent) {
-+		dma_window =
-+		    (unsigned long *) get_property(pdn,
-+						   "toshiba,dma-window",
-+						   NULL);
-+		if (dma_window != NULL)
++	unsigned long ctl_base = pci_resource_start(dev, 0);
++	unsigned long dma_base = pci_resource_start(dev, 1);
++	unsigned long ctl_size = pci_resource_len(dev, 0);
++	unsigned long dma_size = pci_resource_len(dev, 1);
++	void *ctl_addr;
++	void *dma_addr;
++	int i;
++  
++	for (i = 0; i < MAX_HWIFS; i++) {
++		if (scc_ports[i].ctl == 0)
 +			break;
 +	}
-+	if (!dma_window) {
-+		pr_debug("No toshiba,dma-window entry found !\n");
-+		return;
++	if (i >= MAX_HWIFS)
++		return -ENOMEM;
++	
++	if (!request_mem_region(ctl_base, ctl_size, name)) {
++		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
++		goto fail_0;
 +	}
-+	ptype = get_property(pdn, "device_type", NULL);
-+	if (!ptype) {
-+		pr_debug("bus type not defined\n");
-+		return ;
++	
++	if (!request_mem_region(dma_base, dma_size, name)) {
++		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
++		goto fail_1;
 +	}
-+	if (strncmp(ptype,"pci",3) == 0) {
-+		pdn_pci = PCI_DN(pdn);
-+		ioif = NULL;
-+		iommu_set_p = &pdn_pci->iommu_table;
-+	} else if (strncmp(ptype,"ioif",4) == 0) {
-+		pdn_pci = NULL;
-+		ioif = (struct ioif *)pdn->data;
-+		iommu_set_p = &ioif->iommu_table;
-+	} else {
-+		pr_debug("unknown bus type\n");
-+		return ;
-+	}
-+
-+	if (!(*iommu_set_p)) {
-+		iommu =
-+		    (struct celleb_iommu *)
-+		    kmalloc(sizeof(struct celleb_iommu), GFP_KERNEL);
-+		if (iommu == NULL) {
-+			pr_debug("No memory for iommu struct.\n");
-+			return;
-+		}
-+
-+		iommu->io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
-+		iommu->ioid = dma_window[0] & 0x7ffUL;
-+		iommu->io_address = dma_window[1];
-+		iommu->io_size = dma_window[2];
-+		iommu->io_page_size = dma_window[3];
-+		iommu->flags = 0xf800000000000000UL;
-+		/* Fixed setting: read/write permitted, 
-+		 * Memory coherency required, Strongest order
-+		 */
-+		celleb_do_map_iommu_direct(iommu);	/* TBD: always? */
-+
-+		iommu->tbl.it_busno = pdn_pci ? pdn_pci->bussubno : 0;
-+		if (iommu->dmap) {
-+			iommu->tbl.it_size =
-+			   (iommu->io_size - iommu->dmap_size) >> PAGE_SHIFT;
-+			iommu->tbl.it_offset =
-+			   (iommu->io_address + iommu->dmap_size) >> PAGE_SHIFT;
-+		} else {
-+			iommu->tbl.it_size = iommu->io_size >> PAGE_SHIFT;
-+			iommu->tbl.it_offset = iommu->io_address >> PAGE_SHIFT;
-+		}
-+		iommu->tbl.it_base = 0;
-+		iommu->tbl.it_index = 0;
-+		iommu->tbl.it_blocksize = 16;
-+
-+		*iommu_set_p = (struct iommu_table *) iommu;
-+	}
-+
-+	if (dn != pdn) {
-+		*iommu_set_c = *iommu_set_p;
-+	}
++	
++	if ((ctl_addr = ioremap(ctl_base, ctl_size)) == NULL)
++		goto fail_2;
++	
++	if ((dma_addr = ioremap(dma_base, dma_size)) == NULL)
++		goto fail_3;
++	
++	pci_set_master(dev);
++	scc_ports[i].ctl = (unsigned long)ctl_addr;
++	scc_ports[i].dma = (unsigned long)dma_addr;
++	pci_set_drvdata(dev, (void *) &scc_ports[i]);
++	
++	return 1;
++	
++ fail_3:
++	iounmap(ctl_addr);
++ fail_2:
++	release_mem_region(dma_base, dma_size);
++ fail_1:
++	release_mem_region(ctl_base, ctl_size);
++ fail_0:
++	return -ENOMEM;
 +}
 +
-+static void iommu_dev_setup_celleb(struct pci_dev *dev)
-+{
-+	struct device_node *dn, *pdn;
-+	char *pdn_type;
-+	struct iommu_table *iommu_found = NULL;
++/**
++ *	init_setup_scc	-	set up an SCC PATA Controller
++ *	@dev: PCI device
++ *	@d: IDE PCI device
++ *
++ *	Perform the initial set up for this device.
++ */
 +
-+	/* We assume dma-window property is set for the buses, not for devices.
-+	 * Thus we search the tree upwards only to find an iommu_table enty.
-+	 */
-+	dn = dev->sysdata;
-+	if (!dn || !PCI_DN(dn)) {
-+		return;
++static int __devinit init_setup_scc(struct pci_dev *dev, ide_pci_device_t *d)
++{
++	unsigned long ctl_base;
++	unsigned long dma_base;
++	unsigned long cckctrl_port;
++	unsigned long intmask_port;
++	unsigned long mode_port;
++	unsigned long ecmode_port;
++	unsigned long dma_status_port;
++	u32 reg = 0;	
++	struct scc_ports *ports;
++	int rc;
++	
++	rc = setup_mmio_scc(dev, d->name);
++	if (rc < 0) {
++		return rc;
 +	}
-+
-+	/* pdn->data can be either a pointer to struct pci_dn or to struct ioif
-+	 */
-+	for (pdn = dn; pdn && pdn->data ; pdn = pdn->parent) {
-+		pdn_type = (char *)get_property(pdn, "device_type", NULL);
-+		if (pdn_type && strncmp(pdn_type,"ioif",4) == 0) {
-+			iommu_found = ((struct ioif *)(pdn->data))->iommu_table;
-+		} else {
-+			iommu_found = PCI_DN(pdn)->iommu_table;
-+		}
-+		if (iommu_found)
-+				break;
-+	}
-+
-+	if (pdn && pdn != dn && pdn->data && iommu_found) {
-+		PCI_DN(dn)->iommu_table = iommu_found;
-+	}
-+}
-+
-+
-+static inline struct celleb_iommu *devnode_table(struct device *dev)
-+{
-+	struct device_node *dn;
-+	struct pci_dev *pdev;
-+
-+	if (!dev) {
-+		/* No ISA support now */
-+#if 0
-+		pdev = ppc64_isabridge_dev;
-+		if (!pdev)
-+#endif
-+		return NULL;
-+	} else {
-+		pdev = to_pci_dev(dev);
-+	}
-+	dn = pdev->sysdata;
-+
-+	return (struct celleb_iommu *) (PCI_DN(dn)->iommu_table);
-+}
-+
-+
-+static dma_addr_t get_dma_address(struct device *hwdev, size_t size,
-+				  uint64_t phys_addr)
-+{
-+	struct celleb_iommu *iommu;
-+	int i;
-+
-+	iommu = devnode_table(hwdev);
-+	if (!iommu) {
-+		return DMA_ERROR_CODE;
-+	}
-+	/* first, try directly mapped address */
-+	if (iommu->dmap) {
-+		for (i = 0; i < iommu->dmap_regions; i++) {
-+			if (phys_addr >= iommu->dmap[i].real_addr &&
-+			    phys_addr + size <
-+			    iommu->dmap[i].real_addr + iommu->dmap[i].size) {
-+				return (iommu->dmap[i].dma_addr +
-+					phys_addr - iommu->dmap[i].real_addr);
-+			}
-+		}
-+	}
-+	/* TBD: if not found in direct mapping.. */
-+	return DMA_ERROR_CODE;
-+}
-+
-+
-+static void put_dma_address(struct device *hwdev, size_t size,
-+			    dma_addr_t dma_addr)
-+{
-+	struct celleb_iommu *iommu;
-+
-+	iommu = devnode_table(hwdev);
-+	if (!iommu)
-+		return;
-+
-+	if (iommu->dmap) {
-+		/* nothing to do */
-+		;
-+	} else {
-+		/* TBD: not supported yet */
-+		;
-+	}
-+}
-+
-+
-+static void *celleb_alloc_coherent(struct device *hwdev, size_t size,
-+				   dma_addr_t * dma_handle, gfp_t flag)
-+{
-+	void *ret;
-+
-+	ret = (void *) __get_free_pages(flag, get_order(size));
-+	if (ret != NULL) {
-+		memset(ret, 0, size);
-+		*dma_handle =
-+		    get_dma_address(hwdev, size, virt_to_phys(ret));
-+		if (*dma_handle == DMA_ERROR_CODE) {
-+			free_pages((unsigned long) ret, get_order(size));
-+			return NULL;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static void celleb_free_coherent(struct device *hwdev, size_t size,
-+				 void *vaddr, dma_addr_t dma_handle)
-+{
-+	put_dma_address(hwdev, size, dma_handle);
-+	free_pages((unsigned long) vaddr, get_order(size));
-+}
-+
-+static dma_addr_t celleb_map_single(struct device *hwdev, void *ptr,
-+				    size_t size,
-+				    enum dma_data_direction direction)
-+{
-+	return get_dma_address(hwdev, size, virt_to_abs(ptr));
-+}
-+
-+static void celleb_unmap_single(struct device *hwdev, dma_addr_t dma_addr,
-+				size_t size,
-+				enum dma_data_direction direction)
-+{
-+	put_dma_address(hwdev, size, dma_addr);
-+}
-+
-+static int celleb_map_sg(struct device *hwdev, struct scatterlist *sg,
-+			 int nents, enum dma_data_direction direction)
-+{
-+	int i;
-+
-+	for (i = 0; i < nents; i++, sg++) {
-+		sg->dma_address =
-+		    get_dma_address(hwdev, sg->length,
-+				    page_to_phys(sg->page) + sg->offset);
-+		sg->dma_length = sg->length;
-+		if (sg->dma_address == DMA_ERROR_CODE) {
-+			sg->dma_length = 0;
++	
++	ports = pci_get_drvdata(dev);
++	ctl_base = ports->ctl;
++	dma_base = ports->dma;
++	cckctrl_port = ctl_base + 0xff0;
++	intmask_port = dma_base + 0x010;
++	mode_port = ctl_base + 0x024;
++	ecmode_port = ctl_base + 0xf00;
++	dma_status_port = dma_base + 0x004;
++	
++	/* controller initialization */
++	reg = 0;
++	out_be32((void*)cckctrl_port, reg);
++	reg |= CCKCTRL_ATACLKOEN;
++	out_be32((void*)cckctrl_port, reg);
++	reg |= CCKCTRL_LCLKEN | CCKCTRL_OCLKEN;
++	out_be32((void*)cckctrl_port, reg);
++	reg |= CCKCTRL_CRST;
++	out_be32((void*)cckctrl_port, reg);
++	
++	for (;;) {
++		reg = in_be32((void*)cckctrl_port);
++		if (reg & CCKCTRL_CRST)
 +			break;
-+		}
++		udelay(5000);
 +	}
++	
++	reg |= CCKCTRL_ATARESET;
++	out_be32((void*)cckctrl_port, reg);
++	
++	out_be32((void*)ecmode_port, ECMODE_VALUE);
++	out_be32((void*)mode_port, MODE_JCUSFEN);
++	out_be32((void*)intmask_port, INTMASK_MSK);
 +
-+	return i;
++	return ide_setup_pci_device(dev, d);
 +}
 +
-+static void celleb_unmap_sg(struct device *hwdev, struct scatterlist *sg,
-+			    int nents, enum dma_data_direction direction)
-+{
-+	int i;
++/**
++ *	init_mmio_iops_scc	-	set up the iops for MMIO
++ *	@hwif: interface to set up
++ *
++ */
 +
-+	for (i = 0; i < nents; i++, sg++) {
-+		if (sg->dma_address == DMA_ERROR_CODE)
-+			break;
-+		put_dma_address(hwdev, sg->length, sg->dma_address);
-+	}
++static void __devinit init_mmio_iops_scc(ide_hwif_t *hwif)
++{
++	struct pci_dev *dev = hwif->pci_dev;
++	struct scc_ports *ports = pci_get_drvdata(dev);
++	unsigned long dma_base = ports->dma;
++	
++	ide_set_hwifdata(hwif, ports);
++	
++	hwif->INB = scc_ide_inb;
++	hwif->INW = scc_ide_inw;
++	hwif->INL = scc_ide_inl;
++	hwif->INSW = scc_ide_insw;
++	hwif->INSL = scc_ide_insl;
++	hwif->OUTB = scc_ide_outb;
++	hwif->OUTBSYNC = scc_ide_outbsync;
++	hwif->OUTW = scc_ide_outw;
++	hwif->OUTL = scc_ide_outl;
++	hwif->OUTSW = scc_ide_outsw;
++	hwif->OUTSL = scc_ide_outsl;
++	
++	hwif->io_ports[IDE_DATA_OFFSET] = dma_base + 0x20;
++	hwif->io_ports[IDE_ERROR_OFFSET] = dma_base + 0x24;
++	hwif->io_ports[IDE_NSECTOR_OFFSET] = dma_base + 0x28;
++	hwif->io_ports[IDE_SECTOR_OFFSET] = dma_base + 0x2c;
++	hwif->io_ports[IDE_LCYL_OFFSET] = dma_base + 0x30;
++	hwif->io_ports[IDE_HCYL_OFFSET] = dma_base + 0x34;
++	hwif->io_ports[IDE_SELECT_OFFSET] = dma_base + 0x38;
++	hwif->io_ports[IDE_STATUS_OFFSET] = dma_base + 0x3c;
++	hwif->io_ports[IDE_CONTROL_OFFSET] = dma_base + 0x40;
++	
++	hwif->irq = hwif->pci_dev->irq;
++	hwif->dma_base = dma_base;
++	hwif->config_data = ports->ctl;
++	hwif->mmio = 2;
 +}
 +
-+static int celleb_dma_supported(struct device *dev, u64 mask)
++/**
++ *	init_iops_scc	-	set up iops
++ *	@hwif: interface to set up
++ *
++ *	Do the basic setup for the SCC hardware interface
++ *	and then do the MMIO setup.
++ */
++
++static void __devinit init_iops_scc(ide_hwif_t *hwif)
 +{
-+	return (mask < 0x100000000UL);
++	struct pci_dev *dev =  hwif->pci_dev;
++	hwif->hwif_data = NULL;
++	if (pci_get_drvdata(dev) == NULL)
++		return;
++	init_mmio_iops_scc(hwif);
 +}
 +
-+void celleb_init_iommu(void)
++/**
++ *	init_hwif_scc	-	set up hwif
++ *	@hwif: interface to set up
++ *
++ *	We do the basic set up of the interface structure. The SCC
++ *	requires several custom handlers so we override the default
++ *	ide DMA handlers appropriately.
++ */
++
++static void __devinit init_hwif_scc(ide_hwif_t *hwif)
 +{
-+	int setup_bus = 0;
++	struct scc_ports *ports = ide_get_hwifdata(hwif);
 +
-+	if (!(of_chosen &&
-+	      get_property(of_chosen, "linux,iommu-off", NULL)))
-+		setup_bus = 1;
-+
-+	if (setup_bus) {
-+		pr_debug("%s: IOMMU mapping activated\n", __FUNCTION__);
-+		ppc_md.iommu_dev_setup = iommu_dev_setup_celleb;
-+		ppc_md.iommu_bus_setup = iommu_bus_setup_celleb;
++	ports->hwif_id = hwif->index;
++	
++	hwif->dma_command = hwif->dma_base;
++	hwif->dma_status = hwif->dma_base + 0x04;
++	hwif->dma_prdtable = hwif->dma_base + 0x08;
++	
++	hwif->OUTL(hwif->dmatable_dma, (hwif->dma_base + 0x018)); /* PTERADD */
++	
++	hwif->ide_dma_end = scc_ide_dma_end;
++	hwif->speedproc = scc_tune_chipset;
++	hwif->tuneproc = scc_tuneproc;
++	hwif->ide_dma_check = scc_config_drive_for_dma;
++	
++	hwif->drives[0].autotune = IDE_TUNE_AUTO;
++	hwif->drives[1].autotune = IDE_TUNE_AUTO;
++	
++	if (hwif->INL(hwif->config_data + 0xff0) & CCKCTRL_ATACLKOEN) {
++		hwif->ultra_mask = 0x7f; /* 133MHz */
 +	} else {
-+		pr_debug("%s: IOMMU mapping activated, "
-+			 "no device action necessary\n", __FUNCTION__);
-+		/* Direct I/O, IOMMU off */
-+		ppc_md.iommu_dev_setup = iommu_dev_setup_null;
-+		ppc_md.iommu_bus_setup = iommu_bus_setup_null;
++		hwif->ultra_mask = 0x3f; /* 100MHz */
 +	}
-+
-+	pci_dma_ops.alloc_coherent = celleb_alloc_coherent;
-+	pci_dma_ops.free_coherent = celleb_free_coherent;
-+	pci_dma_ops.map_single = celleb_map_single;
-+	pci_dma_ops.unmap_single = celleb_unmap_single;
-+	pci_dma_ops.map_sg = celleb_map_sg;
-+	pci_dma_ops.unmap_sg = celleb_unmap_sg;
-+	pci_dma_ops.dma_supported = celleb_dma_supported;
++	hwif->mwdma_mask = 0x00;
++	hwif->swdma_mask = 0x00;
++	hwif->atapi_dma = 1;
++	
++	/* we support 80c cable only. */
++	hwif->udma_four = 1;
++	
++	hwif->autodma = 0;
++	if (!noautodma)
++		hwif->autodma = 1;
++	hwif->drives[0].autodma = hwif->autodma;
++	hwif->drives[1].autodma = hwif->autodma;
 +}
++
++#define DECLARE_SCC_DEV(name_str)			\
++  {							\
++      .name		= name_str,			\
++      .init_setup	= init_setup_scc,		\
++      .init_iops	= init_iops_scc,		\
++      .init_hwif	= init_hwif_scc,		\
++      .channels	= 1,					\
++      .autodma	= AUTODMA,				\
++      .bootable	= ON_BOARD,				\
++  }
++
++static ide_pci_device_t scc_chipsets[] __devinitdata = {
++	/* 0 */ DECLARE_SCC_DEV("sccIDE"),
++};
++
++/**
++ *	scc_init_one	-	pci layer discovery entry
++ *	@dev: PCI device
++ *	@id: ident table entry
++ *
++ *	Called by the PCI code when it finds an SCC PATA controller.
++ *	We then use the IDE PCI generic helper to do most of the work.
++ */
++
++static int __devinit scc_init_one(struct pci_dev *dev, const struct pci_device_id *id)
++{
++	ide_pci_device_t *d = &scc_chipsets[id->driver_data];
++	return d->init_setup(dev, d);
++}
++
++/**
++ *	scc_remove	-	pci layer remove entry
++ *	@dev: PCI device
++ *
++ *	Called by the PCI code when it removes an SCC PATA controller.
++ */
++
++static void __devexit scc_remove(struct pci_dev *dev)
++{
++	struct scc_ports *ports = pci_get_drvdata(dev);
++	ide_hwif_t *hwif = &ide_hwifs[ports->hwif_id];
++	unsigned long ctl_base = pci_resource_start(dev, 0);
++	unsigned long dma_base = pci_resource_start(dev, 1);
++	unsigned long ctl_size = pci_resource_len(dev, 0);
++	unsigned long dma_size = pci_resource_len(dev, 1);
++	
++	if (hwif->dmatable_cpu) {
++		pci_free_consistent(hwif->pci_dev,
++				    PRD_ENTRIES * PRD_BYTES,
++				    hwif->dmatable_cpu,
++				    hwif->dmatable_dma);
++		hwif->dmatable_cpu = NULL;
++	}
++	
++	ide_unregister(hwif->index);
++	
++	hwif->chipset = ide_unknown;
++	iounmap((void*)ports->dma);
++	iounmap((void*)ports->ctl);
++	release_mem_region(dma_base, dma_size);
++	release_mem_region(ctl_base, ctl_size);
++	memset(ports, 0, sizeof(*ports));
++}
++
++static struct pci_device_id scc_pci_tbl[] = {
++	{ PCI_VENDOR_ID_TOSHIBA_2, PCI_DEVICE_ID_TOSHIBA_SCC_ATA,  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ 0, },
++};
++MODULE_DEVICE_TABLE(pci, scc_pci_tbl);
++
++static struct pci_driver driver = {
++	.name = "SCC IDE",
++	.id_table = scc_pci_tbl,
++	.probe = scc_init_one,
++	.remove = scc_remove,
++};
++
++static int scc_ide_init(void)
++{
++	return ide_pci_register_driver(&driver);
++}
++
++module_init(scc_ide_init);
++/* -- No exit code?
++static void scc_ide_exit(void)
++{
++	ide_pci_unregister_driver(&driver);
++}
++module_exit(scc_ide_exit);
++ */
++
++
++MODULE_DESCRIPTION("PCI driver module for Toshiba SCC IDE");
++MODULE_LICENSE("GPL");
