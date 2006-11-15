@@ -1,27 +1,20 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id 0EDE767C36
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 11:47:59 +1100 (EST)
-Received: from mail3.sony.co.jp (localhost [127.0.0.1])
-	by mail3.sony.co.jp (R8/Sony) with ESMTP id kAF0lwbC000597
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 09:47:58 +0900 (JST)
-Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail3.sony.co.jp (R8/Sony) with SMTP id kAF0lvl5000547
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 09:47:57 +0900 (JST)
-Message-ID: <455A63B5.8090600@am.sony.com>
-Date: Tue, 14 Nov 2006 16:47:49 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 6/16] cell: abstract spu management routines
-References: <4554DA9C.9040102@am.sony.com>	
-	<1163475880.8048.78.camel@localhost.localdomain>	
-	<200611141055.22317.arnd@arndb.de> <45599F91.9070802@am.sony.com>
-	<1163549235.19171.4.camel@localhost.localdomain>
-In-Reply-To: <1163549235.19171.4.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7788E67C6E
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 11:54:48 +1100 (EST)
+In-Reply-To: <BAY102-F1446B29A3C6918114ADE69A9EA0@phx.gbl>
+References: <BAY102-F1446B29A3C6918114ADE69A9EA0@phx.gbl>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3679DAB4-C7A5-4A47-9648-2CC0F87F76F7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Low memory not pageable on Freescale BookE
+Date: Tue, 14 Nov 2006 18:55:02 -0600
+To: "M Ptich" <ptich@hotmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,62 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-TWljaGFlbCBFbGxlcm1hbiB3cm90ZToNCj4gT24gVHVlLCAyMDA2LTExLTE0IGF0IDAyOjUwIC0w
-ODAwLCBHZW9mZiBMZXZhbmQgd3JvdGU6DQo+PiBBcm5kIEJlcmdtYW5uIHdyb3RlOg0KPj4gPiBP
-biBUdWVzZGF5IDE0IE5vdmVtYmVyIDIwMDYgMDQ6NDQsIE1pY2hhZWwgRWxsZXJtYW4gd3JvdGU6
-DQo+PiA+PiBPSywgYmFjayB0byB0aGUgdGFzayBhdCBoYW5kIDopIO+/vUZvciB0aGUgbW9tZW50
-IEknZCByYXRoZXIgc2VlIHlvdSBsZWF2ZQ0KPj4gPj4gb3V0IGR1bXBfZGF0YV9maWVsZHMoKSwg
-YXMgbmVpdGhlciBIViBvciBiYXJlbWV0YWwgaW1wbGVtZW50YXRpb25zIGRvDQo+PiA+PiBhbnl0
-aGluZy4gSnVzdCBwdXQgdGhlIG9mZmVuZGluZyB4bW9uIGNvZGUgaW5zaWRlIGFuICNpZmRlZg0K
-Pj4gPj4gQ09ORklHX1BQQ19DRUxMX05BVElWRS4gZWc6DQo+PiA+PiANCj4+ID4+IEluZGV4OiBj
-ZWxsL2FyY2gvcG93ZXJwYy94bW9uL3htb24uYw0KPj4gPj4gPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPj4gPj4gLS0t
-IGNlbGwub3JpZy9hcmNoL3Bvd2VycGMveG1vbi94bW9uLmMg77+9MjAwNi0xMS0xNCAxNDo0Mzox
-MS4wMDAwMDAwMDAgKzExMDANCj4+ID4+ICsrKyBjZWxsL2FyY2gvcG93ZXJwYy94bW9uL3htb24u
-YyDvv70g77+9IO+/vSAyMDA2LTExLTE0IDE0OjQyOjM1LjAwMDAwMDAwMCArMTEwMA0KPj4gPj4g
-QEAgLTI4MDcsMTIgKzI4MDcsMTEgQEAgc3RhdGljIHZvaWQgZHVtcF9zcHVfZmllbGRzKHN0cnVj
-dCBzcHUgKg0KPj4gPj4g77+9IO+/vSDvv70g77+9IO+/vSDvv70g77+9IO+/vSDvv70g77+9IO+/
-vSDvv70gaW5fYmUzMigmc3B1LT5wcm9ibGVtLT5zcHVfc3RhdHVzX1IpKTsNCj4+ID4+IO+/vSDv
-v70g77+9IO+/vSBEVU1QX1ZBTFVFKCIweCV4IiwgcHJvYmxlbS0+c3B1X25wY19SVywNCj4+ID4+
-IO+/vSDvv70g77+9IO+/vSDvv70g77+9IO+/vSDvv70g77+9IO+/vSDvv70g77+9IGluX2JlMzIo
-JnNwdS0+cHJvYmxlbS0+c3B1X25wY19SVykpOw0KPj4gPj4gKyNpZmRlZiBDT05GSUdfUFBDX0NF
-TExfTkFUSVZFDQo+PiA+PiDvv70g77+9IO+/vSDvv70gRFVNUF9GSUVMRChzcHUsICIweCVwIiwg
-cHJpdjEpOw0KPj4gPj4gLQ0KPj4gPj4gLSDvv70g77+9IO+/vSBpZiAoc3B1LT5wcml2MSkgew0K
-Pj4gPj4gLSDvv70g77+9IO+/vSDvv70g77+9IO+/vSDvv70gRFVNUF9WQUxVRSgiMHglbHgiLCBw
-cml2MS0+bWZjX3NyMV9SVywNCj4+ID4+IC0g77+9IO+/vSDvv70g77+9IO+/vSDvv70g77+9IO+/
-vSDvv70g77+9IO+/vSDvv70g77+9IO+/vSDvv70gaW5fYmU2NCgmc3B1LT5wcml2MS0+bWZjX3Ny
-MV9SVykpOw0KPj4gPj4gLSDvv70g77+9IO+/vSB9DQo+PiA+PiArIO+/vSDvv70g77+9IERVTVBf
-VkFMVUUoIjB4JWx4IiwgcHJpdjEtPm1mY19zcjFfUlcsDQo+PiA+PiArIO+/vSDvv70g77+9IO+/
-vSDvv70g77+9IO+/vSDvv70g77+9IO+/vSDvv70gaW5fYmU2NCgmc3B1LT5wcml2MS0+bWZjX3Ny
-MV9SVykpOw0KPj4gPj4gKyNlbmRpZg0KPj4gPiANCj4+ID4gT29wcy4gTnVsbCBwb2ludGVyIGRl
-cmVmZXJlbmNlLg0KPj4gPiANCj4+ID4gWW91IGNhbid0IGRvIHRoaXMgaWYgeW91IHdhbnQgdG8g
-Y29tcGlsZSBpbiBib3RoIG5hdGl2ZSBhbmQgUFMzUEYNCj4+ID4gc3VwcG9ydCBpbiBhIHNpbmds
-ZSBrZXJuZWwuIEkgdGhpbmsgeW91ciBvcmlnaW5hbCBjb2RlIHRoYXQgcHJpbnRzDQo+PiA+IHBy
-aXYxIGFuZCB0aGUgc3IxIG9ubHkgaWYgcHJpdjEgZXhpc3RzIGlzIGZpbmUgb24gYm90aCB3YXlz
-Lg0KPj4gDQo+PiBObywgdGhhdCB3b24ndCB3b3JrIGVpdGhlciBzaW5jZSBJIG1vdmVkIHByaXYx
-IHRvIHN0cnVjdCBzcHVfcGRhdGEuDQo+PiANCj4+ICtzdHJ1Y3Qgc3B1X3BkYXRhIHsNCj4+ICsJ
-aW50IG5pZDsNCj4+ICsJc3RydWN0IGRldmljZV9ub2RlICpkZXZub2RlOw0KPj4gKwlzdHJ1Y3Qg
-c3B1X3ByaXYxIF9faW9tZW0gKnByaXYxOw0KPj4gK307DQo+IA0KPiBPSywgSSB3YXNuJ3QgdmVy
-eSBjbGVhci4gSSBkaWRuJ3QgbWVhbiB0aGF0IHBhdGNoIHdhcyB0aGUgZmluYWwgc29sdXRpb24N
-Cj4gLSBvYnZpb3VzbHkgaXQgbmVlZHMgdG8gdGFrZSBpbnRvIGFjY291bnQgdGhlIG1vdmVtZW50
-IG9mIHByaXYxIGV0Yy4NCj4gDQo+PiBUaGUgb25seSB3YXkgSSBzZWUgdGhpcyB3b3JraW5nIGlz
-IHRvIGhhdmUgYSBwbGF0Zm9ybSBzcGVjaWZpYw0KPj4gcm91dGluZSB0byBkdW1wIHRob3NlIHNw
-dV9wZGF0YSB2YXJpYWJsZXMuICBUaGUgcHJvYmxlbSBpcyB0aGF0DQo+PiBvbmx5IHRoZSBzcHUg
-cGxhdGZvcm0gY29kZSBrbm93cyBhYm91dCB0aGUgdmFyaWFibGVzLCBhbmQgb25seSB0aGUNCj4+
-IHhtb24gY29kZSBrbm93cyBob3cgdG8gZG8gdGhlIGR1bXAuICBUaGF0IGlzIHdoeSBJIHN1Z2dl
-c3RlZCBlYXJsaWVyDQo+PiB0byByZS13b3JrIHRoZSB4bW9uIGNvZGUgdG8gbWFrZSBhIGR1bXAg
-cm91dGluZSB3aXRoIGdsb2JhbCBzY29wZQ0KPj4gdGhhdCBjYW4gYmUgY2FsbGVkIGZyb20gdGhl
-IHZhcmlvdXMgc3B1IHBsYXRmb3JtIA0KPj4gc3B1X2R1bXBfcGRhdGFfZmllbGRzKCkgcm91dGlu
-ZXMuDQo+PiANCj4+IE5vdGUgdGhhdCB0aGlzIGlzIG5vdCBzcGVjaWZpYyB0byB0aGUgbmF0aXZl
-IHN1cHBvcnQsIHNpbmNlIEkgd2FudA0KPj4gdG8gaG9vayBteSBwbGF0Zm9ybSBjb2RlIGludG8g
-eG1vbiBhbHNvLCBhbmQgSSBuZWVkIHRvIHNvbWVob3cNCj4+IGR1bXAgbXkgdmFyaWFibGVzLiAg
-U28gdGhlIHNvbHV0aW9uIGlzIG5vdCB0byBhZGQgcHJpdjEgYmFjayBpbnRvDQo+PiBzdHJ1Y3Qg
-c3B1Lg0KPiANCj4gSSdtIG5vdCB0aGF0IGJvdGhlcmVkLCBidXQgSSByZWFsbHkgZG9uJ3QgdGhp
-bmsgd2Ugd2FudCB0byBzcGVuZCB0b28NCj4gbXVjaCBlZmZvcnQgZW5naW5lZXJpbmcgaW50ZXJm
-YWNlcyBiZXR3ZWVuIHhtb24gYW5kIHRoZSBzcHUgY29kZSAtIGF0DQo+IHRoZSBlbmQgb2YgdGhl
-IGRheSB4bW9uIGlzIGp1c3QgYSBoYWNraXNoIGRlYnVnZ2luZyBhaWQgZm9yIF9rZXJuZWwNCj4g
-ZGV2ZWxvcGVyc18uDQo+IA0KPiBUaGUgc2ltcGxlc3Qgc29sdXRpb24gbWlnaHQganVzdCBiZSB0
-byBkdW1wIHRoZSBhZGRyZXNzIG9mIHRoZSBwZGF0YQ0KPiBwb2ludGVyLCBhbmQgbGVhdmUgaXQg
-dXAgdG8gdGhlIHhtb24gdXNlciB0byBkdW1wIHRoYXQgYW5kIGludGVycHJldCBpdA0KPiBhcyB0
-aGV5IHNlZSBmaXQuDQoNCk9LLCB0aGF0J3MgYSBnb29kIHNvbHV0aW9uIGZvciBub3cuICBJJ2xs
-IHNldCBpdCB1cCB0aGF0IHdheSBpbiBteSBwYXRjaGVzLg0KDQotR2VvZmYgDQo=
+
+On Nov 14, 2006, at 6:38 PM, M Ptich wrote:
+
+>> Why do you need low kernel memory to be pageable?
+>
+> Mainly for debugging purposes - this way we can have guardbands for  
+> our application stacks, and also for proprietary software that  
+> tracks memory accesses (for corruption detection).
+
+If you are doing at the application level then its already paged.   
+The TLB1 stuff is just for kernel memory.
+
+- k
