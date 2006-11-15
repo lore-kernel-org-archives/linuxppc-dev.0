@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 8AE4B67C1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 10:32:59 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/16] add hypervisor support for SPU
-Date: Thu, 16 Nov 2006 00:33:18 +0100
-References: <200611150928.kAF9SkJN021123@toshiba.co.jp>
-	<20061115182636.GA21633@lst.de>
-In-Reply-To: <20061115182636.GA21633@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611160033.18959.arnd@arndb.de>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 1546867C5A
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 10:37:10 +1100 (EST)
+Date: Thu, 16 Nov 2006 02:36:49 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
+Message-ID: <20061116023649.769b77ec@localhost.localdomain>
+In-Reply-To: <20061115182316.GA20719@lst.de>
+References: <20061114012504.17455.13833.stgit@localhost.localdomain>
+	<20061114012816.17455.12059.stgit@localhost.localdomain>
+	<20061115182316.GA20719@lst.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_f5xBznTLS0KR0ma_1+/E6CO";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 15 November 2006 19:26, Christoph Hellwig wrote:
-> On Wed, Nov 15, 2006 at 06:28:46PM +0900, Ishizaki Kou wrote:
-> > This patch adds hypervisor support for spu.
-> >
-> > Linux(GuestOS) needs to designate SPE ID number when it uses SPE on Beat,
-> > and must read the number from DT.
->
-> In addition to the comments from Arnd which I'd like to second, what
-> do you need int_mask_lock for?  It's initialized but never used.
+--Sig_f5xBznTLS0KR0ma_1+/E6CO
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It's used in patch 14/16 for the hypervisor access. As far as I can
-see, it should be possible to use the existing register lock in it's
-place though. We should hold that lock before calling any of the
-priv1 accessors. In order to verify if this is done right,
-you could add BUG_ON(!spin_is_locked(&spu->register_lock));
-in the beat version of int_mask_{and,or,get,set}.
+Hi Christoph,
 
-	Arnd <><
+As a short disclaimer, the patch under consideration is a direct copy from =
+arch/ppc (since the aim is to move the migration
+forward). Apparently it looks like it's a good time to clean it up, and may=
+be move to /lib so that we have central stuff to deal with non-cache-cohere=
+nt targets. But I have to say I don't know much about other arch's approach=
+es to consider what
+we have below ppc-specific or not.
+
+All your notes make sense so I'll clean up and will remove ifdeffed section.
+But as for generic approach, my opinion is that it should be carefully cons=
+idered, and I suggest to get back to it once  the 8xx framework will get in=
+.=20
+
+Thanks for your time!
+
+--
+Sincerely, Vitaly
+
+--Sig_f5xBznTLS0KR0ma_1+/E6CO
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFW6SSuOg9JvQhSEsRAuxEAJ0eX57H06zC9FfaPGSfAvJUtCbXlgCeKdTj
+UF7wewsz4laAHLvDPJOHLf8=
+=x2XI
+-----END PGP SIGNATURE-----
+
+--Sig_f5xBznTLS0KR0ma_1+/E6CO--
