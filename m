@@ -1,14 +1,17 @@
-Return-Path: <kevcorry@us.ibm.com>
-From: Kevin Corry <kevcorry@us.ibm.com>
-To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] Oprofile-for-Cell prereqs: New routines for managing PMU
-	interrupts
-Date: Wed, 15 Nov 2006 09:56:53 -0600
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 6F82A67CFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 04:24:00 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/16] add base support for Celleb platform
+Date: Wed, 15 Nov 2006 18:23:42 +0100
+References: <200611150931.kAF9VciJ023243@toshiba.co.jp>
+In-Reply-To: <200611150931.kAF9VciJ023243@toshiba.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200611150956.53407.kevcorry@us.ibm.com>
+  charset="iso-8859-1"
+Message-Id: <200611151823.42499.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,177 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add routines for managing the Cell PMU interrupts.
-
-The following routines are added to arch/powerpc/platforms/cell/pmu.c:
- cbe_clear_pm_interrupts()
- cbe_enable_pm_interrupts()
- cbe_disable_pm_interrupts()
- cbe_query_pm_interrupts()
- cbe_pm_irq()
- cbe_init_pm_irq()
-
-This also adds a routine in arch/powerpc/platforms/cell/interrupt.c and
-some macros in cbe_regs.h to manipulate the IIC_IR register:
- iic_set_interrupt_routing()
-
-Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
-Signed-off-by: Carl Love <carll@us.ibm.com>
-
-Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/pmu.c
-===================================================================
---- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/pmu.c
-+++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/pmu.c
-@@ -22,9 +22,11 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
-+#include <linux/interrupt.h>
- #include <linux/types.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
-+#include <asm/pmc.h>
- #include <asm/reg.h>
- #include <asm/spu.h>
- 
-@@ -338,3 +340,71 @@ void cbe_read_trace_buffer(u32 cpu, u64 
- }
- EXPORT_SYMBOL_GPL(cbe_read_trace_buffer);
- 
-+/*
-+ * Enabling/disabling interrupts for the entire performance monitoring unit.
-+ */
-+
-+u32 cbe_query_pm_interrupts(u32 cpu)
-+{
-+	return cbe_read_pm(cpu, pm_status);
-+}
-+EXPORT_SYMBOL_GPL(cbe_query_pm_interrupts);
-+
-+u32 cbe_clear_pm_interrupts(u32 cpu)
-+{
-+	/* Reading pm_status clears the interrupt bits. */
-+	return cbe_query_pm_interrupts(cpu);
-+}
-+EXPORT_SYMBOL_GPL(cbe_clear_pm_interrupts);
-+
-+void cbe_enable_pm_interrupts(u32 cpu, u32 thread, u32 mask)
-+{
-+	/* Set which node and thread will handle the next interrupt. */
-+	iic_set_interrupt_routing(cpu, thread, 0);
-+
-+	/* Enable the interrupt bits in the pm_status register. */
-+	if (mask)
-+		cbe_write_pm(cpu, pm_status, mask);
-+}
-+EXPORT_SYMBOL_GPL(cbe_enable_pm_interrupts);
-+
-+void cbe_disable_pm_interrupts(u32 cpu)
-+{
-+	cbe_clear_pm_interrupts(cpu);
-+	cbe_write_pm(cpu, pm_status, 0);
-+}
-+EXPORT_SYMBOL_GPL(cbe_disable_pm_interrupts);
-+
-+static irqreturn_t cbe_pm_irq(int irq, void *dev_id, struct pt_regs *regs)
-+{
-+	perf_irq(regs);
-+	return IRQ_HANDLED;
-+}
-+
-+int __init cbe_init_pm_irq(void)
-+{
-+	unsigned int irq;
-+	int rc, node;
-+
-+	for_each_node(node) {
-+		irq = irq_create_mapping(NULL, IIC_IRQ_IOEX_PMI |
-+					       (node << IIC_IRQ_NODE_SHIFT));
-+		if (irq == NO_IRQ) {
-+			printk("ERROR: Unable to allocate irq for node %d\n",
-+			       node);
-+			return -EINVAL;
-+		}
-+
-+		rc = request_irq(irq, cbe_pm_irq,
-+				 IRQF_DISABLED, "cbe-pmu-0", NULL);
-+		if (rc) {
-+			printk("ERROR: Request for irq on node %d failed\n",
-+			       node);
-+			return rc;
-+		}
-+	}
-+
-+	return 0;
-+}
-+arch_initcall(cbe_init_pm_irq);
-+
-Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.c
-===================================================================
---- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/interrupt.c
-+++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.c
-@@ -397,3 +397,19 @@ void __init iic_init_IRQ(void)
- 	/* Enable on current CPU */
- 	iic_setup_cpu();
- }
-+
-+void iic_set_interrupt_routing(int cpu, int thread, int priority)
-+{
-+	struct cbe_iic_regs __iomem *iic_regs = cbe_get_cpu_iic_regs(cpu);
-+	u64 iic_ir = 0;
-+	int node = cpu >> 1;
-+
-+	/* Set which node and thread will handle the next interrupt */
-+	iic_ir |= CBE_IIC_IR_PRIO(priority) |
-+		  CBE_IIC_IR_DEST_NODE(node);
-+	if (thread == 0)
-+		iic_ir |= CBE_IIC_IR_DEST_UNIT(CBE_IIC_IR_PT_0);
-+	else
-+		iic_ir |= CBE_IIC_IR_DEST_UNIT(CBE_IIC_IR_PT_1);
-+	out_be64(&iic_regs->iic_ir, iic_ir);
-+}
-Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.h
-===================================================================
---- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/interrupt.h
-+++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.h
-@@ -83,5 +83,7 @@ extern u8 iic_get_target_id(int cpu);
- 
- extern void spider_init_IRQ(void);
- 
-+extern void iic_set_interrupt_routing(int cpu, int thread, int priority);
-+
- #endif
- #endif /* ASM_CELL_PIC_H */
-Index: linux-2.6.18-arnd6/include/asm-powerpc/cell-pmu.h
-===================================================================
---- linux-2.6.18-arnd6.orig/include/asm-powerpc/cell-pmu.h
-+++ linux-2.6.18-arnd6/include/asm-powerpc/cell-pmu.h
-@@ -87,4 +87,9 @@ extern void cbe_disable_pm(u32 cpu);
- 
- extern void cbe_read_trace_buffer(u32 cpu, u64 *buf);
- 
-+extern void cbe_enable_pm_interrupts(u32 cpu, u32 thread, u32 mask);
-+extern void cbe_disable_pm_interrupts(u32 cpu);
-+extern u32  cbe_query_pm_interrupts(u32 cpu);
-+extern u32  cbe_clear_pm_interrupts(u32 cpu);
-+
- #endif /* __ASM_CELL_PMU_H__ */
-Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/cbe_regs.h
-===================================================================
---- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/cbe_regs.h
-+++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/cbe_regs.h
-@@ -185,6 +185,14 @@ struct cbe_iic_regs {
- 	struct	cbe_iic_thread_regs thread[2];			/* 0x0400 */
- 
- 	u64	iic_ir;						/* 0x0440 */
-+#define CBE_IIC_IR_PRIO(x)      (((x) & 0xf) << 12)
-+#define CBE_IIC_IR_DEST_NODE(x) (((x) & 0xf) << 4)
-+#define CBE_IIC_IR_DEST_UNIT(x) ((x) & 0xf)
-+#define CBE_IIC_IR_IOC_0        0x0
-+#define CBE_IIC_IR_IOC_1S       0xb
-+#define CBE_IIC_IR_PT_0         0xe
-+#define CBE_IIC_IR_PT_1         0xf
-+
- 	u64	iic_is;						/* 0x0448 */
- #define CBE_IIC_IS_PMI		0x2
- 
+T24gV2VkbmVzZGF5IDE1IE5vdmVtYmVyIDIwMDYgMTA6MzEsIElzaGl6YWtpIEtvdSB3cm90ZToK
+PiAwNgo+IEBAIC01OCw3ICs1OCwxMiBAQAo+IKCgoKCgoKCgRldfRkVBVFVSRV9QU0VSSUVTX0FM
+V0FZUyA9IDAsCj4goKCgoKCgoKBGV19GRUFUVVJFX0lTRVJJRVNfUE9TU0lCTEUgPSBGV19GRUFU
+VVJFX0lTRVJJRVMgfCBGV19GRUFUVVJFX0xQQVIsCj4goKCgoKCgoKBGV19GRUFUVVJFX0lTRVJJ
+RVNfQUxXQVlTID0gRldfRkVBVFVSRV9JU0VSSUVTIHwgRldfRkVBVFVSRV9MUEFSLAo+ICugoKCg
+oKCgRldfRkVBVFVSRV9DRUxMRUJfUE9TU0lCTEUgPSBGV19GRUFUVVJFX0xQQVIsCj4gK6CgoKCg
+oKBGV19GRUFUVVJFX0NFTExFQl9BTFdBWVMgPSBGV19GRUFUVVJFX0xQQVIsCj4goKCgoKCgoKBG
+V19GRUFUVVJFX1BPU1NJQkxFID0KPiArI2lmZGVmIENPTkZJR19QUENfQ0VMTEVCCj4gK6CgoKCg
+oKCgoKCgoKCgoEZXX0ZFQVRVUkVfQ0VMTEVCX1BPU1NJQkxFIHwKPiArI2VuZGlmCj4goCNpZmRl
+ZiBDT05GSUdfUFBDX1BTRVJJRVMKPiCgoKCgoKCgoKCgoKCgoKCgRldfRkVBVFVSRV9QU0VSSUVT
+X1BPU1NJQkxFIHwKPiCgI2VuZGlmCj4gQEAgLTY3LDYgKzcyLDkgQEAKPiCgI2VuZGlmCj4goKCg
+oKCgoKCgoKCgoKCgoDAsCj4goKCgoKCgoKBGV19GRUFUVVJFX0FMV0FZUyA9Cj4gKyNpZmRlZiBD
+T05GSUdfUFBDX0NFTExFQgo+ICugoKCgoKCgoKCgoKCgoKBGV19GRUFUVVJFX0NFTExFQl9BTFdB
+WVMgJgo+ICsjZW5kaWYKPiCgI2lmZGVmIENPTkZJR19QUENfUFNFUklFUwo+IKCgoKCgoKCgoKCg
+oKCgoKBGV19GRUFUVVJFX1BTRVJJRVNfQUxXQVlTICYKPiCgI2VuZGlmCgpNeSBndWVzcyBpcyB0
+aGF0IGl0IHdvdWxkIGJlIGhlbHBmdWwgdG8gaGF2ZSBhIEZXX0ZFQVRVUkVfQkVBVCBvciBzaW1p
+bGFyCnNvIHRoYXQgeW91IGNhbiB0ZXN0IHRoaXMgYml0IGluIHJ1bnRpbWUgY2hlY2tzLCBpbnN0
+ZWFkIG9mIHRlc3RpbmcKZm9yIEZXX0ZFQVRVUkVfTFBBUi4KCgo+ICsjaW5jbHVkZSAiYmVhdC5o
+Igo+ICsKPiAraW50NjRfdKCgoKCgoKCgYmVhdF9lcnJubzsKCkhtbSwgYSBnbG9iYWwgZXJybm8g
+dmFyaWFibGUgaXMgdXN1YWxseSBjb25zaWRlcmVkIGEgYmFkIGlkZWEsIGJlY2F1c2UgaXQKaXMg
+aW5oZXJlbnRseSByYWN5LiBJcyB0aGlzIHRoZSBoY2FsbCByZXR1cm4gdmFsdWU/IElmIHNvLCB5
+b3Ugc2hvdWxkCnByb2JhYmx5IGp1c3QgcGFzcyBpdCBhcyB0aGUgcmV0dXJuIGNvZGUgZnJvbSB0
+aGUgaGNhbGwgZnVuY3Rpb24uCgo+ICtzdGF0aWMgdm9pZCBiZWF0X3Bvd2VyX3NhdmUodm9pZCkK
+PiArewo+ICugoKCgoKCgYmVhdF9wYXVzZSgwKTsKPiArfQoKTmljZSwgSSB3aXNoIHRoZSBvdGhl
+ciBwb3dlcl9zYXZlIGltcGxlbWVudGF0aW9ucyB3ZXJlIHRoaXMgZWFzeSA7LSkKCj4gKyNpZmRl
+ZiBDT05GSUdfU0VSSUFMX1RYWDkKPiArLyogc2lvIGlycTA9MHhiMDAwMTAwMjIgaXJxMD0weGIw
+MDAxMDAyMyBpcnEyPTB4YjAwMDEwMDI0Cj4gKyCgIKBtbWlvPTB4ZmZmMDAwLTB4MTAwMCwweGZm
+MjAwMC0weDEwMDAgKi8KPiArc3RhdGljIGludCB0eHg5X3NlcmlhbF9iaXRtYXAgPSAwOwo+ICsK
+PiArc3RhdGljIHN0cnVjdCB7Cj4gK6CgoKCgoKB1aW50MzJfdCBvZmZzZXQ7Cj4gK6CgoKCgoKB1
+aW50MzJfdCBpbmRleDsKPiArfSB0eHg5X3NwaWRlcl90YWJbM10gPSB7Cj4gK6CgoKCgoKB7IDB4
+MzAwLCAwIH0soKCgLyogMHhGRkYzMDAgKi8KPiAroKCgoKCgoHsgMHg0MDAsIDAgfSygoKAvKiAw
+eEZGRjQwMCAqLwo+ICugoKCgoKCgeyAweDgwMCwgMSB9oKCgoC8qIDB4RkYyODAwICovCj4gK307
+Cj4gKwo+ICtzdGF0aWMgaW50IHR4eDlfc2VyaWFsX2luaXQodm9pZCkKPiArewo+ICugoKCgoKCg
+ZXh0ZXJuIGludCBlYXJseV9zZXJpYWxfdHh4OV9zZXR1cChzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0
+KTsKPiAroKCgoKCgoHN0cnVjdCBkZXZpY2Vfbm9kZSAqbm9kZTsKPiAroKCgoKCgoHVpbnQ2NF90
+ICppcnFfcHJvcCwgKmJhc2VfcHJvcDsKPiAroKCgoKCgoGludCBpcnFfbGVuLCBiYXNlX2FkZHJf
+bGVuOwo+ICugoKCgoKCgaW50IGksIG1heGk7Cj4gK6CgoKCgoKBzdHJ1Y3QgdWFydF9wb3J0IHJl
+cTsKPiArCj4gK6CgoKCgoKBub2RlID0gb2ZfZmluZF9ub2RlX2J5X3BhdGgoIi9pb2lmMS9zaW8i
+KTsKPiAroKCgoKCgoGlmICghbm9kZSkKPiAroKCgoKCgoKCgoKCgoKCgcmV0dXJuIDA7Cj4gK6Cg
+oKCgoKAKPiAroKCgoKCgoGlycV9wcm9wID0gKHVpbnQ2NF90ICopZ2V0X3Byb3BlcnR5KG5vZGUs
+ICJpbnRlcnJ1cHRzIiwgJmlycV9sZW4pOwo+ICugoKCgoKCgaWYgKCFpcnFfcHJvcCkKPiAroKCg
+oKCgoKCgoKCgoKCgZ290byBvdXQ7Cj4gK6CgoKCgoKBpcnFfbGVuIC89IHNpemVvZih1aW50NjRf
+dCk7Cj4gKwo+ICugoKCgoKCgYmFzZV9wcm9wID0gKHVpbnQ2NF90ICopZ2V0X3Byb3BlcnR5KG5v
+ZGUsICJ0b3NoaWJhLHJlZyIsICZiYXNlX2FkZHJfbGVuKTsKPiAroKCgoKCgoGlmICghYmFzZV9w
+cm9wKQo+ICugoKCgoKCgoKCgoKCgoKBnb3RvIG91dDsKPiAroKCgoKCgoGJhc2VfYWRkcl9sZW4g
+Lz0gc2l6ZW9mKHVpbnQ2NF90KSAqIDI7Cj4gKwo+ICugoKCgoKCgbWF4aSA9IHNpemVvZih0eHg5
+X3NwaWRlcl90YWIpL3NpemVvZih0eHg5X3NwaWRlcl90YWJbMF0pOwo+ICugoKCgoKCgaWYgKG1h
+eGkgPiBpcnFfbGVuKQo+ICugoKCgoKCgoKCgoKCgoKBtYXhpID0gaXJxX2xlbjsKPiArCj4gK6Cg
+oKCgoKBmb3IoaSA9IDA7IGkgPCBtYXhpOyBpKyspIHsKPiAroKCgoKCgoKCgoKCgoKCgaWYgKCEo
+dHh4OV9zZXJpYWxfYml0bWFwICYgKDE8PGkpKSkKPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBj
+b250aW51ZTsKPiAroKCgoKCgoKCgoKCgoKCgaWYgKGJhc2VfYWRkcl9sZW4gPD0gdHh4OV9zcGlk
+ZXJfdGFiW2ldLmluZGV4KQo+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoGNvbnRpbnVlOwo+ICug
+oKCgoKCgoKCgoKCgoKAKPiAroKCgoKCgoKCgoKCgoKCgbWVtc2V0KCZyZXEsIDAsIHNpemVvZihy
+ZXEpKTsKPiAroKCgoKCgoKCgoKCgoKCgcmVxLmxpbmUgPSBpOwo+ICugoKCgoKCgoKCgoKCgoKBy
+ZXEuaW90eXBlID0gVVBJT19NRU07Cj4gK6CgoKCgoKCgoKCgoKCgoHJlcS5tYXBiYXNlID0gYmFz
+ZV9wcm9wW3R4eDlfc3BpZGVyX3RhYltpXS5pbmRleCAqIDJdCj4gK6CgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgKyB0eHg5X3NwaWRlcl90YWJbaV0ub2Zmc2V0Owo+ICsjaWZkZWYgQ09ORklHX1NFUklB
+TF9UWFg5X0NPTlNPTEUKPiAroKCgoKCgoKCgoKCgoKCgcmVxLm1lbWJhc2UgPSBpb3JlbWFwKHJl
+cS5tYXBiYXNlLCAweDI0KTsKPiArI2VuZGlmCj4gK6CgoKCgoKCgoKCgoKCgoHJlcS5pcnEgPSBp
+cnFfY3JlYXRlX21hcHBpbmcoTlVMTCwgaXJxX3Byb3BbaV0pOwo+ICugoKCgoKCgoKCgoKCgoKBy
+ZXEuZmxhZ3MgfD0gVVBGX0lPUkVNQVAgfCBVUEZfQlVHR1lfVUFSVCAvKkhBVkVfQ1RTX0xJTkUq
+LzsKPiAroKCgoKCgoKCgoKCgoKCgcmVxLnVhcnRjbGsgPSA4MzMwMDAwMDsKPiAroKCgoKCgoKCg
+oKCgoKCgZWFybHlfc2VyaWFsX3R4eDlfc2V0dXAoJnJlcSk7Cj4gK6CgoKCgoKB9Cj4gKwo+ICtv
+dXQ6Cj4gK6CgoKCgoKBvZl9ub2RlX3B1dChub2RlKTsKPiAroKCgoKCgoHJldHVybiAwOwo+ICt9
+CgpIbW0sIGEgc3RhbmRhcmQgT0ZXIHJlZyBwcm9wZXJ0eSB3b3VsZCBqdXN0IGVuY29kZSBhbGwg
+dGhyZWUgYWRkcmVzcwpyYW5nZXMgaW4gb25lIHByb3BlcnR5LiBJcyB0aGVyZSBhIHNwZWNpZmlj
+IHJlYXNvbiB3aHkgeW91IGNhbid0IGRvIHRoYXQ/CgoJQXJuZCA8PjwK
