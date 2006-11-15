@@ -1,19 +1,15 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1DA2867DD2
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 05:26:41 +1100 (EST)
-Date: Wed, 15 Nov 2006 19:26:36 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH 2/16] add hypervisor support for SPU
-Message-ID: <20061115182636.GA21633@lst.de>
-References: <200611150928.kAF9SkJN021123@toshiba.co.jp>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7594B67E6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 05:30:42 +1100 (EST)
+Date: Wed, 15 Nov 2006 12:29:35 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] Adapt ucc_geth driver to use new of_platform_device support
+Message-Id: <20061115122935.5fece249.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200611150928.kAF9SkJN021123@toshiba.co.jp>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 15, 2006 at 06:28:46PM +0900, Ishizaki Kou wrote:
-> This patch adds hypervisor support for spu.
-> 
-> Linux(GuestOS) needs to designate SPE ID number when it uses SPE on Beat,
-> and must read the number from DT.
+Include of_platform header, and use
+new of_[un]register_platform_driver() fns.
 
-In addition to the comments from Arnd which I'd like to second, what
-do you need int_mask_lock for?  It's initialized but never used.
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+
+please consider for 2.6.20
+
+ drivers/net/ucc_geth.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index b378880..1f05511 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -30,7 +30,7 @@ #include <linux/fsl_devices.h>
+ #include <linux/ethtool.h>
+ #include <linux/mii.h>
+ 
+-#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/uaccess.h>
+ #include <asm/irq.h>
+ #include <asm/io.h>
+@@ -4301,12 +4301,12 @@ static int __init ucc_geth_init(void)
+ 		memcpy(&(ugeth_info[i]), &ugeth_primary_info,
+ 		       sizeof(ugeth_primary_info));
+ 
+-	return of_register_driver(&ucc_geth_driver);
++	return of_register_platform_driver(&ucc_geth_driver);
+ }
+ 
+ static void __exit ucc_geth_exit(void)
+ {
+-	of_unregister_driver(&ucc_geth_driver);
++	of_unregister_platform_driver(&ucc_geth_driver);
+ }
+ 
+ module_init(ucc_geth_init);
+-- 
+1.4.2.3
