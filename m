@@ -1,21 +1,21 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BBD7767B93
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 20:41:14 +1100 (EST)
-Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
-	by imx12.toshiba.co.jp  with ESMTP id kAF9f9xu022823
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:41:09 +0900 (JST)
-Received: (from root@localhost) by wall11.toshiba.co.jp  id kAF9f9FV004029
-	for linuxppc-dev@ozlabs.org; Wed, 15 Nov 2006 18:41:09 +0900 (JST)
-Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id kAF9f81W011089
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:41:09 +0900 (JST)
-Date: Wed, 15 Nov 2006 18:41:07 +0900 (JST)
-Message-Id: <200611150941.kAF9f85V004282@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id ECD7967C02
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 20:43:10 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id kAF9h7fY012631
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:43:07 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kAF9h8Ko029480
+	for linuxppc-dev@ozlabs.org; Wed, 15 Nov 2006 18:43:08 +0900 (JST)
+Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp1.toshiba.co.jp  with ESMTP id kAF9h7aV001354
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:43:07 +0900 (JST)
+Date: Wed, 15 Nov 2006 18:43:06 +0900 (JST)
+Message-Id: <200611150943.kAF9h67n001212@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/16] hypervisor console for Celleb
+Subject: [PATCH 8/16] Supporting interrupts for Celleb
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,54 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds hypervisor console driver for Celleb platform.
+This patch creates Celleb platform depend files to support interrupts.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-2.6.19/drivers/char/Kconfig
-diff -u linux-2.6.19/drivers/char/Kconfig:1.1.1.2 linux-2.6.19/drivers/char/Kconfig:1.3
---- linux-2.6.19/drivers/char/Kconfig:1.1.1.2	Tue Oct 24 13:36:46 2006
-+++ linux-2.6.19/drivers/char/Kconfig	Tue Nov  7 13:27:03 2006
-@@ -603,6 +603,13 @@
- 	help
- 	  IBM Console device driver which makes use of RTAS
- 
-+config HVC_BEAT
-+	bool "Toshiba's Beat Hypervisor Console support"
-+	depends on PPC_CELLEB
-+	select HVC_DRIVER
-+	help
-+	  Toshiba's Cell Reference Set Beat Console device driver
-+
- config HVCS
- 	tristate "IBM Hypervisor Virtual Console Server support"
- 	depends on PPC_PSERIES
-Index: linux-2.6.19/drivers/char/Makefile
-diff -u linux-2.6.19/drivers/char/Makefile:1.1.1.1 linux-2.6.19/drivers/char/Makefile:1.2
---- linux-2.6.19/drivers/char/Makefile:1.1.1.1	Fri Oct  6 10:40:57 2006
-+++ linux-2.6.19/drivers/char/Makefile	Fri Oct  6 12:26:35 2006
-@@ -44,6 +44,7 @@
- obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
- obj-$(CONFIG_HVC_ISERIES)	+= hvc_iseries.o
- obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
-+obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
- obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
- obj-$(CONFIG_RAW_DRIVER)	+= raw.o
- obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
-Index: linux-2.6.19/drivers/char/hvc_beat.c
-diff -u /dev/null linux-2.6.19/drivers/char/hvc_beat.c:1.2
---- /dev/null	Thu Nov  9 18:40:51 2006
-+++ linux-2.6.19/drivers/char/hvc_beat.c	Mon Nov  6 22:04:23 2006
-@@ -0,0 +1,106 @@
+Index: linux-2.6.19/arch/powerpc/platforms/celleb/interrupt.c
+diff -u /dev/null linux-2.6.19/arch/powerpc/platforms/celleb/interrupt.c:1.3
+--- /dev/null	Thu Nov  9 18:40:50 2006
++++ linux-2.6.19/arch/powerpc/platforms/celleb/interrupt.c	Fri Oct 27 13:54:53 2006
+@@ -0,0 +1,259 @@
 +/*
-+ * Beat hypervisor console driver
++ * Celleb/Beat Interrupt controller
 + *
 + * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on drivers/char/hvc_rtas.c:
-+ * (C) Copyright IBM Corporation 2001-2005
-+ * (C) Copyright Red Hat, Inc. 2005
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -92,85 +58,283 @@ diff -u /dev/null linux-2.6.19/drivers/char/hvc_beat.c:1.2
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
++#include <linux/interrupt.h>
++#include <linux/irq.h>
 +#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/string.h>
-+#include <linux/console.h>
++#include <linux/percpu.h>
++#include <linux/types.h>
++
++#include <asm/io.h>
++#include <asm/pgtable.h>
 +#include <asm/prom.h>
-+#include <asm/hvconsole.h>
++#include <asm/ptrace.h>
++#include <asm/udbg.h>
++#include <asm/machdep.h>
 +
-+#include "hvc_console.h"
++#include "interrupt.h"
++#include "beat.h"
 +
-+extern int64_t beat_get_term_char(uint64_t, uint64_t *, uint64_t *, uint64_t *);
-+extern int64_t beat_put_term_char(uint64_t, uint64_t, uint64_t, uint64_t);
++#define	MAX_IRQS	NR_IRQS
++static spinlock_t beatic_irq_mask_lock;
++static uint64_t	beatic_irq_mask[(MAX_IRQS+255)/64];
 +
-+struct hvc_struct *hvc_beat_dev = NULL;
++static struct irq_host *beatic_host = NULL;
 +
-+static int hvc_beat_get_chars(uint32_t vtermno, char *buf, int cnt)
++/*
++ * In this implementation, "virq" == "IRQ plug number",
++ * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
++ */
++
++static void beatic_unmask_irq(unsigned int irq_plug)
 +{
-+	unsigned long kb[2];
-+	unsigned long got;
++	int off;
++	unsigned long flags;
 +
-+	if (beat_get_term_char(vtermno, &got, &kb[0], &kb[1]) == 0) {
-+		memcpy(buf, kb, got);
-+		return got;
-+	} else {
-+		return 0;
++	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	off = (irq_plug / 256) * 4;
++	beatic_irq_mask[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
++
++	if (beat_set_interrupt_mask(irq_plug&~255UL,
++		beatic_irq_mask[off + 0], beatic_irq_mask[off + 1],
++		beatic_irq_mask[off + 2], beatic_irq_mask[off + 3]) != 0) {
++		panic("Failed to set mask IRQ!");
 +	}
++	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
 +}
 +
-+static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
++static void beatic_mask_irq(unsigned int irq_plug)
 +{
-+	unsigned long kb[2];
++	int off;
++	unsigned long flags;
 +
-+	memcpy(kb, buf, sizeof(kb));
-+	beat_put_term_char(vtermno, cnt, kb[0], kb[1]);
-+	return cnt;
++	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	off = (irq_plug / 256) * 4;
++	beatic_irq_mask[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
++
++	if (beat_set_interrupt_mask(irq_plug&~255UL,
++		beatic_irq_mask[off + 0], beatic_irq_mask[off + 1],
++		beatic_irq_mask[off + 2], beatic_irq_mask[off + 3]) != 0) {
++		panic("Failed to clear mask IRQ!");
++	}
++	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
 +}
 +
-+static struct hv_ops hvc_beat_get_put_ops = {
-+	.get_chars = hvc_beat_get_chars,
-+	.put_chars = hvc_beat_put_chars,
++static void beatic_end_irq(unsigned int irq_plug)
++{
++	int64_t err;
++
++	if ((err = beat_downcount_of_interrupt(irq_plug)) != 0) {
++		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) {	// -11: wrong state
++			panic("Failed to downcount IRQ! Error = %16lx", err);
++		}
++		printk(KERN_ERR "IRQ over-downcounted, plug %d\n",
++			irq_plug);
++	}
++	beatic_unmask_irq(irq_plug);
++}
++
++static struct irq_chip beatic_pic = {
++	.typename = " CELL-BEAT ",
++	.name = " CELL-BEAT ",
++	.unmask = beatic_unmask_irq,
++	.mask = beatic_mask_irq,
++	.eoi = beatic_end_irq,
 +};
 +
-+static int hvc_beat_useit = 1;
-+
-+static int hvc_beat_config(char *p)
++/*
++ * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
++ * update flags.
++ *
++ * Note that the number (virq) is already assigned at upper layer.
++ */
++static void beatic_pic_host_unmap(struct irq_host *h, unsigned int virq)
 +{
-+	hvc_beat_useit = simple_strtoul(p, NULL, 0);
-+	return 0;
++	beat_destruct_irq_plug(virq);
 +}
 +
-+static int hvc_beat_console_init(void)
++/*
++ * Create or update binding hardware IRQ number (hw) and Virtuql
++ * IRQ number (virq). This is called only once for a given mapping.
++ *
++ * Note that the number (virq) is already assigned at upper layer.
++ */
++static int beatic_pic_host_map(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t hw)
 +{
-+	if (hvc_beat_useit && machine_is_compatible("Beat")) {
-+		hvc_instantiate(0, 0, &hvc_beat_get_put_ops);
++	struct irq_desc *desc = get_irq_desc(virq);
++	int64_t	err;
++
++	if ((err = beat_construct_and_connect_irq_plug(virq, hw)) < 0) {
++		return -EIO;
 +	}
++	desc->status |= IRQ_LEVEL;
++	set_irq_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
 +	return 0;
 +}
 +
-+/* temp */
-+static int hvc_beat_init(void)
++/*
++ * Update binding hardware IRQ number (hw) and Virtuql
++ * IRQ number (virq). This is called only once for a given mapping.
++ */
++static void beatic_pic_host_remap(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t hw)
 +{
-+	struct hvc_struct *hp;
++	beat_construct_and_connect_irq_plug(virq, hw);
++}
 +
-+	hp = hvc_alloc(0, NO_IRQ, &hvc_beat_get_put_ops, 16);
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+	hvc_beat_dev = hp;
++/*
++ * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
++ * to pass away to irq_create_mapping().
++ *
++ * Called from irq_create_of_mapping() only.
++ * Note: We have only 1 entry to translate.
++ */
++static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
++				 u32 *intspec, unsigned int intsize,
++				 irq_hw_number_t *out_hwirq,
++				 unsigned int *out_flags)
++{
++	u64 *intspec2 = (u64 *)intspec;
++
++	*out_hwirq = *intspec2;
++	*out_flags |= IRQ_TYPE_LEVEL_LOW;
 +	return 0;
 +}
 +
-+static void __exit hvc_beat_exit(void)
++static struct irq_host_ops beatic_pic_host_ops = {
++	.map = beatic_pic_host_map,
++	.remap = beatic_pic_host_remap,
++	.unmap = beatic_pic_host_unmap,
++	.xlate = beatic_pic_host_xlate,
++};
++
++/*
++ * Get an IRQ number
++ * Note: returns VIRQ
++ */
++static inline unsigned int
++beatic_get_irq_plug(void)
 +{
-+	if (hvc_beat_dev)
-+		hvc_remove(hvc_beat_dev);
++	int i;
++	uint64_t	pending[4], ub;
++
++	for (i = 0; i < MAX_IRQS; i += 256) {
++		beat_detect_pending_interrupts(i, pending);
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[0] & beatic_irq_mask[i/64+0]));
++		if (ub != 64)
++			return i + ub + 0;
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[1] & beatic_irq_mask[i/64+1]));
++		if (ub != 64)
++			return i + ub + 64;
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[2] & beatic_irq_mask[i/64+2]));
++		if (ub != 64)
++			return i + ub + 128;
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[3] & beatic_irq_mask[i/64+3]));
++		if (ub != 64)
++			return i + ub + 192;
++	}
++	
++	return NO_IRQ;
++}
++unsigned int beatic_get_irq(void)
++{
++	unsigned int ret;
++
++	ret = beatic_get_irq_plug();
++	if (ret != NO_IRQ)
++		beatic_mask_irq(ret);
++	return ret;
 +}
 +
-+module_init(hvc_beat_init);
-+module_exit(hvc_beat_exit);
++/*
++ */
++void __init beatic_init_IRQ(void)
++{
++	int	i;
 +
-+__setup("hvc_beat=", hvc_beat_config);
++	spin_lock_init(&beatic_irq_mask_lock);
++	memset(beatic_irq_mask, 0, sizeof(beatic_irq_mask));
++	for (i = 0; i < MAX_IRQS; i += 256) {
++		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
++	}
++	/* Set out get_irq function */
++	ppc_md.get_irq = beatic_get_irq;
 +
-+console_initcall(hvc_beat_console_init);
++	/* Allocate an irq host */
++	beatic_host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0,
++					 &beatic_pic_host_ops,
++					 0);
++	BUG_ON(beatic_host == NULL);
++	irq_set_default_host(beatic_host);
++	spin_lock_init(&beatic_irq_mask_lock);
++}
++
++#ifdef CONFIG_SMP
++
++/* Nullified to compile with SMP mode */
++void beatic_setup_cpu(int cpu)
++{
++}
++
++void beatic_cause_IPI(int cpu, int mesg)
++{
++}
++
++void beatic_request_IPIs(void)
++{
++}
++#endif /* CONFIG_SMP */
++
++void beatic_deinit_IRQ(void)
++{
++	int	i;
++
++	for (i = 1; i < NR_IRQS; i++) {
++		beat_destruct_irq_plug(i);
++	}
++}
+Index: linux-2.6.19/arch/powerpc/platforms/celleb/interrupt.h
+diff -u /dev/null linux-2.6.19/arch/powerpc/platforms/celleb/interrupt.h:1.2
+--- /dev/null	Thu Nov  9 18:40:50 2006
++++ linux-2.6.19/arch/powerpc/platforms/celleb/interrupt.h	Tue Oct 17 13:22:53 2006
+@@ -0,0 +1,36 @@
++/*
++ * Celleb/Beat Interrupt controller
++ *
++ * (C) Copyright 2006 TOSHIBA CORPORATION
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#ifndef ASM_BEAT_PIC_H
++#define ASM_BEAT_PIC_H
++#ifdef __KERNEL__
++
++extern void beatic_init_IRQ(void);
++extern unsigned int beatic_get_irq(void);
++extern void beatic_cause_IPI(int cpu, int mesg);
++extern void beatic_request_IPIs(void);
++extern void beatic_setup_cpu(int);
++extern void beatic_local_enable(void);
++extern void beatic_local_disable(void);
++
++extern u8 beatic_get_target_id(int cpu);
++
++#endif
++#endif /* ASM_BEAT_PIC_H */
