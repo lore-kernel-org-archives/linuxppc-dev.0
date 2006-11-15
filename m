@@ -1,17 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 4C9B967C56
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 04:28:13 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 7/16] hypervisor console for Celleb
-Date: Wed, 15 Nov 2006 18:28:06 +0100
-References: <200611150941.kAF9f85V004282@toshiba.co.jp>
-In-Reply-To: <200611150941.kAF9f85V004282@toshiba.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611151828.06691.arnd@arndb.de>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2CEAF67CE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 04:54:33 +1100 (EST)
+Date: Wed, 15 Nov 2006 18:54:25 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
+Message-ID: <20061115175425.GA18856@lst.de>
+References: <4554DACB.8060809@am.sony.com> <20061110152310.7419ef3e@pb15>
+	<4559099A.6060805@am.sony.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4559099A.6060805@am.sony.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,12 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 15 November 2006 10:41, Ishizaki Kou wrote:
-> This patch adds hypervisor console driver for Celleb platform.
+On Mon, Nov 13, 2006 at 04:11:06PM -0800, Geoff Levand wrote:
+> > platform" which expands to "this is the ps3 platform platform"? ps3 is
+> > quite adequate as the platform name. :-)
 > 
-Nice small driver. Still, I'd like to know why there is no support
-for interrupts to notify the kernel of incoming characters. This seems
-to have the same (mis-)design as the IBM blade with the rtas console
-that uses no interrupts.
+> I had it as ps3, but I was told to change it to ps3pf.
 
-	Arnd <><
+Who told you to use ps3pf?  I think we should shoot that person
+for beein stupid.  It's definitly not an acceptable name.
+I think the most sensible one for now is ps3hv, unless the
+rumoured cell based workstation from sony can share the port,
+in which case sonyhv would make a lot more sense.
