@@ -1,20 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1546867C5A
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 10:37:10 +1100 (EST)
-Date: Thu, 16 Nov 2006 02:36:49 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BFE8967C3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 10:40:51 +1100 (EST)
+Subject: Re: [PATCH 9/16] Supporting of PCI bus for Celleb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
-Message-ID: <20061116023649.769b77ec@localhost.localdomain>
-In-Reply-To: <20061115182316.GA20719@lst.de>
-References: <20061114012504.17455.13833.stgit@localhost.localdomain>
-	<20061114012816.17455.12059.stgit@localhost.localdomain>
-	<20061115182316.GA20719@lst.de>
+In-Reply-To: <20061115184328.GD21633@lst.de>
+References: <200611150945.kAF9jXRV007053@toshiba.co.jp>
+	<20061115184328.GD21633@lst.de>
+Content-Type: text/plain
+Date: Thu, 16 Nov 2006 10:40:43 +1100
+Message-Id: <1163634043.5940.275.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_f5xBznTLS0KR0ma_1+/E6CO";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_f5xBznTLS0KR0ma_1+/E6CO
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hi Christoph,
+> 
+> This look broken to me.  Busses that do not support config space
+> cycles shouldn't be reported to the PCI layer at all.
+> 
+> > +struct pci_ops celleb_fake_pci_ops = {
+> > +	celleb_fake_pci_read_config,
+> > +	celleb_fake_pci_write_config
+> > +};
+> 
+> What are these fake ops for?  If you don't have a real PCI
+> bus you shouldn't emulate it but use a vio-style bus insted.
 
-As a short disclaimer, the patch under consideration is a direct copy from =
-arch/ppc (since the aim is to move the migration
-forward). Apparently it looks like it's a good time to clean it up, and may=
-be move to /lib so that we have central stuff to deal with non-cache-cohere=
-nt targets. But I have to say I don't know much about other arch's approach=
-es to consider what
-we have below ppc-specific or not.
+That was discussed with them earlier and we decided that for now
+it was ok to do it that way. They are doing like us :-) Except that on
+the blade, the PCI is "emulated" for the spider by RTAS and in their
+case, they do it explicitely.
 
-All your notes make sense so I'll clean up and will remove ifdeffed section.
-But as for generic approach, my opinion is that it should be carefully cons=
-idered, and I suggest to get back to it once  the 8xx framework will get in=
-.=20
+With the kernel being able to build the PCI tree from the device-tree,
+this isn't really a problem, and that gives them spidernet and usb for
+"free" as they already know how to probe PCI devices.
 
-Thanks for your time!
-
---
-Sincerely, Vitaly
-
---Sig_f5xBznTLS0KR0ma_1+/E6CO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFW6SSuOg9JvQhSEsRAuxEAJ0eX57H06zC9FfaPGSfAvJUtCbXlgCeKdTj
-UF7wewsz4laAHLvDPJOHLf8=
-=x2XI
------END PGP SIGNATURE-----
-
---Sig_f5xBznTLS0KR0ma_1+/E6CO--
+Ben. 
