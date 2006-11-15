@@ -1,32 +1,24 @@
-Return-Path: <srinivasa@in.ibm.com>
-Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C36E467C59
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 15:04:49 +1100 (EST)
-Received: from sd0112e0.au.ibm.com (d23rh903.au.ibm.com [202.81.18.201])
-	by ausmtp05.au.ibm.com (8.13.8/8.13.6) with ESMTP id kAFG6cu06701296
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 15:06:39 -0100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
-	by sd0112e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAF47hkB219828
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 15:07:50 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAF43lAm022946
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 15:03:48 +1100
-Message-ID: <455A9C89.9090802@in.ibm.com>
-Date: Wed, 15 Nov 2006 10:20:17 +0530
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [RFC] [PATCH] cpu_hotplug on IBM JS20 system
-References: <45586EB5.40409@in.ibm.com>	<1163453995.5940.11.camel@localhost.localdomain>	<4559C6A9.4070204@in.ibm.com>
-	<1163559536.19171.13.camel@localhost.localdomain>
-In-Reply-To: <1163559536.19171.13.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ego@in.ibm.com, anton@au1.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B7A5067C27
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 20:25:43 +1100 (EST)
+Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
+	by imx12.toshiba.co.jp  with ESMTP id kAF9PdAZ017874
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:25:39 +0900 (JST)
+Received: (from root@localhost) by wall11.toshiba.co.jp  id kAF9Pdc3023481
+	for linuxppc-dev@ozlabs.org; Wed, 15 Nov 2006 18:25:39 +0900 (JST)
+Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp11.toshiba.co.jp  with ESMTP id kAF9PcSp000279
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 18:25:38 +0900 (JST)
+Date: Wed, 15 Nov 2006 18:25:33 +0900 (JST)
+Message-Id: <200611150925.kAF9PYiO018978@toshiba.co.jp>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/16] Cell closs-building
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,17 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Tue, 2006-11-14 at 19:07 +0530, Srinivasa Ds wrote:
->   
->> Hi
->> when I tried to hot plug a cpu on IBM bladecentre JS20 system,it dropped 
->> in to xmon.
->>     
->
-> How did you try to hot plug a cpu? Through sysfs/hmc/somethingelse ?
->   
-echo 0 > /sys/devices/system/cpu/cpu1/online
-> cheers
->
->   
+This patch adds support for cross-building by SCE toolchain.
+
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+---
+
+Index: linux-2.6.19/arch/powerpc/Makefile
+diff -u linux-2.6.19/arch/powerpc/Makefile:1.1.1.1 linux-2.6.19/arch/powerpc/Makefile:1.2
+--- linux-2.6.19/arch/powerpc/Makefile:1.1.1.1	Fri Oct  6 10:40:02 2006
++++ linux-2.6.19/arch/powerpc/Makefile	Fri Oct  6 12:26:35 2006
+@@ -110,6 +110,7 @@
+ CFLAGS		+= -mcpu=powerpc
+ endif
+ 
++cpu-as-$(CONFIG_PPC_CELL)	+= -Wa,-mcellppu
+ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+ cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
+ cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
