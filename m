@@ -1,17 +1,14 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 6469467CD2
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 02:47:39 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/16] add hypervisor support for SPU
-Date: Wed, 15 Nov 2006 16:47:14 +0100
-References: <200611150928.kAF9SkJN021123@toshiba.co.jp>
-In-Reply-To: <200611150928.kAF9SkJN021123@toshiba.co.jp>
+Return-Path: <kevcorry@us.ibm.com>
+From: Kevin Corry <kevcorry@us.ibm.com>
+To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] Oprofile-for-Cell prereqs: New routines for managing PMU
+	interrupts
+Date: Wed, 15 Nov 2006 09:56:53 -0600
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611151647.15695.arnd@arndb.de>
+  charset="us-ascii"
+Message-Id: <200611150956.53407.kevcorry@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,55 +18,177 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 15 November 2006 10:28, Ishizaki Kou wrote:
+Add routines for managing the Cell PMU interrupts.
 
-> +static int __init find_spu_unit_number(struct device_node *spe)
-> +{
-> +=A0=A0=A0=A0=A0=A0=A0const unsigned int *reg;
-> +=A0=A0=A0=A0=A0=A0=A0reg =3D get_property(spe, "reg", NULL);
-> +=A0=A0=A0=A0=A0=A0=A0return reg ? *reg : 0;
-> +}
-> +
+The following routines are added to arch/powerpc/platforms/cell/pmu.c:
+ cbe_clear_pm_interrupts()
+ cbe_enable_pm_interrupts()
+ cbe_disable_pm_interrupts()
+ cbe_query_pm_interrupts()
+ cbe_pm_irq()
+ cbe_init_pm_irq()
 
-The unit number shold not be in the 'reg' property any more. With
-the device tree layout we want to migrate to for better OFW compatibility,
-'reg' should contain the addresses of local store, problem state and priv2
-mappings, in that order.
+This also adds a routine in arch/powerpc/platforms/cell/interrupt.c and
+some macros in cbe_regs.h to manipulate the IIC_IR register:
+ iic_set_interrupt_routing()
 
-Having the function is fine, but your interface needs to be a different
-property.
+Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
+Signed-off-by: Carl Love <carll@us.ibm.com>
 
-> @@ -805,7 +816,11 @@
-> =A0=A0=A0=A0=A0=A0=A0=A0if (ret)
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0goto out_unmap;
-> =A0=A0=A0=A0=A0=A0=A0=A0spin_lock_init(&spu->register_lock);
-> -=A0=A0=A0=A0=A0=A0=A0spu_mfc_sdr_set(spu, mfspr(SPRN_SDR1));
-> +#ifdef CONFIG_SPU_NEED_SHADOW_INT_MASK
-> +=A0=A0=A0=A0=A0=A0=A0spin_lock_init(&spu->int_mask_lock);
-> +#endif
-> +=A0=A0=A0=A0=A0=A0=A0if (!(firmware_has_feature(FW_FEATURE_LPAR)))
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0spu_mfc_sdr_set(spu, mfspr(=
-SPRN_SDR1));
-> =A0=A0=A0=A0=A0=A0=A0=A0spu_mfc_sr1_set(spu, 0x33);
-> ...
-> =A0=A0=A0=A0=A0=A0=A0=A0u32 node;
-> +=A0=A0=A0=A0=A0=A0=A0u32 unit_number;
-> =A0=A0=A0=A0=A0=A0=A0=A0u64 flags;
-> =A0=A0=A0=A0=A0=A0=A0=A0u64 dar;
-> =A0=A0=A0=A0=A0=A0=A0=A0u64 dsisr;
-> +#ifdef=A0CONFIG_SPU_NEED_SHADOW_INT_MASK
-> +=A0=A0=A0=A0=A0=A0=A0spinlock_t int_mask_lock;
-> +=A0=A0=A0=A0=A0=A0=A0u64 shadow_int_mask_RW[3];
-> +#endif
-> =A0=A0=A0=A0=A0=A0=A0=A0size_t ls_size;
-> =A0=A0=A0=A0=A0=A0=A0=A0unsigned int slb_replace;
-> =A0=A0=A0=A0=A0=A0=A0=A0struct mm_struct *mm;
-
-Not sure what others think about this, but I'd prefer not to have the
-#ifdef here at all. This part is not a fast path, so we can spend the
-few extra bytes and cycles on keeping it in the kernel always.
-
-The place where it is used should still have a run-time check for whether
-it's running on BEAT.
-
-	Arnd <><
+Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/pmu.c
+===================================================================
+--- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/pmu.c
++++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/pmu.c
+@@ -22,9 +22,11 @@
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
++#include <linux/interrupt.h>
+ #include <linux/types.h>
+ #include <asm/io.h>
+ #include <asm/machdep.h>
++#include <asm/pmc.h>
+ #include <asm/reg.h>
+ #include <asm/spu.h>
+ 
+@@ -338,3 +340,71 @@ void cbe_read_trace_buffer(u32 cpu, u64 
+ }
+ EXPORT_SYMBOL_GPL(cbe_read_trace_buffer);
+ 
++/*
++ * Enabling/disabling interrupts for the entire performance monitoring unit.
++ */
++
++u32 cbe_query_pm_interrupts(u32 cpu)
++{
++	return cbe_read_pm(cpu, pm_status);
++}
++EXPORT_SYMBOL_GPL(cbe_query_pm_interrupts);
++
++u32 cbe_clear_pm_interrupts(u32 cpu)
++{
++	/* Reading pm_status clears the interrupt bits. */
++	return cbe_query_pm_interrupts(cpu);
++}
++EXPORT_SYMBOL_GPL(cbe_clear_pm_interrupts);
++
++void cbe_enable_pm_interrupts(u32 cpu, u32 thread, u32 mask)
++{
++	/* Set which node and thread will handle the next interrupt. */
++	iic_set_interrupt_routing(cpu, thread, 0);
++
++	/* Enable the interrupt bits in the pm_status register. */
++	if (mask)
++		cbe_write_pm(cpu, pm_status, mask);
++}
++EXPORT_SYMBOL_GPL(cbe_enable_pm_interrupts);
++
++void cbe_disable_pm_interrupts(u32 cpu)
++{
++	cbe_clear_pm_interrupts(cpu);
++	cbe_write_pm(cpu, pm_status, 0);
++}
++EXPORT_SYMBOL_GPL(cbe_disable_pm_interrupts);
++
++static irqreturn_t cbe_pm_irq(int irq, void *dev_id, struct pt_regs *regs)
++{
++	perf_irq(regs);
++	return IRQ_HANDLED;
++}
++
++int __init cbe_init_pm_irq(void)
++{
++	unsigned int irq;
++	int rc, node;
++
++	for_each_node(node) {
++		irq = irq_create_mapping(NULL, IIC_IRQ_IOEX_PMI |
++					       (node << IIC_IRQ_NODE_SHIFT));
++		if (irq == NO_IRQ) {
++			printk("ERROR: Unable to allocate irq for node %d\n",
++			       node);
++			return -EINVAL;
++		}
++
++		rc = request_irq(irq, cbe_pm_irq,
++				 IRQF_DISABLED, "cbe-pmu-0", NULL);
++		if (rc) {
++			printk("ERROR: Request for irq on node %d failed\n",
++			       node);
++			return rc;
++		}
++	}
++
++	return 0;
++}
++arch_initcall(cbe_init_pm_irq);
++
+Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/interrupt.c
++++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.c
+@@ -397,3 +397,19 @@ void __init iic_init_IRQ(void)
+ 	/* Enable on current CPU */
+ 	iic_setup_cpu();
+ }
++
++void iic_set_interrupt_routing(int cpu, int thread, int priority)
++{
++	struct cbe_iic_regs __iomem *iic_regs = cbe_get_cpu_iic_regs(cpu);
++	u64 iic_ir = 0;
++	int node = cpu >> 1;
++
++	/* Set which node and thread will handle the next interrupt */
++	iic_ir |= CBE_IIC_IR_PRIO(priority) |
++		  CBE_IIC_IR_DEST_NODE(node);
++	if (thread == 0)
++		iic_ir |= CBE_IIC_IR_DEST_UNIT(CBE_IIC_IR_PT_0);
++	else
++		iic_ir |= CBE_IIC_IR_DEST_UNIT(CBE_IIC_IR_PT_1);
++	out_be64(&iic_regs->iic_ir, iic_ir);
++}
+Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.h
+===================================================================
+--- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/interrupt.h
++++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/interrupt.h
+@@ -83,5 +83,7 @@ extern u8 iic_get_target_id(int cpu);
+ 
+ extern void spider_init_IRQ(void);
+ 
++extern void iic_set_interrupt_routing(int cpu, int thread, int priority);
++
+ #endif
+ #endif /* ASM_CELL_PIC_H */
+Index: linux-2.6.18-arnd6/include/asm-powerpc/cell-pmu.h
+===================================================================
+--- linux-2.6.18-arnd6.orig/include/asm-powerpc/cell-pmu.h
++++ linux-2.6.18-arnd6/include/asm-powerpc/cell-pmu.h
+@@ -87,4 +87,9 @@ extern void cbe_disable_pm(u32 cpu);
+ 
+ extern void cbe_read_trace_buffer(u32 cpu, u64 *buf);
+ 
++extern void cbe_enable_pm_interrupts(u32 cpu, u32 thread, u32 mask);
++extern void cbe_disable_pm_interrupts(u32 cpu);
++extern u32  cbe_query_pm_interrupts(u32 cpu);
++extern u32  cbe_clear_pm_interrupts(u32 cpu);
++
+ #endif /* __ASM_CELL_PMU_H__ */
+Index: linux-2.6.18-arnd6/arch/powerpc/platforms/cell/cbe_regs.h
+===================================================================
+--- linux-2.6.18-arnd6.orig/arch/powerpc/platforms/cell/cbe_regs.h
++++ linux-2.6.18-arnd6/arch/powerpc/platforms/cell/cbe_regs.h
+@@ -185,6 +185,14 @@ struct cbe_iic_regs {
+ 	struct	cbe_iic_thread_regs thread[2];			/* 0x0400 */
+ 
+ 	u64	iic_ir;						/* 0x0440 */
++#define CBE_IIC_IR_PRIO(x)      (((x) & 0xf) << 12)
++#define CBE_IIC_IR_DEST_NODE(x) (((x) & 0xf) << 4)
++#define CBE_IIC_IR_DEST_UNIT(x) ((x) & 0xf)
++#define CBE_IIC_IR_IOC_0        0x0
++#define CBE_IIC_IR_IOC_1S       0xb
++#define CBE_IIC_IR_PT_0         0xe
++#define CBE_IIC_IR_PT_1         0xf
++
+ 	u64	iic_is;						/* 0x0448 */
+ #define CBE_IIC_IS_PMI		0x2
+ 
