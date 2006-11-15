@@ -1,27 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6F5EA67C7D
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 08:05:01 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.60.0611141956070.5542@poirot.grange>
-References: <Pine.LNX.4.60.0611011844570.3736@poirot.grange>
-	<Pine.LNX.4.60.0611051526510.4214@poirot.grange>
-	<4EC85F22-99A9-4B0F-987C-25B715235320@kernel.crashing.org>
-	<Pine.LNX.4.60.0611062048080.6091@poirot.grange>
-	<Pine.LNX.4.60.0611132312430.3789@poirot.grange>
-	<C14DE3DB-D490-4473-A625-CA71058A1C9E@kernel.crashing.org>
-	<Pine.LNX.4.60.0611141956070.5542@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3CC50148-9122-4133-A304-E2723077EE1D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH/RFC (take 3)] linkstation / kurobox support under
-	arch/powerpc
-Date: Tue, 14 Nov 2006 15:05:11 -0600
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 6/16] cell: abstract spu management routines
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45599F91.9070802@am.sony.com>
+References: <4554DA9C.9040102@am.sony.com>
+	<1163475880.8048.78.camel@localhost.localdomain>
+	<200611141055.22317.arnd@arndb.de>  <45599F91.9070802@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-rP0OAGV3OrUG3794M2ZV"
+Date: Wed, 15 Nov 2006 11:07:15 +1100
+Message-Id: <1163549235.19171.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,136 +25,114 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 14, 2006, at 1:09 PM, Guennadi Liakhovetski wrote:
+--=-rP0OAGV3OrUG3794M2ZV
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 14 Nov 2006, Kumar Gala wrote:
->
->> Out of interest how are you booting this kernel build & dts on the
->> linkstation/kurobox? u-boot or wrapper?
->
-> u-boot.
->
->>> diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/ 
->>> boot/dts/kuroboxHG.dts
->>> new file mode 100644
->>> index 0000000..6c76ef6
->>> --- /dev/null
->>> +++ b/arch/powerpc/boot/dts/kuroboxHG.dts
->>
->> would make more sense if this file was called linkstation.dts to  
->> match the
->> Kconfig
->
-> Well, as I wrote in the patch description, there are several NAS  
-> devices
-> which can be hopefully made to run one kernel with just different  
-> fdts.
-> The systems are LinkStation-I (I think, there are 2 variants thereof:
-> HDLAN and HGLAN), Kurobox (normal and HG version), Terastation  
-> (several
-> variations). You can see them and other non-powerpc devices, e.g.,  
-> here:
-> http://linkstationwiki.net/index.php?title=Main_Page
-> The kernel patch traditionally was called "linkstation", that's  
-> where the
-> CONFIG name comes from too. However, the device I have is a KuroboxHG,
-> therefore the dts file is called kuroboxHG.dts, as it is indeed system
-> specific. Makes sense?
->
+On Tue, 2006-11-14 at 02:50 -0800, Geoff Levand wrote:
+> Arnd Bergmann wrote:
+> > On Tuesday 14 November 2006 04:44, Michael Ellerman wrote:
+> >> OK, back to the task at hand :) =EF=BF=BDFor the moment I'd rather see=
+ you leave
+> >> out dump_data_fields(), as neither HV or baremetal implementations do
+> >> anything. Just put the offending xmon code inside an #ifdef
+> >> CONFIG_PPC_CELL_NATIVE. eg:
+> >>=20
+> >> Index: cell/arch/powerpc/xmon/xmon.c
+> >> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >> --- cell.orig/arch/powerpc/xmon/xmon.c =EF=BF=BD2006-11-14 14:43:11.00=
+0000000 +1100
+> >> +++ cell/arch/powerpc/xmon/xmon.c =EF=BF=BD =EF=BF=BD =EF=BF=BD 2006-1=
+1-14 14:42:35.000000000 +1100
+> >> @@ -2807,12 +2807,11 @@ static void dump_spu_fields(struct spu *
+> >> =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
+=EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD in_be32(&spu->problem->sp=
+u_status_R));
+> >> =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD DUMP_VALUE("0x%x", problem->sp=
+u_npc_RW,
+> >> =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
+=EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD in_be32(&spu->problem->sp=
+u_npc_RW));
+> >> +#ifdef CONFIG_PPC_CELL_NATIVE
+> >> =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD DUMP_FIELD(spu, "0x%p", priv1)=
+;
+> >> -
+> >> - =EF=BF=BD =EF=BF=BD =EF=BF=BD if (spu->priv1) {
+> >> - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
+=BD DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
+> >> - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
+=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
+=EF=BF=BD in_be64(&spu->priv1->mfc_sr1_RW));
+> >> - =EF=BF=BD =EF=BF=BD =EF=BF=BD }
+> >> + =EF=BF=BD =EF=BF=BD =EF=BF=BD DUMP_VALUE("0x%lx", priv1->mfc_sr1_RW,
+> >> + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
+=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD in_be64(&spu->priv1->mfc_sr1_RW=
+));
+> >> +#endif
+> >=20
+> > Oops. Null pointer dereference.
+> >=20
+> > You can't do this if you want to compile in both native and PS3PF
+> > support in a single kernel. I think your original code that prints
+> > priv1 and the sr1 only if priv1 exists is fine on both ways.
+>=20
+> No, that won't work either since I moved priv1 to struct spu_pdata.
+>=20
+> +struct spu_pdata {
+> +	int nid;
+> +	struct device_node *devnode;
+> +	struct spu_priv1 __iomem *priv1;
+> +};
 
-Ok that makes sense, then KuroboxHG for the dts makes sense (lets  
-just add a comment in the header saying it uses the linkstation  
-kernel config)
+OK, I wasn't very clear. I didn't mean that patch was the final solution
+- obviously it needs to take into account the movement of priv1 etc.
 
->>> +		dma@80001100 {
->>> +			linux,phandle = <4100>;
->>> +			#interrupt-cells = <1>;
->>> +			#address-cells = <1>;
->>> +			#size-cells = <1>;
->>> +			device_type = "dma";
->>> +			compatible = "fsl-dma";
->>> +			clock-frequency = <0>;
->>> +			reg = <80001100 24>;
->>> +			interrupts = <6 0>;
->>> +			interrupt-parent = <4400>;
->>> +		};
->>> +
->>> +		dma@80001200 {
->>> +			linux,phandle = <4200>;
->>> +			#interrupt-cells = <1>;
->>> +			#address-cells = <1>;
->>> +			#size-cells = <1>;
->>> +			device_type = "dma";
->>> +			compatible = "fsl-dma";
->>> +			clock-frequency = <0>;
->>> +			reg = <80001200 24>;
->>> +			interrupts = <7 0>;
->>> +			interrupt-parent = <4400>;
->>> +		};
->>
->> Can we drop the dma nodes?  are you using them for something.  I'd  
->> prefer not
->> to specify what they look like until we figure out how to handle  
->> the various
->> "features" between the families of FSL PPC's that share the DMA  
->> controller
->> (10x, 824x, 83xx, 85xx)
->
-> Sure, will do.
->
->>> +		i2c@80003000 {
->>> +			linux,phandle = <4300>;
->>> +			device_type = "i2c";
->>> +			compatible = "fsl-i2c";
->>> +			clock-frequency = <0>;
->>
->> Any reason for adding this clock-frequency property?
->
-> Copy-paste:-)
+> The only way I see this working is to have a platform specific
+> routine to dump those spu_pdata variables.  The problem is that
+> only the spu platform code knows about the variables, and only the
+> xmon code knows how to do the dump.  That is why I suggested earlier
+> to re-work the xmon code to make a dump routine with global scope
+> that can be called from the various spu platform=20
+> spu_dump_pdata_fields() routines.
+>=20
+> Note that this is not specific to the native support, since I want
+> to hook my platform code into xmon also, and I need to somehow
+> dump my variables.  So the solution is not to add priv1 back into
+> struct spu.
 
-from where?
+I'm not that bothered, but I really don't think we want to spend too
+much effort engineering interfaces between xmon and the spu code - at
+the end of the day xmon is just a hackish debugging aid for _kernel
+developers_.
 
->>> +		pic@80040000 {
->>> +			linux,phandle = <4400>;
->>> +			#interrupt-cells = <2>;
->>> +			#address-cells = <0>;
->>> +			device_type = "open-pic";
->>> +			compatible = "chrp,open-pic";
->>> +			interrupt-controller;
->>> +			reg = <80040000 40000>;
->>> +			clock-frequency = <0>;		/* ??? */
->>
->> Any reason for adding this clock-frequency property?
->
-> Ditto.
->
->>> diff --git a/arch/powerpc/configs/kuroboxhg_defconfig b/arch/ 
->>> powerpc/configs/kuroboxhg_defconfig
->>> new file mode 100644
->>> index 0000000..136632f
->>> --- /dev/null
->>> +++ b/arch/powerpc/configs/kuroboxhg_defconfig
->>
->> similar file rename comment linkstation_defconfig
->
-> Well, it should eventually be linkstation_defconfig, but so far it  
-> only
-> has drivers for kuroboxhg, but, perhaps, you're right. As the goal  
-> is to
-> have 1 kernel for all with one defconfig, I can rename it now and just
-> hope it will be extended in the future as the patch is used /  
-> tested on
-> more systems. Will rename, thanks.
->
-> So, I would leave most parts with "linkstation" notation, apart  
-> from the
-> .dts, will throw unneeded entries from the .dts, rename the  
-> defconfig, but
-> keep the .dts name. Agree?
+The simplest solution might just be to dump the address of the pdata
+pointer, and leave it up to the xmon user to dump that and interpret it
+as they see fit.
 
-Agreed, also update the comment/help in the Kconfig to make it clear  
-that Kurobox and KuroboxHG are two different things.  The Kurobox(HG)  
-was a bit confusing to me at first glance, and since its help, no  
-reason not be more specific :)
+cheers
 
-- k
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-rP0OAGV3OrUG3794M2ZV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFWloydSjSd0sB4dIRAt8tAJ4ybsHY1UW7GQM8k+Ib8hdF7dMZnQCcCmNN
+iarpERLC8MnPW1PU2LIaQho=
+=VUKj
+-----END PGP SIGNATURE-----
+
+--=-rP0OAGV3OrUG3794M2ZV--
