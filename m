@@ -1,20 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7788E67C6E
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Nov 2006 11:54:48 +1100 (EST)
-In-Reply-To: <BAY102-F1446B29A3C6918114ADE69A9EA0@phx.gbl>
-References: <BAY102-F1446B29A3C6918114ADE69A9EA0@phx.gbl>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3679DAB4-C7A5-4A47-9648-2CC0F87F76F7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Low memory not pageable on Freescale BookE
-Date: Tue, 14 Nov 2006 18:55:02 -0600
-To: "M Ptich" <ptich@hotmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC] [PATCH] cpu_hotplug on IBM JS20 system
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Srinivasa Ds <srinivasa@in.ibm.com>
+In-Reply-To: <4559C6A9.4070204@in.ibm.com>
+References: <45586EB5.40409@in.ibm.com>
+	<1163453995.5940.11.camel@localhost.localdomain>
+	<4559C6A9.4070204@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-re2ZvGguFfcmNcNsPKLX"
+Date: Wed, 15 Nov 2006 13:58:56 +1100
+Message-Id: <1163559536.19171.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: ego@in.ibm.com, anton@au1.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 14, 2006, at 6:38 PM, M Ptich wrote:
+--=-re2ZvGguFfcmNcNsPKLX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->> Why do you need low kernel memory to be pageable?
->
-> Mainly for debugging purposes - this way we can have guardbands for  
-> our application stacks, and also for proprietary software that  
-> tracks memory accesses (for corruption detection).
+On Tue, 2006-11-14 at 19:07 +0530, Srinivasa Ds wrote:
+> Hi
+> when I tried to hot plug a cpu on IBM bladecentre JS20 system,it dropped=20
+> in to xmon.
 
-If you are doing at the application level then its already paged.   
-The TLB1 stuff is just for kernel memory.
+How did you try to hot plug a cpu? Through sysfs/hmc/somethingelse ?
 
-- k
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-re2ZvGguFfcmNcNsPKLX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFWoJwdSjSd0sB4dIRAl6CAKCkNTZtM+gCwweoXPu8GvuYaWHNLwCdGsRc
+UwhN+dsj1gzY+GPwfC9sNpE=
+=teKj
+-----END PGP SIGNATURE-----
+
+--=-re2ZvGguFfcmNcNsPKLX--
