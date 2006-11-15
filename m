@@ -1,19 +1,18 @@
-Return-Path: <jeff@mock.com>
-Received: from mail.mock.com (gw.mock.com [209.157.146.194])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.mock.com", Issuer "CAcert Class 3 Root" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 99F6267CB7
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 8FA3267CCD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Nov 2006 03:49:21 +1100 (EST)
-Message-ID: <455B3E84.8010606@mock.com>
-Date: Wed, 15 Nov 2006 08:21:24 -0800
-From: Jeff Mock <jeff@mock.com>
-MIME-Version: 1.0
-To: aldo lab <aldo.lab@gmail.com>
-Subject: Re: Performance on PowerQuicc8280 linux based
+	Thu, 16 Nov 2006 04:39:20 +1100 (EST)
+In-Reply-To: <455B3E84.8010606@mock.com>
 References: <6e41d1460611150654j6e532ae1pbe378685539e257e@mail.gmail.com>
-In-Reply-To: <6e41d1460611150654j6e532ae1pbe378685539e257e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<455B3E84.8010606@mock.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F1EB2EA4-DF62-4825-84CF-C9E5497AEB09@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: Performance on PowerQuicc8280 linux based
+Date: Wed, 15 Nov 2006 12:39:08 -0500
+To: Jeff Mock <jeff@mock.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,30 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm no big help, but the problem might be TLB related instead of cache
-related.  The performance of embedded PPCs with small TLBs requiring
-software assist for TLB misses can be performance sensitive to TLB misses.
 
-jeff
+On Nov 15, 2006, at 11:21 AM, Jeff Mock wrote:
 
+> I'm no big help, but the problem might be TLB related instead of cache
+> related.  The performance of embedded PPCs with small TLBs requiring
+> software assist for TLB misses can be performance sensitive to TLB  
+> misses.
 
-aldo lab wrote:
-> I've a system Linux based on ppc8280 platform with unstable
-> performance from a compiling to another.
-> I've a board with 2 Ethernet interfaces and I inject traffic in one of
-> this and analyze the number of packets that I receive in the other
-> one.
-> I obtained 60000 pkt/s the first time, the second time i recompiling
-> the kernel just changing some died function that is not involved in
-> the flow of the packet.In that case I obtained 47000 pkt/s and it
-> seems that moving code position change the behaviour in term of cache
-> functionality.
-> Could someone help me to understand this strange situation
-> 
-> Regards
-> Aldo
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+The 82xx is fully cache coherent and has BATs for
+mapping the kernel space.  This is not a PPC with
+a small TLB, but rather one of the most efficient.
+The TLBs are not an issue,  and I doubt the caches
+are as well.
+
+I don't know what kind of test is used to measure this
+performance, but the first thing you must always scrutinize
+are your testing methods and procedures.  Just using
+a user application to measure network performance
+enables a large number of variables that must be
+properly understood and controlled.  Some other
+thread could have switched in and stolen CPU cycles,
+you could have some sampling rate and time
+measurement hysteresis due to buffering,
+you need to find and control such things.
+
+Can you "undo" the changes and get the old
+results?  That's the first thing I would verify,
+and then verify the results are repeatable.
+If that's the case, I'd carefully try to understand
+what this "unrelated" change really affects
+in terms of using CPU cycles.
+
+Thanks.
+
+	-- Dan
