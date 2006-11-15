@@ -1,23 +1,18 @@
-Return-Path: <adgospod@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id D36F467C5F
+Return-Path: <aldo.lab@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id 3D2E867CD3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Nov 2006 01:51:12 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so127688ugf
+	Thu, 16 Nov 2006 01:54:53 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id n15so629111nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Nov 2006 06:51:10 -0800 (PST)
-Message-ID: <bdfc5d6e0611150651r28407a4cp168eb4e4c67a9298@mail.gmail.com>
-Date: Wed, 15 Nov 2006 09:51:10 -0500
-From: "Andy Gospodarek" <andy@greyhouse.net>
-Sender: adgospod@gmail.com
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: BDI2000 with MPC5200 and userspace programs
-In-Reply-To: <528646bc0611150625u18b78d1akdaea088de27c0f9@mail.gmail.com>
+	Wed, 15 Nov 2006 06:54:52 -0800 (PST)
+Message-ID: <6e41d1460611150654j6e532ae1pbe378685539e257e@mail.gmail.com>
+Date: Wed, 15 Nov 2006 15:54:51 +0100
+From: "aldo lab" <aldo.lab@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Performance on PowerQuicc8280 linux based
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <OFEE9EA5F5.4E12B948-ONC1257227.00338F27-C1257227.00343921@moog.com>
-	<528646bc0611150625u18b78d1akdaea088de27c0f9@mail.gmail.com>
-Cc: Erwin Haese <ehaese@moog.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,41 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/15/06, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 11/15/06, Erwin Haese <ehaese@moog.com> wrote:
-> > Hi,
-> >
-> > thinking about ordering a BDI2000, in the information about the BDI2000 it
-> > is broadly mentioned to be capable debugging the kernel.
-> > Is it also possible to debug Linux user space programs with BDI2000 in a
-> > similar way as it is possible with gdbserver running on the target system?
->
-> I don't think so, but why would you need to?
+I've a system Linux based on ppc8280 platform with unstable
+performance from a compiling to another.
+I've a board with 2 Ethernet interfaces and I inject traffic in one of
+this and analyze the number of packets that I receive in the other
+one.
+I obtained 60000 pkt/s the first time, the second time i recompiling
+the kernel just changing some died function that is not involved in
+the flow of the packet.In that case I obtained 47000 pkt/s and it
+seems that moving code position change the behaviour in term of cache
+functionality.
+Could someone help me to understand this strange situation
 
-It is (I've done it), but it can be tricky.  I did it a while back
-with a 2.4 kernel on a 8245-based board.  If I remember correctly the
-trick was to set a breakpoint inside a kernel call (I used an ioctl)
-that came from your userspace app and then map the userspace
-executable to start at address 0x0.  After that you are able to set
-breakpoints in the user-space app and do whatever you need.  After
-doing it I remember seeing a description of basically the same steps
-online somewhere.
-
->
-> > Is there any integration of the BDI2000 to eclipse running at a linux
-> > host?
->
-> Ultimate solutions has a product that does this.
->
-> g.
->
-> --
-> Grant Likely, B.Sc. P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Regards
+Aldo
