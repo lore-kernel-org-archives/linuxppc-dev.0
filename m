@@ -1,19 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH]: wrap cpu_die() with CONFIG_HOTPLUG_CPU
+Subject: Re: [PATCH]: HVCS char driver janitoring: fix compile warnings
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061116214114.GE23600@austin.ibm.com>
-References: <20061115185743.GH8395@austin.ibm.com>
-	<1163635125.8805.6.camel@localhost.localdomain>
-	<20061116214114.GE23600@austin.ibm.com>
+In-Reply-To: <20061116203946.GA23600@austin.ibm.com>
+References: <20061115212619.GJ8395@austin.ibm.com>
+	<1163635387.8805.7.camel@localhost.localdomain>
+	<20061116203946.GA23600@austin.ibm.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-xfHbI4QB9yBhOasNPYdT"
-Date: Fri, 17 Nov 2006 09:34:57 +1100
-Message-Id: <1163716498.16815.3.camel@localhost.localdomain>
+	boundary="=-f2nqMHLg7qZnR7DtceJq"
+Date: Fri, 17 Nov 2006 09:35:36 +1100
+Message-Id: <1163716536.16815.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Srinivasa Ds <srinivasa@in.ibm.com>,
-	Nathan Lynch <ntl@pobox.com>, paulus@samba.org
+Cc: akpm@osdl.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,40 +25,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-xfHbI4QB9yBhOasNPYdT
+--=-f2nqMHLg7qZnR7DtceJq
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-11-16 at 15:41 -0600, Linas Vepstas wrote:
-> Paul,
->=20
-> Please apply; this is an updated patch per Michael Ellerman,
-> below.
->=20
-> --linas
->=20
-> On Thu, Nov 16, 2006 at 10:58:45AM +1100, Michael Ellerman wrote:
+On Thu, 2006-11-16 at 14:39 -0600, Linas Vepstas wrote:
+> On Thu, Nov 16, 2006 at 11:03:07AM +1100, Michael Ellerman wrote:
+> > On Wed, 2006-11-15 at 15:26 -0600, Linas Vepstas wrote:
+> > >=20
+> > > This is a non-urgent patch.=20
+> > >=20
+> > > I can't figure out who the upstream maintainer for char drivers=20
+> > > is supposed to be. Can this patch be applied?=20
+> > >=20
+> > > --linas
+> > >=20
+> > > This patch removes an pair of irritating compiler warnings:
+> > >=20
+> > > drivers/char/hvcs.c:1605: warning: ignoring return value of
+> > > sysfs_create_group declared with attribute warn_unused_result
+> > > drivers/char/hvcs.c:1639: warning: ignoring return value of
+> > > driver_create_file declared with attribute warn_unused_result
+> > >=20
+> > > Doing this required moving a big block of code from the bottom=20
+> > > of the file to the top, so as to avoid the need for (irritating)=20
+> > > forward declarations.
 > >=20
-> > Thanks for writing it up as a patch. Couple of nit-picky comments below=
-:
+> > Can you do the move and the fix as two patches? It's very hard to revie=
+w
+> > in its current form.
 >=20
-> Nitpicking's OK.
->=20
-> >   +#else
-> >    #define pSeries_mach_cpu_die NULL
-> > > +#endif
-> >=20
-> > Not sure if that's a good idea, it would save the #ifdef around the
-> > structure assignment below.
->=20
-> Hmm. Personally, I find the #ifdef in the structure to be more=20
-> readable, in the sense that one is less likely to mis-read what
-> the code is actually doing, when on is skimming quickly. But,
-> not worth arguing over. The patch below incorporates your=20
-> suggestions.
+> Sorry, coming shortly. -- linas
 
-Yeah, it's a trade off, I'm not 100% sure it's a good idea - but we'll
-see what others think :)
+Thanks, new patches look good.
 
 cheers
 
@@ -72,16 +71,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-xfHbI4QB9yBhOasNPYdT
+--=-f2nqMHLg7qZnR7DtceJq
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBFXOeQdSjSd0sB4dIRAqr9AJ0TYKfl0Uw4v4ThL6eYKtMrlYqeVwCfRZke
-5XJWq9JsodX3X4PT3WnaIHU=
-=B4/p
+iD8DBQBFXOe4dSjSd0sB4dIRAp6yAJ9IOtdPTDEHa58LPPTw5B+1Fygi7ACdF+no
+U44FrY1v6GvSb0yfQxlm6ok=
+=89Hn
 -----END PGP SIGNATURE-----
 
---=-xfHbI4QB9yBhOasNPYdT--
+--=-f2nqMHLg7qZnR7DtceJq--
