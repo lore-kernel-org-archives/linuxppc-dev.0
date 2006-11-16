@@ -1,19 +1,22 @@
-Return-Path: <arunkat@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.231])
-	by ozlabs.org (Postfix) with ESMTP id 8110367BC8
+Return-Path: <kallepokki@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 33C8B67BC4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Nov 2006 04:16:57 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so192641wri
+	Fri, 17 Nov 2006 07:23:51 +1100 (EST)
+Received: by nz-out-0102.google.com with SMTP id v1so393798nzb
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Nov 2006 09:16:56 -0800 (PST)
-Message-ID: <edd12c050611160916y1581e270l5ddd8016a0720eca@mail.gmail.com>
-Date: Thu, 16 Nov 2006 22:46:53 +0530
-From: "Arun Kumar" <arunkat@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: unhadled reloc 18
+	Thu, 16 Nov 2006 12:23:50 -0800 (PST)
+Message-ID: <a425f86c0611161223q2fca81c5k692f02f62b0e96e9@mail.gmail.com>
+Date: Thu, 16 Nov 2006 22:23:49 +0200
+From: "Kalle Pokki" <kalle.pokki@iki.fi>
+Sender: kallepokki@gmail.com
+To: "Boris Shteinbock" <boris@fabiotec.com>
+Subject: Re: Linux kernel 2.6 on Embedded Planet 8248 board
+In-Reply-To: <455C974A.1000106@fabiotec.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_18554_16349497.1163697413482"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <455C974A.1000106@fabiotec.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,47 +27,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_18554_16349497.1163697413482
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On 11/16/06, Boris Shteinbock <boris@fabiotec.com> wrote:
+> Hi. I am trying to bring up Linux kernel 2.6.16 on EP8248 board
+> and I am having some serious problems with console driver there, which
+> doesn't work (console on SMC).
+> The kernel hangs after console_init() and BDM shows exception that I was
+> unable to trace to any specific point.
 
-Hi ,
-I am using k2.4.2 with cross compiler for PowerPC 8245 platform .
-When I try to do an insmod of my driver it complains
-
-unhandled reloc 18
-insmod: Unhandled relocation of type 18 .......
-
-for all the symbols in the driver .
-
-I am compiling my driver as a module using -fPIC and then doing ld -r
-mydriver -o mydrivernew `gcc -print-libgcc-file-name`
-
-When I do an insmod mydrivernew it gives these relocation errors .
-
-The reason why i using ld is that my code uses 64 bit division on 32 biut
-platform so when i try to do insmod mydriver
-it says undefined symbol __udivdi3
-
-I am able to locate this symbol in libgcc and hence I am trying to include
-it with my driver mydriver since I am not able to compile my kernel with gcc
-as this library symbol __udivdi3 is not exported in my kernel image when
-linked with libgcc with vmlinux .
-
-Please suggest me how to get rid of these relocation warnings ???
-
-Thanks
-Arun
-
-------=_Part_18554_16349497.1163697413482
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi ,<br>I am using k2.4.2 with cross compiler for PowerPC 8245 platform .<br>When I try to do an insmod of my driver it complains <br><br>unhandled reloc 18<br>insmod: Unhandled relocation of type 18 .......<br><br>for all the symbols in the driver .
-<br><br>I am compiling my driver as a module using -fPIC and then doing ld -r mydriver -o mydrivernew `gcc -print-libgcc-file-name`<br><br>When I do an insmod mydrivernew it gives these relocation errors .<br><br>The reason why i using ld is that my code uses 64 bit division on 32 biut platform so when i try to do insmod mydriver
-<br>it says undefined symbol __udivdi3 <br><br>I am able to locate this symbol in libgcc and hence I am trying to include it with my driver mydriver since I am not able to compile my kernel with gcc as this library symbol __udivdi3 is not exported in my kernel image when linked with libgcc with vmlinux .
-<br><br>Please suggest me how to get rid of these relocation warnings ???<br><br>Thanks<br>Arun<br><br><br clear="all"><br>
-
-------=_Part_18554_16349497.1163697413482--
+When I tried using Linux on that board, I was stuck for a long time
+because I had pipeline depth zero in the PlanetCore settings. My
+system also hung while initializing the console driver. You might want
+to double check you have pipeline depth one.
