@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20A9167BEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 09:25:32 +1100 (EST)
-Subject: Re: [patch 00/16] powerpc cleanup patches
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-In-Reply-To: <20061116162008.GF4688@localhost.localdomain>
-References: <20061102125555.252338000@localhost.localdomain>
-	<20061116162008.GF4688@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 17 Nov 2006 09:25:25 +1100
-Message-Id: <1163715926.5940.397.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH]: wrap cpu_die() with CONFIG_HOTPLUG_CPU
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061116214114.GE23600@austin.ibm.com>
+References: <20061115185743.GH8395@austin.ibm.com>
+	<1163635125.8805.6.camel@localhost.localdomain>
+	<20061116214114.GE23600@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xfHbI4QB9yBhOasNPYdT"
+Date: Fri, 17 Nov 2006 09:34:57 +1100
+Message-Id: <1163716498.16815.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Srinivasa Ds <srinivasa@in.ibm.com>,
+	Nathan Lynch <ntl@pobox.com>, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-11-16 at 17:20 +0100, Sascha Hauer wrote:
-> Hi all and Ben,
-> 
-> What's the further way with these patches (at least the the ones Ben
-> acked)? Are they picked up from here or shall I post them to the patch
-> system?
 
-Paulus should pick them up if he didn't already.
+--=-xfHbI4QB9yBhOasNPYdT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ben.
+On Thu, 2006-11-16 at 15:41 -0600, Linas Vepstas wrote:
+> Paul,
+>=20
+> Please apply; this is an updated patch per Michael Ellerman,
+> below.
+>=20
+> --linas
+>=20
+> On Thu, Nov 16, 2006 at 10:58:45AM +1100, Michael Ellerman wrote:
+> >=20
+> > Thanks for writing it up as a patch. Couple of nit-picky comments below=
+:
+>=20
+> Nitpicking's OK.
+>=20
+> >   +#else
+> >    #define pSeries_mach_cpu_die NULL
+> > > +#endif
+> >=20
+> > Not sure if that's a good idea, it would save the #ifdef around the
+> > structure assignment below.
+>=20
+> Hmm. Personally, I find the #ifdef in the structure to be more=20
+> readable, in the sense that one is less likely to mis-read what
+> the code is actually doing, when on is skimming quickly. But,
+> not worth arguing over. The patch below incorporates your=20
+> suggestions.
+
+Yeah, it's a trade off, I'm not 100% sure it's a good idea - but we'll
+see what others think :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-xfHbI4QB9yBhOasNPYdT
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFXOeQdSjSd0sB4dIRAqr9AJ0TYKfl0Uw4v4ThL6eYKtMrlYqeVwCfRZke
+5XJWq9JsodX3X4PT3WnaIHU=
+=B4/p
+-----END PGP SIGNATURE-----
+
+--=-xfHbI4QB9yBhOasNPYdT--
