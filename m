@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDFC367E57
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 10:58:57 +1100 (EST)
-Subject: Re: [PATCH 13/16] add IRQ remapping
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200611151018.kAFAIb3o028137@toshiba.co.jp>
-References: <200611151018.kAFAIb3o028137@toshiba.co.jp>
-Content-Type: text/plain
-Date: Thu, 16 Nov 2006 10:58:52 +1100
-Message-Id: <1163635132.5940.297.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH]: HVCS char driver janitoring: fix compile warnings
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061115212619.GJ8395@austin.ibm.com>
+References: <20061115212619.GJ8395@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xyBtvIMMSCzfvtVhCm93"
+Date: Thu, 16 Nov 2006 11:03:07 +1100
+Message-Id: <1163635387.8805.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: akpm@osdl.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-11-15 at 19:18 +0900, Ishizaki Kou wrote:
-> This patch adds irq remapping.
-> On interrupt mechanism on Beat, when an irq outlet who has an id
-> hich is formerly used is created, remapping the irq is required.
-> 
-> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--=-xyBtvIMMSCzfvtVhCm93
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Index: linux-2.6.19/arch/powerpc/kernel/irq.c
-> diff -u linux-2.6.19/arch/powerpc/kernel/irq.c:1.1.1.2 linux-2.6.19/arch/powerpc/kernel/irq.c:1.4
-> --- linux-2.6.19/arch/powerpc/kernel/irq.c:1.1.1.2	Tue Oct 17 08:40:57 2006
-> +++ linux-2.6.19/arch/powerpc/kernel/irq.c	Mon Nov  6 22:04:23 2006
-> @@ -534,6 +534,8 @@
->  	 */
->  	virq = irq_find_mapping(host, hwirq);
->  	if (virq != IRQ_NONE) {
-> +		if (host->ops->remap)
-> +			host->ops->remap(host, virq, hwirq);
->  		pr_debug("irq: -> existing mapping on virq %d\n", virq);
->  		return virq;
->  	}
-> Index: linux-2.6.19/include/asm-powerpc/irq.h
-> diff -u linux-2.6.19/include/asm-powerpc/irq.h:1.1.1.2 linux-2.6.19/include/asm-powerpc/irq.h:1.3
-> --- linux-2.6.19/include/asm-powerpc/irq.h:1.1.1.2	Tue Oct 17 08:44:31 2006
-> +++ linux-2.6.19/include/asm-powerpc/irq.h	Tue Oct 17 13:22:53 2006
-> @@ -89,6 +89,9 @@
->  	/* Dispose of such a mapping */
->  	void (*unmap)(struct irq_host *h, unsigned int virq);
->  
-> +	/* Update of such a mapping  */
-> +	void (*remap)(struct irq_host *h, unsigned int virq, irq_hw_number_t hw);
-> +
->  	/* Translate device-tree interrupt specifier from raw format coming
->  	 * from the firmware to a irq_hw_number_t (interrupt line number) and
->  	 * type (sense) that can be passed to set_irq_type(). In the absence
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+On Wed, 2006-11-15 at 15:26 -0600, Linas Vepstas wrote:
+>=20
+> This is a non-urgent patch.=20
+>=20
+> I can't figure out who the upstream maintainer for char drivers=20
+> is supposed to be. Can this patch be applied?=20
+>=20
+> --linas
+>=20
+> This patch removes an pair of irritating compiler warnings:
+>=20
+> drivers/char/hvcs.c:1605: warning: ignoring return value of
+> sysfs_create_group declared with attribute warn_unused_result
+> drivers/char/hvcs.c:1639: warning: ignoring return value of
+> driver_create_file declared with attribute warn_unused_result
+>=20
+> Doing this required moving a big block of code from the bottom=20
+> of the file to the top, so as to avoid the need for (irritating)=20
+> forward declarations.
+
+Can you do the move and the fix as two patches? It's very hard to review
+in its current form.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-xyBtvIMMSCzfvtVhCm93
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFW6q7dSjSd0sB4dIRAui0AJwMx+pk+gQYnIQ/P6BXjRXF9qf2SACfV/fy
+v0VX8TwyNRG/Yyp7TYovRds=
+=pWlU
+-----END PGP SIGNATURE-----
+
+--=-xyBtvIMMSCzfvtVhCm93--
