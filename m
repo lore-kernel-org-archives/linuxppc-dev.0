@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 16 Nov 2006 18:23:26 +1100
-Subject: [RFC/PATCH 7/9] Make xmon disassembly optional
+Date: Thu, 16 Nov 2006 18:23:27 +1100
+Subject: [RFC/PATCH 8/9] Make 64-bit cpu features defined on 32-bit
 In-Reply-To: <1163661800.406227.631357998554.qpush@cradle>
-Message-Id: <20061116072328.651FC67BD3@ozlabs.org>
+Message-Id: <20061116072329.12C5067BEA@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,157 +15,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While adding spu disassembly support it struck me that we're actually
-carrying quite a lot of code around, just to do disassembly in the case
-of a crash.
-
-While on large systems it's not an issue, on smaller ones it might be
-nice to have xmon - but without the weight of the disassembly support.
-For a Cell build this saves ~230KB (!), and for pSeries ~195KB.
-
-We still support the 'di' and 'sdi' commands, however they just dump
-the instruction in hex.
-
-Move the definitions into a header to clean xmon.c just a tiny bit.
+It saves #ifdef'ing in callers if we at least define the 64-bit cpu
+features for 32-bit also.
 
 ---
 
- arch/powerpc/Kconfig.debug  |    9 +++++++++
- arch/powerpc/xmon/Makefile  |    8 ++++++--
- arch/powerpc/xmon/dis-asm.h |   31 +++++++++++++++++++++++++++++++
- arch/powerpc/xmon/ppc-dis.c |    3 +--
- arch/powerpc/xmon/spu-dis.c |    3 +--
- arch/powerpc/xmon/xmon.c    |    5 +----
- 6 files changed, 49 insertions(+), 10 deletions(-)
+ include/asm-powerpc/cputable.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: cell/arch/powerpc/Kconfig.debug
+Index: cell/include/asm-powerpc/cputable.h
 ===================================================================
---- cell.orig/arch/powerpc/Kconfig.debug
-+++ cell/arch/powerpc/Kconfig.debug
-@@ -98,6 +98,15 @@ config XMON_DEFAULT
- 	  xmon is normally disabled unless booted with 'xmon=on'.
- 	  Use 'xmon=off' to disable xmon init during runtime.
- 
-+config XMON_DISASSEMBLY
-+	bool "Include disassembly support in xmon"
-+	depends on XMON
-+	default y
-+	help
-+	  Include support for disassembling in xmon. You probably want
-+	  to say Y here, unless you're building for a memory-constrained
-+	  system.
+--- cell.orig/include/asm-powerpc/cputable.h
++++ cell/include/asm-powerpc/cputable.h
+@@ -311,7 +311,8 @@ extern void do_feature_fixups(unsigned l
+ #define CPU_FTRS_E500_2	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN)
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+-#ifdef __powerpc64__
 +
- config IRQSTACKS
- 	bool "Use separate kernel stacks when processing interrupts"
- 	depends on PPC64
-Index: cell/arch/powerpc/xmon/Makefile
-===================================================================
---- cell.orig/arch/powerpc/xmon/Makefile
-+++ cell/arch/powerpc/xmon/Makefile
-@@ -3,6 +3,10 @@
- ifdef CONFIG_PPC64
- EXTRA_CFLAGS += -mno-minimal-toc
- endif
--obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o start.o \
--			   nonstdio.o
-+
-+obj-y			+= xmon.o setjmp.o start.o nonstdio.o
-+
-+ifdef CONFIG_XMON_DISASSEMBLY
-+obj-y			+= ppc-dis.o ppc-opc.o
- obj-$(CONFIG_PPC_CELL)	+= spu-dis.o spu-opc.o
-+endif
-Index: cell/arch/powerpc/xmon/dis-asm.h
-===================================================================
---- /dev/null
-+++ cell/arch/powerpc/xmon/dis-asm.h
-@@ -0,0 +1,31 @@
-+#ifndef _POWERPC_XMON_DIS_ASM_H
-+#define _POWERPC_XMON_DIS_ASM_H
-+/*
-+ * Copyright (C) 2006 Michael Ellerman, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+extern void print_address (unsigned long memaddr);
-+
-+#ifdef CONFIG_XMON_DISASSEMBLY
-+extern int print_insn_powerpc(unsigned long insn, unsigned long memaddr);
-+extern int print_insn_spu(unsigned long insn, unsigned long memaddr);
-+#else
-+static inline int print_insn_powerpc(unsigned long insn, unsigned long memaddr)
-+{
-+	printf("%.8x", insn);
-+	return 0;
-+}
-+
-+static inline int print_insn_spu(unsigned long insn, unsigned long memaddr)
-+{
-+	printf("%.8x", insn);
-+	return 0;
-+}
-+#endif
-+
-+#endif /* _POWERPC_XMON_DIS_ASM_H */
-Index: cell/arch/powerpc/xmon/ppc-dis.c
-===================================================================
---- cell.orig/arch/powerpc/xmon/ppc-dis.c
-+++ cell/arch/powerpc/xmon/ppc-dis.c
-@@ -21,8 +21,7 @@ Software Foundation, 59 Temple Place - S
- #include "nonstdio.h"
- #include "ansidecl.h"
- #include "ppc.h"
--
--extern void print_address (unsigned long memaddr);
-+#include "dis-asm.h"
++/* 64-bit CPUs */
+ #define CPU_FTRS_POWER3	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | CPU_FTR_PPC_LE)
+ #define CPU_FTRS_RS64	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+@@ -343,7 +344,6 @@ extern void do_feature_fixups(unsigned l
+ 	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
+ #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
+-#endif
  
- /* Print a PowerPC or POWER instruction.  */
- 
-Index: cell/arch/powerpc/xmon/spu-dis.c
-===================================================================
---- cell.orig/arch/powerpc/xmon/spu-dis.c
-+++ cell/arch/powerpc/xmon/spu-dis.c
-@@ -22,8 +22,7 @@
- #include "nonstdio.h"
- #include "ansidecl.h"
- #include "spu.h"
--
--extern void print_address (unsigned long memaddr);
-+#include "dis-asm.h"
- 
- /* This file provides a disassembler function which uses
-    the disassembler interface defined in dis-asm.h.   */
-Index: cell/arch/powerpc/xmon/xmon.c
-===================================================================
---- cell.orig/arch/powerpc/xmon/xmon.c
-+++ cell/arch/powerpc/xmon/xmon.c
-@@ -46,6 +46,7 @@
- #endif
- 
- #include "nonstdio.h"
-+#include "dis-asm.h"
- 
- #define scanhex	xmon_scanhex
- #define skipbl	xmon_skipbl
-@@ -109,7 +110,6 @@ static int bsesc(void);
- static void dump(void);
- static void prdump(unsigned long, long);
- static int ppc_inst_dump(unsigned long, long, int);
--void print_address(unsigned long);
- static void backtrace(struct pt_regs *);
- static void excprint(struct pt_regs *);
- static void prregs(struct pt_regs *);
-@@ -153,9 +153,6 @@ static int do_spu_cmd(void);
- 
- int xmon_no_auto_backtrace;
- 
--extern int print_insn_powerpc(unsigned long insn, unsigned long memaddr);
--extern int print_insn_spu(unsigned long insn, unsigned long memaddr);
--
- extern void xmon_enter(void);
- extern void xmon_leave(void);
- 
+ #ifdef __powerpc64__
+ #define CPU_FTRS_POSSIBLE	\
