@@ -1,23 +1,18 @@
-Return-Path: <aldo.lab@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
-	by ozlabs.org (Postfix) with ESMTP id 2462567BCE
+Return-Path: <leisun124@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.238])
+	by ozlabs.org (Postfix) with ESMTP id A32FF67BE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Nov 2006 20:22:52 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id n15so863200nfc
+	Fri, 17 Nov 2006 02:44:33 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so624013wxd
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Nov 2006 01:22:51 -0800 (PST)
-Message-ID: <6e41d1460611160122u4f8163a1t4ba127ec8815067f@mail.gmail.com>
-Date: Thu, 16 Nov 2006 10:22:50 +0100
-From: "aldo lab" <aldo.lab@gmail.com>
-To: "Dan Malek" <dan@embeddedalley.com>
-Subject: Re: Performance on PowerQuicc8280 linux based
-In-Reply-To: <F1EB2EA4-DF62-4825-84CF-C9E5497AEB09@embeddedalley.com>
+	Thu, 16 Nov 2006 07:44:31 -0800 (PST)
+Message-ID: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
+Date: Thu, 16 Nov 2006 10:44:31 -0500
+From: "Lei Sun" <leisun124@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: memory corruption after MMU turned on
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <6e41d1460611150654j6e532ae1pbe378685539e257e@mail.gmail.com>
-	<455B3E84.8010606@mock.com>
-	<F1EB2EA4-DF62-4825-84CF-C9E5497AEB09@embeddedalley.com>
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,53 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-If I remove the changes I'm not available to reach the previous
-result, and to perform the test I use an external traffic generator (
-Smartbit) and this has an hight precision.
-So the problem in some way should be tied to cache but I don't know
-what I can try.I blocked some critical function (in term of cpu
-cycles)  in istruction cache but I didn't obtained a good result
-Let me know if you have some idea
+Hi all:
+   I am trying to bring up customized board based on MPC8270, the
+kernel version is 2.4.30, it works fine on one of the Eval board
+(PQ2FADS-VR, which use MPC8275).
+   The kernel hangs after uncompressing is done, further debug shows
+that it hangs right after "rfi " instruction of the turn_on_mmu:
+function in head.S
+
+ turn_on_mmu:
+    240     mfmsr   r0
+    241     ori r0,r0,MSR_DR|MSR_IR
+    242     mtspr   SRR1,r0
+    243     lis r0,start_here@h
+    244     ori r0,r0,start_here@l
+    245     mtspr   SRR0,r0
+    246     SYNC
+    247     RFI             /* enables MMU */
+
+After i step over the RFI instruction, the PC points to C000XXX , but
+all memory content is 0 by then.
+my BATU0 is 0xC000FFE0  BATL0 is 0x00000002, I have 128MB RAM. The
+u-boot works fine, without MMU turned on. We do have some hardware
+problem, such that i have to lower the bus frequency to make the SDRAM
+stable. What physical parameter could cause the board not working with
+MMU on?
+
+Any suggestion?
 
 Thanks
-Aldo
-
-
-On 11/15/06, Dan Malek <dan@embeddedalley.com> wrote:
->
-> On Nov 15, 2006, at 11:21 AM, Jeff Mock wrote:
->
-> > I'm no big help, but the problem might be TLB related instead of cache
-> > related.  The performance of embedded PPCs with small TLBs requiring
-> > software assist for TLB misses can be performance sensitive to TLB
-> > misses.
->
-> The 82xx is fully cache coherent and has BATs for
-> mapping the kernel space.  This is not a PPC with
-> a small TLB, but rather one of the most efficient.
-> The TLBs are not an issue,  and I doubt the caches
-> are as well.
->
-> I don't know what kind of test is used to measure this
-> performance, but the first thing you must always scrutinize
-> are your testing methods and procedures.  Just using
-> a user application to measure network performance
-> enables a large number of variables that must be
-> properly understood and controlled.  Some other
-> thread could have switched in and stolen CPU cycles,
-> you could have some sampling rate and time
-> measurement hysteresis due to buffering,
-> you need to find and control such things.
->
-> Can you "undo" the changes and get the old
-> results?  That's the first thing I would verify,
-> and then verify the results are repeatable.
-> If that's the case, I'd carefully try to understand
-> what this "unrelated" change really affects
-> in terms of using CPU cycles.
->
-> Thanks.
->
->        -- Dan
->
->
+lei
