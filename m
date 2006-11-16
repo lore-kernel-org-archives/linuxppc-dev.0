@@ -1,32 +1,33 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <linas@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F232C67BF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 08:21:22 +1100 (EST)
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6B51367BD3
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 08:41:22 +1100 (EST)
 Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
 	[9.17.195.11])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAGLLKVf027249
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 16:21:20 -0500
+	by e33.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAGLfJe3009130
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 16:41:19 -0500
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
 	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAGLK5hG418632
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 14:20:05 -0700
+	kAGLfJNJ544718
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 14:41:19 -0700
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAGLK51B019514
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 14:20:05 -0700
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC/PATCH 0/9] More xmon cell patches
-Date: Thu, 16 Nov 2006 22:20:02 +0100
-References: <1163661800.406227.631357998554.qpush@cradle>
-In-Reply-To: <1163661800.406227.631357998554.qpush@cradle>
+	kAGLfHR1014572
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 14:41:19 -0700
+Date: Thu, 16 Nov 2006 15:41:15 -0600
+To: Michael Ellerman <michael@ellerman.id.au>, paulus@samba.org
+Subject: Re: [PATCH]: wrap cpu_die() with CONFIG_HOTPLUG_CPU
+Message-ID: <20061116214114.GE23600@austin.ibm.com>
+References: <20061115185743.GH8395@austin.ibm.com>
+	<1163635125.8805.6.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611162220.02845.arnd.bergmann@de.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1163635125.8805.6.camel@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Srinivasa Ds <srinivasa@in.ibm.com>,
+	Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 16 November 2006 08:23, Michael Ellerman wrote:
-> This is an updated series of xmon cell patches, it replaces the series
-> of three I sent earlier (Nov 3rd).
+
+Paul,
+
+Please apply; this is an updated patch per Michael Ellerman,
+below.
+
+--linas
+
+On Thu, Nov 16, 2006 at 10:58:45AM +1100, Michael Ellerman wrote:
 > 
-> It fixes the xmon sparse warnings, updates 'ss, adds 'sd' and 'sdi'
-> commands to xmon - and incorporates updated disassembly code. Finally
-> we make the disassembly optional for folks looking for a smaller kernel.
+> Thanks for writing it up as a patch. Couple of nit-picky comments below:
+
+Nitpicking's OK.
+
+>   +#else
+>    #define pSeries_mach_cpu_die NULL
+> > +#endif
 > 
-> I haven't signed-off this series, as I'm not sure whether that's the
-> right thing to do for the binutils code - which I obviously didn't write.
-> When I know, I'll resend with signed-offs or whatever is appropriate.
-> 
-> The update of the ppc-dis.c code is RFC, I just thought I'd do it while I
-> was there. But I haven't tested it thoroughly.
+> Not sure if that's a good idea, it would save the #ifdef around the
+> structure assignment below.
 
-Thanks for the update. I'll put them into my 2.6.19-rc based tree, but I
-won't backport them to 2.6.18, in case anyone is wondering.
+Hmm. Personally, I find the #ifdef in the structure to be more 
+readable, in the sense that one is less likely to mis-read what
+the code is actually doing, when on is skimming quickly. But,
+not worth arguing over. The patch below incorporates your 
+suggestions.
 
-> I think you have the first three of these in CVS? The first two should be
-> unchanged, but the third one has changed for the better and should probably
-> be updated if possible.
+--linas
 
-I would prefer if you didn't do this, as it breaks my scripts when dealing
-with multiple trees containing the same patches. Please either change the
-subject of the replacement patch, or put the update into another patch
-on top of it. It's no problem if your patches go right into powerpc.git,
-but if you want me to forward them, I'd rather fold the patches myself.
+Subject: [PATCH]: wrap cpu_die() with CONFIG_HOTPLUG_CPU
 
-Paul, are you taking these patches directly, or should I repost them
-to you along with my other stuff for 2.6.20?
+Per email discussion, it appears that rtas_stop_self()
+and pSeries_mach_cpu_die() should not be compiled if 
+CONFIG_HOTPLUG_CPU is not defined. This patch adds
+#ifdefs around these bits of code.
 
-	Arnd <><
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ arch/powerpc/kernel/rtas.c             |    5 +++--
+ arch/powerpc/platforms/pseries/setup.c |    4 ++++
+ include/asm-powerpc/rtas.h             |    2 --
+ 3 files changed, 7 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.19-rc4-git3/arch/powerpc/kernel/rtas.c
+===================================================================
+--- linux-2.6.19-rc4-git3.orig/arch/powerpc/kernel/rtas.c	2006-11-15 11:40:14.000000000 -0600
++++ linux-2.6.19-rc4-git3/arch/powerpc/kernel/rtas.c	2006-11-15 12:46:51.000000000 -0600
+@@ -810,9 +810,9 @@ asmlinkage int ppc_rtas(struct rtas_args
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
+ /* This version can't take the spinlock, because it never returns */
+-
+-struct rtas_args rtas_stop_self_args = {
++static struct rtas_args rtas_stop_self_args = {
+ 	/* The token is initialized for real in setup_system() */
+ 	.token = RTAS_UNKNOWN_SERVICE,
+ 	.nargs = 0,
+@@ -834,6 +834,7 @@ void rtas_stop_self(void)
+ 
+ 	panic("Alas, I survived.\n");
+ }
++#endif
+ 
+ /*
+  * Call early during boot, before mem init or bootmem, to retrieve the RTAS
+Index: linux-2.6.19-rc4-git3/include/asm-powerpc/rtas.h
+===================================================================
+--- linux-2.6.19-rc4-git3.orig/include/asm-powerpc/rtas.h	2006-11-01 16:15:46.000000000 -0600
++++ linux-2.6.19-rc4-git3/include/asm-powerpc/rtas.h	2006-11-16 15:23:24.000000000 -0600
+@@ -54,8 +54,6 @@ struct rtas_args {
+ 	rtas_arg_t *rets;     /* Pointer to return values in args[]. */
+ };  
+ 
+-extern struct rtas_args rtas_stop_self_args;
+-
+ struct rtas_t {
+ 	unsigned long entry;		/* physical address pointer */
+ 	unsigned long base;		/* physical address pointer */
+Index: linux-2.6.19-rc4-git3/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux-2.6.19-rc4-git3.orig/arch/powerpc/platforms/pseries/setup.c	2006-11-01 16:15:09.000000000 -0600
++++ linux-2.6.19-rc4-git3/arch/powerpc/platforms/pseries/setup.c	2006-11-16 15:25:02.000000000 -0600
+@@ -347,6 +347,7 @@ static int __init pSeries_init_panel(voi
+ }
+ arch_initcall(pSeries_init_panel);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
+ static void pSeries_mach_cpu_die(void)
+ {
+ 	local_irq_disable();
+@@ -357,6 +358,9 @@ static void pSeries_mach_cpu_die(void)
+ 	BUG();
+ 	for(;;);
+ }
++#else
++#define pSeries_mach_cpu_die NULL
++#endif
+ 
+ static int pseries_set_dabr(unsigned long dabr)
+ {
