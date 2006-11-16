@@ -1,18 +1,17 @@
-Return-Path: <leisun124@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.238])
-	by ozlabs.org (Postfix) with ESMTP id A32FF67BE2
+Return-Path: <claus.gindhart@kontron.com>
+Received: from mail.kontron-modular.com (mail.kontron-modular.com
+	[62.159.155.200]) by ozlabs.org (Postfix) with ESMTP id 4BB1C67BF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Nov 2006 02:44:33 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so624013wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Nov 2006 07:44:31 -0800 (PST)
-Message-ID: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
-Date: Thu, 16 Nov 2006 10:44:31 -0500
-From: "Lei Sun" <leisun124@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: memory corruption after MMU turned on
+	Fri, 17 Nov 2006 03:23:54 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: memory corruption after MMU turned on
+Date: Thu, 16 Nov 2006 17:11:46 +0100
+Message-ID: <DADA32856852FC458E0F96B664A6F55E011E2699@kom-mailsrv1.kontron-modular.com>
+From: "Claus Gindhart" <claus.gindhart@kontron.com>
+To: "Lei Sun" <leisun124@gmail.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,6 +21,50 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Lei,
+
+if you are trying to step over RFI using the BDI2000-probe (propably =
+also with other probes), this problem could be caused by the probe.
+
+I had similar problems in an early phase of an 8270 project. It is not =
+possible to step over RFI; and it is always dangerous to debug through =
+MMU initialization code with the probe.
+
+You could work around this by setting a Breakpoint instruction after =
+MMU-initialization, hoping, that the code will reach this point.
+If also this doesnt help, i could only recommend to set some HW-signals, =
+in the best case a register with LED's behind to see, whether your =
+system reaches particular code areas.
+
+--=20
+Mit freundlichen Gruessen / Best regards
+
+Claus Gindhart
+SW R&D
+Kontron Modular Computers
+phone :++49 (0)8341-803-374
+mailto:claus.gindhart@kontron-modular.com
+http://www.kontron.com
+
+-----BEGIN GEEK CODE BLOCK-----
+  Version: 3.1
+  GU d- s++:>++:+ a+ C++$ !U !P L++>$ E-- W+(-) N- o?
+  K? w !O !M V !PS PE- Y+ PGP+ t 5? X R* tv- b+ DI+++
+  D-- G e++> h--- !r x+++
+------END GEEK CODE BLOCK------
+=20
+
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+claus.gindhart=3Dkontron.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+claus.gindhart=3Dkontron.com@ozlabs.org=
+]
+On Behalf Of Lei Sun
+Sent: Donnerstag, 16. November 2006 16:45
+To: linuxppc-embedded@ozlabs.org
+Subject: memory corruption after MMU turned on
+
 
 Hi all:
    I am trying to bring up customized board based on MPC8270, the
@@ -53,3 +96,7 @@ Any suggestion?
 
 Thanks
 lei
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
