@@ -1,17 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 11/16] powerpc: add ps3 platform repository support
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
+	by ozlabs.org (Postfix) with ESMTP id 884DB67C9A
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 11:51:34 +1100 (EST)
+Received: from mail6.sony.co.jp (localhost [127.0.0.1])
+	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAG0pXKL028450
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 09:51:33 +0900 (JST)
+Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
+	by mail6.sony.co.jp (R8/Sony) with SMTP id kAG0pWcs028442
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 09:51:32 +0900 (JST)
+Message-ID: <455BB60D.1070506@am.sony.com>
+Date: Wed, 15 Nov 2006 16:51:25 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
 To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20061115180613.GC18856@lst.de>
-References: <4554DAFC.1070804@am.sony.com>  <20061115180613.GC18856@lst.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-XnM4/ki7nexjvac4jm6h"
-Date: Thu, 16 Nov 2006 11:12:54 +1100
-Message-Id: <1163635974.8805.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Subject: Re: [PATCH 3/16] add base support for Celleb platform
+References: <200611150931.kAF9VciJ023243@toshiba.co.jp>
+	<20061115183621.GB21633@lst.de>
+In-Reply-To: <20061115183621.GB21633@lst.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Christoph Hellwig wrote:
+>> @@ -16,3 +16,4 @@
+>>  obj-$(CONFIG_PPC_PASEMI)		+= pasemi/
+>>  obj-$(CONFIG_PPC_CELL)		+= cell/
+>>  obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+>> +obj-$(CONFIG_PPC_CELLEB)	+= celleb/
+> 
+> So another platforms directory.  I think we need to sort out the
+> mess we have currently.
+> 
+> I'd prefer either
+> 
+>   arch/powerpc/platforms/cell		generic cell code (spufs, ..)
+>   arch/powerpc/platforms/ibmcell	cell blade & co support
+>   arch/powerpc/platforms/ps3hv		Sony hypervisor support
+>   arch/powerpc/platforms/celleb		Toshiba
 
---=-XnM4/ki7nexjvac4jm6h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I also think this is preferable to the existing layout, that has both generic
+cell support and IBM Blade support in one directory (platforms/cell).
 
-On Wed, 2006-11-15 at 19:06 +0100, Christoph Hellwig wrote:
-> On Fri, Nov 10, 2006 at 12:03:08PM -0800, Geoff Levand wrote:
-> > + * make_first_field - Make the first field of a repository node name.
-> > + * @text: Text portion of the field.
-> > + * @index: Numeric index portion of the field.  Use zero for 'don't ca=
-re'.
-> > + *
-> > + * This routine sets the vendor id to zero (non-vendor specific).
-> > + * Returns field value.
-> > + */
-> > +
-> > +static u64 make_first_field(const char *text, u64 index)
-> > +{
-> > +	u64 n;
-> > +
-> > +	strncpy((char *)&n, text, 8);
-> > +	return ps3pf_vendor_id_none + (n >> 32) + index;
-> > +}
->=20
-> a strncpy into a const pointer doesn't make any sense.
-
-It's from a const pointer into a u64.
-
-It still doesn't make any sense though .. crazy hypervisor weirdness.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-XnM4/ki7nexjvac4jm6h
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFW60GdSjSd0sB4dIRAkqtAJ9sKqpdC3STZR+rsfAHsZDzIRElVACdGl5Z
-DXEL8Uros6G8Nx1tllom6F4=
-=JVCA
------END PGP SIGNATURE-----
-
---=-XnM4/ki7nexjvac4jm6h--
+-Geoff
