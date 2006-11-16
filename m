@@ -1,32 +1,33 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5E59767BD2
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 05:42:11 +1100 (EST)
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E59ED67BDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 07:39:51 +1100 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAGIg8xm021801
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 13:42:08 -0500
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAGKdmBV005370
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 15:39:48 -0500
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
 	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAGIepJR181204
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 11:40:51 -0700
+	kAGKdmM8336080
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 13:39:48 -0700
 Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAGIep0L003966
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 11:40:51 -0700
-In-Reply-To: <200611152304.45243.arnd@arndb.de>
-References: <200611150937.kAF9b305001499@toshiba.co.jp>
-	<20061115183746.GC21633@lst.de> <200611152304.45243.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <45AC8C44-8193-4311-B4BF-BF7FF56C8DF4@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: Re: [PATCH 5/16] hypervisor functions for Celleb
-Date: Thu, 16 Nov 2006 13:40:49 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+	kAGKdltX018275
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 13:39:48 -0700
+Date: Thu, 16 Nov 2006 14:39:46 -0600
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH]: HVCS char driver janitoring: fix compile warnings
+Message-ID: <20061116203946.GA23600@austin.ibm.com>
+References: <20061115212619.GJ8395@austin.ibm.com>
+	<1163635387.8805.7.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1163635387.8805.7.camel@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: akpm@osdl.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,39 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Nov 16, 2006 at 11:03:07AM +1100, Michael Ellerman wrote:
+> On Wed, 2006-11-15 at 15:26 -0600, Linas Vepstas wrote:
+> > 
+> > This is a non-urgent patch. 
+> > 
+> > I can't figure out who the upstream maintainer for char drivers 
+> > is supposed to be. Can this patch be applied? 
+> > 
+> > --linas
+> > 
+> > This patch removes an pair of irritating compiler warnings:
+> > 
+> > drivers/char/hvcs.c:1605: warning: ignoring return value of
+> > sysfs_create_group declared with attribute warn_unused_result
+> > drivers/char/hvcs.c:1639: warning: ignoring return value of
+> > driver_create_file declared with attribute warn_unused_result
+> > 
+> > Doing this required moving a big block of code from the bottom 
+> > of the file to the top, so as to avoid the need for (irritating) 
+> > forward declarations.
+> 
+> Can you do the move and the fix as two patches? It's very hard to review
+> in its current form.
 
-On Nov 15, 2006, at 5:04 PM, Arnd Bergmann wrote:
-
-> On Wednesday 15 November 2006 19:37, Christoph Hellwig wrote:
->>> +static inline int64_t beat_allocate_memory(uint64_t __in0, uint64_t
->>> __in1, uint64_t __in2, uint64_t __in3,void** __out0,uint64_t*  
->>> __out1) {
->>> +     register uint64_t __reg0 __asm__("r3");
->>> +     register uint64_t __reg1 __asm__("r4");
->>> +     register uint64_t __reg2 __asm__("r5");
->>> +     register uint64_t __reg3 __asm__("r6");
->>> +     register uint64_t __sn __asm__("r11") = (0UL);
->>
->> No point in declaring this a register variable, gcc ignores the
->> specifier.
->
-> Actually, this is the one place where gcc forces you to use the
-> 'register' keyword, the '__asm__("r3")' specifier does not work
-> for variables declared without it.
->
->> Is there any chance to not duplicate the inline assembly
->> for every single hypercall but have generic call with n arguments
->> helper, as for the phyp hvcalls?
->
-> It's not easy to do it the way phyp does, because the assembly
-> needs to pass the call number in %r11, which is not one of the
-> argument registers.
->
-Just make another one (or a set of them like the phyp calls) and  
-define then in assembly.
-Certainly a bl to a function will be negligible to the hcall its self.
-
-Is it possible to give the parameters some meaningful names?
-It would also be nice to use HMT_MEDIUM and HVSC
-
--JX
+Sorry, coming shortly. -- linas
