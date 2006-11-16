@@ -1,18 +1,12 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <455BC1E1.2010300@am.sony.com>
-References: <4554DACB.8060809@am.sony.com> <20061115180440.GB18856@lst.de>
-	<455BC1E1.2010300@am.sony.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-gzB25fI1gXrKUCKKF2P4"
-Date: Thu, 16 Nov 2006 13:13:01 +1100
-Message-Id: <1163643181.8805.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17755.51877.237558.694965@cargo.ozlabs.ibm.com>
+Date: Thu, 16 Nov 2006 13:19:17 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: Please pull powerpc.git 'merge' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,66 +16,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
---=-gzB25fI1gXrKUCKKF2P4
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Since the mirroring on kernel.org is slow today, please do:
 
-On Wed, 2006-11-15 at 17:41 -0800, Geoff Levand wrote:
-> Christoph Hellwig wrote:
+git pull \
+master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-> >> +#if !defined(PPC_MSG_MIGRATE_TASK)
-> >> +static const int PPC_MSG_MIGRATE_TASK =3D 2;
-> >> +#endif
-> >=20
-> > This looks rather odd, what is it trying to do?
->=20
->=20
-> For some reason the definition of PPC_MSG_MIGRATE_TASK is sometimes 2, an=
-d
-> sometimes not defined, depending on other config options.  It makes the c=
-ode
-> much simpler if it is always defined as 2.  Maybe it makes more sense if =
-I
-> change it to this:
->=20
-> #if !defined(PPC_MSG_MIGRATE_TASK)
-> #define PPC_MSG_MIGRATE_TASK 2
-> #endif
+or, once the mirror catches up:
 
-include/asm-powerpc/smp.h says:
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-/* This is unused now */
-#if 0
-#define PPC_MSG_MIGRATE_TASK    2
-#endif
+to get the two commits from Stephen Rothwell listed below.
 
+Thanks,
+Paul.
 
-So it will never be defined. Why do you need it, you don't seem to use
-it anywhere?
+ include/asm-powerpc/systbl.h   |    1 +
+ include/asm-powerpc/topology.h |    8 +++++++-
+ include/asm-powerpc/unistd.h   |    3 ++-
+ 3 files changed, 10 insertions(+), 2 deletions(-)
 
-cheers
+commit 9716a340310a383751a06589d0775fad04bd3f54
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Mon Nov 13 14:52:42 2006 +1100
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+    [POWERPC] Wire up sys_move_pages
+    
+    All the infrastructure is already in place for this, so we only need
+    to allocate a syscall number and hook it up.
+    
+    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+commit 056f4faa572f64fa926491a7d42c627c9dc507a7
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Mon Nov 13 14:51:46 2006 +1100
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-gzB25fI1gXrKUCKKF2P4
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFW8ktdSjSd0sB4dIRAuWaAJ9kxhYPvcrqwS25adYNKIu6pPKZxACggBmD
-lqc/4dDmxTDPNiOFFs2HId8=
-=l5wB
------END PGP SIGNATURE-----
-
---=-gzB25fI1gXrKUCKKF2P4--
+    [POWERPC] Add the thread_siblings files to sysfs
+    
+    This adds the /sys/devices/system/cpu/*/topology/thread_siblings
+    files on powerpc.  These files are already available on other
+    architectures.
+    
+    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
