@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B882B67B8F
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 09:48:53 +1100 (EST)
-Subject: Re: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20061115182316.GA20719@lst.de>
-References: <20061114012504.17455.13833.stgit@localhost.localdomain>
-	<20061114012816.17455.12059.stgit@localhost.localdomain>
-	<20061115182316.GA20719@lst.de>
-Content-Type: text/plain
-Date: Fri, 17 Nov 2006 09:48:43 +1100
-Message-Id: <1163717323.5940.407.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 8/9] Make 64-bit cpu features defined on 32-bit
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20061116211759.003f3dbd.sfr@canb.auug.org.au>
+References: <1163661800.406227.631357998554.qpush@cradle>
+	<20061116072329.12C5067BEA@ozlabs.org>
+	<20061116211759.003f3dbd.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-sKF/2103VzaxgO2qU97D"
+Date: Fri, 17 Nov 2006 10:03:45 +1100
+Message-Id: <1163718226.16815.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +25,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> But wha do you need this for anyway?  It's not used anywhere currently,
-> and it's not 8xx-specific at all?
-> 
-> > +unsigned long va_to_phys(unsigned long address)
-> > +{
-> > +	pte_t *pte;
-> > +
-> > +	pte = va_to_pte(address);
-> > +	if (pte)
-> > +		return(((unsigned long)(pte_val(*pte)) & PAGE_MASK) | (address & ~(PAGE_MASK)));
-> > +	return (0);
-> > +}
-> 
-> Shouldn't you use virt_to_phys instead?
-> 
-> Also for the last two I'd prefer if you'd find a way to avoid adding
-> them.
+--=-sKF/2103VzaxgO2qU97D
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I think those 2 are used for cases where they either have a non-linear
-mapping a-la Amiga/APUS or in cases where they try to get addresses of
-things in the vmalloc area no ?.
+On Thu, 2006-11-16 at 21:17 +1100, Stephen Rothwell wrote:
+> On Thu, 16 Nov 2006 18:23:27 +1100 Michael Ellerman <michael@ellerman.id.=
+au> wrote:
+> >
+> > It saves #ifdef'ing in callers if we at least define the 64-bit cpu
+> > features for 32-bit also.
+>=20
+> Does it matter that some of the 64 bit feature bit defines are 0 on 32
+> bit?
 
-Ben.
+Not for me, I just want to be able to call cpu_has_feature() on it. If
+the feature is 0 it'll always return false.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-sKF/2103VzaxgO2qU97D
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFXO5RdSjSd0sB4dIRArWZAKCqNZT8a4Y3LRiMhwiOvSXyQfHeeQCfUHEr
+q5WkYOuhm+4nu9b+aRhu2Ww=
+=SRpj
+-----END PGP SIGNATURE-----
+
+--=-sKF/2103VzaxgO2qU97D--
