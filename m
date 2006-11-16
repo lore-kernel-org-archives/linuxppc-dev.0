@@ -1,35 +1,28 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <srinivasa@in.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 93AB267BB6
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 23:57:22 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAGCvH5e028295
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 07:57:17 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAGCvGEd327676
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 05:57:16 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAGCvGOP019178
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 05:57:16 -0700
-Date: Thu, 16 Nov 2006 18:26:37 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [RFC] Fix for interrupt distribution
-Message-ID: <20061116125637.GB13004@in.ibm.com>
-References: <20061030180446.GA24307@in.ibm.com>
-	<20061030181751.GI17168@localdomain>
-	<20061031110515.GB7884@in.ibm.com>
-	<20061106224603.GG6848@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061106224603.GG6848@localdomain>
-Cc: linuxppc-dev@ozlabs.org, fastboot@lists.osdl.org, anton@samba.org
-Reply-To: mohan@in.ibm.com
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9108967B5B
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 00:52:34 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.5) with ESMTP id kAGE3VT7179862
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 01:03:31 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
+	by sd0208e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAGDtc6H242410
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 00:55:53 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAGDqB5q030787
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 00:52:12 +1100
+Message-ID: <455C783E.2040701@in.ibm.com>
+Date: Thu, 16 Nov 2006 20:09:58 +0530
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, ntl@pobox.com,
+	michael@ellerman.id.au, anton@au1.ibm.com, vatsa@in.ibm.com, ego@in.ibm.com
+Subject: [RFC] [PATCH]  cpu hotplug on power based systems.
+Content-Type: multipart/mixed; boundary="------------030302070108020707090702"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,224 +32,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 06, 2006 at 04:46:03PM -0600, Nathan Lynch wrote:
-> Mohan Kumar M wrote:
-> >
-> > Index: linux-2.6.19-rc3/arch/powerpc/platforms/pseries/xics.c
-> > ===================================================================
-> > --- linux-2.6.19-rc3.orig/arch/powerpc/platforms/pseries/xics.c
-> > +++ linux-2.6.19-rc3/arch/powerpc/platforms/pseries/xics.c
-> > @@ -658,7 +658,7 @@ static void __init xics_setup_8259_casca
-> >  
-> >  void __init xics_init_IRQ(void)
-> >  {
-> > -	int i;
-> > +	int i, j;
-> >  	struct device_node *np;
-> >  	u32 ilen, indx = 0;
-> >  	const u32 *ireg;
-> > @@ -686,23 +686,23 @@ void __init xics_init_IRQ(void)
-> >  	for (np = of_find_node_by_type(NULL, "cpu");
-> >  	     np;
-> >  	     np = of_find_node_by_type(np, "cpu")) {
-> > -		ireg = get_property(np, "reg", &ilen);
-> > -		if (ireg && ireg[0] == get_hard_smp_processor_id(boot_cpuid)) {
-> > -			ireg = get_property(np,
-> > -					"ibm,ppc-interrupt-gserver#s", &ilen);
-> > -			i = ilen / sizeof(int);
-> > -			if (ireg && i > 0) {
-> > -				default_server = ireg[0];
-> > -				/* take last element */
-> > -				default_distrib_server = ireg[i-1];
-> > -			}
-> > -			ireg = get_property(np,
-> > +		ireg = get_property(np, "ibm,ppc-interrupt-gserver#s", &ilen);
-> > +		i = ilen / sizeof(int);
-> > +		for (j = 0; ireg[j] && j < i; j+=2) {
->                             ^^^^^^
-> I don't understand this condition in the loop -- zero is a valid (and
-> common) value for interrupt servers:
-> 
-> # xxd /proc/device-tree/cpus/PowerPC,POWER5@0/ibm,ppc-interrupt-server#s
-> 0000000: 0000 0000 0000 0001
-> 
-> # xxd /proc/device-tree/cpus/PowerPC,POWER5@0/ibm,ppc-interrupt-gserver#s
-> 0000000: 0000 0000 0000 00ff 0000 0001 0000 00ff
-> 
-> So I think this patch wouldn't always work.
-> 
-> > +			if (ireg[j] == get_hard_smp_processor_id(boot_cpuid)) {
-> > +				if ( j + 1 < i) {
-> > +					default_server = ireg[j];
-> > +					default_distrib_server = ireg[j+1];
-> > +				}
-> > +				ireg = get_property(np,
-> >  					"ibm,interrupt-server#-size", NULL);
-> > -			if (ireg)
-> > -				interrupt_server_size = *ireg;
-> > -			break;
-> > +				if (ireg)
-> > +					interrupt_server_size = *ireg;
-> > +				goto out;
-> > +			}
-> >  		}
-> >  	}
-> > +out:
-> >  	of_node_put(np);
-> 
-> 
-> I think we need a helper function or two to make this easier to do
-> correctly and readably, e.g.
-> 
-> /* Returns the device node (with refcount incremented)
->  * corresponding to the given logical cpu id */
-> struct device_node * cpuid_to_of_node(int cpu) {
-> 	struct device_node *np;
-> 	u32 hcpuid = get_hard_smp_processor_id(cpu);
-> 
-> 	for_each_node_by_type(np, "cpu") {
-> 		int len, i;
-> 		u32 *intserv = get_property(np,
-> 				"ibm,ppc-interrupt-server#s", &len);
-> 
-> 		if (!intserv)
-> 			intserv = get_property(np, "reg", &len);
-> 
-> 		i = len / sizeof(u32);
-> 
-> 		while (i--)
-> 			if (intserv[i] == hcpuid)
-> 				return np;
-> 	}
-> 	return NULL;
-> }
-> 
-> 
-> And then the loop in xics_init_IRQ can be replaced with something like:
-> 
-> np = cpuid_to_of_node(boot_cpuid);
-> BUG_ON(!np);
-> ireg = get_property(np, "ibm,ppc-interrupt-gserver#s", &ilen);
-> hcpuid = get_hard_smp_processor_id(boot_cpuid);
-> 
-> if (ireg[0] == hcpuid)
-> 	default_distrib_server = ireg[1];
-> else
-> 	default_distrib_server = ireg[3];
-> 
-> default_server = hcpuid;
-> 
-> ...
+This is a multi-part message in MIME format.
+--------------030302070108020707090702
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Back to work after a long vacation.
 
-Nathan,
+Linux kernel uses some of the rtas token to perform cpu hotplug on power 
+systems. Some of the systems may not provide all the rtas services,which 
+are required to perform cpu hotplug. Like for example
+   1) JS20 doesn't provide "stop-self" token and cpu hotplug operations 
+on these systems causes system to crash.
+   2) some of the p630 systems doesn't provide "query-cpu-stopped-state" 
+token and we are not sure of whether cpu is under stopped state or not  
+or stop-self is still in progress .
+So we can't take decision on whether cpu really has gone offline or not.
 
-Thanks for your suggestions. Based on your suggestions I have rewritten
-the patch to use ibm,ppc-interrupt-server#s to check for both primary
-and secondary CPU ids. Accordingly default distribution server value is
-initialized from "ibm,ppc-interrupt-gserver#s" property.
+So we need to make sure that all required rtas tokens for cpu hotplug  
+are available during rtas initialization phase and to disable cpu 
+hotplug if they are not available.
+I have developed the patch which does the above thing. Please let me 
+know your comments on this.
 
-Patch created over 2.6.19-rc5.
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
-o The following patch allows any secondary CPU thread also to become
-  boot cpu for POWER5. The patch is required to solve kdump boot issue
-  when the kdump kernel is booted with parameter "maxcpus=1". XICS init
-  code tries to match the current boot cpu id with "reg" property in
-  each CPU node in the device tree. But CPU node is created only for
-  primary thread CPU ids and "reg" property only reflects primary CPU
-  ids. So when a kernel is booted on a secondary cpu thread above
-  condition will never meet and the default distribution server is left
-  as zero. This leads to route the interrupts to CPU 0, but which is not
-  online at this time.
-
-o The patch uses ibm,ppc-interrupt-server#s to check for both primary
-  and secondary CPU ids. Accordingly default distribution server value
-  is initialized from "ibm,ppc-interrupt-gserver#s" property.
-
-Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
----
- arch/powerpc/platforms/pseries/xics.c |   57 +++++++++++++++++++++-------------
- 1 file changed, 36 insertions(+), 21 deletions(-)
-
-Index: linux-2.6.19-rc5/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-2.6.19-rc5.orig/arch/powerpc/platforms/pseries/xics.c
-+++ linux-2.6.19-rc5/arch/powerpc/platforms/pseries/xics.c
-@@ -656,13 +656,37 @@ static void __init xics_setup_8259_casca
- 	set_irq_chained_handler(cascade, pseries_8259_cascade);
- }
  
-+static struct device_node *cpuid_to_of_node(int cpu)
+
+--------------030302070108020707090702
+Content-Type: text/plain;
+ name="cpu_final.fix"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpu_final.fix"
+
+ arch/powerpc/kernel/rtas.c |    6 ++++++
+ include/linux/cpu.h        |    4 ++++
+ kernel/cpu.c               |   24 ++++++++++++++++++++++--
+ 3 files changed, 32 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.19-rc5/arch/powerpc/kernel/rtas.c
+===================================================================
+--- linux-2.6.19-rc5.orig/arch/powerpc/kernel/rtas.c
++++ linux-2.6.19-rc5/arch/powerpc/kernel/rtas.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/capability.h>
+ #include <linux/delay.h>
++#include <linux/cpu.h>
+ 
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -843,6 +844,7 @@ void rtas_stop_self(void)
+ void __init rtas_initialize(void)
+ {
+ 	unsigned long rtas_region = RTAS_INSTANTIATE_MAX;
++	int qcss_tok;
+ 
+ 	/* Get RTAS dev node and fill up our "rtas" structure with infos
+ 	 * about it.
+@@ -881,6 +883,10 @@ void __init rtas_initialize(void)
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	rtas_stop_self_args.token = rtas_token("stop-self");
++	qcss_tok = rtas_token("query-cpu-stopped-state");
++	if(rtas_stop_self_args.token == RTAS_UNKNOWN_SERVICE ||
++				 qcss_tok == RTAS_UNKNOWN_SERVICE)
++		disable_cpu_hotplug_perm();
+ #endif /* CONFIG_HOTPLUG_CPU */
+ #ifdef CONFIG_RTAS_ERROR_LOGGING
+ 	rtas_last_error_token = rtas_token("rtas-last-error");
+Index: linux-2.6.19-rc5/kernel/cpu.c
+===================================================================
+--- linux-2.6.19-rc5.orig/kernel/cpu.c
++++ linux-2.6.19-rc5/kernel/cpu.c
+@@ -63,8 +63,20 @@ void unlock_cpu_hotplug(void)
+ }
+ EXPORT_SYMBOL_GPL(unlock_cpu_hotplug);
+ 
++void disable_cpu_hotplug_perm(void)
 +{
-+	struct device_node *np;
-+	u32 hcpuid = get_hard_smp_processor_id(cpu);
-+
-+	for_each_node_by_type(np, "cpu") {
-+		int i, len;
-+		const u32 *intserv;
-+
-+		intserv = get_property(np, "ibm,ppc-interrupt-server#s", &len);
-+
-+		if (!intserv)
-+			intserv = get_property(np, "reg", &len);
-+
-+		i = len / sizeof(u32);
-+
-+		while (i--)
-+			if (intserv[i] == hcpuid)
-+				return np;
-+	}
-+
-+	return NULL;
++	mutex_lock(&cpu_add_remove_lock);
++	cpu_hotplug_disabled = PERM_DISABLED_CPU_HOTPLUG;
++	mutex_unlock(&cpu_add_remove_lock);
 +}
 +
- void __init xics_init_IRQ(void)
+ #endif	/* CONFIG_HOTPLUG_CPU */
+ 
++static int is_cpu_hotplug_perm_disabled()
++{
++	return cpu_hotplug_disabled == PERM_DISABLED_CPU_HOTPLUG;
++}
++
+ /* Need to know about CPUs going up/down? */
+ int __cpuinit register_cpu_notifier(struct notifier_block *nb)
  {
--	int i;
- 	struct device_node *np;
- 	u32 ilen, indx = 0;
- 	const u32 *ireg;
- 	int found = 0;
-+	int hcpuid;
+@@ -193,7 +205,7 @@ int cpu_down(unsigned int cpu)
+ 	int err = 0;
  
- 	ppc64_boot_msg(0x20, "XICS Init");
+ 	mutex_lock(&cpu_add_remove_lock);
+-	if (cpu_hotplug_disabled)
++	if (cpu_hotplug_disabled || is_cpu_hotplug_perm_disabled())
+ 		err = -EBUSY;
+ 	else
+ 		err = _cpu_down(cpu);
+@@ -244,7 +256,7 @@ int __devinit cpu_up(unsigned int cpu)
+ 	int err = 0;
  
-@@ -683,26 +707,17 @@ void __init xics_init_IRQ(void)
- 	xics_init_host();
+ 	mutex_lock(&cpu_add_remove_lock);
+-	if (cpu_hotplug_disabled)
++	if (cpu_hotplug_disabled || is_cpu_hotplug_perm_disabled())
+ 		err = -EBUSY;
+ 	else
+ 		err = _cpu_up(cpu);
+@@ -261,6 +273,10 @@ int disable_nonboot_cpus(void)
+ 	int cpu, first_cpu, error;
  
- 	/* Find the server numbers for the boot cpu. */
--	for (np = of_find_node_by_type(NULL, "cpu");
--	     np;
--	     np = of_find_node_by_type(np, "cpu")) {
--		ireg = get_property(np, "reg", &ilen);
--		if (ireg && ireg[0] == get_hard_smp_processor_id(boot_cpuid)) {
--			ireg = get_property(np,
--					"ibm,ppc-interrupt-gserver#s", &ilen);
--			i = ilen / sizeof(int);
--			if (ireg && i > 0) {
--				default_server = ireg[0];
--				/* take last element */
--				default_distrib_server = ireg[i-1];
--			}
--			ireg = get_property(np,
--					"ibm,interrupt-server#-size", NULL);
--			if (ireg)
--				interrupt_server_size = *ireg;
--			break;
--		}
--	}
-+	np = cpuid_to_of_node(boot_cpuid);
-+	BUG_ON(!np);
-+	ireg = get_property(np, "ibm,ppc-interrupt-gserver#s", &ilen);
-+	hcpuid = get_hard_smp_processor_id(boot_cpuid);
+ 	mutex_lock(&cpu_add_remove_lock);
++	if(is_cpu_hotplug_perm_disabled()) {
++		error = -EBUSY;
++		goto out;
++	}
+ 	first_cpu = first_cpu(cpu_present_map);
+ 	if (!cpu_online(first_cpu)) {
+ 		error = _cpu_up(first_cpu);
+@@ -311,6 +327,10 @@ void enable_nonboot_cpus(void)
+ 
+ 	/* Allow everyone to use the CPU hotplug again */
+ 	mutex_lock(&cpu_add_remove_lock);
++	if(is_cpu_hotplug_perm_disabled()) {
++		mutex_unlock(&cpu_add_remove_lock);
++		return;
++	}
+ 	cpu_hotplug_disabled = 0;
+ 	mutex_unlock(&cpu_add_remove_lock);
+ 
+Index: linux-2.6.19-rc5/include/linux/cpu.h
+===================================================================
+--- linux-2.6.19-rc5.orig/include/linux/cpu.h
++++ linux-2.6.19-rc5/include/linux/cpu.h
+@@ -31,6 +31,8 @@ struct cpu {
+ 	struct sys_device sysdev;
+ };
+ 
++#define  PERM_DISABLED_CPU_HOTPLUG -1
 +
-+	if (ireg[0] == hcpuid)
-+		default_distrib_server = ireg[1];
-+	else
-+		default_distrib_server = ireg[3];
-+
-+	default_server = hcpuid;
- 	of_node_put(np);
- 
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ extern int register_cpu(struct cpu *cpu, int num);
+ extern struct sys_device *get_cpu_sysdev(unsigned cpu);
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -68,6 +70,7 @@ extern struct sysdev_class cpu_sysdev_cl
+ /* Stop CPUs going up and down. */
+ extern void lock_cpu_hotplug(void);
+ extern void unlock_cpu_hotplug(void);
++extern void disable_cpu_hotplug_perm(void);
+ #define hotcpu_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+ 		{ .notifier_call = fn, .priority = pri };	\
+@@ -80,6 +83,7 @@ int cpu_down(unsigned int cpu);
+ #else
+ #define lock_cpu_hotplug()	do { } while (0)
+ #define unlock_cpu_hotplug()	do { } while (0)
++#define disable_cpu_hotplug_perm()     do { } while (0)
+ #define lock_cpu_hotplug_interruptible() 0
+ #define hotcpu_notifier(fn, pri)	do { } while (0)
+ #define register_hotcpu_notifier(nb)	do { } while (0)
+
+--------------030302070108020707090702--
