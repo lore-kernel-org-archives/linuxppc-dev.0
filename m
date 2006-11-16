@@ -2,9 +2,9 @@ Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 Date: Thu, 16 Nov 2006 18:23:26 +1100
-Subject: [RFC/PATCH 6/9] Add spu disassembly to xmon
+Subject: [RFC/PATCH 7/9] Make xmon disassembly optional
 In-Reply-To: <1163661800.406227.631357998554.qpush@cradle>
-Message-Id: <20061116072327.C55EA67C83@ozlabs.org>
+Message-Id: <20061116072328.651FC67BD3@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,110 +15,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a "sdi" command to xmon, to disassemble the contents
-of an spu's local store.
+While adding spu disassembly support it struck me that we're actually
+carrying quite a lot of code around, just to do disassembly in the case
+of a crash.
+
+While on large systems it's not an issue, on smaller ones it might be
+nice to have xmon - but without the weight of the disassembly support.
+For a Cell build this saves ~230KB (!), and for pSeries ~195KB.
+
+We still support the 'di' and 'sdi' commands, however they just dump
+the instruction in hex.
+
+Move the definitions into a header to clean xmon.c just a tiny bit.
 
 ---
 
- arch/powerpc/xmon/Makefile |    1 +
- arch/powerpc/xmon/xmon.c   |   35 +++++++++++++++++++++++++++--------
- 2 files changed, 28 insertions(+), 8 deletions(-)
+ arch/powerpc/Kconfig.debug  |    9 +++++++++
+ arch/powerpc/xmon/Makefile  |    8 ++++++--
+ arch/powerpc/xmon/dis-asm.h |   31 +++++++++++++++++++++++++++++++
+ arch/powerpc/xmon/ppc-dis.c |    3 +--
+ arch/powerpc/xmon/spu-dis.c |    3 +--
+ arch/powerpc/xmon/xmon.c    |    5 +----
+ 6 files changed, 49 insertions(+), 10 deletions(-)
 
+Index: cell/arch/powerpc/Kconfig.debug
+===================================================================
+--- cell.orig/arch/powerpc/Kconfig.debug
++++ cell/arch/powerpc/Kconfig.debug
+@@ -98,6 +98,15 @@ config XMON_DEFAULT
+ 	  xmon is normally disabled unless booted with 'xmon=on'.
+ 	  Use 'xmon=off' to disable xmon init during runtime.
+ 
++config XMON_DISASSEMBLY
++	bool "Include disassembly support in xmon"
++	depends on XMON
++	default y
++	help
++	  Include support for disassembling in xmon. You probably want
++	  to say Y here, unless you're building for a memory-constrained
++	  system.
++
+ config IRQSTACKS
+ 	bool "Use separate kernel stacks when processing interrupts"
+ 	depends on PPC64
 Index: cell/arch/powerpc/xmon/Makefile
 ===================================================================
 --- cell.orig/arch/powerpc/xmon/Makefile
 +++ cell/arch/powerpc/xmon/Makefile
-@@ -5,3 +5,4 @@ EXTRA_CFLAGS += -mno-minimal-toc
+@@ -3,6 +3,10 @@
+ ifdef CONFIG_PPC64
+ EXTRA_CFLAGS += -mno-minimal-toc
  endif
- obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o start.o \
- 			   nonstdio.o
-+obj-$(CONFIG_PPC_CELL)	+= spu-dis.o spu-opc.o
+-obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o start.o \
+-			   nonstdio.o
++
++obj-y			+= xmon.o setjmp.o start.o nonstdio.o
++
++ifdef CONFIG_XMON_DISASSEMBLY
++obj-y			+= ppc-dis.o ppc-opc.o
+ obj-$(CONFIG_PPC_CELL)	+= spu-dis.o spu-opc.o
++endif
+Index: cell/arch/powerpc/xmon/dis-asm.h
+===================================================================
+--- /dev/null
++++ cell/arch/powerpc/xmon/dis-asm.h
+@@ -0,0 +1,31 @@
++#ifndef _POWERPC_XMON_DIS_ASM_H
++#define _POWERPC_XMON_DIS_ASM_H
++/*
++ * Copyright (C) 2006 Michael Ellerman, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++extern void print_address (unsigned long memaddr);
++
++#ifdef CONFIG_XMON_DISASSEMBLY
++extern int print_insn_powerpc(unsigned long insn, unsigned long memaddr);
++extern int print_insn_spu(unsigned long insn, unsigned long memaddr);
++#else
++static inline int print_insn_powerpc(unsigned long insn, unsigned long memaddr)
++{
++	printf("%.8x", insn);
++	return 0;
++}
++
++static inline int print_insn_spu(unsigned long insn, unsigned long memaddr)
++{
++	printf("%.8x", insn);
++	return 0;
++}
++#endif
++
++#endif /* _POWERPC_XMON_DIS_ASM_H */
+Index: cell/arch/powerpc/xmon/ppc-dis.c
+===================================================================
+--- cell.orig/arch/powerpc/xmon/ppc-dis.c
++++ cell/arch/powerpc/xmon/ppc-dis.c
+@@ -21,8 +21,7 @@ Software Foundation, 59 Temple Place - S
+ #include "nonstdio.h"
+ #include "ansidecl.h"
+ #include "ppc.h"
+-
+-extern void print_address (unsigned long memaddr);
++#include "dis-asm.h"
+ 
+ /* Print a PowerPC or POWER instruction.  */
+ 
+Index: cell/arch/powerpc/xmon/spu-dis.c
+===================================================================
+--- cell.orig/arch/powerpc/xmon/spu-dis.c
++++ cell/arch/powerpc/xmon/spu-dis.c
+@@ -22,8 +22,7 @@
+ #include "nonstdio.h"
+ #include "ansidecl.h"
+ #include "spu.h"
+-
+-extern void print_address (unsigned long memaddr);
++#include "dis-asm.h"
+ 
+ /* This file provides a disassembler function which uses
+    the disassembler interface defined in dis-asm.h.   */
 Index: cell/arch/powerpc/xmon/xmon.c
 ===================================================================
 --- cell.orig/arch/powerpc/xmon/xmon.c
 +++ cell/arch/powerpc/xmon/xmon.c
-@@ -154,6 +154,7 @@ static int do_spu_cmd(void);
+@@ -46,6 +46,7 @@
+ #endif
+ 
+ #include "nonstdio.h"
++#include "dis-asm.h"
+ 
+ #define scanhex	xmon_scanhex
+ #define skipbl	xmon_skipbl
+@@ -109,7 +110,6 @@ static int bsesc(void);
+ static void dump(void);
+ static void prdump(unsigned long, long);
+ static int ppc_inst_dump(unsigned long, long, int);
+-void print_address(unsigned long);
+ static void backtrace(struct pt_regs *);
+ static void excprint(struct pt_regs *);
+ static void prregs(struct pt_regs *);
+@@ -153,9 +153,6 @@ static int do_spu_cmd(void);
+ 
  int xmon_no_auto_backtrace;
  
- extern int print_insn_powerpc(unsigned long insn, unsigned long memaddr);
-+extern int print_insn_spu(unsigned long insn, unsigned long memaddr);
- 
+-extern int print_insn_powerpc(unsigned long insn, unsigned long memaddr);
+-extern int print_insn_spu(unsigned long insn, unsigned long memaddr);
+-
  extern void xmon_enter(void);
  extern void xmon_leave(void);
-@@ -218,7 +219,8 @@ Commands:\n\
- "  ss	stop execution on all spus\n\
-   sr	restore execution on stopped spus\n\
-   sf  #	dump spu fields for spu # (in hex)\n\
--  sd  #	dump spu local store for spu # (in hex)\n"
-+  sd  #	dump spu local store for spu # (in hex)\
-+  sdi #	disassemble spu local store for spu # (in hex)\n"
- #endif
- "  S	print special registers\n\
-   t	print backtrace\n\
-@@ -2826,7 +2828,13 @@ static void dump_spu_fields(struct spu *
- 	DUMP_FIELD(spu, "0x%p", priv2);
- }
- 
--static void dump_spu_ls(unsigned long num)
-+int
-+spu_inst_dump(unsigned long adr, long count, int praddr)
-+{
-+	return generic_inst_dump(adr, count, praddr, print_insn_spu);
-+}
-+
-+static void dump_spu_ls(unsigned long num, int subcmd)
- {
- 	unsigned long offset, addr, ls_addr;
- 
-@@ -2853,9 +2861,17 @@ static void dump_spu_ls(unsigned long nu
- 		return;
- 	}
- 
--	prdump(addr, 64);
--	addr += 64;
--	last_cmd = "sd\n";
-+	switch (subcmd) {
-+	case 'i':
-+		addr += spu_inst_dump(addr, 16, 1);
-+		last_cmd = "sdi\n";
-+		break;
-+	default:
-+		prdump(addr, 64);
-+		addr += 64;
-+		last_cmd = "sd\n";
-+		break;
-+	}
- 
- 	spu_info[num].dump_addr = addr;
- }
-@@ -2863,7 +2879,7 @@ static void dump_spu_ls(unsigned long nu
- static int do_spu_cmd(void)
- {
- 	static unsigned long num = 0;
--	int cmd;
-+	int cmd, subcmd = 0;
- 
- 	cmd = inchar();
- 	switch (cmd) {
-@@ -2873,8 +2889,11 @@ static int do_spu_cmd(void)
- 	case 'r':
- 		restart_spus();
- 		break;
--	case 'f':
- 	case 'd':
-+		subcmd = inchar();
-+		if (isxdigit(subcmd) || subcmd == '\n')
-+			termch = subcmd;
-+	case 'f':
- 		scanhex(&num);
- 		if (num >= XMON_NUM_SPUS || !spu_info[num].spu) {
- 			printf("*** Error: invalid spu number\n");
-@@ -2886,7 +2905,7 @@ static int do_spu_cmd(void)
- 			dump_spu_fields(spu_info[num].spu);
- 			break;
- 		default:
--			dump_spu_ls(num);
-+			dump_spu_ls(num, subcmd);
- 			break;
- 		}
  
