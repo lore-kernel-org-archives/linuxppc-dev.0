@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6480067B77
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 22:32:16 +1100 (EST)
-Subject: Re: [PATCH 11/16] PATA driver for Celleb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-In-Reply-To: <200611160939.kAG9dqre027595@toshiba.co.jp>
-References: <200611160939.kAG9dqre027595@toshiba.co.jp>
-Content-Type: text/plain
-Date: Thu, 16 Nov 2006 22:32:03 +1100
-Message-Id: <1163676724.5940.378.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id EB37D67A03
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 23:49:33 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 16/16] Supporting spidernet on Celleb
+Date: Thu, 16 Nov 2006 11:15:48 +0100
+References: <200611151002.kAFA29Tf017783@toshiba.co.jp>
+In-Reply-To: <200611151002.kAFA29Tf017783@toshiba.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611161115.49183.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 15 November 2006 11:02, Ishizaki Kou wrote:
+> This patch adds auto-negotiation.
+> Downloading firmware operation moves into spider_net_open().
+> This patch is not tested on Cell-Blade.
 
-> We use a drivers/ide driver because its design is more suitable for
-> SCC IDE controller than libata driver. But we will try to implement
-> the libata driver as needed. This work needs to override many 
-> callbacks of ata_port_operations by modifying generic helpers.
+This patch needs to be submitted to netdev@vger.kernel.org instead
+of linuxppc-dev. Please also Cc: the maintainer of the driver,
+James K Lewis <jklewis@us.ibm.com>, he at least needs to test
+the changes.
 
-Yup, that's basically the same problem I have with mpc52xx... all of the
-port reset & error handling code in libata does direct IO access and
-thus if you need special IO accessors, you need to re-implement the
-whole thing, which isn't very nice.
+The patch looks good overall, I have only a small cosmetic comments:
 
-I have ideas on how we can fix libata but I haven't had time to talk to
-Jeff much about it yet.
+> @@ -1837,7 +1994,7 @@
+> =A0=A0=A0=A0=A0=A0=A0=A0}
+> =A0
+> =A0try_host_fw:
+> -=A0=A0=A0=A0=A0=A0=A0dn =3D pci_device_to_OF_node(card->pdev);
+> +=A0=A0=A0=A0=A0=A0=A0dn =3D (struct device_node *)card->pdev->sysdata;
+> =A0=A0=A0=A0=A0=A0=A0=A0if (!dn)
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0goto out_err;
+> =A0
 
-> We use the PRD transfer end read function on SCC IDE controller
-> to handle this issue.
-> This function guarantees that issue of DMA End interrupt and
-> setting the interrupt bit of status register are done after 
-> the outstanding write data to memory was pushed. Pushing is 
-> implemented by the dummy read of IDE controller, which reads 
-> the same path as the path of the write data. 
-> Therefore this function is same as the flush of outstanding DMAs.
-> To use this function, we specify the PRD table address(dmatable_dma) 
-> in PRD Transfer End Read Base Address Register(dma_base + 0x018) as
-> the path. Of course it also requires to set a strong order in 
-> the IOIF space.
+> @@ -2071,7 +2234,7 @@
+> =20
+>         netdev->irq =3D card->pdev->irq;
+> =20
+> -       dn =3D pci_device_to_OF_node(card->pdev);
+> +       dn =3D (struct device_node *)card->pdev->sysdata;
+>         if (!dn)
+>                 return -EIO;
+> =20
 
-I haven't seem the dummy read in your code.. where is it ?
+This should not be required. If you PCI bus is set up
+correctly, pci_device_to_OF_node() will do the right thing.
+What problem are you trying to solve here?
 
-> > - Regarding PCI and PCIe on SCC, I didn't see any code in your PCI
-> >support code for handling that issue. Is it fixed ? If not, then I
-> >suppose you'll have problem with most PCI device/drivers on the field as
-> >they do rely on such ordering to be provided. There was also an issue
-> >with prefetch on PCI, for which I currently disable the prefetch in the
-> >workarounds for the cell blade. I don't know if you handle that at all
-> >neither.
-> 
-> We've noticed the problem you mentioned, and been developing the support
-> for dummy read(please refer to previous comments for IDE) and etc. to solve
-> the problem, but we haven't finished yet.  We also currently  disable the
-> prefetch by initial setup of SCC.  We are trying now so that we can post
-> the fixed driver code in next patch.
+> +static void
+> +spider_net_link_phy(struct spider_net_card *card)
 
-Ok. Can you confirm that the prefetch disable is the same was what I'm
-doing for Spider ? (see my patch about IO workarounds posted last week).
+> @@ -2058,6 +2215,12 @@
+> =A0=A0=A0=A0=A0=A0=A0=A0card->tx_timer.data =3D (unsigned long) card;
+> =A0=A0=A0=A0=A0=A0=A0=A0netdev->irq =3D card->pdev->irq;
+> =A0
+> +=A0=A0=A0=A0=A0=A0=A0card->aneg_count =3D 0;
+> +=A0=A0=A0=A0=A0=A0=A0init_timer(&card->aneg_timer);
+> +=A0=A0=A0=A0=A0=A0=A0card->aneg_timer.function =3D
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0(void (*)(unsigned long)) s=
+pider_net_link_phy;
+> +=A0=A0=A0=A0=A0=A0=A0card->aneg_timer.data =3D (unsigned long) card;
+> +
+> =A0=A0=A0=A0=A0=A0=A0=A0card->options.rx_csum =3D SPIDER_NET_RX_CSUM_DEFA=
+ULT;
+> =A0
+> =A0=A0=A0=A0=A0=A0=A0=A0card->num_tx_desc =3D tx_descriptors;
 
-The patch I posted handles both the dummy read and the prefetch disable.
-I've added a mecanism to hook on all MMIO accesses to make that
-possible. You may want to do something very similar.
+You should not need a cast here. It's better to cast the data value
+in the function itself than casting the function pointer. This makes
+sure we notice when the prototype of the function pointer changes.
 
-Cheers,
-Ben.
+	Arnd <><
