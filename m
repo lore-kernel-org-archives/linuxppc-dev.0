@@ -1,24 +1,19 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 939C567BCF
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 21:29:17 +1100 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id kAGATBF2014112
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 19:29:11 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kAGATDaa028829
-	for linuxppc-dev@ozlabs.org; Thu, 16 Nov 2006 19:29:13 +0900 (JST)
-Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id kAGATBfo029187
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 19:29:11 +0900 (JST)
-Date: Thu, 16 Nov 2006 19:29:10 +0900 (JST)
-Message-Id: <200611161029.kAGATB6i001993@toshiba.co.jp>
-To: linuxppc-dev@ozlabs.org
-Subject: Re:[PATCH 3/16] add base support for Celleb platform
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 6480067B77
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 22:32:16 +1100 (EST)
+Subject: Re: [PATCH 11/16] PATA driver for Celleb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+In-Reply-To: <200611160939.kAG9dqre027595@toshiba.co.jp>
+References: <200611160939.kAG9dqre027595@toshiba.co.jp>
+Content-Type: text/plain
+Date: Thu, 16 Nov 2006 22:32:03 +1100
+Message-Id: <1163676724.5940.378.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,145 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Arnd-san,
 
-> On Wednesday 15 November 2006 10:31, Ishizaki Kou wrote:
-> > 06
-> > @@ -58,7 +58,12 @@
-> >         FW_FEATURE_PSERIES_ALWAYS = 0,
-> >         FW_FEATURE_ISERIES_POSSIBLE = FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
-> >         FW_FEATURE_ISERIES_ALWAYS = FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
-> > +       FW_FEATURE_CELLEB_POSSIBLE = FW_FEATURE_LPAR,
-> > +       FW_FEATURE_CELLEB_ALWAYS = FW_FEATURE_LPAR,
-> >         FW_FEATURE_POSSIBLE =
-> > +#ifdef CONFIG_PPC_CELLEB
-> > +               FW_FEATURE_CELLEB_POSSIBLE |
-> > +#endif
-> >  #ifdef CONFIG_PPC_PSERIES
-> >                 FW_FEATURE_PSERIES_POSSIBLE |
-> >  #endif
-> > @@ -67,6 +72,9 @@
-> >  #endif
-> >                 0,
-> >         FW_FEATURE_ALWAYS =
-> > +#ifdef CONFIG_PPC_CELLEB
-> > +               FW_FEATURE_CELLEB_ALWAYS &
-> > +#endif
-> >  #ifdef CONFIG_PPC_PSERIES
-> >                 FW_FEATURE_PSERIES_ALWAYS &
-> >  #endif
+> We use a drivers/ide driver because its design is more suitable for
+> SCC IDE controller than libata driver. But we will try to implement
+> the libata driver as needed. This work needs to override many 
+> callbacks of ata_port_operations by modifying generic helpers.
 
-> My guess is that it would be helpful to have a FW_FEATURE_BEAT or similar
-> so that you can test this bit in runtime checks, instead of testing
-> for FW_FEATURE_LPAR.
+Yup, that's basically the same problem I have with mpc52xx... all of the
+port reset & error handling code in libata does direct IO access and
+thus if you need special IO accessors, you need to re-implement the
+whole thing, which isn't very nice.
 
-Because some common routines seem to check FW_FEATURE_LPAR bit not to touch
-Hypervisor resources, we have to set FW_FEATURE_LPAR on Celleb. And then,
-we have only Beat on Celleb as hypervisor, it is satisfactory that to
-check the FW_FEATURE_LPAR bit not to touch hypervisor resources.
+I have ideas on how we can fix libata but I haven't had time to talk to
+Jeff much about it yet.
 
-> > +#include "beat.h"
-> > +
-> > +int64_t        beat_errno;
+> We use the PRD transfer end read function on SCC IDE controller
+> to handle this issue.
+> This function guarantees that issue of DMA End interrupt and
+> setting the interrupt bit of status register are done after 
+> the outstanding write data to memory was pushed. Pushing is 
+> implemented by the dummy read of IDE controller, which reads 
+> the same path as the path of the write data. 
+> Therefore this function is same as the flush of outstanding DMAs.
+> To use this function, we specify the PRD table address(dmatable_dma) 
+> in PRD Transfer End Read Base Address Register(dma_base + 0x018) as
+> the path. Of course it also requires to set a strong order in 
+> the IOIF space.
 
-> Hmm, a global errno variable is usually considered a bad idea, because it
-> is inherently racy. Is this the hcall return value? If so, you should
-> probably just pass it as the return code from the hcall function.
+I haven't seem the dummy read in your code.. where is it ?
 
-Okay, we will remove it.
+> > - Regarding PCI and PCIe on SCC, I didn't see any code in your PCI
+> >support code for handling that issue. Is it fixed ? If not, then I
+> >suppose you'll have problem with most PCI device/drivers on the field as
+> >they do rely on such ordering to be provided. There was also an issue
+> >with prefetch on PCI, for which I currently disable the prefetch in the
+> >workarounds for the cell blade. I don't know if you handle that at all
+> >neither.
+> 
+> We've noticed the problem you mentioned, and been developing the support
+> for dummy read(please refer to previous comments for IDE) and etc. to solve
+> the problem, but we haven't finished yet.  We also currently  disable the
+> prefetch by initial setup of SCC.  We are trying now so that we can post
+> the fixed driver code in next patch.
 
-This variable was here since we use our small library to invoke hcall
-function, and the library stores the error code (returned in %r3) to
-that variable. Now hcall function calls are inlined, so we don't use
-it anymore.
+Ok. Can you confirm that the prefetch disable is the same was what I'm
+doing for Spider ? (see my patch about IO workarounds posted last week).
 
-> > +static void beat_power_save(void)
-> > +{
-> > +       beat_pause(0);
-> > +}
+The patch I posted handles both the dummy read and the prefetch disable.
+I've added a mecanism to hook on all MMIO accesses to make that
+possible. You may want to do something very similar.
 
-> Nice, I wish the other power_save implementations were this easy ;-)
-
-We agree.
-
-> > +#ifdef CONFIG_SERIAL_TXX9
-> > +/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
-> > +    mmio=0xfff000-0x1000,0xff2000-0x1000 */
-> > +static int txx9_serial_bitmap = 0;
-> > +
-> > +static struct {
-> > +       uint32_t offset;
-> > +       uint32_t index;
-> > +} txx9_spider_tab[3] = {
-> > +       { 0x300, 0 },   /* 0xFFF300 */
-> > +       { 0x400, 0 },   /* 0xFFF400 */
-> > +       { 0x800, 1 }    /* 0xFF2800 */
-> > +};
-> > +
-> > +static int txx9_serial_init(void)
-> > +{
-> > +       extern int early_serial_txx9_setup(struct uart_port *port);
-> > +       struct device_node *node;
-> > +       uint64_t *irq_prop, *base_prop;
-> > +       int irq_len, base_addr_len;
-> > +       int i, maxi;
-> > +       struct uart_port req;
-> > +
-> > +       node = of_find_node_by_path("/ioif1/sio");
-> > +       if (!node)
-> > +               return 0;
-> > +       
-> > +       irq_prop = (uint64_t *)get_property(node, "interrupts", &irq_len);
-> > +       if (!irq_prop)
-> > +               goto out;
-> > +       irq_len /= sizeof(uint64_t);
-> > +
-> > +       base_prop = (uint64_t *)get_property(node, "toshiba,reg", &base_addr_len);
-> > +       if (!base_prop)
-> > +               goto out;
-> > +       base_addr_len /= sizeof(uint64_t) * 2;
-> > +
-> > +       maxi = sizeof(txx9_spider_tab)/sizeof(txx9_spider_tab[0]);
-> > +       if (maxi > irq_len)
-> > +               maxi = irq_len;
-> > +
-> > +       for(i = 0; i < maxi; i++) {
-> > +               if (!(txx9_serial_bitmap & (1<<i)))
-> > +                       continue;
-> > +               if (base_addr_len <= txx9_spider_tab[i].index)
-> > +                       continue;
-> > +               
-> > +               memset(&req, 0, sizeof(req));
-> > +               req.line = i;
-> > +               req.iotype = UPIO_MEM;
-> > +               req.mapbase = base_prop[txx9_spider_tab[i].index * 2]
-> > +                       + txx9_spider_tab[i].offset;
-> > +#ifdef CONFIG_SERIAL_TXX9_CONSOLE
-> > +               req.membase = ioremap(req.mapbase, 0x24);
-> > +#endif
-> > +               req.irq = irq_create_mapping(NULL, irq_prop[i]);
-> > +               req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
-> > +               req.uartclk = 83300000;
-> > +               early_serial_txx9_setup(&req);
-> > +       }
-> > +
-> > +out:
-> > +       of_node_put(node);
-> > +       return 0;
-> > +}
-
-> Hmm, a standard OFW reg property would just encode all three address
-> ranges in one property. Is there a specific reason why you can't do that?
-
-This routine depends on non-standard device-tree property since our older
-boot system eventually lacks standard properties. Our boot system is still
-under development on standard properties.
-
-Adding to that, Beat system allows mapping physical memory (i.e. MMIO) in
-only page unit and does not allow same physical page within one device.
-So we have to map page only once for SIO0 and SIO1 devices (these are in
-same page), and have to have separate page for SIO2.
-
-Thank you,
-Kou Ishizaki
-Toshiba
+Cheers,
+Ben.
