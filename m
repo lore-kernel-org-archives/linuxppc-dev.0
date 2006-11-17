@@ -1,20 +1,38 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20061117153105.edca0777.sfr@canb.auug.org.au>
-References: <20061116154051.GB2008@localdomain>
-	<20061117033638.0E24B67BCE@ozlabs.org>
-	<20061117153105.edca0777.sfr@canb.auug.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-uLy//FRnBZHv1axYGnKM"
-Date: Fri, 17 Nov 2006 15:44:00 +1100
-Message-Id: <1163738640.16815.45.camel@localhost.localdomain>
+Return-Path: <mohan@in.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2789867B6D
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 15:59:33 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAH4xVhf029532
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 23:59:31 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAH4wGXv538694
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 21:58:16 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAH4wFkn013179
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 21:58:15 -0700
+Date: Fri, 17 Nov 2006 10:27:39 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [RFC] Fix for interrupt distribution
+Message-ID: <20061117045739.GA22383@in.ibm.com>
+References: <20061030180446.GA24307@in.ibm.com>
+	<20061030181751.GI17168@localdomain>
+	<20061031110515.GB7884@in.ibm.com>
+	<20061106224603.GG6848@localdomain>
+	<20061116125637.GB13004@in.ibm.com>
+	<20061116153616.GA670@krispykreme>
 Mime-Version: 1.0
-Cc: ego@in.ibm.com, linuxppc-dev@ozlabs.org, srinivasa@in.ibm.com,
-	Anton Blanchard <anton@samba.org>, ntl@pobox.com, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061116153616.GA670@krispykreme>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	fastboot@lists.osdl.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +42,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-uLy//FRnBZHv1axYGnKM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2006-11-17 at 15:31 +1100, Stephen Rothwell wrote:
-> One small nit ...
->=20
-> On Fri, 17 Nov 2006 14:36:35 +1100 Michael Ellerman <michael@ellerman.id.=
-au> wrote:
-> >
-> > +static int __init pseries_cpu_hotplug_init(void)
-> > +{
-> > +	rtas_stop_self_args.token =3D rtas_token("stop-self");
-> > +	qcss_tok =3D rtas_token("query-cpu-stopped-state");
+On Fri, Nov 17, 2006 at 02:36:16AM +1100, Anton Blanchard wrote:
+> 
+> Hi,
+> 
+> Thanks for fixing this problem. One thing I noticed in the patch:
+> 
+> > +	np = cpuid_to_of_node(boot_cpuid);
+> > +	BUG_ON(!np);
+> > +	ireg = get_property(np, "ibm,ppc-interrupt-gserver#s", &ilen);
+> > +	hcpuid = get_hard_smp_processor_id(boot_cpuid);
 > > +
-> > +	if (rtas_stop_self_args.token =3D=3D RTAS_UNKNOWN_SERVICE ||
-> > +			qcss_tok =3D=3D RTAS_UNKNOWN_SERVICE)
-> > +		return 1;
->=20
-> initcall fucntions should return 0 or -<error>;  -ENODEV is ignored,
-> other nonzero values cause a log message if initcall debugging is enabled=
-.
+> > +	if (ireg[0] == hcpuid)
+> > +		default_distrib_server = ireg[1];
+> > +	else
+> > +		default_distrib_server = ireg[3];
+> 
+> While this will work on current firmware it would be more robust to loop
+> through interrupt-gserver#s until you find your cpuid. For example we
+> set up multiple interrupt-gserver#s entries in the lab so we can have
+> chip, node local and global targets:
+> 
+> ibm,ppc-interrupt-server#s
+> 	00000002 00000003
+> 
+> ibm,ppc-interrupt-gserver#s
+> 	00000002 000000ff 00000003 000000ff 00000002 000000f7
+> 	00000003 000000f7 00000002 000000d7
+> 	00000003 000000d7
+> 
+> We always put the global target at the end (0xd7 in this case) because
+> the current code in Linux just grabs the last entry in the array to get
+> the global server. So the question is, do we look for the first or the
+> last entry that matches your cpuid to find the global server?
+>
 
-OK. I wanted to return an error, so there's something in the log to show
-that cpu hotplug was disabled - but I didn't check what to return. I'll
-fix it up on Monday to return -ENOENT.
+Hi Anton,
 
-cheers
+Thanks for your input.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-uLy//FRnBZHv1axYGnKM
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFXT4QdSjSd0sB4dIRArDOAJ0RI9Lko67j11VMBwCZiBT1kV7GiwCfU/Va
-fcMeTAVh4A2G8QTel4diExw=
-=2lr+
------END PGP SIGNATURE-----
-
---=-uLy//FRnBZHv1axYGnKM--
+But I am also having the same question, which entry will be appropriate
+to find the global server? First or the last cpu id entry? The existing
+code always uses the last entry regardless of the cpu id to determine
+the global server. 
+ 
+> It might be worth getting something added to the architecture (PAPR) to
+> clear it up. To match what current Linux does, we would want servers to
+> go from including the least to the most cpus, so the global one is at
+> the end.
+> 
+> Anton
