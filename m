@@ -2,20 +2,20 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3717767BC4
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:18:50 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 130E267BDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:27:59 +1100 (EST)
 Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id kAHAIjIm015142
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:18:45 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kAHAIlD1007324
-	for linuxppc-dev@ozlabs.org; Fri, 17 Nov 2006 19:18:47 +0900 (JST)
+	by inet-tsb5.toshiba.co.jp  with ESMTP id kAHARtAE017873
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:27:55 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kAHARu4b012498
+	for linuxppc-dev@ozlabs.org; Fri, 17 Nov 2006 19:27:56 +0900 (JST)
 Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id kAHAIj9x015932
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:18:45 +0900 (JST)
-Date: Fri, 17 Nov 2006 19:18:44 +0900 (JST)
-Message-Id: <200611171018.kAHAIjOh014589@toshiba.co.jp>
+	by ovp1.toshiba.co.jp  with ESMTP id kAHARt0O025187
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:27:55 +0900 (JST)
+Date: Fri, 17 Nov 2006 19:27:54 +0900 (JST)
+Message-Id: <200611171027.kAHARsYs020497@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/16] Cell closs-building
+Subject: Re: [PATCH 3/16] add base support for Celleb platform
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,34 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph-san,
+Hello Christoph-san,
 
-> On Wed, Nov 15, 2006 at 06:25:33PM +0900, Ishizaki Kou wrote:
-> > This patch adds support for cross-building by SCE toolchain.
-> > 
-> > Signed-off-by: Kou Ishizaki <kou.ishizaki at toshiba.co.jp>
-> > ---
-> > 
-> > Index: linux-2.6.19/arch/powerpc/Makefile
-> > diff -u linux-2.6.19/arch/powerpc/Makefile:1.1.1.1 linux-2.6.19/arch/powerpc/Makefile:1.2
-> > --- linux-2.6.19/arch/powerpc/Makefile:1.1.1.1    Fri Oct  6 10:40:02 2006
-> > +++ linux-2.6.19/arch/powerpc/Makefile    Fri Oct  6 12:26:35 2006
-> > @@ -110,6 +110,7 @@
-> >  CFLAGS       += -mcpu=powerpc
-> >  endif
-> >  
-> > +cpu-as-$(CONFIG_PPC_CELL)    += -Wa,-mcellppu
-> 
-> We had this patch a while ago and I was told it's not needed anumore
-> with a recent gcc.
+> > +         if(size-- <= 0) {
+> > +             return NULL;
+> > +         }
 
-We agree that it should not be merged to mainline.
+> No need for the {} braces for single line conditionals.  also
+> please put a space in front of opening braces.  If you're unsure
+> please take a look at Documentation/CodingStyle in the kernel tree.
 
-We found that discussion in linuxppc64-dev ML archive. Though we need
-this patch currently.
+> > + if((str = re_det1(str, &buf[0].cbuf[4], 4)) == NULL) {
+> > +     return -1;
+> > + }
 
-So we will cancel it.
+> Similarly this should be written as:
 
+>     str = re_det1(str, &buf[0].cbuf[4], 4);
+>     if (!str)
+>         return -1;
+
+Thank you for your comment; these will be fixed at next time.
+
+> And btw, all these function have very non-descriptive names
+> and no comments.  That could use some work.  Also I'm not
+> sure -N returns are very useful - you should at least have
+> descriptive enums for the error cases.
+
+We don't think these functions are useful for all kernel users,
+since they work only on Beat. And, for debugging purpose, return values
+indicate the locations of errors in above case, so we don't have enums
+for these error cases. But it isn't easy to understand them without
+comments as you mentioned, so we will add adequate comments at next time.
 
 Thank you,
 Kou Ishizaki
