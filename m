@@ -1,19 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3372C67BC8
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 11:39:58 +1100 (EST)
-Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20061115180440.GB18856@lst.de>
-References: <4554DACB.8060809@am.sony.com>  <20061115180440.GB18856@lst.de>
-Content-Type: text/plain
-Date: Fri, 17 Nov 2006 11:39:44 +1100
-Message-Id: <1163723984.5940.411.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4745867BAD
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 11:55:48 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAH0u6kd003024
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 19:56:06 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kAH0tj6f280408
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 19:55:45 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kAH0tiWZ003111
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Nov 2006 19:55:45 -0500
+Date: Thu, 16 Nov 2006 18:55:40 -0600
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH]: HVCS char driver janitoring: fix compile warnings
+Message-ID: <20061117005540.GF23600@austin.ibm.com>
+References: <20061115212619.GJ8395@austin.ibm.com>
+	<1163635387.8805.7.camel@localhost.localdomain>
+	<20061116203946.GA23600@austin.ibm.com>
+	<1163716536.16815.5.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1163716536.16815.5.camel@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: akpm@osdl.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +38,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> > +
-> > +enum page_size {
-> > +	page_size_4k = 12U,
-> > +	page_size_64k = 16U,
-> > +	page_size_16m = 24U,
-> > +};
+On Fri, Nov 17, 2006 at 09:35:36AM +1100, Michael Ellerman wrote:
 > 
-> Please use ALL_CAPS for such constants.
+> Thanks, new patches look good.
 
-And call them PAGE_SHIFT_* while at it :-)
+Any clue who I should send these to? I think akpm took the earlier
+one, I'm not clear if that means it will slosh into Linus' tree 
+eventually.
 
-Ben.
+--linas
