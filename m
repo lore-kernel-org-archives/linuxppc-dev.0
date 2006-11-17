@@ -1,16 +1,21 @@
-Return-Path: <hch@lst.de>
-Date: Fri, 17 Nov 2006 07:10:21 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] 2.6.19-rc6-arnd1 release
-Message-ID: <20061117061021.GB13535@lst.de>
-References: <200611170034.09865.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200611170034.09865.arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, Jeremy Kerr <jeremy@au1.ibm.com>,
-	Kevin Corry <kevcorry@us.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A571667BAC
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 17:36:21 +1100 (EST)
+In-Reply-To: <200611090352.kA93quLV003810@shell0.pdx.osdl.net>
+References: <200611090352.kA93quLV003810@shell0.pdx.osdl.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <46E7C133-FEE9-4DBD-A298-BEF957F9C39E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 1/3] ppc: booke reg MCSR msg misquoted
+Date: Fri, 17 Nov 2006 00:36:34 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: "akpm@osdl.org Morton" <akpm@osdl.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, nkalmala@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 17, 2006 at 12:34:08AM +0100, Arnd Bergmann wrote:
-> I've uploaded a new kernel tree to the usual location at
-> http://www.kernel.org/pub/linux/kernel/people/arnd/patches/.
-> 
-> It now contains oprofile support, as well as the updated xmon
-> patches. Both of these were sent in the last few days.
-> 
-> Changes that are in there for a little longer include
-> saving SPU contexts in core dumps, and support for the
-> Playstation 3. The Playstation patches are still last week's
-> version, I expect an update soon, which can probably go
-> right into powerpc.git for the most part.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-No they can't.  There's a shitload of braindamage in there, and we
-should hold Sony against the same standards as everyone else.
+On Nov 8, 2006, at 9:52 PM, akpm@osdl.org wrote:
+
+> From: nkalmala <nkalmala@gmail.com>
+>
+> PPC/booke reg MCSR value misquoted
+>
+> Signed-off-by: nkalmala <nkalmala@gmail.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: <linuxppc-dev@ozlabs.org>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+> ---
+>
+>  arch/ppc/kernel/traps.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff -puN arch/ppc/kernel/traps.c~ppc-booke-reg-mcsr-msg-misquoted  
+> arch/ppc/kernel/traps.c
+> --- a/arch/ppc/kernel/traps.c~ppc-booke-reg-mcsr-msg-misquoted
+> +++ a/arch/ppc/kernel/traps.c
+> @@ -316,7 +316,7 @@ void machine_check_exception(struct pt_r
+>  	if (reason & MCSR_BUS_RBERR)
+>  		printk("Bus - Read Data Bus Error\n");
+>  	if (reason & MCSR_BUS_WBERR)
+> -		printk("Bus - Read Data Bus Error\n");
+> +		printk("Bus - Write Data Bus Error\n");
+>  	if (reason & MCSR_BUS_IPERR)
+>  		printk("Bus - Instruction Parity Error\n");
+>  	if (reason & MCSR_BUS_RPERR)
+> _
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
