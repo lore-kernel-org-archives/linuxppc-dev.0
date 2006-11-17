@@ -1,15 +1,21 @@
-Return-Path: <dtor@insightbb.com>
-Received: from asav14.insightbb.com (gateway.insightbb.com [74.128.0.19])
-	by ozlabs.org (Postfix) with ESMTP id 3D50A67BDF
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 17:41:48 +1100 (EST)
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFT] drivers/macintosh: handle errors from input_register_device()
-Date: Fri, 17 Nov 2006 01:31:37 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200611170131.38486.dtor@insightbb.com>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F031C67BF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 17:48:15 +1100 (EST)
+Date: Fri, 17 Nov 2006 07:48:08 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 11/16] PATA driver for Celleb
+Message-ID: <20061117064808.GA15013@lst.de>
+References: <200611150949.kAF9nGUY009229@toshiba.co.jp>
+	<20061115184416.GE21633@lst.de>
+	<1163634900.5940.290.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1163634900.5940.290.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,84 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Nov 16, 2006 at 10:55:00AM +1100, Benjamin Herrenschmidt wrote:
+> > This needs to go to linux-ide for review.  But IIRC new PATA drivers
+> > should use libata these days, not the old ide layer.
+> 
+> While I agree, there are still issues with libata vs. devices that needs
+> special IOps. libata allows you to override writing/reading taskfiles,
+> but there are cases, specifically in the EH/bus reset code, where it
+> still assumes the standard taskfile byte access format for a few things
+> and while it's possible to "override" these, that means re-implementing
+> a lot of logic in the driver.
+> 
+> I need to sort that out with Jeff one of these days as there is a
+> similar problem with the mpc52xx IDE driver.
+> 
+> In the meantime, I reckon it's ok to have a drivers/ide driver for
+> 2.6.20
 
-Could anyone with a box that has ADB give this patch a quick spin to
-make sure I did not break anything?
-
-Thanks!
-
--- 
-Dmitry
-
-Input: handle errors from input_register_device in drivers/macintosh
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/macintosh/adbhid.c  |   10 +++++++---
- drivers/macintosh/mac_hid.c |    8 ++++++--
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-Index: work/drivers/macintosh/adbhid.c
-===================================================================
---- work.orig/drivers/macintosh/adbhid.c
-+++ work/drivers/macintosh/adbhid.c
-@@ -689,7 +689,6 @@ adbhid_input_register(int id, int defaul
- 	if (!hid || !input_dev) {
- 		err = -ENOMEM;
- 		goto fail;
--
- 	}
- 
- 	sprintf(hid->phys, "adb%d:%d.%02x/input", id, default_id, original_handler_id);
-@@ -807,7 +806,9 @@ adbhid_input_register(int id, int defaul
- 
- 	input_dev->keycode = hid->keycode;
- 
--	input_register_device(input_dev);
-+	err = input_register_device(input_dev);
-+	if (err)
-+		goto fail;
- 
- 	if (default_id == ADB_KEYBOARD) {
- 		/* HACK WARNING!! This should go away as soon there is an utility
-@@ -820,7 +821,10 @@ adbhid_input_register(int id, int defaul
- 	return 0;
- 
-  fail:	input_free_device(input_dev);
--	kfree(hid);
-+	if (hid) {
-+		kfree(hid->keycode);
-+		kfree(hid);
-+	}
- 	adbhid[id] = NULL;
- 	return err;
- }
-Index: work/drivers/macintosh/mac_hid.c
-===================================================================
---- work.orig/drivers/macintosh/mac_hid.c
-+++ work/drivers/macintosh/mac_hid.c
-@@ -106,6 +106,8 @@ EXPORT_SYMBOL(mac_hid_mouse_emulate_butt
- 
- static int emumousebtn_input_register(void)
- {
-+	int ret;
-+
- 	emumousebtn = input_allocate_device();
- 	if (!emumousebtn)
- 		return -ENOMEM;
-@@ -120,9 +122,11 @@ static int emumousebtn_input_register(vo
- 	emumousebtn->keybit[LONG(BTN_MOUSE)] = BIT(BTN_LEFT) | BIT(BTN_MIDDLE) | BIT(BTN_RIGHT);
- 	emumousebtn->relbit[0] = BIT(REL_X) | BIT(REL_Y);
- 
--	input_register_device(emumousebtn);
-+	ret = input_register_device(emumousebtn);
-+	if (ret)
-+		input_free_device(emumousebtn);
- 
--	return 0;
-+	return ret;
- }
- 
- int __init mac_hid_init(void)
+I don't know.  And I think we can't make the judgement here, we should
+leave it to the IDE maintainers to a proper review and make this
+decision, that's why this patch needs to go to linux-ide ASAP.
