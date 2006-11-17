@@ -1,19 +1,30 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id C269767BD4
+Return-Path: <tnt@246tNt.com>
+Received: from outmx001.isp.belgacom.be (outmx001.isp.belgacom.be
+	[195.238.5.51])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B7E7D67BD5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Nov 2006 10:13:28 +1100 (EST)
-To: "Klatt, Fred" <fred.klatt@windriver.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: boot failure on lite5200b board 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 17 Nov 2006 04:58:31 PST."
-	<F6AE8F99CFBB884E9681D609D859BAD339FF0E@ala-mail02.corp.ad.wrs.com>
-Date: Sat, 18 Nov 2006 00:13:27 +0100
-Sender: wd@denx.de
-Message-Id: <20061117231327.106843525AB@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 18 Nov 2006 10:22:00 +1100 (EST)
+Received: from outmx001.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx001.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kAHNLk1n024835
+	for <linuxppc-embedded@ozlabs.org>; Sat, 18 Nov 2006 00:21:46 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <455E4406.8050405@246tNt.com>
+Date: Sat, 18 Nov 2006 00:21:42 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH/RFC] ata: Add support for the MPC52xx ATA controller using
+	libata
+References: <11637151391017-git-send-email-tnt@246tNt.com>
+	<200611172049.49260.jarno.manninen@tut.fi>
+	<455E0907.8000009@246tNt.com> <455E3A7E.3030807@garzik.org>
+In-Reply-To: <455E3A7E.3030807@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux IDE <linux-ide@vger.kernel.org>, Sven Luther <sl@bplan-gmbh.de>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +35,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <F6AE8F99CFBB884E9681D609D859BAD339FF0E@ala-mail02.corp.ad.wrs.com> you wrote:
-> 
-> Was there ever a fix for the Lite5200B boot up problem where uboot keeps
-> rebooting? 
+Jeff Garzik wrote:
+> Sylvain Munaut wrote:
+>> Since the current libata doesn't really support overriding IO accessors,
+>> I'd keep it like
+>> that for now. Apparently some other architecture needs special IO stuff
+>> so we could see
+>> a way to hook io accessor soon, and then we can change it if we notice
+>> big problems.
+>
+> Sure it does...  there are no individual outb etc. hooks, but you can
+> override every available bitbang function.  This is intentional, so
+> that arches have more power to control when and how a set of registers
+> is blasted to the hardware.
 
-Installing a recent version of U-Boot?
+That why I said "really" but in english that doesn't quite mean what I
+meant.
+I have a version that does it and it's not pretty, it needs to reimplement
+every hook where I basically just cut & pasted the standard libata ones
+and changed the outb to mpc52xx_ata_outb ...
 
-Best regards,
+I agree that this gives more flexibility when you need more than just change
+IO accessors. But this also means than when you just need to replace IO
+access, you need to do more work ...  IMHO it would have made sense to
+add hooks for just inb and outb (not for all the possible io stuff like in
+driver/ide), but heh, I'm kind of biased ;)
 
-Wolfgang Denk
+So it's possible but as in the current state of thing since it doesn't
+matter
+if we do it or not, I'd rather not. If it becomes necessary (when doing DMA
+or ...), then we can always add it. But for the moment, I would keep it
+as clean as possible.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A secure program has to be robust: it  must  be  able  to  deal  with
-conditions  that "can't happen", whether user input, program error or
-library/etc. This is basic damage  control.  Buffer  overflow  errors
-have nothing to do with security, but everything with stupidity.
-                 -- Wietse Venema in <5cnqm3$8r9@spike.porcupine.org>
+
+Aside from that, does the driver looks ok ? It has been tested ok on another
+5200b platform as well. I'd like to include it in a patch set I'll probably
+send next weekend. I'll try to add the timing computation to the generic
+call and make use of those.
+
+
+Thanks,
+
+
+    Sylvain
