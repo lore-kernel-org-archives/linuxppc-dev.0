@@ -1,19 +1,19 @@
 Return-Path: <geoffrey.levand@am.sony.com>
 Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id 4B18F67DBD
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:42:40 +1100 (EST)
-Received: from mail7.sony.co.jp (localhost [127.0.0.1])
-	by mail7.sony.co.jp (R8/Sony) with ESMTP id kAH3gcmD016945
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:42:38 +0900 (JST)
+	by ozlabs.org (Postfix) with ESMTP id 82D5367C39
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:42:56 +1100 (EST)
+Received: from mail2.sony.co.jp (localhost [127.0.0.1])
+	by mail2.sony.co.jp (R8/Sony) with ESMTP id kAH3gtXG006571
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:42:56 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail7.sony.co.jp (R8/Sony) with SMTP id kAH3gb0l016915
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:42:37 +0900 (JST)
-Message-ID: <455D2FA8.7040808@am.sony.com>
-Date: Thu, 16 Nov 2006 19:42:32 -0800
+	by mail2.sony.co.jp (R8/Sony) with SMTP id kAH3gtqY006559
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:42:55 +0900 (JST)
+Message-ID: <455D2FB9.6010903@am.sony.com>
+Date: Thu, 16 Nov 2006 19:42:49 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/16] powerpc: add support for ps3 platform
+Subject: [PATCH 7/16] powerpc: add ps3 platform hvcalls
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,142 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the core platform support for the PS3 game console and other
-platforms using the PS3 Platform hypervisor.
-
+Adds the ps3pf hvcalls.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- MAINTAINERS                             |    7 
- arch/powerpc/Kconfig                    |   11 
- arch/powerpc/platforms/Makefile         |    1 
- arch/powerpc/platforms/ps3pf/Kconfig    |   32 +
- arch/powerpc/platforms/ps3pf/Makefile   |    2 
- arch/powerpc/platforms/ps3pf/mm.c       |  827 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/ps3pf/platform.h |   59 ++
- arch/powerpc/platforms/ps3pf/setup.c    |  173 ++++++
- arch/powerpc/platforms/ps3pf/smp.c      |  158 ++++++
- arch/powerpc/platforms/ps3pf/time.c     |  104 ++++
- include/asm-powerpc/ps3pf.h             |  250 +++++++++
- 11 files changed, 1623 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3pf/exports.c |   27 +
+ arch/powerpc/platforms/ps3pf/hvcall.S  |  804 +++++++++++++++++++++++++++++++++
+ include/asm-powerpc/lv1call.h          |  345 ++++++++++++++
+ 3 files changed, 1176 insertions(+)
 
-Index: cell--common--6/MAINTAINERS
-===================================================================
---- cell--common--6.orig/MAINTAINERS
-+++ cell--common--6/MAINTAINERS
-@@ -2423,6 +2423,13 @@
- W:	http://www.pnd-pc.demon.co.uk/promise/
- S:	Maintained
- 
-+PS3PF (PS3 PLATFORM) SUPPORT
-+P:	Geoff Levand
-+M:	geoffrey.levand@am.sony.com
-+L:	linuxppc-dev@ozlabs.org
-+L:	cbe-oss-dev@ozlabs.org
-+S:	Supported
-+
- PVRUSB2 VIDEO4LINUX DRIVER
- P:	Mike Isely
- M:	isely@pobox.com
-Index: cell--common--6/arch/powerpc/Kconfig
-===================================================================
---- cell--common--6.orig/arch/powerpc/Kconfig
-+++ cell--common--6/arch/powerpc/Kconfig
-@@ -495,6 +495,14 @@
- 	depends on PPC_RTAS
- 	default n
- 
-+config PS3PF
-+	bool "PS3 Platform"
-+	depends on PPC_MULTIPLATFORM && PPC64
-+	select PPC_CELL
-+	help
-+	  This option enables support for the PS3 game console
-+	  and other platforms using the PS3 Platform hypervisor.
-+
- config XICS
- 	depends on PPC_PSERIES
- 	bool
-@@ -647,6 +655,7 @@
- source arch/powerpc/platforms/86xx/Kconfig
- source arch/powerpc/platforms/8xx/Kconfig
- source arch/powerpc/platforms/cell/Kconfig
-+source arch/powerpc/platforms/ps3pf/Kconfig
- 
- menu "Kernel options"
- 
-@@ -917,7 +926,7 @@
- 
- config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
--		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2
-+		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2 || PS3PF
- 	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
-Index: cell--common--6/arch/powerpc/platforms/Makefile
-===================================================================
---- cell--common--6.orig/arch/powerpc/platforms/Makefile
-+++ cell--common--6/arch/powerpc/platforms/Makefile
-@@ -16,4 +16,5 @@
- obj-$(CONFIG_PPC_MAPLE)		+= maple/
- obj-$(CONFIG_PPC_PASEMI)		+= pasemi/
- obj-$(CONFIG_PPC_CELL)		+= cell/
-+obj-$(CONFIG_PS3PF)		+= ps3pf/
- obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/Kconfig
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/exports.c
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/Kconfig
-@@ -0,0 +1,32 @@
-+menu "PS3 Platform Options"
-+	depends on PS3PF
-+
-+config PS3PF_HTAB_SIZE
-+	depends on PS3PF
-+	int "PS3 Platform pagetable size"
-+	range 18 20
-+	default 20
-+	help
-+	  This option is only for experts who may have the desire to fine
-+	  tune the pagetable size on their system.  The value here is
-+	  expressed as the log2 of the page table size.  Valid values are
-+	  18, 19, and 20, corresponding to 256KB, 512KB and 1MB respectively.
-+
-+	  If unsure, choose the default (20) with the confidence that your
-+	  system will have optimal runtime performance.
-+
-+config PS3PF_DYNAMIC_DMA
-+	depends on PS3PF && EXPERIMENTAL
-+	bool "PS3 Platform dynamic DMA page table management"
-+	default n
-+	help
-+	  This option will enable kernel support to take advantage of the
-+	  per device dynamic DMA page table management provided by the Cell
-+	  processor's IO Controller.  This support incurs some runtime
-+	  overhead and also slightly increases kernel memory usage.  The
-+	  current implementation should be considered experimental.
-+
-+	  This support is mainly for Linux kernel development.  If unsure,
-+	  say N.
-+
-+endmenu
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
-===================================================================
---- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
-@@ -0,0 +1,2 @@
-+obj-y += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
-+obj-y += interrupt.o exports.o
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/mm.c
-===================================================================
---- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/mm.c
-@@ -0,0 +1,827 @@
++++ cell--common--6/arch/powerpc/platforms/ps3pf/exports.c
+@@ -0,0 +1,27 @@
 +/*
-+ *  PS3 Platform address space management.
++ *  PS3 Platform HV call exports for modules.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -179,823 +61,24 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/mm.c
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/memory_hotplug.h>
 +
-+#include <asm/lmb.h>
-+#include <asm/udbg.h>
-+#include <asm/ps3pf.h>
++#define LV1_CALL(name, in, out, num)                          \
++  extern s64 _lv1_##name(LV1_##in##_IN_##out##_OUT_ARG_DECL); \
++  EXPORT_SYMBOL(_lv1_##name);
++
 +#include <asm/lv1call.h>
-+
-+#include "platform.h"
-+
-+#if defined(DEBUG)
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
-+#endif
-+
-+enum {
-+#if defined(CONFIG_PS3PF_USE_LPAR_ADDR)
-+	USE_LPAR_ADDR = 1,
-+#else
-+	USE_LPAR_ADDR = 0,
-+#endif
-+#if defined(CONFIG_PS3PF_DYNAMIC_DMA)
-+	USE_DYNAMIC_DMA = 1,
-+#else
-+	USE_DYNAMIC_DMA = 0,
-+#endif
-+};
-+
-+enum {
-+	PAGE_SHIFT_4K = 12U,
-+	PAGE_SHIFT_64K = 16U,
-+	PAGE_SHIFT_16M = 24U,
-+};
-+
-+static unsigned long make_page_sizes(unsigned long a, unsigned long b)
-+{
-+	return (a << 56) | (b << 48);
-+}
-+
-+enum {
-+	ALLOCATE_MEMORY_TRY_ALT_UNIT = 0X04,
-+	ALLOCATE_MEMORY_ADDR_ZERO = 0X08,
-+};
-+
-+/* valid htab sizes are {18,19,20} = 256K, 512K, 1M */
-+
-+enum {
-+	HTAB_SIZE_MAX = 20U, /* HV limit of 1MB */
-+	HTAB_SIZE_MIN = 18U, /* CPU limit of 256KB */
-+};
-+
-+/*============================================================================*/
-+/* virtual address space routines                                             */
-+/*============================================================================*/
-+
-+/**
-+ * struct mem_region - memory region structure
-+ * @base: base address
-+ * @size: size in bytes
-+ * @offset: difference between base and rm.size
-+ */
-+
-+struct mem_region {
-+	unsigned long base;
-+	unsigned long size;
-+	unsigned long offset;
-+};
-+
-+/**
-+ * struct map - address space state variables holder
-+ * @total: total memory available as reported by HV
-+ * @vas_id - HV virtual address space id
-+ * @htab_size: htab size in bytes
-+ *
-+ * The HV virtual address space (vas) allows for hotplug memory regions.
-+ * Memory regions can be created and destroyed in the vas at runtime.
-+ * @rm: real mode (bootmem) region
-+ * @r1: hotplug memory region(s)
-+ *
-+ * ps3pf addresses
-+ * virt_addr: a cpu 'translated' effective address
-+ * phys_addr: an address in what Linux thinks is the physical address space
-+ * lpar_addr: an address in the HV virtual address space
-+ * bus_addr: an io controller 'translated' address on a device bus
-+ */
-+
-+struct map {
-+	unsigned long total;
-+	unsigned long vas_id;
-+	unsigned long htab_size;
-+	struct mem_region rm;
-+	struct mem_region r1;
-+};
-+
-+#define debug_dump_map(x) _debug_dump_map(x, __func__, __LINE__)
-+static void _debug_dump_map(const struct map* m, const char* func, int line)
-+{
-+	DBG("%s:%d: map.total     = %lxh\n", func, line, m->total);
-+	DBG("%s:%d: map.rm.size   = %lxh\n", func, line, m->rm.size);
-+	DBG("%s:%d: map.vas_id    = %lu\n", func, line, m->vas_id);
-+	DBG("%s:%d: map.htab_size = %lxh\n", func, line, m->htab_size);
-+	DBG("%s:%d: map.r1.base   = %lxh\n", func, line, m->r1.base);
-+	DBG("%s:%d: map.r1.offset = %lxh\n", func, line, m->r1.offset);
-+	DBG("%s:%d: map.r1.size   = %lxh\n", func, line, m->r1.size);
-+}
-+
-+static struct map map;
-+
-+/**
-+ * ps3pf_mm_phys_to_lpar - translate a linux physical address to lpar address
-+ * @phys_addr: linux physical address
-+ */
-+
-+unsigned long ps3pf_mm_phys_to_lpar(unsigned long phys_addr)
-+{
-+	BUG_ON(is_kernel_addr(phys_addr));
-+	if (USE_LPAR_ADDR)
-+		return phys_addr;
-+	else
-+		return (phys_addr < map.rm.size || phys_addr >= map.total)
-+			? phys_addr : phys_addr + map.r1.offset;
-+}
-+
-+EXPORT_SYMBOL(ps3pf_mm_phys_to_lpar);
-+
-+/**
-+ * ps3pf_mm_vas_create - create the virtual address space
-+ */
-+
-+void __init ps3pf_mm_vas_create(unsigned long* htab_size)
-+{
-+	int result;
-+	unsigned long start_address;
-+	unsigned long size;
-+	unsigned long access_right;
-+	unsigned long max_page_size;
-+	unsigned long flags;
-+
-+	result = lv1_query_logical_partition_address_region_info(0,
-+		&start_address, &size, &access_right, &max_page_size,
-+		&flags);
-+
-+	if (result) {
-+		DBG("%s:%d: lv1_query_logical_partition_address_region_info "
-+			"failed: %s\n", __func__, __LINE__,
-+			ps3pf_result(result));
-+		goto fail;
-+	}
-+
-+	if (max_page_size < PAGE_SHIFT_16M) {
-+		DBG("%s:%d: bad max_page_size %lxh\n", __func__, __LINE__,
-+			max_page_size);
-+		goto fail;
-+	}
-+
-+	BUILD_BUG_ON(CONFIG_PS3PF_HTAB_SIZE > HTAB_SIZE_MAX);
-+	BUILD_BUG_ON(CONFIG_PS3PF_HTAB_SIZE < HTAB_SIZE_MIN);
-+
-+	result = lv1_construct_virtual_address_space(CONFIG_PS3PF_HTAB_SIZE,
-+			2, make_page_sizes(PAGE_SHIFT_16M, PAGE_SHIFT_64K),
-+			&map.vas_id, &map.htab_size);
-+
-+	if (result) {
-+		DBG("%s:%d: lv1_construct_virtual_address_space failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+		goto fail;
-+	}
-+
-+	result = lv1_select_virtual_address_space(map.vas_id);
-+
-+	if (result) {
-+		DBG("%s:%d: lv1_select_virtual_address_space failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+		goto fail;
-+	}
-+
-+	*htab_size = map.htab_size;
-+
-+	debug_dump_map(&map);
-+
-+	return;
-+
-+fail:
-+	panic("ps3pf_mm_vas_create failed");
-+}
-+
-+/**
-+ * ps3pf_mm_vas_destroy -
-+ */
-+
-+void ps3pf_mm_vas_destroy(void)
-+{
-+	if (map.vas_id) {
-+		lv1_select_virtual_address_space(0);
-+		lv1_destruct_virtual_address_space(map.vas_id);
-+		map.vas_id = 0;
-+	}
-+}
-+
-+/*============================================================================*/
-+/* memory hotplug routines                                                    */
-+/*============================================================================*/
-+
-+/**
-+ * ps3pf_mm_region_create - create a memory region in the vas
-+ * @r: pointer to a struct mem_region to accept initialized values
-+ * @size: requested region size
-+ *
-+ * This implementation creates the region with the vas large page size.
-+ * @size is rounded down to a multiple of the vas large page size.
-+ */
-+
-+int ps3pf_mm_region_create(struct mem_region *r, unsigned long size)
-+{
-+	int result;
-+	unsigned long muid;
-+
-+	r->size = _ALIGN_DOWN(size, 1 << PAGE_SHIFT_16M);
-+
-+	DBG("%s:%d requested  %lxh\n", __func__, __LINE__, size);
-+	DBG("%s:%d actual     %lxh\n", __func__, __LINE__, r->size);
-+	DBG("%s:%d difference %lxh (%luMB)\n", __func__, __LINE__,
-+		(unsigned long)(size - r->size),
-+		(size - r->size) / 1024 / 1024);
-+
-+	if (r->size == 0) {
-+		DBG("%s:%d: size == 0\n", __func__, __LINE__);
-+		result = -1;
-+		goto zero_region;
-+	}
-+
-+	result = lv1_allocate_memory(r->size, PAGE_SHIFT_16M, 0,
-+		ALLOCATE_MEMORY_TRY_ALT_UNIT, &r->base, &muid);
-+
-+	if (result || r->base < map.rm.size) {
-+		DBG("%s:%d: lv1_allocate_memory failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+		goto zero_region;
-+	}
-+
-+	r->offset = r->base - map.rm.size;
-+	return result;
-+
-+zero_region:
-+	r->size = r->base = r->offset = 0;
-+	return result;
-+}
-+
-+/**
-+ * ps3pf_mm_region_destroy - destroy a memory region
-+ * @r: pointer to struct mem_region
-+ */
-+
-+void ps3pf_mm_region_destroy(struct mem_region *r)
-+{
-+	if (r->base) {
-+		lv1_release_memory(r->base);
-+		r->size = r->base = r->offset = 0;
-+		map.total = map.rm.size;
-+	}
-+}
-+
-+/**
-+ * ps3pf_mm_add_memory - hot add memory
-+ */
-+
-+static int __init ps3pf_mm_add_memory(void)
-+{
-+	int result;
-+	unsigned long start_addr;
-+	unsigned long start_pfn;
-+	unsigned long nr_pages;
-+
-+	BUG_ON(!mem_init_done);
-+
-+	start_addr = USE_LPAR_ADDR ? map.r1.base : map.rm.size;
-+	start_pfn = start_addr >> PAGE_SHIFT;
-+	nr_pages = (map.r1.size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+
-+	DBG("%s:%d: start_addr %lxh, start_pfn %lxh, nr_pages %lxh\n",
-+		__func__, __LINE__, start_addr, start_pfn, nr_pages);
-+
-+	result = add_memory(0, start_addr, map.r1.size);
-+
-+	if (result) {
-+		DBG("%s:%d: add_memory failed: (%d)\n",
-+			__func__, __LINE__, result);
-+		return result;
-+	}
-+
-+	result = online_pages(start_pfn, nr_pages);
-+
-+	if (result)
-+		DBG("%s:%d: online_pages failed: (%d)\n",
-+			__func__, __LINE__, result);
-+
-+	return result;
-+}
-+
-+core_initcall(ps3pf_mm_add_memory);
-+
-+/*============================================================================*/
-+/* dma routines                                                               */
-+/*============================================================================*/
-+
-+/**
-+ * dma_lpar_to_bus - Translate an lpar address to ioc mapped bus address.
-+ * @r: pointer to dma region structure
-+ * @lpar_addr: HV lpar address
-+ */
-+
-+static unsigned long dma_lpar_to_bus(struct ps3pf_dma_region *r,
-+	unsigned long lpar_addr)
-+{
-+	BUG_ON(lpar_addr >= map.r1.base + map.r1.size);
-+	return r->bus_addr + (lpar_addr <= map.rm.size ? lpar_addr
-+		: lpar_addr - map.r1.offset);
-+}
-+
-+#define dma_dump_region(_a) _dma_dump_region(_a, __func__, __LINE__)
-+static void _dma_dump_region(const struct ps3pf_dma_region *r, const char* func,
-+	int line)
-+{
-+	DBG("%s:%d: dev        %u:%u\n", func, line, r->did.bus_id,
-+		r->did.dev_id);
-+	DBG("%s:%d: page_size  %u\n", func, line, r->page_size);
-+	DBG("%s:%d: bus_addr   %lxh\n", func, line, r->bus_addr);
-+	DBG("%s:%d: len        %lxh\n", func, line, r->len);
-+}
-+
-+/**
-+ * dma_chunk - A chunk of dma pages mapped by the io controller.
-+ * @region - The dma region that owns this chunk.
-+ * @lpar_addr: Starting lpar address of the area to map.
-+ * @bus_addr: Starting ioc bus address of the area to map.
-+ * @len: Length in bytes of the area to map.
-+ * @link: A struct list_head used with struct ps3pf_dma_region.chunk_list, the
-+ * list of all chuncks owned by the region.
-+ *
-+ * This implementation uses a very simple dma page manager
-+ * based on the dma_chunk structure.  This scheme assumes
-+ * that all drivers use very well behaved dma ops.
-+ */
-+
-+struct dma_chunk {
-+	struct ps3pf_dma_region *region;
-+	unsigned long lpar_addr;
-+	unsigned long bus_addr;
-+	unsigned long len;
-+	struct list_head link;
-+	unsigned int usage_count;
-+};
-+
-+#define dma_dump_chunk(_a) _dma_dump_chunk(_a, __func__, __LINE__)
-+static void _dma_dump_chunk (const struct dma_chunk* c, const char* func,
-+	int line)
-+{
-+	DBG("%s:%d: r.dev        %u:%u\n", func, line,
-+		c->region->did.bus_id, c->region->did.dev_id);
-+	DBG("%s:%d: r.bus_addr   %lxh\n", func, line, c->region->bus_addr);
-+	DBG("%s:%d: r.page_size  %u\n", func, line, c->region->page_size);
-+	DBG("%s:%d: r.len        %lxh\n", func, line, c->region->len);
-+	DBG("%s:%d: c.lpar_addr  %lxh\n", func, line, c->lpar_addr);
-+	DBG("%s:%d: c.bus_addr   %lxh\n", func, line, c->bus_addr);
-+	DBG("%s:%d: c.len        %lxh\n", func, line, c->len);
-+}
-+
-+static struct dma_chunk * dma_find_chunk(struct ps3pf_dma_region *r,
-+	unsigned long bus_addr, unsigned long len)
-+{
-+	struct dma_chunk *c;
-+	unsigned long aligned_bus = _ALIGN_DOWN(bus_addr, 1 << r->page_size);
-+	unsigned long aligned_len = _ALIGN_UP(len, 1 << r->page_size);
-+
-+	list_for_each_entry(c, &r->chunk_list.head, link) {
-+		/* intersection */
-+		if (aligned_bus >= c->bus_addr
-+			&& aligned_bus < c->bus_addr + c->len
-+			&& aligned_bus + aligned_len <= c->bus_addr + c->len) {
-+			return c;
-+		}
-+		/* below */
-+		if (aligned_bus + aligned_len <= c->bus_addr) {
-+			continue;
-+		}
-+		/* above */
-+		if (aligned_bus >= c->bus_addr + c->len) {
-+			continue;
-+		}
-+
-+		/* we don't handle the multi-chunk case for now */
-+
-+		dma_dump_chunk(c);
-+		BUG();
-+	}
-+	return NULL;
-+}
-+
-+static int dma_free_chunk(struct dma_chunk *c)
-+{
-+	int result = 0;
-+
-+	if (c->bus_addr) {
-+		result = lv1_unmap_device_dma_region(c->region->did.bus_id,
-+			c->region->did.dev_id, c->bus_addr, c->len);
-+		BUG_ON(result);
-+	}
-+
-+	kfree(c);
-+	return result;
-+}
-+
-+/**
-+ * dma_map_pages - Maps dma pages into the io controller bus address space.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ * @phys_addr: Starting physical address of the area to map.
-+ * @len: Length in bytes of the area to map.
-+ * c_out: A pointer to receive an allocated struct dma_chunk for this area.
-+ *
-+ * This is the lowest level dma mapping routine, and is the one that will
-+ * make the HV call to add the pages into the io controller address space.
-+ */
-+
-+static int dma_map_pages(struct ps3pf_dma_region *r, unsigned long phys_addr,
-+	unsigned long len, struct dma_chunk **c_out)
-+{
-+	int result;
-+	struct dma_chunk *c;
-+
-+	c = kzalloc(sizeof(struct dma_chunk), GFP_ATOMIC);
-+
-+	if (!c) {
-+		result = -ENOMEM;
-+		goto fail_alloc;
-+	}
-+
-+	c->region = r;
-+	c->lpar_addr = ps3pf_mm_phys_to_lpar(phys_addr);
-+	c->bus_addr = dma_lpar_to_bus(r, c->lpar_addr);
-+	c->len = len;
-+
-+	result = lv1_map_device_dma_region(c->region->did.bus_id,
-+		c->region->did.dev_id, c->lpar_addr, c->bus_addr, c->len,
-+		0xf800000000000000UL);
-+
-+	if (result) {
-+		DBG("%s:%d: lv1_map_device_dma_region failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+		goto fail_map;
-+	}
-+
-+	list_add(&c->link, &r->chunk_list.head);
-+
-+	*c_out = c;
-+	return 0;
-+
-+fail_map:
-+	kfree(c);
-+fail_alloc:
-+	*c_out = NULL;
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+/**
-+ * dma_region_create - Create a device dma region.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ *
-+ * This is the lowest level dma region create routine, and is the one that
-+ * will make the HV call to create the region.
-+ */
-+
-+static int dma_region_create(struct ps3pf_dma_region* r)
-+{
-+	int result;
-+
-+	r->len = _ALIGN_UP(map.total, 1 << r->page_size);
-+	INIT_LIST_HEAD(&r->chunk_list.head);
-+	spin_lock_init(&r->chunk_list.lock);
-+
-+	result = lv1_allocate_device_dma_region(r->did.bus_id, r->did.dev_id,
-+		r->len, r->page_size, r->region_type, &r->bus_addr);
-+
-+	dma_dump_region(r);
-+
-+	if (result) {
-+		DBG("%s:%d: lv1_allocate_device_dma_region failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+		r->len = r->bus_addr = 0;
-+	}
-+
-+	return result;
-+}
-+
-+/**
-+ * dma_region_free - Free a device dma region.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ *
-+ * This is the lowest level dma region free routine, and is the one that
-+ * will make the HV call to free the region.
-+ */
-+
-+static int dma_region_free(struct ps3pf_dma_region* r)
-+{
-+	int result;
-+	struct dma_chunk *c;
-+	struct dma_chunk *tmp;
-+
-+	list_for_each_entry_safe(c, tmp, &r->chunk_list.head, link) {
-+		list_del(&c->link);
-+		dma_free_chunk(c);
-+	}
-+
-+	result = lv1_free_device_dma_region(r->did.bus_id, r->did.dev_id,
-+		r->bus_addr);
-+
-+	if (result)
-+		DBG("%s:%d: lv1_free_device_dma_region failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+
-+	r->len = r->bus_addr = 0;
-+
-+	return result;
-+}
-+
-+/**
-+ * dma_map_area - Map an area of memory into a device dma region.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ * @virt_addr: Starting virtual address of the area to map.
-+ * @len: Length in bytes of the area to map.
-+ * @bus_addr: A pointer to return the starting ioc bus address of the area to
-+ * map.
-+ *
-+ * This is the common dma mapping routine.
-+ */
-+
-+static int dma_map_area(struct ps3pf_dma_region *r, unsigned long virt_addr,
-+	unsigned long len, unsigned long *bus_addr)
-+{
-+	int result;
-+	unsigned long flags;
-+	struct dma_chunk *c;
-+	unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
-+		: virt_addr;
-+
-+	*bus_addr = dma_lpar_to_bus(r, ps3pf_mm_phys_to_lpar(phys_addr));
-+
-+	if (!USE_DYNAMIC_DMA) {
-+		unsigned long lpar_addr = ps3pf_mm_phys_to_lpar(phys_addr);
-+		DBG(" -> %s:%d\n", __func__, __LINE__);
-+		DBG("%s:%d virt_addr %lxh\n", __func__, __LINE__,
-+			virt_addr);
-+		DBG("%s:%d phys_addr %lxh\n", __func__, __LINE__,
-+			phys_addr);
-+		DBG("%s:%d lpar_addr %lxh\n", __func__, __LINE__,
-+			lpar_addr);
-+		DBG("%s:%d len       %lxh\n", __func__, __LINE__, len);
-+		DBG("%s:%d bus_addr  %lxh (%lxh)\n", __func__, __LINE__,
-+		*bus_addr, len);
-+	}
-+
-+	spin_lock_irqsave(&r->chunk_list.lock, flags);
-+	c = dma_find_chunk(r, *bus_addr, len);
-+
-+	if (c) {
-+		c->usage_count++;
-+		spin_unlock_irqrestore(&r->chunk_list.lock, flags);
-+		return 0;
-+	}
-+
-+	result = dma_map_pages(r, _ALIGN_DOWN(phys_addr, 1 << r->page_size),
-+		_ALIGN_UP(len, 1 << r->page_size), &c);
-+
-+	if (result) {
-+		*bus_addr = 0;
-+		DBG("%s:%d: dma_map_pages failed (%d)\n",
-+			__func__, __LINE__, result);
-+		spin_unlock_irqrestore(&r->chunk_list.lock, flags);
-+		return result;
-+	}
-+
-+	c->usage_count = 1;
-+
-+	spin_unlock_irqrestore(&r->chunk_list.lock, flags);
-+	return result;
-+}
-+
-+/**
-+ * dma_unmap_area - Unmap an area of memory from a device dma region.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ * @bus_addr: The starting ioc bus address of the area to unmap.
-+ * @len: Length in bytes of the area to unmap.
-+ *
-+ * This is the common dma unmap routine.
-+ */
-+
-+int dma_unmap_area(struct ps3pf_dma_region *r, unsigned long bus_addr,
-+	unsigned long len)
-+{
-+	unsigned long flags;
-+	struct dma_chunk *c;
-+
-+	spin_lock_irqsave(&r->chunk_list.lock, flags);
-+	c = dma_find_chunk(r, bus_addr, len);
-+
-+	if (!c) {
-+		unsigned long aligned_bus = _ALIGN_DOWN(bus_addr,
-+			1 << r->page_size);
-+		unsigned long aligned_len = _ALIGN_UP(len, 1 << r->page_size);
-+		DBG("%s:%d: not found: bus_addr %lxh\n",
-+			__func__, __LINE__, bus_addr);
-+		DBG("%s:%d: not found: len %lxh\n",
-+			__func__, __LINE__, len);
-+		DBG("%s:%d: not found: aligned_bus %lxh\n",
-+			__func__, __LINE__, aligned_bus);
-+		DBG("%s:%d: not found: aligned_len %lxh\n",
-+			__func__, __LINE__, aligned_len);
-+		BUG();
-+	}
-+
-+	c->usage_count--;
-+
-+	if (!c->usage_count) {
-+		list_del(&c->link);
-+		dma_free_chunk(c);
-+	}
-+
-+	spin_unlock_irqrestore(&r->chunk_list.lock, flags);
-+	return 0;
-+}
-+
-+/**
-+ * dma_region_create_linear - Setup a linear dma maping for a device.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ *
-+ * This routine creates an HV dma region for the device and maps all available
-+ * ram into the io controller bus address space.
-+ */
-+
-+static int dma_region_create_linear(struct ps3pf_dma_region *r)
-+{
-+	int result;
-+	unsigned long tmp;
-+
-+	/* force 16M dma pages for linear mapping */
-+
-+	if (r->page_size != PS3PF_DMA_16M) {
-+		pr_info("%s:%d: forcing 16M pages for linear map\n",
-+			__func__, __LINE__);
-+		r->page_size = PS3PF_DMA_16M;
-+	}
-+
-+	result = dma_region_create(r);
-+	BUG_ON(result);
-+
-+	result = dma_map_area(r, map.rm.base, map.rm.size, &tmp);
-+	BUG_ON(result);
-+
-+	if (USE_LPAR_ADDR)
-+		result = dma_map_area(r, map.r1.base, map.r1.size,
-+			&tmp);
-+	else
-+		result = dma_map_area(r, map.rm.size, map.r1.size,
-+			&tmp);
-+
-+	BUG_ON(result);
-+
-+	return result;
-+}
-+
-+/**
-+ * dma_region_free_linear - Free a linear dma mapping for a device.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ *
-+ * This routine will unmap all mapped areas and free the HV dma region.
-+ */
-+
-+static int dma_region_free_linear(struct ps3pf_dma_region *r)
-+{
-+	int result;
-+
-+	result = dma_unmap_area(r, dma_lpar_to_bus(r, 0), map.rm.size);
-+	BUG_ON(result);
-+
-+	result = dma_unmap_area(r, dma_lpar_to_bus(r, map.r1.base),
-+		map.r1.size);
-+	BUG_ON(result);
-+
-+	result = dma_region_free(r);
-+	BUG_ON(result);
-+
-+	return result;
-+}
-+
-+/**
-+ * dma_map_area_linear - Map an area of memory into a device dma region.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ * @virt_addr: Starting virtual address of the area to map.
-+ * @len: Length in bytes of the area to map.
-+ * @bus_addr: A pointer to return the starting ioc bus address of the area to
-+ * map.
-+ *
-+ * This routine just returns the coresponding bus address.  Actual mapping
-+ * occurs in dma_region_create_linear().
-+ */
-+
-+static int dma_map_area_linear(struct ps3pf_dma_region *r,
-+	unsigned long virt_addr, unsigned long len, unsigned long *bus_addr)
-+{
-+	unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
-+		: virt_addr;
-+	*bus_addr = dma_lpar_to_bus(r, ps3pf_mm_phys_to_lpar(phys_addr));
-+	return 0;
-+}
-+
-+/**
-+ * dma_unmap_area_linear - Unmap an area of memory from a device dma region.
-+ * @r: Pointer to a struct ps3pf_dma_region.
-+ * @bus_addr: The starting ioc bus address of the area to unmap.
-+ * @len: Length in bytes of the area to unmap.
-+ *
-+ * This routine does nothing.  Unmapping occurs in dma_region_free_linear().
-+ */
-+
-+static int dma_unmap_area_linear(struct ps3pf_dma_region *r,
-+	unsigned long bus_addr, unsigned long len)
-+{
-+	return 0;
-+}
-+
-+int ps3pf_dma_region_create(struct ps3pf_dma_region *r)
-+{
-+	return (USE_DYNAMIC_DMA)
-+		? dma_region_create(r)
-+		: dma_region_create_linear(r);
-+}
-+
-+int ps3pf_dma_region_free(struct ps3pf_dma_region *r)
-+{
-+	return (USE_DYNAMIC_DMA)
-+		? dma_region_free(r)
-+		: dma_region_free_linear(r);
-+}
-+
-+int ps3pf_dma_map(struct ps3pf_dma_region *r, unsigned long virt_addr,
-+	unsigned long len, unsigned long *bus_addr)
-+{
-+	return (USE_DYNAMIC_DMA)
-+		? dma_map_area(r, virt_addr, len, bus_addr)
-+		: dma_map_area_linear(r, virt_addr, len, bus_addr);
-+}
-+
-+int ps3pf_dma_unmap(struct ps3pf_dma_region *r, unsigned long bus_addr,
-+	unsigned long len)
-+{
-+	return (USE_DYNAMIC_DMA) ? dma_unmap_area(r, bus_addr, len)
-+		: dma_unmap_area_linear(r, bus_addr, len);
-+}
-+
-+/*============================================================================*/
-+/* system startup routines                                                    */
-+/*============================================================================*/
-+
-+/**
-+ * ps3pf_mm_init - initialize the address space state variables
-+ */
-+
-+void __init ps3pf_mm_init(void)
-+{
-+	int result;
-+
-+	DBG(" -> %s:%d\n", __func__, __LINE__);
-+
-+	result = ps3pf_repository_read_mm_info(&map.rm.base, &map.rm.size,
-+		&map.total);
-+
-+	if (result)
-+		panic("ps3pf_repository_read_mm_info() failed");
-+
-+	map.rm.offset = map.rm.base;
-+	map.vas_id = map.htab_size = 0;
-+
-+	/* this implementation assumes map.rm.base is zero */
-+
-+	BUG_ON(map.rm.base);
-+	BUG_ON(!map.rm.size);
-+
-+	lmb_add(map.rm.base, map.rm.size);
-+	lmb_analyze();
-+
-+	/* arrange to do this in ps3pf_mm_add_memory */
-+	ps3pf_mm_region_create(&map.r1, map.total - map.rm.size);
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+}
-+
-+/**
-+ * ps3pf_mm_shutdown - final cleanup of address space
-+ */
-+
-+void ps3pf_mm_shutdown(void)
-+{
-+	ps3pf_mm_region_destroy(&map.r1);
-+	map.total = map.rm.size;
-+}
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/hvcall.S
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
-@@ -0,0 +1,59 @@
++++ cell--common--6/arch/powerpc/platforms/ps3pf/hvcall.S
+@@ -0,0 +1,804 @@
 +/*
-+ *  PS3 Platform declarations.
++ *  PS3 Platform HV call interface.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
++ *  Copyright 2003, 2004 (c) MontaVista Software, Inc.
 + *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
@@ -1011,233 +94,800 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#if !defined(_PS3PF_PLATFORM_H)
-+#define _PS3PF_PLATFORM_H
++#include <asm/processor.h>
++#include <asm/ppc_asm.h>
 +
-+#include <linux/rtc.h>
++#define lv1call .long 0x44000022; extsw r3, r3
 +
-+/* htab */
++#define LV1_N_IN_0_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+void __init ps3pf_hpte_init(unsigned long htab_size);
-+void __init ps3pf_map_htab(void);
++#define LV1_0_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_1_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_2_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_3_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_4_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_5_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_6_IN_0_OUT LV1_N_IN_0_OUT
++#define LV1_7_IN_0_OUT LV1_N_IN_0_OUT
 +
-+/* mm */
++#define LV1_0_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu    r3, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+void __init ps3pf_mm_init(void);
-+void __init ps3pf_mm_vas_create(unsigned long* htab_size);
-+void ps3pf_mm_shutdown(void);
++#define LV1_0_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r3, -8(r1);			\
++	stdu	r4, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+/* irq */
++#define LV1_0_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r3, -8(r1);			\
++	std	r4, -16(r1);			\
++	stdu	r5, -24(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 24;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+void ps3pf_init_IRQ(void);
-+void __init ps3pf_register_ipi_debug_brk(unsigned int cpu, unsigned int virq);
++#define LV1_0_IN_7_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r3, -8(r1);			\
++	std	r4, -16(r1);			\
++	std	r5, -24(r1);			\
++	std	r6, -32(r1);			\
++	std	r7, -40(r1);			\
++	std	r8, -48(r1);			\
++	stdu	r9, -56(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 56;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++	ld	r11, -40(r1);			\
++	std	r8, 0(r11);			\
++	ld	r11, -48(r1);			\
++	std	r9, 0(r11);			\
++	ld	r11, -56(r1);			\
++	std	r10, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+/* smp */
++#define LV1_1_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu    r4, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+void smp_init_ps3pf(void);
-+void ps3pf_smp_cleanup_cpu(int cpu);
++#define LV1_1_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r4, -8(r1);			\
++	stdu	r5, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+/* time */
++#define LV1_1_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r4, -8(r1);			\
++	std	r5, -16(r1);			\
++	stdu	r6, -24(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 24;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+void __init ps3pf_calibrate_decr(void);
-+unsigned long __init ps3pf_get_boot_time(void);
-+void ps3pf_get_rtc_time(struct rtc_time *time);
-+int ps3pf_set_rtc_time(struct rtc_time *time);
++#define LV1_1_IN_4_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r4, -8(r1);			\
++	std	r5, -16(r1);			\
++	std	r6, -24(r1);			\
++	stdu	r7, -32(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 32;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+/* os area */
++#define LV1_1_IN_5_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r4, -8(r1);			\
++	std	r5, -16(r1);			\
++	std	r6, -24(r1);			\
++	std	r7, -32(r1);			\
++	stdu	r8, -40(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 40;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++	ld	r11, -40(r1);			\
++	std	r8, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+int __init ps3pf_os_area_init(void);
-+u64 ps3pf_os_area_rtc_diff(void);
++#define LV1_1_IN_6_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r4, -8(r1);			\
++	std	r5, -16(r1);			\
++	std	r6, -24(r1);			\
++	std	r7, -32(r1);			\
++	std	r8, -40(r1);			\
++	stdu	r9, -48(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 48;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++	ld	r11, -40(r1);			\
++	std	r8, 0(r11);			\
++	ld	r11, -48(r1);			\
++	std	r9, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+#endif
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/setup.c
-===================================================================
---- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/setup.c
-@@ -0,0 +1,173 @@
-+/*
-+ *  PS3 Platform setup routines.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
++#define LV1_1_IN_7_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r4, -8(r1);			\
++	std	r5, -16(r1);			\
++	std	r6, -24(r1);			\
++	std	r7, -32(r1);			\
++	std	r8, -40(r1);			\
++	std	r9, -48(r1);			\
++	stdu	r10, -56(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 56;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++	ld	r11, -40(r1);			\
++	std	r8, 0(r11);			\
++	ld	r11, -48(r1);			\
++	std	r9, 0(r11);			\
++	ld	r11, -56(r1);			\
++	std	r10, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+#include <linux/kernel.h>
-+#include <linux/delay.h>
-+#include <linux/fs.h>
-+#include <linux/root_dev.h>
-+#include <linux/console.h>
-+#include <linux/kexec.h>
++#define LV1_2_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu	r5, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
 +
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
-+#include <asm/time.h>
-+#include <asm/iommu.h>
-+#include <asm/udbg.h>
-+#include <asm/prom.h>
++#define LV1_2_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r5, -8(r1);			\
++	stdu	r6, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_2_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r5, -8(r1);			\
++	std	r6, -16(r1);			\
++	stdu	r7, -24(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 24;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_2_IN_4_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r5, -8(r1);			\
++	std	r6, -16(r1);			\
++	std	r7, -24(r1);			\
++	stdu	r8, -32(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 32;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_2_IN_5_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r5, -8(r1);			\
++	std	r6, -16(r1);			\
++	std	r7, -24(r1);			\
++	std	r8, -32(r1);			\
++	stdu	r9, -40(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 40;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++	ld	r11, -32(r1);			\
++	std	r7, 0(r11);			\
++	ld	r11, -40(r1);			\
++	std	r8, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_3_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu	r6, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_3_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r6, -8(r1);			\
++	stdu	r7, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_3_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r6, -8(r1);			\
++	std	r7, -16(r1);			\
++	stdu	r8, -24(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 24;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_4_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu    r7, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_4_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r7, -8(r1);			\
++	stdu	r8, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_4_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r7, -8(r1);			\
++	std	r8, -16(r1);			\
++	stdu	r9, -24(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 24;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_5_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu    r8, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_5_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r8, -8(r1);			\
++	stdu	r9, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_5_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r8, -8(r1);			\
++	std	r9, -16(r1);			\
++	stdu	r10, -24(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 24;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, -24(r1);			\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_6_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu    r9, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_6_IN_2_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r9, -8(r1);			\
++	stdu    r10, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_6_IN_3_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std     r9, -8(r1);			\
++	stdu    r10, -16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 16;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++	ld	r11, -16(r1);			\
++	std	r5, 0(r11);			\
++	ld	r11, 48+8*8(r1);		\
++	std	r6, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_7_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	stdu    r10, -8(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	addi	r1, r1, 8;			\
++	ld	r11, -8(r1);			\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_7_IN_6_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	std	r10, 48+8*7(r1);		\
++						\
++	li	r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	ld	r11, 48+8*7(r1);		\
++	std	r4, 0(r11);			\
++	ld	r11, 48+8*8(r1);		\
++	std	r5, 0(r11);			\
++	ld	r11, 48+8*9(r1);		\
++	std	r6, 0(r11);			\
++	ld	r11, 48+8*10(r1);		\
++	std	r7, 0(r11);			\
++	ld	r11, 48+8*11(r1);		\
++	std	r8, 0(r11);			\
++	ld	r11, 48+8*12(r1);		\
++	std	r9, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++#define LV1_8_IN_1_OUT(API_NAME, API_NUMBER)	\
++_GLOBAL(_##API_NAME)				\
++						\
++	mflr	r0;				\
++	std	r0, 16(r1);			\
++						\
++	li      r11, API_NUMBER;		\
++	lv1call;				\
++						\
++	ld	r11, 48+8*8(r1);		\
++	std	r4, 0(r11);			\
++						\
++	ld	r0, 16(r1);			\
++	mtlr	r0;				\
++	blr
++
++	.text
++
++/* the lv1 underscored call definitions expand here */
++
++#define LV1_CALL(name, in, out, num) LV1_##in##_IN_##out##_OUT(lv1_##name, num)
 +#include <asm/lv1call.h>
-+
-+#include "platform.h"
-+
-+#if defined(DEBUG)
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
-+#endif
-+
-+static void ps3pf_show_cpuinfo(struct seq_file *m)
-+{
-+	seq_printf(m, "machine\t\t: %s\n", ppc_md.name);
-+}
-+
-+static void ps3pf_power_save(void)
-+{
-+	/*
-+	 * lv1_pause() puts the PPE thread into inactive state until an
-+	 * irq on an unmasked plug exists. MSR[EE] has no effect.
-+	 * flags: 0 = wake on DEC interrupt, 1 = ignore DEC interrupt.
-+	 */
-+
-+	lv1_pause(0);
-+}
-+
-+static void ps3pf_panic(char *str)
-+{
-+	DBG("%s:%d %s\n", __func__, __LINE__, str);
-+
-+#ifdef CONFIG_SMP
-+	smp_send_stop();
-+#endif
-+	printk("\n");
-+	printk("   System does not reboot automatically.\n");
-+	printk("   Please press POWER button.\n");
-+	printk("\n");
-+
-+	for (;;) ;
-+}
-+
-+static void __init ps3pf_setup_arch(void)
-+{
-+	DBG(" -> %s:%d\n", __func__, __LINE__);
-+
-+	ps3pf_spu_set_platform();
-+	ps3pf_map_htab();
-+
-+#ifdef CONFIG_SMP
-+	smp_init_ps3pf();
-+#endif
-+
-+#ifdef CONFIG_DUMMY_CONSOLE
-+	conswitchp = &dummy_con;
-+#endif
-+
-+	ppc_md.power_save = ps3pf_power_save;
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+}
-+
-+static void __init ps3pf_progress(char *s, unsigned short hex)
-+{
-+	printk("*** %04x : %s\n", hex, s ? s : "");
-+}
-+
-+static int __init ps3pf_probe(void)
-+{
-+	unsigned long htab_size;
-+	unsigned long dt_root;
-+
-+	DBG(" -> %s:%d\n", __func__, __LINE__);
-+
-+	dt_root = of_get_flat_dt_root();
-+	if (!of_flat_dt_is_compatible(dt_root, "PS3PF"))
-+		return 0;
-+
-+	powerpc_firmware_features |= FW_FEATURE_LPAR;
-+
-+	ps3pf_os_area_init();
-+	ps3pf_mm_init();
-+	ps3pf_mm_vas_create(&htab_size);
-+	ps3pf_hpte_init(htab_size);
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+	return 1;
-+}
-+
-+#if defined(CONFIG_KEXEC)
-+static void ps3pf_kexec_cpu_down(int crash_shutdown, int secondary)
-+{
-+	DBG(" -> %s:%d\n", __func__, __LINE__);
-+
-+	if (secondary) {
-+		int cpu;
-+		for_each_online_cpu(cpu)
-+			if (cpu)
-+				ps3pf_smp_cleanup_cpu(cpu);
-+	} else
-+		ps3pf_smp_cleanup_cpu(0);
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+}
-+
-+static void ps3pf_machine_kexec(struct kimage *image)
-+{
-+	unsigned long ppe_id;
-+
-+	DBG(" -> %s:%d\n", __func__, __LINE__);
-+
-+	lv1_get_logical_ppe_id(&ppe_id);
-+	lv1_configure_irq_state_bitmap(ppe_id, 0, 0);
-+	ps3pf_mm_shutdown();
-+	ps3pf_mm_vas_destroy();
-+
-+	default_machine_kexec(image);
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+}
-+#endif
-+
-+define_machine(ps3pf) {
-+	.name				= "PS3PF",
-+	.probe				= ps3pf_probe,
-+	.setup_arch			= ps3pf_setup_arch,
-+	.show_cpuinfo			= ps3pf_show_cpuinfo,
-+	.init_IRQ			= ps3pf_init_IRQ,
-+	.panic				= ps3pf_panic,
-+	.get_boot_time			= ps3pf_get_boot_time,
-+	.set_rtc_time			= ps3pf_set_rtc_time,
-+	.get_rtc_time			= ps3pf_get_rtc_time,
-+	.calibrate_decr			= ps3pf_calibrate_decr,
-+	.progress			= ps3pf_progress,
-+#if defined(CONFIG_KEXEC)
-+	.kexec_cpu_down			= ps3pf_kexec_cpu_down,
-+	.machine_kexec			= ps3pf_machine_kexec,
-+	.machine_kexec_prepare		= ps3pf_machine_kexec_prepare,
-+	.machine_crash_shutdown		= default_machine_crash_shutdown,
-+#endif
-+};
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/smp.c
+Index: cell--common--6/include/asm-powerpc/lv1call.h
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/smp.c
-@@ -0,0 +1,158 @@
++++ cell--common--6/include/asm-powerpc/lv1call.h
+@@ -0,0 +1,345 @@
 +/*
-+ *  PS3 Platform SMP routines.
++ *  PS3 Platform HV call interface.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
++ *  Copyright 2003, 2004 (c) MontaVista Software, Inc.
 + *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
@@ -1253,505 +903,327 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/smp.c
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/smp.h>
++#if !defined(_ASM_POWERPC_LV1CALL_H)
++#define _ASM_POWERPC_LV1CALL_H
 +
-+#include <asm/machdep.h>
-+#include <asm/udbg.h>
-+#include <asm/ps3pf.h>
++#if !defined(__ASSEMBLY__)
 +
-+#include "platform.h"
-+
-+#if defined(DEBUG)
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
-+#endif
-+
-+static irqreturn_t ipi_function_handler(int irq, void *msg)
-+{
-+	smp_message_recv((int)(long)msg);
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+  * virqs - a per cpu array of virqs for ipi use
-+  */
-+
-+#define MSG_COUNT 4
-+static DEFINE_PER_CPU(unsigned int, virqs[MSG_COUNT]);
-+
-+static const char *names[MSG_COUNT] = {
-+	"ipi call",
-+	"ipi reschedule",
-+	"ipi migrate",
-+	"ipi debug brk"
-+};
-+
-+static void do_message_pass(int target, int msg)
-+{
-+	int result;
-+	unsigned int virq;
-+
-+	if (msg >= MSG_COUNT) {
-+		DBG("%s:%d: bad msg: %d\n", __func__, __LINE__, msg);
-+		return;
-+	}
-+
-+	virq = per_cpu(virqs, target)[msg];
-+	result = ps3pf_send_event_locally(virq);
-+
-+	if (result)
-+		DBG("%s:%d: ps3pf_send_event_locally(%d, %d) failed"
-+			" (%d)\n", __func__, __LINE__, target, msg, result);
-+}
-+
-+static void ps3pf_smp_message_pass(int target, int msg)
-+{
-+	int cpu;
-+
-+	if (target < NR_CPUS)
-+		do_message_pass(target, msg);
-+	else if (target == MSG_ALL_BUT_SELF) {
-+		for_each_online_cpu(cpu)
-+			if (cpu != smp_processor_id())
-+				do_message_pass(cpu, msg);
-+	} else {
-+		for_each_online_cpu(cpu)
-+			do_message_pass(cpu, msg);
-+	}
-+}
-+
-+static int ps3pf_smp_probe(void)
-+{
-+	return 2;
-+}
-+
-+static void __init ps3pf_smp_setup_cpu(int cpu)
-+{
-+	int result;
-+	unsigned int *virqs = per_cpu(virqs, cpu);
-+	int i;
-+
-+	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
-+
-+	/*
-+	 * Check assumptions on virqs[] indexing. If this
-+	 * check fails, then a different mapping of PPC_MSG_
-+	 * to index needs to be setup.
-+	 */
-+
-+	BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION  != 0);
-+	BUILD_BUG_ON(PPC_MSG_RESCHEDULE     != 1);
-+	BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK != 3);
-+
-+	for (i = 0; i < MSG_COUNT; i++) {
-+		result = ps3pf_alloc_event_irq(&virqs[i]);
-+
-+		if (result)
-+			continue;
-+
-+		DBG("%s:%d: (%d, %d) => virq %u\n",
-+			__func__, __LINE__, cpu, i, virqs[i]);
-+
-+
-+		request_irq(virqs[i], ipi_function_handler, IRQF_DISABLED,
-+			names[i], (void*)(long)i);
-+	}
-+
-+	ps3pf_register_ipi_debug_brk(cpu, virqs[PPC_MSG_DEBUGGER_BREAK]);
-+
-+	DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
-+}
-+
-+void ps3pf_smp_cleanup_cpu(int cpu)
-+{
-+	unsigned int *virqs = per_cpu(virqs, cpu);
-+	int i;
-+
-+	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
-+	for (i = 0; i < MSG_COUNT; i++) {
-+		ps3pf_free_event_irq(virqs[i]);
-+		free_irq(virqs[i], (void*)(long)i);
-+		virqs[i] = NO_IRQ;
-+	}
-+	DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
-+}
-+
-+static struct smp_ops_t ps3pf_smp_ops = {
-+	.probe		= ps3pf_smp_probe,
-+	.message_pass	= ps3pf_smp_message_pass,
-+	.kick_cpu	= smp_generic_kick_cpu,
-+	.setup_cpu	= ps3pf_smp_setup_cpu,
-+};
-+
-+void smp_init_ps3pf(void)
-+{
-+	DBG(" -> %s\n", __func__);
-+	smp_ops = &ps3pf_smp_ops;
-+	DBG(" <- %s\n", __func__);
-+}
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/time.c
-===================================================================
---- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/time.c
-@@ -0,0 +1,104 @@
-+/*
-+ *  PS3 Platform time and rtc routines.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+
-+#include <asm/rtc.h>
-+#include <asm/lv1call.h>
-+#include <asm/ps3pf.h>
-+
-+#include "platform.h"
-+
-+#define dump_tm(_a) _dump_tm(_a, __func__, __LINE__)
-+static void _dump_tm(const struct rtc_time *tm, const char* func, int line)
-+{
-+	pr_debug("%s:%d tm_sec  %d\n", func, line, tm->tm_sec);
-+	pr_debug("%s:%d tm_min  %d\n", func, line, tm->tm_min);
-+	pr_debug("%s:%d tm_hour %d\n", func, line, tm->tm_hour);
-+	pr_debug("%s:%d tm_mday %d\n", func, line, tm->tm_mday);
-+	pr_debug("%s:%d tm_mon  %d\n", func, line, tm->tm_mon);
-+	pr_debug("%s:%d tm_year %d\n", func, line, tm->tm_year);
-+	pr_debug("%s:%d tm_wday %d\n", func, line, tm->tm_wday);
-+}
-+
-+#define dump_time(_a) _dump_time(_a, __func__, __LINE__)
-+static void __attribute__ ((unused)) _dump_time(int time, const char* func,
-+	int line)
-+{
-+	struct rtc_time tm;
-+
-+	to_tm(time, &tm);
-+
-+	pr_debug("%s:%d time    %d\n", func, line, time);
-+	_dump_tm(&tm, func, line);
-+}
-+
-+/**
-+ * rtc_shift - Difference in seconds between 1970 and the ps3pf rtc value.
-+ */
-+
-+static s64 rtc_shift;
-+
-+void __init ps3pf_calibrate_decr(void)
-+{
-+	int result;
-+	u64 tmp;
-+
-+	result = ps3pf_repository_read_be_tb_freq(0, &tmp);
-+	BUG_ON(result);
-+
-+	ppc_tb_freq = tmp;
-+	ppc_proc_freq = ppc_tb_freq * 40;
-+
-+	rtc_shift = ps3pf_os_area_rtc_diff();
-+}
-+
-+static u64 read_rtc(void)
-+{
-+	int result;
-+	u64 rtc_val;
-+	u64 tb_val;
-+
-+	result = lv1_get_rtc(&rtc_val, &tb_val);
-+	BUG_ON(result);
-+
-+	return rtc_val;
-+}
-+
-+int ps3pf_set_rtc_time(struct rtc_time *tm)
-+{
-+	u64 now = mktime(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-+		tm->tm_hour, tm->tm_min, tm->tm_sec);
-+
-+	rtc_shift = now - read_rtc();
-+	return 0;
-+}
-+
-+void ps3pf_get_rtc_time(struct rtc_time *tm)
-+{
-+	to_tm(read_rtc() + rtc_shift, tm);
-+	tm->tm_year -= 1900;
-+	tm->tm_mon -= 1;
-+}
-+
-+unsigned long __init ps3pf_get_boot_time(void)
-+{
-+	return read_rtc() + rtc_shift;
-+}
-Index: cell--common--6/include/asm-powerpc/ps3pf.h
-===================================================================
---- /dev/null
-+++ cell--common--6/include/asm-powerpc/ps3pf.h
-@@ -0,0 +1,250 @@
-+/*
-+ *  PS3 Platform declarations.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#if !defined(_ASM_POWERPC_PS3PF_H)
-+#define _ASM_POWERPC_PS3PF_H
-+
-+#include <linux/compiler.h> /* for __deprecated */
-+#include <linux/init.h>
 +#include <linux/types.h>
-+#include <linux/device.h>
 +
-+/**
-+ * struct ps3pf_device_id - HV bus device identifier from the system repository
-+ * @bus_id: HV bus id, {1..} (zero invalid)
-+ * @dev_id: HV device id, {0..}
++/* lv1 call declaration macros */
++
++#define LV1_1_IN_ARG_DECL u64 in_1
++#define LV1_2_IN_ARG_DECL LV1_1_IN_ARG_DECL, u64 in_2
++#define LV1_3_IN_ARG_DECL LV1_2_IN_ARG_DECL, u64 in_3
++#define LV1_4_IN_ARG_DECL LV1_3_IN_ARG_DECL, u64 in_4
++#define LV1_5_IN_ARG_DECL LV1_4_IN_ARG_DECL, u64 in_5
++#define LV1_6_IN_ARG_DECL LV1_5_IN_ARG_DECL, u64 in_6
++#define LV1_7_IN_ARG_DECL LV1_6_IN_ARG_DECL, u64 in_7
++#define LV1_8_IN_ARG_DECL LV1_7_IN_ARG_DECL, u64 in_8
++#define LV1_1_OUT_ARG_DECL u64 *out_1
++#define LV1_2_OUT_ARG_DECL LV1_1_OUT_ARG_DECL, u64 *out_2
++#define LV1_3_OUT_ARG_DECL LV1_2_OUT_ARG_DECL, u64 *out_3
++#define LV1_4_OUT_ARG_DECL LV1_3_OUT_ARG_DECL, u64 *out_4
++#define LV1_5_OUT_ARG_DECL LV1_4_OUT_ARG_DECL, u64 *out_5
++#define LV1_6_OUT_ARG_DECL LV1_5_OUT_ARG_DECL, u64 *out_6
++#define LV1_7_OUT_ARG_DECL LV1_6_OUT_ARG_DECL, u64 *out_7
++
++#define LV1_0_IN_0_OUT_ARG_DECL void
++#define LV1_1_IN_0_OUT_ARG_DECL LV1_1_IN_ARG_DECL
++#define LV1_2_IN_0_OUT_ARG_DECL LV1_2_IN_ARG_DECL
++#define LV1_3_IN_0_OUT_ARG_DECL LV1_3_IN_ARG_DECL
++#define LV1_4_IN_0_OUT_ARG_DECL LV1_4_IN_ARG_DECL
++#define LV1_5_IN_0_OUT_ARG_DECL LV1_5_IN_ARG_DECL
++#define LV1_6_IN_0_OUT_ARG_DECL LV1_6_IN_ARG_DECL
++#define LV1_7_IN_0_OUT_ARG_DECL LV1_7_IN_ARG_DECL
++
++#define LV1_0_IN_1_OUT_ARG_DECL                    LV1_1_OUT_ARG_DECL
++#define LV1_1_IN_1_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_2_IN_1_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_3_IN_1_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_4_IN_1_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_5_IN_1_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_6_IN_1_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_7_IN_1_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++#define LV1_8_IN_1_OUT_ARG_DECL LV1_8_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
++
++#define LV1_0_IN_2_OUT_ARG_DECL                    LV1_2_OUT_ARG_DECL
++#define LV1_1_IN_2_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++#define LV1_2_IN_2_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++#define LV1_3_IN_2_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++#define LV1_4_IN_2_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++#define LV1_5_IN_2_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++#define LV1_6_IN_2_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++#define LV1_7_IN_2_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
++
++#define LV1_0_IN_3_OUT_ARG_DECL                    LV1_3_OUT_ARG_DECL
++#define LV1_1_IN_3_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++#define LV1_2_IN_3_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++#define LV1_3_IN_3_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++#define LV1_4_IN_3_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++#define LV1_5_IN_3_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++#define LV1_6_IN_3_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++#define LV1_7_IN_3_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
++
++#define LV1_0_IN_4_OUT_ARG_DECL                    LV1_4_OUT_ARG_DECL
++#define LV1_1_IN_4_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++#define LV1_2_IN_4_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++#define LV1_3_IN_4_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++#define LV1_4_IN_4_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++#define LV1_5_IN_4_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++#define LV1_6_IN_4_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++#define LV1_7_IN_4_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
++
++#define LV1_0_IN_5_OUT_ARG_DECL                    LV1_5_OUT_ARG_DECL
++#define LV1_1_IN_5_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++#define LV1_2_IN_5_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++#define LV1_3_IN_5_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++#define LV1_4_IN_5_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++#define LV1_5_IN_5_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++#define LV1_6_IN_5_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++#define LV1_7_IN_5_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
++
++#define LV1_0_IN_6_OUT_ARG_DECL                    LV1_6_OUT_ARG_DECL
++#define LV1_1_IN_6_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++#define LV1_2_IN_6_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++#define LV1_3_IN_6_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++#define LV1_4_IN_6_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++#define LV1_5_IN_6_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++#define LV1_6_IN_6_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++#define LV1_7_IN_6_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
++
++#define LV1_0_IN_7_OUT_ARG_DECL                    LV1_7_OUT_ARG_DECL
++#define LV1_1_IN_7_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++#define LV1_2_IN_7_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++#define LV1_3_IN_7_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++#define LV1_4_IN_7_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++#define LV1_5_IN_7_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++#define LV1_6_IN_7_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++#define LV1_7_IN_7_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
++
++#define LV1_1_IN_ARGS in_1
++#define LV1_2_IN_ARGS LV1_1_IN_ARGS, in_2
++#define LV1_3_IN_ARGS LV1_2_IN_ARGS, in_3
++#define LV1_4_IN_ARGS LV1_3_IN_ARGS, in_4
++#define LV1_5_IN_ARGS LV1_4_IN_ARGS, in_5
++#define LV1_6_IN_ARGS LV1_5_IN_ARGS, in_6
++#define LV1_7_IN_ARGS LV1_6_IN_ARGS, in_7
++#define LV1_8_IN_ARGS LV1_7_IN_ARGS, in_8
++
++#define LV1_1_OUT_ARGS out_1
++#define LV1_2_OUT_ARGS LV1_1_OUT_ARGS, out_2
++#define LV1_3_OUT_ARGS LV1_2_OUT_ARGS, out_3
++#define LV1_4_OUT_ARGS LV1_3_OUT_ARGS, out_4
++#define LV1_5_OUT_ARGS LV1_4_OUT_ARGS, out_5
++#define LV1_6_OUT_ARGS LV1_5_OUT_ARGS, out_6
++#define LV1_7_OUT_ARGS LV1_6_OUT_ARGS, out_7
++
++#define LV1_0_IN_0_OUT_ARGS
++#define LV1_1_IN_0_OUT_ARGS LV1_1_IN_ARGS
++#define LV1_2_IN_0_OUT_ARGS LV1_2_IN_ARGS
++#define LV1_3_IN_0_OUT_ARGS LV1_3_IN_ARGS
++#define LV1_4_IN_0_OUT_ARGS LV1_4_IN_ARGS
++#define LV1_5_IN_0_OUT_ARGS LV1_5_IN_ARGS
++#define LV1_6_IN_0_OUT_ARGS LV1_6_IN_ARGS
++#define LV1_7_IN_0_OUT_ARGS LV1_7_IN_ARGS
++
++#define LV1_0_IN_1_OUT_ARGS                LV1_1_OUT_ARGS
++#define LV1_1_IN_1_OUT_ARGS LV1_1_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_2_IN_1_OUT_ARGS LV1_2_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_3_IN_1_OUT_ARGS LV1_3_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_4_IN_1_OUT_ARGS LV1_4_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_5_IN_1_OUT_ARGS LV1_5_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_6_IN_1_OUT_ARGS LV1_6_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_7_IN_1_OUT_ARGS LV1_7_IN_ARGS, LV1_1_OUT_ARGS
++#define LV1_8_IN_1_OUT_ARGS LV1_8_IN_ARGS, LV1_1_OUT_ARGS
++
++#define LV1_0_IN_2_OUT_ARGS                LV1_2_OUT_ARGS
++#define LV1_1_IN_2_OUT_ARGS LV1_1_IN_ARGS, LV1_2_OUT_ARGS
++#define LV1_2_IN_2_OUT_ARGS LV1_2_IN_ARGS, LV1_2_OUT_ARGS
++#define LV1_3_IN_2_OUT_ARGS LV1_3_IN_ARGS, LV1_2_OUT_ARGS
++#define LV1_4_IN_2_OUT_ARGS LV1_4_IN_ARGS, LV1_2_OUT_ARGS
++#define LV1_5_IN_2_OUT_ARGS LV1_5_IN_ARGS, LV1_2_OUT_ARGS
++#define LV1_6_IN_2_OUT_ARGS LV1_6_IN_ARGS, LV1_2_OUT_ARGS
++#define LV1_7_IN_2_OUT_ARGS LV1_7_IN_ARGS, LV1_2_OUT_ARGS
++
++#define LV1_0_IN_3_OUT_ARGS                LV1_3_OUT_ARGS
++#define LV1_1_IN_3_OUT_ARGS LV1_1_IN_ARGS, LV1_3_OUT_ARGS
++#define LV1_2_IN_3_OUT_ARGS LV1_2_IN_ARGS, LV1_3_OUT_ARGS
++#define LV1_3_IN_3_OUT_ARGS LV1_3_IN_ARGS, LV1_3_OUT_ARGS
++#define LV1_4_IN_3_OUT_ARGS LV1_4_IN_ARGS, LV1_3_OUT_ARGS
++#define LV1_5_IN_3_OUT_ARGS LV1_5_IN_ARGS, LV1_3_OUT_ARGS
++#define LV1_6_IN_3_OUT_ARGS LV1_6_IN_ARGS, LV1_3_OUT_ARGS
++#define LV1_7_IN_3_OUT_ARGS LV1_7_IN_ARGS, LV1_3_OUT_ARGS
++
++#define LV1_0_IN_4_OUT_ARGS                LV1_4_OUT_ARGS
++#define LV1_1_IN_4_OUT_ARGS LV1_1_IN_ARGS, LV1_4_OUT_ARGS
++#define LV1_2_IN_4_OUT_ARGS LV1_2_IN_ARGS, LV1_4_OUT_ARGS
++#define LV1_3_IN_4_OUT_ARGS LV1_3_IN_ARGS, LV1_4_OUT_ARGS
++#define LV1_4_IN_4_OUT_ARGS LV1_4_IN_ARGS, LV1_4_OUT_ARGS
++#define LV1_5_IN_4_OUT_ARGS LV1_5_IN_ARGS, LV1_4_OUT_ARGS
++#define LV1_6_IN_4_OUT_ARGS LV1_6_IN_ARGS, LV1_4_OUT_ARGS
++#define LV1_7_IN_4_OUT_ARGS LV1_7_IN_ARGS, LV1_4_OUT_ARGS
++
++#define LV1_0_IN_5_OUT_ARGS                LV1_5_OUT_ARGS
++#define LV1_1_IN_5_OUT_ARGS LV1_1_IN_ARGS, LV1_5_OUT_ARGS
++#define LV1_2_IN_5_OUT_ARGS LV1_2_IN_ARGS, LV1_5_OUT_ARGS
++#define LV1_3_IN_5_OUT_ARGS LV1_3_IN_ARGS, LV1_5_OUT_ARGS
++#define LV1_4_IN_5_OUT_ARGS LV1_4_IN_ARGS, LV1_5_OUT_ARGS
++#define LV1_5_IN_5_OUT_ARGS LV1_5_IN_ARGS, LV1_5_OUT_ARGS
++#define LV1_6_IN_5_OUT_ARGS LV1_6_IN_ARGS, LV1_5_OUT_ARGS
++#define LV1_7_IN_5_OUT_ARGS LV1_7_IN_ARGS, LV1_5_OUT_ARGS
++
++#define LV1_0_IN_6_OUT_ARGS                LV1_6_OUT_ARGS
++#define LV1_1_IN_6_OUT_ARGS LV1_1_IN_ARGS, LV1_6_OUT_ARGS
++#define LV1_2_IN_6_OUT_ARGS LV1_2_IN_ARGS, LV1_6_OUT_ARGS
++#define LV1_3_IN_6_OUT_ARGS LV1_3_IN_ARGS, LV1_6_OUT_ARGS
++#define LV1_4_IN_6_OUT_ARGS LV1_4_IN_ARGS, LV1_6_OUT_ARGS
++#define LV1_5_IN_6_OUT_ARGS LV1_5_IN_ARGS, LV1_6_OUT_ARGS
++#define LV1_6_IN_6_OUT_ARGS LV1_6_IN_ARGS, LV1_6_OUT_ARGS
++#define LV1_7_IN_6_OUT_ARGS LV1_7_IN_ARGS, LV1_6_OUT_ARGS
++
++#define LV1_0_IN_7_OUT_ARGS                LV1_7_OUT_ARGS
++#define LV1_1_IN_7_OUT_ARGS LV1_1_IN_ARGS, LV1_7_OUT_ARGS
++#define LV1_2_IN_7_OUT_ARGS LV1_2_IN_ARGS, LV1_7_OUT_ARGS
++#define LV1_3_IN_7_OUT_ARGS LV1_3_IN_ARGS, LV1_7_OUT_ARGS
++#define LV1_4_IN_7_OUT_ARGS LV1_4_IN_ARGS, LV1_7_OUT_ARGS
++#define LV1_5_IN_7_OUT_ARGS LV1_5_IN_ARGS, LV1_7_OUT_ARGS
++#define LV1_6_IN_7_OUT_ARGS LV1_6_IN_ARGS, LV1_7_OUT_ARGS
++#define LV1_7_IN_7_OUT_ARGS LV1_7_IN_ARGS, LV1_7_OUT_ARGS
++
++/*
++ * This LV1_CALL() macro is for use by callers.  It expands into an
++ * inline call wrapper and an underscored HV call declaration.  The
++ * wrapper can be used to instrument the lv1 call interface.  The
++ * file lv1call.S defines its own LV1_CALL() macro to expand into
++ * the actual underscored call definition.
 + */
 +
-+struct ps3pf_device_id {
-+	unsigned int bus_id;
-+	unsigned int dev_id;
-+};
-+
-+
-+/* dma routines */
-+
-+enum ps3pf_dma_page_size {
-+	PS3PF_DMA_4K = 12U,
-+	PS3PF_DMA_64K = 16U,
-+	PS3PF_DMA_1M = 20U,
-+	PS3PF_DMA_16M = 24U,
-+};
-+
-+enum ps3pf_dma_region_type {
-+	PS3PF_DMA_OTHER = 0,
-+	PS3PF_DMA_INTERNAL = 2,
-+};
-+
-+/**
-+ * struct ps3pf_dma_region - A per device dma state variables structure
-+ * @did: The HV device id.
-+ * @page_size: The ioc pagesize.
-+ * @region_type: The HV region type.
-+ * @bus_addr: The 'translated' bus address of the region.
-+ * @len: The length in bytes of the region.
-+ * @chunk_list: Opaque variable used by the ioc page manager.
-+ */
-+
-+struct ps3pf_dma_region {
-+	struct ps3pf_device_id did;
-+	enum ps3pf_dma_page_size page_size;
-+	enum ps3pf_dma_region_type region_type;
-+	unsigned long bus_addr;
-+	unsigned long len;
-+	struct {
-+		spinlock_t lock;
-+		struct list_head head;
-+	} chunk_list;
-+};
-+
-+/**
-+ * struct ps3pf_dma_region_init - Helper to initialize structure variables
-+ *
-+ * Helper to properly initialize variables prior to calling
-+ * ps3pf_system_bus_device_register.
-+ */
-+
-+static inline void ps3pf_dma_region_init(struct ps3pf_dma_region *r,
-+	const struct ps3pf_device_id* did, enum ps3pf_dma_page_size page_size,
-+	enum ps3pf_dma_region_type region_type)
-+{
-+	r->did = *did;
-+	r->page_size = page_size;
-+	r->region_type = region_type;
-+}
-+int ps3pf_dma_region_create(struct ps3pf_dma_region *r);
-+int ps3pf_dma_region_free(struct ps3pf_dma_region *r);
-+int ps3pf_dma_map(struct ps3pf_dma_region *r, unsigned long virt_addr,
-+	unsigned long len, unsigned long *bus_addr);
-+int ps3pf_dma_unmap(struct ps3pf_dma_region *r, unsigned long bus_addr,
-+	unsigned long len);
-+
-+/* mmio routines */
-+
-+enum ps3pf_mmio_page_size {
-+	PS3PF_MMIO_4K = 12U,
-+	PS3PF_MMIO_64K = 16U
-+};
-+
-+/**
-+ * struct ps3pf_mmio_region - a per device mmio state variables structure
-+ *
-+ * Current systems can be supported with a single region per device.
-+ */
-+
-+struct ps3pf_mmio_region {
-+	struct ps3pf_device_id did;
-+	unsigned long bus_addr;
-+	unsigned long len;
-+	enum ps3pf_mmio_page_size page_size;
-+	unsigned long lpar_addr;
-+};
-+
-+/**
-+ * struct ps3pf_mmio_region_init - Helper to initialize structure variables
-+ *
-+ * Helper to properly initialize variables prior to calling
-+ * ps3pf_system_bus_device_register.
-+ */
-+
-+static inline void ps3pf_mmio_region_init(struct ps3pf_mmio_region *r,
-+	const struct ps3pf_device_id* did, unsigned long bus_addr,
-+	unsigned long len, enum ps3pf_mmio_page_size page_size)
-+{
-+	r->did = *did;
-+	r->bus_addr = bus_addr;
-+	r->len = len;
-+	r->page_size = page_size;
-+}
-+int ps3pf_mmio_region_create(struct ps3pf_mmio_region *r);
-+int ps3pf_free_mmio_region(struct ps3pf_mmio_region *r);
-+unsigned long ps3pf_mm_phys_to_lpar(unsigned long phys_addr);
-+
-+/* inrerrupt routines */
-+
-+int ps3pf_alloc_io_irq(unsigned int interrupt_id, unsigned int *virq);
-+int ps3pf_free_io_irq(unsigned int virq);
-+int ps3pf_alloc_event_irq(unsigned int *virq);
-+int ps3pf_free_event_irq(unsigned int virq);
-+int ps3pf_send_event_locally(unsigned int virq);
-+int ps3pf_connect_event_irq(const struct ps3pf_device_id *did,
-+	unsigned int interrupt_id, unsigned int *virq);
-+int ps3pf_disconnect_event_irq(const struct ps3pf_device_id *did,
-+	unsigned int interrupt_id, unsigned int virq);
-+int ps3pf_alloc_vuart_irq(void* virt_addr_bmp, unsigned int *virq);
-+int ps3pf_free_vuart_irq(unsigned int virq);
-+int ps3pf_alloc_spe_irq(unsigned long spe_id, unsigned int class,
-+	unsigned int *virq);
-+int ps3pf_free_spe_irq(unsigned int virq);
-+
-+/* lv1 result codes */
-+
-+enum lv1_result {
-+	LV1_SUCCESS                     = 0,
-+	/* not used                       -1 */
-+	LV1_RESOURCE_SHORTAGE           = -2,
-+	LV1_NO_PRIVILEGE                = -3,
-+	LV1_DENIED_BY_POLICY            = -4,
-+	LV1_ACCESS_VIOLATION            = -5,
-+	LV1_NO_ENTRY                    = -6,
-+	LV1_DUPLICATE_ENTRY             = -7,
-+	LV1_TYPE_MISMATCH               = -8,
-+	LV1_BUSY                        = -9,
-+	LV1_EMPTY                       = -10,
-+	LV1_WRONG_STATE                 = -11,
-+	/* not used                       -12 */
-+	LV1_NO_MATCH                    = -13,
-+	LV1_ALREADY_CONNECTED           = -14,
-+	LV1_UNSUPPORTED_PARAMETER_VALUE = -15,
-+	LV1_CONDITION_NOT_SATISFIED     = -16,
-+	LV1_ILLEGAL_PARAMETER_VALUE     = -17,
-+	LV1_BAD_OPTION                  = -18,
-+	LV1_IMPLEMENTATION_LIMITATION   = -19,
-+	LV1_NOT_IMPLEMENTED             = -20,
-+	LV1_INVALID_CLASS_ID            = -21,
-+	LV1_CONSTRAINT_NOT_SATISFIED    = -22,
-+	LV1_ALIGNMENT_ERROR             = -23,
-+	LV1_INTERNAL_ERROR              = -32768,
-+};
-+
-+static inline const char* ps3pf_result(int result)
-+{
-+#if defined(DEBUG)
-+	switch (result) {
-+	case LV1_SUCCESS:
-+		return "LV1_SUCCESS (0)";
-+	case -1:
-+		return "** unknown result ** (-1)";
-+	case LV1_RESOURCE_SHORTAGE:
-+		return "LV1_RESOURCE_SHORTAGE (-2)";
-+	case LV1_NO_PRIVILEGE:
-+		return "LV1_NO_PRIVILEGE (-3)";
-+	case LV1_DENIED_BY_POLICY:
-+		return "LV1_DENIED_BY_POLICY (-4)";
-+	case LV1_ACCESS_VIOLATION:
-+		return "LV1_ACCESS_VIOLATION (-5)";
-+	case LV1_NO_ENTRY:
-+		return "LV1_NO_ENTRY (-6)";
-+	case LV1_DUPLICATE_ENTRY:
-+		return "LV1_DUPLICATE_ENTRY (-7)";
-+	case LV1_TYPE_MISMATCH:
-+		return "LV1_TYPE_MISMATCH (-8)";
-+	case LV1_BUSY:
-+		return "LV1_BUSY (-9)";
-+	case LV1_EMPTY:
-+		return "LV1_EMPTY (-10)";
-+	case LV1_WRONG_STATE:
-+		return "LV1_WRONG_STATE (-11)";
-+	case -12:
-+		return "** unknown result ** (-12)";
-+	case LV1_NO_MATCH:
-+		return "LV1_NO_MATCH (-13)";
-+	case LV1_ALREADY_CONNECTED:
-+		return "LV1_ALREADY_CONNECTED (-14)";
-+	case LV1_UNSUPPORTED_PARAMETER_VALUE:
-+		return "LV1_UNSUPPORTED_PARAMETER_VALUE (-15)";
-+	case LV1_CONDITION_NOT_SATISFIED:
-+		return "LV1_CONDITION_NOT_SATISFIED (-16)";
-+	case LV1_ILLEGAL_PARAMETER_VALUE:
-+		return "LV1_ILLEGAL_PARAMETER_VALUE (-17)";
-+	case LV1_BAD_OPTION:
-+		return "LV1_BAD_OPTION (-18)";
-+	case LV1_IMPLEMENTATION_LIMITATION:
-+		return "LV1_IMPLEMENTATION_LIMITATION (-19)";
-+	case LV1_NOT_IMPLEMENTED:
-+		return "LV1_NOT_IMPLEMENTED (-20)";
-+	case LV1_INVALID_CLASS_ID:
-+		return "LV1_INVALID_CLASS_ID (-21)";
-+	case LV1_CONSTRAINT_NOT_SATISFIED:
-+		return "LV1_CONSTRAINT_NOT_SATISFIED (-22)";
-+	case LV1_ALIGNMENT_ERROR:
-+		return "LV1_ALIGNMENT_ERROR (-23)";
-+	case LV1_INTERNAL_ERROR:
-+		return "LV1_INTERNAL_ERROR (-32768)";
-+	default:
-+		BUG();
-+		return "** unknown result **";
-+	};
-+#else
-+	return "";
++#if !defined(LV1_CALL)
++#define LV1_CALL(name, in, out, num)                               \
++  extern s64 _lv1_##name(LV1_##in##_IN_##out##_OUT_ARG_DECL);      \
++  static inline int lv1_##name(LV1_##in##_IN_##out##_OUT_ARG_DECL) \
++    {return _lv1_##name(LV1_##in##_IN_##out##_OUT_ARGS);}
 +#endif
-+}
++
++#endif /* !defined(__ASSEMBLY__) */
++
++/* lv1 call table */
++
++LV1_CALL(allocate_memory,                               4, 2,   0 )
++LV1_CALL(write_htab_entry,                              4, 0,   1 )
++LV1_CALL(construct_virtual_address_space,               3, 2,   2 )
++LV1_CALL(invalidate_htab_entries,                       5, 0,   3 )
++LV1_CALL(get_virtual_address_space_id_of_ppe,           1, 1,   4 )
++LV1_CALL(query_logical_partition_address_region_info,   1, 5,   6 )
++LV1_CALL(select_virtual_address_space,                  1, 0,   7 )
++LV1_CALL(pause,                                         1, 0,   9 )
++LV1_CALL(destruct_virtual_address_space,                1, 0,  10 )
++LV1_CALL(configure_irq_state_bitmap,                    3, 0,  11 )
++LV1_CALL(connect_irq_plug_ext,                          5, 0,  12 )
++LV1_CALL(release_memory,                                1, 0,  13 )
++LV1_CALL(disconnect_irq_plug_ext,                       3, 0,  17 )
++LV1_CALL(construct_event_receive_port,                  0, 1,  18 )
++LV1_CALL(destruct_event_receive_port,                   1, 0,  19 )
++LV1_CALL(send_event_locally,                            1, 0,  24 )
++LV1_CALL(end_of_interrupt,                              1, 0,  27 )
++LV1_CALL(connect_irq_plug,                              2, 0,  28 )
++LV1_CALL(disconnect_irq_plug,                           1, 0,  29 )
++LV1_CALL(end_of_interrupt_ext,                          3, 0,  30 )
++LV1_CALL(did_update_interrupt_mask,                     2, 0,  31 )
++LV1_CALL(shutdown_logical_partition,                    1, 0,  44 )
++LV1_CALL(destruct_logical_spe,                          1, 0,  54 )
++LV1_CALL(construct_logical_spe,                         7, 6,  57 )
++LV1_CALL(set_spe_interrupt_mask,                        3, 0,  61 )
++LV1_CALL(set_spe_transition_notifier,                   3, 0,  64 )
++LV1_CALL(disable_logical_spe,                           2, 0,  65 )
++LV1_CALL(clear_spe_interrupt_status,                    4, 0,  66 )
++LV1_CALL(get_spe_interrupt_status,                      2, 1,  67 )
++LV1_CALL(get_logical_ppe_id,                            0, 1,  69 )
++LV1_CALL(set_interrupt_mask,                            5, 0,  73 )
++LV1_CALL(get_logical_partition_id,                      0, 1,  74 )
++LV1_CALL(configure_execution_time_variable,             1, 0,  77 )
++LV1_CALL(get_spe_irq_outlet,                            2, 1,  78 )
++LV1_CALL(set_spe_privilege_state_area_1_register,       3, 0,  79 )
++LV1_CALL(create_repository_node,                        6, 0,  90 )
++LV1_CALL(get_repository_node_value,                     5, 2,  91 )
++LV1_CALL(modify_repository_node_value,                  6, 0,  92 )
++LV1_CALL(remove_repository_node,                        4, 0,  93 )
++LV1_CALL(read_htab_entries,                             2, 5,  95 )
++LV1_CALL(set_dabr,                                      2, 0,  96 )
++LV1_CALL(get_total_execution_time,                      2, 1, 103 )
++LV1_CALL(construct_io_irq_outlet,                       1, 1, 120 )
++LV1_CALL(destruct_io_irq_outlet,                        1, 0, 121 )
++LV1_CALL(map_htab,                                      1, 1, 122 )
++LV1_CALL(unmap_htab,                                    1, 0, 123 )
++LV1_CALL(get_version_info,                              0, 1, 127 )
++LV1_CALL(insert_htab_entry,                             6, 3, 158 )
++LV1_CALL(read_virtual_uart,                             3, 1, 162 )
++LV1_CALL(write_virtual_uart,                            3, 1, 163 )
++LV1_CALL(set_virtual_uart_param,                        3, 0, 164 )
++LV1_CALL(get_virtual_uart_param,                        2, 1, 165 )
++LV1_CALL(configure_virtual_uart_irq,                    1, 1, 166 )
++LV1_CALL(open_device,                                   3, 0, 170 )
++LV1_CALL(close_device,                                  2, 0, 171 )
++LV1_CALL(map_device_mmio_region,                        5, 1, 172 )
++LV1_CALL(unmap_device_mmio_region,                      3, 0, 173 )
++LV1_CALL(allocate_device_dma_region,                    5, 1, 174 )
++LV1_CALL(free_device_dma_region,                        3, 0, 175 )
++LV1_CALL(map_device_dma_region,                         6, 0, 176 )
++LV1_CALL(unmap_device_dma_region,                       4, 0, 177 )
++LV1_CALL(net_add_multicast_address,                     4, 0, 185 )
++LV1_CALL(net_remove_multicast_address,                  4, 0, 186 )
++LV1_CALL(net_start_tx_dma,                              4, 0, 187 )
++LV1_CALL(net_stop_tx_dma,                               3, 0, 188 )
++LV1_CALL(net_start_rx_dma,                              4, 0, 189 )
++LV1_CALL(net_stop_rx_dma,                               3, 0, 190 )
++LV1_CALL(net_set_interrupt_status_indicator,            4, 0, 191 )
++LV1_CALL(net_set_interrupt_mask,                        4, 0, 193 )
++LV1_CALL(net_control,                                   6, 2, 194 )
++LV1_CALL(connect_interrupt_event_receive_port,          4, 0, 197 )
++LV1_CALL(disconnect_interrupt_event_receive_port,       4, 0, 198 )
++LV1_CALL(get_spe_all_interrupt_statuses,                1, 1, 199 )
++LV1_CALL(deconfigure_virtual_uart_irq,                  0, 0, 202 )
++LV1_CALL(enable_logical_spe,                            2, 0, 207 )
++LV1_CALL(gpu_open,                                      1, 0, 210 )
++LV1_CALL(gpu_close,                                     0, 0, 211 )
++LV1_CALL(gpu_device_map,                                1, 2, 212 )
++LV1_CALL(gpu_device_unmap,                              1, 0, 213 )
++LV1_CALL(gpu_memory_allocate,                           5, 2, 214 )
++LV1_CALL(gpu_memory_free,                               1, 0, 216 )
++LV1_CALL(gpu_context_allocate,                          2, 5, 217 )
++LV1_CALL(gpu_context_free,                              1, 0, 218 )
++LV1_CALL(gpu_context_iomap,                             5, 0, 221 )
++LV1_CALL(gpu_context_attribute,                         6, 0, 225 )
++LV1_CALL(gpu_context_intr,                              1, 1, 227 )
++LV1_CALL(gpu_attribute,                                 5, 0, 228 )
++LV1_CALL(get_rtc,                                       0, 2, 232 )
++LV1_CALL(set_ppe_periodic_tracer_frequency,             1, 0, 240 )
++LV1_CALL(start_ppe_periodic_tracer,                     5, 0, 241 )
++LV1_CALL(stop_ppe_periodic_tracer,                      1, 1, 242 )
++LV1_CALL(storage_read,                                  6, 1, 245 )
++LV1_CALL(storage_write,                                 6, 1, 246 )
++LV1_CALL(storage_send_device_command,                   6, 1, 248 )
++LV1_CALL(storage_get_async_status,                      1, 2, 249 )
++LV1_CALL(storage_check_async_status,                    2, 1, 254 )
++LV1_CALL(panic,                                         1, 0, 255 )
++LV1_CALL(construct_lpm,                                 6, 3, 140 )
++LV1_CALL(destruct_lpm,                                  1, 0, 141 )
++LV1_CALL(start_lpm,                                     1, 0, 142 )
++LV1_CALL(stop_lpm,                                      1, 1, 143 )
++LV1_CALL(copy_lpm_trace_buffer,                         3, 1, 144 )
++LV1_CALL(add_lpm_event_bookmark,                        5, 0, 145 )
++LV1_CALL(delete_lpm_event_bookmark,                     3, 0, 146 )
++LV1_CALL(set_lpm_interrupt_mask,                        3, 1, 147 )
++LV1_CALL(get_lpm_interrupt_status,                      1, 1, 148 )
++LV1_CALL(set_lpm_general_control,                       5, 2, 149 )
++LV1_CALL(set_lpm_interval,                              3, 1, 150 )
++LV1_CALL(set_lpm_trigger_control,                       3, 1, 151 )
++LV1_CALL(set_lpm_counter_control,                       4, 1, 152 )
++LV1_CALL(set_lpm_group_control,                         3, 1, 153 )
++LV1_CALL(set_lpm_debug_bus_control,                     3, 1, 154 )
++LV1_CALL(set_lpm_counter,                               5, 2, 155 )
++LV1_CALL(set_lpm_signal,                                7, 0, 156 )
++LV1_CALL(set_lpm_spr_trigger,                           2, 0, 157 )
 +
 +#endif
