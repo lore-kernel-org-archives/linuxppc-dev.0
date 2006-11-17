@@ -1,19 +1,19 @@
 Return-Path: <geoffrey.levand@am.sony.com>
 Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
-	by ozlabs.org (Postfix) with ESMTP id 64FCE67BD2
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:41:36 +1100 (EST)
-Received: from mail5.sony.co.jp (localhost [127.0.0.1])
-	by mail5.sony.co.jp (R8/Sony) with ESMTP id kAH3fVsa024256
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:41:31 +0900 (JST)
+	by ozlabs.org (Postfix) with ESMTP id 80F7267DA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:41:51 +1100 (EST)
+Received: from mail6.sony.co.jp (localhost [127.0.0.1])
+	by mail6.sony.co.jp (R8/Sony) with ESMTP id kAH3fjKL019522
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:41:45 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail5.sony.co.jp (R8/Sony) with SMTP id kAH3fUdI024240
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:41:30 +0900 (JST)
-Message-ID: <455D2F65.709@am.sony.com>
-Date: Thu, 16 Nov 2006 19:41:25 -0800
+	by mail6.sony.co.jp (R8/Sony) with SMTP id kAH3fjcs019505
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:41:45 +0900 (JST)
+Message-ID: <455D2F73.9090900@am.sony.com>
+Date: Thu, 16 Nov 2006 19:41:39 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/16] cell: replace spu.nid with spu.node
+Subject: [PATCH 2/16] powerpc: add virq_to_hw accessor routine
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,34 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject: cell: replace spu.nid with spu.node
+Subject: powerpc: add virq_to_hw accessor routine
 
 From: Geoff Levand <geoffrey.levand@am.sony.com>
-Replace the use of the platform specific variable spu.nid with the
-platform independednt variable spu.node.
+This adds an accessor routine virq_to_hw() to the
+virq routines which hides the implementation details
+of the virq to hwirq map.
+
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
-Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
+ include/asm-powerpc/irq.h |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: linux-2.6/include/asm-powerpc/irq.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
-@@ -810,14 +810,14 @@ static int spu_create_sysdev(struct spu 
- 		return ret;
- 	}
+--- linux-2.6.orig/include/asm-powerpc/irq.h
++++ linux-2.6/include/asm-powerpc/irq.h
+@@ -135,6 +135,10 @@ struct irq_map_entry {
  
--	sysfs_add_device_to_node(&spu->sysdev, spu->nid);
-+	sysfs_add_device_to_node(&spu->sysdev, spu->node);
+ extern struct irq_map_entry irq_map[NR_IRQS];
  
- 	return 0;
- }
++static inline irq_hw_number_t virq_to_hw(unsigned int virq)
++{
++	return irq_map[virq].hwirq;
++}
  
- static void spu_destroy_sysdev(struct spu *spu)
- {
--	sysfs_remove_device_from_node(&spu->sysdev, spu->nid);
-+	sysfs_remove_device_from_node(&spu->sysdev, spu->node);
- 	sysdev_unregister(&spu->sysdev);
- }
- 
+ /**
+  * irq_alloc_host - Allocate a new irq_host data structure
