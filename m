@@ -1,18 +1,16 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Fri, 17 Nov 2006 06:21:12 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [PATCH] setup_kcore(): Fix incorrect function name in panic()
-	call.
-In-Reply-To: <Pine.LNX.4.62.0611170506510.16998@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0611170620240.16998@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0611170446250.16998@pademelon.sonytel.be>
-	<200611171458.11245.jk@ozlabs.org>
-	<Pine.LNX.4.62.0611170506510.16998@pademelon.sonytel.be>
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 17 Nov 2006 16:21:58 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [PATCH 5/16] hypervisor functions for Celleb
+Message-ID: <20061117052158.GB670@krispykreme>
+References: <200611150937.kAF9b305001499@toshiba.co.jp>
+	<20061115183746.GC21633@lst.de> <200611152304.45243.arnd@arndb.de>
+	<45AC8C44-8193-4311-B4BF-BF7FF56C8DF4@watson.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45AC8C44-8193-4311-B4BF-BF7FF56C8DF4@watson.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 17 Nov 2006, Geert Uytterhoeven wrote:
-> On Fri, 17 Nov 2006, Jeremy Kerr wrote:
-> > 
-> > > -			panic("mem_init: kmalloc failed\n");
-> > > +			panic("setup_kcore: kmalloc failed\n");
-> > 
-> > How about:
-> > 	
-> > 	panic("%s: kmalloc_failed\n", __FUNCTION__);
-> > 
-> > To prevent this happening again?
-> 
-> You're right, thanks for the suggestion!
 
-Updated patch below:
----
+> Just make another one (or a set of them like the phyp calls) and  
+> define then in assembly.
+> Certainly a bl to a function will be negligible to the hcall its self.
 
-Subject: [PATCH] setup_kcore(): Fix incorrect function name in panic() call.
+Agreed. And I thought the phyp hcall code was ugly :)
 
-setup_kcore(): Fix incorrect function name in panic() call.
+Any ideas why its so different? Just NIH?
 
-Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
---- linux-ps3-geert.orig/arch/powerpc/mm/init_64.c	2006-11-15 10:05:17.000000000 +0900
-+++ linux-ps3-geert/arch/powerpc/mm/init_64.c	2006-11-17 12:36:49.000000000 +0900
-@@ -130,7 +130,7 @@ static int __init setup_kcore(void)
- 		/* GFP_ATOMIC to avoid might_sleep warnings during boot */
- 		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
- 		if (!kcore_mem)
--			panic("mem_init: kmalloc failed\n");
-+			panic("%s: kmalloc failed\n", __FUNCTION__);
- 
- 		kclist_add(kcore_mem, __va(base), size);
- 	}
-
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Anton
