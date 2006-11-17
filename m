@@ -1,20 +1,21 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 7460367BEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 15:11:48 +1100 (EST)
-Date: Fri, 17 Nov 2006 05:11:46 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [PATCH] setup_kcore(): Fix incorrect function name in panic()
-	call.
-In-Reply-To: <200611171458.11245.jk@ozlabs.org>
-Message-ID: <Pine.LNX.4.62.0611170506510.16998@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0611170446250.16998@pademelon.sonytel.be>
-	<200611171458.11245.jk@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7F70A67C02
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 15:31:03 +1100 (EST)
+Date: Fri, 17 Nov 2006 15:31:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
+Message-Id: <20061117153105.edca0777.sfr@canb.auug.org.au>
+In-Reply-To: <20061117033638.0E24B67BCE@ozlabs.org>
+References: <20061116154051.GB2008@localdomain>
+	<20061117033638.0E24B67BCE@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__17_Nov_2006_15_31_05_+1100_b3YwrG8jDf7EG/13"
+Cc: ego@in.ibm.com, linuxppc-dev@ozlabs.org, srinivasa@in.ibm.com,
+	Anton Blanchard <anton@samba.org>, ntl@pobox.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 17 Nov 2006, Jeremy Kerr wrote:
-> 
-> > -			panic("mem_init: kmalloc failed\n");
-> > +			panic("setup_kcore: kmalloc failed\n");
-> 
-> How about:
-> 	
-> 	panic("%s: kmalloc_failed\n", __FUNCTION__);
-> 
-> To prevent this happening again?
+--Signature=_Fri__17_Nov_2006_15_31_05_+1100_b3YwrG8jDf7EG/13
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-You're right, thanks for the suggestion!
+One small nit ...
 
-Gr{oetje,eeting}s,
+On Fri, 17 Nov 2006 14:36:35 +1100 Michael Ellerman <michael@ellerman.id.au> wrote:
+>
+> +static int __init pseries_cpu_hotplug_init(void)
+> +{
+> +	rtas_stop_self_args.token = rtas_token("stop-self");
+> +	qcss_tok = rtas_token("query-cpu-stopped-state");
+> +
+> +	if (rtas_stop_self_args.token == RTAS_UNKNOWN_SERVICE ||
+> +			qcss_tok == RTAS_UNKNOWN_SERVICE)
+> +		return 1;
 
-						Geert
+initcall fucntions should return 0 or -<error>;  -ENODEV is ignored,
+other nonzero values cause a log message if initcall debugging is enabled.
 
-P.S. I was quite convinced panic() didn't do printf() style formatting, but
-     apparently that's not (no longer?) true.
 --
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__17_Nov_2006_15_31_05_+1100_b3YwrG8jDf7EG/13
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFXTsJFdBgD/zoJvwRAsO8AJ4z26gsFOm646wrlhBcG6p1yd2hMACcDV3I
+wvcZlDT9+vz54lLmYsBvlJg=
+=UE7k
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__17_Nov_2006_15_31_05_+1100_b3YwrG8jDf7EG/13--
