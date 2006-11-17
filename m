@@ -1,23 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 39CDC67BDF
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 16:02:50 +1100 (EST)
-Date: Fri, 17 Nov 2006 16:02:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
-Message-Id: <20061117160259.9c27890d.sfr@canb.auug.org.au>
-In-Reply-To: <1163738640.16815.45.camel@localhost.localdomain>
-References: <20061116154051.GB2008@localdomain>
-	<20061117033638.0E24B67BCE@ozlabs.org>
-	<20061117153105.edca0777.sfr@canb.auug.org.au>
-	<1163738640.16815.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__17_Nov_2006_16_02_59_+1100_I+/=+K35jdFzMpud"
-Cc: ego@in.ibm.com, linuxppc-dev@ozlabs.org, srinivasa@in.ibm.com,
-	Anton Blanchard <anton@samba.org>, ntl@pobox.com, paulus@samba.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Fri, 17 Nov 2006 06:21:12 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH] setup_kcore(): Fix incorrect function name in panic()
+	call.
+In-Reply-To: <Pine.LNX.4.62.0611170506510.16998@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0611170620240.16998@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0611170446250.16998@pademelon.sonytel.be>
+	<200611171458.11245.jk@ozlabs.org>
+	<Pine.LNX.4.62.0611170506510.16998@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__17_Nov_2006_16_02_59_+1100_I+/=+K35jdFzMpud
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Fri, 17 Nov 2006, Geert Uytterhoeven wrote:
+> On Fri, 17 Nov 2006, Jeremy Kerr wrote:
+> > 
+> > > -			panic("mem_init: kmalloc failed\n");
+> > > +			panic("setup_kcore: kmalloc failed\n");
+> > 
+> > How about:
+> > 	
+> > 	panic("%s: kmalloc_failed\n", __FUNCTION__);
+> > 
+> > To prevent this happening again?
+> 
+> You're right, thanks for the suggestion!
 
-On Fri, 17 Nov 2006 15:44:00 +1100 Michael Ellerman <michael@ellerman.id.au> wrote:
->
-> > initcall fucntions should return 0 or -<error>;  -ENODEV is ignored,
-> > other nonzero values cause a log message if initcall debugging is enabled.
->
-> OK. I wanted to return an error, so there's something in the log to show
-> that cpu hotplug was disabled - but I didn't check what to return. I'll
-> fix it up on Monday to return -ENOENT.
+Updated patch below:
+---
 
-Which also won't do anything unless initcall debugging is enabled and,
-even then, will just give an obscure message in the boot logs.  If you
-want to log something, then you should explicitly call printk().
+Subject: [PATCH] setup_kcore(): Fix incorrect function name in panic() call.
+
+setup_kcore(): Fix incorrect function name in panic() call.
+
+Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+--- linux-ps3-geert.orig/arch/powerpc/mm/init_64.c	2006-11-15 10:05:17.000000000 +0900
++++ linux-ps3-geert/arch/powerpc/mm/init_64.c	2006-11-17 12:36:49.000000000 +0900
+@@ -130,7 +130,7 @@ static int __init setup_kcore(void)
+ 		/* GFP_ATOMIC to avoid might_sleep warnings during boot */
+ 		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
+ 		if (!kcore_mem)
+-			panic("mem_init: kmalloc failed\n");
++			panic("%s: kmalloc failed\n", __FUNCTION__);
+ 
+ 		kclist_add(kcore_mem, __va(base), size);
+ 	}
+
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__17_Nov_2006_16_02_59_+1100_I+/=+K35jdFzMpud
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFXUKDFdBgD/zoJvwRArW5AKCgrb6lmfG4DsaK8vl/mmK/o3BKTwCfc3hi
-ecW93DzjdrcRXKfpybr/qnQ=
-=C08d
------END PGP SIGNATURE-----
-
---Signature=_Fri__17_Nov_2006_16_02_59_+1100_I+/=+K35jdFzMpud--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
