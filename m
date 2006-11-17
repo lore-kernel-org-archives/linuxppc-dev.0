@@ -1,19 +1,19 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id 567D067F39
+Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
+	by ozlabs.org (Postfix) with ESMTP id 5408567DCE
 	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:44:43 +1100 (EST)
-Received: from mail3.sony.co.jp (localhost [127.0.0.1])
-	by mail3.sony.co.jp (R8/Sony) with ESMTP id kAH3igbC005176
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:42 +0900 (JST)
+Received: from mail5.sony.co.jp (localhost [127.0.0.1])
+	by mail5.sony.co.jp (R8/Sony) with ESMTP id kAH3ifsa002674
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:41 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail3.sony.co.jp (R8/Sony) with SMTP id kAH3igl5005160
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:42 +0900 (JST)
-Message-ID: <455D3022.4040106@am.sony.com>
-Date: Thu, 16 Nov 2006 19:44:34 -0800
+	by mail5.sony.co.jp (R8/Sony) with SMTP id kAH3iedI002635
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:40 +0900 (JST)
+Message-ID: <455D3019.5000602@am.sony.com>
+Date: Thu, 16 Nov 2006 19:44:25 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 15/16] cell: add ps3 platform system bus support
+Subject: [PATCH 14/16] cell: add ps3 platform spu support
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,41 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds a PS3 Platform system bus driver.  This system bus is a virtual
-bus used to present the ps3pf system devices in the LDM.
+Adds spu support for the PS3 Platform.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- drivers/Makefile            |    1 
- drivers/ps3pf/Makefile      |    1 
- drivers/ps3pf/system-bus.c  |  358 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/ps3pf.h |   74 +++++++++
- 4 files changed, 434 insertions(+)
 
-Index: cell--common--6/drivers/Makefile
+This patch requires my previous patch which split the existing spu support into
+platform specific and platform independent parts.
+
+ arch/powerpc/platforms/ps3pf/Makefile   |    2 
+ arch/powerpc/platforms/ps3pf/platform.h |    8 
+ arch/powerpc/platforms/ps3pf/setup.c    |   26 -
+ arch/powerpc/platforms/ps3pf/spu.c      |  613 ++++++++++++++++++++++++++++++++
+ 4 files changed, 638 insertions(+), 11 deletions(-)
+
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
 ===================================================================
---- cell--common--6.orig/drivers/Makefile
-+++ cell--common--6/drivers/Makefile
-@@ -77,3 +77,4 @@
- obj-$(CONFIG_SUPERH)		+= sh/
- obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
- obj-$(CONFIG_DMA_ENGINE)	+= dma/
-+obj-$(CONFIG_PS3PF)		+= ps3pf/
-Index: cell--common--6/drivers/ps3pf/Makefile
+--- cell--common--6.orig/arch/powerpc/platforms/ps3pf/Makefile
++++ cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
+@@ -1,2 +1,4 @@
+ obj-y += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
+ obj-y += interrupt.o exports.o os-area.o
++
++obj-$(CONFIG_SPU_BASE) += spu.o
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
+===================================================================
+--- cell--common--6.orig/arch/powerpc/platforms/ps3pf/platform.h
++++ cell--common--6/arch/powerpc/platforms/ps3pf/platform.h
+@@ -56,4 +56,12 @@
+ int __init ps3pf_os_area_init(void);
+ u64 ps3pf_os_area_rtc_diff(void);
+ 
++/* spu */
++
++#if defined(CONFIG_SPU_BASE)
++void ps3pf_spu_set_platform (void);
++#else
++static inline void ps3pf_spu_set_platform (void) {}
++#endif
++
+ #endif
+Index: cell--common--6/arch/powerpc/platforms/ps3pf/spu.c
 ===================================================================
 --- /dev/null
-+++ cell--common--6/drivers/ps3pf/Makefile
-@@ -0,0 +1 @@
-+obj-y += system-bus.o
-Index: cell--common--6/drivers/ps3pf/system-bus.c
-===================================================================
---- /dev/null
-+++ cell--common--6/drivers/ps3pf/system-bus.c
-@@ -0,0 +1,358 @@
++++ cell--common--6/arch/powerpc/platforms/ps3pf/spu.c
+@@ -0,0 +1,613 @@
 +/*
-+ *  PS3 Platform system bus driver.
++ *  PS3 Platform spu routines.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -80,422 +94,594 @@ Index: cell--common--6/drivers/ps3pf/system-bus.c
 +
 +#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/err.h>
++#include <linux/mmzone.h>
++#include <linux/io.h>
++#include <linux/mm.h>
 +
-+#include <asm/udbg.h>
++#include <asm/spu.h>
++#include <asm/spu_priv1.h>
 +#include <asm/ps3pf.h>
 +#include <asm/lv1call.h>
 +
-+#define dump_mmio_region(_a) _dump_mmio_region(_a, __func__, __LINE__)
-+static void _dump_mmio_region(const struct ps3pf_mmio_region* r,
++/* spu_management_ops */
++
++/**
++ * enum spe_type - Type of spe to create.
++ * @spe_type_logical: Standard logical spe.
++ *
++ * For use with lv1_construct_logical_spe().  The current HV does not support
++ * any types other than those listed.
++ */
++
++enum spe_type {
++	SPE_TYPE_LOGICAL = 0,
++};
++
++/**
++ * struct spe_shadow - logical spe shadow register area.
++ *
++ * Read-only shadow of spe registers.
++ */
++
++struct spe_shadow {
++	u8 padding_0000[0x0140];
++	u64 int_status_class0_RW;       /* 0x0140 */
++	u64 int_status_class1_RW;       /* 0x0148 */
++	u64 int_status_class2_RW;       /* 0x0150 */
++	u8 padding_0158[0x0610-0x0158];
++	u64 mfc_dsisr_RW;               /* 0x0610 */
++	u8 padding_0618[0x0620-0x0618];
++	u64 mfc_dar_RW;                 /* 0x0620 */
++	u8 padding_0628[0x0800-0x0628];
++	u64 mfc_dsipr_R;                /* 0x0800 */
++	u8 padding_0808[0x0810-0x0808];
++	u64 mfc_lscrr_R;                /* 0x0810 */
++	u8 padding_0818[0x0c00-0x0818];
++	u64 mfc_cer_R;                  /* 0x0c00 */
++	u8 padding_0c08[0x0f00-0x0c08];
++	u64 spe_execution_status;       /* 0x0f00 */
++	u8 padding_0f08[0x1000-0x0f08];
++} __attribute__ ((packed));
++
++
++/**
++ * enum spe_ex_state - Logical spe execution state.
++ * @spe_ex_state_unexecutable: Uninitialized.
++ * @spe_ex_state_executable: Enabled, not ready.
++ * @spe_ex_state_executed: Ready for use.
++ *
++ * The execution state (status) of the logical spe as reported in
++ * struct spe_shadow:spe_execution_status.
++ */
++
++enum spe_ex_state {
++	SPE_EX_STATE_UNEXECUTABLE = 0,
++	SPE_EX_STATE_EXECUTABLE = 2,
++	SPE_EX_STATE_EXECUTED = 3,
++};
++
++/**
++ * struct priv1_cache - Cached values of priv1 registers.
++ * @masks[]: Array of cached spe interrupt masks, indexed by class.
++ * @sr1: Cached mfc_sr1 register.
++ * @tclass_id: Cached mfc_tclass_id register.
++ */
++
++struct priv1_cache {
++	u64 masks[3];
++	u64 sr1;
++	u64 tclass_id;
++};
++
++/**
++ * struct spu_pdata - Platform state variables.
++ * @spe_id: HV spe id returned by lv1_construct_logical_spe().
++ * @resource_id: HV spe resource id returned by
++ * 	ps3pf_repository_read_spe_resource_id().
++ * @priv2_addr: lpar address of spe priv2 area returned by
++ * 	lv1_construct_logical_spe().
++ * @shadow_addr: lpar address of spe register shadow area returned by
++ * 	lv1_construct_logical_spe().
++ * @shadow: Virtual (ioremap) address of spe register shadow area.
++ * @cache: Cached values of priv1 registers.
++ */
++
++struct spu_pdata {
++	u64 spe_id;
++	u64 resource_id;
++	u64 priv2_addr;
++	u64 shadow_addr;
++	struct spe_shadow __iomem *shadow;
++	struct priv1_cache cache;
++};
++
++static struct spu_pdata *spu_pdata(struct spu *spu)
++{
++	return spu->pdata;
++}
++
++#define dump_areas(_a, _b, _c, _d, _e) \
++	_dump_areas(_a, _b, _c, _d, _e, __func__, __LINE__)
++static void _dump_areas(unsigned int spe_id, unsigned long priv2,
++	unsigned long problem, unsigned long ls, unsigned long shadow,
 +	const char* func, int line)
 +{
-+	pr_debug("%s:%d: dev       %u:%u\n", func, line, r->did.bus_id,
-+		r->did.dev_id);
-+	pr_debug("%s:%d: bus_addr  %lxh\n", func, line, r->bus_addr);
-+	pr_debug("%s:%d: len       %lxh\n", func, line, r->len);
-+	pr_debug("%s:%d: lpar_addr %lxh\n", func, line, r->lpar_addr);
++	pr_debug("%s:%d: spe_id:  %xh (%u)\n", func, line, spe_id, spe_id);
++	pr_debug("%s:%d: priv2:   %lxh\n", func, line, priv2);
++	pr_debug("%s:%d: problem: %lxh\n", func, line, problem);
++	pr_debug("%s:%d: ls:      %lxh\n", func, line, ls);
++	pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
 +}
 +
-+int ps3pf_mmio_region_create(struct ps3pf_mmio_region *r)
++static unsigned long get_vas_id(void)
++{
++	unsigned long id;
++
++	lv1_get_logical_ppe_id(&id);
++	lv1_get_virtual_address_space_id_of_ppe(id, &id);
++
++	return id;
++}
++
++static int __init construct_spu(struct spu *spu)
 +{
 +	int result;
++	unsigned long unused;
 +
-+	result = lv1_map_device_mmio_region(r->did.bus_id, r->did.dev_id,
-+		r->bus_addr, r->len, r->page_size, &r->lpar_addr);
++	result = lv1_construct_logical_spe(PAGE_SHIFT, PAGE_SHIFT, PAGE_SHIFT,
++		PAGE_SHIFT, PAGE_SHIFT, get_vas_id(), SPE_TYPE_LOGICAL,
++		&spu_pdata(spu)->priv2_addr, &spu->problem_phys,
++		&spu->local_store_phys, &unused,
++		&spu_pdata(spu)->shadow_addr,
++		&spu_pdata(spu)->spe_id);
 +
 +	if (result) {
-+		pr_debug("%s:%d: lv1_map_device_mmio_region failed: %s\n",
++		pr_debug("%s:%d: lv1_construct_logical_spe failed: %s\n",
 +			__func__, __LINE__, ps3pf_result(result));
-+		r->lpar_addr = r->len = r->bus_addr = 0;
++		return result;
 +	}
 +
-+	dump_mmio_region(r);
 +	return result;
 +}
 +
-+int ps3pf_free_mmio_region(struct ps3pf_mmio_region *r)
++static int __init add_spu_pages(unsigned long start_addr, unsigned long size)
 +{
 +	int result;
++	unsigned long start_pfn;
++	unsigned long nr_pages;
++	struct pglist_data *pgdata;
++	struct zone *zone;
 +
-+	result = lv1_unmap_device_mmio_region(r->did.bus_id, r->did.dev_id,
-+		r->bus_addr);
++	BUG_ON(!mem_init_done);
++
++	start_pfn = start_addr >> PAGE_SHIFT;
++	nr_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	pgdata = NODE_DATA(0);
++	zone = pgdata->node_zones;
++
++	result = __add_pages(zone, start_pfn, nr_pages);
 +
 +	if (result)
-+		pr_debug("%s:%d: lv1_unmap_device_mmio_region failed: %s\n",
-+			__func__, __LINE__, ps3pf_result(result));
-+
-+	r->lpar_addr = r->len = r->bus_addr = 0;
-+	return result;
-+}
-+
-+static int ps3pf_system_bus_match(struct device *_dev,
-+	struct device_driver *_drv)
-+{
-+	int result;
-+	struct ps3pf_system_bus_driver *drv = to_ps3pf_system_bus_driver(_drv);
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+
-+	result = dev->match_id == drv->match_id;
-+
-+	pr_info("%s:%d: dev=%u(%s), drv=%u(%s): %s\n", __func__, __LINE__,
-+		dev->match_id, dev->core.bus_id, drv->match_id, drv->core.name,
-+		(result ? "match" : "miss"));
-+	return result;
-+}
-+
-+static int ps3pf_system_bus_probe(struct device *_dev)
-+{
-+	int result;
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+	struct ps3pf_system_bus_driver *drv =
-+		to_ps3pf_system_bus_driver(_dev->driver);
-+
-+	result = lv1_open_device(dev->did.bus_id, dev->did.dev_id, 0);
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_open_device failed (%d)\n",
++		pr_debug("%s:%d: __add_pages failed: (%d)\n",
 +			__func__, __LINE__, result);
-+		result = -EACCES;
-+		goto clean_none;
++
++	return result;
++}
++
++static void spu_unmap(struct spu *spu)
++{
++	iounmap(spu->priv2);
++	iounmap(spu->problem);
++	iounmap((__force u8 __iomem *)spu->local_store);
++	iounmap(spu_pdata(spu)->shadow);
++}
++
++static int __init setup_areas(struct spu *spu)
++{
++	struct table {char* name; unsigned long addr; unsigned long size;};
++	int result;
++
++	/* setup pages */
++
++	result = add_spu_pages(spu->local_store_phys, LS_SIZE);
++	if (result)
++		goto fail_add;
++
++	result = add_spu_pages(spu->problem_phys, sizeof(struct spu_problem));
++	if (result)
++		goto fail_add;
++
++	/* ioremap */
++
++	spu_pdata(spu)->shadow = __ioremap(
++		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
++		PAGE_READONLY | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	if (!spu_pdata(spu)->shadow) {
++		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
++		goto fail_ioremap;
 +	}
 +
-+	if (dev->d_region->did.bus_id) {
-+		result = ps3pf_dma_region_create(dev->d_region);
++	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
++	if (!spu->local_store) {
++		pr_debug("%s:%d: ioremap local_store failed\n",
++			__func__, __LINE__);
++		goto fail_ioremap;
++	}
 +
-+		if (result) {
-+			pr_debug("%s:%d: ps3pf_dma_region_create failed (%d)\n",
-+				__func__, __LINE__, result);
-+			BUG_ON("check region type");
-+			result = -EINVAL;
-+			goto clean_device;
++	spu->problem = ioremap(spu->problem_phys,
++		sizeof(struct spu_problem));
++	if (!spu->problem) {
++		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
++		sizeof(struct spu_priv2));
++	if (!spu->priv2) {
++		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	dump_areas(spu_pdata(spu)->spe_id, spu_pdata(spu)->priv2_addr,
++		spu->problem_phys, spu->local_store_phys,
++		spu_pdata(spu)->shadow_addr);
++	dump_areas(spu_pdata(spu)->spe_id, (unsigned long)spu->priv2,
++		(unsigned long)spu->problem, (unsigned long)spu->local_store,
++		(unsigned long)spu_pdata(spu)->shadow);
++
++	return 0;
++
++fail_ioremap:
++	spu_unmap(spu);
++fail_add:
++	return result;
++}
++
++static int __init setup_interrupts(struct spu *spu)
++{
++	int result;
++
++	result = ps3pf_alloc_spe_irq(spu_pdata(spu)->spe_id, 0,
++		&spu->irqs[0]);
++
++	if (result)
++		goto fail_alloc_0;
++
++	result = ps3pf_alloc_spe_irq(spu_pdata(spu)->spe_id, 1,
++		&spu->irqs[1]);
++
++	if (result)
++		goto fail_alloc_1;
++
++	result = ps3pf_alloc_spe_irq(spu_pdata(spu)->spe_id, 2,
++		&spu->irqs[2]);
++
++	if (result)
++		goto fail_alloc_2;
++
++	return result;
++
++fail_alloc_2:
++	ps3pf_free_spe_irq(spu->irqs[1]);
++fail_alloc_1:
++	ps3pf_free_spe_irq(spu->irqs[0]);
++fail_alloc_0:
++	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
++	return result;
++}
++
++static int __init enable_spu(struct spu *spu)
++{
++	int result;
++
++	result = lv1_enable_logical_spe(spu_pdata(spu)->spe_id,
++		spu_pdata(spu)->resource_id);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_enable_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		goto fail_enable;
++	}
++
++	result = setup_areas(spu);
++
++	if (result)
++		goto fail_areas;
++
++	result = setup_interrupts(spu);
++
++	if (result)
++		goto fail_interrupts;
++
++	return 0;
++
++fail_interrupts:
++	spu_unmap(spu);
++fail_areas:
++	lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
++fail_enable:
++	return result;
++}
++
++static int ps3pf_destroy_spu(struct spu *spu)
++{
++	int result;
++
++	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++
++	result = lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
++	BUG_ON(result);
++
++	ps3pf_free_spe_irq(spu->irqs[2]);
++	ps3pf_free_spe_irq(spu->irqs[1]);
++	ps3pf_free_spe_irq(spu->irqs[0]);
++
++	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
++
++	spu_unmap(spu);
++
++	result = lv1_destruct_logical_spe(spu_pdata(spu)->spe_id);
++	BUG_ON(result);
++
++	kfree(spu->pdata);
++	spu->pdata = NULL;
++
++	return 0;
++}
++
++static int __init ps3pf_create_spu(struct spu *spu, void *data)
++{
++	int result;
++
++	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++
++	spu->pdata = kzalloc(sizeof(struct spu_pdata),
++		GFP_KERNEL);
++
++	if (!spu->pdata) {
++		result = -ENOMEM;
++		goto fail_malloc;
++	}
++
++	spu_pdata(spu)->resource_id = (unsigned long)data;
++
++	/* Init cached reg values to HV defaults. */
++
++	spu_pdata(spu)->cache.sr1 = 0x33;
++
++	result = construct_spu(spu);
++
++	if (result)
++		goto fail_construct;
++
++	/* For now, just go ahead and enable it. */
++
++	result = enable_spu(spu);
++
++	if (result)
++		goto fail_enable;
++
++	/* Make sure the spu is in SPE_EX_STATE_EXECUTED. */
++
++	/* need something better here!!! */
++	while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status)
++		!= SPE_EX_STATE_EXECUTED)
++		(void)0;
++
++	return result;
++
++fail_enable:
++fail_construct:
++	ps3pf_destroy_spu(spu);
++fail_malloc:
++	return result;
++}
++
++static int __init ps3pf_enumerate_spus(int (*fn)(void *data))
++{
++	int result;
++	unsigned int num_resource_id;
++	unsigned int i;
++
++	result = ps3pf_repository_read_num_spu_resource_id(&num_resource_id);
++
++	pr_debug("%s:%d: num_resource_id %u\n", __func__, __LINE__,
++		num_resource_id);
++
++	/*
++	 * For now, just create logical spus equal to the number
++	 * of physical spus reserved for the partition.
++	 */
++
++	for (i = 0; i < num_resource_id; i++) {
++		enum ps3pf_spu_resource_type resource_type;
++		unsigned int resource_id;
++
++		result = ps3pf_repository_read_spu_resource_id(i,
++			&resource_type, &resource_id);
++
++		if (result)
++			break;
++
++		if (resource_type == PS3PF_SPU_RESOURCE_TYPE_EXCLUSIVE) {
++			result = fn((void*)(unsigned long)resource_id);
++
++			if (result)
++				break;
 +		}
 +	}
 +
-+	BUG_ON(!drv);
-+
-+	if (drv->probe)
-+		result = drv->probe(dev);
-+	else
-+		pr_info("%s:%d: %s no probe method\n", __func__, __LINE__,
-+			dev->core.bus_id);
-+
-+	if (result) {
-+		pr_debug("%s:%d: drv->probe failed\n", __func__, __LINE__);
-+		goto clean_dma;
-+	}
++	if (result)
++		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
++			__func__, __LINE__);
 +
 +	return result;
-+
-+clean_dma:
-+	ps3pf_dma_region_free(dev->d_region);
-+clean_device:
-+	lv1_close_device(dev->did.bus_id, dev->did.dev_id);
-+clean_none:
-+	return result;
 +}
 +
-+static int ps3pf_system_bus_remove(struct device *_dev)
-+{
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+	struct ps3pf_system_bus_driver *drv =
-+		to_ps3pf_system_bus_driver(_dev->driver);
-+
-+	if (drv->remove)
-+		drv->remove(dev);
-+	else
-+		pr_info("%s:%d: %s no remove method\n", __func__, __LINE__,
-+			dev->core.bus_id);
-+
-+	ps3pf_dma_region_free(dev->d_region);
-+	ps3pf_free_mmio_region(dev->m_region);
-+	lv1_close_device(dev->did.bus_id, dev->did.dev_id);
-+
-+	return 0;
-+}
-+
-+struct bus_type ps3pf_system_bus_type = {
-+        .name = "ps3pf_system_bus",
-+	.match = ps3pf_system_bus_match,
-+	.probe = ps3pf_system_bus_probe,
-+	.remove = ps3pf_system_bus_remove,
++const struct spu_management_ops spu_management_ps3pf_ops = {
++	.enumerate_spus = ps3pf_enumerate_spus,
++	.create_spu = ps3pf_create_spu,
++	.destroy_spu = ps3pf_destroy_spu,
 +};
 +
-+int __init ps3pf_system_bus_init(void)
-+{
-+	int result;
++/* spu_priv1_ops */
 +
-+	result = bus_register(&ps3pf_system_bus_type);
-+	BUG_ON(result);
-+	return result;
++static void int_mask_and(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++
++	/* are these serialized by caller??? */
++	old_mask = spu_int_mask_get(spu, class);
++	spu_int_mask_set(spu, class, old_mask & mask);
 +}
 +
-+core_initcall(ps3pf_system_bus_init);
-+
-+/* Allocates a contiguous real buffer and creates mappings over it.
-+ * Returns the virtual address of the buffer and sets dma_handle
-+ * to the dma address (mapping) of the first page.
-+ */
-+
-+static void * ps3pf_alloc_coherent(struct device *_dev, size_t size,
-+	dma_addr_t *dma_handle, gfp_t flag)
++static void int_mask_or(struct spu *spu, int class, u64 mask)
 +{
-+	int result;
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+	unsigned long virt_addr;
++	u64 old_mask;
 +
-+	BUG_ON(!dev->d_region->bus_addr);
-+
-+	flag &= ~(__GFP_DMA | __GFP_HIGHMEM);
-+	flag |= __GFP_ZERO;
-+
-+	virt_addr = __get_free_pages(flag, get_order(size));
-+
-+	if (!virt_addr) {
-+		pr_debug("%s:%d: get_free_pages failed\n", __func__, __LINE__);
-+		goto clean_none;
-+	}
-+
-+	result = ps3pf_dma_map(dev->d_region, virt_addr, size, dma_handle);
-+
-+	if (result) {
-+		pr_debug("%s:%d: ps3pf_dma_map failed (%d)\n",
-+			__func__, __LINE__, result);
-+		BUG_ON("check region type");
-+		goto clean_alloc;
-+	}
-+
-+	return (void*)virt_addr;
-+
-+clean_alloc:
-+	free_pages(virt_addr, get_order(size));
-+clean_none:
-+	dma_handle = NULL;
-+	return NULL;
++	old_mask = spu_int_mask_get(spu, class);
++	spu_int_mask_set(spu, class, old_mask | mask);
 +}
 +
-+static void ps3pf_free_coherent(struct device *_dev, size_t size, void *vaddr,
-+	dma_addr_t dma_handle)
++static void int_mask_set(struct spu *spu, int class, u64 mask)
 +{
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+
-+	ps3pf_dma_unmap(dev->d_region, dma_handle, size);
-+	free_pages((unsigned long)vaddr, get_order(size));
++	spu_pdata(spu)->cache.masks[class] = mask;
++	lv1_set_spe_interrupt_mask(spu_pdata(spu)->spe_id, class,
++		spu_pdata(spu)->cache.masks[class]);
 +}
 +
-+/* Creates TCEs for a user provided buffer.  The user buffer must be
-+ * contiguous real kernel storage (not vmalloc).  The address of the buffer
-+ * passed here is the kernel (virtual) address of the buffer.  The buffer
-+ * need not be page aligned, the dma_addr_t returned will point to the same
-+ * byte within the page as vaddr.
-+ */
-+
-+static dma_addr_t ps3pf_map_single(struct device *_dev, void *ptr, size_t size,
-+	enum dma_data_direction direction)
++static u64 int_mask_get(struct spu *spu, int class)
 +{
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+	int result;
-+	unsigned long bus_addr;
-+
-+	result = ps3pf_dma_map(dev->d_region, (unsigned long)ptr, size,
-+		&bus_addr);
-+
-+	if (result) {
-+		pr_debug("%s:%d: ps3pf_dma_map failed (%d)\n",
-+			__func__, __LINE__, result);
-+	}
-+
-+	return bus_addr;
++	return spu_pdata(spu)->cache.masks[class];
 +}
 +
-+static void ps3pf_unmap_single(struct device *_dev, dma_addr_t dma_addr,
-+	size_t size, enum dma_data_direction direction)
++static void int_stat_clear(struct spu *spu, int class, u64 stat)
 +{
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+	int result;
++	/* Note that MFC_DSISR will be cleared when class1[MF] is set. */
 +
-+	result = ps3pf_dma_unmap(dev->d_region, dma_addr, size);
-+
-+	if (result) {
-+		pr_debug("%s:%d: ps3pf_dma_unmap failed (%d)\n",
-+			__func__, __LINE__, result);
-+	}
++	lv1_clear_spe_interrupt_status(spu_pdata(spu)->spe_id, class,
++		stat, 0);
 +}
 +
-+static int ps3pf_map_sg(struct device *_dev, struct scatterlist *sg, int nents,
-+	enum dma_data_direction direction)
++static u64 int_stat_get(struct spu *spu, int class)
 +{
-+#if defined(CONFIG_PS3PF_DYNAMIC_DMA)
-+	BUG_ON("do");
-+#endif
-+	return 0;
++	u64 stat;
++
++	lv1_get_spe_interrupt_status(spu_pdata(spu)->spe_id, class, &stat);
++	return stat;
 +}
 +
-+static void ps3pf_unmap_sg(struct device *_dev, struct scatterlist *sg,
-+	int nents, enum dma_data_direction direction)
++static void cpu_affinity_set(struct spu *spu, int cpu)
 +{
-+#if defined(CONFIG_PS3PF_DYNAMIC_DMA)
-+	BUG_ON("do");
-+#endif
++	/* No support. */
 +}
 +
-+static int ps3pf_dma_supported(struct device *_dev, u64 mask)
++static u64 mfc_dar_get(struct spu *spu)
 +{
-+	return 1;
++	return in_be64(&spu_pdata(spu)->shadow->mfc_dar_RW);
 +}
 +
-+static struct dma_mapping_ops ps3pf_dma_ops = {
-+	.alloc_coherent = ps3pf_alloc_coherent,
-+	.free_coherent = ps3pf_free_coherent,
-+	.map_single = ps3pf_map_single,
-+	.unmap_single = ps3pf_unmap_single,
-+	.map_sg = ps3pf_map_sg,
-+	.unmap_sg = ps3pf_unmap_sg,
-+	.dma_supported = ps3pf_dma_supported
++static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
++{
++	/* Nothing to do, cleared in int_stat_clear(). */
++}
++
++static u64 mfc_dsisr_get(struct spu *spu)
++{
++	return in_be64(&spu_pdata(spu)->shadow->mfc_dsisr_RW);
++}
++
++static void mfc_sdr_setup(struct spu *spu)
++{
++	/* Nothing to do. */
++}
++
++static void mfc_sr1_set(struct spu *spu, u64 sr1)
++{
++	/* Check bits allowed by HV. */
++
++	static const u64 allowed = ~(MFC_STATE1_LOCAL_STORAGE_DECODE_MASK
++		| MFC_STATE1_PROBLEM_STATE_MASK);
++
++	BUG_ON((sr1 & allowed) != (spu_pdata(spu)->cache.sr1 & allowed));
++
++	spu_pdata(spu)->cache.sr1 = sr1;
++	lv1_set_spe_privilege_state_area_1_register(
++		spu_pdata(spu)->spe_id,
++		offsetof(struct spu_priv1, mfc_sr1_RW),
++		spu_pdata(spu)->cache.sr1);
++}
++
++static u64 mfc_sr1_get(struct spu *spu)
++{
++	return spu_pdata(spu)->cache.sr1;
++}
++
++static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
++{
++	spu_pdata(spu)->cache.tclass_id = tclass_id;
++	lv1_set_spe_privilege_state_area_1_register(
++		spu_pdata(spu)->spe_id,
++		offsetof(struct spu_priv1, mfc_tclass_id_RW),
++		spu_pdata(spu)->cache.tclass_id);
++}
++
++static u64 mfc_tclass_id_get(struct spu *spu)
++{
++	return spu_pdata(spu)->cache.tclass_id;
++}
++
++static void tlb_invalidate(struct spu *spu)
++{
++	/* Nothing to do. */
++}
++
++static void resource_allocation_groupID_set(struct spu *spu, u64 id)
++{
++	/* No support. */
++}
++
++static u64 resource_allocation_groupID_get(struct spu *spu)
++{
++	return 0; /* No support. */
++}
++
++static void resource_allocation_enable_set(struct spu *spu, u64 enable)
++{
++	/* No support. */
++}
++
++static u64 resource_allocation_enable_get(struct spu *spu)
++{
++	return 0; /* No support. */
++}
++
++const struct spu_priv1_ops spu_priv1_ps3pf_ops = {
++	.int_mask_and = int_mask_and,
++	.int_mask_or = int_mask_or,
++	.int_mask_set = int_mask_set,
++	.int_mask_get = int_mask_get,
++	.int_stat_clear = int_stat_clear,
++	.int_stat_get = int_stat_get,
++	.cpu_affinity_set = cpu_affinity_set,
++	.mfc_dar_get = mfc_dar_get,
++	.mfc_dsisr_set = mfc_dsisr_set,
++	.mfc_dsisr_get = mfc_dsisr_get,
++	.mfc_sdr_setup = mfc_sdr_setup,
++	.mfc_sr1_set = mfc_sr1_set,
++	.mfc_sr1_get = mfc_sr1_get,
++	.mfc_tclass_id_set = mfc_tclass_id_set,
++	.mfc_tclass_id_get = mfc_tclass_id_get,
++	.tlb_invalidate = tlb_invalidate,
++	.resource_allocation_groupID_set = resource_allocation_groupID_set,
++	.resource_allocation_groupID_get = resource_allocation_groupID_get,
++	.resource_allocation_enable_set = resource_allocation_enable_set,
++	.resource_allocation_enable_get = resource_allocation_enable_get,
 +};
 +
-+/**
-+ * ps3pf_system_bus_release_device - remove a device from the system bus
-+ */
-+
-+static void ps3pf_system_bus_release_device(struct device *_dev)
++void ps3pf_spu_set_platform(void)
 +{
-+	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
-+	kfree(dev);
++	spu_priv1_ops = &spu_priv1_ps3pf_ops;
++	spu_management_ops = &spu_management_ps3pf_ops;
 +}
-+
-+/**
-+ * ps3pf_system_bus_device_register - add a device to the system bus
-+ *
-+ * ps3pf_system_bus_device_register() expects the dev object to be allocated
-+ * dynamically by the caller.  The system bus takes ownership of the dev
-+ * object and frees the object in ps3pf_system_bus_release_device().
-+ */
-+
-+int ps3pf_system_bus_device_register(struct ps3pf_system_bus_device *dev)
-+{
-+	int result;
-+	static unsigned int dev_count = 1;
-+
-+	dev->core.parent = NULL;
-+	dev->core.bus = &ps3pf_system_bus_type;
-+	dev->core.release = ps3pf_system_bus_release_device;
-+
-+	dev->core.archdata.of_node = NULL;
-+	dev->core.archdata.dma_ops = &ps3pf_dma_ops;
-+	dev->core.archdata.numa_node = 0;
-+
-+	snprintf(dev->core.bus_id, sizeof(dev->core.bus_id), "sb_%02x",
-+		dev_count++);
-+
-+	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev->core.bus_id);
-+
-+	result = device_register(&dev->core);
-+	return result;
-+}
-+
-+EXPORT_SYMBOL_GPL(ps3pf_system_bus_device_register);
-+
-+int ps3pf_system_bus_driver_register(struct ps3pf_system_bus_driver *drv)
-+{
-+	int result;
-+
-+	drv->core.bus = &ps3pf_system_bus_type;
-+
-+	result = driver_register(&drv->core);
-+	return result;
-+}
-+
-+EXPORT_SYMBOL_GPL(ps3pf_system_bus_driver_register);
-+
-+void ps3pf_system_bus_driver_unregister(struct ps3pf_system_bus_driver *drv)
-+{
-+	driver_unregister(&drv->core);
-+}
-+
-+EXPORT_SYMBOL_GPL(ps3pf_system_bus_driver_unregister);
-Index: cell--common--6/include/asm-powerpc/ps3pf.h
-===================================================================
---- cell--common--6.orig/include/asm-powerpc/ps3pf.h
-+++ cell--common--6/include/asm-powerpc/ps3pf.h
-@@ -387,4 +387,78 @@
- int ps3pf_repository_read_spu_resource_id(unsigned int res_index,
- 	enum ps3pf_spu_resource_type* resource_type, unsigned int *resource_id);
- 
-+
-+/* system bus routines */
-+
-+enum ps3pf_match_id {
-+	PS3PF_MATCH_ID_TEST_DRIVER = 1,
-+	PS3PF_MATCH_ID_EHCI,
-+	PS3PF_MATCH_ID_OHCI,
-+	PS3PF_MATCH_ID_GELIC,
-+	PS3PF_MATCH_ID_AV_SETTINGS,
-+	PS3PF_MATCH_ID_SYSTEM_MANAGER,
-+};
-+
-+/**
-+ * struct ps3pf_system_bus_device - a device on the system bus
-+ */
-+
-+struct ps3pf_system_bus_device {
-+	enum ps3pf_match_id match_id;
-+	struct ps3pf_device_id did;
-+	unsigned int interrupt_id;
-+/*	struct iommu_table *iommu_table; -- waiting for Ben's cleanups */
-+	struct ps3pf_dma_region *d_region;
-+	struct ps3pf_mmio_region *m_region;
-+	struct device core;
-+};
-+
-+/**
-+ * struct ps3pf_system_bus_driver - a driver for a device on the system bus
-+ */
-+
-+struct ps3pf_system_bus_driver {
-+	enum ps3pf_match_id match_id;
-+	struct device_driver core;
-+	int (*probe)(struct ps3pf_system_bus_device *);
-+	int (*remove)(struct ps3pf_system_bus_device *);
-+/*	int (*suspend)(struct ps3pf_system_bus_device *, pm_message_t); */
-+/*	int (*resume)(struct ps3pf_system_bus_device *); */
-+};
-+
-+int ps3pf_system_bus_device_register(struct ps3pf_system_bus_device *dev);
-+int ps3pf_system_bus_driver_register(struct ps3pf_system_bus_driver *drv);
-+void ps3pf_system_bus_driver_unregister(struct ps3pf_system_bus_driver *drv);
-+static inline struct ps3pf_system_bus_driver *to_ps3pf_system_bus_driver(
-+	struct device_driver *_drv)
-+{
-+	return container_of(_drv, struct ps3pf_system_bus_driver, core);
-+}
-+static inline struct ps3pf_system_bus_device *to_ps3pf_system_bus_device(
-+	struct device *_dev)
-+{
-+	return container_of(_dev, struct ps3pf_system_bus_device, core);
-+}
-+
-+/**
-+ * ps3pf_system_bus_set_drvdata -
-+ * @dev: device structure
-+ * @data: Data to set
-+ */
-+
-+static inline void ps3pf_system_bus_set_driver_data(
-+	struct ps3pf_system_bus_device *dev, void *data)
-+{
-+	dev->core.driver_data = data;
-+}
-+static inline void *ps3pf_system_bus_get_driver_data(
-+	struct ps3pf_system_bus_device *dev)
-+{
-+	return dev->core.driver_data;
-+}
-+
-+/* These two need global scope for get_dma_ops(). */
-+
-+extern struct bus_type ps3pf_system_bus_type;
-+
- #endif
