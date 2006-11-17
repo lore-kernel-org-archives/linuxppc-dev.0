@@ -1,16 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 4C01B67C17
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:47:52 +1100 (EST)
-Date: Fri, 17 Nov 2006 04:47:48 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] setup_kcore(): Fix incorrect function name in panic() call.
-Message-ID: <Pine.LNX.4.62.0611170446250.16998@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 5/16] cell: spu management xmon routines
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <455D2F9A.7050603@am.sony.com>
+References: <455D2F9A.7050603@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Vjd9uT1j/Ya5QqvsgKK9"
+Date: Fri, 17 Nov 2006 14:50:58 +1100
+Message-Id: <1163735458.16815.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +22,82 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-setup_kcore(): Fix incorrect function name in panic() call.
+--=-Vjd9uT1j/Ya5QqvsgKK9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+On Thu, 2006-11-16 at 19:42 -0800, Geoff Levand wrote:
+> This fixes the xmon support to be compatable with the
+> split spu platform code.
+>=20
+>=20
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+>=20
+> ---
+>=20
+> Michael,
+>=20
+> I split this out so we can discuss it if needed.
 
---- linux-ps3-geert.orig/arch/powerpc/mm/init_64.c	2006-11-15 10:05:17.000000000 +0900
-+++ linux-ps3-geert/arch/powerpc/mm/init_64.c	2006-11-17 12:36:49.000000000 +0900
-@@ -130,7 +130,7 @@ static int __init setup_kcore(void)
- 		/* GFP_ATOMIC to avoid might_sleep warnings during boot */
- 		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
- 		if (!kcore_mem)
--			panic("mem_init: kmalloc failed\n");
-+			panic("setup_kcore: kmalloc failed\n");
- 
- 		kclist_add(kcore_mem, __va(base), size);
- 	}
+Looks ok at least for now. Maybe we could add a FW_FEATURE, or use an
+existing one, and just use that in the xmon code to work out whether we
+try to dump the pdata as a sony_pdata or of_pdata.
 
-Gr{oetje,eeting}s,
 
-						Geert
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+>  arch/powerpc/xmon/xmon.c |    8 +-------
+>  1 file changed, 1 insertion(+), 7 deletions(-)
+>=20
+> Index: cell--common--6/arch/powerpc/xmon/xmon.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- cell--common--6.orig/arch/powerpc/xmon/xmon.c
+> +++ cell--common--6/arch/powerpc/xmon/xmon.c
+> @@ -2769,8 +2769,6 @@
+> =20
+>  	DUMP_FIELD(spu, "0x%x", number);
+>  	DUMP_FIELD(spu, "%s", name);
+> -	DUMP_FIELD(spu, "%s", devnode->full_name);
+> -	DUMP_FIELD(spu, "0x%x", nid);
+>  	DUMP_FIELD(spu, "0x%lx", local_store_phys);
+>  	DUMP_FIELD(spu, "0x%p", local_store);
+>  	DUMP_FIELD(spu, "0x%lx", ls_size);
+> @@ -2794,12 +2792,8 @@
+>  	DUMP_FIELD(spu, "0x%x", problem->spu_runcntl_RW);
+>  	DUMP_FIELD(spu, "0x%x", problem->spu_status_R);
+>  	DUMP_FIELD(spu, "0x%x", problem->spu_npc_RW);
+> -	DUMP_FIELD(spu, "0x%p", priv1);
+> -
+> -	if (spu->priv1)
+> -		DUMP_FIELD(spu, "0x%lx", priv1->mfc_sr1_RW);
+> -
+>  	DUMP_FIELD(spu, "0x%p", priv2);
+> +	DUMP_FIELD(spu, "0x%p", pdata);
+>  }
+> =20
+>  static int do_spu_cmd(void)
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Vjd9uT1j/Ya5QqvsgKK9
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFXTGidSjSd0sB4dIRAkO7AKCnHChKSX/37uGCpqT6zLsU8wcW1ACeJltP
+i3oOkpX0YXJSSCmFv6JZCGY=
+=g5LY
+-----END PGP SIGNATURE-----
+
+--=-Vjd9uT1j/Ya5QqvsgKK9--
