@@ -1,21 +1,21 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 130E267BDC
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:27:59 +1100 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id kAHARtAE017873
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:27:55 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kAHARu4b012498
-	for linuxppc-dev@ozlabs.org; Fri, 17 Nov 2006 19:27:56 +0900 (JST)
-Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id kAHARt0O025187
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:27:55 +0900 (JST)
-Date: Fri, 17 Nov 2006 19:27:54 +0900 (JST)
-Message-Id: <200611171027.kAHARsYs020497@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 077DB67BBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:33:36 +1100 (EST)
+Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
+	by imx12.toshiba.co.jp  with ESMTP id kAHAXXLP018217
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:33:33 +0900 (JST)
+Received: (from root@localhost) by wall11.toshiba.co.jp  id kAHAXXqK018644
+	for linuxppc-dev@ozlabs.org; Fri, 17 Nov 2006 19:33:33 +0900 (JST)
+Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp11.toshiba.co.jp  with ESMTP id kAHAXW8B001712
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:33:32 +0900 (JST)
+Date: Fri, 17 Nov 2006 19:33:31 +0900 (JST)
+Message-Id: <200611171033.kAHAXV97013086@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/16] add base support for Celleb platform
+Subject: Re: [PATCH 2/16] add hypervisor support for SPU
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,38 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Christoph-san,
+Hi Arnd-san,
 
-> > +         if(size-- <= 0) {
-> > +             return NULL;
-> > +         }
+> On Wednesday 15 November 2006 10:28, Ishizaki Kou wrote:
+> 
+> > +static int __init find_spu_unit_number(struct device_node *spe)
+> > +{
+> > +       const unsigned int *reg;
+> > +       reg = get_property(spe, "reg", NULL);
+> > +       return reg ? *reg : 0;
+> > +}
+> > +
+> 
+> The unit number shold not be in the 'reg' property any more. With
+> the device tree layout we want to migrate to for better OFW compatibility,
+> 'reg' should contain the addresses of local store, problem state and priv2
+> mappings, in that order.
+> 
+> Having the function is fine, but your interface needs to be a different
+> property.
 
-> No need for the {} braces for single line conditionals.  also
-> please put a space in front of opening braces.  If you're unsure
-> please take a look at Documentation/CodingStyle in the kernel tree.
+We don't think that standard binding for SPE exists. Do you have any
+proposal? If you have, please send us your binding.
 
-> > + if((str = re_det1(str, &buf[0].cbuf[4], 4)) == NULL) {
-> > +     return -1;
-> > + }
+On our device tree, property "reg" has unit number. Addresses are in
+property "priv2", "problem" and "local-store". Because of LPAR
+environment, property "priv1" does not exist.
 
-> Similarly this should be written as:
 
->     str = re_det1(str, &buf[0].cbuf[4], 4);
->     if (!str)
->         return -1;
+> > @@ -805,7 +816,11 @@
+> >         if (ret)
+> >                 goto out_unmap;
+> >         spin_lock_init(&spu->register_lock);
+> > -       spu_mfc_sdr_set(spu, mfspr(SPRN_SDR1));
+> > +#ifdef CONFIG_SPU_NEED_SHADOW_INT_MASK
+> > +       spin_lock_init(&spu->int_mask_lock);
+> > +#endif
+> > +       if (!(firmware_has_feature(FW_FEATURE_LPAR)))
+> > +               spu_mfc_sdr_set(spu, mfspr(SPRN_SDR1));
+> >         spu_mfc_sr1_set(spu, 0x33);
+> > ...
+> >         u32 node;
+> > +       u32 unit_number;
+> >         u64 flags;
+> >         u64 dar;
+> >         u64 dsisr;
+> > +#ifdef CONFIG_SPU_NEED_SHADOW_INT_MASK
+> > +       spinlock_t int_mask_lock;
+> > +       u64 shadow_int_mask_RW[3];
+> > +#endif
+> >         size_t ls_size;
+> >         unsigned int slb_replace;
+> >         struct mm_struct *mm;
+> 
+> Not sure what others think about this, but I'd prefer not to have the
+> #ifdef here at all. This part is not a fast path, so we can spend the
+> few extra bytes and cycles on keeping it in the kernel always.
+> 
+> The place where it is used should still have a run-time check for whether
+> it's running on BEAT.
 
-Thank you for your comment; these will be fixed at next time.
-
-> And btw, all these function have very non-descriptive names
-> and no comments.  That could use some work.  Also I'm not
-> sure -N returns are very useful - you should at least have
-> descriptive enums for the error cases.
-
-We don't think these functions are useful for all kernel users,
-since they work only on Beat. And, for debugging purpose, return values
-indicate the locations of errors in above case, so we don't have enums
-for these error cases. But it isn't easy to understand them without
-comments as you mentioned, so we will add adequate comments at next time.
+When Geoff-san's "abstract spu management routines" patch is accepted,
+we have to rewrite this code to meet with that patch.
+These data and initializer will be moved to platform-dependent files.
 
 Thank you,
 Kou Ishizaki
