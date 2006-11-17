@@ -1,14 +1,14 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 615D467BE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:42:56 +1100 (EST)
-Date: Fri, 17 Nov 2006 19:42:46 +0900 (JST)
-Message-Id: <200611171042.kAHAglOl000686@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 7868167BF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:45:25 +1100 (EST)
+Date: Fri, 17 Nov 2006 19:45:16 +0900 (JST)
+Message-Id: <200611171045.kAHAjHLu020749@toshiba.co.jp>
 To: arnd@arndb.de
-Subject: Re: [PATCH 16/16] Supporting spidernet on Celleb
-In-Reply-To: <200611161115.49183.arnd@arndb.de>
+Subject: Re: [PATCH 2/16] add hypervisor support for SPU
+In-Reply-To: <200611160033.18959.arnd@arndb.de> 
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -24,21 +24,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi Arnd-san,
 
-Thank you for commenting.
+> On Wednesday 15 November 2006 19:26, Christoph Hellwig wrote:
+> > On Wed, Nov 15, 2006 at 06:28:46PM +0900, Ishizaki Kou wrote:
+> > > This patch adds hypervisor support for spu.
+> > >
+> > > Linux(GuestOS) needs to designate SPE ID number when it uses SPE on Beat,
+> > > and must read the number from DT.
+> >
+> > In addition to the comments from Arnd which I'd like to second, what
+> > do you need int_mask_lock for?  It's initialized but never used.
+> 
+> It's used in patch 14/16 for the hypervisor access. As far as I can
+> see, it should be possible to use the existing register lock in it's
+> place though. We should hold that lock before calling any of the
+> priv1 accessors. In order to verify if this is done right,
+> you could add BUG_ON(!spin_is_locked(&spu->register_lock));
+> in the beat version of int_mask_{and,or,get,set}.
 
->This should not be required. If you PCI bus is set up
->correctly, pci_device_to_OF_node() will do the right thing.
->What problem are you trying to solve here?
+Should we hold spu->register_lock before calling 
+int_mask_{and,or,get,set}, like as accessing registers?
 
-Now we have no problem about that. We'll remove this change.
-
->You should not need a cast here. It's better to cast the data value
->in the function itself than casting the function pointer. This makes
->sure we notice when the prototype of the function pointer changes.
-
-We'll change the code as you commented.
-
->   Arnd <><
+If it's true, we will replace spu->int_mask_lock by spu->register_lock.
+So we remove spu->int_mask_lock.  But we found a problem that
+spu_irq_class_0_bottom calls int_mask_get without holding
+spu->register_lock. We suspect that similar problems may exist.
 
 
 Thank you,
