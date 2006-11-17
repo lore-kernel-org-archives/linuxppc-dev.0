@@ -1,17 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] 2.6.19-rc6-arnd1 release
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E7AFF67BAC
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:16:26 +1100 (EST)
+Subject: Re: [RFC] Workaround for G4 CPU data corruption bug
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20061117061021.GB13535@lst.de>
-References: <200611170034.09865.arnd@arndb.de> <20061117061021.GB13535@lst.de>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20061116084800.132070@gmx.net>
+References: <20061116084800.132070@gmx.net>
 Content-Type: text/plain
-Date: Fri, 17 Nov 2006 19:10:15 +1100
-Message-Id: <1163751015.5826.10.camel@localhost.localdomain>
+Date: Fri, 17 Nov 2006 19:16:50 +1100
+Message-Id: <1163751410.5826.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, Kevin Corry <kevcorry@us.ibm.com>,
-	Jeremy Kerr <jeremy@au1.ibm.com>,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-11-17 at 07:10 +0100, Christoph Hellwig wrote:
-> On Fri, Nov 17, 2006 at 12:34:08AM +0100, Arnd Bergmann wrote:
-> > I've uploaded a new kernel tree to the usual location at
-> > http://www.kernel.org/pub/linux/kernel/people/arnd/patches/.
-> > 
-> > It now contains oprofile support, as well as the updated xmon
-> > patches. Both of these were sent in the last few days.
-> > 
-> > Changes that are in there for a little longer include
-> > saving SPU contexts in core dumps, and support for the
-> > Playstation 3. The Playstation patches are still last week's
-> > version, I expect an update soon, which can probably go
-> > right into powerpc.git for the most part.
+On Thu, 2006-11-16 at 09:48 +0100, Gerhard Pircher wrote:
+> Hi,
 > 
-> No they can't.  There's a shitload of braindamage in there, and we
-> should hold Sony against the same standards as everyone else.
+> I need to fix the CPU bug described here:
+> http://ozlabs.org/pipermail/linuxppc-dev/2004-August/017440.html
+> 
+> The bug is worked around in Linux (since a long time) by enabling coherency (M bit) for all memory mappings. Unfortunately my AmigaOne crashes badly with this workaround (the system simply stops after setting up the PCI host controller). I'm afraid I don't know about any snoop control settings within the northbridge.
+> 
+> Thus the only workaround I can think of would be to disable the L2 cache prefetch logic. But would this workaround be accepted in the Linux source tree (only for one architecture) or does anybody know another workaround?
 
-There is not that much brain damage in there anymore, at least not that
-can be fixed (a lot is really the hypervisor being really weird).
+Not sure what the best approach is at this point. The platform probing
+occurs after the CPU fixups on 32 bits, though I want to change that to
+be more like 64 bits in the future, it's not yet done.
 
 Ben.
