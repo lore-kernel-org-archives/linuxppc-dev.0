@@ -1,17 +1,17 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7D8BB67A39
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Nov 2006 08:28:05 +1100 (EST)
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id E595567A39
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Nov 2006 09:08:45 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/16] add hypervisor support for SPU
-Date: Fri, 17 Nov 2006 22:28:02 +0100
-References: <200611171033.kAHAXV97013086@toshiba.co.jp>
-In-Reply-To: <200611171033.kAHAXV97013086@toshiba.co.jp>
+Subject: Re: [PATCH 9/16] Supporting of PCI bus for Celleb
+Date: Fri, 17 Nov 2006 23:08:44 +0100
+References: <200611171040.kAHAeYGG017561@toshiba.co.jp>
+In-Reply-To: <200611171040.kAHAeYGG017561@toshiba.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200611172228.02576.arnd@arndb.de>
+  charset="utf-8"
+Message-Id: <200611172308.44656.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 17 November 2006 11:33, Ishizaki Kou wrote:
-> We don't think that standard binding for SPE exists. Do you have any
-> proposal? If you have, please send us your binding.
+On Friday 17 November 2006 11:40, Ishizaki Kou wrote:
+> Hi Christoph-san,
 >
-> On our device tree, property "reg" has unit number. Addresses are in
-> property "priv2", "problem" and "local-store". Because of LPAR
-> environment, property "priv1" does not exist.
 
-Unfortunately, we don't have any official binding documents for this,
-but you can look at how both methods are used in the source code now.
+>  There were some reasons why we made such  temporary design:
+> - To design a new bus seemed to be large scale development and would
+> affect large parts of original powerpc codes.
+> - Some existing drivers for celleb device(i.e. spider_net) depends on
+> PCI methods.
+>
+>  We think that a new bus type should be defined for IOIFs, as they are
+> not PCI, not virtual buses. We did't have enough time to examine what
+> kind of method is the best, implement to kernel and then modify device
+> drivers..
 
-There should not be any priv2, problem or local-store properties
-any more. We have chosen the order of these register areas in the
-"reg" property to be "local-store", "problem", "priv2", "priv1",
-where the last one is optional so you don't need to provide one
-in a hypervisor.
+We are currently in the process of defining similar structures for
+the IBM Axon chip, the patches have now been merged in the powerpc.git
+tree, but not yet in 2.6.19-rc.
 
-Similarly, there should no longer be a single "isrc" property,
-but rather a standard "interrupts" property with three values
-that can be mapped to an interrupt number each, for class
-0, 1 and 2 interrupts.
+I don't think defining IOIF as the new bus type is the right
+approach, it makes more sense to define devices the way they
+are connected inside of the chip with an internal bus, e.g. PLB4,
+OPC, SiliconBackplane or similar things.
+
+The probing of the devices connected to any of these buses is then
+done from of_platform_bus_probe().
+
+> > Struct ioif is a bit too generic, can you give it a better name?
+>
+>  Thank you. kzalloc is safer and simpler.
+>  This function is now called from setup_arch only. The codes assumes
+> some future cases. As struct ioif includes pointer to iommu_table, this
+> will be used like pci_dn. (with more member variables.. we think.)
+>  The name will be struct ioif_dn? (and will include pointer to struct
+> device_node)
+
+Please look at the new code that Benjamin Herrenschmidt did in the
+current powerpc.git as a reference. I think you don't need a replacement
+for pci_dn here.
 
 	Arnd <><
