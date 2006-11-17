@@ -1,21 +1,21 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D072E679E9
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:14:31 +1100 (EST)
-Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
-	by imx12.toshiba.co.jp  with ESMTP id kAHAEScf012648
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:14:28 +0900 (JST)
-Received: (from root@localhost) by wall11.toshiba.co.jp  id kAHAESIQ005828
-	for linuxppc-dev@ozlabs.org; Fri, 17 Nov 2006 19:14:28 +0900 (JST)
+	by ozlabs.org (Postfix) with ESMTP id 3717767BC4
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 21:18:50 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id kAHAIjIm015142
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:18:45 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kAHAIlD1007324
+	for linuxppc-dev@ozlabs.org; Fri, 17 Nov 2006 19:18:47 +0900 (JST)
 Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id kAHAEPnR018772
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:14:25 +0900 (JST)
-Date: Fri, 17 Nov 2006 19:14:24 +0900 (JST)
-Message-Id: <200611171014.kAHAEPKA011876@toshiba.co.jp>
+	by ovp1.toshiba.co.jp  with ESMTP id kAHAIj9x015932
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 19:18:45 +0900 (JST)
+Date: Fri, 17 Nov 2006 19:18:44 +0900 (JST)
+Message-Id: <200611171018.kAHAIjOh014589@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 14/16] Resource assignments for PCI devices on Celleb
+Subject: [PATCH 1/16] Cell closs-building
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,30 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben-san,
+Christoph-san,
 
->On Wed, 2006-11-15 at 18:58 +0900, Ishizaki Kou wrote:
->> Celleb has multiple PCI buses. Devices on some of those PCI buses require to
->> assign resources by Linux. 
->> This patch is for such buses not to claim resources, because claimed resource
->> does not become a target for resource assign.
->
->I do not fully understand why you need that. You should be able to let
->the PCI code claim all resources wether they are on real PCI or not.
+> On Wed, Nov 15, 2006 at 06:25:33PM +0900, Ishizaki Kou wrote:
+> > This patch adds support for cross-building by SCE toolchain.
+> > 
+> > Signed-off-by: Kou Ishizaki <kou.ishizaki at toshiba.co.jp>
+> > ---
+> > 
+> > Index: linux-2.6.19/arch/powerpc/Makefile
+> > diff -u linux-2.6.19/arch/powerpc/Makefile:1.1.1.1 linux-2.6.19/arch/powerpc/Makefile:1.2
+> > --- linux-2.6.19/arch/powerpc/Makefile:1.1.1.1    Fri Oct  6 10:40:02 2006
+> > +++ linux-2.6.19/arch/powerpc/Makefile    Fri Oct  6 12:26:35 2006
+> > @@ -110,6 +110,7 @@
+> >  CFLAGS       += -mcpu=powerpc
+> >  endif
+> >  
+> > +cpu-as-$(CONFIG_PPC_CELL)    += -Wa,-mcellppu
+> 
+> We had this patch a while ago and I was told it's not needed anumore
+> with a recent gcc.
 
+We agree that it should not be merged to mainline.
 
-This is a temporary workaround for following problem.
-   
-On Celleb, values of PCI base addresses of PCI devices which are not
-described in device tree are not initialized before linux starts. So
-we use pci_bus_assign_resources() later to assign resources for them 
-at ppc_md.pcibios_fixup(). But by original code, when
-ppc_md.pcibios_fixup() is called, resources are already claimed and
-pci_bus_assign_resource() does not work to assign resources.
+We found that discussion in linuxppc64-dev ML archive. Though we need
+this patch currently.
 
-It may not be a good idea to call pci_bus_assign_resources() at the
-timing of ppc_md.pcibios_fixup(), but we did not find an alternative
-idea.
+So we will cancel it.
 
 
 Thank you,
