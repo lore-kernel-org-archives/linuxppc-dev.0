@@ -1,20 +1,26 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 05E4B67BDD
+Return-Path: <DaveLiu@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 4D7EA67BC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Nov 2006 13:59:59 +1100 (EST)
-Message-ID: <455D25DE.2040500@ovro.caltech.edu>
-Date: Thu, 16 Nov 2006 19:00:46 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Leonid <Leonid@a-k-a.net>
-Subject: Re: ELDK initial installation for FC 4.
-References: <406A31B117F2734987636D6CCC93EE3C810B2D@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C810B2D@ehost011-3.exch011.intermedia.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 17 Nov 2006 19:48:51 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	kAHAAOFd022101 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 17 Nov 2006 03:10:24 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kAH8mjBC002346
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 17 Nov 2006 02:48:47 -0600 (CST)
+Subject: Re: memory corruption after MMU turned on
+From: Dave Liu <r63238@freescale.com>
+To: Lei Sun <leisun124@gmail.com>
+In-Reply-To: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
+References: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 17 Nov 2006 16:48:44 +0800
+Message-Id: <1163753324.3655.18.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,40 +32,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Leonid wrote:
-> Hi:
+On Thu, 2006-11-16 at 10:44 -0500, Lei Sun wrote:
+> Hi all:
+>    I am trying to bring up customized board based on MPC8270, the
+> kernel version is 2.4.30, it works fine on one of the Eval board
+> (PQ2FADS-VR, which use MPC8275).
+>    The kernel hangs after uncompressing is done, further debug shows
+> that it hangs right after "rfi " instruction of the turn_on_mmu:
+> function in head.S
 > 
-> I've downloaded ppc-2006-01-11_amcc.iso file, burned it on CD, mounted
-> CD, copied stuff into /opt/eldk, ran install - everything as explained
-> on web. I have following stuff in /opt/eldk now:
+>  turn_on_mmu:
+>     240     mfmsr   r0
+>     241     ori r0,r0,MSR_DR|MSR_IR
+>     242     mtspr   SRR1,r0
+>     243     lis r0,start_here@h
+>     244     ori r0,r0,start_here@l
+>     245     mtspr   SRR0,r0
+>     246     SYNC
+>     247     RFI             /* enables MMU */
 > 
-> [leonid@localhost eldk]$ ls -al
-> total 564
-> drwxr-xr-x  13 root root   4096 Nov 16 18:50 .
-> drwxr-xr-x   5 root root   4096 Nov 16 17:33 ..
-> drwxr-xr-x   2 root root   4096 Nov 16 18:51 bin
-> drwxr-xr-x   2 1543 1543   4096 Jan 13  2006 common
-> -rwxr-xr-x   1 1543 1543   1620 Jan  5  2005 ELDK_FIXOWNER
-> -rwxrwxr-x   1 1543 1543   5468 Dec 17  2005 ELDK_MAKEDEV
-> drwxr-xr-x   5 1543 1543   4096 Nov 16 18:50 etc
-> drwxr-xr-x   2 1543 1543   4096 Jan 13  2006 icons
-> -rwxr-xr-x   1 1543 1543 414416 Jan 13  2006 install
-> drwxr-xr-x   3 1543 1543   4096 Jan 13  2006 ppc_4xx
-> drwxr-xr-x   3 1543 1543   4096 Jan 13  2006 ppc_4xxFP
-> -rw-rw-r--   1 1543 1543  73797 Jan  5  2006 README.html
-> drwxr-xr-x   2 1543 1543   4096 Jan 13  2006 RPMS
-> drwxr-xr-x   2 1543 1543   4096 Jan 13  2006 sys
-> drwxr-xr-x   4 1543 1543   4096 Jan 13  2006 tools
-> drwxr-xr-x  10 root root   4096 Nov 16 18:50 usr
-> drwxr-xr-x   5 root root   4096 Nov 16 18:50 var
-> -rw-r--r--   1 1543 1543     34 Jan 13  2006 version
-> 
-> Is it going to work for Fedora Core 4 my PC is running?
+> After i step over the RFI instruction, the PC points to C000XXX , but
+> all memory content is 0 by then.
+> my BATU0 is 0xC000FFE0  BATL0 is 0x00000002, I have 128MB RAM. The
+> u-boot works fine, without MMU turned on. We do have some hardware
+> problem, such that i have to lower the bus frequency to make the SDRAM
+> stable. What physical parameter could cause the board not working with
+> MMU on?
 
-Why ask, just try it :)
+When MMU turn on, the kernel memory should be cacheable, so the
+processor will burst read instructions from memory to i-cache. Did you
+do the burst read/write memory test in u-boot? As you said, you did not
+do the test.
 
-I haven't had any trouble with Centos 4.x, which is the rip-off
-of Red Hat Enterprise 4.x, which inherits from the FC4 series,
-so I think you'll find it works fine.
-
-Dave
+-Dave
