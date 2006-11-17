@@ -1,19 +1,19 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
-	by ozlabs.org (Postfix) with ESMTP id EB8EA68892
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:44:22 +1100 (EST)
+Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
+	by ozlabs.org (Postfix) with ESMTP id 567D067F39
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 14:44:43 +1100 (EST)
 Received: from mail3.sony.co.jp (localhost [127.0.0.1])
-	by mail3.sony.co.jp (R8/Sony) with ESMTP id kAH3iMbC004065
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:22 +0900 (JST)
+	by mail3.sony.co.jp (R8/Sony) with ESMTP id kAH3igbC005176
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:42 +0900 (JST)
 Received: from mailgw01.scei.sony.co.jp (mailgw01.scei.sony.co.jp [43.27.73.7])
-	by mail3.sony.co.jp (R8/Sony) with SMTP id kAH3iLl5004032
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:21 +0900 (JST)
-Message-ID: <455D300F.1000300@am.sony.com>
-Date: Thu, 16 Nov 2006 19:44:15 -0800
+	by mail3.sony.co.jp (R8/Sony) with SMTP id kAH3igl5005160
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 12:44:42 +0900 (JST)
+Message-ID: <455D3022.4040106@am.sony.com>
+Date: Thu, 16 Nov 2006 19:44:34 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 13/16] powerpc: add ps3 platform OS params support
+Subject: [PATCH 15/16] cell: add ps3 platform system bus support
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,33 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add support to access the parameter data from the ps3pf other OS area of flash
-memory.  The parameter data mainly holds user preferences like static ip
-address, etc.
+Adds a PS3 Platform system bus driver.  This system bus is a virtual
+bus used to present the ps3pf system devices in the LDM.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- arch/powerpc/platforms/ps3pf/Makefile  |    2 
- arch/powerpc/platforms/ps3pf/os-area.c |  259 +++++++++++++++++++++++++++++++++
- 2 files changed, 260 insertions(+), 1 deletion(-)
+ drivers/Makefile            |    1 
+ drivers/ps3pf/Makefile      |    1 
+ drivers/ps3pf/system-bus.c  |  358 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/ps3pf.h |   74 +++++++++
+ 4 files changed, 434 insertions(+)
 
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
+Index: cell--common--6/drivers/Makefile
 ===================================================================
---- cell--common--6.orig/arch/powerpc/platforms/ps3pf/Makefile
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/Makefile
-@@ -1,2 +1,2 @@
- obj-y += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
--obj-y += interrupt.o exports.o
-+obj-y += interrupt.o exports.o os-area.o
-Index: cell--common--6/arch/powerpc/platforms/ps3pf/os-area.c
+--- cell--common--6.orig/drivers/Makefile
++++ cell--common--6/drivers/Makefile
+@@ -77,3 +77,4 @@
+ obj-$(CONFIG_SUPERH)		+= sh/
+ obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
+ obj-$(CONFIG_DMA_ENGINE)	+= dma/
++obj-$(CONFIG_PS3PF)		+= ps3pf/
+Index: cell--common--6/drivers/ps3pf/Makefile
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3pf/os-area.c
-@@ -0,0 +1,259 @@
++++ cell--common--6/drivers/ps3pf/Makefile
+@@ -0,0 +1 @@
++obj-y += system-bus.o
+Index: cell--common--6/drivers/ps3pf/system-bus.c
+===================================================================
+--- /dev/null
++++ cell--common--6/drivers/ps3pf/system-bus.c
+@@ -0,0 +1,358 @@
 +/*
-+ *  PS3 Platform other OS area.
++ *  PS3 Platform system bus driver.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -71,241 +79,423 @@ Index: cell--common--6/arch/powerpc/platforms/ps3pf/os-area.c
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/io.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/dma-mapping.h>
++#include <linux/err.h>
 +
-+#include <asm/lmb.h>
++#include <asm/udbg.h>
 +#include <asm/ps3pf.h>
++#include <asm/lv1call.h>
 +
-+#include "platform.h"
-+
-+enum {
-+	OS_AREA_SEGMENT_SIZE = 0X200,
-+};
-+
-+enum {
-+	HEADER_LDR_FORMAT_RAW = 0,
-+	HEADER_LDR_FORMAT_GZIP = 1,
-+};
-+
-+/**
-+ * struct os_area_header - os area header segment.
-+ * @magic_num: Always 'cell_ext_os_area'.
-+ * @hdr_version: Header format version number.
-+ * @os_area_offset: Starting segment number of os image area.
-+ * @ldr_area_offset: Starting segment number of bootloader image area.
-+ * @ldr_format: HEADER_LDR_FORMAT flag.
-+ * @ldr_size: Size of bootloader image in bytes.
-+ *
-+ * Note that the docs refer to area offsets.  These are offsets in units of
-+ * segments from the start of the os area (top of the header).  These are
-+ * better thought of as segment numbers.  The os area of the os area is
-+ * reserved for the os image.
-+ */
-+
-+struct os_area_header {
-+	s8 magic_num[16];
-+	u32 hdr_version;
-+	u32 os_area_offset;
-+	u32 ldr_area_offset;
-+	u32 _reserved_1;
-+	u32 ldr_format;
-+	u32 ldr_size;
-+	u32 _reserved_2[6];
-+} __attribute__ ((packed));
-+
-+enum {
-+	PARAM_BOOT_FLAG_GAME_OS = 0,
-+	PARAM_BOOT_FLAG_OTHER_OS = 1,
-+};
-+
-+enum {
-+	PARAM_AV_MULTI_OUT_NTSC = 0,
-+	PARAM_AV_MULTI_OUT_PAL_RGB = 1,
-+	PARAM_AV_MULTI_OUT_PAL_YCBCR = 2,
-+	PARAM_AV_MULTI_OUT_SECAM = 3,
-+};
-+
-+enum {
-+	PARAM_CTRL_BUTTON_O_IS_YES = 0,
-+	PARAM_CTRL_BUTTON_X_IS_YES = 1,
-+};
-+
-+/**
-+ * struct os_area_params - os area params segment.
-+ * @boot_flag: User preference of operating system, PARAM_BOOT_FLAG flag.
-+ * @num_params: Number of params in this (params) segment.
-+ * @rtc_diff: Difference in seconds between 1970 and the ps3pf rtc value.
-+ * @av_multi_out: User preference of AV output, PARAM_AV_MULTI_OUT flag.
-+ * @ctrl_button: User preference of controller button config, PARAM_CTRL_BUTTON
-+ *	flag.
-+ * @static_ip_addr: User preference of static IP address.
-+ * @network_mask: User preference of static network mask.
-+ * @default_gateway: User preference of static default gateway.
-+ * @dns_primary: User preference of static primary dns server.
-+ * @dns_secondary: User preference of static secondary dns server.
-+ *
-+ * User preference of zero for static_ip_addr means use dhcp.
-+ */
-+
-+struct os_area_params {
-+	u32 boot_flag;
-+	u32 _reserved_1[3];
-+	u32 num_params;
-+	u32 _reserved_2[3];
-+	/* param 0 */
-+	s64 rtc_diff;
-+	u8 av_multi_out;
-+	u8 ctrl_button;
-+	u8 _reserved_3[6];
-+	/* param 1 */
-+	u8 static_ip_addr[4];
-+	u8 network_mask[4];
-+	u8 default_gateway[4];
-+	u8 _reserved_4[4];
-+	/* param 2 */
-+	u8 dns_primary[4];
-+	u8 dns_secondary[4];
-+	u8 _reserved_5[8];
-+} __attribute__ ((packed));
-+
-+/**
-+ * struct saved_params - Static working copies of data from the os area.
-+ *
-+ * For the convinience of the guest, the HV makes a copy of the os area in
-+ * flash to a high address in the boot memory region and then puts that RAM
-+ * address and the byte count into the repository for retreval by the guest.
-+ * We copy the data we want into a static variable and allow the memory setup
-+ * by the HV to be claimed by the lmb manager.
-+ */
-+
-+struct saved_params {
-+	/* param 0 */
-+	s64 rtc_diff;
-+	unsigned int av_multi_out;
-+	unsigned int ctrl_button;
-+	/* param 1 */
-+	u8 static_ip_addr[4];
-+	u8 network_mask[4];
-+	u8 default_gateway[4];
-+	/* param 2 */
-+	u8 dns_primary[4];
-+	u8 dns_secondary[4];
-+} static saved_params;
-+
-+#define dump_header(_a) _dump_header(_a, __func__, __LINE__)
-+static void _dump_header(const struct os_area_header __iomem *h, const char* func,
-+	int line)
++#define dump_mmio_region(_a) _dump_mmio_region(_a, __func__, __LINE__)
++static void _dump_mmio_region(const struct ps3pf_mmio_region* r,
++	const char* func, int line)
 +{
-+	pr_debug("%s:%d: h.magic_num:         '%s'\n", func, line,
-+		h->magic_num);
-+	pr_debug("%s:%d: h.hdr_version:       %u\n", func, line,
-+		h->hdr_version);
-+	pr_debug("%s:%d: h.os_area_offset:   %u\n", func, line,
-+		h->os_area_offset);
-+	pr_debug("%s:%d: h.ldr_area_offset: %u\n", func, line,
-+		h->ldr_area_offset);
-+	pr_debug("%s:%d: h.ldr_format:        %u\n", func, line,
-+		h->ldr_format);
-+	pr_debug("%s:%d: h.ldr_size:          %xh\n", func, line,
-+		h->ldr_size);
++	pr_debug("%s:%d: dev       %u:%u\n", func, line, r->did.bus_id,
++		r->did.dev_id);
++	pr_debug("%s:%d: bus_addr  %lxh\n", func, line, r->bus_addr);
++	pr_debug("%s:%d: len       %lxh\n", func, line, r->len);
++	pr_debug("%s:%d: lpar_addr %lxh\n", func, line, r->lpar_addr);
 +}
 +
-+#define dump_params(_a) _dump_params(_a, __func__, __LINE__)
-+static void _dump_params(const struct os_area_params __iomem *p, const char* func,
-+	int line)
++int ps3pf_mmio_region_create(struct ps3pf_mmio_region *r)
 +{
-+	pr_debug("%s:%d: p.boot_flag:       %u\n", func, line, p->boot_flag);
-+	pr_debug("%s:%d: p.num_params:      %u\n", func, line, p->num_params);
-+	pr_debug("%s:%d: p.rtc_diff         %ld\n", func, line, p->rtc_diff);
-+	pr_debug("%s:%d: p.av_multi_out     %u\n", func, line, p->av_multi_out);
-+	pr_debug("%s:%d: p.ctrl_button:     %u\n", func, line, p->ctrl_button);
-+	pr_debug("%s:%d: p.static_ip_addr:  %u.%u.%u.%u\n", func, line,
-+		p->static_ip_addr[0], p->static_ip_addr[1],
-+		p->static_ip_addr[2], p->static_ip_addr[3]);
-+	pr_debug("%s:%d: p.network_mask:    %u.%u.%u.%u\n", func, line,
-+		p->network_mask[0], p->network_mask[1],
-+		p->network_mask[2], p->network_mask[3]);
-+	pr_debug("%s:%d: p.default_gateway: %u.%u.%u.%u\n", func, line,
-+		p->default_gateway[0], p->default_gateway[1],
-+		p->default_gateway[2], p->default_gateway[3]);
-+	pr_debug("%s:%d: p.dns_primary:     %u.%u.%u.%u\n", func, line,
-+		p->dns_primary[0], p->dns_primary[1],
-+		p->dns_primary[2], p->dns_primary[3]);
-+	pr_debug("%s:%d: p.dns_secondary:   %u.%u.%u.%u\n", func, line,
-+		p->dns_secondary[0], p->dns_secondary[1],
-+		p->dns_secondary[2], p->dns_secondary[3]);
++	int result;
++
++	result = lv1_map_device_mmio_region(r->did.bus_id, r->did.dev_id,
++		r->bus_addr, r->len, r->page_size, &r->lpar_addr);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_map_device_mmio_region failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++		r->lpar_addr = r->len = r->bus_addr = 0;
++	}
++
++	dump_mmio_region(r);
++	return result;
 +}
 +
-+static int __init verify_header(const struct os_area_header *header)
++int ps3pf_free_mmio_region(struct ps3pf_mmio_region *r)
 +{
-+	if (memcmp(header->magic_num, "cell_ext_os_area", 16)) {
-+		pr_debug("%s:%d magic_num failed\n", __func__, __LINE__);
-+		return -1;
++	int result;
++
++	result = lv1_unmap_device_mmio_region(r->did.bus_id, r->did.dev_id,
++		r->bus_addr);
++
++	if (result)
++		pr_debug("%s:%d: lv1_unmap_device_mmio_region failed: %s\n",
++			__func__, __LINE__, ps3pf_result(result));
++
++	r->lpar_addr = r->len = r->bus_addr = 0;
++	return result;
++}
++
++static int ps3pf_system_bus_match(struct device *_dev,
++	struct device_driver *_drv)
++{
++	int result;
++	struct ps3pf_system_bus_driver *drv = to_ps3pf_system_bus_driver(_drv);
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++
++	result = dev->match_id == drv->match_id;
++
++	pr_info("%s:%d: dev=%u(%s), drv=%u(%s): %s\n", __func__, __LINE__,
++		dev->match_id, dev->core.bus_id, drv->match_id, drv->core.name,
++		(result ? "match" : "miss"));
++	return result;
++}
++
++static int ps3pf_system_bus_probe(struct device *_dev)
++{
++	int result;
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++	struct ps3pf_system_bus_driver *drv =
++		to_ps3pf_system_bus_driver(_dev->driver);
++
++	result = lv1_open_device(dev->did.bus_id, dev->did.dev_id, 0);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_open_device failed (%d)\n",
++			__func__, __LINE__, result);
++		result = -EACCES;
++		goto clean_none;
 +	}
 +
-+	if (header->hdr_version < 1) {
-+		pr_debug("%s:%d hdr_version failed\n", __func__, __LINE__);
-+		return -1;
++	if (dev->d_region->did.bus_id) {
++		result = ps3pf_dma_region_create(dev->d_region);
++
++		if (result) {
++			pr_debug("%s:%d: ps3pf_dma_region_create failed (%d)\n",
++				__func__, __LINE__, result);
++			BUG_ON("check region type");
++			result = -EINVAL;
++			goto clean_device;
++		}
 +	}
 +
-+	if (header->os_area_offset > header->ldr_area_offset) {
-+		pr_debug("%s:%d offsets failed\n", __func__, __LINE__);
-+		return -1;
++	BUG_ON(!drv);
++
++	if (drv->probe)
++		result = drv->probe(dev);
++	else
++		pr_info("%s:%d: %s no probe method\n", __func__, __LINE__,
++			dev->core.bus_id);
++
++	if (result) {
++		pr_debug("%s:%d: drv->probe failed\n", __func__, __LINE__);
++		goto clean_dma;
 +	}
++
++	return result;
++
++clean_dma:
++	ps3pf_dma_region_free(dev->d_region);
++clean_device:
++	lv1_close_device(dev->did.bus_id, dev->did.dev_id);
++clean_none:
++	return result;
++}
++
++static int ps3pf_system_bus_remove(struct device *_dev)
++{
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++	struct ps3pf_system_bus_driver *drv =
++		to_ps3pf_system_bus_driver(_dev->driver);
++
++	if (drv->remove)
++		drv->remove(dev);
++	else
++		pr_info("%s:%d: %s no remove method\n", __func__, __LINE__,
++			dev->core.bus_id);
++
++	ps3pf_dma_region_free(dev->d_region);
++	ps3pf_free_mmio_region(dev->m_region);
++	lv1_close_device(dev->did.bus_id, dev->did.dev_id);
 +
 +	return 0;
 +}
 +
-+int __init ps3pf_os_area_init(void)
++struct bus_type ps3pf_system_bus_type = {
++        .name = "ps3pf_system_bus",
++	.match = ps3pf_system_bus_match,
++	.probe = ps3pf_system_bus_probe,
++	.remove = ps3pf_system_bus_remove,
++};
++
++int __init ps3pf_system_bus_init(void)
 +{
 +	int result;
-+	u64 lpar_addr;
-+	unsigned int size;
-+	struct os_area_header *header;
-+	struct os_area_params *params;
 +
-+	result = ps3pf_repository_read_boot_dat_info(&lpar_addr, &size);
-+
-+	if (result) {
-+		pr_debug("%s:%d ps3pf_repository_read_boot_dat_info failed\n",
-+			__func__, __LINE__);
-+		return result;
-+	}
-+
-+	header = (struct os_area_header *)__va(lpar_addr);
-+	params = (struct os_area_params *)__va(lpar_addr + OS_AREA_SEGMENT_SIZE);
-+
-+	result = verify_header(header);
-+
-+	if (result) {
-+		pr_debug("%s:%d verify_header failed\n", __func__, __LINE__);
-+		dump_header(header);
-+		return -EIO;
-+	}
-+
-+	dump_header(header);
-+	dump_params(params);
-+
-+	saved_params.rtc_diff = params->rtc_diff;
-+	saved_params.av_multi_out = params->av_multi_out;
-+	saved_params.ctrl_button = params->ctrl_button;
-+	memcpy(saved_params.static_ip_addr, params->static_ip_addr, 4);
-+	memcpy(saved_params.network_mask, params->network_mask, 4);
-+	memcpy(saved_params.default_gateway, params->default_gateway, 4);
-+	memcpy(saved_params.dns_secondary, params->dns_secondary, 4);
-+
++	result = bus_register(&ps3pf_system_bus_type);
++	BUG_ON(result);
 +	return result;
 +}
 +
-+/**
-+ * ps3pf_os_area_rtc_diff - Returns the ps3pf rtc diff value.
-+ *
-+ * The ps3pf rtc maintains a value that approximates seconds since
-+ * 2000-01-01 00:00:00 UTC.  Returns the exact number of seconds from 1970 to
-+ * 2000 when saved_params.rtc_diff has not been properly set up.
++core_initcall(ps3pf_system_bus_init);
++
++/* Allocates a contiguous real buffer and creates mappings over it.
++ * Returns the virtual address of the buffer and sets dma_handle
++ * to the dma address (mapping) of the first page.
 + */
 +
-+u64 ps3pf_os_area_rtc_diff(void)
++static void * ps3pf_alloc_coherent(struct device *_dev, size_t size,
++	dma_addr_t *dma_handle, gfp_t flag)
 +{
-+	return saved_params.rtc_diff ? saved_params.rtc_diff : 946684800UL;
++	int result;
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++	unsigned long virt_addr;
++
++	BUG_ON(!dev->d_region->bus_addr);
++
++	flag &= ~(__GFP_DMA | __GFP_HIGHMEM);
++	flag |= __GFP_ZERO;
++
++	virt_addr = __get_free_pages(flag, get_order(size));
++
++	if (!virt_addr) {
++		pr_debug("%s:%d: get_free_pages failed\n", __func__, __LINE__);
++		goto clean_none;
++	}
++
++	result = ps3pf_dma_map(dev->d_region, virt_addr, size, dma_handle);
++
++	if (result) {
++		pr_debug("%s:%d: ps3pf_dma_map failed (%d)\n",
++			__func__, __LINE__, result);
++		BUG_ON("check region type");
++		goto clean_alloc;
++	}
++
++	return (void*)virt_addr;
++
++clean_alloc:
++	free_pages(virt_addr, get_order(size));
++clean_none:
++	dma_handle = NULL;
++	return NULL;
 +}
++
++static void ps3pf_free_coherent(struct device *_dev, size_t size, void *vaddr,
++	dma_addr_t dma_handle)
++{
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++
++	ps3pf_dma_unmap(dev->d_region, dma_handle, size);
++	free_pages((unsigned long)vaddr, get_order(size));
++}
++
++/* Creates TCEs for a user provided buffer.  The user buffer must be
++ * contiguous real kernel storage (not vmalloc).  The address of the buffer
++ * passed here is the kernel (virtual) address of the buffer.  The buffer
++ * need not be page aligned, the dma_addr_t returned will point to the same
++ * byte within the page as vaddr.
++ */
++
++static dma_addr_t ps3pf_map_single(struct device *_dev, void *ptr, size_t size,
++	enum dma_data_direction direction)
++{
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++	int result;
++	unsigned long bus_addr;
++
++	result = ps3pf_dma_map(dev->d_region, (unsigned long)ptr, size,
++		&bus_addr);
++
++	if (result) {
++		pr_debug("%s:%d: ps3pf_dma_map failed (%d)\n",
++			__func__, __LINE__, result);
++	}
++
++	return bus_addr;
++}
++
++static void ps3pf_unmap_single(struct device *_dev, dma_addr_t dma_addr,
++	size_t size, enum dma_data_direction direction)
++{
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++	int result;
++
++	result = ps3pf_dma_unmap(dev->d_region, dma_addr, size);
++
++	if (result) {
++		pr_debug("%s:%d: ps3pf_dma_unmap failed (%d)\n",
++			__func__, __LINE__, result);
++	}
++}
++
++static int ps3pf_map_sg(struct device *_dev, struct scatterlist *sg, int nents,
++	enum dma_data_direction direction)
++{
++#if defined(CONFIG_PS3PF_DYNAMIC_DMA)
++	BUG_ON("do");
++#endif
++	return 0;
++}
++
++static void ps3pf_unmap_sg(struct device *_dev, struct scatterlist *sg,
++	int nents, enum dma_data_direction direction)
++{
++#if defined(CONFIG_PS3PF_DYNAMIC_DMA)
++	BUG_ON("do");
++#endif
++}
++
++static int ps3pf_dma_supported(struct device *_dev, u64 mask)
++{
++	return 1;
++}
++
++static struct dma_mapping_ops ps3pf_dma_ops = {
++	.alloc_coherent = ps3pf_alloc_coherent,
++	.free_coherent = ps3pf_free_coherent,
++	.map_single = ps3pf_map_single,
++	.unmap_single = ps3pf_unmap_single,
++	.map_sg = ps3pf_map_sg,
++	.unmap_sg = ps3pf_unmap_sg,
++	.dma_supported = ps3pf_dma_supported
++};
++
++/**
++ * ps3pf_system_bus_release_device - remove a device from the system bus
++ */
++
++static void ps3pf_system_bus_release_device(struct device *_dev)
++{
++	struct ps3pf_system_bus_device *dev = to_ps3pf_system_bus_device(_dev);
++	kfree(dev);
++}
++
++/**
++ * ps3pf_system_bus_device_register - add a device to the system bus
++ *
++ * ps3pf_system_bus_device_register() expects the dev object to be allocated
++ * dynamically by the caller.  The system bus takes ownership of the dev
++ * object and frees the object in ps3pf_system_bus_release_device().
++ */
++
++int ps3pf_system_bus_device_register(struct ps3pf_system_bus_device *dev)
++{
++	int result;
++	static unsigned int dev_count = 1;
++
++	dev->core.parent = NULL;
++	dev->core.bus = &ps3pf_system_bus_type;
++	dev->core.release = ps3pf_system_bus_release_device;
++
++	dev->core.archdata.of_node = NULL;
++	dev->core.archdata.dma_ops = &ps3pf_dma_ops;
++	dev->core.archdata.numa_node = 0;
++
++	snprintf(dev->core.bus_id, sizeof(dev->core.bus_id), "sb_%02x",
++		dev_count++);
++
++	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev->core.bus_id);
++
++	result = device_register(&dev->core);
++	return result;
++}
++
++EXPORT_SYMBOL_GPL(ps3pf_system_bus_device_register);
++
++int ps3pf_system_bus_driver_register(struct ps3pf_system_bus_driver *drv)
++{
++	int result;
++
++	drv->core.bus = &ps3pf_system_bus_type;
++
++	result = driver_register(&drv->core);
++	return result;
++}
++
++EXPORT_SYMBOL_GPL(ps3pf_system_bus_driver_register);
++
++void ps3pf_system_bus_driver_unregister(struct ps3pf_system_bus_driver *drv)
++{
++	driver_unregister(&drv->core);
++}
++
++EXPORT_SYMBOL_GPL(ps3pf_system_bus_driver_unregister);
+Index: cell--common--6/include/asm-powerpc/ps3pf.h
+===================================================================
+--- cell--common--6.orig/include/asm-powerpc/ps3pf.h
++++ cell--common--6/include/asm-powerpc/ps3pf.h
+@@ -387,4 +387,78 @@
+ int ps3pf_repository_read_spu_resource_id(unsigned int res_index,
+ 	enum ps3pf_spu_resource_type* resource_type, unsigned int *resource_id);
+ 
++
++/* system bus routines */
++
++enum ps3pf_match_id {
++	PS3PF_MATCH_ID_TEST_DRIVER = 1,
++	PS3PF_MATCH_ID_EHCI,
++	PS3PF_MATCH_ID_OHCI,
++	PS3PF_MATCH_ID_GELIC,
++	PS3PF_MATCH_ID_AV_SETTINGS,
++	PS3PF_MATCH_ID_SYSTEM_MANAGER,
++};
++
++/**
++ * struct ps3pf_system_bus_device - a device on the system bus
++ */
++
++struct ps3pf_system_bus_device {
++	enum ps3pf_match_id match_id;
++	struct ps3pf_device_id did;
++	unsigned int interrupt_id;
++/*	struct iommu_table *iommu_table; -- waiting for Ben's cleanups */
++	struct ps3pf_dma_region *d_region;
++	struct ps3pf_mmio_region *m_region;
++	struct device core;
++};
++
++/**
++ * struct ps3pf_system_bus_driver - a driver for a device on the system bus
++ */
++
++struct ps3pf_system_bus_driver {
++	enum ps3pf_match_id match_id;
++	struct device_driver core;
++	int (*probe)(struct ps3pf_system_bus_device *);
++	int (*remove)(struct ps3pf_system_bus_device *);
++/*	int (*suspend)(struct ps3pf_system_bus_device *, pm_message_t); */
++/*	int (*resume)(struct ps3pf_system_bus_device *); */
++};
++
++int ps3pf_system_bus_device_register(struct ps3pf_system_bus_device *dev);
++int ps3pf_system_bus_driver_register(struct ps3pf_system_bus_driver *drv);
++void ps3pf_system_bus_driver_unregister(struct ps3pf_system_bus_driver *drv);
++static inline struct ps3pf_system_bus_driver *to_ps3pf_system_bus_driver(
++	struct device_driver *_drv)
++{
++	return container_of(_drv, struct ps3pf_system_bus_driver, core);
++}
++static inline struct ps3pf_system_bus_device *to_ps3pf_system_bus_device(
++	struct device *_dev)
++{
++	return container_of(_dev, struct ps3pf_system_bus_device, core);
++}
++
++/**
++ * ps3pf_system_bus_set_drvdata -
++ * @dev: device structure
++ * @data: Data to set
++ */
++
++static inline void ps3pf_system_bus_set_driver_data(
++	struct ps3pf_system_bus_device *dev, void *data)
++{
++	dev->core.driver_data = data;
++}
++static inline void *ps3pf_system_bus_get_driver_data(
++	struct ps3pf_system_bus_device *dev)
++{
++	return dev->core.driver_data;
++}
++
++/* These two need global scope for get_dma_ops(). */
++
++extern struct bus_type ps3pf_system_bus_type;
++
+ #endif
