@@ -1,16 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 17 Nov 2006 16:21:58 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: Re: [PATCH 5/16] hypervisor functions for Celleb
-Message-ID: <20061117052158.GB670@krispykreme>
-References: <200611150937.kAF9b305001499@toshiba.co.jp>
-	<20061115183746.GC21633@lst.de> <200611152304.45243.arnd@arndb.de>
-	<45AC8C44-8193-4311-B4BF-BF7FF56C8DF4@watson.ibm.com>
-MIME-Version: 1.0
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B2E9467BAC
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Nov 2006 17:09:07 +1100 (EST)
+Date: Fri, 17 Nov 2006 07:08:45 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 6/16] powerpc: add support for ps3 platform
+Message-ID: <20061117060845.GA13535@lst.de>
+References: <455D2FA8.7040808@am.sony.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45AC8C44-8193-4311-B4BF-BF7FF56C8DF4@watson.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <455D2FA8.7040808@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,13 +23,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Nov 16, 2006 at 07:42:32PM -0800, Geoff Levand wrote:
+> This adds the core platform support for the PS3 game console and other
+> platforms using the PS3 Platform hypervisor.
 
-> Just make another one (or a set of them like the phyp calls) and  
-> define then in assembly.
-> Certainly a bl to a function will be negligible to the hcall its self.
-
-Agreed. And I thought the phyp hcall code was ugly :)
-
-Any ideas why its so different? Just NIH?
-
-Anton
+Still this uses the braindead ps3pf plattform name, please get rid of it
+ASAP!
