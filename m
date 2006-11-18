@@ -1,28 +1,29 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BDA9F67BE1
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 266AC67B99
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Nov 2006 14:08:15 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1GlFkU-0008M1-Cm
-	for linuxppc-embedded@ozlabs.org; Sat, 18 Nov 2006 03:16:06 +0100
-Received: from icarus.icarus.com ([64.105.89.2])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sat, 18 Nov 2006 03:16:06 +0100
-Received: from steve by icarus.icarus.com with local (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sat, 18 Nov 2006 03:16:06 +0100
-To: linuxppc-embedded@ozlabs.org
-From: Stephen Williams <steve@icarus.com>
-Subject: Linux compatible embedded MMC/SD interfaces
-Date: Fri, 17 Nov 2006 18:15:56 -0800
-Message-ID: <ejlqct$pi2$1@sea.gmane.org>
+	Sat, 18 Nov 2006 21:04:03 +1100 (EST)
+Received: from az33smr01 (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	kAIA3ti3019526 for <linuxppc-embedded@ozlabs.org>;
+	Sat, 18 Nov 2006 03:03:55 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr01 (8.13.1/8.13.0) with ESMTP id kAIA3rGt001287
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 18 Nov 2006 04:03:54 -0600 (CST)
+Subject: Re: memory corruption after MMU turned on
+From: Dave Liu <r63238@freescale.com>
+To: Lei Sun <leisun124@gmail.com>
+In-Reply-To: <f9a7e7a80611170847n7a19073fief69dede52d1c199@mail.gmail.com>
+References: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
+	<1163753324.3655.18.camel@localhost.localdomain>
+	<f9a7e7a80611170847n7a19073fief69dede52d1c199@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 18 Nov 2006 18:03:52 +0800
+Message-Id: <1163844232.3659.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Sender: news <news@sea.gmane.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,18 +34,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Did you enable the i-cache or d-cache in u-boot? if you enable i-cache,
+I think the core are burst reading from memory.
 
-I'm looking for a Linux (PPC) compatible solution for connecting
-MMC or SD cards to an embedded system we are working on. We are
-currently using a Xilinx SystemACE in our board, but we are putting
-together a reduced size version of the board (We do not need the
-"ACE" functionality) and still want to keep a Linux system on
-removable media for quick field upgrades.
-
-Any suggestions out there?
-
--- 
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+On Fri, 2006-11-17 at 11:47 -0500, Lei Sun wrote:
+> No, i didn't do the burst memory test, how do i do it then ?
+> 
+> On 11/17/06, Dave Liu <r63238@freescale.com> wrote:
+> > On Thu, 2006-11-16 at 10:44 -0500, Lei Sun wrote:
+> > > Hi all:
+> > >    I am trying to bring up customized board based on MPC8270, the
+> > > kernel version is 2.4.30, it works fine on one of the Eval board
+> > > (PQ2FADS-VR, which use MPC8275).
+> > >    The kernel hangs after uncompressing is done, further debug shows
+> > > that it hangs right after "rfi " instruction of the turn_on_mmu:
+> > > function in head.S
+> > >
+> > >  turn_on_mmu:
+> > >     240     mfmsr   r0
+> > >     241     ori r0,r0,MSR_DR|MSR_IR
+> > >     242     mtspr   SRR1,r0
+> > >     243     lis r0,start_here@h
+> > >     244     ori r0,r0,start_here@l
+> > >     245     mtspr   SRR0,r0
+> > >     246     SYNC
+> > >     247     RFI             /* enables MMU */
+> > >
+> > > After i step over the RFI instruction, the PC points to C000XXX , but
+> > > all memory content is 0 by then.
+> > > my BATU0 is 0xC000FFE0  BATL0 is 0x00000002, I have 128MB RAM. The
+> > > u-boot works fine, without MMU turned on. We do have some hardware
+> > > problem, such that i have to lower the bus frequency to make the SDRAM
+> > > stable. What physical parameter could cause the board not working with
+> > > MMU on?
+> >
+> > When MMU turn on, the kernel memory should be cacheable, so the
+> > processor will burst read instructions from memory to i-cache. Did you
+> > do the burst read/write memory test in u-boot? As you said, you did not
+> > do the test.
+> >
+> > -Dave
+> >
+> >
+> >
