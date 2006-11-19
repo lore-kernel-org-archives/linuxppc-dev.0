@@ -1,31 +1,20 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 632B867B22
+Return-Path: <nd@bplan-gmbh.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
+	by ozlabs.org (Postfix) with ESMTP id E96F4679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Nov 2006 17:01:45 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	kAJ6Fllt019452 for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Nov 2006 23:15:47 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kAJ61fi1013863
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Nov 2006 00:01:42 -0600 (CST)
-Subject: Re: memory corruption after MMU turned on
-From: Dave Liu <r63238@freescale.com>
-To: Lei Sun <leisun124@gmail.com>
-In-Reply-To: <f9a7e7a80611181353p21dce384m21f30bc9d8935a8d@mail.gmail.com>
-References: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
-	<1163753324.3655.18.camel@localhost.localdomain>
-	<f9a7e7a80611170847n7a19073fief69dede52d1c199@mail.gmail.com>
-	<1163844232.3659.15.camel@localhost.localdomain>
-	<f9a7e7a80611181353p21dce384m21f30bc9d8935a8d@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 19 Nov 2006 14:01:42 +0800
-Message-Id: <1163916102.3655.20.camel@localhost.localdomain>
+	Mon, 20 Nov 2006 06:15:03 +1100 (EST)
+Date: Sun, 19 Nov 2006 20:14:09 +0100 (MET)
+From: Nicolas DET <nd@bplan-gmbh.de>
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: [PATCH/RFC] ata: Add support for the MPC52xx ATA controller using
+	libata
+Message-Id: <20061119201411.b5dd5dd5.nd@bplan-gmbh.de>
+In-Reply-To: <455E4406.8050405@246tNt.com>
+References: <11637151391017-git-send-email-tnt@246tNt.com>	<200611172049.49260.jarno.manninen@tut.fi>	<455E0907.8000009@246tNt.com>	<455E3A7E.3030807@garzik.org>	<455E4406.8050405@246tNt.com>
 Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux IDE <linux-ide@vger.kernel.org>, Sven Luther <sl@bplan-gmbh.de>,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,15 +25,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-11-18 at 16:53 -0500, Lei Sun wrote:
-> I tried enable i-cache, but it looks fine, however if i enable
+On Sat, 18 Nov 2006 00:21:42 +0100
+Sylvain Munaut <tnt@246tNt.com> wrote:
 
-Okay, That means the burst read memory is right. I think you should
-check the code at the else, not only focus on RFI. Maybe the problem is
-at the else position. When kernel boot stop, can not see any more
-printed message, you can attach to the process with CW and USBTAP. see
-where the current program pointer is.
 
-> d-cache, u-boot corrupted right away, debugger showed some garbage
-> memory instead of valid instruction.
-<snip>
+> Aside from that, does the driver looks ok ? It has been tested ok on another
+> 5200b platform as well. I'd like to include it in a patch set I'll probably
+> send next weekend. I'll try to add the timing computation to the generic
+> call and make use of those.
+> 
+> 
+
+I succefully tested the driver on Efika 5k2: I booted my root fs and did 2 min badblocks. No problems.
+
+Regards,
