@@ -1,19 +1,31 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6FE6767B77
+Return-Path: <DaveLiu@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 632B867B22
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Nov 2006 11:48:04 +1100 (EST)
-To: "Lei Sun" <leisun124@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: memory corruption after MMU turned on 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 18 Nov 2006 16:53:02 EST."
+	Sun, 19 Nov 2006 17:01:45 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	kAJ6Fllt019452 for <linuxppc-embedded@ozlabs.org>;
+	Sat, 18 Nov 2006 23:15:47 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kAJ61fi1013863
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 19 Nov 2006 00:01:42 -0600 (CST)
+Subject: Re: memory corruption after MMU turned on
+From: Dave Liu <r63238@freescale.com>
+To: Lei Sun <leisun124@gmail.com>
+In-Reply-To: <f9a7e7a80611181353p21dce384m21f30bc9d8935a8d@mail.gmail.com>
+References: <f9a7e7a80611160744t7071ff6clf5e1d42cfaa2c856@mail.gmail.com>
+	<1163753324.3655.18.camel@localhost.localdomain>
+	<f9a7e7a80611170847n7a19073fief69dede52d1c199@mail.gmail.com>
+	<1163844232.3659.15.camel@localhost.localdomain>
 	<f9a7e7a80611181353p21dce384m21f30bc9d8935a8d@mail.gmail.com>
-Date: Sun, 19 Nov 2006 01:48:01 +0100
-Sender: wd@denx.de
-Message-Id: <20061119004801.A57B3353B9C@atlas.denx.de>
-Cc: Dave Liu <r63238@freescale.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Sun, 19 Nov 2006 14:01:42 +0800
+Message-Id: <1163916102.3655.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +36,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <f9a7e7a80611181353p21dce384m21f30bc9d8935a8d@mail.gmail.com> you wrote:
+On Sat, 2006-11-18 at 16:53 -0500, Lei Sun wrote:
 > I tried enable i-cache, but it looks fine, however if i enable
+
+Okay, That means the burst read memory is right. I think you should
+check the code at the else, not only focus on RFI. Maybe the problem is
+at the else position. When kernel boot stop, can not see any more
+printed message, you can attach to the process with CW and USBTAP. see
+where the current program pointer is.
+
 > d-cache, u-boot corrupted right away, debugger showed some garbage
 > memory instead of valid instruction.
-
-Did you read the U-Boot README? It explains why this cannot work.
-
-> > > > >    The kernel hangs after uncompressing is done, further debug shows
-> > > > > that it hangs right after "rfi " instruction of the turn_on_mmu:
-> > > > > function in head.S
-
-Did you read the FAQ, like
-http://www.ultsol.com/faq_p305.htm ?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Everything should be made as simple as possible, but not simpler."
-                                                    - Albert Einstein
+<snip>
