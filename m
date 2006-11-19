@@ -1,20 +1,18 @@
-Return-Path: <nd@bplan-gmbh.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
-	by ozlabs.org (Postfix) with ESMTP id E96F4679E9
+Return-Path: <leisun124@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
+	by ozlabs.org (Postfix) with ESMTP id 94F5567C00
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Nov 2006 06:15:03 +1100 (EST)
-Date: Sun, 19 Nov 2006 20:14:09 +0100 (MET)
-From: Nicolas DET <nd@bplan-gmbh.de>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: [PATCH/RFC] ata: Add support for the MPC52xx ATA controller using
-	libata
-Message-Id: <20061119201411.b5dd5dd5.nd@bplan-gmbh.de>
-In-Reply-To: <455E4406.8050405@246tNt.com>
-References: <11637151391017-git-send-email-tnt@246tNt.com>	<200611172049.49260.jarno.manninen@tut.fi>	<455E0907.8000009@246tNt.com>	<455E3A7E.3030807@garzik.org>	<455E4406.8050405@246tNt.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux IDE <linux-ide@vger.kernel.org>, Sven Luther <sl@bplan-gmbh.de>,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-embedded@ozlabs.org
+	Mon, 20 Nov 2006 08:21:21 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so1504771wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 19 Nov 2006 13:21:19 -0800 (PST)
+Message-ID: <f9a7e7a80611191321r291964cfh653a88714b3b0267@mail.gmail.com>
+Date: Sun, 19 Nov 2006 16:21:19 -0500
+From: "Lei Sun" <leisun124@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: BDI2000 not processing init list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, 18 Nov 2006 00:21:42 +0100
-Sylvain Munaut <tnt@246tNt.com> wrote:
+Hi all:
+   I got BDI2000 today, tring to use to to debug my MMU problem. But
+after I hooked it up and issue "reset", the following messages are
+printed out:
 
+BDI>reset
+- BDI asserts HRESET
+- Reset JTAG controller passed
+- Bypass check: 0x00000001 => 0x00000001
+- JTAG exists check passed
+- COP status is 0x01
+- Check running state passed
+- BDI scans COP freeze command
+- BDI removes HRESET
+- Target PVR is 0x80822013
+- Target SVR is 0x00000000
+- COP status is 0x05
+- Check stopped state passed
+- Check LSRL length passed
+- BDI sets breakpoint at 0xFFF00100
+- BDI resumes program execution
+- Waiting for target stop passed
 
-> Aside from that, does the driver looks ok ? It has been tested ok on another
-> 5200b platform as well. I'd like to include it in a patch set I'll probably
-> send next weekend. I'll try to add the timing computation to the generic
-> call and make use of those.
-> 
-> 
+It didn't process the init list, the IMMR still shows the default
+value, instead of the one specified in init list.  The weird thing is
+, if it didn't process init list, it should keep resetting because of
+the watch dog timmer, I didn't see that happen as well.
 
-I succefully tested the driver on Efika 5k2: I booted my root fs and did 2 min badblocks. No problems.
+My target is mpc8270, the BDI firmware version is 1.24 logic 1.05
 
-Regards,
+Any one had the similar experience ?
+
+Thanks
+lei
