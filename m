@@ -1,22 +1,25 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 04C1E67C48
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 07:30:04 +1100 (EST)
-Message-ID: <4560BF28.8010406@ru.mvista.com>
-Date: Sun, 19 Nov 2006 23:31:36 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3E87467BCD
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 07:32:42 +1100 (EST)
 Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
 	type IRQ handlers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <4560BDF5.400@ru.mvista.com>
 References: <200611192243.34850.sshtylyov@ru.mvista.com>
 	<1163966437.5826.99.camel@localhost.localdomain>
 	<20061119200650.GA22949@elte.hu>
 	<1163967590.5826.104.camel@localhost.localdomain>
-	<20061119202348.GA27649@elte.hu>
-In-Reply-To: <20061119202348.GA27649@elte.hu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	<4560BDF5.400@ru.mvista.com>
+Content-Type: text/plain
+Date: Mon, 20 Nov 2006 07:32:56 +1100
+Message-Id: <1163968376.5826.110.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Sun, 2006-11-19 at 23:26 +0300, Sergei Shtylyov wrote:
 
-Ingo Molnar wrote:
+>     I must not that this whole ack() vs eoi() stuff is misleading. For example,
+> in 8259 driver, mask_ack() method actually sends EOI to PIC, not ACK's an IRQ 
+> -- the actual ACK is implicit on x86 and is used to read the interrupt vector 
+> form 8259 on PPC. So, IMO, there probably should only have been either ack() 
+> or eoi() method in the first place. Though I'm not familiar with ARM from 
+> which genirq stuff originated...
 
->>What do you need an ack() for on fasteoi ? On all fasteoi controllers 
->>I have, ack is implicit by obtaining the vector number and all there 
->>is is an eoi...
+They are different concepts. Ack clears the event on the PIC, it's
+tyically necessary for resetting the edge detection logic for edge
+interrupts and has to happen before the handler is called.
 
-> it's a compatibility hack only. Threaded handlers are a different type 
-> of flow, but often the fasteoi handler is not changed to the threaded 
-> handler so i changed it to be a threaded handler too.
+On MPIC or XICS, this is implicit by reading the vector. On some more
+dumb controllers, this has to be done explicitely.
 
-   The fasteoi flow seem to only had been used for x86 IOAPIC in the RT patch 
-only *before* PPC took to using them in the mainline...
+EOI is a more "high level" thing that some "intelligent" PICs that
+automatically raise the priority do to restore the priority to what it
+was before the interrupt occured.
 
-> threaded handlers need a mask() + an ack(), because that's the correct
-
-    Not all of them. This could be customized on type-by-type basis. I.e. we 
-could call eoi() instead of ack() for fasteoi chips without having to resort 
-to the duplicated ack/eoi handlers.
-
-> model to map them to kernel threads - threaded handlers can be delayed 
-> for a long time if something higher-prio is preempting them.
-> 
-> 	Ingo
-
-WBR, Sergei
+Ben.
