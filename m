@@ -1,23 +1,22 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1BCBD67C09
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 07:24:45 +1100 (EST)
-Date: Sun, 19 Nov 2006 21:23:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id C693F67C26
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 07:24:54 +1100 (EST)
+Message-ID: <4560BDF5.400@ru.mvista.com>
+Date: Sun, 19 Nov 2006 23:26:29 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
 	type IRQ handlers
-Message-ID: <20061119202348.GA27649@elte.hu>
-References: <200611192243.34850.sshtylyov@ru.mvista.com>
-	<1163966437.5826.99.camel@localhost.localdomain>
+References: <200611192243.34850.sshtylyov@ru.mvista.com>	
+	<1163966437.5826.99.camel@localhost.localdomain>	
 	<20061119200650.GA22949@elte.hu>
 	<1163967590.5826.104.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1163967590.5826.104.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Benjamin Herrenschmidt wrote:
 
-> > dont worry, it's -rt only stuff.
-> 
-> Still, I'm curious :-) Besides, there have been people talking about 
+>>* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+>>>Wait wait wait .... Can somebody (Ingo ?) explain me why the fasteoi 
+>>>handler is being changed and what is the rationale for adding an ack 
+>>>that was not necessary before ?
+
+>>dont worry, it's -rt only stuff.
+
+> Still, I'm curious :-) Besides, there have been people talking about
 > having -rt work on ppc64 so ...
 
-ok :)
+> What do you need an ack() for on fasteoi ? On all fasteoi controllers I
+> have, ack is implicit by obtaining the vector number and all there is is
+> an eoi...
 
-> What do you need an ack() for on fasteoi ? On all fasteoi controllers 
-> I have, ack is implicit by obtaining the vector number and all there 
-> is is an eoi...
+    I must not that this whole ack() vs eoi() stuff is misleading. For example,
+in 8259 driver, mask_ack() method actually sends EOI to PIC, not ACK's an IRQ 
+-- the actual ACK is implicit on x86 and is used to read the interrupt vector 
+form 8259 on PPC. So, IMO, there probably should only have been either ack() 
+or eoi() method in the first place. Though I'm not familiar with ARM from 
+which genirq stuff originated...
 
-it's a compatibility hack only. Threaded handlers are a different type 
-of flow, but often the fasteoi handler is not changed to the threaded 
-handler so i changed it to be a threaded handler too.
+> Cheers,
+> Ben.
 
-threaded handlers need a mask() + an ack(), because that's the correct 
-model to map them to kernel threads - threaded handlers can be delayed 
-for a long time if something higher-prio is preempting them.
-
-	Ingo
+WBR, Sergei
