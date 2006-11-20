@@ -1,12 +1,24 @@
-Return-Path: <vwool@ru.mvista.com>
-Date: Mon, 20 Nov 2006 16:32:39 +0300
-From: Vitaly Wool <vwool@ru.mvista.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] powerpc: Add of_platform support for ROM devices
-Message-Id: <20061120163239.f9a38fc1.vwool@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5620067B99
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 02:28:12 +1100 (EST)
+Message-ID: <4561C9EC.3020506@ru.mvista.com>
+Date: Mon, 20 Nov 2006 18:29:48 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
+	type IRQ handlers
+References: <200611192243.34850.sshtylyov@ru.mvista.com>
+	<1163966437.5826.99.camel@localhost.localdomain>
+	<20061119200650.GA22949@elte.hu>
+	<1163967590.5826.104.camel@localhost.localdomain>
+	<20061119202348.GA27649@elte.hu>
+	<1163985380.5826.139.camel@localhost.localdomain>
+	<20061120100144.GA27812@elte.hu>
+In-Reply-To: <20061120100144.GA27812@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,121 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello folks,
+Hello.
 
-inlined below is the patch which adds support for flash device descriptions to the OF device tree. It's inspired by and partially borrowed from Sergei's patch which can be found at http://patchwork.ozlabs.org/linuxppc/patch?id=6526 but arranges things in a different way.
-This patch is a respin of the patch which can be found at http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025013.html with comments from Sergei and Josh taken into account and with "compatible" property changed to "direct-mapped" from "physmap" not to be Linux-biased, and some additional cleanups in booting-without-of.txt.
+Ingo Molnar wrote:
 
- Documentation/powerpc/booting-without-of.txt |   39 +++++++++++++++++++++++++++
- arch/powerpc/sysdev/Makefile                 |    1 
- arch/powerpc/sysdev/rom.c                    |   31 +++++++++++++++++++++
- 3 files changed, 71 insertions(+)
- 
-Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> i.e. Sergei's patch tweaking the irqchip data structures is wrong - the 
+> correct approach is what i do for i386/x86_64: install a different 
+> "threaded" flow handler.
 
-Index: powerpc/Documentation/powerpc/booting-without-of.txt
-===================================================================
---- powerpc.orig/Documentation/powerpc/booting-without-of.txt
-+++ powerpc/Documentation/powerpc/booting-without-of.txt
-@@ -6,6 +6,8 @@
-     IBM Corp.
- (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
-     Freescale Semiconductor, FSL SOC and 32-bit additions
-+(c) 2006 MontaVista Software, Inc.
-+    Flash chip node definition
- 
-    May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
- 
-@@ -1693,6 +1695,43 @@ platforms are moved over to use the flat
- 		};
- 	};
- 
-+    g) Flash chip nodes
-+
-+    Flash chips (Memory Technology Devices) are often used for solid state
-+    file systems on embedded devices.
-+
-+    Required properties:
-+
-+     - device_type : has to be "rom"
-+     - compatible : Should specify what this ROM device is compatible with
-+       (i.e. "onenand"). Currently, this is most likely to be "direct-mapped"
-+       (which corresponds to the MTD physmap mapping driver).
-+     - regs : Offset and length of the register set (or memory mapping) for
-+       the device.
-+
-+    Recommended properties :
-+
-+     - bank-width : Width of the flash data bus in bytes. Required
-+       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
-+     - partitions : Several pairs of 32-bit values where the first value is
-+       partition's offset from the start of the device and the second one is
-+       partition size in bytes with LSB used to signify a read only
-+       partititon (so, the parition size should always be an even number).
-+     - partition-names : The list of concatenated zero terminated strings
-+       representing the partition names.
-+
-+   Example:
-+
-+ 	flash@ff000000 {
-+ 		device_type = "rom";
-+ 		compatible = "direct-mapped";
-+ 		regs = <ff000000 01000000>;
-+ 		bank-width = <4>;
-+ 		partitions = <00000000 00f80000
-+ 			      00f80000 00080001>;
-+ 		partition-names = "fs\0firmware";
-+ 	};
-+
-    More devices will be defined as this spec matures.
- 
- 
-Index: powerpc/arch/powerpc/sysdev/Makefile
-===================================================================
---- powerpc.orig/arch/powerpc/sysdev/Makefile
-+++ powerpc/arch/powerpc/sysdev/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_pic.o
-+obj-$(CONFIG_MTD)		+= rom.o
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
-Index: powerpc/arch/powerpc/sysdev/rom.c
-===================================================================
---- /dev/null
-+++ powerpc/arch/powerpc/sysdev/rom.c
-@@ -0,0 +1,31 @@
-+/*
-+ * ROM device registration
-+ *
-+ * (C) 2006 MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <asm/of_device.h>
-+
-+static int __init powerpc_flash_init(void)
-+{
-+	struct device_node *node = NULL;
-+
-+	/*
-+	 * Register all the devices which type is "rom"
-+	 */
-+	while ((node = of_find_node_by_type(node, "rom")) != NULL) {
-+		if (node->name == NULL) {
-+			printk(KERN_WARNING "powerpc_flash_init: found 'rom' "
-+				"device, but with no name, skipping...\n");
-+			continue;
-+		}
-+		of_platform_device_create(node, node->name, NULL);
-+	}
-+	return 0;
-+}
-+
-+arch_initcall(powerpc_flash_init);
+    Let me remind you that the patch was following *your* change in 
+handle_fasteoi_irq(). Do not present it as my own invention.
+
+> I prefer this to tweaking the existing 
+> 'fasteoi' handler, to make the act of supporting a threaded flow design 
+
+    You do, indeed? :-)
+
+> explicit. (and to allow a mixed threaded/non-threaded flow setup) I 
+> didnt take Daniel's prior patch for that reason: he tried to tweak the 
+> fasteoi flow handler - which is an almost good approach but not good 
+> enough :-)
+
+    Yeah, your way was *really* better. :-/
+
+> on PPC64, 'get the vector' initiates an ACK as well - is that done 
+> before handle_irq() is done?
+
+    Exactly. How else do_IRQ() would know the vector?
+
+>>So by doing a mask followed by an eoi, you essentially mask the 
+>>interrupt preventing further delivery of that interrupt and lower the 
+>>CPU priority in the PIC thus allowing processing of further 
+>>interrupts.
+
+> correct, that's what should happen.
+
+    eoi() would be a more proper name than ack() then.
+
+>>Are there other fasteoi controllers than the ones I have on powerpc 
+>>anyway ?
+
+> well, if you mean the x86 APICs, there you get the vector 'for free' as 
+> part of the IRQ entry call sequence, and there's an EOI register in the 
+> local APIC that notifies the IRQ hardware, lowers the CPU priority, etc. 
+> We have that as an ->eoi handler right now.
+
+    Yes. And my perception from that fragment of RT patch was that fasteoi was 
+targeted only at SMP interrupt controllers which like IOAPIC are sensible 
+enough to not trouble the other CPUs with an interrupt that's already been 
+taken by a certain CPU for handling, i.e. that interrupt being effectively 
+masked off until EOI arrives (well, that's so for the level triggered but not 
+the edge-triggered IRQs, if I don't mistake), so there's no need for explicit 
+masking and at the same time that interrupt isn't hindering the delivery of 
+the lower-priority interrupts to any CPU (unlike that would be happening with 
+8259)...
+    Now it turns out that my understading was wrong, and fasteoi could even 
+fit for 8259 (according to Ben)?
+
+> 	Ingo
+
+WBR, Sergei
