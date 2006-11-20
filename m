@@ -1,16 +1,18 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C283D681F2
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 09:31:00 +1100 (EST)
-Date: Mon, 20 Nov 2006 16:30:58 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [POWERPC][PATCH 2/2] Revert "[POWERPC] Add powerpc get/set_rtc_time
-	interface to new generic rtc class"
-Message-Id: <20061120163058.518f9118.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17762.11247.302674.175475@cargo.ozlabs.ibm.com>
+Date: Tue, 21 Nov 2006 09:27:59 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH] setup_kcore(): Fix incorrect function name in panic()
+	call.
+In-Reply-To: <Pine.LNX.4.62.0611170620240.16998@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0611170446250.16998@pademelon.sonytel.be>
+	<200611171458.11245.jk@ozlabs.org>
+	<Pine.LNX.4.62.0611170506510.16998@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0611170620240.16998@pademelon.sonytel.be>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,83 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This reverts commit 7a69af63e788a324d162201a0b23df41bcf158dd.
+Geert Uytterhoeven writes:
 
-As advised by David Brownell:
+> On Fri, 17 Nov 2006, Geert Uytterhoeven wrote:
+> > On Fri, 17 Nov 2006, Jeremy Kerr wrote:
+> > > 
+> > > > -			panic("mem_init: kmalloc failed\n");
+> > > > +			panic("setup_kcore: kmalloc failed\n");
+> > > 
+> > > How about:
+> > > 	
+> > > 	panic("%s: kmalloc_failed\n", __FUNCTION__);
+> > > 
+> > > To prevent this happening again?
+> > 
+> > You're right, thanks for the suggestion!
+> 
+> Updated patch below:
 
-http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
----
- arch/powerpc/kernel/time.c |   42 ------------------------------------------
- include/asm-powerpc/time.h |    6 +-----
- 2 files changed, 1 insertions(+), 47 deletions(-)
+Grumble.
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index a1b5e4b..46a24de 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -1014,48 +1014,6 @@ void __init time_init(void)
- 	set_dec(tb_ticks_per_jiffy);
- }
- 
--#ifdef CONFIG_RTC_CLASS
--static int set_rtc_class_time(struct rtc_time *tm)
--{
--	int err;
--	struct class_device *class_dev =
--		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
--
--	if (class_dev == NULL)
--		return -ENODEV;
--
--	err = rtc_set_time(class_dev, tm);
--
--	rtc_class_close(class_dev);
--
--	return 0;
--}
--
--static void get_rtc_class_time(struct rtc_time *tm)
--{
--	int err;
--	struct class_device *class_dev =
--		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
--
--	if (class_dev == NULL)
--		return;
--
--	err = rtc_read_time(class_dev, tm);
--
--	rtc_class_close(class_dev);
--
--	return;
--}
--
--int __init rtc_class_hookup(void)
--{
--	ppc_md.get_rtc_time = get_rtc_class_time;
--	ppc_md.set_rtc_time = set_rtc_class_time;
--
--	return 0;
--}
--#endif /* CONFIG_RTC_CLASS */
--
- 
- #define FEBRUARY	2
- #define	STARTOFTIME	1970
-diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
-index a782850..268c623 100644
---- a/include/asm-powerpc/time.h
-+++ b/include/asm-powerpc/time.h
-@@ -39,10 +39,6 @@ extern void generic_calibrate_decr(void)
- extern void wakeup_decrementer(void);
- extern void snapshot_timebase(void);
- 
--#ifdef CONFIG_RTC_CLASS
--extern int __init rtc_class_hookup(void);
--#endif
--
- /* Some sane defaults: 125 MHz timebase, 1GHz processor */
- extern unsigned long ppc_proc_freq;
- #define DEFAULT_PROC_FREQ	(DEFAULT_TB_FREQ * 8)
--- 
-1.4.2.3
+Please don't send patches that you want to go upstream with a subject
+starting with "Re:" and a whole pile of stuff preceding the patch
+description.  Do it like Andrew Morton describes in:
+
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+
+Regards,
+Paul.
