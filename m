@@ -1,15 +1,15 @@
 Return-Path: <Leonid@a-k-a.net>
 Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
-	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 771A967BE1
+	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 76F6E67B9F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Nov 2006 01:12:47 +1100 (EST)
+	Tue, 21 Nov 2006 02:28:30 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: Perl 
-Date: Mon, 20 Nov 2006 06:12:45 -0800
-Message-ID: <406A31B117F2734987636D6CCC93EE3C0438F1@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <20061120083459.29600353A53@atlas.denx.de>
+Date: Mon, 20 Nov 2006 07:28:28 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3C0438F3@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C0438F1@ehost011-3.exch011.intermedia.net>
 From: "Leonid" <Leonid@a-k-a.net>
 To: <wd@denx.de>
 Cc: linuxppc-embedded@ozlabs.org
@@ -37,10 +37,6 @@ all
 > > perl files there) - it doesn't find certain glibc symbols. With ELDK
 4.0
 
-> What is your "original" filesystem? Any standard distro, or what?
-[Leonid] The one, supplied by AMCC with Yosemite board - came from DENX
-originally I believe though I'm not sure.
-
 > > tmp # /opt/bin/perl warnings.pl
 > > /opt/bin/perl: relocation error: /opt/bin/perl: symbol __floatsidf,
 > > version GLIBC_2.3.2 not defined in file libc.so.6 wie
@@ -48,8 +44,8 @@ originally I believe though I'm not sure.
 > Looks as if you used the ppc_4xx packages for  this,  which  are  for
 > FPU-less  4xx  processors.  On  the  yosemite,  you  should  use  the
 > ppc_4xxFP tools instead.
-[Leonid] That must be it! I'll recompile, using ppc_4xxFP target.
+[Leonid] Wee, this really was it, now it works!
 
-Thanks a lot,
+Thanks a lot again,
 
 Leonid.
