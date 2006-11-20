@@ -1,18 +1,19 @@
-Return-Path: <leisun124@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
-	by ozlabs.org (Postfix) with ESMTP id 94F5567C00
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id CC95A67B6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Nov 2006 08:21:21 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so1504771wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Nov 2006 13:21:19 -0800 (PST)
-Message-ID: <f9a7e7a80611191321r291964cfh653a88714b3b0267@mail.gmail.com>
-Date: Sun, 19 Nov 2006 16:21:19 -0500
-From: "Lei Sun" <leisun124@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: BDI2000 not processing init list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 20 Nov 2006 11:23:58 +1100 (EST)
+To: "Lei Sun" <leisun124@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: BDI2000 not processing init list 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 19 Nov 2006 16:21:19 EST."
+	<f9a7e7a80611191321r291964cfh653a88714b3b0267@mail.gmail.com>
+Date: Mon, 20 Nov 2006 01:23:50 +0100
+Sender: wd@denx.de
+Message-Id: <20061120002350.87E0335360D@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all:
-   I got BDI2000 today, tring to use to to debug my MMU problem. But
-after I hooked it up and issue "reset", the following messages are
-printed out:
+In message <f9a7e7a80611191321r291964cfh653a88714b3b0267@mail.gmail.com> you wrote:
+>
+>    I got BDI2000 today, tring to use to to debug my MMU problem. But
+> after I hooked it up and issue "reset", the following messages are
+> printed out:
 
-BDI>reset
-- BDI asserts HRESET
-- Reset JTAG controller passed
-- Bypass check: 0x00000001 => 0x00000001
-- JTAG exists check passed
-- COP status is 0x01
-- Check running state passed
-- BDI scans COP freeze command
-- BDI removes HRESET
-- Target PVR is 0x80822013
-- Target SVR is 0x00000000
-- COP status is 0x05
-- Check stopped state passed
-- Check LSRL length passed
-- BDI sets breakpoint at 0xFFF00100
-- BDI resumes program execution
-- Waiting for target stop passed
+Please RTFM, then check your BDI config file for the setting of the
+STARTUP parameter, and/or try "reset halt".
 
-It didn't process the init list, the IMMR still shows the default
-value, instead of the one specified in init list.  The weird thing is
-, if it didn't process init list, it should keep resetting because of
-the watch dog timmer, I didn't see that happen as well.
+Best regards,
 
-My target is mpc8270, the BDI firmware version is 1.24 logic 1.05
+Wolfgang Denk
 
-Any one had the similar experience ?
-
-Thanks
-lei
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Overdrawn?  But I still have checks left!
