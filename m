@@ -1,18 +1,18 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
-	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 76F6E67B9F
+Return-Path: <stonepine@126.com>
+Received: from m5-142.126.com (m5-142.126.com [202.108.5.142])
+	by ozlabs.org (Postfix) with SMTP id 9E51567F41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Nov 2006 02:28:30 +1100 (EST)
+	Tue, 21 Nov 2006 06:25:49 +1100 (EST)
+Message-ID: <4561F9F2.8020706@126.com>
+Date: Tue, 21 Nov 2006 02:54:42 +0800
+From: Stephen Yee <stonepine@126.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Perl 
-Date: Mon, 20 Nov 2006 07:28:28 -0800
-Message-ID: <406A31B117F2734987636D6CCC93EE3C0438F3@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C0438F1@ehost011-3.exch011.intermedia.net>
-From: "Leonid" <Leonid@a-k-a.net>
-To: <wd@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+To: Andrey Volkov <avolkov@varma-el.com>
+Subject: Re: FYI:  SM5xx toolchain project berliOS registration
+References: <452D0172.1010806@varma-el.com>
+In-Reply-To: <452D0172.1010806@varma-el.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Stephen Yee <shyi@bmrtech.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +23,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday, November 20, 2006 12:35 AM Wolfgang Denk wrote:
-> In message <406A31B117F2734987636D6CCC93EE3C0438F0@ehost011-
-> 3.exch011.intermedia.net> you wrote:
+Hi All,
+  I want to make Voyager GX PCI Demo Board Ver.A(a PCI cards with
+SiliconMotion SM501 chip) work on PPC 405ep board to support CRT
+monitor, I have ported Andrey Volkov's SiliconMotion SM501 drivers to
+2.6.17,  and I have modified the module parameter 'active_plane' to CRT,
+but, I can't get anything from the CRT monitor, and the relative console
+messages as following:
+
+....
+registered sm5xx-fb device
+sm5xx_fb_enable_controller: Enabling CRT controller
+Console: switching to colour frame buffer device 128x48
+fb0: SM5xx CRT frame buffer device
+.....
+
+is Here a  successful  story  about using SM501 on PPC platform with
+this driver?  and would you please give me some advices to drive this
+devices?
+Thanks in Advance.
+Stephen.
+
+Andrey Volkov wrote:
+
+>Hi all,
 >
-> > I've done this successfully with ELDK 4.0 and 3.1.1 on PPC440EP
-Yosemite
-> > board. Resulting perl binary is working with ELDK ppc_4xx filesystem
-> > (linux 2.6.13 has been used).
-> >=20
-> > However it doesn't run on original Yosemite filesystem (I've copied
-all
-> > perl files there) - it doesn't find certain glibc symbols. With ELDK
-4.0
-
-> > tmp # /opt/bin/perl warnings.pl
-> > /opt/bin/perl: relocation error: /opt/bin/perl: symbol __floatsidf,
-> > version GLIBC_2.3.2 not defined in file libc.so.6 wie
-
-> Looks as if you used the ppc_4xx packages for  this,  which  are  for
-> FPU-less  4xx  processors.  On  the  yosemite,  you  should  use  the
-> ppc_4xxFP tools instead.
-[Leonid] Wee, this really was it, now it works!
-
-Thanks a lot again,
-
-Leonid.
+>Yesterday I issued new SiliconMotion SM501 drivers
+>project request to berlios, and receive
+>approvement couple hours ago.
+>
+>So project home page is:
+>
+> http://developer.berlios.de/projects/sm5xx/
+>
+>Anyone who wants admin/write-access, please register with
+>berlios and tell me your account.
+>
+>SVN will be activated in nearest hours.
+>Berlios has direct shell access to your repos.
+>So if there are any svn/CVS-dumps to import or any
+>scripts to set up...
+>
+>The central mailing list
+>
+>	sm5xx-devel@lists.berlios.de
+>
+>will be active soon too.
+>
+>--
+>Happy hacking ;),
+>
+>Andrey Volkov
+>Varma Electronics Oy
+>
+>-------- Original Message --------
+>Subject: BerliOS Developer Project Approved
+>Date: Wed, 11 Oct 2006 12:49:58 +0200 (CEST)
+>From: admin@berlios.de
+>To: avolkov@varma-el.com
+>
+>Your project registration for BerliOS Developer has been approved.
+>
+>Project Full Name:  SM5xx Toolchain
+>Project Unix Name:  sm5xx
+>CVS Server:         cvs.berlios.de
+>SVN Server:         svn.berlios.de
+>Shell Server:       shell.berlios.de
+>Web Server:         sm5xx.berlios.de
+>
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>  
+>
