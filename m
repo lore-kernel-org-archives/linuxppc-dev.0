@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061120180525.281408000@arndb.de>
+Message-Id: <20061120180523.820143000@arndb.de>
 References: <20061120174454.067872000@arndb.de>
-Date: Mon, 20 Nov 2006 18:45:08 +0100
+Date: Mon, 20 Nov 2006 18:45:04 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: cbe-oss-dev@ozlabs.org
-Subject: [PATCH 14/22] spufs: use SPU master control to prevent wild SPU
-	execution
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [PATCH 10/22] spufs: fix missing stop-and-signal
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,236 +17,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When the user changes the runcontrol register, an SPU might be
-running without a process being attached to it and waiting for
-events. In order to prevent this, make sure we always disable
-the priv1 master control when we're not inside of spu_run.
+From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 
+When there is pending signals, current spufs_run_spu() always returns 
+-ERESTARTSYS and it is called again automatically.
+But, if spe already stopped by stop-and-signal or halt instruction,
+returning -ERESTARTSYS makes stop-and-signal/halt lost and 
+spu run over the end-point.
+
+For your convenience, I attached a sample code to restage this bug.
+If there is no bug, printed NPC will be 0x4000.
+
+Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+
 ---
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/hw_ops.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/hw_ops.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/hw_ops.c
-@@ -216,13 +216,26 @@ static void spu_hw_runcntl_write(struct 
- 	spin_unlock_irq(&ctx->spu->register_lock);
- }
- 
--static void spu_hw_runcntl_stop(struct spu_context *ctx)
-+static void spu_hw_master_start(struct spu_context *ctx)
- {
--	spin_lock_irq(&ctx->spu->register_lock);
--	out_be32(&ctx->spu->problem->spu_runcntl_RW, SPU_RUNCNTL_STOP);
--	while (in_be32(&ctx->spu->problem->spu_status_R) & SPU_STATUS_RUNNING)
--		cpu_relax();
--	spin_unlock_irq(&ctx->spu->register_lock);
-+	struct spu *spu = ctx->spu;
-+	u64 sr1;
-+
-+	spin_lock_irq(&spu->register_lock);
-+	sr1 = spu_mfc_sr1_get(spu) | MFC_STATE1_MASTER_RUN_CONTROL_MASK;
-+	spu_mfc_sr1_set(spu, sr1);
-+	spin_unlock_irq(&spu->register_lock);
-+}
-+
-+static void spu_hw_master_stop(struct spu_context *ctx)
-+{
-+	struct spu *spu = ctx->spu;
-+	u64 sr1;
-+
-+	spin_lock_irq(&spu->register_lock);
-+	sr1 = spu_mfc_sr1_get(spu) & ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
-+	spu_mfc_sr1_set(spu, sr1);
-+	spin_unlock_irq(&spu->register_lock);
- }
- 
- static int spu_hw_set_mfc_query(struct spu_context * ctx, u32 mask, u32 mode)
-@@ -295,7 +308,8 @@ struct spu_context_ops spu_hw_ops = {
- 	.status_read = spu_hw_status_read,
- 	.get_ls = spu_hw_get_ls,
- 	.runcntl_write = spu_hw_runcntl_write,
--	.runcntl_stop = spu_hw_runcntl_stop,
-+	.master_start = spu_hw_master_start,
-+	.master_stop = spu_hw_master_stop,
- 	.set_mfc_query = spu_hw_set_mfc_query,
- 	.read_mfc_tagstatus = spu_hw_read_mfc_tagstatus,
- 	.get_mfc_free_elements = spu_hw_get_mfc_free_elements,
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/backing_ops.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/backing_ops.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/backing_ops.c
-@@ -280,9 +280,26 @@ static void spu_backing_runcntl_write(st
- 	spin_unlock(&ctx->csa.register_lock);
- }
- 
--static void spu_backing_runcntl_stop(struct spu_context *ctx)
-+static void spu_backing_master_start(struct spu_context *ctx)
- {
--	spu_backing_runcntl_write(ctx, SPU_RUNCNTL_STOP);
-+	struct spu_state *csa = &ctx->csa;
-+	u64 sr1;
-+
-+	spin_lock(&csa->register_lock);
-+	sr1 = csa->priv1.mfc_sr1_RW | MFC_STATE1_MASTER_RUN_CONTROL_MASK;
-+	csa->priv1.mfc_sr1_RW = sr1;
-+	spin_unlock(&csa->register_lock);
-+}
-+
-+static void spu_backing_master_stop(struct spu_context *ctx)
-+{
-+	struct spu_state *csa = &ctx->csa;
-+	u64 sr1;
-+
-+	spin_lock(&csa->register_lock);
-+	sr1 = csa->priv1.mfc_sr1_RW & ~MFC_STATE1_MASTER_RUN_CONTROL_MASK;
-+	csa->priv1.mfc_sr1_RW = sr1;
-+	spin_unlock(&csa->register_lock);
- }
- 
- static int spu_backing_set_mfc_query(struct spu_context * ctx, u32 mask,
-@@ -347,7 +364,8 @@ struct spu_context_ops spu_backing_ops =
- 	.status_read = spu_backing_status_read,
- 	.get_ls = spu_backing_get_ls,
- 	.runcntl_write = spu_backing_runcntl_write,
--	.runcntl_stop = spu_backing_runcntl_stop,
-+	.master_start = spu_backing_master_start,
-+	.master_stop = spu_backing_master_stop,
- 	.set_mfc_query = spu_backing_set_mfc_query,
- 	.read_mfc_tagstatus = spu_backing_read_mfc_tagstatus,
- 	.get_mfc_free_elements = spu_backing_get_mfc_free_elements,
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-@@ -116,7 +116,8 @@ struct spu_context_ops {
- 	 u32(*status_read) (struct spu_context * ctx);
- 	char*(*get_ls) (struct spu_context * ctx);
- 	void (*runcntl_write) (struct spu_context * ctx, u32 data);
--	void (*runcntl_stop) (struct spu_context * ctx);
-+	void (*master_start) (struct spu_context * ctx);
-+	void (*master_stop) (struct spu_context * ctx);
- 	int (*set_mfc_query)(struct spu_context * ctx, u32 mask, u32 mode);
- 	u32 (*read_mfc_tagstatus)(struct spu_context * ctx);
- 	u32 (*get_mfc_free_elements)(struct spu_context *ctx);
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/context.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/context.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/context.c
-@@ -122,29 +122,29 @@ void spu_unmap_mappings(struct spu_conte
- 
- int spu_acquire_exclusive(struct spu_context *ctx)
- {
--       int ret = 0;
-+	int ret = 0;
- 
--       down_write(&ctx->state_sema);
--       /* ctx is about to be freed, can't acquire any more */
--       if (!ctx->owner) {
--               ret = -EINVAL;
--               goto out;
--       }
--
--       if (ctx->state == SPU_STATE_SAVED) {
--               ret = spu_activate(ctx, 0);
--               if (ret)
--                       goto out;
--               ctx->state = SPU_STATE_RUNNABLE;
--       } else {
--               /* We need to exclude userspace access to the context. */
--               spu_unmap_mappings(ctx);
--       }
-+	down_write(&ctx->state_sema);
-+	/* ctx is about to be freed, can't acquire any more */
-+	if (!ctx->owner) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (ctx->state == SPU_STATE_SAVED) {
-+		ret = spu_activate(ctx, 0);
-+		if (ret)
-+			goto out;
-+		ctx->state = SPU_STATE_RUNNABLE;
-+	} else {
-+		/* We need to exclude userspace access to the context. */
-+		spu_unmap_mappings(ctx);
-+	}
- 
- out:
--       if (ret)
--               up_write(&ctx->state_sema);
--       return ret;
-+	if (ret)
-+		up_write(&ctx->state_sema);
-+	return ret;
- }
- 
- int spu_acquire_runnable(struct spu_context *ctx)
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/inode.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -248,8 +248,13 @@ static int spu_setup_isolated(struct spu
- 	if (!isolated_loader)
- 		return -ENODEV;
- 
--	if ((ret = spu_acquire_exclusive(ctx)) != 0)
--		return ret;
-+	/* prevent concurrent operation with spu_run */
-+	down(&ctx->run_sema);
-+	ctx->ops->master_start(ctx);
-+
-+	ret = spu_acquire_exclusive(ctx);
-+	if (ret)
-+		goto out;
- 
- 	mfc_cntl = &ctx->spu->priv2->mfc_control_RW;
- 
-@@ -315,12 +320,14 @@ out_drop_priv:
- 
- out_unlock:
- 	spu_release_exclusive(ctx);
-+out:
-+	ctx->ops->master_stop(ctx);
-+	up(&ctx->run_sema);
- 	return ret;
- }
- 
- int spu_recycle_isolated(struct spu_context *ctx)
- {
--	ctx->ops->runcntl_stop(ctx);
- 	return spu_setup_isolated(ctx);
- }
- 
-@@ -435,6 +442,8 @@ out:
- 	if (ret >= 0 && (flags & SPU_CREATE_ISOLATE)) {
- 		int setup_err = spu_setup_isolated(
- 				SPUFS_I(dentry->d_inode)->i_ctx);
-+		/* FIXME: clean up context again on failure to avoid
-+		          leak. */
- 		if (setup_err)
- 			ret = setup_err;
- 	}
+
+ run.c |   28 ++++++++++++++++++----------
+ 1 files changed, 18 insertions(+), 10 deletions(-)
+
+
 Index: linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/run.c
 +++ linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
-@@ -207,6 +207,7 @@ long spufs_run_spu(struct file *file, st
- 	if (down_interruptible(&ctx->run_sema))
- 		return -ERESTARTSYS;
+@@ -79,13 +79,7 @@ static inline int spu_run_fini(struct sp
  
-+	ctx->ops->master_start(ctx);
- 	ctx->event_return = 0;
- 	ret = spu_run_init(ctx, npc);
- 	if (ret)
-@@ -234,7 +235,7 @@ long spufs_run_spu(struct file *file, st
- 	} while (!ret && !(status & (SPU_STATUS_STOPPED_BY_STOP |
- 				      SPU_STATUS_STOPPED_BY_HALT)));
+ 	if (signal_pending(current))
+ 		ret = -ERESTARTSYS;
+-	if (unlikely(current->ptrace & PT_PTRACED)) {
+-		if ((*status & SPU_STATUS_STOPPED_BY_STOP)
+-		    && (*status >> SPU_STOP_STATUS_SHIFT) == 0x3fff) {
+-			force_sig(SIGTRAP, current);
+-			ret = -ERESTARTSYS;
+-		}
+-	}
++
+ 	return ret;
+ }
  
--	ctx->ops->runcntl_stop(ctx);
-+	ctx->ops->master_stop(ctx);
+@@ -232,7 +226,7 @@ long spufs_run_spu(struct file *file, st
+ 		if (unlikely(ctx->state != SPU_STATE_RUNNABLE)) {
+ 			ret = spu_reacquire_runnable(ctx, npc, &status);
+ 			if (ret)
+-				goto out;
++				goto out2;
+ 			continue;
+ 		}
+ 		ret = spu_process_events(ctx);
+@@ -242,10 +236,24 @@ long spufs_run_spu(struct file *file, st
+ 
+ 	ctx->ops->runcntl_stop(ctx);
  	ret = spu_run_fini(ctx, npc, &status);
+-	if (!ret)
+-		ret = status;
  	spu_yield(ctx);
  
++out2:
++	if ((ret == 0) ||
++	    ((ret == -ERESTARTSYS) &&
++	     ((status & SPU_STATUS_STOPPED_BY_HALT) ||
++	      ((status & SPU_STATUS_STOPPED_BY_STOP) &&
++	       (status >> SPU_STOP_STATUS_SHIFT != 0x2104)))))
++		ret = status;
++
++	if (unlikely(current->ptrace & PT_PTRACED)) {
++		if ((status & SPU_STATUS_STOPPED_BY_STOP)
++		    && (status >> SPU_STOP_STATUS_SHIFT) == 0x3fff) {
++			force_sig(SIGTRAP, current);
++			ret = -ERESTARTSYS;
++		}
++	}
++
+ out:
+ 	*event = ctx->event_return;
+ 	up(&ctx->run_sema);
 
 --
