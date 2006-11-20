@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061120180526.757793000@arndb.de>
+Message-Id: <20061120180521.991897000@arndb.de>
 References: <20061120174454.067872000@arndb.de>
-Date: Mon, 20 Nov 2006 18:45:12 +0100
+Date: Mon, 20 Nov 2006 18:44:59 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: cbe-oss-dev@ozlabs.org
-Subject: [PATCH 18/22] cell: add symbol exports for oprofile
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Kevin Corry <kevcorry@us.ibm.com>
+Subject: [PATCH 05/22] spufs: Remove /spu_tag_mask file
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, Dwayne Grant McConnell <decimal@us.ibm.com>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,118 +17,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add symbol-exports for the new routines in arch/powerpc/platforms/cell/pmu.c.
-They are needed for Oprofile, which can be built as a module.
+From: Dwayne Grant McConnell <decimal@us.ibm.com>
+This patch removes the /spu_tag_mask file from spufs. The data provided by
+this file is also available from the /dma_info file in the dma_info_mask
+of the spu_dma_info struct.
 
-Patch is against 2.6.18-arnd5.
+The file was intended to be used by gdb, but that never used it, and
+now it has been replaced with the more verbose dma_info file.
 
-Signed-Off-By: Kevin Corry <kevcorry@us.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-
-Index: linux-2.6/arch/powerpc/platforms/cell/pmu.c
+Signed-off-by: Dwayne Grant McConnell <decimal@us.ibm.com>
+Signed-off-by: Arnd Bergmann  <arnd.bergmann@de.ibm.com>
+---
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/pmu.c
-+++ linux-2.6/arch/powerpc/platforms/cell/pmu.c
-@@ -85,6 +85,7 @@ u32 cbe_read_phys_ctr(u32 cpu, u32 phys_
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1439,28 +1439,6 @@ static u64 spufs_decr_status_get(void *d
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_decr_status_ops, spufs_decr_status_get,
+ 			spufs_decr_status_set, "0x%llx\n")
  
- 	return val;
- }
-+EXPORT_SYMBOL_GPL(cbe_read_phys_ctr);
- 
- void cbe_write_phys_ctr(u32 cpu, u32 phys_ctr, u32 val)
+-static void spufs_spu_tag_mask_set(void *data, u64 val)
+-{
+-	struct spu_context *ctx = data;
+-	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	spu_acquire_saved(ctx);
+-	lscsa->tag_mask.slot[0] = (u32) val;
+-	spu_release(ctx);
+-}
+-
+-static u64 spufs_spu_tag_mask_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	u64 ret;
+-	spu_acquire_saved(ctx);
+-	ret = lscsa->tag_mask.slot[0];
+-	spu_release(ctx);
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_spu_tag_mask_ops, spufs_spu_tag_mask_get,
+-			spufs_spu_tag_mask_set, "0x%llx\n")
+-
+ static void spufs_event_mask_set(void *data, u64 val)
  {
-@@ -111,6 +112,7 @@ void cbe_write_phys_ctr(u32 cpu, u32 phy
- 		}
- 	}
- }
-+EXPORT_SYMBOL_GPL(cbe_write_phys_ctr);
- 
- /*
-  * "Logical" counter registers.
-@@ -130,6 +132,7 @@ u32 cbe_read_ctr(u32 cpu, u32 ctr)
- 
- 	return val;
- }
-+EXPORT_SYMBOL_GPL(cbe_read_ctr);
- 
- void cbe_write_ctr(u32 cpu, u32 ctr, u32 val)
- {
-@@ -149,6 +152,7 @@ void cbe_write_ctr(u32 cpu, u32 ctr, u32
- 
- 	cbe_write_phys_ctr(cpu, phys_ctr, val);
- }
-+EXPORT_SYMBOL_GPL(cbe_write_ctr);
- 
- /*
-  * Counter-control registers.
-@@ -164,12 +168,14 @@ u32 cbe_read_pm07_control(u32 cpu, u32 c
- 
- 	return pm07_control;
- }
-+EXPORT_SYMBOL_GPL(cbe_read_pm07_control);
- 
- void cbe_write_pm07_control(u32 cpu, u32 ctr, u32 val)
- {
- 	if (ctr < NR_CTRS)
- 		WRITE_WO_MMIO(pm07_control[ctr], val);
- }
-+EXPORT_SYMBOL_GPL(cbe_write_pm07_control);
- 
- /*
-  * Other PMU control registers. Most of these are write-only.
-@@ -215,6 +221,7 @@ u32 cbe_read_pm(u32 cpu, enum pm_reg_nam
- 
- 	return val;
- }
-+EXPORT_SYMBOL_GPL(cbe_read_pm);
- 
- void cbe_write_pm(u32 cpu, enum pm_reg_name reg, u32 val)
- {
-@@ -252,6 +259,7 @@ void cbe_write_pm(u32 cpu, enum pm_reg_n
- 		break;
- 	}
- }
-+EXPORT_SYMBOL_GPL(cbe_write_pm);
- 
- /*
-  * Get/set the size of a physical counter to either 16 or 32 bits.
-@@ -268,6 +276,7 @@ u32 cbe_get_ctr_size(u32 cpu, u32 phys_c
- 
- 	return size;
- }
-+EXPORT_SYMBOL_GPL(cbe_get_ctr_size);
- 
- void cbe_set_ctr_size(u32 cpu, u32 phys_ctr, u32 ctr_size)
- {
-@@ -287,6 +296,7 @@ void cbe_set_ctr_size(u32 cpu, u32 phys_
- 		cbe_write_pm(cpu, pm_control, pm_ctrl);
- 	}
- }
-+EXPORT_SYMBOL_GPL(cbe_set_ctr_size);
- 
- /*
-  * Enable/disable the entire performance monitoring unit.
-@@ -304,6 +314,7 @@ void cbe_enable_pm(u32 cpu)
- 	pm_ctrl = cbe_read_pm(cpu, pm_control) | CBE_PM_ENABLE_PERF_MON;
- 	cbe_write_pm(cpu, pm_control, pm_ctrl);
- }
-+EXPORT_SYMBOL_GPL(cbe_enable_pm);
- 
- void cbe_disable_pm(u32 cpu)
- {
-@@ -311,6 +322,7 @@ void cbe_disable_pm(u32 cpu)
- 	pm_ctrl = cbe_read_pm(cpu, pm_control) & ~CBE_PM_ENABLE_PERF_MON;
- 	cbe_write_pm(cpu, pm_control, pm_ctrl);
- }
-+EXPORT_SYMBOL_GPL(cbe_disable_pm);
- 
- /*
-  * Reading from the trace_buffer.
-@@ -325,4 +337,5 @@ void cbe_read_trace_buffer(u32 cpu, u64 
- 	*buf++ = in_be64(&pmd_regs->trace_buffer_0_63);
- 	*buf++ = in_be64(&pmd_regs->trace_buffer_64_127);
- }
-+EXPORT_SYMBOL_GPL(cbe_read_trace_buffer);
- 
+ 	struct spu_context *ctx = data;
+@@ -1678,7 +1656,6 @@ struct tree_descr spufs_dir_contents[] =
+ 	{ "srr0", &spufs_srr0_ops, 0666, },
+ 	{ "decr", &spufs_decr_ops, 0666, },
+ 	{ "decr_status", &spufs_decr_status_ops, 0666, },
+-	{ "spu_tag_mask", &spufs_spu_tag_mask_ops, 0666, },
+ 	{ "event_mask", &spufs_event_mask_ops, 0666, },
+ 	{ "event_status", &spufs_event_status_ops, 0444, },
+ 	{ "psmap", &spufs_psmap_fops, 0666, },
 
 --
