@@ -1,27 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CC8E967D71
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 07:11:21 +1100 (EST)
-Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
-	type IRQ handlers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20061120175502.GA12733@elte.hu>
-References: <1163966437.5826.99.camel@localhost.localdomain>
-	<20061119200650.GA22949@elte.hu>
-	<1163967590.5826.104.camel@localhost.localdomain>
-	<20061119202348.GA27649@elte.hu>
-	<1163985380.5826.139.camel@localhost.localdomain>
-	<20061120100144.GA27812@elte.hu> <4561C9EC.3020506@ru.mvista.com>
-	<20061120165621.GA1504@elte.hu> <4561DFE1.4020708@ru.mvista.com>
-	<20061120172642.GA8683@elte.hu>  <20061120175502.GA12733@elte.hu>
-Content-Type: text/plain
-Date: Tue, 21 Nov 2006 07:11:33 +1100
-Message-Id: <1164053493.8073.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
+Return-Path: <rutger@wingding.demon.nl>
+Received: from post-26.mail.nl.demon.net (post-26.mail.nl.demon.net
+	[194.159.73.196]) by ozlabs.org (Postfix) with ESMTP id 4C64667F5E
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 07:19:38 +1100 (EST)
+Received: from wingding.demon.nl ([82.161.27.36]:57573)
+	by post-26.mail.nl.demon.net with esmtp (Exim 4.51)
+	id 1GmDpY-000IM2-7F
+	for linuxppc-dev@ozlabs.org; Mon, 20 Nov 2006 18:25:20 +0000
+Received: from rutger by wingding.demon.nl with local (Exim 4.63)
+	(envelope-from <rutger@wingding.demon.nl>) id 1GmDpX-00083F-H1
+	for linuxppc-dev@ozlabs.org; Mon, 20 Nov 2006 19:25:19 +0100
+Date: Mon, 20 Nov 2006 19:25:19 +0100
+From: Rutger Nijlunsing <rutger@nospam.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add generated powerpc files to .gitignore
+Message-ID: <20061120182519.GA24789@nospam.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Reply-To: linuxppc-dev@tux.tmfweb.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,23 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Is this the right place for patches like this to be digisted?  This
+patch adds files generated on a G3 PowerBook built of 2.6-git...
 
-> Index: linux/kernel/irq/chip.c
-> ===================================================================
-> --- linux.orig/kernel/irq/chip.c
-> +++ linux/kernel/irq/chip.c
-> @@ -238,8 +238,10 @@ static inline void mask_ack_irq(struct i
->  	if (desc->chip->mask_ack)
->  		desc->chip->mask_ack(irq);
->  	else {
-> -		desc->chip->mask(irq);
-> -		desc->chip->ack(irq);
-> +		if (desc->chip->mask)
-> +			desc->chip->mask(irq);
-> +		if (desc->chip->mask)
-> +			desc->chip->ack(irq);
 
-Looks like a typo to me :-)
+Author: Rutger Nijlunsing <linuxppc-dev@tux.tmfweb.nl>
+Date:   Mon Nov 20 18:52:56 2006 +0100
 
-Cheers,
-Ben.
+    Add generated powerpc files to .gitignore
+
+diff --git a/arch/powerpc/.gitignore b/arch/powerpc/.gitignore
+new file mode 100644
+index 0000000..a1a869c
+--- /dev/null
++++ b/arch/powerpc/.gitignore
+@@ -0,0 +1 @@
++include
+diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
+index 45c9ad2..dadf873 100644
+--- a/arch/powerpc/boot/.gitignore
++++ b/arch/powerpc/boot/.gitignore
+@@ -1,20 +1,30 @@
+ addnote
++empty.c
++hack-coff
+ infblock.c
+ infblock.h
+ infcodes.c
+ infcodes.h
+ inffast.c
+ inffast.h
++inffixed.h
+ inflate.c
++inflate.h
+ inftrees.c
+ inftrees.h
+ infutil.c
+ infutil.h
+ kernel-vmlinux.strip.c
+ kernel-vmlinux.strip.gz
+ uImage
+ zImage
++zImage.chrp
++zImage.coff
++zImage.coff.lds
++zImage.lds
++zImage.miboot
++zImage.pmac
+ zImage.vmode
+ zconf.h
+ zlib.h
+ zutil.h
+
+
+-- 
+Rutger Nijlunsing ---------------------------------- eludias ed dse.nl
+never attribute to a conspiracy which can be explained by incompetence
+----------------------------------------------------------------------
