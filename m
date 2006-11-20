@@ -1,29 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A3BFA67BF4
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 08:08:39 +1100 (EST)
-Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
-	type IRQ handlers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <4560C409.9030709@ru.mvista.com>
-References: <200611192243.34850.sshtylyov@ru.mvista.com>
-	<1163966437.5826.99.camel@localhost.localdomain>
-	<20061119200650.GA22949@elte.hu>
-	<1163967590.5826.104.camel@localhost.localdomain>
-	<4560BDF5.400@ru.mvista.com>
-	<1163968376.5826.110.camel@localhost.localdomain>
-	<4560C121.30403@ru.mvista.com>
-	<1163968885.5826.116.camel@localhost.localdomain>
-	<4560C409.9030709@ru.mvista.com>
-Content-Type: text/plain
-Date: Mon, 20 Nov 2006 08:08:43 +1100
-Message-Id: <1163970524.5826.128.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061117181133.GH23600@austin.ibm.com>
+References: <20061116154051.GB2008@localdomain>
+	<20061117033638.0E24B67BCE@ozlabs.org>
+	<20061117153105.edca0777.sfr@canb.auug.org.au>
+	<1163738640.16815.45.camel@localhost.localdomain>
+	<20061117181133.GH23600@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-YmjbtmhGlrO2xZ1ZcOiN"
+Date: Mon, 20 Nov 2006 11:44:16 +1100
+Message-Id: <1163983456.7832.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org, dwalker@mvista.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ego@in.ibm.com,
+	linuxppc-dev@ozlabs.org, ntl@pobox.com,
+	Anton Blanchard <anton@samba.org>, srinivasa@in.ibm.com, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,39 +28,72 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
->     I'm not sure it's feasible. The idea behind level/edge flows is to 
-> eliminate the interrupt priority I think. That's why they EOI ASAP (with the 
-> level handler masking IRQ before that) -- this way the other interrupts may 
-> come thru.
+--=-YmjbtmhGlrO2xZ1ZcOiN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Well, the idea behind the level/edge flow is not exactly that afaik.
-It's more like having tailored handlers for level/edge on PICs that are
-not intelligent to auto-mask with a priority mecanism (ie. dumb PICs
-which are very common in the embedded field, and for example, on ARM
-where genirq takes its roots).
+On Fri, 2006-11-17 at 12:11 -0600, Linas Vepstas wrote:
+> On Fri, Nov 17, 2006 at 03:44:00PM +1100, Michael Ellerman wrote:
+> > On Fri, 2006-11-17 at 15:31 +1100, Stephen Rothwell wrote:
+> > > One small nit ...
+> > >=20
+> > > On Fri, 17 Nov 2006 14:36:35 +1100 Michael Ellerman <michael@ellerman=
+.id.au> wrote:
+> > > >
+> > > > +static int __init pseries_cpu_hotplug_init(void)
+> > > > +{
+> > > > +	rtas_stop_self_args.token =3D rtas_token("stop-self");
+> > > > +	qcss_tok =3D rtas_token("query-cpu-stopped-state");
+> > > > +
+> > > > +	if (rtas_stop_self_args.token =3D=3D RTAS_UNKNOWN_SERVICE ||
+> > > > +			qcss_tok =3D=3D RTAS_UNKNOWN_SERVICE)
+> > > > +		return 1;
+> > >=20
+> > > initcall fucntions should return 0 or -<error>;  -ENODEV is ignored,
+> > > other nonzero values cause a log message if initcall debugging is ena=
+bled.
+> >=20
+> > OK. I wanted to return an error, so there's something in the log to sho=
+w
+> > that cpu hotplug was disabled - but I didn't check what to return. I'll
+> > fix it up on Monday to return -ENOENT.
+>=20
+> I presume the default config from RedHat/SuSE is to have
+> CONFIG_HOTPLUG_CPU turned on. In this case, all sorts of=20
+> pseries boxes will spew a warning. I suppose this is a=20
+> form of subliminal advertising: "Hey Schmo, upgrade your=20
+> box to something that supports CPU hotplug!".=20
 
->     I used to think that fasteoi was intended for SMP PICs which are 
-> intelligent enough to mask off the interrupts pending delivery or handling on 
-> CPUs and unmask them upon receiving EOI -- just like x86 IOAPIC does.
+Yeah the distros would have it on for everything. I'm not sure what
+machines support it, but I think it'd best to have some indication in
+the log that we disabled it.
 
-In general, PICs that are intelligent enough to mask off, wether using
-something as you describe or using priorities. I don't feel the need of
-going through hoops to allow lower or same priority interrupts in.
-First, if you really need an interrupt to be serviced quick, then you
-can just give it a higher priority. In the general case however, I do
--not- want to allow interrupts to stack up. Imagine a big IBM machine
-with hundreds interrupt lines, what happens to the kernel stack if we
-let them interrupt each other ?
+I'll change it to printk, and always return success. As an aside, I
+don't really see the point of having return codes from init routines if
+nothing is done with them by default ... but whatever.
 
->  This 
-> way, the acceptance of the lower priority interrupts shouldn't be hindered on 
-> the other CPUs. Maybe the scheme is different for OpenPIC (I know it has the 
-> different interrupt distribution scheme from IOAPIC)?
+cheers
 
-I don't think there is a real need to let lower priority interrupts in
-on a CPU that is currently handling a higher priority one.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-In the case of RT, though, with delayed delivery, then, the option to
-mask and EOI right away is always possible.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Ben.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-YmjbtmhGlrO2xZ1ZcOiN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFYPpgdSjSd0sB4dIRAoPuAJ9ciJfPTYhfZkZS3UShua8o3H5k3wCfWSJD
++/i05bd7yfeL7t+Y6ogngBE=
+=WrxK
+-----END PGP SIGNATURE-----
+
+--=-YmjbtmhGlrO2xZ1ZcOiN--
