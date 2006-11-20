@@ -1,22 +1,16 @@
-Return-Path: <rutger@wingding.demon.nl>
-Received: from post-26.mail.nl.demon.net (post-26.mail.nl.demon.net
-	[194.159.73.196]) by ozlabs.org (Postfix) with ESMTP id 4C64667F5E
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 07:19:38 +1100 (EST)
-Received: from wingding.demon.nl ([82.161.27.36]:57573)
-	by post-26.mail.nl.demon.net with esmtp (Exim 4.51)
-	id 1GmDpY-000IM2-7F
-	for linuxppc-dev@ozlabs.org; Mon, 20 Nov 2006 18:25:20 +0000
-Received: from rutger by wingding.demon.nl with local (Exim 4.63)
-	(envelope-from <rutger@wingding.demon.nl>) id 1GmDpX-00083F-H1
-	for linuxppc-dev@ozlabs.org; Mon, 20 Nov 2006 19:25:19 +0100
-Date: Mon, 20 Nov 2006 19:25:19 +0100
-From: Rutger Nijlunsing <rutger@nospam.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Add generated powerpc files to .gitignore
-Message-ID: <20061120182519.GA24789@nospam.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: maynardj@us.ibm.com
+Subject: Re: [PATCH 1/1]OProfile for Cell bug fix
+Date: Mon, 20 Nov 2006 21:21:01 +0100
+References: <4561DCE8.20502@us.ibm.com>
+In-Reply-To: <4561DCE8.20502@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Reply-To: linuxppc-dev@tux.tmfweb.nl
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200611202121.01573.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Is this the right place for patches like this to be digisted?  This
-patch adds files generated on a G3 PowerBook built of 2.6-git...
+On Monday 20 November 2006 17:50, Maynard Johnson wrote:
+>   Subject: Bug fixes for OProfile for Cell
+>
+> From: Maynard Johnson <maynardj@us.ibm.com>
+>
+> This patch contains three crucial fixes:
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0- op_model_cell.c:cell_vi=
+rtual_cntr: correctly access the per-cpu
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0pmc_values arrays
+>
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0- op_model_cell.c:cell_re=
+g_setup: =C2=A0initialize _all_ 4 elements of
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0pmc_values with re=
+set_value
+>
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0- include/asm-powerpc/cel=
+l-pmu.h: =C2=A0fix broken macro,
+> PM07_CTR_INPUT_MUX
+>
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
 
+Ok, looks good. I've posted the combined oprofile patch now as part of
+my cell patch series for 2.6.20, using the version you sent me during
+the Weekend. Can you check that everything from this patch is included
+there as well?
 
-Author: Rutger Nijlunsing <linuxppc-dev@tux.tmfweb.nl>
-Date:   Mon Nov 20 18:52:56 2006 +0100
-
-    Add generated powerpc files to .gitignore
-
-diff --git a/arch/powerpc/.gitignore b/arch/powerpc/.gitignore
-new file mode 100644
-index 0000000..a1a869c
---- /dev/null
-+++ b/arch/powerpc/.gitignore
-@@ -0,0 +1 @@
-+include
-diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
-index 45c9ad2..dadf873 100644
---- a/arch/powerpc/boot/.gitignore
-+++ b/arch/powerpc/boot/.gitignore
-@@ -1,20 +1,30 @@
- addnote
-+empty.c
-+hack-coff
- infblock.c
- infblock.h
- infcodes.c
- infcodes.h
- inffast.c
- inffast.h
-+inffixed.h
- inflate.c
-+inflate.h
- inftrees.c
- inftrees.h
- infutil.c
- infutil.h
- kernel-vmlinux.strip.c
- kernel-vmlinux.strip.gz
- uImage
- zImage
-+zImage.chrp
-+zImage.coff
-+zImage.coff.lds
-+zImage.lds
-+zImage.miboot
-+zImage.pmac
- zImage.vmode
- zconf.h
- zlib.h
- zutil.h
-
-
--- 
-Rutger Nijlunsing ---------------------------------- eludias ed dse.nl
-never attribute to a conspiracy which can be explained by incompetence
-----------------------------------------------------------------------
+	Arnd <><
