@@ -1,22 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: jschopp <jschopp@austin.ibm.com>
-In-Reply-To: <45612D68.8080404@austin.ibm.com>
-References: <20061116154051.GB2008@localdomain>
-	<20061117033638.0E24B67BCE@ozlabs.org>
-	<20061117180456.GG23600@austin.ibm.com>
-	<1163984914.7832.16.camel@localhost.localdomain>
-	<45612D68.8080404@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-WKoeIF9knjOLdn8+5KJx"
-Date: Mon, 20 Nov 2006 16:59:15 +1100
-Message-Id: <1164002356.13318.4.camel@localhost.localdomain>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 673C367B6C
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 21:03:15 +1100 (EST)
+Date: Mon, 20 Nov 2006 11:01:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
+	type IRQ handlers
+Message-ID: <20061120100144.GA27812@elte.hu>
+References: <200611192243.34850.sshtylyov@ru.mvista.com>
+	<1163966437.5826.99.camel@localhost.localdomain>
+	<20061119200650.GA22949@elte.hu>
+	<1163967590.5826.104.camel@localhost.localdomain>
+	<20061119202348.GA27649@elte.hu>
+	<1163985380.5826.139.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: srinivasa@in.ibm.com, ego@in.ibm.com, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Anton Blanchard <anton@samba.org>, ntl@pobox.com
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1163985380.5826.139.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,94 +30,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-WKoeIF9knjOLdn8+5KJx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Sun, 2006-11-19 at 22:22 -0600, jschopp wrote:
-> >>> +	/* Isolation and deallocation are definatly done by
-> >>                                         ^^^^^^^^^
-> >> typo
->=20
-> That word definitely gives me trouble.  I'd imagine the typo originated w=
-ith me.
+> If my understanding of "threaded handlers" is correct, that is 
+> delaying the delivery of the interrupt to a thread while restoring the 
+> ability to process further interrupts of the same or lower priority 
+> immediately.
 
-Yeah it's definitely a tricky one ;)
+correct. It's basically a different type of 'flow' of handling an 
+interrupt. It's a host-side genirq-level detail that should have no 
+irqchip level impact at all.
 
-> >>
-> >>> +	 * drslot_chrp_cpu.  If they were not they would be
-> >>> +	 * done here.  Change isolate state to Isolate and
-> >>> +	 * change allocation-state to Unusable.
-> >>> +	 */
-> >>> +	paca[cpu].cpu_start =3D 0;
-> >> I can't figure out what the comment means with respect=20
-> >> to this code ...=20
-> >=20
-> > Me either. It's unchanged from the original merge of cpu hotplug:
-> > http://kernel.org/git/?p=3Dlinux/kernel/git/torvalds/old-2.6-bkcvs.git;=
-a=3Dcommit;h=3D24c13f21f0a6abe07020a959990da2b134e6734f
-> > http://kernel.org/git/?p=3Dlinux/kernel/git/torvalds/old-2.6-bkcvs.git;=
-a=3Dblobdiff;h=3D72144b6122f9336e7fa242e50b65b099df0cd72b;hp=3Df671515c0676=
-e61064ae414273fa4546d0c04938;hb=3D24c13f21f0a6abe07020a959990da2b134e6734f;=
-f=3Darch/ppc64/kernel/smp.c
-> >=20
-> > Which carries the name of one Joel Schopp :)
-> >=20
-> > Grepping the tree at that point finds no other mention of
-> > drslot_chrp_cpu, so I think it's a stale comment - we should probably
-> > just rip it out - Joel?
->=20
-> It might be clearer by saying "the userspace program drslot_chrp_cpu" or =
-"isolation and=20
-> deallocation occur in userspace, so just stop the cpu.  If isolation and =
-deallocation ever=20
-> move from userpace to kernel space they would go here".  On pseries dynam=
-ic partitioning=20
-> or cpu guard (the things that initiate a cpu hotplug) all call a userspac=
-e program drmgr,=20
-> which calls drslot_chrp_cpu, which then talks to the firmware to isolate =
-and unallocate=20
-> (on remove, the opposite on add) after it has hotplug removed the cpu via=
- the /sys=20
-> interface.  This allows the cpu to be reassigned to another partition.
->=20
-> At least that's what I remember from back then when we did it.  Though I =
-don't think it's=20
-> changed any.  Feel free to make the comment more intelligible.
+The only detail is that sometimes a threaded flow /cannot/ be 
+implemented if the irqchip lacks certain methods. (such as a 
+mask/unmask)
 
-OK, it didn't occur to me that it was referring to userspace. I'll
-change it to:
+i.e. Sergei's patch tweaking the irqchip data structures is wrong - the 
+correct approach is what i do for i386/x86_64: install a different 
+"threaded" flow handler. I prefer this to tweaking the existing 
+'fasteoi' handler, to make the act of supporting a threaded flow design 
+explicit. (and to allow a mixed threaded/non-threaded flow setup) I 
+didnt take Daniel's prior patch for that reason: he tried to tweak the 
+fasteoi flow handler - which is an almost good approach but not good 
+enough :-)
 
-/*
- * Isolation and deallocation occur in userspace, so just stop the cpu.
- * If isolation and deallocation ever move from userpace to kernel space
- * we would do them here.
- */
+> There is no such thing as an explicit "ack" on fasteoi controllers. 
+> The ack is implicit with the reading of the vector (either via a 
+> special cycle on the bus or via reading the intack register for 
+> example on mpic).
 
-Sound OK?
+well, even if it's coupled to the reading of the vector, there is an ack 
+initiated by the host. This is not really a fundamental thing, it's API 
+semantics of the hardware interface.
 
-cheers
+so the question is not 'is there an ACK' (all non-MSI-type-of IRQ 
+delivery mechanisms have some sort of ACK mechanism), but what is the 
+precise structure of ACK-ing an IRQ that the host recieves.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+on PPC64, 'get the vector' initiates an ACK as well - is that done 
+before handle_irq() is done?
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+> So by doing a mask followed by an eoi, you essentially mask the 
+> interrupt preventing further delivery of that interrupt and lower the 
+> CPU priority in the PIC thus allowing processing of further 
+> interrupts.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+correct, that's what should happen.
 
---=-WKoeIF9knjOLdn8+5KJx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> Are there other fasteoi controllers than the ones I have on powerpc 
+> anyway ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
+well, if you mean the x86 APICs, there you get the vector 'for free' as 
+part of the IRQ entry call sequence, and there's an EOI register in the 
+local APIC that notifies the IRQ hardware, lowers the CPU priority, etc. 
+We have that as an ->eoi handler right now.
 
-iD8DBQBFYUQydSjSd0sB4dIRArovAJ9yNzBo6FNbdNsxfBh6SxFL260nBgCcCtad
-SexREwSBVXLJhgADL6M9hpA=
-=KyhT
------END PGP SIGNATURE-----
-
---=-WKoeIF9knjOLdn8+5KJx--
+	Ingo
