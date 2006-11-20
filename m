@@ -1,16 +1,20 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: maynardj@us.ibm.com
-Subject: Re: [PATCH 1/1]OProfile for Cell bug fix
-Date: Mon, 20 Nov 2006 21:21:01 +0100
-References: <4561DCE8.20502@us.ibm.com>
-In-Reply-To: <4561DCE8.20502@us.ibm.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4BDB767C33
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 08:18:37 +1100 (EST)
+Message-ID: <45621828.5000904@am.sony.com>
+Date: Mon, 20 Nov 2006 13:03:36 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200611202121.01573.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH 3/16] add base support for Celleb platform
+References: <200611150931.kAF9VciJ023243@toshiba.co.jp>
+In-Reply-To: <200611150931.kAF9VciJ023243@toshiba.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 20 November 2006 17:50, Maynard Johnson wrote:
->   Subject: Bug fixes for OProfile for Cell
->
-> From: Maynard Johnson <maynardj@us.ibm.com>
->
-> This patch contains three crucial fixes:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0- op_model_cell.c:cell_vi=
-rtual_cntr: correctly access the per-cpu
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0pmc_values arrays
->
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0- op_model_cell.c:cell_re=
-g_setup: =C2=A0initialize _all_ 4 elements of
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0pmc_values with re=
-set_value
->
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0- include/asm-powerpc/cel=
-l-pmu.h: =C2=A0fix broken macro,
-> PM07_CTR_INPUT_MUX
->
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+Just a few very minor comments.
 
-Ok, looks good. I've posted the combined oprofile patch now as part of
-my cell patch series for 2.6.20, using the version you sent me during
-the Weekend. Can you check that everything from this patch is included
-there as well?
+Ishizaki Kou wrote:
+> Index: linux-2.6.19/arch/powerpc/platforms/celleb/beat.c
+> +int64_t beat_repository_encode(int vendor_id, const char *str, uint64_t name[4])
+> +{ 
+> +	union {
+> +		unsigned char cbuf[8];
+> +		uint64_t a;
+> +	} buf[4];
+> +
+> +	buf[0].cbuf[0] = vendor_id << 4;
+> +	buf[0].cbuf[1] = 0;
+> +	buf[0].cbuf[2] = 0;
+> +	buf[0].cbuf[3] = 0;
+> +	if((str = re_det1(str, &buf[0].cbuf[4], 4)) == NULL) {
+> +		return -1;
+> +	}
+> +	if((str = re_det1(str, &buf[1].cbuf[0], 8)) == NULL) {
+> +		return -2;
+> +	}
+> +	if((str = re_det1(str, &buf[2].cbuf[0], 8)) == NULL) {
+> +		return -3;
+> +	}
+> +	if((str = re_det1(str, &buf[3].cbuf[0], 8)) == NULL) {
+> +		return -4; 
+> +	}
+> +	if(*str != 0) {
+> +		return -5;
+> +	} 
+> +	name[0] = buf[0].a;
+> +	name[1] = buf[1].a;
+> +	name[2] = buf[2].a;
+> +	name[3] = buf[3].a;
+> +	return 0;
+> +} 
 
-	Arnd <><
+
+I think we can have common lower level repository routines shared between
+beat and lv1.
+
+
+> +#ifdef DEBUG
+> +#define DBG(fmt...) udbg_printf(fmt)
+> +#else
+> +#define DBG(fmt...)
+> +#endif
+
+Maybe you should consider using something like this for the non-debug case:
+
+#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
+
+That way a syntax check is always done, and it will keep your DBG() statements
+from getting out of sync with the rest of the code.
+
+
+-Geoff
