@@ -1,13 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061120180524.176650000@arndb.de>
+Message-Id: <20061120180525.851134000@arndb.de>
 References: <20061120174454.067872000@arndb.de>
-Date: Mon, 20 Nov 2006 18:45:05 +0100
+Date: Mon, 20 Nov 2006 18:45:09 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: cbe-oss-dev@ozlabs.org
-Subject: [PATCH 11/22] spufs: avoid user-triggered oops in ptrace
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <chellwig@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [PATCH 15/22] spufs: Add runcntrl read accessors
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,93 +16,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christoph Hellwig <hch@infradead.org>
-When one of the spufs files is mapped into a process address
-space, regular users can use ptrace to attempt accessing
-them with access_process_vm(). With the way that the
-mappings currently work, this likely causes an oops.
+From: Jeremy Kerr <jeremy@au1.ibm.com>
+This change adds a read accessor for the SPE problem-state run control
+register.
 
-Setting the vm_flags to VM_IO makes sure that ptrace can
-not access them but returns an error code. This is not
-the perfect solution in case of the local store mapping,
-but it fixes the oops in a well-defined way.
+This is required for for applying (userspace) changes made to the run
+control register while the SPE is stopped - simply asserting the master
+run control bit is not sufficient. My next patch for isolated-mode
+setup requires this.
 
-Also remove leftover VM_RESERVED flags in spufs.  The
-VM_RESERVED flag is on it's way out and not checked by
-the memory managment code anymore.
-
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Signed-off-by: Christoph Hellwig <chellwig@de.ibm.com>
 
 ---
 
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+ arch/powerpc/platforms/cell/spufs/backing_ops.c |    6 ++++++
+ arch/powerpc/platforms/cell/spufs/hw_ops.c      |    6 ++++++
+ arch/powerpc/platforms/cell/spufs/spufs.h       |    1 +
+ 3 files changed, 13 insertions(+)
+ 
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/backing_ops.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
-@@ -132,7 +132,7 @@ spufs_mem_mmap(struct file *file, struct
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/backing_ops.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/backing_ops.c
+@@ -268,6 +268,11 @@ static char *spu_backing_get_ls(struct s
+ 	return ctx->csa.lscsa->ls;
+ }
  
--	/* FIXME: */
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE);
++static u32 spu_backing_runcntl_read(struct spu_context *ctx)
++{
++	return ctx->csa.prob.spu_runcntl_RW;
++}
++
+ static void spu_backing_runcntl_write(struct spu_context *ctx, u32 val)
+ {
+ 	spin_lock(&ctx->csa.register_lock);
+@@ -363,6 +368,7 @@ struct spu_context_ops spu_backing_ops =
+ 	.npc_write = spu_backing_npc_write,
+ 	.status_read = spu_backing_status_read,
+ 	.get_ls = spu_backing_get_ls,
++	.runcntl_read = spu_backing_runcntl_read,
+ 	.runcntl_write = spu_backing_runcntl_write,
+ 	.master_start = spu_backing_master_start,
+ 	.master_stop = spu_backing_master_stop,
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/hw_ops.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/hw_ops.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/hw_ops.c
+@@ -207,6 +207,11 @@ static char *spu_hw_get_ls(struct spu_co
+ 	return ctx->spu->local_store;
+ }
  
-@@ -201,7 +201,7 @@ static int spufs_cntl_mmap(struct file *
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
-@@ -791,7 +791,7 @@ static int spufs_signal1_mmap(struct fil
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
-@@ -889,8 +889,7 @@ static int spufs_signal2_mmap(struct fil
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	/* FIXME: */
--	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
-@@ -973,7 +972,7 @@ static int spufs_mss_mmap(struct file *f
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
-@@ -1015,7 +1014,7 @@ static int spufs_psmap_mmap(struct file 
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
-@@ -1056,7 +1055,7 @@ static int spufs_mfc_mmap(struct file *f
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_flags |= VM_IO;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
++static u32 spu_hw_runcntl_read(struct spu_context *ctx)
++{
++	return in_be32(&ctx->spu->problem->spu_runcntl_RW);
++}
++
+ static void spu_hw_runcntl_write(struct spu_context *ctx, u32 val)
+ {
+ 	spin_lock_irq(&ctx->spu->register_lock);
+@@ -307,6 +312,7 @@ struct spu_context_ops spu_hw_ops = {
+ 	.npc_write = spu_hw_npc_write,
+ 	.status_read = spu_hw_status_read,
+ 	.get_ls = spu_hw_get_ls,
++	.runcntl_read = spu_hw_runcntl_read,
+ 	.runcntl_write = spu_hw_runcntl_write,
+ 	.master_start = spu_hw_master_start,
+ 	.master_stop = spu_hw_master_stop,
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -115,6 +115,7 @@ struct spu_context_ops {
+ 	void (*npc_write) (struct spu_context * ctx, u32 data);
+ 	 u32(*status_read) (struct spu_context * ctx);
+ 	char*(*get_ls) (struct spu_context * ctx);
++	 u32 (*runcntl_read) (struct spu_context * ctx);
+ 	void (*runcntl_write) (struct spu_context * ctx, u32 data);
+ 	void (*master_start) (struct spu_context * ctx);
+ 	void (*master_stop) (struct spu_context * ctx);
 
 --
