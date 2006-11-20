@@ -1,18 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DA98367BDC
+Return-Path: <ml@stefan-roese.de>
+Received: from server5.sohosted.com (www.sohosted5.com [193.138.249.49])
+	by ozlabs.org (Postfix) with ESMTP id 8956367B8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Nov 2006 19:35:01 +1100 (EST)
-To: "Leonid" <Leonid@a-k-a.net>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Perl 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 19 Nov 2006 20:21:07 PST."
-	<406A31B117F2734987636D6CCC93EE3C0438F0@ehost011-3.exch011.intermedia.net>
-Date: Mon, 20 Nov 2006 09:34:59 +0100
-Sender: wd@denx.de
-Message-Id: <20061120083459.29600353A53@atlas.denx.de>
+	Mon, 20 Nov 2006 22:14:28 +1100 (EST)
+From: Stefan Roese <ml@stefan-roese.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] serial: Use real irq on UART0 (IRQ = 0) on PPC4xx systems
+Date: Mon, 20 Nov 2006 12:00:36 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200611201200.36780.ml@stefan-roese.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,36 +22,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <406A31B117F2734987636D6CCC93EE3C0438F0@ehost011-3.exch011.intermedia.net> you wrote:
->
-> I've done this successfully with ELDK 4.0 and 3.1.1 on PPC440EP Yosemite
-> board. Resulting perl binary is working with ELDK ppc_4xx filesystem
-> (linux 2.6.13 has been used).
-> 
-> However it doesn't run on original Yosemite filesystem (I've copied all
-> perl files there) - it doesn't find certain glibc symbols. With ELDK 4.0
+This patch fixes a problem seen on multiple 4xx platforms, where
+the UART0 interrupt number is 0. The macro "is_real_interrupt" lead
+on those systems to not use an real interrupt but the timer based
+implementation.
 
-What is your "original" filesystem? Any standard distro, or what?
+This problem was detected and fixed by
+Charles Gales <cgales@amcc.com> and John Baxter <jbaxter@amcc.com>
+from AMCC.
 
-> tmp # /opt/bin/perl warnings.pl
-> /opt/bin/perl: relocation error: /opt/bin/perl: symbol __floatsidf,
-> version GLIBC_2.3.2 not defined in file libc.so.6 wie
+Signed-off-by: Stefan Roese <sr@denx.de>
 
-Looks as if you used the ppc_4xx packages for  this,  which  are  for
-FPU-less  4xx  processors.  On  the  yosemite,  you  should  use  the
-ppc_4xxFP tools instead.
+---
+commit f83094acd3258575c9a5cdb1d65e241c16eff03a
+tree 72582c5eeb2a9c8ea57287616d51e42fff8ed641
+parent f56f68c4e1977f0e884a304af4c617bed4909417
+author Stefan Roese <sr@denx.de> Sat, 18 Nov 2006 10:28:50 +0100
+committer Stefan Roese <sr@denx.de> Sat, 18 Nov 2006 10:28:50 +0100
 
-> Did I something wrong?
+ drivers/serial/8250.c |   22 ++++++++++++++--------
+ 1 files changed, 14 insertions(+), 8 deletions(-)
 
-Yes. You mixed soft-fload and hard-float binaries and libraries.
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index e34bd03..a51679e 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -76,8 +76,14 @@ static unsigned int nr_uarts = CONFIG_SE
+  * We default to IRQ0 for the "no irq" hack.   Some
+  * machine types want others as well - they're free
+  * to redefine this in their header file.
++ * NOTE:  Some PPC4xx use IRQ0 for a UART Interrupt, so
++ * we will assume that the IRQ is always real
+  */
++#ifdef CONFIG_4xx
++#define is_real_interrupt(irq)	(1)
++#else
+ #define is_real_interrupt(irq)	((irq) != 0)
++#endif
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A princess should not be afraid -- not with a brave knight to protect
-her.
-	-- McCoy, "Shore Leave", stardate 3025.3
+ #ifdef CONFIG_SERIAL_8250_DETECT_IRQ
+ #define CONFIG_SERIAL_DETECT_IRQ 1
