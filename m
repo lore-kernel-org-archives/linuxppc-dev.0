@@ -1,13 +1,13 @@
 Return-Path: <kim.phillips@freescale.com>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 82F9C67ED5
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 09:30:54 +1100 (EST)
-Date: Mon, 20 Nov 2006 16:30:50 -0600
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C283D681F2
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 09:31:00 +1100 (EST)
+Date: Mon, 20 Nov 2006 16:30:58 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [POWERPC][PATCH 1/2] Revert "[POWERPC] Enable generic rtc hook for
-	the MPC8349 mITX"
-Message-Id: <20061120163050.1ce160b8.kim.phillips@freescale.com>
+Subject: [POWERPC][PATCH 2/2] Revert "[POWERPC] Add powerpc get/set_rtc_time
+	interface to new generic rtc class"
+Message-Id: <20061120163058.518f9118.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org
@@ -20,29 +20,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This reverts commit a8ed4f7ec3aa472134d7de6176f823b2667e450b.
+This reverts commit 7a69af63e788a324d162201a0b23df41bcf158dd.
 
 As advised by David Brownell:
 
 http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
 ---
- arch/powerpc/platforms/83xx/mpc834x_itx.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/time.c |   42 ------------------------------------------
+ include/asm-powerpc/time.h |    6 +-----
+ 2 files changed, 1 insertions(+), 47 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index e152d06..314c42a 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -108,10 +108,6 @@ static int __init mpc834x_itx_probe(void
- 	return 1;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index a1b5e4b..46a24de 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -1014,48 +1014,6 @@ void __init time_init(void)
+ 	set_dec(tb_ticks_per_jiffy);
  }
  
 -#ifdef CONFIG_RTC_CLASS
--late_initcall(rtc_class_hookup);
+-static int set_rtc_class_time(struct rtc_time *tm)
+-{
+-	int err;
+-	struct class_device *class_dev =
+-		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+-
+-	if (class_dev == NULL)
+-		return -ENODEV;
+-
+-	err = rtc_set_time(class_dev, tm);
+-
+-	rtc_class_close(class_dev);
+-
+-	return 0;
+-}
+-
+-static void get_rtc_class_time(struct rtc_time *tm)
+-{
+-	int err;
+-	struct class_device *class_dev =
+-		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+-
+-	if (class_dev == NULL)
+-		return;
+-
+-	err = rtc_read_time(class_dev, tm);
+-
+-	rtc_class_close(class_dev);
+-
+-	return;
+-}
+-
+-int __init rtc_class_hookup(void)
+-{
+-	ppc_md.get_rtc_time = get_rtc_class_time;
+-	ppc_md.set_rtc_time = set_rtc_class_time;
+-
+-	return 0;
+-}
+-#endif /* CONFIG_RTC_CLASS */
+-
+ 
+ #define FEBRUARY	2
+ #define	STARTOFTIME	1970
+diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
+index a782850..268c623 100644
+--- a/include/asm-powerpc/time.h
++++ b/include/asm-powerpc/time.h
+@@ -39,10 +39,6 @@ extern void generic_calibrate_decr(void)
+ extern void wakeup_decrementer(void);
+ extern void snapshot_timebase(void);
+ 
+-#ifdef CONFIG_RTC_CLASS
+-extern int __init rtc_class_hookup(void);
 -#endif
 -
- define_machine(mpc834x_itx) {
- 	.name			= "MPC834x ITX",
- 	.probe			= mpc834x_itx_probe,
+ /* Some sane defaults: 125 MHz timebase, 1GHz processor */
+ extern unsigned long ppc_proc_freq;
+ #define DEFAULT_PROC_FREQ	(DEFAULT_TB_FREQ * 8)
 -- 
 1.4.2.3
