@@ -1,16 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17762.9524.67555.778549@cargo.ozlabs.ibm.com>
-Date: Tue, 21 Nov 2006 08:59:16 +1100
+Message-ID: <17762.10479.284355.838962@cargo.ozlabs.ibm.com>
+Date: Tue, 21 Nov 2006 09:15:11 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 01/22] powerpc: convert idle_loop to use hard_irq_disable()
-In-Reply-To: <20061120180520.418063000@arndb.de>
-References: <20061120174454.067872000@arndb.de>
-	<20061120180520.418063000@arndb.de>
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [patch 00/16] powerpc cleanup patches
+In-Reply-To: <20061116162008.GF4688@localhost.localdomain>
+References: <20061102125555.252338000@localhost.localdomain>
+	<20061116162008.GF4688@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann writes:
+Sascha Hauer writes:
 
-> I got a bug report that I believe might be fixed by this
-> patch. The problem seems to be that with soft-disabled
-> interrupts in power_save, we can still get external exceptions
-> on Cell, even if we are in pause(0) a.k.a. sleep state.
+> What's the further way with these patches (at least the the ones Ben
+> acked)? Are they picked up from here or shall I post them to the patch
+> system?
 
-[snip]
-
-> -				local_irq_disable();
-> +				hard_irq_disable();
-
-This would mean that any platform-specific power_save function that
-wants to re-enable interrupts (as the pseries ones do) would have to
-do hard_irq_enable instead of local_irq_enable.  Also, I don't think
-this change will be good on iSeries.
-
-What we want is an irq-disable function that is like local_irq_disable
-but also clears MSR_EE and the hard irq enabled flag (provided we
-aren't running on iSeries).
+I picked up the ones that there was agreement on or that seemed
+obvious, and they are now in the powerpc.git tree on the for-2.6.20
+and master branches.  As for the rest, if you want them in you'll need
+to repost them with the changes that were requested, or else convince
+people that your original patch is actually correct.
 
 Paul.
