@@ -1,27 +1,13 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C3EE367BAD
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 04:56:03 +1100 (EST)
-Date: Mon, 20 Nov 2006 18:55:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
-	type IRQ handlers
-Message-ID: <20061120175502.GA12733@elte.hu>
-References: <1163966437.5826.99.camel@localhost.localdomain>
-	<20061119200650.GA22949@elte.hu>
-	<1163967590.5826.104.camel@localhost.localdomain>
-	<20061119202348.GA27649@elte.hu>
-	<1163985380.5826.139.camel@localhost.localdomain>
-	<20061120100144.GA27812@elte.hu> <4561C9EC.3020506@ru.mvista.com>
-	<20061120165621.GA1504@elte.hu> <4561DFE1.4020708@ru.mvista.com>
-	<20061120172642.GA8683@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061120172642.GA8683@elte.hu>
-Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Message-Id: <20061120180521.245775000@arndb.de>
+References: <20061120174454.067872000@arndb.de>
+Date: Mon, 20 Nov 2006 18:44:57 +0100
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: [PATCH 03/22] spufs: Change %llx to 0x%llx.
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, Dwayne Grant McConnell <decimal@us.ibm.com>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,140 +17,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Dwayne Grant McConnell <decimal@us.ibm.com>
+This patches changes /npc, /decr, /decr_status, /spu_tag_mask, 
+/event_mask, /event_status, and /srr0 files to provide output according to 
+the format string "0x%llx" instead of "%llx".
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Before this patch some files used "0x%llx" and other used "%llx" which is 
+inconsistent and potentially confusing. A user might assume "%llx" numbers 
+were decimal if they happened to not contain any a-f digits. This change 
+will break any code cannot tolerate a leading 0x in the file contents. The 
+only known users of these files are the libspe but there might also be 
+some scripts which access these files. This risk is deemed acceptable for 
+future consistency.
 
-> i'm hacking up something now to see whether it makes sense to 
-> introduce a central threaded flow type, or whether it's better the 
-> branch off the current flow types (as the code does it right now).
+Signed-off-by: Dwayne Grant McConnell <decimal@us.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-ok, a central flow type caused more problems than good - the main 
-complication is that the handler needs to know the true 'flow' 
-(edge/level/fasteoi, etc.) anyway, even in the threaded case.
+---
+Dwayne Grant McConnell <decimal@us.ibm.com>
+Lotus Notes Mail: Dwayne McConnell [Mail]/Austin/IBM@IBMUS
+Lotus Notes Calendar: Dwayne McConnell [Calendar]/Austin/IBM@IBMUS
 
-So i rather went on making the existing flow handlers more 
-threading-friendly, and undoing the x86_64 and i386 arch changes to make 
-sure that the default handlers all work fine. Does the patch below 
-(against -rt4) do the trick for your on PPC too?
-
-[ also, i excluded old-style do_IRQ() platforms from irq threading -
-  those hopelessly mix all the flow types that makes robust threading
-  support not really possible. ]
-
-	Ingo
-
-Index: linux/arch/i386/kernel/io_apic.c
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
 ===================================================================
---- linux.orig/arch/i386/kernel/io_apic.c
-+++ linux/arch/i386/kernel/io_apic.c
-@@ -1272,22 +1272,12 @@ static struct irq_chip ioapic_chip;
- static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1391,7 +1391,8 @@ static u64 spufs_npc_get(void *data)
+ 	spu_release(ctx);
+ 	return ret;
+ }
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_npc_ops, spufs_npc_get, spufs_npc_set, "%llx\n")
++DEFINE_SIMPLE_ATTRIBUTE(spufs_npc_ops, spufs_npc_get, spufs_npc_set,
++			"0x%llx\n")
+ 
+ static void spufs_decr_set(void *data, u64 val)
  {
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
--			trigger == IOAPIC_LEVEL) {
--#ifdef CONFIG_PREEMPT_HARDIRQS
-+			trigger == IOAPIC_LEVEL)
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					    handle_level_irq, "level-threaded");
--#else
--		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					      handle_fasteoi_irq, "fasteoi");
--#endif
--	} else {
--#ifdef CONFIG_PREEMPT_HARDIRQS
-+					 handle_fasteoi_irq, "fasteoi");
-+	else {
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					      handle_edge_irq, "edge-threaded");
--#else
--		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					      handle_edge_irq, "edge");
--#endif
-+					 handle_edge_irq, "edge");
- 	}
- 	set_intr_gate(vector, interrupt[irq]);
+@@ -1413,7 +1414,7 @@ static u64 spufs_decr_get(void *data)
+ 	return ret;
  }
-Index: linux/arch/x86_64/kernel/io_apic.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/io_apic.c
-+++ linux/arch/x86_64/kernel/io_apic.c
-@@ -787,22 +787,12 @@ static struct irq_chip ioapic_chip;
- static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_decr_ops, spufs_decr_get, spufs_decr_set,
+-			"%llx\n")
++			"0x%llx\n")
+ 
+ static void spufs_decr_status_set(void *data, u64 val)
  {
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
--			trigger == IOAPIC_LEVEL) {
--#ifdef CONFIG_PREEMPT_HARDIRQS
--		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					    handle_level_irq, "level-threaded");
--#else
-+			trigger == IOAPIC_LEVEL)
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_fasteoi_irq, "fasteoi");
--#endif
--	} else {
--#ifdef CONFIG_PREEMPT_HARDIRQS
--		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					      handle_edge_irq, "edge-threaded");
--#else
-+	else {
- 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
- 					      handle_edge_irq, "edge");
--#endif
- 	}
+@@ -1435,7 +1436,7 @@ static u64 spufs_decr_status_get(void *d
+ 	return ret;
  }
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_decr_status_ops, spufs_decr_status_get,
+-			spufs_decr_status_set, "%llx\n")
++			spufs_decr_status_set, "0x%llx\n")
  
-Index: linux/kernel/Kconfig.preempt
-===================================================================
---- linux.orig/kernel/Kconfig.preempt
-+++ linux/kernel/Kconfig.preempt
-@@ -105,7 +105,7 @@ config PREEMPT_SOFTIRQS
- config PREEMPT_HARDIRQS
- 	bool "Thread Hardirqs"
- 	default n
--#	depends on PREEMPT
-+	depends on !GENERIC_HARDIRQS_NO__DO_IRQ
- 	help
- 	  This option reduces the latency of the kernel by 'threading'
-           hardirqs. This means that all (or selected) hardirqs will run
-Index: linux/kernel/irq/chip.c
-===================================================================
---- linux.orig/kernel/irq/chip.c
-+++ linux/kernel/irq/chip.c
-@@ -238,8 +238,10 @@ static inline void mask_ack_irq(struct i
- 	if (desc->chip->mask_ack)
- 		desc->chip->mask_ack(irq);
- 	else {
--		desc->chip->mask(irq);
--		desc->chip->ack(irq);
-+		if (desc->chip->mask)
-+			desc->chip->mask(irq);
-+		if (desc->chip->mask)
-+			desc->chip->ack(irq);
- 	}
+ static void spufs_spu_tag_mask_set(void *data, u64 val)
+ {
+@@ -1457,7 +1458,7 @@ static u64 spufs_spu_tag_mask_get(void *
+ 	return ret;
  }
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_spu_tag_mask_ops, spufs_spu_tag_mask_get,
+-			spufs_spu_tag_mask_set, "%llx\n")
++			spufs_spu_tag_mask_set, "0x%llx\n")
  
-Index: linux/kernel/irq/handle.c
-===================================================================
---- linux.orig/kernel/irq/handle.c
-+++ linux/kernel/irq/handle.c
-@@ -266,12 +266,6 @@ fastcall notrace unsigned int __do_IRQ(u
- 		goto out;
+ static void spufs_event_mask_set(void *data, u64 val)
+ {
+@@ -1479,7 +1480,7 @@ static u64 spufs_event_mask_get(void *da
+ 	return ret;
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_event_mask_ops, spufs_event_mask_get,
+-			spufs_event_mask_set, "%llx\n")
++			spufs_event_mask_set, "0x%llx\n")
  
- 	/*
--	 * hardirq redirection to the irqd process context:
--	 */
--	if (redirect_hardirq(desc))
--		goto out_no_end;
--
--	/*
- 	 * Edge triggered interrupts need to remember
- 	 * pending events.
- 	 * This applies to any hw interrupts that allow a second
-@@ -303,7 +297,6 @@ out:
- 	 * disabled while the handler was running.
- 	 */
- 	desc->chip->end(irq);
--out_no_end:
- 	spin_unlock(&desc->lock);
+ static void spufs_srr0_set(void *data, u64 val)
+ {
+@@ -1501,7 +1502,7 @@ static u64 spufs_srr0_get(void *data)
+ 	return ret;
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(spufs_srr0_ops, spufs_srr0_get, spufs_srr0_set,
+-			"%llx\n")
++			"0x%llx\n")
  
- 	return 1;
+ static u64 spufs_id_get(void *data)
+ {
+
+--
