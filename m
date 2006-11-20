@@ -1,22 +1,12 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D95D67BAB
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2006 21:24:40 +1100 (EST)
-Date: Mon, 20 Nov 2006 11:24:24 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
-Message-ID: <20061120102424.GB12002@lst.de>
-References: <20061114012504.17455.13833.stgit@localhost.localdomain>
-	<20061114012816.17455.12059.stgit@localhost.localdomain>
-	<20061117080052.GA16985@lst.de>
-	<DB42A6F7-2B5E-4A22-8AA8-0F2C3BDEFC99@embeddedalley.com>
+Return-Path: <vwool@ru.mvista.com>
+Date: Mon, 20 Nov 2006 16:32:39 +0300
+From: Vitaly Wool <vwool@ru.mvista.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] powerpc: Add of_platform support for ROM devices
+Message-Id: <20061120163239.f9a38fc1.vwool@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DB42A6F7-2B5E-4A22-8AA8-0F2C3BDEFC99@embeddedalley.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +16,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 17, 2006 at 08:24:16PM -0500, Dan Malek wrote:
-> On Nov 17, 2006, at 3:00 AM, Christoph Hellwig wrote:
-> 
-> >this is used by arch/ppc/fec.c to set mapping uncachable, which
-> >seems rather odd to me.
-> 
-> I thought arch/ppc/fec.c is dead in favor of the
-> "generic" version in the drivers/net directory?
+Hello folks,
 
-Sorry, I actually meant drivers/net/fec.c.
+inlined below is the patch which adds support for flash device descriptions to the OF device tree. It's inspired by and partially borrowed from Sergei's patch which can be found at http://patchwork.ozlabs.org/linuxppc/patch?id=6526 but arranges things in a different way.
+This patch is a respin of the patch which can be found at http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025013.html with comments from Sergei and Josh taken into account and with "compatible" property changed to "direct-mapped" from "physmap" not to be Linux-biased, and some additional cleanups in booting-without-of.txt.
 
-> We use the va_to_pte() functions to find
-> the mappings to create "coherent" cache areas
-> by changing the cache attributes of the vmalloc()
-> space.  We can't use virt_to_phys() or similar
-> associated functions because they simply do the
-> kernel virtual arithmetic and don't return the
-> proper PTEs for for changing these attributes.
+ Documentation/powerpc/booting-without-of.txt |   39 +++++++++++++++++++++++++++
+ arch/powerpc/sysdev/Makefile                 |    1 
+ arch/powerpc/sysdev/rom.c                    |   31 +++++++++++++++++++++
+ 3 files changed, 71 insertions(+)
+ 
+Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Yes, I noticed that in the second round of actually
-looking at all the users.
-
-> >it might make sense to move the implementation to fec.c.
-> 
-> I don't know what version of fec.c you are looking
-> at, but it should use the dma_alloc_coherent() functions
-> and be stashing both the physical and virtual addresses.
-> I made this change long ago and I hope it hasn't
-> been lost.
-> 
-> The coherent dma functions will in turn use
-> the va_to_pte() (or associated functions) mentioned
-> above.
-
-drivers/net/fec.c in current linus tree doesn't use the dma
-api at all, and there is no dma api implementation that
-uses va_to_pte().  The only users of va_to_pte() in current
-Linus tree are drivers/net/fec.c:fec_uncachable() in the #else
-block of a large #ifdef / #ifelse spagethhi sections and va_to_phys in
-arch/ppc/mm/fault.c under CONFIG_8xx, which is unused.
+Index: powerpc/Documentation/powerpc/booting-without-of.txt
+===================================================================
+--- powerpc.orig/Documentation/powerpc/booting-without-of.txt
++++ powerpc/Documentation/powerpc/booting-without-of.txt
+@@ -6,6 +6,8 @@
+     IBM Corp.
+ (c) 2005 Becky Bruce <becky.bruce at freescale.com>,
+     Freescale Semiconductor, FSL SOC and 32-bit additions
++(c) 2006 MontaVista Software, Inc.
++    Flash chip node definition
+ 
+    May 18, 2005: Rev 0.1 - Initial draft, no chapter III yet.
+ 
+@@ -1693,6 +1695,43 @@ platforms are moved over to use the flat
+ 		};
+ 	};
+ 
++    g) Flash chip nodes
++
++    Flash chips (Memory Technology Devices) are often used for solid state
++    file systems on embedded devices.
++
++    Required properties:
++
++     - device_type : has to be "rom"
++     - compatible : Should specify what this ROM device is compatible with
++       (i.e. "onenand"). Currently, this is most likely to be "direct-mapped"
++       (which corresponds to the MTD physmap mapping driver).
++     - regs : Offset and length of the register set (or memory mapping) for
++       the device.
++
++    Recommended properties :
++
++     - bank-width : Width of the flash data bus in bytes. Required
++       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
++     - partitions : Several pairs of 32-bit values where the first value is
++       partition's offset from the start of the device and the second one is
++       partition size in bytes with LSB used to signify a read only
++       partititon (so, the parition size should always be an even number).
++     - partition-names : The list of concatenated zero terminated strings
++       representing the partition names.
++
++   Example:
++
++ 	flash@ff000000 {
++ 		device_type = "rom";
++ 		compatible = "direct-mapped";
++ 		regs = <ff000000 01000000>;
++ 		bank-width = <4>;
++ 		partitions = <00000000 00f80000
++ 			      00f80000 00080001>;
++ 		partition-names = "fs\0firmware";
++ 	};
++
+    More devices will be defined as this spec matures.
+ 
+ 
+Index: powerpc/arch/powerpc/sysdev/Makefile
+===================================================================
+--- powerpc.orig/arch/powerpc/sysdev/Makefile
++++ powerpc/arch/powerpc/sysdev/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_pic.o
++obj-$(CONFIG_MTD)		+= rom.o
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+Index: powerpc/arch/powerpc/sysdev/rom.c
+===================================================================
+--- /dev/null
++++ powerpc/arch/powerpc/sysdev/rom.c
+@@ -0,0 +1,31 @@
++/*
++ * ROM device registration
++ *
++ * (C) 2006 MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <linux/kernel.h>
++#include <asm/of_device.h>
++
++static int __init powerpc_flash_init(void)
++{
++	struct device_node *node = NULL;
++
++	/*
++	 * Register all the devices which type is "rom"
++	 */
++	while ((node = of_find_node_by_type(node, "rom")) != NULL) {
++		if (node->name == NULL) {
++			printk(KERN_WARNING "powerpc_flash_init: found 'rom' "
++				"device, but with no name, skipping...\n");
++			continue;
++		}
++		of_platform_device_create(node, node->name, NULL);
++	}
++	return 0;
++}
++
++arch_initcall(powerpc_flash_init);
