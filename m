@@ -1,15 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17762.10479.284355.838962@cargo.ozlabs.ibm.com>
-Date: Tue, 21 Nov 2006 09:15:11 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [patch 00/16] powerpc cleanup patches
-In-Reply-To: <20061116162008.GF4688@localhost.localdomain>
-References: <20061102125555.252338000@localhost.localdomain>
-	<20061116162008.GF4688@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 82F9C67ED5
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 09:30:54 +1100 (EST)
+Date: Mon, 20 Nov 2006 16:30:50 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [POWERPC][PATCH 1/2] Revert "[POWERPC] Enable generic rtc hook for
+	the MPC8349 mITX"
+Message-Id: <20061120163050.1ce160b8.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,16 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sascha Hauer writes:
+This reverts commit a8ed4f7ec3aa472134d7de6176f823b2667e450b.
 
-> What's the further way with these patches (at least the the ones Ben
-> acked)? Are they picked up from here or shall I post them to the patch
-> system?
+As advised by David Brownell:
 
-I picked up the ones that there was agreement on or that seemed
-obvious, and they are now in the powerpc.git tree on the for-2.6.20
-and master branches.  As for the rest, if you want them in you'll need
-to repost them with the changes that were requested, or else convince
-people that your original patch is actually correct.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
+---
+ arch/powerpc/platforms/83xx/mpc834x_itx.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-Paul.
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index e152d06..314c42a 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -108,10 +108,6 @@ static int __init mpc834x_itx_probe(void
+ 	return 1;
+ }
+ 
+-#ifdef CONFIG_RTC_CLASS
+-late_initcall(rtc_class_hookup);
+-#endif
+-
+ define_machine(mpc834x_itx) {
+ 	.name			= "MPC834x ITX",
+ 	.probe			= mpc834x_itx_probe,
+-- 
+1.4.2.3
