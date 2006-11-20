@@ -1,18 +1,24 @@
-Return-Path: <ml@stefan-roese.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id 7F63C67A3B
+Return-Path: <rmk+linuxppc-embedded=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F1CC467B6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Nov 2006 23:10:14 +1100 (EST)
-Date: Mon, 20 Nov 2006 12:54:32 +0100 (MET)
-From: Stefan Roese <ml@stefan-roese.de>
+	Tue, 21 Nov 2006 00:05:12 +1100 (EST)
+Date: Mon, 20 Nov 2006 13:04:56 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Alan <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH] serial: Use real irq on UART0 (IRQ = 0) on PPC4xx systems
+Message-ID: <20061120130455.GB22330@flint.arm.linux.org.uk>
 References: <200611201200.36780.ml@stefan-roese.de>
 	<20061120114248.60bb0869@localhost.localdomain>
-In-Reply-To: <20061120114248.60bb0869@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;  charset="iso-8859-1"
-Message-Id: <200611201255.37754.ml@stefan-roese.de>
+	<200611201255.37754.ml@stefan-roese.de>
+	<20061120121015.2fb667d0@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061120121015.2fb667d0@localhost.localdomain>
+Sender: Russell King <rmk@arm.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,32 +30,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 20 November 2006 12:42, Alan wrote:
-> On Mon, 20 Nov 2006 12:00:36 +0100
->
+On Mon, Nov 20, 2006 at 12:10:15PM +0000, Alan wrote:
+> On Mon, 20 Nov 2006 12:54:32 +0100 (MET)
 > Stefan Roese <ml@stefan-roese.de> wrote:
-> > This patch fixes a problem seen on multiple 4xx platforms, where
-> > the UART0 interrupt number is 0. The macro "is_real_interrupt" lead
-> > on those systems to not use an real interrupt but the timer based
-> > implementation.
->
-> NAK.
+> > Let's see, if I got this right. You mean that on such a platform, where 0 is a 
+> > valid physical IRQ, we should assign another value as virtual IRQ number (not 
+> > 0 and not -1 of course). And then the platform "pic" implementation should 
+> > take care of the remapping of these virtual IRQ numbers to the physical 
+> > numbers.
+> > 
+> > Correct?
+> 
+> Absolutely correct in all the detail.
 
-I knew it. ;-)
+Since IRQ0 is not valid, can we arrange for the generic interrupt
+infrastructure to always fail it's allocation, and then remove the
+utterly unused bloatful irq_desc[0] ?
 
-> Zero means "no interrupt" in the Linux space. If you have a physical IRQ
-> 0 remap it to a convenient number (eg map IRQ's + 1, or stick it on the
-> end). The logical and physical IRQ numbering in Linux don't have to match
-> up - and given some platforms have IRQ numbering per bus and the like
-> clearly doesn't in many cases.
+Didn't think so since x86 folk would scream.  Wait a moment, x86 can
+map IRQ0 to some other number for the timer interrupt, just like
+other architectures are being forced to map their UART interrupts.
 
-Let's see, if I got this right. You mean that on such a platform, where 0 is a 
-valid physical IRQ, we should assign another value as virtual IRQ number (not 
-0 and not -1 of course). And then the platform "pic" implementation should 
-take care of the remapping of these virtual IRQ numbers to the physical 
-numbers.
-
-Correct?
-
-Best regards,
-Stefan
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
