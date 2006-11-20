@@ -1,18 +1,15 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 60885679E9
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33015.mail.mud.yahoo.com (web33015.mail.mud.yahoo.com
+	[209.191.69.130]) by ozlabs.org (Postfix) with SMTP id 9A73367BF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Nov 2006 00:26:39 +1100 (EST)
-Message-ID: <4561AD63.1060201@ru.mvista.com>
-Date: Mon, 20 Nov 2006 16:28:03 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Tue, 21 Nov 2006 00:40:12 +1100 (EST)
+Date: Tue, 21 Nov 2006 00:40:10 +1100 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: passwd : error
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Stefan Roese <ml@stefan-roese.de>
-Subject: Re: [PATCH] serial: Use real irq on UART0 (IRQ = 0) on PPC4xx systems
-References: <200611201200.36780.ml@stefan-roese.de>
-In-Reply-To: <200611201200.36780.ml@stefan-roese.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-1250150746-1164030010=:99224"
+Message-ID: <730037.99224.qm@web33015.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,53 +20,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+--0-1250150746-1164030010=:99224
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Stefan Roese wrote:
-> This patch fixes a problem seen on multiple 4xx platforms, where
-> the UART0 interrupt number is 0. The macro "is_real_interrupt" lead
-> on those systems to not use an real interrupt but the timer based
-> implementation.
 
-> This problem was detected and fixed by
-> Charles Gales <cgales@amcc.com> and John Baxter <jbaxter@amcc.com>
-> from AMCC.
+Hi all 
+I use TQM8xxl board with kernel 2.6.11.7 and Ramdisk of ELDK4.0
+command adduser of busybox 1.0
+when I login (root) and type command 
+adduser van
+I receive
+adduser: /home/van: Operation not permitted
+Changing password for van
+Enter the new password (minimum of 5, maximum of 8 characters)
+Please use a combination of upper and lower case letters and numbers.
+Enter new password:
+Re-enter new password:
+passwd[74]: an error occurred updating the password file
+passwd: An error occurred updating the password file.
 
-> Signed-off-by: Stefan Roese <sr@denx.de>
+and in /home/ I see 
+drwxr-sr-x    2 -2       -2           1024 Nov 20  2006 van
+in /etc/  i see three file passwd 
+-rwxrwxrwx  1 root       root        291 Nov 20 20:20 passwd
+-rw-------  1 -2         -2          291 Nov 20 20:20 passwd-
+-rwxrwxrwx  1 -2         -2        0 Nov 20 20:20 passwd+
 
-> ---
-> commit f83094acd3258575c9a5cdb1d65e241c16eff03a
-> tree 72582c5eeb2a9c8ea57287616d51e42fff8ed641
-> parent f56f68c4e1977f0e884a304af4c617bed4909417
-> author Stefan Roese <sr@denx.de> Sat, 18 Nov 2006 10:28:50 +0100
-> committer Stefan Roese <sr@denx.de> Sat, 18 Nov 2006 10:28:50 +0100
+in nfs dir correlative with /home/ i see
+drwxr-sr-x  2 4294967294 4294967294 1024 Nov 20 20:20 van
+and /etc/
+-rwxrwxrwx  1 root       root        291 Nov 20 20:20 passwd
+-rw-------  1 4294967294 4294967294  291 Nov 20 20:20 passwd-
+-rwxrwxrwx  1 4294967294 4294967294    0 Nov 20 20:20 passwd+
 
->  drivers/serial/8250.c |   22 ++++++++++++++--------
->  1 files changed, 14 insertions(+), 8 deletions(-)
 
-> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> index e34bd03..a51679e 100644
-> --- a/drivers/serial/8250.c
-> +++ b/drivers/serial/8250.c
-> @@ -76,8 +76,14 @@ static unsigned int nr_uarts = CONFIG_SE
->   * We default to IRQ0 for the "no irq" hack.   Some
->   * machine types want others as well - they're free
->   * to redefine this in their header file.
-> + * NOTE:  Some PPC4xx use IRQ0 for a UART Interrupt, so
-> + * we will assume that the IRQ is always real
->   */
-> +#ifdef CONFIG_4xx
-> +#define is_real_interrupt(irq)	(1)
-> +#else
->  #define is_real_interrupt(irq)	((irq) != 0)
-> +#endif
+Thanks for all
 
-    This should have been done in <asm/serial.h> instead, like this:
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-1250150746-1164030010=:99224
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-#undef is_real_interrupt(irq)
-#define is_real_interrupt(irq)	1
-
-    Not too smart as well,but at least this wasy you won't be pulluting the 
-generic code...
-
-WBR, Sergei
+<br>Hi all <br>I use TQM8xxl board with kernel 2.6.11.7 and Ramdisk of ELDK4.0<br>command adduser of busybox 1.0<br>when I login (root) and type command <br>adduser van<br>I receive<br>adduser: /home/van: Operation not permitted<br>Changing password for van<br>Enter the new password (minimum of 5, maximum of 8 characters)<br>Please use a combination of upper and lower case letters and numbers.<br>Enter new password:<br>Re-enter new password:<br>passwd[74]: an error occurred updating the password file<br>passwd: An error occurred updating the password file.<br><br>and in /home/ I see <br>drwxr-sr-x&nbsp;&nbsp;&nbsp; 2 -2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1024 Nov 20&nbsp; 2006 van<br>in /etc/&nbsp; i see three file passwd <br>-rwxrwxrwx&nbsp; 1 root&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; root&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 291 Nov 20 20:20 passwd<br>-rw-------&nbsp; 1 -2 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+ &nbsp;-2 &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;291 Nov 20 20:20 passwd-<br>-rwxrwxrwx&nbsp; 1 -2 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-2&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;0 Nov 20 20:20 passwd+<br><br>in nfs dir correlative with /home/ i see<br>drwxr-sr-x&nbsp; 2 4294967294 4294967294 1024 Nov 20 20:20 van<br>and /etc/<br>-rwxrwxrwx&nbsp; 1 root&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; root&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 291 Nov 20 20:20 passwd<br>-rw-------&nbsp; 1 4294967294 4294967294&nbsp; 291 Nov 20 20:20 passwd-<br>-rwxrwxrwx&nbsp; 1 4294967294 4294967294&nbsp;&nbsp;&nbsp; 0 Nov 20 20:20 passwd+<br><br><br>Thanks for all<br><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-1250150746-1164030010=:99224--
