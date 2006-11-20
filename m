@@ -1,24 +1,28 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 5620067B99
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 02:28:12 +1100 (EST)
-Message-ID: <4561C9EC.3020506@ru.mvista.com>
-Date: Mon, 20 Nov 2006 18:29:48 +0300
+	by ozlabs.org (Postfix) with ESMTP id A74EB67BC1
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 02:44:26 +1100 (EST)
+Message-ID: <4561CDB8.2030309@ru.mvista.com>
+Date: Mon, 20 Nov 2006 18:46:00 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
 	type IRQ handlers
-References: <200611192243.34850.sshtylyov@ru.mvista.com>
-	<1163966437.5826.99.camel@localhost.localdomain>
-	<20061119200650.GA22949@elte.hu>
-	<1163967590.5826.104.camel@localhost.localdomain>
-	<20061119202348.GA27649@elte.hu>
-	<1163985380.5826.139.camel@localhost.localdomain>
-	<20061120100144.GA27812@elte.hu>
-In-Reply-To: <20061120100144.GA27812@elte.hu>
+References: <200611192243.34850.sshtylyov@ru.mvista.com>	
+	<1163966437.5826.99.camel@localhost.localdomain>	
+	<20061119200650.GA22949@elte.hu>	
+	<1163967590.5826.104.camel@localhost.localdomain>	
+	<4560BDF5.400@ru.mvista.com>	
+	<1163968376.5826.110.camel@localhost.localdomain>	
+	<4560C121.30403@ru.mvista.com>	
+	<1163968885.5826.116.camel@localhost.localdomain>	
+	<4560C409.9030709@ru.mvista.com>
+	<1163970524.5826.128.camel@localhost.localdomain>
+In-Reply-To: <1163970524.5826.128.camel@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,61 +34,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello.
 
-Ingo Molnar wrote:
+Benjamin Herrenschmidt wrote:
+>>    I'm not sure it's feasible. The idea behind level/edge flows is to 
+>>eliminate the interrupt priority I think. That's why they EOI ASAP (with the 
+>>level handler masking IRQ before that) -- this way the other interrupts may 
+>>come thru.
 
-> i.e. Sergei's patch tweaking the irqchip data structures is wrong - the 
-> correct approach is what i do for i386/x86_64: install a different 
-> "threaded" flow handler.
+> Well, the idea behind the level/edge flow is not exactly that afaik.
+> It's more like having tailored handlers for level/edge on PICs that are
+> not intelligent to auto-mask with a priority mecanism (ie. dumb PICs
+> which are very common in the embedded field, and for example, on ARM
+> where genirq takes its roots).
 
-    Let me remind you that the patch was following *your* change in 
-handle_fasteoi_irq(). Do not present it as my own invention.
+    That was a conclusion to which I came after looking at the 8259 code (that 
+PIC being full capable of the priority masking).
 
-> I prefer this to tweaking the existing 
-> 'fasteoi' handler, to make the act of supporting a threaded flow design 
+>>    I used to think that fasteoi was intended for SMP PICs which are 
+>>intelligent enough to mask off the interrupts pending delivery or handling on 
+>>CPUs and unmask them upon receiving EOI -- just like x86 IOAPIC does.
 
-    You do, indeed? :-)
+> In general, PICs that are intelligent enough to mask off, wether using
+> something as you describe or using priorities. I don't feel the need of
+> going through hoops to allow lower or same priority interrupts in.
+> First, if you really need an interrupt to be serviced quick, then you
+> can just give it a higher priority. In the general case however, I do
+> -not- want to allow interrupts to stack up. Imagine a big IBM machine
+> with hundreds interrupt lines, what happens to the kernel stack if we
+> let them interrupt each other ?
 
-> explicit. (and to allow a mixed threaded/non-threaded flow setup) I 
-> didnt take Daniel's prior patch for that reason: he tried to tweak the 
-> fasteoi flow handler - which is an almost good approach but not good 
-> enough :-)
+    Well, such machines are SMP usually... :-)
 
-    Yeah, your way was *really* better. :-/
+>> This 
+>>way, the acceptance of the lower priority interrupts shouldn't be hindered on 
+>>the other CPUs. Maybe the scheme is different for OpenPIC (I know it has the 
+>>different interrupt distribution scheme from IOAPIC)?
 
-> on PPC64, 'get the vector' initiates an ACK as well - is that done 
-> before handle_irq() is done?
+> I don't think there is a real need to let lower priority interrupts in
+> on a CPU that is currently handling a higher priority one.
 
-    Exactly. How else do_IRQ() would know the vector?
+    Nevertheless, 8259 drivers are doing exactly this on UP machines -- and 
+they were doing this before and after genirq conversion...
 
->>So by doing a mask followed by an eoi, you essentially mask the 
->>interrupt preventing further delivery of that interrupt and lower the 
->>CPU priority in the PIC thus allowing processing of further 
->>interrupts.
-
-> correct, that's what should happen.
-
-    eoi() would be a more proper name than ack() then.
-
->>Are there other fasteoi controllers than the ones I have on powerpc 
->>anyway ?
-
-> well, if you mean the x86 APICs, there you get the vector 'for free' as 
-> part of the IRQ entry call sequence, and there's an EOI register in the 
-> local APIC that notifies the IRQ hardware, lowers the CPU priority, etc. 
-> We have that as an ->eoi handler right now.
-
-    Yes. And my perception from that fragment of RT patch was that fasteoi was 
-targeted only at SMP interrupt controllers which like IOAPIC are sensible 
-enough to not trouble the other CPUs with an interrupt that's already been 
-taken by a certain CPU for handling, i.e. that interrupt being effectively 
-masked off until EOI arrives (well, that's so for the level triggered but not 
-the edge-triggered IRQs, if I don't mistake), so there's no need for explicit 
-masking and at the same time that interrupt isn't hindering the delivery of 
-the lower-priority interrupts to any CPU (unlike that would be happening with 
-8259)...
-    Now it turns out that my understading was wrong, and fasteoi could even 
-fit for 8259 (according to Ben)?
-
-> 	Ingo
+> Ben.
 
 WBR, Sergei
