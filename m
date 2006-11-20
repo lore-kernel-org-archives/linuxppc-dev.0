@@ -1,23 +1,26 @@
-Return-Path: <jsimmons@infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8D9867BFE
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 03:52:00 +1100 (EST)
-Date: Mon, 20 Nov 2006 16:51:39 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [RFC: 2.6 patch] remove broken video drivers
-In-Reply-To: <20061118000235.GV31879@stusta.de>
-Message-ID: <Pine.LNX.4.64.0611201648550.17639@pentafluge.infradead.org>
-References: <20061118000235.GV31879@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: sammy@sammy.net, linux-fbdev-devel@lists.sourceforge.net,
-	sun3-list@redhat.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-m68k@lists.linux-m68k.org,
-	geert@linux-m68k.org, adaplas@pol.net
+	by ozlabs.org (Postfix) with ESMTP id 58D8967D2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 06:11:15 +1100 (EST)
+Date: Mon, 20 Nov 2006 20:10:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi
+	type IRQ handlers
+Message-ID: <20061120191013.GA30828@elte.hu>
+References: <1163967590.5826.104.camel@localhost.localdomain>
+	<20061119202348.GA27649@elte.hu>
+	<1163985380.5826.139.camel@localhost.localdomain>
+	<20061120100144.GA27812@elte.hu> <4561C9EC.3020506@ru.mvista.com>
+	<20061120165621.GA1504@elte.hu> <4561DFE1.4020708@ru.mvista.com>
+	<20061120172642.GA8683@elte.hu>
+	<20061120175502.GA12733@elte.hu> <4561F43B.40000@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4561F43B.40000@ru.mvista.com>
+Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +31,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> This patch removes video drivers that:
-> - had already been marked as BROKEN in 2.6.0 three years ago and
-> - are still marked as BROKEN.
-> 
-> These are the following drivers:
-> - FB_CYBER
-> - FB_VIRGE
-> - FB_RETINAZ3
-> - FB_ATARI
-> - FB_SUN3
-> - FB_PM3
+* Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
 
-If someone is willing to send me a Permedia3 card I can port the driver. 
-The rest are m68k drivers. I do have S3Trio and a Virge card but no specs.
+> >-#else
+> >-		set_irq_chip_and_handler_name(irq, &ioapic_chip,
+> >-					      handle_edge_irq, "edge");
+> >-#endif
+> >+					 handle_edge_irq, "edge");
+> 
+>    Hm, why force edge flow on edge-triggered IRQs?
+
+it doesnt do that. This, ontop of -rt4 restores it to the vanilla arch 
+code.
+
+> > 	if (desc->chip->mask_ack)
+> > 		desc->chip->mask_ack(irq);
+> > 	else {
+> >-		desc->chip->mask(irq);
+> >-		desc->chip->ack(irq);
+> >+		if (desc->chip->mask)
+> >+			desc->chip->mask(irq);
+> >+		if (desc->chip->mask)
+> >+			desc->chip->ack(irq);
+> > 	}
+> > }
+> 
+>    Hmm, that just won't do for PPC threaded fasteoi flows! What you'll 
+> get is a threaded IRQ with EOI *never ever* issued, unless my PPC 
+> patch is also in...
+
+ok, how about the patch below in addition?
+
+	Ingo
+
+Index: linux/kernel/irq/chip.c
+===================================================================
+--- linux.orig/kernel/irq/chip.c
++++ linux/kernel/irq/chip.c
+@@ -396,7 +398,7 @@ handle_fasteoi_irq(unsigned int irq, str
+ 	 */
+ 	if (redirect_hardirq(desc)) {
+ 		mask_ack_irq(desc, irq);
+-		goto out_unlock;
++		goto out;
+ 	}
+ 
+ 	desc->status &= ~IRQ_PENDING;
