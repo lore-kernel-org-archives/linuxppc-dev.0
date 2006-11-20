@@ -1,10 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061120180523.464008000@arndb.de>
+Message-Id: <20061120180523.217159000@arndb.de>
 References: <20061120174454.067872000@arndb.de>
-Date: Mon, 20 Nov 2006 18:45:03 +0100
+Date: Mon, 20 Nov 2006 18:45:02 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: cbe-oss-dev@ozlabs.org
-Subject: [PATCH 09/22] spufs: return correct event for data storage interrupt
+Subject: [PATCH 08/22] spufs: replace spu.nid with spu.node
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	linux-kernel@vger.kernel.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,37 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When we attempt an MFC DMA to an unmapped address, the event
-returned from spu_run should be SPE_EVENT_SPE_DATA_STORAGE,
-not SPE_EVENT_INVALID_DMA.
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Replace the use of the platform specific variable spu.nid with the
+platform independednt variable spu.node.
 
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/run.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/run.c
-@@ -26,6 +26,7 @@ void spufs_dma_callback(struct spu *spu,
- 	} else {
- 		switch (type) {
- 		case SPE_EVENT_DMA_ALIGNMENT:
-+		case SPE_EVENT_SPE_DATA_STORAGE:
- 		case SPE_EVENT_INVALID_DMA:
- 			force_sig(SIGBUS, /* info, */ current);
- 			break;
 Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
 --- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
 +++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
-@@ -507,7 +507,7 @@ int spu_irq_class_1_bottom(struct spu *s
- 	if (!error) {
- 		spu_restart_dma(spu);
- 	} else {
--		__spu_trap_invalid_dma(spu);
-+		spu->dma_callback(spu, SPE_EVENT_SPE_DATA_STORAGE);
+@@ -835,14 +835,14 @@ static int spu_create_sysdev(struct spu 
+ 		return ret;
  	}
- 	return ret;
+ 
+-	sysfs_add_device_to_node(&spu->sysdev, spu->nid);
++	sysfs_add_device_to_node(&spu->sysdev, spu->node);
+ 
+ 	return 0;
  }
+ 
+ static void spu_destroy_sysdev(struct spu *spu)
+ {
+-	sysfs_remove_device_from_node(&spu->sysdev, spu->nid);
++	sysfs_remove_device_from_node(&spu->sysdev, spu->node);
+ 	sysdev_unregister(&spu->sysdev);
+ }
+ 
 
 --
