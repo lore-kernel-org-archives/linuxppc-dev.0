@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 081CF68540
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 18:29:17 +1100 (EST)
-Subject: Re: [PATCH 11/16] PATA driver for Celleb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-In-Reply-To: <200611210719.kAL7JsGH025487@toshiba.co.jp>
-References: <200611160939.kAG9dqre027595@toshiba.co.jp>
-	<1163676724.5940.378.camel@localhost.localdomain>
-	<200611210719.kAL7JsGH025487@toshiba.co.jp>
-Content-Type: text/plain
-Date: Tue, 21 Nov 2006 18:29:47 +1100
-Message-Id: <1164094188.5597.20.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id BBC9567F9D
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 19:18:19 +1100 (EST)
+Date: Tue, 21 Nov 2006 09:18:12 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch 00/16] powerpc cleanup patches
+Message-ID: <20061121081812.GJ4688@localhost.localdomain>
+References: <20061102125555.252338000@localhost.localdomain>
+	<20061116162008.GF4688@localhost.localdomain>
+	<17762.10479.284355.838962@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17762.10479.284355.838962@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,13 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Nov 21, 2006 at 09:15:11AM +1100, Paul Mackerras wrote:
+> Sascha Hauer writes:
+> 
+> > What's the further way with these patches (at least the the ones Ben
+> > acked)? Are they picked up from here or shall I post them to the patch
+> > system?
+> 
+> I picked up the ones that there was agreement on or that seemed
+> obvious, and they are now in the powerpc.git tree on the for-2.6.20
+> and master branches.  As for the rest, if you want them in you'll need
+> to repost them with the changes that were requested, or else convince
+> people that your original patch is actually correct.
 
-> We read your IO workaroud patch for spider. The method for disabling prefetch
-> is same as we suppose. And the method for dummy read may be available, 
-> or be a good reference for us.
-> We found a mistake in our patch at disabling prefetch. We set the prefetch
-> enable bit wrongly.  We'll correct it in the next patch.
+Ah, thank you. I wasn't aware of your git tree. I'll look at the rest of
+the patches soon.
 
-Excellent, thanks !
+Sascha
 
-Ben.
+-- 
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
