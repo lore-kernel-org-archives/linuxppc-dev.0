@@ -1,18 +1,14 @@
-Return-Path: <olof@lixom.net>
-Date: Tue, 21 Nov 2006 10:58:43 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 01/22] powerpc: convert idle_loop to use hard_irq_disable()
-Message-ID: <20061121105843.6b270283@pb15>
-In-Reply-To: <200611211114.46305.arnd@arndb.de>
-References: <20061120174454.067872000@arndb.de>
-	<20061120180520.418063000@arndb.de>
-	<1164070425.8073.40.camel@localhost.localdomain>
-	<200611211114.46305.arnd@arndb.de>
+Return-Path: <SRS0+eba91cc084d5cfeb2a16+1185+infradead.org+dwmw2@canuck.srs.infradead.org>
+Subject: Re: [PATCH] powerpc: Add of_platform support for ROM devices
+From: David Woodhouse <dwmw2@infradead.org>
+To: Vitaly Wool <vwool@ru.mvista.com>
+In-Reply-To: <20061120163239.f9a38fc1.vwool@ru.mvista.com>
+References: <20061120163239.f9a38fc1.vwool@ru.mvista.com>
+Content-Type: text/plain
+Date: Tue, 21 Nov 2006 17:22:39 +0000
+Message-Id: <1164129759.19448.68.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 21 Nov 2006 11:14:45 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
+On Mon, 2006-11-20 at 16:32 +0300, Vitaly Wool wrote:
+> +
+> +     - device_type : has to be "rom"
+> +     - compatible : Should specify what this ROM device is compatible with
+> +       (i.e. "onenand"). Currently, this is most likely to be "direct-mapped"
+> +       (which corresponds to the MTD physmap mapping driver).
 
-> IIRC, all new CPUs are supposed to use the same mechanism based on the
-> 0x100 vector.
+I don't think 'direct-mapped' is particularly necessary -- I think we
+have to assume that any NOR flash device is going to be direct-mapped if
+we're going to be able to represent it with this scheme.
 
-It's only really affecting platforms without hypervisors though, which
-aren't all that many (yet).
+On the other hand, we _do_ want to specify the type of chip, or at least
+the type of _probe_ which should be done for it (jedec vs. cfi). And
+optionally also the chip idents.
 
-I don't have a problem dealing with it locally in my platform.
-
-
--Olof
+-- 
+dwmw2
