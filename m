@@ -1,21 +1,22 @@
-Return-Path: <netstv@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
-	by ozlabs.org (Postfix) with ESMTP id 9CC286836B
+Return-Path: <kashiwagi@co-nss.co.jp>
+Received: from nssinet2.co-nss.co.jp (nssinet2.co-nss.co.jp [150.96.0.5])
+	by ozlabs.org (Postfix) with ESMTP id 5E26067F24
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Nov 2006 11:42:57 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so1899448wxd
+	Tue, 21 Nov 2006 14:40:00 +1100 (EST)
+Received: from nssinet2.co-nss.co.jp (localhost [127.0.0.1])
+	by nssinet2.co-nss.co.jp (8.9.3/3.7W) with ESMTP id LAA24998
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Nov 2006 16:42:55 -0800 (PST)
-Message-ID: <b4b98b690611201642k70917276rd4ce9eab58eed60e@mail.gmail.com>
-Date: Mon, 20 Nov 2006 16:42:55 -0800
-From: "Steve Iribarne (GMail)" <netstv@gmail.com>
-To: Adrian <adrian@it-live.co.uk>
-Subject: Re: Wolfgang Denk
-In-Reply-To: <009601c70cf3$b7a6b2d0$390ea8c0@adrianlaptop>
+	Tue, 21 Nov 2006 11:54:29 +0900 (JST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <009601c70cf3$b7a6b2d0$390ea8c0@adrianlaptop>
-Cc: linuxppc-embedded@ozlabs.org
+Date: Tue, 21 Nov 2006 11:59:00 +0900
+Subject: Re: Memec v4fx12lc - problem booting linux on ppc
+From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
+To: goudard@esrf.fr, linuxppc-embedded@ozlabs.org
+Message-ID: <JG200611211159003.3859000@co-nss.co.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
+In-Reply-To: <1164022946.8340.6.camel@l-cb312-1.esrf.fr>
+References: <1164022946.8340.6.camel@l-cb312-1.esrf.fr>
+Cc: andy.gotz@esrf.fr
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,62 +27,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I second this.  He has saved me countless hours!!!
+Olivier San,
 
+The address of each device driver of LSP of MontaVista Linux and the
+address of each IP of the generated circuit match?
 
+Although your detailed environment is not known, the general way of
+investigating is as follows.
 
-On 11/20/06, Adrian <adrian@it-live.co.uk> wrote:
-> This a general notice to all users.
->
-> *** WARNING ***
->
-> Wolfgang Denk has done a lot of hard work to make porting Linux to as many
-> hardware platforms as you can imagine.
->
-> If some of his stuff does not work in precisely the way that you ordered,
-> and paid *nothing* for, please dont slag Wolfgang off, or even imply that
-> he's done something really badly.
->
-> He might stop offering us these tools, for FREE.
->
-> Then what would we do ?
->
-> START FROM SCRATCH (again).
->
-> So :-
->
-> 1) if you can't read, do not post a question.
-> 2) if you can't be bothered reading, go away completely.
-> 3) if you have a problem (after reading) then ask.
-> 4) if it still does not work, try reading again. You might have missed
-> something.
-> 5) This stuff is hard.There aren't many that can cross-port linux to a new
-> platform, and fewer still that understand what to do if the ELDK was not
-> there.
->
-> Please stop implying that Wolfgang has done something dreadfully wrong. It's
-> more likely to be you. Read more.
->
-> For me, it took about a month to get what I wanted, based on the EDLK
-> downloaded from Wolfgang's site, but now i have what i want.
->
-> Without the ELDK i would still be no-where near.
->
-> Thanks to Wolfgang.
->
-> Adrian Atkins.
-> IT Live Ltd.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Check where the processor was stopped by the stop command and the
+processor has stopped after runing from xmd.
+If compared with stopped address and the address of System.map or
+disassembling list of vmlinux, it should be able to be decided by
+which processing it has hangs.
+Disassembling of vmlinux can be displayed by powerpc-linux-objdump -D 
+vmlinux.
 
+Best Regards,
 
--- 
-/*
- * Steve Iribarne
- * Software Engineer
- * (aka Grunt)
- */
+Yoshio Kashiwagi - Nissin Systems
+
+> Hi,
+> 
+> we have a v4fx12lc fpga board from memec which we are trying to get
+> Linux to boot on the ppc processor. We have generated a linux kernel 
+for
+> nfs using the MontaVista support package. We generate a bitfile with 
+the
+> following hardware peripherals in it :
+> 
+> RS232
+> Ethernet_MAC
+> Led_4bit
+> Push_buttons_3bits
+> DIP_switches_8bit
+> OPB_INTC_0
+> 
+> When we download the linux image with xmd we see nothing on the screen.
+> When we type "run" nothing appears on the screen and Linux does not
+> boot.
+> 
+> Has anyone had a similar problem ? We are stuck! Any ideas would be
+> appreciated.
+> 
+> We can boot a linux ramdisk kernel provided by Memec on the same board
+> using their bitfile. So the board seems to be working in general.
+> 
+> Thansk for any pointers and excuse us if we are posting to the wrong
+> list (this is the only list we could find which seemed useful) ! 
+> 
+> Olivier Goudard
