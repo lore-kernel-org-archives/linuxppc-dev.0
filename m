@@ -1,21 +1,23 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 4EA8067C3F
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 02:13:17 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1302501ugf
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 07:13:16 -0800 (PST)
-Message-ID: <528646bc0611210713t4e9a9f6eo9e89658ae91a7f98@mail.gmail.com>
-Date: Tue, 21 Nov 2006 08:13:16 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>
-Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
-In-Reply-To: <20061102125627.149261000@localhost.localdomain>
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 0969D67BE5
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 03:43:38 +1100 (EST)
+Date: Tue, 21 Nov 2006 10:43:26 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
+Message-ID: <20061121164326.GG22435@localdomain>
+References: <20061116154051.GB2008@localdomain>
+	<20061117033638.0E24B67BCE@ozlabs.org>
+	<20061117180456.GG23600@austin.ibm.com>
+	<1163984914.7832.16.camel@localhost.localdomain>
+	<45612D68.8080404@austin.ibm.com>
+	<1164002356.13318.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20061102125555.252338000@localhost.localdomain>
-	<20061102125627.149261000@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1164002356.13318.4.camel@localhost.localdomain>
+Cc: ego@in.ibm.com, linuxppc-dev@ozlabs.org, srinivasa@in.ibm.com,
+	Anton Blanchard <anton@samba.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/2/06, s.hauer@pengutronix.de <s.hauer@pengutronix.de> wrote:
-> remove EMBEDDED6xx Kconfig entry
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Michael Ellerman wrote:
+> 
+> OK, it didn't occur to me that it was referring to userspace. I'll
+> change it to:
+> 
+> /*
+>  * Isolation and deallocation occur in userspace, so just stop the cpu.
+>  * If isolation and deallocation ever move from userpace to kernel space
+>  * we would do them here.
+>  */
+> 
+> Sound OK?
 
-FWIW, I'm going to say ACK on this one.  Since this discussion, I've
-moved my lite5200 support out of platforms/embedded6xx and changed it
-to use CONFIG_PPC_MULTIPLATFORM
-
-Cheers,
-g.
-
-
->
-> Index: linux-2.6/arch/powerpc/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/Kconfig
-> +++ linux-2.6/arch/powerpc/Kconfig
-> @@ -338,10 +338,6 @@ config PPC_MULTIPLATFORM
->           RS/6000 machine, an Apple machine, or a PReP, CHRP,
->           Maple or Cell-based machine.
->
-> -config EMBEDDED6xx
-> -       bool "Embedded 6xx/7xx/7xxx-based board"
-> -       depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
-> -
->  config APUS
->         bool "Amiga-APUS"
->         depends on PPC32 && BROKEN
->
-> --
->  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
->   Pengutronix - Linux Solutions for Science and Industry
->     Handelsregister: Amtsgericht Hildesheim, HRA 2686
->       Hannoversche Str. 2, 31134 Hildesheim, Germany
->     Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+I favor just dropping the comment.  Offline and isolate are distinct
+-- offline is a per-thread operation while isolate is per-processor.
+Offlining a thread does not imply that its processor will be returned
+to the hypervisor (e.g. going to single thread mode from SMT).
