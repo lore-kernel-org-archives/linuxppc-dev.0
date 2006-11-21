@@ -1,18 +1,23 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 44EE767CA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 00:43:03 +1100 (EST)
-Date: Tue, 21 Nov 2006 22:42:49 +0900 (JST)
-Message-Id: <200611211342.kALDgoL3001797@toshiba.co.jp>
-To: arnd@arndb.de
-Subject: Re: [PATCH 2/16] add hypervisor support for SPU
-In-Reply-To: <200611172228.02576.arnd@arndb.de>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 0596D67C0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 00:45:47 +1100 (EST)
+Date: Tue, 21 Nov 2006 14:45:29 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
+Message-ID: <20061121134529.GA18620@lst.de>
+References: <4554DACB.8060809@am.sony.com>
+	<17762.59947.937875.546225@cargo.ozlabs.ibm.com>
+	<20061121132253.GA17530@lst.de> <200611211442.31667.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200611211442.31667.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Olof Johansson <olof@lixom.net>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd-san,
-
-> On Friday 17 November 2006 11:33, Ishizaki Kou wrote:
-> > We don't think that standard binding for SPE exists. Do you have any
-> > proposal? If you have, please send us your binding.
-> >
-> > On our device tree, property "reg" has unit number. Addresses are in
-> > property "priv2", "problem" and "local-store". Because of LPAR
-> > environment, property "priv1" does not exist.
+On Tue, Nov 21, 2006 at 02:42:30PM +0100, Arnd Bergmann wrote:
+> On Tuesday 21 November 2006 14:22, Christoph Hellwig wrote:
+> > The whole port is hypervisor-specific. ?It should be called ps3hv or
+> > sonyhv (in case the plan for more hardware that's crippled by this
+> > hypervisor) 
 > 
-> Unfortunately, we don't have any official binding documents for this,
-> but you can look at how both methods are used in the source code now.
+> The hypervisor has a name, it's called 'lv1', and the port already
+> uses that identifier for the low-level interfaces.
+> If the platform is named after the hypervisor, we should not make up
+> a new name but use the one that is already there.
+
+Actually that makes even more sense, yes.
+
+> > ps3 should be left for a bare metal port that people may or may not do 
 > 
-> There should not be any priv2, problem or local-store properties
-> any more. We have chosen the order of these register areas in the
-> "reg" property to be "local-store", "problem", "priv2", "priv1",
-> where the last one is optional so you don't need to provide one
-> in a hypervisor.
-> 
-> Similarly, there should no longer be a single "isrc" property,
-> but rather a standard "interrupts" property with three values
-> that can be mapped to an interrupt number each, for class
-> 0, 1 and 2 interrupts.
+> If there will ever be a native port, that will not need its platform
+> directory but can simply go into into common platforms/cell/ and sysdev
+> directories, with a small file for the ppc_md instance. All the interesting
+> files (page table, iommu, interrupt handling) would be shared with native
+> ports to different hardware.
 
-Please tell us a little more.
-
-Where is unit number on your device-tree?
-What encoding is used for it?
-How many cells does it use?
-
-
-Thank you,
-Kou Ishizaki
-Toshiba
+I guess so, yes.  We'd still add a CONFIG_PS3 for it to not bloat
+kernels that don't want support.
