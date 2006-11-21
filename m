@@ -1,21 +1,21 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
-	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 62FB567C17
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 01:44:59 +1100 (EST)
-In-Reply-To: <20061120102424.GB12002@lst.de>
-References: <20061114012504.17455.13833.stgit@localhost.localdomain>
-	<20061114012816.17455.12059.stgit@localhost.localdomain>
-	<20061117080052.GA16985@lst.de>
-	<DB42A6F7-2B5E-4A22-8AA8-0F2C3BDEFC99@embeddedalley.com>
-	<20061120102424.GB12002@lst.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <68068EEF-D816-4E54-8C60-C93CA90E6D7D@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
-Date: Mon, 20 Nov 2006 19:26:49 -0500
-To: Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 4EA8067C3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 02:13:17 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1302501ugf
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 07:13:16 -0800 (PST)
+Message-ID: <528646bc0611210713t4e9a9f6eo9e89658ae91a7f98@mail.gmail.com>
+Date: Tue, 21 Nov 2006 08:13:16 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>
+Subject: Re: [patch 08/16] powerpc: remove EMBEDDED6xx Kconfig entry
+In-Reply-To: <20061102125627.149261000@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061102125555.252338000@localhost.localdomain>
+	<20061102125627.149261000@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 11/2/06, s.hauer@pengutronix.de <s.hauer@pengutronix.de> wrote:
+> remove EMBEDDED6xx Kconfig entry
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-On Nov 20, 2006, at 5:24 AM, Christoph Hellwig wrote:
+FWIW, I'm going to say ACK on this one.  Since this discussion, I've
+moved my lite5200 support out of platforms/embedded6xx and changed it
+to use CONFIG_PPC_MULTIPLATFORM
 
-> Sorry, I actually meant drivers/net/fec.c.
+Cheers,
+g.
 
-That's the wrong one, too :-)
 
-Since I was able to go on an adventure among
-the Ethernet drivers today, I noticed all of the
-PQs use the drivers/net/fs_enet directory.
-The MPC8xx will use some combination
-of the SCC or FEC MAC driver functions
-in that directory.  They all use the cache
-coherent DMA allocators properly.
+>
+> Index: linux-2.6/arch/powerpc/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/Kconfig
+> +++ linux-2.6/arch/powerpc/Kconfig
+> @@ -338,10 +338,6 @@ config PPC_MULTIPLATFORM
+>           RS/6000 machine, an Apple machine, or a PReP, CHRP,
+>           Maple or Cell-based machine.
+>
+> -config EMBEDDED6xx
+> -       bool "Embedded 6xx/7xx/7xxx-based board"
+> -       depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
+> -
+>  config APUS
+>         bool "Amiga-APUS"
+>         depends on PPC32 && BROKEN
+>
+> --
+>  Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+>   Pengutronix - Linux Solutions for Science and Industry
+>     Handelsregister: Amtsgericht Hildesheim, HRA 2686
+>       Hannoversche Str. 2, 31134 Hildesheim, Germany
+>     Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Thanks.
 
-	-- Dan
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
