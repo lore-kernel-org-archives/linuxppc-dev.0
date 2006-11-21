@@ -1,20 +1,18 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 74C5F67C7F
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 03:47:57 +1100 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2.6.19] ehca: bug fix: use wqe offset instead wqe address
-	to determine pending work requests
-References: <200611202354.13030.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 21 Nov 2006 08:47:52 -0800
-In-Reply-To: <200611202354.13030.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Mon, 20 Nov 2006 23:54:12 +0100")
-Message-ID: <adaslgcg30n.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	openib-general@openib.org, raisch@de.ibm.com
+Return-Path: <olof@lixom.net>
+Date: Tue, 21 Nov 2006 10:58:43 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 01/22] powerpc: convert idle_loop to use hard_irq_disable()
+Message-ID: <20061121105843.6b270283@pb15>
+In-Reply-To: <200611211114.46305.arnd@arndb.de>
+References: <20061120174454.067872000@arndb.de>
+	<20061120180520.418063000@arndb.de>
+	<1164070425.8073.40.camel@localhost.localdomain>
+	<200611211114.46305.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,7 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Umm, it's really late to merge things for 2.6.19.  How severe is this
-bug?  Why has it not been found until now if it causing crashes?
+On Tue, 21 Nov 2006 11:14:45 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
 
- - R.
+> IIRC, all new CPUs are supposed to use the same mechanism based on the
+> 0x100 vector.
+
+It's only really affecting platforms without hypervisors though, which
+aren't all that many (yet).
+
+I don't have a problem dealing with it locally in my platform.
+
+
+-Olof
