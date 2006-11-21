@@ -1,25 +1,22 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8EA5E67C44
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 00:23:07 +1100 (EST)
-Date: Tue, 21 Nov 2006 14:22:53 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 80FD167BFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 00:42:53 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
 Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
-Message-ID: <20061121132253.GA17530@lst.de>
-References: <4554DACB.8060809@am.sony.com> <4559099A.6060805@am.sony.com>
-	<17762.26999.152198.792581@cargo.ozlabs.ibm.com>
-	<200611211111.12882.arnd@arndb.de>
-	<Pine.LNX.4.62.0611211114220.21124@pademelon.sonytel.be>
+Date: Tue, 21 Nov 2006 14:42:30 +0100
+References: <4554DACB.8060809@am.sony.com>
 	<17762.59947.937875.546225@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17762.59947.937875.546225@cargo.ozlabs.ibm.com>
+	<20061121132253.GA17530@lst.de>
+In-Reply-To: <20061121132253.GA17530@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611211442.31667.arnd@arndb.de>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>,
-	linuxppc-dev@ozlabs.org
+	Olof Johansson <olof@lixom.net>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 21, 2006 at 10:59:39PM +1100, Paul Mackerras wrote:
-> Geert Uytterhoeven writes:
-> 
-> > Indeed, and since we don't like changing all of these back and forth, it would
-> > be nice to have a definitive decision soon.
-> 
-> Put the ps3 support in arch/powerpc/platforms/ps3.  If there are
-> hypervisor-specific routines, they can have a ps3pf_ prefix if you
-> want.
+On Tuesday 21 November 2006 14:22, Christoph Hellwig wrote:
+> The whole port is hypervisor-specific. =A0It should be called ps3hv or
+> sonyhv (in case the plan for more hardware that's crippled by this
+> hypervisor)=20
 
-The whole port is hypervisor-specific.  It should be called ps3hv or
-sonyhv (in case the plan for more hardware that's crippled by this
-hypervisor)  ps3 should be left for a bare metal port that people may
-or may not do when they have time at their hands to get rid of the
-HV that cripples the hardware.
+The hypervisor has a name, it's called 'lv1', and the port already
+uses that identifier for the low-level interfaces.
+If the platform is named after the hypervisor, we should not make up
+a new name but use the one that is already there.
+
+> ps3 should be left for a bare metal port that people may or may not do=20
+
+If there will ever be a native port, that will not need its platform
+directory but can simply go into into common platforms/cell/ and sysdev
+directories, with a small file for the ppc_md instance. All the interesting
+files (page table, iommu, interrupt handling) would be shared with native
+ports to different hardware.
+
+	Arnd <><
