@@ -1,23 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0596D67C0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 00:45:47 +1100 (EST)
-Date: Tue, 21 Nov 2006 14:45:29 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
-Message-ID: <20061121134529.GA18620@lst.de>
-References: <4554DACB.8060809@am.sony.com>
-	<17762.59947.937875.546225@cargo.ozlabs.ibm.com>
-	<20061121132253.GA17530@lst.de> <200611211442.31667.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200611211442.31667.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Olof Johansson <olof@lixom.net>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 62FB567C17
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 01:44:59 +1100 (EST)
+In-Reply-To: <20061120102424.GB12002@lst.de>
+References: <20061114012504.17455.13833.stgit@localhost.localdomain>
+	<20061114012816.17455.12059.stgit@localhost.localdomain>
+	<20061117080052.GA16985@lst.de>
+	<DB42A6F7-2B5E-4A22-8AA8-0F2C3BDEFC99@embeddedalley.com>
+	<20061120102424.GB12002@lst.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <68068EEF-D816-4E54-8C60-C93CA90E6D7D@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 2/5] [POWERPC] 8xx: generic 8xx code arch/powerpc port
+Date: Mon, 20 Nov 2006 19:26:49 -0500
+To: Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 21, 2006 at 02:42:30PM +0100, Arnd Bergmann wrote:
-> On Tuesday 21 November 2006 14:22, Christoph Hellwig wrote:
-> > The whole port is hypervisor-specific. ?It should be called ps3hv or
-> > sonyhv (in case the plan for more hardware that's crippled by this
-> > hypervisor) 
-> 
-> The hypervisor has a name, it's called 'lv1', and the port already
-> uses that identifier for the low-level interfaces.
-> If the platform is named after the hypervisor, we should not make up
-> a new name but use the one that is already there.
 
-Actually that makes even more sense, yes.
+On Nov 20, 2006, at 5:24 AM, Christoph Hellwig wrote:
 
-> > ps3 should be left for a bare metal port that people may or may not do 
-> 
-> If there will ever be a native port, that will not need its platform
-> directory but can simply go into into common platforms/cell/ and sysdev
-> directories, with a small file for the ppc_md instance. All the interesting
-> files (page table, iommu, interrupt handling) would be shared with native
-> ports to different hardware.
+> Sorry, I actually meant drivers/net/fec.c.
 
-I guess so, yes.  We'd still add a CONFIG_PS3 for it to not bloat
-kernels that don't want support.
+That's the wrong one, too :-)
+
+Since I was able to go on an adventure among
+the Ethernet drivers today, I noticed all of the
+PQs use the drivers/net/fs_enet directory.
+The MPC8xx will use some combination
+of the SCC or FEC MAC driver functions
+in that directory.  They all use the cache
+coherent DMA allocators properly.
+
+Thanks.
+
+	-- Dan
