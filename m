@@ -1,19 +1,25 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0097267C7E
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2006 23:14:20 +1100 (EST)
-Date: Tue, 21 Nov 2006 11:49:53 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Subject: Re: [PATCH] drivers/ide: PATA driver for Celleb
-Message-ID: <20061121114953.1443e7a1@localhost.localdomain>
-In-Reply-To: <200611210959.kAL9x8eH026223@toshiba.co.jp>
-References: <200611210959.kAL9x8eH026223@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 8EA5E67C44
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 00:23:07 +1100 (EST)
+Date: Tue, 21 Nov 2006 14:22:53 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 7/16] powerpc: add support for ps3 platform
+Message-ID: <20061121132253.GA17530@lst.de>
+References: <4554DACB.8060809@am.sony.com> <4559099A.6060805@am.sony.com>
+	<17762.26999.152198.792581@cargo.ozlabs.ibm.com>
+	<200611211111.12882.arnd@arndb.de>
+	<Pine.LNX.4.62.0611211114220.21124@pademelon.sonytel.be>
+	<17762.59947.937875.546225@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17762.59947.937875.546225@cargo.ozlabs.ibm.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> We use a drivers/ide driver because its design is more suitable for
-> SCC IDE controller than libata driver. Since SCC supports only 32bit
+On Tue, Nov 21, 2006 at 10:59:39PM +1100, Paul Mackerras wrote:
+> Geert Uytterhoeven writes:
+> 
+> > Indeed, and since we don't like changing all of these back and forth, it would
+> > be nice to have a definitive decision soon.
+> 
+> Put the ps3 support in arch/powerpc/platforms/ps3.  If there are
+> hypervisor-specific routines, they can have a ps3pf_ prefix if you
+> want.
 
-Understand that drivers/ide will be going away at some point long term
-but not for a while.
-
-> read/write, we must override many callbacks of ata_port_operations
-> by modifying generic helpers. Each time the libata common code is
-> updated, we must update those modified helpers. It is very hard for us.
-> But we will try to implement the libata driver as needed.
-
-It would be good to do so - the future is libata. It may also help because
-it may indicate places were libata not your code should change in order to
-get a nicer interface.
-
-
-> +/* PIO transfer mode  table */
-> +/* JCHST */
-> +static unsigned long JCHSTtbl[2][7] = {
-
-const...
-
-> +	switch (speed) {
-> +	case XFER_UDMA_6:
-> +		idx = 6;
-> +		break;
-
-These values are carefully arranged so you can do
-
-	if (speed >= XFER_UDMA_0)
-		idx = speed - XFER_UDMA_0;
-	else
-		return 1;
-
-
-Otherwise looks ready to merge.
-
-Alan
+The whole port is hypervisor-specific.  It should be called ps3hv or
+sonyhv (in case the plan for more hardware that's crippled by this
+hypervisor)  ps3 should be left for a bare metal port that people may
+or may not do when they have time at their hands to get rid of the
+HV that cripples the hardware.
