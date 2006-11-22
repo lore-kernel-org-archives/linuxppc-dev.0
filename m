@@ -1,36 +1,21 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <SRS0+5e6470665161f9dca089+1186+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 69EDF67C3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 05:36:15 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAMIaCNn013583
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 13:36:12 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAMIaCkZ532044
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 11:36:12 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAMIaBIS024136
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 11:36:12 -0700
-Subject: Re: [PATCH] CAS DFP support
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <F14C95DA-2BC6-4922-B995-ECC6CDB8306E@kernel.crashing.org>
-References: <1164208814.1954.372.camel@goblue>
-	<AA60A1D7-D271-4CE1-A39F-2CE9F605DB16@kernel.crashing.org>
-	<1164211565.4932.7.camel@otta>
-	<F14C95DA-2BC6-4922-B995-ECC6CDB8306E@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 22 Nov 2006 12:36:09 -0600
-Message-Id: <1164220570.8536.8.camel@localhost>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A5B5E67C53
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 05:36:32 +1100 (EST)
+Subject: Re: Incorrect order of last two arguments of ptrace for requests
+	PPC_PTRACE_GETREGS, SETREGS, GETFPREGS, SETFPREGS
+From: David Woodhouse <dwmw2@infradead.org>
+To: supriya kannery <supriyak@in.ibm.com>
+In-Reply-To: <453F421A.6070507@in.ibm.com>
+References: <453F421A.6070507@in.ibm.com>
+Content-Type: multipart/mixed; boundary="=-kaajnNrN3ClK/2QNwuM3"
+Date: Wed, 22 Nov 2006 18:36:20 +0000
+Message-Id: <1164220580.12365.8.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Peter Bergner <bergner@rchmail.rchland.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: will_schmidt@vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,55 +25,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-22-11 at 10:41 -0600, Kumar Gala wrote:
-> On Nov 22, 2006, at 10:06 AM, Peter Bergner wrote:
-> 
-> > On Wed, 2006-11-22 at 09:46 -0600, Kumar Gala wrote:
-> >> On Nov 22, 2006, at 9:20 AM, Jake Moilanen wrote:
-> >>
-> >>> When booting a Power6 in compat mode, the DFP bit must be set in the
-> >>> client architecture call, or else firmware will downgrade the
-> >>> compliance
-> >>> to P5 compat mode, thus removing VMX and DFP instructions.
-> >>>
-> >>> Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
-> >>>
-> >>> --- 2.6/arch/powerpc/kernel/prom_init.c~	2006-11-13
-> >>> 15:01:13.000000000
-> >>> -0600
-> >>> +++ 2.6/arch/powerpc/kernel/prom_init.c	2006-11-21
-> >>> 18:38:27.000000000
-> >>> -0600
-> >>> @@ -627,6 +627,7 @@ static void __init early_cmdline_parse(v
-> >>>  /* Option vector 3: processor options supported */
-> >>>  #define OV3_FP			0x80	/* floating point */
-> >>>  #define OV3_VMX			0x40	/* VMX/Altivec */
-> >>> +#define OV3_DFP			0x20	/* decimal floating point */
-> >>
-> >> Can we make the flag OV3_DECFP to distinguish it from Double FP.
-> >
-> > One thing OV3_DFP has going for it is that is matches the nomenclature
-> > used by GCC, binutils.  I'm not sure what you mean by Double FP,
-> > unless
-> > you're referring to the double wide FP unit on the Blue Gene/L 440
-> > processor, but they don't refer to it as Double FP.
-> 
-> I'm referring to plain old double precision floating point.  The e500
-> core from Freescale has version that provide embedded single
-> precision floating point (EFP_SINGLE) and versions that provide both
-> embedded double precision floating point (EFP_DOUBLE).  I just want
-> use to be clear the DFP could mean either double or decimal as far as
-> I'm concerned.
 
-the comment on the #define "/* decimal floating point */"  should be
-sufficient for that clarification tho, right? 
+--=-kaajnNrN3ClK/2QNwuM3
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
+On Wed, 2006-10-25 at 16:23 +0530, supriya kannery wrote:
+> In ptrace, when request is PPC_PTRACE_GETREGS, SETREGS, GETFPREGS and 
+> SETFPREGS, order of the last two arguments is not correct.
 > 
-> Also, I think the 602 (may have never seen the light of day) only
-> implemented single precision floating point.
+> General format of ptrace is ptrace (request, pid, addr, data).  For the 
+> above mentioned request ids in ppc64, if we use ptrace like
 > 
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>  long reg[32];
+>  ptrace (PPC_PTRACE_GETREGS, pid, 0, &reg[0]);
+> 
+> the return value is always -1.
+> 
+> If we exchange the last two arguments like,
+> 
+>  ptrace (PPC_PTRACE_GETREGS, pid, &reg[0], 0);
+> 
+> it works!
+> 
+> This is because PPC_PTRACE_GETREGS option for powerpc is implemented 
+> such that general purpose
+> registers of the child process get copied to the address variable 
+> instead of data variable. Same is
+> the case with other PPC request options PPC_PTRACE_SETREGS, GETFPREGS 
+> and SETFPREGS.
+> 
+> Prepared a patch for this problem and tested with 2.6.18-rc6 kernel. 
+> This patch can be applied directly to 2.6.19-rc3 kernel.
+
+A more appropriate place to send this would be the linux-ppc development
+list.
+
+-- 
+dwmw2
+
+--=-kaajnNrN3ClK/2QNwuM3
+Content-Disposition: attachment; filename=ppc_ptrace_params.patch
+Content-Type: text/x-patch; name=ppc_ptrace_params.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+diff -Naurp linux-2.6.18-rc6/arch/powerpc/kernel/ptrace.c linux-2.6.18-rc6-mod/arch/powerpc/kernel/ptrace.c
+--- linux-2.6.18-rc6/arch/powerpc/kernel/ptrace.c	2006-10-19 18:09:01.000000000 +0530
++++ linux-2.6.18-rc6-mod/arch/powerpc/kernel/ptrace.c	2006-10-19 18:11:37.000000000 +0530
+@@ -406,7 +406,7 @@ long arch_ptrace(struct task_struct *chi
+ 	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+-		unsigned long __user *tmp = (unsigned long __user *)addr;
++		unsigned long __user *tmp = (unsigned long __user *)data;
+ 
+ 		for (i = 0; i < 32; i++) {
+ 			ret = put_user(*reg, tmp);
+@@ -421,7 +421,7 @@ long arch_ptrace(struct task_struct *chi
+ 	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+-		unsigned long __user *tmp = (unsigned long __user *)addr;
++		unsigned long __user *tmp = (unsigned long __user *)data;
+ 
+ 		for (i = 0; i < 32; i++) {
+ 			ret = get_user(*reg, tmp);
+@@ -436,7 +436,7 @@ long arch_ptrace(struct task_struct *chi
+ 	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
+-		unsigned long __user *tmp = (unsigned long __user *)addr;
++		unsigned long __user *tmp = (unsigned long __user *)data;
+ 
+ 		flush_fp_to_thread(child);
+ 
+@@ -453,7 +453,7 @@ long arch_ptrace(struct task_struct *chi
+ 	case PPC_PTRACE_SETFPREGS: { /* Get FPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
+-		unsigned long __user *tmp = (unsigned long __user *)addr;
++		unsigned long __user *tmp = (unsigned long __user *)data;
+ 
+ 		flush_fp_to_thread(child);
+ 
+diff -Naurp linux-2.6.18-rc6/arch/powerpc/kernel/ptrace32.c linux-2.6.18-rc6-mod/arch/powerpc/kernel/ptrace32.c
+--- linux-2.6.18-rc6/arch/powerpc/kernel/ptrace32.c	2006-10-19 18:09:01.000000000 +0530
++++ linux-2.6.18-rc6-mod/arch/powerpc/kernel/ptrace32.c	2006-10-19 18:11:41.000000000 +0530
+@@ -345,7 +345,7 @@ long compat_sys_ptrace(int request, int 
+ 	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+-		unsigned int __user *tmp = (unsigned int __user *)addr;
++		unsigned int __user *tmp = (unsigned int __user *)data;
+ 
+ 		for (i = 0; i < 32; i++) {
+ 			ret = put_user(*reg, tmp);
+@@ -360,7 +360,7 @@ long compat_sys_ptrace(int request, int 
+ 	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+-		unsigned int __user *tmp = (unsigned int __user *)addr;
++		unsigned int __user *tmp = (unsigned int __user *)data;
+ 
+ 		for (i = 0; i < 32; i++) {
+ 			ret = get_user(*reg, tmp);
+@@ -375,7 +375,7 @@ long compat_sys_ptrace(int request, int 
+ 	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
+-		unsigned int __user *tmp = (unsigned int __user *)addr;
++		unsigned int __user *tmp = (unsigned int __user *)data;
+ 
+ 		flush_fp_to_thread(child);
+ 
+@@ -392,7 +392,7 @@ long compat_sys_ptrace(int request, int 
+ 	case PPC_PTRACE_SETFPREGS: { /* Get FPRs 0 - 31. */
+ 		int i;
+ 		unsigned long *reg = &((unsigned long *)child->thread.fpr)[0];
+-		unsigned int __user *tmp = (unsigned int __user *)addr;
++		unsigned int __user *tmp = (unsigned int __user *)data;
+ 
+ 		flush_fp_to_thread(child);
+ 
+
+--=-kaajnNrN3ClK/2QNwuM3--
