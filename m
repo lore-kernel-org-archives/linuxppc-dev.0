@@ -1,13 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17764.50454.196574.373173@cargo.ozlabs.ibm.com>
-Date: Thu, 23 Nov 2006 08:45:58 +1100
+Message-ID: <17764.50635.859082.406448@cargo.ozlabs.ibm.com>
+Date: Thu, 23 Nov 2006 08:48:59 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Jake Moilanen <moilanen@austin.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] CAS DFP support
-In-Reply-To: <1164208814.1954.372.camel@goblue>
+In-Reply-To: <AA60A1D7-D271-4CE1-A39F-2CE9F605DB16@kernel.crashing.org>
 References: <1164208814.1954.372.camel@goblue>
+	<AA60A1D7-D271-4CE1-A39F-2CE9F605DB16@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,13 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jake Moilanen writes:
+Kumar Gala writes:
 
-> When booting a Power6 in compat mode, the DFP bit must be set in the
-> client architecture call, or else firmware will downgrade the compliance
-> to P5 compat mode, thus removing VMX and DFP instructions.
+> Can we make the flag OV3_DECFP to distinguish it from Double FP.
 
-This change is already in the powerpc.git tree; it was part of my
-"Distinguish POWER6 partition modes and tell userspace" patch.
+I don't think it's worth it; the OV3_DFP name is defined and used only
+in prom_init.c, and only in the context of the code for doing the
+ibm,client-architecture-support call.  Anyway, the comment says what
+it's about, so I don't think there's any potential for confusion.
 
 Paul.
