@@ -1,15 +1,15 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail79-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
+Received: from mail30-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B629767C98
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:44:53 +1100 (EST)
-Message-ID: <4563D028.9060309@am.sony.com>
-Date: Tue, 21 Nov 2006 20:20:56 -0800
+	by ozlabs.org (Postfix) with ESMTP id 82C8667CA9
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:46:14 +1100 (EST)
+Message-ID: <4563CFF4.2000507@am.sony.com>
+Date: Tue, 21 Nov 2006 20:20:04 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 12/14] powerpc: add ps3 platform spu support
+Subject: [PATCH 4/14] powerpc: add support for ps3 platform
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,54 +23,142 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Adds spu support for the PS3 platform.
+Adds the core platform support for the PS3 game console and other devices
+using the PS3 hypervisor.
+
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
-
-This patch requires my previous patch which split the existing spu support into
-platform specific and platform independent parts.
-
+ MAINTAINERS                           |    7 
+ arch/powerpc/Kconfig                  |   11 
+ arch/powerpc/platforms/Makefile       |    1 
+ arch/powerpc/platforms/ps3/Kconfig    |   32 +
  arch/powerpc/platforms/ps3/Makefile   |    2 
- arch/powerpc/platforms/ps3/platform.h |    8 
- arch/powerpc/platforms/ps3/spu.c      |  613 ++++++++++++++++++++++++++++++++++
- 3 files changed, 623 insertions(+)
+ arch/powerpc/platforms/ps3/mm.c       |  827 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/ps3/platform.h |   60 ++
+ arch/powerpc/platforms/ps3/setup.c    |  173 +++++++
+ arch/powerpc/platforms/ps3/smp.c      |  158 ++++++
+ arch/powerpc/platforms/ps3/time.c     |  104 ++++
+ include/asm-powerpc/ps3.h             |  250 ++++++++++
+ 11 files changed, 1624 insertions(+), 1 deletion(-)
 
-Index: cell--common--6/arch/powerpc/platforms/ps3/Makefile
+Index: cell--common--6/MAINTAINERS
 ===================================================================
---- cell--common--6.orig/arch/powerpc/platforms/ps3/Makefile
-+++ cell--common--6/arch/powerpc/platforms/ps3/Makefile
-@@ -1,2 +1,4 @@
- obj-y += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
- obj-y += interrupt.o exports.o os-area.o
-+
-+obj-$(CONFIG_SPU_BASE) += spu.o
-Index: cell--common--6/arch/powerpc/platforms/ps3/platform.h
-===================================================================
---- cell--common--6.orig/arch/powerpc/platforms/ps3/platform.h
-+++ cell--common--6/arch/powerpc/platforms/ps3/platform.h
-@@ -57,4 +57,12 @@
- int __init ps3_os_area_init(void);
- u64 ps3_os_area_rtc_diff(void);
+--- cell--common--6.orig/MAINTAINERS
++++ cell--common--6/MAINTAINERS
+@@ -2423,6 +2423,13 @@
+ W:	http://www.pnd-pc.demon.co.uk/promise/
+ S:	Maintained
  
-+/* spu */
++PS3 PLATFORM SUPPORT
++P:	Geoff Levand
++M:	geoffrey.levand@am.sony.com
++L:	linuxppc-dev@ozlabs.org
++L:	cbe-oss-dev@ozlabs.org
++S:	Supported
 +
-+#if defined(CONFIG_SPU_BASE)
-+void ps3_spu_set_platform (void);
-+#else
-+static inline void ps3_spu_set_platform (void) {}
-+#endif
+ PVRUSB2 VIDEO4LINUX DRIVER
+ P:	Mike Isely
+ M:	isely@pobox.com
+Index: cell--common--6/arch/powerpc/Kconfig
+===================================================================
+--- cell--common--6.orig/arch/powerpc/Kconfig
++++ cell--common--6/arch/powerpc/Kconfig
+@@ -495,6 +495,14 @@
+ 	depends on PPC_RTAS
+ 	default n
+ 
++config PS3
++	bool "Sony PS3"
++	depends on PPC_MULTIPLATFORM && PPC64
++	select PPC_CELL
++	help
++	  This option enables support for the Sony PS3 game console
++	  and other platforms using the PS3 hypervisor.
 +
- #endif
-Index: cell--common--6/arch/powerpc/platforms/ps3/spu.c
+ config XICS
+ 	depends on PPC_PSERIES
+ 	bool
+@@ -647,6 +655,7 @@
+ source arch/powerpc/platforms/86xx/Kconfig
+ source arch/powerpc/platforms/8xx/Kconfig
+ source arch/powerpc/platforms/cell/Kconfig
++source arch/powerpc/platforms/ps3/Kconfig
+ 
+ menu "Kernel options"
+ 
+@@ -917,7 +926,7 @@
+ 
+ config PCI
+ 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
+-		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2
++		|| PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2 || PS3
+ 	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
+Index: cell--common--6/arch/powerpc/platforms/Makefile
+===================================================================
+--- cell--common--6.orig/arch/powerpc/platforms/Makefile
++++ cell--common--6/arch/powerpc/platforms/Makefile
+@@ -16,4 +16,5 @@
+ obj-$(CONFIG_PPC_MAPLE)		+= maple/
+ obj-$(CONFIG_PPC_PASEMI)		+= pasemi/
+ obj-$(CONFIG_PPC_CELL)		+= cell/
++obj-$(CONFIG_PS3)		+= ps3/
+ obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+Index: cell--common--6/arch/powerpc/platforms/ps3/Kconfig
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3/spu.c
-@@ -0,0 +1,613 @@
++++ cell--common--6/arch/powerpc/platforms/ps3/Kconfig
+@@ -0,0 +1,32 @@
++menu "PS3 Platform Options"
++	depends on PS3
++
++config PS3_HTAB_SIZE
++	depends on PS3
++	int "PS3 Platform pagetable size"
++	range 18 20
++	default 20
++	help
++	  This option is only for experts who may have the desire to fine
++	  tune the pagetable size on their system.  The value here is
++	  expressed as the log2 of the page table size.  Valid values are
++	  18, 19, and 20, corresponding to 256KB, 512KB and 1MB respectively.
++
++	  If unsure, choose the default (20) with the confidence that your
++	  system will have optimal runtime performance.
++
++config PS3_DYNAMIC_DMA
++	depends on PS3 && EXPERIMENTAL
++	bool "PS3 Platform dynamic DMA page table management"
++	default n
++	help
++	  This option will enable kernel support to take advantage of the
++	  per device dynamic DMA page table management provided by the Cell
++	  processor's IO Controller.  This support incurs some runtime
++	  overhead and also slightly increases kernel memory usage.  The
++	  current implementation should be considered experimental.
++
++	  This support is mainly for Linux kernel development.  If unsure,
++	  say N.
++
++endmenu
+Index: cell--common--6/arch/powerpc/platforms/ps3/Makefile
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/Makefile
+@@ -0,0 +1,2 @@
++obj-y += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
++obj-y += interrupt.o exports.o
+Index: cell--common--6/arch/powerpc/platforms/ps3/mm.c
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/mm.c
+@@ -0,0 +1,827 @@
 +/*
-+ *  PS3 Platform spu routines.
++ *  PS3 address space management.
 + *
 + *  Copyright (C) 2006 Sony Computer Entertainment Inc.
 + *  Copyright 2006 Sony Corp.
@@ -90,595 +178,1579 @@ Index: cell--common--6/arch/powerpc/platforms/ps3/spu.c
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/mmzone.h>
-+#include <linux/io.h>
-+#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/memory_hotplug.h>
 +
-+#include <asm/spu.h>
-+#include <asm/spu_priv1.h>
++#include <asm/lmb.h>
++#include <asm/udbg.h>
 +#include <asm/ps3.h>
 +#include <asm/lv1call.h>
 +
-+/* spu_management_ops */
++#include "platform.h"
 +
-+/**
-+ * enum spe_type - Type of spe to create.
-+ * @spe_type_logical: Standard logical spe.
-+ *
-+ * For use with lv1_construct_logical_spe().  The current HV does not support
-+ * any types other than those listed.
-+ */
++#if defined(DEBUG)
++#define DBG(fmt...) udbg_printf(fmt)
++#else
++#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
++#endif
 +
-+enum spe_type {
-+	SPE_TYPE_LOGICAL = 0,
++enum {
++#if defined(CONFIG_PS3_USE_LPAR_ADDR)
++	USE_LPAR_ADDR = 1,
++#else
++	USE_LPAR_ADDR = 0,
++#endif
++#if defined(CONFIG_PS3_DYNAMIC_DMA)
++	USE_DYNAMIC_DMA = 1,
++#else
++	USE_DYNAMIC_DMA = 0,
++#endif
 +};
 +
-+/**
-+ * struct spe_shadow - logical spe shadow register area.
-+ *
-+ * Read-only shadow of spe registers.
-+ */
-+
-+struct spe_shadow {
-+	u8 padding_0000[0x0140];
-+	u64 int_status_class0_RW;       /* 0x0140 */
-+	u64 int_status_class1_RW;       /* 0x0148 */
-+	u64 int_status_class2_RW;       /* 0x0150 */
-+	u8 padding_0158[0x0610-0x0158];
-+	u64 mfc_dsisr_RW;               /* 0x0610 */
-+	u8 padding_0618[0x0620-0x0618];
-+	u64 mfc_dar_RW;                 /* 0x0620 */
-+	u8 padding_0628[0x0800-0x0628];
-+	u64 mfc_dsipr_R;                /* 0x0800 */
-+	u8 padding_0808[0x0810-0x0808];
-+	u64 mfc_lscrr_R;                /* 0x0810 */
-+	u8 padding_0818[0x0c00-0x0818];
-+	u64 mfc_cer_R;                  /* 0x0c00 */
-+	u8 padding_0c08[0x0f00-0x0c08];
-+	u64 spe_execution_status;       /* 0x0f00 */
-+	u8 padding_0f08[0x1000-0x0f08];
-+} __attribute__ ((packed));
-+
-+
-+/**
-+ * enum spe_ex_state - Logical spe execution state.
-+ * @spe_ex_state_unexecutable: Uninitialized.
-+ * @spe_ex_state_executable: Enabled, not ready.
-+ * @spe_ex_state_executed: Ready for use.
-+ *
-+ * The execution state (status) of the logical spe as reported in
-+ * struct spe_shadow:spe_execution_status.
-+ */
-+
-+enum spe_ex_state {
-+	SPE_EX_STATE_UNEXECUTABLE = 0,
-+	SPE_EX_STATE_EXECUTABLE = 2,
-+	SPE_EX_STATE_EXECUTED = 3,
++enum {
++	PAGE_SHIFT_4K = 12U,
++	PAGE_SHIFT_64K = 16U,
++	PAGE_SHIFT_16M = 24U,
 +};
 +
-+/**
-+ * struct priv1_cache - Cached values of priv1 registers.
-+ * @masks[]: Array of cached spe interrupt masks, indexed by class.
-+ * @sr1: Cached mfc_sr1 register.
-+ * @tclass_id: Cached mfc_tclass_id register.
-+ */
-+
-+struct priv1_cache {
-+	u64 masks[3];
-+	u64 sr1;
-+	u64 tclass_id;
-+};
-+
-+/**
-+ * struct spu_pdata - Platform state variables.
-+ * @spe_id: HV spe id returned by lv1_construct_logical_spe().
-+ * @resource_id: HV spe resource id returned by
-+ * 	ps3_repository_read_spe_resource_id().
-+ * @priv2_addr: lpar address of spe priv2 area returned by
-+ * 	lv1_construct_logical_spe().
-+ * @shadow_addr: lpar address of spe register shadow area returned by
-+ * 	lv1_construct_logical_spe().
-+ * @shadow: Virtual (ioremap) address of spe register shadow area.
-+ * @cache: Cached values of priv1 registers.
-+ */
-+
-+struct spu_pdata {
-+	u64 spe_id;
-+	u64 resource_id;
-+	u64 priv2_addr;
-+	u64 shadow_addr;
-+	struct spe_shadow __iomem *shadow;
-+	struct priv1_cache cache;
-+};
-+
-+static struct spu_pdata *spu_pdata(struct spu *spu)
++static unsigned long make_page_sizes(unsigned long a, unsigned long b)
 +{
-+	return spu->pdata;
++	return (a << 56) | (b << 48);
 +}
 +
-+#define dump_areas(_a, _b, _c, _d, _e) \
-+	_dump_areas(_a, _b, _c, _d, _e, __func__, __LINE__)
-+static void _dump_areas(unsigned int spe_id, unsigned long priv2,
-+	unsigned long problem, unsigned long ls, unsigned long shadow,
-+	const char* func, int line)
++enum {
++	ALLOCATE_MEMORY_TRY_ALT_UNIT = 0X04,
++	ALLOCATE_MEMORY_ADDR_ZERO = 0X08,
++};
++
++/* valid htab sizes are {18,19,20} = 256K, 512K, 1M */
++
++enum {
++	HTAB_SIZE_MAX = 20U, /* HV limit of 1MB */
++	HTAB_SIZE_MIN = 18U, /* CPU limit of 256KB */
++};
++
++/*============================================================================*/
++/* virtual address space routines                                             */
++/*============================================================================*/
++
++/**
++ * struct mem_region - memory region structure
++ * @base: base address
++ * @size: size in bytes
++ * @offset: difference between base and rm.size
++ */
++
++struct mem_region {
++	unsigned long base;
++	unsigned long size;
++	unsigned long offset;
++};
++
++/**
++ * struct map - address space state variables holder
++ * @total: total memory available as reported by HV
++ * @vas_id - HV virtual address space id
++ * @htab_size: htab size in bytes
++ *
++ * The HV virtual address space (vas) allows for hotplug memory regions.
++ * Memory regions can be created and destroyed in the vas at runtime.
++ * @rm: real mode (bootmem) region
++ * @r1: hotplug memory region(s)
++ *
++ * ps3 addresses
++ * virt_addr: a cpu 'translated' effective address
++ * phys_addr: an address in what Linux thinks is the physical address space
++ * lpar_addr: an address in the HV virtual address space
++ * bus_addr: an io controller 'translated' address on a device bus
++ */
++
++struct map {
++	unsigned long total;
++	unsigned long vas_id;
++	unsigned long htab_size;
++	struct mem_region rm;
++	struct mem_region r1;
++};
++
++#define debug_dump_map(x) _debug_dump_map(x, __func__, __LINE__)
++static void _debug_dump_map(const struct map* m, const char* func, int line)
 +{
-+	pr_debug("%s:%d: spe_id:  %xh (%u)\n", func, line, spe_id, spe_id);
-+	pr_debug("%s:%d: priv2:   %lxh\n", func, line, priv2);
-+	pr_debug("%s:%d: problem: %lxh\n", func, line, problem);
-+	pr_debug("%s:%d: ls:      %lxh\n", func, line, ls);
-+	pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
++	DBG("%s:%d: map.total     = %lxh\n", func, line, m->total);
++	DBG("%s:%d: map.rm.size   = %lxh\n", func, line, m->rm.size);
++	DBG("%s:%d: map.vas_id    = %lu\n", func, line, m->vas_id);
++	DBG("%s:%d: map.htab_size = %lxh\n", func, line, m->htab_size);
++	DBG("%s:%d: map.r1.base   = %lxh\n", func, line, m->r1.base);
++	DBG("%s:%d: map.r1.offset = %lxh\n", func, line, m->r1.offset);
++	DBG("%s:%d: map.r1.size   = %lxh\n", func, line, m->r1.size);
 +}
 +
-+static unsigned long get_vas_id(void)
++static struct map map;
++
++/**
++ * ps3_mm_phys_to_lpar - translate a linux physical address to lpar address
++ * @phys_addr: linux physical address
++ */
++
++unsigned long ps3_mm_phys_to_lpar(unsigned long phys_addr)
 +{
-+	unsigned long id;
-+
-+	lv1_get_logical_ppe_id(&id);
-+	lv1_get_virtual_address_space_id_of_ppe(id, &id);
-+
-+	return id;
++	BUG_ON(is_kernel_addr(phys_addr));
++	if (USE_LPAR_ADDR)
++		return phys_addr;
++	else
++		return (phys_addr < map.rm.size || phys_addr >= map.total)
++			? phys_addr : phys_addr + map.r1.offset;
 +}
 +
-+static int __init construct_spu(struct spu *spu)
++EXPORT_SYMBOL(ps3_mm_phys_to_lpar);
++
++/**
++ * ps3_mm_vas_create - create the virtual address space
++ */
++
++void __init ps3_mm_vas_create(unsigned long* htab_size)
 +{
 +	int result;
-+	unsigned long unused;
++	unsigned long start_address;
++	unsigned long size;
++	unsigned long access_right;
++	unsigned long max_page_size;
++	unsigned long flags;
 +
-+	result = lv1_construct_logical_spe(PAGE_SHIFT, PAGE_SHIFT, PAGE_SHIFT,
-+		PAGE_SHIFT, PAGE_SHIFT, get_vas_id(), SPE_TYPE_LOGICAL,
-+		&spu_pdata(spu)->priv2_addr, &spu->problem_phys,
-+		&spu->local_store_phys, &unused,
-+		&spu_pdata(spu)->shadow_addr,
-+		&spu_pdata(spu)->spe_id);
++	result = lv1_query_logical_partition_address_region_info(0,
++		&start_address, &size, &access_right, &max_page_size,
++		&flags);
 +
 +	if (result) {
-+		pr_debug("%s:%d: lv1_construct_logical_spe failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return result;
++		DBG("%s:%d: lv1_query_logical_partition_address_region_info "
++			"failed: %s\n", __func__, __LINE__,
++			ps3_result(result));
++		goto fail;
 +	}
 +
++	if (max_page_size < PAGE_SHIFT_16M) {
++		DBG("%s:%d: bad max_page_size %lxh\n", __func__, __LINE__,
++			max_page_size);
++		goto fail;
++	}
++
++	BUILD_BUG_ON(CONFIG_PS3_HTAB_SIZE > HTAB_SIZE_MAX);
++	BUILD_BUG_ON(CONFIG_PS3_HTAB_SIZE < HTAB_SIZE_MIN);
++
++	result = lv1_construct_virtual_address_space(CONFIG_PS3_HTAB_SIZE,
++			2, make_page_sizes(PAGE_SHIFT_16M, PAGE_SHIFT_64K),
++			&map.vas_id, &map.htab_size);
++
++	if (result) {
++		DBG("%s:%d: lv1_construct_virtual_address_space failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++		goto fail;
++	}
++
++	result = lv1_select_virtual_address_space(map.vas_id);
++
++	if (result) {
++		DBG("%s:%d: lv1_select_virtual_address_space failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++		goto fail;
++	}
++
++	*htab_size = map.htab_size;
++
++	debug_dump_map(&map);
++
++	return;
++
++fail:
++	panic("ps3_mm_vas_create failed");
++}
++
++/**
++ * ps3_mm_vas_destroy -
++ */
++
++void ps3_mm_vas_destroy(void)
++{
++	if (map.vas_id) {
++		lv1_select_virtual_address_space(0);
++		lv1_destruct_virtual_address_space(map.vas_id);
++		map.vas_id = 0;
++	}
++}
++
++/*============================================================================*/
++/* memory hotplug routines                                                    */
++/*============================================================================*/
++
++/**
++ * ps3_mm_region_create - create a memory region in the vas
++ * @r: pointer to a struct mem_region to accept initialized values
++ * @size: requested region size
++ *
++ * This implementation creates the region with the vas large page size.
++ * @size is rounded down to a multiple of the vas large page size.
++ */
++
++int ps3_mm_region_create(struct mem_region *r, unsigned long size)
++{
++	int result;
++	unsigned long muid;
++
++	r->size = _ALIGN_DOWN(size, 1 << PAGE_SHIFT_16M);
++
++	DBG("%s:%d requested  %lxh\n", __func__, __LINE__, size);
++	DBG("%s:%d actual     %lxh\n", __func__, __LINE__, r->size);
++	DBG("%s:%d difference %lxh (%luMB)\n", __func__, __LINE__,
++		(unsigned long)(size - r->size),
++		(size - r->size) / 1024 / 1024);
++
++	if (r->size == 0) {
++		DBG("%s:%d: size == 0\n", __func__, __LINE__);
++		result = -1;
++		goto zero_region;
++	}
++
++	result = lv1_allocate_memory(r->size, PAGE_SHIFT_16M, 0,
++		ALLOCATE_MEMORY_TRY_ALT_UNIT, &r->base, &muid);
++
++	if (result || r->base < map.rm.size) {
++		DBG("%s:%d: lv1_allocate_memory failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++		goto zero_region;
++	}
++
++	r->offset = r->base - map.rm.size;
++	return result;
++
++zero_region:
++	r->size = r->base = r->offset = 0;
 +	return result;
 +}
 +
-+static int __init add_spu_pages(unsigned long start_addr, unsigned long size)
++/**
++ * ps3_mm_region_destroy - destroy a memory region
++ * @r: pointer to struct mem_region
++ */
++
++void ps3_mm_region_destroy(struct mem_region *r)
++{
++	if (r->base) {
++		lv1_release_memory(r->base);
++		r->size = r->base = r->offset = 0;
++		map.total = map.rm.size;
++	}
++}
++
++/**
++ * ps3_mm_add_memory - hot add memory
++ */
++
++static int __init ps3_mm_add_memory(void)
 +{
 +	int result;
++	unsigned long start_addr;
 +	unsigned long start_pfn;
 +	unsigned long nr_pages;
-+	struct pglist_data *pgdata;
-+	struct zone *zone;
 +
 +	BUG_ON(!mem_init_done);
 +
++	start_addr = USE_LPAR_ADDR ? map.r1.base : map.rm.size;
 +	start_pfn = start_addr >> PAGE_SHIFT;
-+	nr_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
++	nr_pages = (map.r1.size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 +
-+	pgdata = NODE_DATA(0);
-+	zone = pgdata->node_zones;
++	DBG("%s:%d: start_addr %lxh, start_pfn %lxh, nr_pages %lxh\n",
++		__func__, __LINE__, start_addr, start_pfn, nr_pages);
 +
-+	result = __add_pages(zone, start_pfn, nr_pages);
++	result = add_memory(0, start_addr, map.r1.size);
++
++	if (result) {
++		DBG("%s:%d: add_memory failed: (%d)\n",
++			__func__, __LINE__, result);
++		return result;
++	}
++
++	result = online_pages(start_pfn, nr_pages);
 +
 +	if (result)
-+		pr_debug("%s:%d: __add_pages failed: (%d)\n",
++		DBG("%s:%d: online_pages failed: (%d)\n",
 +			__func__, __LINE__, result);
 +
 +	return result;
 +}
 +
-+static void spu_unmap(struct spu *spu)
++core_initcall(ps3_mm_add_memory);
++
++/*============================================================================*/
++/* dma routines                                                               */
++/*============================================================================*/
++
++/**
++ * dma_lpar_to_bus - Translate an lpar address to ioc mapped bus address.
++ * @r: pointer to dma region structure
++ * @lpar_addr: HV lpar address
++ */
++
++static unsigned long dma_lpar_to_bus(struct ps3_dma_region *r,
++	unsigned long lpar_addr)
 +{
-+	iounmap(spu->priv2);
-+	iounmap(spu->problem);
-+	iounmap((__force u8 __iomem *)spu->local_store);
-+	iounmap(spu_pdata(spu)->shadow);
++	BUG_ON(lpar_addr >= map.r1.base + map.r1.size);
++	return r->bus_addr + (lpar_addr <= map.rm.size ? lpar_addr
++		: lpar_addr - map.r1.offset);
 +}
 +
-+static int __init setup_areas(struct spu *spu)
++#define dma_dump_region(_a) _dma_dump_region(_a, __func__, __LINE__)
++static void _dma_dump_region(const struct ps3_dma_region *r, const char* func,
++	int line)
 +{
-+	struct table {char* name; unsigned long addr; unsigned long size;};
-+	int result;
++	DBG("%s:%d: dev        %u:%u\n", func, line, r->did.bus_id,
++		r->did.dev_id);
++	DBG("%s:%d: page_size  %u\n", func, line, r->page_size);
++	DBG("%s:%d: bus_addr   %lxh\n", func, line, r->bus_addr);
++	DBG("%s:%d: len        %lxh\n", func, line, r->len);
++}
 +
-+	/* setup pages */
++/**
++ * dma_chunk - A chunk of dma pages mapped by the io controller.
++ * @region - The dma region that owns this chunk.
++ * @lpar_addr: Starting lpar address of the area to map.
++ * @bus_addr: Starting ioc bus address of the area to map.
++ * @len: Length in bytes of the area to map.
++ * @link: A struct list_head used with struct ps3_dma_region.chunk_list, the
++ * list of all chuncks owned by the region.
++ *
++ * This implementation uses a very simple dma page manager
++ * based on the dma_chunk structure.  This scheme assumes
++ * that all drivers use very well behaved dma ops.
++ */
 +
-+	result = add_spu_pages(spu->local_store_phys, LS_SIZE);
-+	if (result)
-+		goto fail_add;
++struct dma_chunk {
++	struct ps3_dma_region *region;
++	unsigned long lpar_addr;
++	unsigned long bus_addr;
++	unsigned long len;
++	struct list_head link;
++	unsigned int usage_count;
++};
 +
-+	result = add_spu_pages(spu->problem_phys, sizeof(struct spu_problem));
-+	if (result)
-+		goto fail_add;
++#define dma_dump_chunk(_a) _dma_dump_chunk(_a, __func__, __LINE__)
++static void _dma_dump_chunk (const struct dma_chunk* c, const char* func,
++	int line)
++{
++	DBG("%s:%d: r.dev        %u:%u\n", func, line,
++		c->region->did.bus_id, c->region->did.dev_id);
++	DBG("%s:%d: r.bus_addr   %lxh\n", func, line, c->region->bus_addr);
++	DBG("%s:%d: r.page_size  %u\n", func, line, c->region->page_size);
++	DBG("%s:%d: r.len        %lxh\n", func, line, c->region->len);
++	DBG("%s:%d: c.lpar_addr  %lxh\n", func, line, c->lpar_addr);
++	DBG("%s:%d: c.bus_addr   %lxh\n", func, line, c->bus_addr);
++	DBG("%s:%d: c.len        %lxh\n", func, line, c->len);
++}
 +
-+	/* ioremap */
++static struct dma_chunk * dma_find_chunk(struct ps3_dma_region *r,
++	unsigned long bus_addr, unsigned long len)
++{
++	struct dma_chunk *c;
++	unsigned long aligned_bus = _ALIGN_DOWN(bus_addr, 1 << r->page_size);
++	unsigned long aligned_len = _ALIGN_UP(len, 1 << r->page_size);
 +
-+	spu_pdata(spu)->shadow = __ioremap(
-+		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
-+		PAGE_READONLY | _PAGE_NO_CACHE | _PAGE_GUARDED);
-+	if (!spu_pdata(spu)->shadow) {
-+		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
-+		goto fail_ioremap;
++	list_for_each_entry(c, &r->chunk_list.head, link) {
++		/* intersection */
++		if (aligned_bus >= c->bus_addr
++			&& aligned_bus < c->bus_addr + c->len
++			&& aligned_bus + aligned_len <= c->bus_addr + c->len) {
++			return c;
++		}
++		/* below */
++		if (aligned_bus + aligned_len <= c->bus_addr) {
++			continue;
++		}
++		/* above */
++		if (aligned_bus >= c->bus_addr + c->len) {
++			continue;
++		}
++
++		/* we don't handle the multi-chunk case for now */
++
++		dma_dump_chunk(c);
++		BUG();
++	}
++	return NULL;
++}
++
++static int dma_free_chunk(struct dma_chunk *c)
++{
++	int result = 0;
++
++	if (c->bus_addr) {
++		result = lv1_unmap_device_dma_region(c->region->did.bus_id,
++			c->region->did.dev_id, c->bus_addr, c->len);
++		BUG_ON(result);
 +	}
 +
-+	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
-+	if (!spu->local_store) {
-+		pr_debug("%s:%d: ioremap local_store failed\n",
-+			__func__, __LINE__);
-+		goto fail_ioremap;
-+	}
-+
-+	spu->problem = ioremap(spu->problem_phys,
-+		sizeof(struct spu_problem));
-+	if (!spu->problem) {
-+		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
-+		goto fail_ioremap;
-+	}
-+
-+	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
-+		sizeof(struct spu_priv2));
-+	if (!spu->priv2) {
-+		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
-+		goto fail_ioremap;
-+	}
-+
-+	dump_areas(spu_pdata(spu)->spe_id, spu_pdata(spu)->priv2_addr,
-+		spu->problem_phys, spu->local_store_phys,
-+		spu_pdata(spu)->shadow_addr);
-+	dump_areas(spu_pdata(spu)->spe_id, (unsigned long)spu->priv2,
-+		(unsigned long)spu->problem, (unsigned long)spu->local_store,
-+		(unsigned long)spu_pdata(spu)->shadow);
-+
-+	return 0;
-+
-+fail_ioremap:
-+	spu_unmap(spu);
-+fail_add:
++	kfree(c);
 +	return result;
 +}
 +
-+static int __init setup_interrupts(struct spu *spu)
++/**
++ * dma_map_pages - Maps dma pages into the io controller bus address space.
++ * @r: Pointer to a struct ps3_dma_region.
++ * @phys_addr: Starting physical address of the area to map.
++ * @len: Length in bytes of the area to map.
++ * c_out: A pointer to receive an allocated struct dma_chunk for this area.
++ *
++ * This is the lowest level dma mapping routine, and is the one that will
++ * make the HV call to add the pages into the io controller address space.
++ */
++
++static int dma_map_pages(struct ps3_dma_region *r, unsigned long phys_addr,
++	unsigned long len, struct dma_chunk **c_out)
 +{
 +	int result;
++	struct dma_chunk *c;
 +
-+	result = ps3_alloc_spe_irq(spu_pdata(spu)->spe_id, 0,
-+		&spu->irqs[0]);
++	c = kzalloc(sizeof(struct dma_chunk), GFP_ATOMIC);
 +
-+	if (result)
-+		goto fail_alloc_0;
++	if (!c) {
++		result = -ENOMEM;
++		goto fail_alloc;
++	}
 +
-+	result = ps3_alloc_spe_irq(spu_pdata(spu)->spe_id, 1,
-+		&spu->irqs[1]);
++	c->region = r;
++	c->lpar_addr = ps3_mm_phys_to_lpar(phys_addr);
++	c->bus_addr = dma_lpar_to_bus(r, c->lpar_addr);
++	c->len = len;
 +
-+	if (result)
-+		goto fail_alloc_1;
-+
-+	result = ps3_alloc_spe_irq(spu_pdata(spu)->spe_id, 2,
-+		&spu->irqs[2]);
-+
-+	if (result)
-+		goto fail_alloc_2;
-+
-+	return result;
-+
-+fail_alloc_2:
-+	ps3_free_spe_irq(spu->irqs[1]);
-+fail_alloc_1:
-+	ps3_free_spe_irq(spu->irqs[0]);
-+fail_alloc_0:
-+	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
-+	return result;
-+}
-+
-+static int __init enable_spu(struct spu *spu)
-+{
-+	int result;
-+
-+	result = lv1_enable_logical_spe(spu_pdata(spu)->spe_id,
-+		spu_pdata(spu)->resource_id);
++	result = lv1_map_device_dma_region(c->region->did.bus_id,
++		c->region->did.dev_id, c->lpar_addr, c->bus_addr, c->len,
++		0xf800000000000000UL);
 +
 +	if (result) {
-+		pr_debug("%s:%d: lv1_enable_logical_spe failed: %s\n",
++		DBG("%s:%d: lv1_map_device_dma_region failed: %s\n",
 +			__func__, __LINE__, ps3_result(result));
-+		goto fail_enable;
++		goto fail_map;
 +	}
 +
-+	result = setup_areas(spu);
++	list_add(&c->link, &r->chunk_list.head);
 +
-+	if (result)
-+		goto fail_areas;
-+
-+	result = setup_interrupts(spu);
-+
-+	if (result)
-+		goto fail_interrupts;
-+
++	*c_out = c;
 +	return 0;
 +
-+fail_interrupts:
-+	spu_unmap(spu);
-+fail_areas:
-+	lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
-+fail_enable:
++fail_map:
++	kfree(c);
++fail_alloc:
++	*c_out = NULL;
++	DBG(" <- %s:%d\n", __func__, __LINE__);
 +	return result;
 +}
 +
-+static int ps3_destroy_spu(struct spu *spu)
++/**
++ * dma_region_create - Create a device dma region.
++ * @r: Pointer to a struct ps3_dma_region.
++ *
++ * This is the lowest level dma region create routine, and is the one that
++ * will make the HV call to create the region.
++ */
++
++static int dma_region_create(struct ps3_dma_region* r)
 +{
 +	int result;
 +
-+	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++	r->len = _ALIGN_UP(map.total, 1 << r->page_size);
++	INIT_LIST_HEAD(&r->chunk_list.head);
++	spin_lock_init(&r->chunk_list.lock);
 +
-+	result = lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
-+	BUG_ON(result);
++	result = lv1_allocate_device_dma_region(r->did.bus_id, r->did.dev_id,
++		r->len, r->page_size, r->region_type, &r->bus_addr);
 +
-+	ps3_free_spe_irq(spu->irqs[2]);
-+	ps3_free_spe_irq(spu->irqs[1]);
-+	ps3_free_spe_irq(spu->irqs[0]);
++	dma_dump_region(r);
 +
-+	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
-+
-+	spu_unmap(spu);
-+
-+	result = lv1_destruct_logical_spe(spu_pdata(spu)->spe_id);
-+	BUG_ON(result);
-+
-+	kfree(spu->pdata);
-+	spu->pdata = NULL;
-+
-+	return 0;
-+}
-+
-+static int __init ps3_create_spu(struct spu *spu, void *data)
-+{
-+	int result;
-+
-+	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
-+
-+	spu->pdata = kzalloc(sizeof(struct spu_pdata),
-+		GFP_KERNEL);
-+
-+	if (!spu->pdata) {
-+		result = -ENOMEM;
-+		goto fail_malloc;
++	if (result) {
++		DBG("%s:%d: lv1_allocate_device_dma_region failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++		r->len = r->bus_addr = 0;
 +	}
 +
-+	spu_pdata(spu)->resource_id = (unsigned long)data;
-+
-+	/* Init cached reg values to HV defaults. */
-+
-+	spu_pdata(spu)->cache.sr1 = 0x33;
-+
-+	result = construct_spu(spu);
-+
-+	if (result)
-+		goto fail_construct;
-+
-+	/* For now, just go ahead and enable it. */
-+
-+	result = enable_spu(spu);
-+
-+	if (result)
-+		goto fail_enable;
-+
-+	/* Make sure the spu is in SPE_EX_STATE_EXECUTED. */
-+
-+	/* need something better here!!! */
-+	while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status)
-+		!= SPE_EX_STATE_EXECUTED)
-+		(void)0;
-+
-+	return result;
-+
-+fail_enable:
-+fail_construct:
-+	ps3_destroy_spu(spu);
-+fail_malloc:
 +	return result;
 +}
 +
-+static int __init ps3_enumerate_spus(int (*fn)(void *data))
++/**
++ * dma_region_free - Free a device dma region.
++ * @r: Pointer to a struct ps3_dma_region.
++ *
++ * This is the lowest level dma region free routine, and is the one that
++ * will make the HV call to free the region.
++ */
++
++static int dma_region_free(struct ps3_dma_region* r)
 +{
 +	int result;
-+	unsigned int num_resource_id;
-+	unsigned int i;
++	struct dma_chunk *c;
++	struct dma_chunk *tmp;
 +
-+	result = ps3_repository_read_num_spu_resource_id(&num_resource_id);
++	list_for_each_entry_safe(c, tmp, &r->chunk_list.head, link) {
++		list_del(&c->link);
++		dma_free_chunk(c);
++	}
 +
-+	pr_debug("%s:%d: num_resource_id %u\n", __func__, __LINE__,
-+		num_resource_id);
++	result = lv1_free_device_dma_region(r->did.bus_id, r->did.dev_id,
++		r->bus_addr);
 +
++	if (result)
++		DBG("%s:%d: lv1_free_device_dma_region failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++
++	r->len = r->bus_addr = 0;
++
++	return result;
++}
++
++/**
++ * dma_map_area - Map an area of memory into a device dma region.
++ * @r: Pointer to a struct ps3_dma_region.
++ * @virt_addr: Starting virtual address of the area to map.
++ * @len: Length in bytes of the area to map.
++ * @bus_addr: A pointer to return the starting ioc bus address of the area to
++ * map.
++ *
++ * This is the common dma mapping routine.
++ */
++
++static int dma_map_area(struct ps3_dma_region *r, unsigned long virt_addr,
++	unsigned long len, unsigned long *bus_addr)
++{
++	int result;
++	unsigned long flags;
++	struct dma_chunk *c;
++	unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
++		: virt_addr;
++
++	*bus_addr = dma_lpar_to_bus(r, ps3_mm_phys_to_lpar(phys_addr));
++
++	if (!USE_DYNAMIC_DMA) {
++		unsigned long lpar_addr = ps3_mm_phys_to_lpar(phys_addr);
++		DBG(" -> %s:%d\n", __func__, __LINE__);
++		DBG("%s:%d virt_addr %lxh\n", __func__, __LINE__,
++			virt_addr);
++		DBG("%s:%d phys_addr %lxh\n", __func__, __LINE__,
++			phys_addr);
++		DBG("%s:%d lpar_addr %lxh\n", __func__, __LINE__,
++			lpar_addr);
++		DBG("%s:%d len       %lxh\n", __func__, __LINE__, len);
++		DBG("%s:%d bus_addr  %lxh (%lxh)\n", __func__, __LINE__,
++		*bus_addr, len);
++	}
++
++	spin_lock_irqsave(&r->chunk_list.lock, flags);
++	c = dma_find_chunk(r, *bus_addr, len);
++
++	if (c) {
++		c->usage_count++;
++		spin_unlock_irqrestore(&r->chunk_list.lock, flags);
++		return 0;
++	}
++
++	result = dma_map_pages(r, _ALIGN_DOWN(phys_addr, 1 << r->page_size),
++		_ALIGN_UP(len, 1 << r->page_size), &c);
++
++	if (result) {
++		*bus_addr = 0;
++		DBG("%s:%d: dma_map_pages failed (%d)\n",
++			__func__, __LINE__, result);
++		spin_unlock_irqrestore(&r->chunk_list.lock, flags);
++		return result;
++	}
++
++	c->usage_count = 1;
++
++	spin_unlock_irqrestore(&r->chunk_list.lock, flags);
++	return result;
++}
++
++/**
++ * dma_unmap_area - Unmap an area of memory from a device dma region.
++ * @r: Pointer to a struct ps3_dma_region.
++ * @bus_addr: The starting ioc bus address of the area to unmap.
++ * @len: Length in bytes of the area to unmap.
++ *
++ * This is the common dma unmap routine.
++ */
++
++int dma_unmap_area(struct ps3_dma_region *r, unsigned long bus_addr,
++	unsigned long len)
++{
++	unsigned long flags;
++	struct dma_chunk *c;
++
++	spin_lock_irqsave(&r->chunk_list.lock, flags);
++	c = dma_find_chunk(r, bus_addr, len);
++
++	if (!c) {
++		unsigned long aligned_bus = _ALIGN_DOWN(bus_addr,
++			1 << r->page_size);
++		unsigned long aligned_len = _ALIGN_UP(len, 1 << r->page_size);
++		DBG("%s:%d: not found: bus_addr %lxh\n",
++			__func__, __LINE__, bus_addr);
++		DBG("%s:%d: not found: len %lxh\n",
++			__func__, __LINE__, len);
++		DBG("%s:%d: not found: aligned_bus %lxh\n",
++			__func__, __LINE__, aligned_bus);
++		DBG("%s:%d: not found: aligned_len %lxh\n",
++			__func__, __LINE__, aligned_len);
++		BUG();
++	}
++
++	c->usage_count--;
++
++	if (!c->usage_count) {
++		list_del(&c->link);
++		dma_free_chunk(c);
++	}
++
++	spin_unlock_irqrestore(&r->chunk_list.lock, flags);
++	return 0;
++}
++
++/**
++ * dma_region_create_linear - Setup a linear dma maping for a device.
++ * @r: Pointer to a struct ps3_dma_region.
++ *
++ * This routine creates an HV dma region for the device and maps all available
++ * ram into the io controller bus address space.
++ */
++
++static int dma_region_create_linear(struct ps3_dma_region *r)
++{
++	int result;
++	unsigned long tmp;
++
++	/* force 16M dma pages for linear mapping */
++
++	if (r->page_size != PS3_DMA_16M) {
++		pr_info("%s:%d: forcing 16M pages for linear map\n",
++			__func__, __LINE__);
++		r->page_size = PS3_DMA_16M;
++	}
++
++	result = dma_region_create(r);
++	BUG_ON(result);
++
++	result = dma_map_area(r, map.rm.base, map.rm.size, &tmp);
++	BUG_ON(result);
++
++	if (USE_LPAR_ADDR)
++		result = dma_map_area(r, map.r1.base, map.r1.size,
++			&tmp);
++	else
++		result = dma_map_area(r, map.rm.size, map.r1.size,
++			&tmp);
++
++	BUG_ON(result);
++
++	return result;
++}
++
++/**
++ * dma_region_free_linear - Free a linear dma mapping for a device.
++ * @r: Pointer to a struct ps3_dma_region.
++ *
++ * This routine will unmap all mapped areas and free the HV dma region.
++ */
++
++static int dma_region_free_linear(struct ps3_dma_region *r)
++{
++	int result;
++
++	result = dma_unmap_area(r, dma_lpar_to_bus(r, 0), map.rm.size);
++	BUG_ON(result);
++
++	result = dma_unmap_area(r, dma_lpar_to_bus(r, map.r1.base),
++		map.r1.size);
++	BUG_ON(result);
++
++	result = dma_region_free(r);
++	BUG_ON(result);
++
++	return result;
++}
++
++/**
++ * dma_map_area_linear - Map an area of memory into a device dma region.
++ * @r: Pointer to a struct ps3_dma_region.
++ * @virt_addr: Starting virtual address of the area to map.
++ * @len: Length in bytes of the area to map.
++ * @bus_addr: A pointer to return the starting ioc bus address of the area to
++ * map.
++ *
++ * This routine just returns the coresponding bus address.  Actual mapping
++ * occurs in dma_region_create_linear().
++ */
++
++static int dma_map_area_linear(struct ps3_dma_region *r,
++	unsigned long virt_addr, unsigned long len, unsigned long *bus_addr)
++{
++	unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
++		: virt_addr;
++	*bus_addr = dma_lpar_to_bus(r, ps3_mm_phys_to_lpar(phys_addr));
++	return 0;
++}
++
++/**
++ * dma_unmap_area_linear - Unmap an area of memory from a device dma region.
++ * @r: Pointer to a struct ps3_dma_region.
++ * @bus_addr: The starting ioc bus address of the area to unmap.
++ * @len: Length in bytes of the area to unmap.
++ *
++ * This routine does nothing.  Unmapping occurs in dma_region_free_linear().
++ */
++
++static int dma_unmap_area_linear(struct ps3_dma_region *r,
++	unsigned long bus_addr, unsigned long len)
++{
++	return 0;
++}
++
++int ps3_dma_region_create(struct ps3_dma_region *r)
++{
++	return (USE_DYNAMIC_DMA)
++		? dma_region_create(r)
++		: dma_region_create_linear(r);
++}
++
++int ps3_dma_region_free(struct ps3_dma_region *r)
++{
++	return (USE_DYNAMIC_DMA)
++		? dma_region_free(r)
++		: dma_region_free_linear(r);
++}
++
++int ps3_dma_map(struct ps3_dma_region *r, unsigned long virt_addr,
++	unsigned long len, unsigned long *bus_addr)
++{
++	return (USE_DYNAMIC_DMA)
++		? dma_map_area(r, virt_addr, len, bus_addr)
++		: dma_map_area_linear(r, virt_addr, len, bus_addr);
++}
++
++int ps3_dma_unmap(struct ps3_dma_region *r, unsigned long bus_addr,
++	unsigned long len)
++{
++	return (USE_DYNAMIC_DMA) ? dma_unmap_area(r, bus_addr, len)
++		: dma_unmap_area_linear(r, bus_addr, len);
++}
++
++/*============================================================================*/
++/* system startup routines                                                    */
++/*============================================================================*/
++
++/**
++ * ps3_mm_init - initialize the address space state variables
++ */
++
++void __init ps3_mm_init(void)
++{
++	int result;
++
++	DBG(" -> %s:%d\n", __func__, __LINE__);
++
++	result = ps3_repository_read_mm_info(&map.rm.base, &map.rm.size,
++		&map.total);
++
++	if (result)
++		panic("ps3_repository_read_mm_info() failed");
++
++	map.rm.offset = map.rm.base;
++	map.vas_id = map.htab_size = 0;
++
++	/* this implementation assumes map.rm.base is zero */
++
++	BUG_ON(map.rm.base);
++	BUG_ON(!map.rm.size);
++
++	lmb_add(map.rm.base, map.rm.size);
++	lmb_analyze();
++
++	/* arrange to do this in ps3_mm_add_memory */
++	ps3_mm_region_create(&map.r1, map.total - map.rm.size);
++
++	DBG(" <- %s:%d\n", __func__, __LINE__);
++}
++
++/**
++ * ps3_mm_shutdown - final cleanup of address space
++ */
++
++void ps3_mm_shutdown(void)
++{
++	ps3_mm_region_destroy(&map.r1);
++	map.total = map.rm.size;
++}
+Index: cell--common--6/arch/powerpc/platforms/ps3/platform.h
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/platform.h
+@@ -0,0 +1,60 @@
++/*
++ *  PS3 platform declarations.
++ *
++ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#if !defined(_PS3_PLATFORM_H)
++#define _PS3_PLATFORM_H
++
++#include <linux/rtc.h>
++
++/* htab */
++
++void __init ps3_hpte_init(unsigned long htab_size);
++void __init ps3_map_htab(void);
++
++/* mm */
++
++void __init ps3_mm_init(void);
++void __init ps3_mm_vas_create(unsigned long* htab_size);
++void ps3_mm_vas_destroy(void);
++void ps3_mm_shutdown(void);
++
++/* irq */
++
++void ps3_init_IRQ(void);
++void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq);
++
++/* smp */
++
++void smp_init_ps3(void);
++void ps3_smp_cleanup_cpu(int cpu);
++
++/* time */
++
++void __init ps3_calibrate_decr(void);
++unsigned long __init ps3_get_boot_time(void);
++void ps3_get_rtc_time(struct rtc_time *time);
++int ps3_set_rtc_time(struct rtc_time *time);
++
++/* os area */
++
++int __init ps3_os_area_init(void);
++u64 ps3_os_area_rtc_diff(void);
++
++#endif
+Index: cell--common--6/arch/powerpc/platforms/ps3/setup.c
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/setup.c
+@@ -0,0 +1,173 @@
++/*
++ *  PS3 platform setup routines.
++ *
++ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/fs.h>
++#include <linux/root_dev.h>
++#include <linux/console.h>
++#include <linux/kexec.h>
++
++#include <asm/machdep.h>
++#include <asm/firmware.h>
++#include <asm/time.h>
++#include <asm/iommu.h>
++#include <asm/udbg.h>
++#include <asm/prom.h>
++#include <asm/lv1call.h>
++
++#include "platform.h"
++
++#if defined(DEBUG)
++#define DBG(fmt...) udbg_printf(fmt)
++#else
++#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
++#endif
++
++static void ps3_show_cpuinfo(struct seq_file *m)
++{
++	seq_printf(m, "machine\t\t: %s\n", ppc_md.name);
++}
++
++static void ps3_power_save(void)
++{
 +	/*
-+	 * For now, just create logical spus equal to the number
-+	 * of physical spus reserved for the partition.
++	 * lv1_pause() puts the PPE thread into inactive state until an
++	 * irq on an unmasked plug exists. MSR[EE] has no effect.
++	 * flags: 0 = wake on DEC interrupt, 1 = ignore DEC interrupt.
 +	 */
 +
-+	for (i = 0; i < num_resource_id; i++) {
-+		enum ps3_spu_resource_type resource_type;
-+		unsigned int resource_id;
++	lv1_pause(0);
++}
 +
-+		result = ps3_repository_read_spu_resource_id(i,
-+			&resource_type, &resource_id);
++static void ps3_panic(char *str)
++{
++	DBG("%s:%d %s\n", __func__, __LINE__, str);
 +
-+		if (result)
-+			break;
++#ifdef CONFIG_SMP
++	smp_send_stop();
++#endif
++	printk("\n");
++	printk("   System does not reboot automatically.\n");
++	printk("   Please press POWER button.\n");
++	printk("\n");
 +
-+		if (resource_type == PS3_SPU_RESOURCE_TYPE_EXCLUSIVE) {
-+			result = fn((void*)(unsigned long)resource_id);
++	for (;;) ;
++}
 +
-+			if (result)
-+				break;
-+		}
++static void __init ps3_setup_arch(void)
++{
++	DBG(" -> %s:%d\n", __func__, __LINE__);
++
++	ps3_spu_set_platform();
++	ps3_map_htab();
++
++#ifdef CONFIG_SMP
++	smp_init_ps3();
++#endif
++
++#ifdef CONFIG_DUMMY_CONSOLE
++	conswitchp = &dummy_con;
++#endif
++
++	ppc_md.power_save = ps3_power_save;
++
++	DBG(" <- %s:%d\n", __func__, __LINE__);
++}
++
++static void __init ps3_progress(char *s, unsigned short hex)
++{
++	printk("*** %04x : %s\n", hex, s ? s : "");
++}
++
++static int __init ps3_probe(void)
++{
++	unsigned long htab_size;
++	unsigned long dt_root;
++
++	DBG(" -> %s:%d\n", __func__, __LINE__);
++
++	dt_root = of_get_flat_dt_root();
++	if (!of_flat_dt_is_compatible(dt_root, "PS3"))
++		return 0;
++
++	powerpc_firmware_features |= FW_FEATURE_LPAR;
++
++	ps3_os_area_init();
++	ps3_mm_init();
++	ps3_mm_vas_create(&htab_size);
++	ps3_hpte_init(htab_size);
++
++	DBG(" <- %s:%d\n", __func__, __LINE__);
++	return 1;
++}
++
++#if defined(CONFIG_KEXEC)
++static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
++{
++	DBG(" -> %s:%d\n", __func__, __LINE__);
++
++	if (secondary) {
++		int cpu;
++		for_each_online_cpu(cpu)
++			if (cpu)
++				ps3_smp_cleanup_cpu(cpu);
++	} else
++		ps3_smp_cleanup_cpu(0);
++
++	DBG(" <- %s:%d\n", __func__, __LINE__);
++}
++
++static void ps3_machine_kexec(struct kimage *image)
++{
++	unsigned long ppe_id;
++
++	DBG(" -> %s:%d\n", __func__, __LINE__);
++
++	lv1_get_logical_ppe_id(&ppe_id);
++	lv1_configure_irq_state_bitmap(ppe_id, 0, 0);
++	ps3_mm_shutdown();
++	ps3_mm_vas_destroy();
++
++	default_machine_kexec(image);
++
++	DBG(" <- %s:%d\n", __func__, __LINE__);
++}
++#endif
++
++define_machine(ps3) {
++	.name				= "PS3",
++	.probe				= ps3_probe,
++	.setup_arch			= ps3_setup_arch,
++	.show_cpuinfo			= ps3_show_cpuinfo,
++	.init_IRQ			= ps3_init_IRQ,
++	.panic				= ps3_panic,
++	.get_boot_time			= ps3_get_boot_time,
++	.set_rtc_time			= ps3_set_rtc_time,
++	.get_rtc_time			= ps3_get_rtc_time,
++	.calibrate_decr			= ps3_calibrate_decr,
++	.progress			= ps3_progress,
++#if defined(CONFIG_KEXEC)
++	.kexec_cpu_down			= ps3_kexec_cpu_down,
++	.machine_kexec			= ps3_machine_kexec,
++	.machine_kexec_prepare		= default_machine_kexec_prepare,
++	.machine_crash_shutdown		= default_machine_crash_shutdown,
++#endif
++};
+Index: cell--common--6/arch/powerpc/platforms/ps3/smp.c
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/smp.c
+@@ -0,0 +1,158 @@
++/*
++ *  PS3 SMP routines.
++ *
++ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/smp.h>
++
++#include <asm/machdep.h>
++#include <asm/udbg.h>
++#include <asm/ps3.h>
++
++#include "platform.h"
++
++#if defined(DEBUG)
++#define DBG(fmt...) udbg_printf(fmt)
++#else
++#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
++#endif
++
++static irqreturn_t ipi_function_handler(int irq, void *msg)
++{
++	smp_message_recv((int)(long)msg);
++	return IRQ_HANDLED;
++}
++
++/**
++  * virqs - a per cpu array of virqs for ipi use
++  */
++
++#define MSG_COUNT 4
++static DEFINE_PER_CPU(unsigned int, virqs[MSG_COUNT]);
++
++static const char *names[MSG_COUNT] = {
++	"ipi call",
++	"ipi reschedule",
++	"ipi migrate",
++	"ipi debug brk"
++};
++
++static void do_message_pass(int target, int msg)
++{
++	int result;
++	unsigned int virq;
++
++	if (msg >= MSG_COUNT) {
++		DBG("%s:%d: bad msg: %d\n", __func__, __LINE__, msg);
++		return;
 +	}
 +
++	virq = per_cpu(virqs, target)[msg];
++	result = ps3_send_event_locally(virq);
++
 +	if (result)
-+		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
-+			__func__, __LINE__);
-+
-+	return result;
++		DBG("%s:%d: ps3_send_event_locally(%d, %d) failed"
++			" (%d)\n", __func__, __LINE__, target, msg, result);
 +}
 +
-+const struct spu_management_ops spu_management_ps3_ops = {
-+	.enumerate_spus = ps3_enumerate_spus,
-+	.create_spu = ps3_create_spu,
-+	.destroy_spu = ps3_destroy_spu,
++static void ps3_smp_message_pass(int target, int msg)
++{
++	int cpu;
++
++	if (target < NR_CPUS)
++		do_message_pass(target, msg);
++	else if (target == MSG_ALL_BUT_SELF) {
++		for_each_online_cpu(cpu)
++			if (cpu != smp_processor_id())
++				do_message_pass(cpu, msg);
++	} else {
++		for_each_online_cpu(cpu)
++			do_message_pass(cpu, msg);
++	}
++}
++
++static int ps3_smp_probe(void)
++{
++	return 2;
++}
++
++static void __init ps3_smp_setup_cpu(int cpu)
++{
++	int result;
++	unsigned int *virqs = per_cpu(virqs, cpu);
++	int i;
++
++	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
++
++	/*
++	 * Check assumptions on virqs[] indexing. If this
++	 * check fails, then a different mapping of PPC_MSG_
++	 * to index needs to be setup.
++	 */
++
++	BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION  != 0);
++	BUILD_BUG_ON(PPC_MSG_RESCHEDULE     != 1);
++	BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK != 3);
++
++	for (i = 0; i < MSG_COUNT; i++) {
++		result = ps3_alloc_event_irq(&virqs[i]);
++
++		if (result)
++			continue;
++
++		DBG("%s:%d: (%d, %d) => virq %u\n",
++			__func__, __LINE__, cpu, i, virqs[i]);
++
++
++		request_irq(virqs[i], ipi_function_handler, IRQF_DISABLED,
++			names[i], (void*)(long)i);
++	}
++
++	ps3_register_ipi_debug_brk(cpu, virqs[PPC_MSG_DEBUGGER_BREAK]);
++
++	DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
++}
++
++void ps3_smp_cleanup_cpu(int cpu)
++{
++	unsigned int *virqs = per_cpu(virqs, cpu);
++	int i;
++
++	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
++	for (i = 0; i < MSG_COUNT; i++) {
++		ps3_free_event_irq(virqs[i]);
++		free_irq(virqs[i], (void*)(long)i);
++		virqs[i] = NO_IRQ;
++	}
++	DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
++}
++
++static struct smp_ops_t ps3_smp_ops = {
++	.probe		= ps3_smp_probe,
++	.message_pass	= ps3_smp_message_pass,
++	.kick_cpu	= smp_generic_kick_cpu,
++	.setup_cpu	= ps3_smp_setup_cpu,
 +};
 +
-+/* spu_priv1_ops */
-+
-+static void int_mask_and(struct spu *spu, int class, u64 mask)
++void smp_init_ps3(void)
 +{
-+	u64 old_mask;
++	DBG(" -> %s\n", __func__);
++	smp_ops = &ps3_smp_ops;
++	DBG(" <- %s\n", __func__);
++}
+Index: cell--common--6/arch/powerpc/platforms/ps3/time.c
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/time.c
+@@ -0,0 +1,104 @@
++/*
++ *  PS3 time and rtc routines.
++ *
++ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
 +
-+	/* are these serialized by caller??? */
-+	old_mask = spu_int_mask_get(spu, class);
-+	spu_int_mask_set(spu, class, old_mask & mask);
++#include <linux/kernel.h>
++
++#include <asm/rtc.h>
++#include <asm/lv1call.h>
++#include <asm/ps3.h>
++
++#include "platform.h"
++
++#define dump_tm(_a) _dump_tm(_a, __func__, __LINE__)
++static void _dump_tm(const struct rtc_time *tm, const char* func, int line)
++{
++	pr_debug("%s:%d tm_sec  %d\n", func, line, tm->tm_sec);
++	pr_debug("%s:%d tm_min  %d\n", func, line, tm->tm_min);
++	pr_debug("%s:%d tm_hour %d\n", func, line, tm->tm_hour);
++	pr_debug("%s:%d tm_mday %d\n", func, line, tm->tm_mday);
++	pr_debug("%s:%d tm_mon  %d\n", func, line, tm->tm_mon);
++	pr_debug("%s:%d tm_year %d\n", func, line, tm->tm_year);
++	pr_debug("%s:%d tm_wday %d\n", func, line, tm->tm_wday);
 +}
 +
-+static void int_mask_or(struct spu *spu, int class, u64 mask)
++#define dump_time(_a) _dump_time(_a, __func__, __LINE__)
++static void __attribute__ ((unused)) _dump_time(int time, const char* func,
++	int line)
 +{
-+	u64 old_mask;
++	struct rtc_time tm;
 +
-+	old_mask = spu_int_mask_get(spu, class);
-+	spu_int_mask_set(spu, class, old_mask | mask);
++	to_tm(time, &tm);
++
++	pr_debug("%s:%d time    %d\n", func, line, time);
++	_dump_tm(&tm, func, line);
 +}
 +
-+static void int_mask_set(struct spu *spu, int class, u64 mask)
++/**
++ * rtc_shift - Difference in seconds between 1970 and the ps3 rtc value.
++ */
++
++static s64 rtc_shift;
++
++void __init ps3_calibrate_decr(void)
 +{
-+	spu_pdata(spu)->cache.masks[class] = mask;
-+	lv1_set_spe_interrupt_mask(spu_pdata(spu)->spe_id, class,
-+		spu_pdata(spu)->cache.masks[class]);
++	int result;
++	u64 tmp;
++
++	result = ps3_repository_read_be_tb_freq(0, &tmp);
++	BUG_ON(result);
++
++	ppc_tb_freq = tmp;
++	ppc_proc_freq = ppc_tb_freq * 40;
++
++	rtc_shift = ps3_os_area_rtc_diff();
 +}
 +
-+static u64 int_mask_get(struct spu *spu, int class)
++static u64 read_rtc(void)
 +{
-+	return spu_pdata(spu)->cache.masks[class];
++	int result;
++	u64 rtc_val;
++	u64 tb_val;
++
++	result = lv1_get_rtc(&rtc_val, &tb_val);
++	BUG_ON(result);
++
++	return rtc_val;
 +}
 +
-+static void int_stat_clear(struct spu *spu, int class, u64 stat)
++int ps3_set_rtc_time(struct rtc_time *tm)
 +{
-+	/* Note that MFC_DSISR will be cleared when class1[MF] is set. */
++	u64 now = mktime(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
++		tm->tm_hour, tm->tm_min, tm->tm_sec);
 +
-+	lv1_clear_spe_interrupt_status(spu_pdata(spu)->spe_id, class,
-+		stat, 0);
++	rtc_shift = now - read_rtc();
++	return 0;
 +}
 +
-+static u64 int_stat_get(struct spu *spu, int class)
++void ps3_get_rtc_time(struct rtc_time *tm)
 +{
-+	u64 stat;
-+
-+	lv1_get_spe_interrupt_status(spu_pdata(spu)->spe_id, class, &stat);
-+	return stat;
++	to_tm(read_rtc() + rtc_shift, tm);
++	tm->tm_year -= 1900;
++	tm->tm_mon -= 1;
 +}
 +
-+static void cpu_affinity_set(struct spu *spu, int cpu)
++unsigned long __init ps3_get_boot_time(void)
 +{
-+	/* No support. */
++	return read_rtc() + rtc_shift;
 +}
+Index: cell--common--6/include/asm-powerpc/ps3.h
+===================================================================
+--- /dev/null
++++ cell--common--6/include/asm-powerpc/ps3.h
+@@ -0,0 +1,250 @@
++/*
++ *  PS3 platform declarations.
++ *
++ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
 +
-+static u64 mfc_dar_get(struct spu *spu)
-+{
-+	return in_be64(&spu_pdata(spu)->shadow->mfc_dar_RW);
-+}
++#if !defined(_ASM_POWERPC_PS3_H)
++#define _ASM_POWERPC_PS3_H
 +
-+static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
-+{
-+	/* Nothing to do, cleared in int_stat_clear(). */
-+}
++#include <linux/compiler.h> /* for __deprecated */
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/device.h>
 +
-+static u64 mfc_dsisr_get(struct spu *spu)
-+{
-+	return in_be64(&spu_pdata(spu)->shadow->mfc_dsisr_RW);
-+}
++/**
++ * struct ps3_device_id - HV bus device identifier from the system repository
++ * @bus_id: HV bus id, {1..} (zero invalid)
++ * @dev_id: HV device id, {0..}
++ */
 +
-+static void mfc_sdr_setup(struct spu *spu)
-+{
-+	/* Nothing to do. */
-+}
-+
-+static void mfc_sr1_set(struct spu *spu, u64 sr1)
-+{
-+	/* Check bits allowed by HV. */
-+
-+	static const u64 allowed = ~(MFC_STATE1_LOCAL_STORAGE_DECODE_MASK
-+		| MFC_STATE1_PROBLEM_STATE_MASK);
-+
-+	BUG_ON((sr1 & allowed) != (spu_pdata(spu)->cache.sr1 & allowed));
-+
-+	spu_pdata(spu)->cache.sr1 = sr1;
-+	lv1_set_spe_privilege_state_area_1_register(
-+		spu_pdata(spu)->spe_id,
-+		offsetof(struct spu_priv1, mfc_sr1_RW),
-+		spu_pdata(spu)->cache.sr1);
-+}
-+
-+static u64 mfc_sr1_get(struct spu *spu)
-+{
-+	return spu_pdata(spu)->cache.sr1;
-+}
-+
-+static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
-+{
-+	spu_pdata(spu)->cache.tclass_id = tclass_id;
-+	lv1_set_spe_privilege_state_area_1_register(
-+		spu_pdata(spu)->spe_id,
-+		offsetof(struct spu_priv1, mfc_tclass_id_RW),
-+		spu_pdata(spu)->cache.tclass_id);
-+}
-+
-+static u64 mfc_tclass_id_get(struct spu *spu)
-+{
-+	return spu_pdata(spu)->cache.tclass_id;
-+}
-+
-+static void tlb_invalidate(struct spu *spu)
-+{
-+	/* Nothing to do. */
-+}
-+
-+static void resource_allocation_groupID_set(struct spu *spu, u64 id)
-+{
-+	/* No support. */
-+}
-+
-+static u64 resource_allocation_groupID_get(struct spu *spu)
-+{
-+	return 0; /* No support. */
-+}
-+
-+static void resource_allocation_enable_set(struct spu *spu, u64 enable)
-+{
-+	/* No support. */
-+}
-+
-+static u64 resource_allocation_enable_get(struct spu *spu)
-+{
-+	return 0; /* No support. */
-+}
-+
-+const struct spu_priv1_ops spu_priv1_ps3_ops = {
-+	.int_mask_and = int_mask_and,
-+	.int_mask_or = int_mask_or,
-+	.int_mask_set = int_mask_set,
-+	.int_mask_get = int_mask_get,
-+	.int_stat_clear = int_stat_clear,
-+	.int_stat_get = int_stat_get,
-+	.cpu_affinity_set = cpu_affinity_set,
-+	.mfc_dar_get = mfc_dar_get,
-+	.mfc_dsisr_set = mfc_dsisr_set,
-+	.mfc_dsisr_get = mfc_dsisr_get,
-+	.mfc_sdr_setup = mfc_sdr_setup,
-+	.mfc_sr1_set = mfc_sr1_set,
-+	.mfc_sr1_get = mfc_sr1_get,
-+	.mfc_tclass_id_set = mfc_tclass_id_set,
-+	.mfc_tclass_id_get = mfc_tclass_id_get,
-+	.tlb_invalidate = tlb_invalidate,
-+	.resource_allocation_groupID_set = resource_allocation_groupID_set,
-+	.resource_allocation_groupID_get = resource_allocation_groupID_get,
-+	.resource_allocation_enable_set = resource_allocation_enable_set,
-+	.resource_allocation_enable_get = resource_allocation_enable_get,
++struct ps3_device_id {
++	unsigned int bus_id;
++	unsigned int dev_id;
 +};
 +
-+void ps3_spu_set_platform(void)
++
++/* dma routines */
++
++enum ps3_dma_page_size {
++	PS3_DMA_4K = 12U,
++	PS3_DMA_64K = 16U,
++	PS3_DMA_1M = 20U,
++	PS3_DMA_16M = 24U,
++};
++
++enum ps3_dma_region_type {
++	PS3_DMA_OTHER = 0,
++	PS3_DMA_INTERNAL = 2,
++};
++
++/**
++ * struct ps3_dma_region - A per device dma state variables structure
++ * @did: The HV device id.
++ * @page_size: The ioc pagesize.
++ * @region_type: The HV region type.
++ * @bus_addr: The 'translated' bus address of the region.
++ * @len: The length in bytes of the region.
++ * @chunk_list: Opaque variable used by the ioc page manager.
++ */
++
++struct ps3_dma_region {
++	struct ps3_device_id did;
++	enum ps3_dma_page_size page_size;
++	enum ps3_dma_region_type region_type;
++	unsigned long bus_addr;
++	unsigned long len;
++	struct {
++		spinlock_t lock;
++		struct list_head head;
++	} chunk_list;
++};
++
++/**
++ * struct ps3_dma_region_init - Helper to initialize structure variables
++ *
++ * Helper to properly initialize variables prior to calling
++ * ps3_system_bus_device_register.
++ */
++
++static inline void ps3_dma_region_init(struct ps3_dma_region *r,
++	const struct ps3_device_id* did, enum ps3_dma_page_size page_size,
++	enum ps3_dma_region_type region_type)
 +{
-+	spu_priv1_ops = &spu_priv1_ps3_ops;
-+	spu_management_ops = &spu_management_ps3_ops;
++	r->did = *did;
++	r->page_size = page_size;
++	r->region_type = region_type;
 +}
++int ps3_dma_region_create(struct ps3_dma_region *r);
++int ps3_dma_region_free(struct ps3_dma_region *r);
++int ps3_dma_map(struct ps3_dma_region *r, unsigned long virt_addr,
++	unsigned long len, unsigned long *bus_addr);
++int ps3_dma_unmap(struct ps3_dma_region *r, unsigned long bus_addr,
++	unsigned long len);
++
++/* mmio routines */
++
++enum ps3_mmio_page_size {
++	PS3_MMIO_4K = 12U,
++	PS3_MMIO_64K = 16U
++};
++
++/**
++ * struct ps3_mmio_region - a per device mmio state variables structure
++ *
++ * Current systems can be supported with a single region per device.
++ */
++
++struct ps3_mmio_region {
++	struct ps3_device_id did;
++	unsigned long bus_addr;
++	unsigned long len;
++	enum ps3_mmio_page_size page_size;
++	unsigned long lpar_addr;
++};
++
++/**
++ * struct ps3_mmio_region_init - Helper to initialize structure variables
++ *
++ * Helper to properly initialize variables prior to calling
++ * ps3_system_bus_device_register.
++ */
++
++static inline void ps3_mmio_region_init(struct ps3_mmio_region *r,
++	const struct ps3_device_id* did, unsigned long bus_addr,
++	unsigned long len, enum ps3_mmio_page_size page_size)
++{
++	r->did = *did;
++	r->bus_addr = bus_addr;
++	r->len = len;
++	r->page_size = page_size;
++}
++int ps3_mmio_region_create(struct ps3_mmio_region *r);
++int ps3_free_mmio_region(struct ps3_mmio_region *r);
++unsigned long ps3_mm_phys_to_lpar(unsigned long phys_addr);
++
++/* inrerrupt routines */
++
++int ps3_alloc_io_irq(unsigned int interrupt_id, unsigned int *virq);
++int ps3_free_io_irq(unsigned int virq);
++int ps3_alloc_event_irq(unsigned int *virq);
++int ps3_free_event_irq(unsigned int virq);
++int ps3_send_event_locally(unsigned int virq);
++int ps3_connect_event_irq(const struct ps3_device_id *did,
++	unsigned int interrupt_id, unsigned int *virq);
++int ps3_disconnect_event_irq(const struct ps3_device_id *did,
++	unsigned int interrupt_id, unsigned int virq);
++int ps3_alloc_vuart_irq(void* virt_addr_bmp, unsigned int *virq);
++int ps3_free_vuart_irq(unsigned int virq);
++int ps3_alloc_spe_irq(unsigned long spe_id, unsigned int class,
++	unsigned int *virq);
++int ps3_free_spe_irq(unsigned int virq);
++
++/* lv1 result codes */
++
++enum lv1_result {
++	LV1_SUCCESS                     = 0,
++	/* not used                       -1 */
++	LV1_RESOURCE_SHORTAGE           = -2,
++	LV1_NO_PRIVILEGE                = -3,
++	LV1_DENIED_BY_POLICY            = -4,
++	LV1_ACCESS_VIOLATION            = -5,
++	LV1_NO_ENTRY                    = -6,
++	LV1_DUPLICATE_ENTRY             = -7,
++	LV1_TYPE_MISMATCH               = -8,
++	LV1_BUSY                        = -9,
++	LV1_EMPTY                       = -10,
++	LV1_WRONG_STATE                 = -11,
++	/* not used                       -12 */
++	LV1_NO_MATCH                    = -13,
++	LV1_ALREADY_CONNECTED           = -14,
++	LV1_UNSUPPORTED_PARAMETER_VALUE = -15,
++	LV1_CONDITION_NOT_SATISFIED     = -16,
++	LV1_ILLEGAL_PARAMETER_VALUE     = -17,
++	LV1_BAD_OPTION                  = -18,
++	LV1_IMPLEMENTATION_LIMITATION   = -19,
++	LV1_NOT_IMPLEMENTED             = -20,
++	LV1_INVALID_CLASS_ID            = -21,
++	LV1_CONSTRAINT_NOT_SATISFIED    = -22,
++	LV1_ALIGNMENT_ERROR             = -23,
++	LV1_INTERNAL_ERROR              = -32768,
++};
++
++static inline const char* ps3_result(int result)
++{
++#if defined(DEBUG)
++	switch (result) {
++	case LV1_SUCCESS:
++		return "LV1_SUCCESS (0)";
++	case -1:
++		return "** unknown result ** (-1)";
++	case LV1_RESOURCE_SHORTAGE:
++		return "LV1_RESOURCE_SHORTAGE (-2)";
++	case LV1_NO_PRIVILEGE:
++		return "LV1_NO_PRIVILEGE (-3)";
++	case LV1_DENIED_BY_POLICY:
++		return "LV1_DENIED_BY_POLICY (-4)";
++	case LV1_ACCESS_VIOLATION:
++		return "LV1_ACCESS_VIOLATION (-5)";
++	case LV1_NO_ENTRY:
++		return "LV1_NO_ENTRY (-6)";
++	case LV1_DUPLICATE_ENTRY:
++		return "LV1_DUPLICATE_ENTRY (-7)";
++	case LV1_TYPE_MISMATCH:
++		return "LV1_TYPE_MISMATCH (-8)";
++	case LV1_BUSY:
++		return "LV1_BUSY (-9)";
++	case LV1_EMPTY:
++		return "LV1_EMPTY (-10)";
++	case LV1_WRONG_STATE:
++		return "LV1_WRONG_STATE (-11)";
++	case -12:
++		return "** unknown result ** (-12)";
++	case LV1_NO_MATCH:
++		return "LV1_NO_MATCH (-13)";
++	case LV1_ALREADY_CONNECTED:
++		return "LV1_ALREADY_CONNECTED (-14)";
++	case LV1_UNSUPPORTED_PARAMETER_VALUE:
++		return "LV1_UNSUPPORTED_PARAMETER_VALUE (-15)";
++	case LV1_CONDITION_NOT_SATISFIED:
++		return "LV1_CONDITION_NOT_SATISFIED (-16)";
++	case LV1_ILLEGAL_PARAMETER_VALUE:
++		return "LV1_ILLEGAL_PARAMETER_VALUE (-17)";
++	case LV1_BAD_OPTION:
++		return "LV1_BAD_OPTION (-18)";
++	case LV1_IMPLEMENTATION_LIMITATION:
++		return "LV1_IMPLEMENTATION_LIMITATION (-19)";
++	case LV1_NOT_IMPLEMENTED:
++		return "LV1_NOT_IMPLEMENTED (-20)";
++	case LV1_INVALID_CLASS_ID:
++		return "LV1_INVALID_CLASS_ID (-21)";
++	case LV1_CONSTRAINT_NOT_SATISFIED:
++		return "LV1_CONSTRAINT_NOT_SATISFIED (-22)";
++	case LV1_ALIGNMENT_ERROR:
++		return "LV1_ALIGNMENT_ERROR (-23)";
++	case LV1_INTERNAL_ERROR:
++		return "LV1_INTERNAL_ERROR (-32768)";
++	default:
++		BUG();
++		return "** unknown result **";
++	};
++#else
++	return "";
++#endif
++}
++
++#endif
