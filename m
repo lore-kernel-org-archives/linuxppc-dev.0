@@ -1,16 +1,18 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.25])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0CC7867C4A
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 11:10:49 +1100 (EST)
-Message-Id: <200611230010.kAN0AX57020905@shell0.pdx.osdl.net>
-Subject: - ppc4xx-compilation-fixes-for-pci-less-configs.patch removed from
-	-mm tree
-To: wojtekka@toxygen.net, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, mm-commits@vger.kernel.org
-From: akpm@osdl.org
-Date: Wed, 22 Nov 2006 16:10:33 -0800
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id 6000367C4B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 06:43:18 +1100 (EST)
+Date: Wed, 22 Nov 2006 20:36:33 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: NTP time sync
+Message-ID: <20061122203633.611acaa8@inspiron>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: akpm@osdl.org, Kumar, Andi Kleen <ak@muc.de>, ralf@linux-mips.org,
+	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, paulus@samba.org, rmk@arm.linux.org.uk,
+	davem@davemloft.net, kkojima@rr.iij4u.or.jp
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,93 +23,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-The patch titled
-     ppc4xx: Compilation fixes for PCI-less configs
-has been removed from the -mm tree.  Its filename was
-     ppc4xx-compilation-fixes-for-pci-less-configs.patch
 
-This patch was dropped because it was merged into mainline or a subsystem tree
+ wrto the in-kernel NTP synchronization,
+ as discussed before [1], my opinion
+ is that it should be done in userland.
 
-------------------------------------------------------
-Subject: ppc4xx: Compilation fixes for PCI-less configs
-From: Wojtek Kaniewski <wojtekka@toxygen.net>
+ Keeping it in kernel implies subtle code
+ in each of the supported architectures.
 
-Fix compilation without PCI support for Bubinga, CPCI405 and EP405. 
-bios_fixup() for these boards uses functions available only with
-CONFIG_PCI, so linker fails.
+ So, if the arch maintainers agree, 
+ I would suggest to schedule it for removal.
 
-Signed-off-by: Wojtek Kaniewski <wojtekka@toxygen.net>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@ozlabs.org>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
+[1] http://lkml.org/lkml/2006/3/28/358
 
- arch/ppc/platforms/4xx/bubinga.c |    2 ++
- arch/ppc/platforms/4xx/cpci405.c |    2 ++
- arch/ppc/platforms/4xx/ep405.c   |    2 ++
- 3 files changed, 6 insertions(+)
 
-diff -puN arch/ppc/platforms/4xx/bubinga.c~ppc4xx-compilation-fixes-for-pci-less-configs arch/ppc/platforms/4xx/bubinga.c
---- a/arch/ppc/platforms/4xx/bubinga.c~ppc4xx-compilation-fixes-for-pci-less-configs
-+++ a/arch/ppc/platforms/4xx/bubinga.c
-@@ -116,6 +116,7 @@ bubinga_early_serial_map(void)
- void __init
- bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
- {
-+#ifdef CONFIG_PCI
- 
- 	unsigned int bar_response, bar;
- 	/*
-@@ -212,6 +213,7 @@ bios_fixup(struct pci_controller *hose, 
- 	printk(" ptm2la\t0x%x\n", in_le32(&(pcip->ptm2la)));
- 
- #endif
-+#endif
- }
- 
- void __init
-diff -puN arch/ppc/platforms/4xx/cpci405.c~ppc4xx-compilation-fixes-for-pci-less-configs arch/ppc/platforms/4xx/cpci405.c
---- a/arch/ppc/platforms/4xx/cpci405.c~ppc4xx-compilation-fixes-for-pci-less-configs
-+++ a/arch/ppc/platforms/4xx/cpci405.c
-@@ -126,6 +126,7 @@ cpci405_setup_arch(void)
- void __init
- bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
- {
-+#ifdef CONFIG_PCI
- 	unsigned int bar_response, bar;
- 
- 	/* Disable region first */
-@@ -167,6 +168,7 @@ bios_fixup(struct pci_controller *hose, 
- 					PCI_FUNC(hose->first_busno), bar,
- 					&bar_response);
- 	}
-+#endif
- }
- 
- void __init
-diff -puN arch/ppc/platforms/4xx/ep405.c~ppc4xx-compilation-fixes-for-pci-less-configs arch/ppc/platforms/4xx/ep405.c
---- a/arch/ppc/platforms/4xx/ep405.c~ppc4xx-compilation-fixes-for-pci-less-configs
-+++ a/arch/ppc/platforms/4xx/ep405.c
-@@ -68,6 +68,7 @@ ep405_setup_arch(void)
- void __init
- bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
- {
-+#ifdef CONFIG_PCI
- 	unsigned int bar_response, bar;
- 	/*
- 	 * Expected PCI mapping:
-@@ -130,6 +131,7 @@ bios_fixup(struct pci_controller *hose, 
- 		    PCI_FUNC(hose->first_busno), bar, bar_response);
- 	}
- 	/* end work arround */
-+#endif
- }
- 
- void __init
-_
+-- 
 
-Patches currently in -mm which might be from wojtekka@toxygen.net are
+ Best regards,
 
-git-powerpc.patch
-log2-implement-a-general-integer-log2-facility-in-the-kernel-ppc-fix.patch
+ Alessandro Zummo,
+  Tower Technologies - Turin, Italy
+
+  http://www.towertech.it
