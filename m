@@ -1,15 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail79-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A5B6567E35
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:20:43 +1100 (EST)
-Message-ID: <4563D013.7020807@am.sony.com>
-Date: Tue, 21 Nov 2006 20:20:35 -0800
+	by ozlabs.org (Postfix) with ESMTP id 9494E67C6B
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:21:14 +1100 (EST)
+Message-ID: <4563D034.2080403@am.sony.com>
+Date: Tue, 21 Nov 2006 20:21:08 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 9/14] powerpc: add ps3 platform interrupt support
+Subject: [PATCH 14/14] powerpc: add ps3 platform defconfig
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,594 +22,853 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Adds a ps3_defconfig for the PS3 game console.
 
-Adds routines to interface with the PS3 interrupt services.
-
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- arch/powerpc/platforms/ps3/interrupt.c |  575 +++++++++++++++++++++++++++++++++
- 1 files changed, 575 insertions(+)
+ arch/powerpc/configs/ps3_defconfig |  837 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 837 insertions(+)
 
-Index: cell--common--6/arch/powerpc/platforms/ps3/interrupt.c
+Index: cell--common--6/arch/powerpc/configs/ps3_defconfig
 ===================================================================
 --- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3/interrupt.c
-@@ -0,0 +1,575 @@
-+/*
-+ *  PS3 interrupt routines.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/irq.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/udbg.h>
-+#include <asm/ps3.h>
-+#include <asm/lv1call.h>
-+
-+#include "platform.h"
-+
-+#if defined(DEBUG)
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...) do{if(0)printk(fmt);}while(0)
-+#endif
-+
-+/**
-+ * ps3_alloc_io_irq - Assign a virq to a system bus device.
-+ * interrupt_id: The device interrupt id read from the system repository.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * An io irq represents a non-virtualized device interrupt.  interrupt_id
-+ * coresponds to the interrupt number of the interrupt controller.
-+ */
-+
-+int ps3_alloc_io_irq(unsigned int interrupt_id, unsigned int *virq)
-+{
-+	int result;
-+	unsigned long outlet;
-+
-+	result = lv1_construct_io_irq_outlet(interrupt_id, &outlet);
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_construct_io_irq_outlet failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return result;
-+	}
-+
-+	*virq = irq_create_mapping(NULL, outlet);
-+
-+	pr_debug("%s:%d: interrupt_id %u => outlet %lu, virq %u\n",
-+		__func__, __LINE__, interrupt_id, outlet, *virq);
-+
-+	return 0;
-+}
-+
-+int ps3_free_io_irq(unsigned int virq)
-+{
-+	int result;
-+
-+	result = lv1_destruct_io_irq_outlet(virq_to_hw(virq));
-+
-+	if (!result)
-+		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+
-+	irq_dispose_mapping(virq);
-+
-+	return result;
-+}
-+
-+/**
-+ * ps3_alloc_event_irq - Allocate a virq for use with a system event.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * The virq can be used with lv1_connect_interrupt_event_receive_port() to
-+ * arrange to receive events, or with ps3_send_event_locally() to signal
-+ * events.
-+ */
-+
-+int ps3_alloc_event_irq(unsigned int *virq)
-+{
-+	int result;
-+	unsigned long outlet;
-+
-+	result = lv1_construct_event_receive_port(&outlet);
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_construct_event_receive_port failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		*virq = NO_IRQ;
-+		return result;
-+	}
-+
-+	*virq = irq_create_mapping(NULL, outlet);
-+
-+	pr_debug("%s:%d: outlet %lu, virq %u\n", __func__, __LINE__, outlet,
-+		*virq);
-+
-+	return 0;
-+}
-+
-+int ps3_free_event_irq(unsigned int virq)
-+{
-+	int result;
-+
-+	pr_debug(" -> %s:%d\n", __func__, __LINE__);
-+
-+	result = lv1_destruct_event_receive_port(virq_to_hw(virq));
-+
-+	if (result)
-+		pr_debug("%s:%d: lv1_destruct_event_receive_port failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+
-+	irq_dispose_mapping(virq);
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+int ps3_send_event_locally(unsigned int virq)
-+{
-+	return lv1_send_event_locally(virq_to_hw(virq));
-+}
-+
-+/**
-+ * ps3_connect_event_irq - Assign a virq to a system bus device.
-+ * @did: The HV device identifier read from the system repository.
-+ * @interrupt_id: The device interrupt id read from the system repository.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * An event irq represents a virtual device interrupt.  The interrupt_id
-+ * coresponds to the software interrupt number.
-+ */
-+
-+int ps3_connect_event_irq(const struct ps3_device_id *did,
-+	unsigned int interrupt_id, unsigned int *virq)
-+{
-+	int result;
-+
-+	result = ps3_alloc_event_irq(virq);
-+
-+	if (result)
-+		return result;
-+
-+	result = lv1_connect_interrupt_event_receive_port(did->bus_id,
-+		did->dev_id, virq_to_hw(*virq), interrupt_id);
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_connect_interrupt_event_receive_port"
-+			" failed: %s\n", __func__, __LINE__,
-+			ps3_result(result));
-+		ps3_free_event_irq(*virq);
-+		*virq = NO_IRQ;
-+		return result;
-+	}
-+
-+	pr_debug("%s:%d: interrupt_id %u, virq %u\n", __func__, __LINE__,
-+		interrupt_id, *virq);
-+
-+	return 0;
-+}
-+
-+int ps3_disconnect_event_irq(const struct ps3_device_id *did,
-+	unsigned int interrupt_id, unsigned int virq)
-+{
-+	int result;
-+
-+	pr_debug(" -> %s:%d: interrupt_id %u, virq %u\n", __func__, __LINE__,
-+		interrupt_id, virq);
-+
-+	result = lv1_disconnect_interrupt_event_receive_port(did->bus_id,
-+		did->dev_id, virq_to_hw(virq), interrupt_id);
-+
-+	if (result)
-+		pr_debug("%s:%d: lv1_disconnect_interrupt_event_receive_port"
-+			" failed: %s\n", __func__, __LINE__,
-+			ps3_result(result));
-+
-+	ps3_free_event_irq(virq);
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+/**
-+ * ps3_alloc_vuart_irq - Configure the system virtual uart virq.
-+ * @virt_addr_bmp: The caller supplied virtual uart interrupt bitmap.
-+ * @virq: The assigned Linux virq.
-+ *
-+ * The system supports only a single virtual uart, so multiple calls without
-+ * freeing the interrupt will return a wrong state error.
-+ */
-+
-+int ps3_alloc_vuart_irq(void* virt_addr_bmp, unsigned int *virq)
-+{
-+	int result;
-+	unsigned long outlet;
-+	unsigned long lpar_addr;
-+
-+	BUG_ON(!is_kernel_addr((unsigned long)virt_addr_bmp));
-+
-+	lpar_addr = ps3_mm_phys_to_lpar(__pa(virt_addr_bmp));
-+
-+	result = lv1_configure_virtual_uart_irq(lpar_addr, &outlet);
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_configure_virtual_uart_irq failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return result;
-+	}
-+
-+	*virq = irq_create_mapping(NULL, outlet);
-+
-+	pr_debug("%s:%d: outlet %lu, virq %u\n", __func__, __LINE__,
-+		outlet, *virq);
-+
-+	return 0;
-+}
-+
-+int ps3_free_vuart_irq(unsigned int virq)
-+{
-+	int result;
-+
-+	result = lv1_deconfigure_virtual_uart_irq();
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_configure_virtual_uart_irq failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return result;
-+	}
-+
-+	irq_dispose_mapping(virq);
-+
-+	return result;
-+}
-+
-+/**
-+ * ps3_alloc_spe_irq - Configure an spe virq.
-+ * @spe_id: The spe_id returned from lv1_construct_logical_spe().
-+ * @class: The spe interrupt class {0,1,2}.
-+ * @virq: The assigned Linux virq.
-+ *
-+ */
-+
-+int ps3_alloc_spe_irq(unsigned long spe_id, unsigned int class,
-+	unsigned int *virq)
-+{
-+	int result;
-+	unsigned long outlet;
-+
-+	BUG_ON(class > 2);
-+
-+	result = lv1_get_spe_irq_outlet(spe_id, class, &outlet);
-+
-+	if (result) {
-+		pr_debug("%s:%d: lv1_get_spe_irq_outlet failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return result;
-+	}
-+
-+	*virq = irq_create_mapping(NULL, outlet);
-+
-+	pr_debug("%s:%d: spe_id %lu, class %u, outlet %lu, virq %u\n",
-+		__func__, __LINE__, spe_id, class, outlet, *virq);
-+
-+	return 0;
-+}
-+
-+int ps3_free_spe_irq(unsigned int virq)
-+{
-+	irq_dispose_mapping(virq);
-+	return 0;
-+}
-+
-+#define PS3_INVALID_OUTLET ((irq_hw_number_t)-1)
-+#define PS3_PLUG_MAX 63
-+
-+/**
-+ * struct bmp - a per cpu irq status and mask bitmap structure
-+ * @status: 256 bit status bitmap indexed by plug
-+ * @unused_1:
-+ * @mask: 256 bit mask bitmap indexed by plug
-+ * @unused_2:
-+ * @lock:
-+ * @ipi_debug_brk_mask:
-+ *
-+ * The HV mantains per SMT thread mappings of HV outlet to HV plug on
-+ * behalf of the guest.  These mappings are implemented as 256 bit guest
-+ * supplied bitmaps indexed by plug number.  The address of the bitmaps are
-+ * registered with the HV through lv1_configure_irq_state_bitmap().
-+ *
-+ * The HV supports 256 plugs per thread, assigned as {0..255}, for a total
-+ * of 512 plugs supported on a processor.  To simplify the logic this
-+ * implementation equates HV plug value to linux virq value, constrains each
-+ * interrupt to have a system wide unique plug number, and limits the range
-+ * of the plug values to map into the first dword of the bitmaps.  This
-+ * gives a usable range of plug values of  {NUM_ISA_INTERRUPTS..63}.  Note
-+ * that there is no constraint on how many in this set an individual thread
-+ * can aquire.
-+ */
-+
-+struct bmp {
-+	struct {
-+		unsigned long status;
-+		unsigned long unused_1[3];
-+		unsigned long mask;
-+		unsigned long unused_2[3];
-+	} __attribute__ ((packed));
-+	spinlock_t lock;
-+	unsigned long ipi_debug_brk_mask;
-+};
-+
-+/**
-+ * struct private - a per cpu data structure
-+ * @node: HV node id
-+ * @cpu: HV thread id
-+ * @bmp: an HV bmp structure
-+ */
-+
-+struct private {
-+	unsigned long node;
-+	unsigned int cpu;
-+	struct bmp bmp;
-+};
-+
-+#if defined(DEBUG)
-+static void _dump_64_bmp(const char *header, const unsigned long *p, unsigned cpu,
-+	const char* func, int line)
-+{
-+	pr_debug("%s:%d: %s %u {%04lx_%04lx_%04lx_%04lx}\n",
-+		func, line, header, cpu,
-+		*p >> 48, (*p >> 32) & 0xffff, (*p >> 16) & 0xffff,
-+		*p & 0xffff);
-+}
-+
-+static void __attribute__ ((unused)) _dump_256_bmp(const char *header,
-+	const unsigned long *p, unsigned cpu, const char* func, int line)
-+{
-+	pr_debug("%s:%d: %s %u {%016lx:%016lx:%016lx:%016lx}\n",
-+		func, line, header, cpu, p[0], p[1], p[2], p[3]);
-+}
-+
-+#define dump_bmp(_x) _dump_bmp(_x, __func__, __LINE__)
-+static void _dump_bmp(struct private* pd, const char* func, int line)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&pd->bmp.lock, flags);
-+	_dump_64_bmp("stat", &pd->bmp.status, pd->cpu, func, line);
-+	_dump_64_bmp("mask", &pd->bmp.mask, pd->cpu, func, line);
-+	spin_unlock_irqrestore(&pd->bmp.lock, flags);
-+}
-+
-+#define dump_mask(_x) _dump_mask(_x, __func__, __LINE__)
-+static void __attribute__ ((unused)) _dump_mask(struct private* pd,
-+	const char* func, int line)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&pd->bmp.lock, flags);
-+	_dump_64_bmp("mask", &pd->bmp.mask, pd->cpu, func, line);
-+	spin_unlock_irqrestore(&pd->bmp.lock, flags);
-+}
-+#else
-+static void dump_bmp(struct private* pd) {};
-+#endif /* defined(DEBUG) */
-+
-+static void chip_mask(unsigned int virq)
-+{
-+	unsigned long flags;
-+	struct private *pd = get_irq_chip_data(virq);
-+
-+	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
-+
-+	BUG_ON(virq < NUM_ISA_INTERRUPTS);
-+	BUG_ON(virq > PS3_PLUG_MAX);
-+
-+	spin_lock_irqsave(&pd->bmp.lock, flags);
-+	pd->bmp.mask &= ~(0x8000000000000000UL >> virq);
-+	spin_unlock_irqrestore(&pd->bmp.lock, flags);
-+
-+	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+}
-+
-+static void chip_unmask(unsigned int virq)
-+{
-+	unsigned long flags;
-+	struct private *pd = get_irq_chip_data(virq);
-+
-+	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
-+
-+	BUG_ON(virq < NUM_ISA_INTERRUPTS);
-+	BUG_ON(virq > PS3_PLUG_MAX);
-+
-+	spin_lock_irqsave(&pd->bmp.lock, flags);
-+	pd->bmp.mask |= (0x8000000000000000UL >> virq);
-+	spin_unlock_irqrestore(&pd->bmp.lock, flags);
-+
-+	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+}
-+
-+static void chip_eoi(unsigned int virq)
-+{
-+	lv1_end_of_interrupt(virq);
-+}
-+
-+static struct irq_chip irq_chip = {
-+	.typename = "ps3",
-+	.mask = chip_mask,
-+	.unmask = chip_unmask,
-+	.eoi = chip_eoi,
-+};
-+
-+static void host_unmap(struct irq_host *h, unsigned int virq)
-+{
-+	int result;
-+
-+	pr_debug("%s:%d: virq %d\n", __func__, __LINE__, virq);
-+
-+	lv1_disconnect_irq_plug(virq);
-+
-+	result = set_irq_chip_data(virq, NULL);
-+	BUG_ON(result);
-+}
-+
-+static DEFINE_PER_CPU(struct private, private);
-+
-+static int host_map(struct irq_host *h, unsigned int virq,
-+	irq_hw_number_t hwirq)
-+{
-+	int result;
-+	unsigned int cpu;
-+
-+	pr_debug(" -> %s:%d\n", __func__, __LINE__);
-+	pr_debug("%s:%d: hwirq %lu => virq %u\n", __func__, __LINE__, hwirq,
-+		virq);
-+
-+	/* bind this virq to a cpu */
-+
-+	preempt_disable();
-+	cpu = smp_processor_id();
-+	result = lv1_connect_irq_plug(virq, hwirq);
-+	preempt_enable();
-+
-+	if (result) {
-+		pr_info("%s:%d: lv1_connect_irq_plug failed:"
-+			" %s\n", __func__, __LINE__, ps3_result(result));
-+		return -EPERM;
-+	}
-+
-+	result = set_irq_chip_data(virq, &per_cpu(private, cpu));
-+	BUG_ON(result);
-+
-+	set_irq_chip_and_handler(virq, &irq_chip, handle_fasteoi_irq);
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return result;
-+}
-+
-+static struct irq_host_ops host_ops = {
-+	.map = host_map,
-+	.unmap = host_unmap,
-+};
-+
-+void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq)
-+{
-+	struct private *pd = &per_cpu(private, cpu);
-+
-+	pd->bmp.ipi_debug_brk_mask = 0x8000000000000000UL >> virq;
-+
-+	pr_debug("%s:%d: cpu %u, virq %u, mask %lxh\n", __func__, __LINE__,
-+		cpu, virq, pd->bmp.ipi_debug_brk_mask);
-+}
-+
-+static int bmp_get_and_clear_status_bit(struct bmp *m)
-+{
-+	unsigned long flags;
-+	unsigned int bit;
-+	unsigned long x;
-+
-+	spin_lock_irqsave(&m->lock, flags);
-+
-+	/* check for ipi break first to stop this cpu ASAP */
-+
-+	if (m->status & m->ipi_debug_brk_mask) {
-+		m->status &= ~m->ipi_debug_brk_mask;
-+		spin_unlock_irqrestore(&m->lock, flags);
-+		return __ilog2(m->ipi_debug_brk_mask);
-+	}
-+
-+	x = (m->status & m->mask);
-+
-+	for (bit = NUM_ISA_INTERRUPTS, x <<= bit; x; bit++, x <<= 1)
-+		if (x & 0x8000000000000000UL) {
-+			m->status &= ~(0x8000000000000000UL >> bit);
-+			spin_unlock_irqrestore(&m->lock, flags);
-+			return bit;
-+		}
-+
-+	spin_unlock_irqrestore(&m->lock, flags);
-+
-+	pr_debug("%s:%d: not found\n", __func__, __LINE__);
-+	return -1;
-+}
-+
-+unsigned int ps3_get_irq(void)
-+{
-+	int plug;
-+
-+	struct private *pd = &__get_cpu_var(private);
-+
-+	plug = bmp_get_and_clear_status_bit(&pd->bmp);
-+
-+	if (plug < 1) {
-+		pr_debug("%s:%d: no plug found: cpu %u\n", __func__, __LINE__,
-+			pd->cpu);
-+		dump_bmp(&per_cpu(private, 0));
-+		dump_bmp(&per_cpu(private, 1));
-+		return NO_IRQ;
-+	}
-+
-+#if defined(DEBUG)
-+	if (plug < NUM_ISA_INTERRUPTS || plug > PS3_PLUG_MAX) {
-+		dump_bmp(&per_cpu(private, 0));
-+		dump_bmp(&per_cpu(private, 1));
-+		BUG();
-+	}
-+#endif
-+	return plug;
-+}
-+
-+void __init ps3_init_IRQ(void)
-+{
-+	int result;
-+	unsigned long node;
-+	unsigned cpu;
-+	struct irq_host *host;
-+
-+	lv1_get_logical_ppe_id(&node);
-+
-+	host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0, &host_ops,
-+		PS3_INVALID_OUTLET);
-+	irq_set_default_host(host);
-+	irq_set_virq_count(PS3_PLUG_MAX + 1);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct private *pd = &per_cpu(private, cpu);
-+
-+		pd->node = node;
-+		pd->cpu = cpu;
-+		spin_lock_init(&pd->bmp.lock);
-+
-+		result = lv1_configure_irq_state_bitmap(node, cpu,
-+			ps3_mm_phys_to_lpar(__pa(&pd->bmp.status)));
-+
-+		if (result)
-+			pr_debug("%s:%d: lv1_configure_irq_state_bitmap failed:"
-+				" %s\n", __func__, __LINE__,
-+				ps3_result(result));
-+	}
-+
-+	ppc_md.get_irq = ps3_get_irq;
-+}
++++ cell--common--6/arch/powerpc/configs/ps3_defconfig
+@@ -0,0 +1,837 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.19-rc6
++# Tue Nov 21 19:38:53 2006
++#
++CONFIG_PPC64=y
++CONFIG_64BIT=y
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_IRQ_PER_CPU=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_COMPAT=y
++CONFIG_SYSVIPC_COMPAT=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++# CONFIG_PPC_UDBG_16550 is not set
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++# CONFIG_DEFAULT_UIMAGE is not set
++
++#
++# Processor support
++#
++# CONFIG_POWER4_ONLY is not set
++CONFIG_POWER3=y
++CONFIG_POWER4=y
++CONFIG_PPC_FPU=y
++# CONFIG_PPC_DCR_NATIVE is not set
++# CONFIG_PPC_DCR_MMIO is not set
++# CONFIG_PPC_OF_PLATFORM_PCI is not set
++CONFIG_ALTIVEC=y
++CONFIG_PPC_STD_MMU=y
++CONFIG_VIRT_CPU_ACCOUNTING=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=2
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_LOCK_KERNEL=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++# CONFIG_IPC_NS is not set
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_UTS_NS is not set
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++# CONFIG_CPUSETS is not set
++# CONFIG_RELAY is not set
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++# CONFIG_SYSCTL_SYSCALL is not set
++CONFIG_KALLSYMS=y
++CONFIG_KALLSYMS_ALL=y
++CONFIG_KALLSYMS_EXTRA_PASS=y
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++CONFIG_SLAB=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
++
++#
++# Loadable module support
++#
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++CONFIG_KMOD=y
++CONFIG_STOP_MACHINE=y
++
++#
++# Block layer
++#
++CONFIG_BLOCK=y
++# CONFIG_BLK_DEV_IO_TRACE is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
++
++#
++# Platform support
++#
++CONFIG_PPC_MULTIPLATFORM=y
++# CONFIG_EMBEDDED6xx is not set
++# CONFIG_APUS is not set
++# CONFIG_PPC_PSERIES is not set
++# CONFIG_PPC_ISERIES is not set
++# CONFIG_PPC_PMAC is not set
++# CONFIG_PPC_MAPLE is not set
++# CONFIG_PPC_PASEMI is not set
++CONFIG_PPC_CELL=y
++# CONFIG_PPC_CELL_NATIVE is not set
++# CONFIG_PPC_IBM_CELL_BLADE is not set
++CONFIG_PS3=y
++# CONFIG_U3_DART is not set
++# CONFIG_PPC_RTAS is not set
++# CONFIG_MMIO_NVRAM is not set
++# CONFIG_PPC_MPC106 is not set
++# CONFIG_PPC_970_NAP is not set
++# CONFIG_PPC_INDIRECT_IO is not set
++# CONFIG_GENERIC_IOMAP is not set
++# CONFIG_CPU_FREQ is not set
++# CONFIG_WANT_EARLY_SERIAL is not set
++# CONFIG_MPIC is not set
++
++#
++# Cell Broadband Engine options
++#
++CONFIG_SPU_FS=y
++CONFIG_SPU_BASE=y
++# CONFIG_CBE_RAS is not set
++
++#
++# PS3 Platform Options
++#
++CONFIG_PS3_HTAB_SIZE=20
++CONFIG_PS3_DYNAMIC_DMA=y
++CONFIG_PS3_USE_LPAR_ADDR=y
++
++#
++# Kernel options
++#
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++# CONFIG_PREEMPT_BKL is not set
++CONFIG_BINFMT_ELF=y
++CONFIG_BINFMT_MISC=y
++CONFIG_FORCE_MAX_ZONEORDER=9
++# CONFIG_IOMMU_VMERGE is not set
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++# CONFIG_KEXEC is not set
++# CONFIG_CRASH_DUMP is not set
++# CONFIG_IRQ_ALL_CPUS is not set
++# CONFIG_NUMA is not set
++CONFIG_ARCH_SELECT_MEMORY_MODEL=y
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_SPARSEMEM_ENABLE=y
++CONFIG_ARCH_SPARSEMEM_DEFAULT=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++# CONFIG_FLATMEM_MANUAL is not set
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++CONFIG_SPARSEMEM_MANUAL=y
++CONFIG_SPARSEMEM=y
++CONFIG_HAVE_MEMORY_PRESENT=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPARSEMEM_EXTREME=y
++CONFIG_MEMORY_HOTPLUG=y
++CONFIG_MEMORY_HOTPLUG_SPARSE=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_RESOURCES_64BIT=y
++CONFIG_ARCH_MEMORY_PROBE=y
++CONFIG_PPC_64K_PAGES=y
++# CONFIG_SCHED_SMT is not set
++CONFIG_PROC_DEVICETREE=y
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="root=/dev/nfs rw ip=dhcp"
++# CONFIG_PM is not set
++# CONFIG_SECCOMP is not set
++CONFIG_ISA_DMA_API=y
++
++#
++# Bus options
++#
++CONFIG_GENERIC_ISA_DMA=y
++# CONFIG_MPIC_WEIRD is not set
++# CONFIG_PPC_I8259 is not set
++# CONFIG_PCI is not set
++# CONFIG_PCI_DOMAINS is not set
++
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
++
++#
++# PCI Hotplug Support
++#
++CONFIG_KERNEL_START=0xc000000000000000
++
++#
++# Networking
++#
++CONFIG_NET=y
++
++#
++# Networking options
++#
++# CONFIG_NETDEBUG is not set
++# CONFIG_PACKET is not set
++CONFIG_UNIX=y
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++# CONFIG_IP_PNP_BOOTP is not set
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
++# CONFIG_INET_DIAG is not set
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_IPV6 is not set
++# CONFIG_INET6_XFRM_TUNNEL is not set
++# CONFIG_INET6_TUNNEL is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
++
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
++
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
++
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_SYS_HYPERVISOR is not set
++
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++
++#
++# Plug and Play support
++#
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_RAM is not set
++# CONFIG_BLK_DEV_INITRD is not set
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++
++#
++# Misc devices
++#
++# CONFIG_TIFM_CORE is not set
++
++#
++# ATA/ATAPI/MFM/RLL support
++#
++# CONFIG_IDE is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++CONFIG_SCSI=y
++# CONFIG_SCSI_NETLINK is not set
++CONFIG_SCSI_PROC_FS=y
++
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++# CONFIG_BLK_DEV_SD is not set
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++# CONFIG_CHR_DEV_SG is not set
++# CONFIG_CHR_DEV_SCH is not set
++
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++# CONFIG_SCSI_MULTI_LUN is not set
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++
++#
++# SCSI Transports
++#
++# CONFIG_SCSI_SPI_ATTRS is not set
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_ATTRS is not set
++# CONFIG_SCSI_SAS_LIBSAS is not set
++
++#
++# SCSI low-level drivers
++#
++# CONFIG_ISCSI_TCP is not set
++# CONFIG_SCSI_DEBUG is not set
++
++#
++# Serial ATA (prod) and Parallel ATA (experimental) drivers
++#
++# CONFIG_ATA is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++
++#
++# I2O device support
++#
++
++#
++# Macintosh device drivers
++#
++# CONFIG_WINDFARM is not set
++
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++
++#
++# PHY device support
++#
++
++#
++# Ethernet (10 or 100Mbit)
++#
++# CONFIG_NET_ETHERNET is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++
++#
++# Ethernet (10000 Mbit)
++#
++
++#
++# Token Ring devices
++#
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++
++#
++# Userland interfaces
++#
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++CONFIG_INPUT_EVDEV=y
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++# CONFIG_SERIAL_8250 is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_UNIX98_PTYS=y
++# CONFIG_LEGACY_PTYS is not set
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_HW_RANDOM is not set
++CONFIG_GEN_RTC=y
++# CONFIG_GEN_RTC_X is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++
++#
++# Ftape, the floppy tape device driver
++#
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_HANGCHECK_TIMER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++# CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB is not set
++
++#
++# Console display driver support
++#
++# CONFIG_VGA_CONSOLE is not set
++CONFIG_DUMMY_CONSOLE=y
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++# CONFIG_USB_ARCH_HAS_HCD is not set
++# CONFIG_USB_ARCH_HAS_OHCI is not set
++# CONFIG_USB_ARCH_HAS_EHCI is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
++# InfiniBand support
++#
++
++#
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# DMA Engine support
++#
++# CONFIG_DMA_ENGINE is not set
++
++#
++# DMA Clients
++#
++
++#
++# DMA Devices
++#
++
++#
++# File systems
++#
++# CONFIG_EXT2_FS is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4DEV_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_GFS2_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
++# CONFIG_QUOTA is not set
++CONFIG_DNOTIFY=y
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_HUGETLBFS is not set
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++# CONFIG_NFSD is not set
++CONFIG_ROOT_NFS=y
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++
++#
++# Native Language Support
++#
++# CONFIG_NLS is not set
++
++#
++# Library routines
++#
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC32 is not set
++# CONFIG_LIBCRC32C is not set
++CONFIG_PLIST=y
++
++#
++# Instrumentation Support
++#
++# CONFIG_PROFILING is not set
++# CONFIG_KPROBES is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_MUST_CHECK=y
++# CONFIG_MAGIC_SYSRQ is not set
++# CONFIG_UNUSED_SYMBOLS is not set
++CONFIG_DEBUG_KERNEL=y
++CONFIG_LOG_BUF_SHIFT=17
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++CONFIG_DEBUG_SPINLOCK=y
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_RWSEMS is not set
++CONFIG_DEBUG_SPINLOCK_SLEEP=y
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++CONFIG_DEBUG_INFO=y
++# CONFIG_DEBUG_FS is not set
++# CONFIG_DEBUG_VM is not set
++CONFIG_DEBUG_LIST=y
++CONFIG_FORCED_INLINING=y
++# CONFIG_HEADERS_CHECK is not set
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++# CONFIG_DEBUGGER is not set
++CONFIG_IRQSTACKS=y
++# CONFIG_BOOTX_TEXT is not set
++CONFIG_PPC_EARLY_DEBUG=y
++# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
++# CONFIG_PPC_EARLY_DEBUG_G5 is not set
++# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
++# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
++# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
++# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++# CONFIG_CRYPTO is not set
