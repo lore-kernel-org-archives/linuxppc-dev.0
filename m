@@ -1,11 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <torvalds@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.25])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 497A167C0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 13:47:49 +1100 (EST)
+Date: Tue, 21 Nov 2006 18:47:44 -0800 (PST)
+From: Linus Torvalds <torvalds@osdl.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git 'merge' branch
+In-Reply-To: <17763.46950.961979.77987@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0611211843010.3338@woody.osdl.org>
+References: <17763.46950.961979.77987@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17763.46950.961979.77987@cargo.ozlabs.ibm.com>
-Date: Wed, 22 Nov 2006 13:35:18 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: Please pull powerpc.git 'merge' branch
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,70 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Since the mirroring on kernel.org is slow today, please do:
 
-git pull \
-master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+On Wed, 22 Nov 2006, Paul Mackerras wrote:
+>
+>     [POWERPC] Revert "[POWERPC] Add powerpc get/set_rtc_time interface to new generic rtc class"
+>     
+>     This reverts commit 7a69af63e788a324d162201a0b23df41bcf158dd.
+>     
+>     As advised by David Brownell:
+>     
+>     http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
 
-or, once the mirror catches up:
+Btw, when doing a web-pointer like this, _please_ don't just leave it 
+hanging like that.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+For one thing, there's no guarantee that the web-server will continue to 
+exist, or not move around the data. And even _if_ the data still exists 
+and at that address, when looking at bugs of old history it's really 
+irritating to have to fire up a web browser - not to mention that maybe 
+you're on an airplane or other place without internet access. Git works 
+fine disconnected.
 
-It turns out that two commits that were merged post 2.6.18 were
-incorrect and need to be reverted.  Also there is a fix for embedded
-systems using the Freescale MPC83xx family processors.
+So the rule is:
 
-Thanks,
-Paul.
+ - it's perfectly _fine_ to point to web addresses for "further 
+   information" (especially things like bugzilla, of course)
 
- arch/powerpc/kernel/time.c                |   42 -----------------------------
- arch/powerpc/platforms/83xx/mpc832x_mds.c |   19 +++++++++++++
- arch/powerpc/platforms/83xx/mpc834x_itx.c |    4 ---
- include/asm-powerpc/time.h                |    4 ---
- 4 files changed, 19 insertions(+), 50 deletions(-)
+ - but the commit message also has to stand on its own, even _without_ the 
+   pointer. So at least add a sentence about why - even if the web pointer 
+   would explain it more.
 
-commit 8746ed3dae14e87e9f7ad8e44649b72e22b33274
-Author: Kim Phillips <kim.phillips@freescale.com>
-Date:   Tue Nov 21 18:19:42 2006 -0600
+So even if you just say something trivial like
 
-    [POWERPC] Fix ucc_geth of_device discovery on mpc832x
-    
-    mpc832x, as in mpc8360, needs to explicitly find and create the
-    platform device for ucc_geth in 2.6.19.  This code will likely be
-    readapted to Benh's new of_ methods for 2.6.20.
-    
-    Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+	As pointed out by David Brownell, that commit was just a total 
+	thinko, and could never work.
 
-commit df9c23095fc8652798c41dd860676d3dafb2f1dc
-Author: Kim Phillips <kim.phillips@freescale.com>
-Date:   Tue Nov 21 10:31:14 2006 -0600
+at least it doesn't leave the commit message _totally_ without any 
+context.
 
-    [POWERPC] Revert "[POWERPC] Add powerpc get/set_rtc_time interface to new generic rtc class"
-    
-    This reverts commit 7a69af63e788a324d162201a0b23df41bcf158dd.
-    
-    As advised by David Brownell:
-    
-    http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
-    
-    Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 6c12c18dfb0ccae21816de3e0c323b5250450d82
-Author: Kim Phillips <kim.phillips@freescale.com>
-Date:   Tue Nov 21 10:31:08 2006 -0600
-
-    [POWERPC] Revert "[POWERPC] Enable generic rtc hook for the MPC8349 mITX"
-    
-    This reverts commit a8ed4f7ec3aa472134d7de6176f823b2667e450b.
-    
-    As advised by David Brownell:
-    
-    http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
-    
-    Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+		Linus
