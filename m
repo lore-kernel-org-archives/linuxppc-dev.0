@@ -1,16 +1,17 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 3884F67C2B
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:17:27 +1100 (EST)
-Date: Wed, 22 Nov 2006 05:17:27 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: [2.6 patch] arch/powerpc/Kconfig: fix the EMBEDDED6xx dependencies
-Message-ID: <20061122041727.GA5200@stusta.de>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from mail7-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4A45167C03
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:19:49 +1100 (EST)
+Message-ID: <4563CFDB.3050709@am.sony.com>
+Date: Tue, 21 Nov 2006 20:19:39 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/14] patches for 2.6.20
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch changes the EMBEDDED6xx dependencies to the equivalent 
-dependency that seems to have been intended.
+Paul,
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Here is the third round of the patches I have queued for 2.6.20.  Several
+from the last posting have been merged into powerpc.git.  All patches have
+already been posted to this list.  No major functional changes and only a
+few minor functional changes were introduced in this set.  The main change
+was to rename the platform from ps3pf to ps3.  I tried to address everyone's
+comments from all previous postings.  I feel there are no outstanding issues.
 
---- linux-2.6.19-rc5-mm2/arch/powerpc/Kconfig.old	2006-11-22 02:24:21.000000000 +0100
-+++ linux-2.6.19-rc5-mm2/arch/powerpc/Kconfig	2006-11-22 02:24:34.000000000 +0100
-@@ -369,7 +369,7 @@ config PPC_MULTIPLATFORM
- 
- config EMBEDDED6xx
- 	bool "Embedded 6xx/7xx/7xxx-based board"
--	depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
-+	depends on PPC32 && BROKEN_ON_SMP
- 
- config APUS
- 	bool "Amiga-APUS"
+For the convenience of anyone interested, I have put this patchset, plus
+a some of the PS3 drivers under development here:
+
+  http://67.117.136.164/pub/cell/
+
+-Geoff
