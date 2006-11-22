@@ -1,19 +1,15 @@
-Return-Path: <torvalds@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.25])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 497A167C0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 13:47:49 +1100 (EST)
-Date: Tue, 21 Nov 2006 18:47:44 -0800 (PST)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git 'merge' branch
-In-Reply-To: <17763.46950.961979.77987@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0611211843010.3338@woody.osdl.org>
-References: <17763.46950.961979.77987@cargo.ozlabs.ibm.com>
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id 6BC0267BCD
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:17:17 +1100 (EST)
+Date: Wed, 22 Nov 2006 05:17:17 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: paulus@samba.org
+Subject: [2.6 patch] include/asm-powerpc/: "extern inline" -> "static inline"
+Message-ID: <20061122041717.GZ5200@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +19,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+"extern inline" generates a warning with -Wmissing-prototypes and I'm
+currently working on getting the kernel cleaned up for adding this to
+the CFLAGS since it will help us to avoid a nasty class of runtime
+errors.
 
+If there are places that really need a forced inline, __always_inline
+would be the correct solution.
 
-On Wed, 22 Nov 2006, Paul Mackerras wrote:
->
->     [POWERPC] Revert "[POWERPC] Add powerpc get/set_rtc_time interface to new generic rtc class"
->     
->     This reverts commit 7a69af63e788a324d162201a0b23df41bcf158dd.
->     
->     As advised by David Brownell:
->     
->     http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Btw, when doing a web-pointer like this, _please_ don't just leave it 
-hanging like that.
+---
 
-For one thing, there's no guarantee that the web-server will continue to 
-exist, or not move around the data. And even _if_ the data still exists 
-and at that address, when looking at bugs of old history it's really 
-irritating to have to fire up a web browser - not to mention that maybe 
-you're on an airplane or other place without internet access. Git works 
-fine disconnected.
+ include/asm-powerpc/io.h      |    4 ++--
+ include/asm-powerpc/tsi108.h  |    4 ++--
+ include/asm-powerpc/uaccess.h |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-So the rule is:
-
- - it's perfectly _fine_ to point to web addresses for "further 
-   information" (especially things like bugzilla, of course)
-
- - but the commit message also has to stand on its own, even _without_ the 
-   pointer. So at least add a sentence about why - even if the web pointer 
-   would explain it more.
-
-So even if you just say something trivial like
-
-	As pointed out by David Brownell, that commit was just a total 
-	thinko, and could never work.
-
-at least it doesn't leave the commit message _totally_ without any 
-context.
-
-		Linus
+--- linux-2.6.19-rc5-mm2/include/asm-powerpc/io.h.old	2006-11-22 01:46:28.000000000 +0100
++++ linux-2.6.19-rc5-mm2/include/asm-powerpc/io.h	2006-11-22 01:47:08.000000000 +0100
+@@ -304,7 +304,7 @@ do {									\
+ #ifdef CONFIG_PPC32
+ 
+ #define __do_in_asm(name, op)				\
+-extern __inline__ unsigned int name(unsigned int port)	\
++static inline unsigned int name(unsigned int port)	\
+ {							\
+ 	unsigned int x;					\
+ 	__asm__ __volatile__(				\
+@@ -331,7 +331,7 @@ extern __inline__ unsigned int name(unsi
+ }
+ 
+ #define __do_out_asm(name, op)				\
+-extern __inline__ void name(unsigned int val, unsigned int port) \
++static inline void name(unsigned int val, unsigned int port) \
+ {							\
+ 	__asm__ __volatile__(				\
+ 		"sync\n"				\
+--- linux-2.6.19-rc5-mm2/include/asm-powerpc/tsi108.h.old	2006-11-22 01:47:17.000000000 +0100
++++ linux-2.6.19-rc5-mm2/include/asm-powerpc/tsi108.h	2006-11-22 01:47:26.000000000 +0100
+@@ -98,12 +98,12 @@ typedef struct {
+ extern u32 get_vir_csrbase(void);
+ extern u32 tsi108_csr_vir_base;
+ 
+-extern inline u32 tsi108_read_reg(u32 reg_offset)
++static inline u32 tsi108_read_reg(u32 reg_offset)
+ {
+ 	return in_be32((volatile u32 *)(tsi108_csr_vir_base + reg_offset));
+ }
+ 
+-extern inline void tsi108_write_reg(u32 reg_offset, u32 val)
++static inline void tsi108_write_reg(u32 reg_offset, u32 val)
+ {
+ 	out_be32((volatile u32 *)(tsi108_csr_vir_base + reg_offset), val);
+ }
+--- linux-2.6.19-rc5-mm2/include/asm-powerpc/uaccess.h.old	2006-11-22 01:47:33.000000000 +0100
++++ linux-2.6.19-rc5-mm2/include/asm-powerpc/uaccess.h	2006-11-22 01:47:38.000000000 +0100
+@@ -304,7 +304,7 @@ extern unsigned long __copy_tofrom_user(
+ 
+ #ifndef __powerpc64__
+ 
+-extern inline unsigned long copy_from_user(void *to,
++static inline unsigned long copy_from_user(void *to,
+ 		const void __user *from, unsigned long n)
+ {
+ 	unsigned long over;
+@@ -319,7 +319,7 @@ extern inline unsigned long copy_from_us
+ 	return n;
+ }
+ 
+-extern inline unsigned long copy_to_user(void __user *to,
++static inline unsigned long copy_to_user(void __user *to,
+ 		const void *from, unsigned long n)
+ {
+ 	unsigned long over;
