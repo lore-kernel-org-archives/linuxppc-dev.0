@@ -1,36 +1,25 @@
-Return-Path: <mjw@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D2CF67C4F
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 06:42:34 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kAMJgVe7029599
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 14:42:31 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kAMJgVT2503168
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 12:42:31 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kAMJgVW2004105
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 12:42:31 -0700
-Received: from wecm-9-67-39-53.wecm.ibm.com (wecm-9-67-39-53.wecm.ibm.com
-	[9.67.39.53])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	kAMJgUI5004059
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 12:42:30 -0700
-Subject: Re: [PATCH] powerpc: Make 970MP detectable by oprofile
-From: Mike Wolf <mjw@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20061122130507.477dfe2c@pb15>
-References: <1164141715.9752.5.camel@localhost>
-	<1164214098.5704.1.camel@localhost>  <20061122130507.477dfe2c@pb15>
-Content-Type: text/plain
-Date: Wed, 22 Nov 2006 13:42:28 -0600
-Message-Id: <1164224548.2769.4.camel@localhost>
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB42567C79
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 06:52:18 +1100 (EST)
+Date: Wed, 22 Nov 2006 19:51:53 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: NTP time sync
+Message-ID: <20061122195153.GC22601@flint.arm.linux.org.uk>
+References: <20061122203633.611acaa8@inspiron>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061122203633.611acaa8@inspiron>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: akpm@osdl.org, Andi Kleen <ak@muc.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	ralf@linux-mips.org, David Brownell <david-b@pacbell.net>,
+	linuxppc-dev@ozlabs.org, lethal@linux-sh.org, paulus@samba.org,
+	davem@davemloft.net, kkojima@rr.iij4u.or.jp
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,20 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-11-22 at 13:05 -0600, Olof Johansson wrote:
-> On Wed, 22 Nov 2006 10:48:18 -0600 Mike Wolf <mjw@us.ibm.com> wrote:
-> 
-> > >Just out of curiosity, what are those?  I never saw any,
-> > >but I'd love to know :-)
-> >
-> >
-> > They are the IBM JS21 blades
-> 
-> I think Segher might have had "what are the new counters" in mind when he asked that, not where the processors are used. :-)
+On Wed, Nov 22, 2006 at 08:36:33PM +0100, Alessandro Zummo wrote:
 > 
 > 
-> -Olof
+>  wrto the in-kernel NTP synchronization,
+>  as discussed before [1], my opinion
+>  is that it should be done in userland.
+> 
+>  Keeping it in kernel implies subtle code
+>  in each of the supported architectures.
+> 
+>  So, if the arch maintainers agree, 
+>  I would suggest to schedule it for removal.
+> 
+> [1] http://lkml.org/lkml/2006/3/28/358
 
-They are different MMCRx settings for counting certain events.
+Fine, provided there's also a shell tool that can enquire whether the
+kernel is sync'd or not.  (Currently the 11-minute update does not
+occur when the kernel is desynced from a time source - the RTC itself
+might be more accurate in this case.)
 
-Mike
+Throwing hwclock commands into crontab such that they do not take
+note of the kernel's sync status is probably a very bad move in that
+respect.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
