@@ -3,16 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0792C67C1A
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 02:25:16 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DAF9067C0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 02:45:48 +1100 (EST)
 In-Reply-To: <1164208814.1954.372.camel@goblue>
 References: <1164208814.1954.372.camel@goblue>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <59B84360-7376-4BAF-B2A1-9A28A0873A8E@kernel.crashing.org>
+Message-Id: <AA60A1D7-D271-4CE1-A39F-2CE9F605DB16@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] CAS DFP support
-Date: Wed, 22 Nov 2006 09:25:45 -0600
+Date: Wed, 22 Nov 2006 09:46:22 -0600
 To: Jake Moilanen <moilanen@austin.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -33,12 +33,6 @@ On Nov 22, 2006, at 9:20 AM, Jake Moilanen wrote:
 > to P5 compat mode, thus removing VMX and DFP instructions.
 >
 > Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
-
-For DFP do we also need a cpu_user_features, that propagates out to  
-user space?
-
-- k
-
 >
 > --- 2.6/arch/powerpc/kernel/prom_init.c~	2006-11-13 15:01:13.000000000
 > -0600
@@ -49,6 +43,9 @@ user space?
 >  #define OV3_FP			0x80	/* floating point */
 >  #define OV3_VMX			0x40	/* VMX/Altivec */
 > +#define OV3_DFP			0x20	/* decimal floating point */
+
+Can we make the flag OV3_DECFP to distinguish it from Double FP.
+
 >
 >  /* Option vector 5: PAPR/OF options supported */
 >  #define OV5_LPAR		0x80	/* logical partitioning supported */
