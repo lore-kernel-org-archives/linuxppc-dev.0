@@ -1,16 +1,15 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
+Received: from mail79-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 932D867C87
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:38:32 +1100 (EST)
-Message-ID: <4563CFFA.2060100@am.sony.com>
-Date: Tue, 21 Nov 2006 20:20:10 -0800
+	by ozlabs.org (Postfix) with ESMTP id B629767C98
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2006 15:44:53 +1100 (EST)
+Message-ID: <4563D028.9060309@am.sony.com>
+Date: Tue, 21 Nov 2006 20:20:56 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 5/14] powerpc: add ps3 platform hvcalls
+Subject: [PATCH 12/14] powerpc: add ps3 platform spu support
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,1205 +23,662 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Adds the PS3 hvcalls.
+Adds spu support for the PS3 platform.
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- arch/powerpc/platforms/ps3/exports.c |   27 +
- arch/powerpc/platforms/ps3/hvcall.S  |  804 +++++++++++++++++++++++++++++++++++
- include/asm-powerpc/lv1call.h        |  345 +++++++++++++++
- 3 files changed, 1176 insertions(+)
 
-Index: cell--common--6/arch/powerpc/platforms/ps3/exports.c
+This patch requires my previous patch which split the existing spu support into
+platform specific and platform independent parts.
+
+ arch/powerpc/platforms/ps3/Makefile   |    2 
+ arch/powerpc/platforms/ps3/platform.h |    8 
+ arch/powerpc/platforms/ps3/spu.c      |  613 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 623 insertions(+)
+
+Index: cell--common--6/arch/powerpc/platforms/ps3/Makefile
 ===================================================================
---- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3/exports.c
-@@ -0,0 +1,27 @@
-+/*
-+ *  PS3 hvcall exports for modules.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
+--- cell--common--6.orig/arch/powerpc/platforms/ps3/Makefile
++++ cell--common--6/arch/powerpc/platforms/ps3/Makefile
+@@ -1,2 +1,4 @@
+ obj-y += setup.o mm.o smp.o time.o hvcall.o htab.o repository.o
+ obj-y += interrupt.o exports.o os-area.o
 +
-+#include <linux/module.h>
-+
-+#define LV1_CALL(name, in, out, num)                          \
-+  extern s64 _lv1_##name(LV1_##in##_IN_##out##_OUT_ARG_DECL); \
-+  EXPORT_SYMBOL(_lv1_##name);
-+
-+#include <asm/lv1call.h>
-Index: cell--common--6/arch/powerpc/platforms/ps3/hvcall.S
++obj-$(CONFIG_SPU_BASE) += spu.o
+Index: cell--common--6/arch/powerpc/platforms/ps3/platform.h
 ===================================================================
---- /dev/null
-+++ cell--common--6/arch/powerpc/platforms/ps3/hvcall.S
-@@ -0,0 +1,804 @@
-+/*
-+ *  PS3 hvcall interface.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *  Copyright 2003, 2004 (c) MontaVista Software, Inc.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
+--- cell--common--6.orig/arch/powerpc/platforms/ps3/platform.h
++++ cell--common--6/arch/powerpc/platforms/ps3/platform.h
+@@ -57,4 +57,12 @@
+ int __init ps3_os_area_init(void);
+ u64 ps3_os_area_rtc_diff(void);
+ 
++/* spu */
 +
-+#include <asm/processor.h>
-+#include <asm/ppc_asm.h>
-+
-+#define lv1call .long 0x44000022; extsw r3, r3
-+
-+#define LV1_N_IN_0_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_0_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_1_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_2_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_3_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_4_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_5_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_6_IN_0_OUT LV1_N_IN_0_OUT
-+#define LV1_7_IN_0_OUT LV1_N_IN_0_OUT
-+
-+#define LV1_0_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu    r3, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_0_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r3, -8(r1);			\
-+	stdu	r4, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_0_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r3, -8(r1);			\
-+	std	r4, -16(r1);			\
-+	stdu	r5, -24(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 24;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_0_IN_7_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r3, -8(r1);			\
-+	std	r4, -16(r1);			\
-+	std	r5, -24(r1);			\
-+	std	r6, -32(r1);			\
-+	std	r7, -40(r1);			\
-+	std	r8, -48(r1);			\
-+	stdu	r9, -56(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 56;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+	ld	r11, -40(r1);			\
-+	std	r8, 0(r11);			\
-+	ld	r11, -48(r1);			\
-+	std	r9, 0(r11);			\
-+	ld	r11, -56(r1);			\
-+	std	r10, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu    r4, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r4, -8(r1);			\
-+	stdu	r5, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r4, -8(r1);			\
-+	std	r5, -16(r1);			\
-+	stdu	r6, -24(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 24;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_4_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r4, -8(r1);			\
-+	std	r5, -16(r1);			\
-+	std	r6, -24(r1);			\
-+	stdu	r7, -32(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 32;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_5_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r4, -8(r1);			\
-+	std	r5, -16(r1);			\
-+	std	r6, -24(r1);			\
-+	std	r7, -32(r1);			\
-+	stdu	r8, -40(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 40;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+	ld	r11, -40(r1);			\
-+	std	r8, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_6_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r4, -8(r1);			\
-+	std	r5, -16(r1);			\
-+	std	r6, -24(r1);			\
-+	std	r7, -32(r1);			\
-+	std	r8, -40(r1);			\
-+	stdu	r9, -48(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 48;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+	ld	r11, -40(r1);			\
-+	std	r8, 0(r11);			\
-+	ld	r11, -48(r1);			\
-+	std	r9, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_1_IN_7_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r4, -8(r1);			\
-+	std	r5, -16(r1);			\
-+	std	r6, -24(r1);			\
-+	std	r7, -32(r1);			\
-+	std	r8, -40(r1);			\
-+	std	r9, -48(r1);			\
-+	stdu	r10, -56(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 56;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+	ld	r11, -40(r1);			\
-+	std	r8, 0(r11);			\
-+	ld	r11, -48(r1);			\
-+	std	r9, 0(r11);			\
-+	ld	r11, -56(r1);			\
-+	std	r10, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_2_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu	r5, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_2_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r5, -8(r1);			\
-+	stdu	r6, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_2_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r5, -8(r1);			\
-+	std	r6, -16(r1);			\
-+	stdu	r7, -24(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 24;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_2_IN_4_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r5, -8(r1);			\
-+	std	r6, -16(r1);			\
-+	std	r7, -24(r1);			\
-+	stdu	r8, -32(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 32;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_2_IN_5_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r5, -8(r1);			\
-+	std	r6, -16(r1);			\
-+	std	r7, -24(r1);			\
-+	std	r8, -32(r1);			\
-+	stdu	r9, -40(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 40;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+	ld	r11, -32(r1);			\
-+	std	r7, 0(r11);			\
-+	ld	r11, -40(r1);			\
-+	std	r8, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_3_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu	r6, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_3_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r6, -8(r1);			\
-+	stdu	r7, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_3_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r6, -8(r1);			\
-+	std	r7, -16(r1);			\
-+	stdu	r8, -24(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 24;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_4_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu    r7, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_4_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r7, -8(r1);			\
-+	stdu	r8, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_4_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r7, -8(r1);			\
-+	std	r8, -16(r1);			\
-+	stdu	r9, -24(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 24;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_5_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu    r8, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_5_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r8, -8(r1);			\
-+	stdu	r9, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_5_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r8, -8(r1);			\
-+	std	r9, -16(r1);			\
-+	stdu	r10, -24(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 24;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, -24(r1);			\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_6_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu    r9, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_6_IN_2_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r9, -8(r1);			\
-+	stdu    r10, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_6_IN_3_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std     r9, -8(r1);			\
-+	stdu    r10, -16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 16;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+	ld	r11, -16(r1);			\
-+	std	r5, 0(r11);			\
-+	ld	r11, 48+8*8(r1);		\
-+	std	r6, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_7_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	stdu    r10, -8(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	addi	r1, r1, 8;			\
-+	ld	r11, -8(r1);			\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_7_IN_6_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	std	r10, 48+8*7(r1);		\
-+						\
-+	li	r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	ld	r11, 48+8*7(r1);		\
-+	std	r4, 0(r11);			\
-+	ld	r11, 48+8*8(r1);		\
-+	std	r5, 0(r11);			\
-+	ld	r11, 48+8*9(r1);		\
-+	std	r6, 0(r11);			\
-+	ld	r11, 48+8*10(r1);		\
-+	std	r7, 0(r11);			\
-+	ld	r11, 48+8*11(r1);		\
-+	std	r8, 0(r11);			\
-+	ld	r11, 48+8*12(r1);		\
-+	std	r9, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+#define LV1_8_IN_1_OUT(API_NAME, API_NUMBER)	\
-+_GLOBAL(_##API_NAME)				\
-+						\
-+	mflr	r0;				\
-+	std	r0, 16(r1);			\
-+						\
-+	li      r11, API_NUMBER;		\
-+	lv1call;				\
-+						\
-+	ld	r11, 48+8*8(r1);		\
-+	std	r4, 0(r11);			\
-+						\
-+	ld	r0, 16(r1);			\
-+	mtlr	r0;				\
-+	blr
-+
-+	.text
-+
-+/* the lv1 underscored call definitions expand here */
-+
-+#define LV1_CALL(name, in, out, num) LV1_##in##_IN_##out##_OUT(lv1_##name, num)
-+#include <asm/lv1call.h>
-Index: cell--common--6/include/asm-powerpc/lv1call.h
-===================================================================
---- /dev/null
-+++ cell--common--6/include/asm-powerpc/lv1call.h
-@@ -0,0 +1,345 @@
-+/*
-+ *  PS3 hvcall interface.
-+ *
-+ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-+ *  Copyright 2006 Sony Corp.
-+ *  Copyright 2003, 2004 (c) MontaVista Software, Inc.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#if !defined(_ASM_POWERPC_LV1CALL_H)
-+#define _ASM_POWERPC_LV1CALL_H
-+
-+#if !defined(__ASSEMBLY__)
-+
-+#include <linux/types.h>
-+
-+/* lv1 call declaration macros */
-+
-+#define LV1_1_IN_ARG_DECL u64 in_1
-+#define LV1_2_IN_ARG_DECL LV1_1_IN_ARG_DECL, u64 in_2
-+#define LV1_3_IN_ARG_DECL LV1_2_IN_ARG_DECL, u64 in_3
-+#define LV1_4_IN_ARG_DECL LV1_3_IN_ARG_DECL, u64 in_4
-+#define LV1_5_IN_ARG_DECL LV1_4_IN_ARG_DECL, u64 in_5
-+#define LV1_6_IN_ARG_DECL LV1_5_IN_ARG_DECL, u64 in_6
-+#define LV1_7_IN_ARG_DECL LV1_6_IN_ARG_DECL, u64 in_7
-+#define LV1_8_IN_ARG_DECL LV1_7_IN_ARG_DECL, u64 in_8
-+#define LV1_1_OUT_ARG_DECL u64 *out_1
-+#define LV1_2_OUT_ARG_DECL LV1_1_OUT_ARG_DECL, u64 *out_2
-+#define LV1_3_OUT_ARG_DECL LV1_2_OUT_ARG_DECL, u64 *out_3
-+#define LV1_4_OUT_ARG_DECL LV1_3_OUT_ARG_DECL, u64 *out_4
-+#define LV1_5_OUT_ARG_DECL LV1_4_OUT_ARG_DECL, u64 *out_5
-+#define LV1_6_OUT_ARG_DECL LV1_5_OUT_ARG_DECL, u64 *out_6
-+#define LV1_7_OUT_ARG_DECL LV1_6_OUT_ARG_DECL, u64 *out_7
-+
-+#define LV1_0_IN_0_OUT_ARG_DECL void
-+#define LV1_1_IN_0_OUT_ARG_DECL LV1_1_IN_ARG_DECL
-+#define LV1_2_IN_0_OUT_ARG_DECL LV1_2_IN_ARG_DECL
-+#define LV1_3_IN_0_OUT_ARG_DECL LV1_3_IN_ARG_DECL
-+#define LV1_4_IN_0_OUT_ARG_DECL LV1_4_IN_ARG_DECL
-+#define LV1_5_IN_0_OUT_ARG_DECL LV1_5_IN_ARG_DECL
-+#define LV1_6_IN_0_OUT_ARG_DECL LV1_6_IN_ARG_DECL
-+#define LV1_7_IN_0_OUT_ARG_DECL LV1_7_IN_ARG_DECL
-+
-+#define LV1_0_IN_1_OUT_ARG_DECL                    LV1_1_OUT_ARG_DECL
-+#define LV1_1_IN_1_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_2_IN_1_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_3_IN_1_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_4_IN_1_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_5_IN_1_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_6_IN_1_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_7_IN_1_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+#define LV1_8_IN_1_OUT_ARG_DECL LV1_8_IN_ARG_DECL, LV1_1_OUT_ARG_DECL
-+
-+#define LV1_0_IN_2_OUT_ARG_DECL                    LV1_2_OUT_ARG_DECL
-+#define LV1_1_IN_2_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+#define LV1_2_IN_2_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+#define LV1_3_IN_2_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+#define LV1_4_IN_2_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+#define LV1_5_IN_2_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+#define LV1_6_IN_2_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+#define LV1_7_IN_2_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_2_OUT_ARG_DECL
-+
-+#define LV1_0_IN_3_OUT_ARG_DECL                    LV1_3_OUT_ARG_DECL
-+#define LV1_1_IN_3_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+#define LV1_2_IN_3_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+#define LV1_3_IN_3_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+#define LV1_4_IN_3_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+#define LV1_5_IN_3_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+#define LV1_6_IN_3_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+#define LV1_7_IN_3_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_3_OUT_ARG_DECL
-+
-+#define LV1_0_IN_4_OUT_ARG_DECL                    LV1_4_OUT_ARG_DECL
-+#define LV1_1_IN_4_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+#define LV1_2_IN_4_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+#define LV1_3_IN_4_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+#define LV1_4_IN_4_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+#define LV1_5_IN_4_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+#define LV1_6_IN_4_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+#define LV1_7_IN_4_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_4_OUT_ARG_DECL
-+
-+#define LV1_0_IN_5_OUT_ARG_DECL                    LV1_5_OUT_ARG_DECL
-+#define LV1_1_IN_5_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+#define LV1_2_IN_5_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+#define LV1_3_IN_5_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+#define LV1_4_IN_5_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+#define LV1_5_IN_5_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+#define LV1_6_IN_5_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+#define LV1_7_IN_5_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_5_OUT_ARG_DECL
-+
-+#define LV1_0_IN_6_OUT_ARG_DECL                    LV1_6_OUT_ARG_DECL
-+#define LV1_1_IN_6_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+#define LV1_2_IN_6_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+#define LV1_3_IN_6_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+#define LV1_4_IN_6_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+#define LV1_5_IN_6_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+#define LV1_6_IN_6_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+#define LV1_7_IN_6_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_6_OUT_ARG_DECL
-+
-+#define LV1_0_IN_7_OUT_ARG_DECL                    LV1_7_OUT_ARG_DECL
-+#define LV1_1_IN_7_OUT_ARG_DECL LV1_1_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+#define LV1_2_IN_7_OUT_ARG_DECL LV1_2_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+#define LV1_3_IN_7_OUT_ARG_DECL LV1_3_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+#define LV1_4_IN_7_OUT_ARG_DECL LV1_4_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+#define LV1_5_IN_7_OUT_ARG_DECL LV1_5_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+#define LV1_6_IN_7_OUT_ARG_DECL LV1_6_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+#define LV1_7_IN_7_OUT_ARG_DECL LV1_7_IN_ARG_DECL, LV1_7_OUT_ARG_DECL
-+
-+#define LV1_1_IN_ARGS in_1
-+#define LV1_2_IN_ARGS LV1_1_IN_ARGS, in_2
-+#define LV1_3_IN_ARGS LV1_2_IN_ARGS, in_3
-+#define LV1_4_IN_ARGS LV1_3_IN_ARGS, in_4
-+#define LV1_5_IN_ARGS LV1_4_IN_ARGS, in_5
-+#define LV1_6_IN_ARGS LV1_5_IN_ARGS, in_6
-+#define LV1_7_IN_ARGS LV1_6_IN_ARGS, in_7
-+#define LV1_8_IN_ARGS LV1_7_IN_ARGS, in_8
-+
-+#define LV1_1_OUT_ARGS out_1
-+#define LV1_2_OUT_ARGS LV1_1_OUT_ARGS, out_2
-+#define LV1_3_OUT_ARGS LV1_2_OUT_ARGS, out_3
-+#define LV1_4_OUT_ARGS LV1_3_OUT_ARGS, out_4
-+#define LV1_5_OUT_ARGS LV1_4_OUT_ARGS, out_5
-+#define LV1_6_OUT_ARGS LV1_5_OUT_ARGS, out_6
-+#define LV1_7_OUT_ARGS LV1_6_OUT_ARGS, out_7
-+
-+#define LV1_0_IN_0_OUT_ARGS
-+#define LV1_1_IN_0_OUT_ARGS LV1_1_IN_ARGS
-+#define LV1_2_IN_0_OUT_ARGS LV1_2_IN_ARGS
-+#define LV1_3_IN_0_OUT_ARGS LV1_3_IN_ARGS
-+#define LV1_4_IN_0_OUT_ARGS LV1_4_IN_ARGS
-+#define LV1_5_IN_0_OUT_ARGS LV1_5_IN_ARGS
-+#define LV1_6_IN_0_OUT_ARGS LV1_6_IN_ARGS
-+#define LV1_7_IN_0_OUT_ARGS LV1_7_IN_ARGS
-+
-+#define LV1_0_IN_1_OUT_ARGS                LV1_1_OUT_ARGS
-+#define LV1_1_IN_1_OUT_ARGS LV1_1_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_2_IN_1_OUT_ARGS LV1_2_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_3_IN_1_OUT_ARGS LV1_3_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_4_IN_1_OUT_ARGS LV1_4_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_5_IN_1_OUT_ARGS LV1_5_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_6_IN_1_OUT_ARGS LV1_6_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_7_IN_1_OUT_ARGS LV1_7_IN_ARGS, LV1_1_OUT_ARGS
-+#define LV1_8_IN_1_OUT_ARGS LV1_8_IN_ARGS, LV1_1_OUT_ARGS
-+
-+#define LV1_0_IN_2_OUT_ARGS                LV1_2_OUT_ARGS
-+#define LV1_1_IN_2_OUT_ARGS LV1_1_IN_ARGS, LV1_2_OUT_ARGS
-+#define LV1_2_IN_2_OUT_ARGS LV1_2_IN_ARGS, LV1_2_OUT_ARGS
-+#define LV1_3_IN_2_OUT_ARGS LV1_3_IN_ARGS, LV1_2_OUT_ARGS
-+#define LV1_4_IN_2_OUT_ARGS LV1_4_IN_ARGS, LV1_2_OUT_ARGS
-+#define LV1_5_IN_2_OUT_ARGS LV1_5_IN_ARGS, LV1_2_OUT_ARGS
-+#define LV1_6_IN_2_OUT_ARGS LV1_6_IN_ARGS, LV1_2_OUT_ARGS
-+#define LV1_7_IN_2_OUT_ARGS LV1_7_IN_ARGS, LV1_2_OUT_ARGS
-+
-+#define LV1_0_IN_3_OUT_ARGS                LV1_3_OUT_ARGS
-+#define LV1_1_IN_3_OUT_ARGS LV1_1_IN_ARGS, LV1_3_OUT_ARGS
-+#define LV1_2_IN_3_OUT_ARGS LV1_2_IN_ARGS, LV1_3_OUT_ARGS
-+#define LV1_3_IN_3_OUT_ARGS LV1_3_IN_ARGS, LV1_3_OUT_ARGS
-+#define LV1_4_IN_3_OUT_ARGS LV1_4_IN_ARGS, LV1_3_OUT_ARGS
-+#define LV1_5_IN_3_OUT_ARGS LV1_5_IN_ARGS, LV1_3_OUT_ARGS
-+#define LV1_6_IN_3_OUT_ARGS LV1_6_IN_ARGS, LV1_3_OUT_ARGS
-+#define LV1_7_IN_3_OUT_ARGS LV1_7_IN_ARGS, LV1_3_OUT_ARGS
-+
-+#define LV1_0_IN_4_OUT_ARGS                LV1_4_OUT_ARGS
-+#define LV1_1_IN_4_OUT_ARGS LV1_1_IN_ARGS, LV1_4_OUT_ARGS
-+#define LV1_2_IN_4_OUT_ARGS LV1_2_IN_ARGS, LV1_4_OUT_ARGS
-+#define LV1_3_IN_4_OUT_ARGS LV1_3_IN_ARGS, LV1_4_OUT_ARGS
-+#define LV1_4_IN_4_OUT_ARGS LV1_4_IN_ARGS, LV1_4_OUT_ARGS
-+#define LV1_5_IN_4_OUT_ARGS LV1_5_IN_ARGS, LV1_4_OUT_ARGS
-+#define LV1_6_IN_4_OUT_ARGS LV1_6_IN_ARGS, LV1_4_OUT_ARGS
-+#define LV1_7_IN_4_OUT_ARGS LV1_7_IN_ARGS, LV1_4_OUT_ARGS
-+
-+#define LV1_0_IN_5_OUT_ARGS                LV1_5_OUT_ARGS
-+#define LV1_1_IN_5_OUT_ARGS LV1_1_IN_ARGS, LV1_5_OUT_ARGS
-+#define LV1_2_IN_5_OUT_ARGS LV1_2_IN_ARGS, LV1_5_OUT_ARGS
-+#define LV1_3_IN_5_OUT_ARGS LV1_3_IN_ARGS, LV1_5_OUT_ARGS
-+#define LV1_4_IN_5_OUT_ARGS LV1_4_IN_ARGS, LV1_5_OUT_ARGS
-+#define LV1_5_IN_5_OUT_ARGS LV1_5_IN_ARGS, LV1_5_OUT_ARGS
-+#define LV1_6_IN_5_OUT_ARGS LV1_6_IN_ARGS, LV1_5_OUT_ARGS
-+#define LV1_7_IN_5_OUT_ARGS LV1_7_IN_ARGS, LV1_5_OUT_ARGS
-+
-+#define LV1_0_IN_6_OUT_ARGS                LV1_6_OUT_ARGS
-+#define LV1_1_IN_6_OUT_ARGS LV1_1_IN_ARGS, LV1_6_OUT_ARGS
-+#define LV1_2_IN_6_OUT_ARGS LV1_2_IN_ARGS, LV1_6_OUT_ARGS
-+#define LV1_3_IN_6_OUT_ARGS LV1_3_IN_ARGS, LV1_6_OUT_ARGS
-+#define LV1_4_IN_6_OUT_ARGS LV1_4_IN_ARGS, LV1_6_OUT_ARGS
-+#define LV1_5_IN_6_OUT_ARGS LV1_5_IN_ARGS, LV1_6_OUT_ARGS
-+#define LV1_6_IN_6_OUT_ARGS LV1_6_IN_ARGS, LV1_6_OUT_ARGS
-+#define LV1_7_IN_6_OUT_ARGS LV1_7_IN_ARGS, LV1_6_OUT_ARGS
-+
-+#define LV1_0_IN_7_OUT_ARGS                LV1_7_OUT_ARGS
-+#define LV1_1_IN_7_OUT_ARGS LV1_1_IN_ARGS, LV1_7_OUT_ARGS
-+#define LV1_2_IN_7_OUT_ARGS LV1_2_IN_ARGS, LV1_7_OUT_ARGS
-+#define LV1_3_IN_7_OUT_ARGS LV1_3_IN_ARGS, LV1_7_OUT_ARGS
-+#define LV1_4_IN_7_OUT_ARGS LV1_4_IN_ARGS, LV1_7_OUT_ARGS
-+#define LV1_5_IN_7_OUT_ARGS LV1_5_IN_ARGS, LV1_7_OUT_ARGS
-+#define LV1_6_IN_7_OUT_ARGS LV1_6_IN_ARGS, LV1_7_OUT_ARGS
-+#define LV1_7_IN_7_OUT_ARGS LV1_7_IN_ARGS, LV1_7_OUT_ARGS
-+
-+/*
-+ * This LV1_CALL() macro is for use by callers.  It expands into an
-+ * inline call wrapper and an underscored HV call declaration.  The
-+ * wrapper can be used to instrument the lv1 call interface.  The
-+ * file lv1call.S defines its own LV1_CALL() macro to expand into
-+ * the actual underscored call definition.
-+ */
-+
-+#if !defined(LV1_CALL)
-+#define LV1_CALL(name, in, out, num)                               \
-+  extern s64 _lv1_##name(LV1_##in##_IN_##out##_OUT_ARG_DECL);      \
-+  static inline int lv1_##name(LV1_##in##_IN_##out##_OUT_ARG_DECL) \
-+    {return _lv1_##name(LV1_##in##_IN_##out##_OUT_ARGS);}
++#if defined(CONFIG_SPU_BASE)
++void ps3_spu_set_platform (void);
++#else
++static inline void ps3_spu_set_platform (void) {}
 +#endif
 +
-+#endif /* !defined(__ASSEMBLY__) */
+ #endif
+Index: cell--common--6/arch/powerpc/platforms/ps3/spu.c
+===================================================================
+--- /dev/null
++++ cell--common--6/arch/powerpc/platforms/ps3/spu.c
+@@ -0,0 +1,613 @@
++/*
++ *  PS3 Platform spu routines.
++ *
++ *  Copyright (C) 2006 Sony Computer Entertainment Inc.
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
 +
-+/* lv1 call table */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mmzone.h>
++#include <linux/io.h>
++#include <linux/mm.h>
 +
-+LV1_CALL(allocate_memory,                               4, 2,   0 )
-+LV1_CALL(write_htab_entry,                              4, 0,   1 )
-+LV1_CALL(construct_virtual_address_space,               3, 2,   2 )
-+LV1_CALL(invalidate_htab_entries,                       5, 0,   3 )
-+LV1_CALL(get_virtual_address_space_id_of_ppe,           1, 1,   4 )
-+LV1_CALL(query_logical_partition_address_region_info,   1, 5,   6 )
-+LV1_CALL(select_virtual_address_space,                  1, 0,   7 )
-+LV1_CALL(pause,                                         1, 0,   9 )
-+LV1_CALL(destruct_virtual_address_space,                1, 0,  10 )
-+LV1_CALL(configure_irq_state_bitmap,                    3, 0,  11 )
-+LV1_CALL(connect_irq_plug_ext,                          5, 0,  12 )
-+LV1_CALL(release_memory,                                1, 0,  13 )
-+LV1_CALL(disconnect_irq_plug_ext,                       3, 0,  17 )
-+LV1_CALL(construct_event_receive_port,                  0, 1,  18 )
-+LV1_CALL(destruct_event_receive_port,                   1, 0,  19 )
-+LV1_CALL(send_event_locally,                            1, 0,  24 )
-+LV1_CALL(end_of_interrupt,                              1, 0,  27 )
-+LV1_CALL(connect_irq_plug,                              2, 0,  28 )
-+LV1_CALL(disconnect_irq_plug,                           1, 0,  29 )
-+LV1_CALL(end_of_interrupt_ext,                          3, 0,  30 )
-+LV1_CALL(did_update_interrupt_mask,                     2, 0,  31 )
-+LV1_CALL(shutdown_logical_partition,                    1, 0,  44 )
-+LV1_CALL(destruct_logical_spe,                          1, 0,  54 )
-+LV1_CALL(construct_logical_spe,                         7, 6,  57 )
-+LV1_CALL(set_spe_interrupt_mask,                        3, 0,  61 )
-+LV1_CALL(set_spe_transition_notifier,                   3, 0,  64 )
-+LV1_CALL(disable_logical_spe,                           2, 0,  65 )
-+LV1_CALL(clear_spe_interrupt_status,                    4, 0,  66 )
-+LV1_CALL(get_spe_interrupt_status,                      2, 1,  67 )
-+LV1_CALL(get_logical_ppe_id,                            0, 1,  69 )
-+LV1_CALL(set_interrupt_mask,                            5, 0,  73 )
-+LV1_CALL(get_logical_partition_id,                      0, 1,  74 )
-+LV1_CALL(configure_execution_time_variable,             1, 0,  77 )
-+LV1_CALL(get_spe_irq_outlet,                            2, 1,  78 )
-+LV1_CALL(set_spe_privilege_state_area_1_register,       3, 0,  79 )
-+LV1_CALL(create_repository_node,                        6, 0,  90 )
-+LV1_CALL(get_repository_node_value,                     5, 2,  91 )
-+LV1_CALL(modify_repository_node_value,                  6, 0,  92 )
-+LV1_CALL(remove_repository_node,                        4, 0,  93 )
-+LV1_CALL(read_htab_entries,                             2, 5,  95 )
-+LV1_CALL(set_dabr,                                      2, 0,  96 )
-+LV1_CALL(get_total_execution_time,                      2, 1, 103 )
-+LV1_CALL(construct_io_irq_outlet,                       1, 1, 120 )
-+LV1_CALL(destruct_io_irq_outlet,                        1, 0, 121 )
-+LV1_CALL(map_htab,                                      1, 1, 122 )
-+LV1_CALL(unmap_htab,                                    1, 0, 123 )
-+LV1_CALL(get_version_info,                              0, 1, 127 )
-+LV1_CALL(insert_htab_entry,                             6, 3, 158 )
-+LV1_CALL(read_virtual_uart,                             3, 1, 162 )
-+LV1_CALL(write_virtual_uart,                            3, 1, 163 )
-+LV1_CALL(set_virtual_uart_param,                        3, 0, 164 )
-+LV1_CALL(get_virtual_uart_param,                        2, 1, 165 )
-+LV1_CALL(configure_virtual_uart_irq,                    1, 1, 166 )
-+LV1_CALL(open_device,                                   3, 0, 170 )
-+LV1_CALL(close_device,                                  2, 0, 171 )
-+LV1_CALL(map_device_mmio_region,                        5, 1, 172 )
-+LV1_CALL(unmap_device_mmio_region,                      3, 0, 173 )
-+LV1_CALL(allocate_device_dma_region,                    5, 1, 174 )
-+LV1_CALL(free_device_dma_region,                        3, 0, 175 )
-+LV1_CALL(map_device_dma_region,                         6, 0, 176 )
-+LV1_CALL(unmap_device_dma_region,                       4, 0, 177 )
-+LV1_CALL(net_add_multicast_address,                     4, 0, 185 )
-+LV1_CALL(net_remove_multicast_address,                  4, 0, 186 )
-+LV1_CALL(net_start_tx_dma,                              4, 0, 187 )
-+LV1_CALL(net_stop_tx_dma,                               3, 0, 188 )
-+LV1_CALL(net_start_rx_dma,                              4, 0, 189 )
-+LV1_CALL(net_stop_rx_dma,                               3, 0, 190 )
-+LV1_CALL(net_set_interrupt_status_indicator,            4, 0, 191 )
-+LV1_CALL(net_set_interrupt_mask,                        4, 0, 193 )
-+LV1_CALL(net_control,                                   6, 2, 194 )
-+LV1_CALL(connect_interrupt_event_receive_port,          4, 0, 197 )
-+LV1_CALL(disconnect_interrupt_event_receive_port,       4, 0, 198 )
-+LV1_CALL(get_spe_all_interrupt_statuses,                1, 1, 199 )
-+LV1_CALL(deconfigure_virtual_uart_irq,                  0, 0, 202 )
-+LV1_CALL(enable_logical_spe,                            2, 0, 207 )
-+LV1_CALL(gpu_open,                                      1, 0, 210 )
-+LV1_CALL(gpu_close,                                     0, 0, 211 )
-+LV1_CALL(gpu_device_map,                                1, 2, 212 )
-+LV1_CALL(gpu_device_unmap,                              1, 0, 213 )
-+LV1_CALL(gpu_memory_allocate,                           5, 2, 214 )
-+LV1_CALL(gpu_memory_free,                               1, 0, 216 )
-+LV1_CALL(gpu_context_allocate,                          2, 5, 217 )
-+LV1_CALL(gpu_context_free,                              1, 0, 218 )
-+LV1_CALL(gpu_context_iomap,                             5, 0, 221 )
-+LV1_CALL(gpu_context_attribute,                         6, 0, 225 )
-+LV1_CALL(gpu_context_intr,                              1, 1, 227 )
-+LV1_CALL(gpu_attribute,                                 5, 0, 228 )
-+LV1_CALL(get_rtc,                                       0, 2, 232 )
-+LV1_CALL(set_ppe_periodic_tracer_frequency,             1, 0, 240 )
-+LV1_CALL(start_ppe_periodic_tracer,                     5, 0, 241 )
-+LV1_CALL(stop_ppe_periodic_tracer,                      1, 1, 242 )
-+LV1_CALL(storage_read,                                  6, 1, 245 )
-+LV1_CALL(storage_write,                                 6, 1, 246 )
-+LV1_CALL(storage_send_device_command,                   6, 1, 248 )
-+LV1_CALL(storage_get_async_status,                      1, 2, 249 )
-+LV1_CALL(storage_check_async_status,                    2, 1, 254 )
-+LV1_CALL(panic,                                         1, 0, 255 )
-+LV1_CALL(construct_lpm,                                 6, 3, 140 )
-+LV1_CALL(destruct_lpm,                                  1, 0, 141 )
-+LV1_CALL(start_lpm,                                     1, 0, 142 )
-+LV1_CALL(stop_lpm,                                      1, 1, 143 )
-+LV1_CALL(copy_lpm_trace_buffer,                         3, 1, 144 )
-+LV1_CALL(add_lpm_event_bookmark,                        5, 0, 145 )
-+LV1_CALL(delete_lpm_event_bookmark,                     3, 0, 146 )
-+LV1_CALL(set_lpm_interrupt_mask,                        3, 1, 147 )
-+LV1_CALL(get_lpm_interrupt_status,                      1, 1, 148 )
-+LV1_CALL(set_lpm_general_control,                       5, 2, 149 )
-+LV1_CALL(set_lpm_interval,                              3, 1, 150 )
-+LV1_CALL(set_lpm_trigger_control,                       3, 1, 151 )
-+LV1_CALL(set_lpm_counter_control,                       4, 1, 152 )
-+LV1_CALL(set_lpm_group_control,                         3, 1, 153 )
-+LV1_CALL(set_lpm_debug_bus_control,                     3, 1, 154 )
-+LV1_CALL(set_lpm_counter,                               5, 2, 155 )
-+LV1_CALL(set_lpm_signal,                                7, 0, 156 )
-+LV1_CALL(set_lpm_spr_trigger,                           2, 0, 157 )
++#include <asm/spu.h>
++#include <asm/spu_priv1.h>
++#include <asm/ps3.h>
++#include <asm/lv1call.h>
 +
-+#endif
++/* spu_management_ops */
++
++/**
++ * enum spe_type - Type of spe to create.
++ * @spe_type_logical: Standard logical spe.
++ *
++ * For use with lv1_construct_logical_spe().  The current HV does not support
++ * any types other than those listed.
++ */
++
++enum spe_type {
++	SPE_TYPE_LOGICAL = 0,
++};
++
++/**
++ * struct spe_shadow - logical spe shadow register area.
++ *
++ * Read-only shadow of spe registers.
++ */
++
++struct spe_shadow {
++	u8 padding_0000[0x0140];
++	u64 int_status_class0_RW;       /* 0x0140 */
++	u64 int_status_class1_RW;       /* 0x0148 */
++	u64 int_status_class2_RW;       /* 0x0150 */
++	u8 padding_0158[0x0610-0x0158];
++	u64 mfc_dsisr_RW;               /* 0x0610 */
++	u8 padding_0618[0x0620-0x0618];
++	u64 mfc_dar_RW;                 /* 0x0620 */
++	u8 padding_0628[0x0800-0x0628];
++	u64 mfc_dsipr_R;                /* 0x0800 */
++	u8 padding_0808[0x0810-0x0808];
++	u64 mfc_lscrr_R;                /* 0x0810 */
++	u8 padding_0818[0x0c00-0x0818];
++	u64 mfc_cer_R;                  /* 0x0c00 */
++	u8 padding_0c08[0x0f00-0x0c08];
++	u64 spe_execution_status;       /* 0x0f00 */
++	u8 padding_0f08[0x1000-0x0f08];
++} __attribute__ ((packed));
++
++
++/**
++ * enum spe_ex_state - Logical spe execution state.
++ * @spe_ex_state_unexecutable: Uninitialized.
++ * @spe_ex_state_executable: Enabled, not ready.
++ * @spe_ex_state_executed: Ready for use.
++ *
++ * The execution state (status) of the logical spe as reported in
++ * struct spe_shadow:spe_execution_status.
++ */
++
++enum spe_ex_state {
++	SPE_EX_STATE_UNEXECUTABLE = 0,
++	SPE_EX_STATE_EXECUTABLE = 2,
++	SPE_EX_STATE_EXECUTED = 3,
++};
++
++/**
++ * struct priv1_cache - Cached values of priv1 registers.
++ * @masks[]: Array of cached spe interrupt masks, indexed by class.
++ * @sr1: Cached mfc_sr1 register.
++ * @tclass_id: Cached mfc_tclass_id register.
++ */
++
++struct priv1_cache {
++	u64 masks[3];
++	u64 sr1;
++	u64 tclass_id;
++};
++
++/**
++ * struct spu_pdata - Platform state variables.
++ * @spe_id: HV spe id returned by lv1_construct_logical_spe().
++ * @resource_id: HV spe resource id returned by
++ * 	ps3_repository_read_spe_resource_id().
++ * @priv2_addr: lpar address of spe priv2 area returned by
++ * 	lv1_construct_logical_spe().
++ * @shadow_addr: lpar address of spe register shadow area returned by
++ * 	lv1_construct_logical_spe().
++ * @shadow: Virtual (ioremap) address of spe register shadow area.
++ * @cache: Cached values of priv1 registers.
++ */
++
++struct spu_pdata {
++	u64 spe_id;
++	u64 resource_id;
++	u64 priv2_addr;
++	u64 shadow_addr;
++	struct spe_shadow __iomem *shadow;
++	struct priv1_cache cache;
++};
++
++static struct spu_pdata *spu_pdata(struct spu *spu)
++{
++	return spu->pdata;
++}
++
++#define dump_areas(_a, _b, _c, _d, _e) \
++	_dump_areas(_a, _b, _c, _d, _e, __func__, __LINE__)
++static void _dump_areas(unsigned int spe_id, unsigned long priv2,
++	unsigned long problem, unsigned long ls, unsigned long shadow,
++	const char* func, int line)
++{
++	pr_debug("%s:%d: spe_id:  %xh (%u)\n", func, line, spe_id, spe_id);
++	pr_debug("%s:%d: priv2:   %lxh\n", func, line, priv2);
++	pr_debug("%s:%d: problem: %lxh\n", func, line, problem);
++	pr_debug("%s:%d: ls:      %lxh\n", func, line, ls);
++	pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
++}
++
++static unsigned long get_vas_id(void)
++{
++	unsigned long id;
++
++	lv1_get_logical_ppe_id(&id);
++	lv1_get_virtual_address_space_id_of_ppe(id, &id);
++
++	return id;
++}
++
++static int __init construct_spu(struct spu *spu)
++{
++	int result;
++	unsigned long unused;
++
++	result = lv1_construct_logical_spe(PAGE_SHIFT, PAGE_SHIFT, PAGE_SHIFT,
++		PAGE_SHIFT, PAGE_SHIFT, get_vas_id(), SPE_TYPE_LOGICAL,
++		&spu_pdata(spu)->priv2_addr, &spu->problem_phys,
++		&spu->local_store_phys, &unused,
++		&spu_pdata(spu)->shadow_addr,
++		&spu_pdata(spu)->spe_id);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_construct_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++		return result;
++	}
++
++	return result;
++}
++
++static int __init add_spu_pages(unsigned long start_addr, unsigned long size)
++{
++	int result;
++	unsigned long start_pfn;
++	unsigned long nr_pages;
++	struct pglist_data *pgdata;
++	struct zone *zone;
++
++	BUG_ON(!mem_init_done);
++
++	start_pfn = start_addr >> PAGE_SHIFT;
++	nr_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	pgdata = NODE_DATA(0);
++	zone = pgdata->node_zones;
++
++	result = __add_pages(zone, start_pfn, nr_pages);
++
++	if (result)
++		pr_debug("%s:%d: __add_pages failed: (%d)\n",
++			__func__, __LINE__, result);
++
++	return result;
++}
++
++static void spu_unmap(struct spu *spu)
++{
++	iounmap(spu->priv2);
++	iounmap(spu->problem);
++	iounmap((__force u8 __iomem *)spu->local_store);
++	iounmap(spu_pdata(spu)->shadow);
++}
++
++static int __init setup_areas(struct spu *spu)
++{
++	struct table {char* name; unsigned long addr; unsigned long size;};
++	int result;
++
++	/* setup pages */
++
++	result = add_spu_pages(spu->local_store_phys, LS_SIZE);
++	if (result)
++		goto fail_add;
++
++	result = add_spu_pages(spu->problem_phys, sizeof(struct spu_problem));
++	if (result)
++		goto fail_add;
++
++	/* ioremap */
++
++	spu_pdata(spu)->shadow = __ioremap(
++		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
++		PAGE_READONLY | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	if (!spu_pdata(spu)->shadow) {
++		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->local_store = ioremap(spu->local_store_phys, LS_SIZE);
++	if (!spu->local_store) {
++		pr_debug("%s:%d: ioremap local_store failed\n",
++			__func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->problem = ioremap(spu->problem_phys,
++		sizeof(struct spu_problem));
++	if (!spu->problem) {
++		pr_debug("%s:%d: ioremap problem failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	spu->priv2 = ioremap(spu_pdata(spu)->priv2_addr,
++		sizeof(struct spu_priv2));
++	if (!spu->priv2) {
++		pr_debug("%s:%d: ioremap priv2 failed\n", __func__, __LINE__);
++		goto fail_ioremap;
++	}
++
++	dump_areas(spu_pdata(spu)->spe_id, spu_pdata(spu)->priv2_addr,
++		spu->problem_phys, spu->local_store_phys,
++		spu_pdata(spu)->shadow_addr);
++	dump_areas(spu_pdata(spu)->spe_id, (unsigned long)spu->priv2,
++		(unsigned long)spu->problem, (unsigned long)spu->local_store,
++		(unsigned long)spu_pdata(spu)->shadow);
++
++	return 0;
++
++fail_ioremap:
++	spu_unmap(spu);
++fail_add:
++	return result;
++}
++
++static int __init setup_interrupts(struct spu *spu)
++{
++	int result;
++
++	result = ps3_alloc_spe_irq(spu_pdata(spu)->spe_id, 0,
++		&spu->irqs[0]);
++
++	if (result)
++		goto fail_alloc_0;
++
++	result = ps3_alloc_spe_irq(spu_pdata(spu)->spe_id, 1,
++		&spu->irqs[1]);
++
++	if (result)
++		goto fail_alloc_1;
++
++	result = ps3_alloc_spe_irq(spu_pdata(spu)->spe_id, 2,
++		&spu->irqs[2]);
++
++	if (result)
++		goto fail_alloc_2;
++
++	return result;
++
++fail_alloc_2:
++	ps3_free_spe_irq(spu->irqs[1]);
++fail_alloc_1:
++	ps3_free_spe_irq(spu->irqs[0]);
++fail_alloc_0:
++	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
++	return result;
++}
++
++static int __init enable_spu(struct spu *spu)
++{
++	int result;
++
++	result = lv1_enable_logical_spe(spu_pdata(spu)->spe_id,
++		spu_pdata(spu)->resource_id);
++
++	if (result) {
++		pr_debug("%s:%d: lv1_enable_logical_spe failed: %s\n",
++			__func__, __LINE__, ps3_result(result));
++		goto fail_enable;
++	}
++
++	result = setup_areas(spu);
++
++	if (result)
++		goto fail_areas;
++
++	result = setup_interrupts(spu);
++
++	if (result)
++		goto fail_interrupts;
++
++	return 0;
++
++fail_interrupts:
++	spu_unmap(spu);
++fail_areas:
++	lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
++fail_enable:
++	return result;
++}
++
++static int ps3_destroy_spu(struct spu *spu)
++{
++	int result;
++
++	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++
++	result = lv1_disable_logical_spe(spu_pdata(spu)->spe_id, 0);
++	BUG_ON(result);
++
++	ps3_free_spe_irq(spu->irqs[2]);
++	ps3_free_spe_irq(spu->irqs[1]);
++	ps3_free_spe_irq(spu->irqs[0]);
++
++	spu->irqs[0] = spu->irqs[1] = spu->irqs[2] = NO_IRQ;
++
++	spu_unmap(spu);
++
++	result = lv1_destruct_logical_spe(spu_pdata(spu)->spe_id);
++	BUG_ON(result);
++
++	kfree(spu->pdata);
++	spu->pdata = NULL;
++
++	return 0;
++}
++
++static int __init ps3_create_spu(struct spu *spu, void *data)
++{
++	int result;
++
++	pr_debug("%s:%d spu_%d\n", __func__, __LINE__, spu->number);
++
++	spu->pdata = kzalloc(sizeof(struct spu_pdata),
++		GFP_KERNEL);
++
++	if (!spu->pdata) {
++		result = -ENOMEM;
++		goto fail_malloc;
++	}
++
++	spu_pdata(spu)->resource_id = (unsigned long)data;
++
++	/* Init cached reg values to HV defaults. */
++
++	spu_pdata(spu)->cache.sr1 = 0x33;
++
++	result = construct_spu(spu);
++
++	if (result)
++		goto fail_construct;
++
++	/* For now, just go ahead and enable it. */
++
++	result = enable_spu(spu);
++
++	if (result)
++		goto fail_enable;
++
++	/* Make sure the spu is in SPE_EX_STATE_EXECUTED. */
++
++	/* need something better here!!! */
++	while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status)
++		!= SPE_EX_STATE_EXECUTED)
++		(void)0;
++
++	return result;
++
++fail_enable:
++fail_construct:
++	ps3_destroy_spu(spu);
++fail_malloc:
++	return result;
++}
++
++static int __init ps3_enumerate_spus(int (*fn)(void *data))
++{
++	int result;
++	unsigned int num_resource_id;
++	unsigned int i;
++
++	result = ps3_repository_read_num_spu_resource_id(&num_resource_id);
++
++	pr_debug("%s:%d: num_resource_id %u\n", __func__, __LINE__,
++		num_resource_id);
++
++	/*
++	 * For now, just create logical spus equal to the number
++	 * of physical spus reserved for the partition.
++	 */
++
++	for (i = 0; i < num_resource_id; i++) {
++		enum ps3_spu_resource_type resource_type;
++		unsigned int resource_id;
++
++		result = ps3_repository_read_spu_resource_id(i,
++			&resource_type, &resource_id);
++
++		if (result)
++			break;
++
++		if (resource_type == PS3_SPU_RESOURCE_TYPE_EXCLUSIVE) {
++			result = fn((void*)(unsigned long)resource_id);
++
++			if (result)
++				break;
++		}
++	}
++
++	if (result)
++		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
++			__func__, __LINE__);
++
++	return result;
++}
++
++const struct spu_management_ops spu_management_ps3_ops = {
++	.enumerate_spus = ps3_enumerate_spus,
++	.create_spu = ps3_create_spu,
++	.destroy_spu = ps3_destroy_spu,
++};
++
++/* spu_priv1_ops */
++
++static void int_mask_and(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++
++	/* are these serialized by caller??? */
++	old_mask = spu_int_mask_get(spu, class);
++	spu_int_mask_set(spu, class, old_mask & mask);
++}
++
++static void int_mask_or(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++
++	old_mask = spu_int_mask_get(spu, class);
++	spu_int_mask_set(spu, class, old_mask | mask);
++}
++
++static void int_mask_set(struct spu *spu, int class, u64 mask)
++{
++	spu_pdata(spu)->cache.masks[class] = mask;
++	lv1_set_spe_interrupt_mask(spu_pdata(spu)->spe_id, class,
++		spu_pdata(spu)->cache.masks[class]);
++}
++
++static u64 int_mask_get(struct spu *spu, int class)
++{
++	return spu_pdata(spu)->cache.masks[class];
++}
++
++static void int_stat_clear(struct spu *spu, int class, u64 stat)
++{
++	/* Note that MFC_DSISR will be cleared when class1[MF] is set. */
++
++	lv1_clear_spe_interrupt_status(spu_pdata(spu)->spe_id, class,
++		stat, 0);
++}
++
++static u64 int_stat_get(struct spu *spu, int class)
++{
++	u64 stat;
++
++	lv1_get_spe_interrupt_status(spu_pdata(spu)->spe_id, class, &stat);
++	return stat;
++}
++
++static void cpu_affinity_set(struct spu *spu, int cpu)
++{
++	/* No support. */
++}
++
++static u64 mfc_dar_get(struct spu *spu)
++{
++	return in_be64(&spu_pdata(spu)->shadow->mfc_dar_RW);
++}
++
++static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
++{
++	/* Nothing to do, cleared in int_stat_clear(). */
++}
++
++static u64 mfc_dsisr_get(struct spu *spu)
++{
++	return in_be64(&spu_pdata(spu)->shadow->mfc_dsisr_RW);
++}
++
++static void mfc_sdr_setup(struct spu *spu)
++{
++	/* Nothing to do. */
++}
++
++static void mfc_sr1_set(struct spu *spu, u64 sr1)
++{
++	/* Check bits allowed by HV. */
++
++	static const u64 allowed = ~(MFC_STATE1_LOCAL_STORAGE_DECODE_MASK
++		| MFC_STATE1_PROBLEM_STATE_MASK);
++
++	BUG_ON((sr1 & allowed) != (spu_pdata(spu)->cache.sr1 & allowed));
++
++	spu_pdata(spu)->cache.sr1 = sr1;
++	lv1_set_spe_privilege_state_area_1_register(
++		spu_pdata(spu)->spe_id,
++		offsetof(struct spu_priv1, mfc_sr1_RW),
++		spu_pdata(spu)->cache.sr1);
++}
++
++static u64 mfc_sr1_get(struct spu *spu)
++{
++	return spu_pdata(spu)->cache.sr1;
++}
++
++static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
++{
++	spu_pdata(spu)->cache.tclass_id = tclass_id;
++	lv1_set_spe_privilege_state_area_1_register(
++		spu_pdata(spu)->spe_id,
++		offsetof(struct spu_priv1, mfc_tclass_id_RW),
++		spu_pdata(spu)->cache.tclass_id);
++}
++
++static u64 mfc_tclass_id_get(struct spu *spu)
++{
++	return spu_pdata(spu)->cache.tclass_id;
++}
++
++static void tlb_invalidate(struct spu *spu)
++{
++	/* Nothing to do. */
++}
++
++static void resource_allocation_groupID_set(struct spu *spu, u64 id)
++{
++	/* No support. */
++}
++
++static u64 resource_allocation_groupID_get(struct spu *spu)
++{
++	return 0; /* No support. */
++}
++
++static void resource_allocation_enable_set(struct spu *spu, u64 enable)
++{
++	/* No support. */
++}
++
++static u64 resource_allocation_enable_get(struct spu *spu)
++{
++	return 0; /* No support. */
++}
++
++const struct spu_priv1_ops spu_priv1_ps3_ops = {
++	.int_mask_and = int_mask_and,
++	.int_mask_or = int_mask_or,
++	.int_mask_set = int_mask_set,
++	.int_mask_get = int_mask_get,
++	.int_stat_clear = int_stat_clear,
++	.int_stat_get = int_stat_get,
++	.cpu_affinity_set = cpu_affinity_set,
++	.mfc_dar_get = mfc_dar_get,
++	.mfc_dsisr_set = mfc_dsisr_set,
++	.mfc_dsisr_get = mfc_dsisr_get,
++	.mfc_sdr_setup = mfc_sdr_setup,
++	.mfc_sr1_set = mfc_sr1_set,
++	.mfc_sr1_get = mfc_sr1_get,
++	.mfc_tclass_id_set = mfc_tclass_id_set,
++	.mfc_tclass_id_get = mfc_tclass_id_get,
++	.tlb_invalidate = tlb_invalidate,
++	.resource_allocation_groupID_set = resource_allocation_groupID_set,
++	.resource_allocation_groupID_get = resource_allocation_groupID_get,
++	.resource_allocation_enable_set = resource_allocation_enable_set,
++	.resource_allocation_enable_get = resource_allocation_enable_get,
++};
++
++void ps3_spu_set_platform(void)
++{
++	spu_priv1_ops = &spu_priv1_ps3_ops;
++	spu_management_ops = &spu_management_ps3_ops;
++}
