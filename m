@@ -1,22 +1,18 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 019B267C33
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 10:04:05 +1100 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2.6.19] ehca: bug fix: use wqe offset instead wqe address
-	to determine pending work requests
-References: <200611202354.13030.hnguyen@linux.vnet.ibm.com>
-	<adaslgcg30n.fsf@cisco.com>
-	<200611221029.10077.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 22 Nov 2006 15:04:01 -0800
-In-Reply-To: <200611221029.10077.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Wed, 22 Nov 2006 10:29:09 +0100")
-Message-ID: <adaslgbaxsu.fsf@cisco.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 0E09567BF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 10:22:40 +1100 (EST)
+Received: from lyakh (helo=localhost)
+	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
+	id 1Gn1QN-0007AT-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2006 00:22:39 +0100
+Date: Thu, 23 Nov 2006 00:22:39 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [OT] multiplatform kernel test request
+Message-ID: <Pine.LNX.4.60.0611230018220.4456@poirot.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	openib-general@openib.org, raisch@de.ibm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > We found this bug actually through a code review by random. Since
- > (un)fortunately the queue pages were layouted in order, we've not
- > seen it earlier. It's certainly a bug and can cause kernel panic 
- > if above observation is not met, probably in stress situation
- > of system. That means the "former" code accesses next page that 
- > it has not allocated.
+Hi
 
-OK.  After thinking about this, I'm going to queue it for 2.6.20 --
-we're _way_ too close to the 2.6.19 final release to put in patches
-that aren't either small and obvious, or fix a problem someone hit in
-real life.
+I've built a kernel for KuroboxHG that uses MULTIPLATFORM and also has 
+CHRP and MBOOK enabled (uImage). Would be interesting to test if it REALLY 
+would at least boot on any of those machines. Of course, it won't really 
+work as all the drivers are, probably, missing, but if you specify a 
+correct command line, maybe you'd get console output at least as far as 
+"unable to mount root fs"... That would be already nice.
 
- - R.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
