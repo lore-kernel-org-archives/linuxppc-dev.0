@@ -1,14 +1,13 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17764.50141.582888.573591@cargo.ozlabs.ibm.com>
-Date: Thu, 23 Nov 2006 08:40:45 +1100
+Message-ID: <17764.50454.196574.373173@cargo.ozlabs.ibm.com>
+Date: Thu, 23 Nov 2006 08:45:58 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: Please pull powerpc.git 'merge' branch
-In-Reply-To: <Pine.LNX.4.64.0611211843010.3338@woody.osdl.org>
-References: <17763.46950.961979.77987@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0611211843010.3338@woody.osdl.org>
+To: Jake Moilanen <moilanen@austin.ibm.com>
+Subject: Re: [PATCH] CAS DFP support
+In-Reply-To: <1164208814.1954.372.camel@goblue>
+References: <1164208814.1954.372.camel@goblue>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,12 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus Torvalds writes:
+Jake Moilanen writes:
 
-> Btw, when doing a web-pointer like this, _please_ don't just leave it 
-> hanging like that.
+> When booting a Power6 in compat mode, the DFP bit must be set in the
+> client architecture call, or else firmware will downgrade the compliance
+> to P5 compat mode, thus removing VMX and DFP instructions.
 
-So, does that mean you want me to re-do those two commits and send
-another pull request?
+This change is already in the powerpc.git tree; it was part of my
+"Distinguish POWER6 partition modes and tell userspace" patch.
 
 Paul.
