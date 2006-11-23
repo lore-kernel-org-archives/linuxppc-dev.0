@@ -1,19 +1,17 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 51BB667BD5
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Nov 2006 01:32:08 +1100 (EST)
-Date: Thu, 23 Nov 2006 15:32:06 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id DE88167BDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Nov 2006 01:33:39 +1100 (EST)
+Date: Thu, 23 Nov 2006 15:33:37 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] Missed renames of CONFIG_PS3 to CONFIG_PPC_PS3
-In-Reply-To: <200611231409.55709.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.62.0611231530260.25303@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0611231346070.15461@pademelon.sonytel.be>
-	<200611231409.55709.arnd@arndb.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Missed renames of CONFIG_PS3 to CONFIG_PPC_PS3
+Message-ID: <Pine.LNX.4.62.0611231532390.25303@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 23 Nov 2006, Arnd Bergmann wrote:
-> On Thursday 23 November 2006 13:50, Geert Uytterhoeven wrote:
-> > When renaming CONFIG_PS3 to CONFIG_PPC_PS3, a few occurrences have been
-> > missed.
-> 
-> Sorry about this, my fault. I checked the Kconfig and .c files, but
-> missed the Makefiles.
 
-Bummer, I found another one in <asm/firmware.h> (he who uses `grep
-CONFIG_PS3[^_])' doesn't match end of lines), which explains why the resulting
-kernel didn't boot that far...
+When renaming CONFIG_PS3 to CONFIG_PPC_PS3, a few occurrences have been
+missed.
 
-I'll send an updated patch in a few minutes.
+I also fixed up the alignment in arch/powerpc/platforms/Makefile.
+
+Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+Index: ps3-linux-src/arch/powerpc/platforms/Makefile
+===================================================================
+--- ps3-linux-src.orig/arch/powerpc/platforms/Makefile	2006-11-23 13:42:46.000000000 +0100
++++ ps3-linux-src/arch/powerpc/platforms/Makefile	2006-11-23 13:42:49.000000000 +0100
+@@ -5,7 +5,7 @@
+ obj-$(CONFIG_PPC_PMAC)		+= powermac/
+ endif
+ endif
+-obj-$(CONFIG_PPC_EFIKA)          += efika/
++obj-$(CONFIG_PPC_EFIKA)		+= efika/
+ obj-$(CONFIG_PPC_CHRP)		+= chrp/
+ obj-$(CONFIG_4xx)		+= 4xx/
+ obj-$(CONFIG_PPC_83xx)		+= 83xx/
+@@ -14,7 +14,7 @@
+ obj-$(CONFIG_PPC_PSERIES)	+= pseries/
+ obj-$(CONFIG_PPC_ISERIES)	+= iseries/
+ obj-$(CONFIG_PPC_MAPLE)		+= maple/
+-obj-$(CONFIG_PPC_PASEMI)		+= pasemi/
++obj-$(CONFIG_PPC_PASEMI)	+= pasemi/
+ obj-$(CONFIG_PPC_CELL)		+= cell/
+-obj-$(CONFIG_PS3)		+= ps3/
++obj-$(CONFIG_PPC_PS3)		+= ps3/
+ obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+Index: ps3-linux-src/drivers/Makefile
+===================================================================
+--- ps3-linux-src.orig/drivers/Makefile	2006-11-23 13:42:46.000000000 +0100
++++ ps3-linux-src/drivers/Makefile	2006-11-23 13:42:49.000000000 +0100
+@@ -77,4 +77,4 @@
+ obj-$(CONFIG_SUPERH)		+= sh/
+ obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
+ obj-$(CONFIG_DMA_ENGINE)	+= dma/
+-obj-$(CONFIG_PS3)		+= ps3/
++obj-$(CONFIG_PPC_PS3)		+= ps3/
+Index: ps3-linux-src/include/asm-powerpc/firmware.h
+===================================================================
+--- ps3-linux-src.orig/include/asm-powerpc/firmware.h	2006-11-23 10:57:53.000000000 +0100
++++ ps3-linux-src/include/asm-powerpc/firmware.h	2006-11-23 15:12:45.000000000 +0100
+@@ -67,7 +67,7 @@
+ #ifdef CONFIG_PPC_ISERIES
+ 		FW_FEATURE_ISERIES_POSSIBLE |
+ #endif
+-#ifdef CONFIG_PS3
++#ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_POSSIBLE |
+ #endif
+ 		0,
+@@ -78,7 +78,7 @@
+ #ifdef CONFIG_PPC_ISERIES
+ 		FW_FEATURE_ISERIES_ALWAYS &
+ #endif
+-#ifdef CONFIG_PS3
++#ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_ALWAYS &
+ #endif
+ 		FW_FEATURE_POSSIBLE,
 
 Gr{oetje,eeting}s,
 
