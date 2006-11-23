@@ -1,18 +1,18 @@
-Return-Path: <stonepine@126.com>
-Received: from m5-142.126.com (m5-142.126.com [202.108.5.142])
-	by ozlabs.org (Postfix) with SMTP id B7E0A67C9E
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id EECBF67BC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Nov 2006 06:04:15 +1100 (EST)
-Message-ID: <45649EF1.1050703@126.com>
-Date: Thu, 23 Nov 2006 03:03:13 +0800
-From: Stephen Yee <stonepine@126.com>
+	Thu, 23 Nov 2006 18:35:14 +1100 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Perl
+Date: Thu, 23 Nov 2006 08:26:36 +0100
+References: <1163458589.5313.71.camel@mindpipe>
+In-Reply-To: <1163458589.5313.71.camel@mindpipe>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: FYI: SM5xx toolchain project berliOS registration
-References: <20061120214155.91777352643@atlas.denx.de>
-In-Reply-To: <20061120214155.91777352643@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200611230826.36163.matthias.fuchs@esd-electronics.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,41 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mr. Wolfgang,
-   After I ported your linuxppc_2_4_devel.git code to my system and  
-used the smi_disp_settings[2]("1024x768-60", 1024, 768, 15385,160, 24, 
-29,  3, 136, 6, 0 ) to replace the defualt 'fb.var' settings, the 
-Voyager GX PCI Demo Board Ver.A(a PCI cards with  SiliconMotion SM501 
-chip) could work perfectly  on PPC 405ep board to support dual  CRT 
-monitors with 8bpp, Thanks all of the people in 
-linuxppc-embedded@ozlabs.org!  and Thanks the Great code!
-   but,There is a small issue that when I used the 16bpp, the color is 
-not correct, I thinks it's the notorious  RGB565  issue. I wanna get 
-the  messages that the 16bpp have worked correctly on your "TQM5200" 
-board?  and if YES, would you please give some advice to me about it?
-  
-Thanks and Best Regards,
-Stephen Yee
+Hi Lee,
 
-Wolfgang Denk wrote:
+there's a quick'n'dirty way to get a perl running on your CPU.
+Take the Fedora Core 4 ppc binary rpm (perl-5.8.6-15.ppc.rpm) and install it 
+from an ELDK 4 root filesystem:
 
->In message <4561F9F2.8020706@126.com> you wrote:
->  
->
->>is Here a  successful  story  about using SM501 on PPC platform with
->>this driver?  and would you please give me some advices to drive this
->>devices?
->>    
->>
->
->Not in the context of the 2.6 kernel. But we have a working
->configuration of MPC5200 + SM501 in our 2.4 kernel tree; see the
->"TQM5200" board config at
->http://www.denx.de/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git
->
->Best regards,
->
->Wolfgang Denk
->
->  
->
+bash-3.00# rpm -ihv --nodeps perl-5.8.6-15.ppc.rpm
+warning: perl-5.8.6-15.ppc.rpm: Header V3 DSA signature: NOKEY, key ID 
+4f2a6fd2
+Preparing...                ########################################### [100%]
+   1:perl                   ########################################### [100%]
+bash-3.00# perl -v
+
+This is perl, v5.8.6 built for ppc-linux-thread-multi
+
+Copyright 1987-2004, Larry Wall
+
+Perl may be copied only under the terms of either the Artistic License or the
+GNU General Public License, which may be found in the Perl 5 source kit.
+
+Complete documentation for Perl, including FAQ lists, should be found on
+this system using `man perl' or `perldoc perl'.  If you have access to the
+Internet, point your browser at http://www.perl.org/, the Perl Home Page.
+
+bash-3.00# perl -e 'print "Hello World!\n";'
+Hello World!
+bash-3.00#
+
+Note: This test has been done on a PPC405. But do not forget to use a kernel 
+with math emulation for this to work. 
+
+Matthias
+
+On Monday 13 November 2006 23:56, Lee Revell wrote:
+> I've been trying to cross compile Perl for a PPC440 board and it just
+> isn't happening.  Perl is probably the least amenable application to
+> cross compiling I've found.
+> 
+> I tried the instructions in the Cross/ directory of the Perl distro but
+> they don't work - "sh Configure" fails on my target because it expects a
+> full C development environment, which won't fit.
+> 
+> Is there any easy solution?  Can someone send me a binary?
+> 
+> Lee 
+> 
