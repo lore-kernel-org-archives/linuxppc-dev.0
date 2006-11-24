@@ -1,20 +1,29 @@
-Return-Path: <adrian@humboldt.co.uk>
-Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C231F67BE5
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Nov 2006 03:21:20 +1100 (EST)
-Received: from newt.humboldt.co.uk ([81.2.65.19] helo=[192.168.78.155])
-	by mail.humboldt.co.uk with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
-	(Exim 4.50) id 1GndnS-0005RH-St
-	for linuxppc-dev@ozlabs.org; Fri, 24 Nov 2006 16:21:03 +0000
-Subject: Worst case performance of up()
-From: Adrian Cox <adrian@humboldt.co.uk>
+	by ozlabs.org (Postfix) with ESMTP id 05BF967B52
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Nov 2006 07:05:16 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1GngkP-0006Bw-Fq
+	for linuxppc-dev@ozlabs.org; Fri, 24 Nov 2006 20:30:09 +0100
+Received: from mnhm-590c13b4.pool.einsundeins.de ([89.12.19.180])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Nov 2006 20:30:05 +0100
+Received: from deller by mnhm-590c13b4.pool.einsundeins.de with local (Gmexim
+	0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Nov 2006 20:30:05 +0100
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 24 Nov 2006 16:21:02 +0000
-Message-Id: <1164385262.11292.76.camel@localhost.localdomain>
+From: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] Fbdev driver for IBM GXT4500P video cards
+Date: Fri, 24 Nov 2006 20:13:08 +0100
+Message-ID: <ek7g84$93g$1@sea.gmane.org>
+References: <17766.24132.505274.631108@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-First the background: I've been investigating poor performance of a
-Firewire capture application, running on a dual-7450 board with a 2.6.17
-kernel. The kernel is based on a slightly earlier version of the
-mpc7448hpc2 board port, using arch/powerpc, which I've not yet updated
-to reflect the changes made when the board support entered the
-mainstream kernel. 
+Hi Paul,
 
-The application runs smoothly on a single processor. On the dual
-processor machine, the application sometimes suffers a drop in
-frame-rate, simultaneous with high CPU usage by the Firewire kernel
-thread.
+Paul Mackerras wrote:
+> This is an fbdev driver for the IBM GXT4500P display card found in
+> some IBM System P (pSeries) machines.  These cards have hardware 2D
+> and 3D capabilities, but the driver does not use them; it just exports
+> a dumb framebuffer.
 
-Further investigation reveals that the kernel thread spends most of the
-time in one line: up(&fi->complete_sem) in __queue_complete_req() in
-drivers/iee1394/raw1394.c.  It seems that whenever the userspace thread
-calling raw1394_read() is scheduled on the opposite CPU to the kernel
-thread, the kernel thread takes much longer to execute up() - typically
-10000 times longer.
 
-Does anybody have any ideas what could make up() take so long in this
-circumstance? I'd expect cache transfers to make the operation about 100
-times slower, but this looks like repeated cache ping-pong between the
-two CPUs.
+You might try to "const"-ify a few static structs and arrays...
 
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+Helge
+
+
+> +/* Indexed by DFA_PIX_* values */
+> +static unsigned char watfmt[] = {
+> +     WAT_FMT_8BIT, WAT_FMT_16BIT_565, WAT_FMT_16BIT_1555, 0,
+
+
+> +static unsigned char mdivtab[] = {
+> +/* 1 */                    0x3f, 0x00, 0x20, 0x10, 0x28, 0x14, 0x2a, 0x15, 0x0a,
+
+
+> +static unsigned char ndivtab[] = {
+> +/* 2 */                          0x00, 0x80, 0xc0, 0xe0, 0xf0, 0x78, 0xbc, 0x5e,
+
+
+
+not sure about those:
+
+> +static struct fb_bitfield eightbits = {0, 8};
+> +static struct fb_bitfield nobits = {0, 0};
+
+
+> +static struct fb_ops gxt4500_ops = {
+> +     .owner = THIS_MODULE,
+
+
+> +static struct pci_device_id gxt4500_pci_tbl[] = {
+> +     { PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4500P,
+> +       PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+
+
+maybe this one:
+> +static struct pci_driver gxt4500_driver = {
+> +     .name = "gxt4500",
+
+and maybe more ?
