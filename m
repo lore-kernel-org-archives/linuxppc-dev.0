@@ -1,23 +1,15 @@
-Return-Path: <olivier.goudard@esrf.fr>
-Received: from out.esrf.fr (firewall.ill.fr [193.49.43.1])
-	by ozlabs.org (Postfix) with ESMTP id B689967B6C
+Return-Path: <mjoshi_blr@yahoo.com>
+Received: from web34715.mail.mud.yahoo.com (web34715.mail.mud.yahoo.com
+	[209.191.68.164]) by ozlabs.org (Postfix) with SMTP id 5982067B77
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Nov 2006 03:20:57 +1100 (EST)
-Subject: Re: Memec v4fx12lc - problem booting linux on ppc
-Message-Id: <7.0.1.0.1.20061124164552.01f06298@esrf.fr>
-Date: Fri, 24 Nov 2006 17:05:02 +0100
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-From: Olivier GOUDARD <olivier.goudard@esrf.fr>
-In-Reply-To: <45632A8E.3010509@ru.mvista.com>
-References: <1164022946.8340.6.camel@l-cb312-1.esrf.fr>
-	<JG200611211159003.3859000@co-nss.co.jp>
-	<1164102298.21858.4.camel@l-cb312-1.esrf.fr>
-	<4562E546.9070401@ru.mvista.com>
-	<7.0.1.0.1.20061121153812.0430db90@esrf.fr>
-	<45632A8E.3010509@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Cc: andy.gotz@esrf.fr, linuxppc-embedded@ozlabs.org
+	Sat, 25 Nov 2006 04:24:56 +1100 (EST)
+Message-ID: <20061124171814.56700.qmail@web34715.mail.mud.yahoo.com>
+Date: Fri, 24 Nov 2006 09:18:14 -0800 (PST)
+From: Manish Joshi <mjoshi_blr@yahoo.com>
+Subject: Re: virt_to_bus and DMA
+To: Ilse Reyneke <reynekejunk@hotmail.com>, linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2089694040-1164388694=:56225"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,116 +20,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Andrei,
+--0-2089694040-1164388694=:56225
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Thanks to your advices we managed to view characters on the serial line.
-(I remind that we are trying to boot linux MontaVista 3.1 on V4FX12LC 
-board of Memec.)
-It looks like we where using the wrong xparameters_2vpx.h file.
+you can use __pa() along with kmalloc(..., GFP_KERNEL | GFP_DMA).=0A=0A=0A=
+=0A----- Original Message ----=0AFrom: Ilse Reyneke <reynekejunk@hotmail.co=
+m>=0ATo: linuxppc-embedded@ozlabs.org=0ASent: Friday, November 24, 2006 9:0=
+7:58 PM=0ASubject: virt_to_bus and DMA=0A=0A=0AHi there,=0A=0AQuestion from=
+ a relative newby.=0A=0ACan someone please tell me how to get the bus/physi=
+cal address from a =0Avirtual address? To familiarise myself with the PPC4x=
+x DMA API I'm trying to =0Aget a simple mem-mem DMA working (any good sampl=
+es out there??). The =0Afollowing code snippet seems to be the way of alloc=
+ating memory buffers for =0Athe transfer:=0A=0A  int size =3D 2*1024;=0A  u=
+int32_t* sourceaddr =3D (uint32_t *)__get_free_pages(GFP_KERNEL =0A|GFP_DMA=
+,get_order(size));=0A  uint32_t* destaddr =3D (uint32_t *)__get_free_pages(=
+GFP_KERNEL |GFP_DMA,=0Aget_order(size));=0A=0A  phys_addr_t physdest =3D vi=
+rt_to_bus((u32 *)destaddr);=0A  phys_addr_t physsource =3D virt_to_bus((u32=
+ *)sourceaddr);=0A=0A=0AThe problem is that virt_to_bus seems to be returni=
+ng 0. I understand that =0Ait is generally undesirable to use the deprecate=
+d virt_to_bus, but what are =0Athe alternatives?=0A=0AAm I also correct in =
+saying the "standard DMA API" (request_dma, =0Aset_dma_addr etc) is NOT ava=
+ilable on the 4xx?=0A=0AWe're making use of the 440EPx, Linux 2.6.14 kernel=
+.=0A=0ACheers=0A   Jan Reyneke=0A=0A_______________________________________=
+__________________________=0AWindows Live=99 Messenger has arrived. Click h=
+ere to download it for free! =0Ahttp://imagine-msn.com/messenger/launch80/?=
+locale=3Den-gb=0A_______________________________________________=0ALinuxppc=
+-embedded mailing list=0ALinuxppc-embedded@ozlabs.org=0Ahttps://ozlabs.org/=
+mailman/listinfo/linuxppc-embedded=0A=0A=0A =0A____________________________=
+________________________________________________________=0ACheap talk?=0ACh=
+eck out Yahoo! Messenger's low PC-to-Phone call rates.=0Ahttp://voice.yahoo=
+.com
+--0-2089694040-1164388694=:56225
+Content-Type: text/html; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-We also applyied your patch in arch/ppc/boot/simple/head.S
-
-After modifications we obtained :
-______________________________________________________________________________
-loaded at:     00400000 004B61E4
-board data at: 004B313C 004B3154
-relocated to:  0040564C 00405664
-zimage at:     00405C17 004B20B5
-avail ram:     004B7000 04000000
-
-Linux/PPC load: console=ttyS0,9600 ip=on 
-nfsroot=192.168.219.54:/root/myDesign/rootfs rw
-Uncompressing Linux...done.
-Now booting the kernel
-.
-_______________________________________________________________________________
-
-Which is remotivating us a lot !!
-I also managed to get a longer boot, but I encounter a kernel panic 
-during the serial driver configuration...
-
-We are wondering what to do now ?
-Maybe we should try to find in xps why we are not using the right 
-xparameterXX.h file and generate a new bit file ?
-Or maybe we should concentrate our efforts on Linux configuration ?
-
-Any comments are welcome that might help us in the ppc/linux boot quest !
-Thanks again Andrei,
-Olivier
-
-
-
-
-At 17:34 21/11/2006, Andrei Konovalov wrote:
->Olivier GOUDARD wrote:
-> > Dear Andrei,
-> >
-> > Thanks for all details provided in your mail. It looks like we have a
-> > lot to understand about the boot sequence.
-> > To answer your questions :
-> >
-> > We created our own platform with xps.
->
->I meant a new board entry in the kernel configuration.
->Now I see - you are reusing the one for memec 2VPx.
->
-> > We went throught the differents steps of the xps wizard to impelment
-> > ppc, UART, EMAC, SDRAM and so on.
-> > Then, we generated the Linux Support Package and compiled the Montavista
-> > previewkit
-> >  with the generated files in linux/arch and linux/drivers  from the
-> > Linux Support Package.
-> >
-> > The montavista previewkit used is :
-> > insight_memec-2vp7fg456_rev4-previewkit-ppc_405
-> >
-> > and this previewkit seems to be based on linux 2.4.20 version.
->
->Pro 3.1 preview kit is rather old, and does not have a workaround
->required for Virtex4. This should not be a problem in your case though,
->as I believe the generated files in linux/arch should have it.
->Something like this hack:
->
->---8<--------------------------------------------------------------
->--- arch/ppc/boot/simple/head.S 4 Jan 2005 06:18:47 -0000       1.1
->+++ arch/ppc/boot/simple/head.S 23 Jun 2005 05:11:42 -0000      1.2
->@@ -46,6 +46,11 @@
->   #endif
->
->   start_:
->+       /* PPC errata 213: only for Virtex-4 */
->+       mfccr0  0
->+       oris    0,0,0x50000000@h
->+       mtccr0  0
->+
->   #if defined(CONFIG_FORCE) || defined(CONFIG_PPMC260)
->          /* We have some really bad firmware.  We must disable the L1
->           * icache/dcache now or the board won't boot.
->---8<--------------------------------------------------------------
->
->There should be #ifdef CONFIG_XILINX_VIRTEX_4_FX here or like that,
->but the kernel tree you are using doesn't have Virtex4 config option
->(unlike e.g. community 2.6 tree or Montavista Pro 4.0)
->
-> > I'm not sure that we used propers xparameters<something_else>.h file
-> > because I don't understand what you mean. I searched in my kernel
-> > sources to find xparam* but I was not successful.
-> > Can you enlighten my ignorance ?
->
->arch/ppc/platforms/xilinx_ocp/xparameters_2vpx.h
->
->The memec board uses this one (to find the addresses and the interrupt
->numbers). Make sure the defines there match your bitstream.
->
-> > I will check my UART configuration which seems to be very wrong ! :-)
->
->Your UART is 16x50, not UART Lite, correct?
-
-____________________________________________________
-Olivier GOUDARD,
-European Synchrotron Radiation Facility
-Machine Division - Power Supply Group
-BP 220, F-38043 Grenoble Cedex, France
-
-Tel : +33 (0)4 76 88 24 69,   Fax : +33 (0)4 76 88 20 54
-____________________________________________________  
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
+font-size:12pt"><DIV style=3D"FONT-SIZE: 12pt; FONT-FAMILY: times new roman=
+, new york, times, serif">you can use __pa() along with kmalloc(..., GFP_KE=
+RNEL | GFP_DMA).<BR><BR><BR>=0A<DIV style=3D"FONT-SIZE: 12pt; FONT-FAMILY: =
+times new roman, new york, times, serif">----- Original Message ----<BR>Fro=
+m: Ilse Reyneke &lt;reynekejunk@hotmail.com&gt;<BR>To: linuxppc-embedded@oz=
+labs.org<BR>Sent: Friday, November 24, 2006 9:07:58 PM<BR>Subject: virt_to_=
+bus and DMA<BR><BR>=0A<DIV>Hi there,<BR><BR>Question from a relative newby.=
+<BR><BR>Can someone please tell me how to get the bus/physical address from=
+ a <BR>virtual address? To familiarise myself with the PPC4xx DMA API I'm t=
+rying to <BR>get a simple mem-mem DMA working (any good samples out there??=
+). The <BR>following code snippet seems to be the way of allocating memory =
+buffers for <BR>the transfer:<BR><BR>&nbsp;&nbsp;int size =3D 2*1024;<BR>&n=
+bsp;&nbsp;uint32_t* sourceaddr =3D (uint32_t *)__get_free_pages(GFP_KERNEL =
+<BR>|GFP_DMA,get_order(size));<BR>&nbsp;&nbsp;uint32_t* destaddr =3D (uint3=
+2_t *)__get_free_pages(GFP_KERNEL |GFP_DMA,<BR>get_order(size));<BR><BR>&nb=
+sp;&nbsp;phys_addr_t physdest =3D virt_to_bus((u32 *)destaddr);<BR>&nbsp;&n=
+bsp;phys_addr_t physsource =3D virt_to_bus((u32 *)sourceaddr);<BR><BR><BR>T=
+he problem is that virt_to_bus seems to be returning 0. I understand that <=
+BR>it is generally undesirable to use the deprecated virt_to_bus, but what =
+are <BR>the alternatives?<BR><BR>Am I also
+ correct in saying the "standard DMA API" (request_dma, <BR>set_dma_addr et=
+c) is NOT available on the 4xx?<BR><BR>We're making use of the 440EPx, Linu=
+x 2.6.14 kernel.<BR><BR>Cheers<BR>&nbsp;&nbsp; Jan Reyneke<BR><BR>_________=
+________________________________________________________<BR>Windows Live=99=
+ Messenger has arrived. Click here to download it for free! <BR><A href=3D"=
+http://imagine-msn.com/messenger/launch80/?locale=3Den-gb" target=3D_blank>=
+http://imagine-msn.com/messenger/launch80/?locale=3Den-gb</A></DIV>=0A<DIV>=
+_______________________________________________<BR>Linuxppc-embedded mailin=
+g list<BR>Linuxppc-embedded@ozlabs.org<BR><A href=3D"https://ozlabs.org/mai=
+lman/listinfo/linuxppc-embedded" target=3D_blank>https://ozlabs.org/mailman=
+/listinfo/linuxppc-embedded</A></DIV></DIV><BR></DIV></div><br>=0A=0A<hr si=
+ze=3D1>Everyone is raving about <a href=3D"http://us.rd.yahoo.com/evt=3D450=
+83/*http://advision.webevents.yahoo.com/mailbeta">the all-new Yahoo! Mail b=
+eta.</a></body></html>
+--0-2089694040-1164388694=:56225--
