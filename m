@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0A1567BD3
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Nov 2006 08:19:16 +1100 (EST)
-Subject: Re: [PATCH 1/2] Fixed compiled issue tu to new of_platform.h header
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <Pine.LNX.4.44L0.0611241557080.16422-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0611241557080.16422-100000@netrider.rowland.org>
-Content-Type: text/plain
-Date: Sat, 25 Nov 2006 08:19:05 +1100
-Message-Id: <1164403145.5653.93.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>, sl@bplan-gmbh.de,
-	linux-usb-devel@lists.sourceforge.net
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 2A9DC67BAD
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Nov 2006 10:07:23 +1100 (EST)
+To: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Subject: Re: [PATCH 2.6.19] ehca: bug fix: use wqe offset instead wqe
+	address	to determine pending work requests
+References: <OFCFF36ACF.6FF07D9E-ONC125722F.00499C9C-C125722F.0049F685@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 24 Nov 2006 15:07:20 -0800
+Message-ID: <adafyc88mvr.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <raisch@de.ibm.com>,
+	linuxppc-dev-bounces+hnguyen=de.ibm.com@ozlabs.org,
+	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ > That's fair. I understand your decision. And thanks for queueing for
+ > 2.6.20. Can you please brief me on patch procedures for post-2.6.19?
 
-> I haven't been following this very closely.  The problem is that you have 
-> a system with two different kinds of OHCI controllers, thus requiring two 
-> different and incompatible versions of the driver?
+What do you mean by post-2.6.19?  Things go into 2.6.19.x via
+stable@kernel.org, if that's what you're asking.
 
-Sort-of. Basically, PowerPC can (and must in some case) build a single
-kernel image that can be booted on a variety of platforms. There are at
-least 3 platforms coming in now (this Efika is one of them) where that
-includes a non-PCI OHCI or EHCI (big endian even) while the same kernel
-must also contain the normal PCI OHCI/EHCI driver.
-
-It's generally not a problem as the endian thingy is a runtime bit, and
-in general, the whole code allows for this just fine, with, afaik, the
-exception of the multiple module_init() bits...
-
-> If the only source of incompatibility is the module_init() and 
-> module_exit() routines, then your suggestion would be a simple fix.  
-> Ugly, yes, but I don't think anyone will really mind.
-> 
-> Is there anything else to prevent you from combining multiple HCIs into a
-> single driver?
-
-Not that I know. But we could have a cleaner approach. The #include one
-dates a bit... we could have for example an ohci-core.ko with the core
-bits, and ochi-pci.ko, ohci-patform.ko etc... be separate modules linked
-on the first and instanciating it.
-
-I'll have a look and will come up with either solution.
-
-Ben.
+Documentation/stable_kernel_rules.txt describes what patches are
+appropriate for 2.6.19.x, and given that we're so close to the 2.6.19
+final release, I'm working under similar rules for what I'm going to
+merge into 2.6.19.
