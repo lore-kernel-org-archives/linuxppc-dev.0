@@ -1,17 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: powerpc.git build error
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@tux.tmfweb.nl
-In-Reply-To: <20061125225807.GA10510@nospam.com>
-References: <20061125225807.GA10510@nospam.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-bpjYdgv8fg9tBv3YAmTY"
-Date: Sun, 26 Nov 2006 17:39:43 +1100
-Message-Id: <1164523183.10222.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 7763C67B61
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Nov 2006 22:05:12 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'David Brownell'" <david-b@pacbell.net>,
+	"'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>
+Subject: RE: NTP time sync
+Date: Sun, 26 Nov 2006 12:04:54 +0100
+Message-ID: <009a01c7114a$b429f850$020120ac@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <200611251522.19900.david-b@pacbell.net>
+Cc: akpm@osdl.org, 'Alessandro Zummo' <alessandro.zummo@towertech.it>,
+	'Andi Kleen' <ak@muc.de>,
+	'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>,
+	ralf@linux-mips.org, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, paulus@samba.org, kkojima@rr.iij4u.or.jp,
+	davem@davemloft.net, rmk@arm.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,64 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> -----Original Message-----
+> From: 
+> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
+> abs.org] On Behalf Of David Brownell
+> Sent: den 26 november 2006 00:22
+> To: Benjamin Herrenschmidt
+> Cc: akpm@osdl.org; Alessandro Zummo; linuxppc-dev@ozlabs.org; 
+> lethal@linux-sh.org; Linux Kernel Mailing List; 
+> ralf@linux-mips.org; Andi Kleen; paulus@samba.org; 
+> rmk@arm.linux.org.uk; davem@davemloft.net; kkojima@rr.iij4u.or.jp
+> Subject: Re: NTP time sync
+> 
+> On Thursday 23 November 2006 3:00 am, Benjamin Herrenschmidt wrote:
+> > 
+> > Couldn't we have a transition period by making the kernel 
+> not rely on
+> > interrupts ? if the NTP irq code just triggers a work 
+> queue, then all of
+> > a sudden, all of the RTC drivers can be used and the 
+> latency is small.
+> > That might well be a good enough solution and is very simple.
+> 
+> Good point.  Of course, one issue is that the NTP sync code all
+> seems to be platform-specific right now ... just like the code
+> to set the system time from an RTC at boot (except for the new
+> RTC framework stuff) and after resume.
+> 
+> - Dave
 
---=-bpjYdgv8fg9tBv3YAmTY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Looking at rtc-dev.c I don't see a MARJOR number assigned to /dev/rtcN. Seems like
+it is dynamically allocated to whatever major number that is free.
+Is that the way it is supposed to be? How do I create a static /dev/rtcN in my /dev
+directory if the major number isn't fixed?
+Maybe I am just missing something, feel free to correct me :)
 
-On Sat, 2006-11-25 at 23:58 +0100, Rutger Nijlunsing wrote:
-> Hi,
->=20
-> While respinning my previous patch, I'm trying to (cross)compile the
-> PowerPC git kernel (branch master) for a UP G3 (PowerBook) which
-> results in compile errors:
->=20
-> ...
->   CC      arch/powerpc/kernel/crash.o
-> arch/powerpc/kernel/crash.c: In function 'default_machine_crash_shutdown'=
-:
-> arch/powerpc/kernel/crash.c:292: warning: implicit declaration of functio=
-n 'hard_irq_disable'
-> ...
-> arch/powerpc/kernel/built-in.o: In function `default_machine_crash_shutdo=
-wn':
-> arch/powerpc/kernel/crash.c:292: undefined reference to `hard_irq_disable=
-'
-> make: *** [.tmp_vmlinux1] Error 1
->=20
-> ...which can be traced back to commit
-> d04c56f73c30a5e593202ecfcf25ed43d42363a2.
->=20
-> This has undoubtly to do with my config (CONFIG_PPC64=3Dn,
-> CONFIG_PPC32=3Dy); .config attached for full inspection.
-
-And CONFIG_KEXEC=3Dy, which is not in any 32-bit defconfigs. Do you
-actually want it enabled?
-
-See my patch just posted which should fix this for you.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-bpjYdgv8fg9tBv3YAmTY
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFaTaudSjSd0sB4dIRAlBTAJ9ua4vPdZIiSB9zx2WrcZy9DCwSzQCeI03x
-nfNQXW0SiYiSCQpAgO7FHww=
-=PoKt
------END PGP SIGNATURE-----
-
---=-bpjYdgv8fg9tBv3YAmTY--
+ Jocke
