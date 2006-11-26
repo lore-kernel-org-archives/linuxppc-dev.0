@@ -1,23 +1,10 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp104.sbc.mail.mud.yahoo.com (smtp104.sbc.mail.mud.yahoo.com
-	[68.142.198.203]) by ozlabs.org (Postfix) with SMTP id C270367BB4
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Nov 2006 10:22:41 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: NTP time sync
-Date: Sat, 25 Nov 2006 15:22:18 -0800
-References: <20061122203633.611acaa8@inspiron> <20061123105400.GA75714@muc.de>
-	<1164279605.5653.51.camel@localhost.localdomain>
-In-Reply-To: <1164279605.5653.51.camel@localhost.localdomain>
-MIME-Version: 1.0
-Message-Id: <200611251522.19900.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="us-ascii"
-Cc: akpm@osdl.org, Alessandro Zummo <alessandro.zummo@towertech.it>,
-	linuxppc-dev@ozlabs.org, lethal@linux-sh.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	ralf@linux-mips.org, Andi Kleen <ak@muc.de>, paulus@samba.org,
-	rmk@arm.linux.org.uk, davem@davemloft.net, kkojima@rr.iij4u.or.jp
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Sun, 26 Nov 2006 17:36:15 +1100
+Subject: [PATCH] Provide dummy hard_irq_enable/disable() for PPC32
+Message-Id: <20061126063616.A186067B22@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, rutger@nospam.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +14,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 23 November 2006 3:00 am, Benjamin Herrenschmidt wrote:
-> 
-> Couldn't we have a transition period by making the kernel not rely on
-> interrupts ? if the NTP irq code just triggers a work queue, then all of
-> a sudden, all of the RTC drivers can be used and the latency is small.
-> That might well be a good enough solution and is very simple.
+To allow arch/powerpc/kernel/crash.c to build on 32-bit we need a
+definition of hard_irq_disable(). 32-bit doesn't support the lazy
+interrupt disabling mechanism, so on 32-bit hard_irq_disable() is
+simply local_irq_disable(). Add a definition for hard_irq_enable()
+just for completeness.
 
-Good point.  Of course, one issue is that the NTP sync code all
-seems to be platform-specific right now ... just like the code
-to set the system time from an RTC at boot (except for the new
-RTC framework stuff) and after resume.
+This allows (KEXEC=y && PPC32=y) to build again. Broken since
+d04c56f73c30a5e593202ecfcf25ed43d42363a2.
 
-- Dave
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+Paulus,
+
+if this is OK by you, I think it should probably go in for 2.6.19.
+
+---
+ include/asm-powerpc/hw_irq.h |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: powerpc/include/asm-powerpc/hw_irq.h
+===================================================================
+--- powerpc.orig/include/asm-powerpc/hw_irq.h
++++ powerpc/include/asm-powerpc/hw_irq.h
+@@ -92,6 +92,9 @@ static inline void local_irq_save_ptr(un
+ #define local_irq_save(flags)	local_irq_save_ptr(&flags)
+ #define irqs_disabled()		((mfmsr() & MSR_EE) == 0)
+ 
++#define hard_irq_enable()	local_irq_enable()
++#define hard_irq_disable()	local_irq_disable()
++
+ #endif /* CONFIG_PPC64 */
+ 
+ #define mask_irq(irq)						\
