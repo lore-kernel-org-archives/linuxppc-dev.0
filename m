@@ -1,16 +1,18 @@
 Return-Path: <g.liakhovetski@gmx.de>
 Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 734A267C10
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 07:47:25 +1100 (EST)
-Date: Sun, 26 Nov 2006 21:47:22 +0100 (CET)
+	by ozlabs.org (Postfix) with SMTP id 5490367C2F
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 08:19:09 +1100 (EST)
+Date: Sun, 26 Nov 2006 22:19:10 +0100 (CET)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linuxppc-dev@tux.tmfweb.nl
+To: Rutger Nijlunsing <eludias@dse.nl>
 Subject: Re: powerpc.git build error
-In-Reply-To: <20061126190609.GA20291@nospam.com>
-Message-ID: <Pine.LNX.4.60.0611262144230.8431@poirot.grange>
+In-Reply-To: <20061126210535.GA5639@nospam.com>
+Message-ID: <Pine.LNX.4.60.0611262218050.8431@poirot.grange>
 References: <20061125225807.GA10510@nospam.com>
 	<1164523183.10222.1.camel@localhost.localdomain>
 	<20061126190609.GA20291@nospam.com>
+	<Pine.LNX.4.60.0611262144230.8431@poirot.grange>
+	<20061126210535.GA5639@nospam.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
@@ -25,13 +27,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Sun, 26 Nov 2006, Rutger Nijlunsing wrote:
 
-> Long story... I'm trying to get a completely working Lombard with all
-> of its features (PCMCIA wireless, suspend-to-RAM, etc.). However, this
+> It seems suspend-to-ram is working to some extend, or at least
+> 'should' work out-of-the-box. When I close the lid and reopen it, it
+> resumes 'a little': PCMCIA cards seem to power up again (TX/RX WiFi
+> led starts to flash again), but the screen stays dark. I haven't tried
+> to debug this yet, since getting WiFi to work
 
-I would be interested to hear if you manage to get suspend-to-ram and 
-kexec working! Are there any external patches available or you're just 
-starting to work on this? I'm also trying to do those (mostly str, kexec 
-just tried shortly, didn't work) on an embedded 8241 (G2 core).
+Ah, sure, it IS the pmac - the only one PPC machine having STR in the 
+mainline, lucky you:-) ok, good luck to me then:-)
 
 Thanks
 Guennadi
