@@ -1,10 +1,17 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: powerpc.git build error
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Sun, 26 Nov 2006 17:36:15 +1100
-Subject: [PATCH] Provide dummy hard_irq_enable/disable() for PPC32
-Message-Id: <20061126063616.A186067B22@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, rutger@nospam.com
+To: linuxppc-dev@tux.tmfweb.nl
+In-Reply-To: <20061125225807.GA10510@nospam.com>
+References: <20061125225807.GA10510@nospam.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-bpjYdgv8fg9tBv3YAmTY"
+Date: Sun, 26 Nov 2006 17:39:43 +1100
+Message-Id: <1164523183.10222.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,36 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To allow arch/powerpc/kernel/crash.c to build on 32-bit we need a
-definition of hard_irq_disable(). 32-bit doesn't support the lazy
-interrupt disabling mechanism, so on 32-bit hard_irq_disable() is
-simply local_irq_disable(). Add a definition for hard_irq_enable()
-just for completeness.
 
-This allows (KEXEC=y && PPC32=y) to build again. Broken since
-d04c56f73c30a5e593202ecfcf25ed43d42363a2.
+--=-bpjYdgv8fg9tBv3YAmTY
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-Paulus,
+On Sat, 2006-11-25 at 23:58 +0100, Rutger Nijlunsing wrote:
+> Hi,
+>=20
+> While respinning my previous patch, I'm trying to (cross)compile the
+> PowerPC git kernel (branch master) for a UP G3 (PowerBook) which
+> results in compile errors:
+>=20
+> ...
+>   CC      arch/powerpc/kernel/crash.o
+> arch/powerpc/kernel/crash.c: In function 'default_machine_crash_shutdown'=
+:
+> arch/powerpc/kernel/crash.c:292: warning: implicit declaration of functio=
+n 'hard_irq_disable'
+> ...
+> arch/powerpc/kernel/built-in.o: In function `default_machine_crash_shutdo=
+wn':
+> arch/powerpc/kernel/crash.c:292: undefined reference to `hard_irq_disable=
+'
+> make: *** [.tmp_vmlinux1] Error 1
+>=20
+> ...which can be traced back to commit
+> d04c56f73c30a5e593202ecfcf25ed43d42363a2.
+>=20
+> This has undoubtly to do with my config (CONFIG_PPC64=3Dn,
+> CONFIG_PPC32=3Dy); .config attached for full inspection.
 
-if this is OK by you, I think it should probably go in for 2.6.19.
+And CONFIG_KEXEC=3Dy, which is not in any 32-bit defconfigs. Do you
+actually want it enabled?
 
----
- include/asm-powerpc/hw_irq.h |    3 +++
- 1 file changed, 3 insertions(+)
+See my patch just posted which should fix this for you.
 
-Index: powerpc/include/asm-powerpc/hw_irq.h
-===================================================================
---- powerpc.orig/include/asm-powerpc/hw_irq.h
-+++ powerpc/include/asm-powerpc/hw_irq.h
-@@ -92,6 +92,9 @@ static inline void local_irq_save_ptr(un
- #define local_irq_save(flags)	local_irq_save_ptr(&flags)
- #define irqs_disabled()		((mfmsr() & MSR_EE) == 0)
- 
-+#define hard_irq_enable()	local_irq_enable()
-+#define hard_irq_disable()	local_irq_disable()
-+
- #endif /* CONFIG_PPC64 */
- 
- #define mask_irq(irq)						\
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-bpjYdgv8fg9tBv3YAmTY
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFaTaudSjSd0sB4dIRAlBTAJ9ua4vPdZIiSB9zx2WrcZy9DCwSzQCeI03x
+nfNQXW0SiYiSCQpAgO7FHww=
+=PoKt
+-----END PGP SIGNATURE-----
+
+--=-bpjYdgv8fg9tBv3YAmTY--
