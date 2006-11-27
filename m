@@ -1,25 +1,32 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx004.isp.belgacom.be (outmx004.isp.belgacom.be
-	[195.238.4.101])
+Return-Path: <johnrose@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD9AB67DE4
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:40:22 +1100 (EST)
-Received: from outmx004.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx004.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kARLeDWm012581
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 22:40:13 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <456B5B28.4000105@246tNt.com>
-Date: Mon, 27 Nov 2006 22:39:52 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: MPC52xx support rework for 2.6.20
-References: <1164662190802-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1164662190802-git-send-email-grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8E83867CB7
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:54:32 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kARLsNYW011889
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 16:54:23 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kARLsMx8507414
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 14:54:22 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kARLsMqn026430
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 14:54:22 -0700
+Received: from [9.53.40.59] (sinatra.austin.ibm.com [9.53.40.59])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	kARLsMZ2026418
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 14:54:22 -0700
+Subject: powerpc: discontiguous RMO
+From: John Rose <johnrose@austin.ibm.com>
+To: External List <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1164664463.11970.40.camel@sinatra.austin.ibm.com>
+Mime-Version: 1.0
+Date: Mon, 27 Nov 2006 15:54:23 -0600
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +36,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As indicated in each patch description, I acked those.
+Suppose that the hypervisor presented a logically contiguous RMO region
+to a partition that did not necessarily correspond to a physically
+contiguous region.  Would Linux care about this?
 
-I also tested them, they work "out-of-the-box" for both lite5200 and
-lite5200b.
-
-
-    Sylvain
-
-Grant Likely wrote:
-> Rework mpc52xx support in arch/powerpc and add support for lite5200 eval
-> boards.  This patchset only covers the board support code.  Device
-> drivers will be sent in a seperate patchset as they need to cc: other
-> mailing lists
->
-> The whole set of pending mpc52xx patches can also be pulled from:
-> git://git.secretlab.ca/srv/git-trees/public/git/linux-2.6.git#lite5200-merge
->
->
->   
+Thanks-
+John
