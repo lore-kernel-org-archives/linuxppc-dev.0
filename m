@@ -1,14 +1,15 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id E9DF767DE3
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:17:35 +1100 (EST)
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id E863967FEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:17:45 +1100 (EST)
 From: Grant Likely <grant.likely@secretlab.ca>
 To: linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 7/9] [POWERPC] Add lite5200 board support to arch/powerpc
-Date: Mon, 27 Nov 2006 14:16:28 -0700
-Message-Id: <11646622083725-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <11646622072224-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH 8/9] [POWERPC] Add device trees for lite5200 and lite5200b
+	eval boards
+Date: Mon, 27 Nov 2006 14:16:29 -0700
+Message-Id: <11646622081678-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11646622083725-git-send-email-grant.likely@secretlab.ca>
 References: <1164662190802-git-send-email-grant.likely@secretlab.ca>
 	<11646622052490-git-send-email-grant.likely@secretlab.ca>
 	<11646622063980-git-send-email-grant.likely@secretlab.ca>
@@ -16,6 +17,7 @@ References: <1164662190802-git-send-email-grant.likely@secretlab.ca>
 	<11646622072999-git-send-email-grant.likely@secretlab.ca>
 	<1164662207513-git-send-email-grant.likely@secretlab.ca>
 	<11646622072224-git-send-email-grant.likely@secretlab.ca>
+	<11646622083725-git-send-email-grant.likely@secretlab.ca>
 Cc: Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,206 +31,652 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 Acked-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- arch/powerpc/Kconfig                   |    6 +
- arch/powerpc/platforms/52xx/Makefile   |    3 +-
- arch/powerpc/platforms/52xx/lite5200.c |  162 ++++++++++++++++++++++++++++++++
- 3 files changed, 170 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/lite5200.dts  |  313 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/lite5200b.dts |  318 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 631 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2c6f8d1..90efb0a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -420,6 +420,12 @@ config PPC_EFIKA
- 	select PPC_MPC52xx
- 	default y
- 
-+config PPC_LITE5200
-+	bool "Freescale Lite5200 Eval Board"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select PPC_MPC52xx
-+	default n
-+
- config PPC_PMAC
- 	bool "Apple PowerMac based machines"
- 	depends on PPC_MULTIPLATFORM
-diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
-index b8f27a8..a46184a 100644
---- a/arch/powerpc/platforms/52xx/Makefile
-+++ b/arch/powerpc/platforms/52xx/Makefile
-@@ -5,4 +5,5 @@ ifeq ($(CONFIG_PPC_MERGE),y)
- obj-y				+= mpc52xx_pic.o mpc52xx_common.o
- endif
- 
--obj-$(CONFIG_PPC_EFIKA) += efika-setup.o efika-pci.o
-+obj-$(CONFIG_PPC_EFIKA)		+= efika-setup.o efika-pci.o
-+obj-$(CONFIG_PPC_LITE5200)	+= lite5200.o
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
+diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
 new file mode 100644
-index 0000000..fddd1bc
+index 0000000..8bc0d25
 --- /dev/null
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -0,0 +1,162 @@
++++ b/arch/powerpc/boot/dts/lite5200.dts
+@@ -0,0 +1,313 @@
 +/*
-+ * Freescale Lite5200 board support
++ * Lite5200 board Device Tree Source
 + *
-+ * Written by: Grant Likely <grant.likely@secretlab.ca>
++ * Copyright 2006 Secret Lab Technologies Ltd.
++ * Grant Likely <grant.likely@secretlab.ca>
 + *
-+ * Copyright (C) Secret Lab Technologies Ltd. 2006. All rights reserved.
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
-+ *
-+ * Description:
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
 + */
 +
-+#undef DEBUG
++/ {
++	model = "Lite5200";
++	compatible = "lite5200\0lite52xx\0mpc5200\0mpc52xx";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/major.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/initrd.h>
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#include <asm/system.h>
-+#include <asm/atomic.h>
-+#include <asm/time.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/bootinfo.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <sysdev/fsl_soc.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
-+#include <asm/of_platform.h>
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <4000>;		// L1, 16K
++			i-cache-size = <4000>;		// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++			32-bit;
++		};
++	};
 +
-+#include <asm/mpc52xx.h>
++	memory {
++		device_type = "memory";
++		reg = <00000000 04000000>;	// 64MB
++	};
 +
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
++	soc5200@f0000000 {
++		#interrupt-cells = <3>;
++		device_type = "soc";
++		ranges = <0 f0000000 f0010000>;
++		reg = <f0000000 00010000>;
++		bus-frequency = <0>;		// from bootloader
 +
-+static void __init
-+lite52xx_setup_cpu(void)
-+{
-+	struct mpc52xx_gpio __iomem *gpio;
-+	u32 port_config;
++		cdm@200 {
++			compatible = "mpc5200-cdm\0mpc52xx-cdm";
++			reg = <200 38>;
++		};
 +
-+	/* Map zones */
-+	gpio = mpc52xx_find_and_map("mpc52xx-gpio");
-+	if (!gpio) {
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while mapping GPIO register for port config. "
-+			"Expect some abnormal behavior\n");
-+		goto error;
-+	}
++		pic@500 {
++			// 5200 interrupts are encoded into two levels;
++			linux,phandle = <500>;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			device_type = "interrupt-controller";
++			compatible = "mpc5200-pic\0mpc52xx-pic";
++			reg = <500 80>;
++			built-in;
++		};
 +
-+	/* Set port config */
-+	port_config = in_be32(&gpio->port_config);
++		gpt@600 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <600 10>;
++			interrupts = <1 9 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	port_config &= ~0x00800000;	/* 48Mhz internal, pin is GPIO	*/
++		gpt@610 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <610 10>;
++			interrupts = <1 a 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	port_config &= ~0x00007000;	/* USB port : Differential mode	*/
-+	port_config |=  0x00001000;	/*            USB 1 only	*/
++		gpt@620 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <620 10>;
++			interrupts = <1 b 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	port_config &= ~0x03000000;	/* ATA CS is on csb_4/5		*/
-+	port_config |=  0x01000000;
++		gpt@630 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <630 10>;
++			interrupts = <1 c 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	pr_debug("port_config: old:%x new:%x\n",
-+	         in_be32(&gpio->port_config), port_config);
-+	out_be32(&gpio->port_config, port_config);
-+	
-+	/* Unmap zone */
-+error:
-+	iounmap(gpio);
-+}
++		gpt@640 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <640 10>;
++			interrupts = <1 d 0>;
++			interrupt-parent = <500>;
++		};
 +
-+static void __init lite52xx_setup_arch(void)
-+{
-+	struct device_node *np;
++		gpt@650 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <650 10>;
++			interrupts = <1 e 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("lite52xx_setup_arch()", 0);
++		gpt@660 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <660 10>;
++			interrupts = <1 f 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np) {
-+		unsigned int *fp =
-+		    (int *)get_property(np, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(np);
-+	}
++		gpt@670 {	// General Purpose Timer
++			compatible = "mpc5200-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <670 10>;
++			interrupts = <1 10 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	/* CPU & Port mux setup */
-+	mpc52xx_setup_cpu();	/* Generic */
-+	lite52xx_setup_cpu();	/* Platorm specific */
++		rtc@800 {	// Real time clock
++			compatible = "mpc5200-rtc\0mpc52xx-rtc";
++			device_type = "rtc";
++			reg = <800 100>;
++			interrupts = <1 5 0 1 6 0>;
++			interrupt-parent = <500>;
++		};
 +
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (initrd_start)
-+		ROOT_DEV = Root_RAM0;
-+	else
-+#endif
-+#ifdef  CONFIG_ROOT_NFS
-+		ROOT_DEV = Root_NFS;
-+#else
-+		ROOT_DEV = Root_HDA1;
-+#endif
++		mscan@900 {
++			device_type = "mscan";
++			compatible = "mpc5200-mscan\0mpc52xx-mscan";
++			interrupts = <2 11 0>;
++			interrupt-parent = <500>;
++			reg = <900 80>;
++		};
 +
-+}
++		mscan@980 {
++			device_type = "mscan";
++			compatible = "mpc5200-mscan\0mpc52xx-mscan";
++			interrupts = <1 12 0>;
++			interrupt-parent = <500>;
++			reg = <980 80>;
++		};
 +
-+void lite52xx_show_cpuinfo(struct seq_file *m)
-+{
-+	struct device_node* np = of_find_all_nodes(NULL);
-+	const char *model = NULL;
++		gpio@b00 {
++			compatible = "mpc5200-gpio\0mpc52xx-gpio";
++			reg = <b00 40>;
++			interrupts = <1 7 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	if (np)
-+		model = get_property(np, "model", NULL);
++		gpio-wkup@b00 {
++			compatible = "mpc5200-gpio-wkup\0mpc52xx-gpio-wkup";
++			reg = <c00 40>;
++			interrupts = <1 8 0 0 3 0>;
++			interrupt-parent = <500>;
++		};
 +
-+	seq_printf(m, "vendor\t\t:	Freescale Semiconductor\n");
-+	seq_printf(m, "machine\t\t:	%s\n", model ? model : "unknown");
++		pci@0d00 {
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			compatible = "mpc5200-pci\0mpc52xx-pci";
++			reg = <d00 100>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <c000 0 0 1 500 0 0 3
++			                 c000 0 0 2 500 0 0 3
++			                 c000 0 0 3 500 0 0 3
++			                 c000 0 0 4 500 0 0 3>;
++			clock-frequency = <0>; // From boot loader
++			interrupts = <2 8 0 2 9 0 2 a 0>;
++			interrupt-parent = <500>;
++			bus-range = <0 0>;
++			ranges = <42000000 0 80000000 80000000 0 20000000
++			          02000000 0 a0000000 a0000000 0 10000000
++			          01000000 0 00000000 b0000000 0 01000000>;
++		};
 +
-+	of_node_put(np);
-+}
++		spi@f00 {
++			device_type = "spi";
++			compatible = "mpc5200-spi\0mpc52xx-spi";
++			reg = <f00 20>;
++			interrupts = <2 d 0 2 e 0>;
++			interrupt-parent = <500>;
++		};
 +
++		usb@1000 {
++			device_type = "usb-ohci-be";
++			compatible = "mpc5200-ohci\0mpc52xx-ohci\0ohci-be";
++			reg = <1000 ff>;
++			interrupts = <2 6 0>;
++			interrupt-parent = <500>;
++		};
++
++		bestcomm@1200 {
++			device_type = "dma-controller";
++			compatible = "mpc5200-bestcomm\0mpc52xx-bestcomm";
++			reg = <1200 80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 a 0  3 b 0
++			              3 c 0  3 d 0  3 e 0  3 f 0>;
++			interrupt-parent = <500>;
++		};
++
++		xlb@1f00 {
++			compatible = "mpc5200-xlb\0mpc52xx-xlb";
++			reg = <1f00 100>;
++		};
++
++		serial@2000 {		// PSC1
++			device_type = "serial";
++			compatible = "mpc5200-psc-uart\0mpc52xx-psc-uart";
++			port-number = <0>;  // Logical port assignment
++			reg = <2000 100>;
++			interrupts = <2 1 0>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC2 in spi mode example
++		spi@2200 {		// PSC2
++			device_type = "spi";
++			compatible = "mpc5200-psc-spi\0mpc52xx-psc-spi";
++			reg = <2200 100>;
++			interrupts = <2 2 0>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC3 in CODEC mode example
++		i2s@2400 {		// PSC3
++			device_type = "i2s";
++			compatible = "mpc5200-psc-i2s\0mpc52xx-psc-i2s";
++			reg = <2400 100>;
++			interrupts = <2 3 0>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC4 unconfigured
++		//serial@2600 {		// PSC4
++		//	device_type = "serial";
++		//	compatible = "mpc5200-psc-uart\0mpc52xx-psc-uart";
++		//	reg = <2600 100>;
++		//	interrupts = <2 b 0>;
++		//	interrupt-parent = <500>;
++		//};
++
++		// PSC5 unconfigured
++		//serial@2800 {		// PSC5
++		//	device_type = "serial";
++		//	compatible = "mpc5200-psc-uart\0mpc52xx-psc-uart";
++		//	reg = <2800 100>;
++		//	interrupts = <2 c 0>;
++		//	interrupt-parent = <500>;
++		//};
++
++		// PSC6 in AC97 mode example
++		ac97@2c00 {		// PSC6
++			device_type = "ac97";
++			compatible = "mpc5200-psc-ac97\0mpc52xx-psc-ac97";
++			reg = <2c00 100>;
++			interrupts = <2 4 0>;
++			interrupt-parent = <500>;
++		};
++
++		ethernet@3000 {
++			device_type = "network";
++			compatible = "mpc5200-fec\0mpc52xx-fec";
++			reg = <3000 800>;
++			mac-address = [ 02 03 04 05 06 07 ]; // Bad!
++			interrupts = <2 5 0>;
++			interrupt-parent = <500>;
++		};
++
++		ata@3a00 {
++			device_type = "ata";
++			compatible = "mpc5200-ata\0mpc52xx-ata";
++			reg = <3a00 100>;
++			interrupts = <2 7 0>;
++			interrupt-parent = <500>;
++		};
++
++		i2c@3d00 {
++			device_type = "i2c";
++			compatible = "mpc5200-i2c\0mpc52xx-i2c";
++			reg = <3d00 40>;
++			interrupts = <2 f 0>;
++			interrupt-parent = <500>;
++		};
++
++		i2c@3d40 {
++			device_type = "i2c";
++			compatible = "mpc5200-i2c\0mpc52xx-i2c";
++			reg = <3d40 40>;
++			interrupts = <2 10 0>;
++			interrupt-parent = <500>;
++		};
++		sram@8000 {
++			device_type = "sram";
++			compatible = "mpc5200-sram\0mpc52xx-sram\0sram";
++			reg = <8000 4000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+new file mode 100644
+index 0000000..81cb764
+--- /dev/null
++++ b/arch/powerpc/boot/dts/lite5200b.dts
+@@ -0,0 +1,318 @@
 +/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
++ * Lite5200B board Device Tree Source
++ *
++ * Copyright 2006 Secret Lab Technologies Ltd.
++ * Grant Likely <grant.likely@secretlab.ca>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
-+static int __init lite52xx_probe(void)
-+{
-+	unsigned long node = of_get_flat_dt_root();
-+	const char *model = of_get_flat_dt_prop(node, "model", NULL);
 +
-+	if (!of_flat_dt_is_compatible(node, "lite52xx"))
-+		return 0;
-+	pr_debug("%s board w/ mpc52xx found\n", model ? model : "unknown");
++/ {
++	model = "Lite5200b";
++	compatible = "lite5200b\0lite52xx\0mpc5200b\0mpc52xx";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+	return 1;
-+}
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+define_machine(lite52xx) {
-+	.name 		= "lite52xx",
-+	.probe 		= lite52xx_probe,
-+	.setup_arch 	= lite52xx_setup_arch,
-+	.init_IRQ 	= mpc52xx_init_irq,
-+	.get_irq 	= mpc52xx_get_irq,
-+	.show_cpuinfo	= lite52xx_show_cpuinfo,
-+	.calibrate_decr	= generic_calibrate_decr,
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <4000>;		// L1, 16K
++			i-cache-size = <4000>;		// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++			32-bit;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 10000000>;	// 256MB
++	};
++
++	soc5200@f0000000 {
++		#interrupt-cells = <3>;
++		device_type = "soc";
++		ranges = <0 f0000000 f0010000>;
++		reg = <f0000000 00010000>;
++		bus-frequency = <0>;		// from bootloader
++
++		cdm@200 {
++			compatible = "mpc5200b-cdm\0mpc52xx-cdm";
++			reg = <200 38>;
++		};
++
++		pic@500 {
++			// 5200 interrupts are encoded into two levels;
++			linux,phandle = <500>;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			device_type = "interrupt-controller";
++			compatible = "mpc5200b-pic\0mpc52xx-pic";
++			reg = <500 80>;
++			built-in;
++		};
++
++		gpt@600 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <600 10>;
++			interrupts = <1 9 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@610 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <610 10>;
++			interrupts = <1 a 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@620 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <620 10>;
++			interrupts = <1 b 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@630 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <630 10>;
++			interrupts = <1 c 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@640 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <640 10>;
++			interrupts = <1 d 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@650 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <650 10>;
++			interrupts = <1 e 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@660 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <660 10>;
++			interrupts = <1 f 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpt@670 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc52xx-gpt";
++			device_type = "gpt";
++			reg = <670 10>;
++			interrupts = <1 10 0>;
++			interrupt-parent = <500>;
++		};
++
++		rtc@800 {	// Real time clock
++			compatible = "mpc5200b-rtc\0mpc52xx-rtc";
++			device_type = "rtc";
++			reg = <800 100>;
++			interrupts = <1 5 0 1 6 0>;
++			interrupt-parent = <500>;
++		};
++
++		mscan@900 {
++			device_type = "mscan";
++			compatible = "mpc5200b-mscan\0mpc52xx-mscan";
++			interrupts = <2 11 0>;
++			interrupt-parent = <500>;
++			reg = <900 80>;
++		};
++
++		mscan@980 {
++			device_type = "mscan";
++			compatible = "mpc5200b-mscan\0mpc52xx-mscan";
++			interrupts = <1 12 0>;
++			interrupt-parent = <500>;
++			reg = <980 80>;
++		};
++
++		gpio@b00 {
++			compatible = "mpc5200b-gpio\0mpc52xx-gpio";
++			reg = <b00 40>;
++			interrupts = <1 7 0>;
++			interrupt-parent = <500>;
++		};
++
++		gpio-wkup@b00 {
++			compatible = "mpc5200b-gpio-wkup\0mpc52xx-gpio-wkup";
++			reg = <c00 40>;
++			interrupts = <1 8 0 0 3 0>;
++			interrupt-parent = <500>;
++		};
++
++		pci@0d00 {
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			compatible = "mpc5200b-pci\0mpc52xx-pci";
++			reg = <d00 100>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <c000 0 0 1 500 0 0 3 // 1st slot
++			                 c000 0 0 2 500 1 1 3
++			                 c000 0 0 3 500 1 2 3
++			                 c000 0 0 4 500 1 3 3
++
++			                 c800 0 0 1 500 1 1 3 // 2nd slot
++			                 c800 0 0 2 500 1 2 3
++			                 c800 0 0 3 500 1 3 3
++			                 c800 0 0 4 500 0 0 3>;
++			clock-frequency = <0>; // From boot loader
++			interrupts = <2 8 0 2 9 0 2 a 0>;
++			interrupt-parent = <500>;
++			bus-range = <0 0>;
++			ranges = <42000000 0 80000000 80000000 0 20000000
++			          02000000 0 a0000000 a0000000 0 10000000
++			          01000000 0 00000000 b0000000 0 01000000>;
++		};
++
++		spi@f00 {
++			device_type = "spi";
++			compatible = "mpc5200b-spi\0mpc52xx-spi";
++			reg = <f00 20>;
++			interrupts = <2 d 0 2 e 0>;
++			interrupt-parent = <500>;
++		};
++
++		usb@1000 {
++			device_type = "usb-ohci-be";
++			compatible = "mpc5200b-ohci\0mpc52xx-ohci\0ohci-be";
++			reg = <1000 ff>;
++			interrupts = <2 6 0>;
++			interrupt-parent = <500>;
++		};
++
++		bestcomm@1200 {
++			device_type = "dma-controller";
++			compatible = "mpc5200b-bestcomm\0mpc52xx-bestcomm";
++			reg = <1200 80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 a 0  3 b 0
++			              3 c 0  3 d 0  3 e 0  3 f 0>;
++			interrupt-parent = <500>;
++		};
++
++		xlb@1f00 {
++			compatible = "mpc5200b-xlb\0mpc52xx-xlb";
++			reg = <1f00 100>;
++		};
++
++		serial@2000 {		// PSC1
++			device_type = "serial";
++			compatible = "mpc5200b-psc-uart\0mpc52xx-psc-uart";
++			port-number = <0>;  // Logical port assignment
++			reg = <2000 100>;
++			interrupts = <2 1 0>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC2 in spi mode example
++		spi@2200 {		// PSC2
++			device_type = "spi";
++			compatible = "mpc5200b-psc-spi\0mpc52xx-psc-spi";
++			reg = <2200 100>;
++			interrupts = <2 2 0>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC3 in CODEC mode example
++		i2s@2400 {		// PSC3
++			device_type = "i2s";
++			compatible = "mpc5200b-psc-i2s\0mpc52xx-psc-i2s";
++			reg = <2400 100>;
++			interrupts = <2 3 0>;
++			interrupt-parent = <500>;
++		};
++
++		// PSC4 unconfigured
++		//serial@2600 {		// PSC4
++		//	device_type = "serial";
++		//	compatible = "mpc5200b-psc-uart\0mpc52xx-psc-uart";
++		//	reg = <2600 100>;
++		//	interrupts = <2 b 0>;
++		//	interrupt-parent = <500>;
++		//};
++
++		// PSC5 unconfigured
++		//serial@2800 {		// PSC5
++		//	device_type = "serial";
++		//	compatible = "mpc5200b-psc-uart\0mpc52xx-psc-uart";
++		//	reg = <2800 100>;
++		//	interrupts = <2 c 0>;
++		//	interrupt-parent = <500>;
++		//};
++
++		// PSC6 in AC97 mode example
++		ac97@2c00 {		// PSC6
++			device_type = "ac97";
++			compatible = "mpc5200b-psc-ac97\0mpc52xx-psc-ac97";
++			reg = <2c00 100>;
++			interrupts = <2 4 0>;
++			interrupt-parent = <500>;
++		};
++
++		ethernet@3000 {
++			device_type = "network";
++			compatible = "mpc5200b-fec\0mpc52xx-fec";
++			reg = <3000 800>;
++			mac-address = [ 02 03 04 05 06 07 ]; // Bad!
++			interrupts = <2 5 0>;
++			interrupt-parent = <500>;
++		};
++
++		ata@3a00 {
++			device_type = "ata";
++			compatible = "mpc5200b-ata\0mpc52xx-ata";
++			reg = <3a00 100>;
++			interrupts = <2 7 0>;
++			interrupt-parent = <500>;
++		};
++
++		i2c@3d00 {
++			device_type = "i2c";
++			compatible = "mpc5200b-i2c\0mpc52xx-i2c";
++			reg = <3d00 40>;
++			interrupts = <2 f 0>;
++			interrupt-parent = <500>;
++		};
++
++		i2c@3d40 {
++			device_type = "i2c";
++			compatible = "mpc5200b-i2c\0mpc52xx-i2c";
++			reg = <3d40 40>;
++			interrupts = <2 10 0>;
++			interrupt-parent = <500>;
++		};
++		sram@8000 {
++			device_type = "sram";
++			compatible = "mpc5200b-sram\0mpc52xx-sram\0sram";
++			reg = <8000 4000>;
++		};
++	};
 +};
 -- 
 1.4.3.rc2.g0503
