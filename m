@@ -1,24 +1,24 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp111.sbc.mail.mud.yahoo.com (smtp111.sbc.mail.mud.yahoo.com
-	[68.142.198.210]) by ozlabs.org (Postfix) with SMTP id CB9E067C3B
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 12:21:29 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [Bulk] Re: NTP time sync
-Date: Sun, 26 Nov 2006 17:21:23 -0800
-References: <20061126202148.190d5b4b@inspiron>
-	<00b301c711a3$07cf3530$020120ac@Jocke>
-	<20061126235317.5d40d22c@inspiron>
-In-Reply-To: <20061126235317.5d40d22c@inspiron>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200611261721.25473.david-b@pacbell.net>
-Cc: akpm@osdl.org, 'Andi Kleen' <ak@muc.de>,
-	'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>,
-	ralf@linux-mips.org, linuxppc-dev@ozlabs.org,
-	lethal@linux-sh.org, paulus@samba.org, kkojima@rr.iij4u.or.jp,
-	davem@davemloft.net, rmk@arm.linux.org.uk
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A7B3F67BB2
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 14:16:21 +1100 (EST)
+Subject: Re: powerpc.git build error
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: eludias@dse.nl
+In-Reply-To: <20061126210535.GA5639@nospam.com>
+References: <20061125225807.GA10510@nospam.com>
+	<1164523183.10222.1.camel@localhost.localdomain>
+	<20061126190609.GA20291@nospam.com>
+	<Pine.LNX.4.60.0611262144230.8431@poirot.grange>
+	<20061126210535.GA5639@nospam.com>
+Content-Type: text/plain
+Date: Mon, 27 Nov 2006 14:16:04 +1100
+Message-Id: <1164597365.22055.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 26 November 2006 2:53 pm, Alessandro Zummo wrote:
-> On Sun, 26 Nov 2006 22:37:10 +0100
-> "Joakim Tjernlund" <joakim.tjernlund@transmode.se> wrote:
-> 
-> > >  the concept of static numbers is quite old...
-> > 
-> > Yes it is old, but is the old way unsupported now? I have an embedded target
-> > which is using the old static /dev directory, do I need to make
-> > it udev aware to use newer features like the rtc subsystem?
-> 
->  That can be a good option. 
 
-And it's simple enough.  You might not even need to run "udevd"
-if you don't have hotpluggable devices ... just the startup stuff,
-which you might not need after the first boot.  (Since the set of
-devices will be stable, /dev/* won't change, and you can speed up
-system boot by that small delta.)
+> Hold your horses, I'm just a simple user without too much
+> understanding of the hardware trying to get most out of his PowerBook
+> G3 Lombard (with broken L2 cache: 33bogomips) which I got a week ago :)
 
-I certainly run udev on some small systems, with /sbin/hotplug as
-appended.  Getting udev set up, and handling coldplug, is left as
-an exercise for the reader.  :)
+What makes you think it has a broken L2 cache ? The 33 bogomips are
+totally unrelated, it's the timebase frequency. Bogomips are NOT a
+benchmark and on the powerpc architecture, and not even related to the
+processor speed at all (but to the frequency of the timebase input).
 
-- Dave
+> It seems suspend-to-ram is working to some extend, or at least
+> 'should' work out-of-the-box. When I close the lid and reopen it, it
+> resumes 'a little': PCMCIA cards seem to power up again (TX/RX WiFi
+> led starts to flash again), but the screen stays dark. I haven't tried
+> to debug this yet, since getting WiFi to work
 
-#!/bin/ash
-#
-# "hotplug" initializes devices ... hardware drivers get modprobed and
-# create class devices.  then later udev handles /dev node creation and
-# invokes programs that make userspace aware of the new device node.
-#
-# install as /sbin/hotplug
+Does it work better without the PCMCIA card ? Is it properly going to
+sleep (snoozing LED) ? Also make sure you are using the proper video
+driver (atyfb on the lombard) and not booting with "novideo" or
+"video=ofonly".
 
-if [ ! -d /sys ]
-then
-	exit 1
-fi
-cd /sys
+> Furthermore I'm not interested in kexec if 'all is working'. But since
+> 'rebooting' already hangs after the powerdown, I'm more focused on
+> getting the normal 'reboot' working.
 
-if [ "$ACTION" = "add" -a "$SUBSYSTEM" = "mmc" ]
-then
-	# MMC doesn't support modalias yet, but this is
-	# the only choice until we have SDIO support.
-	MODALIAS=mmc_block
-fi
+That is the strange thing... does it reboot fine in MacOS ?
 
-if [ "$ACTION" = "add" -a -n "$MODALIAS" -a ! -L $DEVPATH/driver ]
-then
-	# most important subsystems now have $MODALIAS support:
-	modprobe -q $MODALIAS
-fi
+> Since you're using more esotoric hardware, I'm afraid it will be quite
+> difficult without getting your hands very dirty.
 
-if [ -n "$DEVPATH" ]
-then
-	/sbin/udevsend $1
-fi
+Ben.
