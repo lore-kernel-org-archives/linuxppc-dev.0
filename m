@@ -1,15 +1,26 @@
-Return-Path: <petermendham@computing.dundee.ac.uk>
-Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
-	[134.36.36.15]) by ozlabs.org (Postfix) with ESMTP id 7E6CB67A39
+Return-Path: <jeff@mock.com>
+Received: from mail.mock.com (gw.mock.com [209.157.146.194])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.mock.com", Issuer "CAcert Class 3 Root" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1F81667B6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Nov 2006 01:55:59 +1100 (EST)
-Message-ID: <456AF9A5.70301@computing.dundee.ac.uk>
-Date: Mon, 27 Nov 2006 14:43:49 +0000
-From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+	Tue, 28 Nov 2006 04:35:03 +1100 (EST)
+Received: from [192.168.12.6] (lab.mock.com [192.168.12.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by mail.mock.com (Postfix) with ESMTP id CCEDF73108
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 27 Nov 2006 09:34:59 -0800 (PST)
+Message-ID: <456B21C3.6040203@mock.com>
+Date: Mon, 27 Nov 2006 09:34:59 -0800
+From: Jeff Mock <jeff@mock.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: Using Linux on ML405: Some basic questions
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: PPC440GX ethernet oddities
+References: <456A641D.7070904@mock.com>
+	<20061127042554.GB26806@gate.ebshome.net>
+In-Reply-To: <20061127042554.GB26806@gate.ebshome.net>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,37 +31,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
 
-I am experimenting with Linux on an ML405 dev board in preparation for 
-designing a board of our own.  I am not massively knowledgeable about 
-Linux internals and am learning as I go along.  At the moment I'm 
-working with a 2.4.26 kernel and the demonstration hardware 
-configuration.  I have built the kernel and created a new root file 
-systems using buildroot/busybox.  Most of the time I have a working 
-system :)
+Eugene Surovegin wrote:
+> On Sun, Nov 26, 2006 at 08:05:49PM -0800, Jeff Mock wrote:
+>> I'm having a slightly strange behavior with PPC440GX ethernet, I'm
+>> looking for a little advice where I can poke around to see what's going on.
+>>
+>> I have a custom 440GX board, I use the two RGMII gigabit interfaces to
+>> two Vistesse PHYs.  This works nicely.
+> 
+> What is the CPU clock speed?
+> 
 
-I have a few questions, I was wondering if someone could help me out:
+They are 800MHz rev.F 440GX's.
 
-1) I don't really understand how the kernel image gets loaded from the 
-.ace file.  I've seen articles which say that the SystemAce controller 
-puts the kernel image directly into RAM, but on inspection of the 
-datasheet I can't see any capability other that JTAG programming and 
-acting as a slave to a processor.  Can anyone explain the way this works?
+>> The board has a large FPGA signal processor that is DMA'ing data into
+>> main memory, the PPC sends data from main memory out the ethernet
+>> interfaces.  This all works well.  For testing purposes I'm DMA'ing a
+>> pseudo random sequence at 80MB/s, sending this over ethernet on a TCP
+>> socket to a server machine and checking the sequence at the receiving
+>> end. 
+> 
+> Could you elaborate a little here. Is it a user-space program or some 
+> kernel mode code which does the copying?
+> 
 
-2) I'm trying to simplify the kernel as much as possible, is there a way 
-to do without devfs?  If I don't have devfs do I need an initrd?  If so, 
-what do I need to put on the initrd, can it just be a minimal /dev 
-directory?
+The device driver for the FPGA allocates 64MB of memory at boot time and
+uses this as a ring buffer.  The user process mmap()s the entire buffer.
+When the user process does a read it blocks until data is available and
+the device driver returns pointers into the ring buffer for the
+currently available data.  The user process passes pointers to the ring
+buffer to the write() used to send data out the network connection.
 
-3) I will eventually be wanting tri-mode ethernet support, ideally under 
-a 2.6 kernel.  I've been trying to follow the discussions on this 
-mailing list with respect to the support for the tri-mode MAC and 
-scatter gather/DMA support.  Can anyone summarise what sort of stage 
-this is at? Is auto-negotiation supported? Once I get past the hurdles I 
-have at the moment my next step is to attempt incorporating the tri-mode 
-IP and getting it working under Linux.  If there's anything I can do to 
-help the effort at that point I'd be glad to put in some time.
+This isn't terribly memory efficient, but the embedded 440GX main
+purpose in life is to move data from the FPGAs across the network. At
+80MB/s the 440GX CPU seems to be about 40% utilized.
 
-Many thanks in advance,
--- Peter
+
+> 
+> Well, 300ms doesn't look particularly crazy to me given a data stream 
+> and the fact you are using non-realtime OSes on both ends.
+> 
+
+I'm starting to think that you might be right about that.  The odd thing
+that caused me to seek community help is that the ring buffer only fills
+to about 512kB under normal circumstances, but fills to 25MB if I
+connect the second Gb ethernet port of the 440GX.
+
+
+> Try ethtool -S, EMAC driver supports it.
+> 
+
+This is a great idea, I didn't realize that ethtool supports the IBM
+EMAC driver.  I suspected that I would find some electrical problem that
+was causing additional packet errors when the second ethernet port is
+connected.  A ran about 2TB last night, ethtool -S on the PPC says:
+
+# ./ethtool -S eth0
+NIC statistics:
+     rx_packets: 683430611
+     rx_bytes: 45405076316
+     tx_packets: 1331225622
+     tx_bytes: 2005276384145
+     rx_packets_csum: 683428670
+     tx_packets_csum: 1331224150
+     tx_undo: 0
+     rx_dropped_stack: 80
+     rx_dropped_oom: 0
+     rx_dropped_error: 0
+     [lots more 0's...]
+
+The number of checksum errors seems okay and doesn't really change when
+I plug in the second network connection, but the ring buffer usage still
+increases dramatically.
+
+Thanks for the other suggestions.  I have a friend at a 'real' company
+where I might be able to borrow a network analyzer.
+
+jeff
