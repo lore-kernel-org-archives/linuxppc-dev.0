@@ -1,16 +1,17 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id F17BD67C5D
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:17:01 +1100 (EST)
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 6BB0467D67
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:17:08 +1100 (EST)
 From: Grant Likely <grant.likely@secretlab.ca>
 To: linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/9] [POWERPC] Document describing mpc52xx device tree binding
-	conventions
-Date: Mon, 27 Nov 2006 14:16:22 -0700
-Message-Id: <11646622052490-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1164662190802-git-send-email-grant.likely@secretlab.ca>
+Subject: [PATCH 2/9] [POWERPC] Move MPC52xx PIC driver into
+	arch/powerpc/platforms/52xx
+Date: Mon, 27 Nov 2006 14:16:23 -0700
+Message-Id: <11646622063980-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11646622052490-git-send-email-grant.likely@secretlab.ca>
 References: <1164662190802-git-send-email-grant.likely@secretlab.ca>
+	<11646622052490-git-send-email-grant.likely@secretlab.ca>
 Cc: Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,209 +22,1153 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This document describes the device tree expectations for mpc52xx based
-boards.
+No other chips use this device, it belongs in a 52xx-specific path.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Acked-by: Sylvain Munaut <tnt@246tNt.com>
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- .../powerpc/mpc52xx-device-tree-bindings.txt       |  189 ++++++++++++++++++++
- 1 files changed, 189 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/52xx/Makefile      |    6 +
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c |  538 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/Makefile           |    5 +-
+ arch/powerpc/sysdev/Makefile              |    1 -
+ arch/powerpc/sysdev/mpc52xx_pic.c         |  538 -----------------------------
+ 5 files changed, 547 insertions(+), 541 deletions(-)
 
-diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
 new file mode 100644
-index 0000000..d077d76
+index 0000000..e1b02f1
 --- /dev/null
-+++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-@@ -0,0 +1,189 @@
-+MPC52xx Device Tree Bindings
-+----------------------------
++++ b/arch/powerpc/platforms/52xx/Makefile
+@@ -0,0 +1,6 @@
++#
++# Makefile for 52xx based boards
++#
++ifeq ($(CONFIG_PPC_MERGE),y)
++obj-y				+= mpc52xx_pic.o
++endif
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+new file mode 100644
+index 0000000..6df51f0
+--- /dev/null
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+@@ -0,0 +1,538 @@
++/*
++ *
++ * Programmable Interrupt Controller functions for the Freescale MPC52xx.
++ *
++ * Copyright (C) 2006 bplan GmbH
++ *
++ * Based on the code from the 2.4 kernel by
++ * Dale Farnsworth <dfarnsworth@mvista.com> and Kent Borg.
++ *
++ * Copyright (C) 2004 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003 Montavista Software, Inc
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ *
++ */
 +
-+(c) 2006 Secret Lab Technologies Ltd
-+Grant Likely <grant.likely at secretlab.ca>
++#undef DEBUG
 +
-+I - Introduction
-+================
-+Boards supported by the arch/powerpc architecture require device tree be
-+passed by the boot loader to the kernel at boot time.  The device tree
-+describes what devices are present on the board and how they are
-+connected.  The device tree can either be passed as a binary blob (as
-+described in Documentation/powerpc/booting-without-of.txt), or passed
-+by Open Firmare (IEEE 1275) compatible firmware using an OF compatible
-+client interface API.
++#include <linux/stddef.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/signal.h>
++#include <linux/stddef.h>
++#include <linux/delay.h>
++#include <linux/irq.h>
++#include <linux/hardirq.h>
 +
-+This document specifies the requirements on the device-tree for mpc52xx
-+based boards.  These requirements are above and beyond the details
-+specified in either the OpenFirmware spec or booting-without-of.txt
++#include <asm/io.h>
++#include <asm/processor.h>
++#include <asm/system.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/mpc52xx.h>
 +
-+All new mpc52xx-based boards are expected to match this document.  In
-+cases where this document is not sufficient to support a new board port,
-+this document should be updated as part of adding the new board support.
++/*
++ *
++*/
 +
-+II - Philosophy
-+===============
-+The core of this document is naming convention.  The whole point of
-+defining this convention is to reduce or eliminate the number of
-+special cases required to support a 52xx board.  If all 52xx boards
-+follow the same convention, then generic 52xx support code will work
-+rather than coding special cases for each new board.
++static struct mpc52xx_intr __iomem *intr;
++static struct mpc52xx_sdma __iomem *sdma;
++static struct irq_host *mpc52xx_irqhost = NULL;
 +
-+This section tries to capture the thought process behind why the naming
-+convention is what it is.
++static unsigned char mpc52xx_map_senses[4] = {
++	IRQ_TYPE_LEVEL_HIGH,
++	IRQ_TYPE_EDGE_RISING,
++	IRQ_TYPE_EDGE_FALLING,
++	IRQ_TYPE_LEVEL_LOW,
++};
 +
-+1. Node names
-+-------------
-+There is strong convention/requirements already established for children
-+of the root node.  'cpus' describes the processor cores, 'memory'
-+describes memory, and 'chosen' provides boot configuration.  Other nodes
-+are added to describe devices attached to the processor local bus.
-+Following convention already established with other system-on-chip
-+processors, MPC52xx boards must have an 'soc5200' node as a child of the
-+root node.
++/*
++ *
++*/
 +
-+The soc5200 node holds child nodes for all on chip devices.  Child nodes
-+are typically named after the configured function.  ie. the FEC node is
-+named 'ethernet', and a PSC in uart mode is named 'serial'.
++static inline void io_be_setbit(u32 __iomem * addr, int bitno)
++{
++	out_be32(addr, in_be32(addr) | (1 << bitno));
++}
 +
-+2. device_type property
-+-----------------------
-+similar to the node name convention above; the device_type reflects the
-+configured function of a device.  ie. 'serial' for a uart and 'spi' for
-+an spi controller.  However, while node names *should* reflect the
-+configured function, device_type *must* match the configured function
-+exactly.
++static inline void io_be_clrbit(u32 __iomem * addr, int bitno)
++{
++	out_be32(addr, in_be32(addr) & ~(1 << bitno));
++}
 +
-+3. compatible property
-+----------------------
-+Since device_type isn't enough to match devices to drivers, there also
-+needs to be a naming convention for the compatible property.  Compatible
-+is an list of device descriptions sorted from specific to generic.  For
-+the mpc52xx, the required format for each compatible value is
-+<chip>-<device>[-<mode>].  At the minimum, the list shall contain two
-+items; the first specifying the exact chip, and the second specifying
-+mpc52xx for the chip.
++/*
++ * IRQ[0-3] interrupt irq_chip
++*/
 +
-+ie. ethernet on mpc5200b: compatible = "mpc5200b-ethernet\0mpc52xx-ethernet"
++static void mpc52xx_extirq_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
 +
-+The idea here is that most drivers will match to the most generic field
-+in the compatible list (mpc52xx-*), but can also test the more specific
-+field for enabling bug fixes or extra features.
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
 +
-+Modal devices, like PSCs, also append the configured function to the
-+end of the compatible field.  ie. A PSC in i2s mode would specify
-+"mpc52xx-psc-i2s", not "mpc52xx-i2s".  This convention is chosen to
-+avoid naming conflicts with non-psc devices providing the same
-+function.  For example, "mpc52xx-spi" and "mpc52xx-psc-spi" describe
-+the mpc5200 simple spi device and a PSC spi mode respectively.
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
 +
-+If the soc device is more generic and present on other SOCs, the
-+compatible property can specify the more generic device type also.
++	io_be_clrbit(&intr->ctrl, 11 - l2irq);
++}
 +
-+ie. mscan: compatible = "mpc5200-mscan\0mpc52xx-mscan\0fsl,mscan";
++static void mpc52xx_extirq_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
 +
-+At the time of writing, exact chip may be either 'mpc5200' or
-+'mpc5200b'.
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
 +
-+Device drivers should always try to match as generically as possible.
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
 +
-+III - Structure
-+===============
-+The device tree for an mpc52xx board follows the structure defined in
-+booting-without-of.txt with the following additional notes:
++	io_be_setbit(&intr->ctrl, 11 - l2irq);
++}
 +
-+0) the root node
-+----------------
-+Typical root description node; see booting-without-of
++static void mpc52xx_extirq_ack(unsigned int virq)
++{
++	int irq;
++	int l2irq;
 +
-+1) The cpus node
-+----------------
-+The cpus node follows the basic layout described in booting-without-of.
-+The bus-frequency property holds the XLB bus frequency
-+The clock-frequency property holds the core frequency
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
 +
-+2) The memory node
-+------------------
-+Typical memory description node; see booting-without-of.
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
 +
-+3) The soc5200 node
-+-------------------
-+This node describes the on chip SOC peripherals.  Every mpc52xx based
-+board will have this node, and as such there is a common naming
-+convention for SOC devices.
++	io_be_setbit(&intr->ctrl, 27 - l2irq);
++}
 +
-+Required properties:
-+name			type		description
-+----			----		-----------
-+device_type		string		must be "soc"
-+ranges			int		should be <0 baseaddr baseaddr+10000>
-+reg			int		must be <baseaddr 10000>
++static struct irq_chip mpc52xx_extirq_irqchip = {
++	.typename = " MPC52xx IRQ[0-3] ",
++	.mask = mpc52xx_extirq_mask,
++	.unmask = mpc52xx_extirq_unmask,
++	.ack = mpc52xx_extirq_ack,
++};
 +
-+Recommended properties:
-+name			type		description
-+----			----		-----------
-+compatible		string		should be "<chip>-soc\0mpc52xx-soc"
-+					ie. "mpc5200b-soc\0mpc52xx-soc"
-+#interrupt-cells	int		must be <3>.  If it is not defined
-+					here then it must be defined in every
-+					soc device node.
-+bus-frequency		int		IPB bus frequency in HZ.  Clock rate
-+					used by most of the soc devices.
-+					Defining it here avoids needing it
-+					added to every device node.
++/*
++ * Main interrupt irq_chip
++*/
 +
-+4) soc5200 child nodes
-+----------------------
-+Any on chip SOC devices available to Linux must appear as soc5200 child nodes.
++static void mpc52xx_main_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
 +
-+Note: in the tables below, '*' matches all <chip> values.  ie.
-+*-pic would translate to "mpc5200-pic\0mpc52xx-pic"
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
 +
-+Required soc5200 child nodes:
-+name		device_type		compatible	Description
-+----		-----------		----------	-----------
-+cdm@<addr>	cdm			*-cmd		Clock Distribution
-+pic@<addr>	interrupt-controller	*-pic		need an interrupt
-+							controller to boot
-+bestcomm@<addr>	dma-controller		*-bestcomm	52xx pic also requires
-+							the bestcomm device
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
 +
-+Recommended soc5200 child nodes; populate as needed for your board
-+name		device_type	compatible	Description
-+----		-----------	----------	-----------
-+gpt@<addr>	gpt		*-gpt		General purpose timers
-+rtc@<addr>	rtc		*-rtc		Real time clock
-+mscan@<addr>	mscan		*-mscan		CAN bus controller
-+pci@<addr>	pci		*-pci		PCI bridge
-+serial@<addr>	serial		*-psc-uart	PSC in serial mode
-+i2s@<addr>	i2s		*-psc-i2s	PSC in i2s mode
-+ac97@<addr>	ac97		*-psc-ac97	PSC in ac97 mode
-+spi@<addr>	spi		*-psc-spi	PSC in spi mode
-+irda@<addr>	irda		*-psc-irda	PSC in IrDA mode
-+spi@<addr>	spi		*-spi		MPC52xx spi device
-+ethernet@<addr>	network		*-fec		MPC52xx ethernet device
-+ata@<addr>	ata		*-ata		IDE ATA interface
-+i2c@<addr>	i2c		*-i2c		I2C controller
-+usb@<addr>	usb-ohci-be	*-ohci,ohci-be	USB controller
-+xlb@<addr>	xlb		*-xlb		XLB arbritrator
++	io_be_setbit(&intr->main_mask, 15 - l2irq);
++}
 +
-+IV - Extra Notes
-+================
++static void mpc52xx_main_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
 +
-+1. Interrupt mapping
-+--------------------
-+The mpc52xx pic driver splits hardware IRQ numbers into two levels.  The
-+split reflects the layout of the PIC hardware itself, which groups
-+interrupts into one of three groups; CRIT, MAIN or PERP.  Also, the
-+Bestcomm dma engine has it's own set of interrupt sources which are
-+cascaded off of peripheral interrupt 0, which the driver interprets as a
-+fourth group, SDMA.
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
 +
-+The interrupts property for device nodes using the mpc52xx pic consists
-+of three cells; <L1 L2 level>
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
 +
-+    L1 := [CRIT=0, MAIN=1, PERP=2, SDMA=3]
-+    L2 := interrupt number; directly mapped from the value in the
-+          "ICTL PerStat, MainStat, CritStat Encoded Register"
-+    level := [LEVEL_HIGH=0, EDGE_RISING=1, EDGE_FALLING=2, LEVEL_LOW=3]
++	io_be_clrbit(&intr->main_mask, 15 - l2irq);
++}
++
++static struct irq_chip mpc52xx_main_irqchip = {
++	.typename = "MPC52xx Main",
++	.mask = mpc52xx_main_mask,
++	.mask_ack = mpc52xx_main_mask,
++	.unmask = mpc52xx_main_unmask,
++};
++
++/*
++ * Peripherals interrupt irq_chip
++*/
++
++static void mpc52xx_periph_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&intr->per_mask, 31 - l2irq);
++}
++
++static void mpc52xx_periph_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_clrbit(&intr->per_mask, 31 - l2irq);
++}
++
++static struct irq_chip mpc52xx_periph_irqchip = {
++	.typename = "MPC52xx Peripherals",
++	.mask = mpc52xx_periph_mask,
++	.mask_ack = mpc52xx_periph_mask,
++	.unmask = mpc52xx_periph_unmask,
++};
++
++/*
++ * SDMA interrupt irq_chip
++*/
++
++static void mpc52xx_sdma_mask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_setbit(&sdma->IntMask, l2irq);
++}
++
++static void mpc52xx_sdma_unmask(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	io_be_clrbit(&sdma->IntMask, l2irq);
++}
++
++static void mpc52xx_sdma_ack(unsigned int virq)
++{
++	int irq;
++	int l2irq;
++
++	irq = irq_map[virq].hwirq;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
++
++	out_be32(&sdma->IntPend, 1 << l2irq);
++}
++
++static struct irq_chip mpc52xx_sdma_irqchip = {
++	.typename = "MPC52xx SDMA",
++	.mask = mpc52xx_sdma_mask,
++	.unmask = mpc52xx_sdma_unmask,
++	.ack = mpc52xx_sdma_ack,
++};
++
++/*
++ * irq_host
++*/
++
++static int mpc52xx_irqhost_match(struct irq_host *h, struct device_node *node)
++{
++	pr_debug("%s: node=%p\n", __func__, node);
++	return mpc52xx_irqhost->host_data == node;
++}
++
++static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node *ct,
++				 u32 * intspec, unsigned int intsize,
++				 irq_hw_number_t * out_hwirq,
++				 unsigned int *out_flags)
++{
++	int intrvect_l1;
++	int intrvect_l2;
++	int intrvect_type;
++	int intrvect_linux;
++
++	if (intsize != 3)
++		return -1;
++
++	intrvect_l1 = (int)intspec[0];
++	intrvect_l2 = (int)intspec[1];
++	intrvect_type = (int)intspec[2];
++
++	intrvect_linux =
++	    (intrvect_l1 << MPC52xx_IRQ_L1_OFFSET) & MPC52xx_IRQ_L1_MASK;
++	intrvect_linux |=
++	    (intrvect_l2 << MPC52xx_IRQ_L2_OFFSET) & MPC52xx_IRQ_L2_MASK;
++
++	pr_debug("return %x, l1=%d, l2=%d\n", intrvect_linux, intrvect_l1,
++		 intrvect_l2);
++
++	*out_hwirq = intrvect_linux;
++	*out_flags = mpc52xx_map_senses[intrvect_type];
++
++	return 0;
++}
++
++/*
++ * this function retrieves the correct IRQ type out
++ * of the MPC regs
++ * Only externals IRQs needs this
++*/
++static int mpc52xx_irqx_gettype(int irq)
++{
++	int type;
++	u32 ctrl_reg;
++
++	ctrl_reg = in_be32(&intr->ctrl);
++	type = (ctrl_reg >> (22 - irq * 2)) & 0x3;
++
++	return mpc52xx_map_senses[type];
++}
++
++static int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t irq)
++{
++	int l1irq;
++	int l2irq;
++	struct irq_chip *good_irqchip;
++	void *good_handle;
++	int type;
++
++	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
++	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
++
++	/*
++	 * Most of ours IRQs will be level low
++	 * Only external IRQs on some platform may be others
++	 */
++	type = IRQ_TYPE_LEVEL_LOW;
++
++	switch (l1irq) {
++	case MPC52xx_IRQ_L1_CRIT:
++		pr_debug("%s: Critical. l2=%x\n", __func__, l2irq);
++
++		BUG_ON(l2irq != 0);
++
++		type = mpc52xx_irqx_gettype(l2irq);
++		good_irqchip = &mpc52xx_extirq_irqchip;
++		break;
++
++	case MPC52xx_IRQ_L1_MAIN:
++		pr_debug("%s: Main IRQ[1-3] l2=%x\n", __func__, l2irq);
++
++		if ((l2irq >= 1) && (l2irq <= 3)) {
++			type = mpc52xx_irqx_gettype(l2irq);
++			good_irqchip = &mpc52xx_extirq_irqchip;
++		} else {
++			good_irqchip = &mpc52xx_main_irqchip;
++		}
++		break;
++
++	case MPC52xx_IRQ_L1_PERP:
++		pr_debug("%s: Peripherals. l2=%x\n", __func__, l2irq);
++		good_irqchip = &mpc52xx_periph_irqchip;
++		break;
++
++	case MPC52xx_IRQ_L1_SDMA:
++		pr_debug("%s: SDMA. l2=%x\n", __func__, l2irq);
++		good_irqchip = &mpc52xx_sdma_irqchip;
++		break;
++
++	default:
++		pr_debug("%s: Error, unknown L1 IRQ (0x%x)\n", __func__, l1irq);
++		printk(KERN_ERR "Unknow IRQ!\n");
++		return -EINVAL;
++	}
++
++	switch (type) {
++	case IRQ_TYPE_EDGE_FALLING:
++	case IRQ_TYPE_EDGE_RISING:
++		good_handle = handle_edge_irq;
++		break;
++	default:
++		good_handle = handle_level_irq;
++	}
++
++	set_irq_chip_and_handler(virq, good_irqchip, good_handle);
++
++	pr_debug("%s: virq=%x, hw=%x. type=%x\n", __func__, virq,
++		 (int)irq, type);
++
++	return 0;
++}
++
++static struct irq_host_ops mpc52xx_irqhost_ops = {
++	.match = mpc52xx_irqhost_match,
++	.xlate = mpc52xx_irqhost_xlate,
++	.map = mpc52xx_irqhost_map,
++};
++
++/*
++ * init (public)
++*/
++
++void __init mpc52xx_init_irq(void)
++{
++	struct device_node *picnode = NULL;
++	int picnode_regsize;
++	u32 picnode_regoffset;
++
++	struct device_node *sdmanode = NULL;
++	int sdmanode_regsize;
++	u32 sdmanode_regoffset;
++
++	u64 size64;
++	int flags;
++
++	u32 intr_ctrl;
++
++	picnode = of_find_compatible_node(NULL, "interrupt-controller",
++						"mpc5200-pic");
++	if (picnode == NULL) {
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to find the interrupt controller "
++			"in the OpenFirmware device tree\n");
++		goto end;
++	}
++
++	sdmanode = of_find_compatible_node(NULL, "dma-controller",
++						 "mpc5200-bestcomm");
++	if (sdmanode == NULL) {
++		printk(KERN_ERR "MPC52xx PIC"
++			"Unable to find the Bestcomm DMA controller device "
++			"in the OpenFirmware device tree\n");
++		goto end;
++	}
++
++	/* Retrieve PIC ressources */
++	picnode_regoffset = (u32) of_get_address(picnode, 0, &size64, &flags);
++	if (picnode_regoffset == 0) {
++		printk(KERN_ERR "MPC52xx PIC"
++			"Unable to get the interrupt controller address\n");
++		goto end;
++	}
++
++	picnode_regoffset =
++		of_translate_address(picnode, (u32 *) picnode_regoffset);
++	picnode_regsize = (int)size64;
++
++	/* Retrieve SDMA ressources */
++	sdmanode_regoffset = (u32) of_get_address(sdmanode, 0, &size64, &flags);
++	if (sdmanode_regoffset == 0) {
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to get the Bestcomm DMA controller address\n");
++		goto end;
++	}
++
++	sdmanode_regoffset =
++	    of_translate_address(sdmanode, (u32 *) sdmanode_regoffset);
++	sdmanode_regsize = (int)size64;
++
++	/* Remap the necessary zones */
++	intr = ioremap(picnode_regoffset, picnode_regsize);
++	if (intr == NULL) {
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to ioremap interrupt controller registers!\n");
++		goto end;
++	}
++
++	sdma = ioremap(sdmanode_regoffset, sdmanode_regsize);
++	if (sdma == NULL) {
++		iounmap(intr);
++		printk(KERN_ERR "MPC52xx PIC: "
++			"Unable to ioremap Bestcomm DMA registers!\n");
++		goto end;
++	}
++
++	printk(KERN_INFO "MPC52xx PIC: MPC52xx PIC Remapped at 0x%8.8x\n",
++		picnode_regoffset);
++	printk(KERN_INFO "MPC52xx PIC: MPC52xx SDMA Remapped at 0x%8.8x\n",
++		sdmanode_regoffset);
++
++	/* Disable all interrupt sources. */
++	out_be32(&sdma->IntPend, 0xffffffff);	/* 1 means clear pending */
++	out_be32(&sdma->IntMask, 0xffffffff);	/* 1 means disabled */
++	out_be32(&intr->per_mask, 0x7ffffc00);	/* 1 means disabled */
++	out_be32(&intr->main_mask, 0x00010fff);	/* 1 means disabled */
++	intr_ctrl = in_be32(&intr->ctrl);
++	intr_ctrl &= 0x00ff0000;	/* Keeps IRQ[0-3] config */
++	intr_ctrl |=	0x0f000000 |	/* clear IRQ 0-3 */
++			0x00001000 |	/* MEE master external enable */
++			0x00000000 |	/* 0 means disable IRQ 0-3 */
++			0x00000001;	/* CEb route critical normally */
++	out_be32(&intr->ctrl, intr_ctrl);
++
++	/* Zero a bunch of the priority settings. */
++	out_be32(&intr->per_pri1, 0);
++	out_be32(&intr->per_pri2, 0);
++	out_be32(&intr->per_pri3, 0);
++	out_be32(&intr->main_pri1, 0);
++	out_be32(&intr->main_pri2, 0);
++
++	/*
++	 * As last step, add an irq host to translate the real
++	 * hw irq information provided by the ofw to linux virq
++	 */
++
++	mpc52xx_irqhost =
++	    irq_alloc_host(IRQ_HOST_MAP_LINEAR, MPC52xx_IRQ_HIGHTESTHWIRQ,
++			   &mpc52xx_irqhost_ops, -1);
++
++	if (mpc52xx_irqhost) {
++		mpc52xx_irqhost->host_data = picnode;
++		printk(KERN_INFO "MPC52xx PIC is up and running!\n");
++	} else {
++		printk(KERN_ERR
++			"MPC52xx PIC: Unable to allocate the IRQ host\n");
++	}
++
++end:
++	of_node_put(picnode);
++	of_node_put(sdmanode);
++}
++
++/*
++ * get_irq (public)
++*/
++unsigned int mpc52xx_get_irq(void)
++{
++	u32 status;
++	int irq = NO_IRQ_IGNORE;
++
++	status = in_be32(&intr->enc_status);
++	if (status & 0x00000400) {	/* critical */
++		irq = (status >> 8) & 0x3;
++		if (irq == 2)	/* high priority peripheral */
++			goto peripheral;
++		irq |=	(MPC52xx_IRQ_L1_CRIT << MPC52xx_IRQ_L1_OFFSET) &
++			MPC52xx_IRQ_L1_MASK;
++	} else if (status & 0x00200000) {	/* main */
++		irq = (status >> 16) & 0x1f;
++		if (irq == 4)	/* low priority peripheral */
++			goto peripheral;
++		irq |=	(MPC52xx_IRQ_L1_MAIN << MPC52xx_IRQ_L1_OFFSET) &
++			MPC52xx_IRQ_L1_MASK;
++	} else if (status & 0x20000000) {	/* peripheral */
++	      peripheral:
++		irq = (status >> 24) & 0x1f;
++		if (irq == 0) {	/* bestcomm */
++			status = in_be32(&sdma->IntPend);
++			irq = ffs(status) - 1;
++			irq |=	(MPC52xx_IRQ_L1_SDMA << MPC52xx_IRQ_L1_OFFSET) &
++				MPC52xx_IRQ_L1_MASK;
++		} else
++			irq |=	(MPC52xx_IRQ_L1_PERP << MPC52xx_IRQ_L1_OFFSET) &
++				MPC52xx_IRQ_L1_MASK;
++	}
++
++	pr_debug("%s: irq=%x. virq=%d\n", __func__, irq,
++		 irq_linear_revmap(mpc52xx_irqhost, irq));
++
++	return irq_linear_revmap(mpc52xx_irqhost, irq);
++}
++
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index 56caf4f..562f9da 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -5,16 +5,17 @@ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_PPC_PMAC)		+= powermac/
+ endif
+ endif
+-obj-$(CONFIG_PPC_EFIKA)          += efika/
++obj-$(CONFIG_PPC_EFIKA)		+= efika/
+ obj-$(CONFIG_PPC_CHRP)		+= chrp/
+ obj-$(CONFIG_4xx)		+= 4xx/
++obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
+ obj-$(CONFIG_PPC_83xx)		+= 83xx/
+ obj-$(CONFIG_PPC_85xx)		+= 85xx/
+ obj-$(CONFIG_PPC_86xx)		+= 86xx/
+ obj-$(CONFIG_PPC_PSERIES)	+= pseries/
+ obj-$(CONFIG_PPC_ISERIES)	+= iseries/
+ obj-$(CONFIG_PPC_MAPLE)		+= maple/
+-obj-$(CONFIG_PPC_PASEMI)		+= pasemi/
++obj-$(CONFIG_PPC_PASEMI)	+= pasemi/
+ obj-$(CONFIG_PPC_CELL)		+= cell/
+ obj-$(CONFIG_PS3)		+= ps3/
+ obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index bae8746..623fe71 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -15,7 +15,6 @@ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
+-obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_pic.o
+ endif
+ 
+ # Temporary hack until we have migrated to asm-powerpc
+diff --git a/arch/powerpc/sysdev/mpc52xx_pic.c b/arch/powerpc/sysdev/mpc52xx_pic.c
+deleted file mode 100644
+index 6df51f0..0000000
+--- a/arch/powerpc/sysdev/mpc52xx_pic.c
++++ /dev/null
+@@ -1,538 +0,0 @@
+-/*
+- *
+- * Programmable Interrupt Controller functions for the Freescale MPC52xx.
+- *
+- * Copyright (C) 2006 bplan GmbH
+- *
+- * Based on the code from the 2.4 kernel by
+- * Dale Farnsworth <dfarnsworth@mvista.com> and Kent Borg.
+- *
+- * Copyright (C) 2004 Sylvain Munaut <tnt@246tNt.com>
+- * Copyright (C) 2003 Montavista Software, Inc
+- *
+- * This file is licensed under the terms of the GNU General Public License
+- * version 2. This program is licensed "as is" without any warranty of any
+- * kind, whether express or implied.
+- *
+- */
+-
+-#undef DEBUG
+-
+-#include <linux/stddef.h>
+-#include <linux/init.h>
+-#include <linux/sched.h>
+-#include <linux/signal.h>
+-#include <linux/stddef.h>
+-#include <linux/delay.h>
+-#include <linux/irq.h>
+-#include <linux/hardirq.h>
+-
+-#include <asm/io.h>
+-#include <asm/processor.h>
+-#include <asm/system.h>
+-#include <asm/irq.h>
+-#include <asm/prom.h>
+-#include <asm/mpc52xx.h>
+-
+-/*
+- *
+-*/
+-
+-static struct mpc52xx_intr __iomem *intr;
+-static struct mpc52xx_sdma __iomem *sdma;
+-static struct irq_host *mpc52xx_irqhost = NULL;
+-
+-static unsigned char mpc52xx_map_senses[4] = {
+-	IRQ_TYPE_LEVEL_HIGH,
+-	IRQ_TYPE_EDGE_RISING,
+-	IRQ_TYPE_EDGE_FALLING,
+-	IRQ_TYPE_LEVEL_LOW,
+-};
+-
+-/*
+- *
+-*/
+-
+-static inline void io_be_setbit(u32 __iomem * addr, int bitno)
+-{
+-	out_be32(addr, in_be32(addr) | (1 << bitno));
+-}
+-
+-static inline void io_be_clrbit(u32 __iomem * addr, int bitno)
+-{
+-	out_be32(addr, in_be32(addr) & ~(1 << bitno));
+-}
+-
+-/*
+- * IRQ[0-3] interrupt irq_chip
+-*/
+-
+-static void mpc52xx_extirq_mask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_clrbit(&intr->ctrl, 11 - l2irq);
+-}
+-
+-static void mpc52xx_extirq_unmask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_setbit(&intr->ctrl, 11 - l2irq);
+-}
+-
+-static void mpc52xx_extirq_ack(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_setbit(&intr->ctrl, 27 - l2irq);
+-}
+-
+-static struct irq_chip mpc52xx_extirq_irqchip = {
+-	.typename = " MPC52xx IRQ[0-3] ",
+-	.mask = mpc52xx_extirq_mask,
+-	.unmask = mpc52xx_extirq_unmask,
+-	.ack = mpc52xx_extirq_ack,
+-};
+-
+-/*
+- * Main interrupt irq_chip
+-*/
+-
+-static void mpc52xx_main_mask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_setbit(&intr->main_mask, 15 - l2irq);
+-}
+-
+-static void mpc52xx_main_unmask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_clrbit(&intr->main_mask, 15 - l2irq);
+-}
+-
+-static struct irq_chip mpc52xx_main_irqchip = {
+-	.typename = "MPC52xx Main",
+-	.mask = mpc52xx_main_mask,
+-	.mask_ack = mpc52xx_main_mask,
+-	.unmask = mpc52xx_main_unmask,
+-};
+-
+-/*
+- * Peripherals interrupt irq_chip
+-*/
+-
+-static void mpc52xx_periph_mask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_setbit(&intr->per_mask, 31 - l2irq);
+-}
+-
+-static void mpc52xx_periph_unmask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_clrbit(&intr->per_mask, 31 - l2irq);
+-}
+-
+-static struct irq_chip mpc52xx_periph_irqchip = {
+-	.typename = "MPC52xx Peripherals",
+-	.mask = mpc52xx_periph_mask,
+-	.mask_ack = mpc52xx_periph_mask,
+-	.unmask = mpc52xx_periph_unmask,
+-};
+-
+-/*
+- * SDMA interrupt irq_chip
+-*/
+-
+-static void mpc52xx_sdma_mask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_setbit(&sdma->IntMask, l2irq);
+-}
+-
+-static void mpc52xx_sdma_unmask(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	io_be_clrbit(&sdma->IntMask, l2irq);
+-}
+-
+-static void mpc52xx_sdma_ack(unsigned int virq)
+-{
+-	int irq;
+-	int l2irq;
+-
+-	irq = irq_map[virq].hwirq;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	pr_debug("%s: irq=%x. l2=%d\n", __func__, irq, l2irq);
+-
+-	out_be32(&sdma->IntPend, 1 << l2irq);
+-}
+-
+-static struct irq_chip mpc52xx_sdma_irqchip = {
+-	.typename = "MPC52xx SDMA",
+-	.mask = mpc52xx_sdma_mask,
+-	.unmask = mpc52xx_sdma_unmask,
+-	.ack = mpc52xx_sdma_ack,
+-};
+-
+-/*
+- * irq_host
+-*/
+-
+-static int mpc52xx_irqhost_match(struct irq_host *h, struct device_node *node)
+-{
+-	pr_debug("%s: node=%p\n", __func__, node);
+-	return mpc52xx_irqhost->host_data == node;
+-}
+-
+-static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node *ct,
+-				 u32 * intspec, unsigned int intsize,
+-				 irq_hw_number_t * out_hwirq,
+-				 unsigned int *out_flags)
+-{
+-	int intrvect_l1;
+-	int intrvect_l2;
+-	int intrvect_type;
+-	int intrvect_linux;
+-
+-	if (intsize != 3)
+-		return -1;
+-
+-	intrvect_l1 = (int)intspec[0];
+-	intrvect_l2 = (int)intspec[1];
+-	intrvect_type = (int)intspec[2];
+-
+-	intrvect_linux =
+-	    (intrvect_l1 << MPC52xx_IRQ_L1_OFFSET) & MPC52xx_IRQ_L1_MASK;
+-	intrvect_linux |=
+-	    (intrvect_l2 << MPC52xx_IRQ_L2_OFFSET) & MPC52xx_IRQ_L2_MASK;
+-
+-	pr_debug("return %x, l1=%d, l2=%d\n", intrvect_linux, intrvect_l1,
+-		 intrvect_l2);
+-
+-	*out_hwirq = intrvect_linux;
+-	*out_flags = mpc52xx_map_senses[intrvect_type];
+-
+-	return 0;
+-}
+-
+-/*
+- * this function retrieves the correct IRQ type out
+- * of the MPC regs
+- * Only externals IRQs needs this
+-*/
+-static int mpc52xx_irqx_gettype(int irq)
+-{
+-	int type;
+-	u32 ctrl_reg;
+-
+-	ctrl_reg = in_be32(&intr->ctrl);
+-	type = (ctrl_reg >> (22 - irq * 2)) & 0x3;
+-
+-	return mpc52xx_map_senses[type];
+-}
+-
+-static int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
+-			       irq_hw_number_t irq)
+-{
+-	int l1irq;
+-	int l2irq;
+-	struct irq_chip *good_irqchip;
+-	void *good_handle;
+-	int type;
+-
+-	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
+-	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
+-
+-	/*
+-	 * Most of ours IRQs will be level low
+-	 * Only external IRQs on some platform may be others
+-	 */
+-	type = IRQ_TYPE_LEVEL_LOW;
+-
+-	switch (l1irq) {
+-	case MPC52xx_IRQ_L1_CRIT:
+-		pr_debug("%s: Critical. l2=%x\n", __func__, l2irq);
+-
+-		BUG_ON(l2irq != 0);
+-
+-		type = mpc52xx_irqx_gettype(l2irq);
+-		good_irqchip = &mpc52xx_extirq_irqchip;
+-		break;
+-
+-	case MPC52xx_IRQ_L1_MAIN:
+-		pr_debug("%s: Main IRQ[1-3] l2=%x\n", __func__, l2irq);
+-
+-		if ((l2irq >= 1) && (l2irq <= 3)) {
+-			type = mpc52xx_irqx_gettype(l2irq);
+-			good_irqchip = &mpc52xx_extirq_irqchip;
+-		} else {
+-			good_irqchip = &mpc52xx_main_irqchip;
+-		}
+-		break;
+-
+-	case MPC52xx_IRQ_L1_PERP:
+-		pr_debug("%s: Peripherals. l2=%x\n", __func__, l2irq);
+-		good_irqchip = &mpc52xx_periph_irqchip;
+-		break;
+-
+-	case MPC52xx_IRQ_L1_SDMA:
+-		pr_debug("%s: SDMA. l2=%x\n", __func__, l2irq);
+-		good_irqchip = &mpc52xx_sdma_irqchip;
+-		break;
+-
+-	default:
+-		pr_debug("%s: Error, unknown L1 IRQ (0x%x)\n", __func__, l1irq);
+-		printk(KERN_ERR "Unknow IRQ!\n");
+-		return -EINVAL;
+-	}
+-
+-	switch (type) {
+-	case IRQ_TYPE_EDGE_FALLING:
+-	case IRQ_TYPE_EDGE_RISING:
+-		good_handle = handle_edge_irq;
+-		break;
+-	default:
+-		good_handle = handle_level_irq;
+-	}
+-
+-	set_irq_chip_and_handler(virq, good_irqchip, good_handle);
+-
+-	pr_debug("%s: virq=%x, hw=%x. type=%x\n", __func__, virq,
+-		 (int)irq, type);
+-
+-	return 0;
+-}
+-
+-static struct irq_host_ops mpc52xx_irqhost_ops = {
+-	.match = mpc52xx_irqhost_match,
+-	.xlate = mpc52xx_irqhost_xlate,
+-	.map = mpc52xx_irqhost_map,
+-};
+-
+-/*
+- * init (public)
+-*/
+-
+-void __init mpc52xx_init_irq(void)
+-{
+-	struct device_node *picnode = NULL;
+-	int picnode_regsize;
+-	u32 picnode_regoffset;
+-
+-	struct device_node *sdmanode = NULL;
+-	int sdmanode_regsize;
+-	u32 sdmanode_regoffset;
+-
+-	u64 size64;
+-	int flags;
+-
+-	u32 intr_ctrl;
+-
+-	picnode = of_find_compatible_node(NULL, "interrupt-controller",
+-						"mpc5200-pic");
+-	if (picnode == NULL) {
+-		printk(KERN_ERR "MPC52xx PIC: "
+-			"Unable to find the interrupt controller "
+-			"in the OpenFirmware device tree\n");
+-		goto end;
+-	}
+-
+-	sdmanode = of_find_compatible_node(NULL, "dma-controller",
+-						 "mpc5200-bestcomm");
+-	if (sdmanode == NULL) {
+-		printk(KERN_ERR "MPC52xx PIC"
+-			"Unable to find the Bestcomm DMA controller device "
+-			"in the OpenFirmware device tree\n");
+-		goto end;
+-	}
+-
+-	/* Retrieve PIC ressources */
+-	picnode_regoffset = (u32) of_get_address(picnode, 0, &size64, &flags);
+-	if (picnode_regoffset == 0) {
+-		printk(KERN_ERR "MPC52xx PIC"
+-			"Unable to get the interrupt controller address\n");
+-		goto end;
+-	}
+-
+-	picnode_regoffset =
+-		of_translate_address(picnode, (u32 *) picnode_regoffset);
+-	picnode_regsize = (int)size64;
+-
+-	/* Retrieve SDMA ressources */
+-	sdmanode_regoffset = (u32) of_get_address(sdmanode, 0, &size64, &flags);
+-	if (sdmanode_regoffset == 0) {
+-		printk(KERN_ERR "MPC52xx PIC: "
+-			"Unable to get the Bestcomm DMA controller address\n");
+-		goto end;
+-	}
+-
+-	sdmanode_regoffset =
+-	    of_translate_address(sdmanode, (u32 *) sdmanode_regoffset);
+-	sdmanode_regsize = (int)size64;
+-
+-	/* Remap the necessary zones */
+-	intr = ioremap(picnode_regoffset, picnode_regsize);
+-	if (intr == NULL) {
+-		printk(KERN_ERR "MPC52xx PIC: "
+-			"Unable to ioremap interrupt controller registers!\n");
+-		goto end;
+-	}
+-
+-	sdma = ioremap(sdmanode_regoffset, sdmanode_regsize);
+-	if (sdma == NULL) {
+-		iounmap(intr);
+-		printk(KERN_ERR "MPC52xx PIC: "
+-			"Unable to ioremap Bestcomm DMA registers!\n");
+-		goto end;
+-	}
+-
+-	printk(KERN_INFO "MPC52xx PIC: MPC52xx PIC Remapped at 0x%8.8x\n",
+-		picnode_regoffset);
+-	printk(KERN_INFO "MPC52xx PIC: MPC52xx SDMA Remapped at 0x%8.8x\n",
+-		sdmanode_regoffset);
+-
+-	/* Disable all interrupt sources. */
+-	out_be32(&sdma->IntPend, 0xffffffff);	/* 1 means clear pending */
+-	out_be32(&sdma->IntMask, 0xffffffff);	/* 1 means disabled */
+-	out_be32(&intr->per_mask, 0x7ffffc00);	/* 1 means disabled */
+-	out_be32(&intr->main_mask, 0x00010fff);	/* 1 means disabled */
+-	intr_ctrl = in_be32(&intr->ctrl);
+-	intr_ctrl &= 0x00ff0000;	/* Keeps IRQ[0-3] config */
+-	intr_ctrl |=	0x0f000000 |	/* clear IRQ 0-3 */
+-			0x00001000 |	/* MEE master external enable */
+-			0x00000000 |	/* 0 means disable IRQ 0-3 */
+-			0x00000001;	/* CEb route critical normally */
+-	out_be32(&intr->ctrl, intr_ctrl);
+-
+-	/* Zero a bunch of the priority settings. */
+-	out_be32(&intr->per_pri1, 0);
+-	out_be32(&intr->per_pri2, 0);
+-	out_be32(&intr->per_pri3, 0);
+-	out_be32(&intr->main_pri1, 0);
+-	out_be32(&intr->main_pri2, 0);
+-
+-	/*
+-	 * As last step, add an irq host to translate the real
+-	 * hw irq information provided by the ofw to linux virq
+-	 */
+-
+-	mpc52xx_irqhost =
+-	    irq_alloc_host(IRQ_HOST_MAP_LINEAR, MPC52xx_IRQ_HIGHTESTHWIRQ,
+-			   &mpc52xx_irqhost_ops, -1);
+-
+-	if (mpc52xx_irqhost) {
+-		mpc52xx_irqhost->host_data = picnode;
+-		printk(KERN_INFO "MPC52xx PIC is up and running!\n");
+-	} else {
+-		printk(KERN_ERR
+-			"MPC52xx PIC: Unable to allocate the IRQ host\n");
+-	}
+-
+-end:
+-	of_node_put(picnode);
+-	of_node_put(sdmanode);
+-}
+-
+-/*
+- * get_irq (public)
+-*/
+-unsigned int mpc52xx_get_irq(void)
+-{
+-	u32 status;
+-	int irq = NO_IRQ_IGNORE;
+-
+-	status = in_be32(&intr->enc_status);
+-	if (status & 0x00000400) {	/* critical */
+-		irq = (status >> 8) & 0x3;
+-		if (irq == 2)	/* high priority peripheral */
+-			goto peripheral;
+-		irq |=	(MPC52xx_IRQ_L1_CRIT << MPC52xx_IRQ_L1_OFFSET) &
+-			MPC52xx_IRQ_L1_MASK;
+-	} else if (status & 0x00200000) {	/* main */
+-		irq = (status >> 16) & 0x1f;
+-		if (irq == 4)	/* low priority peripheral */
+-			goto peripheral;
+-		irq |=	(MPC52xx_IRQ_L1_MAIN << MPC52xx_IRQ_L1_OFFSET) &
+-			MPC52xx_IRQ_L1_MASK;
+-	} else if (status & 0x20000000) {	/* peripheral */
+-	      peripheral:
+-		irq = (status >> 24) & 0x1f;
+-		if (irq == 0) {	/* bestcomm */
+-			status = in_be32(&sdma->IntPend);
+-			irq = ffs(status) - 1;
+-			irq |=	(MPC52xx_IRQ_L1_SDMA << MPC52xx_IRQ_L1_OFFSET) &
+-				MPC52xx_IRQ_L1_MASK;
+-		} else
+-			irq |=	(MPC52xx_IRQ_L1_PERP << MPC52xx_IRQ_L1_OFFSET) &
+-				MPC52xx_IRQ_L1_MASK;
+-	}
+-
+-	pr_debug("%s: irq=%x. virq=%d\n", __func__, irq,
+-		 irq_linear_revmap(mpc52xx_irqhost, irq));
+-
+-	return irq_linear_revmap(mpc52xx_irqhost, irq);
+-}
+-
 -- 
 1.4.3.rc2.g0503
