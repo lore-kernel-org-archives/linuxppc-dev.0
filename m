@@ -1,10 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20061127182431.788138000@arndb.de>
+Message-Id: <20061127182431.436201000@arndb.de>
 References: <20061127181851.796747000@arndb.de>
-Date: Mon, 27 Nov 2006 19:18:59 +0100
+Date: Mon, 27 Nov 2006 19:18:58 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: [POWERPC 8/9] fix missing #include in sys_ppc32.c
+Subject: [POWERPC 7/9] ps3: add a default zImage target
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
 	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,20 +16,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-sys_mmap is declared in asm/syscalls.h
+It's currently not possible to build the default zImage
+target if PS3 is the only selected platform. This is
+a hack to fall back to building the pseries style
+zImage, so the build is successful. This will probably
+change in the future, if someone writes a PS3 specific
+boot wrapper.
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Index: linux-2.6/arch/powerpc/kernel/sys_ppc32.c
+Index: linux-2.6/arch/powerpc/boot/Makefile
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/sys_ppc32.c
-+++ linux-2.6/arch/powerpc/kernel/sys_ppc32.c
-@@ -51,6 +51,7 @@
- #include <asm/time.h>
- #include <asm/mmu_context.h>
- #include <asm/ppc-pci.h>
-+#include <asm/syscalls.h>
- 
- /* readdir & getdents */
- #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+--- linux-2.6.orig/arch/powerpc/boot/Makefile
++++ linux-2.6/arch/powerpc/boot/Makefile
+@@ -155,6 +155,7 @@ $(obj)/uImage: vmlinux $(wrapperbits)
+ image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
+ image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
+ image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
++image-$(CONFIG_PPC_PS3)			+= zImage.pseries
+ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
+ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
 
 --
