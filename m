@@ -1,21 +1,24 @@
-Return-Path: <rutger@wingding.demon.nl>
-Received: from post-26.mail.nl.demon.net (post-26.mail.nl.demon.net
-	[194.159.73.196]) by ozlabs.org (Postfix) with ESMTP id B044D67C33
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 08:05:39 +1100 (EST)
-Date: Sun, 26 Nov 2006 22:05:35 +0100
-From: Rutger Nijlunsing <eludias@dse.nl>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: powerpc.git build error
-Message-ID: <20061126210535.GA5639@nospam.com>
-References: <20061125225807.GA10510@nospam.com>
-	<1164523183.10222.1.camel@localhost.localdomain>
-	<20061126190609.GA20291@nospam.com>
-	<Pine.LNX.4.60.0611262144230.8431@poirot.grange>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp111.sbc.mail.mud.yahoo.com (smtp111.sbc.mail.mud.yahoo.com
+	[68.142.198.210]) by ozlabs.org (Postfix) with SMTP id CB9E067C3B
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 12:21:29 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [Bulk] Re: NTP time sync
+Date: Sun, 26 Nov 2006 17:21:23 -0800
+References: <20061126202148.190d5b4b@inspiron>
+	<00b301c711a3$07cf3530$020120ac@Jocke>
+	<20061126235317.5d40d22c@inspiron>
+In-Reply-To: <20061126235317.5d40d22c@inspiron>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0611262144230.8431@poirot.grange>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: eludias@dse.nl
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200611261721.25473.david-b@pacbell.net>
+Cc: akpm@osdl.org, 'Andi Kleen' <ak@muc.de>,
+	'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>,
+	ralf@linux-mips.org, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, paulus@samba.org, kkojima@rr.iij4u.or.jp,
+	davem@davemloft.net, rmk@arm.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Nov 26, 2006 at 09:47:22PM +0100, Guennadi Liakhovetski wrote:
-> On Sun, 26 Nov 2006, Rutger Nijlunsing wrote:
+On Sunday 26 November 2006 2:53 pm, Alessandro Zummo wrote:
+> On Sun, 26 Nov 2006 22:37:10 +0100
+> "Joakim Tjernlund" <joakim.tjernlund@transmode.se> wrote:
 > 
-> > Long story... I'm trying to get a completely working Lombard with all
-> > of its features (PCMCIA wireless, suspend-to-RAM, etc.). However, this
+> > >  the concept of static numbers is quite old...
+> > 
+> > Yes it is old, but is the old way unsupported now? I have an embedded target
+> > which is using the old static /dev directory, do I need to make
+> > it udev aware to use newer features like the rtc subsystem?
 > 
-> I would be interested to hear if you manage to get suspend-to-ram and 
-> kexec working! Are there any external patches available or you're just 
-> starting to work on this? I'm also trying to do those (mostly str, kexec 
-> just tried shortly, didn't work) on an embedded 8241 (G2 core).
+>  That can be a good option. 
 
-Hold your horses, I'm just a simple user without too much
-understanding of the hardware trying to get most out of his PowerBook
-G3 Lombard (with broken L2 cache: 33bogomips) which I got a week ago :)
+And it's simple enough.  You might not even need to run "udevd"
+if you don't have hotpluggable devices ... just the startup stuff,
+which you might not need after the first boot.  (Since the set of
+devices will be stable, /dev/* won't change, and you can speed up
+system boot by that small delta.)
 
-It seems suspend-to-ram is working to some extend, or at least
-'should' work out-of-the-box. When I close the lid and reopen it, it
-resumes 'a little': PCMCIA cards seem to power up again (TX/RX WiFi
-led starts to flash again), but the screen stays dark. I haven't tried
-to debug this yet, since getting WiFi to work
+I certainly run udev on some small systems, with /sbin/hotplug as
+appended.  Getting udev set up, and handling coldplug, is left as
+an exercise for the reader.  :)
 
-Furthermore I'm not interested in kexec if 'all is working'. But since
-'rebooting' already hangs after the powerdown, I'm more focused on
-getting the normal 'reboot' working.
+- Dave
 
-Since you're using more esotoric hardware, I'm afraid it will be quite
-difficult without getting your hands very dirty.
+#!/bin/ash
+#
+# "hotplug" initializes devices ... hardware drivers get modprobed and
+# create class devices.  then later udev handles /dev node creation and
+# invokes programs that make userspace aware of the new device node.
+#
+# install as /sbin/hotplug
 
--- 
-Rutger Nijlunsing ---------------------------------- eludias ed dse.nl
-never attribute to a conspiracy which can be explained by incompetence
-----------------------------------------------------------------------
+if [ ! -d /sys ]
+then
+	exit 1
+fi
+cd /sys
+
+if [ "$ACTION" = "add" -a "$SUBSYSTEM" = "mmc" ]
+then
+	# MMC doesn't support modalias yet, but this is
+	# the only choice until we have SDIO support.
+	MODALIAS=mmc_block
+fi
+
+if [ "$ACTION" = "add" -a -n "$MODALIAS" -a ! -L $DEVPATH/driver ]
+then
+	# most important subsystems now have $MODALIAS support:
+	modprobe -q $MODALIAS
+fi
+
+if [ -n "$DEVPATH" ]
+then
+	/sbin/udevsend $1
+fi
