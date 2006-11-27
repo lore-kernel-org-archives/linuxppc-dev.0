@@ -1,20 +1,32 @@
-Return-Path: <adrian@humboldt.co.uk>
-Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E746667B77
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:02:35 +1100 (EST)
-Subject: Re: Worst case performance of up()
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1164401124.5653.86.camel@localhost.localdomain>
-References: <1164385262.11292.76.camel@localhost.localdomain>
-	<1164401124.5653.86.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 27 Nov 2006 21:02:16 +0000
-Message-Id: <1164661336.11001.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <linas@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2A91F67BE5
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 08:11:00 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kARLAj5L006745
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 16:10:45 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kARLAFRK030988
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 16:10:21 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kARLAECu022478
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Nov 2006 16:10:15 -0500
+Date: Mon, 27 Nov 2006 15:10:13 -0600
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Reorganise and then fixup the pseries cpu hotplug code
+Message-ID: <20061127211013.GI10879@austin.ibm.com>
+References: <20061123021132.B03F767C18@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061123021132.B03F767C18@ozlabs.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: srinivasa@in.ibm.com, ego@in.ibm.com, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, ntl@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-11-25 at 07:45 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2006-11-24 at 16:21 +0000, Adrian Cox wrote:
-> > Does anybody have any ideas what could make up() take so long in this
-> > circumstance? I'd expect cache transfers to make the operation about 100
-> > times slower, but this looks like repeated cache ping-pong between the
-> > two CPUs.
+On Thu, Nov 23, 2006 at 01:11:30PM +1100, Michael Ellerman wrote:
+> The pseries cpu hotplug code is currently spread between ./kernel/rtas.c,
+> ./platforms/pseries/smp.c and ./platforms/pseries/setup.c. Some of it is
+> not #ifdef CONFIG_HOTPLUG_CPU, but it should be.
 > 
-> Is it hung in up() (toplevel) or __up (low level) ?
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Not yet proven.
+Ack'ed by: Linas Vepstas <linas@austin.ibm.com>
 
-> Have you tried some oprofile runs to catch the exact instruction where
-> the cycles appear to be wasted ?
+> Linas, Srinivasa, can you test that this addresses the problems you
+> were seeing. It should, but it'd be good if you could test it.
 
-I've spent a day wrestling with oprofile, but I've not managed to
-trigger the problem while profiling yet.  It's possible that the slight
-overhead of oprofile is enough to change the scheduling behaviour.
+Actually, I was debugging Srinivasa's problem long-distance, which
+was an internally-reported bugzilla bug that had landed in my lap.
+I don't actually have a testable config. But, based on this chain
+of mails, I am happy with the result!
 
-It remains an odd problem, and rather hard to reproduce.  Unless I get
-better data with oprofile this one may remain in the mystery file.
-
-> Have you tried moving the semaphore away from whatever other data might
-> be manipulated at the same time ? In it's own cache line maybe ?
-
-I did try that, but it didn't make any difference.
-
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+--linas
