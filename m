@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A2DF667A3B
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 19:46:48 +1100 (EST)
-Subject: Re: [PATCH] powerpc: fix OF pci flags parsing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20061127212129.2484d68d@localhost.localdomain>
-References: <20061127212129.2484d68d@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 28 Nov 2006 19:46:37 +1100
-Message-Id: <1164703597.5350.73.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 81D8767B5B
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 22:31:57 +1100 (EST)
+Received: from pademelon.sonytel.be (piraat.sonytel.be [43.221.60.197])
+	by vervifontaine.sonycom.com (Postfix) with ESMTP id AF81F58ABD
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 12:31:53 +0100 (MET)
+Date: Tue, 28 Nov 2006 12:31:53 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Clean images in arch/powerpc/boot
+Message-ID: <Pine.LNX.4.62.0611281230590.15543@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-11-27 at 21:21 -0600, Olof Johansson wrote:
-> For PCI devices with only io ports, of_bus_pci_get_flags() will fall
-> through and still mark the resource as IORESOURCE_MEM.
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Oops :-) 
+Add a rule to clean up the various generated image files in arch/powerpc/boot/
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-> ---
-> 
-> This should be fine to hold until 2.6.20, since noone (as far as I
-> know) has hit it in the wild.
-> 
-> 
-> diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-> index 346fb7b..0dfbe1c 100644
-> --- a/arch/powerpc/kernel/prom_parse.c
-> +++ b/arch/powerpc/kernel/prom_parse.c
-> @@ -160,9 +160,11 @@ static unsigned int of_bus_pci_get_flags
->  	switch((w >> 24) & 0x03) {
->  	case 0x01:
->  		flags |= IORESOURCE_IO;
-> +		break;
->  	case 0x02: /* 32 bits */
->  	case 0x03: /* 64 bits */
->  		flags |= IORESOURCE_MEM;
-> +		break;
->  	}
->  	if (w & 0x40000000)
->  		flags |= IORESOURCE_PREFETCH;
+---
+ arch/powerpc/boot/Makefile |    1 +
+ 1 files changed, 1 insertion(+)
+
+--- ps3-linux-src.orig/arch/powerpc/boot/Makefile
++++ ps3-linux-src/arch/powerpc/boot/Makefile
+@@ -181,3 +181,4 @@ install: $(CONFIGURE) $(image-y)
+ 
+ clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.strip.gz)
+ clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.bin.gz)
++clean-files += $(image-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
