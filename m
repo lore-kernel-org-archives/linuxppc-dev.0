@@ -1,17 +1,18 @@
-Return-Path: <petermendham@computing.dundee.ac.uk>
-Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
-	[134.36.36.15]) by ozlabs.org (Postfix) with ESMTP id 6DFDC679FD
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from smtp5-g19.free.fr (smtp5-g19.free.fr [212.27.42.35])
+	by ozlabs.org (Postfix) with ESMTP id 7133367B92
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Nov 2006 21:57:26 +1100 (EST)
-Message-ID: <456C1611.3010605@computing.dundee.ac.uk>
-Date: Tue, 28 Nov 2006 10:57:21 +0000
-From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+	Wed, 29 Nov 2006 00:39:47 +1100 (EST)
+From: "alayrac" <christophe.alayrac@cresitt.com>
+To: "'Peter Mendham'" <petermendham@computing.dundee.ac.uk>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE : RE : Using Linux on ML405: Some basic questions
+Date: Tue, 28 Nov 2006 14:39:36 +0100
+Message-ID: <001701c712f2$a5450ce0$c900a8c0@CRESITTLAB>
 MIME-Version: 1.0
-To: Sharon Feldman <sharonf@scopus.net>,  linuxppc-embedded@ozlabs.org
-Subject: Re: Using Linux on ML405: Some basic questions
-References: <8506C3905ED0764F889ADEB33E3A9E8062CF4F@MAIA.scopus.net>
-In-Reply-To: <8506C3905ED0764F889ADEB33E3A9E8062CF4F@MAIA.scopus.net>
-Content-Type: text/plain; charset=windows-1255; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <456C14F0.5020103@computing.dundee.ac.uk>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sharon Feldman wrote:
-> > [snip]
-> > I have a few questions, I was wondering if someone could help me out:
-> > [snip]
-> > 3) I will eventually be wanting tri-mode ethernet support, ideally under 
-> > a 2.6 kernel.  I've been trying to follow the discussions on this 
-> > mailing list with respect to the support for the tri-mode MAC and 
-> > scatter gather/DMA support.  Can anyone summarise what sort of stage 
-> > this is at? Is auto-negotiation supported? Once I get past the hurdles I 
-> > have at the moment my next step is to attempt incorporating the tri-mode 
-> > IP and getting it working under Linux.  If there's anything I can do to 
-> > help the effort at that point I'd be glad to put in some time.
->
-> The Adaptor Files Nee To Be Updated To ML405, To Support Tri-Mode Auto-Negotiation.
-> The Current Driver Will Work Fine For 1GB, But That's All.
->   
-Thanks for you reply, can you tell me where to look to find out more 
-about this?
 
--- Peter
+
+CRESITT INDUSTRIE
+12 Rue de Blois, BP6744
+45067 ORLEANS Cedex 2
+Tel : 02.38.49.45.59
+Fax :02.38.49.45.55
+Email : christophe.alayrac@cresitt.com=20
+Web : http://www.cresitt.com
+
+
+<----> -----Message d'origine-----
+<----> De=A0: Peter Mendham [mailto:petermendham@computing.dundee.ac.uk]
+<----> Envoy=E9=A0: mardi 28 novembre 2006 11:53
+<----> =C0=A0: alayrac; linuxppc-embedded@ozlabs.org
+<----> Objet=A0: Re: RE : Using Linux on ML405: Some basic questions
+<---->=20
+<----> Wow.  Thanks Chris, that makes a lot of sense, although I had no
+idea
+<----> that the SystemAce chip was quite so clever.  I take it that the
+<----> bitstream in the .ace file is specially constructed by the tools
+to
+<----> do
+<----> the DRAM download?  What is it that produces the text:
+<----> loaded at:     00400000 004E21E4
+<----> board data at: 004DF13C 004DF154
+<----> relocated to:  00405660 00405678
+<----> zimage at:     00405C25 004DE92F
+<----> avail ram:     004E3000 04000000
+<----> I have always assumed that it is a piece of software that does
+this.
+<----> Is
+<----> that correct?
+
+It must be xmd that display messages in its console. All displayed
+address correspond to sections (see the linker file) for exemple txt if
+for the code , bss is for data...
+There is no code running on the powerpc during elf dowload.
+<---->=20
+<----> Thanks very much for replying, the information is really helpful.
+<----> -- Peter
+
+kinds regards
+
+Chris
