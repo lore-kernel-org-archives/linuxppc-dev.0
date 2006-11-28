@@ -1,13 +1,15 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <456BAB86.4070104@am.sony.com>
-Date: Mon, 27 Nov 2006 19:22:46 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [POWERPC] ps3: add a default zImage target
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 229B467C1A
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 14:23:35 +1100 (EST)
+Date: Mon, 27 Nov 2006 21:21:29 -0600
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: fix OF pci flags parsing
+Message-ID: <20061127212129.2484d68d@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,42 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It's currently not possible to build the default zImage target if PS3 is the
-only selected platform. This adds a target that builds a stripped vmlinux,
-which the PS3 bootloader (kboot) will be able to load.
+For PCI devices with only io ports, of_bus_pci_get_flags() will fall
+through and still mark the resource as IORESOURCE_MEM.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
 ---
 
-This replaces Arnd's patch '[POWERPC 7/9] ps3: add a default zImage target'
-sent out earlier today.
+This should be fine to hold until 2.6.20, since noone (as far as I
+know) has hit it in the wild.
 
--Geoff
 
- arch/powerpc/boot/Makefile |    4 ++++
- 1 files changed, 4 insertions(+)
-
-Index: cell--common--7/arch/powerpc/boot/Makefile
-===================================================================
---- cell--common--7.orig/arch/powerpc/boot/Makefile
-+++ cell--common--7/arch/powerpc/boot/Makefile
-@@ -149,6 +149,9 @@
- $(obj)/zImage.initrd.miboot: vmlinux $(wrapperbits)
- 	$(call cmd,wrap_initrd,miboot)
- 
-+$(obj)/zImage.ps3: vmlinux
-+	$(STRIP) -s -R .comment $< -o $@
-+
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call cmd,wrap,uboot)
- 
-@@ -157,6 +160,7 @@
- image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
-+image-$(CONFIG_PPC_PS3)			+= zImage.ps3
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
- 
- # For 32-bit powermacs, build the COFF and miboot images
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 346fb7b..0dfbe1c 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -160,9 +160,11 @@ static unsigned int of_bus_pci_get_flags
+ 	switch((w >> 24) & 0x03) {
+ 	case 0x01:
+ 		flags |= IORESOURCE_IO;
++		break;
+ 	case 0x02: /* 32 bits */
+ 	case 0x03: /* 64 bits */
+ 		flags |= IORESOURCE_MEM;
++		break;
+ 	}
+ 	if (w & 0x40000000)
+ 		flags |= IORESOURCE_PREFETCH;
