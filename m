@@ -1,22 +1,28 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Return-Path: <johnrose@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2D04767BC9
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Nov 2006 08:05:52 +1100 (EST)
-Message-ID: <456CA4A6.60404@am.sony.com>
-Date: Tue, 28 Nov 2006 13:05:42 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [POWERPC 6/9] ps3: multiplatform build fixes
-References: <20061127181851.796747000@arndb.de>
-	<20061127182431.191420000@arndb.de>
-In-Reply-To: <20061127182431.191420000@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AEE5A67C26
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Nov 2006 09:47:19 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kASMlE4p030429
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 17:47:15 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kASMlEfD523650
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 15:47:14 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kASMlEqY017115
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 15:47:14 -0700
+Subject: powerpc: xics_teardown_cpu()
+From: John Rose <johnrose@austin.ibm.com>
+To: External List <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1164754032.20203.4.camel@sinatra.austin.ibm.com>
+Mime-Version: 1.0
+Date: Tue, 28 Nov 2006 16:47:12 -0600
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> A few code paths need to check whether or not they are running
-> on the PS3's LV1 hypervisor before making hcalls. This introduces
-> a new firmware feature bit for this, FW_FEATURE_PS3_LV1.
-> 
-> Now when both PS3 and IBM_CELL_BLADE are enabled, but not PSERIES,
-> FW_FEATURE_PS3_LV1 and FW_FEATURE_LPAR get enabled at compile time,
-> which is a bug. The same problem can also happen for (PPC_ISERIES &&
-> !PPC_PSERIES && PPC_SOMETHING_ELSE). In order to solve this, I
-> introduce a new CONFIG_PPC_NATIVE option that is set when at least
-> one platform is selected that can run without a hypervisor and then
-> turns the firmware feature check into a run-time option.
-> 
-> The new cell oprofile support that was recently merged does not
-> work on hypervisor based platforms like the PS3, therefore make
-> it depend on PPC_CELL_NATIVE instead of PPC_CELL. This may change
-> if we get oprofile support for PS3.
-> 
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+This function currently makes an eoi call that unconditionally sets the
+CPPR bits to 0xff.  For the case of CPU DLPAR remove, the firmware
+require those bits to be 0x00.  We explicitly set the CPPR to 0xff
+earlier in the function.
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Any opinions on whether we should:
+1) Reorder xics_teardown_cpu() to set the CPPR after the eoi call
+2) Add another call to zero out the CPPR at the end of teardown_cpu()
+3) Add a new hcall (H_IPOLL) wrapper to determine the current CPPR, and
+use that in the eoi call.
+
+Any thoughts would be greatly appreciated!
+
+Thanks-
+John
