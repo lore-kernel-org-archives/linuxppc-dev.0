@@ -1,23 +1,18 @@
-Return-Path: <akhilesh@innomedia.soft.net>
-Received: from gateway.innomedia.soft.net (mail.innomedia.soft.net
-	[164.164.79.130])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99107679E9
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from smtp6-g19.free.fr (smtp6-g19.free.fr [212.27.42.36])
+	by ozlabs.org (Postfix) with ESMTP id 4623F679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Nov 2006 18:15:58 +1100 (EST)
-Received: from innomedia ([192.168.18.10]) (authenticated bits=0)
-	by gateway.innomedia.soft.net (8.12.11/8.12.11) with ESMTP id
-	kAS6oXT1009671
-	for <linuxppc-embedded@ozlabs.org>; Tue, 28 Nov 2006 12:20:33 +0530
-Message-ID: <025b01c712b9$1e191b00$0a12a8c0@innomedia>
-From: "Akhilesh Soni" <akhilesh@innomedia.soft.net>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Question regarding Socket Buffers
-Date: Tue, 28 Nov 2006 12:17:47 +0530
+	Tue, 28 Nov 2006 19:09:31 +1100 (EST)
+From: "alayrac" <christophe.alayrac@cresitt.com>
+To: "'Peter Mendham'" <petermendham@computing.dundee.ac.uk>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE : Using Linux on ML405: Some basic questions
+Date: Tue, 28 Nov 2006 09:09:20 +0100
+Message-ID: <000001c712c4$8252e870$c900a8c0@CRESITTLAB>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0258_01C712E7.37496250"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <456AF9A5.70301@computing.dundee.ac.uk>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,95 +23,124 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Peter,
 
-------=_NextPart_000_0258_01C712E7.37496250
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+I'will try to help you on systemace only.
 
-Hi,
+XACCACE can load an ace file from a FAT16 partition into the FPGA fabric
+using boundary scan chain (JTAG).
 
-I wish to transmit a skb from a kernel module.For this I've created a =
-skb and filled all the necessary fields and the called the called =
-dev->hard_start_xmit of the underlying driver and this way I'm able to =
-transmit sucessfully.
+First of all it loads the FPGA fabric, the bitsream file. If you have a
+look in Applications in the ML405 project there should be a bootloop
+code marked as activated and as used to initialized BRAM.=20
+This code is loaded at address 0xFFFFFFFC (where there is a BRAM) wich
+is the reset address of the powerpc. Thus after bitstream dowload, the
+powerpc is in an infinite loop so that it won't try to access any
+peripheral, especially memory.
 
-Now here I've to do memcpy the data every time in the skb->data before =
-transmitting which increases my overhead If I've to transmit a lot of =
-data. Is there any way in which I can give a pointer to my buffer for =
-the data part of the packet and the headers I can fill manually.
+Then systemeace will downlaod the elf file, in your case the kernel
+image (it could be standalone apllication as well as uboot).
 
-Assuming that low level driver supports scatter and gather IO and it can =
-take non-linear skb. What is the procedure to do so. I suppose there is =
-some shared socket info by which can be done.
+To do so the systemace take controle of powerpc through jtag chain (just
+as you are dowing with the JTAG cable when you are debugging you code on
+powerpc inside the FPGA). In fact the FPGA fabric include a JTAG daisy
+chain, so that the PowerPC is seen on JTAG chain after FPGA
+initialization (if you start an xps design from scratch you will see in
+the wizard that you can select the debug chain of your powerpc from JTAG
+or stub...)
 
-Please advice if this is feasible and what are the steps that need to be =
-done to do so. I only need to avoid the data copy and my headers are =
-prepared in advance and there are not much changes in the header part of =
-the packet. This packet is an UDP packet.
+So just to finish, as soon as system ace can see the PowerPC through
+JTAG, it can see and use all powerpc peripherals and espaecially the
+memory in your case. So it read the destination address of the elf image
+to laod (from the elf file itself) and just copy the data at the
+specific address. Then it put the PC at this address and sart the
+powerpc.
+
+Regards.
+
+Chris
+
+CRESITT INDUSTRIE
+12 Rue de Blois, BP6744
+45067 ORLEANS Cedex 2
+Tel : 02.38.49.45.59
+Fax :02.38.49.45.55
+Email : christophe.alayrac@cresitt.com=20
+Web : http://www.cresitt.com
 
 
-Thanx in advance.
-
-Regards,
-Akhilesh
-
-
-
-------=_NextPart_000_0258_01C712E7.37496250
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2600.0" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>I wish to transmit a skb from a kernel =
-module.For=20
-this I've created a skb and filled all the necessary fields and the =
-called the=20
-called dev-&gt;hard_start_xmit of the underlying driver and this way I'm =
-able to=20
-transmit sucessfully.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Now here I've to do memcpy the data =
-every time in=20
-the skb-&gt;data before transmitting which increases my overhead If I've =
-to=20
-transmit a lot of data. Is there any way in which I can give a pointer =
-to my=20
-buffer for the data part of the packet and the headers I can fill=20
-manually.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Assuming that low level driver supports =
-scatter and=20
-gather IO and it can take non-linear skb. What is the procedure to do =
-so. I=20
-suppose there is some shared socket info by which can be =
-done.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Please advice if this is feasible and =
-what are the=20
-steps that need to be done to do so. I only need to avoid the data copy =
-and my=20
-headers are prepared in advance and there are not much changes in the =
-header=20
-part of the packet. This packet is an UDP packet.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Thanx in advance.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>Akhilesh</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
-
-------=_NextPart_000_0258_01C712E7.37496250--
+<----> -----Message d'origine-----
+<----> De=A0: linuxppc-embedded-
+<----> bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org
+[mailto:linuxppc-
+<----> embedded-bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org] De =
+la
+<----> part de Peter Mendham
+<----> Envoy=E9=A0: lundi 27 novembre 2006 15:44
+<----> =C0=A0: linuxppc-embedded@ozlabs.org
+<----> Objet=A0: Using Linux on ML405: Some basic questions
+<---->=20
+<----> Dear all,
+<---->=20
+<----> I am experimenting with Linux on an ML405 dev board in
+preparation
+<----> for
+<----> designing a board of our own.  I am not massively knowledgeable
+about
+<----> Linux internals and am learning as I go along.  At the moment I'm
+<----> working with a 2.4.26 kernel and the demonstration hardware
+<----> configuration.  I have built the kernel and created a new root
+file
+<----> systems using buildroot/busybox.  Most of the time I have a
+working
+<----> system :)
+<---->=20
+<----> I have a few questions, I was wondering if someone could help me
+out:
+<---->=20
+<----> 1) I don't really understand how the kernel image gets loaded
+from
+<----> the
+<----> .ace file.  I've seen articles which say that the SystemAce
+<----> controller
+<----> puts the kernel image directly into RAM, but on inspection of the
+<----> datasheet I can't see any capability other that JTAG programming
+and
+<----> acting as a slave to a processor.  Can anyone explain the way
+this
+<----> works?
+<---->=20
+<----> 2) I'm trying to simplify the kernel as much as possible, is
+there a
+<----> way
+<----> to do without devfs?  If I don't have devfs do I need an initrd?
+If
+<----> so,
+<----> what do I need to put on the initrd, can it just be a minimal
+/dev
+<----> directory?
+<---->=20
+<----> 3) I will eventually be wanting tri-mode ethernet support,
+ideally
+<----> under
+<----> a 2.6 kernel.  I've been trying to follow the discussions on this
+<----> mailing list with respect to the support for the tri-mode MAC and
+<----> scatter gather/DMA support.  Can anyone summarise what sort of
+stage
+<----> this is at? Is auto-negotiation supported? Once I get past the
+<----> hurdles I
+<----> have at the moment my next step is to attempt incorporating the
+tri-
+<----> mode
+<----> IP and getting it working under Linux.  If there's anything I can
+do
+<----> to
+<----> help the effort at that point I'd be glad to put in some time.
+<---->=20
+<----> Many thanks in advance,
+<----> -- Peter
+<---->=20
+<----> _______________________________________________
+<----> Linuxppc-embedded mailing list
+<----> Linuxppc-embedded@ozlabs.org
+<----> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
