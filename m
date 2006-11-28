@@ -1,18 +1,14 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 81D8767B5B
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 22:31:57 +1100 (EST)
-Received: from pademelon.sonytel.be (piraat.sonytel.be [43.221.60.197])
-	by vervifontaine.sonycom.com (Postfix) with ESMTP id AF81F58ABD
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Nov 2006 12:31:53 +0100 (MET)
-Date: Tue, 28 Nov 2006 12:31:53 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Clean images in arch/powerpc/boot
-Message-ID: <Pine.LNX.4.62.0611281230590.15543@pademelon.sonytel.be>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 1463E67BFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Nov 2006 07:01:57 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Tue, 28 Nov 2006 21:01:52 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20061128200152.16610@gmx.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: DEFAULT_CUIMAGE supported already in arch/powerpc?
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +18,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Add a rule to clean up the various generated image files in arch/powerpc/boot/
+I wonder, if the DEFAULT_CUIMAGE target is already supported in the lastest kernel source code (>=2.6.18). I couldn't found any references to it in 2.6.18, but it would be useful for porting the AmigaOne platform code to the powerpc architecture.
+Unfortunately I couldn't get in contact with the main developer of the AmigaOne U-boot firmware yet. This makes the DEFAULT_CUIMAGE target the only viable solution, because the U-boot firmware used in the A1 is too old to support device trees and the current platform init code needs access to the bd_t structure (thus zImage doesn't work too - correct me, if I'm wrong).
 
-Signed-Off-By: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Any information about this?
 
----
- arch/powerpc/boot/Makefile |    1 +
- 1 files changed, 1 insertion(+)
+Regards,
 
---- ps3-linux-src.orig/arch/powerpc/boot/Makefile
-+++ ps3-linux-src/arch/powerpc/boot/Makefile
-@@ -181,3 +181,4 @@ install: $(CONFIGURE) $(image-y)
- 
- clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.strip.gz)
- clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.bin.gz)
-+clean-files += $(image-)
+Gerhard
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-- 
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
