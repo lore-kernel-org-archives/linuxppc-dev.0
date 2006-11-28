@@ -1,14 +1,22 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 1463E67BFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Nov 2006 07:01:57 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Tue, 28 Nov 2006 21:01:52 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20061128200152.16610@gmx.net>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2D04767BC9
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Nov 2006 08:05:52 +1100 (EST)
+Message-ID: <456CA4A6.60404@am.sony.com>
+Date: Tue, 28 Nov 2006 13:05:42 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Subject: DEFAULT_CUIMAGE supported already in arch/powerpc?
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [POWERPC 6/9] ps3: multiplatform build fixes
+References: <20061127181851.796747000@arndb.de>
+	<20061127182431.191420000@arndb.de>
+In-Reply-To: <20061127182431.191420000@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,17 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Arnd Bergmann wrote:
+> A few code paths need to check whether or not they are running
+> on the PS3's LV1 hypervisor before making hcalls. This introduces
+> a new firmware feature bit for this, FW_FEATURE_PS3_LV1.
+> 
+> Now when both PS3 and IBM_CELL_BLADE are enabled, but not PSERIES,
+> FW_FEATURE_PS3_LV1 and FW_FEATURE_LPAR get enabled at compile time,
+> which is a bug. The same problem can also happen for (PPC_ISERIES &&
+> !PPC_PSERIES && PPC_SOMETHING_ELSE). In order to solve this, I
+> introduce a new CONFIG_PPC_NATIVE option that is set when at least
+> one platform is selected that can run without a hypervisor and then
+> turns the firmware feature check into a run-time option.
+> 
+> The new cell oprofile support that was recently merged does not
+> work on hypervisor based platforms like the PS3, therefore make
+> it depend on PPC_CELL_NATIVE instead of PPC_CELL. This may change
+> if we get oprofile support for PS3.
+> 
+> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-I wonder, if the DEFAULT_CUIMAGE target is already supported in the lastest kernel source code (>=2.6.18). I couldn't found any references to it in 2.6.18, but it would be useful for porting the AmigaOne platform code to the powerpc architecture.
-Unfortunately I couldn't get in contact with the main developer of the AmigaOne U-boot firmware yet. This makes the DEFAULT_CUIMAGE target the only viable solution, because the U-boot firmware used in the A1 is too old to support device trees and the current platform init code needs access to the bd_t structure (thus zImage doesn't work too - correct me, if I'm wrong).
-
-Any information about this?
-
-Regards,
-
-Gerhard
-
--- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
