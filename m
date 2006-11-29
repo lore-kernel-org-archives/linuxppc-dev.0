@@ -1,11 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17773.28579.192615.227454@cargo.ozlabs.ibm.com>
-Date: Wed, 29 Nov 2006 22:31:47 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Tell firmware we can handle POWER6 compatible mode
+Return-Path: <ryusuke@osrg.net>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E7F8F67A3B
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Nov 2006 16:15:07 +1100 (EST)
+Date: Wed, 29 Nov 2006 14:07:51 +0900 (JST)
+Message-Id: <20061129.140751.48374104.ryusuke@osrg.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2.6.19-rc6] powerpc: fix of_device __must_check warning
+From: Ryusuke Konishi <ryusuke@osrg.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,21 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the "logical" PVR value used by POWER6 in "compatible" mode
-to the list of PVR values that the kernel tells firmware it is able to
-handle.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+This fixes the following compile warning:
+
+arch/powerpc/kernel/of_device.c: In function 'of_device_register':
+arch/powerpc/kernel/of_device.c:199: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
+
+Signed-off-by: Ryusuke Konishi <ryusuke@osrg.net>
 ---
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 396109a..520ef42 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -643,6 +643,7 @@ static void __init early_cmdline_parse(v
- static unsigned char ibm_architecture_vec[] = {
- 	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
- 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
-+	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
- 	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
- 	5 - 1,				/* 5 option vectors */
+Hi,
+
+This patch becomes useless when Benjamin's "powerpc: of_platform 
+improvements" work will be done.  But, transiently, it helps to 
+reduce gcc warning arising on the latest Linus's tree.
+
+Regards,
+
+Ryusuke
+
+diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
+index 397c83e..8831f00 100644
+--- a/arch/powerpc/kernel/of_device.c
++++ b/arch/powerpc/kernel/of_device.c
+@@ -196,9 +196,11 @@ int of_device_register(struct of_device
+ 	if (rc)
+ 		return rc;
  
+-	device_create_file(&ofdev->dev, &dev_attr_devspec);
++	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
++	if (rc)
++		device_unregister(&ofdev->dev);
+ 
+-	return 0;
++	return rc;
+ }
+ 
+ void of_device_unregister(struct of_device *ofdev)
