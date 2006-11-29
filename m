@@ -1,29 +1,16 @@
-Return-Path: <st@iss.tu-darmstadt.de>
-Received: from lnx130.hrz.tu-darmstadt.de (lnx130.hrz.tu-darmstadt.de
-	[130.83.174.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02D4A67B8F
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s18.bay0.hotmail.com (bay0-omc3-s18.bay0.hotmail.com
+	[65.54.246.218]) by ozlabs.org (Postfix) with ESMTP id 39481679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Nov 2006 21:08:11 +1100 (EST)
-Received: from mailserver3.hrz.tu-darmstadt.de (lnx116.hrz.tu-darmstadt.de
-	[130.83.174.28])
-	by lnx130.hrz.tu-darmstadt.de (8.13.4/8.12.10) with ESMTP id
-	kAT9sIoR021561
-	for <linuxppc-embedded@ozlabs.org>; Wed, 29 Nov 2006 10:54:18 +0100
-Received: from [130.83.164.10] (helo=iss10.vlsi.informatik.tu-darmstadt.de)
-	by mailserver3.hrz.tu-darmstadt.de with esmtpsa
-	(TLS-1.0:DHE_RSA_AES_128_CBC_SHA1:16) (Exim 4.60)
-	(envelope-from <st@iss.tu-darmstadt.de>) id 1GpM8w-0004XS-AS
-	for linuxppc-embedded@ozlabs.org; Wed, 29 Nov 2006 10:54:18 +0100
-From: Silken Tiger <st@iss.tu-darmstadt.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: xilinx xup + 2.6.19-rc6 uartlite
-Date: Wed, 29 Nov 2006 10:54:14 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200611291054.14913.st@iss.tu-darmstadt.de>
+	Thu, 30 Nov 2006 01:33:41 +1100 (EST)
+Message-ID: <BAY110-F289C3474171EF7F5FA8CA8B2E40@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: akonovalov@ru.mvista.com
+Subject: Some questions about the Xilinx Temac driver.
+Date: Wed, 29 Nov 2006 14:33:37 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,26 +21,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Dear Andrei,
+I have some questions about your xilinx Temac driver. If possible, please 
+give me a hand on such confusing problems. 
 
-I was trying to get linux with the uartlite patches on a Xilinx XUP board 
-running. Unfortunatly i get no output on the serial line. I have a other 2.6. 
-Kernel running with serial output on this board. 
+1. I am using the driver from 
+http://source.mvista.com/~ank/paulus-powerpc/20060309/, and the IP cores of 
+plb_temac and hard_temac whose hardware versions are 2.00a and 1.00a 
+specifically. I know the newest versions of those hardwares are 3.00a and 
+3.00a. Is your driver support the 3.00a version hardware? Also, is the 
+driver from http://source.mvista.com/~ank/paulus-powerpc/20060309/ the 
+latest one for Xilinx Temac? If you have some updated version, please tell 
+me the address. 
 
-I have not given the uartlite the address of the uartlite address in my 
-design, so i suppose it can not work. So how do i give the uartlite driver an 
-idea where to find its Hardware? I think it could be done via kernel cmd line 
-parameters?
+2. Is that driver from the above address able to support SGDMA? In fact, I 
+am testing the throughput of the Temac enet by my own little program which 
+is very simple. In the program running on the board, the pseudo code looks 
+just like this:
+     for(;;){
+           select();
+           if(FD_ISSET()){
+                 recvfrom();
+           }
+           
+           sendto();
+     }
 
-.config settings:
-CONFIG_UART0_TTYS0=y
-CONFIG_SERIAL_UARTLITE=y
-# CONFIG_SERIAL_8250 is not set
-CONFIG_SERIAL_UARTLITE_CONSOLE=y
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
+The program is just to receive packets from a pc and then transfer them 
+back. But in this condition, the embedded PowerPC CPU is easily used by 
+100&. So I suspect that maybe the DMA is not running properly. Could you 
+please say something about the DMA in your driver? 
 
-Thanks 
-ST
+Thanks a lot for your telling.
 
-PS: please cc me as i am currently not subscribed to the list.
+Regards
+Ming
+
+_________________________________________________________________
+√‚∑—œ¬‘ÿ MSN Explorer:   http://explorer.msn.com/lccn/  
