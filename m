@@ -1,20 +1,23 @@
-Return-Path: <mgalassi@c-cor.com>
-Received: from penguin.ncube.com (penguin.ncube.com [134.242.67.78])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 733CF67A39
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 67E1767BB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Nov 2006 03:39:07 +1100 (EST)
-Message-Id: <200611291638.kATGcb5a008093@penguin.ncube.com>
-To: "Ming Liu" <eemingliu@hotmail.com>
-From: Michael Galassi <mgalassi@c-cor.com>
-Subject: Re: Some questions about the Xilinx Temac driver. 
-In-reply-to: Your message of "Wed, 29 Nov 2006 14:33:37 GMT."
-	<BAY110-F289C3474171EF7F5FA8CA8B2E40@phx.gbl>
-Date: Wed, 29 Nov 2006 08:38:37 -0800
-Sender: mgalassi@c-cor.com
-Cc: akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
-Reply-To: Michael Galassi <mgalassi@c-cor.com>
+	Thu, 30 Nov 2006 06:16:26 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1685556ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 29 Nov 2006 11:16:24 -0800 (PST)
+Message-ID: <528646bc0611291116p15c87ff6q3a6e0b266c5a8531@mail.gmail.com>
+Date: Wed, 29 Nov 2006 12:16:24 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "John Bonesio" <john.bonesio@xilinx.com>,
+	"Rick Moleres" <rick.moleres@xilinx.com>,
+	"Peter Ryser" <peter.ryser@xilinx.com>,
+	"linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>
+Subject: Virtex device tree generator proof of concept
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_Part_41314_15268225.1164827784075"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,64 +28,164 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-If you use the latest xilinx ISE/EDK/IP update and let it overlay your
-mvl source tree with it's files it shouldn't take you more than a few
-hours to patch things up to where you can compile a kernel which will
-work on the 3.00b IP.  The PHY support is useless but you can work
-around that easily enough.  I've not tried to get any of that working
-with a semi-current kernel so if you're not using mvl's flavor of 2.6.10
-you may run into other issues.
+------=_Part_41314_15268225.1164827784075
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
--michael
+ppx4xx support in arch/powerpc is still off in the distance, but here
+is a proof of concept device tree generator for Xilinx virtex designs.
+ You pass the tool a .mhs file, and it spits out a .dts file.
+Generated dts output is accepted by the dtc parser.  I've tested
+against the ml403 reference designs and a custom design.
 
->Dear Andrei,
->I have some questions about your xilinx Temac driver. If possible, please 
->give me a hand on such confusing problems. 
->
->1. I am using the driver from 
->http://source.mvista.com/~ank/paulus-powerpc/20060309/, and the IP cores of 
->plb_temac and hard_temac whose hardware versions are 2.00a and 1.00a 
->specifically. I know the newest versions of those hardwares are 3.00a and 
->3.00a. Is your driver support the 3.00a version hardware? Also, is the 
->driver from http://source.mvista.com/~ank/paulus-powerpc/20060309/ the 
->latest one for Xilinx Temac? If you have some updated version, please tell 
->me the address. 
->
->2. Is that driver from the above address able to support SGDMA? In fact, I 
->am testing the throughput of the Temac enet by my own little program which 
->is very simple. In the program running on the board, the pseudo code looks 
->just like this:
->     for(;;){
->           select();
->           if(FD_ISSET()){
->                 recvfrom();
->           }
->           
->           sendto();
->     }
->
->The program is just to receive packets from a pc and then transfer them 
->back. But in this condition, the embedded PowerPC CPU is easily used by 
->100&. So I suspect that maybe the DMA is not running properly. Could you 
->please say something about the DMA in your driver? 
->
->Thanks a lot for your telling.
->
->Regards
->Ming
->
->_________________________________________________________________
->Ãâ·ÑÏÂÔØ MSN Explorer:   http://explorer.msn.com/lccn/  
->
->
->--===============1695844909==
->Content-Type: text/plain; charset="us-ascii"
->MIME-Version: 1.0
->Content-Transfer-Encoding: 7bit
->Content-Disposition: inline
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->--===============1695844909==--
+This code can also be viewed at:
+http://git.secretlab.ca/cgi-bin/gitweb.cgi?p=gen_mhs_devtree.git;a=summary
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
+
+------=_Part_41314_15268225.1164827784075
+Content-Type: text/x-python; name=gen_mhs_devtree.py; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ev44atx3
+Content-Disposition: attachment; filename="gen_mhs_devtree.py"
+
+IyEvdXNyL2Jpbi9lbnYgcHl0aG9uCiMKIyBBdXRob3I6IEdyYW50IExpa2VseSA8Z3JhbnQubGlr
+ZWx5QHNlY3JldGxhYi5jYT4KIwojIENvcHlyaWdodCAoQykgU2VjcmV0IExhYiBUZWNobm9sb2dp
+ZXMgTHRkLiAyMDA2LiBBbGwgcmlnaHRzIHJlc2VydmVkLgojCiMgVGhpcyBzb3VyY2UgY29kZSBp
+cyBsaWNlbnNlZCB1bmRlciB2ZXJzaW9uIDIgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYwojIExp
+Y2Vuc2UsCgpmcm9tIHN0cmluZyBpbXBvcnQgdXBwZXIsIHN0cmlwCmZyb20gcHByaW50IGltcG9y
+dCBwcHJpbnQKZnJvbSBzeXMgaW1wb3J0IGFyZ3YKCgpjbGFzcyBtaHNfZmlsZShvYmplY3QpOgoJ
+ZGVmIF9faW5pdF9fKHNlbGYsIGZpbGVuYW1lPU5vbmUpOgoJCXNlbGYuY2xlYXIoKQoJCWlmIGZp
+bGVuYW1lOgoJCQlzZWxmLnBhcnNlZmlsZShmaWxlbmFtZSkKCQoJZGVmIGNsZWFyKHNlbGYpOgoJ
+CXNlbGYuYmxvY2tzID0gW10KCQlzZWxmLmJ1c2VzID0ge30KCQlzZWxmLnBvcnRzID0ge30KCglk
+ZWYgX2FkZF90b19wb3J0KHNlbGYsIHBvcnQsIGJsb2NrKToKCQlwb3J0ID0gcG9ydC51cHBlcigp
+CgkJaWYgcG9ydCBub3QgaW4gc2VsZi5wb3J0czoKCQkJc2VsZi5wb3J0c1twb3J0XSA9IFtdCgkJ
+c2VsZi5wb3J0c1twb3J0XS5hcHBlbmQoYmxvY2spCgoJZGVmIF9hZGRfdG9fYnVzKHNlbGYsIGJ1
+cywgYmxvY2spOgoJCWJ1cyA9IGJ1cy51cHBlcigpCgkJaWYgYnVzIG5vdCBpbiBzZWxmLmJ1c2Vz
+OgoJCQlzZWxmLmJ1c2VzW2J1c10gPSBbXQoJCXNlbGYuYnVzZXNbYnVzXS5hcHBlbmQoYmxvY2sp
+CgoJZGVmIF9hZGRfcHJvcGVydHkoc2VsZiwgdHlwZSwga2V5LCB2YWx1ZSk6CgkJdHlwZSA9IHR5
+cGUudXBwZXIoKQoJCWlmIHR5cGUgbm90IGluIHNlbGYuX2N1cnJfYmxvY2s6CgkJCXNlbGYuX2N1
+cnJfYmxvY2tbdHlwZV0gPSB7fQoJCXNlbGYuX2N1cnJfYmxvY2tbdHlwZV1ba2V5XSA9IHZhbHVl
+CgoJCWlmIHR5cGUgPT0gJ1BBUkFNRVRFUicgYW5kIGtleSA9PSAnSU5TVEFOQ0UnOgoJCQlzZWxm
+Ll9jdXJyX2Jsb2NrWyduYW1lJ10gPSB2YWx1ZQoJCWlmIHR5cGUgPT0gJ1BPUlQnOgoJCQlzZWxm
+Ll9hZGRfdG9fcG9ydCh2YWx1ZSwgc2VsZi5fY3Vycl9ibG9jaykKCQlpZiB0eXBlID09ICdCVVNf
+SU5URVJGQUNFJzoKCQkJc2VsZi5fYWRkX3RvX2J1cyh2YWx1ZSwgc2VsZi5fY3Vycl9ibG9jaykK
+CglkZWYgcGFyc2Uoc2VsZiwgZmlsZSk6CgkJc3RhdGUgPSAiaWRsZSIKCQlmb3IgbCBpbiBmaWxl
+OgoJCQl0b2tzID0gbC5zcGxpdCgnIycpWzBdLnN0cmlwKCkuc3BsaXQoTm9uZSwgMykKCQkJaWYg
+bm90IHRva3M6CgkJCQljb250aW51ZQoJCQlpZiBzdGF0ZSA9PSAnaWRsZSc6CgkJCQlpZiB0b2tz
+WzBdLnVwcGVyKCkgPT0gJ0JFR0lOJzoKCQkJCQlzdGF0ZSA9ICdibG9jaycKCQkJCQlzZWxmLl9j
+dXJyX2Jsb2NrID0geyd0eXBlJzogdG9rc1sxXX0KCQkJZWxpZiBzdGF0ZSA9PSAnYmxvY2snOgoJ
+CQkJaWYgdG9rc1swXS51cHBlcigpID09ICdFTkQnOgoJCQkJCXN0YXRlID0gJ2lkbGUnCgkJCQkJ
+c2VsZi5ibG9ja3MuYXBwZW5kKHNlbGYuX2N1cnJfYmxvY2spCgkJCQkJZGVsIHNlbGYuX2N1cnJf
+YmxvY2sKCQkJCQljb250aW51ZQoJCQkJc2VsZi5fYWRkX3Byb3BlcnR5KHRva3NbMF0sIHRva3Nb
+MV0sIHRva3NbM10pCgoJZGVmIHBhcnNlZmlsZShzZWxmLCBmaWxlbmFtZSk6CgkJZiA9IG9wZW4o
+ZmlsZW5hbWUpCgkJc2VsZi5wYXJzZShmKQoJCWYuY2xvc2UoKQoKCV9jcHVfdHlwZXMgPSAoJ3Bw
+YzQwNV92aXJ0ZXg0JywgJ3BwYzQwNV92aXJ0ZXgycHJvJykKCWRlZiBmaW5kX3Jvb3RfY3B1KHNl
+bGYsIG5hbWU9Tm9uZSk6CgkJZm9yIGJsb2NrIGluIHNlbGYuYmxvY2tzOgoJCQlpZiBibG9ja1sn
+dHlwZSddIG5vdCBpbiBzZWxmLl9jcHVfdHlwZXM6CgkJCQljb250aW51ZQoJCQlpZiBuYW1lIGFu
+ZCBuYW1lICE9IGJsb2NrWyduYW1lJ106CgkJCQljb250aW51ZQoJCQlyZXR1cm4gYmxvY2sKCQly
+ZXR1cm4gTm9uZQoKCWRlZiBmaW5kX3Jvb3RfYnVzKHNlbGYpOgoJCXJvb3RfY3B1ID0gc2VsZi5m
+aW5kX3Jvb3RfY3B1KCkKCQkKCQlkcGxiX25hbWUgPSByb290X2NwdVsnQlVTX0lOVEVSRkFDRSdd
+WydEUExCJ10KCQlpcGxiX25hbWUgPSByb290X2NwdVsnQlVTX0lOVEVSRkFDRSddWydJUExCJ10K
+CQlpZiAoZHBsYl9uYW1lICE9IGlwbGJfbmFtZSk6CgkJCXByaW50ICJzZXBlcmF0ZSBpbnN0ciBh
+bmQgZGF0YSBidXNzZXMsICIgKyBcCgkJCSAgICAgICJJIGRvbid0IGtub3cgd2hhdCB0byBkbyB3
+aXRoIHRoaXMiCgkJCXJldHVybiBOb25lCgoJCWRwbGJfZGF0YSA9IHNlbGYuZmluZF9pbnN0YW5j
+ZShkcGxiX25hbWUpCgkJaWYgbm90IGRwbGJfZGF0YToKCQkJcHJpbnQgJ0NvdWxkIG5vdCBmaW5k
+IGJ1cyBcJyVzXCcnJWRwbGJfbmFtZQoKCQlyZXR1cm4gZHBsYl9kYXRhCgoJZGVmIGZpbmRfaW5z
+dGFuY2Uoc2VsZiwgbmFtZSk6CgkJZm9yIGJsb2NrIGluIHNlbGYuYmxvY2tzOgoJCQlpZiBuYW1l
+ID09IGJsb2NrWyduYW1lJ106CgkJCQlyZXR1cm4gYmxvY2sKCQlyZXR1cm4gTm9uZQoKCWRlZiBm
+aW5kX3R5cGVzKHNlbGYsIHR5cGUpOgoJCWJsID0gW10KCQlmb3IgYmxvY2sgaW4gc2VsZi5ibG9j
+a3M6CgkJCWlmIHR5cGUgPT0gYmxvY2tbJ3R5cGUnXToKCQkJCWJsLmFwcGVuZChibG9jaykKCQly
+ZXR1cm4gYmwKCglkZWYgZmluZF9wb3J0KHNlbGYsIHBvcnQpOgoJCWJsID0gW10KCQlmb3IgYmxv
+Y2sgaW4gc2VsZi5ibG9ja3M6CgkJCWlmICdQT1JUJyBub3QgaW4gYmxvY2s6CgkJCQljb250aW51
+ZQoJCQlmb3IgcCBpbiBibG9ja1snUE9SVCddOgoJCQkJaWYgYmxvY2tbJ1BPUlQnXVtwXSA9PSBw
+b3J0OgoJCQkJCWJsLmFwcGVuZChibG9jaykKCQkJCQlicmVhawoJCXJldHVybiBibAoKCWRlZiBm
+aW5kX2J1c19hdHRhY2htZW50cyhzZWxmLCBidXMpOgoJCWJsb2NrcyA9IFtdCgkJZm9yIGJsb2Nr
+IGluIHNlbGYuYmxvY2tzOgoJCQlpZiAnQlVTX0lOVEVSRkFDRScgbm90IGluIGJsb2NrOgoJCQkJ
+Y29udGludWUKCQkJZm9yIGJrIGluIGJsb2NrWydCVVNfSU5URVJGQUNFJ10ua2V5cygpOgoJCQkJ
+aWYgYmxvY2tbJ0JVU19JTlRFUkZBQ0UnXVtia10gPT0gYnVzOgoJCQkJCWJsb2Nrcy5hcHBlbmQo
+YmxvY2spCgkJCQkJYnJlYWsKCQlyZXR1cm4gYmxvY2tzCgpkZWYgb2ZfYWRkX2NwdShvZl9ub2Rl
+LCBtaHMsIGNwdV9kYXRhKToKCWNwdV9ub2RlID0geydkZXZpY2VfdHlwZSc6ICdjcHUnLCAncmVn
+JzogMCwKCSAgICAgICAgICAgJ2QtY2FjaGUtbGluZS1zaXplJzogMHgyMCwgJ2QtY2FjaGUtc2l6
+ZSc6IDB4NDAwMCwKCSAgICAgICAgICAgJ2ktY2FjaGUtbGluZS1zaXplJzogMHgyMCwgJ2ktY2Fj
+aGUtc2l6ZSc6IDB4NDAwMCwKCSAgICAgICAgICAgJzMyLWJpdCc6IE5vbmV9CgkjY3B1X25vZGVb
+Jy5taHMtcHJpdmF0ZS1kYXRhJ10gPSBjcHVfZGF0YQoJY3B1X25hbWUgPSBjcHVfZGF0YVsnbmFt
+ZSddICsgJyw0MDUnCglvZl9ub2RlW2NwdV9uYW1lICsgJ0Alcyclb2Zfbm9kZVsnI2NwdXMnXV0g
+PSBjcHVfbm9kZQoJb2Zfbm9kZVsnI2NwdXMnXSA9IG9mX25vZGVbJyNjcHVzJ10gKyAxCgpkZWYg
+b2ZfYWRkX2RldmljZShvZl9ub2RlLCBtaHMsIGRldl9kYXRhKToKCWlmICdvZl9ub2RlJyBpbiBk
+ZXZfZGF0YS5rZXlzKCk6CgkJcmV0dXJuCglkZXZfbm9kZSA9IHsnZGV2aWNlX3R5cGUnOiBkZXZf
+ZGF0YVsndHlwZSddIH0KCXBhcmFtcyA9IGRldl9kYXRhWydQQVJBTUVURVInXQoKCSMgQ29uc3Ry
+dWN0IGNvbXBhdGlibGUgcHJvcGVydHkKCWNvbXBhdCA9IFtdCgljb21wYXQuYXBwZW5kKGRldl9k
+YXRhWyd0eXBlJ10gKyAnXycgKyBwYXJhbXNbJ0hXX1ZFUiddKQoJY29tcGF0LmFwcGVuZChkZXZf
+ZGF0YVsndHlwZSddKQoJaWYgZGV2X2RhdGFbJ3R5cGUnXSBpbiAoJ29wYl91YXJ0MTY1NTAnLCAn
+cGxiX29wYl91YXJ0MTY1NTAnKToKCQljb21wYXQuYXBwZW5kKCduczE2NTUwJykKCWRldl9ub2Rl
+Wydjb21wYXRpYmxlJ10gPSAiXFwwIi5qb2luKGNvbXBhdCkKCgkjIEdldCBhZGRyZXNzIHJhbmdl
+cwoJZm9yIGtleSBpbiBwYXJhbXMua2V5cygpOgoJCWlmIGtleS51cHBlcigpLmVuZHN3aXRoKCdf
+QkFTRUFERFInKToKCQkJYmFzZWtleSA9IGtleQoJCWlmIGtleS51cHBlcigpLmVuZHN3aXRoKCdf
+SElHSEFERFInKToKCQkJaGlnaGtleSA9IGtleQoJaWYgbm90IGJhc2VrZXkgb3Igbm90IGhpZ2hr
+ZXk6CgkJcHByaW50KGRldl9kYXRhKQoJCXJldHVybgoJc3RhcnQgPSBpbnQocGFyYW1zW2Jhc2Vr
+ZXldLCAxNikKCWVuZCA9IGludChwYXJhbXNbaGlnaGtleV0sIDE2KQoKCWlmICdyYW5nZXMnIGlu
+IG9mX25vZGUua2V5cygpOgoJCXN0YXJ0ID0gc3RhcnQgLSBvZl9ub2RlWydyYW5nZXMnXVsxXSAr
+IG9mX25vZGVbJ3JhbmdlcyddWzBdCgoJIyBIYWNrIHRvIG9ubHkgdXNlIHNhbmUgcmFuZ2VzCglp
+ZiBzdGFydCA+IDAgYW5kIGVuZCA+IDAgYW5kIHN0YXJ0IDwgMHgxMDAwMDAwMDA6CgkJZGV2X25v
+ZGVbJ3JlZyddID0gKHN0YXJ0LCBlbmQgLSBzdGFydCArIDEpCgoJIyBBZGQgdGhlIG5vZGUKCWlm
+IHN0YXJ0IDwgMCBvciBzdGFydCA+PSAweDEwMDAwMDAwMDoKCQlzdGFydCA9IDAKCgkjICpIQUNL
+KiBTb21lIG5vZGUgbmFtZXMgYXJlIHRvbyBsb25nOyBkb24ndCB1c2UgdGhlIGFkZHJlc3MgZm9y
+IG5vdy4uLgoJI29mX25vZGVbZGV2X2RhdGFbJ25hbWUnXSArICdAJXgnJXN0YXJ0XSA9IGRldl9u
+b2RlCglvZl9ub2RlW2Rldl9kYXRhWyduYW1lJ11dID0gZGV2X25vZGUKCglkZXZfZGF0YVsnb2Zf
+bm9kZSddID0gZGV2X25vZGUKCmRlZiBvZl9hZGRfb3BiX2JyaWRnZShvZl9ub2RlLCBtaHMsIGJy
+aWRnZV9kYXRhKToKCWlmICdvZl9ub2RlJyBpbiBicmlkZ2VfZGF0YS5rZXlzKCk6CgkJcmV0dXJu
+CglicmlkZ2Vfbm9kZSA9IHt9CgoJIyBHZXQgdHJhbnNsYXRpb24gYWRkcmVzcyByYW5nZXMKCXBh
+cmFtcyA9IGJyaWRnZV9kYXRhWydQQVJBTUVURVInXQoJZm9yIGtleSBpbiBwYXJhbXMua2V5cygp
+OgoJCWlmIGtleS51cHBlcigpLmVuZHN3aXRoKCdfQkFTRUFERFInKToKCQkJYmFzZWtleSA9IGtl
+eQoJCWlmIGtleS51cHBlcigpLmVuZHN3aXRoKCdfSElHSEFERFInKToKCQkJaGlnaGtleSA9IGtl
+eQoJaWYgbm90IGJhc2VrZXkgb3Igbm90IGhpZ2hrZXk6CgkJcHByaW50KGRldl9kYXRhKQoJCXJl
+dHVybgoJc3RhcnQgPSBpbnQocGFyYW1zW2Jhc2VrZXldLCAwKQoJZW5kID0gaW50KHBhcmFtc1to
+aWdoa2V5XSwgMCkKCWJyaWRnZV9ub2RlWydyYW5nZXMnXSA9ICgwLCBzdGFydCwgZW5kIC0gc3Rh
+cnQgKyAxKQoKCWJ1c19uYW1lID0gYnJpZGdlX2RhdGFbJ0JVU19JTlRFUkZBQ0UnXVsnTU9QQidd
+CglidXNfZGF0YSA9IG1ocy5maW5kX2luc3RhbmNlKGJ1c19uYW1lKQoKCW9mX25vZGVbYnJpZGdl
+X2RhdGFbJ25hbWUnXSArICdAJXgnJXN0YXJ0XSA9IGJyaWRnZV9ub2RlCglicmlkZ2VfZGF0YVsn
+b2Zfbm9kZSddID0gYnJpZGdlX25vZGUKCglvZl9hZGRfYnVzKGJyaWRnZV9ub2RlLCBtaHMsIGJ1
+c19kYXRhKQoKZGVmIG9mX2FkZF9idXMob2Zfbm9kZSwgbWhzLCBidXNfZGF0YSk6CglidXNfbmFt
+ZSA9IGJ1c19kYXRhWyduYW1lJ10KCWZvciBibG9jayBpbiBtaHMuZmluZF9idXNfYXR0YWNobWVu
+dHMoYnVzX25hbWUpOgoJCWlmIGJsb2NrWyd0eXBlJ10gaW4gKCdwcGM0MDVfdmlydGV4NCcsICdw
+cGM0MDVfdmlydGV4MnBybycpOgoJCQlvZl9hZGRfY3B1KG9mX25vZGVbJ2NwdXMnXSwgbWhzLCBi
+bG9jaykKCQllbGlmIGJsb2NrWyd0eXBlJ10gaW4gKCdwbGIyb3BiX2JyaWRnZScsKToKCQkJb2Zf
+YWRkX29wYl9icmlkZ2Uob2Zfbm9kZSwgbWhzLCBibG9jaykKCQllbHNlOgoJCQlvZl9hZGRfZGV2
+aWNlKG9mX25vZGUsIG1ocywgYmxvY2spCgpkZWYgb2ZfbGlua19pbnRlcnJ1cHRzKG9mX25vZGUs
+IG1ocyk6CglwaGFuZGxlID0gMHgxMDAKCWZvciBibG9jayBpbiBtaHMuZmluZF90eXBlcygnb3Bi
+X2ludGMnKToKCQlwaGFuZGxlID0gcGhhbmRsZSArIDEKCQlpZiAnb2Zfbm9kZScgbm90IGluIGJs
+b2NrOgoJCQljb250aW51ZQoKCQlibG9ja1snb2Zfbm9kZSddWydsaW51eCxwaGFuZGxlJ10gPSBw
+aGFuZGxlCgkJaXJxbnVtID0gMAoJCWZvciBpcnFfbGluZSBpbiBibG9ja1snUE9SVCddWydJbnRy
+J10uc3BsaXQoJyYnKToKCQkJZGV2aWNlcyA9IG1ocy5maW5kX3BvcnQoaXJxX2xpbmUuc3RyaXAo
+KSkKCQkJZm9yIGIgaW4gZGV2aWNlczoKCQkJCWlmICdvZl9ub2RlJyBub3QgaW4gYjoKCQkJCQlj
+b250aW51ZQoJCQkJYlsnb2Zfbm9kZSddWydpbnRlcnJ1cHQtcGFyZW50J10gPSBwaGFuZGxlCgkJ
+CQliWydvZl9ub2RlJ11bJ2ludGVycnVwdHMnXSA9IChpcnFudW0sIDApCgkJCWlycW51bSA9IGly
+cW51bSArIDEKCmRlZiBvZl9idWlsZF90cmVlIChtaHMsIG1oc19yb290X2J1cyk6CgljcHVzX25v
+ZGUgPSB7JyNjcHVzJzogKDApLCAnI2FkZHJlc3MtY2VsbHMnOiAoMSksICcjc2l6ZS1jZWxscyc6
+ICgwKX0KCW9mX3RyZWUgPSB7JyNhZGRyZXNzLWNlbGxzJzogKDEpLCAnI3NpemUtY2VsbHMnOiAo
+MSksICdjcHVzJzogY3B1c19ub2RlfQoKCW9mX2FkZF9idXMob2ZfdHJlZSwgbWhzLCBtaHNfcm9v
+dF9idXMpCgoJb2ZfbGlua19pbnRlcnJ1cHRzKG9mX3RyZWUsIG1ocykKCglyZXR1cm4gb2ZfdHJl
+ZQoKZGVmIG9mX3ByaW50X3RyZWUgKG9mX25vZGUsIG5hbWUgPSAnLycsIGluZGVudD0wKToKCXBy
+ZWZpeCA9ICdcdCcqaW5kZW50CglwcmludCBwcmVmaXggKyBuYW1lLCAneycKCgkjIFByaW50IHBy
+b3BlcnRpZXMgZmlyc3QKCWZvciBrZXkgaW4gb2Zfbm9kZS5rZXlzKCk6CgkJdmFsID0gb2Zfbm9k
+ZVtrZXldCgkJaWYgdHlwZSh2YWwpID09IHN0cjoKCQkJcHJpbnQgcHJlZml4ICsgJ1x0JyArIGtl
+eSwgJz0gIicrdmFsKyciIDsnCgkJaWYgdHlwZSh2YWwpID09IGludDoKCQkJcHJpbnQgcHJlZml4
+ICsgJ1x0JyArIGtleSwgJz0nLCAnPCV4PjsnJXZhbAoJCWlmIHR5cGUodmFsKSA9PSBsaXN0IG9y
+IHR5cGUodmFsKSA9PSB0dXBsZToKCQkJcHJpbnQgcHJlZml4ICsgJ1x0JyArIGtleSwgJz0nLCAn
+PCcsCgkJCWZvciBpIGluIHZhbDoKCQkJCXByaW50ICcleCclaSwKCQkJcHJpbnQgJz47JwoKCSMg
+cHJpbnQgc3ViIG5vZGVzIHNlY29uZAoJZm9yIGtleSBpbiBvZl9ub2RlLmtleXMoKToKCQl2YWwg
+PSBvZl9ub2RlW2tleV0KCQlpZiB0eXBlKHZhbCkgPT0gZGljdDoKCQkJb2ZfcHJpbnRfdHJlZSh2
+YWwsIGtleSwgaW5kZW50KzEpCglwcmludCBwcmVmaXggKyAnfSA7JwoKbWhzID0gbWhzX2ZpbGUo
+YXJndlsxXSkKcm9vdCA9IG1ocy5maW5kX3Jvb3RfYnVzKCkKb2ZfdHJlZSA9IG9mX2J1aWxkX3Ry
+ZWUobWhzLCByb290KQojcHByaW50KG9mX3RyZWUpCm9mX3ByaW50X3RyZWUob2ZfdHJlZSkKCg==
+
+------=_Part_41314_15268225.1164827784075--
