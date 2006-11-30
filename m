@@ -1,45 +1,87 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ABF36DDDFD
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 23:41:25 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2.6.20-rc2: kernel BUG at include/asm/dma-mapping.h:110!
-References: <je7iwa1l8a.fsf@sykes.suse.de>
-	<1167429171.23340.125.camel@localhost.localdomain>
-	<tkrat.f159c58fec599d72@s5r6.in-berlin.de>
-Date: Sat, 30 Dec 2006 13:41:16 +0100
-In-Reply-To: <tkrat.f159c58fec599d72@s5r6.in-berlin.de> (Stefan Richter's
-	message of "Fri, 29 Dec 2006 23:47:04 +0100 (CET)")
-Message-ID: <jehcvdo8sz.fsf@sykes.suse.de>
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from smtp6-g19.free.fr (smtp6-g19.free.fr [212.27.42.36])
+	by ozlabs.org (Postfix) with ESMTP id E540467A39
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Dec 2006 00:21:50 +1100 (EST)
+From: "alayrac" <christophe.alayrac@cresitt.com>
+To: "'Peter Mendham'" <petermendham@computing.dundee.ac.uk>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE : Kernel Panic During Linux Boot on ML405
+Date: Thu, 30 Nov 2006 14:21:43 +0100
+Message-ID: <000001c71482$7d8ff980$c900a8c0@CRESITTLAB>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linux1394-devel@lists.sourceforge.net,
-	Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <456ECDE9.2060506@computing.dundee.ac.uk>
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+Hi Peter,
+ Is there system ace interface in your hardware?
+Your kernel boot command is=20
+console=3Dttl0 root=3D/dev/xsysace/disc0/part2 rw ip=3Doff
 
-> The parent device of my bogus fw-host device should do the trick. Alas I
-> can't test on ppc64 or with anything else than ohci1394 driven
-> controllers...
+so thta after kernel start it will look for any init file ine the root
+file system suppose to be on /dev/xsysace/disc0/part2
 
-Successfully tested on ppc64.
+regards
 
-Thanks, Andreas.
+Chris
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+CRESITT INDUSTRIE
+12 Rue de Blois, BP6744
+45067 ORLEANS Cedex 2
+Tel : 02.38.49.45.59
+Fax :02.38.49.45.55
+Email : christophe.alayrac@cresitt.com=20
+Web : http://www.cresitt.com
+
+
+<----> -----Message d'origine-----
+<----> De=A0: linuxppc-embedded-
+<----> bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org
+[mailto:linuxppc-
+<----> embedded-bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org] De =
+la
+<----> part de Peter Mendham
+<----> Envoy=E9=A0: jeudi 30 novembre 2006 13:26
+<----> =C0=A0: linuxppc-embedded@ozlabs.org
+<----> Objet=A0: Kernel Panic During Linux Boot on ML405
+<---->=20
+<----> I'm trying to make an uber-simple system on an ML405 board.  I
+used
+<----> the
+<----> BSB to create a straight forward system with a PPC, DDR RAM,
+<----> opb_ethernet, a uartlite, and pretty much nothing else.  The BSB
+<----> threw
+<----> in an interrupt controller, some DCMs and some bridges for me.
+<----> That's
+<----> all I have hardware-wise.  I compiled a 2.4.26 kernel because
+I've
+<----> had
+<----> one working already on the default hardware setup.  I chose what
+I
+<----> think
+<----> is the right options for the kernel, I've cut pretty much
+everything
+<----> out
+<----> that I don't need.  The BSP the EDK generated was *extremely*
+<----> lacking.
+<----> It only generated an xparameters_ml300.h (no other files) which
+was
+<----> missing all the redefines.  I added these in myself by hand (this
+may
+<----> be
+<----> the cause of my woes).  A boot log is given below.  I would
+<----> appreciate
+<----> any tips that anyone can give me.  Where should I start looking?
+<---->=20
+<----> Thanks in advance,
