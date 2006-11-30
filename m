@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B6E2567B83
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 16:53:13 +1100 (EST)
-Date: Thu, 30 Nov 2006 16:53:11 +1100
+	by ozlabs.org (Postfix) with ESMTP id 9984267BDF
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 16:55:05 +1100 (EST)
+Date: Thu, 30 Nov 2006 16:55:04 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [POWERPC] iSeries: stop dt_mod.o being rebuilt unnecessarily
-Message-Id: <20061130165311.ca9b7da3.sfr@canb.auug.org.au>
+Subject: [POWERPC] iSeries: don't build head_64.o unnecessarily
+Message-Id: <20061130165504.df0449dd.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,35 +22,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/iseries/Makefile |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/platforms/iseries/Makefile b/arch/powerpc/platforms/iseries/Makefile
-index dee4eb4..13ac301 100644
---- a/arch/powerpc/platforms/iseries/Makefile
-+++ b/arch/powerpc/platforms/iseries/Makefile
-@@ -1,5 +1,7 @@
- EXTRA_CFLAGS	+= -mno-minimal-toc
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index f9ce5d7..4fe53d0 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -76,7 +76,7 @@ obj-y				+= iomap.o
+ endif
  
-+extra-y += dt.o
-+
- obj-y += hvlog.o hvlpconfig.o lpardata.o setup.o dt_mod.o mf.o lpevents.o \
- 	hvcall.o proc.o htab.o iommu.o misc.o irq.o
- obj-$(CONFIG_PCI) += pci.o vpdinfo.o
-@@ -7,5 +9,9 @@ obj-$(CONFIG_SMP) += smp.o
- obj-$(CONFIG_VIOPATH) += viopath.o
- obj-$(CONFIG_MODULES) += ksyms.o
+ ifeq ($(CONFIG_PPC_ISERIES),y)
+-$(obj)/head_64.o: $(obj)/lparmap.s
++extra-y += lparmap.s
+ AFLAGS_head_64.o += -I$(obj)
+ endif
  
-+quiet_cmd_dt_strings = DT_STR  $@
-+      cmd_dt_strings = $(OBJCOPY) --rename-section .rodata.str1.8=.dt_strings \
-+				$< $@
-+
- $(obj)/dt_mod.o:	$(obj)/dt.o
--	@$(OBJCOPY) --rename-section .rodata.str1.8=.dt_strings $(obj)/dt.o $(obj)/dt_mod.o
-+	$(call if_changed,dt_strings)
 -- 
 1.4.4.1
