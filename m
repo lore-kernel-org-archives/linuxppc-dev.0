@@ -1,15 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9984267BDF
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 16:55:05 +1100 (EST)
-Date: Thu, 30 Nov 2006 16:55:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] iSeries: don't build head_64.o unnecessarily
-Message-Id: <20061130165504.df0449dd.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <m.kozlowski@tuxland.pl>
+Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
+	by ozlabs.org (Postfix) with ESMTP id D7CB2679FD
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 20:53:40 +1100 (EST)
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc: m48t35 add missing bracket
+Date: Thu, 30 Nov 2006 10:25:23 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Message-Id: <200611301025.24042.m.kozlowski@tuxland.pl>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+	This patch adds missing bracket.
+
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+
+ include/asm-ppc/m48t35.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.19-rc6-mm2-a/include/asm-ppc/m48t35.h	2006-11-16 05:03:40.000000000 +0100
++++ linux-2.6.19-rc6-mm2-b/include/asm-ppc/m48t35.h	2006-11-30 00:59:27.000000000 +0100
+@@ -39,7 +39,7 @@
+ #define M48T35_RTC_WATCHDOG_RB         0x03
+ #define M48T35_RTC_WATCHDOG_BMB        0x7c
+ #define M48T35_RTC_WATCHDOG_WDS        0x80
+-#define M48T35_RTC_WATCHDOG_ALL        (M48T35_RTC_WATCHDOG_RB|M48T35_RTC_WATCHDOG_BMB|M48T35_RTC_W
++#define M48T35_RTC_WATCHDOG_ALL        (M48T35_RTC_WATCHDOG_RB|M48T35_RTC_WATCHDOG_BMB|M48T35_RTC_W)
+ 
+ #define M48T35_RTC_CONTROL_WRITE       0x80
+ #define M48T35_RTC_CONTROL_READ        0x40
+
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Regards,
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index f9ce5d7..4fe53d0 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -76,7 +76,7 @@ obj-y				+= iomap.o
- endif
- 
- ifeq ($(CONFIG_PPC_ISERIES),y)
--$(obj)/head_64.o: $(obj)/lparmap.s
-+extra-y += lparmap.s
- AFLAGS_head_64.o += -I$(obj)
- endif
- 
--- 
-1.4.4.1
+	Mariusz Kozlowski
