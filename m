@@ -1,16 +1,20 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id D7CB2679FD
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 20:53:40 +1100 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc: m48t35 add missing bracket
-Date: Thu, 30 Nov 2006 10:25:23 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200611301025.24042.m.kozlowski@tuxland.pl>
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <ryusuke@osrg.net>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E744B67B83
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 23:40:06 +1100 (EST)
+Date: Thu, 30 Nov 2006 21:39:58 +0900 (JST)
+Message-Id: <20061130.213958.46869121.ryusuke@osrg.net>
+To: paulus@samba.org
+Subject: Re: [PATCH 2.6.19-rc6] powerpc: fix of_device __must_check warning
+From: Ryusuke Konishi <ryusuke@osrg.net>
+In-Reply-To: <17773.18027.177795.192632@cargo.ozlabs.ibm.com>
+References: <20061129.140751.48374104.ryusuke@osrg.net>
+	<17773.18027.177795.192632@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,29 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi,
 
-	This patch adds missing bracket.
+Paul Mackerras wrote:
+> Your patch also makes a policy change, though, in that without your
+> patch, a failure in creating the "devspec" file in sysfs doesn't
+> prevent of_device_register from performing its main function.  With
+> your patch, of_device_register will fail if we can't create the
+> "devspec" file.
+>
+> On the whole, I am inclined to think that it is useful for
+> of_device_register to succeed even if the devspec file can't be
+> created, since nothing in the kernel relies on the devspec file being
+> present.
+> 
+> Paul.
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Yes, you have a point there.
 
- include/asm-ppc/m48t35.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+For the purpose of reference, I looked into other architectures.
+Then, I found that sparc (and sparc64) had same of_device_register()
+functions, and both are checking the result of device_create_file()
+as follows.
 
---- linux-2.6.19-rc6-mm2-a/include/asm-ppc/m48t35.h	2006-11-16 05:03:40.000000000 +0100
-+++ linux-2.6.19-rc6-mm2-b/include/asm-ppc/m48t35.h	2006-11-30 00:59:27.000000000 +0100
-@@ -39,7 +39,7 @@
- #define M48T35_RTC_WATCHDOG_RB         0x03
- #define M48T35_RTC_WATCHDOG_BMB        0x7c
- #define M48T35_RTC_WATCHDOG_WDS        0x80
--#define M48T35_RTC_WATCHDOG_ALL        (M48T35_RTC_WATCHDOG_RB|M48T35_RTC_WATCHDOG_BMB|M48T35_RTC_W
-+#define M48T35_RTC_WATCHDOG_ALL        (M48T35_RTC_WATCHDOG_RB|M48T35_RTC_WATCHDOG_BMB|M48T35_RTC_W)
- 
- #define M48T35_RTC_CONTROL_WRITE       0x80
- #define M48T35_RTC_CONTROL_READ        0x40
+in function arch/sparc/kernel/of_device.c:
+>int of_device_register(struct of_device *ofdev)
+>{
+>        int rc;
+>
+>        BUG_ON(ofdev->node == NULL);
+>
+>        rc = device_register(&ofdev->dev);
+>        if (rc)
+>                return rc;
+>
+>        rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
+>        if (rc)
+>                device_unregister(&ofdev->dev);
+>
+>        return rc;
+>}
 
+But then, I'd like to respect your point of view,
+and I won't stick to this case example.
 
--- 
-Regards,
-
-	Mariusz Kozlowski
+Ryusuke.
