@@ -1,18 +1,17 @@
-Return-Path: <christophe.alayrac@cresitt.com>
-Received: from smtp3-g19.free.fr (smtp3-g19.free.fr [212.27.42.29])
-	by ozlabs.org (Postfix) with ESMTP id 7E4FA67B52
+Return-Path: <petermendham@computing.dundee.ac.uk>
+Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
+	[134.36.36.15]) by ozlabs.org (Postfix) with ESMTP id E28AC67A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Dec 2006 02:08:24 +1100 (EST)
-From: "alayrac" <christophe.alayrac@cresitt.com>
-To: "'Peter Mendham'" <petermendham@computing.dundee.ac.uk>
-Subject: RE : RE : Kernel Panic During Linux Boot on ML405
-Date: Thu, 30 Nov 2006 16:08:20 +0100
-Message-ID: <000301c71491$6018cd00$c900a8c0@CRESITTLAB>
+	Fri,  1 Dec 2006 02:32:59 +1100 (EST)
+Message-ID: <456EF9AA.1010101@computing.dundee.ac.uk>
+Date: Thu, 30 Nov 2006 15:32:58 +0000
+From: Peter Mendham <petermendham@computing.dundee.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <456EEB35.1070907@computing.dundee.ac.uk>
-Cc: linuxppc-embedded@ozlabs.org
+To: Sharon Feldman <sharonf@scopus.net>,  linuxppc-embedded@ozlabs.org
+Subject: Re: Kernel Panic During Linux Boot on ML405
+References: <8506C3905ED0764F889ADEB33E3A9E8062CF5D@MAIA.scopus.net>
+In-Reply-To: <8506C3905ED0764F889ADEB33E3A9E8062CF5D@MAIA.scopus.net>
+Content-Type: text/plain; charset=windows-1255; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,50 +22,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-As far as I understand you try to start on Montavista root file system
-(delivered with ML40x CompactFlash).
+Sharon Feldman wrote:
+> Make Sure That when you generate the bsp you need to specify the drivers you wish to generate bsp for in the software platform settings
+> in "OS and Libraries" Tab you should click on the connected peripherial and add the peripherials you wish to generated bsp for, also you must specify a driver for them in the "DRIVERS" TAB, otherwise you will not beable to add them.
+>   
+That was exactly my problem.  I do feel pretty stupid, but I just 
+assumed that when I selected mvl as the OS the EDK would assume that I'd 
+quite like it to support my peripherals.  I've learnt my lesson over 
+that one.  Sorry for bothering people.
 
-I think that the init procedure try to initialize keyboard as well as
-mouse.
+However, now I have new problem, this time at shutdown.  I get the 
+following messages:
 
-So its may be a track but I'm not sure about that.
+The system is going down NOW !!
+Sending SIGTERM to all processes.
+Xilinx OS Independent Code XAssert: xuartlite.c:195
+Code may crash due to unhandled errors.
+gs: gs_close: bad port count; tty->count is 1, port count is 3
+System halted.
+System Halted
 
-You can tray to rename the /sbin/init file on the compact flash in
-something like oldinit. The kernel should launch a bash if no init is
-detected.
+The assert at xuartlite.c:195 is:
+XASSERT_NONVOID(((signed)NumBytes) >= 0);
+during XUartLite_Send.  This checks to see if the number of bytes 
+forming the send request is greater than zero (quite reasonably I 
+feel).  The "gs" appears to relate to generic_serial and comes from 
+gs_close in generic_serial.c  I don't understand any more than that.  
+Does anyone have any ideas where to start looking?
 
-Regrads
-
-chris
-
-CRESITT INDUSTRIE
-12 Rue de Blois, BP6744
-45067 ORLEANS Cedex 2
-Tel : 02.38.49.45.59
-Fax :02.38.49.45.55
-Email : christophe.alayrac@cresitt.com=20
-Web : http://www.cresitt.com
-
-
-<----> -----Message d'origine-----
-<----> De=A0: linuxppc-embedded-
-<----> bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org
-[mailto:linuxppc-
-<----> embedded-bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org] De =
-la
-<----> part de Peter Mendham
-<----> Envoy=E9=A0: jeudi 30 novembre 2006 15:31
-<----> Cc=A0: linuxppc-embedded@ozlabs.org
-<----> Objet=A0: Re: RE : Kernel Panic During Linux Boot on ML405
-<---->=20
-<----> alayrac wrote:
-<----> > Is there system ace interface in your hardware?
-<----> >
-<----> Yes, there is, configured as interrupt driven.  I missed that
-from my
-<----> list, sorry.
-<----> -- Peter
-<----> _______________________________________________
-<----> Linuxppc-embedded mailing list
-<----> Linuxppc-embedded@ozlabs.org
-<----> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Thanks,
+-- Peter
