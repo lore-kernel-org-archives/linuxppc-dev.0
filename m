@@ -1,19 +1,17 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 1FBC567B6F
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc1-s9.bay0.hotmail.com (bay0-omc1-s9.bay0.hotmail.com
+	[65.54.246.81]) by ozlabs.org (Postfix) with ESMTP id AD3CA67B6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Dec 2006 02:47:18 +1100 (EST)
-Subject: Re: Compact Flash help
-From: Ben Warren <bwarren@qstreams.com>
-To: "s.balamurugan" <s.balamurugan@gdatech.co.in>
-In-Reply-To: <456EA445.70504@gdatech.co.in>
-References: <456EA445.70504@gdatech.co.in>
-Content-Type: text/plain
-Date: Thu, 30 Nov 2006 10:40:37 -0500
-Message-Id: <1164901237.31193.116.camel@saruman.qstreams.net>
+	Fri,  1 Dec 2006 03:37:27 +1100 (EST)
+Message-ID: <BAY110-F40D23F776DA18A9693D6EBB2DB0@phx.gbl>
+In-Reply-To: <200611291638.kATGcb5a008093@penguin.ncube.com>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: mgalassi@c-cor.com
+Subject: Re: Some questions about the Xilinx Temac driver.
+Date: Thu, 30 Nov 2006 16:37:23 +0000
 Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +22,94 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Bala,
+Dear Michael,
+Now I update my Xilinx design software from 8.1 to 8.2 and notice that 
+there is already linux_2_6 support. Then I generated the BSP for linux 2.6. 
+I found that there are some differences from the older version, e.g. there 
+are some files such as XMakefile, xps_connected.cud, etc. I am confused 
+with this. So could you please give me a hand on how to use such a 
+generated BSP to build my linux 2.6 kernel? I cannot find any guidance on 
+how to do that. Thanks for your help. 
 
-On Thu, 2006-11-30 at 14:58 +0530, s.balamurugan wrote:
-> Hello all,
-> 
->                     This is bala, I am using MPC8360  board and compact 
-> flash is connected via Local Bus Controller(UPM).
-> I have the following questions
-> what are the necessary document to be read for writting the driver for 
-> compact flash.
-> What is the relation between compact flash and PCMCIA and PC Card.
-> What are the CIS structure members.
-> What are the documents to be read to understand the full concept of 
-> Compact Flash.
+BR
+Ming
 
-If you're REALLY interested in knowing everything about Compact Flash,
-go here: http://www.compactflash.org/  You can download the spec, which
-should help you sleep.
 
-If you want to know how to interface Compact Flash to your Local Bus,
-here's a good document.  I'm not intimately familiar with the 8360, but
-unless Freescale has changed their LBC design, it should apply:
-http://www.toshiba.com/taec/components/ApplNote/TSB_CF-Motorola_PPC8260_030325.pdf
+>From: Michael Galassi <mgalassi@c-cor.com>
+>Reply-To: Michael Galassi <mgalassi@c-cor.com>
+>To: "Ming Liu" <eemingliu@hotmail.com>
+>CC: akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
+>Subject: Re: Some questions about the Xilinx Temac driver. 
+>Date: Wed, 29 Nov 2006 08:38:37 -0800
+>
+>If you use the latest xilinx ISE/EDK/IP update and let it overlay your
+>mvl source tree with it's files it shouldn't take you more than a few
+>hours to patch things up to where you can compile a kernel which will
+>work on the 3.00b IP.  The PHY support is useless but you can work
+>around that easily enough.  I've not tried to get any of that working
+>with a semi-current kernel so if you're not using mvl's flavor of 2.6.10
+>you may run into other issues.
+>
+>-michael
+>
+> >Dear Andrei,
+> >I have some questions about your xilinx Temac driver. If possible, 
+please
+> >give me a hand on such confusing problems.
+> >
+> >1. I am using the driver from
+> >http://source.mvista.com/~ank/paulus-powerpc/20060309/, and the IP cores 
+of
+> >plb_temac and hard_temac whose hardware versions are 2.00a and 1.00a
+> >specifically. I know the newest versions of those hardwares are 3.00a 
+and
+> >3.00a. Is your driver support the 3.00a version hardware? Also, is the
+> >driver from http://source.mvista.com/~ank/paulus-powerpc/20060309/ the
+> >latest one for Xilinx Temac? If you have some updated version, please 
+tell
+> >me the address.
+> >
+> >2. Is that driver from the above address able to support SGDMA? In fact, 
+I
+> >am testing the throughput of the Temac enet by my own little program 
+which
+> >is very simple. In the program running on the board, the pseudo code 
+looks
+> >just like this:
+> >     for(;;){
+> >           select();
+> >           if(FD_ISSET()){
+> >                 recvfrom();
+> >           }
+> >
+> >           sendto();
+> >     }
+> >
+> >The program is just to receive packets from a pc and then transfer them
+> >back. But in this condition, the embedded PowerPC CPU is easily used by
+> >100&. So I suspect that maybe the DMA is not running properly. Could you
+> >please say something about the DMA in your driver?
+> >
+> >Thanks a lot for your telling.
+> >
+> >Regards
+> >Ming
+> >
+> >_________________________________________________________________
+> >免费下载 MSN Explorer:   http://explorer.msn.com/lccn/
+> >
+> >
+> >--===============1695844909==
+> >Content-Type: text/plain; charset="us-ascii"
+> >MIME-Version: 1.0
+> >Content-Transfer-Encoding: 7bit
+> >Content-Disposition: inline
+> >
+> >_______________________________________________
+> >Linuxppc-embedded mailing list
+> >Linuxppc-embedded@ozlabs.org
+> >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >--===============1695844909==--
 
-You shouldn't have to write your own driver for this.  I don't feel
-totally comfortable giving you somebody else's code that isn't
-necessarily finished, but since you could Google it yourself anyway,
-here's a link to one that was put up for comment several months ago.  I
-had no part in authoring it and have no idea where it stands regarding
-inclusion in the kernel, so please treat it as experimental.  It will
-require a bit of work on your part to understand how to specify platform
-devices. 
-
-http://lkml.org/lkml/2006/2/1/47
-
-regards,
-Ben
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
