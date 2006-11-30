@@ -1,15 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 96F6B67B9B
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2006 11:46:26 +1100 (EST)
-Date: Thu, 30 Nov 2006 11:46:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] fix cputable.h for combined build
-Message-Id: <20061130114622.b05d9b30.sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [POWERPC] Allow xmon to build on legacy iSeries
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20061130114409.994a661e.sfr@canb.auug.org.au>
+References: <20061130114409.994a661e.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-oeNLm35F6NuKHCpnrZwJ"
+Date: Thu, 30 Nov 2006 12:04:08 +1100
+Message-Id: <1164848648.27764.2.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,68 +21,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove CPU_FTR_16M_PAGE from the cupfeatures mask at runtime on iSeries.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/hash_utils_64.c        |    2 +-
- arch/powerpc/platforms/iseries/setup.c |    2 ++
- include/asm-powerpc/cputable.h         |   13 +++----------
- 3 files changed, 6 insertions(+), 11 deletions(-)
+--=-oeNLm35F6NuKHCpnrZwJ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+On Thu, 2006-11-30 at 11:44 +1100, Stephen Rothwell wrote:
+> xmon still does not run on iSeries, but this allows us to build a combine=
+d
+> kernel that includes it.
+>=20
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/Kconfig.debug |    2 +-
+>  arch/powerpc/xmon/xmon.c   |    9 +++++++++
+>  2 files changed, 10 insertions(+), 1 deletions(-)
+>=20
+> --=20
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+>=20
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index ff16063..5cce904 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -77,7 +77,7 @@ config KGDB_CONSOLE
+> =20
+>  config XMON
+>  	bool "Include xmon kernel debugger"
+> -	depends on DEBUGGER && !PPC_ISERIES
+> +	depends on DEBUGGER
+>  	help
+>  	  Include in-kernel hooks for the xmon kernel monitor/debugger.
+>  	  Unless you are intending to debug the kernel, say N here.
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 1cf90c8..767b242 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -44,6 +44,7 @@
+>  #ifdef CONFIG_PPC64
+>  #include <asm/hvcall.h>
+>  #include <asm/paca.h>
+> +#include <asm/iseries/it_lp_reg_save.h>
+>  #endif
+> =20
+>  #include "nonstdio.h"
+> @@ -2580,6 +2581,10 @@ void dump_segments(void)
+> =20
+>  void xmon_init(int enable)
+>  {
+> +#ifdef CONFIG_PPC_ISERIES
+> +	if (firmware_has_feature(FW_FEATURE_ISERIES))
+> +		return;
+> +#endif
+>  	if (enable) {
+>  		__debugger =3D xmon;
+>  		__debugger_ipi =3D xmon_ipi;
+> @@ -2617,6 +2622,10 @@ static struct sysrq_key_op sysrq_xmon_op =3D
+> =20
+>  static int __init setup_xmon_sysrq(void)
+>  {
+> +#ifdef CONFIG_PPC_ISERIES
+> +	if (firmware_has_feature(FW_FEATURE_ISERIES))
+> +		return 0;
+> +#endif
+>  	register_sysrq_key('x', &sysrq_xmon_op);
+>  	return 0;
+>  }
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 1915661..c0d2a69 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -277,7 +277,7 @@ static void __init htab_init_page_sizes(void)
- 	 * Not in the device-tree, let's fallback on known size
- 	 * list for 16M capable GP & GR
- 	 */
--	if (cpu_has_feature(CPU_FTR_16M_PAGE) && !machine_is(iseries))
-+	if (cpu_has_feature(CPU_FTR_16M_PAGE))
- 		memcpy(mmu_psize_defs, mmu_psize_defaults_gp,
- 		       sizeof(mmu_psize_defaults_gp));
-  found:
-diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
-index 1796644..bdf2afb 100644
---- a/arch/powerpc/platforms/iseries/setup.c
-+++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -643,6 +643,8 @@ static int __init iseries_probe(void)
- 		return 0;
- 
- 	hpte_init_iSeries();
-+	/* iSeries does not support 16M pages */
-+	cur_cpu_spec->cpu_features &= ~CPU_FTR_16M_PAGE;
- 
- 	return 1;
- }
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 354f66d..6fe5c9d 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -155,16 +155,9 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
- 
- #ifndef __ASSEMBLY__
- 
--#define CPU_FTR_PPCAS_ARCH_V2_BASE (CPU_FTR_SLB | \
--					CPU_FTR_TLBIEL | CPU_FTR_NOEXECUTE | \
--					CPU_FTR_NODSISRALIGN)
--
--/* iSeries doesn't support large pages */
--#ifdef CONFIG_PPC_ISERIES
--#define CPU_FTR_PPCAS_ARCH_V2	(CPU_FTR_PPCAS_ARCH_V2_BASE)
--#else
--#define CPU_FTR_PPCAS_ARCH_V2	(CPU_FTR_PPCAS_ARCH_V2_BASE | CPU_FTR_16M_PAGE)
--#endif /* CONFIG_PPC_ISERIES */
-+#define CPU_FTR_PPCAS_ARCH_V2	(CPU_FTR_SLB | \
-+				 CPU_FTR_TLBIEL | CPU_FTR_NOEXECUTE | \
-+				 CPU_FTR_NODSISRALIGN | CPU_FTR_16M_PAGE)
- 
- /* We only set the altivec features if the kernel was compiled with altivec
-  * support
--- 
-1.4.4.1
+Why the ifdefs around the firmware check? Shouldn't it compile out to
+nothing for !ISERIES anyway?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-oeNLm35F6NuKHCpnrZwJ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFbi4HdSjSd0sB4dIRAnfqAJ0WQp3zvBppOjUH1TzBsXBWxTyEXwCgvV09
+atDkqX4lgc8f29C8s7XXRSY=
+=3mrN
+-----END PGP SIGNATURE-----
+
+--=-oeNLm35F6NuKHCpnrZwJ--
