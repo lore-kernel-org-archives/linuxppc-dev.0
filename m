@@ -1,17 +1,19 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 62409679E9
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
+	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 1FBC567B6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Dec 2006 00:13:41 +1100 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: marcelo@kvack.org
-Subject: [PATCH] ppc: cs4218_tdm remove extra brace
-Date: Thu, 30 Nov 2006 13:48:58 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200611301348.59401.m.kozlowski@tuxland.pl>
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Fri,  1 Dec 2006 02:47:18 +1100 (EST)
+Subject: Re: Compact Flash help
+From: Ben Warren <bwarren@qstreams.com>
+To: "s.balamurugan" <s.balamurugan@gdatech.co.in>
+In-Reply-To: <456EA445.70504@gdatech.co.in>
+References: <456EA445.70504@gdatech.co.in>
+Content-Type: text/plain
+Date: Thu, 30 Nov 2006 10:40:37 -0500
+Message-Id: <1164901237.31193.116.camel@saruman.qstreams.net>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,43 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi Bala,
 
-	I tried to find where does this line come from. Googled a bit with
-no luck. Probably somewhere between 2.5.10 and 2.5.20 some patch generated
-this leftover.
+On Thu, 2006-11-30 at 14:58 +0530, s.balamurugan wrote:
+> Hello all,
+> 
+>                     This is bala, I am using MPC8360  board and compact 
+> flash is connected via Local Bus Controller(UPM).
+> I have the following questions
+> what are the necessary document to be read for writting the driver for 
+> compact flash.
+> What is the relation between compact flash and PCMCIA and PC Card.
+> What are the CIS structure members.
+> What are the documents to be read to understand the full concept of 
+> Compact Flash.
 
+If you're REALLY interested in knowing everything about Compact Flash,
+go here: http://www.compactflash.org/  You can download the spec, which
+should help you sleep.
 
-static struct timer_list beep_timer = {
-        function: cs_nosound
-};
+If you want to know how to interface Compact Flash to your Local Bus,
+here's a good document.  I'm not intimately familiar with the 8360, but
+unless Freescale has changed their LBC design, it should apply:
+http://www.toshiba.com/taec/components/ApplNote/TSB_CF-Motorola_PPC8260_030325.pdf
 
-changed to:
+You shouldn't have to write your own driver for this.  I don't feel
+totally comfortable giving you somebody else's code that isn't
+necessarily finished, but since you could Google it yourself anyway,
+here's a link to one that was put up for comment several months ago.  I
+had no part in authoring it and have no idea where it stands regarding
+inclusion in the kernel, so please treat it as experimental.  It will
+require a bit of work on your part to understand how to specify platform
+devices. 
 
-static struct timer_list beep_timer = TIMER_INITIALIZER(cs_nosound, 0, 0);
-};
+http://lkml.org/lkml/2006/2/1/47
 
-
-The patch below removes this extra line.
-
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-
- arch/ppc/8xx_io/cs4218_tdm.c |    1 -
- 1 file changed, 1 deletion(-)
-
---- linux-2.6.19-rc6-mm2-a/arch/ppc/8xx_io/cs4218_tdm.c	2006-11-28 12:16:29.000000000 +0100
-+++ linux-2.6.19-rc6-mm2-b/arch/ppc/8xx_io/cs4218_tdm.c	2006-11-29 16:12:22.000000000 +0100
-@@ -1379,7 +1379,6 @@ static void cs_nosound(unsigned long xx)
- }
- 
- static DEFINE_TIMER(beep_timer, cs_nosound, 0, 0);
--};
- 
- static void cs_mksound(unsigned int hz, unsigned int ticks)
- {
-
-
--- 
-Regards,
-
-	Mariusz Kozlowski
+regards,
+Ben
