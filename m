@@ -1,23 +1,22 @@
-Return-Path: <abdul.rahaman@semindia.in>
-Received: from almach.lunarpages.com (almach.lunarpages.com [209.200.240.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7F0967B9B
+Return-Path: <urwithsudheer@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 81C7467BAC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Nov 2006 15:15:10 +1100 (EST)
-Received: from [164.164.160.11] (helo=abdul)
-	by almach.lunarpages.com with esmtpa (Exim 4.52) id 1GpdKt-0006j3-6L
-	for linuxppc-embedded@ozlabs.org; Wed, 29 Nov 2006 20:15:48 -0800
-Message-ID: <002401c71435$a3b133b0$ab80a8c0@xaltedindia.net>
-From: "Abdul Rahaman" <abdul.rahaman@semindia.in>
-To: <linuxppc-embedded@ozlabs.org>
-References: <f4d44c7f0611262040y244f4042lc6c45ceb606a6d99@mail.gmail.com><004501c7120b$ebca9190$ab80a8c0@xaltedindia.net><456B523B.5090504@nec.com.au>
-	<002d01c712ad$2f1f2180$ab80a8c0@xaltedindia.net>
-Subject: Re: fialing @ executing /sbin/int in main.c
-Date: Thu, 30 Nov 2006 09:41:38 +0530
+	Thu, 30 Nov 2006 15:33:13 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1794217ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 29 Nov 2006 20:33:11 -0800 (PST)
+Message-ID: <12c9fc1a0611292033p1c0ae010iadcf6afdd4a549ce@mail.gmail.com>
+Date: Thu, 30 Nov 2006 10:03:11 +0530
+From: "Anumolu Sudheer" <urwithsudheer@gmail.com>
+To: kernelnewbies@nl.linux.org
+Subject: Re: regarding kgdb in ppc
+In-Reply-To: <12c9fc1a0611280820h748cd520pd5546e2803dbab82@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Content-Type: multipart/alternative;
+	boundary="----=_Part_7092_4038966.1164861191174"
+References: <12c9fc1a0611280820h748cd520pd5546e2803dbab82@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,185 +27,458 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi srideep ,
+------=_Part_7092_4038966.1164861191174
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I tried putting hello world program in Ramdisk image.It is Ok.
-But its not busy box link, but just object file.
+Hi All,
+As i was not able to do  kgdb with  ppc as target, i decided to try first
+with two x86 PCs. On the target system  after uncompressing the kernel i
+could not see any statement like  "Waiting for connection from remote gdb".
+I think this is to be done by gdbserver on the target.
+I compiled the gdbserver but don't know how to use it here along with the
+target kernel. Can anyone give some tips how to do it or if am missing
+something .
+I followed the docs - kgdb_docu_full-2.4.pdf and kgdbquickstart-2.4.pdf
+Host:  x86,  RHEL-2.6.9-34.EL
+Target Linux- 2.6.15.5 <http://2.6.16.2/>
+The kgdb version : linux-2.6.15.5-kgdb-2.4
 
-I tried creating helloworld program also as busy box link, coudnt create.
-perhaps u can tell me some tip to create hello world program as busy box
-link.
-
-Then i will head towards init , can tell clear what did you mean , you took
-init from package , but not from busy box,
-do you mean you have selected init from linux package!!!
-
-Regards,
-Rahaman
-
-
-
------ Original Message ----- 
-From: "Abdul Rahaman" <abdul.rahaman@semindia.in>
-To: "Adrian Craine" <adrian.craine@nec.com.au>;
-<linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, November 28, 2006 10:52 AM
-Subject: Re: fialing @ executing /sbin/int in main.c
+Please let me know if any other details required.
 
 
-Hi Adrain,
+Thanks
+Sudheer
 
-I just cheked what you have told about ld.so.1 looks its there, here the
-dump of 'init'
-[chandrashekharp@linux sbin]$ pwd
-/home/chandrashekharp/linux/new_fs8xx/ramdisk/sbin
-[chandrashekharp@linux sbin]$ readelf -lh init
-ELF Header:
-  Magic:   7f 45 4c 46 01 02 01 00 00 00 00 00 00 00 00 00
-  Class:                             ELF32
-  Data:                              2's complement, big endian
-  Version:                           1 (current)
-  OS/ABI:                            UNIX - System V
-  ABI Version:                       0
-  Type:                              EXEC (Executable file)
-  Machine:                           PowerPC
-  Version:                           0x1
-  Entry point address:               0x100034c4
-  Start of program headers:          52 (bytes into file)
-  Start of section headers:          1010184 (bytes into file)
-  Flags:                             0x0
-  Size of this header:               52 (bytes)
-  Size of program headers:           32 (bytes)
-  Number of program headers:         8
-  Size of section headers:           40 (bytes)
-  Number of section headers:         40
-  Section header string table index: 37
+On 11/28/06, Anumolu Sudheer <urwithsudheer@gmail.com> wrote:
+>
+> Hello All
+> I am in process of learning kgdb and facing some problem with gdbserver. I
+> am not able to "configure and make"   the gdbserver .  Sorry fot the long
+> mail.
+>
+> Did anyone tried to compile the KGDB with this powerpc-eabi ?? Please help me in solving this.
+>
+> Setup datails are below..
+> Host:  x86,  RHEL-2.6.9-34.EL
+> Target Linux- 2.6.16.2
+> Target Processor: AMCC440SPe
+> The kgdb version : linux-2.6.15.5-kgdb-2.4
+> GDB  version gdb-6.4-kgdb-2.4.tar.bz2
+> CrossCompiler - powerpc-eabi
+>
+> I applied the patch to the kernel and cross compiled it.(modified to solve
+> the compilation errors  as is not supported readymade).
+>
+> I used the steps given in "http://www.kegel.com/linux/gdbserver.txt " to
+> build the gdb.
+>
+> I compiled the gdb for host with  following commands
+>
+> #ls
+> gdb-6.4  gdb-6.4-kgdb-2.4.tar.bz2
+>
+> #mkdir ppc440
+> #cd ppc440
+> #/bin/sh ../gdb-6.4/configure --target=powerpc-eabi --with-solib-absolute-prefix=/opt/ppc440
+> #make
+> #cd ..
+>
+> For gdbserver, if i give the "--target=powerpc-eabi" to "configure" script,  it says the target
+>
+> is not supported by gdbserver and if i give "--target=powerpc-linux", it doesnt show any error
+> but its output doesn't look fine .  But when i do make. i get many errors saying many files
+> are not found.  (Adding few required header files didnt help.)
+>
+>
+> I cross compiled the gdbserver with following commands:
+>
+> [root@localhost gdb]# mkdir cross-ppc440
+> [root@localhost gdb]# ls
+> cross-ppc440  gdb-6.4  gdb-6.4-kgdb-2.4.tar.bz2  ppc440
+> [root@localhost
+>
+>
+>  gdb]# cd cross-ppc440/
+> [root@localhost cross-ppc440]#
+> [root@localhost cross-ppc440]# export CC=/usr/local/powerpc-eabi/bin/
+> [root@localhost cross-ppc440]# export CFLAGS="-mcpu=405 -D__PPC405__ -msim"
+>
+>
+>
+> [root@localhost cross-ppc440]# export ac_cv_func_mmap_fixed_mapped=yes
+>
+> [root@localhost cross-ppc440]# /bin/sh ../gdb-6.4/gdb/gdbserver/configure --target=powerpc-eabi --host=i386
+>
+> configure: WARNING: If you wanted to set the --build type, don't use
+> --host.
+>     If a cross compiler is detected then cross compile mode will be used.
+> checking for i386-gcc... /usr/local/powerpc-eabi/bin /powerpc-eabi-gcc
+> checking for C compiler default output file name... a.out
+> checking whether the C compiler works... yes
+> checking whether we are cross compiling... yes
+> checking for suffix of executables...
+> checking for suffix of object files... o
+> checking whether we are using the GNU C compiler... yes
+> checking whether /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc accepts
+> -g... yes
+> checking for /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc option to accept
+> ANSI C... none needed
+> checking build system type... i686-pc-linux-gnulibc1
+> checking host system type... i386-pc-none
+> checking target system type... powerpc-unknown-eabi
+> checking for a BSD-compatible install... /usr/bin/install -c
+> checking how to run the C preprocessor...
+> /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc -E
+> checking for egrep... grep -E
+> checking for ANSI C header files... yes
+> checking for sys/types.h... yes
+> checking for sys/stat.h... yes
+> checking for stdlib.h... yes
+> checking for string.h... yes
+> checking for memory.h... no
+> checking for strings.h... no
+> checking for inttypes.h... no
+> checking for stdint.h... no
+> checking for unistd.h... yes
+> checking sgtty.h usability... no
+> checking sgtty.h presence... no
+> checking for sgtty.h... no
+> checking termio.h usability... no
+> checking termio.h presence... no
+> checking for termio.h... no
+> checking termios.h usability... no
+> checking termios.h presence... no
+> checking for termios.h... no
+> checking sys/reg.h usability... no
+> checking sys/reg.h presence... no
+> checking for sys/reg.h... no
+> checking for string.h... (cached) yes
+> checking proc_service.h usability... no
+> checking proc_service.h presence... no
+> checking for proc_service.h... no
+> checking sys/procfs.h usability... no
+> checking sys/procfs.h presence... no
+> checking for sys/procfs.h... no
+> checking thread_db.h usability... no
+> checking thread_db.h presence... no
+> checking for thread_db.h... no
+> checking linux/elf.h usability... no
+> checking linux/elf.h presence... no
+> checking for linux/elf.h... no
+> checking for stdlib.h... (cached) yes
+> checking for unistd.h... (cached) yes
+> checking whether strerror is declared... yes
+> checking for socklen_t... no
+> Error: target not supported by gdbserver.
+> [root@localhost cross-ppc440]#
+> [root@localhost cross-ppc440]# /bin/sh ../gdb-6.4/gdb/gdbserver/configure
+> --target=powerpc-linux --host=i386
+> configure: WARNING: If you wanted to set the --build type, don't use
+> --host.
+>     If a cross compiler is detected then cross compile mode will be used.
+> checking for i386-gcc... /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc
+> checking for C compiler default output file name... a.out
+> checking whether the C compiler works... yes
+> checking whether we are cross compiling... yes
+> checking for suffix of executables...
+> checking for suffix of object files... o
+> checking whether we are using the GNU C compiler... yes
+> checking whether /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc accepts
+> -g... yes
+> checking for /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc option to accept
+> ANSI C... none needed
+> checking build system type... i686-pc-linux-gnulibc1
+> checking host system type... i386-pc-none
+> checking target system type... powerpc-unknown-linux-gnu
+> checking for a BSD-compatible install... /usr/bin/install -c
+> checking how to run the C preprocessor...
+> /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc -E
+> checking for egrep... grep -E
+> checking for ANSI C header files... yes
+> checking for sys/types.h... yes
+> checking for sys/stat.h... yes
+> checking for stdlib.h... yes
+> checking for string.h... yes
+> checking for memory.h... no
+> checking for strings.h... no
+> checking for inttypes.h... no
+> checking for stdint.h... no
+> checking for unistd.h... yes
+> checking sgtty.h usability... no
+> checking sgtty.h presence... no
+> checking for sgtty.h... no
+> checking termio.h usability... no
+> checking termio.h presence... no
+> checking for termio.h... no
+> checking termios.h usability... no
+> checking termios.h presence... no
+> checking for termios.h... no
+> checking sys/reg.h usability... no
+> checking sys/reg.h presence... no
+> checking for sys/reg.h... no
+> checking for string.h... (cached) yes
+> checking proc_service.h usability... no
+> checking proc_service.h presence... no
+> checking for proc_service.h... no
+> checking sys/procfs.h usability... no
+> checking sys/procfs.h presence... no
+> checking for sys/procfs.h... no
+> checking thread_db.h usability... no
+> checking thread_db.h presence... no
+> checking for thread_db.h... no
+> checking linux/elf.h usability... no
+> checking linux/elf.h presence... no
+> checking for linux/elf.h... no
+> checking for stdlib.h... (cached) yes
+> checking for unistd.h... (cached) yes
+> checking whether strerror is declared... yes
+> checking for socklen_t... no
+> checking for PTRACE_GETREGS... no
+> checking for PTRACE_GETFPXREGS... no
+> checking for libthread_db... no
+> configure: WARNING: Could not find libthread_db.
+> configure: WARNING: Disabling thread support in gdbserver.
+> configure: creating ./config.status
+> config.status: creating Makefile
+> config.status: creating config.h
+> config.status: executing default commands
+> [root@localhost cross-ppc440]# ls
+> config.h  config.log  config.status  Makefile
+> [root@localhost cross-ppc440]#
+> [root@localhost cross-ppc440]#
+>
+> Please let me know if any details required.
+>
+> Thanks in advance
+> Sudheer
+>
 
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  PHDR           0x000034 0x10000034 0x10000034 0x00120 0x00120 R E 0x4
-  INTERP         0x000154 0x10000154 0x10000154 0x0000d 0x0000d R   0x1
-      [Requesting program interpreter: /lib/ld.so.1]
-  LOAD           0x000000 0x10000000 0x10000000 0x6c184 0x6c184 R E 0x10000
-  LOAD           0x06c184 0x1007c184 0x1007c184 0x0045c 0x07018 RWE 0x10000
-  DYNAMIC        0x06c47c 0x1007c47c 0x1007c47c 0x000d0 0x000d0 RW  0x4
-  NOTE           0x000164 0x10000164 0x10000164 0x00020 0x00020 R   0x4
-  GNU_EH_FRAME   0x06c160 0x1006c160 0x1006c160 0x00024 0x00024 R   0x4
-  STACK          0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x4
+------=_Part_7092_4038966.1164861191174
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
- Section to Segment mapping:
-  Segment Sections...
-   00
-   01     .interp
-   02     .interp .note.ABI-tag .hash .dynsym .dynstr .gnu.version
-.gnu.version_
-r .rela.dyn .rela.plt .init .text .fini .rodata .eh_frame_hdr
-   03     .data .eh_frame .got2 .dynamic .ctors .dtors .jcr .got .sdata
-.sbss .p
-lt .bss
-   04     .dynamic
-   05     .note.ABI-tag
-   06     .eh_frame_hdr
-   07
-[chandrashekharp@linux sbin]$
-
-Regards,
-Rahaman
------ Original Message ----- 
-From: "Adrian Craine" <adrian.craine@nec.com.au>
-To: "Abdul Rahaman" <abdul.rahaman@semindia.in>
-Cc: <linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, November 28, 2006 2:31 AM
-Subject: Re: fialing @ executing /sbin/int in main.c
-
-
-Abdul Rahaman wrote:
-> Hi All,
-> Iam trying to port linux on an mpc8xx processor. Iam using 2.6.10
-> kernel and busybox 1.0.0.The system is booting up but its failing at
-> the “init”.For some reasons it says Kernel panic - not syncing: No
-> init found. Try passing init= option to kernel.
-> <0>Rebooting in 180 second
-> Pls check below the entire text.
-> Linux version 2.6.10 (gcc version 3.4.1) #83 Wed
-> Nov
-> 22 16:02:46 IST 2006
-> On node 0 totalpages: 8192
-> DMA zone: 8192 pages, LIFO batch:2
-> Normal zone: 0 pages, LIFO batch:1
-> HighMem zone: 0 pages, LIFO batch:1
-> Built 1 zonelists
-> Kernel command line: console=ttyCPM,38400=console=ttyCPM debug
-> root=/dev/ram0 rw
-> PID hash table entries: 256 (order: 8, 4096 bytes)
-> Decrementer Frequency = 495000000/60
-> m8xx_wdt: wdt disabled (SYPCR: 0xFFFFFF88)
-> Warning: real time clock seems stuck!
-> Console: colour dummy device 80x25
-> Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-> Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-> Memory: 29592k available (1572k kernel code, 360k data, 92k init, 0k
-> highmem)
-> Calibrating delay loop... 261.12 BogoMIPS (lpj=130560)
-> before dcache_init
-> after dcache_init
-> Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-> Before SysFs_init
-> After SysFs_init
-> After init_rootfs
-> after init_mount_tree
-> inside proc_root_init
-> after proc_misc_init
-> checking if image is initramfs...it isn't (no cpio magic); looks like
-> an initrd
-> Freeing initrd memory: 746k freed
-> after SK_Init
-> before register file system in sockets
-> after register file system in sockets
-> after kernel mount in sockets
-> NET: Registered protocol family 16
-> JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
-> Software Watchdog Timer: 0.07 initialized. soft_noboot=0
-> soft_margin=60 sec (nowayout= 0)
-> Serial: CPM driver $Revision: 0.01 $
-> ttyCPM0 at MMIO 0xf000a80 (irq = 20) is a CPM UART
-> io scheduler noop registered
-> io scheduler anticipatory registered
-> io scheduler deadline registered
-> io scheduler cfq registered
-> RAMDISK driver initialized: 4 RAM disks of 8192K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> elevator: using anticipatory as default io scheduler
-> mice: PS/2 mouse device common for all mice
-> eth0: FEC ENET Version 0.2, FEC irq 3, MII irq 4, addr 00:a0:1e:a8:7b:cb
-> u32 classifier
-> OLD policer on
-> NET: Registered protocol family 2
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 2048 bind 4096)
-> NET: Registered protocol family 17
-> RAMDISK: Compressed image found at block 0
-> VFS: Mounted root (ext2 filesystem).
-> Freeing unused kernel memory: 92k init
-> Kernel panic - not syncing: No init found. Try passing init= option to
-> kernel.
-> <0>Rebooting in 180 second
-> I have tried googling,but haven’t got any suitable answer to my
-> problem.Please help,as Iam not able to figure out why the “init” is
-> failing.
-> Sunil
-Are all the libraries present for init?
-# readelf -lh sbin/init
-should contain a line similar to the following: [Requesting program
-interpreter: /lib/ld.so.1]
-If this is missing the kernel will fail to run init with the above behavior.
-
-Adrian.
+Hi All,<br>
+As i was not able to do&nbsp; kgdb with&nbsp; ppc as target, i decided
+to try first with two x86 PCs. On the target system&nbsp; after
+uncompressing the kernel i could not see any statement like&nbsp;
+&quot;Waiting for connection from remote gdb&quot;. I think this is to be done by
+gdbserver on the target.<br>
+I compiled the gdbserver but don't know how to use it here along with
+the target kernel. Can anyone give some tips how to do it or if am
+missing something .<br>
+I followed the docs - kgdb_docu_full-2.4.pdf and kgdbquickstart-2.4.pdf<br>
 
 
 
+Host:&nbsp; x86,&nbsp; RHEL-2.6.9-34.EL<br>
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+Target Linux- <a href="http://2.6.16.2/" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">2.6.15.5</a><br>
+The kgdb version : linux-2.6.15.5-kgdb-2.4<br>
+<br>
+Please let me know if any other details required.<br>
+<br>
+<br>
+Thanks<br>
+Sudheer <br><br><div><span class="gmail_quote">On 11/28/06, <b class="gmail_sendername">Anumolu Sudheer</b> &lt;<a href="mailto:urwithsudheer@gmail.com">urwithsudheer@gmail.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hello All<br>
+
+
+I am in process of learning kgdb and facing some problem with
+gdbserver. I am not able to &quot;configure and make&quot; &nbsp; the gdbserver .&nbsp;  Sorry fot the long mail.<br>
+
+
+<pre>Did anyone tried to compile the KGDB with this powerpc-eabi ?? Please help me in solving this.</pre>
+
+Setup datails are below..<br>
+
+
+Host:&nbsp; x86,&nbsp; RHEL-2.6.9-34.EL<br>
+
+
+Target Linux- <a href="http://2.6.16.2/" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">2.6.16.2</a><br>
+
+
+Target Processor: AMCC440SPe<br>
+
+
+The kgdb version : linux-2.6.15.5-kgdb-2.4 <br>
+
+GDB&nbsp; version gdb-6.4-kgdb-2.4.tar.bz2<br>
+
+
+CrossCompiler - powerpc-eabi<br>
+<br>
+
+<span style="font-family: monospace;"></span>I applied the patch to the
+kernel and cross compiled it.(modified to solve the compilation
+errors&nbsp; as is not supported readymade).<br>
+
+<br>
+
+I used the steps given in &quot;<a href="http://www.kegel.com/linux/gdbserver.txt" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">http://www.kegel.com/linux/gdbserver.txt</a> &quot; to build the gdb.
+<br>
+<br>
+I compiled the gdb for host with&nbsp; following commands<br>
+
+
+<br>
+
+
+#ls<br>
+
+
+gdb-6.4&nbsp; gdb-6.4-kgdb-2.4.tar.bz2<br>
+
+
+<pre>#mkdir ppc440<br>#cd ppc440<br>#/bin/sh ../gdb-6.4/configure --target=powerpc-eabi --with-solib-absolute-prefix=/opt/ppc440<br>#make<br>#cd ..<br><br>For gdbserver, if i give the &quot;--target=powerpc-eabi&quot; to &quot;configure&quot; script,  it says the target 
+<br><br>is not supported by gdbserver and if i give &quot;--target=powerpc-linux&quot;, it doesnt show any error <br>but its output doesn't look fine .  But when i do make. i get many errors saying many files <br>are not found.  (Adding few required header files didnt help.)
+<br><br><br>I cross compiled the gdbserver with following commands:<br><br>[root@localhost gdb]# mkdir cross-ppc440<br>[root@localhost gdb]# ls<br>cross-ppc440  gdb-6.4  gdb-6.4-kgdb-2.4.tar.bz2  ppc440<br>[root@localhost
+<br><br><br> gdb]# cd cross-ppc440/<br>[root@localhost cross-ppc440]#<br>[root@localhost cross-ppc440]# export CC=/usr/local/powerpc-eabi/bin/<br>[root@localhost cross-ppc440]# export CFLAGS=&quot;-mcpu=405 -D__PPC405__ -msim&quot;
+<br><br><br><br>[root@localhost cross-ppc440]# export ac_cv_func_mmap_fixed_mapped=yes<br><br>[root@localhost cross-ppc440]# /bin/sh ../gdb-6.4/gdb/gdbserver/configure --target=powerpc-eabi --host=i386<br></pre>
+
+
+configure: WARNING: If you wanted to set the --build type, don't use --host.<br>
+
+&nbsp;&nbsp;&nbsp; If a cross compiler is detected then cross compile mode will be used.<br>
+
+checking for i386-gcc... /usr/local/powerpc-eabi/bin
+<div>/powerpc-eabi-gcc<br>
+checking for C compiler default output file name... a.out<br>
+checking whether the C compiler works... yes<br>
+checking whether we are cross compiling... yes<br>
+checking for suffix of executables...<br>
+checking for suffix of object files... o<br>
+checking whether we are using the GNU C compiler... yes<br>
+checking whether /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc accepts -g... yes<br>
+checking for /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc option to accept ANSI C... none needed<br>
+checking build system type... i686-pc-linux-gnulibc1<br>
+checking host system type... i386-pc-none<br>
+checking target system type... powerpc-unknown-eabi<br>
+checking for a BSD-compatible install... /usr/bin/install -c<br>
+checking how to run the C preprocessor... /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc -E<br>
+checking for egrep... grep -E<br>
+checking for ANSI C header files... yes<br>
+checking for sys/types.h... yes<br>
+checking for sys/stat.h... yes<br>
+checking for stdlib.h... yes<br>
+checking for string.h... yes<br>
+checking for memory.h... no<br>
+checking for strings.h... no<br>
+checking for inttypes.h... no<br>
+checking for stdint.h... no<br>
+checking for unistd.h... yes<br>
+checking sgtty.h usability... no<br>
+checking sgtty.h presence... no<br>
+checking for sgtty.h... no<br>
+checking termio.h usability... no<br>
+checking termio.h presence... no<br>
+checking for termio.h... no<br>
+checking termios.h usability... no<br>
+checking termios.h presence... no<br>
+checking for termios.h... no<br>
+checking sys/reg.h usability... no<br>
+checking sys/reg.h presence... no<br>
+checking for sys/reg.h... no<br>
+checking for string.h... (cached) yes<br>
+checking proc_service.h usability... no<br>
+checking proc_service.h presence... no<br>
+checking for proc_service.h... no<br>
+checking sys/procfs.h usability... no<br>
+checking sys/procfs.h presence... no<br>
+checking for sys/procfs.h... no<br>
+checking thread_db.h usability... no<br>
+checking thread_db.h presence... no<br>
+checking for thread_db.h... no<br>
+checking linux/elf.h usability... no<br>
+checking linux/elf.h presence... no<br>
+checking for linux/elf.h... no<br>
+checking for stdlib.h... (cached) yes<br>
+checking for unistd.h... (cached) yes<br>
+checking whether strerror is declared... yes<br>
+checking for socklen_t... no<br>
+Error: target not supported by gdbserver.<br>
+[root@localhost cross-ppc440]#<br>[root@localhost cross-ppc440]# /bin/sh
+../gdb-6.4/gdb/gdbserver/configure --target=powerpc-linux --host=i386<br>
+configure: WARNING: If you wanted to set the --build type, don't use --host.<br>
+&nbsp;&nbsp;&nbsp; If a cross compiler is detected then cross compile mode will be used.<br>
+checking for i386-gcc... /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc<br>
+checking for C compiler default output file name... a.out<br>
+checking whether the C compiler works... yes<br>
+checking whether we are cross compiling... yes<br>
+checking for suffix of executables...<br>
+checking for suffix of object files... o<br>
+checking whether we are using the GNU C compiler... yes<br>
+checking whether /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc accepts -g... yes<br>
+checking for /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc option to accept ANSI C... none needed<br>
+checking build system type... i686-pc-linux-gnulibc1<br>
+checking host system type... i386-pc-none<br>
+checking target system type... powerpc-unknown-linux-gnu<br>
+checking for a BSD-compatible install... /usr/bin/install -c<br>
+checking how to run the C preprocessor... /usr/local/powerpc-eabi/bin/powerpc-eabi-gcc -E<br>
+checking for egrep... grep -E<br>
+checking for ANSI C header files... yes<br>
+checking for sys/types.h... yes<br>
+checking for sys/stat.h... yes<br>
+checking for stdlib.h... yes<br>
+checking for string.h... yes<br>
+checking for memory.h... no<br>
+checking for strings.h... no<br>
+checking for inttypes.h... no<br>
+checking for stdint.h... no<br>
+checking for unistd.h... yes<br>
+checking sgtty.h usability... no<br>
+checking sgtty.h presence... no<br>
+checking for sgtty.h... no<br>
+checking termio.h usability... no<br>
+checking termio.h presence... no<br>
+checking for termio.h... no<br>
+checking termios.h usability... no<br>
+checking termios.h presence... no<br>
+checking for termios.h... no<br>
+checking sys/reg.h usability... no<br>
+checking sys/reg.h presence... no<br>
+checking for sys/reg.h... no<br>
+checking for string.h... (cached) yes<br>
+checking proc_service.h usability... no<br>
+checking proc_service.h presence... no<br>
+checking for proc_service.h... no<br>
+checking sys/procfs.h usability... no<br>
+checking sys/procfs.h presence... no<br>
+checking for sys/procfs.h... no<br>
+checking thread_db.h usability... no<br>
+checking thread_db.h presence... no<br>
+checking for thread_db.h... no<br>
+checking linux/elf.h usability... no<br>
+checking linux/elf.h presence... no<br>
+checking for linux/elf.h... no<br>
+checking for stdlib.h... (cached) yes<br>
+checking for unistd.h... (cached) yes<br>
+checking whether strerror is declared... yes<br>
+checking for socklen_t... no<br>
+checking for PTRACE_GETREGS... no<br>
+checking for PTRACE_GETFPXREGS... no<br>
+checking for libthread_db... no<br>
+configure: WARNING: Could not find libthread_db.<br>
+configure: WARNING: Disabling thread support in gdbserver.<br>
+configure: creating ./config.status<br>
+config.status: creating Makefile<br>
+config.status: creating config.h<br>
+config.status: executing default commands<br>
+[root@localhost cross-ppc440]# ls<br>
+config.h&nbsp; config.log&nbsp; config.status&nbsp; Makefile<br>
+[root@localhost cross-ppc440]#<br>
+[root@localhost cross-ppc440]#<br>
+<br>
+Please let me know if any details required.<br>
+<br>
+Thanks in advance<br>
+Sudheer</div>
+
+</blockquote></div><br>
+
+------=_Part_7092_4038966.1164861191174--
