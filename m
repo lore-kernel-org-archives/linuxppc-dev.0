@@ -1,17 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 9ED9F67B99
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.221])
+	by ozlabs.org (Postfix) with ESMTP id AA27567BB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Dec 2006 07:08:06 +1100 (EST)
-Message-ID: <456F3A16.7070204@freescale.com>
-Date: Thu, 30 Nov 2006 14:07:50 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Fri,  1 Dec 2006 07:18:19 +1100 (EST)
 MIME-Version: 1.0
-To: Leonid <Leonid@a-k-a.net>
-Subject: Re: 2 PCI devices behind PCI bridge on Yosemite board.
-References: <406A31B117F2734987636D6CCC93EE3C99D6F2@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C99D6F2@ehost011-3.exch011.intermedia.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 2 PCI devices behind PCI bridge on Yosemite board.
+Date: Thu, 30 Nov 2006 12:18:16 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3C99D709@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <456F3A16.7070204@freescale.com>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Scott Wood" <scottwood@freescale.com>
 Cc: Balajee Premraj <balajee@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,36 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Leonid wrote:
-> Problem starts when I work with Dreamchip. Interrupt arrives from it and
-> kernel doesn't know what to do with this interrupt and it gets disabled.
-> Looks like interrupt doesn't get acknowledged properly.
-> 
-> I tried to register Dreamchip PCI device by 2 ways:
-> 
-> 1) I request interrupt and provide as interrupt handler empty function:
-> 
-> irqreturn_t snd_dream_interrupt(int irq, void *dev_id, struct pt_regs
-> *regs)
-> {
-> 	return IRQ_NONE;
-> }
+On Thursday, November 30, 2006 12:08 PM Scott Wood wrote:
+> >=20
+> > 1) I request interrupt and provide as interrupt handler empty
+function:
+> >=20
+> > irqreturn_t snd_dream_interrupt(int irq, void *dev_id, struct
+pt_regs
+> > *regs)
+> > {
+> > 	return IRQ_NONE;
+> > }
 
-You didn't deal with the source of the interrupt.  Since it's apparently 
-level-triggered, the interrupt just comes right back.
+> You didn't deal with the source of the interrupt.  Since it's
+apparently=20
+> level-triggered, the interrupt just comes right back.
 
-> 2) Because I don't need interrupt from Dreamchip anyway, I tried don't
-> request interrupt upon Dreamchip PCI driver registration. Result was the
-> same though kernel output different:
+> ...  You need to either provide a=20
+> real IRQ handler for the Dreamchip, or tell the Dreamchip itself to
+mask=20
+> the IRQ.
 
-Not requesting the IRQ doesn't stop the device from asserting it.
+On Dreamchip board itself I couldn't find how to mask the interrupt, but
+I'll search more. Can you recommend example for "real" IRQ handler for
+Dreamchip? I just don't what the system crash. BTW, what will happen if
+Dreamchip and Silicon Image will assert interrupt simultaneously?
 
-> Any ideas what I have done wrong? Can I just tell to the bridge don't
-> interrupt CPU if Dreamchip is interrupting?
+Thanks,
 
-No, because both devices share the same physical IRQ line.  The PIC 
-can't tell which device is asserting it.  You need to either provide a 
-real IRQ handler for the Dreamchip, or tell the Dreamchip itself to mask 
-the IRQ.
-
--Scott
+Leonid.
