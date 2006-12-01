@@ -1,19 +1,13 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 7317067BEA
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 06:04:02 +1100 (EST)
-Message-ID: <45707CF8.3090106@ru.mvista.com>
-Date: Fri, 01 Dec 2006 22:05:28 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45708A0B.6000106@us.ibm.com>
+Date: Fri, 01 Dec 2006 14:01:15 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
 MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: pata_sl82c105 can not reserve IO region
-References: <20061130165202.GA23205@aepfle.de>	<20061130171049.7b80a40c@localhost.localdomain>	<20061130184748.GA24071@aepfle.de>
-	<20061201183355.GA9701@aepfle.de>
-In-Reply-To: <20061201183355.GA9701@aepfle.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>,
-	linuxppc-dev@ozlabs.org
+To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH]Add notification for active Cell SPU tasks
+Content-Type: multipart/mixed; boundary="------------040306070403040204060809"
+Reply-To: maynardj@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +17,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
+This is a multi-part message in MIME format.
+--------------040306070403040204060809
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
->>The printk in pci_request_region has 'bar + 1', so 6 should be possible
->>if i becomes 5.
 
-> Does the IO region of the last bar look correct?
 
-    I'd say it looks suspicious since it's not adjacent to all the other 
-regions... In fact, after looking at your /proc/ioports/ I can say that the 
-BAR is actually unassigned and its *actual* value is 0 which the driver may 
-not like (the ones that lspci show are the physical memory addresses not the 
-actual I/O space addresses in this case). That's why the reservation fails.
+--------------040306070403040204060809
+Content-Type: text/x-diff;
+ name="spu-notifier.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="spu-notifier.patch"
 
-> 00:03.1 IDE interface: Symphony Labs SL82c105 (rev 05) (prog-if 8f [Master SecP SecO PriP PriO])
-> 	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
-> 	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-> 	Interrupt: pin A routed to IRQ 86
-> 	Region 0: I/O ports at 3fd3000f000 [size=8]
-> 	Region 1: I/O ports at 3fd3000f010 [size=4]
-> 	Region 2: I/O ports at 3fd3000f020 [size=8]
-> 	Region 3: I/O ports at 3fd3000f030 [size=4]
-> 	Region 4: I/O ports at 3fd3000f040 [size=16]
-> 	Region 5: I/O ports at 3fd30000000 [size=16]
-> 00: ad 10 05 01 41 01 80 02 05 8f 01 01 08 48 80 00
-> 10: 01 f0 00 00 11 f0 00 00 21 f0 00 00 31 f0 00 00
-> 20: 41 f0 00 00 01 00 00 00 00 00 00 00 00 00 00 00
+Subject: Enable SPU switch notification to detect currently active SPU tasks.
 
-    Well, BAR5 is indeed 0.
+From: Maynard Johnson <maynardj@us.ibm.com>
 
-> 30: 00 00 00 00 00 00 00 00 00 00 00 00 56 01 02 28
-> 40: b3 08 ff 00 09 09 00 00 09 09 00 00 09 09 00 00
-> 50: 09 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 70: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
-> 80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 
-> name             "ide"
-> linux,phandle    00d5cdc0 (14011840)
-> assigned-addresses 81001910 00000000 0000f000 00000000 00000008 81001914
-> 		 00000000 0000f010 00000000 00000004 81001918 00000000
-> 		 0000f020 00000000 00000008 8100191c 00000000 0000f030
-> 		 00000000 00000004 81001920 00000000 0000f040 00000000
-> 		 00000010 81001924 00000000 00000000 00000000 00000010
+This patch adds to the capability of spu_switch_event_register to notify the
+caller of currently active SPU tasks.  It also exports spu_switch_event_register
+and spu_switch_event_unregister.
 
-    Yeah, the device tree has 0 for BAR5 too...
+Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
 
-WBR, Sergei
+
+Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
+===================================================================
+--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-11-24 11:34:44.884455680 -0600
++++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-01 13:57:21.864583264 -0600
+@@ -84,15 +84,37 @@
+ 			    ctx ? ctx->object_id : 0, spu);
+ }
+ 
++static void notify_spus_active(void)
++{
++	int node;
++	for (node = 0; node < MAX_NUMNODES; node++) {
++		struct spu *spu;
++		mutex_lock(&spu_prio->active_mutex[node]);
++		list_for_each_entry(spu, &spu_prio->active_list[node], list) {
++	 			 struct spu_context *ctx = spu->ctx;
++	 			 blocking_notifier_call_chain(&spu_switch_notifier,
++	 		 			 ctx ? ctx->object_id : 0, spu);
++		}
++		mutex_unlock(&spu_prio->active_mutex[node]);
++	 }
++
++}
++
+ int spu_switch_event_register(struct notifier_block * n)
+ {
+-	return blocking_notifier_chain_register(&spu_switch_notifier, n);
++	int ret;
++	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
++	if (!ret)
++		notify_spus_active();
++	return ret;
+ }
++EXPORT_SYMBOL_GPL(spu_switch_event_register);
+ 
+ int spu_switch_event_unregister(struct notifier_block * n)
+ {
+ 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
+ }
++EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
+ 
+ 
+ static inline void bind_context(struct spu *spu, struct spu_context *ctx)
+
+--------------040306070403040204060809--
