@@ -1,30 +1,17 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
-	[195.238.4.128])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0A4F267B5B
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc1-s22.bay0.hotmail.com (bay0-omc1-s22.bay0.hotmail.com
+	[65.54.246.94]) by ozlabs.org (Postfix) with ESMTP id DBA5267B92
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Dec 2006 00:18:42 +1100 (EST)
-Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx024.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kB1DIakH006097
-	for <linuxppc-embedded@ozlabs.org>; Fri, 1 Dec 2006 14:18:36 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade.biz (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx024.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kB1DIVMc006033
-	for <linuxppc-embedded@ozlabs.org>; Fri, 1 Dec 2006 14:18:31 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: fs_enet driver "generating" bad interrupts on 2.6.19
-Date: Fri, 1 Dec 2006 14:18:26 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200612011418.26201.laurent.pinchart@tbox.biz>
+	Sat,  2 Dec 2006 01:21:02 +1100 (EST)
+Message-ID: <BAY110-F1254A758CF8C211DDE105B2DA0@phx.gbl>
+In-Reply-To: <000b01c714a3$07330f40$c900a8c0@CRESITTLAB>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: christophe.alayrac@cresitt.com
+Subject: RE: RE : Some questions about the Xilinx Temac driver.
+Date: Fri, 01 Dec 2006 14:20:56 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,106 +22,179 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+Dear Chris,
+Thanks for your telling. I have seen that guidance. But I think that is 
+specific for the MontaVista linux. In that guidance, it just says to copy 
+the generated directories and files into the kernel tree and then configure 
+and make zImage. However it doesn't work for my 2.6.16 kernel. 
 
-I upgraded to 2.6.19 today, and found a strange issue that seems to be related 
-with the fs_enet driver on a MPC8248.
+Any other idea on how to implement such an EDK-generated BSP in the kernel 
+like mine? Thanks for any suggestion.
 
-The number of "bad" interrupts, as reported by /proc/interrupts, seems to 
-grown with the number of packets received and sent by the FCC ethernet 
-controllers.
+BR
+Ming
 
-~ # cat /proc/interrupts && sleep 500 && cat /proc/interrupts
-           CPU0
-  1:        257   CPM2 SIU  Level     i2c-mpc
-  2:       1173   CPM2 SIU  Level     mpc8260_spi
-  4:         11   CPM2 SIU  Level     cpm_uart
- 23:          0   CPM2 SIU  Edge      TBox cascade
- 24:        155   CPM2 SIU  Edge      tbox_spi
- 33:        307   CPM2 SIU  Level     fs_enet-mac
- 40:          0   CPM2 SIU  Level     sdfe_sdi
- 42:          0   CPM2 SIU  Level     sdfe_sdi
- 43:        622   CPM2 SIU  Level     sdfe_sci
-BAD:       1379
 
-The bad interrupt count is incremented when an interrupt can't be assigned to 
-a peripheral, which means cpm2_get_irq() returns -1. I tried printing the SIU 
-interrupt pending and interrupt mask registers when this happens:
+>From: "alayrac" <christophe.alayrac@cresitt.com>
+>To: "'Ming Liu'" <eemingliu@hotmail.com>,<mgalassi@c-cor.com>
+>CC: <linuxppc-embedded@ozlabs.org>
+>Subject: RE : Some questions about the Xilinx Temac driver.
+>Date: Thu, 30 Nov 2006 18:14:43 +0100
+>
+>Hi Ming
+>
+>You will find informations to build linux 2.6 BSP in the file
+>EDK_8.2\sw\ThirdParty\bsp\linux_2_6_v1_00_a\doc\linux_2_6_v1_00_a.pdf
+>
+>This file is installed with plateform Studio
+>
+>Regards
+>
+>Chris
+>
+>CRESITT INDUSTRIE
+>12 Rue de Blois, BP6744
+>45067 ORLEANS Cedex 2
+>Tel : 02.38.49.45.59
+>Fax :02.38.49.45.55
+>Email : christophe.alayrac@cresitt.com
+>Web : http://www.cresitt.com
+>
+>
+><----> -----Message d'origine-----
+><----> De : linuxppc-embedded-
+><----> bounces+christophe.alayrac=cresitt.com@ozlabs.org [mailto:linuxppc-
+><----> embedded-bounces+christophe.alayrac=cresitt.com@ozlabs.org] De la
+><----> part de Ming Liu
+><----> Envoy茅 : jeudi 30 novembre 2006 17:37
+><----> 脌 : mgalassi@c-cor.com
+><----> Cc : linuxppc-embedded@ozlabs.org
+><----> Objet : Re: Some questions about the Xilinx Temac driver.
+><---->
+><----> Dear Michael,
+><----> Now I update my Xilinx design software from 8.1 to 8.2 and notice
+><----> that
+><----> there is already linux_2_6 support. Then I generated the BSP for
+><----> linux 2.6.
+><----> I found that there are some differences from the older version, 
+e.g.
+><----> there
+><----> are some files such as XMakefile, xps_connected.cud, etc. I am
+><----> confused
+><----> with this. So could you please give me a hand on how to use such a
+><----> generated BSP to build my linux 2.6 kernel? I cannot find any
+><----> guidance on
+><----> how to do that. Thanks for your help.
+><---->
+><----> BR
+><----> Ming
+><---->
+><---->
+><----> >From: Michael Galassi <mgalassi@c-cor.com>
+><----> >Reply-To: Michael Galassi <mgalassi@c-cor.com>
+><----> >To: "Ming Liu" <eemingliu@hotmail.com>
+><----> >CC: akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
+><----> >Subject: Re: Some questions about the Xilinx Temac driver.
+><----> >Date: Wed, 29 Nov 2006 08:38:37 -0800
+><----> >
+><----> >If you use the latest xilinx ISE/EDK/IP update and let it overlay
+><----> your
+><----> >mvl source tree with it's files it shouldn't take you more than a
+><----> few
+><----> >hours to patch things up to where you can compile a kernel which
+><----> will
+><----> >work on the 3.00b IP.  The PHY support is useless but you can work
+><----> >around that easily enough.  I've not tried to get any of that
+><----> working
+><----> >with a semi-current kernel so if you're not using mvl's flavor of
+><----> 2.6.10
+><----> >you may run into other issues.
+><----> >
+><----> >-michael
+><----> >
+><----> > >Dear Andrei,
+><----> > >I have some questions about your xilinx Temac driver. If 
+possible,
+><----> please
+><----> > >give me a hand on such confusing problems.
+><----> > >
+><----> > >1. I am using the driver from
+><----> > >http://source.mvista.com/~ank/paulus-powerpc/20060309/, and the 
+IP
+><----> cores
+><----> of
+><----> > >plb_temac and hard_temac whose hardware versions are 2.00a and
+><----> 1.00a
+><----> > >specifically. I know the newest versions of those hardwares are
+><----> 3.00a
+><----> and
+><----> > >3.00a. Is your driver support the 3.00a version hardware? Also, 
+is
+><----> the
+><----> > >driver from 
+http://source.mvista.com/~ank/paulus-powerpc/20060309/
+><----> the
+><----> > >latest one for Xilinx Temac? If you have some updated version,
+><----> please
+><----> tell
+><----> > >me the address.
+><----> > >
+><----> > >2. Is that driver from the above address able to support SGDMA? 
+In
+><----> fact,
+><----> I
+><----> > >am testing the throughput of the Temac enet by my own little
+><----> program
+><----> which
+><----> > >is very simple. In the program running on the board, the pseudo
+><----> code
+><----> looks
+><----> > >just like this:
+><----> > >     for(;;){
+><----> > >           select();
+><----> > >           if(FD_ISSET()){
+><----> > >                 recvfrom();
+><----> > >           }
+><----> > >
+><----> > >           sendto();
+><----> > >     }
+><----> > >
+><----> > >The program is just to receive packets from a pc and then 
+transfer
+><----> them
+><----> > >back. But in this condition, the embedded PowerPC CPU is easily
+><----> used by
+><----> > >100&. So I suspect that maybe the DMA is not running properly.
+><----> Could you
+><----> > >please say something about the DMA in your driver?
+><----> > >
+><----> > >Thanks a lot for your telling.
+><----> > >
+><----> > >Regards
+><----> > >Ming
+><----> > >
+><----> > 
+>_________________________________________________________________
+><----> > >鍏嶈垂涓嬭浇 MSN Explorer:   http://explorer.msn.com/lccn/
+><----> > >
+><----> > >
+><----> > >--===============1695844909==
+><----> > >Content-Type: text/plain; charset="us-ascii"
+><----> > >MIME-Version: 1.0
+><----> > >Content-Transfer-Encoding: 7bit
+><----> > >Content-Disposition: inline
+><----> > >
+><----> > >_______________________________________________
+><----> > >Linuxppc-embedded mailing list
+><----> > >Linuxppc-embedded@ozlabs.org
+><----> > >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+><----> > >--===============1695844909==--
+><---->
+><----> _________________________________________________________________
+><----> 涓庤仈鏈虹殑鏈嬪弸杩涜浜ゆ祦锛岃浣跨敤 MSN Messenger:  
+http://messenger.msn.com/cn
+>
+>
 
-sipnrh 0xbc120000 sipnrl 0x40000000
-simrh  0x00000600 simrl  0x00b0d000
-
-SIPNR_L.1 is the FCC2 interrupt flag. The FCC2 ethernet has no cable plugged 
-in, so the interrupt is masked. SIPNR_H.0 to SIPNR_H.15 are port C 
-interrupts, and are all masked. As you can see, no peripheral should generate 
-an interrupt. Still, do_IRQ() is called, and cpm2_get_irq() reads the SIU 
-interrupt vector register (SIVEC) to find out that it is equal to 0. The bad 
-interrupts counter is then incremented.
-
-The number of bad interrupts increases faster when there is outbound network 
-activity (some non relevant information removed from the following output to 
-make it shorter):
-
-~ # while true; do cat /proc/interrupts; ifconfig eth0; sleep 5; done
-           CPU0
- 33:       2992   CPM2 SIU  Level     fs_enet-mac
-BAD:       1523
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2814 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:208 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3027   CPM2 SIU  Level     fs_enet-mac
-BAD:       1532
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2841 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:217 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3045   CPM2 SIU  Level     fs_enet-mac
-BAD:       1533
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2856 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:218 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3058   CPM2 SIU  Level     fs_enet-mac
-BAD:       1534
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2869 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:220 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3090   CPM2 SIU  Level     fs_enet-mac
-BAD:       1543
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2892 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:229 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3131   CPM2 SIU  Level     fs_enet-mac
-BAD:       1553
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2924 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:238 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3162   CPM2 SIU  Level     fs_enet-mac
-BAD:       1562
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2946 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:247 errors:0 dropped:0 overruns:0 carrier:0
-
-           CPU0
- 33:       3193   CPM2 SIU  Level     fs_enet-mac
-BAD:       1571
-eth0      Link encap:Ethernet  HWaddr 00:06:E1:80:00:03
-          RX packets:2968 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:256 errors:0 dropped:0 overruns:0 carrier:0
-
-The problem wasn't visible with the 2.6.18 kernel. The number of bad 
-interrupts didn't increase with outbound FCC traffic.
-
-Has anyone noticed the same problem ?
-
-Laurent Pinchart
+_________________________________________________________________
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
