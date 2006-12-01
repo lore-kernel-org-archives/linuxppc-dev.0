@@ -1,18 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 2989367BC5
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 01:55:03 +1100 (EST)
-Date: Fri, 1 Dec 2006 15:55:01 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Al Viro <viro@ftp.linux.org.uk>
+Return-Path: <torvalds@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.25])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3E33667BB6
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 02:30:24 +1100 (EST)
+Date: Fri, 1 Dec 2006 07:30:18 -0800 (PST)
+From: Linus Torvalds <torvalds@osdl.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Subject: Re: cast truncates bits from constant value (8000000000000000 becomes
 	0)
-In-Reply-To: <20061201143940.GB3078@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.62.0612011553100.30940@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0612011516120.28210@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.64.0612010723190.3695@woody.osdl.org>
 References: <4563D00D.4010704@am.sony.com>
 	<Pine.LNX.4.62.0612011516120.28210@pademelon.sonytel.be>
-	<20061201143940.GB3078@ftp.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
@@ -26,50 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 1 Dec 2006, Al Viro wrote:
-> On Fri, Dec 01, 2006 at 03:25:08PM +0100, Geert Uytterhoeven wrote:
-> > On Tue, 21 Nov 2006, Geoff Levand wrote:
-> > > +enum ps3_vendor_id {
-> > > +	PS3_VENDOR_ID_NONE = 0,
-> > > +	PS3_VENDOR_ID_SONY = 0x8000000000000000UL,
-> > > +};
-> > 
-> > I've just ran `make C=1' (PPC in 64-bit mode, and sparse is called with -m64),
-> > and noticed that sparse (cloned from
-> > git://git.kernel.org/pub/scm/devel/sparse/sparse.git a few minutes ago)
-> > complains about the second value with:
-> > 
-> > | warning: cast truncates bits from constant value (8000000000000000 becomes 0)
-> > 
-> > Section 6.7.2.2.4 of C99 says:
-> > 
-> > | Each enumerated type shall be compatible with char, a signed integer type, or
-> > | an unsigned integer type. The choice of type is implementation-defined, but
-> > | shall be capable of representing the values of all the members of the
-> > | enumeration.
+
+
+On Fri, 1 Dec 2006, Geert Uytterhoeven wrote:
+>
+> On Tue, 21 Nov 2006, Geoff Levand wrote:
+> > +enum ps3_vendor_id {
+> > +	PS3_VENDOR_ID_NONE = 0,
+> > +	PS3_VENDOR_ID_SONY = 0x8000000000000000UL,
+> > +};
 > 
-> FWIW, that code is *not* valid C99; note that all enumeration members must
-> fit the range of int (see 6.7.2.2.2).  What you quote speaks about the
+> I've just ran `make C=1' (PPC in 64-bit mode, and sparse is called with -m64),
+> and noticed that sparse (cloned from
+> git://git.kernel.org/pub/scm/devel/sparse/sparse.git a few minutes ago)
+> complains about the second value with:
+> 
+> | warning: cast truncates bits from constant value (8000000000000000 becomes 0)
+> 
+> Section 6.7.2.2.4 of C99 says:
+> 
+> | Each enumerated type shall be compatible with char, a signed integer type, or
+> | an unsigned integer type. The choice of type is implementation-defined, but
+> | shall be capable of representing the values of all the members of the
+> | enumeration.
+> 
+> The code snippet
+> 
+> | u64 x = PS3_VENDOR_ID_SONY;
+> | printk("PS3_VENDOR_ID_SONY = %lu\n", x);
+> 
+> does print the expected (i.e. non-zero) result.
+> 
+> Hence this looks like a bug in sparse.
 
-You're right. I missed that one.
+It's really a bug in gcc, but it's documented, so it's a "feature".
 
-> IOW, you are using a gccism in an area where gcc is bloody inconsistent
-> in the set of bugs it shows in different versions.
+Gcc allows large enums, but does so in such a strange manner that it's 
+totally hopeless to catch problems. Also, putting a value that is larger 
+than "unsigned int" into an enum is really setting yourself up for bugs 
+and not even guaranteed to work for standard C, so sparse takes a dim view 
+of it and just says that enums are limited in size to "int" or "unsigned 
+int".
 
-Hmmm...
+You can either ignore that warning or just use a #define. 
 
-> Generally safe way is to split the anonymous huge enum members into
-> single-element enums and pray that gcc will at least stay consistent
-> in handling of those.
-
-Or fall back to #defines, which is what we were trying to avoid in the first
-place (i.e. group related values together in enums)...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+			Linus
