@@ -1,13 +1,16 @@
-Return-Path: <edi@linux.vnet.ibm.com>
-Message-ID: <45705FA3.4040904@linux.vnet.ibm.com>
-Date: Fri, 01 Dec 2006 12:00:19 -0500
-From: Edi Shmueli <edi@linux.vnet.ibm.com>
+Return-Path: <afleming@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 471D167B6F
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 04:56:56 +1100 (EST)
+Date: Fri, 1 Dec 2006 11:56:31 -0600 (CST)
+From: Andy Fleming <afleming@freescale.com>
+To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 2.6.20] powerpc: Changed gianfar device tree definition to
+	make it more flexible
+Message-ID: <Pine.LNX.4.61.0612011153500.15004@ld0175-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 1/1] PPC32 : Huge-page support for ppc440 - 2.6.19-rc4 -
-	revised
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,422 +20,1424 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Edi Shmueli <edi@linux.vnet.ibm.com>
+The old gianfar node definition used a concept of "models" to
+determine the feature bits and interrupt settings to pass to the
+driver.  This won't scale well when the hardware designers come
+up with new and (hopefully) interesting variants of the eTSEC.
+So one goal of this patch is to prepare for that eventuality by
+listing the features, rather than inferring them.
 
-Following requests to test the patch under the latest kernel, here it is again, tested for 2.6.19-rc4.
-This patch enables applications to exploit the PPC440 TLB support for huge-page mapping, to minimize TLB thrashing.
-Applications with large memory footprint that exploit this support, experience minimal TLB misses, and boost in performance.
-NAS benchmarks tested with this patch indicate hundreds of percent of improvement in performance.
+And then, incidentally, some of the code was cleaned up so that
+initialization functions will skip devices which encounter
+errors, rather than bailing.  The CPM devices were not modified
+in this way, as they are more complex.
 
-Signed-off-by: Edi Shmueli <edi@linux.vnet.ibm.com>
------
+Finally, all the dts files with gianfar nodes were updated to use
+the new feature bits and the new interface field, and the various
+MAC address conventions were all accommodated by preserving the
+currently-used field, while adding local-mac-address, which will
+be used in the future (once u-boot changes have been made).
+Signed-off-by: Andrew Fleming <afleming@freescale.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   38 ++
+ arch/powerpc/boot/dts/mpc8349emds.dts        |   12 +
+ arch/powerpc/boot/dts/mpc8349emitx.dts       |   10 +
+ arch/powerpc/boot/dts/mpc8540ads.dts         |   39 ++
+ arch/powerpc/boot/dts/mpc8541cds.dts         |   28 +-
+ arch/powerpc/boot/dts/mpc8548cds.dts         |   88 +++++-
+ arch/powerpc/boot/dts/mpc8555cds.dts         |   28 +-
+ arch/powerpc/boot/dts/mpc8560ads.dts         |   24 +-
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts       |   78 ++++-
+ arch/powerpc/sysdev/fsl_soc.c                |  407 +++++++++++++++-----------
+ include/linux/fsl_devices.h                  |   11 +
+ 11 files changed, 544 insertions(+), 219 deletions(-)
 
-Benchmarks and Implementation comments
-======================================
-Below is the NAS IS benchmark results, executing under Linux, with and
-without this huge-page mapping support.
-IS Benchmark           4KB pages             16MB pages
-=======================================================
-  Class             =   A                     A
-  Size              =   8388608               8388608
-  Iterations        =   10                    10
-  Time in seconds   =   24.44                 6.38
-  Mop/s total       =   3.43                  13.15
-  Operation type    =   keys ranked           keys ranked
-  Verification      =   SUCCESSFUL            SUCCESSFUL
-Implementation details:
-=======================
-This patch is ppc440 architecture-specific. It enables the use of huge-pages by processes executing under the 2.6.16 kernel on the ppc440 processors.
-Huge-pages are accessible to user processes using either the hugetlbfs or using shared memory. See Documentation/vs/hugetlbpage.txt.
-==
-The ppc 32bit kernel uses 64bit PTEs (set by CONFIG_PTE_64BIT).
-I exploit a "hole" of 4 unused bits in the PTE MS word (bits 24-27) and code the page size information in those bits.
-I then modified the TLB miss handler (head_44x.S) to stop using the constant PPC44x_TLB_4K to set the page size in the TLB.
-Instead, when a TLB miss happens, the miss handler reads the size information from the PTE and sets that size in the TLB entry.
-This way, different TLB entries get to map different page sizes (e.g., 4KB or 16MB).
-The TLB replacement policy remains RR. This means that a huge-page entry in the TLB may be overwritten if not used for a long time, but when accessed it will be set again by the TLB miss handler, with the correct size, as set in the PTE.
-==
-In arch/ppc/mm/hugetlbpage.c is where page table entries are set to map huge pages:
-By default , each process has two-level page-tables. It has 2048, 32bit PMD (or PGD) entries at the higher-level, each maps 2MB of the process address spase, and 512, 64bit PTE entries in each lower-level page table.
-When a TLB miss happens and no PTE is found by the miss handler to offer the translation, a check is made (memory.c) on whether the faulting address belongs to a huge-page VM region.
-If so, the code in set_huge_pte_at() will set the required number of PMDs (e.g.,8 PMDs for huge-pages of size 16MB, or 1 PMD for huge-pages of size 2MB or less) to point to the *same* lower-level PTE page table.
-Within the lower-level page table, it will set the required number PTEs (e.g., all 512 PTEs for huge-pages larger than 2MB, or 256 PTEs for huge-pages of size 1MB etc.) to point to the *same* physical huge-page frame.
-All these PTEs will be *identical* and have the page-size coded in their MS word as described above.
-==
-Once the TLB miss handler copies the mapping (and the size) from the PTE into on of a TLB entry, the process will not suffer any TLB misses for that huge-page.
-If the mapping was overwritten by the TLB RR replacement policy, it will be re-loaded again (probably in a different TLB entry) when the process re-access that huge-page.
-
-
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/kernel/head_44x.S my_linux/arch/ppc/kernel/head_44x.S
---- linux-2.6.19-rc4-vanilla/arch/ppc/kernel/head_44x.S    2006-11-14 11:16:29.000000000 -0500
-+++ my_linux/arch/ppc/kernel/head_44x.S    2006-11-14 17:26:13.000000000 -0500
-@@ -21,12 +21,14 @@
-   *            debbie_chu@mvista.com
-   *    Copyright 2002-2005 MontaVista Software, Inc.
-   *      PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
-+ *    Copyright (C) 2006 Edi Shmueli, IBM Corporation.
-+ *    PowerPC 44x handling of huge-page misses.
-   *
-   * This program is free software; you can redistribute  it and/or modify it
-   * under  the terms of  the GNU General  Public License as published by the
-   * Free Software Foundation;  either version 2 of the  License, or (at your
-   * option) any later version.
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 27b457c..edb68b8 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1193,6 +1193,7 @@ platforms are moved over to use the flat
+ 
+     - device_type : Should be "network"
+     - model : Model of the device.  Can be "TSEC", "eTSEC", or "FEC"
++      (This is deprecated in favor of the feature bits)
+     - compatible : Should be "gianfar"
+     - reg : Offset and length of the register set for the device
+     - mac-address : List of bytes representing the ethernet address of
+@@ -1207,12 +1208,47 @@ platforms are moved over to use the flat
+     - phy-handle : The phandle for the PHY connected to this ethernet
+       controller.
+ 
++  Optional properties (features):
++    - gigabit : Indicates support for 1000 Mbit operation
++    - coalescing : Indicates support for interrupt coalescing
++    - rmon : Indicates support for RMON-style counters
++    - checksumming : Indicates support for hardware TCP/UDP checksumming
++    - vlan-insertion : Indicates support for hardware vlan header insertion
++    - extended-hash : Indicates support for using the Individual
++        Address Hash registers to extend the Group Address Hash registers
++    - padding : Indicates support for padding between the FCB and
++        the frame
++    - filer : Indicates support for the Filer
++    - parseL2 : Indicates support for parsing L2 headers
++    - parseL3 : Indicates support for parsing L3 headers
++    - parseL4 : Indicates support for parsing L4 headers
++    - multi-queue : Indicates support for sending and receiving
++      into multiple queues
++    - buffer-stashing : Controller can allocate buffers into L2
++    - buffer-locking : Controller can lock buffers into L2
++    - bd-stashing : Controller can allocate descriptors into L2
++    - bd-locking : Controller can lock descriptors into L2
++    
++    The "eTSEC" model implements all of these, except for the
++    buffer-locking and bd-locking features.  The "TSEC" model
++    implements only the first three, and all of the
++    stashing/locking features.  The "FEC" only supports the
++    stashing and locking features.
++  
++
+   Example:
+ 
+ 	ethernet@24000 {
+ 		#size-cells = <0>;
+ 		device_type = "network";
+ 		model = "TSEC";
++		gigabit;
++		coalescing;
++		rmon;
++		buffer-stashing;
++		buffer-locking;
++		bd-stashing;
++		bd-locking;
+ 		compatible = "gianfar";
+ 		reg = <24000 1000>;
+ 		mac-address = [ 00 E0 0C 00 73 00 ];
+@@ -1238,6 +1274,7 @@ platforms are moved over to use the flat
+     - reg : The ID number for the phy, usually a small integer
+     - linux,phandle :  phandle for this node; likely referenced by an
+       ethernet controller node.
++    - flags : PHY-specific flags (defined by the device driver)
+ 
+ 
+    Example:
+@@ -1246,6 +1283,7 @@ platforms are moved over to use the flat
+ 		linux,phandle = <2452000>
+ 		interrupt-parent = <40000>;
+ 		interrupts = <35 1>;
++		flags = <0>;
+ 		reg = <0>;
+ 		device_type = "ethernet-phy";
+ 	};
+diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
+index efceb34..ac1ad6b 100644
+--- a/arch/powerpc/boot/dts/mpc8349emds.dts
++++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+@@ -117,6 +117,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <700>;
+ 				interrupts = <11 2>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -124,6 +125,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <700>;
+ 				interrupts = <12 2>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -132,10 +134,13 @@
+ 		ethernet@24000 {
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
++			address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <20 8 21 8 22 8>;
+ 			interrupt-parent = <700>;
+ 			phy-handle = <2452000>;
+@@ -146,10 +151,13 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
++			address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <23 8 24 8 25 8>;
+ 			interrupt-parent = <700>;
+ 			phy-handle = <2452001>;
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 27807fc..c8b2fe5 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -116,6 +116,7 @@
+ 				linux,phandle = <245201c>;
+ 				interrupt-parent = <700>;
+ 				interrupts = <12 2>;
++				flags = <0>;
+ 				reg = <1c>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -125,6 +126,7 @@
+ 				linux,phandle = <245201f>;
+ 				interrupt-parent = <700>;
+ 				interrupts = <12 2>;
++				flags = <0>;
+ 				reg = <1f>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -133,10 +135,13 @@
+ 		ethernet@24000 {
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
++			address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <20 8 21 8 22 8>;
+ 			interrupt-parent = <700>;
+ 			phy-handle = <245201c>;
+@@ -147,6 +152,9 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+ 			address = [ 00 00 00 00 00 00 ];
+diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
+index 5f41c1f..2ea76a1 100644
+--- a/arch/powerpc/boot/dts/mpc8540ads.dts
++++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+@@ -30,9 +30,9 @@
+ 			i-cache-line-size = <20>;	// 32 bytes
+ 			d-cache-size = <8000>;		// L1, 32K
+ 			i-cache-size = <8000>;		// L1, 32K
+-			timebase-frequency = <0>;	//  33 MHz, from uboot
+-			bus-frequency = <0>;	// 166 MHz
+-			clock-frequency = <0>;	// 825 MHz, from uboot
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+ 		};
+@@ -73,6 +73,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 1>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -80,6 +81,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 1>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -87,6 +89,7 @@
+ 				linux,phandle = <2452003>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <37 1>;
++				flags = <0>;
+ 				reg = <3>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -97,10 +100,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			address = [ 00 E0 0C 00 73 00 ];
+-			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <d 2 e 2 12 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
+@@ -111,10 +121,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			address = [ 00 E0 0C 00 73 01 ];
+-			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <13 2 14 2 18 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+@@ -125,10 +142,14 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "FEC";
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <26000 1000>;
+-			address = [ 00 E0 0C 00 73 02 ];
+-			local-mac-address = [ 00 E0 0C 00 73 02 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <19 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452003>;
+diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
+index 7be0bc6..240182b 100644
+--- a/arch/powerpc/boot/dts/mpc8541cds.dts
++++ b/arch/powerpc/boot/dts/mpc8541cds.dts
+@@ -30,9 +30,9 @@
+ 			i-cache-line-size = <20>;	// 32 bytes
+ 			d-cache-size = <8000>;		// L1, 32K
+ 			i-cache-size = <8000>;		// L1, 32K
+-			timebase-frequency = <0>;	//  33 MHz, from uboot
+-			bus-frequency = <0>;	// 166 MHz
+-			clock-frequency = <0>;	// 825 MHz, from uboot
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+ 		};
+@@ -73,6 +73,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -80,6 +81,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -90,9 +92,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <d 2 e 2 12 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
+@@ -103,9 +113,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <13 2 14 2 18 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
+index 893d795..859abdd 100644
+--- a/arch/powerpc/boot/dts/mpc8548cds.dts
++++ b/arch/powerpc/boot/dts/mpc8548cds.dts
+@@ -1,5 +1,5 @@
+ /*
+- * MPC8555 CDS Device Tree Source
++ * MPC8548 CDS Device Tree Source
+  *
+  * Copyright 2006 Freescale Semiconductor Inc.
+  *
+@@ -30,9 +30,9 @@
+ 			i-cache-line-size = <20>;	// 32 bytes
+ 			d-cache-size = <8000>;		// L1, 32K
+ 			i-cache-size = <8000>;		// L1, 32K
+-			timebase-frequency = <0>;	//  33 MHz, from uboot
+-			bus-frequency = <0>;	// 166 MHz
+-			clock-frequency = <0>;	// 825 MHz, from uboot
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+ 		};
+@@ -73,6 +73,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -80,6 +81,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -88,6 +90,7 @@
+ 				linux,phandle = <2452002>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <2>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -95,6 +98,7 @@
+ 				linux,phandle = <2452003>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <3>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -105,9 +109,24 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			checksumming;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <d 2 e 2 12 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
+@@ -118,41 +137,86 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			checksumming;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <13 2 14 2 18 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+ 		};
++	/* eTSEC3 and eTSEC4 don't work on older CDS boards
+ 
+ 		ethernet@26000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			checksumming;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <26000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 02 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <f 2 10 2 11 2>;
+ 			interrupt-parent = <40000>;
+-			phy-handle = <2452001>;
++			phy-handle = <2452002>;
+ 		};
+ 
+-/* eTSEC 4 is currently broken
+ 		ethernet@27000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			checksumming;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <27000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 03 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <15 2 16 2 17 2>;
+ 			interrupt-parent = <40000>;
+-			phy-handle = <2452001>;
++			phy-handle = <2452003>;
+ 		};
 - */
-+*/
-
-  #include <asm/processor.h>
-  #include <asm/page.h>
-@@ -654,19 +656,22 @@ finish_tlb_load:
-      lis    r11, tlb_44x_index@ha
-      stw    r13, tlb_44x_index@l(r11)
-
--    lwz    r11, 0(r12)            /* Get MS word of PTE */
--    lwz    r12, 4(r12)            /* Get LS word of PTE */
--    rlwimi    r11, r12, 0, 0 , 19        /* Insert RPN */
--    tlbwe    r11, r13, PPC44x_TLB_XLAT    /* Write XLAT */
--
-+    /*huge-page support*/
-      /*
-       * Create PAGEID. This is the faulting address,
-       * page size, and valid flag.
--     */
--    li    r11, PPC44x_TLB_VALID | PPC44x_TLB_4K
--    rlwimi    r10, r11, 0, 20, 31        /* Insert valid and page size */
-+    */
-+    lwz    r11, 0(r12)            /* Get MS word of PTE */
-+    andi.   r11, r11, 0x000000F0        /* Leave only the size */
-+    ori     r11, r11, PPC44x_TLB_VALID | PPC44x_TLB_4K /* Insert valid and page size */
-+    rlwimi    r10, r11, 0, 20, 31        /* Combine EA from r10 with flags from r11 */
-      tlbwe    r10, r13, PPC44x_TLB_PAGEID    /* Write PAGEID */
-
-+    lwz    r11, 0(r12)            /* Get MS word of PTE */
-+    lwz    r12, 4(r12)            /* Get LS word of PTE */
-+    rlwimi    r11, r12, 0, 0 , 19        /* Insert RPN */
-+    tlbwe    r11, r13, PPC44x_TLB_XLAT    /* Write XLAT */
++	*/
+ 
+ 		serial@4500 {
+ 			device_type = "serial";
+diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
+index 118f5a8..b3c0dc6 100644
+--- a/arch/powerpc/boot/dts/mpc8555cds.dts
++++ b/arch/powerpc/boot/dts/mpc8555cds.dts
+@@ -30,9 +30,9 @@
+ 			i-cache-line-size = <20>;	// 32 bytes
+ 			d-cache-size = <8000>;		// L1, 32K
+ 			i-cache-size = <8000>;		// L1, 32K
+-			timebase-frequency = <0>;	//  33 MHz, from uboot
+-			bus-frequency = <0>;	// 166 MHz
+-			clock-frequency = <0>;	// 825 MHz, from uboot
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+ 		};
+@@ -73,6 +73,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -80,6 +81,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 0>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -90,9 +92,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0d 2 0e 2 12 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
+@@ -103,9 +113,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			local-mac-address = [ 00 E0 0C 00 73 01 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <13 2 14 2 18 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
+index 2b16848..8dad554 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -65,6 +65,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 1>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -72,6 +73,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <35 1>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -79,6 +81,7 @@
+ 				linux,phandle = <2452002>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <37 1>;
++				flags = <0>;
+ 				reg = <2>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -86,6 +89,7 @@
+ 				linux,phandle = <2452003>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <37 1>;
++				flags = <0>;
+ 				reg = <3>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -94,9 +98,17 @@
+ 		ethernet@24000 {
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			address = [ 00 00 0C 00 00 FD ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <d 2 e 2 12 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
+@@ -107,9 +119,17 @@
+ 			#size-cells = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			buffer-stashing;
++			buffer-locking;
++			bd-stashing;
++			bd-locking;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			address = [ 00 00 0C 00 01 FD ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <13 2 14 2 18 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index f0c7731..c4fda72 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -28,7 +28,7 @@
+ 			i-cache-line-size = <20>;	// 32 bytes
+ 			d-cache-size = <8000>;		// L1, 32K
+ 			i-cache-size = <8000>;		// L1, 32K
+-			timebase-frequency = <0>;	// 33 MHz, from uboot
++			timebase-frequency = <0>;	// from uboot
+ 			bus-frequency = <0>;		// From uboot
+ 			clock-frequency = <0>;		// From uboot
+ 			32-bit;
+@@ -91,6 +91,7 @@
+ 				linux,phandle = <2452000>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <4a 1>;
++				flags = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -98,6 +99,7 @@
+ 				linux,phandle = <2452001>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <4a 1>;
++				flags = <0>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -105,6 +107,7 @@
+ 				linux,phandle = <2452002>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <4a 1>;
++				flags = <0>;
+ 				reg = <2>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -112,6 +115,7 @@
+ 				linux,phandle = <2452003>;
+ 				interrupt-parent = <40000>;
+ 				interrupts = <4a 1>;
++				flags = <0>;
+ 				reg = <3>;
+ 				device_type = "ethernet-phy";
+ 			};
+@@ -121,10 +125,24 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			model = "TSEC";
++			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <24000 1000>;
+-			mac-address = [ 00 E0 0C 00 73 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <1d 2 1e 2 22 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
+@@ -134,10 +152,24 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			model = "TSEC";
++			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <25000 1000>;
+-			mac-address = [ 00 E0 0C 00 73 01 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <23 2 24 2 28 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+@@ -147,10 +179,24 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			model = "TSEC";
++			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <26000 1000>;
+-			mac-address = [ 00 E0 0C 00 02 FD ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <1F 2 20 2 21 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452002>;
+@@ -160,10 +206,24 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			model = "TSEC";
++			model = "eTSEC";
++			gigabit;
++			coalescing;
++			rmon;
++			vlan;
++			extended-hash;
++			padding;
++			filer;
++			parseL4;
++			parseL3;
++			parseL2;
++			multi-queue;
++			buffer-stashing;
++			bd-stashing;
+ 			compatible = "gianfar";
+ 			reg = <27000 1000>;
+-			mac-address = [ 00 E0 0C 00 03 FD ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <25 2 26 2 27 2>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452003>;
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index ad31e56..57a1a2a 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -6,6 +6,9 @@
+  * 2006 (c) MontaVista Software, Inc.
+  * Vitaly Bordug <vbordug@ru.mvista.com>
+  *
++ * 2006 (c) Freescale Semiconductor, Inc
++ * Andy Fleming
++ *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+@@ -178,58 +181,162 @@ static const char *gfar_tx_intr = "tx";
+ static const char *gfar_rx_intr = "rx";
+ static const char *gfar_err_intr = "error";
+ 
++struct gfar_flag_info {
++	const char *name;
++	u32 flags;
++};
 +
-      li    r10, PPC44x_TLB_SR@l        /* Set SR */
-      rlwimi    r10, r12, 0, 30, 30        /* Set SW = _PAGE_RW */
-      rlwimi    r10, r12, 29, 29, 29        /* SX = _PAGE_HWEXEC */
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/mm/hugetlbpage.c my_linux/arch/ppc/mm/hugetlbpage.c
---- linux-2.6.19-rc4-vanilla/arch/ppc/mm/hugetlbpage.c    1969-12-31 19:00:00.000000000 -0500
-+++ my_linux/arch/ppc/mm/hugetlbpage.c    2006-11-15 11:44:43.297682864 -0500
-@@ -0,0 +1,185 @@
-+/*
-+ * PPC32 (440) Huge TLB Page Support for Kernel.
++static struct gfar_flag_info __initdata flag_info[] = {
++	{ "gigabit", FSL_GIANFAR_DEV_HAS_GIGABIT },
++	{ "coalescing", FSL_GIANFAR_DEV_HAS_COALESCE },
++	{ "rmon", FSL_GIANFAR_DEV_HAS_RMON },
++	{ "checksumming", FSL_GIANFAR_DEV_HAS_CSUM },
++	{ "vlan", FSL_GIANFAR_DEV_HAS_VLAN },
++	{ "extended-hash", FSL_GIANFAR_DEV_HAS_EXTENDED_HASH },
++	{ "padding", FSL_GIANFAR_DEV_HAS_PADDING },
++	{ "filer", FSL_GIANFAR_DEV_HAS_FILER },
++	{ "parseL4", FSL_GIANFAR_DEV_HAS_PARSE_L4 },
++	{ "parseL3", FSL_GIANFAR_DEV_HAS_PARSE_L3 },
++	{ "parseL2", FSL_GIANFAR_DEV_HAS_PARSE_L2 },
++	{ "multi-queue", FSL_GIANFAR_DEV_HAS_MULTI_QUEUE },
++	{ "buffer-stashing", FSL_GIANFAR_DEV_HAS_BUF_STASHING },
++	{ "buffer-locking", FSL_GIANFAR_DEV_HAS_BUF_LOCKING },
++	{ "bd-stashing", FSL_GIANFAR_DEV_HAS_BD_STASHING },
++	{ "bd-locking", FSL_GIANFAR_DEV_HAS_BD_LOCKING },
++};
++
++/* Returns a bitfield with the appropriate flasgs set,
++ * based on the device tree */
++static int __init gfar_get_flags(struct device_node *np)
++{
++	int idx;
++	int device_flags = 0;
++
++	for (idx = 0; idx < ARRAY_SIZE(flag_info); idx++)
++		if (get_property(np, flag_info[idx].name, NULL) != NULL)
++			device_flags |= flag_info[idx].flags;
++
++	return device_flags;
++}
++
++static struct device_node * __init gfar_get_phy_node(struct device_node *np)
++{
++	const phandle *ph;
++	struct device_node *phy;
++
++	ph = get_property(np, "phy-handle", NULL);
++	if (ph == NULL)
++		return NULL;
++
++	phy = of_find_node_by_phandle(*ph);
++
++	return phy;
++}
++
++/* Set the phy_id field of gfar_data to the address of the PHY
++ * Set the bus_id field of gfar_data to the memory address of the mdio bus
++ * Set the phy_flags field of gfar_data to passed in values
 + *
-+ * Copyright (C) 2006 Edi Shmueli, IBM Corporation.
-+ *
-+ * Based on the IA-32 version:
-+ * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
-+ *
++ * returns 0 on success
 + */
-+
-+#include <linux/init.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <linux/hugetlb.h>
-+#include <linux/pagemap.h>
-+#include <linux/smp_lock.h>
-+#include <linux/slab.h>
-+#include <linux/err.h>
-+#include <linux/sysctl.h>
-+#include <asm/mman.h>
-+#include <asm/tlb.h>
-+#include <asm/tlbflush.h>
-+
-+pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
++static int __init gfar_set_phy_info(struct device_node *np,
++		int *phy_id, int *bus_id, int *phy_flags)
 +{
-+  pgd_t *pgd;
-+  pud_t *pud;
-+  pmd_t *pmd=NULL;
-+  pte_t *ptep=NULL;
++	struct resource res;
++	struct device_node *phy;
++	struct device_node *mdio;
++	const unsigned int *id;
++	const unsigned int *flags;
++	int ret;
 +
-+  pgd = pgd_offset(mm, addr);
++	phy = gfar_get_phy_node(np);
++	if (phy == NULL)
++		return -1;
 +
-+  pud = pud_offset(pgd, addr);
-+  if(!pud)
-+    return NULL;
++	/* Get the PHY address, the parent MDIO bus,
++	 * and the phy flags, then release the phy node */
++	id = get_property(phy, "reg", NULL);
++	flags = get_property(phy, "flags", NULL);
++	mdio = of_get_parent(phy);
+ 
++	/* We're done with the phy node, now */
++	of_node_put(phy);
 +
-+  pmd = pmd_offset(pud, addr);
-+  if(!pmd)
-+    return NULL;
++	/* Set the PHY address */
++	if (id == NULL)
++		return -1;
 +
-+  ptep = pte_offset_map(pmd, addr); /*also check pte_offset_map_lock()*/
++	*phy_id = *id;
 +
-+  return ptep;
++	/* Set the flags */
++	if (flags == NULL)
++		return -1;
++
++	*phy_flags = *flags;
++
++	/* Set the bus id */
++	if (mdio == NULL)
++		return -1;
++
++	ret = of_address_to_resource(mdio, 0, &res);
++	of_node_put(mdio);
++	if (ret)
++		return -1;
++
++	*bus_id = res.start;
++
++	return 0;
 +}
++  
+ static int __init gfar_of_init(void)
+ {
+ 	struct device_node *np;
+-	unsigned int i;
++	unsigned int num;
+ 	struct platform_device *gfar_dev;
+-	struct resource res;
+ 	int ret;
+ 
+-	for (np = NULL, i = 0;
++	for (np = NULL, num = 0;
+ 	     (np = of_find_compatible_node(np, "network", "gianfar")) != NULL;
+-	     i++) {
++	     num++) {
+ 		struct resource r[4];
+-		struct device_node *phy, *mdio;
+ 		struct gianfar_platform_data gfar_data;
+-		const unsigned int *id;
+-		const char *model;
+ 		const void *mac_addr;
+-		const phandle *ph;
+-		int n_res = 2;
++		int n_res = 0;
+ 
+ 		memset(r, 0, sizeof(r));
+ 		memset(&gfar_data, 0, sizeof(gfar_data));
+ 
+ 		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
++		if (ret) {
++			printk("gfar %d's address lookup failed\n", num);
++			continue;
++		}
+ 
+-		of_irq_to_resource(np, 0, &r[1]);
++		gfar_data.device_flags = gfar_get_flags(np);
+ 
+-		model = get_property(np, "model", NULL);
++		/* Map all the irq resources, and set n_res to
++		 * the number of irqs plus 1 (which is the total
++		 * number of resources) */
++		while (n_res < 4 &&
++			of_irq_to_resource(np, n_res, &r[++n_res]) != NO_IRQ);
++		if (n_res < 2) {
++			printk("No interrupts found for gfar %d\n", num);
++			continue;
++		}
+ 
+-		/* If we aren't the FEC we have multiple interrupts */
+-		if (model && strcasecmp(model, "FEC")) {
++		/* If we have 3 interrupts, name them, and set the flag */
++		if (n_res == 4) {
+ 			r[1].name = gfar_tx_intr;
+-
+ 			r[2].name = gfar_rx_intr;
+-			of_irq_to_resource(np, 1, &r[2]);
+-
+ 			r[3].name = gfar_err_intr;
+-			of_irq_to_resource(np, 2, &r[3]);
+-
+-			n_res += 2;
+-		}
+-
+-		gfar_dev =
+-		    platform_device_register_simple("fsl-gianfar", i, &r[0],
+-						    n_res);
+ 
+-		if (IS_ERR(gfar_dev)) {
+-			ret = PTR_ERR(gfar_dev);
+-			goto err;
++			gfar_data.device_flags |=
++				FSL_GIANFAR_DEV_HAS_MULTI_INTR;
++		} else if (n_res != 2) {
++			printk("gfar %d had an unexpected number"
++					"of interrupts (%d)\n",
++					num, n_res-1);
++			continue;
+ 		}
+ 
+ 		mac_addr = get_property(np, "local-mac-address", NULL);
+@@ -243,60 +350,31 @@ static int __init gfar_of_init(void)
+ 		if (mac_addr)
+ 			memcpy(gfar_data.mac_addr, mac_addr, 6);
+ 
+-		if (model && !strcasecmp(model, "TSEC"))
+-			gfar_data.device_flags =
+-			    FSL_GIANFAR_DEV_HAS_GIGABIT |
+-			    FSL_GIANFAR_DEV_HAS_COALESCE |
+-			    FSL_GIANFAR_DEV_HAS_RMON |
+-			    FSL_GIANFAR_DEV_HAS_MULTI_INTR;
+-		if (model && !strcasecmp(model, "eTSEC"))
+-			gfar_data.device_flags =
+-			    FSL_GIANFAR_DEV_HAS_GIGABIT |
+-			    FSL_GIANFAR_DEV_HAS_COALESCE |
+-			    FSL_GIANFAR_DEV_HAS_RMON |
+-			    FSL_GIANFAR_DEV_HAS_MULTI_INTR |
+-			    FSL_GIANFAR_DEV_HAS_CSUM |
+-			    FSL_GIANFAR_DEV_HAS_VLAN |
+-			    FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
++		ret = gfar_set_phy_info(np, &gfar_data.phy_id,
++				&gfar_data.bus_id, &gfar_data.phy_flags);
++  		if (ret) {
++			printk("gfar %d failed to set PHY info\n", num);
++			continue;
++  		}
+ 
+-		ph = get_property(np, "phy-handle", NULL);
+-		phy = of_find_node_by_phandle(*ph);
+-
+-		if (phy == NULL) {
+-			ret = -ENODEV;
+-			goto unreg;
++		gfar_dev = platform_device_register_simple("fsl-gianfar",
++				num, &r[0], n_res);
++		if (IS_ERR(gfar_dev)) {
++			printk("Failed to register gfar %d due to error %ld\n",
++					num, PTR_ERR(gfar_dev));
++			continue;
+ 		}
+ 
+-		mdio = of_get_parent(phy);
+-
+-		id = get_property(phy, "reg", NULL);
+-		ret = of_address_to_resource(mdio, 0, &res);
++		ret = platform_device_add_data(gfar_dev, &gfar_data,
++				sizeof(struct gianfar_platform_data));
+ 		if (ret) {
+-			of_node_put(phy);
+-			of_node_put(mdio);
+-			goto unreg;
++			printk("gfar %d data not added\n", num);
++			platform_device_unregister(gfar_dev);
+ 		}
+-
+-		gfar_data.phy_id = *id;
+-		gfar_data.bus_id = res.start;
+-
+-		of_node_put(phy);
+-		of_node_put(mdio);
+-
+-		ret =
+-		    platform_device_add_data(gfar_dev, &gfar_data,
+-					     sizeof(struct
+-						    gianfar_platform_data));
+-		if (ret)
+-			goto unreg;
+ 	}
+ 
+ 	return 0;
+ 
+-unreg:
+-	platform_device_unregister(gfar_dev);
+-err:
+-	return ret;
+ }
+ 
+ arch_initcall(gfar_of_init);
+@@ -304,13 +382,13 @@ arch_initcall(gfar_of_init);
+ static int __init fsl_i2c_of_init(void)
+ {
+ 	struct device_node *np;
+-	unsigned int i;
++	unsigned int num;
+ 	struct platform_device *i2c_dev;
+ 	int ret;
+ 
+-	for (np = NULL, i = 0;
++	for (np = NULL, num = 0;
+ 	     (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL;
+-	     i++) {
++	     num++) {
+ 		struct resource r[2];
+ 		struct fsl_i2c_platform_data i2c_data;
+ 		const unsigned char *flags = NULL;
+@@ -319,15 +397,22 @@ static int __init fsl_i2c_of_init(void)
+ 		memset(&i2c_data, 0, sizeof(i2c_data));
+ 
+ 		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
++		if (ret) {
++			printk("i2c %d could not map registers\n", num);
++			continue;
++		}
+ 
+-		of_irq_to_resource(np, 0, &r[1]);
++		ret = of_irq_to_resource(np, 0, &r[1]);
++		if (ret == NO_IRQ) {
++			printk("i2c %d could not map irq\n", num);
++			continue;
++		}
+ 
+-		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
++		i2c_dev = platform_device_register_simple("fsl-i2c", num, r, 2);
+ 		if (IS_ERR(i2c_dev)) {
+-			ret = PTR_ERR(i2c_dev);
+-			goto err;
++			printk("Failed to register i2c %d due to error %ld\n",
++					num, PTR_ERR(i2c_dev));
++			continue;
+ 		}
+ 
+ 		i2c_data.device_flags = 0;
+@@ -339,20 +424,15 @@ static int __init fsl_i2c_of_init(void)
+ 		if (flags)
+ 			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
+ 
+-		ret =
+-		    platform_device_add_data(i2c_dev, &i2c_data,
+-					     sizeof(struct
+-						    fsl_i2c_platform_data));
+-		if (ret)
+-			goto unreg;
++		ret = platform_device_add_data(i2c_dev, &i2c_data,
++				     sizeof(struct fsl_i2c_platform_data));
++		if (ret) {
++			printk("i2c %d data not added\n", num);
++			platform_device_unregister(i2c_dev);
++		}
+ 	}
+ 
+ 	return 0;
+-
+-unreg:
+-	platform_device_unregister(i2c_dev);
+-err:
+-	return ret;
+ }
+ 
+ arch_initcall(fsl_i2c_of_init);
+@@ -436,41 +516,44 @@ static enum fsl_usb2_phy_modes determine
+ 	return FSL_USB2_PHY_NONE;
+ }
+ 
+-static int __init fsl_usb_of_init(void)
 +
-+pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
++static void fsl_usb_of_init_one(struct device_node *np, unsigned int num,
++		enum fsl_usb2_operating_modes mode)
+ {
+-	struct device_node *np;
+-	unsigned int i;
+-	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr = NULL;
++	struct resource r[2];
++	struct fsl_usb2_platform_data usb_data;
++	const unsigned char *prop = NULL;
++	struct platform_device *usb_dev = NULL;
+ 	int ret;
+ 
+-	for (np = NULL, i = 0;
+-	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-mph")) != NULL;
+-	     i++) {
+-		struct resource r[2];
+-		struct fsl_usb2_platform_data usb_data;
+-		const unsigned char *prop = NULL;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&usb_data, 0, sizeof(usb_data));
++	memset(&r, 0, sizeof(r));
++	memset(&usb_data, 0, sizeof(usb_data));
+ 
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
++	ret = of_address_to_resource(np, 0, &r[0]);
++	if (ret) {
++		printk("usb %d could not map registers\n", num);
++		return;
++	}
+ 
+-		of_irq_to_resource(np, 0, &r[1]);
++	ret = of_irq_to_resource(np, 0, &r[1]);
++	if (ret == NO_IRQ) {
++		printk("usb %d could not map irq\n", num);
++		return;
++	}
+ 
+-		usb_dev_mph =
+-		    platform_device_register_simple("fsl-ehci", i, r, 2);
+-		if (IS_ERR(usb_dev_mph)) {
+-			ret = PTR_ERR(usb_dev_mph);
+-			goto err;
+-		}
++	usb_dev = platform_device_register_simple("fsl-ehci", num, r, 2);
++	if (IS_ERR(usb_dev)) {
++		printk("usb %d register failed with error %ld\n",
++				num, PTR_ERR(usb_dev));
++		return;
++	}
+ 
+-		usb_dev_mph->dev.coherent_dma_mask = 0xffffffffUL;
+-		usb_dev_mph->dev.dma_mask = &usb_dev_mph->dev.coherent_dma_mask;
++	usb_dev->dev.coherent_dma_mask = 0xffffffffUL;
++	usb_dev->dev.dma_mask = &usb_dev->dev.coherent_dma_mask;
+ 
+-		usb_data.operating_mode = FSL_USB2_MPH_HOST;
++	usb_data.operating_mode = mode;
+ 
++	if (mode == FSL_USB2_DR_HOST) {
+ 		prop = get_property(np, "port0", NULL);
+ 		if (prop)
+ 			usb_data.port_enables |= FSL_USB2_PORT0_ENABLED;
+@@ -478,66 +561,36 @@ static int __init fsl_usb_of_init(void)
+ 		prop = get_property(np, "port1", NULL);
+ 		if (prop)
+ 			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
+-
+-		prop = get_property(np, "phy_type", NULL);
+-		usb_data.phy_mode = determine_usb_phy(prop);
+-
+-		ret =
+-		    platform_device_add_data(usb_dev_mph, &usb_data,
+-					     sizeof(struct
+-						    fsl_usb2_platform_data));
+-		if (ret)
+-			goto unreg_mph;
+ 	}
+ 
+-	for (np = NULL;
+-	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-dr")) != NULL;
+-	     i++) {
+-		struct resource r[2];
+-		struct fsl_usb2_platform_data usb_data;
+-		const unsigned char *prop = NULL;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&usb_data, 0, sizeof(usb_data));
++	prop = get_property(np, "phy_type", NULL);
++	usb_data.phy_mode = determine_usb_phy(prop);
+ 
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto unreg_mph;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
++	ret = platform_device_add_data(usb_dev, &usb_data,
++			sizeof(struct fsl_usb2_platform_data));
++	if (ret) {
++		printk("usb %d failed to add data\n", num);
++		platform_device_unregister(usb_dev);
++	}
++}
+ 
+-		usb_dev_dr =
+-		    platform_device_register_simple("fsl-ehci", i, r, 2);
+-		if (IS_ERR(usb_dev_dr)) {
+-			ret = PTR_ERR(usb_dev_dr);
+-			goto err;
+-		}
+ 
+-		usb_dev_dr->dev.coherent_dma_mask = 0xffffffffUL;
+-		usb_dev_dr->dev.dma_mask = &usb_dev_dr->dev.coherent_dma_mask;
++static int __init fsl_usb_of_init(void)
 +{
-+    pgd_t *pgd;
-+    pud_t *pud;
-+    pmd_t *pmd;
-+    pte_t *pte = NULL;
-+
-+    pgd = pgd_offset(mm, addr);
-+
-+    pud = pud_alloc(mm, pgd, addr);
-+    if (!pud)
-+      return NULL;
-+
-+    pmd = pmd_alloc(mm, pud, addr);
-+    if (!pmd)
-+      return NULL;
-+
-+    pte = pte_alloc_map(mm, pmd, addr); /* also sets pmd !!!*/
-+    if (!pte)
-+      return NULL;
-+
-+
-+    BUG_ON(pte && !pte_none(*pte) && !pte_huge(*pte));
-+
-+    return pte;
-+}
-+
-+#ifdef ARCH_HAS_SETCLEAR_HUGE_PTE
-+void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte){
-+  pgd_t *pgd;
-+  pud_t *pud;
-+  pmd_t *pmd;
-+  pmd_t pmd_val;
-+  int i;
-+
-+  /* For the cow case, we overwrite '*ptep' (which points to the orig huge-page) with 'pte' (which points to the new page). */
-+  /* Cow is detected after the TLB exception handler has already wrote a TLB entry that points to the "orig" page but       */
-+  /* this entry does not have the user write permission set (UW), so when the process tries the write, we get exception.    */
-+  /* As we reach this call to overwrite the PTEs to point to the new huge-page, the TLB contains                            */
-+  /* translation for the old huge-page. By invalidating the TLB, we ensure the TLB exception handler will re-fill           */
-+  /* the entry from the updated page tables */
-+  if (pte_present(*ptep)) {
-+    flush_tlb_pending();
-+  }
-+
-+  ptep = (pte_t *)((unsigned long)ptep & _PTE_MASK); /* point to first pte for this huge page */
-+
-+  /* update _PTE_CNT pte entries, starting with ptep set above */
-+  for(i=0; i < _PTE_CNT ;i++){
-+    set_pte_at(mm, addr, ptep, pte);
-+    ptep++;
-+  }
-+
-+  /* next, we set all pmd's that cover the huge-page to point to the above PTEs table. */
-+  /* 'pmd' that mapps 'addr', was already set when hugetlb_fault() called huge_pte_alloc() */
-+  /* we start by locating it... */
-+  pgd = pgd_offset(mm, addr);
-+  pud = pud_offset(pgd, addr);
-+  pmd = pmd_offset(pud, addr); /*this pmd already points to the PTEs table. It was set be the call to huge_pte_alloc()  */
-+  pmd_val=*pmd;
-+
-+  /* find the first pmd that mapps the huge page  */
-+  addr=addr & HPAGE_MASK;
-+  pgd = pgd_offset(mm, addr);
-+  pud = pud_offset(pgd, addr);
-+  pmd = pmd_offset(pud, addr);
-+
-+  for(i=0;i< (HPAGE_SIZE >> PMD_SHIFT);i++){
-+    *pmd=pmd_val;
-+    pmd++;
-+  }
-+}
-+
-+pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep){
-+  pgd_t *pgd;
-+  pud_t *pud;
-+  pmd_t *pmd;
-+  pte_t pte;
-+  int i;
-+  pmd_t pmd_val;
-+
-+  ptep = (pte_t *)((unsigned long)ptep & _PTE_MASK); /* point to first pte for this huge page */
-+
-+  /*Clean _PTE_CNT entries, starting with ptep set above*/
-+  for(i=0; i < _PTE_CNT ;i++){
-+    pte=ptep_get_and_clear(mm, addr, ptep);
-+    ptep++;
-+  }
-+
-+  addr=addr & HPAGE_MASK; /* point to the base of the huge-page that contains addr */
-+  pgd = pgd_offset(mm, addr);
-+  pud = pud_offset(pgd, addr);
-+  pmd = pmd_offset(pud, addr);
-+
-+  pmd_val=*pmd; //this is the first pmd that mappes the huge page;
-+
-+  pmd++; /* leave it... page cache will delete it */
-+
-+  for(i=1;i< (HPAGE_SIZE >> PMD_SHIFT);i++){
-+    pmd_clear(pmd);
-+    pmd++;
-+  }
-+
-+  return pte; /*all pte's are the same, except maybe dirty bit*/
-+}
-+#endif
-+
-+int is_aligned_hugepage_range(unsigned long addr, unsigned long len)
-+{
-+  if (len & ~HPAGE_MASK)
-+    return -EINVAL;
-+  if (addr & ~HPAGE_MASK)
-+    return -EINVAL;
-+  return 0;
-+}
-+
-+struct page *
-+follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
-+{
-+  pte_t *pte;
-+  struct page *page;
-+
-+  pte = huge_pte_offset(mm, address);
-+  page = pte_page(*pte);
-+  return page;
-+}
-+
-+int pmd_huge(pmd_t pmd)
-+{
-+  return 0;
-+}
-+
-+struct page *
-+follow_huge_pmd(struct mm_struct *mm, unsigned long address,
-+        pmd_t *pmd, int write)
-+{
-+   return NULL;
-+}
-+
-+
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/mm/Makefile my_linux/arch/ppc/mm/Makefile
---- linux-2.6.19-rc4-vanilla/arch/ppc/mm/Makefile    2006-11-14 11:16:29.000000000 -0500
-+++ my_linux/arch/ppc/mm/Makefile    2006-11-06 09:52:41.000000000 -0500
-@@ -9,3 +9,4 @@ obj-$(CONFIG_PPC_STD_MMU)    += hashtable.o
-  obj-$(CONFIG_40x)        += 4xx_mmu.o
-  obj-$(CONFIG_44x)        += 44x_mmu.o
-  obj-$(CONFIG_FSL_BOOKE)        += fsl_booke_mmu.o
-+obj-$(CONFIG_HUGETLB_PAGE)      += hugetlbpage.o
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/fs/Kconfig my_linux/fs/Kconfig
---- linux-2.6.19-rc4-vanilla/fs/Kconfig    2006-11-14 11:17:37.000000000 -0500
-+++ my_linux/fs/Kconfig    2006-11-14 17:26:13.000000000 -0500
-@@ -1008,7 +1008,7 @@ config TMPFS_POSIX_ACL
-
-  config HUGETLBFS
-      bool "HugeTLB file system support"
--    depends X86 || IA64 || PPC64 || SPARC64 || SUPERH || BROKEN
-+    depends X86 || IA64 || PPC || PPC64 || SPARC64 || SUPERH || BROKEN
-      help
-        hugetlbfs is a filesystem backing for HugeTLB pages, based on
-        ramfs. For architectures that support it, say Y here and read
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/asm-ppc/page.h my_linux/include/asm-ppc/page.h
---- linux-2.6.19-rc4-vanilla/include/asm-ppc/page.h    2006-11-14 11:18:00.000000000 -0500
-+++ my_linux/include/asm-ppc/page.h    2006-11-14 17:26:14.000000000 -0500
-@@ -7,6 +7,12 @@
-  #define PAGE_SHIFT    12
-  #define PAGE_SIZE    (ASM_CONST(1) << PAGE_SHIFT)
-
-+#ifdef CONFIG_HUGETLB_PAGE
-+#define HPAGE_SHIFT     24
-+#define HPAGE_SIZE      ((1UL) << HPAGE_SHIFT)
-+#define HPAGE_MASK      (~(HPAGE_SIZE - 1))
-+#define HUGETLB_PAGE_ORDER      (HPAGE_SHIFT - PAGE_SHIFT)
-+#endif
-  /*
-   * Subtle: this is an int (not an unsigned long) and so it
-   * gets extended to 64 bits the way want (i.e. with 1s).  -- paulus
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/asm-ppc/pgtable.h my_linux/include/asm-ppc/pgtable.h
---- linux-2.6.19-rc4-vanilla/include/asm-ppc/pgtable.h    2006-11-14 11:18:00.000000000 -0500
-+++ my_linux/include/asm-ppc/pgtable.h    2006-11-15 11:40:45.332514013 -0500
-@@ -263,6 +263,40 @@ extern unsigned long ioremap_bot, iorema
-  #define    _PAGE_NO_CACHE    0x00000400        /* H: I bit */
-  #define    _PAGE_WRITETHRU    0x00000800        /* H: W bit */
-
-+#if   HPAGE_SHIFT == 10 /*Unsupported*/
-+#define _PAGE_HUGE      0x0000000000000000ULL   /* H: SIZE=1K bytes */
-+#define _PTE_MASK       0xfffffff8UL
-+#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 9))
-+#elif HPAGE_SHIFT == 12
-+#define _PAGE_HUGE      0x0000001000000000ULL   /* H: SIZE=4K bytes */
-+#define _PTE_MASK       0xfffffff8UL
-+#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 9))
-+#elif HPAGE_SHIFT == 14
-+#define _PAGE_HUGE      0x0000002000000000ULL   /* H: SIZE=16K bytes */
-+#define _PTE_MASK       0xffffffe0UL
-+#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 7))
-+#elif HPAGE_SHIFT == 16
-+#define _PAGE_HUGE      0x0000003000000000ULL   /* H: SIZE=64K bytes */
-+#define _PTE_MASK       0xffffff80UL
-+#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 5))
-+#elif HPAGE_SHIFT == 18
-+#define _PAGE_HUGE      0x0000004000000000ULL   /* H: SIZE=256K bytes */
-+#define _PTE_MASK       0xfffffe00UL
-+#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 3))
-+#elif HPAGE_SHIFT == 20
-+#define _PAGE_HUGE      0x0000005000000000ULL   /* H: SIZE=1M bytes */
-+#define _PTE_MASK       0xfffff800UL
-+#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 1))
-+#elif HPAGE_SHIFT == 24
-+#define _PAGE_HUGE      0x0000007000000000ULL   /* H: SIZE=16M bytes */
-+#define _PTE_MASK       0xfffff000UL
-+#define _PTE_CNT        ((1UL) << PTE_SHIFT)
-+#elif HPAGE_SHIFT == 28
-+#define _PAGE_HUGE      0x0000009000000000ULL   /* H: SIZE=256M bytes */
-+#define _PTE_MASK       0xfffff000UL
-+#define _PTE_CNT        ((1UL) << PTE_SHIFT)
-+#endif
-+
-  /* TODO: Add large page lowmem mapping support */
-  #define _PMD_PRESENT    0
-  #define _PMD_PRESENT_MASK (PAGE_MASK)
-@@ -490,7 +524,12 @@ extern unsigned long bad_call_to_PMD_PAG
-  #define PFN_SHIFT_OFFSET    (PAGE_SHIFT)
-  #endif
-
--#define pte_pfn(x)        (pte_val(x) >> PFN_SHIFT_OFFSET)
-+/*                                                                                    v             */
-+/* huge-page fix:  since now the PTE (MS) contains the size of the page e.g., 0x0000007000000000ULL */
-+/* which was once assumed to be 0, we must zero it, otherwise we get extreamly huge (and wrong) pfn */
-+//#define pte_pfn(x)        ( pte_val(x) >> PFN_SHIFT_OFFSET )
-+#define pte_pfn(x)        ( ( pte_val(x) & 0x0000000fffffffffULL ) >> PFN_SHIFT_OFFSET )
-+
-  #define pte_page(x)        pfn_to_page(pte_pfn(x))
-
-  #define pfn_pte(pfn, prot)    __pte(((pte_basic_t)(pfn) << PFN_SHIFT_OFFSET) |\
-@@ -539,6 +578,7 @@ static inline int pte_exec(pte_t pte)        {
-  static inline int pte_dirty(pte_t pte)        { return pte_val(pte) & _PAGE_DIRTY; }
-  static inline int pte_young(pte_t pte)        { return pte_val(pte) & _PAGE_ACCESSED; }
-  static inline int pte_file(pte_t pte)        { return pte_val(pte) & _PAGE_FILE; }
-+static inline int pte_huge(pte_t pte)           { return (pte_val(pte) & _PAGE_HUGE)?1:0; }
-
-  static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= _PAGE_NO_CACHE; }
-  static inline void pte_cache(pte_t pte)         { pte_val(pte) &= ~_PAGE_NO_CACHE; }
-@@ -564,6 +604,8 @@ static inline pte_t pte_mkdirty(pte_t pt
-      pte_val(pte) |= _PAGE_DIRTY; return pte; }
-  static inline pte_t pte_mkyoung(pte_t pte) {
-      pte_val(pte) |= _PAGE_ACCESSED; return pte; }
-+static inline pte_t pte_mkhuge(pte_t pte) {
-+        pte_val(pte) |= _PAGE_HUGE; return pte; }
-
-  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-  {
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/linux/hugetlb.h my_linux/include/linux/hugetlb.h
---- linux-2.6.19-rc4-vanilla/include/linux/hugetlb.h    2006-11-14 11:18:05.000000000 -0500
-+++ my_linux/include/linux/hugetlb.h    2006-11-14 17:26:18.000000000 -0500
-@@ -2,6 +2,7 @@
-  #define _LINUX_HUGETLB_H
-
-  #ifdef CONFIG_HUGETLB_PAGE
-+#define ARCH_HAS_SETCLEAR_HUGE_PTE
-
-  #include <linux/mempolicy.h>
-  #include <asm/tlbflush.h>
-diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/linux/mmzone.h my_linux/include/linux/mmzone.h
---- linux-2.6.19-rc4-vanilla/include/linux/mmzone.h    2006-11-14 11:18:06.000000000 -0500
-+++ my_linux/include/linux/mmzone.h    2006-11-14 17:26:17.000000000 -0500
-@@ -18,7 +18,7 @@
-
-  /* Free memory management - zoned buddy allocator.  */
-  #ifndef CONFIG_FORCE_MAX_ZONEORDER
--#define MAX_ORDER 11
-+#define MAX_ORDER 13
-  #else
-  #define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
-  #endif
++	struct device_node *np;
++	unsigned int num;
+ 
+-		usb_data.operating_mode = FSL_USB2_DR_HOST;
++	for (np = NULL, num = 0;
++	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-mph")) != NULL;
++	     num++)
++		fsl_usb_of_init_one(np, num, FSL_USB2_MPH_HOST);
+ 
+-		prop = get_property(np, "phy_type", NULL);
+-		usb_data.phy_mode = determine_usb_phy(prop);
++	for (np = NULL;
++	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-dr")) != NULL;
++	     num++)
++		fsl_usb_of_init_one(np, num, FSL_USB2_DR_HOST);
+ 
+-		ret =
+-		    platform_device_add_data(usb_dev_dr, &usb_data,
+-					     sizeof(struct
+-						    fsl_usb2_platform_data));
+-		if (ret)
+-			goto unreg_dr;
+-	}
+ 	return 0;
+-
+-unreg_dr:
+-	if (usb_dev_dr)
+-		platform_device_unregister(usb_dev_dr);
+-unreg_mph:
+-	if (usb_dev_mph)
+-		platform_device_unregister(usb_dev_mph);
+-err:
+-	return ret;
+ }
+ 
+ arch_initcall(fsl_usb_of_init);
+@@ -587,7 +640,11 @@ static int __init fs_enet_of_init(void)
+ 		r[2].name = fcc_regs_c;
+ 		fs_enet_data.fcc_regs_c = r[2].start;
+ 
+-		of_irq_to_resource(np, 0, &r[3]);
++		ret = of_irq_to_resource(np, 0, &r[3]);
++		if (ret == NO_IRQ) {
++			ret = -EINVAL;
++			goto err;
++		}
+ 
+ 		fs_enet_dev =
+ 		    platform_device_register_simple("fsl-cpm-fcc", i, &r[0], 4);
+@@ -749,7 +806,11 @@ static int __init cpm_uart_of_init(void)
+ 			goto err;
+ 		r[1].name = scc_pram;
+ 
+-		of_irq_to_resource(np, 0, &r[2]);
++		ret = of_irq_to_resource(np, 0, &r[2]);
++		if (ret == NO_IRQ) {
++			ret = -EINVAL;
++			goto err;
++		}
+ 
+ 		cpm_uart_dev =
+ 		    platform_device_register_simple("fsl-cpm-scc:uart", i, &r[0], 3);
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 3da29e2..fa2c60d 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -51,6 +51,7 @@ struct gianfar_platform_data {
+ 	u32	board_flags;
+ 	u32	bus_id;
+ 	u32	phy_id;
++	u32	phy_flags;
+ 	u8	mac_addr[6];
+ };
+ 
+@@ -68,10 +69,18 @@ #define FSL_GIANFAR_DEV_HAS_CSUM		0x0000
+ #define FSL_GIANFAR_DEV_HAS_VLAN		0x00000020
+ #define FSL_GIANFAR_DEV_HAS_EXTENDED_HASH	0x00000040
+ #define FSL_GIANFAR_DEV_HAS_PADDING		0x00000080
++#define FSL_GIANFAR_DEV_HAS_FILER		0x00000100
++#define FSL_GIANFAR_DEV_HAS_PARSE_L2		0x00000200
++#define FSL_GIANFAR_DEV_HAS_PARSE_L3		0x00000300
++#define FSL_GIANFAR_DEV_HAS_PARSE_L4		0x00000400
++#define FSL_GIANFAR_DEV_HAS_MULTI_QUEUE		0x00000800
++#define FSL_GIANFAR_DEV_HAS_BUF_STASHING	0x00001000
++#define FSL_GIANFAR_DEV_HAS_BUF_LOCKING		0x00002000
++#define FSL_GIANFAR_DEV_HAS_BD_STASHING		0x00004000
++#define FSL_GIANFAR_DEV_HAS_BD_LOCKING		0x00008000
+ 
+ /* Flags in gianfar_platform_data */
+ #define FSL_GIANFAR_BRD_HAS_PHY_INTR	0x00000001 /* set or use a timer */
+-#define FSL_GIANFAR_BRD_IS_REDUCED	0x00000002 /* Set if RGMII, RMII */
+ 
+ struct fsl_i2c_platform_data {
+ 	/* device specific information */
+-- 
+1.4.2.3
