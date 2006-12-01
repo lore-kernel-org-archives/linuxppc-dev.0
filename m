@@ -1,23 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 781B167DBC
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 08:54:10 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C45E067BD2
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 09:08:28 +1100 (EST)
+Date: Fri, 1 Dec 2006 22:15:25 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: pata_sl82c105 can not reserve IO region
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <45707CF8.3090106@ru.mvista.com>
+Message-ID: <20061201221525.7a741062@localhost.localdomain>
+In-Reply-To: <1165010029.22108.10.camel@localhost.localdomain>
 References: <20061130165202.GA23205@aepfle.de>
 	<20061130171049.7b80a40c@localhost.localdomain>
-	<20061130184748.GA24071@aepfle.de> <20061201183355.GA9701@aepfle.de>
-	<45707CF8.3090106@ru.mvista.com>
-Content-Type: text/plain
-Date: Sat, 02 Dec 2006 08:53:49 +1100
-Message-Id: <1165010029.22108.10.camel@localhost.localdomain>
+	<20061130184748.GA24071@aepfle.de>
+	<20061201183355.GA9701@aepfle.de> <45707CF8.3090106@ru.mvista.com>
+	<1165010029.22108.10.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
-	Alan <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@ozlabs.org
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-12-01 at 22:05 +0300, Sergei Shtylyov wrote:
-> Olaf Hering wrote:
+On Sat, 02 Dec 2006 08:53:49 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> In fact, the driver doesn't actually use that BAR 5... Only 0 to 4
+> afaik.
 > 
-> >>The printk in pci_request_region has 'bar + 1', so 6 should be possible
-> >>if i becomes 5.
-> 
-> > Does the IO region of the last bar look correct?
+> I think the libata code shouldn't request the BARs it doesn't need or
+> that problem will hit us in other circumstances. It should only request
+> 0 to 4 and let the drivers request 5 themselves if they need it.
 
-I think BAR 5 is unassigned by the firmware, though when OF does that,
-it often means that an OF driver for that chip decided that the BAR
-wasn't useful.
+I don't think that is the problem. pci_request_regions() handles all
+this internally. It is incorrect for me to not request BAR 5
+if present as nobody else should use that resource with my driver loaded.
 
-In fact, the driver doesn't actually use that BAR 5... Only 0 to 4
-afaik.
+The underlying problem appears to be that PPC64 isn't setting up the
+resources properly (at least as viewed by the pci core code). If a
+resource is not set up then pci_request_resource() correctly handles
+it .. except on PPC64. You have a resource at zero with a length and
+type. PPC64 is not reporting to the upper layers that the resource was
+not allocated. It is reporting that the resource *was* allocated, and at a
+bogus address of zero.
 
-I think the libata code shouldn't request the BARs it doesn't need or
-that problem will hit us in other circumstances. It should only request
-0 to 4 and let the drivers request 5 themselves if they need it.
+If you trust the firmware that is fine, but you need to report the truth,
+at which point pci_request_resources() will work correctly.
 
-Ben.
+Alan
