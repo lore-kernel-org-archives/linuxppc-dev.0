@@ -1,17 +1,17 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 46B7767C25
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 2A06E67DCD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Dec 2006 02:50:40 +1100 (EST)
-Message-ID: <45704F4D.6090507@anagramm.de>
-Date: Fri, 01 Dec 2006 16:50:37 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Lee Revell <rlrevell@joe-job.com>
-Subject: Re: Perl
-References: <1163458589.5313.71.camel@mindpipe>
-In-Reply-To: <1163458589.5313.71.camel@mindpipe>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat,  2 Dec 2006 04:00:42 +1100 (EST)
+Date: Fri, 1 Dec 2006 20:00:40 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+Subject: Re: fs_enet driver "generating" bad interrupts on 2.6.19
+Message-ID: <20061201200040.090f185c@vitb.ru.mvista.com>
+In-Reply-To: <200612011418.26201.laurent.pinchart@tbox.biz>
+References: <200612011418.26201.laurent.pinchart@tbox.biz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,46 +23,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Lee!
+On Fri, 1 Dec 2006 14:18:26 +0100
+Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
 
-Lee Revell schrieb:
-> I've been trying to cross compile Perl for a PPC440 board and it just
-> isn't happening.  Perl is probably the least amenable application to
-> cross compiling I've found.
+> Hi everybody,
 > 
-> I tried the instructions in the Cross/ directory of the Perl distro but
-> they don't work - "sh Configure" fails on my target because it expects a
-> full C development environment, which won't fit.
+> I upgraded to 2.6.19 today, and found a strange issue that seems to be related 
+> with the fs_enet driver on a MPC8248.
 > 
-> Is there any easy solution?  Can someone send me a binary?
+> The number of "bad" interrupts, as reported by /proc/interrupts, seems to 
+> grown with the number of packets received and sent by the FCC ethernet 
+> controllers.
+> 
+I'll check if it is true on our 82xx board && FCC.
 
-I don't know much about the ppc440 and it's core. But maybe you
-can use mine?!
-I am using perl successfully on a MPC8540 CPU which has an e500
-core w/o an FPU. I don't need to cross compile and it comes with
-only the necessary dependencies:
 
-$ prt-get deptree perl
--- dependencies ([i] = installed, '-->' = seen before)
-[i] perl
-[i]   db
-[i]   gdbm
-
-all that on top of glibc-2.3.4
-If you want to try those three tar.gz's please contact me off list
-and I can send it to you.
-It's also possible to recompile that stuff to a different ppc target...
-
-Greets,
-
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+-- 
+Sincerely, 
+Vitaly
