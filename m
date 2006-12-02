@@ -1,22 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: cast truncates bits from constant value (8000000000000000
-	becomes 0)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0612011553100.30940@pademelon.sonytel.be>
-References: <4563D00D.4010704@am.sony.com>
-	<Pine.LNX.4.62.0612011516120.28210@pademelon.sonytel.be>
-	<20061201143940.GB3078@ftp.linux.org.uk>
-	<Pine.LNX.4.62.0612011553100.30940@pademelon.sonytel.be>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pv/Cw+SRebEp+T+e19p4"
-Date: Sat, 02 Dec 2006 18:50:26 +1100
-Message-Id: <1165045826.6246.5.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-sparse@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
-Reply-To: michael@ellerman.id.au
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id F091B67BAB
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 19:41:51 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so2351794ugf
+	for <linuxppc-dev@ozlabs.org>; Sat, 02 Dec 2006 00:41:49 -0800 (PST)
+Message-ID: <528646bc0612020041q32e8b1el3e8362f980f8f7b@mail.gmail.com>
+Date: Sat, 2 Dec 2006 01:41:48 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: linuxppc-dev@ozlabs.org, "David Gibson" <david@gibson.dropbear.id.au>
+Subject: Re: libfdt - flat tree manipulation library
+In-Reply-To: <20061201060038.GA25476@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20061127055905.GA6428@localhost.localdomain>
+	<20061129055904.GA11883@localhost.localdomain>
+	<20061201060038.GA25476@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,84 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 11/30/06, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Wed, Nov 29, 2006 at 04:59:04PM +1100, David Gibson wrote:
+> > On Mon, Nov 27, 2006 at 04:59:05PM +1100, David Gibson wrote:
+> > [snip]
+> > > The code, such as it is, is at:
+> > >     git://ozlabs.org/home/dgibson/git/libfdt.git
+> >
+> > Code for writing device trees from scratch, sequentially, is now
+> > implemented.
+>
+> And now support for random access read-write is implemented.  The
+> library is now close to feature-complete, cleanups and convenience
+> wrappers remain.
 
---=-pv/Cw+SRebEp+T+e19p4
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I've run into some problems running this on an amd64 host.  There are
+problems with the byte swapping code where libfdt.h is trying to byte
+swap the fdt pointer, not the value it points to.
 
-On Fri, 2006-12-01 at 15:55 +0100, Geert Uytterhoeven wrote:
-> On Fri, 1 Dec 2006, Al Viro wrote:
-> > On Fri, Dec 01, 2006 at 03:25:08PM +0100, Geert Uytterhoeven wrote:
-> > > On Tue, 21 Nov 2006, Geoff Levand wrote:
-> > > > +enum ps3_vendor_id {
-> > > > +	PS3_VENDOR_ID_NONE =3D 0,
-> > > > +	PS3_VENDOR_ID_SONY =3D 0x8000000000000000UL,
-> > > > +};
-> > >=20
-> > > I've just ran `make C=3D1' (PPC in 64-bit mode, and sparse is called =
-with -m64),
-> > > and noticed that sparse (cloned from
-> > > git://git.kernel.org/pub/scm/devel/sparse/sparse.git a few minutes ag=
-o)
-> > > complains about the second value with:
-> > >=20
-> > > | warning: cast truncates bits from constant value (8000000000000000 =
-becomes 0)
-> > >=20
-> > > Section 6.7.2.2.4 of C99 says:
-> > >=20
-> > > | Each enumerated type shall be compatible with char, a signed intege=
-r type, or
-> > > | an unsigned integer type. The choice of type is implementation-defi=
-ned, but
-> > > | shall be capable of representing the values of all the members of t=
-he
-> > > | enumeration.
-> >=20
-> > FWIW, that code is *not* valid C99; note that all enumeration members m=
-ust
-> > fit the range of int (see 6.7.2.2.2).  What you quote speaks about the
->=20
-> You're right. I missed that one.
->=20
-> > IOW, you are using a gccism in an area where gcc is bloody inconsistent
-> > in the set of bugs it shows in different versions.
->=20
-> Hmmm...
->=20
-> > Generally safe way is to split the anonymous huge enum members into
-> > single-element enums and pray that gcc will at least stay consistent
-> > in handling of those.
->=20
-> Or fall back to #defines, which is what we were trying to avoid in the fi=
-rst
-> place (i.e. group related values together in enums)...
+Ie, I think this:
+#define fdt_magic(fdt)			(fdt32_to_cpu(fdt)->magic)
+should really be this:
+#define fdt_magic(fdt)			(fdt32_to_cpu(fdt->magic))
 
-The enum achieves very little in this case IMHO, it's just a more
-verbose way of #defining - and it doesn't even have reliable semantics.
+As is it doesn't compile on amd64 (and probably not x86 either).  I
+suspect that you want to do your byte swap on the value in the
+structure field, not on the pointer to the structure.  :)  However,
+the test cases fail spectacularly when I change the byte swap to be on
+the value in the structure.  If I comment out the byte swap entirely
+in libfdt_env.h; then the test cases unexpectedly pass!  So I did some
+digging.  The test cases are generating little-endian device trees;
+looks like test/trees.S is at fault.  I would say that a different
+mechanism is needed to generate the .dtb files.
 
-cheers
+For example; here's the first 16 bytes of my lite5200 device tree:
+00000000  d0 0d fe ed 00 00 15 b7  00 00 00 38 00 00 14 5c  |...........8...\|
+Here's the first 16 bytes of tests/rw_tree1.test.dtb; clearly wrong endian!
+00000000  ed fe 0d d0 1a 01 00 00  40 00 00 00 08 01 00 00  |........@.......|
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Anyway; I'll send a patch to fix up part of the byte swapping code;
+but I haven't looked into other ways of creating the .dtb files.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Cheers,
+g.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
 
---=-pv/Cw+SRebEp+T+e19p4
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFcTBBdSjSd0sB4dIRAqCxAJwK2RBu4/SGzBLncIzE1PDOct1uBgCgt+6W
-xPvL+xvtbgoVEEmGHxhfSMw=
-=SakU
------END PGP SIGNATURE-----
-
---=-pv/Cw+SRebEp+T+e19p4--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
