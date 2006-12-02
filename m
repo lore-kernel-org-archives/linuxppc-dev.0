@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 8F1BC67B8F
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 21:56:41 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] linkstation / kurobox support
-Date: Sat, 2 Dec 2006 11:56:36 +0100
-References: <Pine.LNX.4.60.0612012241430.13326@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0612012241430.13326@poirot.grange>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612021156.37067.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 14E8D67BF5
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 22:16:02 +1100 (EST)
+Subject: Re: Worst case performance of up()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Adrian Cox <adrian@humboldt.co.uk>
+In-Reply-To: <1165055754.4380.15.camel@localhost.localdomain>
+References: <1164385262.11292.76.camel@localhost.localdomain>
+	<1164401124.5653.86.camel@localhost.localdomain>
+	<1164661336.11001.9.camel@localhost.localdomain>
+	<1165055754.4380.15.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 02 Dec 2006 22:15:51 +1100
+Message-Id: <1165058151.22108.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gRnJpZGF5IDAxIERlY2VtYmVyIDIwMDYgMjI6NTMsIEd1ZW5uYWRpIExpYWtob3ZldHNraSB3
-cm90ZToKPiArc3RhdGljIGludCBfX2luaXQgYWRkX2JyaWRnZShzdHJ1Y3QgZGV2aWNlX25vZGUg
-KmRldikKPiArewo+ICugoKCgoKCgaW50IGxlbjsKPiAroKCgoKCgoHN0cnVjdCBwY2lfY29udHJv
-bGxlciAqaG9zZTsKPiAroKCgoKCgoGludCAqYnVzX3JhbmdlOwo+ICsKPiAroKCgoKCgoHByaW50
-aygiQWRkaW5nIFBDSSBob3N0IGJyaWRnZSAlc1xuIiwgZGV2LT5mdWxsX25hbWUpOwo+ICsKPiAr
-oKCgoKCgoGJ1c19yYW5nZSA9IChpbnQgKikgZ2V0X3Byb3BlcnR5KGRldiwgImJ1cy1yYW5nZSIs
-ICZsZW4pOwo+ICugoKCgoKCgaWYgKGJ1c19yYW5nZSA9PSBOVUxMIHx8IGxlbiA8IDIgKiBzaXpl
-b2YoaW50KSkKPiAroKCgoKCgoKCgoKCgoKCgcHJpbnRrKEtFUk5fV0FSTklORyAiQ2FuJ3QgZ2V0
-IGJ1cy1yYW5nZSBmb3IgJXMsIGFzc3VtZSIKPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoCIgYnVzIDBcbiIsIGRldi0+ZnVsbF9uYW1lKTsKPiArCj4gK6CgoKCgoKBob3NlID0gcGNp
-Ymlvc19hbGxvY19jb250cm9sbGVyKCk7Cj4gK6CgoKCgoKBpZiAoaG9zZSA9PSBOVUxMKQo+ICug
-oKCgoKCgoKCgoKCgoKByZXR1cm4gLUVOT01FTTsKPiAroKCgoKCgoGhvc2UtPmZpcnN0X2J1c25v
-ID0gYnVzX3JhbmdlID8gYnVzX3JhbmdlWzBdIDogMDsKPiAroKCgoKCgoGhvc2UtPmxhc3RfYnVz
-bm8gPSBidXNfcmFuZ2UgPyBidXNfcmFuZ2VbMV0gOiAweGZmOwo+ICugoKCgoKCgaG9zZS0+YXJj
-aF9kYXRhID0gZGV2Owo+ICugoKCgoKCgc2V0dXBfaW5kaXJlY3RfcGNpKGhvc2UsIDB4ZmVjMDAw
-MDAsIDB4ZmVlMDAwMDApOwo+ICsKPiAroKCgoKCgoC8qIEludGVycHJldCB0aGUgInJhbmdlcyIg
-cHJvcGVydHkgKi8KPiAroKCgoKCgoC8qIFRoaXMgYWxzbyBtYXBzIHRoZSBJL08gcmVnaW9uIGFu
-ZCBzZXRzIGlzYV9pby9tZW1fYmFzZSAqLwo+ICugoKCgoKCgcGNpX3Byb2Nlc3NfYnJpZGdlX09G
-X3Jhbmdlcyhob3NlLCBkZXYsIDEpOwo+ICsKPiAroKCgoKCgoHJldHVybiAwOwo+ICt9CgpDYW4n
-dCB5b3UgdXNlIHRoZSBuZXcgUENJIHByb2JpbmcgZnJvbSBhcmNoL3Bvd2VycGMva2VybmVsL29m
-X3BsYXRmb3JtCmZvciB0aGlzPwoKPiArI2lmZGVmIENPTkZJR19CTEtfREVWX0lOSVRSRAo+ICug
-oKCgoKCgaWYgKGluaXRyZF9zdGFydCkKPiAroKCgoKCgoKCgoKCgoKCgUk9PVF9ERVYgPSBSb290
-X1JBTTA7Cj4gK6CgoKCgoKBlbHNlCj4gKyNlbmRpZgo+ICsjaWZkZWagQ09ORklHX1JPT1RfTkZT
-Cj4gK6CgoKCgoKCgoKCgoKCgoFJPT1RfREVWID0gUm9vdF9ORlM7Cj4gKyNlbHNlCj4gK6CgoKCg
-oKCgoKCgoKCgoFJPT1RfREVWID0gUm9vdF9IREExOwo+ICsjZW5kaWYKPiArCgpUaGlzIGxvb2tz
-IHdyb25nLiBEaWRuJ3QgdGhlIHNhbWUgY29kZSBjb21lIHVwIHJlY2VudGx5IGluIGEgcmV2aWV3
-IGZvcgphbm90aGVyIHBsYXRmb3JtPyBXaGF0IHdhcyB0aGUgY29uY2x1c2lvbj8KCglBcm5kIDw+
-PAo=
+On Sat, 2006-12-02 at 10:35 +0000, Adrian Cox wrote:
+> On Mon, 2006-11-27 at 21:02 +0000, Adrian Cox wrote:
+> > On Sat, 2006-11-25 at 07:45 +1100, Benjamin Herrenschmidt wrote:
+> > > On Fri, 2006-11-24 at 16:21 +0000, Adrian Cox wrote:
+> > > > Does anybody have any ideas what could make up() take so long in this
+> > > > circumstance? I'd expect cache transfers to make the operation about 100
+> > > > times slower, but this looks like repeated cache ping-pong between the
+> > > > two CPUs.
+> > > 
+> > > Is it hung in up() (toplevel) or __up (low level) ?
+> > 
+> > Not yet proven.
+> 
+> By using a scope, I have further data: the system is hung in this line
+> of resched_task() in kernel/sched.c:
+> 	set_tsk_thread_flag(p, TIF_NEED_RESCHED);
+> 
+> During this time, there is a great deal of ARTRY activity on the bus.
+> The sequence ends when the other CPU takes a timer tick.
+> 
+> I'll need to track down what the other CPU is doing at this point, but
+> my current hypothesis is that it's somewhere in schedule().
+> 
+> > > Have you tried some oprofile runs to catch the exact instruction where
+> > > the cycles appear to be wasted ?
+> 
+> Oprofile turned out to break the error condition, by increasing the
+> interrupt rate on each CPU.  In the end a combination of lockmeter and
+> an oscilloscope did the trick.
+
+I think we are hitting a livelock due to both CPUs trying to perform an
+atomic operation on the same cache line (or same variable even).
+
+I would expect that to work more smoothly but it looks like we can hit
+a work case scenario...
+
+Can you remind me what CPU this on precisely ? I know that for some
+CPUs like 970's, Apple code has some weirdo workarounds around atomic
+ops involving forcing a mispredict when the stwcx. fails ... but if both
+CPUs are following the exact same pattern, I can't see another way out
+but an interrupt, unless something in the bus protocol can prevent such
+livelocks...
+
+Ben.
