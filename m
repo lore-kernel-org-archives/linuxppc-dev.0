@@ -1,25 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E7A9667BD5
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 09:19:52 +1100 (EST)
-Subject: Re: pata_sl82c105 can not reserve IO region
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20061201221525.7a741062@localhost.localdomain>
-References: <20061130165202.GA23205@aepfle.de>
-	<20061130171049.7b80a40c@localhost.localdomain>
-	<20061130184748.GA24071@aepfle.de> <20061201183355.GA9701@aepfle.de>
-	<45707CF8.3090106@ru.mvista.com>
-	<1165010029.22108.10.camel@localhost.localdomain>
-	<20061201221525.7a741062@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 02 Dec 2006 09:19:43 +1100
-Message-Id: <1165011583.22108.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <yang.reeve@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0506.google.com [64.233.162.232])
+	by ozlabs.org (Postfix) with ESMTP id 092F067B99
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 14:03:25 +1100 (EST)
+Received: by nz-out-0102.google.com with SMTP id l1so1746176nzf
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Dec 2006 19:03:23 -0800 (PST)
+Message-ID: <198592450612011903r3e9311e5ke3f5e7b305108fe7@mail.gmail.com>
+Date: Sat, 2 Dec 2006 03:03:23 +0000
+From: "Reeve Yang" <yang.reeve@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: MPC83xx SPI controller questions
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8867_28289846.1165028603642"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_8867_28289846.1165028603642
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> I don't think that is the problem. pci_request_regions() handles all
-> this internally. It is incorrect for me to not request BAR 5
-> if present as nobody else should use that resource with my driver loaded.
->
-> The underlying problem appears to be that PPC64 isn't setting up the
-> resources properly (at least as viewed by the pci core code). If a
-> resource is not set up then pci_request_resource() correctly handles
-> it .. except on PPC64. You have a resource at zero with a length and
-> type. PPC64 is not reporting to the upper layers that the resource was
-> not allocated. It is reporting that the resource *was* allocated, and at a
-> bogus address of zero.
-> 
-> If you trust the firmware that is fine, but you need to report the truth,
-> at which point pci_request_resources() will work correctly.
+Greetings!
 
-We don't have a choice but to trust the firmware on those machines. We
-can't assign things ourselves on most of them for various reasons (in
-many cases, the hypervisor won't let us).
+I'm trying to make mmc/sd card whihc is connect to MPC8343E SPI controller
+to work. I found there are SPI drivers added after kernel 2.6.16, but we're
+using kernel 2.6.14. I have a few questions help someone could help out.
 
-So you suggest that I clear resource->flags in that case ?
+- Has anyone backward ported SPI driver to kernel 2.6.14?
+- Does spi_mpc83xx.c work for MPC8343E cpu? I saw some comments of Kumar
+Gala to say the driver is not for CPM or Quiccengine SPI controller, but I
+think 8343 is one of quiccengine
+- I don't see any arch/ppc change for SPI like done for TSEC, e.g., we need
+to declar the platform device, and init platform data. Is this correct? how
+to test this driver? Or say, how to make this driver work? I only saw
+/sys/bus/platform/drivers/mpc83xx_spi/ created but no sure if SPI controller
+works.
 
-I think part of the problem is a firmware bug in that the firmware data
-actually decodes to BAR 5 is assigned to address 0 ... I suppose we can
-consider that address 0 is never valid on those machines and consider
-that as unassigned but it's a bit dodgy.. Or maybe a PCI quirk in the
-pSeries code would be best.
+Thanks in advance.
 
-Ben.
+- Reeve
+
+------=_Part_8867_28289846.1165028603642
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Greetings!<br>
+<br>
+I'm trying to make mmc/sd card whihc is connect to MPC8343E SPI
+controller to work. I found there are SPI drivers added after kernel
+2.6.16, but we're using kernel 2.6.14. I have a few questions help
+someone could help out.<br>
+<br>
+- Has anyone backward ported SPI driver to kernel 2.6.14?<br>
+- Does spi_mpc83xx.c work for MPC8343E cpu? I saw some comments of
+Kumar Gala to say the driver is not for CPM or Quiccengine SPI
+controller, but I think 8343 is one of quiccengine<br>
+- I don't see any arch/ppc change for SPI like done for TSEC, e.g., we
+need to declar the platform device, and init platform data. Is this
+correct? how to test this driver? Or say, how to make this driver work?
+I only saw /sys/bus/platform/drivers/mpc83xx_spi/ created but no sure
+if SPI controller works.<br>
+<br>
+Thanks in advance.<br>
+<br>
+- Reeve<br>
+
+------=_Part_8867_28289846.1165028603642--
