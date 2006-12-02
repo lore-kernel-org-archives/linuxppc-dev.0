@@ -2,21 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14E8D67BF5
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 22:16:02 +1100 (EST)
-Subject: Re: Worst case performance of up()
+	by ozlabs.org (Postfix) with ESMTP id 445AD67BF5
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 22:20:03 +1100 (EST)
+Subject: Re: [PATCH] linkstation / kurobox support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-In-Reply-To: <1165055754.4380.15.camel@localhost.localdomain>
-References: <1164385262.11292.76.camel@localhost.localdomain>
-	<1164401124.5653.86.camel@localhost.localdomain>
-	<1164661336.11001.9.camel@localhost.localdomain>
-	<1165055754.4380.15.camel@localhost.localdomain>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200612021156.37067.arnd@arndb.de>
+References: <Pine.LNX.4.60.0612012241430.13326@poirot.grange>
+	<200612021156.37067.arnd@arndb.de>
 Content-Type: text/plain
-Date: Sat, 02 Dec 2006 22:15:51 +1100
-Message-Id: <1165058151.22108.31.camel@localhost.localdomain>
+Date: Sat, 02 Dec 2006 22:19:51 +1100
+Message-Id: <1165058392.22108.34.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-12-02 at 10:35 +0000, Adrian Cox wrote:
-> On Mon, 2006-11-27 at 21:02 +0000, Adrian Cox wrote:
-> > On Sat, 2006-11-25 at 07:45 +1100, Benjamin Herrenschmidt wrote:
-> > > On Fri, 2006-11-24 at 16:21 +0000, Adrian Cox wrote:
-> > > > Does anybody have any ideas what could make up() take so long in this
-> > > > circumstance? I'd expect cache transfers to make the operation about 100
-> > > > times slower, but this looks like repeated cache ping-pong between the
-> > > > two CPUs.
-> > > 
-> > > Is it hung in up() (toplevel) or __up (low level) ?
-> > 
-> > Not yet proven.
+On Sat, 2006-12-02 at 11:56 +0100, Arnd Bergmann wrote:
+> > +
+> > +       /* Interpret the "ranges" property */
+> > +       /* This also maps the I/O region and sets isa_io/mem_base */
+> > +       pci_process_bridge_OF_ranges(hose, dev, 1);
+> > +
+> > +       return 0;
+> > +}
 > 
-> By using a scope, I have further data: the system is hung in this line
-> of resched_task() in kernel/sched.c:
-> 	set_tsk_thread_flag(p, TIF_NEED_RESCHED);
-> 
-> During this time, there is a great deal of ARTRY activity on the bus.
-> The sequence ends when the other CPU takes a timer tick.
-> 
-> I'll need to track down what the other CPU is doing at this point, but
-> my current hypothesis is that it's somewhere in schedule().
-> 
-> > > Have you tried some oprofile runs to catch the exact instruction where
-> > > the cycles appear to be wasted ?
-> 
-> Oprofile turned out to break the error condition, by increasing the
-> interrupt rate on each CPU.  In the end a combination of lockmeter and
-> an oscilloscope did the trick.
+> Can't you use the new PCI probing from arch/powerpc/kernel/of_platform
+> for this?
 
-I think we are hitting a livelock due to both CPUs trying to perform an
-atomic operation on the same cache line (or same variable even).
+I wouldnt recomment it for 32 bits just yet ...
 
-I would expect that to work more smoothly but it looks like we can hit
-a work case scenario...
+> > +#ifdef CONFIG_BLK_DEV_INITRD
+> > +       if (initrd_start)
+> > +               ROOT_DEV = Root_RAM0;
+> > +       else
+> > +#endif
+> > +#ifdef CONFIG_ROOT_NFS
+> > +               ROOT_DEV = Root_NFS;
+> > +#else
+> > +               ROOT_DEV = Root_HDA1;
+> > +#endif
+> > +
+> 
+> This looks wrong. Didn't the same code come up recently in a review for
+> another platform? What was the conclusion?
 
-Can you remind me what CPU this on precisely ? I know that for some
-CPUs like 970's, Apple code has some weirdo workarounds around atomic
-ops involving forcing a mispredict when the stwcx. fails ... but if both
-CPUs are following the exact same pattern, I can't see another way out
-but an interrupt, unless something in the bus protocol can prevent such
-livelocks...
+It's a copy paste that we inhertit from the big bang...  Should probably
+go...
 
-Ben.
+Note that PowerMac does have a proper root autodetect feature though
+it's not fascionable to have such a thing nowadays and the only reason
+it's still in is because it mostly stays under the radar :-)
+
+So basically... yeah, the #ifdef sucks, but I don't mind that much...
+
+Ben
