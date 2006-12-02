@@ -1,24 +1,18 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id EE14667B77
+	by ozlabs.org (Postfix) with ESMTP id 1A42367BAD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  3 Dec 2006 01:34:36 +1100 (EST)
-Message-ID: <45718F55.4080903@ru.mvista.com>
-Date: Sat, 02 Dec 2006 17:36:05 +0300
+	Sun,  3 Dec 2006 03:32:03 +1100 (EST)
+Message-ID: <4571AAE1.1020609@ru.mvista.com>
+Date: Sat, 02 Dec 2006 19:33:37 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 To: u-boot-users@lists.sourceforge.net
-Subject: U-Boot allocating PCI I/O space from 0 (Was: pata_sl82c105 can not
-	reserve IO region)
-References: <20061130165202.GA23205@aepfle.de>	
-	<20061130171049.7b80a40c@localhost.localdomain>	
-	<20061130184748.GA24071@aepfle.de>
-	<20061201183355.GA9701@aepfle.de>	
-	<45707CF8.3090106@ru.mvista.com>	
-	<1165010029.22108.10.camel@localhost.localdomain>	
-	<20061201221525.7a741062@localhost.localdomain>
-	<1165011583.22108.17.camel@localhost.localdomain>
-In-Reply-To: <1165011583.22108.17.camel@localhost.localdomain>
+Subject: Re: U-Boot allocating PCI I/O space from 0 (Was: pata_sl82c105 can
+	not	reserve IO region)
+References: <20061130165202.GA23205@aepfle.de>		<20061130171049.7b80a40c@localhost.localdomain>		<20061130184748.GA24071@aepfle.de>	<20061201183355.GA9701@aepfle.de>		<45707CF8.3090106@ru.mvista.com>		<1165010029.22108.10.camel@localhost.localdomain>		<20061201221525.7a741062@localhost.localdomain>	<1165011583.22108.17.camel@localhost.localdomain>
+	<45718F55.4080903@ru.mvista.com>
+In-Reply-To: <45718F55.4080903@ru.mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -33,44 +27,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hello.
 
-Benjamin Herrenschmidt wrote:
+Sergei Shtylyov wrote:
 
->>I don't think that is the problem. pci_request_regions() handles all
->>this internally. It is incorrect for me to not request BAR 5
->>if present as nobody else should use that resource with my driver loaded.
+>     Well, I'm having a very related issue with the U-Boot on MPC85xx: recently 
+> I've noticed that it started allocating PCI I/O space from 0 (while the older 
+> versions started from 0x1000). The IDE core can't tolerate this, giving me 
+> such messages on bootup:
 
->>The underlying problem appears to be that PPC64 isn't setting up the
->>resources properly (at least as viewed by the pci core code). If a
->>resource is not set up then pci_request_resource() correctly handles
->>it .. except on PPC64. You have a resource at zero with a length and
->>type. PPC64 is not reporting to the upper layers that the resource was
->>not allocated. It is reporting that the resource *was* allocated, and at a
->>bogus address of zero.
+> PDC20269: inconsistent baseregs (BIOS) for port 0, skipping
 
->>If you trust the firmware that is fine, but you need to report the truth,
->>at which point pci_request_resources() will work correctly.
+> when I have Promise Ultra133TX2 card inserted into PCI alone. I've looked thru 
+> the U-Boot sources and commit history but failed to locate the change that led 
+> to this...
 
-> We don't have a choice but to trust the firmware on those machines. We
-> can't assign things ourselves on most of them for various reasons (in
-> many cases, the hypervisor won't let us).
+    It's actually much worse than just that. When I also plug in some other 
+PCI card so Ultra133TX2 doesn't get the zero addresses anymore, I'm getting this:
 
-> So you suggest that I clear resource->flags in that case ?
+eepro100.c: $Revision: 1.36 $ 2000/11/17 Modified by Andrey V. Savochkin
+<saw@saw.sw.com.sg> and others
+eth3: Invalid EEPROM checksum 0xfffe, check settings before activating this
+device!
+eth3: OEM i82557/i82558 10/100 Ethernet, 00:00:00:00:FF:FF, IRQ 52.
+[...]
+PDC20269: 100% native mode on irq 51
+     ide2: BM-DMA at 0x0060-0x0067, BIOS settings: hde:pio, hdf:pio
+PDC20269: simplex device: DMA disabled
+ide3: PDC20269 Bus-Master DMA disabled (BIOS)
 
-> I think part of the problem is a firmware bug in that the firmware data
-> actually decodes to BAR 5 is assigned to address 0 ... I suppose we can
-> consider that address 0 is never valid on those machines and consider
-> that as unassigned but it's a bit dodgy.. Or maybe a PCI quirk in the
-> pSeries code would be best.
+    I've just verified that both these cards are working OK in x86 box
+As for the simplex message, I've encountered this some months ago and it was 
+caused by invalid programming of the MPC85xx bridge PCI/X outbound translation 
+address register for the I/O space or at least by the non-zero value of the 
+bus I/O address in the "ranges" property of the bridge device node in the 
+device tree... I'm somewhat confused now since I know that the relevant U-Boot 
+code has been fixed but it looks like that made it only worse -- I was using 
+the custom patched version of U-Boot before which missed that fix:
 
-    Well, I'm having a very related issue with the U-Boot on MPC85xx: recently 
-I've noticed that it started allocating PCI I/O space from 0 (while the older 
-versions started from 0x1000). The IDE core can't tolerate this, giving me 
-such messages on bootup:
-
-PDC20269: inconsistent baseregs (BIOS) for port 0, skipping
-
-when I have Promise Ultra133TX2 card inserted into PCI alone. I've looked thru 
-the U-Boot sources and commit history but failed to locate the change that led 
-to this...
+http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=commitdiff;h=97074ed9655309b64231bc2cee69fe85399f8055
 
 WBR, Sergei
