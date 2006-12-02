@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <adrian@humboldt.co.uk>
+Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9777B67B8F
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 22:33:10 +1100 (EST)
-Subject: Re: [PATCH] linkstation / kurobox support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <1165058392.22108.34.camel@localhost.localdomain>
-References: <Pine.LNX.4.60.0612012241430.13326@poirot.grange>
-	<200612021156.37067.arnd@arndb.de>
-	<1165058392.22108.34.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 4005767BB2
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Dec 2006 22:54:51 +1100 (EST)
+Subject: Re: Worst case performance of up()
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1165058151.22108.31.camel@localhost.localdomain>
+References: <1164385262.11292.76.camel@localhost.localdomain>
+	<1164401124.5653.86.camel@localhost.localdomain>
+	<1164661336.11001.9.camel@localhost.localdomain>
+	<1165055754.4380.15.camel@localhost.localdomain>
+	<1165058151.22108.31.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Sat, 02 Dec 2006 22:32:59 +1100
-Message-Id: <1165059179.22108.45.camel@localhost.localdomain>
+Date: Sat, 02 Dec 2006 11:54:44 +0000
+Message-Id: <1165060484.4380.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2006-12-02 at 22:15 +1100, Benjamin Herrenschmidt wrote:
+> I think we are hitting a livelock due to both CPUs trying to perform an
+> atomic operation on the same cache line (or same variable even).
 
-> > Can't you use the new PCI probing from arch/powerpc/kernel/of_platform
-> > for this?
-> 
-> I wouldnt recomment it for 32 bits just yet ...
+I agree.
 
-To be more precise... I suspect the code in there will not work properly
-for 32 bits. The PCI code is still very very very different between
-ppc32 and ppc64 (and both are broken in different ways).
+> Can you remind me what CPU this on precisely ? I know that for some
+> CPUs like 970's, Apple code has some weirdo workarounds around atomic
+> ops involving forcing a mispredict when the stwcx. fails ... but if both
+> CPUs are following the exact same pattern, I can't see another way out
+> but an interrupt, unless something in the bus protocol can prevent such
+> livelocks...
 
-I do plan to try to fix all of that up, but it's a complicated problem
-(and the "generic" code doesn't help much as it's also broken in
-different ways).
+It's a pair of 7448s in MPX bus mode, with a Tsi109 host bridge.
 
-So for now, PCI related things have to be quite different between ppc32
-and ppc64 unfortunately...
-
-Ben.
+-- 
+Adrian Cox <adrian@humboldt.co.uk>
