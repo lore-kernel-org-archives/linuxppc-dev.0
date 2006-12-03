@@ -1,25 +1,16 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from LAubervilliers-151-12-84-108.w193-252.abo.wanadoo.fr.
-	(LNeuilly-152-23-83-57.w217-128.abo.wanadoo.fr [217.128.214.57])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D5A9A67B77
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 02:02:20 +1100 (EST)
-Date: Sun, 3 Dec 2006 15:57:50 +0100
-From: Sven Luther <sven@genesi-usa.com>
-To: Nicolas DET <nicolas@det-net.org>
-Subject: Re: [PATCH 1/2] Fixed compiled issue tu to new of_platform.h header
-Message-ID: <20061203145750.GA20359@powerlinux.fr>
-References: <Pine.LNX.4.44L0.0611241557080.16422-100000@netrider.rowland.org>
-	<1164403145.5653.93.camel@localhost.localdomain>
-	<20061203082303.GA9129@powerlinux.fr>
-	<20061203101343.6ceda991.nicolas@det-net.org>
+Return-Path: <olaf@aepfle.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
+	by ozlabs.org (Postfix) with ESMTP id 122A667B83
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 04:12:18 +1100 (EST)
+Date: Sun, 3 Dec 2006 18:12:16 +0100 (MET)
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: pata_sl82c105 can not reserve IO region
+Message-ID: <20061203171216.GB21947@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061203101343.6ceda991.nicolas@det-net.org>
-Cc: linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>,
-	sl@bplan-gmbh.de, linuxppc-dev@ozlabs.org,
-	Alan Stern <stern@rowland.harvard.edu>, Sven Luther <sven@genesi-usa.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061130165202.GA23205@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,43 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 03, 2006 at 10:13:41AM +0100, Nicolas DET wrote:
-> On Sun, 3 Dec 2006 09:23:03 +0100
-> S0ven Luther <sven@genesi-usa.com> wrote:
-> 
-> 
-> > > Not that I know. But we could have a cleaner approach. The #include one
-> > > dates a bit... we could have for example an ohci-core.ko with the core
-> > > bits, and ochi-pci.ko, ohci-patform.ko etc... be separate modules linked
-> > > on the first and instanciating it.
-> > > 
-> > > I'll have a look and will come up with either solution.
-> > 
-> 
-> In my mind, this is the correct approch.
-> 
-> > Hi, ...
-> > 
-> > I am just wondering if i got dropped from the CCs or if there was no further
-> > discussion on this.
-> > 
-> > The 2.6.19 kernel doesn't build when the efika patches are applied and the
-> > ohci modules are built. We need a solution for this. Even disabling the patch
-> > for ohci fails to build the ohci driver, but this could be a bad manipulation.
-> > 
-> 
-> "Efika OHCI patches" does not exist. There is a new OHCI glue for OpenFrimware.
+On Thu, Nov 30, Olaf Hering wrote:
 
-Whatever.
-
-> > Is there any hint on the right way to go for this ? 
-> > 
 > 
-> I'm currently running on 2.6.19 (the whole USB in kernel not kmod). It compiles and works fine.
+> pata_sl82c105 can be used on the ppc64 POWER4 system p610, p615 and p630
+> for the onboard IDE CD drive. It could be also used for ppc32 Motorola
+> PowerStack PReP systems.
+> 
+> Unfortunately, it doesnt work for me on the p630:
+> 
+> PCI: Enabling device: (0000:00:03.1), cmd 141
+> PCI: Unable to reserve I/O region #6:10@0 for device 0000:00:03.1
+> pata_sl82c105: probe of 0000:00:03.1 failed with error -16
 
-Ok, the day you are able to run the same ohci driver binary on both pegasos
-with ohci usb card, and efika, then we can speak.
+I modified pci_request_regions to request only the first 5 regions.
+Now the detection works, but access to the drive does not work:
 
-Friendly,
+[  175.479288] PCI: Enabling device: (0000:00:03.1), cmd 141
+[  181.533396] ata1: PATA max MWDMA2 cmd 0xF000 ctl 0xF012 bmdma 0xF040 irq 86
+[  175.542281] scsi2 : pata_sl82c105
+[  175.879574] ata1.00: ATAPI, max UDMA/33
+[  176.055641] ata1.00: configured for MWDMA2
+[  176.065579] scsi 2:0:0:0: CD-ROM            LG       CD-ROM CRD-8484B 2.01 PQ: 0 ANSI: 5
+[  176.077138] sr0: scsi3-mmc drive: 48x/48x cd/rw xa/form2 cdda tray
+[  176.086020] Uniform CD-ROM driver Revision: 3.20
+[  176.094959] sr 2:0:0:0: Attached scsi CD-ROM sr0
+[  176.103932] sr 2:0:0:0: Attached scsi generic sg4 type 5
 
-Sven Luther
+
+[  194.947620] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+[  194.947628] ata1.00: (BMDMA stat 0x41)
+[  194.947693] ata1.00: tag 0 cmd 0xa0 Emask 0x4 stat 0x40 err 0x0 (timeout)
+[  194.947714] ata1: soft resetting port
+[  195.448133] ata1.00: configured for MWDMA2
+[  195.448157] ata1: EH complete
+[  200.450116] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+[  200.450124] ata1.00: (BMDMA stat 0x41)
+[  200.450132] ata1.00: tag 0 cmd 0xa0 Emask 0x4 stat 0x40 err 0x0 (timeout)
+[  200.450153] ata1: soft resetting port
+[  200.945670] ata1.00: configured for MWDMA2
+[  200.945695] ata1: EH complete
