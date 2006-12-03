@@ -1,16 +1,15 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
-	by ozlabs.org (Postfix) with ESMTP id 122A667B83
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 04:12:18 +1100 (EST)
-Date: Sun, 3 Dec 2006 18:12:16 +0100 (MET)
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: pata_sl82c105 can not reserve IO region
-Message-ID: <20061203171216.GB21947@aepfle.de>
-References: <20061130165202.GA23205@aepfle.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 133F767B92
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 04:50:56 +1100 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix debug printks for 32-bit resources in the PCI code
+Date: Sun, 3 Dec 2006 20:52:27 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20061130165202.GA23205@aepfle.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612032052.27519.sshtylyov@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +19,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 30, Olaf Hering wrote:
+Cure the damage done by the former PCI debug printks fix for the case of 64-bit
+resources (commit 685143ac1f7a579a3fac9c7f2ac8f82e95af6864) which broke it for
+the plain vanilla 32-bit resources...
 
-> 
-> pata_sl82c105 can be used on the ppc64 POWER4 system p610, p615 and p630
-> for the onboard IDE CD drive. It could be also used for ppc32 Motorola
-> PowerStack PReP systems.
-> 
-> Unfortunately, it doesnt work for me on the p630:
-> 
-> PCI: Enabling device: (0000:00:03.1), cmd 141
-> PCI: Unable to reserve I/O region #6:10@0 for device 0000:00:03.1
-> pata_sl82c105: probe of 0000:00:03.1 failed with error -16
+ arch/powerpc/kernel/pci_32.c |   24 +++++++++++-------------
+ 1 files changed, 11 insertions(+), 13 deletions(-)
 
-I modified pci_request_regions to request only the first 5 regions.
-Now the detection works, but access to the drive does not work:
-
-[  175.479288] PCI: Enabling device: (0000:00:03.1), cmd 141
-[  181.533396] ata1: PATA max MWDMA2 cmd 0xF000 ctl 0xF012 bmdma 0xF040 irq 86
-[  175.542281] scsi2 : pata_sl82c105
-[  175.879574] ata1.00: ATAPI, max UDMA/33
-[  176.055641] ata1.00: configured for MWDMA2
-[  176.065579] scsi 2:0:0:0: CD-ROM            LG       CD-ROM CRD-8484B 2.01 PQ: 0 ANSI: 5
-[  176.077138] sr0: scsi3-mmc drive: 48x/48x cd/rw xa/form2 cdda tray
-[  176.086020] Uniform CD-ROM driver Revision: 3.20
-[  176.094959] sr 2:0:0:0: Attached scsi CD-ROM sr0
-[  176.103932] sr 2:0:0:0: Attached scsi generic sg4 type 5
-
-
-[  194.947620] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-[  194.947628] ata1.00: (BMDMA stat 0x41)
-[  194.947693] ata1.00: tag 0 cmd 0xa0 Emask 0x4 stat 0x40 err 0x0 (timeout)
-[  194.947714] ata1: soft resetting port
-[  195.448133] ata1.00: configured for MWDMA2
-[  195.448157] ata1: EH complete
-[  200.450116] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-[  200.450124] ata1.00: (BMDMA stat 0x41)
-[  200.450132] ata1.00: tag 0 cmd 0xa0 Emask 0x4 stat 0x40 err 0x0 (timeout)
-[  200.450153] ata1: soft resetting port
-[  200.945670] ata1.00: configured for MWDMA2
-[  200.945695] ata1: EH complete
+Index: powerpc/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/pci_32.c
++++ powerpc/arch/powerpc/kernel/pci_32.c
+@@ -100,7 +100,7 @@ pcibios_fixup_resources(struct pci_dev *
+ 			continue;
+ 		if (res->end == 0xffffffff) {
+ 			DBG("PCI:%s Resource %d [%016llx-%016llx] is unassigned\n",
+-			    pci_name(dev), i, res->start, res->end);
++			    pci_name(dev), i, (u64)res->start, (u64)res->end);
+ 			res->end -= res->start;
+ 			res->start = 0;
+ 			res->flags |= IORESOURCE_UNSET;
+@@ -116,11 +116,9 @@ pcibios_fixup_resources(struct pci_dev *
+ 		if (offset != 0) {
+ 			res->start += offset;
+ 			res->end += offset;
+-#ifdef DEBUG
+-			printk("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
+-			       i, res->flags, pci_name(dev),
+-			       res->start - offset, res->start);
+-#endif
++			DBG("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
++			    i, res->flags, pci_name(dev),
++			    (u64)res->start - offset, (u64)res->start);
+ 		}
+ 	}
+ 
+@@ -256,7 +254,7 @@ pcibios_allocate_bus_resources(struct li
+ 			}
+ 
+ 			DBG("PCI: bridge rsrc %llx..%llx (%lx), parent %p\n",
+-				res->start, res->end, res->flags, pr);
++			    (u64)res->start, (u64)res->end, res->flags, pr);
+ 			if (pr) {
+ 				if (request_resource(pr, res) == 0)
+ 					continue;
+@@ -307,7 +305,7 @@ reparent_resources(struct resource *pare
+ 	for (p = res->child; p != NULL; p = p->sibling) {
+ 		p->parent = res;
+ 		DBG(KERN_INFO "PCI: reparented %s [%llx..%llx] under %s\n",
+-		    p->name, p->start, p->end, res->name);
++		    p->name, (u64)p->start, (u64)p->end, res->name);
+ 	}
+ 	return 0;
+ }
+@@ -363,7 +361,7 @@ pci_relocate_bridge_resource(struct pci_
+ 	}
+ 	if (request_resource(pr, res)) {
+ 		DBG(KERN_ERR "PCI: huh? couldn't move to %llx..%llx\n",
+-		    res->start, res->end);
++		    (u64)res->start, (u64)res->end);
+ 		return -1;		/* "can't happen" */
+ 	}
+ 	update_bridge_base(bus, i);
+@@ -481,14 +479,14 @@ static inline void alloc_resource(struct
+ 	struct resource *pr, *r = &dev->resource[idx];
+ 
+ 	DBG("PCI:%s: Resource %d: %016llx-%016llx (f=%lx)\n",
+-	    pci_name(dev), idx, r->start, r->end, r->flags);
++	    pci_name(dev), idx, (u64)r->start, (u64)r->end, r->flags);
+ 	pr = pci_find_parent_resource(dev, r);
+ 	if (!pr || request_resource(pr, r) < 0) {
+ 		printk(KERN_ERR "PCI: Cannot allocate resource region %d"
+ 		       " of device %s\n", idx, pci_name(dev));
+ 		if (pr)
+ 			DBG("PCI:  parent is %p: %016llx-%016llx (f=%lx)\n",
+-			    pr, pr->start, pr->end, pr->flags);
++			    pr, (u64)pr->start, (u64)pr->end, pr->flags);
+ 		/* We'll assign a new address later */
+ 		r->flags |= IORESOURCE_UNSET;
+ 		r->end -= r->start;
+@@ -961,7 +959,7 @@ pci_process_bridge_OF_ranges(struct pci_
+ 			res->flags = IORESOURCE_IO;
+ 			res->start = ranges[2];
+ 			DBG("PCI: IO 0x%llx -> 0x%llx\n",
+-				    res->start, res->start + size - 1);
++			    (u64)res->start, (u64)res->start + size - 1);
+ 			break;
+ 		case 2:		/* memory space */
+ 			memno = 0;
+@@ -983,7 +981,7 @@ pci_process_bridge_OF_ranges(struct pci_
+ 					res->flags |= IORESOURCE_PREFETCH;
+ 				res->start = ranges[na+2];
+ 				DBG("PCI: MEM[%d] 0x%llx -> 0x%llx\n", memno,
+-					    res->start, res->start + size - 1);
++				    (u64)res->start, (u64)res->start + size - 1);
+ 			}
+ 			break;
+ 		}
