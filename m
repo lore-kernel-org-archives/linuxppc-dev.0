@@ -1,26 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25E7067C05
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 07:25:58 +1100 (EST)
-Subject: Re: Worst case performance of up()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-In-Reply-To: <1165239794.17906.14.camel@localhost.localdomain>
-References: <1164385262.11292.76.camel@localhost.localdomain>
-	<1164401124.5653.86.camel@localhost.localdomain>
-	<1164661336.11001.9.camel@localhost.localdomain>
-	<1165055754.4380.15.camel@localhost.localdomain>
-	<1165058151.22108.31.camel@localhost.localdomain>
-	<1165060484.4380.18.camel@localhost.localdomain>
-	<1165092773.22108.47.camel@localhost.localdomain>
-	<1165239794.17906.14.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 05 Dec 2006 07:25:46 +1100
-Message-Id: <1165263946.29784.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id B16C267C1E
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 07:30:33 +1100 (EST)
+In-Reply-To: <C8D32511-EE52-4745-99C7-30039FA02F21@freescale.com>
+References: <Pine.LNX.4.61.0612011153500.15004@ld0175-tx32.am.freescale.net>
+	<B9050CFE-9237-4024-9B1A-6940339FD0F1@kernel.crashing.org>
+	<C8D32511-EE52-4745-99C7-30039FA02F21@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <57683779-78D8-40EE-B87E-3F829AC39EEE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.20] powerpc: Changed gianfar device tree definition to
+	make it more flexible
+Date: Mon, 4 Dec 2006 14:30:23 -0600
+To: Andy Fleming <afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,34 +27,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-12-04 at 13:43 +0000, Adrian Cox wrote:
-> On Sun, 2006-12-03 at 07:52 +1100, Benjamin Herrenschmidt wrote:
-> > On Sat, 2006-12-02 at 11:54 +0000, Adrian Cox wrote:
-> > > On Sat, 2006-12-02 at 22:15 +1100, Benjamin Herrenschmidt wrote:
-> > > > I think we are hitting a livelock due to both CPUs trying to perform an
-> > > > atomic operation on the same cache line (or same variable even).
-> > > 
-> > > I agree.
-> 
-> I now have this one identified and fixed. The cure is actually simple:
-> on 32-bit SMP machines, rather than setting powersave_nap to 0, set
-> ppc_md.power_save to NULL.
-> 
-> CPU A is attempting to reschedule the idle thread on CPU B:
-> set_tsk_thread_flag(p, TIF_NEED_RESCHED);
-> 
-> CPU B is in the idle loop, but does not support nap. The result is that
-> ppc6xx_idle() returns immediately, and CPU B runs in a tight loop:
-> while(...) {
-> 	set_thread_flag(TIF_POLLING_NRFLAG);
-> 	...
-> 	clear_thread_flag(TIF_POLLING_NRFLAG);
-> }
-> 
-> If ppc_md.power_save is NULL, then the idle loop does not touch the flag
-> word of the idle thread, and everything works.
 
-Good to know, there might be other cases of performance issues due to
-touching that flag in a loop...
+On Dec 4, 2006, at 2:08 PM, Andy Fleming wrote:
 
-Ben.
+>
+> On Dec 1, 2006, at 12:52, Kumar Gala wrote:
+>
+>> [snip]
+>>
+>>> +  Optional properties (features):
+>>> +    - gigabit : Indicates support for 1000 Mbit operation
+>>> +    - coalescing : Indicates support for interrupt coalescing
+>>> +    - rmon : Indicates support for RMON-style counters
+>>> +    - checksumming : Indicates support for hardware TCP/UDP  
+>>> checksumming
+>>> +    - vlan-insertion : Indicates support for hardware vlan  
+>>> header insertion
+>>> +    - extended-hash : Indicates support for using the Individual
+>>> +        Address Hash registers to extend the Group Address Hash  
+>>> registers
+>>> +    - padding : Indicates support for padding between the FCB and
+>>> +        the frame
+>>> +    - filer : Indicates support for the Filer
+>>> +    - parseL2 : Indicates support for parsing L2 headers
+>>> +    - parseL3 : Indicates support for parsing L3 headers
+>>> +    - parseL4 : Indicates support for parsing L4 headers
+>>
+>> I'm still think that filer, parseL2, parseL3, parseL4 should be  
+>> folded into one attribute. Unless there are plans for version that  
+>> only do some subset.
+>
+> I was told that it would be good to separate them.  I can pursue  
+> this further, but until there's code that uses these bits, they're  
+> not too important.  Can we let this through, with the proviso that  
+> I'll change it?  I'm more concerned about getting the code in,  
+> right now.
+
+Told by whom?  I'm not in favor of letting this in because its a  
+interface we dont want to be changing.  I can list at all the reasons  
+we dont want to, but I think you get the point.
+
+>>> +    - multi-queue : Indicates support for sending and receiving
+>>
+>> We may want to split this into multi-queue = 4 or something to  
+>> spec how many.  Also you may want to split this into tx-multi- 
+>> queue and rx-multi-queue.  I can for see have non-equal numbers  
+>> for them.
+>
+>
+> Hmm.  Yeah, that makes sense.  My comment from above applies again,  
+> though.  Can we let it through, with the proviso that I will change  
+> it in a forthcoming patch?  There's no code actually *using* these  
+> bits right now, but I need to look into the parse/filer bits, and I  
+> need to think about the multiqueue stuff.
+
+See my comment about about interfaces.
+
+>>> +      into multiple queues
+>>> +    - buffer-stashing : Controller can allocate buffers into L2
+>>> +    - buffer-locking : Controller can lock buffers into L2
+>>> +    - bd-stashing : Controller can allocate descriptors into L2
+>>> +    - bd-locking : Controller can lock descriptors into L2
+>>> +
+>>
+>>
+>> Also
+>
+> On the other hand
+>
+>
+> Andy
