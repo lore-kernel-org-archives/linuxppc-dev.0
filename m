@@ -1,14 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 4 Dec 2006 12:53:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [LIBFDT] Fixup byteswapping code
-Message-ID: <20061204015329.GA4790@localhost.localdomain>
-References: <11650491414017-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11650491414017-git-send-email-grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <17779.37050.4039.942954@cargo.ozlabs.ibm.com>
+Date: Mon, 4 Dec 2006 14:06:34 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [2.6 patch] arch/powerpc/Kconfig: fix the EMBEDDED6xx dependencies
+In-Reply-To: <20061201115410.GV11084@stusta.de>
+References: <20061201115410.GV11084@stusta.de>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,11 +19,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just applied a patch with a whole batch of endian fixes, obsoleting
-this patch of yours.
+Adrian Bunk writes:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> This patch changes the EMBEDDED6xx dependencies to the equivalent 
+> dependency that seems to have been intended.
+
+Nack - CONFIG_EMBEDDED6xx is going away entirely, soon.
+
+Paul.
