@@ -1,19 +1,21 @@
-Return-Path: <zippel@linux-m68k.org>
-Received: from scrub.xs4all.nl (scrub.xs4all.nl [194.109.195.176])
-	by ozlabs.org (Postfix) with ESMTP id 664A367B6C
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 08:57:14 +1100 (EST)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Ingo Molnar <mingo@elte.hu>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4119C67B5B
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 08:59:49 +1100 (EST)
+Date: Mon, 4 Dec 2006 22:58:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
 Subject: Re: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t
-	=?iso-8859-1?q?in=09latency=5Ftrace=2Ec?= (take 3)
-Date: Mon, 4 Dec 2006 22:56:50 +0100
+	in	latency_trace.c (take 3)
+Message-ID: <20061204215840.GA23604@elte.hu>
 References: <200611132252.58818.sshtylyov@ru.mvista.com>
 	<4574149B.5070602@ru.mvista.com> <20061204153949.GA9350@elte.hu>
-In-Reply-To: <20061204153949.GA9350@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612042256.51823.zippel@linux-m68k.org>
+	<200612042256.51823.zippel@linux-m68k.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200612042256.51823.zippel@linux-m68k.org>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,16 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-On Monday 04 December 2006 16:39, Ingo Molnar wrote:
+* Roman Zippel <zippel@linux-m68k.org> wrote:
 
-> there's *always* a way to do such things more cleanly - such as the
-> patch below. Could you try to fix it up for 32-bit cycles_t platforms? I
-> bet the hackery will be limited to now() and maybe the conversion
-> routines, instead of spreading all around latency_trace.c.
+> While I'm not against this patch, but on m68k I prefer a 32bit cycle 
+> type (however it's called), so it doesn't solve the original problem.
 
-While I'm not against this patch, but on m68k I prefer a 32bit cycle type 
-(however it's called), so it doesn't solve the original problem.
+i havent changed the cycles_t type - it's still 32-bit. I agree with you 
+that we dont want to bloat 32-bit arch-level code by artificially 
+forcing everyone to a 64-bit cycles_t.
 
-bye, Roman
+	Ingo
