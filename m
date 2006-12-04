@@ -1,26 +1,16 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7AF3367B52
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 10:31:51 +1100 (EST)
-Date: Sun, 3 Dec 2006 23:39:02 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: pata_sl82c105 can not reserve IO region
-Message-ID: <20061203233902.4550e39f@localhost.localdomain>
-In-Reply-To: <1165011583.22108.17.camel@localhost.localdomain>
-References: <20061130165202.GA23205@aepfle.de>
-	<20061130171049.7b80a40c@localhost.localdomain>
-	<20061130184748.GA24071@aepfle.de>
-	<20061201183355.GA9701@aepfle.de> <45707CF8.3090106@ru.mvista.com>
-	<1165010029.22108.10.camel@localhost.localdomain>
-	<20061201221525.7a741062@localhost.localdomain>
-	<1165011583.22108.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17779.26617.771677.316798@cargo.ozlabs.ibm.com>
+Date: Mon, 4 Dec 2006 11:12:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.20] powerpc: Changed gianfar device tree definition to
+	make it more flexible
+In-Reply-To: <B9050CFE-9237-4024-9B1A-6940339FD0F1@kernel.crashing.org>
+References: <Pine.LNX.4.61.0612011153500.15004@ld0175-tx32.am.freescale.net>
+	<B9050CFE-9237-4024-9B1A-6940339FD0F1@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,19 +20,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 02 Dec 2006 09:19:43 +1100
-> We don't have a choice but to trust the firmware on those machines. We
-> can't assign things ourselves on most of them for various reasons (in
-> many cases, the hypervisor won't let us).
-> 
-> So you suggest that I clear resource->flags in that case ?
+Kumar Gala writes:
 
-That will do the trick yes.
- 
-> I think part of the problem is a firmware bug in that the firmware data
-> actually decodes to BAR 5 is assigned to address 0 ... I suppose we can
-> consider that address 0 is never valid on those machines and consider
-> that as unassigned 
+> > +    The "eTSEC" model implements all of these, except for the
 
-The core PCI code already "knows" that zero in a resource_start() is
-unassigned
+followed by > 1300 more lines of the patch quoted, but not commented
+on.  Please, everybody, trim the quoted context down to just what's
+needed for the comments you're making.
+
+Paul.
