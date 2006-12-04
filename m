@@ -1,17 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id B16BC67A2E
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 23:48:27 +1100 (EST)
-Message-ID: <4574197A.2020204@ru.mvista.com>
-Date: Mon, 04 Dec 2006 15:50:02 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1FDAF67BF8
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 23:55:23 +1100 (EST)
+In-Reply-To: <4574197A.2020204@ru.mvista.com>
 References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>
 	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
-In-Reply-To: <FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<4574197A.2020204@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
+Date: Mon, 4 Dec 2006 13:54:59 +0100
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,36 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+>> Please make this run on pSeries only; on a PowerMac for
+>> example, it's totally normal that the first PCI legacy I/O
+>> BAR in the system gets assigned 0.
+>
+>    What do you mean by legacy I/O BAR?
 
-Segher Boessenkool wrote:
->>--- a/arch/powerpc/kernel/pci_64.c
->>+++ b/arch/powerpc/kernel/pci_64.c
->>@@ -1234,6 +1234,14 @@ static void __devinit fixup_resource(str
->> 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
->> 	unsigned long start, end, mask, offset;
->>
->>+	/*
->>+	 * tell the core code that this ressource is unassigned
->>+	 * fixes p630 winbond IDE with libata
->>+	 */
->>+	if (res->start == 0) {
->>+		res->flags = 0;
->>+		return;
->>+	}
->> 	if (res->flags & IORESOURCE_IO) {
->> 		offset = (unsigned long)hose->io_base_virt - pci_io_base;
-> 
-> 
-> Please make this run on pSeries only; on a PowerMac for
-> example, it's totally normal that the first PCI legacy I/O
-> BAR in the system gets assigned 0.
+Any PCI BAR with bits 1:0 == 0b01.
 
-    What do you mean by legacy I/O BAR? If you mean IDE controller, that would 
-drive IDE core mad like this:
+> If you mean IDE controller, that would drive IDE core mad like this:
+>
+> W82C105_IDE: inconsistent baseregs (BIOS) for port 0, skipping
 
-W82C105_IDE: inconsistent baseregs (BIOS) for port 0, skipping
+So that needs fixing too, then.
 
-> Segher
 
-WBR, Sergei
+Segher
