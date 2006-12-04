@@ -1,15 +1,18 @@
-Return-Path: <dwg@au1.ibm.com>
-Date: Mon, 4 Dec 2006 18:01:00 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Edi Shmueli <edi@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] PPC32 : Huge-page support for ppc440 - 2.6.19-rc4 -
-	revised
-Message-ID: <20061204070100.GB32026@localhost.localdomain>
-References: <45705FA3.4040904@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 4 Dec 2006 18:16:29 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [LIBFDT] Fixup byteswapping code
+Message-ID: <20061204071629.GC32026@localhost.localdomain>
+References: <11650491414017-git-send-email-grant.likely@secretlab.ca>
+	<20061204015329.GA4790@localhost.localdomain>
+	<528646bc0612032118i689e9c83gdfc841a3d7b91fcf@mail.gmail.com>
+	<20061204055217.GA32026@localhost.localdomain>
+	<528646bc0612032233y573dfbcdk29a969e19540242a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45705FA3.4040904@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+In-Reply-To: <528646bc0612032233y573dfbcdk29a969e19540242a@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,241 +22,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 01, 2006 at 12:00:19PM -0500, Edi Shmueli wrote:
-> From: Edi Shmueli <edi@linux.vnet.ibm.com>
+On Sun, Dec 03, 2006 at 11:33:42PM -0700, Grant Likely wrote:
+> On 12/3/06, David Gibson <david@gibson.dropbear.id.au> wrote:
+> > On Sun, Dec 03, 2006 at 10:18:25PM -0700, Grant Likely wrote:
+> > > This requires a hacky cast from int to pointer and back again, and it
+> > > makes the assumption that int and void* are the same size.  However,
+> > > on a x86_64 system (not sure about power64), int is 32 bits and void*
+> > > is 64.  Therefore; a return of (void*)-1 results in address
+> > > 0xffffffff; not 0xffffffffffffffff.  0xffffffff is right in the middle
+> > > of valid address ranges.
+> >
+> > Urg.  Yes indeed.  The same is true on powerpc64, but userspace is
+> > usually 32-bits on powerpc64 machines; I hadn't tested compiling
+> > 64-bit.  An extra (long) in PTR_ERROR() appears to be enough to fix
+> > it.
+> >
+> > > This, of course, produces the warning: "cast to pointer from integer
+> > > of different size"
+> > >
+> > > I believe the accepted convention (at least in the kernel) is to
+> > > return NULL on error, and libfdt should probably follow that
+> > > convention.
+> >
+> > Actually, there are two conventions in the kernel.  Just returning
+> > NULL on error is the most common.  But there's a significant number of
+> > functions that encode an errno into the returned pointer in just this
+> > way - see the IS_ERR(), PTR_ERR() and ERR_PTR() macros.
 > 
-> Following requests to test the patch under the latest kernel, here
-> it is again, tested for 2.6.19-rc4.  This patch enables applications
-> to exploit the PPC440 TLB support for huge-page mapping, to minimize
-> TLB thrashing.  Applications with large memory footprint that
-> exploit this support, experience minimal TLB misses, and boost in
-> performance.  NAS benchmarks tested with this patch indicate
-> hundreds of percent of improvement in performance.
-
-Ok, I'm still in the process of getting our Ebony set up again so I
-can test this.  In the meantime some observations..
-
-First things first:  your patch has been hopelessly whitespace
-mangled, probably by Notes.  You'll need to resend with a patch-safe
-mailer.
-
-Have you attempted to run the testsuite from libhugetlbfs with this?
-It will require some tweaking, since it's not previously been needed
-on ppc32, but it has testcases for a whole pile of potential kernel
-hugepage bugs.
-
-Also have you looked at how this code compares to the large page
-support on PPC 40x.  40x doesn't support hugetlbfs, but it does have
-about half the necessary bits, since it stores a page size in the PTE
-for implementing large page mapping of the linear mapping.  I'm not
-sure how applicable any of that stuff is to 440.
-
-> Signed-off-by: Edi Shmueli <edi@linux.vnet.ibm.com>
-> -----
+> Ah, okay, I see that code now.
 > 
-> Benchmarks and Implementation comments
-> ======================================
-> Below is the NAS IS benchmark results, executing under Linux, with and
-> without this huge-page mapping support.
-> IS Benchmark           4KB pages             16MB pages
-> =======================================================
->   Class             =   A                     A
->   Size              =   8388608               8388608
->   Iterations        =   10                    10
->   Time in seconds   =   24.44                 6.38
->   Mop/s total       =   3.43                  13.15
->   Operation type    =   keys ranked           keys ranked
->   Verification      =   SUCCESSFUL            SUCCESSFUL
-
-> Implementation details:
-> =======================
-
-> This patch is ppc440 architecture-specific. It enables the use of
-> huge-pages by processes executing under the 2.6.16 kernel on the
-> ppc440 processors.  Huge-pages are accessible to user processes
-> using either the hugetlbfs or using shared memory. See
-> Documentation/vs/hugetlbpage.txt.
-
-> The ppc 32bit kernel uses 64bit PTEs (set by CONFIG_PTE_64BIT).  I
-> exploit a "hole" of 4 unused bits in the PTE MS word (bits 24-27)
-> and code the page size information in those bits.  I then modified
-> the TLB miss handler (head_44x.S) to stop using the constant
-> PPC44x_TLB_4K to set the page size in the TLB.  Instead, when a TLB
-> miss happens, the miss handler reads the size information from the
-> PTE and sets that size in the TLB entry.  This way, different TLB
-> entries get to map different page sizes (e.g., 4KB or 16MB).  The
-> TLB replacement policy remains RR. This means that a huge-page entry
-> in the TLB may be overwritten if not used for a long time, but when
-> accessed it will be set again by the TLB miss handler, with the
-> correct size, as set in the PTE.
-
-> In arch/ppc/mm/hugetlbpage.c is where page table entries are set to
-> map huge pages:
-> By default , each process has two-level page-tables. It has 2048,
-> 32bit PMD (or PGD) entries at the higher-level, each maps 2MB of the
-> process address spase, and 512, 64bit PTE entries in each
-> lower-level page table.  When a TLB miss happens and no PTE is found
-> by the miss handler to offer the translation, a check is made
-> (memory.c) on whether the faulting address belongs to a huge-page VM
-> region.  If so, the code in set_huge_pte_at() will set the required
-> number of PMDs (e.g.,8 PMDs for huge-pages of size 16MB, or 1 PMD
-> for huge-pages of size 2MB or less) to point to the *same*
-> lower-level PTE page table.  Within the lower-level page table, it
-> will set the required number PTEs (e.g., all 512 PTEs for huge-pages
-> larger than 2MB, or 256 PTEs for huge-pages of size 1MB etc.) to
-> point to the *same* physical huge-page frame.  All these PTEs will
-> be *identical* and have the page-size coded in their MS word as
-> described above.
-
-Creating an all-equal PTE page even when using pages of a size greater
-than or equal to that mapped by a single PMD seems very wasteful.
-
-> Once the TLB miss handler copies the mapping (and the size) from the
-> PTE into on of a TLB entry, the process will not suffer any TLB
-> misses for that huge-page.  If the mapping was overwritten by the
-> TLB RR replacement policy, it will be re-loaded again (probably in a
-> different TLB entry) when the process re-access that huge-page.
-
-> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/kernel/head_44x.S my_linux/arch/ppc/kernel/head_44x.S
-> --- linux-2.6.19-rc4-vanilla/arch/ppc/kernel/head_44x.S    2006-11-14 11:16:29.000000000 -0500
-> +++ my_linux/arch/ppc/kernel/head_44x.S    2006-11-14 17:26:13.000000000 -0500
-> @@ -21,12 +21,14 @@
->    *            debbie_chu@mvista.com
->    *    Copyright 2002-2005 MontaVista Software, Inc.
->    *      PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
-> + *    Copyright (C) 2006 Edi Shmueli, IBM Corporation.
-> + *    PowerPC 44x handling of huge-page misses.
->    *
->    * This program is free software; you can redistribute  it and/or modify it
->    * under  the terms of  the GNU General  Public License as published by the
->    * Free Software Foundation;  either version 2 of the  License, or (at your
->    * option) any later version.
-> - */
-> +*/
-
-Please try to avoid extraneous changes in your patch.
-
-[snip]
-
-> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/mm/hugetlbpage.c my_linux/arch/ppc/mm/hugetlbpage.c
-> --- linux-2.6.19-rc4-vanilla/arch/ppc/mm/hugetlbpage.c    1969-12-31 19:00:00.000000000 -0500
-> +++ my_linux/arch/ppc/mm/hugetlbpage.c    2006-11-15
-> 11:44:43.297682864 -0500
-
-Since this patch is 440 specific, and 40x at least could also support
-hugepages, this should probably go in hugetlbpage_44x.c
-
-> @@ -0,0 +1,185 @@
-> +/*
-> + * PPC32 (440) Huge TLB Page Support for Kernel.
-> + *
-> + * Copyright (C) 2006 Edi Shmueli, IBM Corporation.
-> + *
-> + * Based on the IA-32 version:
-> + * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
-> + *
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/fs.h>
-> +#include <linux/mm.h>
-> +#include <linux/hugetlb.h>
-> +#include <linux/pagemap.h>
-> +#include <linux/smp_lock.h>
-> +#include <linux/slab.h>
-> +#include <linux/err.h>
-> +#include <linux/sysctl.h>
-> +#include <asm/mman.h>
-> +#include <asm/tlb.h>
-> +#include <asm/tlbflush.h>
-> +
-> +pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
-> +{
-> +  pgd_t *pgd;
-
-I'm not sure if the bogus indentation here is yours, or the result of
-Notes whitespace mangling.  If the former, please make sure your code
-is formatted as per CodingStyle.
-
-[snip]
-> +    return pte;
-> +}
-> +
-> +#ifdef ARCH_HAS_SETCLEAR_HUGE_PTE
-
-This #ifdef makes no sense here.  You already know that this arch will
-need this code.
-
-> +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
-> pte_t *ptep, pte_t pte){
-
-Open brace on the next line, as per CodingStyle, please.
-
-[snip]
-> +int is_aligned_hugepage_range(unsigned long addr, unsigned long len)
-> +{
-> +  if (len & ~HPAGE_MASK)
-> +    return -EINVAL;
-> +  if (addr & ~HPAGE_MASK)
-> +    return -EINVAL;
-> +  return 0;
-> +}
-
-The is_aligned_hugepage_range() callback was removed quite some time
-ago, please remove.
-
-[snip]
-> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/fs/Kconfig my_linux/fs/Kconfig
-> --- linux-2.6.19-rc4-vanilla/fs/Kconfig    2006-11-14 11:17:37.000000000 -0500
-> +++ my_linux/fs/Kconfig    2006-11-14 17:26:13.000000000 -0500
-> @@ -1008,7 +1008,7 @@ config TMPFS_POSIX_ACL
+> Hmmm....
 > 
->   config HUGETLBFS
->       bool "HugeTLB file system support"
-> -    depends X86 || IA64 || PPC64 || SPARC64 || SUPERH || BROKEN
-> +    depends X86 || IA64 || PPC || PPC64 || SPARC64 || SUPERH || BROKEN
->       help
->         hugetlbfs is a filesystem backing for HugeTLB pages, based on
->         ramfs. For architectures that support it, say Y here and
->   read
+> Gah, this still makes me really nervous.  The hard part will be how to
+> make it *blatently* obvious to users that checking for NULL is *not*
+> sufficient for error checking when using these functions.  Otherwise a
+> very common code defect will be code using just a NULL check before
+> dereferencing the returned pointer.
 
-This needs a test for 44x as well, or this option will be available
-and horribly broken for other ppc32 machines.
+Exactly.  It makes me very nervous, too.
 
-> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/asm-ppc/page.h my_linux/include/asm-ppc/page.h
-> --- linux-2.6.19-rc4-vanilla/include/asm-ppc/page.h    2006-11-14 11:18:00.000000000 -0500
-> +++ my_linux/include/asm-ppc/page.h    2006-11-14 17:26:14.000000000 -0500
-> @@ -7,6 +7,12 @@
->   #define PAGE_SHIFT    12
->   #define PAGE_SIZE    (ASM_CONST(1) << PAGE_SHIFT)
+> > > If you must return the actual error code; maybe rework
+> > > the API to accept a void** argument to be used to pass back the
+> > > pointer and use 'return code', or include an 'int*' argument for
+> > > passing back the err code.
+> >
+> > I thought quite a bit about how to pass back errors here.  I'm not
+> > very fond of the current method of encoding the error codes into the
+> > return values - it's more magic than I'm comfortable with (especially
+> > given the multiple encoding methods for different return types) - but
+> > I haven't thought of a better way.
 > 
-> +#ifdef CONFIG_HUGETLB_PAGE
-> +#define HPAGE_SHIFT     24
-> +#define HPAGE_SIZE      ((1UL) << HPAGE_SHIFT)
-> +#define HPAGE_MASK      (~(HPAGE_SIZE - 1))
-> +#define HUGETLB_PAGE_ORDER      (HPAGE_SHIFT - PAGE_SHIFT)
-> +#endif
->   /*
->    * Subtle: this is an int (not an unsigned long) and so it
->    * gets extended to 64 bits the way want (i.e. with 1s).  -- paulus
-> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/asm-ppc/pgtable.h my_linux/include/asm-ppc/pgtable.h
-> --- linux-2.6.19-rc4-vanilla/include/asm-ppc/pgtable.h    2006-11-14 11:18:00.000000000 -0500
-> +++ my_linux/include/asm-ppc/pgtable.h    2006-11-15 11:40:45.332514013 -0500
-> @@ -263,6 +263,40 @@ extern unsigned long ioremap_bot, iorema
->   #define    _PAGE_NO_CACHE    0x00000400        /* H: I bit */
->   #define    _PAGE_WRITETHRU    0x00000800        /* H: W bit */
+> heh; Isn't beating your head against the limits of a language fun?  I
+> wish I had a better suggestion myself, but I understand your point and
+> the difficulty involved.
 > 
-> +#if   HPAGE_SHIFT == 10 /*Unsupported*/
-> +#define _PAGE_HUGE      0x0000000000000000ULL   /* H: SIZE=1K bytes */
-> +#define _PTE_MASK       0xfffffff8UL
-> +#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 9))
-> +#elif HPAGE_SHIFT == 12
-> +#define _PAGE_HUGE      0x0000001000000000ULL   /* H: SIZE=4K bytes */
-> +#define _PTE_MASK       0xfffffff8UL
-> +#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 9))
+> > Having to use a void ** for the real return value is ugly - and means
+> > you can't stack library calls together (result of one call as
+> > parameter to another call).  Using int * for the error code is also
+> > ugly and all too much encouragement for people not too check it.
+> 
+> Yeah, I agree 100%.
+> 
+> > What I'd really prefer is an errno-style interface, where a separate
+> > variable or call must be consulted to find the details of the error.
+> > But, I can't see any way to do that safely in code that's supposed to
+> > be easy to import into a wide variety of execution environments
+> > (kernel, zImage, bootloader, userspace) - some of which could be
+> > multithreaded.
+> 
+> Unfortunately, there is no simple way to keep around execution
+> context.  newlib uses a scheme where the exec environment has to
+> specifically tell it which thread context to use, but it's a bit ugly
+> in that hooks must be added to the thread scheduler to change the
+> context pointer on every schedule.
 
-Yikes!  Please use computed values here, not this ghastly string of
-#ifdefs.
+Sure, and if I set up something to use the newlib scheme, it would
+break in things using a different approach.
+
+> > Oh incidentally, this isn't true at present, but I'd like to make it
+> > true:  all the library functions should check their parameters so if
+> > they're *given* one of the encoded error values, they'll just
+> > propagate the error out again and won't do anything nasty.  That will
+> > make it safe to nest library calls, even if the inner ones could fail.
+> 
+> good idea
+
+I do have one idea for better error handling: I'd like to put in
+something defined in the the libfdt_env.h (which is designed to be
+replaced when libfdt is compiled in different environments) to report
+an error.  That would be invoked every time a libfdt function exits
+with an error - I would envisage it calling through to a user supplied
+function pointer.
+
+In many practical situations, I think most libfdt errors would be the
+result of something unrecoverable problem (such as a corrupted device
+tree blob), the callback could just print an error (by whatever means
+is appropritate for the environment) and bail out, avoiding the need
+for checking return values.  At least for the "serious" errors
+(BADMAGIC, BADSTRUCTURE and so forth).  NOTFOUND (and maybe TRUNCATED)
+would need to be passed back as a return value still, since that can
+certainly occur in a legitimate test.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
