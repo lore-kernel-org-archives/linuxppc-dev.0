@@ -1,15 +1,18 @@
-Return-Path: <t.denzinger@lesametric.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id B3C9167C6F
+Return-Path: <mgalassi@c-cor.com>
+Received: from penguin.ncube.com (penguin.ncube.com [134.242.67.78])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2BD9467C24
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Dec 2006 03:05:37 +1100 (EST)
-Message-ID: <45744834.8090804@lesametric.de>
-Date: Mon, 04 Dec 2006 17:09:24 +0100
-From: "t.denzinger" <t.denzinger@lesametric.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Updating plb_temac to version 3.00.a on XILINX ml403 board
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue,  5 Dec 2006 04:08:30 +1100 (EST)
+Message-Id: <200612041708.kB4H8OQo059150@penguin.ncube.com>
+To: "t.denzinger" <t.denzinger@lesametric.de>
+Subject: Re: Updating plb_temac to version 3.00.a on XILINX ml403 board 
+In-reply-to: <45744834.8090804@lesametric.de> 
+References: <45744834.8090804@lesametric.de>
+Date: Mon, 04 Dec 2006 09:08:24 -0800
+From: Michael Galassi <mgalassi@c-cor.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,27 +23,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+>I have a plb_temac-design based on XAPP902 demodesign running. It's 
+>based on plb_temac version 2.00.a and hard_temac version 1.00.a.
+>I tried to update to version 3.00 manually, because of incompatibility 
+>for automatic update.
+>Up to now without success.
+>Can somebody help me with a  copy of .mhs and .ucf files, where the 
+>interface to the PHY and the PPC is correct?
 
-I have a plb_temac-design based on XAPP902 demodesign running. It's 
-based on plb_temac version 2.00.a and hard_temac version 1.00.a.
-I tried to update to version 3.00 manually, because of incompatibility 
-for automatic update.
-Up to now without success.
-Can somebody help me with a  copy of .mhs and .ucf files, where the 
-interface to the PHY and the PPC is correct?
+They're largish so I put copies of the ones I used with the ml403 on my
+web server, look for:
 
-best regards
+http://www.xyz.com/system.ucf
+http://www.xyz.com/system.mhs
 
-Thomas
+I didn't clean out other unrelated changes.
 
--- 
-___________________________________________________
-Thomas Denzinger
-LesaMetric GmbH
-Hauptstrasse 46
-D-35649 Bischoffen
-
-Phone:	+49(0)6444/9319-28
-Fax:    +49(0)6444/9319-12
-eMail:	T.Denzinger@LesaMetric.de
+-michael
