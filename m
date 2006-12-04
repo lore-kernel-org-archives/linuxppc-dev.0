@@ -1,21 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9229E67B8F
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 15:42:22 +1100 (EST)
-In-Reply-To: <17779.38056.64501.458056@cargo.ozlabs.ibm.com>
-References: <20061122142020.3e700bac.kim.phillips@freescale.com>
-	<17779.38056.64501.458056@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6E68D133-183F-4BB1-84B7-E0F8664DE24A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add support for FP emulation for the e300c2 core
-Date: Sun, 3 Dec 2006 22:41:56 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id B857067BAB
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 15:53:54 +1100 (EST)
+From: Grant Likely <grant.likely@secretlab.ca>
+To: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-dev@ozlabs.org
+Subject: [LIBFDT] Add cscope target to Makefile
+Date: Sun,  3 Dec 2006 21:53:41 -0700
+Message-Id: <116520802113-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+---
+ Makefile |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-On Dec 3, 2006, at 9:23 PM, Paul Mackerras wrote:
-
-> Kim Phillips writes:
->
->> The e300c2 has no FPU.  Its MSR[FP] is grounded to zero.  If an  
->> attempt
->> is made to execute a floating point instruction (including  
->> floating-point
->> load, store, or move instructions), the e300c2 takes a floating-point
->> unavailable interrupt (IVOR7).
->
-> Can't you just point IVOR7 at the program check handler on these cpus?
-
-No, e300c2 is a 'classic' core not book-e.  It's effectively a 603 w/ 
-o and FPU.  I'll cleanup the commit message in my git tree for you.
-
-- k
+diff --git a/Makefile b/Makefile
+index d464a82..0c3b143 100644
+--- a/Makefile
++++ b/Makefile
+@@ -55,6 +55,9 @@ stress:	all
+ stressv: all
+ 	cd tests; ./run_tests.sh -t stress -v
+ 
++cscope:
++	cscope -b -k *.[ch] tests/*.[ch]
++
+ %.o: %.c
+ 	@$(VECHO) CC $@
+ 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+@@ -73,7 +76,7 @@ libfdt.a: $(LIBOBJS)
+ 
+ clean:
+ 	@$(VECHO) CLEAN
+-	rm -f *~ *.o *.so *.a *.d *.i *.s core a.out $(VERSION)
++	rm -f *~ *.o *.so *.a *.d *.i *.s core a.out cscope.out $(VERSION)
+ 	$(MAKE) -C tests clean
+ 
+ %.d: %.c
+-- 
+1.4.3.rc2.g0503
