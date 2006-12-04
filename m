@@ -1,23 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B16C267C1E
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 07:30:33 +1100 (EST)
-In-Reply-To: <C8D32511-EE52-4745-99C7-30039FA02F21@freescale.com>
-References: <Pine.LNX.4.61.0612011153500.15004@ld0175-tx32.am.freescale.net>
-	<B9050CFE-9237-4024-9B1A-6940339FD0F1@kernel.crashing.org>
-	<C8D32511-EE52-4745-99C7-30039FA02F21@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <57683779-78D8-40EE-B87E-3F829AC39EEE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.20] powerpc: Changed gianfar device tree definition to
-	make it more flexible
-Date: Mon, 4 Dec 2006 14:30:23 -0600
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 5EFD067BED
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 07:53:18 +1100 (EST)
+Date: Mon, 4 Dec 2006 21:53:06 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
+In-Reply-To: <457444E3.7030706@ru.mvista.com>
+Message-ID: <Pine.LNX.4.60.0612042146040.6042@poirot.grange>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+	<4574197A.2020204@ru.mvista.com>
+	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
+	<45741DDE.4080509@ru.mvista.com>
+	<20061204132124.4f7c50a9@localhost.localdomain>
+	<45742253.1000807@ru.mvista.com>
+	<20061204142201.68d9621f@localhost.localdomain>
+	<457431FE.6040702@ru.mvista.com>
+	<20061204144411.246f3700@localhost.localdomain>
+	<45744159.8040301@ru.mvista.com> <457444E3.7030706@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Olaf Hering <olaf@aepfle.de>, linuxppc-dev@ozlabs.org, greg@kroah.com,
+	linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,73 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 4 Dec 2006, Sergei Shtylyov wrote:
 
-On Dec 4, 2006, at 2:08 PM, Andy Fleming wrote:
+> >>>   When Linus remaps IRQ0 on x86, I'll follow that code as a testament. Until 
+> >>>this happens, I consider is just an opinion. Forcing every arch but x86 to 
+> >>>remap IRQ0 is an example of the double standards.
 
->
-> On Dec 1, 2006, at 12:52, Kumar Gala wrote:
->
->> [snip]
->>
->>> +  Optional properties (features):
->>> +    - gigabit : Indicates support for 1000 Mbit operation
->>> +    - coalescing : Indicates support for interrupt coalescing
->>> +    - rmon : Indicates support for RMON-style counters
->>> +    - checksumming : Indicates support for hardware TCP/UDP  
->>> checksumming
->>> +    - vlan-insertion : Indicates support for hardware vlan  
->>> header insertion
->>> +    - extended-hash : Indicates support for using the Individual
->>> +        Address Hash registers to extend the Group Address Hash  
->>> registers
->>> +    - padding : Indicates support for padding between the FCB and
->>> +        the frame
->>> +    - filer : Indicates support for the Filer
->>> +    - parseL2 : Indicates support for parsing L2 headers
->>> +    - parseL3 : Indicates support for parsing L3 headers
->>> +    - parseL4 : Indicates support for parsing L4 headers
->>
->> I'm still think that filer, parseL2, parseL3, parseL4 should be  
->> folded into one attribute. Unless there are plans for version that  
->> only do some subset.
->
-> I was told that it would be good to separate them.  I can pursue  
-> this further, but until there's code that uses these bits, they're  
-> not too important.  Can we let this through, with the proviso that  
-> I'll change it?  I'm more concerned about getting the code in,  
-> right now.
+Can I have a link to that specific answer from Linus, please? Somehow I 
+missed it.
 
-Told by whom?  I'm not in favor of letting this in because its a  
-interface we dont want to be changing.  I can list at all the reasons  
-we dont want to, but I think you get the point.
+>     Although, I'm getting the point -- PCI is likely to return 0 for 
+> unassigned the interrupt line register (this isn't always true though).  So, 
+> some mixup is possible in that regard.  Well, then we're unlucky, and indeed 
+> remapping IRQ0 has sense...
 
->>> +    - multi-queue : Indicates support for sending and receiving
->>
->> We may want to split this into multi-queue = 4 or something to  
->> spec how many.  Also you may want to split this into tx-multi- 
->> queue and rx-multi-queue.  I can for see have non-equal numbers  
->> for them.
->
->
-> Hmm.  Yeah, that makes sense.  My comment from above applies again,  
-> though.  Can we let it through, with the proviso that I will change  
-> it in a forthcoming patch?  There's no code actually *using* these  
-> bits right now, but I need to look into the parse/filer bits, and I  
-> need to think about the multiqueue stuff.
+Strange, if __PCI__ uses 0 for an unassigned IRQ line, I'd say it's 
+_internal_ PCI peculiarity, and should be handled by the PCI code, and not 
+be taken as an enforced definition by all architectures for the whole 
+system.
 
-See my comment about about interfaces.
+Why does one HAVE to remap IRQs if on a specific system it is easy and 
+natural to use 0 as a valid IRQ number?
 
->>> +      into multiple queues
->>> +    - buffer-stashing : Controller can allocate buffers into L2
->>> +    - buffer-locking : Controller can lock buffers into L2
->>> +    - bd-stashing : Controller can allocate descriptors into L2
->>> +    - bd-locking : Controller can lock descriptors into L2
->>> +
->>
->>
->> Also
->
-> On the other hand
->
->
-> Andy
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
