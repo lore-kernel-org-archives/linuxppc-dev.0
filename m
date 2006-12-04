@@ -1,20 +1,21 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id 6C1EC679E9
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 20:21:31 +1100 (EST)
-Date: Mon, 4 Dec 2006 10:21:28 +0100 (MET)
-From: Olaf Hering <olaf@aepfle.de>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pata_sl82c105 can not reserve IO region
-Message-ID: <20061204092127.GA27140@aepfle.de>
-References: <20061130165202.GA23205@aepfle.de>
-	<20061203171216.GB21947@aepfle.de> <20061203222450.GA23765@aepfle.de>
-	<20061203232349.72be01e7@localhost.localdomain>
-	<20061204003048.GA24585@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20061204003048.GA24585@aepfle.de>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 81DBC67A2E
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 20:52:05 +1100 (EST)
+Date: Mon, 4 Dec 2006 10:51:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t
+	in	latency_trace.c (take 3)
+Message-ID: <20061204095131.GE7872@elte.hu>
+References: <200611132252.58818.sshtylyov@ru.mvista.com>
+	<457326A2.2020402@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <457326A2.2020402@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,63 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 04, Olaf Hering wrote:
 
-> On Sun, Dec 03, Alan wrote:
-> 
-> > On Sun, 3 Dec 2006 23:24:49 +0100 (MET)
-> > Olaf Hering <olaf@aepfle.de> wrote:
-> > 
-> > > This change seems to fix it, only a single reset occurs. I think that
-> > > one is normal when a CD is in the drive during bootup, maybe it leaves
-> > > the drive in a confused state.
-> > > 
-> > > @@ -167,9 +175,13 @@ static void sl82c105_reset_engine(struct
-> > >         struct pci_dev *pdev = to_pci_dev(ap->host->dev);
-> > >         u16 val;
-> > > 
-> > > +       udelay(42);
-> > >         pci_read_config_word(pdev, 0x7E, &val);
-> > > +       udelay(10);
-> > >         pci_write_config_word(pdev, 0x7E, val | 4);
-> > > +       udelay(10);
-> > >         pci_write_config_word(pdev, 0x7E, val & ~4);
-> > > +       udelay(42);
-> > >  }
-> > 
-> > Where do you get the delays from ? There is nothing in the documentation
-> > or errata sheets I have here on that subject. Is this guesswork, divine
-> > inspiration or an errata note I don't posess ?
-> 
-> Just guessing.
-> The udelay(10) calls can go, then it still works.
-> I moved the delays to the callers, which should have been equivalent,
-> but it failed again.
+* Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
 
-This patch gives still two resets during the first access, but the
-access works ok afterwards:
+>    What was the destiny of that patch? I haven't seen it accepted, 
+> haven't seen any comments... while this is not a mere warning fix. 
+> What am I expected to do to get it accepted -- recast it against 
+> 2.6.19-rt1?
 
+i'd suggest to redo it - but please keep it simple and clean. Those 
+dozens of casts to u64 are quite ugly. Why is cycles_t 32-bits on some 
+of the arches to begin with?
 
-
-Index: linux-2.6.19/drivers/ata/pata_sl82c105.c
-===================================================================
---- linux-2.6.19.orig/drivers/ata/pata_sl82c105.c
-+++ linux-2.6.19/drivers/ata/pata_sl82c105.c
-@@ -187,7 +187,9 @@ static void sl82c105_bmdma_start(struct 
- {
- 	struct ata_port *ap = qc->ap;
- 
-+	udelay(50);
- 	sl82c105_reset_engine(ap);
-+	udelay(50);
- 
- 	/* Set the clocks for DMA */
- 	sl82c105_configure_dmamode(ap, qc->dev);
-@@ -216,6 +218,7 @@ static void sl82c105_bmdma_stop(struct a
- 
- 	ata_bmdma_stop(qc);
- 	sl82c105_reset_engine(ap);
-+	udelay(50);
- 
- 	/* This will redo the initial setup of the DMA device to matching
- 	   PIO timings */
+	Ingo
