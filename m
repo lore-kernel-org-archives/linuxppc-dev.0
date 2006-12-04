@@ -1,33 +1,20 @@
-Return-Path: <p2@mind.be>
-Received: from outmx005.isp.belgacom.be (outmx005.isp.belgacom.be
-	[195.238.4.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E05FD67B99
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7799D67B5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  3 Dec 2006 09:51:49 +1100 (EST)
-Received: from outmx005.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx005.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kB2MpcND011372
-	for <linuxppc-embedded@ozlabs.org>; Sat, 2 Dec 2006 23:51:38 +0100
-	(envelope-from <p2@mind.be>)
-Received: from ione.intern.mind.be (140.79-246-81.adsl-static.isp.belgacom.be
-	[81.246.79.140])
-	by outmx005.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kB2MpXnY011332
-	for <linuxppc-embedded@ozlabs.org>; Sat, 2 Dec 2006 23:51:33 +0100
-	(envelope-from <p2@mind.be>)
-Received: from eros.intern.mind.be ([10.42.0.56] helo=NAT.office.mind.be)
-	by ione.intern.mind.be with esmtp (Exim 3.35 #1 (Debian))
-	id 1Gqdcj-00071x-00
-	for <linuxppc-embedded@ozlabs.org>; Sat, 02 Dec 2006 22:46:21 +0000
-From: p2@mind.be
-Date: Sat, 2 Dec 2006 23:51:35 +0100
-To: linuxppc-embedded@ozlabs.org
-Subject: CALL FOR PAPERS for the 5th EMBEDDED track at FOSDEM 2007
-Message-ID: <20061202225135.GD5216@eros.intern.mind.be>
+	Mon,  4 Dec 2006 23:09:58 +1100 (EST)
+Subject: Re: Compile Error using SMC1 on a MPC8272 for 2.6.19-rc4
+From: Heiko Schocher <hs@denx.de>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <20061111001527.1274c7f4@localhost.localdomain>
+References: <1163159594.6319.56.camel@Zeus.EmbLux>
+	<20061111001527.1274c7f4@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 04 Dec 2006 13:09:10 +0100
+Message-Id: <1165234150.6011.77.camel@Zeus.EmbLux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,93 +25,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello Vitaly,
 
-CALL FOR PAPERS for the 5th EMBEDDED track at FOSDEM 2007
-=========================================================
+Am Samstag, den 11.11.2006, 00:15 +0300 schrieb Vitaly Bordug:
+> On Fri, 10 Nov 2006 12:53:14 +0100
+> Heiko Schocher wrote:
+> > I tried to compile the Linux Kernel 2.6.19-rc5 with a MPC8272 CPU and
+> > a console on SMC1, and get the following Compile Error:
+> > 
+> >   CC      drivers/serial/cpm_uart/cpm_uart_cpm2.o
+> > drivers/serial/cpm_uart/cpm_uart_cpm2.c: In function
+> > 'cpm_uart_init_portdesc':
+> > drivers/serial/cpm_uart/cpm_uart_cpm2.c:364: warning: assignment makes
+> > integer from pointer without a cast
+> > drivers/serial/cpm_uart/cpm_uart_cpm2.c:368: error: invalid type
+> > argument of 'unary *'
+> > make[3]: *** [drivers/serial/cpm_uart/cpm_uart_cpm2.o] Error 1
+> > make[2]: *** [drivers/serial/cpm_uart] Error 2
+> > make[1]: *** [drivers/serial] Error 2
+> > make: *** [drivers] Error 2
+> > 
+> > The following Code solves the problem:
+> > 
+> > diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> > b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> > index 0599030..bb0a6c1 100644
+> > --- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> > +++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> > @@ -349,7 +349,7 @@ void cpm_uart_freebuf(struct uart_cpm_po
+> >  int cpm_uart_init_portdesc(void)
+> >  {
+> >  #if defined(CONFIG_SERIAL_CPM_SMC1) ||
+> > defined(CONFIG_SERIAL_CPM_SMC2)
+> > -	u32 addr;
+> > +	u32 *addr;
+> >  #endif
+> >  	pr_debug("CPM uart[-]:init portdesc\n");
+> >  
+> Yes, but that is not the only issue. I am working on that.
 
-sat 24 - sun 25 February 2007, Brussels
+Yes, i think so too, because I tried the 2.6.19 Kernel on a board with
+MPC8272, SMC1-2 and SMCC1-4 used as serial port, SMC2 as Console, and
+it dont work ... with a 2.6.14er Kernel it worked ...
 
-Call for papers
-----------------
-
-The 2007 edition of FOSDEM (Free and Open Source Developers' European
-Meeting; http://www.fosdem.org) will take place in Brussels, Belgium 
-on 24 and 25 February 2007. For the fifth time, a track on Embedded 
-Systems and Operating Systems will be organized. The fourth edition 
-was quite succesful and attracted up to 150 attendants for certain
-topics.
-
-For last year's program see:
-http://www.embedded-kernel-track.org/2006/papers.html
-
-The use of Free Software in the infrastructure of Embedded Systems 
-is booming, e.g. by the use of Linux, uClinux, eCos, RedBoot, RTEMS 
-and many other Free Software components. More companies are supporting
-Embedded Free Software every day because of the reliability and cheap
-licensing. This can be confirmed from looking at some high profile
-releases of embedded GNU/Linux systems. Some examples are the Nokia 770,
-some models of Motorola's smartphones and Archos media players. Not to 
-forget the popular TomTom navigation system, the numerous SOHO routers 
-and NAS devices based on linux.
-
-Operating System development has always been a very important topic in
-Free Software.
-As embedded and real-time systems typically have special OS
-requirements, we organise this Free Embedded and OS development track at
-FOSDEM to give people the opportunity to present their (or their teams)
-achievements.
-
-This track at FOSDEM provides a remarkable opportunity to present and
-discuss the ongoing work in these areas, and we invite developers to 
-present their current projects. Technical topics of the conference 
-include but are not limited to :
-
-* OS Development : kernel architecture and implementation, libraries, power 
-   management, TIPC, boot time and memory usage optimizations
-  (e.g. Linux, BSD, uClinux, uClibc, newlib, slob allocator,...)
-
-* Practical experiences in implementing Free Software in embedded
-systems  (e.g. reverse engineering, porting  to (and adapting of)
-commercial devices like the Ipaq, linksys WRT54G, nlsu2 .... )
-
-* Toolchain, performance testing and build environment 
-  (e.g. crosstool, emdebian, openembedded, PTX dist, packaging,
-scratchbox, Eclipse, Valgrind,...)
-
-* GUIs for embedded systems
-  (Gtk, Qt-(embedded), GPE, Qtopia, UI design with touchscreen, 
-   Hildon GUI extensions, OpenMoko, OpenGL ES, ...)
-
-* Multimedia applications for embedded systems
-  (e.g. integer only decoders, Opieplayer, gstreamer... )
-
-* Real-time extensions, nanokernels and hardware virtualization software
-  (e.g. RTAI, Adeos, KURT, L4, Qemu, User Mode Linux, VirtualLogix,
-   high resolution timers, ...)
+I had to change the following Code:
+----------------------------------------------------------------------------
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index bb0a6c1..4ee1bfc 100644
+@@ -349,7 +351,7 @@ void cpm_uart_freebuf(struct uart_cpm_po
+ int cpm_uart_init_portdesc(void)
+ {
+ #if defined(CONFIG_SERIAL_CPM_SMC1) || defined(CONFIG_SERIAL_CPM_SMC2)
+-	u32 *addr;
++	u16 *addr;
+ #endif
+ 	pr_debug("CPM uart[-]:init portdesc\n");
  
-* Hard real-time OS's
-  (eCos, RTEMS, Real Time Linux,...)
+----------------------------------------------------------------------------
 
-* Open hardware, DSP, softcores and general hardware management
-  (e.g opencores.org, OpenRISC, leonSparc, FPGA's, specific design
-restrictions for free systems, DSP, Power management...)
+With this change, Linux comes up, with SMC1-2 and SCC1-4 as serial port,
+and a console on SMC2 :-)
 
-* Safety and security certifications applied to Free software
-   (e.g. security measures in Embedded systems, TPM, SELinux
-    for embedded, TrustZone, ...)
+If I use the Plattform Bus:
+I have also to apply the patch from:
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025101.html
 
-* Tools and techniques for programming multicore systems
+to bring it up working.
 
-* Free software licenses and embedded systems
-
-Authors that wish to present a topic are requested to submit their
-abstracts online to embedded@fosdem.org before 14/01/2007. Notification
-of receipt will be sent within 48 hours. Authors wishing to submit a
-full paper (between 6 and 12 A4 pages), can do so in PS or PDF format.
-
-The Program Committee will evaluate the abstracts and consists of:
-
-* Geert Uytterhoeven, Sony NSCE, Belgium
-* Peter De Schrijver (p2), Essensium, Belgium
-* Philippe De Swert, Nokia (OSSO), Finland
-* Klaas van Gend, MontaVista Software, The Netherlands
+thanks
+Heiko
