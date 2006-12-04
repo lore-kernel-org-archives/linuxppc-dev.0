@@ -1,16 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 4 Dec 2006 10:55:39 +1100
+Date: Mon, 4 Dec 2006 11:03:00 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: libfdt - flat tree manipulation library
-Message-ID: <20061203235539.GA32722@localhost.localdomain>
+Message-ID: <20061204000300.GB32722@localhost.localdomain>
 References: <20061127055905.GA6428@localhost.localdomain>
 	<20061129055904.GA11883@localhost.localdomain>
 	<20061201060038.GA25476@localhost.localdomain>
-	<45702A07.2030303@smiths-aerospace.com>
+	<528646bc0612020041q32e8b1el3e8362f980f8f7b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45702A07.2030303@smiths-aerospace.com>
+In-Reply-To: <528646bc0612020041q32e8b1el3e8362f980f8f7b@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,85 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 01, 2006 at 08:11:35AM -0500, Jerry Van Baren wrote:
-> David Gibson wrote:
+On Sat, Dec 02, 2006 at 01:41:48AM -0700, Grant Likely wrote:
+> On 11/30/06, David Gibson <david@gibson.dropbear.id.au> wrote:
 > > On Wed, Nov 29, 2006 at 04:59:04PM +1100, David Gibson wrote:
-> >> On Mon, Nov 27, 2006 at 04:59:05PM +1100, David Gibson wrote:
-> >> [snip]
-> >>> The code, such as it is, is at:
-> >>> 	git://ozlabs.org/home/dgibson/git/libfdt.git
-> >> Code for writing device trees from scratch, sequentially, is now
-> >> implemented.
-> > 
+> > > On Mon, Nov 27, 2006 at 04:59:05PM +1100, David Gibson wrote:
+> > > [snip]
+> > > > The code, such as it is, is at:
+> > > >     git://ozlabs.org/home/dgibson/git/libfdt.git
+> > >
+> > > Code for writing device trees from scratch, sequentially, is now
+> > > implemented.
+> >
 > > And now support for random access read-write is implemented.  The
 > > library is now close to feature-complete, cleanups and convenience
 > > wrappers remain.
 > 
-> Hi David,
+> I've run into some problems running this on an amd64 host.  There are
+> problems with the byte swapping code where libfdt.h is trying to byte
+> swap the fdt pointer, not the value it points to.
 > 
-> You have not gotten any feedback on your library efforts.  
+> Ie, I think this:
+> #define fdt_magic(fdt)			(fdt32_to_cpu(fdt)->magic)
+> should really be this:
+> #define fdt_magic(fdt)			(fdt32_to_cpu(fdt->magic))
 
-Not until now :).
+Erk!  That's.. highly embarrasing.  I was getting to testing on a
+little endian machine...
 
-> I just 
-> thought I would let you know I am interested in your code for possibly 
-> using it in u-boot.  I have not had time to review it carefully and 
-> compare it to (a) existing u-boot fdt code and (b) current linux fdt 
-> support but intend to do that soon.
+> As is it doesn't compile on amd64 (and probably not x86 either).  I
+> suspect that you want to do your byte swap on the value in the
+> structure field, not on the pointer to the structure.  :)  However,
+> the test cases fail spectacularly when I change the byte swap to be on
+> the value in the structure.  If I comment out the byte swap entirely
+> in libfdt_env.h; then the test cases unexpectedly pass!  So I did some
+> digging.  The test cases are generating little-endian device trees;
+> looks like test/trees.S is at fault.  I would say that a different
+> mechanism is needed to generate the .dtb files.
 
-Excellent.
+Oh, crud.  Yes of course.
 
-> The existing u-boot fdt code is pretty crude (IMHO - makes (a) above a 
-> nobrainer) and could bear replacing with something that has more 
-> widespread support and is more flexible.  Easier to use would be a big 
-> bonus. :-)
-> 
-> Size looks pretty comparable.
-> $ wc -l libfdt/*.c
->    124 fdt.c
->    237 fdt_ro.c
->    310 fdt_rw.c
->    226 fdt_sw.c
->    115 fdt_wip.c
->   1012 total
-> 
-> $ wc -l arch/powerpc/boot/flatdevtree*.c
->    880 flatdevtree.c
->     51 flatdevtree_misc.c
->    931 total
-> 
-> For u-boot purposes, I would like to create a command that can dump a 
-> fdt starting at a give node (a string, e.g. "/" for the whole thing, 
-> "/cpus" for the entire CPU node and subnodes, or "/cpus/#cpus" to get 
-> just one property).  I don't see a way of doing that directly with your 
-> current interface.  Am I missing something or would I have to add 
-> something?  The kernel doesn't need to support interactive fdt 
-> manipulation, but that would be very beneficial for a bootrom like 
-> u-boot.  (FWIIW, I've done a "prototype" ;-) version of this command 
-> with the existing u-boot code.)
+> For example; here's the first 16 bytes of my lite5200 device tree:
+> 00000000  d0 0d fe ed 00 00 15 b7  00 00 00 38 00 00 14 5c  |...........8...\|
+> Here's the first 16 bytes of tests/rw_tree1.test.dtb; clearly wrong endian!
+> 00000000  ed fe 0d d0 1a 01 00 00  40 00 00 00 08 01 00 00  |........@.......|
 
-You're right: there's no support for traversing a tree - it's all
-based on knowing the names in advance, so far.  Well, except for the
-_fdt_next_tag() function which is only really intended for internal
-use.  I'd been vaguely intending to add another module with traversal
-support functions.
+Um.. yes.. but in the case if rw_tree1 this is because you commented
+out the byteswaps - this one is generated by the code in fdt_rw.c.
+test_tree1.dtb is the only one from trees.S
 
-What interface would suit for you?  Would
-first_subnode()/next_subnode(), first_property()/next_property() be
-what you want?  Or would a depth first approach, something like
-_fdt_next_tag() be better?  Or an explicit walk_tree() interface, with
-a function pointer callbacks?
+> Anyway; I'll send a patch to fix up part of the byte swapping code;
+> but I haven't looked into other ways of creating the .dtb files.
 
-> If the linux kernel were to adopt your library, how do you envision this 
-> happening?  Replace the existing code with wrappers (your "convenience 
-> wrappers"?) to provide a backwards compatible interface (looks nasty and 
-> negates your simplification advantages) or rip out 'n replace?
-
-Rip out and replace.  Or possibly, make the PReP code in the pipeline
-use the new code.  Then a bit later rip out the flatdevtree code.
-Because of the existing dt_ops abstraction in the zImage code, the two
-flat tree libraries could co-exist, though I think more than very
-briefly would not be a great idea.
+Um.. yes.  I really don't want to have to fuss with hex editors and
+including binary files in the distribution.  Ah, but I think I have
+the solution, I can make a macro using .byte directives to explicitly
+output things with the correct endianness.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
