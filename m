@@ -1,17 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 4 Dec 2006 11:03:00 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: libfdt - flat tree manipulation library
-Message-ID: <20061204000300.GB32722@localhost.localdomain>
-References: <20061127055905.GA6428@localhost.localdomain>
-	<20061129055904.GA11883@localhost.localdomain>
-	<20061201060038.GA25476@localhost.localdomain>
-	<528646bc0612020041q32e8b1el3e8362f980f8f7b@mail.gmail.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id C11FC67BC8
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 11:30:49 +1100 (EST)
+Date: Mon, 4 Dec 2006 01:30:47 +0100 (MET)
+From: Olaf Hering <olaf@aepfle.de>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: pata_sl82c105 can not reserve IO region
+Message-ID: <20061204003048.GA24585@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061203171216.GB21947@aepfle.de> <20061203222450.GA23765@aepfle.de>
+	<20061203232349.72be01e7@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc0612020041q32e8b1el3e8362f980f8f7b@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061203232349.72be01e7@localhost.localdomain>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,64 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 02, 2006 at 01:41:48AM -0700, Grant Likely wrote:
-> On 11/30/06, David Gibson <david@gibson.dropbear.id.au> wrote:
-> > On Wed, Nov 29, 2006 at 04:59:04PM +1100, David Gibson wrote:
-> > > On Mon, Nov 27, 2006 at 04:59:05PM +1100, David Gibson wrote:
-> > > [snip]
-> > > > The code, such as it is, is at:
-> > > >     git://ozlabs.org/home/dgibson/git/libfdt.git
-> > >
-> > > Code for writing device trees from scratch, sequentially, is now
-> > > implemented.
-> >
-> > And now support for random access read-write is implemented.  The
-> > library is now close to feature-complete, cleanups and convenience
-> > wrappers remain.
+On Sun, Dec 03, Alan wrote:
+
+> On Sun, 3 Dec 2006 23:24:49 +0100 (MET)
+> Olaf Hering <olaf@aepfle.de> wrote:
 > 
-> I've run into some problems running this on an amd64 host.  There are
-> problems with the byte swapping code where libfdt.h is trying to byte
-> swap the fdt pointer, not the value it points to.
+> > This change seems to fix it, only a single reset occurs. I think that
+> > one is normal when a CD is in the drive during bootup, maybe it leaves
+> > the drive in a confused state.
+> > 
+> > @@ -167,9 +175,13 @@ static void sl82c105_reset_engine(struct
+> >         struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+> >         u16 val;
+> > 
+> > +       udelay(42);
+> >         pci_read_config_word(pdev, 0x7E, &val);
+> > +       udelay(10);
+> >         pci_write_config_word(pdev, 0x7E, val | 4);
+> > +       udelay(10);
+> >         pci_write_config_word(pdev, 0x7E, val & ~4);
+> > +       udelay(42);
+> >  }
 > 
-> Ie, I think this:
-> #define fdt_magic(fdt)			(fdt32_to_cpu(fdt)->magic)
-> should really be this:
-> #define fdt_magic(fdt)			(fdt32_to_cpu(fdt->magic))
+> Where do you get the delays from ? There is nothing in the documentation
+> or errata sheets I have here on that subject. Is this guesswork, divine
+> inspiration or an errata note I don't posess ?
 
-Erk!  That's.. highly embarrasing.  I was getting to testing on a
-little endian machine...
-
-> As is it doesn't compile on amd64 (and probably not x86 either).  I
-> suspect that you want to do your byte swap on the value in the
-> structure field, not on the pointer to the structure.  :)  However,
-> the test cases fail spectacularly when I change the byte swap to be on
-> the value in the structure.  If I comment out the byte swap entirely
-> in libfdt_env.h; then the test cases unexpectedly pass!  So I did some
-> digging.  The test cases are generating little-endian device trees;
-> looks like test/trees.S is at fault.  I would say that a different
-> mechanism is needed to generate the .dtb files.
-
-Oh, crud.  Yes of course.
-
-> For example; here's the first 16 bytes of my lite5200 device tree:
-> 00000000  d0 0d fe ed 00 00 15 b7  00 00 00 38 00 00 14 5c  |...........8...\|
-> Here's the first 16 bytes of tests/rw_tree1.test.dtb; clearly wrong endian!
-> 00000000  ed fe 0d d0 1a 01 00 00  40 00 00 00 08 01 00 00  |........@.......|
-
-Um.. yes.. but in the case if rw_tree1 this is because you commented
-out the byteswaps - this one is generated by the code in fdt_rw.c.
-test_tree1.dtb is the only one from trees.S
-
-> Anyway; I'll send a patch to fix up part of the byte swapping code;
-> but I haven't looked into other ways of creating the .dtb files.
-
-Um.. yes.  I really don't want to have to fuss with hex editors and
-including binary files in the distribution.  Ah, but I think I have
-the solution, I can make a macro using .byte directives to explicitly
-output things with the correct endianness.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Just guessing.
+The udelay(10) calls can go, then it still works.
+I moved the delays to the callers, which should have been equivalent,
+but it failed again.
