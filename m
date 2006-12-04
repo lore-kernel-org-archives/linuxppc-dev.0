@@ -1,19 +1,25 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 2F93867C9E
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 00:26:14 +1100 (EST)
-Message-ID: <45742253.1000807@ru.mvista.com>
-Date: Mon, 04 Dec 2006 16:27:47 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
-References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>	<4574197A.2020204@ru.mvista.com>	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>	<45741DDE.4080509@ru.mvista.com>
-	<20061204132124.4f7c50a9@localhost.localdomain>
-In-Reply-To: <20061204132124.4f7c50a9@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <adrian@humboldt.co.uk>
+Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3FC9F67B5F
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 00:43:31 +1100 (EST)
+Subject: Re: Worst case performance of up()
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1165092773.22108.47.camel@localhost.localdomain>
+References: <1164385262.11292.76.camel@localhost.localdomain>
+	<1164401124.5653.86.camel@localhost.localdomain>
+	<1164661336.11001.9.camel@localhost.localdomain>
+	<1165055754.4380.15.camel@localhost.localdomain>
+	<1165058151.22108.31.camel@localhost.localdomain>
+	<1165060484.4380.18.camel@localhost.localdomain>
+	<1165092773.22108.47.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 04 Dec 2006 13:43:14 +0000
+Message-Id: <1165239794.17906.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Sun, 2006-12-03 at 07:52 +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2006-12-02 at 11:54 +0000, Adrian Cox wrote:
+> > On Sat, 2006-12-02 at 22:15 +1100, Benjamin Herrenschmidt wrote:
+> > > I think we are hitting a livelock due to both CPUs trying to perform an
+> > > atomic operation on the same cache line (or same variable even).
+> > 
+> > I agree.
 
-Alan wrote:
+I now have this one identified and fixed. The cure is actually simple:
+on 32-bit SMP machines, rather than setting powersave_nap to 0, set
+ppc_md.power_save to NULL.
 
->>>>W82C105_IDE: inconsistent baseregs (BIOS) for port 0, skipping
+CPU A is attempting to reschedule the idle thread on CPU B:
+set_tsk_thread_flag(p, TIF_NEED_RESCHED);
 
->>>So that needs fixing too, then.
+CPU B is in the idle loop, but does not support nap. The result is that
+ppc6xx_idle() returns immediately, and CPU B runs in a tight loop:
+while(...) {
+	set_thread_flag(TIF_POLLING_NRFLAG);
+	...
+	clear_thread_flag(TIF_POLLING_NRFLAG);
+}
 
-> Both PCI core and IDE interpret a zero length resource as unassigned.
+If ppc_md.power_save is NULL, then the idle loop does not touch the flag
+word of the idle thread, and everything works.
 
-   This is not about 0-length resource, this is about 0-address. Look at 
-ide_hwif_confiure() in drivers/ide/setup-pci.c...
-
-> That is probably better than clearing the flags in retrospect.
-
->>    I'd agree here, that check in the IDE code seems like being too x86 
->>specific. I'm having issues with it as well on MPC85xx/U-Boot...
-
-> setup-pci is for SFF8038i devices. It therefore knows that for assigned
-> resources they must be I/O. It also assumes that zero is not a valid I/O
-> port just like zero is not a valid IRQ.
-
-    You should know that the IRQ assumption is *not* true even for x86 since 
-IRQ0 is and has always been a perfectly valid IRQ (used by PIT).
-
-> Stick a real IDE resource at zero
- > and drivers/ide can't cope.
-
-    Yeah, I've noticed. Unfortunately, a lot of PPC platforms (at least) are 
-doing exactly this...
-
-> Alan
-
-WBR, Sergei
+-- 
+Adrian Cox <adrian@humboldt.co.uk>
