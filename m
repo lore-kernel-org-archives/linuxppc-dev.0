@@ -1,16 +1,19 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45744079.40600@us.ibm.com>
-Date: Mon, 04 Dec 2006 09:36:25 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 5936267BBD
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 02:38:49 +1100 (EST)
+Message-ID: <45744159.8040301@ru.mvista.com>
+Date: Mon, 04 Dec 2006 18:40:09 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [PATCH]Add notification for active Cell SPU tasks
-References: <45708A0B.6000106@us.ibm.com> <200612022100.20609.arnd@arndb.de>
-In-Reply-To: <200612022100.20609.arnd@arndb.de>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
+References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>	<4574197A.2020204@ru.mvista.com>	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>	<45741DDE.4080509@ru.mvista.com>	<20061204132124.4f7c50a9@localhost.localdomain>	<45742253.1000807@ru.mvista.com>	<20061204142201.68d9621f@localhost.localdomain>	<457431FE.6040702@ru.mvista.com>
+	<20061204144411.246f3700@localhost.localdomain>
+In-Reply-To: <20061204144411.246f3700@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Reply-To: maynardj@us.ibm.com
+Cc: Olaf Hering <olaf@aepfle.de>, linuxppc-dev@ozlabs.org, greg@kroah.com,
+	linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Friday 01 December 2006 21:01, Maynard Johnson wrote:
-> 
->>+static void notify_spus_active(void)
->>+{
->>+       int node;
->>+       for (node = 0; node < MAX_NUMNODES; node++) {
->>+               struct spu *spu;
->>+               mutex_lock(&spu_prio->active_mutex[node]);
->>+               list_for_each_entry(spu, &spu_prio->active_list[node], list) {
->>+                                struct spu_context *ctx = spu->ctx;
->>+                                blocking_notifier_call_chain(&spu_switch_notifier,
->>+                                                ctx ? ctx->object_id : 0, spu);
->>+               }
->>+               mutex_unlock(&spu_prio->active_mutex[node]);
->>+        }
-> 
-> 
-> I wonder if this is enough for oprofile. Don't you need to access user
-> space data of the task running on the SPU? I always assumed you want
-No, I don't need anything from the user app besides access to the 
-executable binary, which I get with copy_from_user, specifying the 
-'objectid' as from address.
-> to do it via get_user or copy_from_user, which obviously doesn't work
-> here, when you're running in the oprofile task. Are you using something
-> like access_process_vm now?
-> 
-> 	Arnd <><
+Hello.
+
+Alan wrote:
+
+>>    When Linus remaps IRQ0 on x86, I'll follow that code as a testament. Until 
+>>this happens, I consider is just an opinion. Forcing every arch but x86 to 
+>>remap IRQ0 is an example of the double standards.
+
+> Yawn.. x86 does not expose IRQ 0 outside of arch specific code.
+
+    Can you believe, some non-x86 platofrms also don't -- for example, IRQ0 
+may be internal to SOC, not shareable or routable outside of it, BUT the SOC 
+device is driven by the standard driver (I'm minding 8250.c here). Yet we're 
+told that we should remap it, period...
+
+>>>The checks need pushing upwards and removing from their current place -
+>>>the pci layer should check the resource length, the isa pnp should I
+>>>believe check for zero address etc.
+
+>>    So, it's OK to remove the base *address* check in ide_hwif_confiure() 
+>>altogether?
+
+> IFF you move all the other checks, verify their correctness and then get
+> them tested for a while yes
+
+    All other checks aren't hindering (at least me ATM).  What's probably 
+worth doing is to check the result of ide_pci_check_iomem() some lines above 
+the discussed check (it's ignored now).
+
+WBR, Sergei
