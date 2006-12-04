@@ -1,20 +1,20 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 78BB367C47
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 02:53:44 +1100 (EST)
-Message-ID: <457444E3.7030706@ru.mvista.com>
-Date: Mon, 04 Dec 2006 18:55:15 +0300
+	by ozlabs.org (Postfix) with ESMTP id 3196F67BE1
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 03:19:35 +1100 (EST)
+Message-ID: <45744AF5.2040508@ru.mvista.com>
+Date: Mon, 04 Dec 2006 19:21:09 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
-References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>	<4574197A.2020204@ru.mvista.com>	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>	<45741DDE.4080509@ru.mvista.com>	<20061204132124.4f7c50a9@localhost.localdomain>	<45742253.1000807@ru.mvista.com>	<20061204142201.68d9621f@localhost.localdomain>	<457431FE.6040702@ru.mvista.com>	<20061204144411.246f3700@localhost.localdomain>
-	<45744159.8040301@ru.mvista.com>
-In-Reply-To: <45744159.8040301@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t
+	in	latency_trace.c (take 3)
+References: <200611132252.58818.sshtylyov@ru.mvista.com>
+	<457326A2.2020402@ru.mvista.com> <20061204095131.GE7872@elte.hu>
+	<4574149B.5070602@ru.mvista.com> <20061204153949.GA9350@elte.hu>
+In-Reply-To: <20061204153949.GA9350@elte.hu>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Olaf Hering <olaf@aepfle.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-	greg@kroah.com
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +26,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello.
 
-Sergei Shtylyov wrote:
+Ingo Molnar wrote:
 
->>>   When Linus remaps IRQ0 on x86, I'll follow that code as a testament. Until 
->>>this happens, I consider is just an opinion. Forcing every arch but x86 to 
->>>remap IRQ0 is an example of the double standards.
+>>>i'd suggest to redo it - but please keep it simple and clean. Those 
+>>>dozens of casts to u64 are quite ugly.
 
->>Yawn.. x86 does not expose IRQ 0 outside of arch specific code.
+>>   Alas, there's *nothing* I can do about it with 32-bit cycles_t. 
+>>[...]
 
->     Can you believe, some non-x86 platofrms also don't -- for example, IRQ0 
-> may be internal to SOC, not shareable or routable outside of it, BUT the SOC 
-> device is driven by the standard driver (I'm minding 8250.c here). Yet we're 
-> told that we should remap it, period...
+> there's *always* a way to do such things more cleanly - such as the 
+> patch below. Could you try to fix it up for 32-bit cycles_t platforms? I 
+> bet the hackery will be limited to now() and maybe the conversion 
+> routines, instead of spreading all around latency_trace.c.
 
->>>>The checks need pushing upwards and removing from their current place -
->>>>the pci layer should check the resource length, the isa pnp should I
->>>>believe check for zero address etc.
+    I'm not sure what you want me to do... You've switched to clocksource 
+specific cycle_t (which is u64), do you want me to use the clocksource 
+interface to get the cycles from now on?
 
-    Although, I'm getting the point -- PCI is likely to return 0 for 
-unassigned the interrupt line register (this isn't always true though).  So, 
-some mixup is possible in that regard.  Well, then we're unlucky, and indeed 
-remapping IRQ0 has sense...
+> Index: linux/kernel/latency_trace.c
+> ===================================================================
+> --- linux.orig/kernel/latency_trace.c
+> +++ linux/kernel/latency_trace.c
+[...]
+> @@ -1721,7 +1722,7 @@ check_critical_timing(int cpu, struct cp
+>  	T2 = get_monotonic_cycles();
+>  
+>  	/* check for buggy clocks, handling wrap for 32-bit clocks */
+> -	if (TYPE_EQUAL(cycles_t, unsigned long)) {
+> +	if (TYPE_EQUAL(cycle_t, unsigned long)) {
+>  		if (time_after((unsigned long)T1, (unsigned long)T2))
+>  			printk("bug: %08lx < %08lx!\n",
+>  				(unsigned long)T2, (unsigned long)T1);
+
+    This earlier fix by Kevin woulnd't have sense anymore with cycle_t...
 
 WBR, Sergei
