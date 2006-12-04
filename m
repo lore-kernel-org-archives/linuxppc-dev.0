@@ -1,16 +1,22 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id 4239667BB4
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 23:40:27 +1100 (EST)
-Date: Mon, 4 Dec 2006 13:40:26 +0100 (MET)
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] add delay around sl82c105_reset_engine calls
-Message-ID: <20061204124026.GB28159@aepfle.de>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8178467BCD
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 23:44:15 +1100 (EST)
+In-Reply-To: <20061204123854.GA28159@aepfle.de>
 References: <20061130165202.GA23205@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
+Date: Mon, 4 Dec 2006 13:44:03 +0100
+To: Olaf Hering <olaf@aepfle.de>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -1234,6 +1234,14 @@ static void __devinit fixup_resource(str
+>  	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+>  	unsigned long start, end, mask, offset;
+>
+> +	/*
+> +	 * tell the core code that this ressource is unassigned
+> +	 * fixes p630 winbond IDE with libata
+> +	 */
+> +	if (res->start == 0) {
+> +		res->flags = 0;
+> +		return;
+> +	}
+>  	if (res->flags & IORESOURCE_IO) {
+>  		offset = (unsigned long)hose->io_base_virt - pci_io_base;
+
+Please make this run on pSeries only; on a PowerMac for
+example, it's totally normal that the first PCI legacy I/O
+BAR in the system gets assigned 0.
 
 
-the hald media changed polling does really confuse things.
-noone knows why the delays are needed, but they give us access to
-the CD.
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- drivers/scsi/pata_sl82c105.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- a/drivers/scsi/pata_sl82c105.c
-+++ b/drivers/scsi/pata_sl82c105.c
-@@ -187,7 +187,9 @@ static void sl82c105_bmdma_start(struct 
- {
- 	struct ata_port *ap = qc->ap;
- 
-+	udelay(50);
- 	sl82c105_reset_engine(ap);
-+	udelay(50);
- 
- 	/* Set the clocks for DMA */
- 	sl82c105_configure_dmamode(ap, qc->dev);
-@@ -216,6 +218,7 @@ static void sl82c105_bmdma_stop(struct a
- 
- 	ata_bmdma_stop(qc);
- 	sl82c105_reset_engine(ap);
-+	udelay(50);
- 
- 	/* This will redo the initial setup of the DMA device to matching
- 	   PIO timings */
+Segher
