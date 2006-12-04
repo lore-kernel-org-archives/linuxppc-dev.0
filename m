@@ -1,22 +1,31 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1EF767BC8
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 02:40:25 +1100 (EST)
-Date: Mon, 4 Dec 2006 16:39:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] 2.6.18-rt7: fix more issues with 32-bit cycles_t
-	in	latency_trace.c (take 3)
-Message-ID: <20061204153949.GA9350@elte.hu>
-References: <200611132252.58818.sshtylyov@ru.mvista.com>
-	<457326A2.2020402@ru.mvista.com> <20061204095131.GE7872@elte.hu>
-	<4574149B.5070602@ru.mvista.com>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DFD6667C26
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 02:49:23 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB4Fn3TF001650
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Dec 2006 10:49:03 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB4Fn3Vu304686
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Dec 2006 10:49:03 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB4Fn37U021315
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Dec 2006 10:49:03 -0500
+Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+In-Reply-To: <45707469.9060604@austin.ibm.com>
+References: <45707469.9060604@austin.ibm.com>
+Content-Type: text/plain
+Date: Mon, 04 Dec 2006 09:48:58 -0600
+Message-Id: <1165247338.18104.21.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4574149B.5070602@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,228 +35,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
-
-> >i'd suggest to redo it - but please keep it simple and clean. Those 
-> >dozens of casts to u64 are quite ugly.
+On Fri, 2006-01-12 at 12:28 -0600, Manish Ahuja wrote:
+> During power outages, the ups notifies the system for a shutdown. In the
+> current setup, it isn't possible to poweron when power is restored. This
+> patch fixes the issue by calling the right ibm,power-off-ups token
+> during such events. It also adds a proc interface so that rc.powerfail
+> can parse the epow events and modify the power-off behavior accordingly
+> to enable the right token to be called.
 > 
->    Alas, there's *nothing* I can do about it with 32-bit cycles_t. 
-> [...]
+> Signed-off-by: Manish Ahuja <ahuja@austin.ibm.com>
+> 
 
-there's *always* a way to do such things more cleanly - such as the 
-patch below. Could you try to fix it up for 32-bit cycles_t platforms? I 
-bet the hackery will be limited to now() and maybe the conversion 
-routines, instead of spreading all around latency_trace.c.
 
-	Ingo
+> plain text document attachment (power-off-ups.patch)
+> Index: 2.6-git2/arch/powerpc/kernel/rtas.c
+> ===================================================================
+> --- 2.6-git2.orig/arch/powerpc/kernel/rtas.c	2006-11-29 12:00:26.000000000 -0800
+> +++ 2.6-git2/arch/powerpc/kernel/rtas.c	2006-11-30 10:56:12.000000000 -0800
+> @@ -603,11 +603,30 @@
+> 
+>  void rtas_power_off(void)
+>  {
+> +	int rc = 0;
+> +	int rtas_poweron_auto_token;
+> +
+>  	if (rtas_flash_term_hook)
+>  		rtas_flash_term_hook(SYS_POWER_OFF);
+> -	/* allow power on only with power button press */
+> -	printk("RTAS power-off returned %d\n",
+> -	       rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1));
+> +
+> +	if (rtas_poweron_auto == 0) {
+> +		/* allow power on only with power button press */
 
-Index: linux/kernel/latency_trace.c
-===================================================================
---- linux.orig/kernel/latency_trace.c
-+++ linux/kernel/latency_trace.c
-@@ -18,6 +18,7 @@
- #include <linux/kallsyms.h>
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
-+#include <linux/clocksource.h>
- #include <linux/proc_fs.h>
- #include <linux/latency_hist.h>
- #include <linux/utsrelease.h>
-@@ -43,7 +44,7 @@ int trace_use_raw_cycles = 1;
-  * points, but the trace entries inbetween are timestamped with
-  * get_cycles().
-  */
--static unsigned long notrace cycles_to_us(cycles_t delta)
-+static unsigned long notrace cycles_to_us(cycle_t delta)
- {
- 	if (!trace_use_raw_cycles)
- 		return cycles_to_usecs(delta);
-@@ -60,7 +61,7 @@ static unsigned long notrace cycles_to_u
- 	return (unsigned long) delta;
- }
- 
--static notrace inline cycles_t now(void)
-+static notrace inline cycle_t now(void)
- {
- 	if (trace_use_raw_cycles)
- 		return get_cycles();
-@@ -150,17 +151,17 @@ enum trace_flag_type
-  * we clear it after bootup.
-  */
- #ifdef CONFIG_LATENCY_HIST
--static cycles_t preempt_max_latency = (cycles_t)0UL;
-+static cycle_t preempt_max_latency = (cycle_t)0UL;
- #else
--static cycles_t preempt_max_latency = (cycles_t)ULONG_MAX;
-+static cycle_t preempt_max_latency = (cycle_t)ULONG_MAX;
- #endif
- 
--static cycles_t preempt_thresh;
-+static cycle_t preempt_thresh;
- 
- /*
-  * Should this new latency be reported/recorded?
-  */
--static int report_latency(cycles_t delta)
-+static int report_latency(cycle_t delta)
- {
- 	if (latency_hist_flag && !trace_user_triggered)
- 		return 1;
-@@ -193,7 +194,7 @@ struct trace_entry {
- 	char flags;
- 	char preempt_count; // assumes PREEMPT_MASK is 8 bits or less
- 	int pid;
--	cycles_t timestamp;
-+	cycle_t timestamp;
- 	union {
- 		struct {
- 			unsigned long eip;
-@@ -224,7 +225,7 @@ struct trace_entry {
- struct cpu_trace {
- 	atomic_t disabled;
- 	unsigned long trace_idx;
--	cycles_t preempt_timestamp;
-+	cycle_t preempt_timestamp;
- 	unsigned long critical_start, critical_end;
- 	unsigned long critical_sequence;
- 	atomic_t overrun;
-@@ -274,7 +275,7 @@ int trace_user_trigger_irq = -1;
- 
- struct saved_trace_struct {
- 	int cpu;
--	cycles_t first_timestamp, last_timestamp;
-+	cycle_t first_timestamp, last_timestamp;
- 	struct cpu_trace traces[NR_CPUS];
- } ____cacheline_aligned_in_smp;
- 
-@@ -586,7 +587,7 @@ ____trace(int cpu, enum trace_type type,
- {
- 	struct trace_entry *entry;
- 	unsigned long idx, idx_next;
--	cycles_t timestamp;
-+	cycle_t timestamp;
- 	u32 pc;
- 
- #ifdef CONFIG_DEBUG_PREEMPT
-@@ -972,7 +973,7 @@ struct block_idx {
-  */
- static int min_idx(struct block_idx *bidx)
- {
--	cycles_t min_stamp = (cycles_t) -1;
-+	cycle_t min_stamp = (cycle_t) -1;
- 	struct trace_entry *entry;
- 	int cpu, min_cpu = -1, idx;
- 
-@@ -1006,7 +1007,7 @@ static int min_idx(struct block_idx *bid
- static void update_out_trace(void)
- {
- 	struct trace_entry *out_entry, *entry, *tmp;
--	cycles_t stamp, first_stamp, last_stamp;
-+	cycle_t stamp, first_stamp, last_stamp;
- 	struct block_idx bidx = { { 0, }, };
- 	struct cpu_trace *tmp_max, *tmp_out;
- 	int cpu, sum, entries, overrun_sum;
-@@ -1694,7 +1695,7 @@ static void notrace
- check_critical_timing(int cpu, struct cpu_trace *tr, unsigned long parent_eip)
- {
- 	unsigned long latency, t0, t1;
--	cycles_t T0, T1, T2, delta;
-+	cycle_t T0, T1, T2, delta;
- 	unsigned long flags;
- 
- 	if (trace_user_triggered)
-@@ -1721,7 +1722,7 @@ check_critical_timing(int cpu, struct cp
- 	T2 = get_monotonic_cycles();
- 
- 	/* check for buggy clocks, handling wrap for 32-bit clocks */
--	if (TYPE_EQUAL(cycles_t, unsigned long)) {
-+	if (TYPE_EQUAL(cycle_t, unsigned long)) {
- 		if (time_after((unsigned long)T1, (unsigned long)T2))
- 			printk("bug: %08lx < %08lx!\n",
- 				(unsigned long)T2, (unsigned long)T1);
-@@ -2100,7 +2101,7 @@ check_wakeup_timing(struct cpu_trace *tr
- {
- 	int cpu = raw_smp_processor_id();
- 	unsigned long latency, t0, t1;
--	cycles_t T0, T1, delta;
-+	cycle_t T0, T1, delta;
- 
- 	if (trace_user_triggered)
- 		return;
-@@ -2293,7 +2294,7 @@ long user_trace_start(void)
- 	 * bootup then we assume that this was the intention
- 	 * (we wont get any tracing done otherwise):
- 	 */
--	if (preempt_max_latency == (cycles_t)ULONG_MAX)
-+	if (preempt_max_latency == (cycle_t)ULONG_MAX)
- 		preempt_max_latency = 0;
- 
- 	/*
-@@ -2343,7 +2344,7 @@ long user_trace_stop(void)
- {
- 	unsigned long latency, flags;
- 	struct cpu_trace *tr;
--	cycles_t delta;
-+	cycle_t delta;
- 
- 	if (!trace_user_triggered || trace_print_at_crash || print_functions)
- 		return -EINVAL;
-@@ -2371,7 +2372,7 @@ long user_trace_stop(void)
- 
- 	atomic_inc(&tr->disabled);
- 	if (tr->preempt_timestamp) {
--		cycles_t T0, T1;
-+		cycle_t T0, T1;
- 		unsigned long long tmp0;
- 
- 		T0 = tr->preempt_timestamp;
-@@ -2633,7 +2634,7 @@ void print_traces(struct task_struct *ta
- static int preempt_read_proc(char *page, char **start, off_t off,
- 			     int count, int *eof, void *data)
- {
--	cycles_t *max = data;
-+	cycle_t *max = data;
- 
- 	return sprintf(page, "%ld\n", cycles_to_usecs(*max));
- }
-@@ -2642,7 +2643,7 @@ static int preempt_write_proc(struct fil
- 			      unsigned long count, void *data)
- {
- 	unsigned int c, done = 0, val, sum = 0;
--	cycles_t *max = data;
-+	cycle_t *max = data;
- 
- 	while (count) {
- 		if (get_user(c, buffer))
-Index: linux/kernel/timer.c
-===================================================================
---- linux.orig/kernel/timer.c
-+++ linux/kernel/timer.c
-@@ -889,7 +889,7 @@ static inline s64 __get_nsec_offset(void
- 	return ns_offset;
- }
- 
--cycles_t notrace get_monotonic_cycles(void)
-+cycle_t notrace get_monotonic_cycles(void)
- {
- 	cycle_t cycle_now, cycle_delta;
- 
-@@ -902,7 +902,7 @@ cycles_t notrace get_monotonic_cycles(vo
- 	return clock->cycle_last + cycle_delta;
- }
- 
--unsigned long notrace cycles_to_usecs(cycles_t cycles)
-+unsigned long notrace cycles_to_usecs(cycle_t cycles)
- {
- 	u64 ret = cyc2ns(clock, cycles);
- 
-@@ -911,7 +911,7 @@ unsigned long notrace cycles_to_usecs(cy
- 	return ret;
- }
- 
--cycles_t notrace usecs_to_cycles(unsigned long usecs)
-+cycle_t notrace usecs_to_cycles(unsigned long usecs)
- {
- 	return ns2cyc(clock, (u64)usecs * 1000);
- }
+I expect someone will agree or strongly disagree with me here on
+cosmetics.. :-)  I'd be tempted to pull the one-liner comments out of
+the code and replace them with a short paragraph above the function
+name.
+
+And.. 
+Do we have a preference for  "(rtas_poweron_auto == 0)" versus "(!rtas_poweron_auto)" 
+notation?    rtas.c has some of each, so I'm not sure.
+
+
+> +		printk(KERN_INFO "RTAS power-off returned %d\n",
+> +			rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1));
+> +	} else {
+> +		rtas_poweron_auto_token = rtas_token("ibm,power-off-ups");
+> +
+> +		if (rtas_poweron_auto_token == RTAS_UNKNOWN_SERVICE) {
+> +			/* ibm,power-off-ups failed or token does not exist */
+> +			rc = rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1);
+> +	 		printk(KERN_EMERG "Power-off called instead %d\n", rc );
+> +		} else {
+> +			/* Enable the system to reboot if power comes back on */
+> +			rc = rtas_call(rtas_token("ibm,power-off-ups"), 0, 1, NULL);
+> +			printk(KERN_INFO "RTAS ibm,power-off-ups returned %d\n", rc);
+> +		}
+
+You could eliminate the temp variable rtas_poweron_auto_token, and
+rewrite as something like:
+
+               if (rtas_token("ibm,power-off-ups") == RTAS_UNKNOWN_SERVICE) {
+                       rc = rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1);
+                       printk(KERN_EMERG "Power-off called instead %d\n", rc );
+               } else {
+                       rc = rtas_call(rtas_token("ibm,power-off-ups"),0, 1, NULL);
+                       printk(KERN_INFO "RTAS ibm,power-off-ups returned %d\n", rc);
+               }
+
+
+> +
+> +	}
+>  	for (;;);
+>  }
+
+<snippage> 
+> +static ssize_t ppc_rtas_poweron_auto_write(struct file *file,
+> +		const char __user *buf, size_t count, loff_t *ppos)
+> +{
+> +	unsigned long ups_restart;
+> +	int error = parse_number(buf, count, &ups_restart);
+> +	if (error)
+> +		return error;
+> +
+> +	if (ups_restart != 0)
+> +		rtas_poweron_auto = 1;
+
+the !=0 is redundant here..  just "if (ups_restart) " should be
+sufficient. 
+
+> +
+> +	return count;
+> +}
+
+>  /**
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
