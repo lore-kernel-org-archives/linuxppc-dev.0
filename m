@@ -1,31 +1,20 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DFD6667C26
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 02:49:23 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB4Fn3TF001650
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Dec 2006 10:49:03 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB4Fn3Vu304686
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Dec 2006 10:49:03 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB4Fn37U021315
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Dec 2006 10:49:03 -0500
-Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-In-Reply-To: <45707469.9060604@austin.ibm.com>
-References: <45707469.9060604@austin.ibm.com>
-Content-Type: text/plain
-Date: Mon, 04 Dec 2006 09:48:58 -0600
-Message-Id: <1165247338.18104.21.camel@localhost>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 78BB367C47
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 02:53:44 +1100 (EST)
+Message-ID: <457444E3.7030706@ru.mvista.com>
+Date: Mon, 04 Dec 2006 18:55:15 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
+References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>	<4574197A.2020204@ru.mvista.com>	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>	<45741DDE.4080509@ru.mvista.com>	<20061204132124.4f7c50a9@localhost.localdomain>	<45742253.1000807@ru.mvista.com>	<20061204142201.68d9621f@localhost.localdomain>	<457431FE.6040702@ru.mvista.com>	<20061204144411.246f3700@localhost.localdomain>
+	<45744159.8040301@ru.mvista.com>
+In-Reply-To: <45744159.8040301@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Olaf Hering <olaf@aepfle.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+	greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,102 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-01-12 at 12:28 -0600, Manish Ahuja wrote:
-> During power outages, the ups notifies the system for a shutdown. In the
-> current setup, it isn't possible to poweron when power is restored. This
-> patch fixes the issue by calling the right ibm,power-off-ups token
-> during such events. It also adds a proc interface so that rc.powerfail
-> can parse the epow events and modify the power-off behavior accordingly
-> to enable the right token to be called.
-> 
-> Signed-off-by: Manish Ahuja <ahuja@austin.ibm.com>
-> 
+Hello.
 
+Sergei Shtylyov wrote:
 
-> plain text document attachment (power-off-ups.patch)
-> Index: 2.6-git2/arch/powerpc/kernel/rtas.c
-> ===================================================================
-> --- 2.6-git2.orig/arch/powerpc/kernel/rtas.c	2006-11-29 12:00:26.000000000 -0800
-> +++ 2.6-git2/arch/powerpc/kernel/rtas.c	2006-11-30 10:56:12.000000000 -0800
-> @@ -603,11 +603,30 @@
-> 
->  void rtas_power_off(void)
->  {
-> +	int rc = 0;
-> +	int rtas_poweron_auto_token;
-> +
->  	if (rtas_flash_term_hook)
->  		rtas_flash_term_hook(SYS_POWER_OFF);
-> -	/* allow power on only with power button press */
-> -	printk("RTAS power-off returned %d\n",
-> -	       rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1));
-> +
-> +	if (rtas_poweron_auto == 0) {
-> +		/* allow power on only with power button press */
+>>>   When Linus remaps IRQ0 on x86, I'll follow that code as a testament. Until 
+>>>this happens, I consider is just an opinion. Forcing every arch but x86 to 
+>>>remap IRQ0 is an example of the double standards.
 
-I expect someone will agree or strongly disagree with me here on
-cosmetics.. :-)  I'd be tempted to pull the one-liner comments out of
-the code and replace them with a short paragraph above the function
-name.
+>>Yawn.. x86 does not expose IRQ 0 outside of arch specific code.
 
-And.. 
-Do we have a preference for  "(rtas_poweron_auto == 0)" versus "(!rtas_poweron_auto)" 
-notation?    rtas.c has some of each, so I'm not sure.
+>     Can you believe, some non-x86 platofrms also don't -- for example, IRQ0 
+> may be internal to SOC, not shareable or routable outside of it, BUT the SOC 
+> device is driven by the standard driver (I'm minding 8250.c here). Yet we're 
+> told that we should remap it, period...
 
+>>>>The checks need pushing upwards and removing from their current place -
+>>>>the pci layer should check the resource length, the isa pnp should I
+>>>>believe check for zero address etc.
 
-> +		printk(KERN_INFO "RTAS power-off returned %d\n",
-> +			rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1));
-> +	} else {
-> +		rtas_poweron_auto_token = rtas_token("ibm,power-off-ups");
-> +
-> +		if (rtas_poweron_auto_token == RTAS_UNKNOWN_SERVICE) {
-> +			/* ibm,power-off-ups failed or token does not exist */
-> +			rc = rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1);
-> +	 		printk(KERN_EMERG "Power-off called instead %d\n", rc );
-> +		} else {
-> +			/* Enable the system to reboot if power comes back on */
-> +			rc = rtas_call(rtas_token("ibm,power-off-ups"), 0, 1, NULL);
-> +			printk(KERN_INFO "RTAS ibm,power-off-ups returned %d\n", rc);
-> +		}
+    Although, I'm getting the point -- PCI is likely to return 0 for 
+unassigned the interrupt line register (this isn't always true though).  So, 
+some mixup is possible in that regard.  Well, then we're unlucky, and indeed 
+remapping IRQ0 has sense...
 
-You could eliminate the temp variable rtas_poweron_auto_token, and
-rewrite as something like:
-
-               if (rtas_token("ibm,power-off-ups") == RTAS_UNKNOWN_SERVICE) {
-                       rc = rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1);
-                       printk(KERN_EMERG "Power-off called instead %d\n", rc );
-               } else {
-                       rc = rtas_call(rtas_token("ibm,power-off-ups"),0, 1, NULL);
-                       printk(KERN_INFO "RTAS ibm,power-off-ups returned %d\n", rc);
-               }
-
-
-> +
-> +	}
->  	for (;;);
->  }
-
-<snippage> 
-> +static ssize_t ppc_rtas_poweron_auto_write(struct file *file,
-> +		const char __user *buf, size_t count, loff_t *ppos)
-> +{
-> +	unsigned long ups_restart;
-> +	int error = parse_number(buf, count, &ups_restart);
-> +	if (error)
-> +		return error;
-> +
-> +	if (ups_restart != 0)
-> +		rtas_poweron_auto = 1;
-
-the !=0 is redundant here..  just "if (ups_restart) " should be
-sufficient. 
-
-> +
-> +	return count;
-> +}
-
->  /**
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+WBR, Sergei
