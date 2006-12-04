@@ -1,18 +1,19 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 36D2B67BDA
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 23:45:38 +1100 (EST)
-Message-ID: <457418CF.9040303@ru.mvista.com>
-Date: Mon, 04 Dec 2006 15:47:11 +0300
+	by ozlabs.org (Postfix) with ESMTP id B16BC67A2E
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 23:48:27 +1100 (EST)
+Message-ID: <4574197A.2020204@ru.mvista.com>
+Date: Mon, 04 Dec 2006 15:50:02 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] mark PCI resource with start 0 as unassigned
-References: <20061130165202.GA23205@aepfle.de>
-	<20061204123854.GA28159@aepfle.de>
-In-Reply-To: <20061204123854.GA28159@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+In-Reply-To: <FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +25,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello.
 
-Olaf Hering wrote:
-> mark pci resources with start 0 as unassigned
-> libata calls pci_request_regions to claim bar 0 - 5
-> bar 5 has base 0.
-> Tested on a p630 in SMP mode with pata_sl82c105
-
-[...]
-
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -1234,6 +1234,14 @@ static void __devinit fixup_resource(str
->  	struct pci_controller *hose = pci_bus_to_host(dev->bus);
->  	unsigned long start, end, mask, offset;
->  
-> +	/*
-> +	 * tell the core code that this ressource is unassigned
-> +	 * fixes p630 winbond IDE with libata
-> +	 */
-> +	if (res->start == 0) {
-> +		res->flags = 0;
-
-     Wouldn't it be better to set flags to IORESOURCE_UNSET to get it reassigned?
-
-> +		return;
-> +	}
->  	if (res->flags & IORESOURCE_IO) {
->  		offset = (unsigned long)hose->io_base_virt - pci_io_base;
+Segher Boessenkool wrote:
+>>--- a/arch/powerpc/kernel/pci_64.c
+>>+++ b/arch/powerpc/kernel/pci_64.c
+>>@@ -1234,6 +1234,14 @@ static void __devinit fixup_resource(str
+>> 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+>> 	unsigned long start, end, mask, offset;
+>>
+>>+	/*
+>>+	 * tell the core code that this ressource is unassigned
+>>+	 * fixes p630 winbond IDE with libata
+>>+	 */
+>>+	if (res->start == 0) {
+>>+		res->flags = 0;
+>>+		return;
+>>+	}
+>> 	if (res->flags & IORESOURCE_IO) {
+>> 		offset = (unsigned long)hose->io_base_virt - pci_io_base;
 > 
+> 
+> Please make this run on pSeries only; on a PowerMac for
+> example, it's totally normal that the first PCI legacy I/O
+> BAR in the system gets assigned 0.
+
+    What do you mean by legacy I/O BAR? If you mean IDE controller, that would 
+drive IDE core mad like this:
+
+W82C105_IDE: inconsistent baseregs (BIOS) for port 0, skipping
+
+> Segher
 
 WBR, Sergei
