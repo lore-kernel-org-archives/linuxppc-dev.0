@@ -1,18 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 4 Dec 2006 18:16:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [LIBFDT] Fixup byteswapping code
-Message-ID: <20061204071629.GC32026@localhost.localdomain>
-References: <11650491414017-git-send-email-grant.likely@secretlab.ca>
-	<20061204015329.GA4790@localhost.localdomain>
-	<528646bc0612032118i689e9c83gdfc841a3d7b91fcf@mail.gmail.com>
-	<20061204055217.GA32026@localhost.localdomain>
-	<528646bc0612032233y573dfbcdk29a969e19540242a@mail.gmail.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 667ED67A3B
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Dec 2006 19:20:47 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc0612032233y573dfbcdk29a969e19540242a@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 2.6.20] powerpc: Changed gianfar device tree definition
+	tomake it more flexible
+Date: Mon, 4 Dec 2006 09:20:36 +0100
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D939B5008F@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Andy Fleming" <afleming@freescale.com>, <linuxppc-dev@ozlabs.org>,
+	"Paul Mackerras" <paulus@samba.org>,
+	"Kumar Gala" <galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,109 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 03, 2006 at 11:33:42PM -0700, Grant Likely wrote:
-> On 12/3/06, David Gibson <david@gibson.dropbear.id.au> wrote:
-> > On Sun, Dec 03, 2006 at 10:18:25PM -0700, Grant Likely wrote:
-> > > This requires a hacky cast from int to pointer and back again, and it
-> > > makes the assumption that int and void* are the same size.  However,
-> > > on a x86_64 system (not sure about power64), int is 32 bits and void*
-> > > is 64.  Therefore; a return of (void*)-1 results in address
-> > > 0xffffffff; not 0xffffffffffffffff.  0xffffffff is right in the middle
-> > > of valid address ranges.
-> >
-> > Urg.  Yes indeed.  The same is true on powerpc64, but userspace is
-> > usually 32-bits on powerpc64 machines; I hadn't tested compiling
-> > 64-bit.  An extra (long) in PTR_ERROR() appears to be enough to fix
-> > it.
-> >
-> > > This, of course, produces the warning: "cast to pointer from integer
-> > > of different size"
-> > >
-> > > I believe the accepted convention (at least in the kernel) is to
-> > > return NULL on error, and libfdt should probably follow that
-> > > convention.
-> >
-> > Actually, there are two conventions in the kernel.  Just returning
-> > NULL on error is the most common.  But there's a significant number of
-> > functions that encode an errno into the returned pointer in just this
-> > way - see the IS_ERR(), PTR_ERR() and ERR_PTR() macros.
-> 
-> Ah, okay, I see that code now.
-> 
-> Hmmm....
-> 
-> Gah, this still makes me really nervous.  The hard part will be how to
-> make it *blatently* obvious to users that checking for NULL is *not*
-> sufficient for error checking when using these functions.  Otherwise a
-> very common code defect will be code using just a NULL check before
-> dereferencing the returned pointer.
+=20
 
-Exactly.  It makes me very nervous, too.
+> -----Original Message-----
+> From:=20
+> linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@ozl
+> abs.org] On Behalf Of Andy Fleming
+> Sent: 01 December 2006 18:57
+> To: linuxppc-dev@ozlabs.org; Paul Mackerras; Kumar Gala
+> Subject: [PATCH 2.6.20] powerpc: Changed gianfar device tree=20
+> definition tomake it more flexible
+>=20
+> The old gianfar node definition used a concept of "models" to
+> determine the feature bits and interrupt settings to pass to the
+> driver.  This won't scale well when the hardware designers come
+> up with new and (hopefully) interesting variants of the eTSEC.
+> So one goal of this patch is to prepare for that eventuality by
+> listing the features, rather than inferring them.
+>=20
+> And then, incidentally, some of the code was cleaned up so that
+> initialization functions will skip devices which encounter
+> errors, rather than bailing.  The CPM devices were not modified
+> in this way, as they are more complex.
+>=20
+> Finally, all the dts files with gianfar nodes were updated to use
+> the new feature bits and the new interface field, and the various
+> MAC address conventions were all accommodated by preserving the
+> currently-used field, while adding local-mac-address, which will
+> be used in the future (once u-boot changes have been made).
+> Signed-off-by: Andrew Fleming <afleming@freescale.com>
 
-> > > If you must return the actual error code; maybe rework
-> > > the API to accept a void** argument to be used to pass back the
-> > > pointer and use 'return code', or include an 'int*' argument for
-> > > passing back the err code.
-> >
-> > I thought quite a bit about how to pass back errors here.  I'm not
-> > very fond of the current method of encoding the error codes into the
-> > return values - it's more magic than I'm comfortable with (especially
-> > given the multiple encoding methods for different return types) - but
-> > I haven't thought of a better way.
-> 
-> heh; Isn't beating your head against the limits of a language fun?  I
-> wish I had a better suggestion myself, but I understand your point and
-> the difficulty involved.
-> 
-> > Having to use a void ** for the real return value is ugly - and means
-> > you can't stack library calls together (result of one call as
-> > parameter to another call).  Using int * for the error code is also
-> > ugly and all too much encouragement for people not too check it.
-> 
-> Yeah, I agree 100%.
-> 
-> > What I'd really prefer is an errno-style interface, where a separate
-> > variable or call must be consulted to find the details of the error.
-> > But, I can't see any way to do that safely in code that's supposed to
-> > be easy to import into a wide variety of execution environments
-> > (kernel, zImage, bootloader, userspace) - some of which could be
-> > multithreaded.
-> 
-> Unfortunately, there is no simple way to keep around execution
-> context.  newlib uses a scheme where the exec environment has to
-> specifically tell it which thread context to use, but it's a bit ugly
-> in that hooks must be added to the thread scheduler to change the
-> context pointer on every schedule.
+[SNIP]
 
-Sure, and if I set up something to use the newlib scheme, it would
-break in things using a different approach.
+> +
+> +static struct gfar_flag_info __initdata flag_info[] =3D {
+> +	{ "gigabit", FSL_GIANFAR_DEV_HAS_GIGABIT },
+> +	{ "coalescing", FSL_GIANFAR_DEV_HAS_COALESCE },
+> +	{ "rmon", FSL_GIANFAR_DEV_HAS_RMON },
+> +	{ "checksumming", FSL_GIANFAR_DEV_HAS_CSUM },
+> +	{ "vlan", FSL_GIANFAR_DEV_HAS_VLAN },
+> +	{ "extended-hash", FSL_GIANFAR_DEV_HAS_EXTENDED_HASH },
+> +	{ "padding", FSL_GIANFAR_DEV_HAS_PADDING },
+> +	{ "filer", FSL_GIANFAR_DEV_HAS_FILER },
+> +	{ "parseL4", FSL_GIANFAR_DEV_HAS_PARSE_L4 },
+> +	{ "parseL3", FSL_GIANFAR_DEV_HAS_PARSE_L3 },
+> +	{ "parseL2", FSL_GIANFAR_DEV_HAS_PARSE_L2 },
+> +	{ "multi-queue", FSL_GIANFAR_DEV_HAS_MULTI_QUEUE },
+> +	{ "buffer-stashing", FSL_GIANFAR_DEV_HAS_BUF_STASHING },
+> +	{ "buffer-locking", FSL_GIANFAR_DEV_HAS_BUF_LOCKING },
+> +	{ "bd-stashing", FSL_GIANFAR_DEV_HAS_BD_STASHING },
+> +	{ "bd-locking", FSL_GIANFAR_DEV_HAS_BD_LOCKING },
+> +};
 
-> > Oh incidentally, this isn't true at present, but I'd like to make it
-> > true:  all the library functions should check their parameters so if
-> > they're *given* one of the encoded error values, they'll just
-> > propagate the error out again and won't do anything nasty.  That will
-> > make it safe to nest library calls, even if the inner ones could fail.
-> 
-> good idea
+Shouldn't these be  mapped to generic names(drop the GIANFAR name)?
+The newer UCC also have sevral of these capabilities and it seems
+to me that one can use the same names instead of making a similar table.
 
-I do have one idea for better error handling: I'd like to put in
-something defined in the the libfdt_env.h (which is designed to be
-replaced when libfdt is compiled in different environments) to report
-an error.  That would be invoked every time a libfdt function exits
-with an error - I would envisage it calling through to a user supplied
-function pointer.
-
-In many practical situations, I think most libfdt errors would be the
-result of something unrecoverable problem (such as a corrupted device
-tree blob), the callback could just print an error (by whatever means
-is appropritate for the environment) and bail out, avoiding the need
-for checking return values.  At least for the "serious" errors
-(BADMAGIC, BADSTRUCTURE and so forth).  NOTFOUND (and maybe TRUNCATED)
-would need to be passed back as a return value still, since that can
-certainly occur in a legitimate test.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ Jocke
