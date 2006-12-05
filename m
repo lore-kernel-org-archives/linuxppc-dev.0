@@ -1,14 +1,16 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 6C419679A6
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 06:21:02 +1100 (EST)
-Message-ID: <4575C6DC.7000204@ru.mvista.com>
-Date: Tue, 05 Dec 2006 22:22:04 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 908CC67B6F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 08:21:37 +1100 (EST)
 Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
-References: <FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20061205081557.GA8483@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
 	<4574197A.2020204@ru.mvista.com>
 	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
 	<45741DDE.4080509@ru.mvista.com>
@@ -16,12 +18,12 @@ References: <FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
 	<45742253.1000807@ru.mvista.com>
 	<20061204142201.68d9621f@localhost.localdomain>
 	<1165293679.29784.39.camel@localhost.localdomain>
-	<20061205105126.GC12351@iram.es> <45756861.2050004@ru.mvista.com>
-	<20061205173735.GA13179@colo.lackof.org>
-In-Reply-To: <20061205173735.GA13179@colo.lackof.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Olaf Hering <olaf@aepfle.de>, linux-ide@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, greg@kroah.com,
+	<20061205081557.GA8483@aepfle.de>
+Content-Type: text/plain
+Date: Wed, 06 Dec 2006 07:19:01 +1100
+Message-Id: <1165349941.5469.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-ide@vger.kernel.org, greg@kroah.com, linuxppc-dev@ozlabs.org,
 	linux-pci@atrey.karlin.mff.cuni.cz, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,69 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Tue, 2006-12-05 at 09:15 +0100, Olaf Hering wrote:
+> On Tue, Dec 05, Benjamin Herrenschmidt wrote:
+> 
+> > Olaf, can you give me a dump of /proc/ioports ? What is sitting at 0 on
+> > that PCI bus ?
+> 
+> with IDE=y
+> 
+> ==> /proc/ioports <==
+> 00000000-0000001f : dma1
 
-Grant Grundler wrote:
+So it's indeed colliding with the cruft above.
 
->>>Well, I don't have the PCI specification, but I have a device with the 
+I reckon it's a bug in the firmware of this machine.
 
->>   Try googling for pdf21.pdf, pdf22.pdf if you need it. :-)
+Add to pseries/pci.c a quirk for that chipset (don't forget to test for
+machine_is(pseries) in the quirk as they get called for all platforms in
+a combo kernel. The quirk shall check if resource 6 has a 0 base and
+clear the size as Alan suggested (possibly setting the UNSET flag as
+well).
 
-> I think you meant pci21.pdf/pci22.pdf/pci23.pdf.
-
-> And if you find them, trust me when I say whoever is hosting those files
-> can expect a cease-and-desist letter in the mail shortly there after.
-
-> Better to just ask someone with proper access to lookup the parts
-> you need to know (i.e. ask here). Member companies are listed at:
-> 	http://www.pcisig.com/membership/about_us/membership_roster/
-
-> if you want to approach someone offlist.
-
-    That's not fun. :-)
-
->>>following gem in its errata (name edited and changed to <Device>):
-
->>>""The <Device> contains two PCI base registers to allow for both greater 
->>>flexibility in tightly constrained I/O space as well as the "on the fly" 
->>>option to access the <Device> registers from either I/O or memory space. 
->>>Both PCI base registers contained in the <Device> will accept the value 
->>>of "zero" as a valid and decodable address. This differs from the PCI 2.1 
->>>specification, where a zero value being written to the PCI base register 
->>>should disable the register space.
-
->>   I haven't found such words in PCI 2.1 -- it only said that 0 is not a 
->>valid address (those words are gone from 2.2).
-
-> AFAIK, zero is a valid address for IO Port space on several architectures.
-> But PCI generic code should never use it. See usage of PCIBIOS_MIN_IO
-> and PCIBIOS_MIN_MEM in the various asm-*/pci.h files.
-
-    That'd be all good if bootloaders also folllowed this rule... Not all of 
-them do, hence the thread. :-/
-
->>>which makes me suspect that a base address of zero really should mean
->>>unassigned and is a way to disable base registers on a region by region
->>>basis.
-
->>   AFAIR, there's never been a provision to enable/disable BARs on an 
->>individual basis in PCI (except the expansion ROM BAR). The decoders are
->>only controlled via 2 command register bits for I/O and memory space.
-
-> One can "disable" a BAR by pointing it at an address that is NOT routed
-> by the upstream bridge. Ie CPU physical addresses that can never reach
-> that secondary bus. But I'm not aware of any code to do that currently
-
-    Yeah, that's the trick that Gabriel has already described...
-
-> and it certainly won't work with all "PCI-like" (think integrated south
-> bridges) devices.
-
-    Well, those are using subtractive decoders, so will only get the R/W 
-cycles that nobody else cared about. If using I/O ports higher than 0xffff the 
-trick will still work on x86 even in presence of ISA bridges...
-
-> hth,
-> grant
-
-WBR, Sergei
+Ben.
