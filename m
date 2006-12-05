@@ -1,18 +1,10 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8A99F679E0
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 17:02:12 +1100 (EST)
-Date: Tue, 5 Dec 2006 17:01:44 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-ide@vger.kernel.org
-Subject: Oops in pata_pdc2027x
-Message-Id: <20061205170144.0b98d7e6.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__5_Dec_2006_17_01_44_+1100_/=VtkIWOCIWV_AP3"
-Cc: Albert Lee <albertcc@tw.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 05 Dec 2006 17:52:36 +1100
+Subject: [PATCH 1/5] Move rtas_stop_self() into platforms/pseries/hotplug-cpu.c
+Message-Id: <1165301556.843426.760217571714.qpush@cradle>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,82 +14,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__5_Dec_2006_17_01_44_+1100_/=VtkIWOCIWV_AP3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+As the first step in consolidating the pseries hotplug cpu code,
+create platforms/pseries/hotplug-cpu.c and move rtas_stop_self()
+into it. Do the rtas token initialisation in a new initcall, rather
+than rtas_initialize()
 
-Hi all,
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-I get an oops during initialisation of the pata_pdc2027x module on a
-POWER 285 machine.  This is on a very recent Linus kernel tree
-(ff51a98799931256b555446b2f5675db08de6229) with Paulus' powerpc tree
-(that has now been merged). The oops looks like this:
+ arch/powerpc/kernel/rtas.c                   |   29 -------------
+ arch/powerpc/platforms/pseries/Makefile      |    2 
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |   58 +++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+), 29 deletions(-)
 
-----------------------------------------------------------------------------
-Synthesizing the initial hotplug events...done.
-Waiting for /dev to be fully populated...pata_pdc2027x 0001:cc:01.0: PLL input clock 32721 kHz
-ata1: PATA max UDMA/133 cmd 0xD0000800801457C0 ctl 0xD000080080145FDA bmdma 0xD000080080145000 irq 324
-ata2: PATA max UDMA/133 cmd 0xD0000800801455C0 ctl 0xD000080080145DDA bmdma 0xD000080080145008 irq 324
-scsi1 : pata_pdc2027x
-ata1.00: ATAPI, max UDMA/66
-Unable to handle kernel paging request for data at address 0xc0000001007e8d80
-Faulting instruction address: 0xd00000000007b660
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=128 NUMA
-Modules linked in: pata_pdc2027x dm_mirror dm_snapshot ipr libata
-NIP: D00000000007B660 LR: D00000000007B628 CTR: 0000000000000000
-REGS: c0000000f4e3b5a0 TRAP: 0300   Not tainted  (2.6.19comb)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000080  XER: 20000009
-DAR: C0000001007E8D80, DSISR: 0000000040010000
-TASK = c000000007001040[3393] 'scsi_eh_1' THREAD: c0000000f4e38000 CPU: 2
-GPR00: 0000000100000000 C0000000F4E3B820 D0000000000A95C0 C00000000FA946E8
-GPR04: C0000000F4E3B960 0000000000000000 0000000000000003 C0000000F4E3B890
-GPR08: 0000000000000001 C0000000007E8D80 D000080080145110 C000000000033A34
-GPR12: 0000000000000000 C00000000056FF80 0000000000000000 C0000000004751C8
-GPR16: 4000000001C00000 C000000000473B90 0000000000000000 000000000035D800
-GPR20: 000000000213AF30 C00000000053AF30 C0000000F4E3BB10 0000000000000001
-GPR24: 0000000000000002 0000000000000000 C0000000F4E3B960 C00000000FA946E8
-GPR28: 0000000000000003 4000000000000000 D0000000000A7980 0000000000000000
-NIP [D00000000007B660] .ata_exec_internal+0x8c/0xf8 [libata]
-LR [D00000000007B628] .ata_exec_internal+0x54/0xf8 [libata]
-Call Trace:
-[C0000000F4E3B820] [D0000000000A7980] .ipr_store_update_fw+0x100/0x6f0 [ipr] (unreliable)
-[C0000000F4E3B8F0] [D00000000007C15C] .ata_set_mode+0x4dc/0x6d0 [libata]
-[C0000000F4E3B9D0] [D0000000000860E0] .ata_do_eh+0x1538/0x1930 [libata]
-[C0000000F4E3BC20] [D000000000083774] .ata_bmdma_drive_eh+0x1f8/0x2e8 [libata]
-[C0000000F4E3BCD0] [D0000000000C17B4] .pdc2027x_error_handler+0x28/0x40 [pata_pdc2027x]
-[C0000000F4E3BD50] [D000000000086DC0] .ata_scsi_error+0x32c/0x660 [libata]
-[C0000000F4E3BE00] [C000000000312F7C] .scsi_error_handler+0xc8/0x80c
-[C0000000F4E3BEE0] [C00000000006A0F4] .kthread+0x124/0x174
-[C0000000F4E3BF90] [C000000000024D68] .kernel_thread+0x4c/0x68
-Instruction dump:
-57ac053e e93e8020 7f63db78 7f44d378 780007c6 7f25cb78 7f86e378 38e10070
-7fbd0214 39000001 7ba0f860 78001f24 <7d69002a> 7ba0a302 7bbd4602 39200000
- done.
-----------------------------------------------------------------------------
-
-(The reference to ipr_store_update_fw is certainly not real)
-
-The config, lspci and full boot dmesg output are available at
-http://ozlabs.org/~sfr/{config,lspci,dmesg}
-
-This machine has a only cdrom drive attached to the pdc controller.
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__5_Dec_2006_17_01_44_+1100_/=VtkIWOCIWV_AP3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFFdQtIFdBgD/zoJvwRAo6oAJwKOrLlQTQKfiJPcJVpk0W6LgpeMgCdF9zP
-z89jW1++XUH1mT+LXus0CSA=
-=cDmP
------END PGP SIGNATURE-----
-
---Signature=_Tue__5_Dec_2006_17_01_44_+1100_/=VtkIWOCIWV_AP3--
+Index: powerpc/arch/powerpc/kernel/rtas.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/rtas.c
++++ powerpc/arch/powerpc/kernel/rtas.c
+@@ -810,32 +810,6 @@ asmlinkage int ppc_rtas(struct rtas_args
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-/* This version can't take the spinlock, because it never returns */
+-static struct rtas_args rtas_stop_self_args = {
+-	/* The token is initialized for real in setup_system() */
+-	.token = RTAS_UNKNOWN_SERVICE,
+-	.nargs = 0,
+-	.nret = 1,
+-	.rets = &rtas_stop_self_args.args[0],
+-};
+-
+-void rtas_stop_self(void)
+-{
+-	struct rtas_args *rtas_args = &rtas_stop_self_args;
+-
+-	local_irq_disable();
+-
+-	BUG_ON(rtas_args->token == RTAS_UNKNOWN_SERVICE);
+-
+-	printk("cpu %u (hwid %u) Ready to die...\n",
+-	       smp_processor_id(), hard_smp_processor_id());
+-	enter_rtas(__pa(rtas_args));
+-
+-	panic("Alas, I survived.\n");
+-}
+-#endif
+-
+ /*
+  * Call early during boot, before mem init or bootmem, to retrieve the RTAS
+  * informations from the device-tree and allocate the RMO buffer for userland
+@@ -880,9 +854,6 @@ void __init rtas_initialize(void)
+ #endif
+ 	rtas_rmo_buf = lmb_alloc_base(RTAS_RMOBUF_MAX, PAGE_SIZE, rtas_region);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	rtas_stop_self_args.token = rtas_token("stop-self");
+-#endif /* CONFIG_HOTPLUG_CPU */
+ #ifdef CONFIG_RTAS_ERROR_LOGGING
+ 	rtas_last_error_token = rtas_token("rtas-last-error");
+ #endif
+Index: powerpc/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/Makefile
++++ powerpc/arch/powerpc/platforms/pseries/Makefile
+@@ -10,6 +10,8 @@ obj-$(CONFIG_XICS)	+= xics.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+ obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o
+ 
++obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
++
+ obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
+ obj-$(CONFIG_HVCS)		+= hvcserver.o
+ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
+Index: powerpc/arch/powerpc/platforms/pseries/hotplug-cpu.c
+===================================================================
+--- /dev/null
++++ powerpc/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -0,0 +1,58 @@
++/*
++ * pseries CPU Hotplug infrastructure.
++ *
++ * Split out from arch/powerpc/kernel/rtas.c
++ *
++ * Peter Bergner, IBM	March 2001.
++ * Copyright (C) 2001 IBM.
++ *
++ * Copyright (C) 2006 Michael Ellerman, IBM Corporation
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/cpu.h>
++#include <asm/system.h>
++#include <asm/prom.h>
++#include <asm/rtas.h>
++#include <asm/firmware.h>
++#include <asm/machdep.h>
++#include <asm/vdso_datapage.h>
++#include <asm/pSeries_reconfig.h>
++#include "xics.h"
++
++/* This version can't take the spinlock, because it never returns */
++static struct rtas_args rtas_stop_self_args = {
++	.token = RTAS_UNKNOWN_SERVICE,
++	.nargs = 0,
++	.nret = 1,
++	.rets = &rtas_stop_self_args.args[0],
++};
++
++void rtas_stop_self(void)
++{
++	struct rtas_args *args = &rtas_stop_self_args;
++
++	local_irq_disable();
++
++	BUG_ON(args->token == RTAS_UNKNOWN_SERVICE);
++
++	printk("cpu %u (hwid %u) Ready to die...\n",
++	       smp_processor_id(), hard_smp_processor_id());
++	enter_rtas(__pa(args));
++
++	panic("Alas, I survived.\n");
++}
++
++static int __init pseries_cpu_hotplug_init(void)
++{
++	rtas_stop_self_args.token = rtas_token("stop-self");
++
++	return 0;
++}
++arch_initcall(pseries_cpu_hotplug_init);
