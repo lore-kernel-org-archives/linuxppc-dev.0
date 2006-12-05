@@ -1,27 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E124267B8B
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 08:59:07 +1100 (EST)
-Subject: Re: Worst case performance of up()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-In-Reply-To: <1165263946.29784.13.camel@localhost.localdomain>
-References: <1164385262.11292.76.camel@localhost.localdomain>
-	<1164401124.5653.86.camel@localhost.localdomain>
-	<1164661336.11001.9.camel@localhost.localdomain>
-	<1165055754.4380.15.camel@localhost.localdomain>
-	<1165058151.22108.31.camel@localhost.localdomain>
-	<1165060484.4380.18.camel@localhost.localdomain>
-	<1165092773.22108.47.camel@localhost.localdomain>
-	<1165239794.17906.14.camel@localhost.localdomain>
-	<1165263946.29784.13.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 06 Dec 2006 09:00:02 +1100
-Message-Id: <1165356002.5469.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id C896467BAC
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 09:06:47 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH] cell: fix missing spu.h header export
+Date: Tue, 5 Dec 2006 23:06:42 +0100
+References: <4575E712.5020103@am.sony.com>
+In-Reply-To: <4575E712.5020103@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612052306.42632.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,19 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 05 December 2006 22:39, Geoff Levand wrote:
+>=20
+> Add spu.h to the list of exported headers. =A0Fixes this error when
+> using 'make headers_check' or when CONFIG_HEADERS_CHECK=3Dy:
+>=20
+> =A0 asm/spu_info.h requires asm/spu.h, which does not exist in exported h=
+eaders
+>=20
+>=20
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-> > If ppc_md.power_save is NULL, then the idle loop does not touch the flag
-> > word of the idle thread, and everything works.
-> 
-> Good to know, there might be other cases of performance issues due to
-> touching that flag in a loop...
+Sorry, wrong fix. I had a better one already but haven't gotten around
+to post it. spu_info.h should be in unifdef-y and spu.h should stay
+internal to the kernel. I'll follow up with my patch.
 
-More specifically... that means we have the same performance problem on
-SMP PowerMacs (dual G4s & Xserve G4s)... on those machines, there's a
-firmware property telling us not to use NAP mode and we do so by
-clearing powersave_nap.
-
-Paul, do you reckon the best solution here is to clear ppc_md.power_save
-when detecting an SMP powermac ? (Or the flush-on-lock property)
-
-Ben.
+	Arnd <><
