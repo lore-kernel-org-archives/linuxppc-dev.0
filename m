@@ -1,20 +1,15 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4735967BBD
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 11:11:45 +1100 (EST)
-Message-ID: <4574B93A.6030307@am.sony.com>
-Date: Mon, 04 Dec 2006 16:11:38 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [POWERPC] ps3: add a default zImage target
-References: <456BAB86.4070104@am.sony.com>
-In-Reply-To: <456BAB86.4070104@am.sony.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 7E4D467BBD
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 11:29:29 +1100 (EST)
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linuxppc-dev@ozlabs.org,
+	paulus@samba.org
+Subject: [PATCH] [POWERPC] Remove obsolete PPC_52xx and update PPC_6xx comment
+Date: Mon,  4 Dec 2006 17:29:13 -0700
+Message-Id: <116527855527-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1165278553297-git-send-email-grant.likely@secretlab.ca>
+References: <1165278553297-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a powerpc make target that can be loaded by the ps3 bootloader (kboot) and
-set this as the default image to build for that platform.
-
-Until the compressed zImage wrapper is made, this arranges for a stripped
-vmlinux image to be built.
-
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
+ arch/powerpc/Kconfig |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
-Paul,
-
-I noticed this didn't go into the latest set in powerpc.git.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 90efb0a..a75bccf 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -112,7 +112,7 @@ choice
+ 	default 6xx
  
-I think having the default image for ps3 set as zImage.pseries will cause
-confusion for some users since that image is not loadable by the ps3 bootloader.
-
-I rebased this to the latest powerpc.git.  Please apply.
-
--Geoff 
-
-
- arch/powerpc/boot/Makefile |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletion(-)
-
---- cell--common--7.orig/arch/powerpc/boot/Makefile
-+++ cell--common--7/arch/powerpc/boot/Makefile
-@@ -149,13 +149,16 @@ $(obj)/zImage.miboot: vmlinux $(wrapperb
- $(obj)/zImage.initrd.miboot: vmlinux $(wrapperbits)
- 	$(call cmd,wrap_initrd,miboot)
- 
-+$(obj)/zImage.ps3: vmlinux
-+	$(STRIP) -s -R .comment $< -o $@
+ config CLASSIC32
+-	bool "6xx/7xx/74xx"
++	bool "52xx/6xx/7xx/74xx"
+ 	select PPC_FPU
+ 	select 6xx
+ 	help
+@@ -121,16 +121,18 @@ config CLASSIC32
+ 	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
+ 	  embedded versions (403 and 405) and the high end 64 bit Power
+ 	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
 +
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call cmd,wrap,uboot)
++	  This option is the catch-all for 6xx types, including some of the
++	  embedded versions.  Unless there is see an option for the specific
++	  chip family you are using, you want this option.
++	  
++	  You do not want this if you are building a kernel for a 64 bit
++	  IBM RS/6000 or an Apple G5, choose 6xx.
++	  
++	  If unsure, select this option
+ 	  
+-	  Unless you are building a kernel for one of the embedded processor
+-	  systems, 64 bit IBM RS/6000 or an Apple G5, choose 6xx.
+ 	  Note that the kernel runs in 32-bit mode even on 64-bit chips.
  
- image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
- image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
- image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
--image-$(CONFIG_PPC_PS3)			+= zImage.pseries
-+image-$(CONFIG_PPC_PS3)			+= zImage.ps3
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
+-config PPC_52xx
+-	bool "Freescale 52xx"
+-	select 6xx
+-	select PPC_FPU
+-	
+ config PPC_82xx
+ 	bool "Freescale 82xx"
+ 	select 6xx
+-- 
+1.4.3.rc2.g0503
