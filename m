@@ -1,20 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 5C48267A3B
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 23:37:36 +1100 (EST)
-Message-ID: <45756861.2050004@ru.mvista.com>
-Date: Tue, 05 Dec 2006 15:38:57 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 723AE67A3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 00:34:37 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [POWERPC] fix cell pmu initialisation
+Date: Tue, 5 Dec 2006 14:34:07 +0100
+References: <20061205155414.4afdcc77.sfr@canb.auug.org.au>
+In-Reply-To: <20061205155414.4afdcc77.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
-References: <20061130165202.GA23205@aepfle.de>	<20061204123854.GA28159@aepfle.de>	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>	<4574197A.2020204@ru.mvista.com>	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>	<45741DDE.4080509@ru.mvista.com>	<20061204132124.4f7c50a9@localhost.localdomain>	<45742253.1000807@ru.mvista.com>	<20061204142201.68d9621f@localhost.localdomain>	<1165293679.29784.39.camel@localhost.localdomain>
-	<20061205105126.GC12351@iram.es>
-In-Reply-To: <20061205105126.GC12351@iram.es>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Olaf Hering <olaf@aepfle.de>, linux-ide@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, greg@kroah.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, Alan <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612051434.07917.arnd@arndb.de>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Tuesday 05 December 2006 05:54, Stephen Rothwell wrote:
+> -int __init cbe_init_pm_irq(void)
+> +static int __init cbe_init_pm_irq(void)
+> =A0{
+> =A0=A0=A0=A0=A0=A0=A0=A0unsigned int irq;
+> =A0=A0=A0=A0=A0=A0=A0=A0int rc, node;
+> =A0
+> +=A0=A0=A0=A0=A0=A0=A0if (!machine_is(cell))
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return 0;
+> +
 
-Gabriel Paubert wrote:
+This looks like a working fix at the moment, but it will break if we
+add machine more descriptions have these registers.
 
->>On Mon, 2006-12-04 at 14:22 +0000, Alan wrote:
+I see three options here how to solve this:
 
->>>The discussion I was having was about sl82cxx and handling unassigned
->>>resources. The zero address isn't relevant to that.
+1. export a method from cbe_regs.c to find out whether the pmd=20
+   regs are available and test that in cbe_init_pm_irq().
+2. take you patch as is, with a comment hinting to fix it up
+   when needed.
+3. change cbe_init_pm_irq to be called explicitly from cbe_regs_init(),
+   which already scans the device tree correctly.
 
->>Well, actually, it's unclear to me wether the resource is unassigned or
->>has been assigned to 0 :-) And in the later case, why claim'ing it
->>fails.
-
-> Well, I don't have the PCI specification, but I have a device with the 
-
-    Try googling for pdf21.pdf, pdf22.pdf if you need it. :-)
-
-> following gem in its errata (name edited and changed to <Device>):
-
-> ""The <Device> contains two PCI base registers to allow for both greater 
-> flexibility in tightly constrained I/O space as well as the "on the fly" 
-> option to access the <Device> registers from either I/O or memory space. 
-> Both PCI base registers contained in the <Device> will accept the value 
-> of "zero" as a valid and decodable address. This differs from the PCI 2.1 
-> specification, where a zero value being written to the PCI base register 
-> should disable the register space.
-
-    I haven't found such words in PCI 2.1 -- it only said that 0 is not a 
-valid address (those words are gone from 2.2).
-
-> <Device> will continue to decode for 
-> register accesses using the value "zero" written to the PCI_BS register 
-> as the base address for decoding.""
-
-    I'd say it's absolutely valid bahavior.
-
-> which makes me suspect that a base address of zero really should mean
-> unassigned and is a way to disable base registers on a region by region
-> basis.
-
-    AFAIR, there's never been a provision to enable/disable BARs on an 
-individual basis in PCI (except the expansion ROM BAR). The decoders are
-only controlled via 2 command register bits for I/O and memory space.
-
-> Now the fun with this device is that the I/O region occupies 4kB, so 
-
-    That's a crappy device indeed, I/O alloction limit is 256 bytes (that's 
-due to PC-specific limitation actually). Such regions may (and should) be left 
-unassigned by f/w (and I/O decoder disabled).
-
-> it leads to serious conflicts since there is also an ISA bridge in
-> the system (no 8259 anymore, serial console dead, etc...). The best
-> way to make this bug harmless is to write all ones to said base
-> register (it has 32 bit). This moves it to an address which cannot 
-> be generated by the host bridge (unless you program it in a really 
-> weird way).
-
-    You may also completely disable the I/O decoder for this device.
-
-> Whatever a specification says, you'll always find some device that
-> has a bug in this area.
-
-    Yeah. I've already encountered such one...
-
-WBR, Sergei
+	Arnd <><
