@@ -1,23 +1,27 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 82A4767B83
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 19:15:37 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so2911000ugf
-	for <linuxppc-dev@ozlabs.org>; Tue, 05 Dec 2006 00:15:35 -0800 (PST)
-Message-ID: <528646bc0612050015xa18b33bh4afdc2f9d196f1a1@mail.gmail.com>
-Date: Tue, 5 Dec 2006 01:15:35 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: master branch reset
-In-Reply-To: <Pine.LNX.4.62.0612050901160.12448@pademelon.sonytel.be>
+Return-Path: <olaf@aepfle.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id 81B3A67B6C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 19:16:09 +1100 (EST)
+Date: Tue, 5 Dec 2006 09:15:55 +0100 (MET)
+From: Olaf Hering <olaf@aepfle.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
+Message-ID: <20061205081557.GA8483@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+	<4574197A.2020204@ru.mvista.com>
+	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
+	<45741DDE.4080509@ru.mvista.com>
+	<20061204132124.4f7c50a9@localhost.localdomain>
+	<45742253.1000807@ru.mvista.com>
+	<20061204142201.68d9621f@localhost.localdomain>
+	<1165293679.29784.39.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <17780.2568.641734.276805@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.62.0612050839120.12448@pademelon.sonytel.be>
-	<528646bc0612042349t34662037nc641c8e6e2516a09@mail.gmail.com>
-	<Pine.LNX.4.62.0612050901160.12448@pademelon.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1165293679.29784.39.camel@localhost.localdomain>
+Cc: linux-ide@vger.kernel.org, greg@kroah.com, linuxppc-dev@ozlabs.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/5/06, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> On Tue, 5 Dec 2006, Grant Likely wrote:
-> > On 12/5/06, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > > On Mon, 4 Dec 2006, Paul Mackerras wrote:
-> >
-> > > Any clues? Delete and reclone?
-> >
-> > Because Paul had to redo his tree; you're no longer able to 'pull' his
-> > changes into your branch.  If you've got changes that you need to
-> > preserve; then you need to either generate a diff between Paul's old
-> > HEAD and your HEAD; then apply that to a new branch based of Paul's
-> > new HEAD.
-> >
-> > Or; you can create a new branch based on the new HEAD and
-> > 'git-cherry-pick' your changes into it.
-> >
-> > Either way, it can be rather painful.
->
-> I didn't make any local changes, so I assumed I could just follow Paul's
-> instructions. But they failed.
+On Tue, Dec 05, Benjamin Herrenschmidt wrote:
 
-You're in easy street then; assuming you just cloned from powerpc.git, just do:
+> Olaf, can you give me a dump of /proc/ioports ? What is sitting at 0 on
+> that PCI bus ?
 
-git-reset --hard origin
+with IDE=y
 
-and your done.
-
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+==> /proc/ioports <==
+00000000-0000001f : dma1
+00000020-00000021 : 8259 (master)
+00000040-0000005f : timer
+00000060-0000006f : i8042
+00000080-0000008f : dma page reg
+000000a0-000000a1 : 8259 (slave)
+000000c0-000000df : dma2
+000002f8-000002ff : serial
+000003c0-000003df : matrox
+000003f8-000003ff : serial
+000004d0-000004d1 : 8259 edge control
+00000898-0000089f : serial
+0000f000-0000f007 : 0000:00:03.1
+  0000f000-0000f007 : ide0
+0000f010-0000f013 : 0000:00:03.1
+  0000f012-0000f012 : ide0
+0000f020-0000f027 : 0000:00:03.1
+0000f030-0000f033 : 0000:00:03.1
+0000f040-0000f04f : 0000:00:03.1
+  0000f040-0000f047 : ide0
+  0000f048-0000f04f : ide1
+00010000-0001ffff : PCI Bus #01
+00020000-0002ffff : PCI Bus #21
+  0002ec00-0002ec3f : 0000:21:01.0
+    0002ec00-0002ec3f : e100
+00030000-0003ffff : PCI Bus #41
+  0003e800-0003e8ff : 0000:41:01.0
+    0003e800-0003e8ff : sym53c8xx
+  0003ec00-0003ecff : 0000:41:01.1
+    0003ec00-0003ecff : sym53c8xx
+00040000-0004ffff : PCI Bus #61
+00100000-001fffff : /pci@400000000112
+  00100000-0010ffff : PCI Bus #01
+  00110000-0011ffff : PCI Bus #21
+    0011ec00-0011ec3f : 0001:21:01.0
+      0011ec00-0011ec3f : e100
+  00120000-0012ffff : PCI Bus #61
