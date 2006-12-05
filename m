@@ -1,10 +1,17 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 0228B67B6D
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 18:41:15 +1100 (EST)
+Date: Tue, 5 Dec 2006 08:41:10 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
 To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 05 Dec 2006 17:52:39 +1100
-Subject: [PATCH 5/5] Cleanup pass over platforms/pseries/hotplug-cpu.c
-In-Reply-To: <1165301556.843426.760217571714.qpush@cradle>
-Message-Id: <20061205065237.9F25C67C01@ozlabs.org>
+Subject: Re: master branch reset
+In-Reply-To: <17780.2568.641734.276805@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.62.0612050839120.12448@pademelon.sonytel.be>
+References: <17780.2568.641734.276805@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,112 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Purely cosmetic. Change pSeries to pseries inline with other parts of the
-kernel, and fix an overly long line.
+On Mon, 4 Dec 2006, Paul Mackerras wrote:
+> If you are following the master branch, throw away the old master
+> branch and grab the new one.  Once the mirrors have caught up, you can
+> do this with:
+> 
+> $ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+> $ git reset --hard FETCH_HEAD
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+I did this yesterday. But when I wanted to update, I got:
 
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   29 +++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+| pademelon$ git pull -v
+| Unpacking 1595 objects
+|  100% (1595/1595) done
+| * committish: ef6a3165e75c189da82c943a081cd1da52068738
+|   branch 'for-2.6.20' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+| * refs/heads/for-2.6.20: same as branch 'for-2.6.20' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+| * committish: e62438630ca37539c8cc1553710bbfaa3cf960a7
+|   branch 'master' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+| * refs/heads/origin: does not fast forward to branch 'master' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc;
+|   not updating.
+| pademelon$
 
-Index: powerpc/arch/powerpc/platforms/pseries/hotplug-cpu.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ powerpc/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -53,7 +53,7 @@ static void rtas_stop_self(void)
- 	panic("Alas, I survived.\n");
- }
- 
--static void pSeries_mach_cpu_die(void)
-+static void pseries_mach_cpu_die(void)
- {
- 	local_irq_disable();
- 	idle_task_exit();
-@@ -88,7 +88,7 @@ static int query_cpu_stopped(unsigned in
- 	return cpu_status;
- }
- 
--static int pSeries_cpu_disable(void)
-+static int pseries_cpu_disable(void)
- {
- 	int cpu = smp_processor_id();
- 
-@@ -104,7 +104,7 @@ static int pSeries_cpu_disable(void)
- 	return 0;
- }
- 
--static void pSeries_cpu_die(unsigned int cpu)
-+static void pseries_cpu_die(unsigned int cpu)
- {
- 	int tries;
- 	int cpu_status;
-@@ -136,7 +136,7 @@ static void pSeries_cpu_die(unsigned int
-  * the logical ids for sibling SMT threads x and y are adjacent, such
-  * that x^1 == y and y^1 == x.
-  */
--static int pSeries_add_processor(struct device_node *np)
-+static int pseries_add_processor(struct device_node *np)
- {
- 	unsigned int cpu;
- 	cpumask_t candidate_map, tmp = CPU_MASK_NONE;
-@@ -197,7 +197,7 @@ out_unlock:
-  * the hard id in the paca(s) to -1 to be consistent with boot time
-  * convention for non-present cpus.
-  */
--static void pSeries_remove_processor(struct device_node *np)
-+static void pseries_remove_processor(struct device_node *np)
- {
- 	unsigned int cpu;
- 	int len, nthreads, i;
-@@ -226,17 +226,18 @@ static void pSeries_remove_processor(str
- 	unlock_cpu_hotplug();
- }
- 
--static int pSeries_smp_notifier(struct notifier_block *nb, unsigned long action, void *node)
-+static int pseries_smp_notifier(struct notifier_block *nb,
-+				unsigned long action, void *node)
- {
- 	int err = NOTIFY_OK;
- 
- 	switch (action) {
- 	case PSERIES_RECONFIG_ADD:
--		if (pSeries_add_processor(node))
-+		if (pseries_add_processor(node))
- 			err = NOTIFY_BAD;
- 		break;
- 	case PSERIES_RECONFIG_REMOVE:
--		pSeries_remove_processor(node);
-+		pseries_remove_processor(node);
- 		break;
- 	default:
- 		err = NOTIFY_DONE;
-@@ -245,8 +246,8 @@ static int pSeries_smp_notifier(struct n
- 	return err;
- }
- 
--static struct notifier_block pSeries_smp_nb = {
--	.notifier_call = pSeries_smp_notifier,
-+static struct notifier_block pseries_smp_nb = {
-+	.notifier_call = pseries_smp_notifier,
- };
- 
- static int __init pseries_cpu_hotplug_init(void)
-@@ -261,13 +262,13 @@ static int __init pseries_cpu_hotplug_in
- 		return 0;
- 	}
- 
--	ppc_md.cpu_die = pSeries_mach_cpu_die;
--	smp_ops->cpu_disable = pSeries_cpu_disable;
--	smp_ops->cpu_die = pSeries_cpu_die;
-+	ppc_md.cpu_die = pseries_mach_cpu_die;
-+	smp_ops->cpu_disable = pseries_cpu_disable;
-+	smp_ops->cpu_die = pseries_cpu_die;
- 
- 	/* Processors can be added/removed only on LPAR */
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
--		pSeries_reconfig_notifier_register(&pSeries_smp_nb);
-+		pSeries_reconfig_notifier_register(&pseries_smp_nb);
- 
- 	return 0;
- }
+2nd try:
+
+| pademelon$ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+| Unpacking 1595 objects
+|  100% (1595/1595) done
+| pademelon$ git reset --hard FETCH_HEAD
+| pademelon$ git pull -v * committish: ef6a3165e75c189da82c943a081cd1da52068738
+|   branch 'for-2.6.20' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+| * refs/heads/for-2.6.20: same as branch 'for-2.6.20' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+| * committish: e62438630ca37539c8cc1553710bbfaa3cf960a7
+|   branch 'master' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+| * refs/heads/origin: does not fast forward to branch 'master' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc;
+|   not updating.
+| pademelon$
+
+Any clues? Delete and reclone?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
