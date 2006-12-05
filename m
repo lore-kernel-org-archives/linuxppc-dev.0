@@ -1,26 +1,28 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx013.isp.belgacom.be (outmx013.isp.belgacom.be
-	[195.238.5.64])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3C43A679FD
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 21:14:08 +1100 (EST)
-Received: from outmx013.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx013.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kB5ADuJq017083
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Dec 2006 11:13:57 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <4575463F.6070902@246tNt.com>
-Date: Tue, 05 Dec 2006 11:13:19 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 8192E67A3A
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Dec 2006 21:51:37 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 5 Dec 2006 11:51:26 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: What is the correct way to indicate an unassigned PCI resource ?
+Message-ID: <20061205105126.GC12351@iram.es>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204123854.GA28159@aepfle.de>
+	<FF278F8E-1F65-488D-8821-86A1D9F3B5DA@kernel.crashing.org>
+	<4574197A.2020204@ru.mvista.com>
+	<4FC2EBCF-C927-435A-9BE3-E4403AFC042D@kernel.crashing.org>
+	<45741DDE.4080509@ru.mvista.com>
+	<20061204132124.4f7c50a9@localhost.localdomain>
+	<45742253.1000807@ru.mvista.com>
+	<20061204142201.68d9621f@localhost.localdomain>
+	<1165293679.29784.39.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: master branch reset
-References: <17780.2568.641734.276805@cargo.ozlabs.ibm.com>	<Pine.LNX.4.62.0612050839120.12448@pademelon.sonytel.be>	<528646bc0612042349t34662037nc641c8e6e2516a09@mail.gmail.com>	<Pine.LNX.4.62.0612050901160.12448@pademelon.sonytel.be>	<528646bc0612050015xa18b33bh4afdc2f9d196f1a1@mail.gmail.com>
-	<Pine.LNX.4.62.0612051022470.20543@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0612051022470.20543@pademelon.sonytel.be>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1165293679.29784.39.camel@localhost.localdomain>
+Cc: Olaf Hering <olaf@aepfle.de>, linux-ide@vger.kernel.org, greg@kroah.com,
+	linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,20 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Dec 05, 2006 at 03:41:19PM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2006-12-04 at 14:22 +0000, Alan wrote:
+> 
+> > The discussion I was having was about sl82cxx and handling unassigned
+> > resources. The zero address isn't relevant to that.
+> 
+> Well, actually, it's unclear to me wether the resource is unassigned or
+> has been assigned to 0 :-) And in the later case, why claim'ing it
+> fails.
 
-> Apparently not :-(
->
-> | pademelon$ git-reset --hard origin
-> | pademelon$ git pull -v
-> | Unpacking 10843 objects
-> |  100% (10843/10843) done
-> | * committish: ef6a3165e75c189da82c943a081cd1da52068738
-> |   branch 'for-2.6.20' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
-> | * refs/heads/for-2.6.20: same as branch 'for-2.6.20' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
-> | * committish: e62438630ca37539c8cc1553710bbfaa3cf960a7
-> |   branch 'master' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
-> | * refs/heads/origin: does not fast forward to branch 'master' of git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc;
-> |   not updating.
-> | pademelon$
->   
-try git pull -f -v
+Well, I don't have the PCI specification, but I have a device with the 
+following gem in its errata (name edited and changed to <Device>):
+
+""The <Device> contains two PCI base registers to allow for both greater 
+flexibility in tightly constrained I/O space as well as the "on the fly" 
+option to access the <Device> registers from either I/O or memory space. 
+Both PCI base registers contained in the <Device> will accept the value 
+of "zero" as a valid and decodable address. This differs from the PCI 2.1 
+specification, where a zero value being written to the PCI base register 
+should disable the register space. <Device> will continue to decode for 
+register accesses using the value "zero" written to the PCI_BS register 
+as the base address for decoding.""
+
+which makes me suspect that a base address of zero really should mean
+unassigned and is a way to disable base registers on a region by region
+basis.
+
+Now the fun with this device is that the I/O region occupies 4kB, so 
+it leads to serious conflicts since there is also an ISA bridge in
+the system (no 8259 anymore, serial console dead, etc...). The best
+way to make this bug harmless is to write all ones to said base
+register (it has 32 bit). This moves it to an address which cannot 
+be generated by the host bridge (unless you program it in a really 
+weird way).
+
+Whatever a specification says, you'll always find some device that
+has a bug in this area.
+
+	Regards,
+	Gabriel
