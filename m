@@ -1,22 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D507A67BFF
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 17:21:26 +1100 (EST)
-Date: Wed, 6 Dec 2006 17:21:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: albertl@mail.com
-Subject: Re: Oops in pata_pdc2027x
-Message-Id: <20061206172114.a1c515f8.sfr@canb.auug.org.au>
-In-Reply-To: <45765EC7.2000908@tw.ibm.com>
-References: <20061205170144.0b98d7e6.sfr@canb.auug.org.au>
-	<45765EC7.2000908@tw.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: shared config registers and locking
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20061206060625.GA30005@gate.ebshome.net>
+References: <1165381847.5469.70.camel@localhost.localdomain>
+	<1165382189.5469.76.camel@localhost.localdomain>
+	<20061206060625.GA30005@gate.ebshome.net>
+Content-Type: text/plain
+Date: Wed, 06 Dec 2006 17:36:23 +1100
+Message-Id: <1165386983.5469.94.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__6_Dec_2006_17_21_14_+1100_J+KINg=8AeB7wdyv"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Albert Lee <albertcc@tw.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +20,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__6_Dec_2006_17_21_14_+1100_J+KINg=8AeB7wdyv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Wed, 06 Dec 2006 14:10:15 +0800 Albert Lee <albertcc@tw.ibm.com> wrote:
+> No, it's not simpler. This just does not handle the problem this 
+> workaround was implemented for.
+
+Quite possibly I didn't fully understand it as there is little
+explanation in the code about what is going on except that the RX clock
+from the PHY is dropping and that is causing TX timeouts...
+
+> You don't understand what this workaround does. It has nothing to do 
+> with TX path at all. It deals with RX one and the fact that in that 
+> particular MAC design whole RX domain is clocked from this clock, 
+> meaning some parts of EMAC just simply stop working.
+
+Ok. Up to what extent ? Enough so that MDIO stops working ?
+
+> For some modes (e.g. SMII) this problem will not arise as this clock is always 
+> present, there are other cases when it's not needed (like sane PHY).
 >
-> Where could I download the patched kernel source? There are two
-> POWER5 9110-51A boxes here. Maybe I could try to reproduce the problem
-> on these boxes.
+> For example, how do you handle PHY detection if you cannot talk to the 
+> PHY?
 
-You can just use Linus' current tree - it exhibits the same problem (and
-the powerpc tree has been merged into it).
+Ok, so MDIO is going down... Do you have some examples of which PHYs are
+causing this ? (for my own curiosity/education)
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> Ben, my suggestion, before you start "forking" and "cleaning up" this 
+> code, understand what it does.
 
---Signature=_Wed__6_Dec_2006_17_21_14_+1100_J+KINg=8AeB7wdyv
-Content-Type: application/pgp-signature
+That is gratuituously mean.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+I'm forking it to make everybody's (including yours) life easy as I had
+to do major changes to the driver to handle SMP safety, OF platform
+probing, and other things like that and I'm trying to avoid disrupting
+the existing working driver while I am doing that.
 
-iD8DBQFFdmFaFdBgD/zoJvwRAlrrAJ9nTsXfOmskR8L8mTwmI4mp8C65KwCgmDUe
-HB9+ck7EU3PHukwX4zzUs20=
-=OW9h
------END PGP SIGNATURE-----
+This is more a "branch" than a "fork" per-se and is, I think, the
+appropriate thing to do when changes of that magnitude are needed.
 
---Signature=_Wed__6_Dec_2006_17_21_14_+1100_J+KINg=8AeB7wdyv--
+I'm not planning to do more "cleanups" than the obvious things that will
+naturally result from the changes, like removing ifdef's whenever
+possible as the driver becomes multiplatform capable, etc...
+
+Your attack about not understanding what it does is low, since it
+concern specifically a workaround for a problem that isn't clearly
+explained in the code, and  I was specifically asking you about it
+before changing things exactly because I wasn't sure about my
+understanding of it !
+
+Besides, I don't understand your bitterness about the situation as, as I
+said, I'm trying hard to do things in a way that will be easier to deal
+with for everybody, and I've tried to discuss my choices with you on IRC
+pretty much every time, to be mostly received with harsh words if not
+insults.
+
+Now, regarding that clocking problem, I wonder if it is related to Apple
+disabling the automatic low power mode on some PHYs on GEM ... I think
+that mode causes that stopping of the RX clock when the link is down and
+this is disrupting the chip. (Just wondering if it's a similar isssue).
+
+Now back to this workaround, there is still the issue that you noticed
+that on some chips, the only way to tweak the clocks is globally for all
+EMACs (440GX). Does that mean that on such a setup, removing the link
+after probe will be fatal to the driver ? I suppose switching to
+internal clocks of all EMACs is not an option as it will disrupt
+activity on all the other ones....
+
+Ben.
