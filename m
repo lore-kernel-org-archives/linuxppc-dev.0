@@ -1,20 +1,19 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CA69D67C44
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 53A6067C00
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 04:50:41 +1100 (EST)
+	Thu,  7 Dec 2006 06:13:56 +1100 (EST)
+Message-ID: <45771721.1080102@grandegger.com>
+Date: Wed, 06 Dec 2006 20:16:49 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: How to use the device tree for lite5200
-From: Jon Loeliger <jdl@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <528646bc0612060821u6fbb0de2o26d04ab67d705d75@mail.gmail.com>
 References: <4576E8CC.6050508@grandegger.com>
-	<528646bc0612060820w5be26647h2c14730856cc6ad6@mail.gmail.com>
-	<528646bc0612060821u6fbb0de2o26d04ab67d705d75@mail.gmail.com>
-Content-Type: text/plain
-Message-Id: <1165427351.19135.61.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Wed, 06 Dec 2006 11:49:12 -0600
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	<B1186D1B-C47D-46C3-B928-8FDE4A55363B@kernel.crashing.org>
+In-Reply-To: <B1186D1B-C47D-46C3-B928-8FDE4A55363B@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,16 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-06 at 10:21, Grant Likely wrote:
-> >
-> > Add the -f flag to dtc to ignore the missing /chosen node error
-> >
-> > Use the "-O dtb" flag to output a fdt blob
+Kumar Gala wrote:
 > 
-> Oh, and like Kumar said, you need the -V 0x10 flag to generate the
-> correct blob version.
+> On Dec 6, 2006, at 9:59 AM, Wolfgang Grandegger wrote:
+> 
+>> Hello,
+>>
+>> I want to boot PowerPC Linux 2.6.19 on my Icecube board but I didn't
+>> succeed yet to get lite5200.dts compiled and an appropriate image 
+>> created:
+>>
+>>    $ dtc -b0 lite5200.dts
+>>    DTC: dts->dts  on file "lite5200.dts"
+>>    ERROR: Missing /chosen node
+>>    Input tree has errors
+>>
+>> What is the procedure to make and boot an uImage for the U-Boot
+>> bootloader. I read about the third argument for bootm but did not
+>> understand how to use it.
+> 
+> How have you booted in the past?  Do you tftp down the images or run 
+> from flash?
 
-Oh, and, -V 0x10 is the default now with a current
-top-of-git DTC too.  :-)
+Yes, at least for development.
 
-jdl
+> Here's an example assuming you have a kernel image at address $loadaddr 
+> and the dtb at $ftaddr
+> 
+> dtc -b0 -Idts -Odtb -V16 lite5200.dts > lite5200.dtb
+> 
+> download lite5200.dtb to the system
+> 
+> => bootm $loadaddr - $fdtaddr
+
+Great, that worked with the additional "-f" option, as suggested by 
+Grant. Now I can boot the kernel but BESTCOM and FEC support seem still 
+missing. Are there already patches around?
+
+Thanks to all who replied.
+
+Wolfgang.
