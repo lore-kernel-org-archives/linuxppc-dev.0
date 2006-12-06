@@ -1,12 +1,33 @@
-Return-Path: <Marta.Chamorro@XEROX.COM>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7197A.76775F36"
-Subject: Power management for ppc 85xx
-Date: Wed, 6 Dec 2006 21:06:56 -0000
-Message-ID: <BFEE19E1D0DBF84698D76276388DCB843F207B@gbrwgceumf01.eu.xerox.net>
-From: "Chamorro, Marta" <Marta.Chamorro@XEROX.COM>
-To: <linuxppc-dev@ozlabs.org>, <linuxppc-embedded@ozlabs.org>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8749767C05
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 08:16:29 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	kB6LUqkr020773
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 14:30:52 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kB6LGPpV007396
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:16:25 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	kB6L0jrZ027527
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:00:45 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 727394B924
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 15:16:24 -0600 (CST)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	kB6LGO8d012990
+	for linuxppc-dev@ozlabs.org; Wed, 6 Dec 2006 15:16:24 -0600
+Date: Wed, 6 Dec 2006 15:16:24 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH][RESEND] qe_ic: Do a sync when masking interrupts.
+Message-ID: <20061206211624.GA12800@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,149 +37,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This patch causes a sync do be done after masking a QE interrupt, to
+ensure that the masking has completed before interrupts are enabled.
+This allows the masking of the cascade IRQ to be removed without causing
+spurious interrupts.
 
-------_=_NextPart_001_01C7197A.76775F36
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The mask_and_ack function is also removed and set to the mask function,
+as the two are identical.
 
-Hi there!
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/sysdev/qe_lib/qe_ic.c |   40 +++++++++---------------------------
+ 1 files changed, 10 insertions(+), 30 deletions(-)
 
-=20
-
-Hope someone out there can give me some pointers here. I've got a 2.6.18
-kernel on a ppc 8555, which I configured to enable power management
-(CONFIG_PM=3Dy). After doing that, the file /sys/power/state appears on =
-my
-file system. If I cat the file I get "standby mem" (without the quotes),
-but if I try to write to it (to change the state) I get an EPERM. I
-assume it is because I have no code that implements any power save mode
-changes, only the interface to change them. Am I wrong? How can I tell
-for sure? (the file is writable, so it is not a problem with writing
-permissions)
-
-=20
-
-So the question is (if I am right) where do I get the code from? I am
-hoping someone has implemented power save for that processor already,
-but I just don't know where to start looking for that code. Can someone
-help?=20
-
-=20
-
-Thanks very much in advance.
-
-=20
-
-Marta Chamorro.
-
-
-------_=_NextPart_001_01C7197A.76775F36
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-GB link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi there!<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hope someone out there can give me some pointers =
-here. I&#8217;ve
-got a 2.6.18 kernel on a ppc 8555, which I configured to enable power
-management (CONFIG_PM=3Dy). After doing that, the file /sys/power/state =
-appears
-on my file system. If I cat the file I get &#8220;standby mem&#8221; =
-(without
-the quotes), but if I try to write to it (to change the state) I get an =
-EPERM. I
-assume it is because I have no code that implements any power save mode =
-changes,
-only the interface to change them. Am I wrong? How can I tell for sure? =
-(the
-file is writable, so it is not a problem with writing =
-permissions)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>So the question is (if I am right) where do I get the =
-code
-from? I am hoping someone has implemented power save for that processor
-already, but I just don&#8217;t know where to start looking for that =
-code. Can someone
-help? <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks very much in =
-advance.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Marta Chamorro.<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C7197A.76775F36--
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+index 6995f51..74e48d9 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+@@ -223,23 +223,15 @@ static void qe_ic_mask_irq(unsigned int 
+ 	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
+ 		    temp & ~qe_ic_info[src].mask);
+ 
+-	spin_unlock_irqrestore(&qe_ic_lock, flags);
+-}
+-
+-static void qe_ic_mask_irq_and_ack(unsigned int virq)
+-{
+-	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
+-	unsigned long flags;
+-	u32 temp;
+-
+-	spin_lock_irqsave(&qe_ic_lock, flags);
+-
+-	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
+-	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
+-		    temp & ~qe_ic_info[src].mask);
+-
+-	/* There is nothing to do for ack here, ack is handled in ISR */
++	/* Flush the above write before enabling interrupts; otherwise,
++	 * spurious interrupts will sometimes happen.  To be 100% sure
++	 * that the write has reached the device before interrupts are
++	 * enabled, the mask register would have to be read back; however,
++	 * this is not required for correctness, only to avoid wasting
++	 * time on a large number of spurious interrupts.  In testing,
++	 * a sync reduced the observed spurious interrupts to zero.
++	 */
++	mb();
+ 
+ 	spin_unlock_irqrestore(&qe_ic_lock, flags);
+ }
+@@ -248,7 +240,7 @@ static struct irq_chip qe_ic_irq_chip = 
+ 	.typename = " QEIC  ",
+ 	.unmask = qe_ic_unmask_irq,
+ 	.mask = qe_ic_mask_irq,
+-	.mask_ack = qe_ic_mask_irq_and_ack,
++	.mask_ack = qe_ic_mask_irq,
+ };
+ 
+ static int qe_ic_host_match(struct irq_host *h, struct device_node *node)
+@@ -331,34 +323,22 @@ unsigned int qe_ic_get_high_irq(struct q
+ 	return irq_linear_revmap(qe_ic->irqhost, irq);
+ }
+ 
+-/* FIXME: We mask all the QE Low interrupts while handling.  We should
+- * let other interrupt come in, but BAD interrupts are generated */
+ void fastcall qe_ic_cascade_low(unsigned int irq, struct irq_desc *desc)
+ {
+ 	struct qe_ic *qe_ic = desc->handler_data;
+-	struct irq_chip *chip = irq_desc[irq].chip;
+-
+ 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
+ 
+-	chip->mask_ack(irq);
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+-	chip->unmask(irq);
+ }
+ 
+-/* FIXME: We mask all the QE High interrupts while handling.  We should
+- * let other interrupt come in, but BAD interrupts are generated */
+ void fastcall qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
+ {
+ 	struct qe_ic *qe_ic = desc->handler_data;
+-	struct irq_chip *chip = irq_desc[irq].chip;
+-
+ 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
+ 
+-	chip->mask_ack(irq);
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+-	chip->unmask(irq);
+ }
+ 
+ void __init qe_ic_init(struct device_node *node, unsigned int flags)
+-- 
+1.4.2.3
