@@ -1,35 +1,14 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E3D3467C5A
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 09:22:57 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6MMrOO027264
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 17:22:53 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB6MMqZj537438
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:22:52 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB6MMq68009518
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:22:52 -0700
-Date: Wed, 6 Dec 2006 16:22:47 -0600
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>, paulus@samba.org
-Subject: Re: [PATCH]: powerpc documentation: Clarify why twi appears in the
-	i/o	macros.
-Message-ID: <20061206222246.GG17931@austin.ibm.com>
-References: <20061206182922.GA17931@austin.ibm.com>
-	<45770E44.30000@ru.mvista.com>
-	<20061206194516.GD17931@austin.ibm.com>
-	<45772700.2080708@ru.mvista.com>
+Return-Path: <Marta.Chamorro@xerox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45772700.2080708@ru.mvista.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Power management for ppc 85xx
+Date: Wed, 6 Dec 2006 22:27:35 -0000
+Message-ID: <BFEE19E1D0DBF84698D76276388DCB843F208C@gbrwgceumf01.eu.xerox.net>
+In-Reply-To: <99A19F8F-62E6-4D3D-A34B-3D815C7ED0C4@kernel.crashing.org>
+From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,77 +18,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Hi Kumar, thanks for the reply.
 
-Please apply.
+I am not sure I fully understand your question, but here's an attempt of
+an answer :)
 
-On Wed, Dec 06, 2006 at 11:24:32PM +0300, Sergei Shtylyov wrote:
-> >>  A minor type here -- double "the".
->    And here as well. :-)
+What I want to do is:
 
-I forgot to say "quilt refresh" !? My quality control mechanism
-broke.
+First stage - Get the processor on doze mode (core halted, but responds
+to interrupts)
+Second stage - Once I understand how to do that, using all the right
+interfaces and so on, get other devices (mainly image processing ASICS)
+to stop clocks.
 
-So again ... 
+Does that answer your question? Can you help? Do you know where to find
+the code that deals with power management for the ppc 8555?=20
 
---linas
+Regards,
 
-Clarify why twi appears in the i/o macros. Shorten some over-length
-lines, while we're at it.
+Marta Chamorro
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: 06 December 2006 21:51
+To: Chamorro, Marta
+Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
+Subject: Re: Power management for ppc 85xx
 
-----
- include/asm-powerpc/io.h |   33 ++++++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 11 deletions(-)
 
-Index: linux-2.6.19-git7/include/asm-powerpc/io.h
-===================================================================
---- linux-2.6.19-git7.orig/include/asm-powerpc/io.h	2006-12-06 16:11:31.000000000 -0600
-+++ linux-2.6.19-git7/include/asm-powerpc/io.h	2006-12-06 16:19:40.000000000 -0600
-@@ -62,22 +62,33 @@ extern unsigned long pci_dram_offset;
-  *
-  * Low level MMIO accessors
-  *
-- * This provides the non-bus specific accessors to MMIO. Those are PowerPC
-- * specific and thus shouldn't be used in generic code. The accessors
-- * provided here are:
-+ * This provides the non-bus specific accessors to MMIO. Those are 
-+ * PowerPC specific and thus shouldn't be used in generic code. The 
-+ * accessors provided here are:
-  *
-  *	in_8, in_le16, in_be16, in_le32, in_be32, in_le64, in_be64
-  *	out_8, out_le16, out_be16, out_le32, out_be32, out_le64, out_be64
-  *	_insb, _insw_ns, _insl_ns, _outsb, _outsw_ns, _outsl_ns
-  *
-- * Those operate directly on a kernel virtual address. Note that the prototype
-- * for the out_* accessors has the arguments in opposite order from the usual
-- * linux PCI accessors. Unlike those, they take the address first and the value
-- * next.
-- *
-- * Note: I might drop the _ns suffix on the stream operations soon as it is
-- * simply normal for stream operations to not swap in the first place.
-- *
-+ * Those operate directly on a kernel virtual address. Note that the 
-+ * prototype for the out_* accessors has the arguments in opposite 
-+ * order from the usual linux PCI accessors. Unlike those, they take 
-+ * the address first and the value next.
-+ *
-+ * Note: I might drop the _ns suffix on the stream operations soon as it
-+ * is simply normal for stream operations to not swap in the first place.
-+ *
-+ * Read operations have additional twi & isync to make sure the read
-+ * is actually performed (i.e. the data has come back) before we start
-+ * executing any following instructions.
-+ *
-+ * A data-dependent branch followed by an isync ensures that no
-+ * instructions after the isync in program order will be 
-+ * (speculatively) executed before the isync has completed, and the 
-+ * isync won't complete until the branch is resolved. The load that 
-+ * the twi depends on has to complete before anything else is 
-+ * executed; in particular, it's a barrier to keep MMIO reads ordered 
-+ * before main-storage accesses.
-  */
- 
- #ifdef CONFIG_PPC64
+On Dec 6, 2006, at 3:06 PM, Chamorro, Marta wrote:
+
+> Hi there!
+>
+>
+>
+> Hope someone out there can give me some pointers here. I've got a =20
+> 2.6.18 kernel on a ppc 8555, which I configured to enable power =20
+> management (CONFIG_PM=3Dy). After doing that, the file /sys/power/=20
+> state appears on my file system. If I cat the file I get "standby =20
+> mem" (without the quotes), but if I try to write to it (to change =20
+> the state) I get an EPERM. I assume it is because I have no code =20
+> that implements any power save mode changes, only the interface to =20
+> change them. Am I wrong? How can I tell for sure? (the file is =20
+> writable, so it is not a problem with writing permissions)
+I can pretty much say that there isn't any code that does pwr mgmt =20
+for 85xx.  I'm not sure what exactly your issue is, but there =20
+definitely isn't any code.
+> So the question is (if I am right) where do I get the code from? I =20
+> am hoping someone has implemented power save for that processor =20
+> already, but I just don't know where to start looking for that =20
+> code. Can someone help?
+Getting the core to nap is easy enough, doing proper power savings =20
+for the full SoC maybe more challenging.
+
+What exact behavior are you looking for?  Something like suspend/=20
+resume or just idle power savings?
+
+- k
