@@ -1,14 +1,31 @@
-Return-Path: <Marta.Chamorro@xerox.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E28AC67CC6
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 09:32:27 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6MWOhS017143
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 17:32:24 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB6MWO9D398582
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:32:24 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB6MWN6g009187
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:32:24 -0700
+Date: Wed, 6 Dec 2006 16:32:23 -0600
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 0/16] Spidernet RX Misc cleanups and fixes
+Message-ID: <20061206223223.GH17931@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Power management for ppc 85xx
-Date: Wed, 6 Dec 2006 22:27:35 -0000
-Message-ID: <BFEE19E1D0DBF84698D76276388DCB843F208C@gbrwgceumf01.eu.xerox.net>
-In-Reply-To: <99A19F8F-62E6-4D3D-A34B-3D815C7ED0C4@kernel.crashing.org>
-From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
+	James K Lewis <jklewis@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,60 +35,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar, thanks for the reply.
 
-I am not sure I fully understand your question, but here's an attempt of
-an answer :)
+Andrew, 
 
-What I want to do is:
+Please apply and forward upstream. This series of 16 small patches 
+consist of mostly of various cleanups, a few fixes, and a clarification
+of the flow of the RX side of the spidernet ethernet driver.  The 
+first patch, though, is a resubmit of an old patch.
 
-First stage - Get the processor on doze mode (core halted, but responds
-to interrupts)
-Second stage - Once I understand how to do that, using all the right
-interfaces and so on, get other devices (mainly image processing ASICS)
-to stop clocks.
-
-Does that answer your question? Can you help? Do you know where to find
-the code that deals with power management for the ppc 8555?=20
-
-Regards,
-
-Marta Chamorro
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: 06 December 2006 21:51
-To: Chamorro, Marta
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: Power management for ppc 85xx
-
-
-On Dec 6, 2006, at 3:06 PM, Chamorro, Marta wrote:
-
-> Hi there!
->
->
->
-> Hope someone out there can give me some pointers here. I've got a =20
-> 2.6.18 kernel on a ppc 8555, which I configured to enable power =20
-> management (CONFIG_PM=3Dy). After doing that, the file /sys/power/=20
-> state appears on my file system. If I cat the file I get "standby =20
-> mem" (without the quotes), but if I try to write to it (to change =20
-> the state) I get an EPERM. I assume it is because I have no code =20
-> that implements any power save mode changes, only the interface to =20
-> change them. Am I wrong? How can I tell for sure? (the file is =20
-> writable, so it is not a problem with writing permissions)
-I can pretty much say that there isn't any code that does pwr mgmt =20
-for 85xx.  I'm not sure what exactly your issue is, but there =20
-definitely isn't any code.
-> So the question is (if I am right) where do I get the code from? I =20
-> am hoping someone has implemented power save for that processor =20
-> already, but I just don't know where to start looking for that =20
-> code. Can someone help?
-Getting the core to nap is easy enough, doing proper power savings =20
-for the full SoC maybe more challenging.
-
-What exact behavior are you looking for?  Something like suspend/=20
-resume or just idle power savings?
-
-- k
+--linas
