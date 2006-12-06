@@ -1,32 +1,16 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B37FD67CEE
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 10:52:10 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6NqTBK005172
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:52:29 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB6Np31R261620
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:51:03 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB6Np2If025882
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:51:03 -0500
-Date: Wed, 6 Dec 2006 17:51:02 -0600
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 16/16] Spidernet Rework RX linked list
-Message-ID: <20061206235102.GP4649@austin.ibm.com>
-References: <20061206223223.GH17931@austin.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 7 Dec 2006 10:47:57 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Virtex device tree generator proof of concept
+Message-ID: <20061206234757.GD17446@localhost.localdomain>
+References: <977C41F842E66D4CB2E41332313B615002F76196@XSJ-EXCHVS1.xlnx.xilinx.com>
+	<528646bc0612061514mbcb2627wbe83cd47a06b31b9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061206223223.GH17931@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-	James K Lewis <jklewis@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	jgarzik@pobox.com
+In-Reply-To: <528646bc0612061514mbcb2627wbe83cd47a06b31b9@mail.gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,46 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hmm.. I seem to have missed the beginning of this thread, somehow.
 
-Make the hardware perceive the RX descriptor ring as a 
-null-terminated linked list, instead of a circular ring.
+On Wed, Dec 06, 2006 at 04:14:33PM -0700, Grant Likely wrote:
+> On 12/6/06, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+> >
+> > Hi Grant,
+> >
+> > This looks really cool...  I've hacked around in it a bit to generate
+> > device trees that go more completely through dtc.  (I'd be happy
+> > to push these modifications back to you, if you're interested...)
+> 
+> Yes please, send me your patches.
+> 
+> >
+> > I'm curious if you've heard of anyone using device trees other than
+> > at boot time: for instance, using an incomplete device tree blob to
+> > represent components discovered at runtime?  It looks like it should
+> > be possible to rip out alot of the code from kernel/powerpc/prom.c in
+> > recent kernels to parse incomplete device trees, too...  Any thoughts?
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: James K Lewis <jklewis@us.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
+That reminds me:  I was definitely thinking about implementing a
+"graft" function in libfdt for merging a tree from one blob into
+another.
 
-----
- drivers/net/spider_net.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.19-git7/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-06 16:03:20.000000000 -0600
-+++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-06 16:05:48.000000000 -0600
-@@ -389,9 +389,13 @@ spider_net_prepare_rx_descr(struct spide
- 		card->spider_stats.rx_iommu_map_error++;
- 		descr->dmac_cmd_status = SPIDER_NET_DESCR_NOT_IN_USE;
- 	} else {
-+		descr->next_descr_addr = 0;
- 		wmb();
- 		descr->dmac_cmd_status = SPIDER_NET_DESCR_CARDOWNED |
- 					 SPIDER_NET_DMAC_NOINTR_COMPLETE;
-+
-+		wmb();
-+		descr->prev->next_descr_addr = descr->bus_addr;
- 	}
- 
- 	return 0;
-@@ -1676,12 +1680,6 @@ spider_net_open(struct net_device *netde
- 					+ card->num_tx_desc * sizeof(struct spider_net_descr),
- 	                          card->num_rx_desc);
- 
--	descr = card->rx_chain.head;
--	do {
--		descr->next_descr_addr = descr->next->bus_addr;
--		descr = descr->next;
--	} while (descr != card->rx_chain.head);
--
- 	/* allocate rx skbs */
- 	if (spider_net_alloc_rx_skbs(card))
- 		goto alloc_skbs_failed;
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
