@@ -1,31 +1,14 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB59467BF2
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 09:51:23 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6MpKES024906
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 17:51:20 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB6MpKP5294690
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 17:51:20 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB6MpJxd018992
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 17:51:20 -0500
-Date: Wed, 6 Dec 2006 16:51:18 -0600
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/5] Move rtas_stop_self() into
-	platforms/pseries/hotplug-cpu.c
-Message-ID: <20061206225118.GI17931@austin.ibm.com>
-References: <1165301556.843426.760217571714.qpush@cradle>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1165301556.843426.760217571714.qpush@cradle>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <BFEE19E1D0DBF84698D76276388DCB843F208C@gbrwgceumf01.eu.xerox.net>
+References: <BFEE19E1D0DBF84698D76276388DCB843F208C@gbrwgceumf01.eu.xerox.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4DA05580-4BD0-41D5-B2DA-62CD42C28FD2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Power management for ppc 85xx
+Date: Wed, 6 Dec 2006 16:53:20 -0600
+To: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,13 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 05, 2006 at 05:52:36PM +1100, Michael Ellerman wrote:
-> As the first step in consolidating the pseries hotplug cpu code,
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-As per previous discussion,
+On Dec 6, 2006, at 4:27 PM, Chamorro, Marta wrote:
 
-Acked-by: Linas Vepstas <linas@austin.ibm.cm>
+> Hi Kumar, thanks for the reply.
+>
+> I am not sure I fully understand your question, but here's an  
+> attempt of
+> an answer :)
+>
+> What I want to do is:
+>
+> First stage - Get the processor on doze mode (core halted, but  
+> responds
+> to interrupts)
+> Second stage - Once I understand how to do that, using all the right
+> interfaces and so on, get other devices (mainly image processing  
+> ASICS)
+> to stop clocks.
+>
+> Does that answer your question? Can you help? Do you know where to  
+> find
+> the code that deals with power management for the ppc 8555?
 
---linas
+It does, what periphs are you using on the 8555 itself?
+
+- k
