@@ -1,14 +1,21 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <BFEE19E1D0DBF84698D76276388DCB843F207B@gbrwgceumf01.eu.xerox.net>
-References: <BFEE19E1D0DBF84698D76276388DCB843F207B@gbrwgceumf01.eu.xerox.net>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B733367C71
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 08:59:49 +1100 (EST)
+In-Reply-To: <20061206215042.GA13675@ld0162-tx32.am.freescale.net>
+References: <20061206215042.GA13675@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <99A19F8F-62E6-4D3D-A34B-3D815C7ED0C4@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9A5124B0-DA40-4994-BFBC-73ED9DB72E86@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Power management for ppc 85xx
-Date: Wed, 6 Dec 2006 15:50:50 -0600
-To: "Chamorro, Marta" <Marta.Chamorro@XEROX.COM>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH/RFC] Change the program check exception from EXC_XFER_STD
+	to EXC_XFER_EE.
+Date: Wed, 6 Dec 2006 15:59:37 -0600
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +26,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 6, 2006, at 3:06 PM, Chamorro, Marta wrote:
+On Dec 6, 2006, at 3:50 PM, Scott Wood wrote:
 
-> Hi there!
+> This patch causes interrupts to be enabled in  
+> program_check_exception()
+> if they were enabled in the faulting context.  This is required  
+> because
+> do_mathemu() calls get_user(), which can sleep, and thus triggers an
+> assertion if called with interrupts disabled.
 >
->
->
-> Hope someone out there can give me some pointers here. I=92ve got a =20=
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> Is there any reason why ProgramCheck needs to be EXC_XFER_STD?  Has
+> nobody ever used math emulation with CONFIG_DEBUG_SPINLOCK_SLEEP  
+> before?
 
-> 2.6.18 kernel on a ppc 8555, which I configured to enable power =20
-> management (CONFIG_PM=3Dy). After doing that, the file /sys/power/=20
-> state appears on my file system. If I cat the file I get =93standby =20=
+This has come up before and I think our desired solution is to use  
+use local_irq_enable() in traps.c.  For some reason we didn't realize  
+that we needed to fix the do_mathemu() path.
 
-> mem=94 (without the quotes), but if I try to write to it (to change =20=
+Take a look at the following threads:
+http://lkml.org/lkml/2006/2/22/243
+http://ozlabs.org/pipermail/linuxppc-dev/2006-August/025016.html
+http://git.kernel.org/git/?p=linux/kernel/git/paulus/ 
+powerpc.git;a=commitdiff;h=cd8a5673e9abb3fde0a1c25ee63a60fe1908c6f5
 
-> the state) I get an EPERM. I assume it is because I have no code =20
-> that implements any power save mode changes, only the interface to =20
-> change them. Am I wrong? How can I tell for sure? (the file is =20
-> writable, so it is not a problem with writing permissions)
-I can pretty much say that there isn't any code that does pwr mgmt =20
-for 85xx.  I'm not sure what exactly your issue is, but there =20
-definitely isn't any code.
-> So the question is (if I am right) where do I get the code from? I =20
-> am hoping someone has implemented power save for that processor =20
-> already, but I just don=92t know where to start looking for that =20
-> code. Can someone help?
-Getting the core to nap is easy enough, doing proper power savings =20
-for the full SoC maybe more challenging.
-
-What exact behavior are you looking for?  Something like suspend/=20
-resume or just idle power savings?
-
-- k=
+- kumar
