@@ -1,25 +1,18 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id AFB4367C00
+Return-Path: <Hengmeej@linsys.ca>
+Received: from linsys.ca (205-200-74-130.static.mts.net [205.200.74.130])
+	by ozlabs.org (Postfix) with ESMTP id B340D67C25
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 02:56:14 +1100 (EST)
-Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id C1B3B99635
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Dec 2006 16:56:12 +0100 (CET)
-Received: from [172.16.0.100] (p5497EE5C.dip.t-dialin.net [84.151.238.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id A26EC93670
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Dec 2006 16:56:12 +0100 (CET)
-Message-ID: <4576E8CC.6050508@grandegger.com>
-Date: Wed, 06 Dec 2006 16:59:08 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
+	Thu,  7 Dec 2006 03:01:30 +1100 (EST)
+Received: from WorldClient by linsys.ca (MDaemon PRO v9.5.3)
+	with ESMTP id md50000125176.msg
+	for <linuxppc-embedded@ozlabs.org>; Wed, 06 Dec 2006 09:56:14 -0600
+Date: Wed, 06 Dec 2006 09:56:09 -0600
+From: "Jantira Hengmeechai (Tai)" <Hengmeej@linsys.ca>
 To: linuxppc-embedded@ozlabs.org
-Subject: How to use the device tree for lite5200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: TEMAC driver for linuxppc-2.4
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="_1206-0956-09-PART-BREAK"
+Message-ID: <WorldClient-F200612060956.AA56090065@linsys.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,20 +23,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+--_1206-0956-09-PART-BREAK
+Content-Type: text/plain; charset=us-ascii
 
-I want to boot PowerPC Linux 2.6.19 on my Icecube board but I didn't 
-succeed yet to get lite5200.dts compiled and an appropriate image created:
+Hello all,
+I am using uClinux (linuxppc-2.4) for the Xilinx Virtex-4 powerpc board.
+http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/powerpc_linux/
 
-   $ dtc -b0 lite5200.dts
-   DTC: dts->dts  on file "lite5200.dts"
-   ERROR: Missing /chosen node
-   Input tree has errors
+I would like to use XTEMAC, but there are only XEMAC and XGEMAC driver 
+available.
+Please inform me, if anyone know how to get the XTEMAC driver for 
+linuxppc-2.4.
 
-What is the procedure to make and boot an uImage for the U-Boot 
-bootloader. I read about the third argument for bootm but did not 
-understand how to use it.
+Thanks,
+Jantira.
 
-TIA.
+--_1206-0956-09-PART-BREAK
+Content-Type: text/html; charset=us-ascii
 
-Wolfgang.
+<HTML>
+<HEAD> <META http-equiv=Content-Type content="text/html; charset=us-ascii"> 
+<STYLE title="table borders">.htmtableborders, .htmtableborders td, 
+.htmtableborders th {border : 1px dashed lightgrey ! important;}  </STYLE>  
+<STYLE type=text/css>html, body { border: 0px; }  span.macro, span.macro ul, 
+span.macro div, span.macro p {background : #CCCCCC;} </STYLE>  <STYLE 
+type=text/css> p{margin-bottom: 0.15em;margin-top: 
+0.15em;}body{font-family:;font-size:10pt;}; </STYLE> </HEAD> <BODY><FONT 
+style="FONT-SIZE: 10pt; FONT-FAMILY: "> <DIV>Hello all,</DIV> <DIV>I am 
+using uClinux (linuxppc-2.4) for the Xilinx Virtex-4 powerpc board.</DIV> 
+<DIV><A 
+href="http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/powerpc_linux/" 
+target=_blank><FONT color=#0000ff>
+http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux/powerpc_linux/</FONT></A>
+</DIV> <DIV>&nbsp;</DIV> <DIV>I would like to use XTEMAC, but there are 
+only&nbsp;XEMAC and XGEMAC driver available.</DIV> <DIV>Please inform me, if 
+anyone know how to get the XTEMAC driver for linuxppc-2.4.</DIV> <DIV>
+&nbsp;</DIV> <DIV>Thanks,</DIV> <DIV>Jantira.</DIV></FONT></BODY>
+</HTML>
+
+--_1206-0956-09-PART-BREAK--
