@@ -1,24 +1,25 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DDBAA67D5B
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 10:34:53 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6NYokH013843
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:34:50 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB6NYoB1280438
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:34:50 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB6NYn0d008170
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:34:50 -0500
-Date: Wed, 6 Dec 2006 17:34:49 -0600
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5A9C667D75
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 10:36:11 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6Na7qp017716
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:36:07 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB6Na6ID550424
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 16:36:06 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB6Na6dB030470
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 16:36:06 -0700
+Date: Wed, 6 Dec 2006 17:36:05 -0600
 To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 5/16] Spidernet RX skb mem leak
-Message-ID: <20061206233449.GE4649@austin.ibm.com>
+Subject: [PATCH 6/16] Spidernet another skb mem leak
+Message-ID: <20061206233605.GF4649@austin.ibm.com>
 References: <20061206223223.GH17931@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,73 +38,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-One of the unlikely error branches has an skb memory leak.
-Fix this by handling the error conditions consistently.
+Another skb leak in an error branch. Fix this by adding
+call to dev_kfree_skb_irq() after moving to a more
+appropriate spot.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: James K Lewis <jklewis@us.ibm.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 
 ----
- drivers/net/spider_net.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/spider_net.c |   23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
 Index: linux-2.6.19-git7/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-06 16:02:58.000000000 -0600
-+++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-06 16:03:00.000000000 -0600
-@@ -884,8 +884,8 @@ spider_net_do_ioctl(struct net_device *n
-  *
-  * returns 1 on success, 0 if no packet was passed to the stack
-  *
-- * iommu-unmaps the skb, fills out skb structure and passes the data to the
-- * stack. The descriptor state is not changed.
-+ * Fills out skb structure and passes the data to the stack.
-+ * The descriptor state is not changed.
-  */
- static int
- spider_net_pass_skb_up(struct spider_net_descr *descr,
-@@ -900,10 +900,6 @@ spider_net_pass_skb_up(struct spider_net
+--- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-06 16:03:00.000000000 -0600
++++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-06 16:03:04.000000000 -0600
+@@ -897,19 +897,8 @@ spider_net_pass_skb_up(struct spider_net
  
+ 	data_status = descr->data_status;
+ 	data_error = descr->data_error;
+-
  	netdev = card->netdev;
  
--	/* unmap descriptor */
--	pci_unmap_single(card->pdev, descr->buf_addr, SPIDER_NET_MAX_FRAME,
--			PCI_DMA_FROMDEVICE);
+-	/* the cases we'll throw away the packet immediately */
+-	if (data_error & SPIDER_NET_DESTROY_RX_FLAGS) {
+-		if (netif_msg_rx_err(card))
+-			pr_err("error in received descriptor found, "
+-			       "data_status=x%08x, data_error=x%08x\n",
+-			       data_status, data_error);
+-		card->spider_stats.rx_desc_error++;
+-		return 0;
+-	}
 -
- 	/* the cases we'll throw away the packet immediately */
- 	if (data_error & SPIDER_NET_DESTROY_RX_FLAGS) {
- 		if (netif_msg_rx_err(card))
-@@ -998,6 +994,11 @@ spider_net_decode_one_descr(struct spide
- 	spin_unlock_irqrestore(&chain->lock, flags);
- 
- 	result = 0;
-+
-+	/* unmap descriptor */
-+	pci_unmap_single(card->pdev, descr->buf_addr,
-+			SPIDER_NET_MAX_FRAME, PCI_DMA_FROMDEVICE);
-+
- 	if ( (status == SPIDER_NET_DESCR_RESPONSE_ERROR) ||
- 	     (status == SPIDER_NET_DESCR_PROTECTION_ERROR) ||
- 	     (status == SPIDER_NET_DESCR_FORCE_END) ) {
-@@ -1005,8 +1006,6 @@ spider_net_decode_one_descr(struct spide
- 			pr_err("%s: dropping RX descriptor with state %d\n",
- 			       card->netdev->name, status);
- 		card->netdev_stats.rx_dropped++;
--		pci_unmap_single(card->pdev, descr->buf_addr,
--				SPIDER_NET_MAX_FRAME, PCI_DMA_FROMDEVICE);
- 		dev_kfree_skb_irq(descr->skb);
+ 	skb = descr->skb;
+ 	skb->dev = netdev;
+ 	skb_put(skb, descr->valid_size);
+@@ -1020,6 +1009,18 @@ spider_net_decode_one_descr(struct spide
  		goto refill;
  	}
-@@ -1014,9 +1013,10 @@ spider_net_decode_one_descr(struct spide
- 	if ( (status != SPIDER_NET_DESCR_COMPLETE) &&
- 	     (status != SPIDER_NET_DESCR_FRAME_END) ) {
- 		if (netif_msg_rx_err(card))
--			pr_err("%s: RX descriptor with state %d\n",
-+			pr_err("%s: RX descriptor with unkown state %d\n",
- 			       card->netdev->name, status);
- 		card->spider_stats.rx_desc_unk_state++;
+ 
++	/* The cases we'll throw away the packet immediately */
++	if (descr->data_error & SPIDER_NET_DESTROY_RX_FLAGS) {
++		if (netif_msg_rx_err(card))
++			pr_err("%s: error in received descriptor found, "
++			       "data_status=x%08x, data_error=x%08x\n",
++			       card->netdev->name,
++			       descr->data_status, descr->data_error);
++		card->spider_stats.rx_desc_error++;
 +		dev_kfree_skb_irq(descr->skb);
- 		goto refill;
- 	}
- 
++		goto refill;
++	}
++
+ 	/* ok, we've got a packet in descr */
+ 	result = spider_net_pass_skb_up(descr, card, napi);
+ refill:
