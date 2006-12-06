@@ -1,14 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <BFEE19E1D0DBF84698D76276388DCB843F208C@gbrwgceumf01.eu.xerox.net>
-References: <BFEE19E1D0DBF84698D76276388DCB843F208C@gbrwgceumf01.eu.xerox.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4DA05580-4BD0-41D5-B2DA-62CD42C28FD2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Power management for ppc 85xx
-Date: Wed, 6 Dec 2006 16:53:20 -0600
-To: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 7 Dec 2006 09:22:13 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: 2.6.19 cannot find root partition
+Message-ID: <20061206222213.GA17446@localhost.localdomain>
+References: <20061206211630.GB27857@krispykreme>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061206211630.GB27857@krispykreme>
+Cc: linuxppc-dev@ozlabs.org, olh@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,29 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Dec 07, 2006 at 08:16:30AM +1100, Anton Blanchard wrote:
+> 
+> Hi,
+> 
+> The patch to identify AIX disks and ignore them has caused at least one
+> machine to fail to find the root partition on 2.6.19. The patch is:
+> 
+> http://lkml.org/lkml/2006/7/31/117
+> 
+> The problem is some disk formatters do not blow away the first 4 bytes
+> of the disk. If the disk we are installing to used to have AIX on it,
+> then the first 4 bytes will still have IBMA in EBCDIC.
+> 
+> The install in question was debian etch. Im not sure what the best fix
+> is, perhaps the AIX detection code could check more than the first 4
+> bytes.
 
-On Dec 6, 2006, at 4:27 PM, Chamorro, Marta wrote:
+Yeah, I had this problem on paulus' old PReP machine - I had to
+manually zap the AIX magic number to get it to see the perfectly good
+partitions.
 
-> Hi Kumar, thanks for the reply.
->
-> I am not sure I fully understand your question, but here's an  
-> attempt of
-> an answer :)
->
-> What I want to do is:
->
-> First stage - Get the processor on doze mode (core halted, but  
-> responds
-> to interrupts)
-> Second stage - Once I understand how to do that, using all the right
-> interfaces and so on, get other devices (mainly image processing  
-> ASICS)
-> to stop clocks.
->
-> Does that answer your question? Can you help? Do you know where to  
-> find
-> the code that deals with power management for the ppc 8555?
-
-It does, what periphs are you using on the 8555 itself?
-
-- k
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
