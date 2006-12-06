@@ -3,20 +3,20 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4A5F67CA5
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 09:12:53 +1100 (EST)
-In-Reply-To: <16CEB634-0DC7-438B-973C-2BE5A374591C@freescale.com>
-References: <F6AD7E21CDF4E145A44F61F43EE6D939B5008F@tmnt04.transmode.se>
-	<16CEB634-0DC7-438B-973C-2BE5A374591C@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 0780067CB1
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 09:15:45 +1100 (EST)
+In-Reply-To: <17783.16290.783728.708434@cargo.ozlabs.ibm.com>
+References: <20061206215042.GA13675@ld0162-tx32.am.freescale.net>
+	<17783.16290.783728.708434@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <65D63DFC-AC2E-490A-BB3D-32CFE7B026B3@kernel.crashing.org>
+Message-Id: <4CF47E53-356C-49B7-9F8B-9C61CF8103E5@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.20] powerpc: Changed gianfar device tree definition
-	tomake it more flexible
-Date: Wed, 6 Dec 2006 16:12:44 -0600
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH/RFC] Change the program check exception from EXC_XFER_STD
+	to EXC_XFER_EE.
+Date: Wed, 6 Dec 2006 16:15:39 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +27,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 6, 2006, at 2:40 PM, Andy Fleming wrote:
+On Dec 6, 2006, at 4:09 PM, Paul Mackerras wrote:
 
+> Scott Wood writes:
 >
-> On Dec 4, 2006, at 02:20, Joakim Tjernlund wrote:
+>> Is there any reason why ProgramCheck needs to be EXC_XFER_STD?
 >
->>
->>> +
->>> +static struct gfar_flag_info __initdata flag_info[] = {
->>> +	{ "gigabit", FSL_GIANFAR_DEV_HAS_GIGABIT },
->>> +	{ "coalescing", FSL_GIANFAR_DEV_HAS_COALESCE },
->>> +	{ "rmon", FSL_GIANFAR_DEV_HAS_RMON },
->>> +	{ "checksumming", FSL_GIANFAR_DEV_HAS_CSUM },
->>> +	{ "vlan", FSL_GIANFAR_DEV_HAS_VLAN },
->>> +	{ "extended-hash", FSL_GIANFAR_DEV_HAS_EXTENDED_HASH },
->>> +	{ "padding", FSL_GIANFAR_DEV_HAS_PADDING },
->>> +	{ "filer", FSL_GIANFAR_DEV_HAS_FILER },
->>> +	{ "parseL4", FSL_GIANFAR_DEV_HAS_PARSE_L4 },
->>> +	{ "parseL3", FSL_GIANFAR_DEV_HAS_PARSE_L3 },
->>> +	{ "parseL2", FSL_GIANFAR_DEV_HAS_PARSE_L2 },
->>> +	{ "multi-queue", FSL_GIANFAR_DEV_HAS_MULTI_QUEUE },
->>> +	{ "buffer-stashing", FSL_GIANFAR_DEV_HAS_BUF_STASHING },
->>> +	{ "buffer-locking", FSL_GIANFAR_DEV_HAS_BUF_LOCKING },
->>> +	{ "bd-stashing", FSL_GIANFAR_DEV_HAS_BD_STASHING },
->>> +	{ "bd-locking", FSL_GIANFAR_DEV_HAS_BD_LOCKING },
->>> +};
->>
->> Shouldn't these be  mapped to generic names(drop the GIANFAR name)?
->> The newer UCC also have sevral of these capabilities and it seems
->> to me that one can use the same names instead of making a similar  
->> table.
+> Yes.  It used to be EXC_XFER_EE, but I changed it to EXC_XFER_STD
+> because I didn't want the possibility of preemption on the way from a
+> kernel breakpoint into a kernel debugger (xmon/kgdb/etc.).
 >
->
-> That's an excellent idea.  But the UCC code base is still pretty  
-> foreign to me, so I will have to pursue that with its authors.
+> I think the solution to your problem is to rearrange
+> program_check_exception a little, to make sure we do the
+> local_irq_enable before calling do_mathemu (but still after the
+> debugger_bpt call).
 
-Unless we plan on merging the UCC and gianfar drivers in the future I  
-dont see much of a point to worry about it.  Eventually this table  
-will live in the driver proper so it will have to be duplicated  
-between gianfar and UCC.
+We don't need to rearrange anything, just put the local_irq_enable()  
+call in do_mathemu().  If we are a debugger than REASON_TRAP will  
+have to be set and we dont bother with do_mathemu() than.
+
+Do you think we should also move the local_irq_enable() that exists  
+in the handler into emulate_instruction().
 
 - k
