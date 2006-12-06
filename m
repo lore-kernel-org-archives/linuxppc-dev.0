@@ -1,25 +1,24 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A264067D14
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 10:31:41 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6NVcJr017979
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:31:38 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB6NVcMW544206
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 16:31:38 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB6NVbq3015471
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 16:31:38 -0700
-Date: Wed, 6 Dec 2006 17:31:34 -0600
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8C85A67D37
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 10:33:21 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6NXhML011059
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:33:43 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB6NXHEG195686
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:33:17 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB6NXGrc020634
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 18:33:17 -0500
+Date: Wed, 6 Dec 2006 17:33:16 -0600
 To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 3/16] Spidernet RX Locking
-Message-ID: <20061206233134.GC4649@austin.ibm.com>
+Subject: [PATCH 4/16] Spidernet Refactor RX refill
+Message-ID: <20061206233316.GD4649@austin.ibm.com>
 References: <20061206223223.GH17931@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,66 +37,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-The RX packet handling can be called from several
-places, yet does not protect the rx ring structure.
-This patch places the ring buffer pointers under a lock.
+Refactor how spider_net_refill_rx_chain() is called. 
+No functional change; this just simplifies the code
+by moving the subroutine call to a more appropriate spot.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: James K Lewis <jklewis@us.ibm.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 
 ----
- drivers/net/spider_net.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ drivers/net/spider_net.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 Index: linux-2.6.19-git7/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-06 15:58:27.000000000 -0600
-+++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-06 16:01:49.000000000 -0600
-@@ -969,28 +969,33 @@ static int
- spider_net_decode_one_descr(struct spider_net_card *card, int napi)
- {
- 	struct spider_net_descr_chain *chain = &card->rx_chain;
--	struct spider_net_descr *descr = chain->tail;
-+	struct spider_net_descr *descr;
- 	int status;
- 	int result;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chain->lock, flags);
-+	descr = chain->tail;
- 
- 	status = spider_net_get_descr_status(descr);
- 
- 	if (status == SPIDER_NET_DESCR_CARDOWNED) {
- 		/* nothing in the descriptor yet */
--		result=0;
--		goto out;
-+		spin_unlock_irqrestore(&chain->lock, flags);
-+		return 0;
- 	}
- 
- 	if (status == SPIDER_NET_DESCR_NOT_IN_USE) {
- 		/* not initialized yet, the ring must be empty */
-+		spin_unlock_irqrestore(&chain->lock, flags);
- 		spider_net_refill_rx_chain(card);
- 		spider_net_enable_rxdmac(card);
--		result=0;
--		goto out;
-+		return 0;
- 	}
- 
- 	/* descriptor definitively used -- move on tail */
- 	chain->tail = descr->next;
-+	spin_unlock_irqrestore(&chain->lock, flags);
- 
- 	result = 0;
- 	if ( (status == SPIDER_NET_DESCR_RESPONSE_ERROR) ||
-@@ -1022,7 +1027,6 @@ refill:
+--- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-06 16:01:49.000000000 -0600
++++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-06 16:02:58.000000000 -0600
+@@ -1023,10 +1023,8 @@ spider_net_decode_one_descr(struct spide
+ 	/* ok, we've got a packet in descr */
+ 	result = spider_net_pass_skb_up(descr, card, napi);
+ refill:
+-	descr->dmac_cmd_status = SPIDER_NET_DESCR_NOT_IN_USE;
  	/* change the descriptor state: */
- 	if (!napi)
- 		spider_net_refill_rx_chain(card);
--out:
+-	if (!napi)
+-		spider_net_refill_rx_chain(card);
++	descr->dmac_cmd_status = SPIDER_NET_DESCR_NOT_IN_USE;
  	return result;
  }
  
+@@ -1205,8 +1203,11 @@ spider_net_set_mac(struct net_device *ne
+ static void
+ spider_net_handle_rxram_full(struct spider_net_card *card)
+ {
+-	while (spider_net_decode_one_descr(card, 0))
+-		;
++	int rc = 1;
++	while (rc) {
++		rc = spider_net_decode_one_descr(card, 0);
++		spider_net_refill_rx_chain(card);
++	}
+ 	spider_net_enable_rxchtails(card);
+ 	spider_net_enable_rxdmac(card);
+ 	netif_rx_schedule(card->netdev);
