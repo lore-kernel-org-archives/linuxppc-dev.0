@@ -1,15 +1,29 @@
-Return-Path: <vitalywool@gmail.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 15A1E67BE1
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 23:43:08 +1100 (EST)
-Date: Wed, 6 Dec 2006 15:36:27 +0300
-From: Vitaly Wool <vitalywool@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] update MTD OF implementation
-Message-Id: <20061206153627.43fdc59c.vitalywool@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, dwmw2@redhat.com
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2E80667BEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 05:29:57 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB6ITsNg003013
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 13:29:54 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB6ITiGa186996
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 13:29:44 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB6IThBR021302
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 13:29:44 -0500
+Date: Wed, 6 Dec 2006 12:29:22 -0600
+To: paulus@samba.org
+Subject: [PATCH]: powerpc documentation: Clarify why twi appears in the i/o
+	macros.
+Message-ID: <20061206182922.GA17931@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,72 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello folks,
 
-the patch below updates the powerpc part of the MTD OF implementation with the new field probe-type and also fixes the typos/build warning for rom.c.
-So therefore it in a way supersedes the patch from Geoff which can be seen at http://ozlabs.org/pipermail/linuxppc-dev/2006-December/028831.html.
+Paul,
+Please apply. This atch resulted from an email discussion
+back in Sept.
 
- Documentation/powerpc/booting-without-of.txt |   19 +++++++++++--------
- arch/powerpc/sysdev/rom.c                    |    1 +
- 2 files changed, 12 insertions(+), 8 deletions(-)
+--linas
 
-Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
+Clarify why twi appears in the i/o macros.
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b3bd366..3399427 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1703,29 +1703,32 @@ platforms are moved over to use the flat
-     Required properties:
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+
+----
+ include/asm-powerpc/io.h |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+Index: linux-2.6.19-git7/include/asm-powerpc/io.h
+===================================================================
+--- linux-2.6.19-git7.orig/include/asm-powerpc/io.h	2006-12-05 17:11:02.000000000 -0600
++++ linux-2.6.19-git7/include/asm-powerpc/io.h	2006-12-06 11:48:43.000000000 -0600
+@@ -78,6 +78,17 @@ extern unsigned long pci_dram_offset;
+  * Note: I might drop the _ns suffix on the stream operations soon as it is
+  * simply normal for stream operations to not swap in the first place.
+  *
++ * Read operations have additional twi & isync to make sure the read
++ * is actually performed (i.e. the data has come back) before we start
++ * executing any following instructions.
++ *
++ * A data-dependent branch followed by an isync ensures that no
++ * instructions after the isync in program order will be
++ * (speculatively) executed before the isync has completed, and
++ * the isync won't complete until the branch is resolved. The
++ * the load that the twi depends on has to complete before
++ * anything else is executed; in particular, it's a barrier to
++ * keep MMIO reads ordered before main-storage accesses.
+  */
  
-      - device_type : has to be "rom"
--     - compatible : Should specify what this ROM device is compatible with
--       (i.e. "onenand"). Currently, this is most likely to be "direct-mapped"
--       (which corresponds to the MTD physmap mapping driver).
--     - regs : Offset and length of the register set (or memory mapping) for
-+     - compatible : Should specify what this flash device is compatible with.
-+       Currently, this is most likely to be "direct-mapped" (which
-+       corresponds to the MTD physmap mapping driver).
-+     - reg : Offset and length of the register set (or memory mapping) for
-        the device.
-+     - bank-width : Width of the flash data bus in bytes. Required
-+       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
- 
-     Recommended properties :
- 
--     - bank-width : Width of the flash data bus in bytes. Required
--       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
-      - partitions : Several pairs of 32-bit values where the first value is
-        partition's offset from the start of the device and the second one is
-        partition size in bytes with LSB used to signify a read only
--       partititon (so, the parition size should always be an even number).
-+       partition (so, the parition size should always be an even number).
-      - partition-names : The list of concatenated zero terminated strings
-        representing the partition names.
-+     - probe-type : The type of probe which should be done for the chip
-+       (JEDEC vs CFI actually). Valid ONLY for NOR flashes.
- 
-    Example:
- 
-  	flash@ff000000 {
-  		device_type = "rom";
-  		compatible = "direct-mapped";
-- 		regs = <ff000000 01000000>;
-+ 		probe-type = "CFI";
-+ 		reg = <ff000000 01000000>;
-  		bank-width = <4>;
-  		partitions = <00000000 00f80000
-  			      00f80000 00080001>;
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-diff --git a/arch/powerpc/sysdev/rom.c b/arch/powerpc/sysdev/rom.c
-index bf5b3f1..c855a3b 100644
---- a/arch/powerpc/sysdev/rom.c
-+++ b/arch/powerpc/sysdev/rom.c
-@@ -9,6 +9,7 @@
- 
- #include <linux/kernel.h>
- #include <asm/of_device.h>
-+#include <asm/of_platform.h>
- 
- static int __init powerpc_flash_init(void)
- {
+ #ifdef CONFIG_PPC64
