@@ -1,19 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 53A6067C00
+Return-Path: <roger.larsson@norran.net>
+Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
+	by ozlabs.org (Postfix) with ESMTP id 88A2A67CB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 06:13:56 +1100 (EST)
-Message-ID: <45771721.1080102@grandegger.com>
-Date: Wed, 06 Dec 2006 20:16:49 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Thu,  7 Dec 2006 09:14:41 +1100 (EST)
+Received: from icd.localnet (78.net216.skekraft.net [84.244.216.78])
+	by mail.skekraft.net (Postfix) with ESMTP id 7BD3BA40AB
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  6 Dec 2006 22:57:46 +0100 (CET)
+From: Roger Larsson <roger.larsson@norran.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: shared config registers and locking
+Date: Wed, 6 Dec 2006 22:57:44 +0100
+References: <1165381847.5469.70.camel@localhost.localdomain>
+In-Reply-To: <1165381847.5469.70.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: How to use the device tree for lite5200
-References: <4576E8CC.6050508@grandegger.com>
-	<B1186D1B-C47D-46C3-B928-8FDE4A55363B@kernel.crashing.org>
-In-Reply-To: <B1186D1B-C47D-46C3-B928-8FDE4A55363B@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612062257.45153.roger.larsson@norran.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +27,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Dec 6, 2006, at 9:59 AM, Wolfgang Grandegger wrote:
-> 
->> Hello,
->>
->> I want to boot PowerPC Linux 2.6.19 on my Icecube board but I didn't
->> succeed yet to get lite5200.dts compiled and an appropriate image 
->> created:
->>
->>    $ dtc -b0 lite5200.dts
->>    DTC: dts->dts  on file "lite5200.dts"
->>    ERROR: Missing /chosen node
->>    Input tree has errors
->>
->> What is the procedure to make and boot an uImage for the U-Boot
->> bootloader. I read about the third argument for bootm but did not
->> understand how to use it.
-> 
-> How have you booted in the past?  Do you tftp down the images or run 
-> from flash?
+On Wednesday 06 December 2006 06:10, Benjamin Herrenschmidt wrote:
+>
+> On UP configuration, there is no real problem: local_irq_disable/enable
+> around the code tweaking those bits (read/modify/write) is enough and
+> everybody is happy. That's what the current emac code does.
+>
+> However, on SMP, we need spinlocking (or a semaphore, but for simple
+> register accesses like that, spinlocks are probably better).
+>
+It is actually simple.
 
-Yes, at least for development.
+You should use
+spin_lock_irq_save()
 
-> Here's an example assuming you have a kernel image at address $loadaddr 
-> and the dtb at $ftaddr
-> 
-> dtc -b0 -Idts -Odtb -V16 lite5200.dts > lite5200.dtb
-> 
-> download lite5200.dtb to the system
-> 
-> => bootm $loadaddr - $fdtaddr
+include/linux/spinlock.h
+#if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
+#define spin_lock_irqsave(lock, flags)  flags = _spin_lock_irqsave(lock)
+- - -
+#else
+#define spin_lock_irqsave(lock, flags)  _spin_lock_irqsave(lock, flags)
+- - -
+#endif
 
-Great, that worked with the additional "-f" option, as suggested by 
-Grant. Now I can boot the kernel but BESTCOM and FEC support seem still 
-missing. Are there already patches around?
+spinlock_api_smp.h:
+	unsigned long __lockfunc _spin_lock_irqsave(spinlock_t *lock)
+spinlock_api_up.h:
+	/*
+	 * In the UP-nondebug case there's no real locking going on, so the
+	 * only thing we have to do is to keep the preempt counts and irq
+	 * flags straight, to supress compiler warnings of unused lock
+	 * variables, and to add the proper checker annotations:
+	 */
 
-Thanks to all who replied.
+	#define _spin_lock_irqsave(lock, flags) __LOCK_IRQSAVE(lock, flags)
+	#define __LOCK_IRQSAVE(lock, flags) \
+		do { local_irq_save(flags); __LOCK(lock); } while (0)
+	#define __LOCK(lock) \
+		do { preempt_disable(); __acquire(lock); (void)(lock); } while (0)
+		-> disable preemption if compiled with preemption
+		-> static checker annotation
+		-> make compiler happy, use variable lock
 
-Wolfgang.
+So by using spin_lock_irqsave always you won't get anything more than 
+local_irq_save when compiling on an UP box with kernel preemption disabled.
+
+You could of cause use spin_lock_irq(lock) if you do not have nested locks -
+it is not the lock that is the problem but the unlock.
+
+#define local_irq_disable()     __asm__ __volatile__("cli": : :"memory")
+#define local_irq_enable()      __asm__ __volatile__("sti": : :"memory")
+
+local_irq_disable()
+call
+	local_irq_disable()
+	local_irq_enable()
+do_something(); // Is IRQ enabled or disabled here? Was that intended?
+local_irq_enable()
+
+
+Documentation to read:
+	linux2.6/Documentation/spinlocks.txt
+	linux2.6/Documentation/io_ordering.txt
+	linux2.6/Documentation/preempt-locking.txt
+
+/RogerL
