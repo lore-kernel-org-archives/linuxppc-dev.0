@@ -1,32 +1,10 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8749767C05
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 08:16:29 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	kB6LUqkr020773
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 14:30:52 -0700 (MST)
-Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
-	[10.82.65.62])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kB6LGPpV007396
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:16:25 -0600 (CST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
-	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	kB6L0jrZ027527
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Dec 2006 15:00:45 -0600 (CST)
-Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 727394B924
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 15:16:24 -0600 (CST)
-Received: (from b07421@localhost)
-	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	kB6LGO8d012990
-	for linuxppc-dev@ozlabs.org; Wed, 6 Dec 2006 15:16:24 -0600
-Date: Wed, 6 Dec 2006 15:16:24 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH][RESEND] qe_ic: Do a sync when masking interrupts.
-Message-ID: <20061206211624.GA12800@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 7 Dec 2006 08:16:30 +1100
+From: Anton Blanchard <anton@samba.org>
+To: olh@suse.de, linuxppc-dev@ozlabs.org
+Subject: 2.6.19 cannot find root partition
+Message-ID: <20061206211630.GB27857@krispykreme>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,99 +15,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch causes a sync do be done after masking a QE interrupt, to
-ensure that the masking has completed before interrupts are enabled.
-This allows the masking of the cascade IRQ to be removed without causing
-spurious interrupts.
 
-The mask_and_ack function is also removed and set to the mask function,
-as the two are identical.
+Hi,
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/sysdev/qe_lib/qe_ic.c |   40 +++++++++---------------------------
- 1 files changed, 10 insertions(+), 30 deletions(-)
+The patch to identify AIX disks and ignore them has caused at least one
+machine to fail to find the root partition on 2.6.19. The patch is:
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-index 6995f51..74e48d9 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-@@ -223,23 +223,15 @@ static void qe_ic_mask_irq(unsigned int 
- 	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
- 		    temp & ~qe_ic_info[src].mask);
- 
--	spin_unlock_irqrestore(&qe_ic_lock, flags);
--}
--
--static void qe_ic_mask_irq_and_ack(unsigned int virq)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
--	unsigned long flags;
--	u32 temp;
--
--	spin_lock_irqsave(&qe_ic_lock, flags);
--
--	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
--	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
--		    temp & ~qe_ic_info[src].mask);
--
--	/* There is nothing to do for ack here, ack is handled in ISR */
-+	/* Flush the above write before enabling interrupts; otherwise,
-+	 * spurious interrupts will sometimes happen.  To be 100% sure
-+	 * that the write has reached the device before interrupts are
-+	 * enabled, the mask register would have to be read back; however,
-+	 * this is not required for correctness, only to avoid wasting
-+	 * time on a large number of spurious interrupts.  In testing,
-+	 * a sync reduced the observed spurious interrupts to zero.
-+	 */
-+	mb();
- 
- 	spin_unlock_irqrestore(&qe_ic_lock, flags);
- }
-@@ -248,7 +240,7 @@ static struct irq_chip qe_ic_irq_chip = 
- 	.typename = " QEIC  ",
- 	.unmask = qe_ic_unmask_irq,
- 	.mask = qe_ic_mask_irq,
--	.mask_ack = qe_ic_mask_irq_and_ack,
-+	.mask_ack = qe_ic_mask_irq,
- };
- 
- static int qe_ic_host_match(struct irq_host *h, struct device_node *node)
-@@ -331,34 +323,22 @@ unsigned int qe_ic_get_high_irq(struct q
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
- 
--/* FIXME: We mask all the QE Low interrupts while handling.  We should
-- * let other interrupt come in, but BAD interrupts are generated */
- void fastcall qe_ic_cascade_low(unsigned int irq, struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = desc->handler_data;
--	struct irq_chip *chip = irq_desc[irq].chip;
--
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
- 
--	chip->mask_ack(irq);
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
--	chip->unmask(irq);
- }
- 
--/* FIXME: We mask all the QE High interrupts while handling.  We should
-- * let other interrupt come in, but BAD interrupts are generated */
- void fastcall qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = desc->handler_data;
--	struct irq_chip *chip = irq_desc[irq].chip;
--
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 
--	chip->mask_ack(irq);
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
--	chip->unmask(irq);
- }
- 
- void __init qe_ic_init(struct device_node *node, unsigned int flags)
--- 
-1.4.2.3
+http://lkml.org/lkml/2006/7/31/117
+
+The problem is some disk formatters do not blow away the first 4 bytes
+of the disk. If the disk we are installing to used to have AIX on it,
+then the first 4 bytes will still have IBMA in EBCDIC.
+
+The install in question was debian etch. Im not sure what the best fix
+is, perhaps the AIX detection code could check more than the first 4
+bytes.
+
+Anton
