@@ -1,19 +1,22 @@
-Return-Path: <mgalassi@c-cor.com>
-Received: from penguin.ncube.com (penguin.ncube.com [134.242.67.78])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B979E67C18
+	by ozlabs.org (Postfix) with ESMTP id 3917167D5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 10:14:58 +1100 (EST)
-Message-Id: <200612062314.kB6NE8iQ083398@penguin.ncube.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: shared config registers and locking 
-In-reply-to: <1165445865.5469.130.camel@localhost.localdomain> 
+	Thu,  7 Dec 2006 10:34:25 +1100 (EST)
+Subject: Re: shared config registers and locking
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Galassi <mgalassi@c-cor.com>
+In-Reply-To: <200612062314.kB6NE8iQ083398@penguin.ncube.com>
 References: <1165381847.5469.70.camel@localhost.localdomain>
 	<200612062257.45153.roger.larsson@norran.net>
 	<1165445865.5469.130.camel@localhost.localdomain>
-Date: Wed, 06 Dec 2006 15:14:08 -0800
-From: Michael Galassi <mgalassi@c-cor.com>
+	<200612062314.kB6NE8iQ083398@penguin.ncube.com>
+Content-Type: text/plain
+Date: Thu, 07 Dec 2006 10:34:13 +1100
+Message-Id: <1165448053.5469.145.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,38 +28,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->Now, more seriously, of course the thing will boil down to a spinlock.
->My point was what do you guys think about having one shared spinlock
->exposed by the powerpc platform code for use by all those little bits
->here or there that whack global configuration registers like clock
->control things, etc... that we have all over the place on embedded
->processors.
 
-GACK!  Many better engineers than any of us have spent countless hours
-breaking down locks.  A lock takes nearly no space at all, you're not
-proposing to lock any less often, so multiple locks take no less time,
-the only thing you stand to gain by protecting multiple data structures
-with one lock is the possibility of lock contention.  Please reconsider.
+> GACK!  Many better engineers than any of us have spent countless hours
+> breaking down locks.  A lock takes nearly no space at all, you're not
+> proposing to lock any less often, so multiple locks take no less time,
+> the only thing you stand to gain by protecting multiple data structures
+> with one lock is the possibility of lock contention.  Please reconsider.
 
-I can envision situations in which you might want to have a lock
-protecting more than one item in code which is local to your project,
-company, group, whatever, feel free to do do so in that circumstance
-but limit this practice to individual, carefully thought out, *LOCAL*
-situations, don't allow that to propagate.  Please?  Pretty please?
+Wait wait wait.... I'm perfectly aware of lock contention issues and I'm
+not proposing to have a giant lock for everything in the system.
 
->Since I don't like exposing a naked data structure though, rather than
->exposing the spinlock itself, I was proposing to expose an API of two
->functions (just in case we want to do something fancy) though they could
->well end up being inline and thus boil down to the same...
+I was proposing something very clearly aimed at configuration type
+things that are generally accessed a bit at boot time and then every
+time the phase of the moon changes, in which case, it's just a pain to
+have to use fine grained locking and one shared lock is plenty enough.
 
-Linux needs another api just as much as we need another war in the
-middle east or a third term of our commander in chief.  Just say no.
+The specific example that made me think about it was some clock control
+registers on 4xx that the EMAC driver is whacking every now and then (on
+link state change, no lock contention to be worried about here), though
+they could be used by other drivers too (or platform code). Since those
+registers are a bit different from one 4xx to the next too, and since I
+now have a non-4xx platform that needs to use EMAC and has similar clock
+control bits I might have to toggle there too, I'm basically ending up
+with a global spinlock that I can't precisely define better than "global
+clock control lock" ....
 
-It turns out that any place you have any business manipulating a lock
-associated with some data you're probably doing so in preparation to
-manipulate that data.  By using a simple, well known interface such as
-spin_lock_irqsave/spin_unlock_irqrestore you are actually making clear
-what your code is doing, you are alerting the reader that you've
-considered locking issues.  This is a good thing.
+Now, what is best there ? To have 4xx expose such a lock and define
+precisely what set of registers it covers and require any non-4xx
+platform that uses the EMAC driver to provide a similar lock ?
+ 
+Now, you have the right to disagree with me, I was mostly asking what
+the mood was about it, I don't have any firm opinion on wether it's a
+good or a bad idea just yet... so I count your vote as a "no" :-)
 
--michael
+Another approach would be to remove the code from EMAC and have it
+instead use the "feature call" thingy to call into platform code to do
+the magic clock tweaking (with appropriate locking) but I don't like
+much that idea as all 4xx platforms pretty much would have to duplicate
+that code, and I prefer keeping some of that magic in the EMAC driver
+itself. 
+
+Now, regarding exposing a function or just a spinlock, well, you might
+well be right that exposing a spinlock is better, I have no very firm
+preference there neither... just a slight bias toward exporting
+functions rather than variables.
+
+Ben.
