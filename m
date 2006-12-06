@@ -1,23 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 7D1AE67C0F
+Return-Path: <mgalassi@c-cor.com>
+Received: from penguin.ncube.com (penguin.ncube.com [134.242.67.78])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B979E67C18
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 10:11:32 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so280096ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 06 Dec 2006 15:11:30 -0800 (PST)
-Message-ID: <528646bc0612061511v5bfe5f8di9eb7f160221828da@mail.gmail.com>
-Date: Wed, 6 Dec 2006 16:11:29 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: How to use the device tree for lite5200
-In-Reply-To: <45771721.1080102@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4576E8CC.6050508@grandegger.com>
-	<B1186D1B-C47D-46C3-B928-8FDE4A55363B@kernel.crashing.org>
-	<45771721.1080102@grandegger.com>
+	Thu,  7 Dec 2006 10:14:58 +1100 (EST)
+Message-Id: <200612062314.kB6NE8iQ083398@penguin.ncube.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: shared config registers and locking 
+In-reply-to: <1165445865.5469.130.camel@localhost.localdomain> 
+References: <1165381847.5469.70.camel@localhost.localdomain>
+	<200612062257.45153.roger.larsson@norran.net>
+	<1165445865.5469.130.camel@localhost.localdomain>
+Date: Wed, 06 Dec 2006 15:14:08 -0800
+From: Michael Galassi <mgalassi@c-cor.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,18 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 12/6/06, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Great, that worked with the additional "-f" option, as suggested by
-> Grant. Now I can boot the kernel but BESTCOM and FEC support seem still
-> missing. Are there already patches around?
+>Now, more seriously, of course the thing will boil down to a spinlock.
+>My point was what do you guys think about having one shared spinlock
+>exposed by the powerpc platform code for use by all those little bits
+>here or there that whack global configuration registers like clock
+>control things, etc... that we have all over the place on embedded
+>processors.
 
-They are not in mainline as they are undergoing rework; I've got
-working drivers in my tree.  see here:
+GACK!  Many better engineers than any of us have spent countless hours
+breaking down locks.  A lock takes nearly no space at all, you're not
+proposing to lock any less often, so multiple locks take no less time,
+the only thing you stand to gain by protecting multiple data structures
+with one lock is the possibility of lock contention.  Please reconsider.
 
-http://git.secretlab.ca
+I can envision situations in which you might want to have a lock
+protecting more than one item in code which is local to your project,
+company, group, whatever, feel free to do do so in that circumstance
+but limit this practice to individual, carefully thought out, *LOCAL*
+situations, don't allow that to propagate.  Please?  Pretty please?
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+>Since I don't like exposing a naked data structure though, rather than
+>exposing the spinlock itself, I was proposing to expose an API of two
+>functions (just in case we want to do something fancy) though they could
+>well end up being inline and thus boil down to the same...
+
+Linux needs another api just as much as we need another war in the
+middle east or a third term of our commander in chief.  Just say no.
+
+It turns out that any place you have any business manipulating a lock
+associated with some data you're probably doing so in preparation to
+manipulate that data.  By using a simple, well known interface such as
+spin_lock_irqsave/spin_unlock_irqrestore you are actually making clear
+what your code is doing, you are alerting the reader that you've
+considered locking issues.  This is a good thing.
+
+-michael
