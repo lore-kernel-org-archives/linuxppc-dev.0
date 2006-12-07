@@ -1,12 +1,13 @@
 Return-Path: <b07421@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7C5C067D0E
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 04:38:14 +1100 (EST)
-Date: Thu, 7 Dec 2006 11:33:53 -0600
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F380367D7A
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 04:39:17 +1100 (EST)
+Date: Thu, 7 Dec 2006 11:34:57 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] powerpc: Document device nodes for I2C devices.
-Message-ID: <20061207173353.GD22989@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 2/4] powerpc: Add the ds1374 RTC to the mpc8349emds device
+	tree.
+Message-ID: <20061207173457.GE22989@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: i2c@lm-sensors.org
@@ -19,72 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Document the use of device trees to describe devices on an I2C bus, which
-will be used with David Brownell's "new style" I2C binding patches.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   34 ++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc8349emds.dts |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 27b457c..092b8f3 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1277,6 +1277,8 @@ platforms are moved over to use the flat
+diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
+index 50f4886..889a5b8 100644
+--- a/arch/powerpc/boot/dts/mpc8349emds.dts
++++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+@@ -55,12 +55,22 @@
+ 		};
  
-    e) I2C
- 
-+   e1) I2C Controller
+ 		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 			device_type = "i2c";
+ 			compatible = "fsl-i2c";
+ 			reg = <3000 100>;
+ 			interrupts = <e 8>;
+ 			interrupt-parent = <700>;
+ 			dfsrr;
 +
-    Required properties :
++			rtc@68 {
++				device_type = "rtc";
++				compatible = "ds1374";
++				reg = <68>;
++				interrupts = <13 8>;
++				interrupt-parent = <700>;
++			};
+ 		};
  
-     - device_type : Should be "i2c"
-@@ -1297,6 +1299,10 @@ platforms are moved over to use the flat
-       a digital filter sampling rate register
-     - fsl5200-clocking : boolean; if defined, indicated that this device
-       uses the FSL 5200 clocking mechanism.
-+    - #address-cells : should exist and be 1 if I2C devices are declared
-+      in the device tree.
-+    - #size-cells : should exist and be 0 if I2C devices are declared
-+      in the device tree.
- 
-    Example :
- 
-@@ -1309,6 +1315,34 @@ platforms are moved over to use the flat
- 		dfsrr;
- 	};
- 
-+   e2) I2C Devices
-+
-+   Required properties :
-+
-+    - reg : I2C address for the device
-+
-+   Recommended properties :
-+
-+    - compatible : The name of the Linux device driver that
-+      handles this device.  If unspecified, the name of the
-+      node will be used.
-+    - interrupts : <a b> where a is the interrupt number and b is a
-+      field that represents an encoding of the sense and level
-+      information for the interrupt.  This should be encoded based on
-+      the information in section 2) depending on the type of interrupt
-+      controller you have.
-+    - interrupt-parent : the phandle for the interrupt controller that
-+      services interrupts for this device.
-+
-+   Example :
-+
-+	rtc@68 {
-+		device_type = "rtc";
-+		compatible = "ds1374";
-+		reg = <68>;
-+		interrupts = <13 8>;
-+		interrupt-parent = <700>;
-+	};
- 
-    f) Freescale SOC USB controllers
- 
+ 		i2c@3100 {
 -- 
 1.4.2.3
