@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
 	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5643667C68
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 11:17:25 +1100 (EST)
-Message-ID: <45775D8E.5040808@am.sony.com>
-Date: Wed, 06 Dec 2006 16:17:18 -0800
+	by ozlabs.org (Postfix) with ESMTP id 7668167CD6
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 11:17:29 +1100 (EST)
+Message-ID: <45775D92.3080701@am.sony.com>
+Date: Wed, 06 Dec 2006 16:17:22 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/2] ps3: repository code cleanups
+Subject: [PATCH 2/2] ps3: add repository storage support
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,250 +22,294 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Various fixes for the PS3 repository code:
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-  - Sync signatures of function prototypes and implementations (enum vs.
-    unsigned int)
-  - Correct references to `regions' as `registers':
-      o Correct enum ps3_region_type as enum ps3_reg_type,
-      o Correct PS3_REGION_TYPE_* as PS3_REG_TYPE_*,
-      o Correct ps3_repository_find_region() as ps3_repository_find_reg().
-  - Correct function name in pr_debug() call
-  - Export repository functions needed by the PS3 storage driver
-  - Minor error condition improvements.
+Adds PS3 repository storage support routines:
+
+  - Add missing implementations of ps3_repository_read_stor_*() repository
+    accessors.
+  - Dump storage properties in debug mode
+  - Add PS3_DEV_TYPE_STOR_PDISK,ROM,FLASH} device types (which are identical to
+    the corresponding SCSI device types) to enum ps3_dev_type
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
-
-Please apply.
-
- arch/powerpc/platforms/ps3/repository.c |   41 +++++++++++++++++++++-----------
- include/asm-powerpc/ps3.h               |   16 ++++++------
- 2 files changed, 36 insertions(+), 21 deletions(-)
+ arch/powerpc/platforms/ps3/repository.c |  185 +++++++++++++++++++++++++++++++-
+ include/asm-powerpc/ps3.h               |   24 ++--
+ 2 files changed, 200 insertions(+), 9 deletions(-)
 
 --- cell--common--7.orig/arch/powerpc/platforms/ps3/repository.c
 +++ cell--common--7/arch/powerpc/platforms/ps3/repository.c
-@@ -181,6 +181,7 @@ int ps3_repository_read_bus_id(unsigned 
- 	*bus_id = v1;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_bus_id);
- 
- int ps3_repository_read_bus_type(unsigned int bus_index,
- 	enum ps3_bus_type *bus_type)
-@@ -196,6 +197,7 @@ int ps3_repository_read_bus_type(unsigne
- 	*bus_type = v1;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_bus_type);
- 
- int ps3_repository_read_bus_num_dev(unsigned int bus_index,
- 	unsigned int *num_dev)
-@@ -211,6 +213,7 @@ int ps3_repository_read_bus_num_dev(unsi
- 	*num_dev = v1;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_bus_num_dev);
- 
- int ps3_repository_read_dev_str(unsigned int bus_index,
- 	unsigned int dev_index, const char *dev_str, u64 *value)
-@@ -238,6 +241,7 @@ int ps3_repository_read_dev_id(unsigned 
- 	*dev_id = v1;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_dev_id);
- 
- int ps3_repository_read_dev_type(unsigned int bus_index,
- 	unsigned int dev_index, enum ps3_dev_type *dev_type)
-@@ -254,10 +258,11 @@ int ps3_repository_read_dev_type(unsigne
- 	*dev_type = v1;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_dev_type);
- 
- int ps3_repository_read_dev_intr(unsigned int bus_index,
- 	unsigned int dev_index, unsigned int intr_index,
--	unsigned int *intr_type, unsigned int* interrupt_id)
-+	enum ps3_interrupt_type *intr_type, unsigned int* interrupt_id)
- {
- 	int result;
- 	u64 v1;
-@@ -273,9 +278,11 @@ int ps3_repository_read_dev_intr(unsigne
- 	*interrupt_id = v2;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_dev_intr);
- 
- int ps3_repository_read_dev_reg_type(unsigned int bus_index,
--	unsigned int dev_index, unsigned int reg_index, unsigned int *reg_type)
-+	unsigned int dev_index, unsigned int reg_index,
-+	enum ps3_reg_type *reg_type)
- {
- 	int result;
- 	u64 v1;
-@@ -302,8 +309,8 @@ int ps3_repository_read_dev_reg_addr(uns
- }
- 
- int ps3_repository_read_dev_reg(unsigned int bus_index,
--	unsigned int dev_index, unsigned int reg_index, unsigned int *reg_type,
--	u64 *bus_addr, u64 *len)
-+	unsigned int dev_index, unsigned int reg_index,
-+	enum ps3_reg_type *reg_type, u64 *bus_addr, u64 *len)
- {
- 	int result = ps3_repository_read_dev_reg_type(bus_index, dev_index,
- 		reg_index, reg_type);
-@@ -343,7 +350,7 @@ int ps3_repository_dump_resource_info(un
- 	}
- 
- 	for (res_index = 0; res_index < 10; res_index++) {
--		enum ps3_region_type reg_type;
-+		enum ps3_reg_type reg_type;
- 		u64 bus_addr;
- 		u64 len;
- 
-@@ -487,7 +494,8 @@ static int find_device(unsigned int bus_
- 			break;
- 	}
- 
--	BUG_ON(dev_index == num_dev);
-+	if (dev_index == num_dev)
-+		return -1;
- 
- 	pr_debug("%s:%d: found dev_type %u at dev_index %u\n",
- 		__func__, __LINE__, dev_type, dev_index);
-@@ -521,7 +529,7 @@ int ps3_repository_find_device (enum ps3
- 	pr_debug("%s:%d: find bus_type %u, dev_type %u\n", __func__, __LINE__,
- 		bus_type, dev_type);
- 
--	dev->bus_index = UINT_MAX;
-+	BUG_ON(start_dev && start_dev->bus_index > 10);
- 
- 	for (bus_index = start_dev ? start_dev->bus_index : 0; bus_index < 10;
- 		bus_index++) {
-@@ -532,13 +540,15 @@ int ps3_repository_find_device (enum ps3
- 		if (result) {
- 			pr_debug("%s:%d read_bus_type failed\n",
- 				__func__, __LINE__);
-+			dev->bus_index = UINT_MAX;
- 			return result;
- 		}
- 		if (x == bus_type)
- 			break;
- 	}
- 
--	BUG_ON(bus_index == 10);
-+	if (bus_index >= 10)
-+		return -ENODEV;
- 
- 	pr_debug("%s:%d: found bus_type %u at bus_index %u\n",
- 		__func__, __LINE__, bus_type, bus_index);
-@@ -574,6 +584,7 @@ int ps3_repository_find_device (enum ps3
- 
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_find_device);
- 
- int ps3_repository_find_interrupt(const struct ps3_repository_device *dev,
- 	enum ps3_interrupt_type intr_type, unsigned int *interrupt_id)
-@@ -604,7 +615,8 @@ int ps3_repository_find_interrupt(const 
- 		}
- 	}
- 
--	BUG_ON(res_index == 10);
-+	if (res_index == 10)
-+		return -ENODEV;
- 
- 	pr_debug("%s:%d: found intr_type %u at res_index %u\n",
- 		__func__, __LINE__, intr_type, res_index);
-@@ -612,8 +624,8 @@ int ps3_repository_find_interrupt(const 
+@@ -374,7 +374,55 @@ int ps3_repository_dump_resource_info(un
  	return result;
  }
  
--int ps3_repository_find_region(const struct ps3_repository_device *dev,
--	enum ps3_region_type reg_type, u64 *bus_addr, u64 *len)
-+int ps3_repository_find_reg(const struct ps3_repository_device *dev,
-+	enum ps3_reg_type reg_type, u64 *bus_addr, u64 *len)
+-static int dump_device_info(unsigned int bus_index, unsigned int num_dev)
++static int dump_stor_dev_info(unsigned int bus_index, unsigned int dev_index)
++{
++	int result = 0;
++	unsigned int num_regions, region_index;
++	u64 port, blk_size, num_blocks;
++
++	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
++		bus_index, dev_index);
++
++	result = ps3_repository_read_stor_dev_info(bus_index, dev_index, &port,
++		&blk_size, &num_blocks, &num_regions);
++	if (result) {
++		pr_debug("%s:%d ps3_repository_read_stor_dev_info"
++			" (%u:%u) failed\n", __func__, __LINE__,
++			bus_index, dev_index);
++		goto out;
++	}
++
++	pr_debug("%s:%d  (%u:%u): port %lu, blk_size %lu, num_blocks "
++		 "%lu, num_regions %u\n",
++		 __func__, __LINE__, bus_index, dev_index, port,
++		 blk_size, num_blocks, num_regions);
++
++	for (region_index = 0; region_index < num_regions; region_index++) {
++		unsigned int region_id;
++		u64 region_start, region_size;
++
++		result = ps3_repository_read_stor_dev_region(bus_index,
++			dev_index, region_index, &region_id, &region_start,
++			&region_size);
++		if (result) {
++			 pr_debug("%s:%d ps3_repository_read_stor_dev_region"
++				  " (%u:%u) failed\n", __func__, __LINE__,
++				  bus_index, dev_index);
++			break;
++		}
++
++		pr_debug("%s:%d (%u:%u) region_id %u, start %lxh, size %lxh\n",
++			 __func__, __LINE__, bus_index, dev_index, region_id,
++			 region_start, region_size);
++	}
++
++out:
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++static int dump_device_info(unsigned int bus_index, enum ps3_bus_type bus_type,
++			    unsigned int num_dev)
  {
  	int result = 0;
- 	unsigned int res_index;
-@@ -623,7 +635,7 @@ int ps3_repository_find_region(const str
- 	*bus_addr = *len = 0;
+ 	unsigned int dev_index;
+@@ -409,6 +457,9 @@ static int dump_device_info(unsigned int
+ 			__LINE__, bus_index, dev_index, dev_type, dev_id);
  
- 	for (res_index = 0; res_index < 10; res_index++) {
--		enum ps3_region_type t;
-+		enum ps3_reg_type t;
- 		u64 a;
- 		u64 l;
- 
-@@ -643,7 +655,8 @@ int ps3_repository_find_region(const str
- 		}
+ 		ps3_repository_dump_resource_info(bus_index, dev_index);
++
++		if (bus_type == PS3_BUS_TYPE_STORAGE)
++			dump_stor_dev_info(bus_index, dev_index);
  	}
  
--	BUG_ON(res_index == 10);
-+	if (res_index == 10)
-+		return -ENODEV;
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+@@ -459,7 +510,7 @@ int ps3_repository_dump_bus_info(void)
+ 			__func__, __LINE__, bus_index, bus_type, bus_id,
+ 			num_dev);
  
- 	pr_debug("%s:%d: found reg_type %u at res_index %u\n",
- 		__func__, __LINE__, reg_type, res_index);
-@@ -761,6 +774,7 @@ int ps3_repository_read_boot_dat_address
- 		0,
- 		address, 0);
+-		dump_device_info(bus_index, num_dev);
++		dump_device_info(bus_index, bus_type, num_dev);
+ 	}
+ 
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+@@ -664,6 +715,136 @@ int ps3_repository_find_reg(const struct
+ 	return result;
  }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_stor_dev_info);
  
- int ps3_repository_read_boot_dat_size(unsigned int *size)
++int ps3_repository_read_stor_dev_port(unsigned int bus_index,
++	unsigned int dev_index, u64 *port)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("port", 0),
++		0, port, 0);
++}
++
++int ps3_repository_read_stor_dev_blk_size(unsigned int bus_index,
++	unsigned int dev_index, u64 *blk_size)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("blk_size", 0),
++		0, blk_size, 0);
++}
++
++int ps3_repository_read_stor_dev_num_blocks(unsigned int bus_index,
++	unsigned int dev_index, u64 *num_blocks)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("n_blocks", 0),
++		0, num_blocks, 0);
++}
++
++int ps3_repository_read_stor_dev_num_regions(unsigned int bus_index,
++	unsigned int dev_index, unsigned int *num_regions)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("n_regs", 0),
++		0, &v1, 0);
++	*num_regions = v1;
++	return result;
++}
++
++int ps3_repository_read_stor_dev_region_id(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(PS3_LPAR_ID_PME,
++	    make_first_field("bus", bus_index),
++	    make_field("dev", dev_index),
++	    make_field("region", region_index),
++	    make_field("id", 0),
++	    &v1, 0);
++	*region_id = v1;
++	return result;
++}
++
++int ps3_repository_read_stor_dev_region_size(unsigned int bus_index,
++	unsigned int dev_index,	unsigned int region_index, u64 *region_size)
++{
++	return read_node(PS3_LPAR_ID_PME,
++	    make_first_field("bus", bus_index),
++	    make_field("dev", dev_index),
++	    make_field("region", region_index),
++	    make_field("size", 0),
++	    region_size, 0);
++}
++
++int ps3_repository_read_stor_dev_region_start(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index, u64 *region_start)
++{
++	return read_node(PS3_LPAR_ID_PME,
++	    make_first_field("bus", bus_index),
++	    make_field("dev", dev_index),
++	    make_field("region", region_index),
++	    make_field("start", 0),
++	    region_start, 0);
++}
++
++int ps3_repository_read_stor_dev_info(unsigned int bus_index,
++	unsigned int dev_index, u64 *port, u64 *blk_size,
++	u64 *num_blocks, unsigned int *num_regions)
++{
++	int result;
++
++	result = ps3_repository_read_stor_dev_port(bus_index, dev_index, port);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_blk_size(bus_index, dev_index,
++		blk_size);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_num_blocks(bus_index, dev_index,
++		num_blocks);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_num_regions(bus_index, dev_index,
++		num_regions);
++	return result;
++}
++
++int ps3_repository_read_stor_dev_region(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id, u64 *region_start, u64 *region_size)
++{
++	int result;
++
++	result = ps3_repository_read_stor_dev_region_id(bus_index, dev_index,
++		region_index, region_id);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_region_start(bus_index, dev_index,
++		region_index, region_start);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_region_size(bus_index, dev_index,
++		region_index, region_size);
++	return result;
++}
++
+ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size)
  {
-@@ -827,6 +841,7 @@ int ps3_repository_read_tb_freq(u64 node
- 		0,
- 		tb_freq, 0);
- }
-+EXPORT_SYMBOL_GPL(ps3_repository_read_stor_dev_region);
- 
- int ps3_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq)
- {
+ 	return read_node(PS3_LPAR_ID_CURRENT,
 --- cell--common--7.orig/include/asm-powerpc/ps3.h
 +++ cell--common--7/include/asm-powerpc/ps3.h
-@@ -277,10 +277,10 @@ enum ps3_interrupt_type {
- 	PS3_INTERRUPT_TYPE_OTHER = 5,
+@@ -25,6 +25,7 @@
+ #include <linux/init.h>
+ #include <linux/types.h>
+ #include <linux/device.h>
++#include <scsi/scsi.h>
+ 
+ /**
+  * struct ps3_device_id - HV bus device identifier from the system repository
+@@ -255,9 +256,12 @@ enum ps3_bus_type {
  };
  
--enum ps3_region_type {
--	PS3_REGION_TYPE_SB_OHCI = 3,
--	PS3_REGION_TYPE_SB_EHCI = 4,
--	PS3_REGION_TYPE_SB_GPIO = 5,
-+enum ps3_reg_type {
-+	PS3_REG_TYPE_SB_OHCI = 3,
-+	PS3_REG_TYPE_SB_EHCI = 4,
-+	PS3_REG_TYPE_SB_GPIO = 5,
+ enum ps3_dev_type {
++	PS3_DEV_TYPE_STOR_DISK = TYPE_DISK,	/* 0 */
+ 	PS3_DEV_TYPE_SB_GELIC = 3,
+ 	PS3_DEV_TYPE_SB_USB = 4,
++	PS3_DEV_TYPE_STOR_ROM = TYPE_ROM,	/* 5 */
+ 	PS3_DEV_TYPE_SB_GPIO = 6,
++	PS3_DEV_TYPE_STOR_FLASH = TYPE_RBC,	/* 14 */
  };
  
- int ps3_repository_read_dev_str(unsigned int bus_index,
-@@ -294,13 +294,13 @@ int ps3_repository_read_dev_intr(unsigne
- 	enum ps3_interrupt_type *intr_type, unsigned int *interrupt_id);
- int ps3_repository_read_dev_reg_type(unsigned int bus_index,
- 	unsigned int dev_index, unsigned int reg_index,
--	enum ps3_region_type *reg_type);
-+	enum ps3_reg_type *reg_type);
- int ps3_repository_read_dev_reg_addr(unsigned int bus_index,
- 	unsigned int dev_index, unsigned int reg_index, u64 *bus_addr,
- 	u64 *len);
- int ps3_repository_read_dev_reg(unsigned int bus_index,
- 	unsigned int dev_index, unsigned int reg_index,
--	enum ps3_region_type *reg_type, u64 *bus_addr, u64 *len);
-+	enum ps3_reg_type *reg_type, u64 *bus_addr, u64 *len);
- 
- /* repository bus enumerators */
- 
-@@ -322,8 +322,8 @@ static inline int ps3_repository_find_fi
- }
- int ps3_repository_find_interrupt(const struct ps3_repository_device *dev,
- 	enum ps3_interrupt_type intr_type, unsigned int *interrupt_id);
--int ps3_repository_find_region(const struct ps3_repository_device *dev,
--	enum ps3_region_type reg_type, u64 *bus_addr, u64 *len);
-+int ps3_repository_find_reg(const struct ps3_repository_device *dev,
-+	enum ps3_reg_type reg_type, u64 *bus_addr, u64 *len);
+ int ps3_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
+@@ -327,21 +331,27 @@ int ps3_repository_find_reg(const struct
  
  /* repository block device info */
+ 
+-int ps3_repository_read_dev_port(unsigned int bus_index,
++int ps3_repository_read_stor_dev_port(unsigned int bus_index,
+ 	unsigned int dev_index, u64 *port);
+-int ps3_repository_read_dev_blk_size(unsigned int bus_index,
++int ps3_repository_read_stor_dev_blk_size(unsigned int bus_index,
+ 	unsigned int dev_index, u64 *blk_size);
+-int ps3_repository_read_dev_num_blocks(unsigned int bus_index,
++int ps3_repository_read_stor_dev_num_blocks(unsigned int bus_index,
+ 	unsigned int dev_index, u64 *num_blocks);
+-int ps3_repository_read_dev_num_regions(unsigned int bus_index,
++int ps3_repository_read_stor_dev_num_regions(unsigned int bus_index,
+ 	unsigned int dev_index, unsigned int *num_regions);
+-int ps3_repository_read_dev_region_id(unsigned int bus_index,
++int ps3_repository_read_stor_dev_region_id(unsigned int bus_index,
+ 	unsigned int dev_index, unsigned int region_index,
+ 	unsigned int *region_id);
+-int ps3_repository_read_dev_region_size(unsigned int bus_index,
++int ps3_repository_read_stor_dev_region_size(unsigned int bus_index,
+ 	unsigned int dev_index,	unsigned int region_index, u64 *region_size);
+-int ps3_repository_read_dev_region_start(unsigned int bus_index,
++int ps3_repository_read_stor_dev_region_start(unsigned int bus_index,
+ 	unsigned int dev_index, unsigned int region_index, u64 *region_start);
++int ps3_repository_read_stor_dev_info(unsigned int bus_index,
++	unsigned int dev_index, u64 *port, u64 *blk_size,
++	u64 *num_blocks, unsigned int *num_regions);
++int ps3_repository_read_stor_dev_region(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id, u64 *region_start, u64 *region_size);
+ 
+ /* repository pu and memory info */
  
