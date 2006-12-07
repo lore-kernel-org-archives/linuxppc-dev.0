@@ -1,21 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E096E67C7B
+Return-Path: <xchen@sunrisetelecom.com.cn>
+Received: from smtp01.east.net (smtp01.east.net [211.100.61.140])
+	by ozlabs.org (Postfix) with ESMTP id AD77667BB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 20:11:00 +1100 (EST)
-Message-ID: <4577DB56.2000802@grandegger.com>
-Date: Thu, 07 Dec 2006 10:13:58 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Thu,  7 Dec 2006 20:59:10 +1100 (EST)
+Received: from unknown (HELO xchen)
+	(Authenticated?user:?xchen@sunrisetelecom.com.cn@[211.157.209.206])
+	(envelope-sender <xchen@sunrisetelecom.com.cn>)
+	by 0 (qmail-ldap-1.03) with SMTP
+	for <linuxppc-embedded@ozlabs.org>; 7 Dec 2006 17:52:17 +0800
+From: =?gb2312?B?s8LPow==?= <xchen@sunrisetelecom.com.cn>
+To: <linuxppc-embedded@ozlabs.org>,
+	<linuxppc-embedded-request@ozlabs.org>
+Subject: When I use ichache_enable or dcache_enable in uboot,it crash
+Date: Thu, 7 Dec 2006 17:52:29 +0800
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: How to use the device tree for lite5200
-References: <4576E8CC.6050508@grandegger.com>	
-	<B1186D1B-C47D-46C3-B928-8FDE4A55363B@kernel.crashing.org>	
-	<45771721.1080102@grandegger.com>
-	<528646bc0612061511v5bfe5f8di9eb7f160221828da@mail.gmail.com>
-In-Reply-To: <528646bc0612061511v5bfe5f8di9eb7f160221828da@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="gb2312"
+Message-Id: <20061207095910.AD77667BB2@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 12/6/06, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Great, that worked with the additional "-f" option, as suggested by
->> Grant. Now I can boot the kernel but BESTCOM and FEC support seem still
->> missing. Are there already patches around?
-> 
-> They are not in mainline as they are undergoing rework; I've got
-> working drivers in my tree.  see here:
-> 
-> http://git.secretlab.ca
+Hi,
 
-I already used one of your trees, but obviously the wrong one. Now it 
-works, that's great.
+	In the very begin of the uboot, the dcache is disable and the icache
+is enable. The code runs in flash nomarlly. Then the uboot should jump to
+ram and if I don't  disable icache the uboot will crash. I can't enable the
+dcache too. The more serious problem is that when I boot the linux kernel
+,it will stop at init_mmu. I think it is the same reason. Please help me.
 
-Thanks a lot.
-
-Wolfgang.
+Thanks & Br,
+Andy 
