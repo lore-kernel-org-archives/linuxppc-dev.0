@@ -1,14 +1,31 @@
-Return-Path: <Marta.Chamorro@xerox.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Power management for ppc 85xx
-Date: Thu, 7 Dec 2006 15:53:59 -0000
-Message-ID: <BFEE19E1D0DBF84698D76276388DCB843F2251@gbrwgceumf01.eu.xerox.net>
-In-Reply-To: <4DA05580-4BD0-41D5-B2DA-62CD42C28FD2@kernel.crashing.org>
-From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 366D467D2E
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 03:26:51 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kB7GQfHM093294
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 16:26:41 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id kB7GQfdb2789498
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 16:26:41 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kB7GQeMI026553
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 16:26:41 GMT
+Date: Thu, 7 Dec 2006 17:22:59 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: openipmi-developer@lists.sourceforge.net
+Subject: [patch 0/1] ipmi: add autosensing of ipmi device on powerpc using
+	device-tree
+Message-ID: <20061207172259.64168f8c@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, krafft@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,53 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi again,
+Hi openipmi-developers,
 
-Glad I managed to make sense. I checked the hardware spec on the board
-and it looks like we're using everything, apart from the SEC and maybe
-the stand-alone I2C (I think we're just using the one within the CMP).
-By the way, I made a mistake and the actual processor on the board is
-the cut-down 8541, not the 8555. My apologies for that.
+the patch I'll send, adds of_device support to the ipmi_si module.
+Having the correct device-tree entries, the ipmi module can be loaded witho=
+ut
+specifying the resources as module parameters.
 
-This morning I added some printks and confirmed that there is no code
-behind pm_ops, so my question remains: is there some code out there that
-I can use? (hope so, otherwise I'm doomed...)
+If it's looking okay, it would be nice, if you can merge this one.
 
-Regards and thanks,
+--=20
+Mit freundlichen Gr=FCssen,
+kind regards,
 
-Marta Chamorro
-
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: 06 December 2006 22:53
-To: Chamorro, Marta
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: Power management for ppc 85xx
-
-
-On Dec 6, 2006, at 4:27 PM, Chamorro, Marta wrote:
-
-> Hi Kumar, thanks for the reply.
->
-> I am not sure I fully understand your question, but here's an =20
-> attempt of
-> an answer :)
->
-> What I want to do is:
->
-> First stage - Get the processor on doze mode (core halted, but =20
-> responds
-> to interrupts)
-> Second stage - Once I understand how to do that, using all the right
-> interfaces and so on, get other devices (mainly image processing =20
-> ASICS)
-> to stop clocks.
->
-> Does that answer your question? Can you help? Do you know where to =20
-> find
-> the code that deals with power management for the ppc 8555?
-
-It does, what periphs are you using on the 8555 itself?
-
-- k
+Christian Krafft
+IBM Systems & Technology Group,=20
+Linux Kernel Development
+IT Specialist
