@@ -1,18 +1,15 @@
 Return-Path: <MAILER-DAEMON@rune.sasl.smtp.pobox.com>
-Received: from gretel.pobox.com (gretel.pobox.com [208.58.1.197])
-	by ozlabs.org (Postfix) with ESMTP id 65BED67C74
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 13:23:13 +1100 (EST)
+Received: from lollipop.listbox.com (lollipop.listbox.com [208.210.124.78])
+	by ozlabs.org (Postfix) with ESMTP id 37AEE67C42
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 13:28:46 +1100 (EST)
 Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by gretel.pobox.com (Postfix) with ESMTP id DE7574F9F864
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 19:51:49 -0500 (EST)
+	by lollipop.listbox.com (Postfix) with ESMTP id 6D58D48BDF7
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 19:51:28 -0500 (EST)
 From: Nathan Lynch <ntl@pobox.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] add rtas_service_present() helper
-Date: Wed,  6 Dec 2006 18:50:45 -0600
-Message-Id: <11654526533213-git-send-email-ntl@pobox.com>
-In-Reply-To: <11654526511379-git-send-email-ntl@pobox.com>
-References: <11654526463043-git-send-email-ntl@pobox.com>
-	<11654526511379-git-send-email-ntl@pobox.com>
+Subject: [PATCH 1/4] maple: match "pcie" name for CPC945
+Date: Wed,  6 Dec 2006 18:50:43 -0600
+Message-Id: <11654526463043-git-send-email-ntl@pobox.com>
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,49 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To test for the existence of an RTAS function, we typically do:
-
-   foo_token = rtas_token("foo");
-   if (foo_token == RTAS_UNKNOWN_SERVICE)
-      return;
-
-Add a rtas_service_present method, which provides a more conventional
-boolean interface for testing the existence of an RTAS method.
+Some firmwares have "pcie" for the "name" property of the CPC945 PCI
+Express host bridge.  Check for "pcie" in addition to "pci" so we
+don't miss it.
 
 Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
- arch/powerpc/kernel/rtas.c |    6 ++++++
- include/asm-powerpc/rtas.h |    1 +
- 2 files changed, 7 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/maple/pci.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 387ed0d..7970bed 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -303,6 +303,12 @@ int rtas_token(const char *service)
- }
- EXPORT_SYMBOL(rtas_token);
- 
-+int rtas_service_present(const char *service)
-+{
-+	return rtas_token(service) != RTAS_UNKNOWN_SERVICE;
-+}
-+EXPORT_SYMBOL(rtas_service_present);
-+
- #ifdef CONFIG_RTAS_ERROR_LOGGING
- /*
-  * Return the firmware-specified size of the error log buffer
-diff --git a/include/asm-powerpc/rtas.h b/include/asm-powerpc/rtas.h
-index 5a0c136..f08f356 100644
---- a/include/asm-powerpc/rtas.h
-+++ b/include/asm-powerpc/rtas.h
-@@ -159,6 +159,7 @@ extern struct rtas_t rtas;
- 
- extern void enter_rtas(unsigned long);
- extern int rtas_token(const char *service);
-+extern int rtas_service_present(const char *service);
- extern int rtas_call(int token, int, int, int *, ...);
- extern void rtas_restart(char *cmd);
- extern void rtas_power_off(void);
+diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+index 3a32ded..3f6a69f 100644
+--- a/arch/powerpc/platforms/maple/pci.c
++++ b/arch/powerpc/platforms/maple/pci.c
+@@ -562,7 +562,7 @@ void __init maple_pci_init(void)
+ 	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;) {
+ 		if (np->name == NULL)
+ 			continue;
+-		if (strcmp(np->name, "pci") == 0) {
++		if (!strcmp(np->name, "pci") || !strcmp(np->name, "pcie")) {
+ 			if (add_bridge(np) == 0)
+ 				of_node_get(np);
+ 		}
 -- 
 1.4.4.1
