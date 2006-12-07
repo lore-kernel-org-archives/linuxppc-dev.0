@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A152F67CD8
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 08:58:14 +1100 (EST)
-In-Reply-To: <20061207173353.GD22989@ld0162-tx32.am.freescale.net>
-References: <20061207173353.GD22989@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <161D7B81-B884-4C75-B42E-1627CA538918@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] powerpc: Document device nodes for I2C devices.
-Date: Thu, 7 Dec 2006 15:58:02 -0600
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6AC4967CFC
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 09:01:18 +1100 (EST)
+Message-ID: <45788F20.8030804@am.sony.com>
+Date: Thu, 07 Dec 2006 14:01:04 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH] ps3: add vuart support
+References: <45775D89.7030904@am.sony.com> <200612071937.22607.arnd@arndb.de>
+	<457879BE.9000704@am.sony.com>
+	<Pine.LNX.4.62.0612072229260.30717@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0612072229260.30717@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Geert Uytterhoeven wrote:
+> On Thu, 7 Dec 2006, Geoff Levand wrote:
+>> Arnd Bergmann wrote:
+>> > On Thursday 07 December 2006 01:17, Geoff Levand wrote:
+>> >> Adds support for the PS3 virtual UART (vuart).  The vuart provides a
+>> >> bi-directional byte stream data link between logical partitions.
+>> > 
+>> > Looks good now, just a few minor comments:
+>> > 
+>> >> +struct ports_bmp
+>> >> +{
+>> >> +	u64 status;
+>> >> +	u64 unused[3];
+>> >> +} __attribute__ ((packed));
+>> > 
+>> > Do you really want to have this structure packed? It will produce
+>> > better code if it isn't.
+>> 
+>> Yes, it is a little obscure in the code, but the address of the ports_bmp
+>> instance is passed to ps3_alloc_vuart_irq(), which in turn calls
+>> lv1_configure_virtual_uart_irq().  The HV (actually the vuart service
+>> in the policy module) uses this as a 256 bit bitmap to indicate the
+>> interrupt status of the ports.  The system supports 256 ports, but
+>> currently just two ports, 1 and 3, are used, so I took advantage of
+>> that to simplify the code and just used the first word of the bitmap.
+> 
+> I think Arnd meant that the `__attribute__ ((packed))' is useless for structs
+> containing u64 members only. The natural alignment of 64-bit values is on a
+> 64-bit boundary, so there won't be padding anyway.
+> 
+> IIRC, someone (davem?) told me a long time ago gcc _always_ uses byte-accesses
+> when accessing members in a struct with `__attribute__ ((packed))', since the
+> members may be unaligned. Even when the values are perfectly aligned. So it's
+> better not to use `__attribute__ ((packed))' unless it's really needed.
+> 
+> Why is there a comment about `Needs 4 byte alignment.'? The way it's used, it
+> will always be 8-byte aligned anyway.
 
-On Dec 7, 2006, at 11:33 AM, Scott Wood wrote:
 
-> Document the use of device trees to describe devices on an I2C bus,  
-> which
-> will be used with David Brownell's "new style" I2C binding patches.
->
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  Documentation/powerpc/booting-without-of.txt |   34 +++++++++++++++ 
-> +++++++++++
->  1 files changed, 34 insertions(+), 0 deletions(-)
->
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
-> Documentation/powerpc/booting-without-of.txt
-> index 27b457c..092b8f3 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -1277,6 +1277,8 @@ platforms are moved over to use the flat
->
->     e) I2C
->
-> +   e1) I2C Controller
-> +
->     Required properties :
->
->      - device_type : Should be "i2c"
-> @@ -1297,6 +1299,10 @@ platforms are moved over to use the flat
->        a digital filter sampling rate register
->      - fsl5200-clocking : boolean; if defined, indicated that this  
-> device
->        uses the FSL 5200 clocking mechanism.
-> +    - #address-cells : should exist and be 1 if I2C devices are  
-> declared
-> +      in the device tree.
-> +    - #size-cells : should exist and be 0 if I2C devices are declared
-> +      in the device tree.
->
->     Example :
->
-> @@ -1309,6 +1315,34 @@ platforms are moved over to use the flat
->  		dfsrr;
->  	};
->
-> +   e2) I2C Devices
-> +
-> +   Required properties :
-> +
-> +    - reg : I2C address for the device
+After some discussion on IRC I understand that my comment above is in error.
 
-Is this a 7-bit or 8-bit padded address?
+The packed attribute forces both the structure members and the structure instance
+to have 1-byte alignment, so it will not have an 8-byte alignment, but a 1-byte.
+In the usage here though, the ports_bmp instance follows an aligned long, so it
+by chance starts at 8-byte aligned address.
 
-- kumar
+The 4-byte alignment is a requirement of the HV, so I just noted that in
+the comment.  I'll change the comment to be more clear.
+
+-Geoff
