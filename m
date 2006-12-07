@@ -1,20 +1,30 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9110267CAF
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 07:29:55 +1100 (EST)
-Message-ID: <457879BE.9000704@am.sony.com>
-Date: Thu, 07 Dec 2006 12:29:50 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] ps3: add vuart support
-References: <45775D89.7030904@am.sony.com> <200612071937.22607.arnd@arndb.de>
-In-Reply-To: <200612071937.22607.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <hollis@penguinppc.org>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1A50667C66
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 07:36:05 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB7KZepO011467
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 15:35:40 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB7KZewV181862
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 15:35:40 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB7KZefO027680
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 15:35:40 -0500
+Subject: Re: libfdt - flat tree manipulation library
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20061127055905.GA6428@localhost.localdomain>
+References: <20061127055905.GA6428@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 07 Dec 2006 14:35:34 -0600
+Message-Id: <1165523734.8900.10.camel@basalt>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Thursday 07 December 2006 01:17, Geoff Levand wrote:
->> Adds support for the PS3 virtual UART (vuart).  The vuart provides a
->> bi-directional byte stream data link between logical partitions.
+On Mon, 2006-11-27 at 16:59 +1100, David Gibson wrote:
 > 
-> Looks good now, just a few minor comments:
-> 
->> +struct ports_bmp
->> +{
->> +	u64 status;
->> +	u64 unused[3];
->> +} __attribute__ ((packed));
-> 
-> Do you really want to have this structure packed? It will produce
-> better code if it isn't.
+>         - License is GPL for now.  I'm looking into the red tape to
+> get it released as BSD or other non-restrictive license, so that it
+> can be used in closed bootloaders.
 
+A GPL license means it cannot be used in Xen today (that part of the
+code is BSD-licensed), nor could it be used in developing non-GPL
+firmwares.
 
-Yes, it is a little obscure in the code, but the address of the ports_bmp
-instance is passed to ps3_alloc_vuart_irq(), which in turn calls
-lv1_configure_virtual_uart_irq().  The HV (actually the vuart service
-in the policy module) uses this as a 256 bit bitmap to indicate the
-interrupt status of the ports.  The system supports 256 ports, but
-currently just two ports, 1 and 3, are used, so I took advantage of
-that to simplify the code and just used the first word of the bitmap.
-
-I'll post an updated patch to address your other comments.
-
--Geoff
+-Hollis
