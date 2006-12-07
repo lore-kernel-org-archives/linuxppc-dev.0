@@ -1,16 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3A3F467C2C
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 14:23:48 +1100 (EST)
-Date: Wed, 6 Dec 2006 21:20:51 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 1/4] maple: match "pcie" name for CPC945
-Message-ID: <20061206212051.756e0634@localhost.localdomain>
-In-Reply-To: <11654526463043-git-send-email-ntl@pobox.com>
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id CAD7367C4A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 14:25:40 +1100 (EST)
+Date: Wed, 6 Dec 2006 21:25:23 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/4] add rtas_service_present() helper
+Message-ID: <20061207032523.GG18846@localdomain>
 References: <11654526463043-git-send-email-ntl@pobox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<11654526511379-git-send-email-ntl@pobox.com>
+	<11654526533213-git-send-email-ntl@pobox.com>
+	<1165459893.14780.0.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1165459893.14780.0.camel@concordia.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,18 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed,  6 Dec 2006 18:50:43 -0600 Nathan Lynch <ntl@pobox.com> wrote:
+Michael Ellerman wrote:
+> On Wed, 2006-12-06 at 18:50 -0600, Nathan Lynch wrote:
+> > To test for the existence of an RTAS function, we typically do:
+> > 
+> >    foo_token = rtas_token("foo");
+> >    if (foo_token == RTAS_UNKNOWN_SERVICE)
+> >       return;
+> > 
+> > Add a rtas_service_present method, which provides a more conventional
+> > boolean interface for testing the existence of an RTAS method.
+> 
+> 
+> I like it a lot ..
+> 
+> But should it be called rtas_token_present() ? :D
 
-> Some firmwares have "pcie" for the "name" property of the CPC945 PCI
-> Express host bridge.  Check for "pcie" in addition to "pci" so we
-> don't miss it.
+I considered that, but thought my name was a little more descriptive
+-- a token is merely an integer value, but we're really interested in
+whether the service named is available.
 
-1275 (draft) supplement for PCI Express use 'pciex'. 'Some firmware'
-should be changed instead, if possible.
-
-See http://playground.sun.com/1275/bindings/pci/pci-express.txt
-
-That's also what pseries and rtas_pci uses.
-
-
--Olof
+I don't really care that much either way, though :)
