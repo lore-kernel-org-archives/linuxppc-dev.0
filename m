@@ -1,13 +1,15 @@
-Return-Path: <enorm@126.com>
-Message-ID: <001501c719fa$19e45020$8809a8c0@class>
-From: "enorm" <enorm@126.com>
-To: =?gb2312?B?s8LPow==?= <xchen@sunrisetelecom.com.cn>,
-	<linuxppc-embedded@ozlabs.org>, <linuxppc-embedded-request@ozlabs.org>
-References: <20061207095910.AD77667BB2@ozlabs.org>
-Subject: Re: When I use ichache_enable or dcache_enable in uboot,it crash
-Date: Thu, 7 Dec 2006 20:20:36 +0800
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="gb2312"; reply-type=original
+Return-Path: <reynekejunk@hotmail.com>
+Received: from bay0-omc1-s37.bay0.hotmail.com (bay0-omc1-s37.bay0.hotmail.com
+	[65.54.246.109]) by ozlabs.org (Postfix) with ESMTP id 1C66E67C5C
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  8 Dec 2006 01:10:44 +1100 (EST)
+Message-ID: <BAY7-F1D1F74BDCA80CD1342CBCBEDC0@phx.gbl>
+From: "Ilse Reyneke" <reynekejunk@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Linux 4xx DMA interface broken?
+Date: Thu, 07 Dec 2006 14:10:39 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,37 +20,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-disable icache& dcache at the beginning is essential or else your program 
-will crash. Only when you do the proper initiation, can you enable them. For 
-details you can refer to you reference manual.
+Gents/ladies,
+
+Has anyone successfully used the 4xx DMA interface? I think I'm missing 
+something very obvious, or it's broken.
+
+We are using a Linux 2.6.14 kernel on a 440EPx. Basically, it looks like the 
+code is written to work with the PLB4 controller but addressed to the PLB3 
+controller.
+
+The problem I have is the following: ppc4xx_dma.h has the following code 
+section(s):
+
+#ifdef CONFIG_44x
+#define	PPC4xx_DMA_64BIT
+#define DMA_CR_OFFSET 1
+#else
+#define DMA_CR_OFFSET 0
+#endif
+
+#define SET_DMA_PW(x)     (((x)&0x3)<<(26-DMA_CR_OFFSET))	/* Peripheral 
+Width */
 
 
------ Original Message ----- 
-From: "³ÂÏ£" <xchen@sunrisetelecom.com.cn>
-To: <linuxppc-embedded@ozlabs.org>; <linuxppc-embedded-request@ozlabs.org>
-Sent: Thursday, December 07, 2006 5:52 PM
-Subject: When I use ichache_enable or dcache_enable in uboot,it crash
+And ibm44x.h has the following:
 
 
-> Hi,
->
-> In the very begin of the uboot, the dcache is disable and the icache
-> is enable. The code runs in flash nomarlly. Then the uboot should jump to
-> ram and if I don't  disable icache the uboot will crash. I can't enable 
-> the
-> dcache too. The more serious problem is that when I boot the linux kernel
-> ,it will stop at init_mmu. I think it is the same reason. Please help me.
->
-> Thanks & Br,
-> Andy
->
->
+#define DCRN_DMA0_BASE	0x100
+#define DCRN_DMA2P40_BASE  0x300
+#define DCRN_DMACR0	(DCRN_DMA0_BASE + 0x0)	/* DMA Channel Control 0 */
+
+A typical DMA interface function as defined in ppc4xx_dma.c, looks like this
+
+void ppc4xx_enable_dma(unsigned int dmanr)
+{
+	...
+	mtdcr(DCRN_DMACR0 + (dmanr * 0x8), control);
+	...
+}
 
 
---------------------------------------------------------------------------------
+Because of the processor type, DMA_CR_OFFSET is set to 1. Which means that 
+the control register is structured on the PLB4, not the PL3 as the 
+DCRN_DMASR address implies.
 
+How (or can you) do you specify which DMA controller you want to use? Any 
+ideas/comments?
 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded 
+Cheers
+   Jan Reyneke
+
+_________________________________________________________________
+Be the first to hear what's new at MSN - sign up to our free newsletters! 
+http://www.msn.co.uk/newsletters
