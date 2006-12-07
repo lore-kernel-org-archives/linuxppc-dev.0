@@ -1,30 +1,13 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1A50667C66
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 07:36:05 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB7KZepO011467
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 15:35:40 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB7KZewV181862
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 15:35:40 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB7KZefO027680
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 15:35:40 -0500
-Subject: Re: libfdt - flat tree manipulation library
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20061127055905.GA6428@localhost.localdomain>
-References: <20061127055905.GA6428@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 07 Dec 2006 14:35:34 -0600
-Message-Id: <1165523734.8900.10.camel@basalt>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC] powerpc: experimental of serial port driver
+Date: Thu, 7 Dec 2006 21:40:46 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612072140.47405.arnd@arndb.de>
+Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,14 +17,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-11-27 at 16:59 +1100, David Gibson wrote:
-> 
->         - License is GPL for now.  I'm looking into the red tape to
-> get it released as BSD or other non-restrictive license, so that it
-> can be used in closed bootloaders.
+This can be used for serial ports that are connected to an
+OF platform bus. This is independent of whether they also
+get detected as legacy_serial devices during early boot,
+because the serial core makes sure it handles multiple
+registrations fine.
 
-A GPL license means it cannot be used in Xen today (that part of the
-code is BSD-licensed), nor could it be used in developing non-GPL
-firmwares.
+It should be generic enough to work for more than just
+8250 style devices, but those are the only ones I tested
+so far.
 
--Hollis
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+
+Index: linux-2.6/drivers/serial/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/serial/Makefile
++++ linux-2.6/drivers/serial/Makefile
+@@ -56,3 +56,4 @@ obj-$(CONFIG_SERIAL_SGI_IOC4) += ioc4_se
+ obj-$(CONFIG_SERIAL_SGI_IOC3) += ioc3_serial.o
+ obj-$(CONFIG_SERIAL_ATMEL) += atmel_serial.o
+ obj-$(CONFIG_SERIAL_NETX) += netx-serial.o
++obj-$(CONFIG_SERIAL_OF_PLATFORM) += of_serial.o
+Index: linux-2.6/drivers/serial/of_serial.c
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/serial/of_serial.c
+@@ -0,0 +1,141 @@
++/*
++ *  Serial Port driver for Open Firmware platform devices
++ *
++ *    Copyright (C) 2006 Arnd Bergmann <arnd@arndb.de>, IBM Corp.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/serial_core.h>
++#include <linux/serial_8250.h>
++
++#include <asm/of_platform.h>
++#include <asm/prom.h>
++
++/*
++ * Fill a struct uart_port for a given device node
++ */
++static int __devinit of_platform_serial_setup(struct of_device *ofdev,
++					int type, struct uart_port *port)
++{
++	struct resource resource;
++	struct device_node *np = ofdev->node;
++	const unsigned int *clk, *spd;
++	int ret;
++
++	memset(port, 0, sizeof *port);
++	spd = get_property(np, "current-speed", NULL);
++	clk = get_property(np, "clock-frequency", NULL);
++	if (!clk) {
++		dev_warn(&ofdev->dev, "no clock-frequency property set\n");
++		return -ENODEV;
++	}
++
++	ret = of_address_to_resource(np, 0, &resource);
++	if (ret) {
++		dev_warn(&ofdev->dev, "invalid address\n");
++		return ret;
++	}
++
++	spin_lock_init(&port->lock);
++	port->mapbase = resource.start;
++	port->irq = irq_of_parse_and_map(np, 0);
++	port->iotype = UPIO_MEM;
++	port->type = type;
++	port->uartclk = *clk;
++	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP;
++	port->dev = &ofdev->dev;
++/*	if (spd) // FIXME: how to set?
++		port->speed = spd;
++*/
++	return 0;
++}
++
++/*
++ * Try to register a serial port
++ */
++static int __devinit of_platform_serial_probe(struct of_device *ofdev,
++						const struct of_device_id *id)
++{
++	struct uart_port port;
++	int port_type;
++	int ret;
++
++	port_type = (unsigned long)id->data;
++	ret = of_platform_serial_setup(ofdev, port_type, &port);
++	if (ret)
++		goto out;
++
++	switch (port_type) {
++	case PORT_UNKNOWN:
++		dev_info(&ofdev->dev, "Unknown serial port found, "
++			"attempting to use 8250 driver\n");
++		/* fallthrough */
++	case PORT_8250 ... PORT_MAX_8250:
++		ret = serial8250_register_port(&port);
++		break;
++	default:
++		/* need to add code for these */
++		ret = -ENODEV;
++		break;
++	}
++	if (ret < 0)
++		goto out;
++
++	ofdev->dev.driver_data = (void *)(unsigned long)ret;
++	return 0;
++out:
++	irq_dispose_mapping(port.irq);
++	return ret;
++}
++
++/*
++ * Release a line
++ */
++static int of_platform_serial_remove(struct of_device *ofdev)
++{
++	int line = (unsigned long)ofdev->dev.driver_data;
++	serial8250_unregister_port(line);
++	return 0;
++}
++
++/*
++ * A few common types, add more as needed.
++ */
++static struct of_device_id __devinitdata of_platform_serial_table[] = {
++	{ .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
++	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
++	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
++	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
++	{ .type = "serial",			      .data = (void *)PORT_UNKNOWN, },
++	{ /* end of list */ },
++};
++
++static struct of_platform_driver __devinitdata of_platform_serial_driver = {
++	.owner = THIS_MODULE,
++	.name = "of_serial",
++	.probe = of_platform_serial_probe,
++	.remove = of_platform_serial_remove,
++	.match_table = of_platform_serial_table,
++};
++
++static int __init of_platform_serial_init(void)
++{
++	return of_register_platform_driver(&of_platform_serial_driver);
++}
++module_init(of_platform_serial_init);
++
++static void __exit of_platform_serial_exit(void)
++{
++	return of_unregister_platform_driver(&of_platform_serial_driver);
++};
++module_exit(of_platform_serial_exit);
++
++MODULE_AUTHOR("Arnd Bergmann <arnd@arndb.de>");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Serial Port driver for Open Firmware platform devices");
+Index: linux-2.6/drivers/serial/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/serial/Kconfig
++++ linux-2.6/drivers/serial/Kconfig
+@@ -965,4 +965,14 @@ config SERIAL_NETX_CONSOLE
+ 	  If you have enabled the serial port on the Motorola IMX
+ 	  CPU you can make it the console by answering Y to this option.
+ 
++config SERIAL_OF_PLATFORM
++	tristate "Serial port on Open Firmware platform bus"
++	depends on PPC_OF
++	depends on SERIAL_8250
++	help
++	  If you have a PowerPC based system that has serial ports
++	  on a platform specific bus, you should enable this option.
++	  Currently, only 8250 compatible ports are supported, but
++	  others can easily be added.
++
+ endmenu
