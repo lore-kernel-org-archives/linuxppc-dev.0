@@ -1,14 +1,20 @@
-Return-Path: <Marta.Chamorro@xerox.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9110267CAF
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 07:29:55 +1100 (EST)
+Message-ID: <457879BE.9000704@am.sony.com>
+Date: Thu, 07 Dec 2006 12:29:50 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Power management for ppc 85xx
-Date: Thu, 7 Dec 2006 19:57:23 -0000
-Message-ID: <BFEE19E1D0DBF84698D76276388DCB843F22D2@gbrwgceumf01.eu.xerox.net>
-In-Reply-To: <99A19F8F-62E6-4D3D-A34B-3D815C7ED0C4@kernel.crashing.org>
-From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] ps3: add vuart support
+References: <45775D89.7030904@am.sony.com> <200612071937.22607.arnd@arndb.de>
+In-Reply-To: <200612071937.22607.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,53 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi again, Kumar,
-
-You said on your first reply that it was easy to get the core to nap, so
-that sounds like a suitable first step for me.
-
-Any pointers? Is there, for instance, any ppc implementation of power
-management I could look at to see how's done?
-
-Thanks,
-
-Marta
-
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: 06 December 2006 21:51
-To: Chamorro, Marta
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: Power management for ppc 85xx
+Arnd Bergmann wrote:
+> On Thursday 07 December 2006 01:17, Geoff Levand wrote:
+>> Adds support for the PS3 virtual UART (vuart).  The vuart provides a
+>> bi-directional byte stream data link between logical partitions.
+> 
+> Looks good now, just a few minor comments:
+> 
+>> +struct ports_bmp
+>> +{
+>> +	u64 status;
+>> +	u64 unused[3];
+>> +} __attribute__ ((packed));
+> 
+> Do you really want to have this structure packed? It will produce
+> better code if it isn't.
 
 
-On Dec 6, 2006, at 3:06 PM, Chamorro, Marta wrote:
+Yes, it is a little obscure in the code, but the address of the ports_bmp
+instance is passed to ps3_alloc_vuart_irq(), which in turn calls
+lv1_configure_virtual_uart_irq().  The HV (actually the vuart service
+in the policy module) uses this as a 256 bit bitmap to indicate the
+interrupt status of the ports.  The system supports 256 ports, but
+currently just two ports, 1 and 3, are used, so I took advantage of
+that to simplify the code and just used the first word of the bitmap.
 
-> Hi there!
->
->
->
-> Hope someone out there can give me some pointers here. I've got a =20
-> 2.6.18 kernel on a ppc 8555, which I configured to enable power =20
-> management (CONFIG_PM=3Dy). After doing that, the file /sys/power/=20
-> state appears on my file system. If I cat the file I get "standby =20
-> mem" (without the quotes), but if I try to write to it (to change =20
-> the state) I get an EPERM. I assume it is because I have no code =20
-> that implements any power save mode changes, only the interface to =20
-> change them. Am I wrong? How can I tell for sure? (the file is =20
-> writable, so it is not a problem with writing permissions)
-I can pretty much say that there isn't any code that does pwr mgmt =20
-for 85xx.  I'm not sure what exactly your issue is, but there =20
-definitely isn't any code.
-> So the question is (if I am right) where do I get the code from? I =20
-> am hoping someone has implemented power save for that processor =20
-> already, but I just don't know where to start looking for that =20
-> code. Can someone help?
-Getting the core to nap is easy enough, doing proper power savings =20
-for the full SoC maybe more challenging.
+I'll post an updated patch to address your other comments.
 
-What exact behavior are you looking for?  Something like suspend/=20
-resume or just idle power savings?
-
-- k
+-Geoff
