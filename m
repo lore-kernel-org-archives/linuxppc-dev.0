@@ -1,20 +1,22 @@
-Return-Path: <roger.larsson@norran.net>
-Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
-	by ozlabs.org (Postfix) with ESMTP id 4BB2F67C63
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E968B67BB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Dec 2006 12:22:10 +1100 (EST)
-From: Roger Larsson <roger.larsson@norran.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Thu,  7 Dec 2006 13:47:54 +1100 (EST)
 Subject: Re: shared config registers and locking
-Date: Thu, 7 Dec 2006 02:22:06 +0100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roger Larsson <roger.larsson@norran.net>
+In-Reply-To: <200612070222.07456.roger.larsson@norran.net>
 References: <1165381847.5469.70.camel@localhost.localdomain>
 	<200612062314.kB6NE8iQ083398@penguin.ncube.com>
 	<1165448053.5469.145.camel@localhost.localdomain>
-In-Reply-To: <1165448053.5469.145.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200612070222.07456.roger.larsson@norran.net>
+	<200612070222.07456.roger.larsson@norran.net>
+Content-Type: text/plain
+Date: Thu, 07 Dec 2006 13:47:43 +1100
+Message-Id: <1165459663.5469.159.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,69 +28,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 07 December 2006 00:34, you wrote:
-> > GACK!  Many better engineers than any of us have spent countless hours
-> > breaking down locks.  A lock takes nearly no space at all, you're not
-> > proposing to lock any less often, so multiple locks take no less time,
-> > the only thing you stand to gain by protecting multiple data structures
-> > with one lock is the possibility of lock contention.  Please reconsider.
->
-> Wait wait wait.... I'm perfectly aware of lock contention issues and I'm
-> not proposing to have a giant lock for everything in the system.
->
-> I was proposing something very clearly aimed at configuration type
-> things that are generally accessed a bit at boot time and then every
-> time the phase of the moon changes, in which case, it's just a pain to
-> have to use fine grained locking and one shared lock is plenty enough.
->
-> The specific example that made me think about it was some clock control
-> registers on 4xx that the EMAC driver is whacking every now and then (on
-> link state change, no lock contention to be worried about here), though
-> they could be used by other drivers too (or platform code). Since those
-> registers are a bit different from one 4xx to the next too, and since I
-> now have a non-4xx platform that needs to use EMAC and has similar clock
-> control bits I might have to toggle there too, I'm basically ending up
-> with a global spinlock that I can't precisely define better than "global
-> clock control lock" ....
->
 
-Do all EMAC implementations have this problem?
+> > The specific example that made me think about it was some clock control
+> > registers on 4xx that the EMAC driver is whacking every now and then (on
+> > link state change, no lock contention to be worried about here), though
+> > they could be used by other drivers too (or platform code). Since those
+> > registers are a bit different from one 4xx to the next too, and since I
+> > now have a non-4xx platform that needs to use EMAC and has similar clock
+> > control bits I might have to toggle there too, I'm basically ending up
+> > with a global spinlock that I can't precisely define better than "global
+> > clock control lock" ....
+> >
+> 
+> Do all EMAC implementations have this problem?
 
-- - -
+No, only some of them. 
 
-> Another approach would be to remove the code from EMAC and have it
-> instead use the "feature call" thingy to call into platform code to do
-> the magic clock tweaking (with appropriate locking) but I don't like
-> much that idea as all 4xx platforms pretty much would have to duplicate
-> that code, and I prefer keeping some of that magic in the EMAC driver
-> itself.
+> Another approach might be to factor out the modification code only,
+> keeping the original locking code for comparation...
+> 	static inline modify_dcr(reg, set_mask, reset_mask)
+> 	{
+> 		unsigned long flags;
+> 		local_irq_save(flags);
+> 		mtdcr(reg, mfdcr(reg) & ~reset_mask | set_mask ))
+> 		local_irq_restore(flags);
+> 	}
+> and
+> 	static inline SDR_MODIFY(...)
 
-I usually preferre this approach. Since the magic from one point of view 
-(EMAC) is normal configuration from another.
+Since we need a spinlock here (the whole point of the exercise is to
+make it SMP and -rt safe), that means having a global spinlock used by
+modify_dcr / SDR_MODIFY which boils down to something not far from my
+proposal.
 
-Good candidates from EMACs(!) point of view...
-	EMAC_RX_CLK_TX(int idx)
-	EMAC_RX_CLK_DEFAULT(int idx)
-But form clock config it is probably closer to this.
-	CLK_DEFAULT(int idx)
-	...
+> #if defined(CONFIG_405EP)
+> #define EMAC_RX_CLK_TX(idx) modify_dcr(0xf3, 1<< (idx), 0)
+> #else
+> #define EMAC_RX_CLK_TX(idx) SDR_MODIFY(DCRN_SDR_MFR, (0x08000000 >> idx), 0)
+> #endif
 
-Another approach might be to factor out the modification code only,
-keeping the original locking code for comparation...
-	static inline modify_dcr(reg, set_mask, reset_mask)
-	{
-		unsigned long flags;
-		local_irq_save(flags);
-		mtdcr(reg, mfdcr(reg) & ~reset_mask | set_mask ))
-		local_irq_restore(flags);
-	}
-and
-	static inline SDR_MODIFY(...)
+The ifdef's are going away in my rework in favor of something like
 
-#if defined(CONFIG_405EP)
-#define EMAC_RX_CLK_TX(idx) modify_dcr(0xf3, 1<< (idx), 0)
-#else
-#define EMAC_RX_CLK_TX(idx) SDR_MODIFY(DCRN_SDR_MFR, (0x08000000 >> idx), 0)
-#endif
+	if (emac_has_feature(dev, EMAC_FTR_NEED_405EP_CLK_FIX))
+		xxxx
 
-/RogerL
+So that we can build support for multiple models in one driver if we
+want. If we don't, the above if will turn into if (0) / if (1) depending
+on what we build for and thus the compiler will do the right thing and
+optimize out unused code. That's the approach we use already for CPU and
+firmware features and it works well.
+
+Ben.
