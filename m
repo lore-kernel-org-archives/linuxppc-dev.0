@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0225967D0E
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 09:05:12 +1100 (EST)
-In-Reply-To: <20061207173541.GG22989@ld0162-tx32.am.freescale.net>
-References: <20061207173541.GG22989@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DC219401-9766-4BFD-BA94-7BA1997D9530@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] powerpc: Call of_register_i2c_devices() for fsl-i2c.
-Date: Thu, 7 Dec 2006 16:05:11 -0600
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+	by ozlabs.org (Postfix) with ESMTP id 8E2F767C52
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 09:51:08 +1100 (EST)
+Subject: [PATCH/RESEND] powerpc: Fix mmap of PCI resource with hack for X
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Fri, 08 Dec 2006 09:52:05 +1100
+Message-Id: <1165531925.5027.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +21,278 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The powerpc version of pci_resource_to_user() and associated hooks
+used by /proc/bus/pci and /sys/bus/pci mmap have been broken for some
+time on machines that don't have a 1:1 mapping of devices (basically
+on non-PowerMacs) and have PCI devices above 32 bits.
 
-On Dec 7, 2006, at 11:35 AM, Scott Wood wrote:
+This attempts to fix it as well as possible. 
 
-> Call of_register_i2c_devices() to register I2C devices on
-> the device tree under an fsl-i2c node.
->
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> This patch depends on David Brownell's patchset at
-> http://lists.lm-sensors.org/pipermail/i2c/2006-November/000516.html
->
->  arch/powerpc/sysdev/fsl_soc.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/ 
-> fsl_soc.c
-> index ad31e56..a4d3c46 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -345,6 +345,8 @@ static int __init fsl_i2c_of_init(void)
->  						    fsl_i2c_platform_data));
->  		if (ret)
->  			goto unreg;
-> +
-> +		of_register_i2c_devices(np, i);
->  	}
+The rule is supposed to be that pci_resource_to_user() always converts
+the resources back into a BAR values since that's what the /proc
+interface was supposed to deal with. However, for X to work on platforms
+where PCI MMIO is not mapped 1:1, it became a habit of platforms like
+sparc or powerpc to pass "fixed up" values there sinve X expects to
+be able to use values from /proc/bus/pci/devices as offsets to mmap
+of /dev/mem...
 
-You are assuming the bus number is the same as our index. This may  
-not be true.
+So we keep that contraption here, causing also /sys/*/resource to
+expose fully absolute MMIO addresses instead of BAR values, which is
+ugly, but should still work as long as those are only used to calculate
+alignment within a page.
 
->  	return 0;
-> -- 
-> 1.4.2.3
->
->
->
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+X is still broken when built 32 bits on machines where PCI MMIO can be
+above 32 bits space unfortunately. It looks like somebody (DaveM ?)
+hacked a fix in X to handle long long resources and had the good idea
+to wrap it in #ifdef __sparc__ :-(
+
+I suppose distro can do a quick fix here to get current X working, at
+least until we have the new code from Ian Romanick that is supposed to
+do proper use of sysfs for mapping resources.
+
+This version of the patch is not well tested, mostly for comments at
+this point.
+
+As for fixing X to deal with 64 bits values when built as a 32 bits
+binary, edit hw/xfree86/os-support/linux/lnx_pci.c and make it use
+the definitions inside #ifdef __sparc__ at the top of the file. I
+can't see any good reason why this was made sparc only in the first
+place though...
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+That should have been in 2.6.19, I though you picked it up already...
+I'll try to get it in stable.
+
+Index: linux-cell/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/pci_32.c	2006-11-13 13:37:51.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/pci_32.c	2006-11-13 19:01:28.000000000 +1100
+@@ -1546,7 +1546,7 @@ pci_resource_to_bus(struct pci_dev *pdev
+ 
+
+ static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
+-					       unsigned long *offset,
++					       resource_size_t *offset,
+ 					       enum pci_mmap_state mmap_state)
+ {
+ 	struct pci_controller *hose = pci_bus_to_hose(dev->bus->number);
+@@ -1558,7 +1558,9 @@ static struct resource *__pci_mmap_make_
+ 
+ 	/* If memory, add on the PCI bridge address offset */
+ 	if (mmap_state == pci_mmap_mem) {
++#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
+ 		*offset += hose->pci_mem_offset;
++#endif
+ 		res_bit = IORESOURCE_MEM;
+ 	} else {
+ 		io_offset = hose->io_base_virt - (void __iomem *)_IO_BASE;
+@@ -1626,9 +1628,6 @@ static pgprot_t __pci_mmap_set_pgprot(st
+ 	else
+ 		prot |= _PAGE_GUARDED;
+ 
+-	printk("PCI map for %s:%llx, prot: %lx\n", pci_name(dev),
+-		(unsigned long long)rp->start, prot);
+-
+ 	return __pgprot(prot);
+ }
+ 
+@@ -1697,7 +1696,7 @@ int pci_mmap_page_range(struct pci_dev *
+ 			enum pci_mmap_state mmap_state,
+ 			int write_combine)
+ {
+-	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
++	resource_size_t offset = vma->vm_pgoff << PAGE_SHIFT;
+ 	struct resource *rp;
+ 	int ret;
+ 
+@@ -1810,21 +1809,43 @@ void pci_resource_to_user(const struct p
+ 			  resource_size_t *start, resource_size_t *end)
+ {
+ 	struct pci_controller *hose = pci_bus_to_hose(dev->bus->number);
+-	unsigned long offset = 0;
++	resource_size_t offset = 0;
+ 
+ 	if (hose == NULL)
+ 		return;
+ 
+ 	if (rsrc->flags & IORESOURCE_IO)
+-		offset = (void __iomem *)_IO_BASE - hose->io_base_virt
+-			+ hose->io_base_phys;
++		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++
++	/* We pass a fully fixed up address to userland for MMIO instead of
++	 * a BAR value because X is lame and expects to be able to use that
++	 * to pass to /dev/mem !
++	 *
++	 * That means that we'll have potentially 64 bits values where some
++	 * userland apps only expect 32 (like X itself since it thinks only
++	 * Sparc has 64 bits MMIO) but if we don't do that, we break it on
++	 * 32 bits CHRPs :-(
++	 *
++	 * Hopefully, the sysfs insterface is immune to that gunk. Once X
++	 * has been fixed (and the fix spread enough), we can re-enable the
++	 * 2 lines below and pass down a BAR value to userland. In that case
++	 * we'll also have to re-enable the matching code in
++	 * __pci_mmap_make_offset().
++	 *
++	 * BenH.
++	 */
++#if 0
++	else if (rsrc->flags & IORESOURCE_MEM)
++		offset = hose->pci_mem_offset;
++#endif
+ 
+-	*start = rsrc->start + offset;
+-	*end = rsrc->end + offset;
++	*start = rsrc->start - offset;
++	*end = rsrc->end - offset;
+ }
+ 
+ void __init
+-pci_init_resource(struct resource *res, unsigned long start, unsigned long end,
++pci_init_resource(struct resource *res, resource_size_t start,
++		  resource_size_t end,
+ 		  int flags, char *name)
+ {
+ 	res->start = start;
+Index: linux-cell/arch/powerpc/kernel/pci_64.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/kernel/pci_64.c	2006-11-13 13:37:51.000000000 +1100
++++ linux-cell/arch/powerpc/kernel/pci_64.c	2006-11-13 19:01:21.000000000 +1100
+@@ -689,7 +689,7 @@ int pci_proc_domain(struct pci_bus *bus)
+  * Returns negative error code on failure, zero on success.
+  */
+ static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
+-					       unsigned long *offset,
++					       resource_size_t *offset,
+ 					       enum pci_mmap_state mmap_state)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+@@ -701,7 +701,9 @@ static struct resource *__pci_mmap_make_
+ 
+ 	/* If memory, add on the PCI bridge address offset */
+ 	if (mmap_state == pci_mmap_mem) {
++#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
+ 		*offset += hose->pci_mem_offset;
++#endif
+ 		res_bit = IORESOURCE_MEM;
+ 	} else {
+ 		io_offset = (unsigned long)hose->io_base_virt - pci_io_base;
+@@ -769,9 +771,6 @@ static pgprot_t __pci_mmap_set_pgprot(st
+ 	else
+ 		prot |= _PAGE_GUARDED;
+ 
+-	printk(KERN_DEBUG "PCI map for %s:%lx, prot: %lx\n", pci_name(dev), rp->start,
+-	       prot);
+-
+ 	return __pgprot(prot);
+ }
+ 
+@@ -839,7 +838,7 @@ pgprot_t pci_phys_mem_access_prot(struct
+ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 			enum pci_mmap_state mmap_state, int write_combine)
+ {
+-	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
++	resource_size_t offset = vma->vm_pgoff << PAGE_SHIFT;
+ 	struct resource *rp;
+ 	int ret;
+ 
+@@ -1342,20 +1341,41 @@ EXPORT_SYMBOL(pci_read_irq_line);
+ 
+ void pci_resource_to_user(const struct pci_dev *dev, int bar,
+ 			  const struct resource *rsrc,
+-			  u64 *start, u64 *end)
++			  resource_size_t *start, resource_size_t *end)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	unsigned long offset = 0;
++	resource_size_t offset = 0;
+ 
+ 	if (hose == NULL)
+ 		return;
+ 
+ 	if (rsrc->flags & IORESOURCE_IO)
+-		offset = pci_io_base - (unsigned long)hose->io_base_virt +
+-			hose->io_base_phys;
++		offset = (unsigned long)hose->io_base_virt - pci_io_base;
++
++	/* We pass a fully fixed up address to userland for MMIO instead of
++	 * a BAR value because X is lame and expects to be able to use that
++	 * to pass to /dev/mem !
++	 *
++	 * That means that we'll have potentially 64 bits values where some
++	 * userland apps only expect 32 (like X itself since it thinks only
++	 * Sparc has 64 bits MMIO) but if we don't do that, we break it on
++	 * 32 bits CHRPs :-(
++	 *
++	 * Hopefully, the sysfs insterface is immune to that gunk. Once X
++	 * has been fixed (and the fix spread enough), we can re-enable the
++	 * 2 lines below and pass down a BAR value to userland. In that case
++	 * we'll also have to re-enable the matching code in
++	 * __pci_mmap_make_offset().
++	 *
++	 * BenH.
++	 */
++#if 0
++	else if (rsrc->flags & IORESOURCE_MEM)
++		offset = hose->pci_mem_offset;
++#endif
+ 
+-	*start = rsrc->start + offset;
+-	*end = rsrc->end + offset;
++	*start = rsrc->start - offset;
++	*end = rsrc->end - offset;
+ }
+ 
+ struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
+Index: linux-cell/include/asm-powerpc/pci-bridge.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/pci-bridge.h	2006-11-13 13:37:50.000000000 +1100
++++ linux-cell/include/asm-powerpc/pci-bridge.h	2006-11-13 13:51:00.000000000 +1100
+@@ -31,12 +31,12 @@ struct pci_controller {
+ 	int last_busno;
+ 
+ 	void __iomem *io_base_virt;
+-	unsigned long io_base_phys;
++	resource_size_t io_base_phys;
+ 
+ 	/* Some machines have a non 1:1 mapping of
+ 	 * the PCI memory space in the CPU bus space
+ 	 */
+-	unsigned long pci_mem_offset;
++	resource_size_t pci_mem_offset;
+ 	unsigned long pci_io_size;
+ 
+ 	struct pci_ops *ops;
+Index: linux-cell/include/asm-ppc/pci-bridge.h
+===================================================================
+--- linux-cell.orig/include/asm-ppc/pci-bridge.h	2006-11-13 13:37:50.000000000 +1100
++++ linux-cell/include/asm-ppc/pci-bridge.h	2006-11-13 13:47:30.000000000 +1100
+@@ -20,8 +20,8 @@ extern unsigned long pci_bus_mem_base_ph
+ extern struct pci_controller* pcibios_alloc_controller(void);
+ 
+ /* Helper function for setting up resources */
+-extern void pci_init_resource(struct resource *res, unsigned long start,
+-			      unsigned long end, int flags, char *name);
++extern void pci_init_resource(struct resource *res, resource_size_t start,
++			      resource_size_t end, int flags, char *name);
+ 
+ /* Get the PCI host controller for a bus */
+ extern struct pci_controller* pci_bus_to_hose(int bus);
+@@ -50,12 +50,12 @@ struct pci_controller {
+ 	int bus_offset;
+ 
+ 	void __iomem *io_base_virt;
+-	unsigned long io_base_phys;
++	resource_size_t io_base_phys;
+ 
+ 	/* Some machines (PReP) have a non 1:1 mapping of
+ 	 * the PCI memory space in the CPU bus space
+ 	 */
+-	unsigned long pci_mem_offset;
++	resource_size_t pci_mem_offset;
+ 
+ 	struct pci_ops *ops;
+ 	volatile unsigned int __iomem *cfg_addr;
