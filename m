@@ -1,22 +1,25 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.25])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0EBA967C4A
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 18:08:56 +1100 (EST)
-Date: Wed, 6 Dec 2006 23:08:47 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Linas Vepstas" <linas@austin.ibm.com>
-Subject: Re: [PATCH 1/16] Spidernet DMA coalescing
-Message-Id: <20061206230847.dfd7cb18.akpm@osdl.org>
-In-Reply-To: <20061206232745.GA4649@austin.ibm.com>
-References: <20061206223223.GH17931@austin.ibm.com>
-	<20061206232745.GA4649@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, James K
-	Lewis <jklewis@us.ibm.com>, jgarzik@pobox.com,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4F2CB679F0
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 19:17:37 +1100 (EST)
+Received: from Relay2.suse.de (mail2.suse.de [195.135.221.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mx2.suse.de (Postfix) with ESMTP id B57A02177F
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 09:17:32 +0100 (CET)
+Date: Thu, 7 Dec 2006 09:17:32 +0100
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.19 cannot find root partition
+Message-ID: <20061207081732.GA29848@suse.de>
+References: <20061206211630.GB27857@krispykreme>
+	<20061206222213.GA17446@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061206222213.GA17446@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,7 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Dec 07, David Gibson wrote:
 
-It worries me when a patch series gets resent a few hours later.
+> Yeah, I had this problem on paulus' old PReP machine - I had to
+> manually zap the AIX magic number to get it to see the perfectly good
+> partitions.
 
-Did anything change?
+Something like this in aix_label_present should do it, beside
+echo > /dev/sda
+
+        struct partition *pt = (struct partition *) (p + 0x1be);
+        int slot;
+        for (slot = 1; slot <= 4; slot++, pt++) {
+                if (pt->sys_ind == LINUX_SWAP_PARTITION ||
+                        pt->sys_ind == LINUX_RAID_PARTITION ||
+                        pt->sys_ind == 0x83 ||
+                        pt->sys_ind == 0x8e ||
+                        is_extended_partition(pt))
+                        return 0;
+        }                                                                                                                                                            
