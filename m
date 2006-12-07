@@ -1,19 +1,14 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 2214667D36
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 02:49:20 +1100 (EST)
-Date: Thu, 7 Dec 2006 16:49:18 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] of_platform_make_bus_id(): make `magic` int
-In-Reply-To: <F5EB4110-C3A8-4C7F-98AE-9096A12482B6@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.62.0612071648040.27097@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0612071627400.16653@pademelon.sonytel.be>
-	<F5EB4110-C3A8-4C7F-98AE-9096A12482B6@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <BFEE19E1D0DBF84698D76276388DCB843F2251@gbrwgceumf01.eu.xerox.net>
+References: <BFEE19E1D0DBF84698D76276388DCB843F2251@gbrwgceumf01.eu.xerox.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5480D0D0-2F38-4BF1-B018-78E25D97F7B6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Power management for ppc 85xx
+Date: Thu, 7 Dec 2006 09:56:45 -0600
+To: Marta Chamorro <Marta.Chamorro@xerox.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +19,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-of_platform_make_bus_id(): Kill a compiler warning which is a real
-bug on PPC64 by changing `magic' to `int'.
+On Dec 7, 2006, at 9:53 AM, Chamorro, Marta wrote:
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Hi again,
+>
+> Glad I managed to make sense. I checked the hardware spec on the board
+> and it looks like we're using everything, apart from the SEC and maybe
+> the stand-alone I2C (I think we're just using the one within the CMP).
+> By the way, I made a mistake and the actual processor on the board is
+> the cut-down 8541, not the 8555. My apologies for that.
+>
+> This morning I added some printks and confirmed that there is no code
+> behind pm_ops, so my question remains: is there some code out there  
+> that
+> I can use? (hope so, otherwise I'm doomed...)
 
---- ps3-linux-src.orig/arch/powerpc/kernel/of_platform.c	2006-12-05 11:16:13.000000000 +0100
-+++ ps3-linux-src/arch/powerpc/kernel/of_platform.c	2006-12-07 16:47:21.000000000 +0100
-@@ -169,7 +169,7 @@ static void of_platform_make_bus_id(stru
- 	char *name = dev->dev.bus_id;
- 	const u32 *reg;
- 	u64 addr;
--	long magic;
-+	int magic;
- 
- 	/*
- 	 * If it's a DCR based device, use 'd' for native DCRs
+I'm sorry to say you're doomed.  I don't believe anyone's spent any  
+time trying to do pwr mgmt on 85xx.
 
-Gr{oetje,eeting}s,
+- k
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: 06 December 2006 22:53
+> To: Chamorro, Marta
+> Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
+> Subject: Re: Power management for ppc 85xx
+>
+>
+> On Dec 6, 2006, at 4:27 PM, Chamorro, Marta wrote:
+>
+>> Hi Kumar, thanks for the reply.
+>>
+>> I am not sure I fully understand your question, but here's an
+>> attempt of
+>> an answer :)
+>>
+>> What I want to do is:
+>>
+>> First stage - Get the processor on doze mode (core halted, but
+>> responds
+>> to interrupts)
+>> Second stage - Once I understand how to do that, using all the right
+>> interfaces and so on, get other devices (mainly image processing
+>> ASICS)
+>> to stop clocks.
+>>
+>> Does that answer your question? Can you help? Do you know where to
+>> find
+>> the code that deals with power management for the ppc 8555?
+>
+> It does, what periphs are you using on the 8555 itself?
+>
+> - k
+>
+>
+>
