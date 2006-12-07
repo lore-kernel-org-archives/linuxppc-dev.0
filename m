@@ -1,34 +1,16 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AD4BB67D1D
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 04:16:47 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB7HGWcj006768
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 12:16:32 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB7HGVxB485078
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 10:16:31 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB7HGV6f014895
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Dec 2006 10:16:31 -0700
-Date: Thu, 7 Dec 2006 11:16:30 -0600
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 1/16] Spidernet DMA coalescing
-Message-ID: <20061207171630.GA4614@austin.ibm.com>
-References: <20061206223223.GH17931@austin.ibm.com>
-	<20061206232745.GA4649@austin.ibm.com>
-	<20061206230847.dfd7cb18.akpm@osdl.org>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 81CAC67CB6
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 04:35:12 +1100 (EST)
+Date: Thu, 7 Dec 2006 11:30:41 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: i2c@lm-sensors.org
+Subject: [PATCH] i2c: Move i2c-mpc.c from i2c_add_adapter() to
+	i2c_register_adapter().
+Message-ID: <20061207173041.GA22989@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061206230847.dfd7cb18.akpm@osdl.org>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	jgarzik@pobox.com, Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,19 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 06, 2006 at 11:08:47PM -0800, Andrew Morton wrote:
-> 
-> It worries me when a patch series gets resent a few hours later.
-> 
-> Did anything change?
+Call i2c_register_adapter() in i2c-mpc.c so that scan_static_board_info()
+will pick it up.
 
-I did not resend this patch series.  However, I did receive a large 
-number of MTA errors:
-   <linuxppc-dev@ozlabs.org>: mail forwarding loop for linuxppc-dev@ozlabs.org
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+This patch depends on David Brownell's patchset at
+http://lists.lm-sensors.org/pipermail/i2c/2006-November/000516.html
 
-which might be related to what you saw.
+ drivers/i2c/busses/i2c-mpc.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-(I also cc'ed several lists, and delivry on one of the lists may have
-been delayed by a few hours??)
-
---linas
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 29891b6..aefbca7 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -330,7 +330,8 @@ static int fsl_i2c_probe(struct platform
+ 	i2c->adap = mpc_ops;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+ 	i2c->adap.class_dev.dev = &pdev->dev;
+-	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
++	i2c->adap.nr = pdev->id;
++	if ((result = i2c_register_adapter(&i2c->adap)) < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
+-- 
+1.4.2.3
