@@ -1,19 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/4] add rtas_service_present() helper
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <11654526533213-git-send-email-ntl@pobox.com>
+Return-Path: <MAILER-DAEMON@rune.sasl.smtp.pobox.com>
+Received: from lollipop.listbox.com (lollipop.listbox.com [208.210.124.78])
+	by ozlabs.org (Postfix) with ESMTP id 5A1DD67BF8
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 13:53:59 +1100 (EST)
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by lollipop.listbox.com (Postfix) with ESMTP id C5F5348950C
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Dec 2006 19:51:18 -0500 (EST)
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/4] maple: select PPC_RTAS
+Date: Wed,  6 Dec 2006 18:50:44 -0600
+Message-Id: <11654526511379-git-send-email-ntl@pobox.com>
+In-Reply-To: <11654526463043-git-send-email-ntl@pobox.com>
 References: <11654526463043-git-send-email-ntl@pobox.com>
-	<11654526511379-git-send-email-ntl@pobox.com>
-	<11654526533213-git-send-email-ntl@pobox.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-nFBTp8Pl2NNWQlGHQF3a"
-Date: Thu, 07 Dec 2006 13:51:33 +1100
-Message-Id: <1165459893.14780.0.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Some systems supported by the maple platform have RTAS; make PPC_MAPLE
+select PPC_RTAS.
 
---=-nFBTp8Pl2NNWQlGHQF3a
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-On Wed, 2006-12-06 at 18:50 -0600, Nathan Lynch wrote:
-> To test for the existence of an RTAS function, we typically do:
->=20
->    foo_token =3D rtas_token("foo");
->    if (foo_token =3D=3D RTAS_UNKNOWN_SERVICE)
->       return;
->=20
-> Add a rtas_service_present method, which provides a more conventional
-> boolean interface for testing the existence of an RTAS method.
-
-
-I like it a lot ..
-
-But should it be called rtas_token_present() ? :D
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-nFBTp8Pl2NNWQlGHQF3a
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFd4G1dSjSd0sB4dIRAoR8AKCZW70XpRrDdSdjnIE9HWEunorXpwCfRGtM
-OArTIvG90iN/FAKNcPaJfgM=
-=ROWd
------END PGP SIGNATURE-----
-
---=-nFBTp8Pl2NNWQlGHQF3a--
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 291c95a..f524b3b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -470,6 +470,7 @@ config PPC_MAPLE
+ 	select PPC_UDBG_16550
+ 	select PPC_970_NAP
+ 	select PPC_NATIVE
++	select PPC_RTAS
+ 	default n
+ 	help
+           This option enables support for the Maple 970FX Evaluation Board.
+-- 
+1.4.4.1
