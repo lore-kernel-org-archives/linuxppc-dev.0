@@ -1,19 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 70C3667CA5
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 08:33:07 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Scott Wood'" <scottwood@freescale.com>,
-	<linuxppc-dev@ozlabs.org>
-Subject: RE: [PATCH 2/4] powerpc: Add the ds1374 RTC to the mpc8349emds
-	devicetree.
-Date: Thu, 7 Dec 2006 22:32:57 +0100
-Message-ID: <008e01c71a47$430d1700$020120ac@Jocke>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id A47EE67CB3
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 08:37:35 +1100 (EST)
+Date: Thu, 7 Dec 2006 22:37:33 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH] ps3: add vuart support
+In-Reply-To: <457879BE.9000704@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0612072229260.30717@pademelon.sonytel.be>
+References: <45775D89.7030904@am.sony.com> <200612071937.22607.arnd@arndb.de>
+	<457879BE.9000704@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20061207173457.GE22989@ld0162-tx32.am.freescale.net>
-Cc: i2c@lm-sensors.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: 
-> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
-> abs.org] On Behalf Of Scott Wood
-> Sent: den 7 december 2006 18:35
-> To: linuxppc-dev@ozlabs.org
-> Cc: i2c@lm-sensors.org
-> Subject: [PATCH 2/4] powerpc: Add the ds1374 RTC to the 
-> mpc8349emds devicetree.
+On Thu, 7 Dec 2006, Geoff Levand wrote:
+> Arnd Bergmann wrote:
+> > On Thursday 07 December 2006 01:17, Geoff Levand wrote:
+> >> Adds support for the PS3 virtual UART (vuart).  The vuart provides a
+> >> bi-directional byte stream data link between logical partitions.
+> > 
+> > Looks good now, just a few minor comments:
+> > 
+> >> +struct ports_bmp
+> >> +{
+> >> +	u64 status;
+> >> +	u64 unused[3];
+> >> +} __attribute__ ((packed));
+> > 
+> > Do you really want to have this structure packed? It will produce
+> > better code if it isn't.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/boot/dts/mpc8349emds.dts |   10 ++++++++++
->  1 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts 
-> b/arch/powerpc/boot/dts/mpc8349emds.dts
-> index 50f4886..889a5b8 100644
-> --- a/arch/powerpc/boot/dts/mpc8349emds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8349emds.dts
-> @@ -55,12 +55,22 @@
->  		};
->  
->  		i2c@3000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
->  			device_type = "i2c";
->  			compatible = "fsl-i2c";
->  			reg = <3000 100>;
->  			interrupts = <e 8>;
->  			interrupt-parent = <700>;
->  			dfsrr;
-> +
-> +			rtc@68 {
-> +				device_type = "rtc";
-> +				compatible = "ds1374";
-> +				reg = <68>;
-> +				interrupts = <13 8>;
-> +				interrupt-parent = <700>;
-> +			};
->  		};
->  
->  		i2c@3100 {
-> -- 
-> 1.4.2.3
+> Yes, it is a little obscure in the code, but the address of the ports_bmp
+> instance is passed to ps3_alloc_vuart_irq(), which in turn calls
+> lv1_configure_virtual_uart_irq().  The HV (actually the vuart service
+> in the policy module) uses this as a 256 bit bitmap to indicate the
+> interrupt status of the ports.  The system supports 256 ports, but
+> currently just two ports, 1 and 3, are used, so I took advantage of
+> that to simplify the code and just used the first word of the bitmap.
 
-Nice, I have a question/request though:
+I think Arnd meant that the `__attribute__ ((packed))' is useless for structs
+containing u64 members only. The natural alignment of 64-bit values is on a
+64-bit boundary, so there won't be padding anyway.
 
-I have a ds1337 I2C RTC and to make the current rtc-ds1307 do
-the right thing, I need to pass module param
-rtc-ds1307.force=0,0x68
+IIRC, someone (davem?) told me a long time ago gcc _always_ uses byte-accesses
+when accessing members in a struct with `__attribute__ ((packed))', since the
+members may be unaligned. Even when the values are perfectly aligned. So it's
+better not to use `__attribute__ ((packed))' unless it's really needed.
 
-I would need some way to tell rtc-ds1307 that I have
-a ds1337 device from my dts spec.
+Why is there a comment about `Needs 4 byte alignment.'? The way it's used, it
+will always be 8-byte aligned anyway.
 
- Jocke
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
