@@ -1,21 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C84567D27
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 06:39:20 +1100 (EST)
-In-Reply-To: <200612072035.56514.arnd@arndb.de>
-References: <20061207173541.GG22989@ld0162-tx32.am.freescale.net>
-	<200612072035.56514.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BB352E50-2E63-45D7-BE87-7318D8092DB5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] powerpc: Call of_register_i2c_devices() for fsl-i2c.
-Date: Thu, 7 Dec 2006 13:39:15 -0600
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <Marta.Chamorro@xerox.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Power management for ppc 85xx
+Date: Thu, 7 Dec 2006 19:57:23 -0000
+Message-ID: <BFEE19E1D0DBF84698D76276388DCB843F22D2@gbrwgceumf01.eu.xerox.net>
+In-Reply-To: <99A19F8F-62E6-4D3D-A34B-3D815C7ED0C4@kernel.crashing.org>
+From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +18,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi again, Kumar,
 
-On Dec 7, 2006, at 1:35 PM, Arnd Bergmann wrote:
+You said on your first reply that it was easy to get the core to nap, so
+that sounds like a suitable first step for me.
 
-> On Thursday 07 December 2006 18:35, Scott Wood wrote:
->> --- a/arch/powerpc/sysdev/fsl_soc.c
->> +++ b/arch/powerpc/sysdev/fsl_soc.c
->> @@ -345,6 +345,8 @@ static int __init fsl_i2c_of_init(void)
->>                                                      
->> fsl_i2c_platform_data));
->>                 if (ret)
->>                         goto unreg;
->> +
->> +               of_register_i2c_devices(np, i);
->>         }
+Any pointers? Is there, for instance, any ppc implementation of power
+management I could look at to see how's done?
+
+Thanks,
+
+Marta
+
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: 06 December 2006 21:51
+To: Chamorro, Marta
+Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
+Subject: Re: Power management for ppc 85xx
+
+
+On Dec 6, 2006, at 3:06 PM, Chamorro, Marta wrote:
+
+> Hi there!
 >
-> I get the impression that this fsl_i2c_of_init function is doing the
-> probing in the opposite way it should. Instead of searching the
-> whole device tree for type="i2c" devices to call
-> platform_device_register_simple, can't you use of_platform_bus_probe
-> to create the i2c device in the first place, and then have a
-> of_platform_driver that calls of_register_i2c_devices() in its probe
-> function?
+>
+>
+> Hope someone out there can give me some pointers here. I've got a =20
+> 2.6.18 kernel on a ppc 8555, which I configured to enable power =20
+> management (CONFIG_PM=3Dy). After doing that, the file /sys/power/=20
+> state appears on my file system. If I cat the file I get "standby =20
+> mem" (without the quotes), but if I try to write to it (to change =20
+> the state) I get an EPERM. I assume it is because I have no code =20
+> that implements any power save mode changes, only the interface to =20
+> change them. Am I wrong? How can I tell for sure? (the file is =20
+> writable, so it is not a problem with writing permissions)
+I can pretty much say that there isn't any code that does pwr mgmt =20
+for 85xx.  I'm not sure what exactly your issue is, but there =20
+definitely isn't any code.
+> So the question is (if I am right) where do I get the code from? I =20
+> am hoping someone has implemented power save for that processor =20
+> already, but I just don't know where to start looking for that =20
+> code. Can someone help?
+Getting the core to nap is easy enough, doing proper power savings =20
+for the full SoC maybe more challenging.
 
-Some of this is historic because of arch/ppc legacy.  We explicitly  
-spec'd devices as platform devices.  At some point we will move to  
-having the drivers be proper of_platform drivers instead of platform  
-drivers.
+What exact behavior are you looking for?  Something like suspend/=20
+resume or just idle power savings?
 
 - k
