@@ -1,28 +1,21 @@
-Return-Path: <yunfeizhang@sjtu.edu.cn>
-Received: from mx.sjtu.edu.cn (mx.sjtu.edu.cn [202.112.26.52])
-	by ozlabs.org (Postfix) with ESMTP id 45FCD67B93
+Return-Path: <roger.larsson@norran.net>
+Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
+	by ozlabs.org (Postfix) with ESMTP id 4055167B77
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Dec 2006 19:33:18 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mx.sjtu.edu.cn (Postfix) with ESMTP id 51A09252C85
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Dec 2006 16:00:09 +0800 (CST)
-Received: from mx.sjtu.edu.cn ([127.0.0.1])
-	by localhost (mx [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 00611-03 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 8 Dec 2006 16:00:09 +0800 (CST)
-Received: from jerry (unknown [220.248.74.82])
-	by mx.sjtu.edu.cn (Postfix) with ESMTP id 329B7252F55
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Dec 2006 16:00:07 +0800 (CST)
-Date: Fri, 8 Dec 2006 16:00:07 +0800
-From: "Yunfei Zhang" <yunfeizhang@sjtu.edu.cn>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: AC'97 driver on MontaVista Linx for Xilinx ML403 board
-Message-ID: <200612081600035783179@sjtu.edu.cn>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon163628384567_====="
+	Fri,  8 Dec 2006 21:11:52 +1100 (EST)
+From: Roger Larsson <roger.larsson@norran.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: shared config registers and locking
+Date: Thu, 7 Dec 2006 19:18:39 +0100
+References: <1165381847.5469.70.camel@localhost.localdomain>
+	<200612070222.07456.roger.larsson@norran.net>
+	<1165459663.5469.159.camel@localhost.localdomain>
+In-Reply-To: <1165459663.5469.159.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200612071918.39355.roger.larsson@norran.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,47 +26,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thursday 07 December 2006 03:47, Benjamin Herrenschmidt wrote:
+> > > The specific example that made me think about it was some clock control
+> > > registers on 4xx that the EMAC driver is whacking every now and then
+> > > (on link state change, no lock contention to be worried about here),
+> > > though they could be used by other drivers too (or platform code).
+> > > Since those registers are a bit different from one 4xx to the next too,
+> > > and since I now have a non-4xx platform that needs to use EMAC and has
+> > > similar clock control bits I might have to toggle there too, I'm
+> > > basically ending up with a global spinlock that I can't precisely
+> > > define better than "global clock control lock" ....
+> >
+> > Do all EMAC implementations have this problem?
+>
+> No, only some of them.
+>
+> > Another approach might be to factor out the modification code only,
+> > keeping the original locking code for comparation...
+> > 	static inline modify_dcr(reg, set_mask, reset_mask)
+> > 	{
+> > 		unsigned long flags;
+> > 		local_irq_save(flags);
+> > 		mtdcr(reg, mfdcr(reg) & ~reset_mask | set_mask ))
+> > 		local_irq_restore(flags);
+> > 	}
+> > and
+> > 	static inline SDR_MODIFY(...)
+>
+> Since we need a spinlock here (the whole point of the exercise is to
+> make it SMP and -rt safe), that means having a global spinlock used by
+> modify_dcr / SDR_MODIFY which boils down to something not far from my
+> proposal.
 
-This is a multi-part message in MIME format.
+That is correct. BUT I do like my other approach better.
+Add functions with names that work on for example clocks.
+By doing that there will be no need to comment on what is done, only why.
 
---=====003_Dragon163628384567_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+Modify all users to use those functions (you will need to modify all users
+for all approaches). ALL modification on clock config registers will be 
+required to use the modify_dcr internally - then it might be a lot better to 
+add a cleaner interface directly.
 
-Hi All, 
-    I am porting a audio decoder to ML403 board, but I find there is no AC'97 driver supported. I am not familiar with the linux driver for powerpc. Could someone give me a copy of AC'97 diver which is compatible for ML403 board or PPC405.If there is none, could you tell me what could I do to alter certain copies or any suggestions.
-    Thanks for all your kindness.
+And that interface would take care of the differences in how the actual
+modify clock between 405 and 440 (use of dcr or sdr).
 
+>
+> > #if defined(CONFIG_405EP)
+> > #define EMAC_RX_CLK_TX(idx) modify_dcr(0xf3, 1<< (idx), 0)
+> > #else
+> > #define EMAC_RX_CLK_TX(idx) SDR_MODIFY(DCRN_SDR_MFR, (0x08000000 >> idx),
+> > 0) #endif
+>
+> The ifdef's are going away in my rework in favor of something like
+>
+> 	if (emac_has_feature(dev, EMAC_FTR_NEED_405EP_CLK_FIX))
+> 		xxxx
+>
+> So that we can build support for multiple models in one driver if we
+> want. If we don't, the above if will turn into if (0) / if (1) depending
+> on what we build for and thus the compiler will do the right thing and
+> optimize out unused code. That's the approach we use already for CPU and
+> firmware features and it works well.
 
+Nice!
 
-
-Yunfei Zhang
-2006-12-08
-
---=====003_Dragon163628384567_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=gb2312">
-<META content="MSHTML 6.00.2900.2995" name=GENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=Verdana><FONT size=2><FONT face=Arial>Hi All,</FONT><FONT 
-size=3> </FONT><BR>&nbsp;&nbsp;&nbsp; I am porting a audio decoder to ML403 
-board, but I find there is no AC'97 driver supported. I am not familiar with the 
-linux driver for powerpc. Could someone give me a copy of AC'97 diver which is 
-compatible for ML403 board or PPC405.If there is none, could you tell me what 
-could I do to alter certain copies or any suggestions.</FONT></FONT></DIV>
-<DIV><FONT face=Verdana><FONT size=2>&nbsp;&nbsp;&nbsp; Thanks for all your 
-kindness.</FONT></DIV>
-<DIV><FONT size=2></FONT>&nbsp;</DIV>
-<DIV align=left><FONT size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" SIZE=2>
-</FONT></DIV>
-<DIV><FONT color=#c0c0c0><FONT size=2>Yunfei Zhang</FONT></DIV>
-<DIV><FONT size=2>2006-12-08</FONT></FONT></DIV></FONT></BODY></HTML>
-
---=====003_Dragon163628384567_=====--
+/RogerL
