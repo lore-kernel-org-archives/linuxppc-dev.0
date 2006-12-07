@@ -1,19 +1,21 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound1-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1168067C3B
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 12:39:39 +1100 (EST)
+Return-Path: <david-b@pacbell.net>
+Received: from smtp103.sbc.mail.mud.yahoo.com (smtp103.sbc.mail.mud.yahoo.com
+	[68.142.198.202]) by ozlabs.org (Postfix) with SMTP id 026B567C76
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Dec 2006 12:48:01 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH 1/2] Fixed compiled issue tu to new
+	of_platform.h header
+Date: Wed, 6 Dec 2006 17:19:59 -0800
+References: <11642982453599-git-send-email-nd@bplan-gmbh.de>
+	<11642982461138-git-send-email-nd@bplan-gmbh.de>
+In-Reply-To: <11642982461138-git-send-email-nd@bplan-gmbh.de>
 MIME-Version: 1.0
+Message-Id: <200612061720.01082.david-b@pacbell.net>
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Virtex device tree generator proof of concept
-Date: Wed, 6 Dec 2006 16:19:41 -0800
-Message-ID: <977C41F842E66D4CB2E41332313B615002F764BB@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+  charset="us-ascii"
+Cc: linuxppc-dev@ozlabs.org, greg@kroah.com, stern@rowland.harvard.edu,
+	sl@bplan-gmbh.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 23 November 2006 8:12 am, nd@bplan-gmbh.de wrote:
+>  drivers/usb/host/ohci-ppc-of.c |  285 ++++++++++++++++++++++++++++++++++++++++
 
-> Yes please, send me your patches.
-done.
+You've split one "add new bus glue" patch into two ... please
+do it the normal way, as one patch!
 
-> > I'm curious if you've heard of anyone using device trees=20
-> other than at=20
-> > boot time: for instance, using an incomplete device tree blob to=20
-> > represent components discovered at runtime?  It looks like=20
-> it should=20
-> > be possible to rip out alot of the code from=20
-> kernel/powerpc/prom.c in=20
-> > recent kernels to parse incomplete device trees, too... =20
-> Any thoughts?
->=20
-> Possible, but there are probably better ways do deal with=20
-> those; like just allocating and registering a platform=20
-> device; or adding nodes to the existing tree.  If you're able=20
-> to probe a device, then do you need to describe it with a=20
-> device tree fragment?
->=20
-> What scenario are you thinking about?
+(Oh, I see you did that the next day.  The next two comments
+still apply.)
 
-In an FPGA, even platform-bus devices don't necessarily exist at
-processor boot time, and
-they might change during the life of a system.
-As you suggest, I plan to simply add the correct devices to the platform
-bus at the correct time,
-and I'm also trying to abstract the code that creates the platform
-devices (which probably
-should be part of a basic kernel device) from the information about
-which devices actually exist.
-There are probably other ways of doing this (for instance, automatically
-generating the code for
-a kernel module which adds devices to the platform bus), but a device
-tree fragment=20
-doesn't seem like too bad a way of doing it.
 
-Steve
+> + * Store this function in the HCD's struct pci_driver as probe().
+
+You should remove irrelevant/ancient comments like this.  Looks
+like you cloned the PCI bus glue and didn't update key parts...
+
+
+> + */
+> +static int usb_hcd_ppc_of_probe(const struct hc_driver *driver,
+> +			  struct of_device *dev, int is_bigendian)
+
+I'm not sure why you didn't just have ohci_hcd_ppc_of_drv_probe()
+do all this stuff; there's no point in splitting that code into
+two chunks.
+
+Likewise, ohci_hcd_ppc_of_drv_remove() shouldn't be split in two.
