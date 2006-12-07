@@ -1,20 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id A47EE67CB3
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 08:37:35 +1100 (EST)
-Date: Thu, 7 Dec 2006 22:37:33 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH] ps3: add vuart support
-In-Reply-To: <457879BE.9000704@am.sony.com>
-Message-ID: <Pine.LNX.4.62.0612072229260.30717@pademelon.sonytel.be>
-References: <45775D89.7030904@am.sony.com> <200612071937.22607.arnd@arndb.de>
-	<457879BE.9000704@am.sony.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id E31A467F07
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 08:37:46 +1100 (EST)
+Message-ID: <45788A01.1020300@ru.mvista.com>
+Date: Fri, 08 Dec 2006 00:39:13 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd@arndb.de>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 2/4] powerpc: Add the ds1374 RTC to the
+	mpc8349emds	devicetree.
+References: <008e01c71a47$430d1700$020120ac@Jocke>
+In-Reply-To: <008e01c71a47$430d1700$020120ac@Jocke>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 7 Dec 2006, Geoff Levand wrote:
-> Arnd Bergmann wrote:
-> > On Thursday 07 December 2006 01:17, Geoff Levand wrote:
-> >> Adds support for the PS3 virtual UART (vuart).  The vuart provides a
-> >> bi-directional byte stream data link between logical partitions.
-> > 
-> > Looks good now, just a few minor comments:
-> > 
-> >> +struct ports_bmp
-> >> +{
-> >> +	u64 status;
-> >> +	u64 unused[3];
-> >> +} __attribute__ ((packed));
-> > 
-> > Do you really want to have this structure packed? It will produce
-> > better code if it isn't.
-> 
-> Yes, it is a little obscure in the code, but the address of the ports_bmp
-> instance is passed to ps3_alloc_vuart_irq(), which in turn calls
-> lv1_configure_virtual_uart_irq().  The HV (actually the vuart service
-> in the policy module) uses this as a 256 bit bitmap to indicate the
-> interrupt status of the ports.  The system supports 256 ports, but
-> currently just two ports, 1 and 3, are used, so I took advantage of
-> that to simplify the code and just used the first word of the bitmap.
+Hello.
 
-I think Arnd meant that the `__attribute__ ((packed))' is useless for structs
-containing u64 members only. The natural alignment of 64-bit values is on a
-64-bit boundary, so there won't be padding anyway.
+Joakim Tjernlund wrote:
 
-IIRC, someone (davem?) told me a long time ago gcc _always_ uses byte-accesses
-when accessing members in a struct with `__attribute__ ((packed))', since the
-members may be unaligned. Even when the values are perfectly aligned. So it's
-better not to use `__attribute__ ((packed))' unless it's really needed.
+>>Signed-off-by: Scott Wood <scottwood@freescale.com>
+>>---
+>> arch/powerpc/boot/dts/mpc8349emds.dts |   10 ++++++++++
+>> 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Why is there a comment about `Needs 4 byte alignment.'? The way it's used, it
-will always be 8-byte aligned anyway.
+>>diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts 
+>>b/arch/powerpc/boot/dts/mpc8349emds.dts
+>>index 50f4886..889a5b8 100644
+>>--- a/arch/powerpc/boot/dts/mpc8349emds.dts
+>>+++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+>>@@ -55,12 +55,22 @@
+>> 		};
+>> 
+>> 		i2c@3000 {
+>>+			#address-cells = <1>;
+>>+			#size-cells = <0>;
+>> 			device_type = "i2c";
+>> 			compatible = "fsl-i2c";
+>> 			reg = <3000 100>;
+>> 			interrupts = <e 8>;
+>> 			interrupt-parent = <700>;
+>> 			dfsrr;
+>>+
+>>+			rtc@68 {
+>>+				device_type = "rtc";
+>>+				compatible = "ds1374";
+>>+				reg = <68>;
+>>+				interrupts = <13 8>;
+>>+				interrupt-parent = <700>;
+>>+			};
+>> 		};
+>> 
+>> 		i2c@3100 {
+>>-- 
+>>1.4.2.3
 
-Gr{oetje,eeting}s,
+> Nice, I have a question/request though:
 
-						Geert
+> I have a ds1337 I2C RTC and to make the current rtc-ds1307 do
+> the right thing, I need to pass module param
+> rtc-ds1307.force=0,0x68
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+> I would need some way to tell rtc-ds1307 that I have
+> a ds1337 device from my dts spec.
+
+    That must be achievable by specifiying the "model" property...
+
+>  Jocke
+
+WBR, Sergei
