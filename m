@@ -1,34 +1,30 @@
-Return-Path: <schihei@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2A9767BB3
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 21:24:12 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kB8AO7Yw164550
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:24:07 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kB8AO76d2105402
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:24:07 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kB8AO7eT002871
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:24:07 GMT
-Message-ID: <45793D48.2070808@de.ibm.com>
-Date: Fri, 08 Dec 2006 11:24:08 +0100
-From: Heiko Joerg Schick <schihei@de.ibm.com>
-MIME-Version: 1.0
-To: Christian Krafft <krafft@de.ibm.com>
-Subject: Re: [patch 1/1] ipmi: add autosensing of ipmi device on powerpc	using
-	device-tree
-References: <20061207172259.64168f8c@localhost>
-	<20061207172445.2108cf43@localhost>
-In-Reply-To: <20061207172445.2108cf43@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DC28767B89
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 21:45:03 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id kB8AitLt183564
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:44:58 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id kB8AisgA3174496
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 11:44:54 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kB8AirsT020149
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 11:44:53 +0100
+Date: Fri, 8 Dec 2006 11:41:13 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [patch] powerpc: add scanning of ebc bus to of_platform
+Message-ID: <20061208114113.2191e446@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: krafft@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,16 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christian Krafft wrote:
-> This patch adds support for of_platform_driver to the ipmi_si module.
-> When loading the module, the driver will be registered to of_platform.
-> The driver will be probed for all devices with the type ipmi. It's supporting
-> devices with compatible settings ipmi-kcs, ipmi-smic and ipmi-bt.
-> Only ipmi-kcs could be tested.
->
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
->   
-Acked-by: Heiko J Schick <schihei@de.ibm.com>
+Subject: powerpc: add scanning of ebc bus to of_platform
 
-Regards,
-    Heiko
+This patch add scanning of ebc bus to of_platform, which is needed
+to recognize devices located on that bus.
+
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+
+Index: linux-2.6.19-rc6/arch/powerpc/kernel/of_platform.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.19-rc6.orig/arch/powerpc/kernel/of_platform.c
++++ linux-2.6.19-rc6/arch/powerpc/kernel/of_platform.c
+@@ -50,6 +50,7 @@ static struct of_device_id of_default_bu
+ 	{ .type =3D "plb5", },
+ 	{ .type =3D "plb4", },
+ 	{ .type =3D "opb", },
++	{ .type =3D "ebc", },
+ 	{},
+ };
+=20
+
+
+--=20
+Mit freundlichen Gr=FCssen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,=20
+Linux Kernel Development
+IT Specialist
