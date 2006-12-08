@@ -1,15 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 8 Dec 2006 09:23:48 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: libfdt - flat tree manipulation library
-Message-ID: <20061207222348.GB19166@localhost.localdomain>
-References: <20061127055905.GA6428@localhost.localdomain>
-	<1165523734.8900.10.camel@basalt>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1165523734.8900.10.camel@basalt>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <17784.46252.935.759285@cargo.ozlabs.ibm.com>
+Date: Fri, 8 Dec 2006 11:41:16 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Christian Krafft <krafft@de.ibm.com>
+Subject: Re: [patch 0/1] ipmi: add autosensing of ipmi device on powerpc using
+	device-tree
+In-Reply-To: <20061207172259.64168f8c@localhost>
+References: <20061207172259.64168f8c@localhost>
+Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,21 +19,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 07, 2006 at 02:35:34PM -0600, Hollis Blanchard wrote:
-> On Mon, 2006-11-27 at 16:59 +1100, David Gibson wrote:
-> > 
-> >         - License is GPL for now.  I'm looking into the red tape to
-> > get it released as BSD or other non-restrictive license, so that it
-> > can be used in closed bootloaders.
-> 
-> A GPL license means it cannot be used in Xen today (that part of the
-> code is BSD-licensed), nor could it be used in developing non-GPL
-> firmwares.
+Christian Krafft writes:
 
-Yes, that's kind of my point.  I'm working on it...
+> the patch I'll send, adds of_device support to the ipmi_si module.
+> Having the correct device-tree entries, the ipmi module can be loaded without
+> specifying the resources as module parameters.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Which powerpc-based machines have IPMI?
+
+Paul.
