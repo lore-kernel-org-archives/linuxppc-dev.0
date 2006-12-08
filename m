@@ -1,30 +1,21 @@
-Return-Path: <krafft@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DC28767B89
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 21:45:03 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id kB8AitLt183564
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:44:58 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kB8AisgA3174496
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 11:44:54 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kB8AirsT020149
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 11:44:53 +0100
-Date: Fri, 8 Dec 2006 11:41:13 +0100
-From: Christian Krafft <krafft@de.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 17FFB679F0
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 01:04:32 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch] powerpc: add scanning of ebc bus to of_platform
-Message-ID: <20061208114113.2191e446@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: krafft@de.ibm.com
+Subject: Re: [patch 0/1] ipmi: add autosensing of ipmi device on powerpc using
+	device-tree
+Date: Fri, 8 Dec 2006 15:04:14 +0100
+References: <20061207172259.64168f8c@localhost>
+	<17784.46252.935.759285@cargo.ozlabs.ibm.com>
+In-Reply-To: <17784.46252.935.759285@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612081504.15471.arnd@arndb.de>
+Cc: Christian Krafft <krafft@de.ibm.com>,
+	openipmi-developer@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,34 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject: powerpc: add scanning of ebc bus to of_platform
+On Friday 08 December 2006 01:41, Paul Mackerras wrote:
+> Christian Krafft writes:
+> 
+> > the patch I'll send, adds of_device support to the ipmi_si module.
+> > Having the correct device-tree entries, the ipmi module can be loaded without
+> > specifying the resources as module parameters.
+> 
+> Which powerpc-based machines have IPMI?
 
-This patch add scanning of ebc bus to of_platform, which is needed
-to recognize devices located on that bus.
+This particular one is for an upcoming product, benh knows which one this
+is for. The JS21 blade already has an IPMI controller, though that is
+hidden behind the hypervisor, see 
+http://www-03.ibm.com/systems/bladecenter/js21/specs.html.
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-
-Index: linux-2.6.19-rc6/arch/powerpc/kernel/of_platform.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.19-rc6.orig/arch/powerpc/kernel/of_platform.c
-+++ linux-2.6.19-rc6/arch/powerpc/kernel/of_platform.c
-@@ -50,6 +50,7 @@ static struct of_device_id of_default_bu
- 	{ .type =3D "plb5", },
- 	{ .type =3D "plb4", },
- 	{ .type =3D "opb", },
-+	{ .type =3D "ebc", },
- 	{},
- };
-=20
-
-
---=20
-Mit freundlichen Gr=FCssen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,=20
-Linux Kernel Development
-IT Specialist
+	Arnd <><
