@@ -1,17 +1,11 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC] powerpc: experimental of serial port driver
-Date: Fri, 8 Dec 2006 16:12:27 +0100
-References: <200612072140.47405.arnd@arndb.de>
-	<1165553018.1103.23.camel@localhost.localdomain>
-	<1165588888.3328.8.camel@hades.cambridge.redhat.com>
-In-Reply-To: <1165588888.3328.8.camel@hades.cambridge.redhat.com>
+Return-Path: <nhit_bk@yahoo.com>
+Message-ID: <20061208150752.69438.qmail@web30009.mail.mud.yahoo.com>
+Date: Fri, 8 Dec 2006 07:07:52 -0800 (PST)
+From: nam ho <nhit_bk@yahoo.com>
+Subject: Can not send and receive data on serial port 2
+To: Linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200612081612.28385.arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-610065413-1165590472=:68910"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +15,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 08 December 2006 15:41, David Woodhouse wrote:
-> On Fri, 2006-12-08 at 15:43 +1100, Benjamin Herrenschmidt wrote:
-> > I'd rather call it 8250_of.c and have it be specific to 8250's.
-> 
-> Didn't we already do that once?
-> 
-You submitted a patch once to create a file with the same name,
-but different intend, see
-http://ozlabs.org/pipermail/linuxppc-dev/2005-August/019464.html
+--0-610065413-1165590472=:68910
+Content-Type: text/plain; charset=ascii
+Content-Transfer-Encoding: quoted-printable
 
-I can't tell if it was ever merged, but it doesn't look like it.
-My driver is only meaningful for platforms that use the new style
-of_platform_device autoprobing. It will make the serial ports
-show up correctly in sysfs, even if they were not detected by
-the legacy_serial code we use for 8250 style console ports. This
-should be the same thing we do for 8250 PCI ports when the
-8250_pci driver.
+I have a problem with serial port on TQM8xxL with linux kernel 2.6.11.7. I =
+used serial port 1 (ttyCPM0) for console, it ok. But can not send and recei=
+ve data on serial port 2 (ttyCPM1) as following echo command:=0A=0A[root@tq=
+m_csprj ~]# echo aaaaaaaaaaa > /dev/ttyCPM1.=0A=0AAnd I can see anything ap=
+pearing on Hyper Termial. This is a big problem on serial port driver!!!=0A=
+=0AAnyone have experimental of serial port driver.=0A=0A=0A=0A=0A=0A=0A=0A=
+=0A =0A____________________________________________________________________=
+________________=0AHave a burning question?  =0AGo to www.Answers.yahoo.com=
+ and get answers from real people who know.
+--0-610065413-1165590472=:68910
+Content-Type: text/html; charset=ascii
+Content-Transfer-Encoding: quoted-printable
 
-	Arnd <><
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
+font-size:14pt"><div style=3D"font-family: times new roman,new york,times,s=
+erif; font-size: 14pt;"><div style=3D"font-family: times new roman,new york=
+,times,serif; font-size: 12pt;"><div style=3D"font-family: times new roman,=
+new york,times,serif; font-size: 14pt;"><div>I have a problem with serial p=
+ort on TQM8xxL with linux kernel 2.6.11.7. I used serial port 1 (ttyCPM0) f=
+or console, it ok. But can not send and receive data on serial port 2 (ttyC=
+PM1) as following echo command:<br><br>[root@tqm_csprj ~]# echo aaaaaaaaaaa=
+ &gt; /dev/ttyCPM1.<br><br>And I can see anything appearing on Hyper Termia=
+l. This is a big problem on serial port driver!!!<br><br>Anyone have experi=
+mental of serial port driver.<br></div></div></div><br></div></div><br>=0A=
+=0A<hr size=3D1>Want to start your own business? Learn how on <a href=3D"ht=
+tp://us.rd.yahoo.com/evt=3D41244/*http://smallbusiness.yahoo.com/r-index">Y=
+ahoo! Small Business.</a></body></html>
+--0-610065413-1165590472=:68910--
