@@ -1,21 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C961267B6C
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 09:41:51 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	kB9048Xg015858
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 17:04:08 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kB8MfmhY022376
-	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 16:41:49 -0600 (CST)
-Message-ID: <4579EA2C.4050204@freescale.com>
-Date: Fri, 08 Dec 2006 16:41:48 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Can't clone Paul's tree
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DDC5367B6C
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 09:47:26 +1100 (EST)
+Subject: Re: [PATCH 3/16] Spidernet RX Locking
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061207175046.GB4614@austin.ibm.com>
+References: <20061206223223.GH17931@austin.ibm.com>
+	<20061206233134.GC4649@austin.ibm.com> <4577E850.6040500@pobox.com>
+	<20061207175046.GB4614@austin.ibm.com>
+Content-Type: text/plain
+Date: Sat, 09 Dec 2006 09:47:05 +1100
+Message-Id: <1165618025.1103.85.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
+	linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-git-clone fails, although cg-clone works.  Using different versions of git 
-doesn't change anything.  Others in Freescale have seen the same thing.
+A spinlock is expensive in the fast path, which is why Jeff says it's
+invasive.
 
-$ git clone http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git 
-powerpc.git
-error: Couldn't get 
-http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git/refs/heads/for-2.6.20 
-for heads/for-2.6.20
-The requested URL returned error: 404
-error: Could not interpret heads/for-2.6.20 as something to pull
+> spider_net_decode_one_descr() is called from
+> spider_net_poll() (which is the netdev->poll callback)
+> and also from spider_net_handle_rxram_full(). 
+> 
+> The rxramfull routine is called from a tasklet that
+> is fired off after a "RX ram full" interrupt is receved.
+> This interrupt is generated when the hardware runs out
+> of space to store incoming packets. We are seeing this
+> interrupt fire when the CPU is heavily loaded, and a
+> lot of traffic is being fired at the device.
 
+How often does that interrupt happen in that case ?
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+A better approach is to keep the fast path (ie. poll()) lockless, and in
+handle_rxram_full(), the slow path, protect against poll using
+netif_disable_poll(). Though that means using a work queue, not a
+tasklet, since it needs to schedule.
+
+> > and what other 
+> > non-sledgehammer approaches were discarded before arriving at this one?
+> 
+> Well, I'm not that good at kernel programming, so I guess
+> I did not perceive this as a "sledgehammer."  And alternative
+> approach is to simply ignore the rxramfull interrupt entirely,
+> and depend on poll() do all the work.   I'll try this shortly.
+
+or you can schedule rx work from the rxramfull interrupt after setting a
+"something bad happened" flag. Then, poll can check this flag and do the
+right thing.
+
+Ben.
