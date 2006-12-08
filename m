@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A634567BAC
+Return-Path: <nhit_bk@yahoo.com>
+Received: from web30002.mail.mud.yahoo.com (web30002.mail.mud.yahoo.com
+	[209.191.69.19]) by ozlabs.org (Postfix) with SMTP id 25A6D67BD9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Dec 2006 01:06:45 +1100 (EST)
-In-Reply-To: <20061208132038.38517.qmail@web25601.mail.ukl.yahoo.com>
-References: <20061208132038.38517.qmail@web25601.mail.ukl.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <D4D096D4-6157-4F79-BE75-0202C8409665@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8568E-MDS board support
-Date: Fri, 8 Dec 2006 08:06:37 -0600
-To: emre kara <emrekara2002@yahoo.co.uk>
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Sat,  9 Dec 2006 02:02:52 +1100 (EST)
+Message-ID: <20061208150250.17847.qmail@web30002.mail.mud.yahoo.com>
+Date: Fri, 8 Dec 2006 07:02:50 -0800 (PST)
+From: nam ho <nhit_bk@yahoo.com>
+Subject: Can not send and receive data on serial port 2
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-761204869-1165590170=:17511"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,26 +20,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-761204869-1165590170=:17511
+Content-Type: text/plain; charset=ascii
+Content-Transfer-Encoding: quoted-printable
 
-On Dec 8, 2006, at 7:20 AM, emre kara wrote:
+I have a problem with serial port on TQM8xxL with linux kernel 2.6.11.7. I =
+used serial port 1 (ttyCPM0) for console, it ok. But can not send and recei=
+ve data on serial port 2 (ttyCPM1) as following echo command:=0A=0A[root@tq=
+m_csprj ~]# echo aaaaaaaaaaa > /dev/ttyCPM1.=0A=0AAnd I can see anything ap=
+pearing on Hyper Termial. This is a big problem on serial port driver!!!=0A=
+=0AAnyone have experimental of serial port driver.=0A=0A=0A=0A=0A =0A______=
+___________________________________________________________________________=
+___=0ADo you Yahoo!?=0AEveryone is raving about the all-new Yahoo! Mail bet=
+a.=0Ahttp://new.mail.yahoo.com
+--0-761204869-1165590170=:17511
+Content-Type: text/html; charset=ascii
+Content-Transfer-Encoding: quoted-printable
 
-> Hi folks;
-> My question is espacially to freescale people.
-> We have a plan to move our platform  to a new (and
-> fast) freescale cpu (currently we are using MPC8540),
-> and MPC8568E is an  reasonable alternative. There is
-> an development board, named MPC8568E-MDS but I
-> could'nt find any resource related to it.
-> Here is my questions:
-> 1- Is there any plan to support this board and cpu?
-> When?
-
-typically freescale has provided patches for new boards.
-
-> 2- What is the nearest cpu and board to start
-> development on MPC8568E-MDS and how much work do we
-> have to spend?
-
-the MPC8548 CDS and MPC8360 MDS are probably the best starting points.
-
-- k
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
+font-size:14pt"><div>I have a problem with serial port on TQM8xxL with linu=
+x kernel 2.6.11.7. I used serial port 1 (ttyCPM0) for console, it ok. But c=
+an not send and receive data on serial port 2 (ttyCPM1) as following echo c=
+ommand:<br><br>[root@tqm_csprj ~]# echo aaaaaaaaaaa &gt; /dev/ttyCPM1.<br><=
+br>And I can see anything appearing on Hyper Termial. This is a big problem=
+ on serial port driver!!!<br><br>Anyone have experimental of serial port dr=
+iver.<br></div></div><br>=0A=0A<hr size=3D1>Any questions?  Get answers on =
+any topic at <a href=3D"http://answers.yahoo.com/;_ylc=3DX3oDMTFvbGNhMGE3BF=
+9TAzM5NjU0NTEwOARfcwMzOTY1NDUxMDMEc2VjA21haWxfdGFnbGluZQRzbGsDbWFpbF90YWcx"=
+>Yahoo! Answers</a>. Try it now.</body></html>
+--0-761204869-1165590170=:17511--
