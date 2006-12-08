@@ -1,21 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 17FFB679F0
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 01:04:32 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 0/1] ipmi: add autosensing of ipmi device on powerpc using
-	device-tree
-Date: Fri, 8 Dec 2006 15:04:14 +0100
-References: <20061207172259.64168f8c@localhost>
-	<17784.46252.935.759285@cargo.ozlabs.ibm.com>
-In-Reply-To: <17784.46252.935.759285@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612081504.15471.arnd@arndb.de>
-Cc: Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>
+Return-Path: <SRS0+535085c82e3f4334fa5c+1202+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Subject: Re: [RFC] powerpc: experimental of serial port driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1165553018.1103.23.camel@localhost.localdomain>
+References: <200612072140.47405.arnd@arndb.de>
+	<1165553018.1103.23.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 08 Dec 2006 14:41:28 +0000
+Message-Id: <1165588888.3328.8.camel@hades.cambridge.redhat.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +20,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 08 December 2006 01:41, Paul Mackerras wrote:
-> Christian Krafft writes:
-> 
-> > the patch I'll send, adds of_device support to the ipmi_si module.
-> > Having the correct device-tree entries, the ipmi module can be loaded without
-> > specifying the resources as module parameters.
-> 
-> Which powerpc-based machines have IPMI?
+On Fri, 2006-12-08 at 15:43 +1100, Benjamin Herrenschmidt wrote:
+> I'd rather call it 8250_of.c and have it be specific to 8250's.
 
-This particular one is for an upcoming product, benh knows which one this
-is for. The JS21 blade already has an IPMI controller, though that is
-hidden behind the hypervisor, see 
-http://www-03.ibm.com/systems/bladecenter/js21/specs.html.
+Didn't we already do that once?
 
-	Arnd <><
+-- 
+dwmw2
