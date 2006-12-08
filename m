@@ -1,16 +1,20 @@
-Return-Path: <SRS0+535085c82e3f4334fa5c+1202+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Subject: Re: [RFC] powerpc: experimental of serial port driver
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1165553018.1103.23.camel@localhost.localdomain>
-References: <200612072140.47405.arnd@arndb.de>
-	<1165553018.1103.23.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 08 Dec 2006 14:41:28 +0000
-Message-Id: <1165588888.3328.8.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE92F67BBE
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 01:44:39 +1100 (EST)
+In-Reply-To: <407514.33488.qm@web58414.mail.re3.yahoo.com>
+References: <407514.33488.qm@web58414.mail.re3.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EEF5A3A8-9D02-4A35-A2B9-58FA7DF9FFB3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: GPIO driver
+Date: Fri, 8 Dec 2006 08:44:33 -0600
+To: Shriram Janardhan <shriramjanardhan@yahoo.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,10 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-12-08 at 15:43 +1100, Benjamin Herrenschmidt wrote:
-> I'd rather call it 8250_of.c and have it be specific to 8250's.
 
-Didn't we already do that once?
+On Dec 8, 2006, at 8:43 AM, Shriram Janardhan wrote:
 
--- 
-dwmw2
+> Kumar,
+>
+> Greetings!!  I am trying to port some applications from IBM 405h to  
+> MPC8541.  I am using the 2.6.11 kernel distribution from  
+> freescale.  I was just wondering if there would be any generic GPIO  
+> driver for the 85xx series, something along the lines of  
+> ibm_ocp_gpio driver for the 4xx series from Montavista.
+
+There isn't at this point.  There has been some discussion at a  
+higher level of a generic GPIO infrastructure, but I have looked at  
+what's going on there in a few weeks.
+
+- k
