@@ -1,27 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A940767A5E
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 08:55:02 +1100 (EST)
-In-Reply-To: <17784.54471.964452.513068@cargo.ozlabs.ibm.com>
-References: <20061206182922.GA17931@austin.ibm.com>
-	<45770E44.30000@ru.mvista.com>
-	<20061206194516.GD17931@austin.ibm.com>
-	<45772700.2080708@ru.mvista.com>
-	<20061206222246.GG17931@austin.ibm.com>
-	<17784.54471.964452.513068@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <177E9875-1C08-4EFF-A066-E33C6C94DD91@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH]: powerpc documentation: Clarify why twi appears in the
-	i/o	macros.
-Date: Fri, 8 Dec 2006 22:54:56 +0100
-To: Paul Mackerras <paulus@samba.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C961267B6C
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 09:41:51 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	kB9048Xg015858
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 17:04:08 -0700 (MST)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id kB8MfmhY022376
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 16:41:49 -0600 (CST)
+Message-ID: <4579EA2C.4050204@freescale.com>
+Date: Fri, 08 Dec 2006 16:41:48 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Can't clone Paul's tree
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> + * A data-dependent branch followed by an isync ensures that no
->
-> I think it's potentially confusing to talk about data-dependent
-> branches when what the code does is a twi instruction.  Even if you
-> argue that a twi is a data-dependent branch (and I disagree with that,
-> since a trap is not a branch),
+git-clone fails, although cg-clone works.  Using different versions of git 
+doesn't change anything.  Others in Freescale have seen the same thing.
 
-If you argue it is *not* a branch, where in the architecture
-documentation can we find any language that gives us the
-guarantee we depend on here?
-
-> that wouldn't be obvious to a casual
-> reader of the code.
-
-True enough.
-
-> In other words, I don't think the comment
-> clarifies the situation very much.
-
-Got anything better?  :-)
-
-The first half of the new comment probably should go in no
-matter what (it says what twi;isync do here, not how exactly
-that works).
+$ git clone http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git 
+powerpc.git
+error: Couldn't get 
+http://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git/refs/heads/for-2.6.20 
+for heads/for-2.6.20
+The requested URL returned error: 404
+error: Could not interpret heads/for-2.6.20 as something to pull
 
 
-Segher
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
