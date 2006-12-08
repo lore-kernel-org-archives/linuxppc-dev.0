@@ -1,15 +1,18 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Patch] Add necessary #includes to asm-powerpc/spu.h
-Date: Fri, 8 Dec 2006 18:54:12 +0100
-References: <45799CA2.2090407@us.ibm.com>
-In-Reply-To: <45799CA2.2090407@us.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 290F867B92
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 05:01:35 +1100 (EST)
+Message-ID: <4579A76A.7020801@freescale.com>
+Date: Fri, 08 Dec 2006 11:56:58 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200612081854.13200.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] powerpc: Document device nodes for I2C devices.
+References: <20061207173353.GD22989@ld0162-tx32.am.freescale.net>
+	<161D7B81-B884-4C75-B42E-1627CA538918@kernel.crashing.org>
+In-Reply-To: <161D7B81-B884-4C75-B42E-1627CA538918@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,37 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 08 December 2006 18:10, Maynard Johnson wrote:
->  #define _SPU_H
->  #ifdef __KERNEL__
->  
-> +#include <linux/fs.h>
-> +#include <linux/notifier.h>
->  #include <linux/workqueue.h>
->  #include <linux/sysdev.h>
->  
-Thanks for pointing this out. I'm fixing this in a different way though,
-with by adding forward-declarations of the structures to spu.h in order
-to avoid making the include hierarchy worse. I'll submit that in a clean
-patch along with my next batch of fixes.
+Kumar Gala wrote:
+> On Dec 7, 2006, at 11:33 AM, Scott Wood wrote:
+>> +    - reg : I2C address for the device
+> 
+> 
+> Is this a 7-bit or 8-bit padded address?
 
-	Arnd <><
- 
---- a/include/asm-powerpc/spu.h
-+++ b/include/asm-powerpc/spu.h
-@@ -161,6 +161,7 @@ struct spu_syscall_block {
- extern long spu_sys_callback(struct spu_syscall_block *s);
- 
- /* syscalls implemented in spufs */
-+struct file;
- extern struct spufs_calls {
- 	asmlinkage long (*create_thread)(const char __user *name,
- 					unsigned int flags, mode_t mode);
-@@ -232,6 +233,7 @@ void spu_remove_sysdev_attr_group(struct
-  * to object-id spufs file from user space and the notifer
-  * function can assume that spu->ctx is valid.
-  */
-+struct notifier_block;
- int spu_switch_event_register(struct notifier_block * n);
- int spu_switch_event_unregister(struct notifier_block * n);
- 
+It's a 7-bit address.
+
+-Scott
