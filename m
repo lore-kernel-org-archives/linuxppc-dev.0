@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B0E8567B6D
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 09:53:11 +1100 (EST)
-Subject: Re: [patch] powerpc: add scanning of ebc bus to of_platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Krafft <krafft@de.ibm.com>
-In-Reply-To: <20061208114113.2191e446@localhost>
-References: <20061208114113.2191e446@localhost>
-Content-Type: text/plain
-Date: Sat, 09 Dec 2006 09:53:01 +1100
-Message-Id: <1165618381.1103.89.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 01F55679E0
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 09:58:28 +1100 (EST)
+Message-ID: <4579ED1F.5050205@freescale.com>
+Date: Fri, 08 Dec 2006 16:54:23 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] powerpc: Call of_register_i2c_devices() for fsl-i2c.
+References: <20061207173541.GG22989@ld0162-tx32.am.freescale.net>
+	<DC219401-9766-4BFD-BA94-7BA1997D9530@kernel.crashing.org>
+	<4579B12D.3090300@freescale.com>
+	<FDE06AFE-E8B2-4507-99DA-2B8765AFA5B8@kernel.crashing.org>
+In-Reply-To: <FDE06AFE-E8B2-4507-99DA-2B8765AFA5B8@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-12-08 at 11:41 +0100, Christian Krafft wrote:
-> Subject: powerpc: add scanning of ebc bus to of_platform
-> 
-> This patch add scanning of ebc bus to of_platform, which is needed
-> to recognize devices located on that bus.
-> 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+Kumar Gala wrote:
+> What about doing the of_register_i2c_devices in the fsl-i2c driver  
+> itself.  Than it knows what bus number its been assigned.
 
-I'd like other people opinions here... But I'm tempted to remove the
-"default" list of bus types here and have it always be passed by the
-platform... just in case.
+It won't know the dynamic bus number until after it registers the 
+adapter, which is too late (even if the new-style device registration 
+were modified to support registering devices after adapter registration, 
+legacy probing drivers for devices on the same address might grab the 
+device first, before the proper device gets registered).
 
-If you guys prefer to keep it that way, then fine, patch is
+The allocation of an i2c bus ID could be factored out into its own 
+function that gets called before registering the i2c adapter.  This 
+(plus calling of_register_i2c_devices in the adapter driver) isn't much 
+different from passing the list in with the adapter registration, but it 
+would avoid some list management.  OTOH, it means we'd have to continue 
+having global numeric bus IDs even after the last legacy driver is 
+converted.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Ben.
+-Scott
