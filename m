@@ -1,19 +1,15 @@
-Return-Path: <minyard@acm.org>
-Received: from mta1.adelphia.net (mta1.adelphia.net [68.168.78.175])
-	by ozlabs.org (Postfix) with ESMTP id 7608767BCE
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 04:30:12 +1100 (EST)
-Message-ID: <45799EBC.5060003@acm.org>
-Date: Fri, 08 Dec 2006 11:19:56 -0600
-From: Corey Minyard <minyard@acm.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Patch] Add necessary #includes to asm-powerpc/spu.h
+Date: Fri, 8 Dec 2006 18:54:12 +0100
+References: <45799CA2.2090407@us.ibm.com>
+In-Reply-To: <45799CA2.2090407@us.ibm.com>
 MIME-Version: 1.0
-To: Christian Krafft <krafft@de.ibm.com>
-Subject: Re: [Openipmi-developer] [patch 1/1] ipmi: add autosensing of ipmi
-	device on powerpc using device-tree
-References: <20061207172259.64168f8c@localhost>
-	<20061207172445.2108cf43@localhost>
-In-Reply-To: <20061207172445.2108cf43@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200612081854.13200.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ok, patch is in my tree with some minor changes required due to other 
-changes that have gone in since 2.6.19.
+On Friday 08 December 2006 18:10, Maynard Johnson wrote:
+>  #define _SPU_H
+>  #ifdef __KERNEL__
+>  
+> +#include <linux/fs.h>
+> +#include <linux/notifier.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/sysdev.h>
+>  
+Thanks for pointing this out. I'm fixing this in a different way though,
+with by adding forward-declarations of the structures to spu.h in order
+to avoid making the include hierarchy worse. I'll submit that in a clean
+patch along with my next batch of fixes.
 
-Christian Krafft wrote:
-> +};
-> +
-> +static void __devinit of_find_bmc(void)
-> +{
-> +	of_register_platform_driver(&ipmi_of_platform_driver);
-> +}
-> +#endif /* CONFIG_PM_OF */
->   
-I took the liberty of changing this to "CONFIG_PPC_OF"
+	Arnd <><
+ 
+--- a/include/asm-powerpc/spu.h
++++ b/include/asm-powerpc/spu.h
+@@ -161,6 +161,7 @@ struct spu_syscall_block {
+ extern long spu_sys_callback(struct spu_syscall_block *s);
+ 
+ /* syscalls implemented in spufs */
++struct file;
+ extern struct spufs_calls {
+ 	asmlinkage long (*create_thread)(const char __user *name,
+ 					unsigned int flags, mode_t mode);
+@@ -232,6 +233,7 @@ void spu_remove_sysdev_attr_group(struct
+  * to object-id spufs file from user space and the notifer
+  * function can assume that spu->ctx is valid.
+  */
++struct notifier_block;
+ int spu_switch_event_register(struct notifier_block * n);
+ int spu_switch_event_unregister(struct notifier_block * n);
+ 
