@@ -1,17 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <schihei@de.ibm.com>
+Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7BCA567BAB
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 19:51:24 +1100 (EST)
-Date: Fri, 8 Dec 2006 02:51:19 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for_paulus' branch
-Message-ID: <Pine.LNX.4.64.0612080250380.17483@gate.crashing.org>
+	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D2A9767BB3
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Dec 2006 21:24:12 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kB8AO7Yw164550
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:24:07 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id kB8AO76d2105402
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:24:07 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kB8AO7eT002871
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 10:24:07 GMT
+Message-ID: <45793D48.2070808@de.ibm.com>
+Date: Fri, 08 Dec 2006 11:24:08 +0100
+From: Heiko Joerg Schick <schihei@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Christian Krafft <krafft@de.ibm.com>
+Subject: Re: [patch 1/1] ipmi: add autosensing of ipmi device on powerpc	using
+	device-tree
+References: <20061207172259.64168f8c@localhost>
+	<20061207172445.2108cf43@localhost>
+In-Reply-To: <20061207172445.2108cf43@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,147 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for_paulus' branch of
-master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+Christian Krafft wrote:
+> This patch adds support for of_platform_driver to the ipmi_si module.
+> When loading the module, the driver will be registered to of_platform.
+> The driver will be probed for all devices with the type ipmi. It's supporting
+> devices with compatible settings ipmi-kcs, ipmi-smic and ipmi-bt.
+> Only ipmi-kcs could be tested.
+>
+> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+>   
+Acked-by: Heiko J Schick <schihei@de.ibm.com>
 
-to receive the following updates:
-
-  arch/powerpc/Kconfig            |    2 +-
-  arch/powerpc/kernel/cputable.c  |    5 ++---
-  arch/powerpc/kernel/head_32.S   |    7 +++++++
-  arch/powerpc/kernel/of_device.c |    4 +---
-  arch/powerpc/kernel/traps.c     |    2 ++
-  include/asm-powerpc/cputable.h  |   10 ++++++++--
-  6 files changed, 21 insertions(+), 9 deletions(-)
-
-Kim Phillips:
-       [POWERPC] Add support for FP emulation for the e300c2 core
-
-Kumar Gala:
-       [POWERPC] of_device_register: propagate device_create_file return code
-       [POWERPC] Fix 440SPe CPU table entry
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 291c95a..0b2d05d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -706,7 +706,7 @@ config FORCE_MAX_ZONEORDER
-
-  config MATH_EMULATION
-  	bool "Math emulation"
--	depends on 4xx || 8xx || E200 || E500
-+	depends on 4xx || 8xx || E200 || PPC_83xx || E500
-  	---help---
-  	  Some PowerPC chips designed for embedded applications do not have
-  	  a floating-point unit and therefore do not implement the
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 9d1614c..b742013 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -833,7 +833,7 @@ #if CLASSIC_PPC
-  		.pvr_mask		= 0x7fff0000,
-  		.pvr_value		= 0x00840000,
-  		.cpu_name		= "e300c2",
--		.cpu_features		= CPU_FTRS_E300,
-+		.cpu_features		= CPU_FTRS_E300C2,
-  		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-  		.icache_bsize		= 32,
-  		.dcache_bsize		= 32,
-@@ -1136,8 +1136,7 @@ #ifdef CONFIG_44x
-  		.pvr_mask		= 0xff000fff,
-  		.pvr_value		= 0x53000890,
-  		.cpu_name		= "440SPe Rev. A",
--		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
--			CPU_FTR_USE_TB,
-+		.cpu_features		= CPU_FTRS_44X,
-  		.cpu_user_features	= COMMON_USER_BOOKE,
-  		.icache_bsize		= 32,
-  		.dcache_bsize		= 32,
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index d88e182..9417cf5 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -437,6 +437,13 @@ Alignment:
-  /* Floating-point unavailable */
-  	. = 0x800
-  FPUnavailable:
-+BEGIN_FTR_SECTION
-+/*
-+ * Certain Freescale cores don't have a FPU and treat fp instructions
-+ * as a FP Unavailable exception.  Redirect to illegal/emulation handling.
-+ */
-+	b 	ProgramCheck
-+END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
-  	EXCEPTION_PROLOG
-  	bne	load_up_fpu		/* if from user, just load it up */
-  	addi	r3,r1,STACK_FRAME_OVERHEAD
-diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
-index 8a06724..e921514 100644
---- a/arch/powerpc/kernel/of_device.c
-+++ b/arch/powerpc/kernel/of_device.c
-@@ -109,9 +109,7 @@ int of_device_register(struct of_device
-  	if (rc)
-  		return rc;
-
--	device_create_file(&ofdev->dev, &dev_attr_devspec);
--
--	return 0;
-+	return device_create_file(&ofdev->dev, &dev_attr_devspec);
-  }
-
-  void of_device_unregister(struct of_device *ofdev)
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 0d4e203..fde820e 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -782,6 +782,8 @@ void __kprobes program_check_exception(s
-  	unsigned int reason = get_reason(regs);
-  	extern int do_mathemu(struct pt_regs *regs);
-
-+	/* We can now get here via a FP Unavailable exception if the core
-+	 * has no FPU, in that case no reason flags will be set */
-  #ifdef CONFIG_MATH_EMULATION
-  	/* (reason & REASON_ILLEGAL) would be the obvious thing here,
-  	 * but there seems to be a hardware bug on the 405GP (RevD)
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 6fe5c9d..aca72f9 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -126,6 +126,7 @@ #define CPU_FTR_BIG_PHYS		ASM_CONST(0x00
-  #define CPU_FTR_NODSISRALIGN		ASM_CONST(0x0000000000100000)
-  #define CPU_FTR_PPC_LE			ASM_CONST(0x0000000000200000)
-  #define CPU_FTR_REAL_LE			ASM_CONST(0x0000000000400000)
-+#define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x0000000000800000)
-
-  /*
-   * Add the 64-bit processor unique features in the top half of the word;
-@@ -295,6 +296,9 @@ #define CPU_FTRS_G2_LE	(CPU_FTR_SPLIT_ID
-  #define CPU_FTRS_E300	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
-  	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
-  	    CPU_FTR_COMMON)
-+#define CPU_FTRS_E300C2	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
-  #define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-  	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE)
-  #define CPU_FTRS_8XX	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB)
-@@ -364,7 +368,8 @@ #if CLASSIC_PPC
-  	    CPU_FTRS_7450_21 | CPU_FTRS_7450_23 | CPU_FTRS_7455_1 |
-  	    CPU_FTRS_7455_20 | CPU_FTRS_7455 | CPU_FTRS_7447_10 |
-  	    CPU_FTRS_7447 | CPU_FTRS_7447A | CPU_FTRS_82XX |
--	    CPU_FTRS_G2_LE | CPU_FTRS_E300 | CPU_FTRS_CLASSIC32 |
-+	    CPU_FTRS_G2_LE | CPU_FTRS_E300 | CPU_FTRS_E300C2 |
-+	    CPU_FTRS_CLASSIC32 |
-  #else
-  	    CPU_FTRS_GENERIC_32 |
-  #endif
-@@ -403,7 +408,8 @@ #if CLASSIC_PPC
-  	    CPU_FTRS_7450_21 & CPU_FTRS_7450_23 & CPU_FTRS_7455_1 &
-  	    CPU_FTRS_7455_20 & CPU_FTRS_7455 & CPU_FTRS_7447_10 &
-  	    CPU_FTRS_7447 & CPU_FTRS_7447A & CPU_FTRS_82XX &
--	    CPU_FTRS_G2_LE & CPU_FTRS_E300 & CPU_FTRS_CLASSIC32 &
-+	    CPU_FTRS_G2_LE & CPU_FTRS_E300 & CPU_FTRS_E300C2 &
-+	    CPU_FTRS_CLASSIC32 &
-  #else
-  	    CPU_FTRS_GENERIC_32 &
-  #endif
+Regards,
+    Heiko
