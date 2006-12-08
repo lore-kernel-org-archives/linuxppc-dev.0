@@ -1,18 +1,28 @@
-Return-Path: <xchen@sunrisetelecom.com.cn>
-Received: from smtp01.east.net (smtp01.east.net [211.100.61.140])
-	by ozlabs.org (Postfix) with ESMTP id B2BA067BB2
+Return-Path: <yunfeizhang@sjtu.edu.cn>
+Received: from mx.sjtu.edu.cn (mx.sjtu.edu.cn [202.112.26.52])
+	by ozlabs.org (Postfix) with ESMTP id 45FCD67B93
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Dec 2006 18:48:34 +1100 (EST)
-From: =?gb2312?B?s8LPow==?= <xchen@sunrisetelecom.com.cn>
-To: "'enorm'" <enorm@126.com>, <linuxppc-embedded@ozlabs.org>,
-	<linuxppc-embedded-request@ozlabs.org>
-Subject: Re: When I use ichache_enable or dcache_enable in uboot,it crash
-Date: Fri, 8 Dec 2006 15:48:31 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-In-Reply-To: <20061208024333.C5FCB67B6F@ozlabs.org>
-Message-Id: <20061208074835.B2BA067BB2@ozlabs.org>
+	Fri,  8 Dec 2006 19:33:18 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mx.sjtu.edu.cn (Postfix) with ESMTP id 51A09252C85
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  8 Dec 2006 16:00:09 +0800 (CST)
+Received: from mx.sjtu.edu.cn ([127.0.0.1])
+	by localhost (mx [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 00611-03 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 8 Dec 2006 16:00:09 +0800 (CST)
+Received: from jerry (unknown [220.248.74.82])
+	by mx.sjtu.edu.cn (Postfix) with ESMTP id 329B7252F55
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  8 Dec 2006 16:00:07 +0800 (CST)
+Date: Fri, 8 Dec 2006 16:00:07 +0800
+From: "Yunfei Zhang" <yunfeizhang@sjtu.edu.cn>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: AC'97 driver on MontaVista Linx for Xilinx ML403 board
+Message-ID: <200612081600035783179@sjtu.edu.cn>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon163628384567_====="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,58 +34,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Myabe my presentation is not clear.  The uboot has NEVER disable icache.
-The icache is enable at all times.   Disable icaceh is added by me. In =
-other
-words, someone else use uboot won't disable icache. So it is the point =
-that
-the icache effect my code run in ram. I wish can find the reason. The =
-ORx
-BRx init has error or UPM table is wrong or any other reason?  BTW, if I
-give up cache, uboot is OK, no other bugs are found.
+This is a multi-part message in MIME format.
 
+--=====003_Dragon163628384567_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
------=D3=CA=BC=FE=D4=AD=BC=FE-----
-=B7=A2=BC=FE=C8=CB: enorm [mailto:enorm@126.com]
-=B7=A2=CB=CD=CA=B1=BC=E4: 2006=C4=EA12=D4=C28=C8=D5 9:55
-=CA=D5=BC=FE=C8=CB: =B3=C2=CF=A3; linuxppc-embedded@ozlabs.org;
-linuxppc-embedded-request@ozlabs.org
-=B3=AD=CB=CD: 'Elvis Ma'
-=D6=F7=CC=E2: (Rising Spam Alert)Re: When I use ichache_enable or =
-dcache_enable in
-uboot,it crash
-
-At the end of the "board_init_f()" function all data and code will be
-relocated to SDRAM. So, If you enable icache & dcache it will cause
-inconsistence between cache and Memory, so your program will crash
+Hi All, 
+    I am porting a audio decoder to ML403 board, but I find there is no AC'97 driver supported. I am not familiar with the linux driver for powerpc. Could someone give me a copy of AC'97 diver which is compatible for ML403 board or PPC405.If there is none, could you tell me what could I do to alter certain copies or any suggestions.
+    Thanks for all your kindness.
 
 
 
 
------ Original Message -----
-From: "=B3=C2=CF=A3" <xchen@sunrisetelecom.com.cn>
-To: "'enorm'" <enorm@126.com>; <linuxppc-embedded@ozlabs.org>;
-<linuxppc-embedded-request@ozlabs.org>
-Cc: "'Elvis Ma'" <npma@sunrisetelecom.com.cn>
-Sent: Friday, December 08, 2006 9:33 AM
-Subject: Re: When I use ichache_enable or dcache_enable in uboot,it =
-crash
+Yunfei Zhang
+2006-12-08
 
+--=====003_Dragon163628384567_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-Hi enorm
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=gb2312">
+<META content="MSHTML 6.00.2900.2995" name=GENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=Verdana><FONT size=2><FONT face=Arial>Hi All,</FONT><FONT 
+size=3> </FONT><BR>&nbsp;&nbsp;&nbsp; I am porting a audio decoder to ML403 
+board, but I find there is no AC'97 driver supported. I am not familiar with the 
+linux driver for powerpc. Could someone give me a copy of AC'97 diver which is 
+compatible for ML403 board or PPC405.If there is none, could you tell me what 
+could I do to alter certain copies or any suggestions.</FONT></FONT></DIV>
+<DIV><FONT face=Verdana><FONT size=2>&nbsp;&nbsp;&nbsp; Thanks for all your 
+kindness.</FONT></DIV>
+<DIV><FONT size=2></FONT>&nbsp;</DIV>
+<DIV align=left><FONT size=2>
+<HR style="WIDTH: 122px; HEIGHT: 2px" SIZE=2>
+</FONT></DIV>
+<DIV><FONT color=#c0c0c0><FONT size=2>Yunfei Zhang</FONT></DIV>
+<DIV><FONT size=2>2006-12-08</FONT></FONT></DIV></FONT></BODY></HTML>
 
-Thank you for your reply. In fact, the uboot has never disable icache. =
-The
-icache is enable at all times.And the code run in flash normally when =
-the
-icache is enable.  I have to add disable_icache() in the
-board_init_f() so that the code can run in ram normally.  BTW, I just =
-use
-the function supported by uboot to enable icache&dcache, I'm sure the =
-steps
-of cache init have no problem. I just can't understand why the icache =
-can
-effect the code run in ram.
-
-Thanks &Br,
-Andy
+--=====003_Dragon163628384567_=====--
