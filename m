@@ -1,19 +1,21 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 2132B67B6F
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 16:37:01 +1100 (EST)
-Message-ID: <457A4A40.2060803@anagramm.de>
-Date: Sat, 09 Dec 2006 06:31:44 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Power management for ppc 85xx
-References: <BFEE19E1D0DBF84698D76276388DCB843F2251@gbrwgceumf01.eu.xerox.net>
-	<5480D0D0-2F38-4BF1-B018-78E25D97F7B6@kernel.crashing.org>
-In-Reply-To: <5480D0D0-2F38-4BF1-B018-78E25D97F7B6@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Marta Chamorro <Marta.Chamorro@xerox.com>, linuxppc-embedded@ozlabs.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 899FD67B83
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 16:47:45 +1100 (EST)
+Date: Sat, 9 Dec 2006 16:47:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] dont allow pSeries_probe to succeed without
+	initialising MMU
+Message-Id: <20061209164738.61ef7b35.sfr@canb.auug.org.au>
+In-Reply-To: <20061208072208.GD29167@krispykreme>
+References: <20061208070837.GC29167@krispykreme>
+	<20061208072208.GD29167@krispykreme>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, Kumar, Hi, Marta!
+--Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
->> Glad I managed to make sense. I checked the hardware spec on the board
->> and it looks like we're using everything, apart from the SEC and maybe
->> the stand-alone I2C (I think we're just using the one within the CMP).
->> By the way, I made a mistake and the actual processor on the board is
->> the cut-down 8541, not the 8555. My apologies for that.
->>
->> This morning I added some printks and confirmed that there is no code
->> behind pm_ops, so my question remains: is there some code out there  
->> that
->> I can use? (hope so, otherwise I'm doomed...)
-> 
-> I'm sorry to say you're doomed.  I don't believe anyone's spent any  
-> time trying to do pwr mgmt on 85xx.
+On Fri, 8 Dec 2006 18:22:09 +1100 Anton Blanchard <anton@samba.org> wrote:
+>
+>  	DBG("Machine is%s LPAR !\n",
+>  	    (powerpc_firmware_features & FW_FEATURE_LPAR) ? "" : " not");
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Want to change that to firmware_has_feature(FW_FEATURE_LPAR) while you
+are there?
 
-I am working with the MPC8540 in a mobile product and some
-power saving would be fine to use. But I haven't seen any
-power management code for that thingy in the kernels at all.
-So, there is some work left there. Maybe I will have
-a closer look in the future.
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-According to some tests of a board manufacturer, the cpu
-doesn't power down very much, when you stop some peripherals
-or send the core to nap. But I wasn't able to confirm that yet.
+--Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa
+Content-Type: application/pgp-signature
 
-Best greets,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+iD8DBQFFek4AFdBgD/zoJvwRAji9AJ9Nm4W5RP3/rGyglZDhC/dpS3iWwQCePwgA
+5sG8Imsx7zPL6DIyATHjvUo=
+=wMfB
+-----END PGP SIGNATURE-----
 
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+--Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa--
