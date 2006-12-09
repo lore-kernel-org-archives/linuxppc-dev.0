@@ -1,21 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 899FD67B83
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 16:47:45 +1100 (EST)
-Date: Sat, 9 Dec 2006 16:47:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] dont allow pSeries_probe to succeed without
-	initialising MMU
-Message-Id: <20061209164738.61ef7b35.sfr@canb.auug.org.au>
-In-Reply-To: <20061208072208.GD29167@krispykreme>
-References: <20061208070837.GC29167@krispykreme>
-	<20061208072208.GD29167@krispykreme>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4821867B5B
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 18:15:01 +1100 (EST)
+Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20061208190758.6cee088f.kim.phillips@freescale.com>
+References: <20061208190758.6cee088f.kim.phillips@freescale.com>
+Content-Type: text/plain
+Date: Sat, 09 Dec 2006 18:14:50 +1100
+Message-Id: <1165648490.1103.117.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Fri, 2006-12-08 at 19:07 -0600, Kim Phillips wrote:
+> Eliminate code redundancy.  mpc83[246]x_{mds,itx,sys,pb} files merged
+> into a single setup.c.  machine_probe, instead of using the model property,
+> checks the compatible property for "MPC83xx" (dts files updated appropriately).
+> This patch also utilizes of_platform_bus_probe() in lieu of manually
+> calling of_platform_device_create for each ucc_geth device.
+> 
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
-On Fri, 8 Dec 2006 18:22:09 +1100 Anton Blanchard <anton@samba.org> wrote:
->
->  	DBG("Machine is%s LPAR !\n",
->  	    (powerpc_firmware_features & FW_FEATURE_LPAR) ? "" : " not");
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Want to change that to firmware_has_feature(FW_FEATURE_LPAR) while you
-are there?
+I am not completely certain this is the right approach.
 
---
+While factoring code is good, I think that every single board should
+have it's own ppc_md, though you can definitely provide "common"
+functions for mpc83xx that can optinally be used by those different
+boards.
+
+Maybe put all the freescale ones in one file if you want...
+
+The rationale here is that while your approach is fine for your eval
+boards, I don't think it's good for embedded customers. They may want
+more complex platforms, with their own directory even if they have a lot
+of custom stuff on the board while still possibly picking some of your
+"common" code (and their board shouldn't match your overly generic
+probe() implementation).
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFek4AFdBgD/zoJvwRAji9AJ9Nm4W5RP3/rGyglZDhC/dpS3iWwQCePwgA
-5sG8Imsx7zPL6DIyATHjvUo=
-=wMfB
------END PGP SIGNATURE-----
-
---Signature=_Sat__9_Dec_2006_16_47_38_+1100_1N84tfePMxRWHkFa--
+Ben.
