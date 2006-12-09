@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
+	[195.238.4.203])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8E59567A03
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 19:59:18 +1100 (EST)
-Subject: Re: Oops in pata_pdc2027x
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: albertl@mail.com
-In-Reply-To: <457790F0.2070208@tw.ibm.com>
-References: <20061205170144.0b98d7e6.sfr@canb.auug.org.au>
-	<457790F0.2070208@tw.ibm.com>
-Content-Type: text/plain
-Date: Sat, 09 Dec 2006 18:57:12 +1100
-Message-Id: <1165651032.1103.123.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 060EC67B93
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 20:05:59 +1100 (EST)
+Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kB995slx012895
+	for <linuxppc-dev@ozlabs.org>; Sat, 9 Dec 2006 10:05:54 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <457A7C41.7070001@246tNt.com>
+Date: Sat, 09 Dec 2006 10:05:05 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Modules autoloading for bus 'of' and 'macio' : The situation
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,122 +27,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Could that be related to the fix
+Hi everyone,
 
-[PATCH] libata: fix oops with sparsemem
-
-That Arnd Bergmann just posted ? I'm copying it below in case you
-haven't seen it.
-
-----
-
-                              From: 
-Arnd Bergmann
-<arnd.bergmann@de.ibm.com>
-                                To: 
-jgarzik@pobox.com
-                                Cc: 
-linux-ide@vger.kernel.org,
-linux-kernel@vger.kernel.org,
-linuxppc-dev@ozlabs.org
-                           Subject: 
-[PATCH] libata: fix oops with
-sparsemem
-                              Date: 
-Fri, 8 Dec 2006 19:14:40 +0100
-(Sat, 05:14 EST)
+Recently I've been looking at the uevent code in macio and of_platform
+to see how it works and
+I think there may be a problem with it. If it works today it may be
+partly due to luck.
+The email is a little long, but I'm trying to be clear ;)
 
 
-libata incorrectly passes NULL arguments to sg_set_buf, which
-crashes on powerpc64 when looking for the corresponding mem_section.
+First, a quick refresh on how it supposed to work (It's my understanding
+of the process so I may be mistaken) :
 
-This introduces a new ata_exec_nodma() wrapper that takes no buffer
-arguments and does not call sg_set_buf either. In order to make it
-easier to detect this sort of problem, it also adds a WARN_ON(!buf)
-to sg_set_buf() so we get a log message even platforms without
-sparsemem.
+ * On the device driver side : You have a MODULE_DEVICE_TABLE(....),
+this will result in the table being put in a section in the module
+object, to be picked up my modpost during compile and finally results in
+line like this in the 'modinfos' of the .ko :
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+alias:          of:NusbT*Cohci-bigendian*
+alias:          of:NusbT*Cohci-be*
 
-Index: linux-2.6/drivers/ata/libata-core.c
-===================================================================
---- linux-2.6.orig/drivers/ata/libata-core.c
-+++ linux-2.6/drivers/ata/libata-core.c
-@@ -1332,7 +1332,7 @@ unsigned ata_exec_internal_sg(struct ata
- }
- 
- /**
-- *     ata_exec_internal_sg - execute libata internal command
-+ *     ata_exec_internal - execute libata internal command
-  *     @dev: Device to which the command is sent
-  *     @tf: Taskfile registers for the command and the result
-  *     @cdb: CDB for packet command
-@@ -1361,6 +1361,25 @@ unsigned ata_exec_internal(struct ata_de
- }
- 
- /**
-+ *     ata_exec_nodma - execute libata internal command
-+ *     @dev: Device to which the command is sent
-+ *     @tf: Taskfile registers for the command and the result
-+ *
-+ *     Wrapper around ata_exec_internal_sg() which takes no
-+ *     data buffer.
-+ *
-+ *     LOCKING:
-+ *     None.  Should be called with kernel context, might sleep.
-+ *
-+ *     RETURNS:
-+ *     Zero on success, AC_ERR_* mask on failure
-+ */
-+static unsigned ata_exec_nodma(struct ata_device *dev, struct
-ata_taskfile *tf)
-+{
-+       return ata_exec_internal_sg(dev, tf, NULL, DMA_NONE, NULL, 0);
-+}
-+
-+/**
-  *     ata_do_simple_cmd - execute simple internal command
-  *     @dev: Device to which the command is sent
-  *     @cmd: Opcode to execute
-@@ -1384,7 +1403,7 @@ unsigned int ata_do_simple_cmd(struct at
-        tf.flags |= ATA_TFLAG_DEVICE;
-        tf.protocol = ATA_PROT_NODATA;
- 
--       return ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
-+       return ata_exec_nodma(dev, &tf);
- }
- 
- /**
-@@ -3475,7 +3494,7 @@ static unsigned int ata_dev_set_xfermode
-        tf.protocol = ATA_PROT_NODATA;
-        tf.nsect = dev->xfer_mode;
- 
--       err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
-+       err_mask = ata_exec_nodma(dev, &tf);
- 
-        DPRINTK("EXIT, err_mask=%x\n", err_mask);
-        return err_mask;
-@@ -3513,7 +3532,7 @@ static unsigned int ata_dev_init_params(
-        tf.nsect = sectors;
-        tf.device |= (heads - 1) & 0x0f; /* max head = num. of heads - 1
-*/
- 
--       err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
-+       err_mask = ata_exec_nodma(dev, &tf);
- 
-        DPRINTK("EXIT, err_mask=%x\n", err_mask);
-        return err_mask;
-Index: linux-2.6/include/linux/scatterlist.h
-===================================================================
---- linux-2.6.orig/include/linux/scatterlist.h
-+++ linux-2.6/include/linux/scatterlist.h
-@@ -8,6 +8,8 @@
- static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
-                              unsigned int buflen)
- {
-+       WARN_ON(!buf); /* virt_to_page(NULL) crashes with sparsemem */
-+
-        sg->page = virt_to_page(buf);
-        sg->offset = offset_in_page(buf);
-        sg->length = buflen;
-_______________________________________________
+The match table that generated theses is :
+
+static struct of_device_id ohci_hcd_ppc_of_match[] = {
+        {
+                .name = "usb",
+                .compatible = "ohci-bigendian",
+        },
+        {
+                .name = "usb",
+                .compatible = "ohci-be",
+        },
+};
+
+As you can see, since no .type is specified, it has been replaced by a
+wildcard *, and there is also a wildcard at the end, added for future
+compatibility.
+
+ * On the device node side :
+
+When a device is attached to a bus, the uevent handler of the bus is
+called and this one generates the event to be sent to user space. The
+handler is free to send whatever he wants, but the most critical entry
+is the MODALIAS variable. It's meant to be matched against the alias of
+the modules to find what to load.
+
+On PCI for example, the modalias is the vendord id, product id, and some
+others id as well. On the macio and of bus, we include the name, the
+type and the compatible list. For the latter though, since there can be
+multiple value we must put several values ... That could be for example :
+
+of:NusbTohciCmpc5200-ohciCmpc52xx-ohciCohci-be
+
+That's what would be generated for this device node :
+
+                usb@1000 {
+                        device_type = "usb-ohci-be";
+                        compatible = "mpc5200-ohci\0mpc52xx-ohci\0ohci-be";
+                        reg = <1000 ff>;
+                        interrupts = <2 6 0>;
+                        interrupt-parent = <500>;
+                };
+
+
+ * On the kernel side :
+
+When doing the depmod, a modules.alias file is created containing
+entries like this :
+
+alias of:NusbT*Cohci-bigendian* ohci_hcd
+alias of:NusbT*Cohci-be* ohci_hcd
+
+ * On the user space side : When it receives an event that a new device
+'appeared', udev will try to load a module for it. As far as I can tell
+the only thing it does, is call modprobe $DEVALIAS, then modprobe tries
+to load the module with that name. As there is no module whose file name
+is "of:...", it will load the modules.alias file and try to match it
+(with wildcards).
+
+
+Now the problem :
+
+It lies with the compatible property as in this case, the device as a
+list of compatible and the device as a list of compatible as well and we
+just want 1 common entry.
+In the usual case (other bus), that's not the case, the driver has a
+list of supported ids but the device has only a unique one.
+
+The solution found here is to put several C...C... in the MODALIAS sent
+in the userspace event.
+But the whole alias stuff was never really meant for this and the
+matching in modprobe really doesn't 'know' about this trick.
+
+So why does it work ? Well because of the wildcards.
+There is always one at the end in the alias generated by modpost,
+meaning if the uevent handler sent some more 'C...' after the 'good'
+one, they'll be matched by the wildcard. And if there is 'C...' before
+the 'good' one they _may_ be matched using the wildcard of the field
+just before : type. And I didn't find any driver using both compatible
+and type for matching, that's why it works.
+
+The solution I see now would be to change modpost to always add a *
+before the first C (if there is not already one due to type).
+
+Any thought on this ? Am I correct or completly wrong ?
+
+
+    Sylvain
