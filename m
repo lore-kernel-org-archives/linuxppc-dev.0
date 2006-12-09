@@ -1,22 +1,38 @@
-Return-Path: <minyard@acm.org>
-Received: from mta16.adelphia.net (mta16.mail.adelphia.net [68.168.78.211])
-	by ozlabs.org (Postfix) with ESMTP id 97BC167A3B
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 11:07:47 +1100 (EST)
-Message-ID: <4579FE4F.8000206@acm.org>
-Date: Fri, 08 Dec 2006 18:07:43 -0600
-From: Corey Minyard <minyard@acm.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4AE1467A5E
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 11:11:37 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB90BWUG007366
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 19:11:32 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB90BWDP197198
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 19:11:32 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB90BWZ5000865
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Dec 2006 19:11:32 -0500
+Date: Fri, 8 Dec 2006 18:11:30 -0600
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH]: powerpc documentation: Clarify why twi appears in the
+	i/o	macros.
+Message-ID: <20061209001130.GA13128@austin.ibm.com>
+References: <20061206182922.GA17931@austin.ibm.com>
+	<45770E44.30000@ru.mvista.com>
+	<20061206194516.GD17931@austin.ibm.com>
+	<45772700.2080708@ru.mvista.com>
+	<20061206222246.GG17931@austin.ibm.com>
+	<17784.54471.964452.513068@cargo.ozlabs.ibm.com>
+	<177E9875-1C08-4EFF-A066-E33C6C94DD91@kernel.crashing.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Openipmi-developer] [patch 1/1] ipmi: add autosensing of ipmi
-	device on powerpc using device-tree
-References: <20061207172259.64168f8c@localhost>
-	<20061208185902.GA14675@localdomain>
-	<1165618236.1103.87.camel@localhost.localdomain>
-	<200612090100.09380.arnd@arndb.de>
-In-Reply-To: <200612090100.09380.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net,
-	Christian Krafft <krafft@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <177E9875-1C08-4EFF-A066-E33C6C94DD91@kernel.crashing.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Friday 08 December 2006 23:50, Benjamin Herrenschmidt wrote:
->   
->>> +     info->io.regsize        = resource0.end - resource0.start + 1;
->>> +     info->io.regspacing     = resource1.start - resource0.start;
->>>
->>> Are you sure this is a reliable way to check the register spacing and
->>> register size?  Register size means "how big is a register (8, 16, 32
->>> bits)".  Register spacing means (how many bytes are there between
->>> registers.  If you had two registers that were 8 bits and 4 bytes
->>> apart, for instance, I don't believe the above calculations would work.
->>>       
->> How many registers do we expect here ? Might be better to have one
->> resource represent the whole MMIO area, and have a separate property
->> that indicates the stride between 2 registers.
->>     
->
-> I think the current representation is perfect. AFAICS, there are always
-> two registers, but depending on the HW implementation, they may be
-> between 1 and 4 bytes wide, and can have a different spacing.
->   
-The BT and SMIC interfaces have three registers.  Does that break things?
+On Fri, Dec 08, 2006 at 10:54:56PM +0100, Segher Boessenkool wrote:
+> >>+ * A data-dependent branch followed by an isync ensures that no
+> >
+> >I think it's potentially confusing to talk about data-dependent
+> >branches when what the code does is a twi instruction.  Even if you
+> >argue that a twi is a data-dependent branch (and I disagree with that,
+> >since a trap is not a branch),
+> 
+> If you argue it is *not* a branch, where in the architecture
+> documentation can we find any language that gives us the
+> guarantee we depend on here?
 
--Corey
+How about this wording: "A data-dependent branch, or trap word, 
+followed by an isync ensures that ..."
+
+> >that wouldn't be obvious to a casual
+> >reader of the code.
+
+I was trying to understand why the spidernet driver seemed to 
+behave in the crazy ways that it does, and I decided to scrutinize 
+this code. Even if one is relatively familiar with the overall
+powerpc architecture (as I am), the effect of the twi/isync 
+was far from obvious, and left me scratching my head.
+
+> >In other words, I don't think the comment
+> >clarifies the situation very much.
+
+Later on, I tripped over some text written by Segher, that
+made a lightbulb go off in my head ... and thus I was motiviated
+to plagiarizingly cut-n-paste it into here.  So this block of 
+text clarified things a lot for me, it "hit the spot".
+
+Now, what I don't know is how accurate it really is ... I don't
+know if there aren't any strange deviations on 403 or 601 or 
+any of the modern embedded processors, or whatever. But the text
+certainly makes me beleive I now know what's going on. As a
+service to the next person who scratches thier head in wonderment, 
+we should have at least something written up here.
+
+--linas
