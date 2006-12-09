@@ -1,22 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 9EC5D67BBE
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 22:46:34 +1100 (EST)
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id E7DC367B8F
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 23:18:39 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Openipmi-developer] [patch 1/1] ipmi: add autosensing of ipmi
-	device on powerpc using device-tree
-Date: Sat, 9 Dec 2006 12:46:19 +0100
-References: <20061207172259.64168f8c@localhost>
-	<200612090100.09380.arnd@arndb.de>
-	<4FBDC6E5-1B34-41A3-AF78-4B5917EA6848@kernel.crashing.org>
-In-Reply-To: <4FBDC6E5-1B34-41A3-AF78-4B5917EA6848@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ps3: add vuart support
+Date: Sat, 9 Dec 2006 13:18:23 +0100
+References: <45775D89.7030904@am.sony.com> <457A1F23.1020207@am.sony.com>
+In-Reply-To: <457A1F23.1020207@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200612091246.19732.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net,
-	Christian Krafft <krafft@de.ibm.com>
+Message-Id: <200612091318.23993.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 09 December 2006 10:46, Segher Boessenkool wrote:
-> How do you know? =A0Some later compatible implementation might add
-> some regs. =A0Also, there are implementations that simply ignore
-> the lower address bits, so size=3D1 in the "reg" property is wrong
-> for those.
+On Saturday 09 December 2006 03:27, Geoff Levand wrote:
+> Adds support for the PS3 virtual UART (vuart). =A0The vuart provides a
+> bi-directional byte stream data link between logical partitions.
 >=20
-> > but depending on the HW implementation, they may be
-> > between 1 and 4 bytes wide, and can have a different spacing.
+> This is needed for the ps3 graphics driver and the ps3 power
+> control support to be able to communicate with the lv1 policy
+> module.
 >=20
-> Always one byte wide.
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-AFAICS, some implementations require word access on the registers,
-even if only part of it is used. That's why the driver has
-the concept of reg-size and reg-shift.
-
-	Arnd <><
+Acked-by: Arnd Bergmann <arnd@arndb.de>
