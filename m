@@ -1,20 +1,21 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 6EE0867A2E
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 22:37:07 +1100 (EST)
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id C7B6367BAB
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Dec 2006 22:44:41 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch] powerpc: add scanning of ebc bus to of_platform
-Date: Sat, 9 Dec 2006 12:36:56 +0100
-References: <20061208114113.2191e446@localhost>
-	<1165618381.1103.89.camel@localhost.localdomain>
-	<F6853CAA-5CBD-4BA8-A330-55D66AB3E853@kernel.crashing.org>
-In-Reply-To: <F6853CAA-5CBD-4BA8-A330-55D66AB3E853@kernel.crashing.org>
+To: Corey Minyard <minyard@acm.org>
+Subject: Re: [Openipmi-developer] [patch 1/1] ipmi: add autosensing of ipmi
+	device on powerpc using device-tree
+Date: Sat, 9 Dec 2006 12:44:05 +0100
+References: <20061207172259.64168f8c@localhost>
+	<200612090100.09380.arnd@arndb.de> <4579FE4F.8000206@acm.org>
+In-Reply-To: <4579FE4F.8000206@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200612091236.57252.arnd@arndb.de>
-Cc: Christian Krafft <krafft@de.ibm.com>
+Message-Id: <200612091244.05862.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net,
+	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 09 December 2006 11:04, Segher Boessenkool wrote:
-> 
-> > I'd like other people opinions here... But I'm tempted to remove the
-> > "default" list of bus types here and have it always be passed by the
-> > platform... just in case.
+On Saturday 09 December 2006 01:07, Corey Minyard wrote:
+> > I think the current representation is perfect. AFAICS, there are always
+> > two registers, but depending on the HW implementation, they may be
+> > between 1 and 4 bytes wide, and can have a different spacing.
+> > =A0=20
+> The BT and SMIC interfaces have three registers. =A0Does that break thing=
+s?
+>=20
+It should still work, but I have to admit that at this point it gets ugly.
 
-I think for the flat device tree, we often have only type=soc,
-or compatible=soc anyway, and there is a limited number of
-internal bus types we want to probe on top of that for real
-OF implementations.
+How about defining the properties just like the driver expects them:
 
-> That's probably best -- no sense in registering devices
-> on buses that the platform doesn't know how to drive!
-
-But the platform doesn't need how to drive them, the device driver
-needs to. All the platform needs to know is the fact that it can
-deal with SOC devices that are automatically probed.
-
-I'd much prefer to have the list in the same file that drives the
-devices in the first place. It's probably also good to register
-them as MODULE_DEVICE_TABLE(), for documentation purposes, even
-if the driver can't be built as a module yet.
+reg <size> <len>:	the area spanning all registers (2 or three)
+reg-spacing <number>:	offset of the start of each register (default 1)
+reg-size <number>:	length of each register (1, 2, or 4, default 1)
+reg-shift <number>:	bit-position of the data inside the register
+			(default 0).
 
 	Arnd <><
