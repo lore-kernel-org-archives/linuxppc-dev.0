@@ -1,17 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D36F067BC1
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Dec 2006 23:00:18 +1100 (EST)
-Date: Sun, 10 Dec 2006 23:00:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: ibmvscsi compile error in 2.6.20-rc1
-Message-Id: <20061210230023.8defde28.sfr@canb.auug.org.au>
-In-Reply-To: <20061210114806.GA8687@aepfle.de>
-References: <20061210114806.GA8687@aepfle.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-scsi@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C7A8167B6C
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Dec 2006 23:17:50 +1100 (EST)
+In-Reply-To: <200612091236.57252.arnd@arndb.de>
+References: <20061208114113.2191e446@localhost>
+	<1165618381.1103.89.camel@localhost.localdomain>
+	<F6853CAA-5CBD-4BA8-A330-55D66AB3E853@kernel.crashing.org>
+	<200612091236.57252.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D4C188FC-1FCF-4E56-8A9B-3701CEF84C2A@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch] powerpc: add scanning of ebc bus to of_platform
+Date: Sun, 10 Dec 2006 13:17:39 +0100
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 10 Dec 2006 12:48:03 +0100 (MET) Olaf Hering <olaf@aepfle.de> wrote:
+>> That's probably best -- no sense in registering devices
+>> on buses that the platform doesn't know how to drive!
 >
-> This happens when client and server are enabled.
-> And CONFIG_ISERIES is enabled too in my ppc64_defconfig.
+> But the platform doesn't need how to drive them, the device driver
+> needs to.
 
-Known problem.  There is a patch available.  I am hoping Paulus will put
-it in soon ...
+No -- the platform needs to know how to do low-level
+bus operations (I/O reads, etc).  For most memory-mapped
+buses this is pretty trivial, of course.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Maybe we're just disagreeing over the word "platform"
+here?
 
-diff --git a/drivers/scsi/ibmvscsi/Makefile b/drivers/scsi/ibmvscsi/Makefile
-index 4e247b6..6661d74 100644
---- a/drivers/scsi/ibmvscsi/Makefile
-+++ b/drivers/scsi/ibmvscsi/Makefile
-@@ -1,5 +1,7 @@
- obj-$(CONFIG_SCSI_IBMVSCSI)	+= ibmvscsic.o
- 
- ibmvscsic-y			+= ibmvscsi.o
-+ifneq ($(CONFIG_PPC_PSERIES),y)
- ibmvscsic-$(CONFIG_PPC_ISERIES)	+= iseries_vscsi.o 
-+endif
- ibmvscsic-$(CONFIG_PPC_PSERIES)	+= rpa_vscsi.o 
+
+Segher
