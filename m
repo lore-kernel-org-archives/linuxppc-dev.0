@@ -1,22 +1,23 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <info@schihei.de>
+Received: from schihei.org (schihei.net [81.169.184.117])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CF8DC679FD
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 04:07:37 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: "IRQ probe failed (0x0)" on powerbook
-References: <87lklg9rkz.fsf@briny.internal.ondioline.org>
-	<1165737970.1103.171.camel@localhost.localdomain>
-Date: Sun, 10 Dec 2006 18:07:19 +0100
-In-Reply-To: <1165737970.1103.171.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Sun, 10 Dec 2006 19:06:10 +1100")
-Message-ID: <jey7pfvfw8.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 360BD679A6
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 06:32:19 +1100 (EST)
+In-Reply-To: <200612091244.05862.arnd@arndb.de>
+References: <20061207172259.64168f8c@localhost>
+	<200612090100.09380.arnd@arndb.de> <4579FE4F.8000206@acm.org>
+	<200612091244.05862.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <89216897-DF66-4C4E-9436-BD7816424139@schihei.de>
+From: Heiko J Schick <info@schihei.de>
+Subject: Re: [Openipmi-developer] [patch 1/1] ipmi: add autosensing of ipmi
+	device on powerpc using device-tree
+Date: Sun, 10 Dec 2006 19:42:17 +0100
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net,
+	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hello,
 
-> On Sun, 2006-12-10 at 19:45 +1300, Paul Collins wrote:
->> On my PowerBook when booting Linus's tree as of commit af1713e0 I get
->> something like this:
->> 
->>   [blah blah]
->>   ide0: Found Apple UniNorth ATA-6 controller, bus ID 3, irq 0
->>   Probing IDE interface ide0...
->>   hda: HTS541080G9AT00, ATA DISK drive
->>   IRQ probe failed (0x0)
->>   IRQ probe failed (0x0)
->>   IRQ probe failed (0x0)
->>   IRQ probe failed (0x0)
->> 
->> And then of course it fails to mount root.  No such problem using a
->> kernel built from commit 97be852f of December 2nd.
+On 09.12.2006, at 12:44, Arnd Bergmann wrote:
+
+> On Saturday 09 December 2006 01:07, Corey Minyard wrote:
+>>> I think the current representation is perfect. AFAICS, there are  
+>>> always
+>>> two registers, but depending on the HW implementation, they may be
+>>> between 1 and 4 bytes wide, and can have a different spacing.
+>>>
+>> The BT and SMIC interfaces have three registers.  Does that break  
+>> things?
+>>
+> It should still work, but I have to admit that at this point it  
+> gets ugly.
 >
-> I'll investigate tomorrow, looks like irq assignment got broken in a way
-> or another for that IDE controller.
+> How about defining the properties just like the driver expects them:
+>
+> reg <size> <len>:	the area spanning all registers (2 or three)
+> reg-spacing <number>:	offset of the start of each register (default 1)
+> reg-size <number>:	length of each register (1, 2, or 4, default 1)
+> reg-shift <number>:	bit-position of the data inside the register
+> 			(default 0).
 
-Bisection has identified this patch:
+We have to include the IPMI information in a way which can be used  
+for controllers which are accessed via memory mapped or legacy I/O.  
+Furthermore, we have to include the register information that it will  
+work not only for KCS interfaces. It should be possible to include BT  
+and SMIC interfaces, too.
 
-commit f90bb153b1493719d18b4529a46ebfe43220ea6c
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Sat Nov 11 17:24:51 2006 +1100
+We have two options how we wanna present IPMI in the OFDT.
 
-    [POWERPC] Make pci_read_irq_line the default
-    
-Andreas.
+(1)
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+name = ipmi
+device_type = ipmi
+compatible = ipmi-kcs, ipmi-1.5, ...
+
+regs = <addr> <len> <addr> <len> (for KCS interfaces)
+	or
+regs = <addr> <len> <addr> <len> <addr> <len> (for BT and SMIC  
+interfaces)
+
+(2)
+name = ipmi
+device_type
+regs = <addr> <len>
+reg-spacing = <number>
+reg-size = <number>
+reg-shift = <number>
+
+The main difference between (1) and (2) is that (2) will represent  
+the whole register region within the reg property. Because of that  
+you have to include additional properties.
+
+In (1) you will include every register (e.g. Cmd / Status, Data_In /  
+Data_Out, etc.) within the reg property. The values for reg-spacing  
+are calculated by subtracting addr2 - addr1. The reg-size are the  
+len's within the reg property.
+
+Personally I prefer (1), because I a the moment I don't see a big  
+benefit in (2). For both options of have to implement source code  
+which checks the compatible node to get the used interface type.  
+According to the emitted interface type you have to read in (1) two  
+or three registers from the reg property.
+
+In (2) you have to calculate two or three addresses (with the help of  
+reg and the additional reg-spacing, etc. properties).
+
+Regards,
+	Heiko
