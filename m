@@ -1,17 +1,18 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s26.bay0.hotmail.com (bay0-omc1-s26.bay0.hotmail.com
-	[65.54.246.98]) by ozlabs.org (Postfix) with ESMTP id 38C8567CC0
+Return-Path: <vbordug@ru.mvista.com>
+Received: from localhost.localdomain (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E8A9B67D4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Dec 2006 01:26:18 +1100 (EST)
-Message-ID: <BAY110-F19503E49329593BA19BD5DB2D00@phx.gbl>
-In-Reply-To: <457D3FFD.8000107@grandegger.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: wg@grandegger.com
-Subject: Re: how to cross-compile netperf.
-Date: Mon, 11 Dec 2006 14:26:16 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 12 Dec 2006 05:01:23 +1100 (EST)
+To: Jeff Garzik <jeff@garzik.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] [FS_ENET] OF-related update for FEC and SCC MAC's
+Date: Mon, 11 Dec 2006 21:00:49 +0300
+Message-Id: <20061211180048.17991.59030.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,83 +24,111 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Dear Wolfgang,
-By the Way, another problem now. If I transfer UDP packets from my PC to my 
-board as "netperf -H 192.168.0.5 -t UDP_STREAM -l 30", a problem happens on 
-my ML403 board and ppc 405 as:
+Updated direct resource pass with ioremap call, make it grant proper IRQ
+mapping, stuff incompatible with the new approach were respectively put  under 
+#ifndef CONFIG_PPC_MERGE.
+---
 
-BUG: soft lockup detected on CPU#0!
-NIP: C015084C LR: C014D384 CTR: C015075C
-REGS: c2d43a20 TRAP: 1001   Not tainted  (2.6.16-rc5-g51645017-dirty)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 24004028  XER: 20000000
-TASK = c03c27b0[732] 'netserver' THREAD: c2d42000
-GPR00: 00007F08 C2D43AD0 C03C27B0 C032F2D8 C032F000 C2D43BA0 00021030 
-0000000A
-GPR08: C3359000 03362DDF C0270000 C4000000 003C2978
-NIP [C015084C] XTemac_IntrSgHandler+0xf0/0x27c
-LR [C014D384] xtenet_interrupt+0x20/0x34
-Call Trace:
-[C2D43AD0] [C306A620] 0xc306a620 (unreliable)
-[C2D43B00] [C014D384] xtenet_interrupt+0x20/0x34
-[C2D43B10] [C003BB30] handle_IRQ_event+0x54/0xa8
-[C2D43B40] [C003BC5C] __do_IRQ+0xd8/0x148
-[C2D43B70] [C0007588] do_IRQ+0x48/0x78
-[C2D43B90] [C000343C] ret_from_except+0x0/0x18
-[C2D43C50] [C014E568] SgRecvHandlerBH+0x124/0x434
-[C2D43C90] [C0022688] tasklet_action+0x8c/0xd0
-[C2D43CB0] [C00222CC] __do_softirq+0x64/0xe0
-[C2D43CD0] [C0007608] do_softirq+0x50/0x74
-[C2D43CF0] [C00223E8] irq_exit+0x38/0x48
-[C2D43D00] [C00075A4] do_IRQ+0x64/0x78
-[C2D43D20] [C000343C] ret_from_except+0x0/0x18
-[C2D43DE0] [C003E0DC] filemap_nopage+0x178/0x378
-[C2D43E20] [C004C394] __handle_mm_fault+0x550/0x100c
-[C2D43E80] [C000A0E8] do_page_fault+0x35c/0x578
-[C2D43F40] [C0003238] handle_page_fault+0xc/0x80
-Instruction dump:
-73a00040 41a20028 813f0138 807f0130 39290001 913f0138 83ff012c 388001f9
-7fe903a6 38a00001 4bffffd0 800b0028 <0c000000> 4c00012c 812b0020 0c090000
+ drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
+ drivers/net/fs_enet/mac-scc.c |    6 ++++--
+ drivers/net/phy/fixed.c       |    2 +-
+ 3 files changed, 14 insertions(+), 7 deletions(-)
 
-If I specify the time length shorter, e.g. -l 5, it will not happened. 
-
-This never happens when using TCP.
-
-Can anyone tell me what's the reason and how to solve this? thanks for your 
-helping.
-
-BR
-Ming
-
-
->From: Wolfgang Grandegger <wg@grandegger.com>
->To: Ming Liu <eemingliu@hotmail.com>
->CC: linuxppc-embedded@ozlabs.org
->Subject: Re: how to cross-compile netperf.
->Date: Mon, 11 Dec 2006 12:24:45 +0100
->
->Ming Liu wrote:
-> > Dear all,
-> > Maybe my question is not proper for this maillist but I really see some
-> > friends who are using netperf to measure the netowrk performance from
-> > this maillist. So I ask for help here.
-> > Could anyone please tell me how to cross-compile the Netperf which 
-could
-> > be run on my PowerPC 405 processor? I cannot find a detailed 
-explanation
-> > from the manual. After the downloading and untaring the package, I use
-> > the command "./configure --host ppc CC=powerpc-405-linux-gnu-gcc".
-> > However unfortunately it doesn't work and error " checking whether
-> > setpgrp takes no argument... configure:error: cannot check setpgrp when
-> > cross compiling" appears. My host system is X86_64 PC with linux OS and
-> > my target system is PowerPC 405(Xilinx Virtex 4 FPGA) with linux
-> > too(embedded Ml403 board from Xilinx company). In my condition, which
-> > arguments shall I specify?
-> > If anyone can help, I wll really appreciate a lot.
->
->$ echo "ac_cv_func_setpgrp_void=yes" > config.cache
->$ ./configure --host ppc CC=powerpc-405-linux-gnu-gcc --config-cache
->
->Wolfgang.
-
-_________________________________________________________________
-Ãâ·ÑÏÂÔØ MSN Explorer:   http://explorer.msn.com/lccn  
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index c2c5fd4..474d6d7 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_pr
+ 	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
+ 	if (fep->interrupt < 0)
+ 		return -EINVAL;
+-	
++
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->fec.fecp =(void*)r->start;
++	fep->fec.fecp = (void *)ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if(fep->fec.fecp == NULL)
+ 		return -EINVAL;
+@@ -319,11 +319,14 @@ #endif
+ 	 * Clear any outstanding interrupt.
+ 	 */
+ 	FW(fecp, ievent, 0xffc0);
++#ifndef CONFIG_PPC_MERGE
+ 	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+-	
++#else
++	FW(fecp, ivec, (irq_map[fep->interrupt].hwirq / 2) << 29);
++#endif
+ 
+ 	/*
+-	 * adjust to speed (only for DUET & RMII) 
++	 * adjust to speed (only for DUET & RMII)
+ 	 */
+ #ifdef CONFIG_DUET
+ 	if (fpi->use_rmii) {
+@@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -431,6 +435,7 @@ static void pre_request_irq(struct net_d
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 95ec587..62057f4 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_pr
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->scc.sccp = (void *)r->start;
++	fep->scc.sccp = (void *)ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.sccp == NULL)
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
+-	fep->scc.ep = (void *)r->start;
++	fep->scc.ep = (void *)ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.ep == NULL)
+ 		return -EINVAL;
+@@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -410,6 +411,7 @@ static void pre_request_irq(struct net_d
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 096d4a1..8613539 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -349,7 +349,7 @@ #ifdef CONFIG_FIXED_MII_100_FDX
+ 	fixed_mdio_register_device(0, 100, 1);
+ #endif
+ 
+-#ifdef CONFIX_FIXED_MII_10_FDX
++#ifdef CONFIG_FIXED_MII_10_FDX
+ 	fixed_mdio_register_device(0, 10, 1);
+ #endif
+ 	return 0;
