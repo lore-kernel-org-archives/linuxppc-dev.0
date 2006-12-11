@@ -1,39 +1,16 @@
-Return-Path: <krafft@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
+Return-Path: <vbordug@ru.mvista.com>
+Received: from localhost.localdomain (unknown [85.21.88.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 49A8967CA1
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 04:24:02 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kBBHNsuR074528
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 17:23:54 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id kBBHNslr1683662
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 17:23:54 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id kBBHNrML014402
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 17:23:54 GMT
-Date: Mon, 11 Dec 2006 18:20:01 +0100
-From: Christian Krafft <krafft@de.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Openipmi-developer] [patch 1/1] ipmi: add autosensing of ipmi
-	device on powerpc using device-tree
-Message-ID: <20061211182001.0896b7bd@localhost>
-In-Reply-To: <06260804-0C3C-4A40-9E69-408E77973984@kernel.crashing.org>
-References: <20061207172259.64168f8c@localhost>
-	<89216897-DF66-4C4E-9436-BD7816424139@schihei.de>
-	<1F172C93-90F5-48E5-88D7-4D0BC0E1841A@kernel.crashing.org>
-	<200612111525.50044.arnd@arndb.de>
-	<2C6AF45B-CD26-449B-B12C-1A89D8537463@schihei.de>
-	<06260804-0C3C-4A40-9E69-408E77973984@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, openipmi-developer@lists.sourceforge.net,
-	Arnd Bergmann <arnd@arndb.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4847167DA6
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 04:27:12 +1100 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] [POWERPC] cpm_uart: OF-related updates
+Date: Mon, 11 Dec 2006 20:27:08 +0300
+Message-Id: <20061211172708.17475.180.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,57 +20,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Good then, it make things easier for me ;-)
-Will send an updated version soon...
 
-Cheers, ck
+This makes cpm uart able to work using OF-passed parameters 
+in case of CPM1 stuff (found on most mpc8xx reference and custom
+boards).
+---
 
-On Mon, 11 Dec 2006 17:58:36 +0100
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
-> > If I understood you comments an example OFDT node for IPMI could
-> > look like the following:
-> >
-> > name =3D "ipmi"
-> > device_type =3D "ipmi"
-> > compatible =3D "ipmi-kcs"
-> >
-> > reg =3D XXXXXXX8 00000008
-> > reg-spacing =3D 4
->=20
-> Yeah.
->=20
-> > reg-size    =3D 1
-> > reg-shift   =3D 0
->=20
-> But without these two, they are the default.
->=20
-> > Is the "8" of the reg property correct?
->=20
-> Sure.  Alternatively, if your device really only claims
-> bus cycles targeting the 8-bit regs at xxx8 and xxxC, you
-> can say that in the "reg" property.  This doesn't change
-> the programming model in the least though.
->=20
-> > I'm still worried what happens when we have a BT or SMIC interface
-> > an the registers sitting at XXXXXXX4, XXXXXXX6, XXXXXXXA. In this
-> > case the reg-spacing property can't be used anymore. Can this
-> > happen in reality?
->=20
-> I don't think it is allowed.  Either way, the generic Linux IPMI
-> code would need changing for this -- let's worry about it later
-> (if ever!)
->=20
->=20
-> Segher
->=20
-
-
---=20
-Mit freundlichen Gr=FCssen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,=20
-Linux Kernel Development
-IT Specialist
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 08e55fd..3ed4622 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -40,6 +40,7 @@ #include <linux/dma-mapping.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
++#include <asm/fs_pd.h>
+ 
+ #include <linux/serial_core.h>
+ #include <linux/kernel.h>
+@@ -145,7 +146,11 @@ int cpm_uart_allocbuf(struct uart_cpm_po
+ 		/* was hostalloc but changed cause it blows away the */
+ 		/* large tlb mapping when pinning the kernel area    */
+ 		mem_addr = (u8 *) cpm_dpram_addr(cpm_dpalloc(memsz, 8));
++#ifdef CONFIG_PPC_MERGE
++		dma_addr = (u32)cpm_dpram_phys(mem_addr);
++#else
+ 		dma_addr = (u32)mem_addr;
++#endif
+ 	} else
+ 		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+ 					      GFP_KERNEL);
+@@ -205,7 +210,7 @@ # endif
+ 	    (unsigned long)&cpmp->cp_smc[0];
+ 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+ 	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+-	cpm_uart_ports[UART_SMC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SMC1].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
+ #endif
+ 
+@@ -217,7 +222,7 @@ #ifdef CONFIG_SERIAL_CPM_SMC2
+ 	    (unsigned long)&cpmp->cp_smc[1];
+ 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+ 	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+-	cpm_uart_ports[UART_SMC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SMC2].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
+ #endif
+ 
+@@ -231,7 +236,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC1
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC1].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
+ #endif
+ 
+@@ -245,7 +250,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC2
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC2].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
+ #endif
+ 
+@@ -259,7 +264,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC3
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC3].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC3].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
+ #endif
+ 
+@@ -273,7 +278,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC4
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC4].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC4].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
+ #endif
+ 	return 0;
