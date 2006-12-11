@@ -1,22 +1,17 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 814DA67BDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 02:55:20 +1100 (EST)
-Message-ID: <457D7F5C.8040609@pobox.com>
-Date: Mon, 11 Dec 2006 10:55:08 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: don't initialize sg in ata_exec_internal() if
-	DMA_NONE
-References: <200612081914.41810.arnd.bergmann@de.ibm.com>
-	<20061211140258.GB18947@htj.dyndns.org>
-In-Reply-To: <20061211140258.GB18947@htj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ide@vger.kernel.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id EC95367BF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 03:23:51 +1100 (EST)
+Date: Mon, 11 Dec 2006 19:23:47 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/6] [POWERPC] 8xx: Add support for FSL 8xx, 885ads and
+	86xads eval boards
+Message-ID: <20061211192347.47700906@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_u3./yTk=s3jdqpYs+jQ7Fb.";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tejun Heo wrote:
-> Calling sg_init_one() with NULL buf causes oops on certain
-> configurations.  Don't initialize sg in ata_exec_internal() if
-> DMA_NONE and make the function complain if @buf is NULL when dma_dir
-> isn't DMA_NONE.  While at it, fix comment.
-> 
-> The problem is discovered and initial patch was submitted by Arnd
-> Bergmann.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> ---
-> 
-> Hello, Arnd Bergmann.
-> 
-> Thanks for spotting and fixing this but ata_exec_internal_nodma() is
-> almost identical to ata_do_simple_cmd() and ata_exec_internal() itself
-> needs fixing anyway.  This patch just fixes ata_exec_internal().  I'll
-> follow up with conversion to ata_do_simple_cmd().
-> 
-> Thanks.
-> 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 011c0a8..70e02e9 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -1332,7 +1332,7 @@ unsigned ata_exec_internal_sg(struct ata_device *dev,
->  }
->  
->  /**
-> - *	ata_exec_internal_sg - execute libata internal command
-> + *	ata_exec_internal - execute libata internal command
->   *	@dev: Device to which the command is sent
->   *	@tf: Taskfile registers for the command and the result
->   *	@cdb: CDB for packet command
-> @@ -1354,10 +1354,15 @@ unsigned ata_exec_internal(struct ata_device *dev,
->  			   int dma_dir, void *buf, unsigned int buflen)
->  {
->  	struct scatterlist sg;
-> +	unsigned int n_elem = 0;
->  
-> -	sg_init_one(&sg, buf, buflen);
-> +	if (dma_dir != DMA_NONE) {
-> +		WARN_ON(!buf);
-> +		sg_init_one(&sg, buf, buflen);
-> +		n_elem++;
-> +	}
->  
-> -	return ata_exec_internal_sg(dev, tf, cdb, dma_dir, &sg, 1);
-> +	return ata_exec_internal_sg(dev, tf, cdb, dma_dir, &sg, n_elem);
+--Sig_u3./yTk=s3jdqpYs+jQ7Fb.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-ACK, if you conditionally replace "&sg" with NULL.  That's the safer 
-choice, as it guarantees (via an oops) that the user will not be 
-touching sg, if dma_dir==DMA_NONE.
 
-	Jeff
+
+The following series intended to port the 8xx boards support to arch/powerpc
+together with mpc885ads and mpc86xads reference boards. It features regress=
+ion-less=20
+transaction (all the peripherials work, namely SMC1,2 UARTs, FEC1,2 or SCC3=
+ Ethernet
+for 885ads for instance).
+
+It is pretty extended comparing to the original stuff because all the comme=
+nts were addressed+
+added support of 86xads family.
+
+--
+Sincerely, Vitaly
+
+--Sig_u3./yTk=s3jdqpYs+jQ7Fb.
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFfYYUuOg9JvQhSEsRAv8MAJ9CCEa60RsAzvtaqR+aolpm5ITgywCeIo/0
+MDt4hZ9rD6OwdVanKGsdvBg=
+=vdjc
+-----END PGP SIGNATURE-----
+
+--Sig_u3./yTk=s3jdqpYs+jQ7Fb.--
