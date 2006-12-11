@@ -1,18 +1,25 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 8523D67C7B
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 08:57:00 +1100 (EST)
-Message-ID: <457DD485.9010501@ru.mvista.com>
-Date: Tue, 12 Dec 2006 00:58:29 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Vitaly Wool <vitalywool@gmail.com>
-Subject: Re: [PATCH] update MTD OF implementation
-References: <20061206153627.43fdc59c.vitalywool@gmail.com>
-In-Reply-To: <20061206153627.43fdc59c.vitalywool@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, dwmw2@redhat.com,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17789.54777.283849.950002@cargo.ozlabs.ibm.com>
+Date: Tue, 12 Dec 2006 09:04:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: 2.6.19-git13: uts banner changes break SLES9 (at least)
+In-Reply-To: <Pine.LNX.4.64.0612111106310.12500@woody.osdl.org>
+References: <457D750C.9060807@shadowen.org> <20061211163333.GA17947@aepfle.de>
+	<Pine.LNX.4.64.0612110840240.12500@woody.osdl.org>
+	<Pine.LNX.4.64.0612110852010.12500@woody.osdl.org>
+	<20061211180414.GA18833@aepfle.de>
+	<20061211181813.GB18963@aepfle.de>
+	<Pine.LNX.4.64.0612111022140.12500@woody.osdl.org>
+	<20061211182908.GC7256@MAIL.13thfloor.at>
+	<Pine.LNX.4.64.0612111040160.12500@woody.osdl.org>
+	<20061211185536.GA19338@aepfle.de>
+	<Pine.LNX.4.64.0612111106310.12500@woody.osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, Olaf Hering <olaf@aepfle.de>,
+	Steve Fox <drfickle@us.ibm.com>, linux-kernel@vger.kernel.org,
+	Andi Kleen <ak@suse.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,78 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Linus Torvalds writes:
 
-Vitaly Wool wrote:
-
-> the patch below updates the powerpc part of the MTD OF implementation with the new field probe-type and also fixes the typos/build warning for rom.c.
-> So therefore it in a way supersedes the patch from Geoff which can be seen at http://ozlabs.org/pipermail/linuxppc-dev/2006-December/028831.html.
+> On Mon, 11 Dec 2006, Olaf Hering wrote:
+> > 
+> > arch/powerpc/boot/wrapper:156:    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
 > 
->  Documentation/powerpc/booting-without-of.txt |   19 +++++++++++--------
->  arch/powerpc/sysdev/rom.c                    |    1 +
->  2 files changed, 12 insertions(+), 8 deletions(-)
+> This is also obviously broken (and really sad), but actually ends up being 
+> better than what get_kernel_version apparently does, by at least adding 
+> the requirement that the string "Linux version" be slightly more correct.
 > 
-> Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
+> However, it's also TOTALLY BROKEN. 
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+It's the minimum effort for the barely acceptable outcome. :)
 
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> index b3bd366..3399427 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -1703,29 +1703,32 @@ platforms are moved over to use the flat
->      Required properties:
->  
->       - device_type : has to be "rom"
-> -     - compatible : Should specify what this ROM device is compatible with
-> -       (i.e. "onenand"). Currently, this is most likely to be "direct-mapped"
-> -       (which corresponds to the MTD physmap mapping driver).
-> -     - regs : Offset and length of the register set (or memory mapping) for
-> +     - compatible : Should specify what this flash device is compatible with.
-> +       Currently, this is most likely to be "direct-mapped" (which
-> +       corresponds to the MTD physmap mapping driver).
-> +     - reg : Offset and length of the register set (or memory mapping) for
->         the device.
-> +     - bank-width : Width of the flash data bus in bytes. Required
-> +       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
->  
->      Recommended properties :
->  
-> -     - bank-width : Width of the flash data bus in bytes. Required
-> -       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
->       - partitions : Several pairs of 32-bit values where the first value is
->         partition's offset from the start of the device and the second one is
->         partition size in bytes with LSB used to signify a read only
-> -       partititon (so, the parition size should always be an even number).
-> +       partition (so, the parition size should always be an even number).
->       - partition-names : The list of concatenated zero terminated strings
->         representing the partition names.
-> +     - probe-type : The type of probe which should be done for the chip
-> +       (JEDEC vs CFI actually). Valid ONLY for NOR flashes.
->  
->     Example:
->  
->   	flash@ff000000 {
->   		device_type = "rom";
->   		compatible = "direct-mapped";
-> - 		regs = <ff000000 01000000>;
-> + 		probe-type = "CFI";
-> + 		reg = <ff000000 01000000>;
->   		bank-width = <4>;
->   		partitions = <00000000 00f80000
->   			      00f80000 00080001>;
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> diff --git a/arch/powerpc/sysdev/rom.c b/arch/powerpc/sysdev/rom.c
-> index bf5b3f1..c855a3b 100644
-> --- a/arch/powerpc/sysdev/rom.c
-> +++ b/arch/powerpc/sysdev/rom.c
-> @@ -9,6 +9,7 @@
->  
->  #include <linux/kernel.h>
->  #include <asm/of_device.h>
-> +#include <asm/of_platform.h>
->  
->  static int __init powerpc_flash_init(void)
->  {
+The wrapper script, although it currently lives in arch/powerpc/boot,
+is designed and intended to be standalone, so that people can use it
+outside the kernel tree, and possibly even without having the kernel
+source easily to hand.  Therefore I didn't want to use any kernel
+header files.
 
-WBR, Sergei
+Apparently the only reason "mkimage" wants to know the kernel version
+is to put it as a comment in the image, which can be displayed to the
+user when booting with u-boot (the bootloader used on some embedded
+platforms).  So it's not critical if the grep fails, and it's slightly
+more useful to do the grep than it would be to not even try to provide
+any version string to mkimage.
+
+If there is a reliable way to get the version string, great, I'll use
+that.
+
+Paul.
