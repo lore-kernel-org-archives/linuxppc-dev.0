@@ -3,13 +3,13 @@ Received: from localhost.localdomain (cdma-44-175.msk.skylink.ru
 	[83.217.44.175])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9DC4467CDD
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 10:21:07 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 80C2C67D19
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 10:21:12 +1100 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 2/4] [POWERPC] cpm_uart: OF-related updates
-Date: Tue, 12 Dec 2006 01:37:03 +0300
-Message-Id: <20061211223703.20169.24913.stgit@localhost.localdomain>
+Subject: [PATCH 1/4] [POWERPC] cpm2: Updates for CPM2 pic
+Date: Tue, 12 Dec 2006 01:36:59 +0300
+Message-Id: <20061211223659.20169.50415.stgit@localhost.localdomain>
 In-Reply-To: <20061212012641.5ef493f7@localhost.localdomain>
 References: <20061212012641.5ef493f7@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -24,91 +24,236 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This makes cpm uart able to work using OF-passed parameters 
-in case of CPM1 stuff (found on most mpc8xx reference and custom
-boards).
+This contains important fixes for the CPM2 PIC code. Eliminated
+CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the interrupt
+mapping. Updated devicetree files to reflect that. Changed direct
+IC-related IO accesses to the IO accessors.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- drivers/serial/cpm_uart/cpm_uart_cpm1.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/boot/dts/mpc8560ads.dts |    8 ++-
+ arch/powerpc/sysdev/cpm2_pic.c       |   78 ++++++++++++----------------------
+ 2 files changed, 31 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-index 08e55fd..3ed4622 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -40,6 +40,7 @@ #include <linux/dma-mapping.h>
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
+index 2b16848..3c1e44a 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -250,7 +250,7 @@
+ 				rx-clock = <1>;
+ 				tx-clock = <1>;
+ 				current-speed = <1c200>;
+-				interrupts = <64 1>;
++				interrupts = <28 1>;
+ 				interrupt-parent = <90c00>;
+ 			};
  
- #include <asm/io.h>
- #include <asm/irq.h>
-+#include <asm/fs_pd.h>
+@@ -264,7 +264,7 @@
+ 				rx-clock = <2>;
+ 				tx-clock = <2>;
+ 				current-speed = <1c200>;
+-				interrupts = <65 1>;
++				interrupts = <29 1>;
+ 				interrupt-parent = <90c00>;
+ 			};
  
- #include <linux/serial_core.h>
- #include <linux/kernel.h>
-@@ -145,7 +146,11 @@ int cpm_uart_allocbuf(struct uart_cpm_po
- 		/* was hostalloc but changed cause it blows away the */
- 		/* large tlb mapping when pinning the kernel area    */
- 		mem_addr = (u8 *) cpm_dpram_addr(cpm_dpalloc(memsz, 8));
-+#ifdef CONFIG_PPC_MERGE
-+		dma_addr = (u32)cpm_dpram_phys(mem_addr);
-+#else
- 		dma_addr = (u32)mem_addr;
-+#endif
- 	} else
- 		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
- 					      GFP_KERNEL);
-@@ -205,7 +210,7 @@ # endif
- 	    (unsigned long)&cpmp->cp_smc[0];
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SMC1].port.uartclk = uart_clock();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
- #endif
+@@ -278,7 +278,7 @@
+ 				clock-setup = <ff00ffff 250000>;
+ 				rx-clock = <15>;
+ 				tx-clock = <16>;
+-				interrupts = <5d 1>;
++				interrupts = <21 1>;
+ 				interrupt-parent = <90c00>;
+ 				phy-handle = <2452002>;
+ 			};
+@@ -293,7 +293,7 @@
+ 				clock-setup = <ffff00ff 3700>;
+ 				rx-clock = <17>;
+ 				tx-clock = <18>;
+-				interrupts = <5e 1>;
++				interrupts = <22 1>;
+ 				interrupt-parent = <90c00>;
+ 				phy-handle = <2452003>;
+ 			};
+diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
+index 767ee66..46fb0a2 100644
+--- a/arch/powerpc/sysdev/cpm2_pic.c
++++ b/arch/powerpc/sysdev/cpm2_pic.c
+@@ -68,68 +68,55 @@ static const u_char irq_to_siubit[] = {
+ 	24, 25, 26, 27, 28, 29, 30, 31,
+ };
  
-@@ -217,7 +222,7 @@ #ifdef CONFIG_SERIAL_CPM_SMC2
- 	    (unsigned long)&cpmp->cp_smc[1];
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SMC2].port.uartclk = uart_clock();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
- #endif
+-static void cpm2_mask_irq(unsigned int irq_nr)
++static void cpm2_mask_irq(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr;
+-
+-	irq_nr -= CPM_IRQ_OFFSET;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
  
-@@ -231,7 +236,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC1
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC1].port.uartclk = uart_clock();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
- #endif
+ 	bit = irq_to_siubit[irq_nr];
+ 	word = irq_to_siureg[irq_nr];
  
-@@ -245,7 +250,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC2
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC2].port.uartclk = uart_clock();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
- #endif
+-	simr = &(cpm2_intctl->ic_simrh);
+ 	ppc_cached_irq_mask[word] &= ~(1 << bit);
+-	simr[word] = ppc_cached_irq_mask[word];
++	out_be32(&cpm2_intctl->ic_simrh + word, ppc_cached_irq_mask[word]);
+ }
  
-@@ -259,7 +264,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC3
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC3].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC3].port.uartclk = uart_clock();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
- #endif
+-static void cpm2_unmask_irq(unsigned int irq_nr)
++static void cpm2_unmask_irq(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr;
+-
+-	irq_nr -= CPM_IRQ_OFFSET;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
  
-@@ -273,7 +278,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC4
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC4].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC4].port.uartclk = uart_clock();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
- #endif
+ 	bit = irq_to_siubit[irq_nr];
+ 	word = irq_to_siureg[irq_nr];
+ 
+-	simr = &(cpm2_intctl->ic_simrh);
+ 	ppc_cached_irq_mask[word] |= 1 << bit;
+-	simr[word] = ppc_cached_irq_mask[word];
++	out_be32(&cpm2_intctl->ic_simrh + word, ppc_cached_irq_mask[word]);
+ }
+ 
+-static void cpm2_mask_and_ack(unsigned int irq_nr)
++static void cpm2_ack(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr, *sipnr;
+-
+-	irq_nr -= CPM_IRQ_OFFSET;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
+ 
+ 	bit = irq_to_siubit[irq_nr];
+ 	word = irq_to_siureg[irq_nr];
+ 
+-	simr = &(cpm2_intctl->ic_simrh);
+-	sipnr = &(cpm2_intctl->ic_sipnrh);
+-	ppc_cached_irq_mask[word] &= ~(1 << bit);
+-	simr[word] = ppc_cached_irq_mask[word];
+-	sipnr[word] = 1 << bit;
++	out_be32(&cpm2_intctl->ic_sipnrh + word, 1 << bit);
+ }
+ 
+-static void cpm2_end_irq(unsigned int irq_nr)
++static void cpm2_end_irq(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
+ 
+ 	if (!(irq_desc[irq_nr].status & (IRQ_DISABLED|IRQ_INPROGRESS))
+ 			&& irq_desc[irq_nr].action) {
+ 
+-		irq_nr -= CPM_IRQ_OFFSET;
+ 		bit = irq_to_siubit[irq_nr];
+ 		word = irq_to_siureg[irq_nr];
+ 
+-		simr = &(cpm2_intctl->ic_simrh);
+ 		ppc_cached_irq_mask[word] |= 1 << bit;
+-		simr[word] = ppc_cached_irq_mask[word];
++		out_be32(&cpm2_intctl->ic_simrh + word, ppc_cached_irq_mask[word]);
++
+ 		/*
+ 		 * Work around large numbers of spurious IRQs on PowerPC 82xx
+ 		 * systems.
+@@ -140,11 +127,10 @@ static void cpm2_end_irq(unsigned int ir
+ 
+ static struct irq_chip cpm2_pic = {
+ 	.typename = " CPM2 SIU ",
+-	.enable = cpm2_unmask_irq,
+-	.disable = cpm2_mask_irq,
++	.mask = cpm2_mask_irq,
+ 	.unmask = cpm2_unmask_irq,
+-	.mask_ack = cpm2_mask_and_ack,
+-	.end = cpm2_end_irq,
++	.ack = cpm2_ack,
++	.eoi = cpm2_end_irq,
+ };
+ 
+ unsigned int cpm2_get_irq(void)
+@@ -154,17 +140,17 @@ unsigned int cpm2_get_irq(void)
+ 
+        /* For CPM2, read the SIVEC register and shift the bits down
+          * to get the irq number.         */
+-        bits = cpm2_intctl->ic_sivec;
++        bits = in_be32(&cpm2_intctl->ic_sivec);
+         irq = bits >> 26;
+ 
+ 	if (irq == 0)
+ 		return(-1);
+-	return irq+CPM_IRQ_OFFSET;
++	return irq_linear_revmap(cpm2_pic_host, irq);
+ }
+ 
+ static int cpm2_pic_host_match(struct irq_host *h, struct device_node *node)
+ {
+-	return cpm2_pic_node == NULL || cpm2_pic_node == node;
++	return cpm2_pic_node == node;
+ }
+ 
+ static int cpm2_pic_host_map(struct irq_host *h, unsigned int virq,
+@@ -177,15 +163,6 @@ static int cpm2_pic_host_map(struct irq_
  	return 0;
+ }
+ 
+-static void cpm2_host_unmap(struct irq_host *h, unsigned int virq)
+-{
+-	/* Make sure irq is masked in hardware */
+-	cpm2_mask_irq(virq);
+-
+-	/* remove chip and handler */
+-	set_irq_chip_and_handler(virq, NULL, NULL);
+-}
+-
+ static int cpm2_pic_host_xlate(struct irq_host *h, struct device_node *ct,
+ 			    u32 *intspec, unsigned int intsize,
+ 			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
+@@ -209,7 +186,6 @@ static int cpm2_pic_host_xlate(struct ir
+ static struct irq_host_ops cpm2_pic_host_ops = {
+ 	.match = cpm2_pic_host_match,
+ 	.map = cpm2_pic_host_map,
+-	.unmap = cpm2_host_unmap,
+ 	.xlate = cpm2_pic_host_xlate,
+ };
+ 
+@@ -223,26 +199,26 @@ void cpm2_pic_init(struct device_node *n
+ 
+ 	/* Mask out everything */
+ 
+-	cpm2_intctl->ic_simrh = 0x00000000;
+-	cpm2_intctl->ic_simrl = 0x00000000;
++	out_be32(&cpm2_intctl->ic_simrh, 0x00000000);
++	out_be32(&cpm2_intctl->ic_simrl, 0x00000000);
+ 
+ 	wmb();
+ 
+ 	/* Ack everything */
+-	cpm2_intctl->ic_sipnrh = 0xffffffff;
+-	cpm2_intctl->ic_sipnrl = 0xffffffff;
++	out_be32(&cpm2_intctl->ic_sipnrh, 0xffffffff);
++	out_be32(&cpm2_intctl->ic_sipnrl, 0xffffffff);
+ 	wmb();
+ 
+ 	/* Dummy read of the vector */
+-	i = cpm2_intctl->ic_sivec;
++	i = in_be32(&cpm2_intctl->ic_sivec);
+ 	rmb();
+ 
+ 	/* Initialize the default interrupt mapping priorities,
+ 	 * in case the boot rom changed something on us.
+ 	 */
+-	cpm2_intctl->ic_sicr = 0;
+-	cpm2_intctl->ic_scprrh = 0x05309770;
+-	cpm2_intctl->ic_scprrl = 0x05309770;
++	out_be16(&cpm2_intctl->ic_sicr, 0);
++	out_be32(&cpm2_intctl->ic_scprrh, 0x05309770);
++	out_be32(&cpm2_intctl->ic_scprrl, 0x05309770);
+ 
+ 	/* create a legacy host */
+ 	if (node)
