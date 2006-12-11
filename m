@@ -1,23 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <SRS0+61c1008cfb9f6953af6c+1205+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8D6F267CDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:08:23 +1100 (EST)
-In-Reply-To: <20061211155155.26868ca6.kim.phillips@freescale.com>
-References: <20061208190758.6cee088f.kim.phillips@freescale.com>
-	<1165648490.1103.117.camel@localhost.localdomain>
-	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>
-	<20061211155155.26868ca6.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A1A95A77-B86C-41CF-87DC-58CD63843CE3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
-Date: Mon, 11 Dec 2006 16:08:20 -0600
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id C0E5F67D79
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:14:50 +1100 (EST)
+Date: Mon, 11 Dec 2006 22:14:45 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc: "IRQ probe failed (0x0)" on powerbook
+Message-ID: <20061211221445.GA17999@infradead.org>
+References: <87lklg9rkz.fsf@briny.internal.ondioline.org>
+	<20061211112017.GA16399@infradead.org>
+	<1165868903.7260.53.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1165868903.7260.53.camel@localhost.localdomain>
+Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,111 +27,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Dec 12, 2006 at 07:28:23AM +1100, Benjamin Herrenschmidt wrote:
+> > Same here, btw - except that I couldn't catch the exact message as
+> > nicely.
+> 
+> Yeah, fixed in the patch I sent yesterday [PATCH] powerpc: Fix irq
+> routing on some PowerMac 32 bit.
 
-On Dec 11, 2006, at 3:51 PM, Kim Phillips wrote:
-
-> On Sun, 10 Dec 2006 21:41:24 -0600
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->>
->> On Dec 9, 2006, at 1:14 AM, Benjamin Herrenschmidt wrote:
->>
->>> On Fri, 2006-12-08 at 19:07 -0600, Kim Phillips wrote:
->>>> Eliminate code redundancy.  mpc83[246]x_{mds,itx,sys,pb} files  
->>>> merged
->>>> into a single setup.c.  machine_probe, instead of using the model
->>>> property,
->>>> checks the compatible property for "MPC83xx" (dts files updated
->>>> appropriately).
->>>> This patch also utilizes of_platform_bus_probe() in lieu of  
->>>> manually
->>>> calling of_platform_device_create for each ucc_geth device.
->>>>
->>>> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
->>
->> Nack on the patch.
->>
->>> I am not completely certain this is the right approach.
->>>
->>> While factoring code is good, I think that every single board should
->>> have it's own ppc_md, though you can definitely provide "common"
->>> functions for mpc83xx that can optinally be used by those different
->>> boards.
->>>
->>> Maybe put all the freescale ones in one file if you want...
->>>
->>> The rationale here is that while your approach is fine for your eval
->>> boards, I don't think it's good for embedded customers. They may  
->>> want
->>> more complex platforms, with their own directory even if they have
->>> a lot
->>> of custom stuff on the board while still possibly picking some of  
->>> your
->>> "common" code (and their board shouldn't match your overly generic
->>> probe() implementation).
->>>
->>> Cheers,
->>> Ben.
->>
->> I'm with Ben on this.  I think consolidating the code that is common
->> is fine, but we should have a define_machine() per board.  You can
->> put them all in one mpc83xx/fsl.c
->>
-> so the contents of 83xx/fsl.c would look like:
-> #ifdef CONFIG_MPC834x_SYS
-> define_machine(mpc834x_sys) {
-> 	.name 		= "MPC834x SYS",
-> 	.probe 		= mpc83xx_probe,
-> 	.setup_arch 	= mpc83xx_setup_arch,
-> 	.init_IRQ 	= mpc83xx_init_IRQ,
-> 	.get_irq 	= ipic_get_irq,
-> 	.restart 	= mpc83xx_restart,
-> 	.time_init 	= mpc83xx_time_init,
-> 	.calibrate_decr	= generic_calibrate_decr,
-> 	.progress 	= udbg_progress,
-> };
-> #else
-> #ifdef CONFIG_MPC834x_ITX
-> define_machine(mpc83xx) {
-> 	.name 		= "MPC834x ITX",
-> <rest is the same>
-> #else
-> ..and so on and so forth for CONFIG_MPC8360E_PB,  
-> CONFIG_MPC832x_MDS, and now CONFIG_MPC831x_RDB.  So the only thing  
-> that changes is the name?  And perhaps the _probe function?  That's  
-> still pretty redundant, esp. considering the source of the name to  
-> match in the dt is easily modifiable.  And it's not as if other  
-> platforms (52xx, 86xx, pasemi etc.) don't use  
-> of_flat_dt_is_compatible.
-
-Why would you need the ifdef's around the define_machine()?
-
-> All 83xx platform code, define_machine included, is exactly the  
-> same on all boards, modulo the QE stuff which is ifdef protected  
-> and easily configured.  All board differences can be specified in  
-> the device tree and/or handled with proper kernel configuration.   
-> If an embedded customer wants, they can configure their kernel  
-> based on the various 83xx defconfigs, customize their _probe() to  
-> match their device tree, all at will, just as before.  I'm  
-> concerned because 83xx has the capability of being a single kernel  
-> image basically for free (we just need to clean some things up in  
-> the ucc_geth driver first).
-
-You say this, but miss the point that its only true for ALL FREESCALE  
-boards, which are the only boards currently in the tree.  We aren't  
-precluding the ability to have a single kernel image for 83xx.
-
-> That said, I'm not an embedded customer, and the motivation for  
-> this patch was to prep 83xx platform filespace so that we don't  
-> have to:
->
-> sed s/834/831/ < mpc834x_itx.c > mpc831x_rdb.c
-> sed s/834/831/ < mpc834x_itx.h > mpc831x_rdb.h
->
-> and copy and paste the Makefile and Kconfig lines, which just feels  
-> like a terrible thing to do (and keep on doing).
-
-And I'm suggesting that for 831x_rdb, All you'd add is a new  
-define_machine() struct.
-
-- kumar
+Confirmed, everything is fine with that patch.
