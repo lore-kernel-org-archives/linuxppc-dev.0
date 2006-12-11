@@ -1,21 +1,22 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8888867C05
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 13:11:00 +1100 (EST)
-Date: Mon, 11 Dec 2006 20:10:55 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
-Message-Id: <20061211201055.21031c9b.kim.phillips@freescale.com>
-In-Reply-To: <A1A95A77-B86C-41CF-87DC-58CD63843CE3@kernel.crashing.org>
-References: <20061208190758.6cee088f.kim.phillips@freescale.com>
-	<1165648490.1103.117.camel@localhost.localdomain>
-	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>
-	<20061211155155.26868ca6.kim.phillips@freescale.com>
-	<A1A95A77-B86C-41CF-87DC-58CD63843CE3@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from localhost.localdomain (cdma-44-175.msk.skylink.ru
+	[83.217.44.175])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CA77567CD1
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:21:07 +1100 (EST)
+Date: Tue, 12 Dec 2006 01:11:25 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH] update MTD OF implementation
+Message-ID: <20061212011125.323d4003@localhost.localdomain>
+In-Reply-To: <457DD485.9010501@ru.mvista.com>
+References: <20061206153627.43fdc59c.vitalywool@gmail.com>
+	<457DD485.9010501@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; boundary="Sig_W=1=MtfwX=B8M4Yoj1QtaPE";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev@ozlabs.org, dwmw2@redhat.com,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,113 +26,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 11 Dec 2006 16:08:20 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
+--Sig_W=1=MtfwX=B8M4Yoj1QtaPE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> On Dec 11, 2006, at 3:51 PM, Kim Phillips wrote:
-> 
-> > On Sun, 10 Dec 2006 21:41:24 -0600
-> > Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> >>
-> >> On Dec 9, 2006, at 1:14 AM, Benjamin Herrenschmidt wrote:
-> >>
-> >>> On Fri, 2006-12-08 at 19:07 -0600, Kim Phillips wrote:
-> >>>> Eliminate code redundancy.  mpc83[246]x_{mds,itx,sys,pb} files  
-> >>>> merged
-> >>>> into a single setup.c.  machine_probe, instead of using the model
-> >>>> property,
-> >>>> checks the compatible property for "MPC83xx" (dts files updated
-> >>>> appropriately).
-> >>>> This patch also utilizes of_platform_bus_probe() in lieu of  
-> >>>> manually
-> >>>> calling of_platform_device_create for each ucc_geth device.
-> >>>>
-> >>>> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> >>
-> >> Nack on the patch.
-> >>
-> >>> I am not completely certain this is the right approach.
-> >>>
-> >>> While factoring code is good, I think that every single board should
-> >>> have it's own ppc_md, though you can definitely provide "common"
-> >>> functions for mpc83xx that can optinally be used by those different
-> >>> boards.
-> >>>
-> >>> Maybe put all the freescale ones in one file if you want...
-> >>>
-> >>> The rationale here is that while your approach is fine for your eval
-> >>> boards, I don't think it's good for embedded customers. They may  
-> >>> want
-> >>> more complex platforms, with their own directory even if they have
-> >>> a lot
-> >>> of custom stuff on the board while still possibly picking some of  
-> >>> your
-> >>> "common" code (and their board shouldn't match your overly generic
-> >>> probe() implementation).
-> >>>
-> >>> Cheers,
-> >>> Ben.
-> >>
-> >> I'm with Ben on this.  I think consolidating the code that is common
-> >> is fine, but we should have a define_machine() per board.  You can
-> >> put them all in one mpc83xx/fsl.c
-> >>
-> > so the contents of 83xx/fsl.c would look like:
-> > #ifdef CONFIG_MPC834x_SYS
-> > define_machine(mpc834x_sys) {
-> > 	.name 		= "MPC834x SYS",
-> > 	.probe 		= mpc83xx_probe,
-> > 	.setup_arch 	= mpc83xx_setup_arch,
-> > 	.init_IRQ 	= mpc83xx_init_IRQ,
-> > 	.get_irq 	= ipic_get_irq,
-> > 	.restart 	= mpc83xx_restart,
-> > 	.time_init 	= mpc83xx_time_init,
-> > 	.calibrate_decr	= generic_calibrate_decr,
-> > 	.progress 	= udbg_progress,
-> > };
-> > #else
-> > #ifdef CONFIG_MPC834x_ITX
-> > define_machine(mpc83xx) {
-> > 	.name 		= "MPC834x ITX",
-> > <rest is the same>
-> > #else
-> > ..and so on and so forth for CONFIG_MPC8360E_PB,  
-> > CONFIG_MPC832x_MDS, and now CONFIG_MPC831x_RDB.  So the only thing  
-> > that changes is the name?  And perhaps the _probe function?  That's  
-> > still pretty redundant, esp. considering the source of the name to  
-> > match in the dt is easily modifiable.  And it's not as if other  
-> > platforms (52xx, 86xx, pasemi etc.) don't use  
-> > of_flat_dt_is_compatible.
-> 
-> Why would you need the ifdef's around the define_machine()?
+On Tue, 12 Dec 2006 00:58:29 +0300
+Sergei Shtylyov wrote:
 
-how else is platform_probe going to find the right match?  it's either that, or adding _probe()s for each platform.
+> Hello.
+>=20
+> Vitaly Wool wrote:
+>=20
+> > the patch below updates the powerpc part of the MTD OF
+> > implementation with the new field probe-type and also fixes the
+> > typos/build warning for rom.c. So therefore it in a way supersedes
+> > the patch from Geoff which can be seen at
+> > http://ozlabs.org/pipermail/linuxppc-dev/2006-December/028831.html.
+> >=20
+> >  Documentation/powerpc/booting-without-of.txt |   19
+> > +++++++++++-------- arch/powerpc/sysdev/rom.c
+> > |    1 + 2 files changed, 12 insertions(+), 8 deletions(-)
+> >=20
+> > Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
+>=20
+> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-> > All 83xx platform code, define_machine included, is exactly the  
-> > same on all boards, modulo the QE stuff which is ifdef protected  
-> > and easily configured.  All board differences can be specified in  
-> > the device tree and/or handled with proper kernel configuration.   
-> > If an embedded customer wants, they can configure their kernel  
-> > based on the various 83xx defconfigs, customize their _probe() to  
-> > match their device tree, all at will, just as before.  I'm  
-> > concerned because 83xx has the capability of being a single kernel  
-> > image basically for free (we just need to clean some things up in  
-> > the ucc_geth driver first).
-> 
-> You say this, but miss the point that its only true for ALL FREESCALE  
-> boards, which are the only boards currently in the tree.  We aren't  
 
-it's not my fault that only fsl boards are the only ones in the tree.  And why is it so impossible that other boards are the same way?
+>=20
+> > diff --git a/Documentation/powerpc/booting-without-of.txt
+> > b/Documentation/powerpc/booting-without-of.txt index
+> > b3bd366..3399427 100644 ---
+> > a/Documentation/powerpc/booting-without-of.txt +++
+> > b/Documentation/powerpc/booting-without-of.txt @@ -1703,29 +1703,32
+> > @@ platforms are moved over to use the flat Required properties:
+> > =20
+> >       - device_type : has to be "rom"
+> > -     - compatible : Should specify what this ROM device is
+> > compatible with
+> > -       (i.e. "onenand"). Currently, this is most likely to be
+> > "direct-mapped"
+> > -       (which corresponds to the MTD physmap mapping driver).
+> > -     - regs : Offset and length of the register set (or memory
+> > mapping) for
+> > +     - compatible : Should specify what this flash device is
+> > compatible with.
+> > +       Currently, this is most likely to be "direct-mapped" (which
+> > +       corresponds to the MTD physmap mapping driver).
+> > +     - reg : Offset and length of the register set (or memory
+> > mapping) for the device.
+> > +     - bank-width : Width of the flash data bus in bytes. Required
+> > +       for the NOR flashes (compatible =3D=3D "direct-mapped" and
+> > others) ONLY.=20
+> >      Recommended properties :
+> > =20
+> > -     - bank-width : Width of the flash data bus in bytes. Required
+> > -       for the NOR flashes (compatible =3D=3D "direct-mapped" and
+> > others) ONLY.
+> >       - partitions : Several pairs of 32-bit values where the first
+> > value is partition's offset from the start of the device and the
+> > second one is partition size in bytes with LSB used to signify a
+> > read only
+> > -       partititon (so, the parition size should always be an even
+> > number).
+> > +       partition (so, the parition size should always be an even
+> > number).
+> >       - partition-names : The list of concatenated zero terminated
+> > strings representing the partition names.
+> > +     - probe-type : The type of probe which should be done for the
+> > chip
+> > +       (JEDEC vs CFI actually). Valid ONLY for NOR flashes.
+> > =20
+> >     Example:
+> > =20
+> >   	flash@ff000000 {
+> >   		device_type =3D "rom";
+> >   		compatible =3D "direct-mapped";
+> > - 		regs =3D <ff000000 01000000>;
+> > + 		probe-type =3D "CFI";
+> > + 		reg =3D <ff000000 01000000>;
+> >   		bank-width =3D <4>;
+> >   		partitions =3D <00000000 00f80000
+> >   			      00f80000 00080001>;
+> > diff --git a/arch/powerpc/sysdev/Makefile
+> > b/arch/powerpc/sysdev/Makefile diff --git
+> > a/arch/powerpc/sysdev/rom.c b/arch/powerpc/sysdev/rom.c index
+> > bf5b3f1..c855a3b 100644 --- a/arch/powerpc/sysdev/rom.c
+> > +++ b/arch/powerpc/sysdev/rom.c
+> > @@ -9,6 +9,7 @@
+> > =20
+> >  #include <linux/kernel.h>
+> >  #include <asm/of_device.h>
+> > +#include <asm/of_platform.h>
+> > =20
+> >  static int __init powerpc_flash_init(void)
+> >  {
+>=20
+> WBR, Sergei
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-> precluding the ability to have a single kernel image for 83xx.
-> 
-good to know.
 
-> And I'm suggesting that for 831x_rdb, All you'd add is a new  
-> define_machine() struct.
-> 
-how about making a single _probe() try and match the ppc_md.name with the model in the device tree?
+--=20
+Sincerely, Vitaly
 
-Kim
+
+--Sig_W=1=MtfwX=B8M4Yoj1QtaPE
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD4DBQFFfdeO+5fX0XX0D7ERAlsDAKCNtpXV6JfV/1/aZZwiBZMRSX95ggCY3/rD
+B6k6ZUJZRlimWEfk4KLF5w==
+=n7pE
+-----END PGP SIGNATURE-----
+
+--Sig_W=1=MtfwX=B8M4Yoj1QtaPE--
