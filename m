@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF34167BEA
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 17:56:56 +1100 (EST)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5AC87679E0
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 21:05:38 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [patch] powerpc: add scanning of ebc bus to of_platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17788.49546.390921.608302@cargo.ozlabs.ibm.com>
+Date: Mon, 11 Dec 2006 11:01:36 +0100
 References: <20061208114113.2191e446@localhost>
-	<1165618381.1103.89.camel@localhost.localdomain>
-	<F6853CAA-5CBD-4BA8-A330-55D66AB3E853@kernel.crashing.org>
-	<200612091236.57252.arnd@arndb.de>
 	<17788.49546.390921.608302@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 11 Dec 2006 17:56:08 +1100
-Message-Id: <1165820168.7260.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	<1165820168.7260.42.camel@localhost.localdomain>
+In-Reply-To: <1165820168.7260.42.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200612111101.37629.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,21 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-12-11 at 13:25 +1100, Paul Mackerras wrote:
-> Arnd Bergmann writes:
-> 
-> > But the platform doesn't need how to drive them, the device driver
-> > needs to. All the platform needs to know is the fact that it can
-> > deal with SOC devices that are automatically probed.
-> > 
-> > I'd much prefer to have the list in the same file that drives the
-> > devices in the first place. It's probably also good to register
-> > them as MODULE_DEVICE_TABLE(), for documentation purposes, even
-> > if the driver can't be built as a module yet.
-> 
-> So is that an ack or a nack for the patch?  Sounds like a nack to me,
-> but I'm not sure. :)
+On Monday 11 December 2006 07:56, Benjamin Herrenschmidt wrote:
+>=20
+> > an ack or a nack for the patch? =A0Sounds like a nack to me,
+> > but I'm not sure. :)
+>=20
+> Put it in for now.
+>=20
 
-Put it in for now.
+Yes, definitely. I was not objecting to Christian's patch anyway,
+but to Ben's idea of getting rid of that part of the code, which
+is a side-discussion.
 
-Ben.
+	Arnd <><
