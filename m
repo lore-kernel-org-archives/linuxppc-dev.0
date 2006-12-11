@@ -1,23 +1,16 @@
-Return-Path: <SRS0+61c1008cfb9f6953af6c+1205+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C0E5F67D79
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:14:50 +1100 (EST)
-Date: Mon, 11 Dec 2006 22:14:45 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: "IRQ probe failed (0x0)" on powerbook
-Message-ID: <20061211221445.GA17999@infradead.org>
-References: <87lklg9rkz.fsf@briny.internal.ondioline.org>
-	<20061211112017.GA16399@infradead.org>
-	<1165868903.7260.53.camel@localhost.localdomain>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 0A90867C8A
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:36:27 +1100 (EST)
+Date: Tue, 12 Dec 2006 01:36:12 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/4] CPM-related stuff resubmit
+Message-ID: <20061212013612.18725c25@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1165868903.7260.53.camel@localhost.localdomain>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; boundary=Sig_C0IBf33zh0u9dCgPNkFOl7b;
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,11 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 12, 2006 at 07:28:23AM +1100, Benjamin Herrenschmidt wrote:
-> > Same here, btw - except that I couldn't catch the exact message as
-> > nicely.
-> 
-> Yeah, fixed in the patch I sent yesterday [PATCH] powerpc: Fix irq
-> routing on some PowerMac 32 bit.
+--Sig_C0IBf33zh0u9dCgPNkFOl7b
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Confirmed, everything is fine with that patch.
+Paul,
+
+Resubmit with proper Sign-off follows. Those fixes are more or less
+independent by sense, but here they are in order I applied them to prevent =
+confusion.
+
+Fs_enet patch, as usual, included as reference and to represent a full pict=
+ure, and will be sent=20
+over to netdev.=20
+
+They were applied after the 8xx series in my tree, and though I haven't val=
+idated each one for
+self-sufficiency, they play nicely in a row. I don't think they'll confuse =
+because of linus' merge=20
+either, if so, let me know and I'll do a rebase.
+
+--
+Thanks, Vitaly
+
+--Sig_C0IBf33zh0u9dCgPNkFOl7b
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFfd1duOg9JvQhSEsRAkzEAJ4uiVFBu5pjrMJLnQXfqDox0aZisQCgkKSE
+S+OhpZdf9spy48Xan3X1hCM=
+=GdFK
+-----END PGP SIGNATURE-----
+
+--Sig_C0IBf33zh0u9dCgPNkFOl7b--
