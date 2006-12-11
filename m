@@ -1,18 +1,19 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 8E43B67CC1
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:38:22 +1100 (EST)
-Date: Mon, 11 Dec 2006 16:38:12 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] maple: match "pcie" name for CPC945
-Message-ID: <20061211223812.GD6573@localdomain>
-References: <11654526463043-git-send-email-ntl@pobox.com>
-	<38E12654-EED6-4335-9DC6-293FE70A797C@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <38E12654-EED6-4335-9DC6-293FE70A797C@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from localhost.localdomain (cdma-44-175.msk.skylink.ru
+	[83.217.44.175])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6D2B967C3D
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 10:21:01 +1100 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH 3/4] [FS_ENET] OF-related update for FEC and SCC MAC's
+Date: Tue, 12 Dec 2006 01:37:06 +0300
+Message-Id: <20061211223706.20169.99707.stgit@localhost.localdomain>
+In-Reply-To: <20061212012641.5ef493f7@localhost.localdomain>
+References: <20061212012641.5ef493f7@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,41 +23,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
-> >Some firmwares have "pcie" for the "name" property of the CPC945 PCI
-> >Express host bridge.  Check for "pcie" in addition to "pci" so we
-> >don't miss it.
-> 
-> You shouldn't use "name" but "device_type" and "compatible".
 
-Like this?
+Updated direct resource pass with ioremap call, make it grant proper IRQ
+mapping, stuff incompatible with the new approach were respectively put  under 
+#ifndef CONFIG_PPC_MERGE.
 
-(Hmm, does the u3-agp on maple have "pci" for device_type?)
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
-index 3a32ded..011f0f1 100644
---- a/arch/powerpc/platforms/maple/pci.c
-+++ b/arch/powerpc/platforms/maple/pci.c
-@@ -560,13 +560,16 @@ void __init maple_pci_init(void)
- 		return;
- 	}
- 	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;) {
--		if (np->name == NULL)
-+		if (!np->type)
- 			continue;
--		if (strcmp(np->name, "pci") == 0) {
--			if (add_bridge(np) == 0)
--				of_node_get(np);
--		}
--		if (strcmp(np->name, "ht") == 0) {
-+		if (strcmp(np->type, "pci") && strcmp(np->type, "ht"))
-+			continue;
-+		if ((device_is_compatible(np, "u4-pcie") ||
-+		     device_is_compatible(np, "u3-agp")) &&
-+		    add_bridge(np) == 0)
-+			of_node_get(np);
+ drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
+ drivers/net/fs_enet/mac-scc.c |    6 ++++--
+ drivers/net/phy/fixed.c       |    2 +-
+ 3 files changed, 14 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index c2c5fd4..474d6d7 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_pr
+ 	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
+ 	if (fep->interrupt < 0)
+ 		return -EINVAL;
+-	
 +
-+		if (device_is_compatible(np, "u3-ht")) {
- 			of_node_get(np);
- 			ht = np;
- 		}
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->fec.fecp =(void*)r->start;
++	fep->fec.fecp = (void *)ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if(fep->fec.fecp == NULL)
+ 		return -EINVAL;
+@@ -319,11 +319,14 @@ #endif
+ 	 * Clear any outstanding interrupt.
+ 	 */
+ 	FW(fecp, ievent, 0xffc0);
++#ifndef CONFIG_PPC_MERGE
+ 	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+-	
++#else
++	FW(fecp, ivec, (irq_map[fep->interrupt].hwirq / 2) << 29);
++#endif
+ 
+ 	/*
+-	 * adjust to speed (only for DUET & RMII) 
++	 * adjust to speed (only for DUET & RMII)
+ 	 */
+ #ifdef CONFIG_DUET
+ 	if (fpi->use_rmii) {
+@@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -431,6 +435,7 @@ static void pre_request_irq(struct net_d
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 95ec587..62057f4 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_pr
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->scc.sccp = (void *)r->start;
++	fep->scc.sccp = (void *)ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.sccp == NULL)
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
+-	fep->scc.ep = (void *)r->start;
++	fep->scc.ep = (void *)ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.ep == NULL)
+ 		return -EINVAL;
+@@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -410,6 +411,7 @@ static void pre_request_irq(struct net_d
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 096d4a1..8613539 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -349,7 +349,7 @@ #ifdef CONFIG_FIXED_MII_100_FDX
+ 	fixed_mdio_register_device(0, 100, 1);
+ #endif
+ 
+-#ifdef CONFIX_FIXED_MII_10_FDX
++#ifdef CONFIG_FIXED_MII_10_FDX
+ 	fixed_mdio_register_device(0, 10, 1);
+ #endif
+ 	return 0;
