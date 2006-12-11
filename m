@@ -2,13 +2,13 @@ Return-Path: <vbordug@ru.mvista.com>
 Received: from localhost.localdomain (unknown [85.21.88.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4104467DE5
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 03:28:50 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4F0E567C98
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 03:28:48 +1100 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 3/6] [POWERPC] 8xx: platform-related changes to the fsl_soc.c
-Date: Mon, 11 Dec 2006 19:28:45 +0300
-Message-Id: <20061211162845.17227.61636.stgit@localhost.localdomain>
+Subject: [PATCH 2/6] [POWERPC] 8xx: generic 8xx code arch/powerpc port
+Date: Mon, 11 Dec 2006 19:28:43 +0300
+Message-Id: <20061211162843.17227.58971.stgit@localhost.localdomain>
 In-Reply-To: <20061211192347.47700906@localhost.localdomain>
 References: <20061211192347.47700906@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -23,303 +23,497 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Added 8xx SoC peripherials: fec for Ethernet and smc for UARTs.
-Ordinary routines to extract values from the device tree and insert respective
-platform devices
+Including support for non-coherent cache, some mm-related things +
+relevant field in Kconfig and Makefiles. Also included rheap.o compilation
+if 8xx is defined. 
+
+Non-coherent mapping were refined and renamed according to Cristoph
+Hellwig. Orhaned functions were cleaned up.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- arch/powerpc/sysdev/fsl_soc.c |  268 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 267 insertions(+), 1 deletions(-)
+ arch/powerpc/Kconfig               |   11 +
+ arch/powerpc/lib/Makefile          |    2 
+ arch/powerpc/lib/dma-noncoherent.c |  418 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 429 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index ad31e56..db09c20 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -39,6 +39,8 @@ #include <asm/cpm2.h>
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f81d9f6..f4f5191 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -165,6 +165,11 @@ config PPC_86xx
+ 	help
+ 	  The Freescale E600 SoCs have 74xx cores.
  
- extern void init_fcc_ioports(struct fs_platform_info*);
- extern void init_scc_ioports(struct fs_uart_platform_info*);
-+extern void init_fec_ioports(struct fs_platform_info*);
-+extern void init_smc_ioports(struct fs_uart_platform_info*);
- static phys_addr_t immrbase = -1;
- 
- phys_addr_t get_immrbase(void)
-@@ -63,7 +65,7 @@ phys_addr_t get_immrbase(void)
- 
- EXPORT_SYMBOL(get_immrbase);
- 
--#ifdef CONFIG_CPM2
-+#if defined(CONFIG_CPM2) || defined(CONFIG_8xx)
- 
- static u32 brgfreq = -1;
- 
-@@ -792,3 +794,267 @@ err:
- 
- arch_initcall(cpm_uart_of_init);
- #endif /* CONFIG_CPM2 */
++config PPC_8xx
++	bool "Freescale 8xx"
++	select FSL_SOC
++	select 8xx
 +
-+#ifdef CONFIG_8xx
+ config 40x
+ 	bool "AMCC 40x"
+ 	select PPC_DCR_NATIVE
+@@ -173,8 +178,6 @@ config 44x
+ 	bool "AMCC 44x"
+ 	select PPC_DCR_NATIVE
+ 
+-config 8xx
+-	bool "Freescale 8xx"
+ 
+ config E200
+ 	bool "Freescale e200"
+@@ -203,6 +206,10 @@ config 6xx
+ 	bool
+ 
+ # this is temp to handle compat with arch=ppc
++config 8xx
++	bool
 +
-+static int __init fs_enet_mdio_of_init(void)
++# this is temp to handle compat with arch=ppc
+ config 83xx
+ 	bool
+ 
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index a0360ae..e2d4141 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_PPC64)	+= checksum_64.o cop
+ 			   strcase.o
+ obj-$(CONFIG_QUICC_ENGINE) += rheap.o
+ obj-$(CONFIG_XMON)	+= sstep.o
++obj-$(CONFIG_NOT_COHERENT_CACHE)	+= dma-noncoherent.o
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_SMP)	+= locks.o
+@@ -24,5 +25,6 @@ endif
+ 
+ # Temporary hack until we have migrated to asm-powerpc
+ ifeq ($(CONFIG_PPC_MERGE),y)
++obj-$(CONFIG_8xx)	+= rheap.o
+ obj-$(CONFIG_CPM2)	+= rheap.o
+ endif
+diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+new file mode 100644
+index 0000000..48f3d13
+--- /dev/null
++++ b/arch/powerpc/lib/dma-noncoherent.c
+@@ -0,0 +1,418 @@
++/*
++ *  PowerPC version derived from arch/arm/mm/consistent.c
++ *    Copyright (C) 2001 Dan Malek (dmalek@jlc.net)
++ *
++ *  Copyright (C) 2000 Russell King
++ *
++ * Consistent memory allocators.  Used for DMA devices that want to
++ * share uncached memory with the processor core.  The function return
++ * is the virtual address and 'dma_handle' is the physical address.
++ * Mostly stolen from the ARM port, with some changes for PowerPC.
++ *						-- Dan
++ *
++ * Reorganized to get rid of the arch-specific consistent_* functions
++ * and provide non-coherent implementations for the DMA API. -Matt
++ *
++ * Added in_interrupt() safe dma_alloc_coherent()/dma_free_coherent()
++ * implementation. This is pulled straight from ARM and barely
++ * modified. -Matt
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/highmem.h>
++#include <linux/dma-mapping.h>
++
++#include <asm/tlbflush.h>
++
++/*
++ * This address range defaults to a value that is safe for all
++ * platforms which currently set CONFIG_NOT_COHERENT_CACHE. It
++ * can be further configured for specific applications under
++ * the "Advanced Setup" menu. -Matt
++ */
++#define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
++#define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
++#define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
++
++/*
++ * This is the page table (2MB) covering uncached, DMA consistent allocations
++ */
++static pte_t *consistent_pte;
++static DEFINE_SPINLOCK(consistent_lock);
++
++/*
++ * VM region handling support.
++ *
++ * This should become something generic, handling VM region allocations for
++ * vmalloc and similar (ioremap, module space, etc).
++ *
++ * I envisage vmalloc()'s supporting vm_struct becoming:
++ *
++ *  struct vm_struct {
++ *    struct vm_region	region;
++ *    unsigned long	flags;
++ *    struct page	**pages;
++ *    unsigned int	nr_pages;
++ *    unsigned long	phys_addr;
++ *  };
++ *
++ * get_vm_area() would then call vm_region_alloc with an appropriate
++ * struct vm_region head (eg):
++ *
++ *  struct vm_region vmalloc_head = {
++ *	.vm_list	= LIST_HEAD_INIT(vmalloc_head.vm_list),
++ *	.vm_start	= VMALLOC_START,
++ *	.vm_end		= VMALLOC_END,
++ *  };
++ *
++ * However, vmalloc_head.vm_start is variable (typically, it is dependent on
++ * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
++ * would have to initialise this each time prior to calling vm_region_alloc().
++ */
++struct vm_region {
++	struct list_head	vm_list;
++	unsigned long		vm_start;
++	unsigned long		vm_end;
++};
++
++static struct vm_region consistent_head = {
++	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
++	.vm_start	= CONSISTENT_BASE,
++	.vm_end		= CONSISTENT_END,
++};
++
++static struct vm_region *
++vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
 +{
-+	struct device_node *np;
-+	unsigned int i;
-+	struct platform_device *mdio_dev;
-+	struct resource res;
-+	int ret;
++	unsigned long addr = head->vm_start, end = head->vm_end - size;
++	unsigned long flags;
++	struct vm_region *c, *new;
 +
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "mdio", "fs_enet")) != NULL;
-+	     i++) {
-+		struct fs_mii_fec_platform_info mdio_data;
++	new = kmalloc(sizeof(struct vm_region), gfp);
++	if (!new)
++		goto out;
 +
-+		memset(&res, 0, sizeof(res));
-+		memset(&mdio_data, 0, sizeof(mdio_data));
++	spin_lock_irqsave(&consistent_lock, flags);
 +
-+		ret = of_address_to_resource(np, 0, &res);
-+		if (ret)
-+			goto err;
-+
-+		mdio_dev =
-+		    platform_device_register_simple("fsl-cpm-fec-mdio",
-+						    res.start, &res, 1);
-+		if (IS_ERR(mdio_dev)) {
-+			ret = PTR_ERR(mdio_dev);
-+			goto err;
-+		}
-+
-+		mdio_data.mii_speed = ((((ppc_proc_freq + 4999999) / 2500000) / 2) & 0x3F) << 1;
-+
-+		ret =
-+		    platform_device_add_data(mdio_dev, &mdio_data,
-+					     sizeof(struct fs_mii_fec_platform_info));
-+		if (ret)
-+			goto unreg;
++	list_for_each_entry(c, &head->vm_list, vm_list) {
++		if ((addr + size) < addr)
++			goto nospc;
++		if ((addr + size) <= c->vm_start)
++			goto found;
++		addr = c->vm_end;
++		if (addr > end)
++			goto nospc;
 +	}
-+	return 0;
 +
-+unreg:
-+	platform_device_unregister(mdio_dev);
-+err:
-+	return ret;
++ found:
++	/*
++	 * Insert this entry _before_ the one we found.
++	 */
++	list_add_tail(&new->vm_list, &c->vm_list);
++	new->vm_start = addr;
++	new->vm_end = addr + size;
++
++	spin_unlock_irqrestore(&consistent_lock, flags);
++	return new;
++
++ nospc:
++	spin_unlock_irqrestore(&consistent_lock, flags);
++	kfree(new);
++ out:
++	return NULL;
 +}
 +
-+arch_initcall(fs_enet_mdio_of_init);
-+
-+static const char *enet_regs = "regs";
-+static const char *enet_pram = "pram";
-+static const char *enet_irq = "interrupt";
-+static char bus_id[9][BUS_ID_SIZE];
-+
-+static int __init fs_enet_of_init(void)
++static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
 +{
-+	struct device_node *np;
-+	unsigned int i;
-+	struct platform_device *fs_enet_dev = NULL;
-+	struct resource res;
-+	int ret;
++	struct vm_region *c;
 +
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "network", "fs_enet")) != NULL;
-+	     i++) {
-+		struct resource r[4];
-+		struct device_node *phy = NULL, *mdio = NULL;
-+		struct fs_platform_info fs_enet_data;
-+		unsigned int *id, *phy_addr;
-+		void *mac_addr;
-+		phandle *ph;
-+		char *model;
++	list_for_each_entry(c, &head->vm_list, vm_list) {
++		if (c->vm_start == addr)
++			goto out;
++	}
++	c = NULL;
++ out:
++	return c;
++}
 +
-+		memset(r, 0, sizeof(r));
-+		memset(&fs_enet_data, 0, sizeof(fs_enet_data));
++/*
++ * Allocate DMA-coherent memory space and return both the kernel remapped
++ * virtual and bus address for that space.
++ */
++void *
++__dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
++{
++	struct page *page;
++	struct vm_region *c;
++	unsigned long order;
++	u64 mask = 0x00ffffff, limit; /* ISA default */
 +
-+		model = (char *)get_property(np, "model", NULL);
-+		if (model == NULL) {
-+			ret = -ENODEV;
-+			goto unreg;
++	if (!consistent_pte) {
++		printk(KERN_ERR "%s: not initialised\n", __func__);
++		dump_stack();
++		return NULL;
++	}
++
++	size = PAGE_ALIGN(size);
++	limit = (mask + 1) & ~mask;
++	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
++		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
++		       size, mask);
++		return NULL;
++	}
++
++	order = get_order(size);
++
++	if (mask != 0xffffffff)
++		gfp |= GFP_DMA;
++
++	page = alloc_pages(gfp, order);
++	if (!page)
++		goto no_page;
++
++	/*
++	 * Invalidate any data that might be lurking in the
++	 * kernel direct-mapped region for device DMA.
++	 */
++	{
++		unsigned long kaddr = (unsigned long)page_address(page);
++		memset(page_address(page), 0, size);
++		flush_dcache_range(kaddr, kaddr + size);
++	}
++
++	/*
++	 * Allocate a virtual address in the consistent mapping region.
++	 */
++	c = vm_region_alloc(&consistent_head, size,
++			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
++	if (c) {
++		unsigned long vaddr = c->vm_start;
++		pte_t *pte = consistent_pte + CONSISTENT_OFFSET(vaddr);
++		struct page *end = page + (1 << order);
++
++		split_page(page, order);
++
++		/*
++		 * Set the "dma handle"
++		 */
++		*handle = page_to_bus(page);
++
++		do {
++			BUG_ON(!pte_none(*pte));
++
++			SetPageReserved(page);
++			set_pte_at(&init_mm, vaddr,
++				   pte, mk_pte(page, pgprot_noncached(PAGE_KERNEL)));
++			page++;
++			pte++;
++			vaddr += PAGE_SIZE;
++		} while (size -= PAGE_SIZE);
++
++		/*
++		 * Free the otherwise unused pages.
++		 */
++		while (page < end) {
++			__free_page(page);
++			page++;
 +		}
 +
-+		id = (u32 *) get_property(np, "device-id", NULL);
-+		fs_enet_data.fs_no = *id;
++		return (void *)c->vm_start;
++	}
 +
-+		if (platform_device_skip(model, *id))
-+			continue;
++	if (page)
++		__free_pages(page, order);
++ no_page:
++	return NULL;
++}
++EXPORT_SYMBOL(__dma_alloc_coherent);
 +
-+		ret = of_address_to_resource(np, 0, &r[0]);
-+		if (ret)
-+			goto err;
-+		r[0].name = enet_regs;
++/*
++ * free a page as defined by the above mapping.
++ */
++void __dma_free_coherent(size_t size, void *vaddr)
++{
++	struct vm_region *c;
++	unsigned long flags, addr;
++	pte_t *ptep;
 +
-+		mac_addr = (void *)get_property(np, "mac-address", NULL);
-+		memcpy(fs_enet_data.macaddr, mac_addr, 6);
++	size = PAGE_ALIGN(size);
 +
-+		ph = (phandle *) get_property(np, "phy-handle", NULL);
-+		if (ph != NULL)
-+			phy = of_find_node_by_phandle(*ph);
++	spin_lock_irqsave(&consistent_lock, flags);
 +
-+		if (phy != NULL) {
-+			phy_addr = (u32 *) get_property(phy, "reg", NULL);
-+			fs_enet_data.phy_addr = *phy_addr;
-+			fs_enet_data.has_phy = 1;
++	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
++	if (!c)
++		goto no_area;
 +
-+			mdio = of_get_parent(phy);
-+			ret = of_address_to_resource(mdio, 0, &res);
-+			if (ret) {
-+				of_node_put(phy);
-+				of_node_put(mdio);
-+                                goto unreg;
++	if ((c->vm_end - c->vm_start) != size) {
++		printk(KERN_ERR "%s: freeing wrong coherent size (%ld != %d)\n",
++		       __func__, c->vm_end - c->vm_start, size);
++		dump_stack();
++		size = c->vm_end - c->vm_start;
++	}
++
++	ptep = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
++	addr = c->vm_start;
++	do {
++		pte_t pte = ptep_get_and_clear(&init_mm, addr, ptep);
++		unsigned long pfn;
++
++		ptep++;
++		addr += PAGE_SIZE;
++
++		if (!pte_none(pte) && pte_present(pte)) {
++			pfn = pte_pfn(pte);
++
++			if (pfn_valid(pfn)) {
++				struct page *page = pfn_to_page(pfn);
++				ClearPageReserved(page);
++
++				__free_page(page);
++				continue;
 +			}
 +		}
 +
-+		model = (char*)get_property(np, "model", NULL);
-+		strcpy(fs_enet_data.fs_type, model);
++		printk(KERN_CRIT "%s: bad page in kernel page table\n",
++		       __func__);
++	} while (size -= PAGE_SIZE);
 +
-+		if (strstr(model, "FEC")) {
-+			r[1].start = r[1].end = irq_of_parse_and_map(np, 0);
-+			r[1].flags = IORESOURCE_IRQ;
-+			r[1].name = enet_irq;
++	flush_tlb_kernel_range(c->vm_start, c->vm_end);
 +
-+			fs_enet_dev =
-+				    platform_device_register_simple("fsl-cpm-fec", i, &r[0], 2);
++	list_del(&c->vm_list);
 +
-+			if (IS_ERR(fs_enet_dev)) {
-+				ret = PTR_ERR(fs_enet_dev);
-+				goto err;
-+			}
++	spin_unlock_irqrestore(&consistent_lock, flags);
 +
-+			fs_enet_data.rx_ring = 128;
-+			fs_enet_data.tx_ring = 16;
-+			fs_enet_data.rx_copybreak = 240;
-+			fs_enet_data.use_napi = 1;
-+			fs_enet_data.napi_weight = 17;
++	kfree(c);
++	return;
 +
-+			snprintf((char*)&bus_id[i], BUS_ID_SIZE, "%x:%02x",
-+							(u32)res.start, fs_enet_data.phy_addr);
-+			fs_enet_data.bus_id = (char*)&bus_id[i];
-+			fs_enet_data.init_ioports = init_fec_ioports;
-+		}
-+		if (strstr(model, "SCC")) {
-+			ret = of_address_to_resource(np, 1, &r[1]);
-+			if (ret)
-+				goto err;
-+			r[1].name = enet_pram;
-+
-+			r[2].start = r[2].end = irq_of_parse_and_map(np, 0);
-+			r[2].flags = IORESOURCE_IRQ;
-+			r[2].name = enet_irq;
-+
-+			fs_enet_dev =
-+				    platform_device_register_simple("fsl-cpm-scc", i, &r[0], 3);
-+
-+			if (IS_ERR(fs_enet_dev)) {
-+				ret = PTR_ERR(fs_enet_dev);
-+				goto err;
-+			}
-+
-+			fs_enet_data.rx_ring = 64;
-+			fs_enet_data.tx_ring = 8;
-+			fs_enet_data.rx_copybreak = 240;
-+			fs_enet_data.use_napi = 1;
-+			fs_enet_data.napi_weight = 17;
-+
-+			snprintf((char*)&bus_id[i], BUS_ID_SIZE, "%s", "fixed@10:1");
-+                        fs_enet_data.bus_id = (char*)&bus_id[i];
-+			fs_enet_data.init_ioports = init_scc_ioports;
-+		}
-+
-+		of_node_put(phy);
-+		of_node_put(mdio);
-+
-+		ret = platform_device_add_data(fs_enet_dev, &fs_enet_data,
-+					     sizeof(struct
-+						    fs_platform_info));
-+		if (ret)
-+			goto unreg;
-+	}
-+	return 0;
-+
-+unreg:
-+	platform_device_unregister(fs_enet_dev);
-+err:
-+	return ret;
++ no_area:
++	spin_unlock_irqrestore(&consistent_lock, flags);
++	printk(KERN_ERR "%s: trying to free invalid coherent area: %p\n",
++	       __func__, vaddr);
++	dump_stack();
 +}
++EXPORT_SYMBOL(__dma_free_coherent);
 +
-+arch_initcall(fs_enet_of_init);
-+
-+
-+static const char *smc_regs = "regs";
-+static const char *smc_pram = "pram";
-+
-+static int __init cpm_smc_uart_of_init(void)
++/*
++ * Initialise the consistent memory allocation.
++ */
++static int __init dma_alloc_init(void)
 +{
-+	struct device_node *np;
-+	unsigned int i;
-+	struct platform_device *cpm_uart_dev;
-+	int ret;
++	pgd_t *pgd;
++	pmd_t *pmd;
++	pte_t *pte;
++	int ret = 0;
 +
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "serial", "cpm_uart")) != NULL;
-+	     i++) {
-+		struct resource r[3];
-+		struct fs_uart_platform_info cpm_uart_data;
-+		int *id;
-+		char *model;
++	do {
++		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
++		pmd = pmd_alloc(&init_mm, pgd, CONSISTENT_BASE);
++		if (!pmd) {
++			printk(KERN_ERR "%s: no pmd tables\n", __func__);
++			ret = -ENOMEM;
++			break;
++		}
++		WARN_ON(!pmd_none(*pmd));
 +
-+		memset(r, 0, sizeof(r));
-+		memset(&cpm_uart_data, 0, sizeof(cpm_uart_data));
-+
-+		ret = of_address_to_resource(np, 0, &r[0]);
-+		if (ret)
-+			goto err;
-+
-+		r[0].name = smc_regs;
-+
-+		ret = of_address_to_resource(np, 1, &r[1]);
-+		if (ret)
-+			goto err;
-+		r[1].name = smc_pram;
-+
-+		r[2].start = r[2].end = irq_of_parse_and_map(np, 0);
-+		r[2].flags = IORESOURCE_IRQ;
-+
-+		cpm_uart_dev =
-+		    platform_device_register_simple("fsl-cpm-smc:uart", i, &r[0], 3);
-+
-+		if (IS_ERR(cpm_uart_dev)) {
-+			ret = PTR_ERR(cpm_uart_dev);
-+			goto err;
++		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
++		if (!pte) {
++			printk(KERN_ERR "%s: no pte tables\n", __func__);
++			ret = -ENOMEM;
++			break;
 +		}
 +
-+		model = (char*)get_property(np, "model", NULL);
-+		strcpy(cpm_uart_data.fs_type, model);
++		consistent_pte = pte;
++	} while (0);
 +
-+		id = (int*)get_property(np, "device-id", NULL);
-+		cpm_uart_data.fs_no = *id;
-+		cpm_uart_data.uart_clk = ppc_proc_freq;
-+
-+		cpm_uart_data.tx_num_fifo = 4;
-+		cpm_uart_data.tx_buf_size = 32;
-+		cpm_uart_data.rx_num_fifo = 4;
-+		cpm_uart_data.rx_buf_size = 32;
-+
-+		ret =
-+		    platform_device_add_data(cpm_uart_dev, &cpm_uart_data,
-+					     sizeof(struct
-+						    fs_uart_platform_info));
-+		if (ret)
-+			goto unreg;
-+	}
-+
-+	return 0;
-+
-+unreg:
-+	platform_device_unregister(cpm_uart_dev);
-+err:
 +	return ret;
 +}
 +
-+arch_initcall(cpm_smc_uart_of_init);
++core_initcall(dma_alloc_init);
 +
-+#endif /* CONFIG_8xx */
++/*
++ * make an area consistent.
++ */
++void __dma_sync(void *vaddr, size_t size, int direction)
++{
++	unsigned long start = (unsigned long)vaddr;
++	unsigned long end   = start + size;
++
++	switch (direction) {
++	case DMA_NONE:
++		BUG();
++	case DMA_FROM_DEVICE:	/* invalidate only */
++		invalidate_dcache_range(start, end);
++		break;
++	case DMA_TO_DEVICE:		/* writeback only */
++		clean_dcache_range(start, end);
++		break;
++	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
++		flush_dcache_range(start, end);
++		break;
++	}
++}
++EXPORT_SYMBOL(__dma_sync);
++
++#ifdef CONFIG_HIGHMEM
++/*
++ * __dma_sync_page() implementation for systems using highmem.
++ * In this case, each page of a buffer must be kmapped/kunmapped
++ * in order to have a virtual address for __dma_sync(). This must
++ * not sleep so kmap_atomic()/kunmap_atomic() are used.
++ *
++ * Note: yes, it is possible and correct to have a buffer extend
++ * beyond the first page.
++ */
++static inline void __dma_sync_page_highmem(struct page *page,
++		unsigned long offset, size_t size, int direction)
++{
++	size_t seg_size = min((size_t)(PAGE_SIZE - offset), size);
++	size_t cur_size = seg_size;
++	unsigned long flags, start, seg_offset = offset;
++	int nr_segs = 1 + ((size - seg_size) + PAGE_SIZE - 1)/PAGE_SIZE;
++	int seg_nr = 0;
++
++	local_irq_save(flags);
++
++	do {
++		start = (unsigned long)kmap_atomic(page + seg_nr,
++				KM_PPC_SYNC_PAGE) + seg_offset;
++
++		/* Sync this buffer segment */
++		__dma_sync((void *)start, seg_size, direction);
++		kunmap_atomic((void *)start, KM_PPC_SYNC_PAGE);
++		seg_nr++;
++
++		/* Calculate next buffer segment size */
++		seg_size = min((size_t)PAGE_SIZE, size - cur_size);
++
++		/* Add the segment size to our running total */
++		cur_size += seg_size;
++		seg_offset = 0;
++	} while (seg_nr < nr_segs);
++
++	local_irq_restore(flags);
++}
++#endif /* CONFIG_HIGHMEM */
++
++/*
++ * __dma_sync_page makes memory consistent. identical to __dma_sync, but
++ * takes a struct page instead of a virtual address
++ */
++void __dma_sync_page(struct page *page, unsigned long offset,
++	size_t size, int direction)
++{
++#ifdef CONFIG_HIGHMEM
++	__dma_sync_page_highmem(page, offset, size, direction);
++#else
++	unsigned long start = (unsigned long)page_address(page) + offset;
++	__dma_sync((void *)start, size, direction);
++#endif
++}
++EXPORT_SYMBOL(__dma_sync_page);
