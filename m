@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFA3A67BAC
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Dec 2006 06:46:23 +1100 (EST)
-Subject: Re: powerpc: "IRQ probe failed (0x0)" on powerbook
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jey7pfvfw8.fsf@sykes.suse.de>
-References: <87lklg9rkz.fsf@briny.internal.ondioline.org>
-	<1165737970.1103.171.camel@localhost.localdomain>
-	<jey7pfvfw8.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Mon, 11 Dec 2006 06:46:14 +1100
-Message-Id: <1165779974.1103.181.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17788.49546.390921.608302@cargo.ozlabs.ibm.com>
+Date: Mon, 11 Dec 2006 13:25:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch] powerpc: add scanning of ebc bus to of_platform
+In-Reply-To: <200612091236.57252.arnd@arndb.de>
+References: <20061208114113.2191e446@localhost>
+	<1165618381.1103.89.camel@localhost.localdomain>
+	<F6853CAA-5CBD-4BA8-A330-55D66AB3E853@kernel.crashing.org>
+	<200612091236.57252.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Arnd Bergmann writes:
 
-> Bisection has identified this patch:
+> But the platform doesn't need how to drive them, the device driver
+> needs to. All the platform needs to know is the fact that it can
+> deal with SOC devices that are automatically probed.
 > 
-> commit f90bb153b1493719d18b4529a46ebfe43220ea6c
-> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date:   Sat Nov 11 17:24:51 2006 +1100
-> 
->     [POWERPC] Make pci_read_irq_line the default
+> I'd much prefer to have the list in the same file that drives the
+> devices in the first place. It's probably also good to register
+> them as MODULE_DEVICE_TABLE(), for documentation purposes, even
+> if the driver can't be built as a module yet.
 
-Thanks Andreas ! I was expecting something around that patch indeed, I
-suspect something in Apple device-tree is dodgy and breaking the
-new generic PCI irq parsing (for example, at first sight, it's a PCI
-device with 2 interrupts, which isn't allowed by the PCI spec).
+So is that an ack or a nack for the patch?  Sounds like a nack to me,
+but I'm not sure. :)
 
-I'll dig a bit more when I get to the office where my crash box is, and
-will do a fix.
-
-Ben.
+Paul.
