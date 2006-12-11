@@ -1,25 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17789.54777.283849.950002@cargo.ozlabs.ibm.com>
-Date: Tue, 12 Dec 2006 09:04:41 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: 2.6.19-git13: uts banner changes break SLES9 (at least)
-In-Reply-To: <Pine.LNX.4.64.0612111106310.12500@woody.osdl.org>
-References: <457D750C.9060807@shadowen.org> <20061211163333.GA17947@aepfle.de>
-	<Pine.LNX.4.64.0612110840240.12500@woody.osdl.org>
-	<Pine.LNX.4.64.0612110852010.12500@woody.osdl.org>
-	<20061211180414.GA18833@aepfle.de>
-	<20061211181813.GB18963@aepfle.de>
-	<Pine.LNX.4.64.0612111022140.12500@woody.osdl.org>
-	<20061211182908.GC7256@MAIL.13thfloor.at>
-	<Pine.LNX.4.64.0612111040160.12500@woody.osdl.org>
-	<20061211185536.GA19338@aepfle.de>
-	<Pine.LNX.4.64.0612111106310.12500@woody.osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, Olaf Hering <olaf@aepfle.de>,
-	Steve Fox <drfickle@us.ibm.com>, linux-kernel@vger.kernel.org,
-	Andi Kleen <ak@suse.de>, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8D6F267CDF
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:08:23 +1100 (EST)
+In-Reply-To: <20061211155155.26868ca6.kim.phillips@freescale.com>
+References: <20061208190758.6cee088f.kim.phillips@freescale.com>
+	<1165648490.1103.117.camel@localhost.localdomain>
+	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>
+	<20061211155155.26868ca6.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A1A95A77-B86C-41CF-87DC-58CD63843CE3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
+Date: Mon, 11 Dec 2006 16:08:20 -0600
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,34 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus Torvalds writes:
 
-> On Mon, 11 Dec 2006, Olaf Hering wrote:
-> > 
-> > arch/powerpc/boot/wrapper:156:    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
-> 
-> This is also obviously broken (and really sad), but actually ends up being 
-> better than what get_kernel_version apparently does, by at least adding 
-> the requirement that the string "Linux version" be slightly more correct.
-> 
-> However, it's also TOTALLY BROKEN. 
+On Dec 11, 2006, at 3:51 PM, Kim Phillips wrote:
 
-It's the minimum effort for the barely acceptable outcome. :)
+> On Sun, 10 Dec 2006 21:41:24 -0600
+> Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+>>
+>> On Dec 9, 2006, at 1:14 AM, Benjamin Herrenschmidt wrote:
+>>
+>>> On Fri, 2006-12-08 at 19:07 -0600, Kim Phillips wrote:
+>>>> Eliminate code redundancy.  mpc83[246]x_{mds,itx,sys,pb} files  
+>>>> merged
+>>>> into a single setup.c.  machine_probe, instead of using the model
+>>>> property,
+>>>> checks the compatible property for "MPC83xx" (dts files updated
+>>>> appropriately).
+>>>> This patch also utilizes of_platform_bus_probe() in lieu of  
+>>>> manually
+>>>> calling of_platform_device_create for each ucc_geth device.
+>>>>
+>>>> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+>>
+>> Nack on the patch.
+>>
+>>> I am not completely certain this is the right approach.
+>>>
+>>> While factoring code is good, I think that every single board should
+>>> have it's own ppc_md, though you can definitely provide "common"
+>>> functions for mpc83xx that can optinally be used by those different
+>>> boards.
+>>>
+>>> Maybe put all the freescale ones in one file if you want...
+>>>
+>>> The rationale here is that while your approach is fine for your eval
+>>> boards, I don't think it's good for embedded customers. They may  
+>>> want
+>>> more complex platforms, with their own directory even if they have
+>>> a lot
+>>> of custom stuff on the board while still possibly picking some of  
+>>> your
+>>> "common" code (and their board shouldn't match your overly generic
+>>> probe() implementation).
+>>>
+>>> Cheers,
+>>> Ben.
+>>
+>> I'm with Ben on this.  I think consolidating the code that is common
+>> is fine, but we should have a define_machine() per board.  You can
+>> put them all in one mpc83xx/fsl.c
+>>
+> so the contents of 83xx/fsl.c would look like:
+> #ifdef CONFIG_MPC834x_SYS
+> define_machine(mpc834x_sys) {
+> 	.name 		= "MPC834x SYS",
+> 	.probe 		= mpc83xx_probe,
+> 	.setup_arch 	= mpc83xx_setup_arch,
+> 	.init_IRQ 	= mpc83xx_init_IRQ,
+> 	.get_irq 	= ipic_get_irq,
+> 	.restart 	= mpc83xx_restart,
+> 	.time_init 	= mpc83xx_time_init,
+> 	.calibrate_decr	= generic_calibrate_decr,
+> 	.progress 	= udbg_progress,
+> };
+> #else
+> #ifdef CONFIG_MPC834x_ITX
+> define_machine(mpc83xx) {
+> 	.name 		= "MPC834x ITX",
+> <rest is the same>
+> #else
+> ..and so on and so forth for CONFIG_MPC8360E_PB,  
+> CONFIG_MPC832x_MDS, and now CONFIG_MPC831x_RDB.  So the only thing  
+> that changes is the name?  And perhaps the _probe function?  That's  
+> still pretty redundant, esp. considering the source of the name to  
+> match in the dt is easily modifiable.  And it's not as if other  
+> platforms (52xx, 86xx, pasemi etc.) don't use  
+> of_flat_dt_is_compatible.
 
-The wrapper script, although it currently lives in arch/powerpc/boot,
-is designed and intended to be standalone, so that people can use it
-outside the kernel tree, and possibly even without having the kernel
-source easily to hand.  Therefore I didn't want to use any kernel
-header files.
+Why would you need the ifdef's around the define_machine()?
 
-Apparently the only reason "mkimage" wants to know the kernel version
-is to put it as a comment in the image, which can be displayed to the
-user when booting with u-boot (the bootloader used on some embedded
-platforms).  So it's not critical if the grep fails, and it's slightly
-more useful to do the grep than it would be to not even try to provide
-any version string to mkimage.
+> All 83xx platform code, define_machine included, is exactly the  
+> same on all boards, modulo the QE stuff which is ifdef protected  
+> and easily configured.  All board differences can be specified in  
+> the device tree and/or handled with proper kernel configuration.   
+> If an embedded customer wants, they can configure their kernel  
+> based on the various 83xx defconfigs, customize their _probe() to  
+> match their device tree, all at will, just as before.  I'm  
+> concerned because 83xx has the capability of being a single kernel  
+> image basically for free (we just need to clean some things up in  
+> the ucc_geth driver first).
 
-If there is a reliable way to get the version string, great, I'll use
-that.
+You say this, but miss the point that its only true for ALL FREESCALE  
+boards, which are the only boards currently in the tree.  We aren't  
+precluding the ability to have a single kernel image for 83xx.
 
-Paul.
+> That said, I'm not an embedded customer, and the motivation for  
+> this patch was to prep 83xx platform filespace so that we don't  
+> have to:
+>
+> sed s/834/831/ < mpc834x_itx.c > mpc831x_rdb.c
+> sed s/834/831/ < mpc834x_itx.h > mpc831x_rdb.h
+>
+> and copy and paste the Makefile and Kconfig lines, which just feels  
+> like a terrible thing to do (and keep on doing).
+
+And I'm suggesting that for 831x_rdb, All you'd add is a new  
+define_machine() struct.
+
+- kumar
