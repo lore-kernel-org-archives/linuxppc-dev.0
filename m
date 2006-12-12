@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B99A467B92
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 07:49:23 +1100 (EST)
-Subject: Re: [PATCH 8/15] Supporting PCI bus and base of I/O
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200612122103.41597.arnd@arndb.de>
-References: <200612120338.kBC3c08S020556@toshiba.co.jp>
-	<200612122103.41597.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 13 Dec 2006 07:49:14 +1100
-Message-Id: <1165956554.11914.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id A0AFF67BD2
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 07:52:39 +1100 (EST)
+In-Reply-To: <Pine.LNX.4.61.0612081718380.14619@ld0175-tx32.am.freescale.net>
+References: <Pine.LNX.4.61.0612081718380.14619@ld0175-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BD193285-AC82-4DDA-B37D-F82E003D3DEC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.20] Changed gianfar device tree definition to make it
+	more flexible
+Date: Tue, 12 Dec 2006 14:52:23 -0600
+To: Andy Fleming <afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-12-12 at 21:03 +0100, Arnd Bergmann wrote:
-> On Tuesday 12 December 2006 04:37, Ishizaki Kou wrote:
-> > This patch includes support for pci buses, base of Celleb specific
-> > devices, and etc. It works on of_platform bus.
-> > 
-> > Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
-> 
-> The code looks good to me, I guess it could go in, except that
-> I really don't like the concept of faking a PCI bus device when
-> it's not actually there. I guess the EPCI part of this is
-> not controversial, so it would be good if you can split that
-> out into a separate patch that we can merge first.
 
-I personally don't have a big problem with the fake PCI stuff. The
-spider and USB drivers are already working out of the box pretty much
-with PCI and that's exactly what we do on IBM blades (though the
-illusion is maintained by the firmware in our case).
+On Dec 8, 2006, at 5:20 PM, Andy Fleming wrote:
 
-I agree that in the long run, it's better to move that to of_platform,
-but I wouldn't nack the patches for that.
+> The old gianfar node definition used a concept of "models" to
+> determine the feature bits and interrupt settings to pass to the
+> driver.  This won't scale well when the hardware designers come
+> up with new and (hopefully) interesting variants of the eTSEC.
+> So one goal of this patch is to prepare for that eventuality by
+> listing the features, rather than inferring them.
+>
+> And then, incidentally, some of the code was cleaned up so that
+> initialization functions will skip devices which encounter
+> errors, rather than bailing.  The CPM devices were not modified
+> in this way, as they are more complex.
+>
+> Finally, all the dts files with gianfar nodes were updated to use
+> the new feature bits and the new interface field, and the various
+> MAC address conventions were all accommodated by preserving the
+> currently-used field, while adding local-mac-address, which will
+> be used in the future (once u-boot changes have been made).  The
+> parsing code was also changed so that it will find a mac address
+> that has actually been set to something, rather than defaulting
+> to the first, possibly zeroed, mac address.
 
-Ben.
+Nack, in its current form.  You are breaking people who can't modify  
+their dts/dtb.  I'd suggest removing model all together since that is  
+the effect you want to have and make the parsing code such that if  
+model is set it does the old style, and if its not you do the new style.
+
+Also, how does these feature bits effect arch/ppc platform support?
+
+- k
