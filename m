@@ -1,20 +1,32 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 4B1C967BA1
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 10:03:37 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 8/15] Supporting PCI bus and base of I/O
-Date: Wed, 13 Dec 2006 00:03:28 +0100
-References: <200612120338.kBC3c08S020556@toshiba.co.jp>
-	<200612122103.41597.arnd@arndb.de>
-	<1165956554.11914.54.camel@localhost.localdomain>
-In-Reply-To: <1165956554.11914.54.camel@localhost.localdomain>
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0D1B7679E0
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 10:34:24 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBCNYMh4015731
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 18:34:22 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBCNYLoR099460
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 16:34:21 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBCNYLXF029357
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 16:34:21 -0700
+Date: Tue, 12 Dec 2006 17:34:21 -0600
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH] drivers/ata: PATA driver for Celleb
+Message-ID: <20061212233421.GM4329@austin.ibm.com>
+References: <200612120206.kBC26wHr022838@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200612130003.28650.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200612120206.kBC26wHr022838@toshiba.co.jp>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linux-ide@vger.kernel.org, paulus@samba.org, arnd@arndb.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 12 December 2006 21:49, Benjamin Herrenschmidt wrote:
+On Tue, Dec 12, 2006 at 11:08:24AM +0900, Akira Iguchi wrote:
 > 
-> > The code looks good to me, I guess it could go in, except that
-> > I really don't like the concept of faking a PCI bus device when
-> > it's not actually there. I guess the EPCI part of this is
-> > not controversial, so it would be good if you can split that
-> > out into a separate patch that we can merge first.
-> 
-> I personally don't have a big problem with the fake PCI stuff. The
-> spider and USB drivers are already working out of the box pretty much
-> with PCI and that's exactly what we do on IBM blades (though the
-> illusion is maintained by the firmware in our case).
+> I use some static functions in libata-core.c because it makes
 
-Ok, fair enough. Then let's take these patches as well.
+You will want to split this patch into several pars, and submit the 
+changes to libata-core.c separately.
 
-> I agree that in the long run, it's better to move that to of_platform,
-> but I wouldn't nack the patches for that.
+> --- linux-2.6.19/drivers/ata/libata-core.c	Wed Dec  6 12:00:47 2006
+> ***************
+> *** 600,606 ****
+>    *	Device type - %ATA_DEV_ATA, %ATA_DEV_ATAPI or %ATA_DEV_NONE.
+>    */
+>   
+> ! static unsigned int
+>   ata_dev_try_classify(struct ata_port *ap, unsigned int device, u8 *r_err)
+>   {
+>   	struct ata_taskfile tf;
+> --- 600,606 ----
+>    *	Device type - %ATA_DEV_ATA, %ATA_DEV_ATAPI or %ATA_DEV_NONE.
+>    */
+>   
+> ! unsigned int
+>   ata_dev_try_classify(struct ata_port *ap, unsigned int device, u8 *r_err)
 
-Another alternative might be for the BEAT developers to access the
-config space of all buses using an hcall abstraction, but that's
-something that is not in the hand of the Linux people.
+Please generate unified diffs (diff -pu) or use quilt,
+this makes the patches easier to read. (and smaller)
 
-	Arnd <><
+--linas
