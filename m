@@ -1,13 +1,13 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6033F67C92
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 14:47:14 +1100 (EST)
-Date: Tue, 12 Dec 2006 12:47:06 +0900 (JST)
-Message-Id: <200612120347.kBC3lAiH019486@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 2225967CB2
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 14:49:42 +1100 (EST)
+Date: Tue, 12 Dec 2006 12:49:35 +0900 (JST)
+Message-Id: <200612120349.kBC3nZ1K027611@toshiba.co.jp>
 To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 9/15] celleb: Supporting iommu
+Subject: [PATCH 10/15] celleb: SPU support routines
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -20,41 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch creates Celleb platform dependent files to support iommu.
+SPU support routines for Celleb platform.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
 ---
 
-Index: linux-powerpc-git/include/asm-powerpc/iommu.h
-diff -u linux-powerpc-git/include/asm-powerpc/iommu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/iommu.h:1.2
---- linux-powerpc-git/include/asm-powerpc/iommu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-+++ linux-powerpc-git/include/asm-powerpc/iommu.h	Wed Dec  6 08:43:16 2006
-@@ -99,6 +99,7 @@
- extern void iommu_init_early_pSeries(void);
- extern void iommu_init_early_iSeries(void);
- extern void iommu_init_early_dart(void);
-+extern void celleb_init_iommu(void);
+Index: linux-powerpc-git/include/asm-powerpc/spu_priv1.h
+diff -u linux-powerpc-git/include/asm-powerpc/spu_priv1.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/spu_priv1.h:1.2
+--- linux-powerpc-git/include/asm-powerpc/spu_priv1.h:1.1.1.1	Wed Dec  6 08:24:04 2006
++++ linux-powerpc-git/include/asm-powerpc/spu_priv1.h	Wed Dec  6 08:43:16 2006
+@@ -207,6 +207,8 @@
  
- #ifdef CONFIG_PCI
- extern void pci_iommu_init(void);
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.5
---- /dev/null	Mon Dec 11 21:26:17 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c	Mon Dec 11 21:09:38 2006
-@@ -0,0 +1,418 @@
+ extern const struct spu_priv1_ops spu_priv1_mmio_ops;
+ extern const struct spu_management_ops spu_management_of_ops;
++extern const struct spu_priv1_ops spu_priv1_beat_ops;
++extern const struct spu_management_ops spu_management_beat_ops;
+ 
+ #endif /* __KERNEL__ */
+ #endif
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/spu.h
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/spu.h:1.2
+--- /dev/null	Mon Dec 11 20:37:36 2006
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/spu.h	Thu Dec  7 16:41:39 2006
+@@ -0,0 +1,36 @@
 +/*
-+ * Support for IOMMU on Celleb platform.
++ * spu hypervisor abstraction for Beat
 + *
 + * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/cell/iommu.c:
-+ * Copyright (C) 2005 IBM Deutschland Entwicklung GmbH,
-+ *			 Arnd Bergmann <arndb@de.ibm.com>
-+ *
-+ * and arch/powerpc/platforms/pseries/iommu.c:
-+ * Copyright (C) 2001 Mike Corrigan & Dave Engebretsen, IBM Corporation
-+ * Copyright (C) 2004 Olof Johansson <olof@lixom.net>, IBM Corporation
-+ * Copyright (C) 2006 Olof Johansson <olof@lixom.net>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -71,392 +63,521 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.5
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#undef DEBUG
++#ifndef _CELLEB_SPU_H
++#define _CELLEB_SPU_H
 +
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/delay.h>
-+#include <linux/string.h>
-+#include <linux/init.h>
-+#include <linux/bootmem.h>
-+#include <linux/mm.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/kernel.h>
-+#include <linux/compiler.h>
-+
-+#include <asm/sections.h>
-+#include <asm/iommu.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/machdep.h>
-+#include <asm/pmac_feature.h>
-+#include <asm/abs_addr.h>
-+#include <asm/system.h>
-+#include <asm/ppc-pci.h>
-+#include <asm/udbg.h>
-+#include <asm/lmb.h>
-+
-+#include "beat.h"
-+
-+static void iommu_dev_setup_null(struct pci_dev *d)
-+{
-+}
-+static void iommu_bus_setup_null(struct pci_bus *d)
-+{
-+}
-+static void iopt_build_null(struct iommu_table *tbl, long index,
-+	long npages, unsigned long uaddr, enum dma_data_direction direction)
-+{
-+}
-+static void iopt_free_null(struct iommu_table *tbl, long index,
-+	long npages)
-+{
-+}
-+
-+/* ToDo:
-+ *  Current codes can not handle more than one NUMA domains.
-+ */
-+#define NR_IOMMUS	1
-+
-+
-+struct celleb_iommu_dmap {
-+	unsigned long real_addr;
-+	unsigned long dma_addr;
-+	unsigned long size;
++struct spu_pdata {
++	int nid;
++	u64 unit_number;
++	u64 shadow_int_mask_RW[3];
 +};
 +
-+struct celleb_iommu {
-+	struct iommu_table tbl;    /* should be the first member */
-+	unsigned long io_space_id;
-+	unsigned long ioid;	   /* IOPTE parameter */
-+	int	nid;
-+	unsigned long io_address;  /* start DMA address */
-+	unsigned long io_size;
-+	unsigned long io_page_size;
-+	unsigned long flags;       /* IOPTE parameter */
-+	unsigned long dmap_size;   /* size of direct map ==
-+	                                start address of the rest */
-+	unsigned long dmap_regions;/* == number of actual lmb regions */
-+	struct celleb_iommu_dmap *dmap;
-+} iommus[NR_IOMMUS];
++static inline struct spu_pdata *spu_get_pdata(struct spu *spu)
++{
++	BUG_ON(!spu->pdata);
++	return spu->pdata;
++}
 +
-+static int celleb_nr_iommus = 0;
-+
-+
-+/* initialize the iommu to support a simple linear mapping
-+ * for each DMA window used by any device.
++#endif /* _CELLEB_SPU_H */
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/spu_manage.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/spu_manage.c:1.4
+--- /dev/null	Mon Dec 11 20:37:36 2006
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/spu_manage.c	Mon Dec 11 15:52:35 2006
+@@ -0,0 +1,282 @@
++/*
++ * spu management operations for Beat
++ *
++ * (C) Copyright 2006 TOSHIBA CORPORATION
++ *
++ * This code is based on arch/powerpc/platforms/cell/spu_priv1_mmio.c:
++ *  (C) Copyright IBM Deutschland Entwicklung GmbH 2005
++ *  Copyright 2006 Sony Corp.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
-+static void celleb_do_map_iommu_direct(struct celleb_iommu *iommu)
++
++#include <linux/interrupt.h>
++#include <linux/list.h>
++#include <linux/module.h>
++#include <linux/ptrace.h>
++#include <linux/slab.h>
++#include <linux/wait.h>
++#include <linux/mm.h>
++#include <linux/io.h>
++#include <linux/mutex.h>
++#include <linux/device.h>
++
++#include <asm/spu.h>
++#include <asm/spu_priv1.h>
++#include <asm/firmware.h>
++#include <asm/prom.h>
++
++#include "spu.h"
++
++static int __init find_spu_node_id(struct device_node *spe)
 +{
-+	unsigned long io_address, real_address;
-+	unsigned long old_address, old_ioid, old_flags;
++	const unsigned int *id;
++	struct device_node *cpu;
++	cpu = spe->parent->parent;
++	id = get_property(cpu, "node-id", NULL);
++	return id ? *id : 0;
++}
++
++static u64 __init find_spu_unit_number(struct device_node *spe)
++{
++	const unsigned int *reg;
++	reg = get_property(spe, "reg", NULL);
++	return reg ? (u64)*reg : 0ul;
++}
++
++static int __init cell_spuprop_present(struct spu *spu, struct device_node *spe,
++		const char *prop)
++{
++	static DEFINE_MUTEX(add_spumem_mutex);
++
++	const struct address_prop {
++		unsigned long address;
++		unsigned int len;
++	} __attribute__((packed)) *p;
++	int proplen;
++
++	unsigned long start_pfn, nr_pages;
++	struct pglist_data *pgdata;
++	struct zone *zone;
++	int ret;
++
++	p = get_property(spe, prop, &proplen);
++	WARN_ON(proplen != sizeof (*p));
++
++	start_pfn = p->address >> PAGE_SHIFT;
++	nr_pages = ((unsigned long)p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	pgdata = NODE_DATA(spu_get_pdata(spu)->nid);
++	zone = pgdata->node_zones;
++
++	/* XXX rethink locking here */
++	mutex_lock(&add_spumem_mutex);
++	ret = __add_pages(zone, start_pfn, nr_pages);
++	mutex_unlock(&add_spumem_mutex);
++
++	return ret;
++}
++
++static void __iomem * __init map_spe_prop(struct spu *spu,
++		struct device_node *n, const char *name)
++{
++	const struct address_prop {
++		unsigned long address;
++		unsigned int len;
++	} __attribute__((packed)) *prop;
++
++	const void *p;
++	int proplen;
++	void __iomem *ret = NULL;
++	int err = 0;
++
++	p = get_property(n, name, &proplen);
++	if (proplen != sizeof (struct address_prop))
++		return NULL;
++
++	prop = p;
++
++	err = cell_spuprop_present(spu, n, name);
++	if (err && (err != -EEXIST))
++		goto out;
++
++	ret = ioremap(prop->address, prop->len);
++
++ out:
++	return ret;
++}
++
++static void spu_unmap(struct spu *spu)
++{
++	iounmap(spu->priv2);
++	iounmap(spu->problem);
++	iounmap((__force u8 __iomem *)spu->local_store);
++}
++
++static int __init spu_map_device(struct spu *spu, struct device_node *node)
++{
++	const char *prop;
++	int ret;
++
++	ret = -ENODEV;
++	spu->name = get_property(node, "name", NULL);
++	if (!spu->name)
++		goto out;
++
++	prop = get_property(node, "local-store", NULL);
++	if (!prop)
++		goto out;
++	spu->local_store_phys = *(unsigned long *)prop;
++
++	/* we use local store as ram, not io memory */
++	spu->local_store = (void __force *)
++		map_spe_prop(spu, node, "local-store");
++	if (!spu->local_store)
++		goto out;
++
++	prop = get_property(node, "problem", NULL);
++	if (!prop)
++		goto out_unmap;
++	spu->problem_phys = *(unsigned long *)prop;
++
++	spu->problem= map_spe_prop(spu, node, "problem");
++	if (!spu->problem)
++		goto out_unmap;
++
++	spu->priv2= map_spe_prop(spu, node, "priv2");
++	if (!spu->priv2)
++		goto out_unmap;
++	ret = 0;
++	goto out;
++
++out_unmap:
++	spu_unmap(spu);
++out:
++	return ret;
++}
++
++static int __init spu_map_interrupts(struct spu *spu, struct device_node *np)
++{
++	struct of_irq oirq;
++	int ret;
 +	int i;
 +
-+	iommu->dmap =
-+	    kzalloc(sizeof(struct celleb_iommu_dmap) * lmb.memory.cnt,
-+		    GFP_KERNEL);
-+	if (!iommu->dmap) {
-+		return;
++	for (i=0; i < 3; i++) {
++		ret = of_irq_map_one(np, i, &oirq);
++		if (ret) {
++			pr_debug("spu_new: failed to get irq %d\n", i);
++			goto err;
++		}
++		ret = -EINVAL;
++		pr_debug("  irq %d no 0x%x on %s\n", i, oirq.specifier[0],
++			 oirq.controller->full_name);
++		spu->irqs[i] = irq_create_of_mapping(oirq.controller,
++					oirq.specifier, oirq.size);
++		if (spu->irqs[i] == NO_IRQ) {
++			pr_debug("spu_new: failed to map it !\n");
++			goto err;
++		}
 +	}
-+	iommu->dmap_regions = lmb.memory.cnt;
++	return 0;
 +
-+	iommu->dmap_size = 0;
-+	io_address = iommu->io_address;
-+	for (i = 0; i < iommu->dmap_regions; i++) {
-+		iommu->dmap[i].real_addr = lmb.memory.region[i].base;
-+		if (io_address >= iommu->io_address + iommu->io_size) {
-+			/* no more DMA address, ignore this memory region */
-+			iommu->dmap[i].dma_addr = DMA_ERROR_CODE;
-+			iommu->dmap[i].size = 0;
-+			continue;
-+		}
-+		if ( (lmb.memory.region[i].base &
-+		       ((1UL << iommu->io_page_size) - 1))
-+		    || (lmb.memory.region[i].size &
-+		       ((1UL << iommu->io_page_size) - 1))) {
-+			/* page size mismatch, ignore this memory region */
-+			iommu->dmap[i].dma_addr = DMA_ERROR_CODE;
-+			iommu->dmap[i].size = 0;
-+			continue;
-+		}
-+		iommu->dmap[i].dma_addr = io_address;
-+		iommu->dmap[i].size = lmb.memory.region[i].size;
-+
-+		for (real_address = iommu->dmap[i].real_addr;
-+		     real_address <
-+		     iommu->dmap[i].real_addr + iommu->dmap[i].size;
-+		     real_address += 1UL << iommu->io_page_size,
-+		     io_address += 1UL << iommu->io_page_size) {
-+			if (beat_put_iopte
-+			    (iommu->io_space_id, io_address, (void *)real_address,
-+			     iommu->ioid, iommu->flags, (void **)&old_address,
-+			     &old_ioid, &old_flags) != 0) {
-+				break;
-+			}
-+		}
-+		if (real_address - iommu->dmap[i].real_addr <
-+		    iommu->dmap[i].size) {
-+			iommu->dmap[i].size =
-+			    real_address - iommu->dmap[i].real_addr;
-+		}
-+
-+		iommu->dmap_size += iommu->dmap[i].size;
++err:
++	pr_debug("failed to map irq %x for spu %s\n", *oirq.specifier,
++		spu->name);
++	for (; i >= 0; i--) {
++		if (spu->irqs[i] != NO_IRQ)
++			irq_dispose_mapping(spu->irqs[i]);
 +	}
++	return ret;
 +}
 +
-+static void iommu_bus_setup_celleb(struct pci_bus *b)
++static int __init of_enumerate_spus(int (*fn)(void *data))
 +{
-+	struct device_node *dn = (struct device_node *) b->sysdata;
-+	struct device_node *pdn;
-+	struct pci_dn *pdn_pci = NULL;
-+	const char *ctype, *ptype;
-+	const unsigned long *dma_window = NULL;
-+	struct celleb_iommu *iommu;
-+	struct iommu_table **iommu_pos = NULL/*, **iommu_set_p */;
++	int ret;
++	struct device_node *node;
 +
-+	if (celleb_nr_iommus >= NR_IOMMUS) {
-+		pr_debug("too many iommus.\n");
-+		return ;
-+	}
-+
-+	ctype = get_property(dn, "device_type", NULL);
-+	if (!ctype) {
-+		pr_debug("bus type not defined.\n");
-+		return ;
-+	}
-+	if (strncmp(ctype,"pci",3) == 0)
-+		iommu_pos = &(PCI_DN(dn)->iommu_table);
-+
-+	for (pdn = dn; pdn != NULL; pdn = pdn->parent) {
-+		dma_window = get_property(pdn, "toshiba,dma-window", NULL);
-+		if (dma_window != NULL)
++	ret = -ENODEV;
++	for (node = of_find_node_by_type(NULL, "spe");
++			node; node = of_find_node_by_type(node, "spe")) {
++		ret = fn(node);
++		if (ret) {
++			printk(KERN_WARNING "%s: Error initializing %s\n",
++				__FUNCTION__, node->name);
 +			break;
-+	}
-+	if (!dma_window) {
-+		pr_debug("No toshiba,dma-window entry found !\n");
-+		return;
-+	}
-+	ptype = get_property(pdn, "device_type", NULL);
-+	if (!ptype) {
-+		pr_debug("bus type not defined\n");
-+		return ;
-+	}
-+	if (strncmp(ptype,"pci",3) == 0)
-+		pdn_pci = PCI_DN(pdn);
-+
-+
-+	/* ToDo: Do not initialize iommu tables in bus_setup, as they belong to
-+	 *  CBE-IOC. To do here is to get NUMA node ID of the bus and find
-+	 * an iommu table.
-+         *  As the current version of Celleb's device tree doesn't have
-+	 * CBE-IOC entry, we do initialize the table here..
-+	 */
-+	iommu = &iommus[0]; /* ToDo: must be nid of the bus */
-+	if (!iommu->io_size) {
-+		iommu->io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
-+		iommu->ioid = dma_window[0] & 0x7ffUL;
-+		iommu->nid = 0;
-+		iommu->io_address = dma_window[1];
-+		iommu->io_size = dma_window[2];
-+		iommu->io_page_size = dma_window[3];
-+		iommu->flags = 0xf800000000000000UL;
-+		/* Fixed setting: read/write permitted,
-+		 * Memory coherency required, Strongest order
-+		 */
-+		celleb_do_map_iommu_direct(iommu);	/* TBD: always? */
-+
-+		iommu->tbl.it_busno = pdn_pci ? pdn_pci->bussubno : 0;
-+		if (iommu->dmap) {
-+			iommu->tbl.it_size =
-+			   (iommu->io_size - iommu->dmap_size) >> PAGE_SHIFT;
-+			iommu->tbl.it_offset =
-+			   (iommu->io_address + iommu->dmap_size) >> PAGE_SHIFT;
-+		} else {
-+			iommu->tbl.it_size = iommu->io_size >> PAGE_SHIFT;
-+			iommu->tbl.it_offset = iommu->io_address >> PAGE_SHIFT;
-+		}
-+		iommu->tbl.it_base = 0;
-+		iommu->tbl.it_index = 0;
-+		iommu->tbl.it_blocksize = 16;
-+
-+	}
-+
-+	if (iommu_pos)
-+		*iommu_pos = &iommu->tbl;
-+}
-+
-+static void iommu_dev_setup_celleb(struct pci_dev *dev)
-+{
-+	struct celleb_iommu *iommu_found = NULL;
-+
-+#if 0
-+	for (i=0;i<celleb_nr_iommus;i++) {
-+		if (dev->dev.archdata.numa_node == iommus[i].nid) {
-+			iommu_found = &iommus[i];
-+			break;
-+		}
-+	}
-+#else
-+	/* ToDo: find nid and.. */
-+	if (iommus[0].io_size) iommu_found = &iommus[0];
-+#endif
-+	dev->dev.archdata.dma_ops = pci_dma_ops;
-+	dev->dev.archdata.dma_data = iommu_found;
-+}
-+
-+
-+static dma_addr_t get_dma_address(struct device *hwdev, size_t size,
-+				  uint64_t phys_addr)
-+{
-+	struct celleb_iommu *iommu;
-+	int i;
-+
-+	iommu = hwdev->archdata.dma_data;
-+	if (!iommu)
-+		return DMA_ERROR_CODE;
-+
-+	/* first, try directly mapped address */
-+	if (iommu->dmap) {
-+		for (i = 0; i < iommu->dmap_regions; i++) {
-+			if (phys_addr >= iommu->dmap[i].real_addr &&
-+			    phys_addr + size <
-+			    iommu->dmap[i].real_addr + iommu->dmap[i].size)
-+				return (iommu->dmap[i].dma_addr +
-+					phys_addr - iommu->dmap[i].real_addr);
-+		}
-+	}
-+	/* TBD: if not found in direct mapping.. */
-+	return DMA_ERROR_CODE;
-+}
-+
-+
-+static void put_dma_address(struct device *hwdev, size_t size,
-+			    dma_addr_t dma_addr)
-+{
-+	struct celleb_iommu *iommu;
-+
-+	iommu = hwdev->archdata.dma_data;
-+	if (!iommu)
-+		return;
-+
-+	if (iommu->dmap)
-+		/* nothing to do */
-+		;
-+	else
-+		/* TBD: not supported yet */
-+		;
-+}
-+
-+
-+static void *celleb_alloc_coherent(struct device *hwdev, size_t size,
-+				   dma_addr_t * dma_handle, gfp_t flag)
-+{
-+	void *ret;
-+
-+	ret = (void *) __get_free_pages(flag, get_order(size));
-+	if (ret != NULL) {
-+		memset(ret, 0, size);
-+		*dma_handle =
-+		    get_dma_address(hwdev, size, virt_to_phys(ret));
-+		if (*dma_handle == DMA_ERROR_CODE) {
-+			free_pages((unsigned long) ret, get_order(size));
-+			return NULL;
 +		}
 +	}
 +	return ret;
 +}
 +
-+static void celleb_free_coherent(struct device *hwdev, size_t size,
-+				 void *vaddr, dma_addr_t dma_handle)
++static int __init beat_create_spu(struct spu *spu, void *data)
 +{
-+	put_dma_address(hwdev, size, dma_handle);
-+	free_pages((unsigned long) vaddr, get_order(size));
-+}
++	int ret;
++	struct device_node *spe = (struct device_node *)data;
 +
-+static dma_addr_t celleb_map_single(struct device *hwdev, void *ptr,
-+				    size_t size,
-+				    enum dma_data_direction direction)
-+{
-+	return get_dma_address(hwdev, size, virt_to_abs(ptr));
-+}
-+
-+static void celleb_unmap_single(struct device *hwdev, dma_addr_t dma_addr,
-+				size_t size,
-+				enum dma_data_direction direction)
-+{
-+	put_dma_address(hwdev, size, dma_addr);
-+}
-+
-+static int celleb_map_sg(struct device *hwdev, struct scatterlist *sg,
-+			 int nents, enum dma_data_direction direction)
-+{
-+	int i;
-+
-+	for (i = 0; i < nents; i++, sg++) {
-+		sg->dma_address =
-+		    get_dma_address(hwdev, sg->length,
-+				    page_to_phys(sg->page) + sg->offset);
-+		sg->dma_length = sg->length;
-+		if (sg->dma_address == DMA_ERROR_CODE) {
-+			sg->dma_length = 0;
-+			break;
-+		}
++	spu->pdata = kzalloc(sizeof(struct spu_pdata),
++		GFP_KERNEL);
++	if (!spu->pdata) {
++		ret = -ENOMEM;
++		goto out;
 +	}
 +
-+	return i;
-+}
-+
-+static void celleb_unmap_sg(struct device *hwdev, struct scatterlist *sg,
-+			    int nents, enum dma_data_direction direction)
-+{
-+	int i;
-+
-+	for (i = 0; i < nents; i++, sg++) {
-+		if (sg->dma_address == DMA_ERROR_CODE)
-+			break;
-+		put_dma_address(hwdev, sg->length, sg->dma_address);
++	spu->node = find_spu_node_id(spe);
++	if (spu->node >= MAX_NUMNODES) {
++		printk(KERN_WARNING "SPE %s on node %d ignored,"
++		       " node number too big\n", spe->full_name, spu->node);
++		printk(KERN_WARNING "Check if CONFIG_NUMA is enabled.\n");
++		ret = -ENODEV;
++		goto out_free;
 +	}
++
++	spu_get_pdata(spu)->nid = of_node_to_nid(spe);
++	if (spu_get_pdata(spu)->nid == -1)
++		spu_get_pdata(spu)->nid = 0;
++
++	spu_get_pdata(spu)->unit_number = find_spu_unit_number(spe);
++
++	ret = spu_map_device(spu, spe);
++	if (ret)
++		goto out_free;
++
++	ret = spu_map_interrupts(spu, spe);
++	if (ret)
++		goto out_unmap;
++
++	pr_debug(KERN_DEBUG "Using SPE %s %p %p %p %d\n", spu->name,
++		spu->local_store, spu->problem, spu->priv2, spu->number);
++	goto out;
++
++out_unmap:
++	spu_unmap(spu);
++out_free:
++	kfree(spu->pdata);
++	spu->pdata = NULL;
++out:
++	return ret;
 +}
 +
-+static int celleb_dma_supported(struct device *dev, u64 mask)
++static int beat_destroy_spu(struct spu *spu)
 +{
-+	return (mask < 0x100000000UL);
++	spu_unmap(spu);
++	kfree(spu->pdata);
++	spu->pdata = NULL;
++	return 0;
 +}
 +
-+
-+static struct dma_mapping_ops celleb_dma_ops = {
-+	.alloc_coherent = celleb_alloc_coherent,
-+	.free_coherent = celleb_free_coherent,
-+	.map_single = celleb_map_single,
-+	.unmap_single = celleb_unmap_single,
-+	.map_sg = celleb_map_sg,
-+	.unmap_sg = celleb_unmap_sg,
-+	.dma_supported = celleb_dma_supported,
++const struct spu_management_ops spu_management_beat_ops = {
++	.enumerate_spus = of_enumerate_spus,
++	.create_spu = beat_create_spu,
++	.destroy_spu = beat_destroy_spu,
 +};
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/spu_priv1.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/spu_priv1.c:1.2
+--- /dev/null	Mon Dec 11 20:37:36 2006
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/spu_priv1.c	Thu Dec  7 16:43:32 2006
+@@ -0,0 +1,210 @@
++/*
++ * spu hypervisor abstraction for Beat
++ *
++ * (C) Copyright 2006 TOSHIBA CORPORATION
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
 +
++#include <linux/module.h>
 +
-+void celleb_init_iommu(void)
++#include <asm/spu.h>
++#include <asm/spu_priv1.h>
++
++#include "beat.h"
++#include "spu.h"
++
++static inline void _int_mask_set(struct spu *spu, int class, u64 mask)
 +{
-+	int setup_bus = 0;
-+
-+	if (!(of_chosen &&
-+	      get_property(of_chosen, "linux,iommu-off", NULL)))
-+		setup_bus = 1;
-+
-+	if (setup_bus) {
-+		pr_debug("%s: IOMMU mapping activated\n", __FUNCTION__);
-+		ppc_md.pci_dma_dev_setup = iommu_dev_setup_celleb;
-+		ppc_md.pci_dma_bus_setup = iommu_bus_setup_celleb;
-+	} else {
-+		pr_debug("%s: IOMMU mapping activated, "
-+			 "no device action necessary\n", __FUNCTION__);
-+		/* Direct I/O, IOMMU off */
-+		ppc_md.pci_dma_dev_setup = iommu_dev_setup_null;
-+		ppc_md.pci_dma_bus_setup = iommu_bus_setup_null;
-+	}
-+	ppc_md.tce_build = iopt_build_null;
-+	ppc_md.tce_free = iopt_free_null;
-+
-+	pci_dma_ops = &celleb_dma_ops;
++	spu_get_pdata(spu)->shadow_int_mask_RW[class] = mask;
++	beat_set_irq_mask_for_spe(spu_get_pdata(spu)->unit_number, class, mask);
 +}
++
++static inline u64 _int_mask_get(struct spu *spu, int class)
++{
++	return spu_get_pdata(spu)->shadow_int_mask_RW[class];
++}
++
++static void int_mask_set(struct spu *spu, int class, u64 mask)
++{
++	_int_mask_set(spu, class, mask);
++}
++
++static u64 int_mask_get(struct spu *spu, int class)
++{
++	return _int_mask_get(spu, class);
++}
++
++static void int_mask_and(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++	old_mask = _int_mask_get(spu, class);
++	_int_mask_set(spu, class, old_mask & mask);
++}
++
++static void int_mask_or(struct spu *spu, int class, u64 mask)
++{
++	u64 old_mask;
++	old_mask = _int_mask_get(spu, class);
++	_int_mask_set(spu, class, old_mask | mask);
++}
++
++static void int_stat_clear(struct spu *spu, int class, u64 stat)
++{
++	beat_clear_interrupt_status_of_spe(spu_get_pdata(spu)->unit_number,
++					   class, stat);
++}
++
++static u64 int_stat_get(struct spu *spu, int class)
++{
++	u64 int_stat;
++	beat_get_interrupt_status_of_spe(spu_get_pdata(spu)->unit_number,
++					 class, &int_stat);
++	return int_stat;
++}
++
++static void cpu_affinity_set(struct spu *spu, int cpu)
++{
++	return;
++}
++
++static u64 mfc_dar_get(struct spu *spu)
++{
++	u64 dar;
++	beat_get_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_dar_RW), &dar);
++	return dar;
++}
++
++static u64 mfc_dsisr_get(struct spu *spu)
++{
++	u64 dsisr;
++	beat_get_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_dsisr_RW), &dsisr);
++	return dsisr;
++}
++
++static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
++{
++	beat_set_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_dsisr_RW), dsisr);
++}
++
++static void mfc_sdr_setup(struct spu *spu)
++{
++	return;
++}
++
++static void mfc_sr1_set(struct spu *spu, u64 sr1)
++{
++	beat_set_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_sr1_RW), sr1);
++}
++
++static u64 mfc_sr1_get(struct spu *spu)
++{
++	u64 sr1;
++	beat_get_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_sr1_RW), &sr1);
++	return sr1;
++}
++
++static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
++{
++	beat_set_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_tclass_id_RW), tclass_id);
++}
++
++static u64 mfc_tclass_id_get(struct spu *spu)
++{
++	u64 tclass_id;
++	beat_get_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, mfc_tclass_id_RW), &tclass_id);
++	return tclass_id;
++}
++
++static void tlb_invalidate(struct spu *spu)
++{
++	beat_set_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, tlb_invalidate_entry_W), 0ul);
++}
++
++static void resource_allocation_groupID_set(struct spu *spu, u64 id)
++{
++	beat_set_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, resource_allocation_groupID_RW),
++		id);
++}
++
++static u64 resource_allocation_groupID_get(struct spu *spu)
++{
++	u64 id;
++	beat_get_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, resource_allocation_groupID_RW),
++		&id);
++	return id;
++}
++
++static void resource_allocation_enable_set(struct spu *spu, u64 enable)
++{
++	beat_set_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, resource_allocation_enable_RW),
++		enable);
++}
++
++static u64 resource_allocation_enable_get(struct spu *spu)
++{
++	u64 enable;
++	beat_get_spe_privileged_state_1_registers(
++		spu_get_pdata(spu)->unit_number,
++		offsetof(struct spu_priv1, resource_allocation_enable_RW),
++		&enable);
++	return enable;
++}
++
++const struct spu_priv1_ops spu_priv1_beat_ops =
++{
++	.int_mask_and = int_mask_and,
++	.int_mask_or = int_mask_or,
++	.int_mask_set = int_mask_set,
++	.int_mask_get = int_mask_get,
++	.int_stat_clear = int_stat_clear,
++	.int_stat_get = int_stat_get,
++	.cpu_affinity_set = cpu_affinity_set,
++	.mfc_dar_get = mfc_dar_get,
++	.mfc_dsisr_get = mfc_dsisr_get,
++	.mfc_dsisr_set = mfc_dsisr_set,
++	.mfc_sdr_setup = mfc_sdr_setup,
++	.mfc_sr1_set = mfc_sr1_set,
++	.mfc_sr1_get = mfc_sr1_get,
++	.mfc_tclass_id_set = mfc_tclass_id_set,
++	.mfc_tclass_id_get = mfc_tclass_id_get,
++	.tlb_invalidate = tlb_invalidate,
++	.resource_allocation_groupID_set = resource_allocation_groupID_set,
++	.resource_allocation_groupID_get = resource_allocation_groupID_get,
++	.resource_allocation_enable_set = resource_allocation_enable_set,
++	.resource_allocation_enable_get = resource_allocation_enable_get,
++};
