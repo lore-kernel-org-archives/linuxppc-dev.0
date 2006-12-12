@@ -1,15 +1,22 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from bay0-omc3-s15.bay0.hotmail.com (bay0-omc3-s15.bay0.hotmail.com
-	[65.54.246.215]) by ozlabs.org (Postfix) with ESMTP id 763F067C4B
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id A1B8267BC8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Dec 2006 02:59:41 +1100 (EST)
-Message-ID: <BAY122-F11E9828E7994B0E0514B19CAD70@phx.gbl>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Lite5200B I2S driver
-Date: Tue, 12 Dec 2006 16:47:29 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+	Wed, 13 Dec 2006 03:07:31 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1737979ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 12 Dec 2006 08:07:29 -0800 (PST)
+Message-ID: <528646bc0612120807x1af8ca06icfc53bea567a2a46@mail.gmail.com>
+Date: Tue, 12 Dec 2006 09:07:28 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Andrea Galbusera" <andrea.galbusera@teamware.it>
+Subject: Re: Which kernel for Lite5200 based target board?
+In-Reply-To: <1165936728.32602.59.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1165936728.32602.59.camel@localhost.localdomain>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,23 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On 12/12/06, Andrea Galbusera <andrea.galbusera@teamware.it> wrote:
+> Hi all,
+>
+> I read a lot about this but I'm still confused. I have a Lite5200 based
+> target board and I'm experimenting with a few kernels but I can't figure
+> out which is the best to stay with.
+<SNIP>
+> I know Sylvain Munaut is/was also maintaining a kernel tree with working
+> support for IDE and Bestcomm. This tree seems not very active to me but
+> my git wisdom is very very poor and I may be wrong :-(
 
-I´m working with a Lite5200B EVB, trying to atach an audio output to a PCM 
-1680 from Texas Instruments.
-At this moment I am using the patched 2.6.16.11-rt18 kernel that comes with 
-Freescale BSP.
-I´ve tried to develop an I2S driver for the platform with no results. I´m 
-afraid that my driver devolping skills are still too low.
+Sylvain and I are actively working on the mpc52xx support in
+arch/powerpc.  You can choose between an arch/ppc or an arch/powerpc
+kernel (arch/ppc the old 32 bit support; and it is steadly being
+migrated over to arch/powerpc).  If you want to stick with arch/ppc;
+you can use any recent 2.6 kernel and search the mailing list for the
+patches adding bestcomm, ethernet and IDE support.  If you want to use
+an arch/powerpc kernel, look at my tree on http://git.secretlab.ca.
+The lite5200 branch already contains IDE, bestcomm, ethernet, PCI,
+etc.
 
-Anybody knows a working I2S driver for this board that can throw any 
-audiooutput through PSCs?
+> Unfortunately my tests tell me none of the listed kernels works out of
+> the box for the target: the former being not officially supported by
+> DENX for the Lite5200 target, the latter having a Lite5200/Lite5200B
+> configuration target.
 
-Any help or indication would be apreciated.
+My tree works for me; but you'll need to update to a recent u-boot.
+arch/powerpc requires passing in a flattened device tree at boot time.
+ Look in arch/powerpc/boot/dts/lite5200b.dts for the device tree
+source.  You'll also need to get the device tree compiler from
+www.jdl.org.
 
-Pedro Dominguez.
+Plus since Sylvain and I are actively working on this stuff; there's a
+better chance that we can help.  :)
 
-_________________________________________________________________
-Acepta el reto MSN Premium: Protección para tus hijos en internet. 
-Descárgalo y pruébalo 2 meses gratis. 
-http://join.msn.com?XAPID=1697&DI=1055&HL=Footer_mailsenviados_proteccioninfantil
+cheers,
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
