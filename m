@@ -1,16 +1,20 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s15.bay0.hotmail.com (bay0-omc2-s15.bay0.hotmail.com
-	[65.54.246.151]) by ozlabs.org (Postfix) with ESMTP id 26D27679E0
+Return-Path: <Marta.Chamorro@xerox.com>
+Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler1.mail.xerox.com",
+	Issuer "wvmler1.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C113567C7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Dec 2006 22:20:18 +1100 (EST)
-Message-ID: <BAY110-F278D0CB7E79880A1BEC358B2D70@phx.gbl>
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C0360F790@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: rick.moleres@xilinx.com
-Subject: RE: Speed of plb_temac 3.00 on ML403
-Date: Tue, 12 Dec 2006 11:08:06 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+	Wed, 13 Dec 2006 02:18:38 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Power management for ppc 85xx
+Date: Tue, 12 Dec 2006 15:17:55 -0000
+Message-ID: <BFEE19E1D0DBF84698D76276388DCB84435E82@gbrwgceumf01.eu.xerox.net>
+In-Reply-To: <457A4A40.2060803@anagramm.de>
+From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
+To: "Clemens Koller" <clemens.koller@anagramm.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,132 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Rick,
-Now I am measuring the performance of my TEMAC on ml403 using netperf. 
-However I cannot get a performance as high as yours(550Mbps for TX). My 
-data is listed here:
 
-Board --> PC (tx)
+Hi Clemens,
 
-# ./netperf -H 192.168.0.3 -C -t TCP_STREAM -- -m 8192 -s 253952 -S 253952
-TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.0.3 
-(192.168.0.3) port 0 AF_INET
-Recv   Send    Send                          Utilization       Service 
-Demand
-Socket Socket  Message  Elapsed              Send     Recv     Send    Recv
-Size   Size    Size     Time     Throughput  local    remote   local   
-remote
-bytes  bytes   bytes    secs.    10^6bits/s  % U      % S      us/KB   
-us/KB
+>=20
+> Hello, Kumar, Hi, Marta!
+>=20
+> >> Glad I managed to make sense. I checked the hardware spec on the
+board
+> >> and it looks like we're using everything, apart from the SEC and
+maybe
+> >> the stand-alone I2C (I think we're just using the one within the
+CMP).
+> >> By the way, I made a mistake and the actual processor on the board
+is
+> >> the cut-down 8541, not the 8555. My apologies for that.
+> >>
+> >> This morning I added some printks and confirmed that there is no
+code
+> >> behind pm_ops, so my question remains: is there some code out there
+> >> that
+> >> I can use? (hope so, otherwise I'm doomed...)
+> >
+> > I'm sorry to say you're doomed.  I don't believe anyone's spent any
+> > time trying to do pwr mgmt on 85xx.
+>=20
+> I am working with the MPC8540 in a mobile product and some
+> power saving would be fine to use. But I haven't seen any
+> power management code for that thingy in the kernels at all.
+> So, there is some work left there. Maybe I will have
+> a closer look in the future.
+>=20
+> According to some tests of a board manufacturer, the cpu
+> doesn't power down very much, when you stop some peripherals
+> or send the core to nap. But I wasn't able to confirm that yet.
 
-262142 206848   8192    10.00        64.51   -1.00    2.59     -1.000  
-6.587
+We're estimating 2.5 watts saving on doze mode, in case that helps.
+That's for a 8545 @ 800MHz
 
-PC --> board (rx)
+>=20
+> Best greets,
+>=20
+> Clemens Koller
+> _______________________________
 
-linux:/home/mingliu/netperf-2.4.1 # netperf -H 192.168.0.5 -C -t TCP_STREAM 
--- -m 14400 -s 253952 -S 253952
-TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.0.5 
-(192.168.0.5) port 0 AF_INET
-Recv   Send    Send                          Utilization       Service 
-Demand
-Socket Socket  Message  Elapsed              Send     Recv     Send    Recv
-Size   Size    Size     Time     Throughput  local    remote   local   
-remote
-bytes  bytes   bytes    secs.    10^6bits/s  % U      % U      us/KB   
-us/KB
+Bfn,
 
-206848 262142  14400    10.02       169.09   -1.00    -1.00    -1.000  
--0.484
-
-I think this performance is much slower than what you have described. So 
-what's the problem? I am using the old cores of TEMAC(plb_temac 2.00.a and 
-hard_temac 1.00.a and DMA type is 3, Tx and Rx FIFO lengths are both 
-131072, large enough?). My linux is 2.6.16 from the general kernel with the 
-temac driver patched. The driver is from the patch 
-http://source.mvista.com/~ank/paulus-powerpc/20060309/. Is this bad 
-performance because of the old cores, or the driver? Or Montavista Linux is 
-RTOS and it should have a much better performance like this? You must be 
-more experienced on the performance issue and your suggestion will be 
-extreamly useful for me. 
-
-Anxious for your suggestion and explanation. 
-
-Regards
-Ming
-
->From: "Rick Moleres" <rick.moleres@xilinx.com>
->To: "Michael Galassi" <mgalassi@c-cor.com>,"Thomas Denzinger" 
-<t.denzinger@lesametric.de>
->CC: linuxppc-embedded@ozlabs.org
->Subject: RE: Speed of plb_temac 3.00 on ML403 
->Date: Tue, 5 Dec 2006 12:08:58 -0700
->
->
->Thomas,
->
->Yes, Michael points out the hardware parameters that are needed to
->enable SGDMA along with DRE (to allow unaligned packets) and checksum
->offload. It also helps the queuing if the FIFOs in the hardware (Tx/Rx
->and IPIF) are deep to handle fast frame rates.  And finally, better
->performance if jumbo frames are enabled. Once SGDMA is tuned (e.g.,
->number of buffer descriptors, interrupt coalescing) and set up, the PPC
->is not involved in the data transfers - only in the setup and interrupt
->handling.
->
->With a 300Mhz system we saw about 730Mbps Tx with TCP on 2.4.20
->(MontaVista Linux) and about 550Mbps Tx with TCP on 2.6.10 (MontaVista
->again) - using netperf w/ TCP_SENDFILE option. We didn't investigate the
->difference between 2.4 and 2.6.
->
->-Rick
->
->-----Original Message-----
->From: linuxppc-embedded-bounces+moleres=xilinx.com@ozlabs.org
->[mailto:linuxppc-embedded-bounces+moleres=xilinx.com@ozlabs.org] On
->Behalf Of Michael Galassi
->Sent: Tuesday, December 05, 2006 11:42 AM
->To: Thomas Denzinger
->Cc: linuxppc-embedded@ozlabs.org
->Subject: Re: Speed of plb_temac 3.00 on ML403
->
-> >My question is now: Has anybody deeper knowledge how ethernet and sgDMA
-> >works? How deep is the PPC involved in the data transfer? Or does the
-> >Temac-core handle the datatransfer to DDR-memory autonomous?
->
->Thomas,
->
->If you cut & pasted directly from my design you may be running without
->DMA, which in turn implies running without checksum offload and DRE.
->The plb_temac shrinks to about half it's size this way, but if you're
->performance bound you probably want to turn DMA back on in your mhs
->file:
->
->  PARAMETER C_DMA_TYPE = 3
->  PARAMETER C_INCLUDE_RX_CSUM = 1
->  PARAMETER C_INCLUDE_TX_CSUM = 1
->  PARAMETER C_RX_DRE_TYPE = 1
->  PARAMETER C_TX_DRE_TYPE = 1
->  PARAMETER C_RXFIFO_DEPTH = 32768
->
->You'll have to regenerate the xparameters file too if you make these
->changes (in xps: Software -> Generate Libraries and BSPs).
->
->There may also be issues with the IP stack in the 2.4 linux kernels.
->If you have the option, an experiment with at 2.6 stack would be
->ammusing.
->
->-michael
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+Marta Chamorro
