@@ -1,15 +1,15 @@
-Return-Path: <andrea.galbusera@teamware.it>
-Received: from smtp5.aruba.it (smtpd3.aruba.it [62.149.128.208])
-	by ozlabs.org (Postfix) with SMTP id 7F86C67CEE
+Return-Path: <carcadiz@hotmail.com>
+Received: from bay0-omc3-s15.bay0.hotmail.com (bay0-omc3-s15.bay0.hotmail.com
+	[65.54.246.215]) by ozlabs.org (Postfix) with ESMTP id 763F067C4B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Dec 2006 02:25:29 +1100 (EST)
-Subject: Which kernel for Lite5200 based target board?
-From: Andrea Galbusera <andrea.galbusera@teamware.it>
+	Wed, 13 Dec 2006 02:59:41 +1100 (EST)
+Message-ID: <BAY122-F11E9828E7994B0E0514B19CAD70@phx.gbl>
+From: "Pedro Luis D. L." <carcadiz@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 12 Dec 2006 16:18:48 +0100
-Message-Id: <1165936728.32602.59.camel@localhost.localdomain>
+Subject: Lite5200B I2S driver
+Date: Tue, 12 Dec 2006 16:47:29 +0100
 Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,51 +22,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi all,
 
-I read a lot about this but I'm still confused. I have a Lite5200 based
-target board and I'm experimenting with a few kernels but I can't figure
-out which is the best to stay with.
+I´m working with a Lite5200B EVB, trying to atach an audio output to a PCM 
+1680 from Texas Instruments.
+At this moment I am using the patched 2.6.16.11-rt18 kernel that comes with 
+Freescale BSP.
+I´ve tried to develop an I2S driver for the platform with no results. I´m 
+afraid that my driver devolping skills are still too low.
 
-Let me say something about my target system:
-* It is based on the Lite5200 design
-* It uses MPC5200B CPU (the one nowadays available for production)
-* Need IDE to support DOM and/or Compact Flash devices (same design of
-Lite5200)
-* Need ethernet (same hardware design of Lite5200 apart from phy that is
-AMD NetPhy AM79C874)
-* We have a custom PCI device and a 2.6 kernel module to manage it
-* Need some SPI and I2C basic support for system configuration at boot
+Anybody knows a working I2S driver for this board that can throw any 
+audiooutput through PSCs?
 
-I'm doing my tests with the following kernels:
-* 2.6.16 from Denx git repository
-* 2.6.16.11-rt18 from Freescale BSP (based on the ltib build tool)
-* 2.6.11 from the same Freescale BSP (based on the ltib build tool)
+Any help or indication would be apreciated.
 
-I know Sylvain Munaut is/was also maintaining a kernel tree with working
-support for IDE and Bestcomm. This tree seems not very active to me but
-my git wisdom is very very poor and I may be wrong :-(
+Pedro Dominguez.
 
-Unfortunately my tests tell me none of the listed kernels works out of
-the box for the target: the former being not officially supported by
-DENX for the Lite5200 target, the latter having a Lite5200/Lite5200B
-configuration target.
-
-I'm doing tests comparing kernels behavior on both the target board and
-the Lite5200 EVB. Some problems seem related to differences between the
-boards, some come up with both.
-
-Please, consider this as a preliminary post. I'm looking for general
-suggestion on the more convenient kernel to stay with. I know I will
-still need some patching to make everything work fine, but I can't spend
-too much time on "unpromising" solutions. If useful I can then post
-details about the specific problems I have with IDE and ethernet in
-particular.
-
-Can you tell me where to find details about the status of the Lite5200
-support in the kernels listed above? Or maybe suggest me another kernel
-to go with?
-
-Any help is appreciated.
-
-
--- 
-Andrea Galbusera <andrea.galbusera@teamware.it>
+_________________________________________________________________
+Acepta el reto MSN Premium: Protección para tus hijos en internet. 
+Descárgalo y pruébalo 2 meses gratis. 
+http://join.msn.com?XAPID=1697&DI=1055&HL=Footer_mailsenviados_proteccioninfantil
