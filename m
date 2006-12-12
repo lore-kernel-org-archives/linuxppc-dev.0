@@ -1,20 +1,18 @@
-Return-Path: <SRS0+51ca8985c89399554713+1206+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CEEB267D89
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 23:25:02 +1100 (EST)
-Date: Tue, 12 Dec 2006 12:24:50 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH] drivers/net: spidernet driver on Celleb
-Message-ID: <20061212122450.GA30466@infradead.org>
-References: <200612120525.kBC5PpWC009418@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200612120525.kBC5PpWC009418@toshiba.co.jp>
-Cc: netdev@vger.kernel.org, jim@jklewis.com, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 87CA367E87
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 23:27:38 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [1/17] cell: SPU register lock
+Date: Tue, 12 Dec 2006 13:27:29 +0100
+References: <200612120303.kBC33vDC016599@toshiba.co.jp>
+In-Reply-To: <200612120303.kBC33vDC016599@toshiba.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612121327.30487.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 12, 2006 at 02:25:50PM +0900, Ishizaki Kou wrote:
+On Tuesday 12 December 2006 04:03, Ishizaki Kou wrote:
+> spu->register_lock should be held before accessing registers.
 > 
-> Following are the changes.
-> -This patch enables auto-negotiation.
-> -Loading firmware is done when spidernet_open() is called.
-> -And this patch adds other several small changes for Celleb. 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
 
-This should be split into three separate patches, sent as a patch
-series.
-
-> -/* outside loopback mode: ETOMOD signal dont matter, not connected */
-> -#define SPIDER_NET_OPMODE_VALUE		0x00000063
-> +/* ETOMOD signal is brought to PHY reset. bit2 must be 1 in Celleb */
-> +#define SPIDER_NET_OPMODE_VALUE		0x00000067
-
-Is it okay to simple change this value for the ibm blades?
-
-> +static int is1000 = 1;
-
-This should be in struct spider_net_card instead of a global flag.
-
->  	case SPIDER_NET_GTMFLLINT:
-> -		if (netif_msg_intr(card) && net_ratelimit())
-> -			pr_err("Spider TX RAM full\n");
-> +		/* if (netif_msg_intr(card) && net_ratelimit())
-> +			pr_err("Spider TX RAM full\n"); */
-
-Either this should be kept or removed entirely.  In the latter case you
-need a good description why it's removed in the patch header.
-
-> +
-> +	spider_net_write_reg(card, SPIDER_NET_GMACOPEMD,
-> +	                     spider_net_read_reg(card, SPIDER_NET_GMACOPEMD) | 0x4);
-
-Please make sure this doesn't overflow the 80 characters per line limit.
-
-> +static int spider_net_init_firmware(struct spider_net_card *);
-
-Random forward declarations in the middle of the file aren't very nice.
-If you really need them put them at the beggining of the file, but it would
-be even better if you moved spider_net_init_firmware further up in the
-file so we wouldn't need the forward-declaration at all.
-
-> +	if (card->phy.def->phy_id)
-> +		mod_timer(&card->aneg_timer, jiffies + SPIDER_NET_ANEG_TIMER);
-> +	else
-> +		pr_err("No phy is available\n");
-
-What is this idiom about?  Is not having a phy a fatal error in which case
-we should abort here, or is it tolerable in which case pr_err is too much.
-
-> +static void spider_net_init_card(struct spider_net_card *);
-
-Same comment above forward declarations as above.
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
