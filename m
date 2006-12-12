@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A426A67BE6
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 16:31:33 +1100 (EST)
-Subject: Re: [PATCH] ppc: fix build of DCR bits on 4xx
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1165900994.11914.27.camel@localhost.localdomain>
-References: <1165900994.11914.27.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 12 Dec 2006 16:31:27 +1100
-Message-Id: <1165901487.11914.34.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C552E67C03
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 16:32:32 +1100 (EST)
+Date: Tue, 12 Dec 2006 16:32:20 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH 14/15] powerpc: avoid claiming some PCI bus
+Message-Id: <20061212163220.b17d83cd.sfr@canb.auug.org.au>
+In-Reply-To: <200612120439.kBC4dOUJ002218@toshiba.co.jp>
+References: <200612120439.kBC4dOUJ002218@toshiba.co.jp>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__12_Dec_2006_16_32_20_+1100_uyEFBvKZ1ktg+sBd"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-12-12 at 16:23 +1100, Benjamin Herrenschmidt wrote:
-> The new dcr.c file shouldn't be compiled on arch/ppc, and dcr-low.S
-> should only be built if CONFIG_PPC_DCR_NATIVE is set.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--Signature=_Tue__12_Dec_2006_16_32_20_+1100_uyEFBvKZ1ktg+sBd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Hrm... it collides with Kumar's patch, sorry, I'll send a fixed one
+On Tue, 12 Dec 2006 13:39:23 +0900 (JST) Ishizaki Kou <kou.ishizaki@toshiba.co.jp> wrote:
+>
+> +#ifdef CONFIG_PPC_MULTIPLATFORM
+> +	list_for_each_entry(b, &pci_root_buses, node) {
+> +		if (!machine_is(celleb) ||
+> +		    ppc_md.pci_probe_mode(b) == PCI_PROBE_DEVTREE)
+> +			pcibios_claim_one_bus(b);
+> +	}
+> +#else
+>  	list_for_each_entry(b, &pci_root_buses, node)
+>  		pcibios_claim_one_bus(b);
+> +#endif
 
-Ben.
+All 64 bit platforms now have CONFIG_PPC_MULTIPLATFORM set, I think.
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__12_Dec_2006_16_32_20_+1100_uyEFBvKZ1ktg+sBd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFfj7kFdBgD/zoJvwRAii4AJ0eISs8HQhrnJGBitORBVOgoErebgCfX6TF
+Emhr+RLUAMQQPdmVOocBWEQ=
+=ycpz
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_Dec_2006_16_32_20_+1100_uyEFBvKZ1ktg+sBd--
