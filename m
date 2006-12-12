@@ -2,24 +2,24 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DCFB767C93
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 00:36:31 +1100 (EST)
-Subject: Re: [linux-pm] [RFC 0/3] experimental G5 powermac suspend
-	implementation
+	by ozlabs.org (Postfix) with ESMTP id 0951067D5E
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 00:48:16 +1100 (EST)
+Subject: Re: [linux-pm] [RFC 1/3] support powermac G5 CPU hotplug
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Pavel Machek <pavel@suse.cz>
-In-Reply-To: <20061212132240.GE5190@ucw.cz>
+In-Reply-To: <1165929483.22338.18.camel@johannes.berg>
 References: <20061211230208.526233000@sipsolutions.net> >
-	<1165926068.22338.15.camel@johannes.berg>
-	<20061212132240.GE5190@ucw.cz>
+	<20061211230754.380263000@sipsolutions.net>
+	<20061212130916.GB5190@ucw.cz>
+	<1165929483.22338.18.camel@johannes.berg>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-vTjyKeZZ4i6HmVbUdyyu"
-Date: Tue, 12 Dec 2006 14:36:03 +0100
-Message-Id: <1165930563.22338.32.camel@johannes.berg>
+	boundary="=-gEB/kjIQ7n0vufvkDn/1"
+Date: Tue, 12 Dec 2006 14:47:17 +0100
+Message-Id: <1165931237.22338.36.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
-	Michael Buesch <mb@bu3sch.de>, Torrance <torrance123@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>,
+	Michael Buesch <mb@bu3sch.de>, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +30,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-vTjyKeZZ4i6HmVbUdyyu
+--=-gEB/kjIQ7n0vufvkDn/1
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2006-12-12 at 13:22 +0000, Pavel Machek wrote:
+On Tue, 2006-12-12 at 14:18 +0100, Johannes Berg wrote:
 
-> Clock do not tick while suspended; I guess you need to copy time
-> suspend/resume from i386 or something.
+> > ?? Context for downing cpu should better be well-defined. Just do this
+> > in cpu_die if it is really required.
+>=20
+> It is actually required but I'm not exactly sure why. When I don't do
+> this, I end up with preempt_count() 0x100000 (IIRC, notes not here at
+                                      ^^^^^^^^ typo, should be 0x10000
+> the moment).
+>=20
+> I think this is because the suspend code has interrupts disabled already
+> when downing the CPUs.
 
-Well the RTC of course ticks but the system clock obviously doesn't.
-Yes, I'll have to look at the time suspend/resume code. Do you know
-where to find it?
+Also, the /sys/devices/system/cpu/cpuN/online thing doesn't disable
+interrupts before downing the CPU thus that works without this.
 
 johannes
 
---=-vTjyKeZZ4i6HmVbUdyyu
+--=-gEB/kjIQ7n0vufvkDn/1
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFfrBD/ETPhpq3jKURAt1lAJ4+5VxDHHZRT5VC+9rgd2k2wVS/2QCgmRAf
-1a0kJBBZXqz4P8W05kY8GL0=
-=OnQd
+iD8DBQBFfrLl/ETPhpq3jKURArY8AJ9ToMdMFNbR6aBy7lI47PgXWdcs3gCfWTKw
+HiknoG4K/YKcTL8PHMvrHvg=
+=hrRV
 -----END PGP SIGNATURE-----
 
---=-vTjyKeZZ4i6HmVbUdyyu--
+--=-gEB/kjIQ7n0vufvkDn/1--
