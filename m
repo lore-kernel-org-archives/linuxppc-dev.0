@@ -1,26 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 65A6667B5B
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 01:07:53 +1100 (EST)
-Subject: Re: [linux-pm] [RFC 0/3] experimental G5 powermac suspend
-	implementation
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@suse.cz>
-In-Reply-To: <1165930563.22338.32.camel@johannes.berg>
-References: <20061211230208.526233000@sipsolutions.net> >
-	<1165926068.22338.15.camel@johannes.berg>
-	<20061212132240.GE5190@ucw.cz>
-	<1165930563.22338.32.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-0GM02Phdz5QtMFNH/Jww"
-Date: Tue, 12 Dec 2006 15:07:43 +0100
-Message-Id: <1165932463.22338.37.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
-	Michael Buesch <mb@bu3sch.de>, Torrance <torrance123@gmail.com>
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <457EC112.3020204@us.ibm.com>
+Date: Tue, 12 Dec 2006 08:47:46 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+MIME-Version: 1.0
+To: Luke Browning <LukeBrowning@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [PATCH]Add notification for active Cell SPU tasks
+References: <OFD47C2157.B38B81D4-ON8325723E.00687BA3-8325723E.0069669F@us.ibm.com>
+In-Reply-To: <OFD47C2157.B38B81D4-ON8325723E.00687BA3-8325723E.0069669F@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: maynardj@linux.vnet.ibm.com, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
+Reply-To: maynardj@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-0GM02Phdz5QtMFNH/Jww
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2006-12-12 at 14:36 +0100, Johannes Berg wrote:
-
-> Well the RTC of course ticks but the system clock obviously doesn't.
-> Yes, I'll have to look at the time suspend/resume code. Do you know
-> where to find it?
-
-Never mind, found it easily enough: it's in arch/i386/kernel/time.c
-
-johannes
-
---=-0GM02Phdz5QtMFNH/Jww
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFfrev/ETPhpq3jKURAnrEAKCPxyXqkQFmJlVQG9+GjWHl497gAACbBDWu
-KSiapjwNyxkEzHoJRWdGidI=
-=9dyk
------END PGP SIGNATURE-----
-
---=-0GM02Phdz5QtMFNH/Jww--
+Luke Browning wrote:
+> maynardj@linux.vnet.ibm.com wrote on 08/12/2006 01:04:30 PM:
+> 
+>  > Arnd Bergmann wrote:
+>  >
+>  > >On Wednesday 06 December 2006 23:04, Maynard Johnson wrote:
+>  > >  
+>  > >No code should ever need to look at other SPUs when performing an
+>  > >operation on a given SPU, so we don't need to hold a global lock
+>  > >during normal operation.
+>  > >
+>  > >We have two cases that need to be handled:
+>  > >
+>  > >- on each context unload and load (both for a full switch operation),
+>  > >  call to the profiling code with a pointer to the current context
+>  > >  and spu (context is NULL when unloading).
+>  > >
+>  > >  If the new context is not know yet, scan its overlay table (expensive)
+>  > >  and store information about it in an oprofile private object. 
+> Otherwise
+>  > >  just point to the currently active object, this should be really 
+> cheap.
+>  > >
+>  > >- When enabling oprofile initially, scan all contexts that are currently
+>  > >  running on one of the SPUs. This is also expensive, but should happen
+>  > >  before the measurement starts so it does not impact the resulting 
+> data.
+>  > >
+> 
+> Agreed.  
+> 
+> <snip>
+> 
+>  > >>I'm not exactly sure what you're saying here.  Are you suggesting 
+> that a
+>  > >>user may only be interested in acitve SPU notification and, therefore,
+>  > >>shouldn't have to be depenent on the "standard" notification
+>  > >>registration succeeding?  There may be a case for adding a new
+>  > >>registration function, I suppose; although, I'm not aware of any other
+>  > >>users of the SPUFS notification mechanism besides OProfile and PDT, 
+> and
+>  > >>we need notification of both active and future SPU tasks.  But I would
+>  > >>not object to a new function.
+>  > >>
+>  > >>    
+>  > >>
+>  > >I think what Luke was trying to get to is that notify_spus_active() 
+> should
+>  > >not call blocking_notifier_call_chain(), since it will notify other 
+> users
+>  > >as well as the newly registered one. Instead, it can simply call the
+>  > >notifier function directly.
+>  > >  
+>  > >
+>  > Ah, yes.  Thanks to both of you for pointing that out.  I'll fix that
+>  > and re-post.
+>  >
+>  > -Maynard
+>  >
+> 
+> I actually was hoping to take this one step further.  If the interface to
+> the context switch handler is something like:
+> 
+> switch_handler(int spu_id, from_ctx, to_ctx)
+The function prototype for the switch handler is set in concrete by the 
+notification framework.  The parameters are: struct notifier_block *, 
+unsigned long, void *.
+> 
+> The kernel extension can maintain an internal spu table of its own where it
+> marks the named spuid as active or not.  You don't need to have a bunch of
+> individual calls.  Internally, you can keep track of it yourself.
+I think this would be nice to have, and I will look into it as I have 
+time.  However, for the existing usage of the SPU switch notification, I 
+don't think it's too critical, since most users are not going to be 
+trying to do profiling or debugging with multiple SPU apps running 
+simultaneously.
+> 
+> Luke
+> 
