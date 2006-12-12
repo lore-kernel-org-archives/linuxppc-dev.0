@@ -1,18 +1,17 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
+Received: from mail95-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5BA9D67BFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 04:26:21 +1100 (EST)
-Message-ID: <457EE633.2070208@am.sony.com>
-Date: Tue, 12 Dec 2006 09:26:11 -0800
+	by ozlabs.org (Postfix) with ESMTP id C6C8867BE7
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 04:31:30 +1100 (EST)
+Message-ID: <457EE768.6040606@am.sony.com>
+Date: Tue, 12 Dec 2006 09:31:20 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH 2/15] powerpc, celleb: Basic supports for Celleb
-References: <200612120314.kBC3EZqp026763@toshiba.co.jp>
-In-Reply-To: <200612120314.kBC3EZqp026763@toshiba.co.jp>
+Subject: Re: [PATCH 4/15] celleb: interfaces to the hypervisor of Celleb
+References: <200612120323.kBC3NjEW004119@toshiba.co.jp>
+In-Reply-To: <200612120323.kBC3NjEW004119@toshiba.co.jp>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,214 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, just a few comments.
-
--Geoff
-
 Ishizaki Kou wrote:
-> This patch adds base support for Celleb platform.
-> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile	Mon Dec 11 18:11:35 2006
-> @@ -0,0 +1,10 @@
-> +obj-$(CONFIG_PPC_CELLEB)		+= interrupt.o iommu.o setup.o \
-> +					   lpar.o beat.o pci.o \
-> +					   scc_epci.o scc_uhc.o
-> +
-
-
-I think this can just be obj-y, since this makefile is only used when CONFIG_PPC_CELLEB=y
-
-
-> +ifeq ($(CONFIG_SMP),y)
-> +obj-$(CONFIG_PPC_CELLEB)		+= smp.o
-> +endif
-
-
-Can't this just be obj-$(CONFIG_SMP) += smp.o, again, since CONFIG_PPC_CELLEB=y here?
-
-
-> +spu-priv1-$(CONFIG_PPC_CELLEB)		+= spu_priv1.o spu_manage.o
-> +obj-$(CONFIG_SPU_BASE)			+= $(spu-priv1-y)
-
-
-Again, can't this be obj-$(CONFIG_SPU_BASE) += spu_priv1.o spu_manage.o?
-
-
-> +}
-> +
-> +#if 0
-> +/* returns 0 if couldn't find or use /chosen/stdout as console */
-> +void __init celleb_find_udbg_vterm(void)
+> This patch creates Celleb platform dependent file which adds interfaces
+> to call hypervisor.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
+> ---
+> 
+> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_sys.h
+> diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/beat_sys.h:1.1
+> --- /dev/null	Mon Dec 11 20:37:33 2006
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_sys.h	Wed Dec  6 08:43:15 2006
 ...
+> +static inline int64_t beat_allocate_memory(uint64_t __in0, uint64_t __in1, uint64_t __in2, uint64_t __in3,void** __out0,uint64_t* __out1) {
 
 
-Why is this dead code in here?  If this is broken, it should go into
-another patch to be submitted later.  If it is for debugging, this
-should be reworked so that the usage is more clear.
+These at least need to be re-formated to meet the 80 char
+width limit.
 
-
-> +static inline unsigned int beat_read_mask(unsigned hpte_group)
-> +{
-> +	unsigned long hpte_v0, hpte_v1, hpte_v2, hpte_v3, hpte_perms;
-> +	unsigned long rmask = 0;
-> +
-> +	beat_read_htab_entries(0, hpte_group + 0,
-> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-> +	if (!(hpte_v0 & HPTE_V_BOLTED))
-> +		rmask |= 0x8000;
-> +	if (!(hpte_v1 & HPTE_V_BOLTED))
-> +		rmask |= 0x4000;
-> +	if (!(hpte_v2 & HPTE_V_BOLTED))
-> +		rmask |= 0x2000;
-> +	if (!(hpte_v3 & HPTE_V_BOLTED))
-> +		rmask |= 0x1000;
-> +	beat_read_htab_entries(0, hpte_group + 4,
-> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-> +	if (!(hpte_v0 & HPTE_V_BOLTED))
-> +		rmask |= 0x0800;
-> +	if (!(hpte_v1 & HPTE_V_BOLTED))
-> +		rmask |= 0x0400;
-> +	if (!(hpte_v2 & HPTE_V_BOLTED))
-> +		rmask |= 0x0200;
-> +	if (!(hpte_v3 & HPTE_V_BOLTED))
-> +		rmask |= 0x0100;
-> +	hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
-> +	beat_read_htab_entries(0, hpte_group + 0,
-> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-> +	if (!(hpte_v0 & HPTE_V_BOLTED))
-> +		rmask |= 0x80;
-> +	if (!(hpte_v1 & HPTE_V_BOLTED))
-> +		rmask |= 0x40;
-> +	if (!(hpte_v2 & HPTE_V_BOLTED))
-> +		rmask |= 0x20;
-> +	if (!(hpte_v3 & HPTE_V_BOLTED))
-> +		rmask |= 0x10;
-> +	beat_read_htab_entries(0, hpte_group + 4,
-> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-> +	if (!(hpte_v0 & HPTE_V_BOLTED))
-> +		rmask |= 0x08;
-> +	if (!(hpte_v1 & HPTE_V_BOLTED))
-> +		rmask |= 0x04;
-> +	if (!(hpte_v2 & HPTE_V_BOLTED))
-> +		rmask |= 0x02;
-> +	if (!(hpte_v3 & HPTE_V_BOLTED))
-> +		rmask |= 0x01;
-> +	return rmask;
-> +}
-
-
-These pagetable routines need to go into a separate file, I think this
-request was made the last time this patch was posted.
-
-
-> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
-> diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c:1.3
-> --- /dev/null	Mon Dec 11 20:37:31 2006
-> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c	Mon Dec 11 19:55:10 2006
-> @@ -0,0 +1,314 @@
-> +/*
-> + * Celleb setup code
-> + *
-> + * (C) Copyright 2006 TOSHIBA CORPORATION
-> + *
-> + * This code is based on arch/powerpc/platforms/cell/setup.c:
-> + *  Copyright (C) 1995  Linus Torvalds
-> + *  Adapted from 'alpha' version by Gary Thomas
-> + *  Modified by Cort Dougan (cort@cs.nmt.edu)
-> + *  Modified by PPC64 Team, IBM Corp
-> + *  Modified by Cell Team, IBM Deutschland Entwicklung GmbH
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-> + */
-> +
-> +#undef DEBUG
-
-
-This should be removed so that DEBUG can be set via the build system.  I saw
-this in a few other files also.
-
-
-> +static int celleb_pci_probe_mode(struct pci_bus *bus){
-> +
-> +	struct device_node *node;
-> +	const char *name;
-> +
-> +	node = (struct device_node *)bus->sysdata;
-> +	name = get_property(node, "name", NULL);
-> +
-> +	if (strcmp(name, "pci-pseudo") == 0)
-> +		return PCI_PROBE_DEVTREE;
-> +
-> +	return PCI_PROBE_NORMAL;
-> +}
-> +
-> +static void celleb_kexec_cpu_down(int crash, int secondary)
-> +{
-> +	extern void	beatic_deinit_IRQ(void);
-> +
-> +	beatic_deinit_IRQ();
-> +}
-> +
-> +#ifdef CONFIG_SERIAL_TXX9
-> +/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
-> +    mmio=0xfff000-0x1000,0xff2000-0x1000 */
-> +static int txx9_serial_bitmap = 0;
-> +
-> +static struct {
-> +	uint32_t offset;
-> +	uint32_t index;
-> +} txx9_spider_tab[3] = {
-> +	{ 0x300, 0 },	/* 0xFFF300 */
-> +	{ 0x400, 0 },	/* 0xFFF400 */
-> +	{ 0x800, 1 }	/* 0xFF2800 */
-> +};
-
-
-Setup.c is not the proper place for these PCI and serial UART
-device routines.
-
-There is already a Linux driver for the txx9_serial, why did you create
-another one here?  Why can't you re-use the existing txx9_serial driver,
-or rework it to support this platform?
-
-
-> Index: linux-powerpc-git/include/asm-powerpc/mmu.h
-> diff -u linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/mmu.h:1.2
-> --- linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-> +++ linux-powerpc-git/include/asm-powerpc/mmu.h	Wed Dec  6 08:43:16 2006
-> @@ -247,6 +247,7 @@
->  extern void hpte_init_native(void);
->  extern void hpte_init_lpar(void);
->  extern void hpte_init_iSeries(void);
-> +extern void hpte_init_beat(void);
->  
->  extern void stabs_alloc(void);
->  extern void slb_initialize(void);
-> Index: linux-powerpc-git/include/asm-powerpc/smp.h
-> diff -u linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/smp.h:1.2
-> --- linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-> +++ linux-powerpc-git/include/asm-powerpc/smp.h	Wed Dec  6 08:43:16 2006
-> @@ -75,6 +75,7 @@
->  void smp_init_iSeries(void);
->  void smp_init_pSeries(void);
->  void smp_init_cell(void);
-> +void smp_init_celleb(void);
->  void smp_setup_cpu_maps(void);
-
-
-Since these routines are defined and used all inside in arch/powerpc/platforms/celleb, these
-declarations should go into a header file in that directory.
-
+In general though, we need to work out a common hcall mechanism
+for all the hypevisors.
 
 -Geoff
