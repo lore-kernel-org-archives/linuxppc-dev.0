@@ -1,19 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 12/15] powerpc: Do not use op_model_cell under LPAR
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1165899226.11914.20.camel@localhost.localdomain>
-References: <200612120402.kBC42USg007674@toshiba.co.jp>
-	<1165896791.14839.7.camel@concordia.ozlabs.ibm.com>
-	<1165899226.11914.20.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2yVoEelM0MQ0RNzuYl6g"
-Date: Tue, 12 Dec 2006 15:55:56 +1100
-Message-Id: <1165899356.14839.20.camel@concordia.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 291A367C64
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 16:23:22 +1100 (EST)
+Subject: [PATCH] ppc: fix build of DCR bits on 4xx
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 12 Dec 2006 16:23:14 +1100
+Message-Id: <1165900994.11914.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,68 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The new dcr.c file shouldn't be compiled on arch/ppc, and dcr-low.S
+should only be built if CONFIG_PPC_DCR_NATIVE is set.
 
---=-2yVoEelM0MQ0RNzuYl6g
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Tue, 2006-12-12 at 15:53 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2006-12-12 at 15:13 +1100, Michael Ellerman wrote:
-> > On Tue, 2006-12-12 at 13:02 +0900, Ishizaki Kou wrote:
-> > > op_model_cell supports native Cell processor. Under LPAR environment,
-> > > it cannot work.
-> > >=20
-> > > Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
-> > > ---
-> > >=20
-> > > Index: linux-powerpc-git/arch/powerpc/oprofile/common.c
-> > > diff -u linux-powerpc-git/arch/powerpc/oprofile/common.c:1.1.1.1 linu=
-x-powerpc-git/arch/powerpc/oprofile/common.c:1.2
-> > > --- linux-powerpc-git/arch/powerpc/oprofile/common.c:1.1.1.1	Wed Dec =
- 6 08:25:43 2006
-> > > +++ linux-powerpc-git/arch/powerpc/oprofile/common.c	Wed Dec  6 08:43=
-:15 2006
-> > > @@ -149,6 +149,8 @@
-> > >  #ifdef CONFIG_PPC64
-> > >  #ifdef CONFIG_PPC_CELL_NATIVE
-> > >  		case PPC_OPROFILE_CELL:
-> > > +			if (firmware_has_feature(FW_FEATURE_LPAR))
-> > > +				return -ENODEV;
-> > >  			model =3D &op_model_cell;
-> > >  			break;
-> > >  #endif
-> >=20
-> > Is FW_FEATURE_LPAR is the right switch to use here, I'm not sure.
->=20
-> For now, it probably is as none of the LPAR env. for cell work with that
-> op_model.
-
-Sure, there's probably twenty different things we could use at the
-moment, I'm just wondering out loud if LPAR is the best thing to reduce
-the chance we have to change it in the future.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-2yVoEelM0MQ0RNzuYl6g
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFfjZcdSjSd0sB4dIRAr7IAJ9R57mZoLLKXtrJiCMp76yKURlFzgCfTUtX
-UFcvIqiGBtXbTeoSSbQ7FPo=
-=A29j
------END PGP SIGNATURE-----
-
---=-2yVoEelM0MQ0RNzuYl6g--
+Index: linux-cell/arch/powerpc/sysdev/Makefile
+===================================================================
+--- linux-cell.orig/arch/powerpc/sysdev/Makefile	2006-12-12 16:18:27.000000000 +1100
++++ linux-cell/arch/powerpc/sysdev/Makefile	2006-12-12 16:19:12.000000000 +1100
+@@ -5,7 +5,7 @@ endif
+ obj-$(CONFIG_MPIC)		+= mpic.o
+ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
+ obj-$(CONFIG_PPC_MPC106)	+= grackle.o
+-obj-$(CONFIG_PPC_DCR)		+= dcr.o dcr-low.o
++obj-$(CONFIG_PPC_DCR_NATIVE)	+= dcr-low.o
+ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+@@ -14,6 +14,7 @@ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ obj-$(CONFIG_OF_SERIAL)	+= of_serial.o
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
++obj-$(CONFIG_PPC_DCR)		+= dcr.o
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
+ obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_pic.o
