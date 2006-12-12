@@ -1,33 +1,20 @@
-Return-Path: <edi@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ED23967A5E
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 03:04:27 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBCG4N9t003890
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 11:04:23 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBCG4NX5322344
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:04:23 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBCG4Nb0024953
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 09:04:23 -0700
-Message-ID: <457ED2F7.9070406@linux.vnet.ibm.com>
-Date: Tue, 12 Dec 2006 11:04:07 -0500
-From: Edi Shmueli <edi@linux.vnet.ibm.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5BA9D67BFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 04:26:21 +1100 (EST)
+Message-ID: <457EE633.2070208@am.sony.com>
+Date: Tue, 12 Dec 2006 09:26:11 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/1] PPC32 : Huge-page support for ppc440 - 2.6.19-rc4
-	- revised
-References: <45705FA3.4040904@linux.vnet.ibm.com>
-	<20061204070100.GB32026@localhost.localdomain>
-In-Reply-To: <20061204070100.GB32026@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH 2/15] powerpc, celleb: Basic supports for Celleb
+References: <200612120314.kBC3EZqp026763@toshiba.co.jp>
+In-Reply-To: <200612120314.kBC3EZqp026763@toshiba.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,278 +24,214 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, Dec 01, 2006 at 12:00:19PM -0500, Edi Shmueli wrote:
->> From: Edi Shmueli <edi@linux.vnet.ibm.com>
->>
->> Following requests to test the patch under the latest kernel, here
->> it is again, tested for 2.6.19-rc4.  This patch enables applications
->> to exploit the PPC440 TLB support for huge-page mapping, to minimize
->> TLB thrashing.  Applications with large memory footprint that
->> exploit this support, experience minimal TLB misses, and boost in
->> performance.  NAS benchmarks tested with this patch indicate
->> hundreds of percent of improvement in performance.
-> 
-> Ok, I'm still in the process of getting our Ebony set up again so I
-> can test this.  In the meantime some observations..
-> 
-> First things first:  your patch has been hopelessly whitespace
-> mangled, probably by Notes.  You'll need to resend with a patch-safe
-> mailer.
-> 
-> Have you attempted to run the testsuite from libhugetlbfs with this?
-> It will require some tweaking, since it's not previously been needed
-> on ppc32, but it has testcases for a whole pile of potential kernel
-> hugepage bugs.
-> 
-> Also have you looked at how this code compares to the large page
-> support on PPC 40x.  40x doesn't support hugetlbfs, but it does have
-> about half the necessary bits, since it stores a page size in the PTE
-> for implementing large page mapping of the linear mapping.  I'm not
-> sure how applicable any of that stuff is to 440.
-> 
->> Signed-off-by: Edi Shmueli <edi@linux.vnet.ibm.com>
->> -----
->>
->> Benchmarks and Implementation comments
->> ======================================
->> Below is the NAS IS benchmark results, executing under Linux, with and
->> without this huge-page mapping support.
->> IS Benchmark           4KB pages             16MB pages
->> =======================================================
->>   Class             =   A                     A
->>   Size              =   8388608               8388608
->>   Iterations        =   10                    10
->>   Time in seconds   =   24.44                 6.38
->>   Mop/s total       =   3.43                  13.15
->>   Operation type    =   keys ranked           keys ranked
->>   Verification      =   SUCCESSFUL            SUCCESSFUL
-> 
->> Implementation details:
->> =======================
-> 
->> This patch is ppc440 architecture-specific. It enables the use of
->> huge-pages by processes executing under the 2.6.16 kernel on the
->> ppc440 processors.  Huge-pages are accessible to user processes
->> using either the hugetlbfs or using shared memory. See
->> Documentation/vs/hugetlbpage.txt.
-> 
->> The ppc 32bit kernel uses 64bit PTEs (set by CONFIG_PTE_64BIT).  I
->> exploit a "hole" of 4 unused bits in the PTE MS word (bits 24-27)
->> and code the page size information in those bits.  I then modified
->> the TLB miss handler (head_44x.S) to stop using the constant
->> PPC44x_TLB_4K to set the page size in the TLB.  Instead, when a TLB
->> miss happens, the miss handler reads the size information from the
->> PTE and sets that size in the TLB entry.  This way, different TLB
->> entries get to map different page sizes (e.g., 4KB or 16MB).  The
->> TLB replacement policy remains RR. This means that a huge-page entry
->> in the TLB may be overwritten if not used for a long time, but when
->> accessed it will be set again by the TLB miss handler, with the
->> correct size, as set in the PTE.
-> 
->> In arch/ppc/mm/hugetlbpage.c is where page table entries are set to
->> map huge pages:
->> By default , each process has two-level page-tables. It has 2048,
->> 32bit PMD (or PGD) entries at the higher-level, each maps 2MB of the
->> process address spase, and 512, 64bit PTE entries in each
->> lower-level page table.  When a TLB miss happens and no PTE is found
->> by the miss handler to offer the translation, a check is made
->> (memory.c) on whether the faulting address belongs to a huge-page VM
->> region.  If so, the code in set_huge_pte_at() will set the required
->> number of PMDs (e.g.,8 PMDs for huge-pages of size 16MB, or 1 PMD
->> for huge-pages of size 2MB or less) to point to the *same*
->> lower-level PTE page table.  Within the lower-level page table, it
->> will set the required number PTEs (e.g., all 512 PTEs for huge-pages
->> larger than 2MB, or 256 PTEs for huge-pages of size 1MB etc.) to
->> point to the *same* physical huge-page frame.  All these PTEs will
->> be *identical* and have the page-size coded in their MS word as
->> described above.
-> 
-> Creating an all-equal PTE page even when using pages of a size greater
-> than or equal to that mapped by a single PMD seems very wasteful.
-> 
->> Once the TLB miss handler copies the mapping (and the size) from the
->> PTE into on of a TLB entry, the process will not suffer any TLB
->> misses for that huge-page.  If the mapping was overwritten by the
->> TLB RR replacement policy, it will be re-loaded again (probably in a
->> different TLB entry) when the process re-access that huge-page.
-> 
->> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/kernel/head_44x.S my_linux/arch/ppc/kernel/head_44x.S
->> --- linux-2.6.19-rc4-vanilla/arch/ppc/kernel/head_44x.S    2006-11-14 11:16:29.000000000 -0500
->> +++ my_linux/arch/ppc/kernel/head_44x.S    2006-11-14 17:26:13.000000000 -0500
->> @@ -21,12 +21,14 @@
->>    *            debbie_chu@mvista.com
->>    *    Copyright 2002-2005 MontaVista Software, Inc.
->>    *      PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
->> + *    Copyright (C) 2006 Edi Shmueli, IBM Corporation.
->> + *    PowerPC 44x handling of huge-page misses.
->>    *
->>    * This program is free software; you can redistribute  it and/or modify it
->>    * under  the terms of  the GNU General  Public License as published by the
->>    * Free Software Foundation;  either version 2 of the  License, or (at your
->>    * option) any later version.
->> - */
->> +*/
-> 
-> Please try to avoid extraneous changes in your patch.
-> 
-> [snip]
-> 
->> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/arch/ppc/mm/hugetlbpage.c my_linux/arch/ppc/mm/hugetlbpage.c
->> --- linux-2.6.19-rc4-vanilla/arch/ppc/mm/hugetlbpage.c    1969-12-31 19:00:00.000000000 -0500
->> +++ my_linux/arch/ppc/mm/hugetlbpage.c    2006-11-15
->> 11:44:43.297682864 -0500
-> 
-> Since this patch is 440 specific, and 40x at least could also support
-> hugepages, this should probably go in hugetlbpage_44x.c
-> 
->> @@ -0,0 +1,185 @@
->> +/*
->> + * PPC32 (440) Huge TLB Page Support for Kernel.
->> + *
->> + * Copyright (C) 2006 Edi Shmueli, IBM Corporation.
->> + *
->> + * Based on the IA-32 version:
->> + * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
->> + *
->> + */
->> +
->> +#include <linux/init.h>
->> +#include <linux/fs.h>
->> +#include <linux/mm.h>
->> +#include <linux/hugetlb.h>
->> +#include <linux/pagemap.h>
->> +#include <linux/smp_lock.h>
->> +#include <linux/slab.h>
->> +#include <linux/err.h>
->> +#include <linux/sysctl.h>
->> +#include <asm/mman.h>
->> +#include <asm/tlb.h>
->> +#include <asm/tlbflush.h>
->> +
->> +pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
->> +{
->> +  pgd_t *pgd;
-> 
-> I'm not sure if the bogus indentation here is yours, or the result of
-> Notes whitespace mangling.  If the former, please make sure your code
-> is formatted as per CodingStyle.
-> 
-> [snip]
->> +    return pte;
->> +}
->> +
->> +#ifdef ARCH_HAS_SETCLEAR_HUGE_PTE
-> 
-> This #ifdef makes no sense here.  You already know that this arch will
-> need this code.
-> 
->> +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
->> pte_t *ptep, pte_t pte){
-> 
-> Open brace on the next line, as per CodingStyle, please.
-> 
-> [snip]
->> +int is_aligned_hugepage_range(unsigned long addr, unsigned long len)
->> +{
->> +  if (len & ~HPAGE_MASK)
->> +    return -EINVAL;
->> +  if (addr & ~HPAGE_MASK)
->> +    return -EINVAL;
->> +  return 0;
->> +}
-> 
-> The is_aligned_hugepage_range() callback was removed quite some time
-> ago, please remove.
-> 
-> [snip]
->> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/fs/Kconfig my_linux/fs/Kconfig
->> --- linux-2.6.19-rc4-vanilla/fs/Kconfig    2006-11-14 11:17:37.000000000 -0500
->> +++ my_linux/fs/Kconfig    2006-11-14 17:26:13.000000000 -0500
->> @@ -1008,7 +1008,7 @@ config TMPFS_POSIX_ACL
->>
->>   config HUGETLBFS
->>       bool "HugeTLB file system support"
->> -    depends X86 || IA64 || PPC64 || SPARC64 || SUPERH || BROKEN
->> +    depends X86 || IA64 || PPC || PPC64 || SPARC64 || SUPERH || BROKEN
->>       help
->>         hugetlbfs is a filesystem backing for HugeTLB pages, based on
->>         ramfs. For architectures that support it, say Y here and
->>   read
-> 
-> This needs a test for 44x as well, or this option will be available
-> and horribly broken for other ppc32 machines.
-> 
->> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/asm-ppc/page.h my_linux/include/asm-ppc/page.h
->> --- linux-2.6.19-rc4-vanilla/include/asm-ppc/page.h    2006-11-14 11:18:00.000000000 -0500
->> +++ my_linux/include/asm-ppc/page.h    2006-11-14 17:26:14.000000000 -0500
->> @@ -7,6 +7,12 @@
->>   #define PAGE_SHIFT    12
->>   #define PAGE_SIZE    (ASM_CONST(1) << PAGE_SHIFT)
->>
->> +#ifdef CONFIG_HUGETLB_PAGE
->> +#define HPAGE_SHIFT     24
->> +#define HPAGE_SIZE      ((1UL) << HPAGE_SHIFT)
->> +#define HPAGE_MASK      (~(HPAGE_SIZE - 1))
->> +#define HUGETLB_PAGE_ORDER      (HPAGE_SHIFT - PAGE_SHIFT)
->> +#endif
->>   /*
->>    * Subtle: this is an int (not an unsigned long) and so it
->>    * gets extended to 64 bits the way want (i.e. with 1s).  -- paulus
->> diff -uprP -X linux-2.6.19-rc4-vanilla/Documentation/dontdiff linux-2.6.19-rc4-vanilla/include/asm-ppc/pgtable.h my_linux/include/asm-ppc/pgtable.h
->> --- linux-2.6.19-rc4-vanilla/include/asm-ppc/pgtable.h    2006-11-14 11:18:00.000000000 -0500
->> +++ my_linux/include/asm-ppc/pgtable.h    2006-11-15 11:40:45.332514013 -0500
->> @@ -263,6 +263,40 @@ extern unsigned long ioremap_bot, iorema
->>   #define    _PAGE_NO_CACHE    0x00000400        /* H: I bit */
->>   #define    _PAGE_WRITETHRU    0x00000800        /* H: W bit */
->>
->> +#if   HPAGE_SHIFT == 10 /*Unsupported*/
->> +#define _PAGE_HUGE      0x0000000000000000ULL   /* H: SIZE=1K bytes */
->> +#define _PTE_MASK       0xfffffff8UL
->> +#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 9))
->> +#elif HPAGE_SHIFT == 12
->> +#define _PAGE_HUGE      0x0000001000000000ULL   /* H: SIZE=4K bytes */
->> +#define _PTE_MASK       0xfffffff8UL
->> +#define _PTE_CNT        ((1UL) << (PTE_SHIFT - 9))
-> 
-> Yikes!  Please use computed values here, not this ghastly string of
-> #ifdefs.
-> 
-> --
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
+Hi, just a few comments.
+
+-Geoff
+
+Ishizaki Kou wrote:
+> This patch adds base support for Celleb platform.
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile	Mon Dec 11 18:11:35 2006
+> @@ -0,0 +1,10 @@
+> +obj-$(CONFIG_PPC_CELLEB)		+= interrupt.o iommu.o setup.o \
+> +					   lpar.o beat.o pci.o \
+> +					   scc_epci.o scc_uhc.o
+> +
 
 
-Thanks David,
-One step at a time, lets start with libhugetlbfs :-)
-I'm successfully able to run most of my tests using the library, backing my data,text and BSS with huge-pages.
-There is a major improvement in performance, similar to what I reported above.
-Good job with the library !!!
+I think this can just be obj-y, since this makefile is only used when CONFIG_PPC_CELLEB=y
 
-There is a problem though when a program calls "fopen".
-I see hugetlbfs does the unmapping/mapping , moves control to main(),
-and then a crash with the following error:
-"*** glibc detected *** free(): invalid pointer: 0x3002a008 ***"
-This happens inside fopen() (....which never returns).
 
-Here is the detailed output.
+> +ifeq ($(CONFIG_SMP),y)
+> +obj-$(CONFIG_PPC_CELLEB)		+= smp.o
+> +endif
 
-/bgd-public/edi/IS # ./is.A.linux_ser_hugetlbfs
-libhugetlbfs: Hugepage segment 0 (phdr 2): 0x10000000-0x10001b70  (filesz=0x1b70) (prot = 0x5)
-libhugetlbfs: Hugepage segment 1 (phdr 3): 0x11000000-0x170006e8  (filesz=0x274) (prot = 0x7)
-libhugetlbfs: HUGETLB_SHARE=0, sharing disabled
-libhugetlbfs: Got unshared fd as expected -- Preparing
-libhugetlbfs: Mapped hugeseg at 0x31000000. Copying 0x1b70 bytes from 0x10000000...
-done
-libhugetlbfs: Minimal copy was not performed
-libhugetlbfs: Prepare succeeded
-libhugetlbfs: HUGETLB_SHARE=0, sharing disabled
-libhugetlbfs: Got unshared fd as expected -- Preparing
-libhugetlbfs: Mapped hugeseg at 0x31000000. Copying 0x274 bytes from 0x11000000...
-done
-libhugetlbfs: Minimal copy was not performed
-libhugetlbfs: Prepare succeeded
-*** glibc detected *** free(): invalid pointer: 0x3002a008 ***
-Aborted
+
+Can't this just be obj-$(CONFIG_SMP) += smp.o, again, since CONFIG_PPC_CELLEB=y here?
+
+
+> +spu-priv1-$(CONFIG_PPC_CELLEB)		+= spu_priv1.o spu_manage.o
+> +obj-$(CONFIG_SPU_BASE)			+= $(spu-priv1-y)
+
+
+Again, can't this be obj-$(CONFIG_SPU_BASE) += spu_priv1.o spu_manage.o?
+
+
+> +}
+> +
+> +#if 0
+> +/* returns 0 if couldn't find or use /chosen/stdout as console */
+> +void __init celleb_find_udbg_vterm(void)
+...
+
+
+Why is this dead code in here?  If this is broken, it should go into
+another patch to be submitted later.  If it is for debugging, this
+should be reworked so that the usage is more clear.
+
+
+> +static inline unsigned int beat_read_mask(unsigned hpte_group)
+> +{
+> +	unsigned long hpte_v0, hpte_v1, hpte_v2, hpte_v3, hpte_perms;
+> +	unsigned long rmask = 0;
+> +
+> +	beat_read_htab_entries(0, hpte_group + 0,
+> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> +	if (!(hpte_v0 & HPTE_V_BOLTED))
+> +		rmask |= 0x8000;
+> +	if (!(hpte_v1 & HPTE_V_BOLTED))
+> +		rmask |= 0x4000;
+> +	if (!(hpte_v2 & HPTE_V_BOLTED))
+> +		rmask |= 0x2000;
+> +	if (!(hpte_v3 & HPTE_V_BOLTED))
+> +		rmask |= 0x1000;
+> +	beat_read_htab_entries(0, hpte_group + 4,
+> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> +	if (!(hpte_v0 & HPTE_V_BOLTED))
+> +		rmask |= 0x0800;
+> +	if (!(hpte_v1 & HPTE_V_BOLTED))
+> +		rmask |= 0x0400;
+> +	if (!(hpte_v2 & HPTE_V_BOLTED))
+> +		rmask |= 0x0200;
+> +	if (!(hpte_v3 & HPTE_V_BOLTED))
+> +		rmask |= 0x0100;
+> +	hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
+> +	beat_read_htab_entries(0, hpte_group + 0,
+> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> +	if (!(hpte_v0 & HPTE_V_BOLTED))
+> +		rmask |= 0x80;
+> +	if (!(hpte_v1 & HPTE_V_BOLTED))
+> +		rmask |= 0x40;
+> +	if (!(hpte_v2 & HPTE_V_BOLTED))
+> +		rmask |= 0x20;
+> +	if (!(hpte_v3 & HPTE_V_BOLTED))
+> +		rmask |= 0x10;
+> +	beat_read_htab_entries(0, hpte_group + 4,
+> +		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> +	if (!(hpte_v0 & HPTE_V_BOLTED))
+> +		rmask |= 0x08;
+> +	if (!(hpte_v1 & HPTE_V_BOLTED))
+> +		rmask |= 0x04;
+> +	if (!(hpte_v2 & HPTE_V_BOLTED))
+> +		rmask |= 0x02;
+> +	if (!(hpte_v3 & HPTE_V_BOLTED))
+> +		rmask |= 0x01;
+> +	return rmask;
+> +}
+
+
+These pagetable routines need to go into a separate file, I think this
+request was made the last time this patch was posted.
+
+
+> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+> diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c:1.3
+> --- /dev/null	Mon Dec 11 20:37:31 2006
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c	Mon Dec 11 19:55:10 2006
+> @@ -0,0 +1,314 @@
+> +/*
+> + * Celleb setup code
+> + *
+> + * (C) Copyright 2006 TOSHIBA CORPORATION
+> + *
+> + * This code is based on arch/powerpc/platforms/cell/setup.c:
+> + *  Copyright (C) 1995  Linus Torvalds
+> + *  Adapted from 'alpha' version by Gary Thomas
+> + *  Modified by Cort Dougan (cort@cs.nmt.edu)
+> + *  Modified by PPC64 Team, IBM Corp
+> + *  Modified by Cell Team, IBM Deutschland Entwicklung GmbH
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along
+> + * with this program; if not, write to the Free Software Foundation, Inc.,
+> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+> + */
+> +
+> +#undef DEBUG
+
+
+This should be removed so that DEBUG can be set via the build system.  I saw
+this in a few other files also.
+
+
+> +static int celleb_pci_probe_mode(struct pci_bus *bus){
+> +
+> +	struct device_node *node;
+> +	const char *name;
+> +
+> +	node = (struct device_node *)bus->sysdata;
+> +	name = get_property(node, "name", NULL);
+> +
+> +	if (strcmp(name, "pci-pseudo") == 0)
+> +		return PCI_PROBE_DEVTREE;
+> +
+> +	return PCI_PROBE_NORMAL;
+> +}
+> +
+> +static void celleb_kexec_cpu_down(int crash, int secondary)
+> +{
+> +	extern void	beatic_deinit_IRQ(void);
+> +
+> +	beatic_deinit_IRQ();
+> +}
+> +
+> +#ifdef CONFIG_SERIAL_TXX9
+> +/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
+> +    mmio=0xfff000-0x1000,0xff2000-0x1000 */
+> +static int txx9_serial_bitmap = 0;
+> +
+> +static struct {
+> +	uint32_t offset;
+> +	uint32_t index;
+> +} txx9_spider_tab[3] = {
+> +	{ 0x300, 0 },	/* 0xFFF300 */
+> +	{ 0x400, 0 },	/* 0xFFF400 */
+> +	{ 0x800, 1 }	/* 0xFF2800 */
+> +};
+
+
+Setup.c is not the proper place for these PCI and serial UART
+device routines.
+
+There is already a Linux driver for the txx9_serial, why did you create
+another one here?  Why can't you re-use the existing txx9_serial driver,
+or rework it to support this platform?
+
+
+> Index: linux-powerpc-git/include/asm-powerpc/mmu.h
+> diff -u linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/mmu.h:1.2
+> --- linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
+> +++ linux-powerpc-git/include/asm-powerpc/mmu.h	Wed Dec  6 08:43:16 2006
+> @@ -247,6 +247,7 @@
+>  extern void hpte_init_native(void);
+>  extern void hpte_init_lpar(void);
+>  extern void hpte_init_iSeries(void);
+> +extern void hpte_init_beat(void);
+>  
+>  extern void stabs_alloc(void);
+>  extern void slb_initialize(void);
+> Index: linux-powerpc-git/include/asm-powerpc/smp.h
+> diff -u linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/smp.h:1.2
+> --- linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1	Wed Dec  6 08:24:04 2006
+> +++ linux-powerpc-git/include/asm-powerpc/smp.h	Wed Dec  6 08:43:16 2006
+> @@ -75,6 +75,7 @@
+>  void smp_init_iSeries(void);
+>  void smp_init_pSeries(void);
+>  void smp_init_cell(void);
+> +void smp_init_celleb(void);
+>  void smp_setup_cpu_maps(void);
+
+
+Since these routines are defined and used all inside in arch/powerpc/platforms/celleb, these
+declarations should go into a header file in that directory.
+
+
+-Geoff
