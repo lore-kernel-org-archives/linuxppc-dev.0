@@ -1,14 +1,14 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5CE9E67C68
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 22:30:13 +1100 (EST)
-Date: Tue, 12 Dec 2006 20:30:04 +0900 (JST)
-Message-Id: <200612121130.kBCBU5AX010094@toshiba.co.jp>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 6/15] hypervisor console driver for Celleb
-In-Reply-To: <1165896566.14839.3.camel@concordia.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 72FE167EFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 22:46:19 +1100 (EST)
+Date: Tue, 12 Dec 2006 20:45:33 +0900 (JST)
+Message-Id: <200612121145.kBCBjX3b011783@toshiba.co.jp>
+To: sfr@canb.auug.org.au
+Subject: Re: [PATCH 14/15] powerpc: avoid claiming some PCI bus
+In-Reply-To: <20061212163220.b17d83cd.sfr@canb.auug.org.au>
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -23,42 +23,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> On Tue, 2006-12-12 at 15:53 +1100, Benjamin Herrenschmidt wrote:
-> > On Tue, 2006-12-12 at 15:13 +1100, Michael Ellerman wrote:
-> > > On Tue, 2006-12-12 at 13:02 +0900, Ishizaki Kou wrote:
-> > > > op_model_cell supports native Cell processor. Under LPAR environment,
-> > > > it cannot work.
-> > > > 
-> > > > Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
-> > > > ---
-> > > > 
-> > > > Index: linux-powerpc-git/arch/powerpc/oprofile/common.c
-> > > > diff -u linux-powerpc-git/arch/powerpc/oprofile/common.c:1.1.1.1 linux-powerpc-git/arch/powerpc/oprofile/common.c:1.2
-> > > > --- linux-powerpc-git/arch/powerpc/oprofile/common.c:1.1.1.1	 Wed Dec  6 08:25:43 2006
-> > > > +++ linux-powerpc-git/arch/powerpc/oprofile/common.c		 Wed Dec  6 08:43:15 2006
-> > > > @@ -149,6 +149,8 @@
-> > > >  #ifdef CONFIG_PPC64
-> > > >  #ifdef CONFIG_PPC_CELL_NATIVE
-> > > >			case PPC_OPROFILE_CELL:
-> > > > +			if (firmware_has_feature(FW_FEATURE_LPAR))
-> > > > +					return -ENODEV;
-> > > >							model = &op_model_cell;
-> > > >								break;
-> > > >  #endif
-> > > 
-> > > Is FW_FEATURE_LPAR is the right switch to use here, I'm not sure.
-> > 
-> > For now, it probably is as none of the LPAR env. for cell work with that
-> > op_model.
+> On Tue, 12 Dec 2006 13:39:23 +0900 (JST) Ishizaki Kou <kou.ishizaki@toshiba.co.jp> wrote:
+> >
+> > +#ifdef CONFIG_PPC_MULTIPLATFORM
+> > +	    list_for_each_entry(b, &pci_root_buses, node) {
+> > +				   if (!machine_is(celleb) ||
+> > +				          ppc_md.pci_probe_mode(b) == PCI_PROBE_DEVTREE)
+> > +								      pcibios_claim_one_bus(b);
+> > +								      }
+> > +#else
+> >	list_for_each_entry(b, &pci_root_buses, node)
+> >			       pcibios_claim_one_bus(b);
+> > +#endif
 > 
-> Sure, there's probably twenty different things we could use at the
-> moment, I'm just wondering out loud if LPAR is the best thing to reduce
-> the chance we have to change it in the future.
+> All 64 bit platforms now have CONFIG_PPC_MULTIPLATFORM set, I think.
 
-We will implement Cell LPAR support in the future. The code doesn't
-exist now, and it tries to use oprofile_timer by returning -ENODEV
-here.
-				   
-Thank you,
+Thanks, we will remove #ifdef from this patch.
+
+Best regards,
 Kou Ishizaki
-Toshiba
