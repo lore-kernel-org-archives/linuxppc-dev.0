@@ -2,12 +2,12 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB2D967C20
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 14:14:40 +1100 (EST)
-Date: Tue, 12 Dec 2006 12:14:34 +0900 (JST)
-Message-Id: <200612120314.kBC3EZqp026763@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id ABB3F67C03
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 14:19:37 +1100 (EST)
+Date: Tue, 12 Dec 2006 12:19:31 +0900 (JST)
+Message-Id: <200612120319.kBC3JW0W007783@toshiba.co.jp>
 To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/15] powerpc, celleb: Basic supports for Celleb
+Subject: [PATCH 3/15] powerpc: defconfig for Celleb
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -20,1273 +20,1396 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds base support for Celleb platform.
+This patch creates defconfig file for Celleb platform.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/Kconfig
-diff -u linux-powerpc-git/arch/powerpc/Kconfig:1.1.1.1 linux-powerpc-git/arch/powerpc/Kconfig:1.3
---- linux-powerpc-git/arch/powerpc/Kconfig:1.1.1.1	Wed Dec  6 08:25:42 2006
-+++ linux-powerpc-git/arch/powerpc/Kconfig	Mon Dec 11 15:30:41 2006
-@@ -518,6 +518,13 @@
- 	  This option enables support for the Sony PS3 game console
- 	  and other platforms using the PS3 hypervisor.
- 
-+config PPC_CELLEB
-+	bool "Toshiba's Cell Reference Set 'Celleb' Architecture"
-+	depends on PPC_MULTIPLATFORM && PPC64
-+	select PPC_CELL
-+	select PPC_OF_PLATFORM_PCI
-+	select HAS_TXX9_SERIAL
-+
- config PPC_NATIVE
- 	bool
- 	depends on PPC_MULTIPLATFORM
-Index: linux-powerpc-git/arch/powerpc/Kconfig.debug
-diff -u linux-powerpc-git/arch/powerpc/Kconfig.debug:1.1.1.1 linux-powerpc-git/arch/powerpc/Kconfig.debug:1.2
---- linux-powerpc-git/arch/powerpc/Kconfig.debug:1.1.1.1	Wed Dec  6 08:25:42 2006
-+++ linux-powerpc-git/arch/powerpc/Kconfig.debug	Wed Dec  6 08:43:14 2006
-@@ -185,6 +185,12 @@
- 	  Select this to enable early debugging for legacy iSeries. You need
- 	  to hit "Ctrl-x Ctrl-x" to see the messages on the console.
- 
-+config PPC_EARLY_DEBUG_BEAT
-+	bool "Beat HV Console"
-+	depends on PPC_CELLEB
-+	help
-+	  Select this to enable early debugging for Celleb with Beat.
-+
- endchoice
- 
- endmenu
-Index: linux-powerpc-git/arch/powerpc/boot/Makefile
-diff -u linux-powerpc-git/arch/powerpc/boot/Makefile:1.1.1.1 linux-powerpc-git/arch/powerpc/boot/Makefile:1.2
---- linux-powerpc-git/arch/powerpc/boot/Makefile:1.1.1.1	Wed Dec  6 08:25:43 2006
-+++ linux-powerpc-git/arch/powerpc/boot/Makefile	Wed Dec  6 08:43:14 2006
-@@ -159,6 +159,7 @@
- image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
- image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
- image-$(CONFIG_PPC_PS3)			+= zImage.ps3
-+image-$(CONFIG_PPC_CELLEB)		+= zImage.pseries
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
-Index: linux-powerpc-git/arch/powerpc/kernel/udbg.c
-diff -u linux-powerpc-git/arch/powerpc/kernel/udbg.c:1.1.1.1 linux-powerpc-git/arch/powerpc/kernel/udbg.c:1.2
---- linux-powerpc-git/arch/powerpc/kernel/udbg.c:1.1.1.1	Wed Dec  6 08:25:43 2006
-+++ linux-powerpc-git/arch/powerpc/kernel/udbg.c	Wed Dec  6 08:43:15 2006
-@@ -45,6 +45,8 @@
- #elif defined(CONFIG_PPC_EARLY_DEBUG_ISERIES)
- 	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
- 	udbg_init_iseries();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_BEAT)
-+	udbg_init_debug_beat();
- #endif
- }
- 
-Index: linux-powerpc-git/arch/powerpc/platforms/Makefile
-diff -u linux-powerpc-git/arch/powerpc/platforms/Makefile:1.1.1.1 linux-powerpc-git/arch/powerpc/platforms/Makefile:1.2
---- linux-powerpc-git/arch/powerpc/platforms/Makefile:1.1.1.1	Wed Dec  6 08:25:43 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/Makefile	Wed Dec  6 08:43:15 2006
-@@ -17,4 +17,5 @@
- obj-$(CONFIG_PPC_PASEMI)	+= pasemi/
- obj-$(CONFIG_PPC_CELL)		+= cell/
- obj-$(CONFIG_PPC_PS3)		+= ps3/
-+obj-$(CONFIG_PPC_CELLEB)	+= celleb/
- obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile:1.3
---- /dev/null	Mon Dec 11 20:37:31 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile	Mon Dec 11 18:11:35 2006
-@@ -0,0 +1,10 @@
-+obj-$(CONFIG_PPC_CELLEB)		+= interrupt.o iommu.o setup.o \
-+					   lpar.o beat.o pci.o \
-+					   scc_epci.o scc_uhc.o
-+
-+ifeq ($(CONFIG_SMP),y)
-+obj-$(CONFIG_PPC_CELLEB)		+= smp.o
-+endif
-+
-+spu-priv1-$(CONFIG_PPC_CELLEB)		+= spu_priv1.o spu_manage.o
-+obj-$(CONFIG_SPU_BASE)			+= $(spu-priv1-y)
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c:1.2
---- /dev/null	Mon Dec 11 20:37:31 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c	Thu Dec  7 19:37:12 2006
-@@ -0,0 +1,162 @@
-+/*
-+ * Simple routines for Celleb/Beat
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/rtc.h>
-+#include <asm/hvconsole.h>
-+#include <asm/time.h>
-+
-+#include "beat.h"
-+
-+int64_t	beat_errno;
-+
-+void beat_restart(char *cmd)
-+{
-+	beat_shutdown_logical_partition(1);
-+}
-+
-+void beat_power_off(void)
-+{
-+	beat_shutdown_logical_partition(0);
-+}
-+
-+u64 beat_halt_code = 0x1000000000000000UL;
-+
-+void beat_halt(void)
-+{
-+	beat_shutdown_logical_partition(beat_halt_code);
-+}
-+
-+int beat_set_rtc_time(struct rtc_time *rtc_time)
-+{
-+	u64 tim;
-+	tim = mktime(rtc_time->tm_year+1900,
-+		     rtc_time->tm_mon+1, rtc_time->tm_mday,
-+		     rtc_time->tm_hour, rtc_time->tm_min, rtc_time->tm_sec);
-+	if (beat_rtc_write(tim))
-+		return -1;
-+	return 0;
-+}
-+
-+void beat_get_rtc_time(struct rtc_time *rtc_time)
-+{
-+	u64 tim;
-+
-+	if (beat_rtc_read(&tim))
-+		tim = 0;
-+	to_tm(tim, rtc_time);
-+	rtc_time->tm_year -= 1900;
-+	rtc_time->tm_mon -= 1;
-+}
-+
-+#define	BEAT_NVRAM_SIZE	4096
-+#define	BEAT_NVRW_CNT	(sizeof(u64) * 6)
-+
-+ssize_t beat_nvram_read(char *buf, size_t count, loff_t *index)
-+{
-+	unsigned int i;
-+	unsigned long len;
-+	char *p = buf;
-+
-+	if (*index >= BEAT_NVRAM_SIZE)
-+		return -ENODEV;
-+	i = *index;
-+	if (i + count > BEAT_NVRAM_SIZE)
-+		count = BEAT_NVRAM_SIZE - i;
-+
-+	for (; count != 0; count -= len) {
-+		u64 nb[6];
-+
-+		len = count;
-+		if (len > BEAT_NVRW_CNT)
-+			len = BEAT_NVRW_CNT;
-+		if (beat_eeprom_read(i, len,
-+			nb+0, nb+1, nb+2, nb+3, nb+4, nb+5)) {
-+			return -EIO;
-+		}
-+
-+		memcpy(p, nb, len);
-+
-+		p += len;
-+		i += len;
-+	}
-+	*index = i;
-+	return p - buf;
-+}
-+
-+ssize_t beat_nvram_write(char *buf, size_t count, loff_t *index)
-+{
-+	unsigned int i;
-+	unsigned long len;
-+	char *p = buf;
-+
-+	if (*index >= BEAT_NVRAM_SIZE)
-+		return -ENODEV;
-+	i = *index;
-+	if (i + count > BEAT_NVRAM_SIZE)
-+		count = BEAT_NVRAM_SIZE - i;
-+
-+	for (; count != 0; count -= len) {
-+		u64 nb[6];
-+
-+		len = count;
-+		if (len > BEAT_NVRW_CNT)
-+			len = BEAT_NVRW_CNT;
-+		memcpy(nb, p, len);
-+		if (beat_eeprom_write(i, len,
-+			nb[0], nb[1], nb[2], nb[3], nb[4], nb[5])) {
-+			return -EIO;
-+		}
-+
-+		p += len;
-+		i += len;
-+	}
-+	*index = i;
-+	return p - buf;
-+}
-+
-+ssize_t beat_nvram_get_size(void)
-+{
-+	return BEAT_NVRAM_SIZE;
-+}
-+
-+int beat_set_xdabr(unsigned long dabr)
-+{
-+	if (beat_set_dabr(dabr, DABRX_KERNEL | DABRX_USER))
-+		return -1;
-+	return 0;
-+}
-+
-+int64_t beat_get_term_char(u64 vterm, u64 *len, u64 *t1, u64 *t2)
-+{
-+	return beat_get_characters_from_console(vterm, len, t1, t2);
-+}
-+
-+int64_t beat_put_term_char(u64 vterm, u64 len, u64 t1, u64 t2)
-+{
-+	return beat_put_characters_to_console(vterm, len, t1, t2);
-+}
-+
-+EXPORT_SYMBOL(beat_get_term_char);
-+EXPORT_SYMBOL(beat_put_term_char);
-+EXPORT_SYMBOL(beat_errno);
-+EXPORT_SYMBOL(beat_halt_code);
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat.h
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/beat.h:1.1
---- /dev/null	Mon Dec 11 20:37:31 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat.h	Wed Dec  6 08:43:15 2006
-@@ -0,0 +1,41 @@
-+/*
-+ * Guest OS Interfaces.
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#ifndef _CELLEB_BEAT_H
-+#define _CELLEB_BEAT_H
-+#include "beat_sys.h"
-+
-+#define DABRX_KERNEL		(1UL<<1)
-+#define DABRX_USER		(1UL<<0)
-+
-+int64_t beat_get_term_char(uint64_t,uint64_t*,uint64_t*,uint64_t*);
-+int64_t beat_put_term_char(uint64_t,uint64_t,uint64_t,uint64_t);
-+int64_t beat_repository_encode(int, const char *, uint64_t[4]);
-+void beat_restart(char *);
-+void beat_power_off(void);
-+void beat_halt(void);
-+int beat_set_rtc_time(struct rtc_time *);
-+void beat_get_rtc_time(struct rtc_time *);
-+ssize_t beat_nvram_get_size(void);
-+ssize_t beat_nvram_read(char *, size_t, loff_t *);
-+ssize_t beat_nvram_write(char *, size_t, loff_t *);
-+int beat_set_xdabr(unsigned long);
-+
-+#endif /* _CELLEB_BEAT_H */
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/lpar.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/lpar.c:1.2
---- /dev/null	Mon Dec 11 20:37:31 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/lpar.c	Mon Dec 11 15:50:31 2006
-@@ -0,0 +1,426 @@
-+/*
-+ * "Cell Reference Set" LPAR support.
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/pseries/lpar.c:
-+ * Copyright (C) 2001 Todd Inglett, IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#undef DEBUG_LOW
-+
-+#include <linux/kernel.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/console.h>
-+#include <asm/processor.h>
-+#include <asm/mmu.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/machdep.h>
-+#include <asm/abs_addr.h>
-+#include <asm/mmu_context.h>
-+#include <asm/iommu.h>
-+#include <asm/tlbflush.h>
-+#include <asm/tlb.h>
-+#include <asm/prom.h>
-+#include <asm/abs_addr.h>
-+#include <asm/cputable.h>
-+#include <asm/udbg.h>
-+#include <asm/smp.h>
-+
-+#include "beat.h"
-+
-+int	celleb_vtermno;
-+
-+#ifdef DEBUG_LOW
-+#define DBG_LOW(fmt...) do { udbg_printf(fmt); } while(0)
-+#else
-+#define DBG_LOW(fmt...) do { } while(0)
-+#endif
-+
-+static void udbg_putc_beat(char c)
-+{
-+	unsigned long rc;
-+
-+	if (c == '\n')
-+		udbg_putc_beat('\r');
-+
-+	rc = beat_put_term_char(celleb_vtermno, 1, (uint64_t)c << 56, 0);
-+}
-+
-+/* Buffered chars getc */
-+static long inbuflen;
-+static long inbuf[2];	/* must be 2 longs */
-+
-+static int udbg_getc_poll_beat(void)
-+{
-+	/* The interface is tricky because it may return up to 16 chars.
-+	 * We save them statically for future calls to udbg_getc().
-+	 */
-+	char ch, *buf = (char *)inbuf;
-+	int i;
-+	long rc;
-+	if (inbuflen == 0) {
-+		/* get some more chars. */
-+		inbuflen = 0;
-+		rc = beat_get_term_char(celleb_vtermno, &inbuflen, inbuf+0, inbuf+1);
-+		if (rc != 0)
-+			inbuflen = 0;	/* otherwise inbuflen is garbage */
-+	}
-+	if (inbuflen <= 0 || inbuflen > 16) {
-+		/* Catch error case as well as other oddities (corruption) */
-+		inbuflen = 0;
-+		return -1;
-+	}
-+	ch = buf[0];
-+	for (i = 1; i < inbuflen; i++)	/* shuffle them down. */
-+		buf[i-1] = buf[i];
-+	inbuflen--;
-+	return ch;
-+}
-+
-+static int udbg_getc_beat(void)
-+{
-+	int ch;
-+	for (;;) {
-+		ch = udbg_getc_poll_beat();
-+		if (ch == -1) {
-+			/* This shouldn't be needed...but... */
-+			volatile unsigned long delay;
-+			for (delay=0; delay < 2000000; delay++)
-+				;
-+		} else {
-+			return ch;
-+		}
-+	}
-+}
-+
-+/* call this from early_init() for a working debug console on
-+ * vterm capable LPAR machines
-+ */
-+void __init udbg_init_debug_beat(void)
-+{
-+	celleb_vtermno = 0;
-+	udbg_putc = udbg_putc_beat;
-+	udbg_getc = udbg_getc_beat;
-+	udbg_getc_poll = udbg_getc_poll_beat;
-+}
-+
-+#if 0
-+/* returns 0 if couldn't find or use /chosen/stdout as console */
-+void __init celleb_find_udbg_vterm(void)
-+{
-+	struct device_node *stdout_node;
-+	const u32 *termno;
-+	const char *name;
-+	int add_console;
-+
-+	/* find the boot console from /chosen/stdout */
-+	if (!of_chosen)
-+		return;
-+	name = get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (name == NULL)
-+		return;
-+	stdout_node = of_find_node_by_path(name);
-+	if (!stdout_node)
-+		return;
-+	name = get_property(stdout_node, "name", NULL);
-+	if (!name) {
-+		printk(KERN_WARNING "stdout node missing 'name' property!\n");
-+		goto out;
-+	}
-+	/* The user has requested a console so this is already set up. */
-+	add_console = !strstr(cmd_line, "console=");
-+
-+	/* Check if it's a virtual terminal */
-+	if (strncmp(name, "vty", 3) != 0)
-+		goto out;
-+	termno = get_property(stdout_node, "reg", NULL);
-+	if (termno == NULL)
-+		goto out;
-+	celleb_vtermno = termno[0];
-+
-+	if (device_is_compatible(stdout_node, "hvterm1")) {
-+		udbg_putc = udbg_putc_beat;
-+		udbg_getc = udbg_getc_beat;
-+		udbg_getc_poll = udbg_getc_poll_beat;
-+		if (add_console)
-+			add_preferred_console("hvc", termno[0] & 0xff, NULL);
-+	}
-+out:
-+	of_node_put(stdout_node);
-+}
-+#endif
-+
-+static inline unsigned int beat_read_mask(unsigned hpte_group)
-+{
-+	unsigned long hpte_v0, hpte_v1, hpte_v2, hpte_v3, hpte_perms;
-+	unsigned long rmask = 0;
-+
-+	beat_read_htab_entries(0, hpte_group + 0,
-+		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-+	if (!(hpte_v0 & HPTE_V_BOLTED))
-+		rmask |= 0x8000;
-+	if (!(hpte_v1 & HPTE_V_BOLTED))
-+		rmask |= 0x4000;
-+	if (!(hpte_v2 & HPTE_V_BOLTED))
-+		rmask |= 0x2000;
-+	if (!(hpte_v3 & HPTE_V_BOLTED))
-+		rmask |= 0x1000;
-+	beat_read_htab_entries(0, hpte_group + 4,
-+		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-+	if (!(hpte_v0 & HPTE_V_BOLTED))
-+		rmask |= 0x0800;
-+	if (!(hpte_v1 & HPTE_V_BOLTED))
-+		rmask |= 0x0400;
-+	if (!(hpte_v2 & HPTE_V_BOLTED))
-+		rmask |= 0x0200;
-+	if (!(hpte_v3 & HPTE_V_BOLTED))
-+		rmask |= 0x0100;
-+	hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
-+	beat_read_htab_entries(0, hpte_group + 0,
-+		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-+	if (!(hpte_v0 & HPTE_V_BOLTED))
-+		rmask |= 0x80;
-+	if (!(hpte_v1 & HPTE_V_BOLTED))
-+		rmask |= 0x40;
-+	if (!(hpte_v2 & HPTE_V_BOLTED))
-+		rmask |= 0x20;
-+	if (!(hpte_v3 & HPTE_V_BOLTED))
-+		rmask |= 0x10;
-+	beat_read_htab_entries(0, hpte_group + 4,
-+		&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
-+	if (!(hpte_v0 & HPTE_V_BOLTED))
-+		rmask |= 0x08;
-+	if (!(hpte_v1 & HPTE_V_BOLTED))
-+		rmask |= 0x04;
-+	if (!(hpte_v2 & HPTE_V_BOLTED))
-+		rmask |= 0x02;
-+	if (!(hpte_v3 & HPTE_V_BOLTED))
-+		rmask |= 0x01;
-+	return rmask;
-+}
-+
-+static long beat_lpar_hpte_insert(unsigned long hpte_group,
-+				  unsigned long va, unsigned long pa,
-+				  unsigned long rflags, unsigned long vflags,
-+				  int psize)
-+{
-+	unsigned long lpar_rc;
-+	unsigned long slot;
-+	unsigned long hpte_v, hpte_r;
-+	unsigned long dummy0, dummy1;
-+
-+	/* same as iseries */
-+	if (vflags & HPTE_V_SECONDARY)
-+		return -1;
-+
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
-+			"rflags=%lx, vflags=%lx, psize=%d)\n",
-+		hpte_group, va, pa, rflags, vflags, psize);
-+
-+	hpte_v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
-+	hpte_r = hpte_encode_r(pa, psize) | rflags;
-+
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
-+
-+	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-+		hpte_r &= ~_PAGE_COHERENT;
-+
-+	if ((lpar_rc = beat_read_mask(hpte_group)) == 0) {
-+		if (!(vflags & HPTE_V_BOLTED))
-+			DBG_LOW(" full\n");
-+		return -1;
-+	}
-+
-+	lpar_rc = beat_insert_htab_entry(0, hpte_group, lpar_rc << 48,
-+		hpte_v, hpte_r, &slot, &dummy0, &dummy1);
-+
-+	/*
-+	 * Since we try and ioremap PHBs we don't own, the pte insert
-+	 * will fail. However we must catch the failure in hash_page
-+	 * or we will loop forever, so return -2 in this case.
-+	 */
-+	if (unlikely(lpar_rc != 0)) {
-+		if (!(vflags & HPTE_V_BOLTED))
-+			DBG_LOW(" lpar err %lx\n", lpar_rc);
-+		return -2;
-+	}
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW(" -> slot: %lx\n", slot);
-+
-+	/* We have to pass down the secondary bucket bit here as well */
-+	return (slot ^ hpte_group) & 15;
-+}
-+
-+static long beat_lpar_hpte_remove(unsigned long hpte_group)
-+{
-+	DBG_LOW("hpte_remove(group=%lx)\n", hpte_group);
-+	return -1;
-+}
-+
-+static unsigned long beat_lpar_hpte_getword0(unsigned long slot)
-+{
-+	unsigned long dword0, dword[4], dwordX;
-+	unsigned long lpar_rc;
-+
-+	lpar_rc = beat_read_htab_entries(0, slot & ~3UL,
-+		dword+0, dword+1, dword+2, dword+3, &dwordX);
-+
-+	dword0 = dword[slot&3];
-+
-+	BUG_ON(lpar_rc != 0);
-+
-+	return dword0;
-+}
-+
-+static void beat_lpar_hptab_clear(void)
-+{
-+	unsigned long size_bytes = 1UL << ppc64_pft_size;
-+	unsigned long hpte_count = size_bytes >> 4;
-+	unsigned long dummy1, dummy2;
-+	int i;
-+
-+	/* TODO: Use bulk call */
-+	for (i = 0; i < hpte_count; i++)
-+		beat_write_htab_entry(0, i, 0, 0, -1UL, -1UL, &dummy1, &dummy2);
-+}
-+
-+/*
-+ * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
-+ * the low 3 bits of flags happen to line up.  So no transform is needed.
-+ * We can probably optimize here and assume the high bits of newpp are
-+ * already zero.  For now I am paranoid.
-+ */
-+static long beat_lpar_hpte_updatepp(unsigned long slot,
-+				    unsigned long newpp,
-+				    unsigned long va,
-+				    int psize, int local)
-+{
-+	unsigned long lpar_rc;
-+	unsigned long dummy0, dummy1, want_v;
-+
-+	want_v = hpte_encode_v(va, psize);
-+
-+	DBG_LOW("    update: avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
-+		want_v & HPTE_V_AVPN, slot, psize, newpp);
-+
-+	dummy0 = beat_lpar_hpte_getword0(slot);
-+	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-+		DBG_LOW("not found !\n");
-+		return -1;
-+	}
-+
-+	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
-+		&dummy0, &dummy1);
-+
-+	if (lpar_rc != 0 || dummy0 == 0) {
-+		DBG_LOW("not found !\n");
-+		return -1;
-+	}
-+
-+	DBG_LOW("ok %lx %lx\n", dummy0, dummy1);
-+
-+	BUG_ON(lpar_rc != 0);
-+
-+	return 0;
-+}
-+
-+static long beat_lpar_hpte_find(unsigned long va, int psize)
-+{
-+	unsigned long hash;
-+	unsigned long i, j;
-+	long slot;
-+	unsigned long want_v, hpte_v;
-+
-+	hash = hpt_hash(va, mmu_psize_defs[psize].shift);
-+	want_v = hpte_encode_v(va, psize);
-+
-+	for (j = 0; j < 2; j++) {
-+		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+		for (i = 0; i < HPTES_PER_GROUP; i++) {
-+			hpte_v = beat_lpar_hpte_getword0(slot);
-+
-+			if (HPTE_V_COMPARE(hpte_v, want_v)
-+			    && (hpte_v & HPTE_V_VALID)
-+			    && (!!(hpte_v & HPTE_V_SECONDARY) == j)) {
-+				/* HPTE matches */
-+				if (j)
-+					slot = -slot;
-+				return slot;
-+			}
-+			++slot;
-+		}
-+		hash = ~hash;
-+	}
-+
-+	return -1;
-+}
-+
-+static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
-+					  unsigned long ea,
-+					  int psize)
-+{
-+	unsigned long lpar_rc, slot, vsid, va, dummy0, dummy1;
-+
-+	vsid = get_kernel_vsid(ea);
-+	va = (vsid << 28) | (ea & 0x0fffffff);
-+
-+	slot = beat_lpar_hpte_find(va, psize);
-+	BUG_ON(slot == -1);
-+
-+	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
-+		&dummy0, &dummy1);
-+
-+	BUG_ON(lpar_rc != 0);
-+}
-+
-+static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
-+					 int psize, int local)
-+{
-+	unsigned long want_v;
-+	unsigned long lpar_rc;
-+	unsigned long dummy1, dummy2;
-+
-+	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
-+		slot, va, psize, local);
-+	want_v = hpte_encode_v(va, psize);
-+
-+	dummy1 = beat_lpar_hpte_getword0(slot);
-+
-+	if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-+		DBG_LOW("not found !\n");
-+		return;
-+	}
-+
-+	lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
-+		&dummy1, &dummy2);
-+
-+	BUG_ON(lpar_rc != 0);
-+}
-+
-+void __init hpte_init_beat(void)
-+{
-+	ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
-+	ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
-+	ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
-+	ppc_md.hpte_insert	= beat_lpar_hpte_insert;
-+	ppc_md.hpte_remove	= beat_lpar_hpte_remove;
-+	ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
-+}
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c:1.3
---- /dev/null	Mon Dec 11 20:37:31 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c	Mon Dec 11 19:55:10 2006
-@@ -0,0 +1,314 @@
-+/*
-+ * Celleb setup code
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/cell/setup.c:
-+ *  Copyright (C) 1995  Linus Torvalds
-+ *  Adapted from 'alpha' version by Gary Thomas
-+ *  Modified by Cort Dougan (cort@cs.nmt.edu)
-+ *  Modified by PPC64 Team, IBM Corp
-+ *  Modified by Cell Team, IBM Deutschland Entwicklung GmbH
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#undef DEBUG
-+
-+#include <linux/cpu.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/stddef.h>
-+#include <linux/unistd.h>
-+#include <linux/reboot.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/irq.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/console.h>
-+
-+#include <asm/mmu.h>
-+#include <asm/processor.h>
-+#include <asm/io.h>
-+#include <asm/kexec.h>
-+#include <asm/prom.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/iommu.h>
-+#include <asm/machdep.h>
-+#include <asm/cputable.h>
-+#include <asm/irq.h>
-+#include <asm/spu_priv1.h>
-+#include <asm/firmware.h>
-+#include <asm/of_platform.h>
-+
-+#include "interrupt.h"
-+#include "beat.h"
-+
-+#ifdef CONFIG_SERIAL_TXX9
-+#include <linux/tty.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
-+#endif
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
-+
-+static void celleb_show_cpuinfo(struct seq_file *m)
-+{
-+	struct device_node *root;
-+	const char *model = "";
-+
-+	root = of_find_node_by_path("/");
-+	if (root)
-+		model = get_property(root, "model", NULL);
-+	seq_printf(m, "machine\t\t: CHRP %s\n", model);
-+	of_node_put(root);
-+}
-+
-+static void celleb_progress(char *s, unsigned short hex)
-+{
-+	printk("*** %04x : %s\n", hex, s ? s : "");
-+}
-+
-+static void __init celleb_setup_arch(void)
-+{
-+	ppc_md.init_IRQ = beatic_init_IRQ;
-+	ppc_md.get_irq = beatic_get_irq;
-+#ifdef CONFIG_SPU_BASE
-+	spu_priv1_ops = &spu_priv1_beat_ops;
-+	spu_management_ops = &spu_management_beat_ops;
-+#endif
-+
-+#ifdef CONFIG_SMP
-+	smp_init_celleb();
-+#endif
-+
-+	/* init to some ~sane value until calibrate_delay() runs */
-+	loops_per_jiffy = 50000000;
-+
-+	if (ROOT_DEV == 0) {
-+		printk("No ramdisk, default root is /dev/hda2\n");
-+		ROOT_DEV = Root_HDA2;
-+	}
-+
-+#ifdef CONFIG_DUMMY_CONSOLE
-+	conswitchp = &dummy_con;
-+#endif
-+}
-+
-+/*
-+ * Early initialization.  Relocation is on but do not reference unbolted pages
-+ */
-+static void __init celleb_init_early(void)
-+{
-+	DBG(" -> celleb_init_early()\n");
-+
-+	celleb_init_iommu();
-+
-+	DBG(" <- celleb_init_early()\n");
-+}
-+
-+static void beat_power_save(void)
-+{
-+	beat_pause(0);
-+}
-+
-+static int __init celleb_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "Beat"))
-+		return 0;
-+
-+	powerpc_firmware_features |= FW_FEATURE_LPAR;
-+	hpte_init_beat();
-+	return 1;
-+}
-+
-+/*
-+ * Cell has no legacy IO; anything calling this function has to
-+ * fail or bad things will happen
-+ */
-+static int celleb_check_legacy_ioport(unsigned int baseport)
-+{
-+	return -ENODEV;
-+}
-+
-+static int celleb_pci_probe_mode(struct pci_bus *bus){
-+
-+	struct device_node *node;
-+	const char *name;
-+
-+	node = (struct device_node *)bus->sysdata;
-+	name = get_property(node, "name", NULL);
-+
-+	if (strcmp(name, "pci-pseudo") == 0)
-+		return PCI_PROBE_DEVTREE;
-+
-+	return PCI_PROBE_NORMAL;
-+}
-+
-+static void celleb_kexec_cpu_down(int crash, int secondary)
-+{
-+	extern void	beatic_deinit_IRQ(void);
-+
-+	beatic_deinit_IRQ();
-+}
-+
-+#ifdef CONFIG_SERIAL_TXX9
-+/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
-+    mmio=0xfff000-0x1000,0xff2000-0x1000 */
-+static int txx9_serial_bitmap = 0;
-+
-+static struct {
-+	uint32_t offset;
-+	uint32_t index;
-+} txx9_spider_tab[3] = {
-+	{ 0x300, 0 },	/* 0xFFF300 */
-+	{ 0x400, 0 },	/* 0xFFF400 */
-+	{ 0x800, 1 }	/* 0xFF2800 */
-+};
-+
-+static int txx9_serial_init(void)
-+{
-+	extern int early_serial_txx9_setup(struct uart_port *port);
-+	struct device_node *node;
-+	const uint64_t *irq_prop, *base_prop;
-+	int irq_len, base_addr_len;
-+	int i, maxi;
-+	struct uart_port req;
-+
-+	node = of_find_node_by_path("/ioif1/sio");
-+	if (!node)
-+		return 0;
-+
-+	irq_prop = get_property(node, "interrupts", &irq_len);
-+	if (!irq_prop)
-+		goto out;
-+	irq_len /= sizeof(uint64_t);
-+
-+	base_prop = get_property(node, "toshiba,reg", &base_addr_len);
-+	if (!base_prop)
-+		goto out;
-+	base_addr_len /= sizeof(uint64_t) * 2;
-+
-+	maxi = sizeof(txx9_spider_tab)/sizeof(txx9_spider_tab[0]);
-+	if (maxi > irq_len)
-+		maxi = irq_len;
-+
-+	for(i = 0; i < maxi; i++) {
-+		if (!(txx9_serial_bitmap & (1<<i)))
-+			continue;
-+		if (base_addr_len <= txx9_spider_tab[i].index)
-+			continue;
-+
-+		memset(&req, 0, sizeof(req));
-+		req.line = i;
-+		req.iotype = UPIO_MEM;
-+		req.mapbase = base_prop[txx9_spider_tab[i].index * 2]
-+			+ txx9_spider_tab[i].offset;
-+#ifdef CONFIG_SERIAL_TXX9_CONSOLE
-+		req.membase = ioremap(req.mapbase, 0x24);
-+#endif
-+		req.irq = irq_create_mapping(NULL, irq_prop[i]);
-+		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
-+		req.uartclk = 83300000;
-+		early_serial_txx9_setup(&req);
-+	}
-+
-+out:
-+	of_node_put(node);
-+	return 0;
-+}
-+
-+static int txx9_serial_config(char *ptr)
-+{
-+	int	i;
-+
-+	for (;;) {
-+		switch(get_option(&ptr, &i)) {
-+		default:
-+			return 0;
-+		case 2:
-+			txx9_serial_bitmap |= 1 << i;
-+			break;
-+		case 1:
-+			txx9_serial_bitmap |= 1 << i;
-+			return 0;
-+		}
-+	}
-+}
-+__setup("txx9_serial=", txx9_serial_config);
-+
-+console_initcall(txx9_serial_init);
-+#endif
-+
-+#if 1
-+static struct of_device_id celleb_bus_ids[] = {
-+	{ .type = "spider", },
-+	{ .type = "ioif", },	/* old style */
-+	{},
-+};
-+
-+static int __init celleb_publish_devices(void)
-+{
-+	if (!machine_is(celleb))
-+		return 0;
-+
-+	/* Publish OF platform devices for southbridge IOs */
-+	of_platform_bus_probe(NULL, celleb_bus_ids, NULL);
-+
-+	return 0;
-+}
-+device_initcall(celleb_publish_devices);
-+#endif
-+
-+extern int celleb_setup_phb(struct pci_controller *phb);
-+extern void celleb_pcibios_fixup(void);
-+
-+define_machine(celleb) {
-+	.name			= "Cell Reference Set",
-+	.probe			= celleb_probe,
-+	.setup_arch		= celleb_setup_arch,
-+	.init_early		= celleb_init_early,
-+	.show_cpuinfo		= celleb_show_cpuinfo,
-+	.pci_probe_mode 	= celleb_pci_probe_mode,
-+	.restart		= beat_restart,
-+	.power_off		= beat_power_off,
-+	.halt			= beat_halt,
-+	.get_rtc_time		= beat_get_rtc_time,
-+	.set_rtc_time		= beat_set_rtc_time,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.check_legacy_ioport	= celleb_check_legacy_ioport,
-+	.progress		= celleb_progress,
-+	.power_save		= beat_power_save,
-+	.nvram_size		= beat_nvram_get_size,
-+	.nvram_read		= beat_nvram_read,
-+	.nvram_write		= beat_nvram_write,
-+	.set_dabr		= beat_set_xdabr,
-+	.pci_setup_phb		= celleb_setup_phb,
-+	.pcibios_fixup		= celleb_pcibios_fixup,
-+#ifdef CONFIG_KEXEC
-+	.kexec_cpu_down		= celleb_kexec_cpu_down,
-+	.machine_kexec		= default_machine_kexec,
-+	.machine_kexec_prepare	= default_machine_kexec_prepare,
-+	.machine_crash_shutdown	= default_machine_crash_shutdown,
-+#endif
-+};
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/smp.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/smp.c:1.1
---- /dev/null	Mon Dec 11 20:37:32 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/smp.c	Wed Dec  6 08:43:15 2006
-@@ -0,0 +1,143 @@
-+/*
-+ * SMP support for Celleb platform. (Incomplete)
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/cell/smp.c:
-+ * Dave Engebretsen, Peter Bergner, and
-+ * Mike Corrigan {engebret|bergner|mikec}@us.ibm.com
-+ * Plus various changes from other IBM teams...
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#undef DEBUG
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/smp.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/spinlock.h>
-+#include <linux/cache.h>
-+#include <linux/err.h>
-+#include <linux/sysdev.h>
-+#include <linux/cpu.h>
-+
-+#include <asm/ptrace.h>
-+#include <asm/atomic.h>
-+#include <asm/irq.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/smp.h>
-+#include <asm/paca.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/cputable.h>
-+#include <asm/firmware.h>
-+#include <asm/system.h>
-+#include <asm/rtas.h>
-+#include <asm/udbg.h>
-+
-+#include "interrupt.h"
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
-+
-+/*
-+ * The primary thread of each non-boot processor is recorded here before
-+ * smp init.
-+ */
-+/* static cpumask_t of_spin_map; */
-+
-+/**
-+ * smp_startup_cpu() - start the given cpu
-+ *
-+ * At boot time, there is nothing to do for primary threads which were
-+ * started from Open Firmware.  For anything else, call RTAS with the
-+ * appropriate start location.
-+ *
-+ * Returns:
-+ *	0	- failure
-+ *	1	- success
-+ */
-+static inline int __devinit smp_startup_cpu(unsigned int lcpu)
-+{
-+	return 0;
-+}
-+
-+static void smp_beatic_message_pass(int target, int msg)
-+{
-+	unsigned int i;
-+
-+	if (target < NR_CPUS) {
-+		beatic_cause_IPI(target, msg);
-+	} else {
-+		for_each_online_cpu(i) {
-+			if (target == MSG_ALL_BUT_SELF
-+			    && i == smp_processor_id())
-+				continue;
-+			beatic_cause_IPI(i, msg);
-+		}
-+	}
-+}
-+
-+static int __init smp_beatic_probe(void)
-+{
-+	return cpus_weight(cpu_possible_map);
-+}
-+
-+static void __devinit smp_beatic_setup_cpu(int cpu)
-+{
-+	beatic_setup_cpu(cpu);
-+}
-+
-+static void __devinit smp_celleb_kick_cpu(int nr)
-+{
-+	BUG_ON(nr < 0 || nr >= NR_CPUS);
-+
-+	if (!smp_startup_cpu(nr))
-+		return;
-+	/*  */
-+}
-+
-+static int smp_celleb_cpu_bootable(unsigned int nr)
-+{
-+	return 1;
-+}
-+static struct smp_ops_t bpa_beatic_smp_ops = {
-+	.message_pass	= smp_beatic_message_pass,
-+	.probe		= smp_beatic_probe,
-+	.kick_cpu	= smp_celleb_kick_cpu,
-+	.setup_cpu	= smp_beatic_setup_cpu,
-+	.cpu_bootable	= smp_celleb_cpu_bootable,
-+};
-+
-+/* This is called very early */
-+void __init smp_init_celleb(void)
-+{
-+	DBG(" -> smp_init_celleb()\n");
-+
-+	smp_ops = &bpa_beatic_smp_ops;
-+
-+	DBG(" <- smp_init_celleb()\n");
-+}
-Index: linux-powerpc-git/include/asm-powerpc/firmware.h
-diff -u linux-powerpc-git/include/asm-powerpc/firmware.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/firmware.h:1.2
---- linux-powerpc-git/include/asm-powerpc/firmware.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-+++ linux-powerpc-git/include/asm-powerpc/firmware.h	Wed Dec  6 08:43:16 2006
-@@ -61,6 +61,8 @@
- 	FW_FEATURE_ISERIES_ALWAYS = FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
- 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
- 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
-+	FW_FEATURE_CELLEB_POSSIBLE = FW_FEATURE_LPAR,
-+	FW_FEATURE_CELLEB_ALWAYS = FW_FEATURE_LPAR,
- 	FW_FEATURE_NATIVE_POSSIBLE = 0,
- 	FW_FEATURE_NATIVE_ALWAYS = 0,
- 	FW_FEATURE_POSSIBLE =
-@@ -73,6 +75,9 @@
- #ifdef CONFIG_PPC_PS3
- 		FW_FEATURE_PS3_POSSIBLE |
- #endif
-+#ifdef CONFIG_PPC_CELLEB
-+		FW_FEATURE_CELLEB_POSSIBLE |
-+#endif
- #ifdef CONFIG_PPC_NATIVE
- 		FW_FEATURE_NATIVE_ALWAYS |
- #endif
-@@ -87,6 +92,9 @@
- #ifdef CONFIG_PPC_PS3
- 		FW_FEATURE_PS3_ALWAYS &
- #endif
-+#ifdef CONFIG_PPC_CELLEB
-+		FW_FEATURE_CELLEB_ALWAYS &
-+#endif
- #ifdef CONFIG_PPC_NATIVE
- 		FW_FEATURE_NATIVE_ALWAYS &
- #endif
-Index: linux-powerpc-git/include/asm-powerpc/mmu.h
-diff -u linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/mmu.h:1.2
---- linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-+++ linux-powerpc-git/include/asm-powerpc/mmu.h	Wed Dec  6 08:43:16 2006
-@@ -247,6 +247,7 @@
- extern void hpte_init_native(void);
- extern void hpte_init_lpar(void);
- extern void hpte_init_iSeries(void);
-+extern void hpte_init_beat(void);
- 
- extern void stabs_alloc(void);
- extern void slb_initialize(void);
-Index: linux-powerpc-git/include/asm-powerpc/smp.h
-diff -u linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/smp.h:1.2
---- linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-+++ linux-powerpc-git/include/asm-powerpc/smp.h	Wed Dec  6 08:43:16 2006
-@@ -75,6 +75,7 @@
- void smp_init_iSeries(void);
- void smp_init_pSeries(void);
- void smp_init_cell(void);
-+void smp_init_celleb(void);
- void smp_setup_cpu_maps(void);
- 
- extern int __cpu_disable(void);
-Index: linux-powerpc-git/include/asm-powerpc/udbg.h
-diff -u linux-powerpc-git/include/asm-powerpc/udbg.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/udbg.h:1.2
---- linux-powerpc-git/include/asm-powerpc/udbg.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-+++ linux-powerpc-git/include/asm-powerpc/udbg.h	Wed Dec  6 08:43:16 2006
-@@ -44,6 +44,7 @@
- extern void __init udbg_init_iseries(void);
- extern void __init udbg_init_rtas_panel(void);
- extern void __init udbg_init_rtas_console(void);
-+extern void __init udbg_init_debug_beat(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
+Index: linux-powerpc-git/arch/powerpc/configs/celleb_defconfig
+diff -u /dev/null linux-powerpc-git/arch/powerpc/configs/celleb_defconfig:1.1
+--- /dev/null	Mon Dec 11 20:37:33 2006
++++ linux-powerpc-git/arch/powerpc/configs/celleb_defconfig	Wed Dec  6 08:43:14 2006
+@@ -0,0 +1,1383 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.19
++# Tue Dec  5 19:20:35 2006
++#
++CONFIG_PPC64=y
++CONFIG_64BIT=y
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_IRQ_PER_CPU=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_COMPAT=y
++CONFIG_SYSVIPC_COMPAT=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++# CONFIG_PPC_UDBG_16550 is not set
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++# CONFIG_DEFAULT_UIMAGE is not set
++
++#
++# Processor support
++#
++# CONFIG_POWER4_ONLY is not set
++CONFIG_POWER3=y
++CONFIG_POWER4=y
++CONFIG_PPC_FPU=y
++# CONFIG_PPC_DCR_NATIVE is not set
++# CONFIG_PPC_DCR_MMIO is not set
++# CONFIG_PPC_OF_PLATFORM_PCI is not set
++CONFIG_ALTIVEC=y
++CONFIG_PPC_STD_MMU=y
++CONFIG_VIRT_CPU_ACCOUNTING=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=4
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_LOCK_KERNEL=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++# CONFIG_IPC_NS is not set
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_UTS_NS is not set
++# CONFIG_AUDIT is not set
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++# CONFIG_CPUSETS is not set
++CONFIG_SYSFS_DEPRECATED=y
++# CONFIG_RELAY is not set
++CONFIG_INITRAMFS_SOURCE=""
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++CONFIG_SYSCTL=y
++# CONFIG_EMBEDDED is not set
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++# CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++CONFIG_SLAB=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
++
++#
++# Loadable module support
++#
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++CONFIG_MODVERSIONS=y
++CONFIG_MODULE_SRCVERSION_ALL=y
++CONFIG_KMOD=y
++CONFIG_STOP_MACHINE=y
++
++#
++# Block layer
++#
++CONFIG_BLOCK=y
++# CONFIG_BLK_DEV_IO_TRACE is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
++
++#
++# Platform support
++#
++CONFIG_PPC_MULTIPLATFORM=y
++# CONFIG_EMBEDDED6xx is not set
++# CONFIG_APUS is not set
++# CONFIG_PPC_PSERIES is not set
++# CONFIG_PPC_ISERIES is not set
++# CONFIG_PPC_MPC52xx is not set
++# CONFIG_PPC_PMAC is not set
++# CONFIG_PPC_MAPLE is not set
++# CONFIG_PPC_PASEMI is not set
++CONFIG_PPC_CELL=y
++# CONFIG_PPC_CELL_NATIVE is not set
++# CONFIG_PPC_IBM_CELL_BLADE is not set
++# CONFIG_PPC_PS3 is not set
++CONFIG_PPC_CELLEB=y
++# CONFIG_UDBG_RTAS_CONSOLE is not set
++# CONFIG_U3_DART is not set
++CONFIG_PPC_RTAS=y
++# CONFIG_RTAS_ERROR_LOGGING is not set
++CONFIG_RTAS_PROC=y
++# CONFIG_RTAS_FLASH is not set
++# CONFIG_MMIO_NVRAM is not set
++# CONFIG_PPC_MPC106 is not set
++# CONFIG_PPC_970_NAP is not set
++# CONFIG_PPC_INDIRECT_IO is not set
++# CONFIG_GENERIC_IOMAP is not set
++# CONFIG_CPU_FREQ is not set
++# CONFIG_WANT_EARLY_SERIAL is not set
++# CONFIG_MPIC is not set
++
++#
++# Cell Broadband Engine options
++#
++CONFIG_SPU_FS=y
++CONFIG_SPU_BASE=y
++# CONFIG_CBE_RAS is not set
++
++#
++# Kernel options
++#
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_PREEMPT_BKL=y
++CONFIG_BINFMT_ELF=y
++CONFIG_BINFMT_MISC=m
++CONFIG_FORCE_MAX_ZONEORDER=13
++# CONFIG_IOMMU_VMERGE is not set
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++CONFIG_KEXEC=y
++# CONFIG_CRASH_DUMP is not set
++# CONFIG_IRQ_ALL_CPUS is not set
++CONFIG_NUMA=y
++CONFIG_NODES_SHIFT=4
++CONFIG_ARCH_SELECT_MEMORY_MODEL=y
++CONFIG_ARCH_SPARSEMEM_ENABLE=y
++CONFIG_ARCH_SPARSEMEM_DEFAULT=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++# CONFIG_FLATMEM_MANUAL is not set
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++CONFIG_SPARSEMEM_MANUAL=y
++CONFIG_SPARSEMEM=y
++CONFIG_NEED_MULTIPLE_NODES=y
++CONFIG_HAVE_MEMORY_PRESENT=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPARSEMEM_EXTREME=y
++CONFIG_MEMORY_HOTPLUG=y
++CONFIG_MEMORY_HOTPLUG_SPARSE=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_MIGRATION=y
++CONFIG_RESOURCES_64BIT=y
++CONFIG_ARCH_MEMORY_PROBE=y
++CONFIG_NODES_SPAN_OTHER_NODES=y
++# CONFIG_PPC_64K_PAGES is not set
++# CONFIG_SCHED_SMT is not set
++CONFIG_PROC_DEVICETREE=y
++# CONFIG_CMDLINE_BOOL is not set
++# CONFIG_PM is not set
++CONFIG_SECCOMP=y
++CONFIG_ISA_DMA_API=y
++
++#
++# Bus options
++#
++CONFIG_GENERIC_ISA_DMA=y
++# CONFIG_MPIC_WEIRD is not set
++# CONFIG_PPC_I8259 is not set
++# CONFIG_PPC_INDIRECT_PCI is not set
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++# CONFIG_PCIEPORTBUS is not set
++# CONFIG_PCI_MULTITHREAD_PROBE is not set
++# CONFIG_PCI_DEBUG is not set
++
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
++
++#
++# PCI Hotplug Support
++#
++# CONFIG_HOTPLUG_PCI is not set
++CONFIG_KERNEL_START=0xc000000000000000
++
++#
++# Networking
++#
++CONFIG_NET=y
++
++#
++# Networking options
++#
++# CONFIG_NETDEBUG is not set
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++CONFIG_XFRM=y
++# CONFIG_XFRM_USER is not set
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++# CONFIG_IP_PNP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_IP_MROUTE is not set
++# CONFIG_ARPD is not set
++CONFIG_SYN_COOKIES=y
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++
++#
++# IP: Virtual Server Configuration
++#
++# CONFIG_IP_VS is not set
++CONFIG_IPV6=y
++# CONFIG_IPV6_PRIVACY is not set
++# CONFIG_IPV6_ROUTER_PREF is not set
++CONFIG_INET6_AH=m
++CONFIG_INET6_ESP=m
++CONFIG_INET6_IPCOMP=m
++# CONFIG_IPV6_MIP6 is not set
++CONFIG_INET6_XFRM_TUNNEL=m
++CONFIG_INET6_TUNNEL=m
++CONFIG_INET6_XFRM_MODE_TRANSPORT=y
++CONFIG_INET6_XFRM_MODE_TUNNEL=y
++CONFIG_INET6_XFRM_MODE_BEET=y
++# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
++CONFIG_IPV6_SIT=y
++CONFIG_IPV6_TUNNEL=m
++# CONFIG_IPV6_MULTIPLE_TABLES is not set
++# CONFIG_NETWORK_SECMARK is not set
++CONFIG_NETFILTER=y
++# CONFIG_NETFILTER_DEBUG is not set
++
++#
++# Core Netfilter Configuration
++#
++# CONFIG_NETFILTER_NETLINK is not set
++# CONFIG_NF_CONNTRACK_ENABLED is not set
++# CONFIG_NETFILTER_XTABLES is not set
++
++#
++# IP: Netfilter Configuration
++#
++CONFIG_IP_NF_QUEUE=m
++
++#
++# IPv6: Netfilter Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP6_NF_QUEUE is not set
++
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
++
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
++
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++CONFIG_FW_LOADER=y
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_SYS_HYPERVISOR is not set
++
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++
++#
++# Plug and Play support
++#
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_CRYPTOLOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++# CONFIG_BLK_DEV_UB is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++
++#
++# Misc devices
++#
++# CONFIG_SGI_IOC4 is not set
++# CONFIG_TIFM_CORE is not set
++
++#
++# ATA/ATAPI/MFM/RLL support
++#
++CONFIG_IDE=y
++CONFIG_BLK_DEV_IDE=y
++
++#
++# Please see Documentation/ide.txt for help/info on IDE drives
++#
++# CONFIG_BLK_DEV_IDE_SATA is not set
++CONFIG_BLK_DEV_IDEDISK=y
++CONFIG_IDEDISK_MULTI_MODE=y
++CONFIG_BLK_DEV_IDECD=m
++# CONFIG_BLK_DEV_IDETAPE is not set
++# CONFIG_BLK_DEV_IDEFLOPPY is not set
++# CONFIG_BLK_DEV_IDESCSI is not set
++# CONFIG_IDE_TASK_IOCTL is not set
++
++#
++# IDE chipset support/bugfixes
++#
++CONFIG_IDE_GENERIC=y
++CONFIG_BLK_DEV_IDEPCI=y
++CONFIG_IDEPCI_SHARE_IRQ=y
++# CONFIG_BLK_DEV_OFFBOARD is not set
++CONFIG_BLK_DEV_GENERIC=y
++# CONFIG_BLK_DEV_OPTI621 is not set
++# CONFIG_BLK_DEV_SL82C105 is not set
++CONFIG_BLK_DEV_IDEDMA_PCI=y
++# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
++CONFIG_IDEDMA_PCI_AUTO=y
++# CONFIG_IDEDMA_ONLYDISK is not set
++# CONFIG_BLK_DEV_AEC62XX is not set
++# CONFIG_BLK_DEV_ALI15X3 is not set
++# CONFIG_BLK_DEV_AMD74XX is not set
++# CONFIG_BLK_DEV_CMD64X is not set
++# CONFIG_BLK_DEV_TRIFLEX is not set
++# CONFIG_BLK_DEV_CY82C693 is not set
++# CONFIG_BLK_DEV_CS5520 is not set
++# CONFIG_BLK_DEV_CS5530 is not set
++# CONFIG_BLK_DEV_HPT34X is not set
++# CONFIG_BLK_DEV_HPT366 is not set
++# CONFIG_BLK_DEV_JMICRON is not set
++# CONFIG_BLK_DEV_SC1200 is not set
++# CONFIG_BLK_DEV_PIIX is not set
++# CONFIG_BLK_DEV_IT821X is not set
++# CONFIG_BLK_DEV_NS87415 is not set
++# CONFIG_BLK_DEV_PDC202XX_OLD is not set
++# CONFIG_BLK_DEV_PDC202XX_NEW is not set
++# CONFIG_BLK_DEV_SVWKS is not set
++# CONFIG_BLK_DEV_SIIMAGE is not set
++# CONFIG_BLK_DEV_SLC90E66 is not set
++# CONFIG_BLK_DEV_TRM290 is not set
++# CONFIG_BLK_DEV_VIA82CXXX is not set
++CONFIG_BLK_DEV_IDE_CELLEB=y
++# CONFIG_IDE_ARM is not set
++CONFIG_BLK_DEV_IDEDMA=y
++# CONFIG_IDEDMA_IVB is not set
++CONFIG_IDEDMA_AUTO=y
++# CONFIG_BLK_DEV_HD is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++CONFIG_SCSI=m
++# CONFIG_SCSI_NETLINK is not set
++# CONFIG_SCSI_PROC_FS is not set
++
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++CONFIG_BLK_DEV_SD=m
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++CONFIG_BLK_DEV_SR=m
++# CONFIG_BLK_DEV_SR_VENDOR is not set
++CONFIG_CHR_DEV_SG=m
++# CONFIG_CHR_DEV_SCH is not set
++
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++CONFIG_SCSI_MULTI_LUN=y
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++
++#
++# SCSI Transports
++#
++# CONFIG_SCSI_SPI_ATTRS is not set
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_ATTRS is not set
++# CONFIG_SCSI_SAS_LIBSAS is not set
++
++#
++# SCSI low-level drivers
++#
++# CONFIG_ISCSI_TCP is not set
++# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
++# CONFIG_SCSI_3W_9XXX is not set
++# CONFIG_SCSI_ACARD is not set
++# CONFIG_SCSI_AACRAID is not set
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
++# CONFIG_SCSI_AIC79XX is not set
++# CONFIG_SCSI_AIC94XX is not set
++# CONFIG_SCSI_ARCMSR is not set
++# CONFIG_MEGARAID_NEWGEN is not set
++# CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_MEGARAID_SAS is not set
++# CONFIG_SCSI_HPTIOP is not set
++# CONFIG_SCSI_BUSLOGIC is not set
++# CONFIG_SCSI_DMX3191D is not set
++# CONFIG_SCSI_EATA is not set
++# CONFIG_SCSI_FUTURE_DOMAIN is not set
++# CONFIG_SCSI_GDTH is not set
++# CONFIG_SCSI_IPS is not set
++# CONFIG_SCSI_INITIO is not set
++# CONFIG_SCSI_INIA100 is not set
++# CONFIG_SCSI_STEX is not set
++# CONFIG_SCSI_SYM53C8XX_2 is not set
++# CONFIG_SCSI_QLOGIC_1280 is not set
++# CONFIG_SCSI_QLA_FC is not set
++# CONFIG_SCSI_QLA_ISCSI is not set
++# CONFIG_SCSI_LPFC is not set
++# CONFIG_SCSI_DC395x is not set
++# CONFIG_SCSI_DC390T is not set
++# CONFIG_SCSI_DEBUG is not set
++
++#
++# Serial ATA (prod) and Parallel ATA (experimental) drivers
++#
++# CONFIG_ATA is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++CONFIG_MD=y
++CONFIG_BLK_DEV_MD=m
++CONFIG_MD_LINEAR=m
++CONFIG_MD_RAID0=m
++CONFIG_MD_RAID1=m
++# CONFIG_MD_RAID10 is not set
++# CONFIG_MD_RAID456 is not set
++# CONFIG_MD_MULTIPATH is not set
++# CONFIG_MD_FAULTY is not set
++CONFIG_BLK_DEV_DM=m
++# CONFIG_DM_DEBUG is not set
++CONFIG_DM_CRYPT=m
++CONFIG_DM_SNAPSHOT=m
++CONFIG_DM_MIRROR=m
++CONFIG_DM_ZERO=m
++CONFIG_DM_MULTIPATH=m
++# CONFIG_DM_MULTIPATH_EMC is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++# CONFIG_FUSION_SPI is not set
++# CONFIG_FUSION_FC is not set
++# CONFIG_FUSION_SAS is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
++
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
++
++#
++# Macintosh device drivers
++#
++# CONFIG_WINDFARM is not set
++
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
++
++#
++# PHY device support
++#
++# CONFIG_PHYLIB is not set
++
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=y
++CONFIG_MII=y
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
++# CONFIG_NET_VENDOR_3COM is not set
++
++#
++# Tulip family network device support
++#
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++# CONFIG_NET_PCI is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++CONFIG_SPIDER_NET=y
++# CONFIG_QLA3XXX is not set
++
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_CHELSIO_T1 is not set
++# CONFIG_IXGB is not set
++# CONFIG_S2IO is not set
++# CONFIG_MYRI10GE is not set
++# CONFIG_NETXEN_NIC is not set
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++
++#
++# Userland interfaces
++#
++CONFIG_INPUT_MOUSEDEV=y
++# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
++CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
++CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++CONFIG_SERIO=y
++# CONFIG_SERIO_I8042 is not set
++CONFIG_SERIO_SERPORT=y
++# CONFIG_SERIO_PCIPS2 is not set
++# CONFIG_SERIO_RAW is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
++CONFIG_SERIAL_NONSTANDARD=y
++# CONFIG_COMPUTONE is not set
++# CONFIG_ROCKETPORT is not set
++# CONFIG_CYCLADES is not set
++# CONFIG_DIGIEPCA is not set
++# CONFIG_MOXA_INTELLIO is not set
++# CONFIG_MOXA_SMARTIO is not set
++# CONFIG_ISI is not set
++# CONFIG_SYNCLINK is not set
++# CONFIG_SYNCLINKMP is not set
++# CONFIG_SYNCLINK_GT is not set
++# CONFIG_N_HDLC is not set
++# CONFIG_SPECIALIX is not set
++# CONFIG_SX is not set
++# CONFIG_RIO is not set
++# CONFIG_STALDRV is not set
++
++#
++# Serial drivers
++#
++# CONFIG_SERIAL_8250 is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++CONFIG_SERIAL_TXX9=y
++CONFIG_HAS_TXX9_SERIAL=y
++CONFIG_SERIAL_TXX9_CONSOLE=y
++# CONFIG_SERIAL_TXX9_STDSERIAL is not set
++# CONFIG_SERIAL_JSM is not set
++CONFIG_UNIX98_PTYS=y
++# CONFIG_LEGACY_PTYS is not set
++CONFIG_HVC_DRIVER=y
++# CONFIG_HVC_RTAS is not set
++CONFIG_HVC_BEAT=y
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++CONFIG_WATCHDOG=y
++# CONFIG_WATCHDOG_NOWAYOUT is not set
++
++#
++# Watchdog Device Drivers
++#
++# CONFIG_SOFT_WATCHDOG is not set
++# CONFIG_WATCHDOG_RTAS is not set
++
++#
++# PCI-based Watchdog Cards
++#
++# CONFIG_PCIPCWATCHDOG is not set
++# CONFIG_WDTPCI is not set
++
++#
++# USB-based Watchdog Cards
++#
++# CONFIG_USBPCWATCHDOG is not set
++# CONFIG_HW_RANDOM is not set
++CONFIG_GEN_RTC=y
++# CONFIG_GEN_RTC_X is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_HANGCHECK_TIMER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++CONFIG_I2C=y
++# CONFIG_I2C_CHARDEV is not set
++
++#
++# I2C Algorithms
++#
++CONFIG_I2C_ALGOBIT=y
++# CONFIG_I2C_ALGOPCF is not set
++# CONFIG_I2C_ALGOPCA is not set
++
++#
++# I2C Hardware Bus support
++#
++# CONFIG_I2C_ALI1535 is not set
++# CONFIG_I2C_ALI1563 is not set
++# CONFIG_I2C_ALI15X3 is not set
++# CONFIG_I2C_AMD756 is not set
++# CONFIG_I2C_AMD8111 is not set
++# CONFIG_I2C_I801 is not set
++# CONFIG_I2C_I810 is not set
++# CONFIG_I2C_PIIX4 is not set
++# CONFIG_I2C_NFORCE2 is not set
++# CONFIG_I2C_OCORES is not set
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_PROSAVAGE is not set
++# CONFIG_I2C_SAVAGE4 is not set
++# CONFIG_I2C_SIS5595 is not set
++# CONFIG_I2C_SIS630 is not set
++# CONFIG_I2C_SIS96X is not set
++# CONFIG_I2C_STUB is not set
++# CONFIG_I2C_VIA is not set
++# CONFIG_I2C_VIAPRO is not set
++# CONFIG_I2C_VOODOO3 is not set
++# CONFIG_I2C_PCA_ISA is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_SENSORS_DS1337 is not set
++# CONFIG_SENSORS_DS1374 is not set
++# CONFIG_SENSORS_EEPROM is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_SENSORS_PCA9539 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++# CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++# CONFIG_USB_DABUSB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB is not set
++
++#
++# Console display driver support
++#
++# CONFIG_VGA_CONSOLE is not set
++CONFIG_DUMMY_CONSOLE=y
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++CONFIG_USB=y
++# CONFIG_USB_DEBUG is not set
++
++#
++# Miscellaneous USB options
++#
++CONFIG_USB_DEVICEFS=y
++# CONFIG_USB_BANDWIDTH is not set
++# CONFIG_USB_DYNAMIC_MINORS is not set
++# CONFIG_USB_MULTITHREAD_PROBE is not set
++# CONFIG_USB_OTG is not set
++
++#
++# USB Host Controller Drivers
++#
++CONFIG_USB_EHCI_HCD=m
++# CONFIG_USB_EHCI_SPLIT_ISO is not set
++# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
++# CONFIG_USB_EHCI_TT_NEWSCHED is not set
++# CONFIG_USB_ISP116X_HCD is not set
++CONFIG_USB_OHCI_HCD=m
++# CONFIG_USB_OHCI_BIG_ENDIAN is not set
++CONFIG_USB_OHCI_LITTLE_ENDIAN=y
++# CONFIG_USB_UHCI_HCD is not set
++# CONFIG_USB_SL811_HCD is not set
++
++#
++# USB Device Class drivers
++#
++# CONFIG_USB_ACM is not set
++# CONFIG_USB_PRINTER is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# may also be needed; see USB_STORAGE Help for more information
++#
++CONFIG_USB_STORAGE=m
++# CONFIG_USB_STORAGE_DEBUG is not set
++# CONFIG_USB_STORAGE_DATAFAB is not set
++# CONFIG_USB_STORAGE_FREECOM is not set
++# CONFIG_USB_STORAGE_ISD200 is not set
++# CONFIG_USB_STORAGE_DPCM is not set
++# CONFIG_USB_STORAGE_USBAT is not set
++# CONFIG_USB_STORAGE_SDDR09 is not set
++# CONFIG_USB_STORAGE_SDDR55 is not set
++# CONFIG_USB_STORAGE_JUMPSHOT is not set
++# CONFIG_USB_STORAGE_ALAUDA is not set
++# CONFIG_USB_STORAGE_KARMA is not set
++# CONFIG_USB_LIBUSUAL is not set
++
++#
++# USB Input Devices
++#
++CONFIG_USB_HID=y
++CONFIG_USB_HIDINPUT=y
++# CONFIG_USB_HIDINPUT_POWERBOOK is not set
++# CONFIG_HID_FF is not set
++CONFIG_USB_HIDDEV=y
++# CONFIG_USB_AIPTEK is not set
++# CONFIG_USB_WACOM is not set
++# CONFIG_USB_ACECAD is not set
++# CONFIG_USB_KBTAB is not set
++# CONFIG_USB_POWERMATE is not set
++# CONFIG_USB_TOUCHSCREEN is not set
++# CONFIG_USB_YEALINK is not set
++# CONFIG_USB_XPAD is not set
++# CONFIG_USB_ATI_REMOTE is not set
++# CONFIG_USB_ATI_REMOTE2 is not set
++# CONFIG_USB_KEYSPAN_REMOTE is not set
++# CONFIG_USB_APPLETOUCH is not set
++
++#
++# USB Imaging devices
++#
++# CONFIG_USB_MDC800 is not set
++# CONFIG_USB_MICROTEK is not set
++
++#
++# USB Network Adapters
++#
++# CONFIG_USB_CATC is not set
++# CONFIG_USB_KAWETH is not set
++# CONFIG_USB_PEGASUS is not set
++# CONFIG_USB_RTL8150 is not set
++# CONFIG_USB_USBNET_MII is not set
++# CONFIG_USB_USBNET is not set
++CONFIG_USB_MON=y
++
++#
++# USB port drivers
++#
++
++#
++# USB Serial Converter support
++#
++# CONFIG_USB_SERIAL is not set
++
++#
++# USB Miscellaneous drivers
++#
++# CONFIG_USB_EMI62 is not set
++# CONFIG_USB_EMI26 is not set
++# CONFIG_USB_ADUTUX is not set
++# CONFIG_USB_AUERSWALD is not set
++# CONFIG_USB_RIO500 is not set
++# CONFIG_USB_LEGOTOWER is not set
++# CONFIG_USB_LCD is not set
++# CONFIG_USB_LED is not set
++# CONFIG_USB_CYPRESS_CY7C63 is not set
++# CONFIG_USB_CYTHERM is not set
++# CONFIG_USB_PHIDGET is not set
++# CONFIG_USB_IDMOUSE is not set
++# CONFIG_USB_FTDI_ELAN is not set
++# CONFIG_USB_APPLEDISPLAY is not set
++# CONFIG_USB_SISUSBVGA is not set
++# CONFIG_USB_LD is not set
++# CONFIG_USB_TRANCEVIBRATOR is not set
++# CONFIG_USB_TEST is not set
++
++#
++# USB DSL modem support
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# DMA Engine support
++#
++# CONFIG_DMA_ENGINE is not set
++
++#
++# DMA Clients
++#
++
++#
++# DMA Devices
++#
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++CONFIG_EXT2_FS_XATTR=y
++CONFIG_EXT2_FS_POSIX_ACL=y
++CONFIG_EXT2_FS_SECURITY=y
++CONFIG_EXT2_FS_XIP=y
++CONFIG_FS_XIP=y
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_XATTR=y
++CONFIG_EXT3_FS_POSIX_ACL=y
++CONFIG_EXT3_FS_SECURITY=y
++# CONFIG_EXT4DEV_FS is not set
++CONFIG_JBD=y
++# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++CONFIG_FS_POSIX_ACL=y
++# CONFIG_XFS_FS is not set
++# CONFIG_GFS2_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
++# CONFIG_QUOTA is not set
++CONFIG_DNOTIFY=y
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++CONFIG_ISO9660_FS=m
++CONFIG_JOLIET=y
++# CONFIG_ZISOFS is not set
++CONFIG_UDF_FS=m
++CONFIG_UDF_NLS=y
++
++#
++# DOS/FAT/NT Filesystems
++#
++CONFIG_FAT_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++CONFIG_FAT_DEFAULT_CODEPAGE=437
++CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++CONFIG_HUGETLBFS=y
++CONFIG_HUGETLB_PAGE=y
++CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=m
++CONFIG_NFS_V3=y
++CONFIG_NFS_V3_ACL=y
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++CONFIG_NFSD=m
++CONFIG_NFSD_V2_ACL=y
++CONFIG_NFSD_V3=y
++CONFIG_NFSD_V3_ACL=y
++# CONFIG_NFSD_V4 is not set
++CONFIG_NFSD_TCP=y
++CONFIG_LOCKD=m
++CONFIG_LOCKD_V4=y
++CONFIG_EXPORTFS=m
++CONFIG_NFS_ACL_SUPPORT=m
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=m
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++# CONFIG_MAC_PARTITION is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++# CONFIG_LDM_PARTITION is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
++CONFIG_EFI_PARTITION=y
++
++#
++# Native Language Support
++#
++CONFIG_NLS=m
++CONFIG_NLS_DEFAULT="iso8859-1"
++# CONFIG_NLS_CODEPAGE_437 is not set
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++CONFIG_NLS_ISO8859_1=m
++CONFIG_NLS_ISO8859_2=m
++CONFIG_NLS_ISO8859_3=m
++CONFIG_NLS_ISO8859_4=m
++CONFIG_NLS_ISO8859_5=m
++CONFIG_NLS_ISO8859_6=m
++CONFIG_NLS_ISO8859_7=m
++CONFIG_NLS_ISO8859_9=m
++CONFIG_NLS_ISO8859_13=m
++CONFIG_NLS_ISO8859_14=m
++CONFIG_NLS_ISO8859_15=m
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
++
++#
++# Library routines
++#
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++CONFIG_CRC32=y
++CONFIG_LIBCRC32C=m
++CONFIG_ZLIB_INFLATE=m
++CONFIG_ZLIB_DEFLATE=m
++CONFIG_PLIST=y
++
++#
++# Instrumentation Support
++#
++# CONFIG_PROFILING is not set
++# CONFIG_KPROBES is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_MAGIC_SYSRQ=y
++# CONFIG_UNUSED_SYMBOLS is not set
++CONFIG_DEBUG_KERNEL=y
++CONFIG_LOG_BUF_SHIFT=15
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++CONFIG_DEBUG_MUTEXES=y
++# CONFIG_DEBUG_RWSEMS is not set
++CONFIG_DEBUG_SPINLOCK_SLEEP=y
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++# CONFIG_DEBUG_INFO is not set
++CONFIG_DEBUG_FS=y
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_LIST is not set
++# CONFIG_FORCED_INLINING is not set
++# CONFIG_HEADERS_CHECK is not set
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++CONFIG_DEBUGGER=y
++CONFIG_XMON=y
++CONFIG_XMON_DEFAULT=y
++CONFIG_XMON_DISASSEMBLY=y
++CONFIG_IRQSTACKS=y
++# CONFIG_BOOTX_TEXT is not set
++CONFIG_PPC_EARLY_DEBUG=y
++# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
++# CONFIG_PPC_EARLY_DEBUG_G5 is not set
++# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
++# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
++# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
++# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
++CONFIG_PPC_EARLY_DEBUG_BEAT=y
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++CONFIG_CRYPTO=y
++CONFIG_CRYPTO_ALGAPI=y
++CONFIG_CRYPTO_BLKCIPHER=m
++CONFIG_CRYPTO_HASH=y
++CONFIG_CRYPTO_MANAGER=y
++CONFIG_CRYPTO_HMAC=y
++CONFIG_CRYPTO_NULL=m
++CONFIG_CRYPTO_MD4=m
++CONFIG_CRYPTO_MD5=y
++CONFIG_CRYPTO_SHA1=m
++CONFIG_CRYPTO_SHA256=m
++CONFIG_CRYPTO_SHA512=m
++CONFIG_CRYPTO_WP512=m
++CONFIG_CRYPTO_TGR192=m
++CONFIG_CRYPTO_ECB=m
++CONFIG_CRYPTO_CBC=m
++CONFIG_CRYPTO_DES=m
++CONFIG_CRYPTO_BLOWFISH=m
++CONFIG_CRYPTO_TWOFISH=m
++CONFIG_CRYPTO_TWOFISH_COMMON=m
++CONFIG_CRYPTO_SERPENT=m
++CONFIG_CRYPTO_AES=m
++CONFIG_CRYPTO_CAST5=m
++CONFIG_CRYPTO_CAST6=m
++CONFIG_CRYPTO_TEA=m
++CONFIG_CRYPTO_ARC4=m
++CONFIG_CRYPTO_KHAZAD=m
++CONFIG_CRYPTO_ANUBIS=m
++CONFIG_CRYPTO_DEFLATE=m
++CONFIG_CRYPTO_MICHAEL_MIC=m
++CONFIG_CRYPTO_CRC32C=m
++CONFIG_CRYPTO_TEST=m
++
++#
++# Hardware crypto devices
++#
