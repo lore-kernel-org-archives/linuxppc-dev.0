@@ -1,21 +1,19 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19d.g19.rapidsite.net (mail19d.g19.rapidsite.net
-	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id 2A5AC67C00
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 43DF767C10
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Dec 2006 10:12:56 +1100 (EST)
-Received: from mx101.stngva01.us.mxservers.net (198.173.112.38)
-	by mail19d.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	4-0355018374 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Dec 2006 18:06:15 -0500 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC8360E Startup - CFG_INIT_RAM
-Date: Mon, 11 Dec 2006 15:05:42 -0800
-Message-ID: <000801c71d78$e28cae60$6405a8c0@absolut>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <mailman.1727.1165862180.2346.linuxppc-embedded@ozlabs.org>
+	Tue, 12 Dec 2006 12:18:02 +1100 (EST)
+To: "Russell McGuire" <rmcguire@uwbt.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: MPC8360E Startup - CFG_INIT_RAM 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 11 Dec 2006 15:05:42 PST."
+	<000801c71d78$e28cae60$6405a8c0@absolut>
+Date: Tue, 12 Dec 2006 02:17:59 +0100
+Sender: wd@denx.de
+Message-Id: <20061212011759.D6839353BC7@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Anybody,
+Dear Russel,
 
-I am porting U-boot to a new custom MPC8360E based board.
-I have downloaded the GIT U-boot tree, and see that DENX has made an example
-for the MPC8360E-MDS board, and it is an excellent start. <If anyone is
-interested I have the new 83xx header files to support Rev 2.0 CPU's, only
-about 10 extra lines>
+in message <000801c71d78$e28cae60$6405a8c0@absolut> you wrote:
+> 
+> I am porting U-boot to a new custom MPC8360E based board.
 
-My question lies with what value to place in the CFG_INIT_RAM address. 
+You're off topic here. You should post such things on the
+U-Bootmailing list instead.
 
-I see that the example board has this mapped to dcache? I think... If so how
-does one calculate what address dcache sits at?
+> I have downloaded the GIT U-boot tree, and see that DENX has made an example
+> for the MPC8360E-MDS board, and it is an excellent start. <If anyone is
 
-Or would I be able to use the internal IMMR space multi-user QE ram?
-My question is without dissecting the assembly at startup, does the IMMR get
-remapped before or after the CFG_INIT_RAM is used.
+No, the MPC8360EMDS was not done by us, but by Dave Liu; see the
+MAINTAINERS file for details.
 
-The board has no external memory other than DDR, so I am going to have to
-use something in the CPU.
+> My question lies with what value to place in the CFG_INIT_RAM address. 
 
-Due to the massive amount of flash on our board <128M>, I cannot leave the
-.text space at 0xFE00000. So I would prefer the IMMR be located at
-0xF0000000 and flash be at 0xE0000000, this would leave room for future
-expansion <maybe up to 256M>, if this is even related to early startup.
+See the "Note:" in the README...
 
--Russ
+> Due to the massive amount of flash on our board <128M>, I cannot leave the
+> .text space at 0xFE00000. So I would prefer the IMMR be located at
+> 0xF0000000 and flash be at 0xE0000000, this would leave room for future
+> expansion <maybe up to 256M>, if this is even related to early startup.
+
+Even if you boot high you  can  easily  adjust  for  different  flash
+sizes. This hase been done with other boards before. Just look around
+a bit. Of course everything is much easier if you boot low.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A conservative is a man with two perfectly good legs  who  has  never
+learned to walk.                              - Franklin D. Roosevelt
