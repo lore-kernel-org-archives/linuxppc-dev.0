@@ -1,21 +1,15 @@
-Return-Path: <Marta.Chamorro@xerox.com>
-Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler1.mail.xerox.com",
-	Issuer "wvmler1.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C113567C7A
+Return-Path: <andrea.galbusera@teamware.it>
+Received: from smtp5.aruba.it (smtpd3.aruba.it [62.149.128.208])
+	by ozlabs.org (Postfix) with SMTP id 7F86C67CEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Dec 2006 02:18:38 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Power management for ppc 85xx
-Date: Tue, 12 Dec 2006 15:17:55 -0000
-Message-ID: <BFEE19E1D0DBF84698D76276388DCB84435E82@gbrwgceumf01.eu.xerox.net>
-In-Reply-To: <457A4A40.2060803@anagramm.de>
-From: "Chamorro, Marta" <Marta.Chamorro@xerox.com>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 13 Dec 2006 02:25:29 +1100 (EST)
+Subject: Which kernel for Lite5200 based target board?
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 12 Dec 2006 16:18:48 +0100
+Message-Id: <1165936728.32602.59.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,50 +20,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-Hi Clemens,
+I read a lot about this but I'm still confused. I have a Lite5200 based
+target board and I'm experimenting with a few kernels but I can't figure
+out which is the best to stay with.
 
->=20
-> Hello, Kumar, Hi, Marta!
->=20
-> >> Glad I managed to make sense. I checked the hardware spec on the
-board
-> >> and it looks like we're using everything, apart from the SEC and
-maybe
-> >> the stand-alone I2C (I think we're just using the one within the
-CMP).
-> >> By the way, I made a mistake and the actual processor on the board
-is
-> >> the cut-down 8541, not the 8555. My apologies for that.
-> >>
-> >> This morning I added some printks and confirmed that there is no
-code
-> >> behind pm_ops, so my question remains: is there some code out there
-> >> that
-> >> I can use? (hope so, otherwise I'm doomed...)
-> >
-> > I'm sorry to say you're doomed.  I don't believe anyone's spent any
-> > time trying to do pwr mgmt on 85xx.
->=20
-> I am working with the MPC8540 in a mobile product and some
-> power saving would be fine to use. But I haven't seen any
-> power management code for that thingy in the kernels at all.
-> So, there is some work left there. Maybe I will have
-> a closer look in the future.
->=20
-> According to some tests of a board manufacturer, the cpu
-> doesn't power down very much, when you stop some peripherals
-> or send the core to nap. But I wasn't able to confirm that yet.
+Let me say something about my target system:
+* It is based on the Lite5200 design
+* It uses MPC5200B CPU (the one nowadays available for production)
+* Need IDE to support DOM and/or Compact Flash devices (same design of
+Lite5200)
+* Need ethernet (same hardware design of Lite5200 apart from phy that is
+AMD NetPhy AM79C874)
+* We have a custom PCI device and a 2.6 kernel module to manage it
+* Need some SPI and I2C basic support for system configuration at boot
 
-We're estimating 2.5 watts saving on doze mode, in case that helps.
-That's for a 8545 @ 800MHz
+I'm doing my tests with the following kernels:
+* 2.6.16 from Denx git repository
+* 2.6.16.11-rt18 from Freescale BSP (based on the ltib build tool)
+* 2.6.11 from the same Freescale BSP (based on the ltib build tool)
 
->=20
-> Best greets,
->=20
-> Clemens Koller
-> _______________________________
+I know Sylvain Munaut is/was also maintaining a kernel tree with working
+support for IDE and Bestcomm. This tree seems not very active to me but
+my git wisdom is very very poor and I may be wrong :-(
 
-Bfn,
+Unfortunately my tests tell me none of the listed kernels works out of
+the box for the target: the former being not officially supported by
+DENX for the Lite5200 target, the latter having a Lite5200/Lite5200B
+configuration target.
 
-Marta Chamorro
+I'm doing tests comparing kernels behavior on both the target board and
+the Lite5200 EVB. Some problems seem related to differences between the
+boards, some come up with both.
+
+Please, consider this as a preliminary post. I'm looking for general
+suggestion on the more convenient kernel to stay with. I know I will
+still need some patching to make everything work fine, but I can't spend
+too much time on "unpromising" solutions. If useful I can then post
+details about the specific problems I have with IDE and ethernet in
+particular.
+
+Can you tell me where to find details about the status of the Lite5200
+support in the kernels listed above? Or maybe suggest me another kernel
+to go with?
+
+Any help is appreciated.
+
+
+-- 
+Andrea Galbusera <andrea.galbusera@teamware.it>
