@@ -1,20 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5EBE667C25
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 05:04:04 +1100 (EST)
-In-Reply-To: <20061212113653.2da563a7.kim.phillips@freescale.com>
-References: <20061212113653.2da563a7.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3E4A6C67-E44F-40DF-B540-064876B91623@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
-Date: Tue, 12 Dec 2006 12:03:56 -0600
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 5F56A67C1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 05:49:35 +1100 (EST)
+Date: Tue, 12 Dec 2006 21:49:42 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] [POWERPC] Fix kernel build errors for mpc8272ads
+	and mpc8560ads.
+Message-ID: <20061212214942.41bc2369@vitb.ru.mvista.com>
+In-Reply-To: <9EC45741-28F3-49C7-9F0A-8EA3DA6A6290@kernel.crashing.org>
+References: <20061212012641.5ef493f7@localhost.localdomain>
+	<20061211223709.20169.93595.stgit@localhost.localdomain>
+	<9EC45741-28F3-49C7-9F0A-8EA3DA6A6290@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 11 Dec 2006 20:28:38 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-On Dec 12, 2006, at 11:36 AM, Kim Phillips wrote:
+> 
+> On Dec 11, 2006, at 4:37 PM, Vitaly Bordug wrote:
+> 
+> >
+> > Recent update of asm-powerpc/io.h caused cpm-related stuff to break  
+> > in the
+> > current kernel. Current patch fixes it, and includes other overhaul  
+> > and
+> > improvements (incomplete list is below). Required for proper  
+> > functioning of
+> > the 8xx stuff as well.
+> >
+> > - Updated dts with a chosen node with interrupt controller,
+> > - fixed messed device IDs among CPM2 SoC devices,
+> > - corrected odd header name and fixed type in defines,
+> > - Added 82xx subdir to the powerpc/platforms Makefile, new
+> >   solely-powerpc header for 8260 family (was using one from arch/ 
+> > ppc, this
+> >   one cleaned up from the extra stuff).
+> >
+> > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> > ---
+> [snip]
+> >
+> > diff --git a/include/asm-powerpc/fs_pd.h b/include/asm-powerpc/fs_pd.h
+> > index 4c3af35..c624915 100644
+> > --- a/include/asm-powerpc/fs_pd.h
+> > +++ b/include/asm-powerpc/fs_pd.h
+> > @@ -17,6 +17,12 @@ #include <asm/time.h>
+> >  #ifdef CONFIG_CPM2
+> >  #include <asm/cpm2.h>
+> >
+> > +#if defined(CONFIG_8260)
+> > +#include <asm/mpc8260.h>
+> > +#elif defined(CONFIG_85xx)
+> > +#include <asm/mpc85xx.h>
+> > +#endif
+> > +
+> 
+> Why does this need to include these files?
 
-> Eliminate code redundancy.  mpc83[246]x_{mds,itx,sys,pb} files merged
-> into a single setup.c.  machine definitions moved to machdefs.c with
-> corresponding probe fns.  This patch also utilizes  
-> of_platform_bus_probe()
-> in lieu of manually calling of_platform_device_create for each  
-> ucc_geth device.
->
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> ---
->
->  arch/powerpc/kernel/of_platform.c         |    1 +
->  arch/powerpc/platforms/83xx/Makefile      |    6 +-
->  arch/powerpc/platforms/83xx/machdefs.c    |  126 +++++++++++++++
->  arch/powerpc/platforms/83xx/mpc832x_mds.c |  232  
-> ----------------------------
->  arch/powerpc/platforms/83xx/mpc832x_mds.h |   19 ---
->  arch/powerpc/platforms/83xx/mpc834x_itx.c |  121 ---------------
->  arch/powerpc/platforms/83xx/mpc834x_itx.h |   23 ---
->  arch/powerpc/platforms/83xx/mpc834x_sys.c |  140 -----------------
->  arch/powerpc/platforms/83xx/mpc834x_sys.h |   23 ---
->  arch/powerpc/platforms/83xx/mpc8360e_pb.c |  236  
-> -----------------------------
->  arch/powerpc/platforms/83xx/mpc83xx.h     |    2 +
->  arch/powerpc/platforms/83xx/setup.c       |  188 ++++++++++++++++++ 
-> +++++
->  12 files changed, 318 insertions(+), 799 deletions(-)
+To produce exact answer, I have to build kernel which became temporary trouble after git-pull :)
+I can say this is mainly for CPM_MAP_ADDR (where CPM immap residing) so that to reset cpm early,
+and a few other BSP defines(like BCSR), that are delivered with #defines for now.
 
-We should split machdefs into <BOARD>.c and then fixup the Kconfig to  
-you can build all of them together?  I think this would be more clear  
-and makes for good examples on how a custom board port should go.
+In fact, upper header sequence used to reside in some common ppc/powerpc header until recent cleanup,
+and CPM-related stuff were not buildable after that. So, "clean-n-proper" solution is under construction
+now (to get rid of CPM_MAP_ADDR/IMMAP defines usage at all) but we'd better avoid having "build broken" stuff meanwhile.
 
-- k
+> 
+> >  #define cpm2_map(member)						\
+> >  ({									\
+> >  	u32 offset = offsetof(cpm2_map_t, member);			\
+> > @@ -37,6 +43,7 @@ #endif
+> >
+> >  #ifdef CONFIG_8xx
+> >  #include <asm/8xx_immap.h>
+> > +#include <asm/mpc8xx.h>
+> >
+[...]
+> > --- /dev/null
+> > +++ b/include/asm-powerpc/mpc8260.h
+> 
+> Who needs this header?  Is this just for the board code under  
+> platforms/82xx?
+> 
+This header it to triage across 82xx boards and include proper BSP .h file.
+The process is ongoing to minimize such header-residing stuff though. I found it missing from 
+initial 8272 addition, it is required for proper build/operation (so far, but anyway).
+
+-- 
+Sincerely, 
+Vitaly
