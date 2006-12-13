@@ -1,12 +1,17 @@
 Return-Path: <timur@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id DE51267C56
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 04:43:10 +1100 (EST)
-From: timur@freescale.com
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Update ucc_geth.c for new workqueue structure
-Date: Wed, 13 Dec 2006 11:43:06 -0600
-Message-Id: <11660317861257-git-send-email-timur@freescale.com>
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 4A1E367CA7
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 04:48:22 +1100 (EST)
+Message-ID: <45803CE3.4030600@freescale.com>
+Date: Wed, 13 Dec 2006 11:48:19 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: joakim.tjernlund@transmode.se
+Subject: Re: latest linux git doesn't compile ucc_geth_phy.c and ucc_geth.c
+References: <1166013887.30422.54.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1166013887.30422.54.camel@gentoo-jocke.transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,67 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Timur Tabi <timur@freescale.com>
+Joakim Tjernlund wrote:
+> drivers/net/ucc_geth.c:4083:45: macro "INIT_WORK" passed 3 arguments,
+> but takes just 2
+> drivers/net/ucc_geth.c: In function `ucc_geth_open':
+> drivers/net/ucc_geth.c:4083: error: `INIT_WORK' undeclared (first use in
+> this function)
+> drivers/net/ucc_geth.c:4083: error: (Each undeclared identifier is
+> reported only once
+> drivers/net/ucc_geth.c:4083: error: for each function it appears in.)
+> drivers/net/ucc_geth.c: At top level:
+> drivers/net/ucc_geth.c:3924: warning: 'ugeth_phy_change' defined but not
+> used
+> make[2]: *** [drivers/net/ucc_geth.o] Error 1
+> 
+> drivers/net/ucc_geth_phy.c:71: error: conflicting types for 'phy_read'
+> include/linux/phy.h:355: error: previous declaration of 'phy_read' was
+> here
+> drivers/net/ucc_geth_phy.c:71: error: conflicting types for 'phy_read'
+> include/linux/phy.h:355: error: previous declaration of 'phy_read' was
+> here
+> drivers/net/ucc_geth_phy.c:72: error: conflicting types for 'phy_write'
+> include/linux/phy.h:356: error: previous declaration of 'phy_write' was
+> here
+> drivers/net/ucc_geth_phy.c:72: error: conflicting types for 'phy_write'
+> include/linux/phy.h:356: error: previous declaration of 'phy_write' was
+> here
 
-The workqueue interface changed with David Howell's patch on 11/22/2006
-(SHA 65f27f38446e1976cc98fd3004b110fedcddd189).  Several drivers were
-updated with that patch to handle the new interface, but ucc_geth.c
-was not one of them.  This patch updates ucc_geth.c to support the new
-model.
+I just posted two patches to linuxppc-dev that fix these problems.  The message 
+are titled:
 
-A compiler warning in set_mac_addr() was also fixed.
+[PATCH] Update ucc_geth.c for new workqueue structure
+[PATCH] Fix phy_read/write redefinition errors in ucc_geth_phy.c
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+I've tested these on an 8360EMDS, and Kumar has reviewed and signed off on the 
+code, so I think they're good.  Please let me know if they're not.
 
----
- drivers/net/ucc_geth.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 1f05511..d33bb0c 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -29,6 +29,7 @@
- #include <linux/fsl_devices.h>
- #include <linux/ethtool.h>
- #include <linux/mii.h>
-+#include <linux/workqueue.h>
- 
- #include <asm/of_platform.h>
- #include <asm/uaccess.h>
-@@ -472,7 +473,7 @@ static void put_enet_addr_container(stru
- 	kfree(enet_addr_cont);
- }
- 
--static int set_mac_addr(__be16 __iomem *reg, u8 *mac)
-+static void set_mac_addr(__be16 __iomem *reg, u8 *mac)
- {
- 	out_be16(&reg[0], ((u16)mac[5] << 8) | mac[4]);
- 	out_be16(&reg[1], ((u16)mac[3] << 8) | mac[2]);
-@@ -3918,10 +3919,11 @@ static irqreturn_t phy_interrupt(int irq
- }
- 
- /* Scheduled by the phy_interrupt/timer to handle PHY changes */
--static void ugeth_phy_change(void *data)
-+static void ugeth_phy_change(struct work_struct *work)
- {
--	struct net_device *dev = (struct net_device *)data;
--	struct ucc_geth_private *ugeth = netdev_priv(dev);
-+	struct ucc_geth_private *ugeth =
-+		container_of(work, struct ucc_geth_private, tq);
-+	struct net_device *dev = ugeth->dev;
- 	struct ucc_geth *ug_regs;
- 	int result = 0;
- 
-@@ -4078,7 +4080,7 @@ static int ucc_geth_open(struct net_devi
- #endif				/* CONFIG_UGETH_NAPI */
- 
- 	/* Set up the PHY change work queue */
--	INIT_WORK(&ugeth->tq, ugeth_phy_change, dev);
-+	INIT_WORK(&ugeth->tq, ugeth_phy_change);
- 
- 	init_timer(&ugeth->phy_info_timer);
- 	ugeth->phy_info_timer.function = &ugeth_phy_startup_timer;
 -- 
-1.4.4
+Timur Tabi
+Linux Kernel Developer @ Freescale
