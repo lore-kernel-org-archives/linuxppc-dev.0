@@ -1,16 +1,19 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Bug: early_pfn_in_nid() called when not early
-Date: Wed, 13 Dec 2006 19:20:57 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612131920.59270.arnd@arndb.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, hch@infradead.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	mkravetz@us.ibm.com
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 701B467CB9
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 05:24:54 +1100 (EST)
+Date: Wed, 13 Dec 2006 12:23:53 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 6/9] MPIC MSI allocator
+Message-ID: <20061213122353.7498a25e@pb15>
+In-Reply-To: <20061213104007.4B8F967DA9@ozlabs.org>
+References: <1166006370.90082.476088563252.qpush@cradle>
+	<20061213104007.4B8F967DA9@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-After a lot of debugging in spufs, I found that a crash that we encountered
-on Cell actually was caused by a change in the memory management.
+On Wed, 13 Dec 2006 21:40:03 +1100 Michael Ellerman <michael@ellerman.id.au> wrote:
 
-The patch that caused it is archived in http://lkml.org/lkml/2006/11/1/43,
-and this one has been discussed back and forth, but I fear that the current
-version may be broken for all setups that do memory hotplug with sparsemen
-and NUMA, at least on powerpc.
+> To support MSI on MPIC we need a way to reserve and allocate hardware irq
+> numbers, this patch implements an allocator for that. It looks like we'll
+> end up with several backends based on the MPIC, so the allocator is attached
+> to the struct mpic, not the msi backend.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-What happens exactly is that the spufs code tries to register the memory
-area owned by the SPU as hotplug memory in order to get page structs (we
-probably shouldn't do it that way, but that's a separate discussion).
+> +static void mpic_msi_auto_reserve_hwirqs(struct mpic *mpic)
+> +{
+> +	irq_hw_number_t hwirq;
+> +	struct irq_host_ops *ops = mpic->irqhost->ops;
+> +	struct device_node *np;
+> +	int flags, index, i;
+> +	struct of_irq oirq;
+> +
+> +	/* Reserve source numbers we know are reserved in the HW */
 
-memmap_init_zone now calls early_pfn_valid() and early_pfn_in_nid()
-in order to determine if the page struct should be initialized. This
-is wrong for two reasons:
+How do we know? Reserved on what HW? Sure looks system/platform
+dependent to me.
 
-- early_pfn_in_nid checks the early_node_map variable to determine
-  to which node the hot plugged memory belongs. However, the new
-  memory never was part of the early_node_map to start with, so
-  it incorrectly returns node zero, and then fails to initialize
-  the page struct if we were trying to add it to a nonzero node.
-  This is probably not a problem for pseries, but it is for cell.
+> +	for (i = 0;   i < 8;   i++)
+> +		__mpic_msi_reserve_hwirq(mpic, i);
+> +	for (i = 42;  i < 26;  i++)
+             ^^^^^^^^^^^^^^^
 
-- both early_pfn_{in,to}_nid and early_node_map are in the __init
-  section and may already have been freed at the time we are calling
-  memmap_init_zone().
+Is this some sort of check to see if we're awake? :)
 
-The patch below is not a suggested fix that I want to get into mainline
-(checking slab_is_available is the wrong here), but it is a quick fix
-that you should apply if you want to run a recent (post-2.6.18) kernel
-on the IBM QS20 blade. I'm sorry for not having reported this earlier,
-but we were always trying to find the problem in my own code...
+> +		__mpic_msi_reserve_hwirq(mpic, i);
+> +	for (i = 100; i < 105; i++)
+> +		__mpic_msi_reserve_hwirq(mpic, i);
 
-	Arnd <><
 
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1962,7 +1962,8 @@ void __meminit memmap_init_zone(unsigned
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
- 		if (!early_pfn_valid(pfn))
- 			continue;
--		if (!early_pfn_in_nid(pfn, nid))
-+		if (!slab_is_available() &&
-+		    !early_pfn_in_nid(pfn, nid))
- 			continue;
- 		page = pfn_to_page(pfn);
- 		set_page_links(page, zone, nid, pfn);
+
+
+-Olof
