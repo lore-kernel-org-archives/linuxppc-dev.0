@@ -1,33 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6EE7E6813E
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 08:25:10 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBDLPYE4005466
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 16:25:34 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBDLP6ot228572
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 16:25:06 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBDLP5US032148
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 16:25:06 -0500
-Date: Wed, 13 Dec 2006 15:25:05 -0600
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 14/14] Spidernet Rework RX linked list
-Message-ID: <20061213212505.GN1915@austin.ibm.com>
-References: <20061213210010.GR4329@austin.ibm.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp111.sbc.mail.mud.yahoo.com (smtp111.sbc.mail.mud.yahoo.com
+	[68.142.198.210]) by ozlabs.org (Postfix) with SMTP id AEDFE67C8C
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 08:33:07 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+Date: Wed, 13 Dec 2006 12:31:21 -0800
+References: <032a01c71ecc$659ae480$020120ac@Jocke>
+In-Reply-To: <032a01c71ecc$659ae480$020120ac@Jocke>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061213210010.GR4329@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Jens Osterkamp <Jens.Osterkamp@gmx.de>, jgarzik@pobox.com,
-	James K Lewis <jim@jklewis.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200612131231.22905.david-b@pacbell.net>
+Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,54 +23,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Make the hardware perceive the RX descriptor ring as a 
-null-terminated linked list, instead of a circular ring.
+On Wednesday 13 December 2006 7:36 am, Joakim Tjernlund wrote:
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: James K Lewis <jklewis@us.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
+> > One problem I have with this patch is the fact that it assumes the  
+> > current driver for (mpc834x) and your mods to support mpc832x/QE are  
+> > mutually exclusive.
+> 
+> I don't see that as a problem ATM. If that is added it should be optional.
 
-----
- drivers/net/spider_net.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+If PPC supports multi-CPU/board kernels, PPC drivers should too.  I know that
+some ARMs don't support them (PXA) while some do (OMAP); so PPC could go either
+way.  (Overall it's a win, since it's easier to uncover build breakage if one
+kernel can support lots of configurations and drivers.)
 
-Index: linux-2.6.19-git7/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-13 14:32:13.000000000 -0600
-+++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-13 14:33:21.000000000 -0600
-@@ -419,9 +419,13 @@ spider_net_prepare_rx_descr(struct spide
- 		card->spider_stats.rx_iommu_map_error++;
- 		descr->dmac_cmd_status = SPIDER_NET_DESCR_NOT_IN_USE;
- 	} else {
-+		descr->next_descr_addr = 0;
- 		wmb();
- 		descr->dmac_cmd_status = SPIDER_NET_DESCR_CARDOWNED |
- 					 SPIDER_NET_DMAC_NOINTR_COMPLETE;
-+
-+		wmb();
-+		descr->prev->next_descr_addr = descr->bus_addr;
- 	}
+The problem I have with this patch is that it has too much #ifdeffery.  If
+the PPC code expects that, it should be easy to put infrastructure in place
+so that it can be eliminated.  That is, if the PPC powers-that-be allow it!
+
+
+> > We need to handle the case of having driver support for both the QE  
+> > and MPC834x style in the same kernel.
+> 
+> Adding that will double the number RX_BUF/TX_BUF functions from 6 to 12
+
+Your patch already does this, just they're #ifdeffed so that only one of
+the sets will build at a time.
+
+
+> (possibly this can be reduced by adding more logic to the tx_buf/rx_buf functions)
+> not to mention what will happen when support for reversed bit order is added.
+
+Sure enough, sounds ugly.  But cpu_is_xxx() macros, combined with GCC dead
+code elimination will strip out functions that are unused, so that e.g.
+
+	if (cpu_is_mpc834x())
+		fn = mpc834x_spi_tx_buf_u16;
+	else if (cpu_is_mpc832x())
+		fn = mpc832x_spi_tx_buf_u16;
+
+would only link one of them unless the kernel supports both SOCs.  And
+without in-driver #ifdeffery.
+
  
- 	return 0;
-@@ -1650,7 +1654,6 @@ int
- spider_net_open(struct net_device *netdev)
- {
- 	struct spider_net_card *card = netdev_priv(netdev);
--	struct spider_net_descr *descr;
- 	int result;
- 
- 	result = spider_net_init_chain(card, &card->tx_chain);
-@@ -1662,13 +1665,6 @@ spider_net_open(struct net_device *netde
- 	if (result)
- 		goto alloc_rx_failed;
- 
--	/* Make a ring of of bus addresses */
--	descr = card->rx_chain.ring;
--	do {
--		descr->next_descr_addr = descr->next->bus_addr;
--		descr = descr->next;
--	} while (descr != card->rx_chain.ring);
--
- 	/* Allocate rx skbs */
- 	if (spider_net_alloc_rx_skbs(card))
- 		goto alloc_skbs_failed;
+> I would argue that the kernel lacks the possibility to remove complexity
+> I don't need. Example in this driver is that there is no way to remove
+> support for 16 and 32 bit SPI character sizes. The same goes for a lot of
+> the probing code in fsl-soc.c.
+
+You could certainly add Kconfig options to help shift some complexity
+from runtime to compile time.  But if you do that, remember that it's
+not always a win in terms of the overall system.  Every configuration
+needs to be tested for correctness, after all.
+
+
+> It would be nice if a board port could add a custom header file that
+> gets included by all .c automatically. Then one could add knobs
+> (read #defines) there to futher tune such things as SPI char size.
+> That way one don't have add Kconfig entries for all those small
+> tuning knobs.
+
+Sounds error prone to me.  What's the point ... removing maybe 100
+bytes of code in this one driver?  You could save more than that
+just by switching over to platform_device_probe() instead of using
+platform_device_register().  And that'd be without adding failure
+modes like "oops, this board stack really _does_ use 12 bit words
+for the ADCs".
+
+- Dave
