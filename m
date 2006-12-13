@@ -1,20 +1,33 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
-	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 5B55C67D34
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 08:13:40 +1100 (EST)
-In-Reply-To: <2B135C85-9FF6-435E-975B-D0D3E7ACFF5B@kernel.crashing.org>
-References: <20061208190758.6cee088f.kim.phillips@freescale.com>	<1165648490.1103.117.camel@localhost.localdomain>	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>	<20061211155155.26868ca6.kim.phillips@freescale.com>	<A1A95A77-B86C-41CF-87DC-58CD63843CE3@kernel.crashing.org>	<20061211201055.21031c9b.kim.phillips@freescale.com>	<1165890570.11914.5.camel@localhost.localdomain>	<457F1F6E.4020502@freescale.com>	<1165960058.11914.72.camel@localhost.localdomain>	<7152860A-27A3-4C08-B6A5-DFA57A63ACED@kernel.crashing.org>	<20061212162416.06f0dd76.kim.phillips@freescale.com>	<A2576248-6DF4-44BE-99D2-0D8477865B17@kernel.crashing.org>	<457F2FE1.1080308@freescale.com>
-	<513E2628-5785-4100-9E83-986990E06DF5@kernel.crashing.org>
-	<457F8EC3.60201@freescale.com>
-	<2B135C85-9FF6-435E-975B-D0D3E7ACFF5B@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1816B48E-3ABB-49C1-9D64-588F5B1C1492@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
-Date: Wed, 13 Dec 2006 16:13:48 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB03F67BD7
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 08:15:20 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBDLFGx5002201
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 16:15:16 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBDLFGDM127470
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 16:15:16 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBDLFFwD021457
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 16:15:16 -0500
+Date: Wed, 13 Dec 2006 15:15:15 -0600
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 5/14] Spidernet RX skb mem leak
+Message-ID: <20061213211515.GE1915@austin.ibm.com>
+References: <20061213210010.GR4329@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061213210010.GR4329@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Jens Osterkamp <Jens.Osterkamp@gmx.de>, jgarzik@pobox.com,
+	James K Lewis <jim@jklewis.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +38,73 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 13, 2006, at 1:07 AM, Kumar Gala wrote:
+One of the unlikely error branches has an skb memory leak.
+Fix this by handling the error conditions consistently.
 
-> My question has been what's the value in trying to save a few lines
-> of code for the reference boards.  The idea of a generic board
-> doesn't make sense in the embedded space.
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: James K Lewis <jklewis@us.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
 
-This grand unification of embedded board software just
-isn't useful.  It's a waste of time for the reference board
-developers that should be writing useful device drivers
-for the SOC peripherals, and also for those of us trying
-to develop real products.  I spend way too much time
-trying to find configuration options or other indirect
-function hooks so the special functions I need to be
-performed are done properly.
+----
+ drivers/net/spider_net.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-The current 85xx is a pretty good implementation.
-Things that are truly generic are provided as functions
-that the individual board port initialization files/functions
-can use as needed.
-
-> ....  The majority of developers dont have the time
-> to spend trying to come up with one to solve their specific problem
-> so they hard code some solution that works for them.
-
-Don't make it sound like some "hard code" hack :-)
-We just have to write software to support all of these
-unique product designs.  Many of these boards have
-custom external hardware than needs to be controlled
-with some special configurations or algorithm.  There
-are just times I have to toggle a set of GPIOs with a
-particular algorithm, for example.  This was my comment
-about "generic" board ports and device tree a while
-ago.  The device tree is just an information data base,
-it doesn't help me when I really have to write some code
-that is unique to a board.
-
-If you want to make similar Freescale boards utilize
-common code, that's great.  Don't assume any product
-will look like one of these boards, no matter how much
-you want people to do that.  In almost all cases, they
-aren't even close due to other product design requirements.
-
-All of these efforts to "help" us develop products by
-providing generic board ports with the goal of a single
-kernel on multiple boards actually costs us development
-time due to the lack of flexibility we need.  We just need
-a library of generic functions, and then 50 to 100 lines of
-"board support" initialization that will initialize custom
-hardware, data structures, variables, and then call the
-more generic functions.  There may be only very minor
-differences between the board files, but this simplicity
-is much nicer than complex indirect paths to enable
-features with cute #defines or other complicated
-data structures.
-
-Thanks.
-
-	-- Dan
+Index: linux-2.6.19-git7/drivers/net/spider_net.c
+===================================================================
+--- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-13 14:24:13.000000000 -0600
++++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-13 14:24:16.000000000 -0600
+@@ -913,8 +913,8 @@ spider_net_do_ioctl(struct net_device *n
+  *
+  * returns 1 on success, 0 if no packet was passed to the stack
+  *
+- * iommu-unmaps the skb, fills out skb structure and passes the data to the
+- * stack. The descriptor state is not changed.
++ * Fills out skb structure and passes the data to the stack.
++ * The descriptor state is not changed.
+  */
+ static int
+ spider_net_pass_skb_up(struct spider_net_descr *descr,
+@@ -929,10 +929,6 @@ spider_net_pass_skb_up(struct spider_net
+ 
+ 	netdev = card->netdev;
+ 
+-	/* unmap descriptor */
+-	pci_unmap_single(card->pdev, descr->buf_addr, SPIDER_NET_MAX_FRAME,
+-			PCI_DMA_FROMDEVICE);
+-
+ 	/* the cases we'll throw away the packet immediately */
+ 	if (data_error & SPIDER_NET_DESTROY_RX_FLAGS) {
+ 		if (netif_msg_rx_err(card))
+@@ -1015,6 +1011,11 @@ spider_net_decode_one_descr(struct spide
+ 	chain->tail = descr->next;
+ 
+ 	result = 0;
++
++	/* unmap descriptor */
++	pci_unmap_single(card->pdev, descr->buf_addr,
++			SPIDER_NET_MAX_FRAME, PCI_DMA_FROMDEVICE);
++
+ 	if ( (status == SPIDER_NET_DESCR_RESPONSE_ERROR) ||
+ 	     (status == SPIDER_NET_DESCR_PROTECTION_ERROR) ||
+ 	     (status == SPIDER_NET_DESCR_FORCE_END) ) {
+@@ -1022,8 +1023,6 @@ spider_net_decode_one_descr(struct spide
+ 			pr_err("%s: dropping RX descriptor with state %d\n",
+ 			       card->netdev->name, status);
+ 		card->netdev_stats.rx_dropped++;
+-		pci_unmap_single(card->pdev, descr->buf_addr,
+-				SPIDER_NET_MAX_FRAME, PCI_DMA_FROMDEVICE);
+ 		dev_kfree_skb_irq(descr->skb);
+ 		goto refill;
+ 	}
+@@ -1031,9 +1030,10 @@ spider_net_decode_one_descr(struct spide
+ 	if ( (status != SPIDER_NET_DESCR_COMPLETE) &&
+ 	     (status != SPIDER_NET_DESCR_FRAME_END) ) {
+ 		if (netif_msg_rx_err(card))
+-			pr_err("%s: RX descriptor with state %d\n",
++			pr_err("%s: RX descriptor with unkown state %d\n",
+ 			       card->netdev->name, status);
+ 		card->spider_stats.rx_desc_unk_state++;
++		dev_kfree_skb_irq(descr->skb);
+ 		goto refill;
+ 	}
+ 
