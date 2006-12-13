@@ -1,18 +1,22 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp111.sbc.mail.mud.yahoo.com (smtp111.sbc.mail.mud.yahoo.com
-	[68.142.198.210]) by ozlabs.org (Postfix) with SMTP id AEDFE67C8C
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 08:33:07 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-Date: Wed, 13 Dec 2006 12:31:21 -0800
-References: <032a01c71ecc$659ae480$020120ac@Jocke>
-In-Reply-To: <032a01c71ecc$659ae480$020120ac@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200612131231.22905.david-b@pacbell.net>
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A884167CBE
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 08:34:52 +1100 (EST)
+In-Reply-To: <45803CE3.4030600@freescale.com>
+References: <1166013887.30422.54.camel@gentoo-jocke.transmode.se>
+	<45803CE3.4030600@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CB1C9185-2489-4121-BCE4-58D028A56672@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: latest linux git doesn't compile ucc_geth_phy.c and ucc_geth.c
+Date: Wed, 13 Dec 2006 15:34:36 -0600
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Jeff Garzik <jgarzik@pobox.com>, Netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,71 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> I just posted two patches to linuxppc-dev that fix these problems.   
+> The message
+> are titled:
+>
+> [PATCH] Update ucc_geth.c for new workqueue structure
+> [PATCH] Fix phy_read/write redefinition errors in ucc_geth_phy.c
+>
+> I've tested these on an 8360EMDS, and Kumar has reviewed and signed  
+> off on the
+> code, so I think they're good.  Please let me know if they're not.
 
-On Wednesday 13 December 2006 7:36 am, Joakim Tjernlund wrote:
+You should really copy Jeff Garzik and the netdev list on these patches.
 
-> > One problem I have with this patch is the fact that it assumes the  
-> > current driver for (mpc834x) and your mods to support mpc832x/QE are  
-> > mutually exclusive.
-> 
-> I don't see that as a problem ATM. If that is added it should be optional.
-
-If PPC supports multi-CPU/board kernels, PPC drivers should too.  I know that
-some ARMs don't support them (PXA) while some do (OMAP); so PPC could go either
-way.  (Overall it's a win, since it's easier to uncover build breakage if one
-kernel can support lots of configurations and drivers.)
-
-The problem I have with this patch is that it has too much #ifdeffery.  If
-the PPC code expects that, it should be easy to put infrastructure in place
-so that it can be eliminated.  That is, if the PPC powers-that-be allow it!
-
-
-> > We need to handle the case of having driver support for both the QE  
-> > and MPC834x style in the same kernel.
-> 
-> Adding that will double the number RX_BUF/TX_BUF functions from 6 to 12
-
-Your patch already does this, just they're #ifdeffed so that only one of
-the sets will build at a time.
-
-
-> (possibly this can be reduced by adding more logic to the tx_buf/rx_buf functions)
-> not to mention what will happen when support for reversed bit order is added.
-
-Sure enough, sounds ugly.  But cpu_is_xxx() macros, combined with GCC dead
-code elimination will strip out functions that are unused, so that e.g.
-
-	if (cpu_is_mpc834x())
-		fn = mpc834x_spi_tx_buf_u16;
-	else if (cpu_is_mpc832x())
-		fn = mpc832x_spi_tx_buf_u16;
-
-would only link one of them unless the kernel supports both SOCs.  And
-without in-driver #ifdeffery.
-
- 
-> I would argue that the kernel lacks the possibility to remove complexity
-> I don't need. Example in this driver is that there is no way to remove
-> support for 16 and 32 bit SPI character sizes. The same goes for a lot of
-> the probing code in fsl-soc.c.
-
-You could certainly add Kconfig options to help shift some complexity
-from runtime to compile time.  But if you do that, remember that it's
-not always a win in terms of the overall system.  Every configuration
-needs to be tested for correctness, after all.
-
-
-> It would be nice if a board port could add a custom header file that
-> gets included by all .c automatically. Then one could add knobs
-> (read #defines) there to futher tune such things as SPI char size.
-> That way one don't have add Kconfig entries for all those small
-> tuning knobs.
-
-Sounds error prone to me.  What's the point ... removing maybe 100
-bytes of code in this one driver?  You could save more than that
-just by switching over to platform_device_probe() instead of using
-platform_device_register().  And that'd be without adding failure
-modes like "oops, this board stack really _does_ use 12 bit words
-for the ADCs".
-
-- Dave
+- k
