@@ -1,20 +1,20 @@
-Return-Path: <vitalywool@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
-	by ozlabs.org (Postfix) with ESMTP id D99FD67D17
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 21:45:24 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id n15so434926nfc
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 02:45:22 -0800 (PST)
-Message-ID: <acd2a5930612130245g321961dcn3870f5738cc1a8a6@mail.gmail.com>
-Date: Wed, 13 Dec 2006 13:45:22 +0300
-From: "Vitaly Wool" <vitalywool@gmail.com>
-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D939BA6B6D@tmnt04.transmode.se>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_135015_10446603.1166006722408"
-References: <F6AD7E21CDF4E145A44F61F43EE6D939BA6B6D@tmnt04.transmode.se>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jim@jklewis.com>
+Received: from que01.suddenlink.net (queue01-pub.suddenlink.net
+	[208.180.40.86]) by ozlabs.org (Postfix) with ESMTP id 4D53967B9B
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 18:18:55 +1100 (EST)
+Subject: Re: [PATCH] drivers/net: spidernet driver on Celleb
+From: Jim Lewis <jim@jklewis.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1165982077.11914.123.camel@localhost.localdomain>
+References: <200612120525.kBC5PpWC009418@toshiba.co.jp>
+	<20061213011435.GN4329@austin.ibm.com>
+	<1165982077.11914.123.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 13 Dec 2006 00:30:35 -0600
+Message-Id: <1165991435.21877.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Reply-To: jim@jklewis.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_135015_10446603.1166006722408
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On 12/13/06, Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
->
-> Will send an updated patch to spi-devel-general@lists.sourceforge.net
-> instead of here.
->
+ I got a note from Jens earlier today that mentioned some changes he has
+made to the PHY code. He plans to get those in soon, so this might be
+solved already.
 
-It's pretty fine if you CC: this list as well, but the main recipients
-better be SPI subsystem maintainer (David Brownell) and SPI development
-list.
+Jim Lewis
 
-Thanks,
-   Vitaly
 
-------=_Part_135015_10446603.1166006722408
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On 12/13/06, <b class="gmail_sendername">Joakim Tjernlund</b> &lt;<a href="mailto:joakim.tjernlund@transmode.se">joakim.tjernlund@transmode.se</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Will send an updated patch to <a href="mailto:spi-devel-general@lists.sourceforge.net">spi-devel-general@lists.sourceforge.net</a><br>instead of here.<br></blockquote></div><br>It's pretty fine if you CC: this list as well, but the main recipients better be SPI subsystem maintainer (David Brownell) and SPI development list.
-<br><br>Thanks,<br>&nbsp;&nbsp; Vitaly<br>
-
-------=_Part_135015_10446603.1166006722408--
+On Wed, 2006-12-13 at 14:54 +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2006-12-12 at 19:14 -0600, Linas Vepstas wrote:
+> > On Tue, Dec 12, 2006 at 02:25:50PM +0900, Ishizaki Kou wrote:
+> > > 
+> > > Following are the changes.
+> > > -This patch enables auto-negotiation.
+> > > -Loading firmware is done when spidernet_open() is called.
+> > > -And this patch adds other several small changes for Celleb. 
+> > > -This patch is not tested on CellBlade.
+> > 
+> > I just tested this, and it does not work. Jim Lewis is gone
+> > until the new year. However, as he was leaving, he grumbled something
+> > about how autonegotiation simply won't work on the spider. 
+> > (I didn't think to ask about the details). Perhaps he'll 
+> > look at his email soon?
+> 
+> Duh ? Autoneg is completely local to the PHY. It will not work on the
+> Cell blade because it's using a fiber link though, thus we probably need
+> to disable this code when running on a fiber link.
+>  
+> > I've been trying to figure out how to modify the patch to make it 
+> > work anyway, but so far, no success. 
+> > 
+> > Basically, in genmii_poll_link(), 
+> >   status = phy_read(phy, MII_BMSR);
+> >     status & BMSR_LSTATUS will always be zero.
+> > 
+> > So I tried ignoring this value, and calling setup_forced()
+> > However, this still doesn't get the thing working.
+> > I am somewhat at a loss to see why right now, since
+> > I don't see what may be causing this.
+> 
+> I can have a look, most of the code was borrowed from sungem and I wrote
+> the MII code for it :-)
+> 
+> Ben.
+> 
