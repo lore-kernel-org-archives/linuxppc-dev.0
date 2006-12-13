@@ -1,25 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1251F67BAD
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 19:47:42 +1100 (EST)
-In-Reply-To: <20061213113505.6d5d90fd@vitb.ru.mvista.com>
-References: <20061212012641.5ef493f7@localhost.localdomain>
-	<20061211223659.20169.50415.stgit@localhost.localdomain>
-	<CB3BCBF7-D800-4438-A7D5-3798C56F9720@kernel.crashing.org>
-	<20061212215509.696cccf8@vitb.ru.mvista.com>
-	<A55328DA-0FC7-4334-B300-B853B9050773@kernel.crashing.org>
-	<20061213113505.6d5d90fd@vitb.ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <76DF781B-EC0B-4C91-8B32-B3F0A4DE522E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] [POWERPC] cpm2: Updates for CPM2 pic
-Date: Wed, 13 Dec 2006 02:47:36 -0600
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id A683F67BB3
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 20:22:32 +1100 (EST)
+Subject: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="=-+SsfQnJp40vvotN9C2DZ"
+Date: Wed, 13 Dec 2006 10:22:27 +0100
+Message-Id: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,57 +20,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 13, 2006, at 2:35 AM, Vitaly Bordug wrote:
+--=-+SsfQnJp40vvotN9C2DZ
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> On Tue, 12 Dec 2006 13:58:44 -0600
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->>
->> On Dec 12, 2006, at 12:55 PM, Vitaly Bordug wrote:
->>
->>> On Mon, 11 Dec 2006 20:21:52 -0600
->>> Kumar Gala <galak@kernel.crashing.org> wrote:
->>>
->>>>
->>>> On Dec 11, 2006, at 4:36 PM, Vitaly Bordug wrote:
->>>>
->>>>>
->>>>> This contains important fixes for the CPM2 PIC code. Eliminated
->>>>> CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the
->>>>> interrupt
->>>>> mapping. Updated devicetree files to reflect that. Changed direct
->>>>> IC-related IO accesses to the IO accessors.
->>>>
->>>> Since your changing the interrupt numbers, do you mind changing the
->>>> interrupt sense to match ipic?  I was hoping to introduce a generic
->>>> host_xlate function to cover the various embedded pic's.
->>> Umm, can you pls elaborate what do you want to achieve?
->>
->> Its a minor thing, but the values we picked for ipic to encode sense/
->> polarity match the linux definitions.  The idea is that  if we use
->> the same encoding on multiple pic's we can sure the host_xlate code.
->>
-> I started it but faced with the problem:
->
-> in 8560, there are both mpic and cpm2 pic. To keep consistency (so  
-> that cpm irqs encode sence one way, and generic - mpic -  in  
-> another), we'll have to modify mpic too, and all the 85xx dts's as  
-> well.
+The MPC 832x has a different SPI controller i/f, probably due to
+its QUICC engine support. This patch adapts the spi_mpx83xx driver to
+be usable on QE based 83xx cpus.
 
-Don't worry about mpic, just the cpm2.  The idea was for pic's that  
-didn't of existing OF specs like mpic/openpic/i8259, etc. to use the  
-same encoding.  Consider mpic grandfathered in and don't worry about it.
+ Jocke
 
-- k
+PS.
+   Sorry for the attatcment, I have yet to figure out how to tell
+   evolution not to mangle inline patches.
 
-> Yet doable, it's pretty big change, and I think it should be put to  
-> the patch, independent of small fixes I have introduced, and that  
-> should come separately (or else we'll have hard time git-bisecting  
-> for troubles).
->
-> If you envision this way as a proper one for mpic too, I'll head  
-> for it though.
->
-> -- 
-> Sincerely,
-> Vitaly
+--=-+SsfQnJp40vvotN9C2DZ
+Content-Disposition: attachment; filename=spi2.diff
+Content-Type: text/x-patch; name=spi2.diff; charset=ISO-8859-15
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3BpL3NwaV9tcGM4M3h4LmMgYi9kcml2ZXJzL3NwaS9zcGlf
+bXBjODN4eC5jDQppbmRleCBmZjBiMDQ4Li4xOGYwOTRlIDEwMDY0NA0KLS0tIGEvZHJpdmVycy9z
+cGkvc3BpX21wYzgzeHguYw0KKysrIGIvZHJpdmVycy9zcGkvc3BpX21wYzgzeHguYw0KQEAgLTQ3
+LDEzICs0NywxOSBAQCBzdHJ1Y3QgbXBjODN4eF9zcGlfcmVnIHsNCiAjZGVmaW5lCVNQTU9ERV9F
+TkFCTEUJCSgxIDw8IDI0KQ0KICNkZWZpbmUJU1BNT0RFX0xFTih4KQkJKCh4KSA8PCAyMCkNCiAj
+ZGVmaW5lCVNQTU9ERV9QTSh4KQkJKCh4KSA8PCAxNikNCisjZGVmaW5lCVNQTU9ERV9PUAkJKDEg
+PDwgMTQpDQogDQogLyoNCiAgKiBEZWZhdWx0IGZvciBTUEkgTW9kZToNCiAgKiAJU1BJIE1PREUg
+MCAoaW5hY3RpdmUgbG93LCBwaGFzZSBtaWRkbGUsIE1TQiwgOC1iaXQgbGVuZ3RoLCBzbG93IGNs
+aw0KICAqLw0KLSNkZWZpbmUJU1BNT0RFX0lOSVRfVkFMIChTUE1PREVfQ0lfSU5BQ1RJVkVISUdI
+IHwgU1BNT0RFX0RJVjE2IHwgU1BNT0RFX1JFViB8IFwNCi0JCQkgU1BNT0RFX01TIHwgU1BNT0RF
+X0xFTig3KSB8IFNQTU9ERV9QTSgweGYpKQ0KKyNkZWZpbmUgU1BNT0RFX0NPTU1PTl9JTklUIFNQ
+TU9ERV9DSV9JTkFDVElWRUhJR0ggfCBTUE1PREVfRElWMTYgfCBTUE1PREVfUkVWIHwgXA0KKwkJ
+CSAgIFNQTU9ERV9NUyB8IFNQTU9ERV9MRU4oNykgfCBTUE1PREVfUE0oMHhmKQ0KKyNpZmRlZiBD
+T05GSUdfUVVJQ0NfRU5HSU5FDQorICAjZGVmaW5lIFNQTU9ERV9JTklUX1ZBTCAoU1BNT0RFX0NP
+TU1PTl9JTklUIHwgU1BNT0RFX09QKQ0KKyNlbHNlDQorICAjZGVmaW5lIFNQTU9ERV9JTklUX1ZB
+TCAoU1BNT0RFX0NPTU1PTl9JTklUKQ0KKyNlbmRpZg0KIA0KIC8qIFNQSUUgcmVnaXN0ZXIgdmFs
+dWVzICovDQogI2RlZmluZQlTUElFX05FCQkweDAwMDAwMjAwCS8qIE5vdCBlbXB0eSAqLw0KQEAg
+LTk5LDMxICsxMDUsMzkgQEAgc3RhdGljIGlubGluZSB1MzIgbXBjODN4eF9zcGlfcmVhZF9yZWco
+Xw0KIAlyZXR1cm4gaW5fYmUzMihyZWcpOw0KIH0NCiANCi0jZGVmaW5lIE1QQzgzWFhfU1BJX1JY
+X0JVRih0eXBlKSAJCQkJCSAgXA0KKyNkZWZpbmUgTVBDODNYWF9TUElfUlhfQlVGKHR5cGUsIHNo
+aWZ0KQkJCQkJICBcDQogdm9pZCBtcGM4M3h4X3NwaV9yeF9idWZfIyN0eXBlKHUzMiBkYXRhLCBz
+dHJ1Y3QgbXBjODN4eF9zcGkgKm1wYzgzeHhfc3BpKSBcDQogewkJCQkJCQkJCSAgXA0KIAl0eXBl
+ICogcnggPSBtcGM4M3h4X3NwaS0+cng7CQkJCQkgIFwNCi0JKnJ4KysgPSAodHlwZSlkYXRhOwkJ
+CQkJCSAgXA0KKwkqcngrKyA9ICh0eXBlKShkYXRhID4+IHNoaWZ0KTsJCQkJCSAgXA0KIAltcGM4
+M3h4X3NwaS0+cnggPSByeDsJCQkJCQkgIFwNCiB9DQogDQotI2RlZmluZSBNUEM4M1hYX1NQSV9U
+WF9CVUYodHlwZSkJCQkJXA0KKyNkZWZpbmUgTVBDODNYWF9TUElfVFhfQlVGKHR5cGUsIHNoaWZ0
+KQkJCQlcDQogdTMyIG1wYzgzeHhfc3BpX3R4X2J1Zl8jI3R5cGUoc3RydWN0IG1wYzgzeHhfc3Bp
+ICptcGM4M3h4X3NwaSkJXA0KIHsJCQkJCQkJCVwNCiAJdTMyIGRhdGE7CQkJCQkJXA0KIAljb25z
+dCB0eXBlICogdHggPSBtcGM4M3h4X3NwaS0+dHg7CQkJXA0KLQlkYXRhID0gKnR4Kys7CQkJCQkJ
+XA0KKwlkYXRhID0gKnR4KysgPDwgc2hpZnQ7CQkJCQlcDQogCW1wYzgzeHhfc3BpLT50eCA9IHR4
+OwkJCQkJXA0KIAlyZXR1cm4gZGF0YTsJCQkJCQlcDQogfQ0KLQ0KLU1QQzgzWFhfU1BJX1JYX0JV
+Rih1OCkNCi1NUEM4M1hYX1NQSV9SWF9CVUYodTE2KQ0KLU1QQzgzWFhfU1BJX1JYX0JVRih1MzIp
+DQotTVBDODNYWF9TUElfVFhfQlVGKHU4KQ0KLU1QQzgzWFhfU1BJX1RYX0JVRih1MTYpDQotTVBD
+ODNYWF9TUElfVFhfQlVGKHUzMikNCi0NCisjaWZkZWYgQ09ORklHX1FVSUNDX0VOR0lORQ0KKy8q
+IFRoaXMgYXNzdW1lcyBTUE1PREVfUkVWIGlzIHNldCAqLw0KK01QQzgzWFhfU1BJX1JYX0JVRih1
+OCwgMTYpDQorTVBDODNYWF9TUElfUlhfQlVGKHUxNiwgMTYpDQorTVBDODNYWF9TUElfUlhfQlVG
+KHUzMiwgMCkNCitNUEM4M1hYX1NQSV9UWF9CVUYodTgsIDI0KQ0KK01QQzgzWFhfU1BJX1RYX0JV
+Rih1MTYsIDE2KQ0KK01QQzgzWFhfU1BJX1RYX0JVRih1MzIsIDApDQorI2Vsc2UNCitNUEM4M1hY
+X1NQSV9SWF9CVUYodTgsIDApDQorTVBDODNYWF9TUElfUlhfQlVGKHUxNiwgMCkNCitNUEM4M1hY
+X1NQSV9SWF9CVUYodTMyLCAwKQ0KK01QQzgzWFhfU1BJX1RYX0JVRih1OCwgMCkNCitNUEM4M1hY
+X1NQSV9UWF9CVUYodTE2LCAwKQ0KK01QQzgzWFhfU1BJX1RYX0JVRih1MzIsIDApDQorI2VuZGlm
+DQogc3RhdGljIHZvaWQgbXBjODN4eF9zcGlfY2hpcHNlbGVjdChzdHJ1Y3Qgc3BpX2RldmljZSAq
+c3BpLCBpbnQgdmFsdWUpDQogew0KIAlzdHJ1Y3QgbXBjODN4eF9zcGkgKm1wYzgzeHhfc3BpOw0K
+
+
+
+--=-+SsfQnJp40vvotN9C2DZ--
