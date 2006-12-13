@@ -1,15 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id A683F67BB3
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 20:22:32 +1100 (EST)
-Subject: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="=-+SsfQnJp40vvotN9C2DZ"
-Date: Wed, 13 Dec 2006 10:22:27 +0100
-Message-Id: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <vitalywool@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 5881067C13
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 20:44:24 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so114913ugf
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 01:44:20 -0800 (PST)
+Message-ID: <acd2a5930612130144u2d75229etecb82611b0bea04a@mail.gmail.com>
+Date: Wed, 13 Dec 2006 12:44:19 +0300
+From: "Vitaly Wool" <vitalywool@gmail.com>
+To: joakim.tjernlund@transmode.se
+Subject: Re: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+In-Reply-To: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_134255_13775682.1166003059976"
+References: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,70 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-+SsfQnJp40vvotN9C2DZ
-Content-Type: text/plain
+------=_Part_134255_13775682.1166003059976
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The MPC 832x has a different SPI controller i/f, probably due to
-its QUICC engine support. This patch adapts the spi_mpx83xx driver to
-be usable on QE based 83xx cpus.
+On 12/13/06, Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> The MPC 832x has a different SPI controller i/f, probably due to
+> its QUICC engine support. This patch adapts the spi_mpx83xx driver to
+> be usable on QE based 83xx cpus.
+>
 
- Jocke
+First, I'm pretty much against sending such patches to arch lists and not to
+subsystem lists.
 
-PS.
-   Sorry for the attatcment, I have yet to figure out how to tell
-   evolution not to mangle inline patches.
+@@ -99,31 +105,39 @@ static inline u32 mpc83xx_spi_read_reg(_
+        return in_be32(reg);
+ }
 
---=-+SsfQnJp40vvotN9C2DZ
-Content-Disposition: attachment; filename=spi2.diff
-Content-Type: text/x-patch; name=spi2.diff; charset=ISO-8859-15
-Content-Transfer-Encoding: base64
+Then,  this
++       *rx++ = (type)(data >> shift);                                    \
+and this
++       data = *tx++ << shift;                                  \
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3BpL3NwaV9tcGM4M3h4LmMgYi9kcml2ZXJzL3NwaS9zcGlf
-bXBjODN4eC5jDQppbmRleCBmZjBiMDQ4Li4xOGYwOTRlIDEwMDY0NA0KLS0tIGEvZHJpdmVycy9z
-cGkvc3BpX21wYzgzeHguYw0KKysrIGIvZHJpdmVycy9zcGkvc3BpX21wYzgzeHguYw0KQEAgLTQ3
-LDEzICs0NywxOSBAQCBzdHJ1Y3QgbXBjODN4eF9zcGlfcmVnIHsNCiAjZGVmaW5lCVNQTU9ERV9F
-TkFCTEUJCSgxIDw8IDI0KQ0KICNkZWZpbmUJU1BNT0RFX0xFTih4KQkJKCh4KSA8PCAyMCkNCiAj
-ZGVmaW5lCVNQTU9ERV9QTSh4KQkJKCh4KSA8PCAxNikNCisjZGVmaW5lCVNQTU9ERV9PUAkJKDEg
-PDwgMTQpDQogDQogLyoNCiAgKiBEZWZhdWx0IGZvciBTUEkgTW9kZToNCiAgKiAJU1BJIE1PREUg
-MCAoaW5hY3RpdmUgbG93LCBwaGFzZSBtaWRkbGUsIE1TQiwgOC1iaXQgbGVuZ3RoLCBzbG93IGNs
-aw0KICAqLw0KLSNkZWZpbmUJU1BNT0RFX0lOSVRfVkFMIChTUE1PREVfQ0lfSU5BQ1RJVkVISUdI
-IHwgU1BNT0RFX0RJVjE2IHwgU1BNT0RFX1JFViB8IFwNCi0JCQkgU1BNT0RFX01TIHwgU1BNT0RF
-X0xFTig3KSB8IFNQTU9ERV9QTSgweGYpKQ0KKyNkZWZpbmUgU1BNT0RFX0NPTU1PTl9JTklUIFNQ
-TU9ERV9DSV9JTkFDVElWRUhJR0ggfCBTUE1PREVfRElWMTYgfCBTUE1PREVfUkVWIHwgXA0KKwkJ
-CSAgIFNQTU9ERV9NUyB8IFNQTU9ERV9MRU4oNykgfCBTUE1PREVfUE0oMHhmKQ0KKyNpZmRlZiBD
-T05GSUdfUVVJQ0NfRU5HSU5FDQorICAjZGVmaW5lIFNQTU9ERV9JTklUX1ZBTCAoU1BNT0RFX0NP
-TU1PTl9JTklUIHwgU1BNT0RFX09QKQ0KKyNlbHNlDQorICAjZGVmaW5lIFNQTU9ERV9JTklUX1ZB
-TCAoU1BNT0RFX0NPTU1PTl9JTklUKQ0KKyNlbmRpZg0KIA0KIC8qIFNQSUUgcmVnaXN0ZXIgdmFs
-dWVzICovDQogI2RlZmluZQlTUElFX05FCQkweDAwMDAwMjAwCS8qIE5vdCBlbXB0eSAqLw0KQEAg
-LTk5LDMxICsxMDUsMzkgQEAgc3RhdGljIGlubGluZSB1MzIgbXBjODN4eF9zcGlfcmVhZF9yZWco
-Xw0KIAlyZXR1cm4gaW5fYmUzMihyZWcpOw0KIH0NCiANCi0jZGVmaW5lIE1QQzgzWFhfU1BJX1JY
-X0JVRih0eXBlKSAJCQkJCSAgXA0KKyNkZWZpbmUgTVBDODNYWF9TUElfUlhfQlVGKHR5cGUsIHNo
-aWZ0KQkJCQkJICBcDQogdm9pZCBtcGM4M3h4X3NwaV9yeF9idWZfIyN0eXBlKHUzMiBkYXRhLCBz
-dHJ1Y3QgbXBjODN4eF9zcGkgKm1wYzgzeHhfc3BpKSBcDQogewkJCQkJCQkJCSAgXA0KIAl0eXBl
-ICogcnggPSBtcGM4M3h4X3NwaS0+cng7CQkJCQkgIFwNCi0JKnJ4KysgPSAodHlwZSlkYXRhOwkJ
-CQkJCSAgXA0KKwkqcngrKyA9ICh0eXBlKShkYXRhID4+IHNoaWZ0KTsJCQkJCSAgXA0KIAltcGM4
-M3h4X3NwaS0+cnggPSByeDsJCQkJCQkgIFwNCiB9DQogDQotI2RlZmluZSBNUEM4M1hYX1NQSV9U
-WF9CVUYodHlwZSkJCQkJXA0KKyNkZWZpbmUgTVBDODNYWF9TUElfVFhfQlVGKHR5cGUsIHNoaWZ0
-KQkJCQlcDQogdTMyIG1wYzgzeHhfc3BpX3R4X2J1Zl8jI3R5cGUoc3RydWN0IG1wYzgzeHhfc3Bp
-ICptcGM4M3h4X3NwaSkJXA0KIHsJCQkJCQkJCVwNCiAJdTMyIGRhdGE7CQkJCQkJXA0KIAljb25z
-dCB0eXBlICogdHggPSBtcGM4M3h4X3NwaS0+dHg7CQkJXA0KLQlkYXRhID0gKnR4Kys7CQkJCQkJ
-XA0KKwlkYXRhID0gKnR4KysgPDwgc2hpZnQ7CQkJCQlcDQogCW1wYzgzeHhfc3BpLT50eCA9IHR4
-OwkJCQkJXA0KIAlyZXR1cm4gZGF0YTsJCQkJCQlcDQogfQ0KLQ0KLU1QQzgzWFhfU1BJX1JYX0JV
-Rih1OCkNCi1NUEM4M1hYX1NQSV9SWF9CVUYodTE2KQ0KLU1QQzgzWFhfU1BJX1JYX0JVRih1MzIp
-DQotTVBDODNYWF9TUElfVFhfQlVGKHU4KQ0KLU1QQzgzWFhfU1BJX1RYX0JVRih1MTYpDQotTVBD
-ODNYWF9TUElfVFhfQlVGKHUzMikNCi0NCisjaWZkZWYgQ09ORklHX1FVSUNDX0VOR0lORQ0KKy8q
-IFRoaXMgYXNzdW1lcyBTUE1PREVfUkVWIGlzIHNldCAqLw0KK01QQzgzWFhfU1BJX1JYX0JVRih1
-OCwgMTYpDQorTVBDODNYWF9TUElfUlhfQlVGKHUxNiwgMTYpDQorTVBDODNYWF9TUElfUlhfQlVG
-KHUzMiwgMCkNCitNUEM4M1hYX1NQSV9UWF9CVUYodTgsIDI0KQ0KK01QQzgzWFhfU1BJX1RYX0JV
-Rih1MTYsIDE2KQ0KK01QQzgzWFhfU1BJX1RYX0JVRih1MzIsIDApDQorI2Vsc2UNCitNUEM4M1hY
-X1NQSV9SWF9CVUYodTgsIDApDQorTVBDODNYWF9TUElfUlhfQlVGKHUxNiwgMCkNCitNUEM4M1hY
-X1NQSV9SWF9CVUYodTMyLCAwKQ0KK01QQzgzWFhfU1BJX1RYX0JVRih1OCwgMCkNCitNUEM4M1hY
-X1NQSV9UWF9CVUYodTE2LCAwKQ0KK01QQzgzWFhfU1BJX1RYX0JVRih1MzIsIDApDQorI2VuZGlm
-DQogc3RhdGljIHZvaWQgbXBjODN4eF9zcGlfY2hpcHNlbGVjdChzdHJ1Y3Qgc3BpX2RldmljZSAq
-c3BpLCBpbnQgdmFsdWUpDQogew0KIAlzdHJ1Y3QgbXBjODN4eF9zcGkgKm1wYzgzeHhfc3BpOw0K
+pieces of code are potentially dangerous (what if 'shift' is something like
+'x & 0xf3 << 4' ?)
 
+Vitaly
 
+------=_Part_134255_13775682.1166003059976
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---=-+SsfQnJp40vvotN9C2DZ--
+On 12/13/06, <b class="gmail_sendername">Joakim Tjernlund</b> &lt;<a href="mailto:joakim.tjernlund@transmode.se">joakim.tjernlund@transmode.se</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+The MPC 832x has a different SPI controller i/f, probably due to<br>its QUICC engine support. This patch adapts the spi_mpx83xx driver to<br>be usable on QE based 83xx cpus.<br></blockquote></div><br>First, I'm pretty much against sending such patches to arch lists and not to subsystem lists.
+<br><br>@@ -99,31 +105,39 @@ static inline u32 mpc83xx_spi_read_reg(_<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return in_be32(reg);<br>&nbsp;}<br><br>Then,&nbsp; this <br>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *rx++ = (type)(data &gt;&gt; shift);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>and this
+<br>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; data = *tx++ &lt;&lt; shift;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br><br>pieces of code are potentially dangerous (what if 'shift' is something like 'x &amp; 0xf3 &lt;&lt; 4' ?)<br><br>Vitaly<br>
+
+------=_Part_134255_13775682.1166003059976--
