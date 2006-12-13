@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 13 Dec 2006 21:40:03 +1100
-Subject: [PATCH 6/9] MPIC MSI allocator
+Date: Wed, 13 Dec 2006 21:40:06 +1100
+Subject: [PATCH 7/9] MPIC MSI backend
 In-Reply-To: <1166006370.90082.476088563252.qpush@cradle>
-Message-Id: <20061213104007.4B8F967DA9@ozlabs.org>
+Message-Id: <20061213104015.85E7E67CD6@ozlabs.org>
 Cc: linux-pci@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,100 +15,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To support MSI on MPIC we need a way to reserve and allocate hardware irq
-numbers, this patch implements an allocator for that. It looks like we'll
-end up with several backends based on the MPIC, so the allocator is attached
-to the struct mpic, not the msi backend.
+MPIC MSI backend. Based on code from Segher, heavily hacked by me.
+Renamed to mpic_htmsi, as it only deals with MSI over Hypertransport.
+
+We properly discover the HT magic address by reading the config space.
+Now have an irq allocator we can support > 1 MSI, and we don't reuse
+the LSI.
+
+Tested, succesfully getting MSIs from the tg3 via HT/PCI-X on a JS21
+running SLOF. Successive insmod/rmmods working too.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/sysdev/Makefile   |    5 +
- arch/powerpc/sysdev/mpic.c     |    4 +
- arch/powerpc/sysdev/mpic.h     |   30 +++++++
- arch/powerpc/sysdev/mpic_msi.c |  160 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/mpic.h     |    5 +
- 5 files changed, 203 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/Makefile     |    2 
+ arch/powerpc/sysdev/mpic.h       |    7 +
+ arch/powerpc/sysdev/mpic_htmsi.c |  193 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 201 insertions(+), 1 deletion(-)
 
 Index: msi/arch/powerpc/sysdev/Makefile
 ===================================================================
 --- msi.orig/arch/powerpc/sysdev/Makefile
 +++ msi/arch/powerpc/sysdev/Makefile
-@@ -2,7 +2,10 @@ ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS			+= -mno-minimal-toc
+@@ -3,7 +3,7 @@ EXTRA_CFLAGS			+= -mno-minimal-toc
  endif
  
--obj-$(CONFIG_MPIC)		+= mpic.o
-+mpic-obj-y			:= mpic.o
-+mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
-+obj-$(CONFIG_MPIC)		+= $(mpic-obj-y)
-+
+ mpic-obj-y			:= mpic.o
+-mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
++mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_htmsi.o
+ obj-$(CONFIG_MPIC)		+= $(mpic-obj-y)
+ 
  obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_MPC106)	+= grackle.o
- obj-$(CONFIG_PPC_DCR)		+= dcr.o dcr-low.o
-Index: msi/arch/powerpc/sysdev/mpic.c
-===================================================================
---- msi.orig/arch/powerpc/sysdev/mpic.c
-+++ msi/arch/powerpc/sysdev/mpic.c
-@@ -36,6 +36,8 @@
- #include <asm/mpic.h>
- #include <asm/smp.h>
- 
-+#include "mpic.h"
-+
- #ifdef DEBUG
- #define DBG(fmt...) printk(fmt)
- #else
-@@ -825,6 +827,8 @@ static int mpic_host_map(struct irq_host
- 	if (hw >= mpic->irq_count)
- 		return -EINVAL;
- 
-+	mpic_msi_reserve_hwirq(mpic, hw);
-+
- 	/* Default chip */
- 	chip = &mpic->hc_irq;
- 
 Index: msi/arch/powerpc/sysdev/mpic.h
 ===================================================================
---- /dev/null
+--- msi.orig/arch/powerpc/sysdev/mpic.h
 +++ msi/arch/powerpc/sysdev/mpic.h
-@@ -0,0 +1,30 @@
-+#ifndef _POWERPC_SYSDEV_MPIC_H
-+#define _POWERPC_SYSDEV_MPIC_H
+@@ -15,11 +15,18 @@
+ #include <asm/msi.h>
+ 
+ #ifdef CONFIG_PCI_MSI
++extern int mpic_htmsi_init(struct mpic *mpic);
 +
-+/*
-+ * Copyright (C) 2006 Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the
-+ * License.
-+ *
-+ */
-+
-+#include <linux/bitmap.h>
-+#include <asm/msi.h>
-+
-+#ifdef CONFIG_PCI_MSI
-+extern int mpic_msi_init_allocator(struct mpic *mpic);
-+extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq);
-+extern irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num);
-+extern void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num);
-+#else
-+static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
-+					  irq_hw_number_t hwirq)
+ extern int mpic_msi_init_allocator(struct mpic *mpic);
+ extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq);
+ extern irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num);
+ extern void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num);
+ #else
++static inline int mpic_htmsi_init(struct mpic *mpic)
 +{
-+	return;
++	return -1;
 +}
-+#endif
 +
-+#endif /* _POWERPC_SYSDEV_MPIC_H */
-Index: msi/arch/powerpc/sysdev/mpic_msi.c
+ static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
+ 					  irq_hw_number_t hwirq)
+ {
+Index: msi/arch/powerpc/sysdev/mpic_htmsi.c
 ===================================================================
 --- /dev/null
-+++ msi/arch/powerpc/sysdev/mpic_msi.c
-@@ -0,0 +1,160 @@
++++ msi/arch/powerpc/sysdev/mpic_htmsi.c
+@@ -0,0 +1,193 @@
 +/*
++ * Copyright (C) 2006 Segher Boessenkool, IBM Corp.
 + * Copyright (C) 2006 Michael Ellerman, IBM Corp.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -117,170 +84,186 @@ Index: msi/arch/powerpc/sysdev/mpic_msi.c
 + * License.
 + *
 + */
++
++#undef DEBUG
 +
 +#include <linux/irq.h>
 +#include <linux/bootmem.h>
-+#include <linux/bitops.h>
 +#include <asm/msi.h>
 +#include <asm/mpic.h>
 +#include <asm/prom.h>
 +#include <asm/hw_irq.h>
 +#include <asm/ppc-pci.h>
 +
++#include "mpic.h"
 +
-+static void __mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq)
++/* XXX Do we ever need > 1 of these? void * msi_ops.data perhaps ? */
++static struct mpic *msi_mpic;
++
++static unsigned int find_ht_msi_capability(struct pci_dev *pdev)
 +{
-+	msi_debug("reserving hwirq 0x%lx\n", hwirq);
++	unsigned int pos = pci_find_capability(pdev, PCI_CAP_ID_HT);
++	u8 subcap, ttl = 48;
 +
-+	if (hwirq > mpic->irq_count) {
-+		WARN_ON(1);
-+		return;
++	while (pos && ttl--) {
++		pci_read_config_byte(pdev, pos + 3, &subcap);
++		if ((subcap & 0xF8) == HT_CAPTYPE_MSI_MAPPING)
++			return pos;
++		pos = pci_find_next_capability(pdev, pos, PCI_CAP_ID_HT);
 +	}
 +
-+	bitmap_allocate_region(mpic->hwirq_bitmap, hwirq, 0);
++	return 0;
 +}
 +
-+void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq)
++static u64 read_ht_magic_addr(struct pci_dev *pdev, unsigned int pos)
 +{
-+	unsigned long flags;
++	u8 flags;
++	u32 tmp;
++	u64 addr;
 +
-+	/* The mpic calls this even when there is no allocator setup */
-+	if (!mpic->hwirq_bitmap)
-+		return;
++	pci_read_config_byte(pdev, pos + HT_MSI_FLAGS, &flags);
 +
-+	spin_lock_irqsave(&mpic->bitmap_lock, flags);
-+	__mpic_msi_reserve_hwirq(mpic, hwirq);
-+	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++	if (flags & HT_MSI_FLAGS_FIXED)
++		return HT_MSI_FIXED_ADDR;
++
++	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_LO, &tmp);
++	addr = tmp & HT_MSI_ADDR_LO_MASK;
++	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_HI, &tmp);
++	addr = addr | ((u64)tmp << 32);
++
++	return addr;
 +}
 +
-+irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num)
++static u64 find_ht_magic_addr(struct pci_dev *pdev)
 +{
-+	unsigned long flags;
-+	int offset, order = get_count_order(num);
++	struct pci_bus *bus;
++	unsigned int pos;
 +
-+	spin_lock_irqsave(&mpic->bitmap_lock, flags);
-+	/*
-+	 * This is fast, but stricter than we need. We might want to add
-+	 * a fallback routine which does a linear search with no alignment.
-+	 */
-+	offset = bitmap_find_free_region(mpic->hwirq_bitmap, mpic->irq_count,
-+					 order);
-+	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++	for (bus = pdev->bus; bus; bus = bus->parent) {
++		pos = find_ht_msi_capability(bus->self);
++		if (pos)
++			return read_ht_magic_addr(bus->self, pos);
++	}
 +
-+	msi_debug("allocated %d (2^%d) at offset %d\n", num, order, offset);
-+
-+	return offset;
++	return 0;
 +}
 +
-+void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num)
++static int htmsi_check(struct pci_dev *pdev, int num,
++			struct msix_entry *entries, int type)
 +{
-+	unsigned long flags;
-+	int order = get_count_order(num);
++	if (type == PCI_CAP_ID_MSIX) {
++		msi_debug("MSI-X unsupported for %s\n", pci_name(pdev));
++		return 1;
++	}
 +
-+	msi_debug("freeing %d (2^%d) at offset %d\n", num, order, offset);
++	/* If we can't find a magic address then MSI ain't gonna work */
++	if (find_ht_magic_addr(pdev) == 0) {
++		msi_debug("no magic address found for %s\n", pci_name(pdev));
++		return 1;
++	}
 +
-+	spin_lock_irqsave(&mpic->bitmap_lock, flags);
-+	bitmap_release_region(mpic->hwirq_bitmap, offset, order);
-+	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++	return 0;
 +}
 +
-+static void mpic_msi_auto_reserve_hwirqs(struct mpic *mpic)
++static void htmsi_free(struct pci_dev *pdev, int num,
++			struct msix_entry *entries, int type)
 +{
 +	irq_hw_number_t hwirq;
-+	struct irq_host_ops *ops = mpic->irqhost->ops;
-+	struct device_node *np;
-+	int flags, index, i;
-+	struct of_irq oirq;
++	int i;
 +
-+	/* Reserve source numbers we know are reserved in the HW */
-+	for (i = 0;   i < 8;   i++)
-+		__mpic_msi_reserve_hwirq(mpic, i);
-+	for (i = 42;  i < 26;  i++)
-+		__mpic_msi_reserve_hwirq(mpic, i);
-+	for (i = 100; i < 105; i++)
-+		__mpic_msi_reserve_hwirq(mpic, i);
++	hwirq = irq_map[entries[0].vector].hwirq;
 +
-+	np = NULL;
-+	while ((np = of_find_all_nodes(np))) {
-+		msi_debug("mapping hwirqs for %s\n", np->full_name);
++	for (i = 0; i < num; i++) {
++		irq_dispose_mapping(entries[i].vector);
++		entries[i].vector = NO_IRQ;
++	}
 +
-+		index = 0;
-+		while (of_irq_map_one(np, index++, &oirq) == 0) {
-+			ops->xlate(mpic->irqhost, NULL, oirq.specifier,
-+						oirq.size, &hwirq, &flags);
-+			__mpic_msi_reserve_hwirq(mpic, hwirq);
++	msi_debug("freeing %d hwirqs for msi at offset 0x%lx\n", num, hwirq);
++	mpic_msi_free_hwirqs(msi_mpic, hwirq, num);
++
++	return;
++}
++
++static int htmsi_alloc(struct pci_dev *pdev, int num,
++			struct msix_entry *entries, int type)
++{
++	int i;
++	irq_hw_number_t hwirq;
++	unsigned int virq;
++
++	hwirq = mpic_msi_alloc_hwirqs(msi_mpic, num);
++	if (hwirq < 0) {
++		msi_debug("failed allocating %d hwirqs for %s\n", num,
++			  pci_name(pdev));
++		return -1;
++	}
++
++	for (i = 0; i < num; i++) {
++		/* FIXME should we save the existing type */
++		set_irq_type(hwirq, IRQ_TYPE_EDGE_RISING);
++
++		virq = irq_create_mapping(msi_mpic->irqhost, hwirq);
++		if (virq == NO_IRQ) {
++			msi_debug("failed mapping hwirq 0x%lx for %s\n", hwirq,
++				  pci_name(pdev));
++			goto out_free;
 +		}
++
++		entries[i].vector = virq;
++		hwirq++;
 +	}
++
++	return 0;
++
++ out_free:
++	htmsi_free(pdev, num, entries, type);
++	return -1;
 +}
 +
-+static int mpic_msi_reserve_dt_hwirqs(struct mpic *mpic)
++static int htmsi_setup_msi_msg(struct pci_dev *pdev,
++		struct msix_entry *entry, struct msi_msg *msg, int type)
 +{
-+	int i, len;
-+	const u32 *p;
++	u64 addr;
 +
-+	p = get_property(mpic->of_node, "msi-available", &len);
-+	if (!p) {
-+		msi_debug("no msi-available property found on %s\n",
-+			  mpic->of_node->full_name);
-+		return -ENODEV;
-+	}
++	addr = find_ht_magic_addr(pdev);
++	msg->address_lo = addr & 0xFFFFFFFF;
++	msg->address_hi = addr >> 32;
++	msg->data = irq_map[entry->vector].hwirq;
 +
-+	if (len % 8 != 0) {
-+		printk(KERN_WARNING "Malformed msi-available property on %s\n",
-+		       mpic->of_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	/* By default everything is reserved */
-+	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
-+			       get_count_order(mpic->irq_count));
-+
-+	/* Format is: (<u32 start> <u32 count>)+ */
-+	len /= sizeof(u32);
-+	for (i = 0; i < len / 2; i++, p += 2)
-+		mpic_msi_free_hwirqs(mpic, *p, *(p + 1));
++	msi_debug("allocated irq %d at 0x%lx for %s\n", entry->vector,
++			addr, pci_name(pdev));
 +
 +	return 0;
 +}
 +
-+int mpic_msi_init_allocator(struct mpic *mpic)
++static struct ppc_msi_ops mpic_htmsi_ops = {
++	.check = htmsi_check,
++	.alloc = htmsi_alloc,
++	.free = htmsi_free,
++	.enable = msi_raw_enable,
++	.disable = msi_raw_disable,
++	.setup_msi_msg = htmsi_setup_msi_msg,
++};
++
++static struct ppc_msi_ops *htmsi_get_msi_ops(struct pci_dev *pdev)
 +{
-+	int size = mpic->irq_count / 8;
++	return &mpic_htmsi_ops;
++}
 +
-+	BUG_ON(mpic->hwirq_bitmap);
++int mpic_htmsi_init(struct mpic *mpic)
++{
++	int rc;
 +
-+	msi_debug("allocator bitmap size is 0x%x bytes\n", size);
-+
-+	if (mem_init_done)
-+		mpic->hwirq_bitmap = kmalloc(size, GFP_KERNEL);
-+	else
-+		mpic->hwirq_bitmap = alloc_bootmem(size);
-+
-+	if (!mpic->hwirq_bitmap) {
-+		msi_debug("no mem allocating allocator bitmap!\n");
-+		return -ENOMEM;
++	rc = mpic_msi_init_allocator(mpic);
++	if (rc) {
++		pr_debug("mpic_htmsi_init: Error allocating bitmap!\n");
++		return rc;
 +	}
 +
-+	memset(mpic->hwirq_bitmap, 0, size);
++	msi_mpic = mpic;
 +
-+	if (mpic_msi_reserve_dt_hwirqs(mpic))
-+		mpic_msi_auto_reserve_hwirqs(mpic);
++	pr_debug("mpic_htmsi_init: Registering MPIC MSI ops.\n");
++	ppc_md.get_msi_ops = htmsi_get_msi_ops;
 +
 +	return 0;
 +}
-Index: msi/include/asm-powerpc/mpic.h
-===================================================================
---- msi.orig/include/asm-powerpc/mpic.h
-+++ msi/include/asm-powerpc/mpic.h
-@@ -300,6 +300,11 @@ struct mpic
- 	u32			*hw_set;
- #endif
- 
-+#ifdef CONFIG_PCI_MSI
-+	spinlock_t		bitmap_lock;
-+	unsigned long		*hwirq_bitmap;
-+#endif
-+
- 	/* link */
- 	struct mpic		*next;
- };
