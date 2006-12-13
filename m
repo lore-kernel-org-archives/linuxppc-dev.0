@@ -1,20 +1,24 @@
-Return-Path: <vitalywool@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 5881067C13
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 20:44:24 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so114913ugf
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 01:44:20 -0800 (PST)
-Message-ID: <acd2a5930612130144u2d75229etecb82611b0bea04a@mail.gmail.com>
-Date: Wed, 13 Dec 2006 12:44:19 +0300
-From: "Vitaly Wool" <vitalywool@gmail.com>
-To: joakim.tjernlund@transmode.se
-Subject: Re: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-In-Reply-To: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 217ED67BE2
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 20:52:53 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	kBDA7QYD029639
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 03:07:26 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id kBD9qlux017771
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 03:52:49 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_134255_13775682.1166003059976"
-References: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+Date: Wed, 13 Dec 2006 17:53:47 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D32F78C@zch01exm20.fsl.freescale.net>
+In-Reply-To: <1166001747.30422.43.camel@gentoo-jocke.transmode.se>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: <joakim.tjernlund@transmode.se>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_134255_13775682.1166003059976
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The data shifts for receive register are truly different.
+Please also send such patch to SPI list:
+spi-devel-general@lists.sourceforge.net
 
-On 12/13/06, Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
->
+- Leo
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
+> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org] On =
+Behalf
+Of Joakim
+> Tjernlund
+> Sent: Wednesday, December 13, 2006 5:22 PM
+> To: linuxppc-dev@ozlabs.org
+> Subject: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+>=20
 > The MPC 832x has a different SPI controller i/f, probably due to
 > its QUICC engine support. This patch adapts the spi_mpx83xx driver to
 > be usable on QE based 83xx cpus.
->
-
-First, I'm pretty much against sending such patches to arch lists and not to
-subsystem lists.
-
-@@ -99,31 +105,39 @@ static inline u32 mpc83xx_spi_read_reg(_
-        return in_be32(reg);
- }
-
-Then,  this
-+       *rx++ = (type)(data >> shift);                                    \
-and this
-+       data = *tx++ << shift;                                  \
-
-pieces of code are potentially dangerous (what if 'shift' is something like
-'x & 0xf3 << 4' ?)
-
-Vitaly
-
-------=_Part_134255_13775682.1166003059976
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On 12/13/06, <b class="gmail_sendername">Joakim Tjernlund</b> &lt;<a href="mailto:joakim.tjernlund@transmode.se">joakim.tjernlund@transmode.se</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-The MPC 832x has a different SPI controller i/f, probably due to<br>its QUICC engine support. This patch adapts the spi_mpx83xx driver to<br>be usable on QE based 83xx cpus.<br></blockquote></div><br>First, I'm pretty much against sending such patches to arch lists and not to subsystem lists.
-<br><br>@@ -99,31 +105,39 @@ static inline u32 mpc83xx_spi_read_reg(_<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return in_be32(reg);<br>&nbsp;}<br><br>Then,&nbsp; this <br>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *rx++ = (type)(data &gt;&gt; shift);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>and this
-<br>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; data = *tx++ &lt;&lt; shift;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br><br>pieces of code are potentially dangerous (what if 'shift' is something like 'x &amp; 0xf3 &lt;&lt; 4' ?)<br><br>Vitaly<br>
-
-------=_Part_134255_13775682.1166003059976--
+>=20
+>  Jocke
+>=20
+> PS.
+>    Sorry for the attatcment, I have yet to figure out how to tell
+>    evolution not to mangle inline patches.
