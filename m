@@ -1,35 +1,12 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1307567C5A
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 04:27:24 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBDHRFP9002382
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 12:27:15 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBDHRFZi539764
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 10:27:15 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBDHREiP006501
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 10:27:15 -0700
-Date: Wed, 13 Dec 2006 11:27:14 -0600
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 1/16] Spidernet DMA coalescing
-Message-ID: <20061213172714.GQ4329@austin.ibm.com>
-References: <20061206223223.GH17931@austin.ibm.com>
-	<20061206232745.GA4649@austin.ibm.com>
-	<20061207101151.GB27904@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061207101151.GB27904@infradead.org>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
-	linuxppc-dev@ozlabs.org, jgarzik@pobox.com
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id AA9D667BC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 04:39:15 +1100 (EST)
+From: timur@freescale.com
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix phy_read/write redefinition errors in ucc_geth_phy.c
+Date: Wed, 13 Dec 2006 11:39:09 -0600
+Message-Id: <11660315492978-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,19 +16,350 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 07, 2006 at 10:11:51AM +0000, Christoph Hellwig wrote:
-> On Wed, Dec 06, 2006 at 05:27:45PM -0600, Linas Vepstas wrote:
-> > 
-> > The current driver code performs 512 DMA mappings of a bunch of 
-> > 32-byte structures. This is silly, as they are all in contiguous 
-> > memory. Ths patch changes the code to DMA map the entie area
-> > with just one call.
-> 
-> This is still wrong.  The descriptor array must be in dma_alloc_coherent
-> memory, not a streaming mapping.  (I also think I pointed this out a while
-> ago when I made dma_alloc_coherent node-aware)
+From: Timur Tabi <timur@freescale.com>
 
-Sorry, I missed this the first time. I'm splitting this off now; will 
-resubmit shortly.
+The local versions of phy_read() and phy_write() in ucc_geth_phy.c conflict
+with the prototypes in include/linux/phy.h, so this patch renames them, 
+moves them to the top of the file (while eliminating the redundant prototype),
+and makes them static.
 
---linas
+Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+---
+ drivers/net/ucc_geth_phy.c |  134 ++++++++++++++++++++++----------------------
+ 1 files changed, 66 insertions(+), 68 deletions(-)
+
+diff --git a/drivers/net/ucc_geth_phy.c b/drivers/net/ucc_geth_phy.c
+index 5360ec0..3c86592 100644
+--- a/drivers/net/ucc_geth_phy.c
++++ b/drivers/net/ucc_geth_phy.c
+@@ -68,8 +68,31 @@ static int gbit_config_aneg(struct ugeth
+ static int genmii_config_aneg(struct ugeth_mii_info *mii_info);
+ static int genmii_update_link(struct ugeth_mii_info *mii_info);
+ static int genmii_read_status(struct ugeth_mii_info *mii_info);
+-u16 phy_read(struct ugeth_mii_info *mii_info, u16 regnum);
+-void phy_write(struct ugeth_mii_info *mii_info, u16 regnum, u16 val);
++
++static u16 ucc_geth_phy_read(struct ugeth_mii_info *mii_info, u16 regnum)
++{
++	u16 retval;
++	unsigned long flags;
++
++	ugphy_vdbg("%s: IN", __FUNCTION__);
++
++	spin_lock_irqsave(&mii_info->mdio_lock, flags);
++	retval = mii_info->mdio_read(mii_info->dev, mii_info->mii_id, regnum);
++	spin_unlock_irqrestore(&mii_info->mdio_lock, flags);
++
++	return retval;
++}
++
++static void ucc_geth_phy_write(struct ugeth_mii_info *mii_info, u16 regnum, u16 val)
++{
++	unsigned long flags;
++
++	ugphy_vdbg("%s: IN", __FUNCTION__);
++
++	spin_lock_irqsave(&mii_info->mdio_lock, flags);
++	mii_info->mdio_write(mii_info->dev, mii_info->mii_id, regnum, val);
++	spin_unlock_irqrestore(&mii_info->mdio_lock, flags);
++}
+ 
+ /* Write value to the PHY for this device to the register at regnum, */
+ /* waiting until the write is done before it returns.  All PHY */
+@@ -184,7 +207,7 @@ static void config_genmii_advert(struct
+ 	advertise = mii_info->advertising;
+ 
+ 	/* Setup standard advertisement */
+-	adv = phy_read(mii_info, MII_ADVERTISE);
++	adv = ucc_geth_phy_read(mii_info, MII_ADVERTISE);
+ 	adv &= ~(ADVERTISE_ALL | ADVERTISE_100BASE4);
+ 	if (advertise & ADVERTISED_10baseT_Half)
+ 		adv |= ADVERTISE_10HALF;
+@@ -194,7 +217,7 @@ static void config_genmii_advert(struct
+ 		adv |= ADVERTISE_100HALF;
+ 	if (advertise & ADVERTISED_100baseT_Full)
+ 		adv |= ADVERTISE_100FULL;
+-	phy_write(mii_info, MII_ADVERTISE, adv);
++	ucc_geth_phy_write(mii_info, MII_ADVERTISE, adv);
+ }
+ 
+ static void genmii_setup_forced(struct ugeth_mii_info *mii_info)
+@@ -204,7 +227,7 @@ static void genmii_setup_forced(struct u
+ 
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+-	ctrl = phy_read(mii_info, MII_BMCR);
++	ctrl = ucc_geth_phy_read(mii_info, MII_BMCR);
+ 
+ 	ctrl &=
+ 	    ~(BMCR_FULLDPLX | BMCR_SPEED100 | BMCR_SPEED1000 | BMCR_ANENABLE);
+@@ -234,7 +257,7 @@ static void genmii_setup_forced(struct u
+ 		break;
+ 	}
+ 
+-	phy_write(mii_info, MII_BMCR, ctrl);
++	ucc_geth_phy_write(mii_info, MII_BMCR, ctrl);
+ }
+ 
+ /* Enable and Restart Autonegotiation */
+@@ -244,9 +267,9 @@ static void genmii_restart_aneg(struct u
+ 
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+-	ctl = phy_read(mii_info, MII_BMCR);
++	ctl = ucc_geth_phy_read(mii_info, MII_BMCR);
+ 	ctl |= (BMCR_ANENABLE | BMCR_ANRESTART);
+-	phy_write(mii_info, MII_BMCR, ctl);
++	ucc_geth_phy_write(mii_info, MII_BMCR, ctl);
+ }
+ 
+ static int gbit_config_aneg(struct ugeth_mii_info *mii_info)
+@@ -261,14 +284,14 @@ static int gbit_config_aneg(struct ugeth
+ 		config_genmii_advert(mii_info);
+ 		advertise = mii_info->advertising;
+ 
+-		adv = phy_read(mii_info, MII_1000BASETCONTROL);
++		adv = ucc_geth_phy_read(mii_info, MII_1000BASETCONTROL);
+ 		adv &= ~(MII_1000BASETCONTROL_FULLDUPLEXCAP |
+ 			 MII_1000BASETCONTROL_HALFDUPLEXCAP);
+ 		if (advertise & SUPPORTED_1000baseT_Half)
+ 			adv |= MII_1000BASETCONTROL_HALFDUPLEXCAP;
+ 		if (advertise & SUPPORTED_1000baseT_Full)
+ 			adv |= MII_1000BASETCONTROL_FULLDUPLEXCAP;
+-		phy_write(mii_info, MII_1000BASETCONTROL, adv);
++		ucc_geth_phy_write(mii_info, MII_1000BASETCONTROL, adv);
+ 
+ 		/* Start/Restart aneg */
+ 		genmii_restart_aneg(mii_info);
+@@ -298,10 +321,10 @@ static int genmii_update_link(struct uge
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	/* Do a fake read */
+-	phy_read(mii_info, MII_BMSR);
++	ucc_geth_phy_read(mii_info, MII_BMSR);
+ 
+ 	/* Read link and autonegotiation status */
+-	status = phy_read(mii_info, MII_BMSR);
++	status = ucc_geth_phy_read(mii_info, MII_BMSR);
+ 	if ((status & BMSR_LSTATUS) == 0)
+ 		mii_info->link = 0;
+ 	else
+@@ -329,7 +352,7 @@ static int genmii_read_status(struct uge
+ 		return err;
+ 
+ 	if (mii_info->autoneg) {
+-		status = phy_read(mii_info, MII_LPA);
++		status = ucc_geth_phy_read(mii_info, MII_LPA);
+ 
+ 		if (status & (LPA_10FULL | LPA_100FULL))
+ 			mii_info->duplex = DUPLEX_FULL;
+@@ -352,9 +375,9 @@ static int marvell_init(struct ugeth_mii
+ {
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+-	phy_write(mii_info, 0x14, 0x0cd2);
+-	phy_write(mii_info, MII_BMCR,
+-		  phy_read(mii_info, MII_BMCR) | BMCR_RESET);
++	ucc_geth_phy_write(mii_info, 0x14, 0x0cd2);
++	ucc_geth_phy_write(mii_info, MII_BMCR,
++		  ucc_geth_phy_read(mii_info, MII_BMCR) | BMCR_RESET);
+ 	msleep(4000);
+ 
+ 	return 0;
+@@ -367,13 +390,13 @@ static int marvell_config_aneg(struct ug
+ 	/* The Marvell PHY has an errata which requires
+ 	 * that certain registers get written in order
+ 	 * to restart autonegotiation */
+-	phy_write(mii_info, MII_BMCR, BMCR_RESET);
++	ucc_geth_phy_write(mii_info, MII_BMCR, BMCR_RESET);
+ 
+-	phy_write(mii_info, 0x1d, 0x1f);
+-	phy_write(mii_info, 0x1e, 0x200c);
+-	phy_write(mii_info, 0x1d, 0x5);
+-	phy_write(mii_info, 0x1e, 0);
+-	phy_write(mii_info, 0x1e, 0x100);
++	ucc_geth_phy_write(mii_info, 0x1d, 0x1f);
++	ucc_geth_phy_write(mii_info, 0x1e, 0x200c);
++	ucc_geth_phy_write(mii_info, 0x1d, 0x5);
++	ucc_geth_phy_write(mii_info, 0x1e, 0);
++	ucc_geth_phy_write(mii_info, 0x1e, 0x100);
+ 
+ 	gbit_config_aneg(mii_info);
+ 
+@@ -398,7 +421,7 @@ static int marvell_read_status(struct ug
+ 	 * are as set */
+ 	if (mii_info->autoneg && mii_info->link) {
+ 		int speed;
+-		status = phy_read(mii_info, MII_M1011_PHY_SPEC_STATUS);
++		status = ucc_geth_phy_read(mii_info, MII_M1011_PHY_SPEC_STATUS);
+ 
+ 		/* Get the duplexity */
+ 		if (status & MII_M1011_PHY_SPEC_STATUS_FULLDUPLEX)
+@@ -430,7 +453,7 @@ static int marvell_ack_interrupt(struct
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	/* Clear the interrupts by reading the reg */
+-	phy_read(mii_info, MII_M1011_IEVENT);
++	ucc_geth_phy_read(mii_info, MII_M1011_IEVENT);
+ 
+ 	return 0;
+ }
+@@ -440,9 +463,9 @@ static int marvell_config_intr(struct ug
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	if (mii_info->interrupts == MII_INTERRUPT_ENABLED)
+-		phy_write(mii_info, MII_M1011_IMASK, MII_M1011_IMASK_INIT);
++		ucc_geth_phy_write(mii_info, MII_M1011_IMASK, MII_M1011_IMASK_INIT);
+ 	else
+-		phy_write(mii_info, MII_M1011_IMASK, MII_M1011_IMASK_CLEAR);
++		ucc_geth_phy_write(mii_info, MII_M1011_IMASK, MII_M1011_IMASK_CLEAR);
+ 
+ 	return 0;
+ }
+@@ -451,9 +474,9 @@ static int cis820x_init(struct ugeth_mii
+ {
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+-	phy_write(mii_info, MII_CIS8201_AUX_CONSTAT,
++	ucc_geth_phy_write(mii_info, MII_CIS8201_AUX_CONSTAT,
+ 		  MII_CIS8201_AUXCONSTAT_INIT);
+-	phy_write(mii_info, MII_CIS8201_EXT_CON1, MII_CIS8201_EXTCON1_INIT);
++	ucc_geth_phy_write(mii_info, MII_CIS8201_EXT_CON1, MII_CIS8201_EXTCON1_INIT);
+ 
+ 	return 0;
+ }
+@@ -477,7 +500,7 @@ static int cis820x_read_status(struct ug
+ 	if (mii_info->autoneg && mii_info->link) {
+ 		int speed;
+ 
+-		status = phy_read(mii_info, MII_CIS8201_AUX_CONSTAT);
++		status = ucc_geth_phy_read(mii_info, MII_CIS8201_AUX_CONSTAT);
+ 		if (status & MII_CIS8201_AUXCONSTAT_DUPLEX)
+ 			mii_info->duplex = DUPLEX_FULL;
+ 		else
+@@ -505,7 +528,7 @@ static int cis820x_ack_interrupt(struct
+ {
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+-	phy_read(mii_info, MII_CIS8201_ISTAT);
++	ucc_geth_phy_read(mii_info, MII_CIS8201_ISTAT);
+ 
+ 	return 0;
+ }
+@@ -515,9 +538,9 @@ static int cis820x_config_intr(struct ug
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	if (mii_info->interrupts == MII_INTERRUPT_ENABLED)
+-		phy_write(mii_info, MII_CIS8201_IMASK, MII_CIS8201_IMASK_MASK);
++		ucc_geth_phy_write(mii_info, MII_CIS8201_IMASK, MII_CIS8201_IMASK_MASK);
+ 	else
+-		phy_write(mii_info, MII_CIS8201_IMASK, 0);
++		ucc_geth_phy_write(mii_info, MII_CIS8201_IMASK, 0);
+ 
+ 	return 0;
+ }
+@@ -541,7 +564,7 @@ static int dm9161_read_status(struct uge
+ 	/* If we aren't autonegotiating, assume speeds
+ 	 * are as set */
+ 	if (mii_info->autoneg && mii_info->link) {
+-		status = phy_read(mii_info, MII_DM9161_SCSR);
++		status = ucc_geth_phy_read(mii_info, MII_DM9161_SCSR);
+ 		if (status & (MII_DM9161_SCSR_100F | MII_DM9161_SCSR_100H))
+ 			mii_info->speed = SPEED_100;
+ 		else
+@@ -572,7 +595,7 @@ static void dm9161_timer(unsigned long d
+ {
+ 	struct ugeth_mii_info *mii_info = (struct ugeth_mii_info *)data;
+ 	struct dm9161_private *priv = mii_info->priv;
+-	u16 status = phy_read(mii_info, MII_BMSR);
++	u16 status = ucc_geth_phy_read(mii_info, MII_BMSR);
+ 
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+@@ -599,11 +622,11 @@ static int dm9161_init(struct ugeth_mii_
+ 	/* Reset is not done yet */
+ 	priv->resetdone = 0;
+ 
+-	phy_write(mii_info, MII_BMCR,
+-		  phy_read(mii_info, MII_BMCR) | BMCR_RESET);
++	ucc_geth_phy_write(mii_info, MII_BMCR,
++		  ucc_geth_phy_read(mii_info, MII_BMCR) | BMCR_RESET);
+ 
+-	phy_write(mii_info, MII_BMCR,
+-		  phy_read(mii_info, MII_BMCR) & ~BMCR_ISOLATE);
++	ucc_geth_phy_write(mii_info, MII_BMCR,
++		  ucc_geth_phy_read(mii_info, MII_BMCR) & ~BMCR_ISOLATE);
+ 
+ 	config_genmii_advert(mii_info);
+ 	/* Start/Restart aneg */
+@@ -634,7 +657,7 @@ static int dm9161_ack_interrupt(struct u
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	/* Clear the interrupts by reading the reg */
+-	phy_read(mii_info, MII_DM9161_INTR);
++	ucc_geth_phy_read(mii_info, MII_DM9161_INTR);
+ 
+ 
+ 	return 0;
+@@ -645,9 +668,9 @@ static int dm9161_config_intr(struct uge
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	if (mii_info->interrupts == MII_INTERRUPT_ENABLED)
+-		phy_write(mii_info, MII_DM9161_INTR, MII_DM9161_INTR_INIT);
++		ucc_geth_phy_write(mii_info, MII_DM9161_INTR, MII_DM9161_INTR_INIT);
+ 	else
+-		phy_write(mii_info, MII_DM9161_INTR, MII_DM9161_INTR_STOP);
++		ucc_geth_phy_write(mii_info, MII_DM9161_INTR, MII_DM9161_INTR_STOP);
+ 
+ 	return 0;
+ }
+@@ -718,31 +741,6 @@ static struct phy_info *phy_info[] = {
+ 	NULL
+ };
+ 
+-u16 phy_read(struct ugeth_mii_info *mii_info, u16 regnum)
+-{
+-	u16 retval;
+-	unsigned long flags;
+-
+-	ugphy_vdbg("%s: IN", __FUNCTION__);
+-
+-	spin_lock_irqsave(&mii_info->mdio_lock, flags);
+-	retval = mii_info->mdio_read(mii_info->dev, mii_info->mii_id, regnum);
+-	spin_unlock_irqrestore(&mii_info->mdio_lock, flags);
+-
+-	return retval;
+-}
+-
+-void phy_write(struct ugeth_mii_info *mii_info, u16 regnum, u16 val)
+-{
+-	unsigned long flags;
+-
+-	ugphy_vdbg("%s: IN", __FUNCTION__);
+-
+-	spin_lock_irqsave(&mii_info->mdio_lock, flags);
+-	mii_info->mdio_write(mii_info->dev, mii_info->mii_id, regnum, val);
+-	spin_unlock_irqrestore(&mii_info->mdio_lock, flags);
+-}
+-
+ /* Use the PHY ID registers to determine what type of PHY is attached
+  * to device dev.  return a struct phy_info structure describing that PHY
+  */
+@@ -757,11 +755,11 @@ struct phy_info *get_phy_info(struct uge
+ 	ugphy_vdbg("%s: IN", __FUNCTION__);
+ 
+ 	/* Grab the bits from PHYIR1, and put them in the upper half */
+-	phy_reg = phy_read(mii_info, MII_PHYSID1);
++	phy_reg = ucc_geth_phy_read(mii_info, MII_PHYSID1);
+ 	phy_ID = (phy_reg & 0xffff) << 16;
+ 
+ 	/* Grab the bits from PHYIR2, and put them in the lower half */
+-	phy_reg = phy_read(mii_info, MII_PHYSID2);
++	phy_reg = ucc_geth_phy_read(mii_info, MII_PHYSID2);
+ 	phy_ID |= (phy_reg & 0xffff);
+ 
+ 	/* loop through all the known PHY types, and find one that */
+-- 
+1.4.4
