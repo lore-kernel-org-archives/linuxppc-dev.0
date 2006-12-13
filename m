@@ -2,20 +2,23 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7548C67BCD
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 00:13:24 +1100 (EST)
-Subject: Re: [PATCH 3/3] powerpc: fix comment in kernel/irq.c
+	by ozlabs.org (Postfix) with ESMTP id 5A2D267C6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 00:20:18 +1100 (EST)
+Subject: Re: [linux-pm] [RFC 1/3] support powermac G5 CPU hotplug
 From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20061213123945.859071000@sipsolutions.net>>
-References: <20061213123819.403286000@sipsolutions.net> >
-	<20061213123945.859071000@sipsolutions.net>>
+To: Pavel Machek <pavel@suse.cz>
+In-Reply-To: <20061212130916.GB5190@ucw.cz>
+References: <20061211230208.526233000@sipsolutions.net> >
+	<20061211230754.380263000@sipsolutions.net>
+	<20061212130916.GB5190@ucw.cz>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-Gws3XRP00KS/eloGuLdx"
-Date: Wed, 13 Dec 2006 14:13:12 +0100
-Message-Id: <1166015592.7273.8.camel@johannes.berg>
+	boundary="=-CQIcQyxgpP9oY12t8ik3"
+Date: Wed, 13 Dec 2006 14:20:08 +0100
+Message-Id: <1166016008.7273.11.camel@johannes.berg>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>,
+	Michael Buesch <mb@bu3sch.de>, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +29,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-Gws3XRP00KS/eloGuLdx
+--=-CQIcQyxgpP9oY12t8ik3
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2006-12-13 at 13:38 +0100, Johannes Berg wrote:
+On Tue, 2006-12-12 at 13:09 +0000, Pavel Machek wrote:
 
-> kernel/irq.c contains a comment that speaks of -1 and -2 as interrupt
-> numbers, but this is actually dependent on configuration options now.
-> Replace by NO_IRQ and NO_IRQ_ENABLED.
+> ?? Context for downing cpu should better be well-defined. Just do this
+> in cpu_die if it is really required.
 
-Humm, this got into this patchset by accident. That doesn't really make
-it wrong though :)
+Hmm. Just tried, but that doesn't help either!
+
+I'm confused. Really need to check where that value comes from. It looks
+as though we disable the CPU inside an interrupt but I can't see how
+that should happen during resume code. Or maybe preempt count is
+initialised non-zero during boot or something.. Digging
 
 johannes
 
---=-Gws3XRP00KS/eloGuLdx
+--=-CQIcQyxgpP9oY12t8ik3
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFf/xo/ETPhpq3jKURAhnHAJ9yliNTQmaaq2lT2fdPxKHFqRVynACgnLA8
-cD1VLprK7SAcdW9pneDx65c=
-=enq4
+iD8DBQBFf/4H/ETPhpq3jKURAlZVAKCJSYjJ8MHRKZ23U2Ekjf5JlFWEawCfXjFH
+nHtIFj/qnlWOr2FzbemoDHc=
+=jHnT
 -----END PGP SIGNATURE-----
 
---=-Gws3XRP00KS/eloGuLdx--
+--=-CQIcQyxgpP9oY12t8ik3--
