@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DDB3F679E0
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 14:54:55 +1100 (EST)
-Subject: Re: [PATCH] drivers/net: spidernet driver on Celleb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061213011435.GN4329@austin.ibm.com>
-References: <200612120525.kBC5PpWC009418@toshiba.co.jp>
-	<20061213011435.GN4329@austin.ibm.com>
+Return-Path: <hollis@penguinppc.org>
+Received: from pop-tawny.atl.sa.earthlink.net (pop-tawny.atl.sa.earthlink.net
+	[207.69.195.67]) by ozlabs.org (Postfix) with ESMTP id A0941679FD
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 15:01:05 +1100 (EST)
+Subject: Re: kgdb on mpc834x
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Reeve Yang <yang.reeve@gmail.com>
+In-Reply-To: <198592450612121611o7f7271cbnb1404c7f7f9fda71@mail.gmail.com>
+References: <198592450612121611o7f7271cbnb1404c7f7f9fda71@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 13 Dec 2006 14:54:37 +1100
-Message-Id: <1165982077.11914.123.camel@localhost.localdomain>
+Date: Tue, 12 Dec 2006 22:00:56 -0600
+Message-Id: <1165982456.10549.1.camel@diesel>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jim@jklewis.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-12-12 at 19:14 -0600, Linas Vepstas wrote:
-> On Tue, Dec 12, 2006 at 02:25:50PM +0900, Ishizaki Kou wrote:
-> > 
-> > Following are the changes.
-> > -This patch enables auto-negotiation.
-> > -Loading firmware is done when spidernet_open() is called.
-> > -And this patch adds other several small changes for Celleb. 
-> > -This patch is not tested on CellBlade.
+On Wed, 2006-12-13 at 00:11 +0000, Reeve Yang wrote:
+> I applied kgdb patch for 2.6.13 to kernel 2.6.14 (since there is no
+> patch for 2.6.14), but gdb client cannot connec to it. I turn on all
+> necessary kernel hacking options. Our board is customized with
+> MPC834x, can someoen who used kgdb to debug kernel on MPC834x help me
+> out? Following are the message from linux boot and gdb client.
 > 
-> I just tested this, and it does not work. Jim Lewis is gone
-> until the new year. However, as he was leaving, he grumbled something
-> about how autonegotiation simply won't work on the spider. 
-> (I didn't think to ask about the details). Perhaps he'll 
-> look at his email soon?
-
-Duh ? Autoneg is completely local to the PHY. It will not work on the
-Cell blade because it's using a fiber link though, thus we probably need
-to disable this code when running on a fiber link.
- 
-> I've been trying to figure out how to modify the patch to make it 
-> work anyway, but so far, no success. 
+> ## Booting image at ff300000 ...
 > 
-> Basically, in genmii_poll_link(), 
->   status = phy_read(phy, MII_BMSR);
->     status & BMSR_LSTATUS will always be zero.
+> loaded at:     FF300000 FFB71124
+> relocated to:  00800000 01071124
+> board data at: 007FFF70 007FFFF8
+> relocated to:  00805114 0080519C
+> zimage at:     00805915 00926A5E
+> initrd at:     00927000 0106E242
+> avail ram:     01072000 01472000
 > 
-> So I tried ignoring this value, and calling setup_forced()
-> However, this still doesn't get the thing working.
-> I am somewhat at a loss to see why right now, since
-> I don't see what may be causing this.
+> Linux/PPC load: mem=248M
+> Uncompressing Linux...done.
+> Now booting the kernel
+> mpc834x_sys_init(): exit
+> id mach(): done
+> MMU:enter
+> MMU:hw init
+> MMU:mapin
+> MMU:setio
+> MMU:exit
+> setup_arch: enter
+> setup_arch: bootmem
+> 
+> (gdb) target remote /dev/ttyS0
+> Remote debugging using /dev/ttyS0
+> Ignoring packet error, continuing...
+> Ignoring packet error, continuing...
+> Ignoring packet error, continuing...
+> Malformed response to offset query, timeout
 
-I can have a look, most of the code was borrowed from sungem and I wrote
-the MII code for it :-)
+Try 'set debug serial 1' in GDB; it will show you the actual data GDB is
+receiving.
 
-Ben.
+-Hollis
