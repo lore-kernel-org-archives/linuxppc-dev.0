@@ -1,19 +1,16 @@
-Return-Path: <Jens.Osterkamp@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 787A767B83
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 20:03:25 +1100 (EST)
-From: Jens Osterkamp <Jens.Osterkamp@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] drivers/net: spidernet driver on Celleb
-Date: Wed, 13 Dec 2006 10:03:23 +0100
-References: <200612120525.kBC5PpWC009418@toshiba.co.jp>
-	<20061213011435.GN4329@austin.ibm.com>
-	<1165982077.11914.123.camel@localhost.localdomain>
-In-Reply-To: <1165982077.11914.123.camel@localhost.localdomain>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 1455F679E9
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 23:22:55 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612131003.23533.Jens.Osterkamp@gmx.de>
+	charset="us-ascii"
+Subject: RE: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+Date: Wed, 13 Dec 2006 13:22:52 +0100
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D939BA6BC0@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Vitaly Wool" <vitalywool@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 13 December 2006 04:54, Benjamin Herrenschmidt wrote:
+>=20
+> On 12/13/06, Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>=20
+> 	Will send an updated patch to=20
+> spi-devel-general@lists.sourceforge.net
+> 	instead of here.
+> =09
+>=20
+>=20
+> It's pretty fine if you CC: this list as well, but the main=20
+> recipients better be SPI subsystem maintainer (David=20
+> Brownell) and SPI development list.=20
 
-> I can have a look, most of the code was borrowed from sungem and I wrote
-> the MII code for it :-)
+I already sent it to SPI development list(only added () around shift).
+Next round, if any, will include this list also.
 
-I have a patch that makes it work also for us and will submit it soon.
-
-Jens
+ Thanks
+       Jocke
