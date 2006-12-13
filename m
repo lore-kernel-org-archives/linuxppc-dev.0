@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 13 Dec 2006 21:39:55 +1100
-Subject: [PATCH 5/9] RTAS MSI implementation
+Date: Wed, 13 Dec 2006 21:40:03 +1100
+Subject: [PATCH 6/9] MPIC MSI allocator
 In-Reply-To: <1166006370.90082.476088563252.qpush@cradle>
-Message-Id: <20061213104003.D3D1168164@ozlabs.org>
+Message-Id: <20061213104007.4B8F967DA9@ozlabs.org>
 Cc: linux-pci@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,22 +15,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Powerpc MSI support via RTAS. Based on Jake's code.
+To support MSI on MPIC we need a way to reserve and allocate hardware irq
+numbers, this patch implements an allocator for that. It looks like we'll
+end up with several backends based on the MPIC, so the allocator is attached
+to the struct mpic, not the msi backend.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/msi-rtas.c |  265 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/msi.h      |    6 
- 2 files changed, 271 insertions(+)
+ arch/powerpc/sysdev/Makefile   |    5 +
+ arch/powerpc/sysdev/mpic.c     |    4 +
+ arch/powerpc/sysdev/mpic.h     |   30 +++++++
+ arch/powerpc/sysdev/mpic_msi.c |  160 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mpic.h     |    5 +
+ 5 files changed, 203 insertions(+), 1 deletion(-)
 
-Index: msi/arch/powerpc/kernel/msi-rtas.c
+Index: msi/arch/powerpc/sysdev/Makefile
+===================================================================
+--- msi.orig/arch/powerpc/sysdev/Makefile
++++ msi/arch/powerpc/sysdev/Makefile
+@@ -2,7 +2,10 @@ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS			+= -mno-minimal-toc
+ endif
+ 
+-obj-$(CONFIG_MPIC)		+= mpic.o
++mpic-obj-y			:= mpic.o
++mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
++obj-$(CONFIG_MPIC)		+= $(mpic-obj-y)
++
+ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
+ obj-$(CONFIG_PPC_MPC106)	+= grackle.o
+ obj-$(CONFIG_PPC_DCR)		+= dcr.o dcr-low.o
+Index: msi/arch/powerpc/sysdev/mpic.c
+===================================================================
+--- msi.orig/arch/powerpc/sysdev/mpic.c
++++ msi/arch/powerpc/sysdev/mpic.c
+@@ -36,6 +36,8 @@
+ #include <asm/mpic.h>
+ #include <asm/smp.h>
+ 
++#include "mpic.h"
++
+ #ifdef DEBUG
+ #define DBG(fmt...) printk(fmt)
+ #else
+@@ -825,6 +827,8 @@ static int mpic_host_map(struct irq_host
+ 	if (hw >= mpic->irq_count)
+ 		return -EINVAL;
+ 
++	mpic_msi_reserve_hwirq(mpic, hw);
++
+ 	/* Default chip */
+ 	chip = &mpic->hc_irq;
+ 
+Index: msi/arch/powerpc/sysdev/mpic.h
 ===================================================================
 --- /dev/null
-+++ msi/arch/powerpc/kernel/msi-rtas.c
-@@ -0,0 +1,265 @@
++++ msi/arch/powerpc/sysdev/mpic.h
+@@ -0,0 +1,30 @@
++#ifndef _POWERPC_SYSDEV_MPIC_H
++#define _POWERPC_SYSDEV_MPIC_H
++
 +/*
-+ * Copyright (C) 2006 Jake Moilanen <moilanen@austin.ibm.com>, IBM Corp.
 + * Copyright (C) 2006 Michael Ellerman, IBM Corp.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -40,274 +86,201 @@ Index: msi/arch/powerpc/kernel/msi-rtas.c
 + *
 + */
 +
-+#undef DEBUG
++#include <linux/bitmap.h>
++#include <asm/msi.h>
++
++#ifdef CONFIG_PCI_MSI
++extern int mpic_msi_init_allocator(struct mpic *mpic);
++extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq);
++extern irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num);
++extern void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num);
++#else
++static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
++					  irq_hw_number_t hwirq)
++{
++	return;
++}
++#endif
++
++#endif /* _POWERPC_SYSDEV_MPIC_H */
+Index: msi/arch/powerpc/sysdev/mpic_msi.c
+===================================================================
+--- /dev/null
++++ msi/arch/powerpc/sysdev/mpic_msi.c
+@@ -0,0 +1,160 @@
++/*
++ * Copyright (C) 2006 Michael Ellerman, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; version 2 of the
++ * License.
++ *
++ */
 +
 +#include <linux/irq.h>
++#include <linux/bootmem.h>
++#include <linux/bitops.h>
 +#include <asm/msi.h>
-+#include <asm/rtas.h>
++#include <asm/mpic.h>
++#include <asm/prom.h>
 +#include <asm/hw_irq.h>
 +#include <asm/ppc-pci.h>
 +
-+static int query_token, change_token;
 +
-+#define RTAS_QUERY_MSI_FN	0
-+#define RTAS_CHANGE_MSI_FN	1
-+#define RTAS_RESET_MSI_FN	2
-+
-+
-+static struct pci_dn *get_pdn(struct pci_dev *pdev)
++static void __mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq)
 +{
-+	struct device_node *dn;
-+	struct pci_dn *pdn;
++	msi_debug("reserving hwirq 0x%lx\n", hwirq);
 +
-+	dn = pci_device_to_OF_node(pdev);
-+	if (!dn) {
-+		msi_debug("No OF device node for %s\n", pci_name(pdev));
-+		return NULL;
++	if (hwirq > mpic->irq_count) {
++		WARN_ON(1);
++		return;
 +	}
 +
-+	pdn = PCI_DN(dn);
-+	if (!pdn) {
-+		msi_debug("No PCI DN for %s\n", pci_name(pdev));
-+		return NULL;
-+	}
-+
-+	return pdn;
++	bitmap_allocate_region(mpic->hwirq_bitmap, hwirq, 0);
 +}
 +
-+/* RTAS Helpers */
-+
-+static int rtas_change_msi(struct pci_dn *pdn, u32 function, u32 num_irqs)
++void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq)
 +{
-+	u32 addr, seq_num, rtas_ret[2];
-+	unsigned long buid;
-+	int rc;
++	unsigned long flags;
 +
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+
-+	seq_num = 1;
-+	do {
-+		rc = rtas_call(change_token, 6, 3, rtas_ret, addr,
-+				BUID_HI(buid), BUID_LO(buid),
-+				function, num_irqs, seq_num);
-+
-+		seq_num = rtas_ret[1];
-+	} while (rtas_busy_delay(rc));
-+
-+	if (rc) {
-+		msi_debug("error (%d) for %s\n", rc, pci_name(pdn->pcidev));
-+		return rc;
-+	}
-+
-+	return rtas_ret[0];
-+}
-+
-+static int rtas_query_irq_number(struct pci_dn *pdn, int offset)
-+{
-+	u32 addr, rtas_ret[2];
-+	unsigned long buid;
-+	int rc;
-+
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+
-+	do {
-+		rc = rtas_call(query_token, 4, 3, rtas_ret, addr,
-+			       BUID_HI(buid), BUID_LO(buid), offset);
-+	} while (rtas_busy_delay(rc));
-+
-+	if (rc) {
-+		msi_debug("error (%d) querying source number for %s\n",
-+				rc, pci_name(pdn->pcidev));
-+		return rc;
-+	}
-+
-+	return rtas_ret[0];
-+}
-+
-+/*
-+ * The spec gives firmware the option to enable either MSI or MSI-X,
-+ * this doesn't wash with the Linux API. For the time beinging, we
-+ * kludge around that by checking ourselves the right type is enabled.
-+ */
-+static int check_msi_type(struct pci_dev *pdev, int type)
-+{
-+	int pos, msi_enabled, msix_enabled;
-+	u16 reg;
-+
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+	if (!pos) {
-+		msi_debug("cap (%d) not found for %s\n", type, pci_name(pdev));
-+		return -1;
-+	}
-+
-+	pci_read_config_word(pdev, pos + PCI_MSI_FLAGS, &reg);
-+
-+	msi_enabled = msix_enabled = 0;
-+
-+	if (reg & PCI_MSI_FLAGS_ENABLE)
-+		msi_enabled = 1;
-+
-+	if (reg & PCI_MSIX_FLAGS_ENABLE)
-+		msix_enabled = 1;
-+
-+	if (type == PCI_CAP_ID_MSI && (msix_enabled || !msi_enabled)) {
-+		msi_debug("Expected MSI but got %s.\n",
-+				msix_enabled ? "MSI-X" : "none");
-+		return -1;
-+	}
-+
-+	if (type == PCI_CAP_ID_MSIX && (msi_enabled || !msix_enabled)) {
-+		msi_debug("Expected MSI-X but got %s.\n",
-+				msi_enabled ? "MSI" : "none");
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+static void msi_rtas_free(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
-+{
-+	struct pci_dn *pdn;
-+	int i;
-+
-+	pdn = get_pdn(pdev);
-+	if (!pdn)
++	/* The mpic calls this even when there is no allocator setup */
++	if (!mpic->hwirq_bitmap)
 +		return;
 +
-+	for (i = 0; i < num; i++) {
-+		irq_dispose_mapping(entries[i].vector);
-+	}
-+
-+	if (rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, 0) != 0) {
-+		msi_debug("Setting MSIs to 0 failed!\n");
-+		BUG();
-+	}
++	spin_lock_irqsave(&mpic->bitmap_lock, flags);
++	__mpic_msi_reserve_hwirq(mpic, hwirq);
++	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
 +}
 +
-+static int msi_rtas_check(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
++irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num)
 +{
-+	struct device_node *dn;
-+	int i;
++	unsigned long flags;
++	int offset, order = get_count_order(num);
 +
-+	/* We must have a pci_dn for the RTAS code. */
-+	if (!get_pdn(pdev))
-+		return -1;
-+
-+	dn = pci_device_to_OF_node(pdev);
-+	if (!of_find_property(dn, "ibm,req#msi", NULL)) {
-+		msi_debug("No ibm,req#msi for %s\n", pci_name(pdev));
-+		return -1;
-+	}
-+
++	spin_lock_irqsave(&mpic->bitmap_lock, flags);
 +	/*
-+	 * Firmware gives us no control over which entries are allocated
-+	 * for MSI-X, it seems to assume we want 0 - n. For now just insist
-+	 * that the entries array entry members are 0 - n.
++	 * This is fast, but stricter than we need. We might want to add
++	 * a fallback routine which does a linear search with no alignment.
 +	 */
-+	for (i = 0; i < num; i++) {
-+		if (entries[i].entry != i) {
-+			msi_debug("entries[%d].entry (%d) != %d\n", i,
-+					entries[i].entry, i);
-+			return -1;
++	offset = bitmap_find_free_region(mpic->hwirq_bitmap, mpic->irq_count,
++					 order);
++	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++
++	msi_debug("allocated %d (2^%d) at offset %d\n", num, order, offset);
++
++	return offset;
++}
++
++void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num)
++{
++	unsigned long flags;
++	int order = get_count_order(num);
++
++	msi_debug("freeing %d (2^%d) at offset %d\n", num, order, offset);
++
++	spin_lock_irqsave(&mpic->bitmap_lock, flags);
++	bitmap_release_region(mpic->hwirq_bitmap, offset, order);
++	spin_unlock_irqrestore(&mpic->bitmap_lock, flags);
++}
++
++static void mpic_msi_auto_reserve_hwirqs(struct mpic *mpic)
++{
++	irq_hw_number_t hwirq;
++	struct irq_host_ops *ops = mpic->irqhost->ops;
++	struct device_node *np;
++	int flags, index, i;
++	struct of_irq oirq;
++
++	/* Reserve source numbers we know are reserved in the HW */
++	for (i = 0;   i < 8;   i++)
++		__mpic_msi_reserve_hwirq(mpic, i);
++	for (i = 42;  i < 26;  i++)
++		__mpic_msi_reserve_hwirq(mpic, i);
++	for (i = 100; i < 105; i++)
++		__mpic_msi_reserve_hwirq(mpic, i);
++
++	np = NULL;
++	while ((np = of_find_all_nodes(np))) {
++		msi_debug("mapping hwirqs for %s\n", np->full_name);
++
++		index = 0;
++		while (of_irq_map_one(np, index++, &oirq) == 0) {
++			ops->xlate(mpic->irqhost, NULL, oirq.specifier,
++						oirq.size, &hwirq, &flags);
++			__mpic_msi_reserve_hwirq(mpic, hwirq);
 +		}
 +	}
++}
++
++static int mpic_msi_reserve_dt_hwirqs(struct mpic *mpic)
++{
++	int i, len;
++	const u32 *p;
++
++	p = get_property(mpic->of_node, "msi-available", &len);
++	if (!p) {
++		msi_debug("no msi-available property found on %s\n",
++			  mpic->of_node->full_name);
++		return -ENODEV;
++	}
++
++	if (len % 8 != 0) {
++		printk(KERN_WARNING "Malformed msi-available property on %s\n",
++		       mpic->of_node->full_name);
++		return -EINVAL;
++	}
++
++	/* By default everything is reserved */
++	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
++			       get_count_order(mpic->irq_count));
++
++	/* Format is: (<u32 start> <u32 count>)+ */
++	len /= sizeof(u32);
++	for (i = 0; i < len / 2; i++, p += 2)
++		mpic_msi_free_hwirqs(mpic, *p, *(p + 1));
 +
 +	return 0;
 +}
 +
-+static int msi_rtas_alloc(struct pci_dev *pdev, int num,
-+			struct msix_entry *entries, int type)
++int mpic_msi_init_allocator(struct mpic *mpic)
 +{
-+	struct pci_dn *pdn;
-+	int hwirq, virq, i;
++	int size = mpic->irq_count / 8;
 +
-+	pdn = get_pdn(pdev);
-+	if (!pdn)
-+		return -1;
++	BUG_ON(mpic->hwirq_bitmap);
 +
-+	/*
-+	 * In the case of an error it's not clear whether the device is left
-+	 * with MSI enabled or not, I think we should explicitly disable.
-+	 */
-+	if (rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, num) != num) {
-+		msi_debug("rtas_change_msi() failed for %s\n", pci_name(pdev));
-+		goto out_free;
++	msi_debug("allocator bitmap size is 0x%x bytes\n", size);
++
++	if (mem_init_done)
++		mpic->hwirq_bitmap = kmalloc(size, GFP_KERNEL);
++	else
++		mpic->hwirq_bitmap = alloc_bootmem(size);
++
++	if (!mpic->hwirq_bitmap) {
++		msi_debug("no mem allocating allocator bitmap!\n");
++		return -ENOMEM;
 +	}
 +
-+	if (check_msi_type(pdev, type))
-+		goto out_free;
++	memset(mpic->hwirq_bitmap, 0, size);
 +
-+	for (i = 0; i < num; i++) {
-+		hwirq = rtas_query_irq_number(pdn, i);
-+		if (hwirq < 0) {
-+			msi_debug("error (%d) getting hwirq for %s\n",
-+					hwirq, pci_name(pdev));
-+			goto out_free;
-+		}
-+
-+		virq = irq_create_mapping(NULL, hwirq);
-+
-+		if (virq == NO_IRQ) {
-+			msi_debug("Failed mapping hwirq %d\n", hwirq);
-+			goto out_free;
-+		}
-+
-+		entries[i].vector = virq;
-+	}
-+
-+	return 0;
-+
-+ out_free:
-+	msi_rtas_free(pdev, num, entries, type);
-+	return -1;
-+}
-+
-+static struct ppc_msi_ops rtas_msi_ops = {
-+	.check = msi_rtas_check,
-+	.alloc = msi_rtas_alloc,
-+	.free  = msi_rtas_free
-+};
-+
-+static struct ppc_msi_ops *rtas_get_msi_ops(struct pci_dev *pdev)
-+{
-+	return &rtas_msi_ops;
-+}
-+
-+int msi_rtas_init(void)
-+{
-+	query_token  = rtas_token("ibm,query-interrupt-source-number");
-+	change_token = rtas_token("ibm,change-msi");
-+
-+	if ((query_token == RTAS_UNKNOWN_SERVICE) ||
-+			(change_token == RTAS_UNKNOWN_SERVICE)) {
-+		msi_debug("Couldn't find RTAS tokens, no MSI support.\n");
-+		return -1;
-+	}
-+
-+	msi_debug("Registering RTAS MSI ops.\n");
-+
-+	ppc_md.get_msi_ops = rtas_get_msi_ops;
++	if (mpic_msi_reserve_dt_hwirqs(mpic))
++		mpic_msi_auto_reserve_hwirqs(mpic);
 +
 +	return 0;
 +}
-Index: msi/include/asm-powerpc/msi.h
+Index: msi/include/asm-powerpc/mpic.h
 ===================================================================
---- msi.orig/include/asm-powerpc/msi.h
-+++ msi/include/asm-powerpc/msi.h
-@@ -168,6 +168,12 @@ extern void msi_raw_disable(struct pci_d
- #define msi_debug(fmt, args...)	\
- 	pr_debug("MSI:%s:%d: " fmt, __FUNCTION__, __LINE__, ## args)
+--- msi.orig/include/asm-powerpc/mpic.h
++++ msi/include/asm-powerpc/mpic.h
+@@ -300,6 +300,11 @@ struct mpic
+ 	u32			*hw_set;
+ #endif
  
 +#ifdef CONFIG_PCI_MSI
-+extern int msi_rtas_init(void);
-+#else
-+static inline int msi_rtas_init(void) { return -1; };
++	spinlock_t		bitmap_lock;
++	unsigned long		*hwirq_bitmap;
 +#endif
 +
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_MSI_H */
+ 	/* link */
+ 	struct mpic		*next;
+ };
