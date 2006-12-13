@@ -1,23 +1,16 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
-	by ozlabs.org (Postfix) with ESMTP id 7876F67B9F
+Return-Path: <carcadiz@hotmail.com>
+Received: from bay0-omc2-s33.bay0.hotmail.com (bay0-omc2-s33.bay0.hotmail.com
+	[65.54.246.169]) by ozlabs.org (Postfix) with ESMTP id A596D67BEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Dec 2006 20:10:50 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 1EC36183C5
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Dec 2006 10:10:43 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
+	Wed, 13 Dec 2006 20:31:21 +1100 (EST)
+Message-ID: <BAY122-F14372E8319615AF19887CDCAD60@phx.gbl>
+In-Reply-To: <457F0193.9040007@246tNt.com>
+From: "Pedro Luis D. L." <carcadiz@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: Lite5200B I2S driver
-References: <BAY122-F11E9828E7994B0E0514B19CAD70@phx.gbl>
-In-Reply-To: <BAY122-F11E9828E7994B0E0514B19CAD70@phx.gbl>
-MIME-Version: 1.0
-Message-ID: <200612131010.42401.roman.fietze@telemotive.de>
-Date: Wed, 13 Dec 2006 10:10:38 +0100
-Content-Type: multipart/signed; boundary="nextPart1800328.fEp5IaSP9d";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Date: Wed, 13 Dec 2006 10:31:16 +0100
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,47 +21,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1800328.fEp5IaSP9d
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi Pedro,
+Sylvain Munaut wrote:
 
-On Tuesday 12 December 2006 16:47, Pedro Luis D. L. wrote:
+>Pedro Luis D. L. wrote:
+> > Hi all,
+> >
+> > I´m working with a Lite5200B EVB, trying to atach an audio output to a 
+>PCM
+> > 1680 from Texas Instruments.
+> > At this moment I am using the patched 2.6.16.11-rt18 kernel that comes 
+>with
+> > Freescale BSP.
+> > I´ve tried to develop an I2S driver for the platform with no results. 
+>I´m
+> > afraid that my driver devolping skills are still too low.
+> >
+> > Anybody knows a working I2S driver for this board that can throw any
+> > audiooutput through PSCs?
+> >
+> > Any help or indication would be apreciated
+>I've never seen one.
+>
+>I'm currently working on a AC97 driver, maybe once it's done you can use
+>it as a base.
+>It's pretty early so don't excepect anything before a while ;)
+>
+>I'm pretty sure some part could be shared between the two ...
+>
+>
+>     Sylvain
 
-> I=B4m working with a Lite5200B EVB, trying to atach an audio output to
-> a PCM 1680 from Texas Instruments.
+That would be a nice point to start.
 
-I've got a fully working GPL ALSA driver for the MPC5200 PSC's using
-I2S as well as the ALSA controls for an UDA1380 codec connected via
-I2C. This code is written for ALSA 1.0.8 and the 2.4.25 from Wolfgang.
+Thx.
 
-I'm sorry not to be able to provide a patchset for either ALSA nor the
-2.6. If you are interested in this code I will post it here.
+       Pedro.
 
-A question to the mailing pro's: should I post source as attachments
-or inlined?
-
-
-Roman
-
-=2D-=20
-Roman Fietze              Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                            73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45      http://www.telemotive.de
-
-
---nextPart1800328.fEp5IaSP9d
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQBFf8OSp5XY/BK//MIRAlEPAJ9kwCN8+4JFiD7AyuDB3EM+cYYA6gCeOura
-4GB6RdZov5ffjARRH3L9GSA=
-=3iaT
------END PGP SIGNATURE-----
-
---nextPart1800328.fEp5IaSP9d--
+_________________________________________________________________
+Acepta el reto MSN Premium: Correos más divertidos con fotos y textos 
+increíbles en MSN Premium. Descárgalo y pruébalo 2 meses gratis. 
+http://join.msn.com?XAPID=1697&DI=1055&HL=Footer_mailsenviados_correosmasdivertidos
