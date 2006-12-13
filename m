@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35B3C67C89
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 10:25:59 +1100 (EST)
-Subject: Re: [PATCH 6/9] MPIC MSI allocator
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20061213122353.7498a25e@pb15>
-References: <1166006370.90082.476088563252.qpush@cradle>
-	<20061213104007.4B8F967DA9@ozlabs.org> <20061213122353.7498a25e@pb15>
-Content-Type: text/plain
-Date: Thu, 14 Dec 2006 10:25:44 +1100
-Message-Id: <1166052344.11914.233.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/14] Spidernet add net_ratelimit to suppress long output
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061213210825.GB1915@austin.ibm.com>
+References: <20061213210010.GR4329@austin.ibm.com>
+	<20061213210825.GB1915@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-fdv73rC2xthXo/Eyyjvj"
+Date: Thu, 14 Dec 2006 10:31:19 +1100
+Message-Id: <1166052679.6838.1.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@gmx.de>,
+	jgarzik@pobox.com, James K Lewis <jim@jklewis.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,43 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-13 at 12:23 -0600, Olof Johansson wrote:
-> On Wed, 13 Dec 2006 21:40:03 +1100 Michael Ellerman <michael@ellerman.id.au> wrote:
-> 
-> > To support MSI on MPIC we need a way to reserve and allocate hardware irq
-> > numbers, this patch implements an allocator for that. It looks like we'll
-> > end up with several backends based on the MPIC, so the allocator is attached
-> > to the struct mpic, not the msi backend.
-> > 
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> 
-> > +static void mpic_msi_auto_reserve_hwirqs(struct mpic *mpic)
-> > +{
-> > +	irq_hw_number_t hwirq;
-> > +	struct irq_host_ops *ops = mpic->irqhost->ops;
-> > +	struct device_node *np;
-> > +	int flags, index, i;
-> > +	struct of_irq oirq;
-> > +
-> > +	/* Reserve source numbers we know are reserved in the HW */
-> 
-> How do we know? Reserved on what HW? Sure looks system/platform
-> dependent to me.
-> 
-> > +	for (i = 0;   i < 8;   i++)
-> > +		__mpic_msi_reserve_hwirq(mpic, i);
-> > +	for (i = 42;  i < 26;  i++)
->              ^^^^^^^^^^^^^^^
-> 
-> Is this some sort of check to see if we're awake? :)
 
-This code in MPIC currently is only ever used on U3/U4 and so that code
-reserves IRQs we know are used for U3/U4 internal IRQs and not available
-for HT interrupts (or MSIs). The code, then, does a second pass also
-exclusing all IRQs for all devices in the device-tree.
+--=-fdv73rC2xthXo/Eyyjvj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This is a "hack" that works until device-trees provide the right
-property we have defined for mpic to indicate what range of irqs is to
-be used for MSIs.
+On Wed, 2006-12-13 at 15:08 -0600, Linas Vepstas wrote:
+> This patch adds net_ratelimit to many of the printks in order to
+> limit extraneous warning messages (created in response to Bug 28554).
 
-Ben.
+Bug 28554 in which bug tracking system? I can't find it in LTC or
+kernel.org bugzilla.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-fdv73rC2xthXo/Eyyjvj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFgI1GdSjSd0sB4dIRAtBdAJ95zoWGfyJ1BxzNqiHtpidDKuXPowCfcRPx
+HvyBrUoJ5EfmJIY9lGcoZZE=
+=ADeF
+-----END PGP SIGNATURE-----
+
+--=-fdv73rC2xthXo/Eyyjvj--
