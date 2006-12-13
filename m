@@ -1,20 +1,35 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8CC3567BC1
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 04:21:49 +1100 (EST)
-Message-ID: <458036A8.8060907@am.sony.com>
-Date: Wed, 13 Dec 2006 09:21:44 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1307567C5A
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 04:27:24 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBDHRFP9002382
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 12:27:15 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBDHRFZi539764
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 10:27:15 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBDHREiP006501
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 10:27:15 -0700
+Date: Wed, 13 Dec 2006 11:27:14 -0600
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 1/16] Spidernet DMA coalescing
+Message-ID: <20061213172714.GQ4329@austin.ibm.com>
+References: <20061206223223.GH17931@austin.ibm.com>
+	<20061206232745.GA4649@austin.ibm.com>
+	<20061207101151.GB27904@infradead.org>
 MIME-Version: 1.0
-To: Reeve Yang <yang.reeve@gmail.com>
-Subject: Re: kgdb on mpc834x
-References: <198592450612121611o7f7271cbnb1404c7f7f9fda71@mail.gmail.com>
-In-Reply-To: <198592450612121611o7f7271cbnb1404c7f7f9fda71@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061207101151.GB27904@infradead.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, James K Lewis <jklewis@us.ibm.com>,
+	linuxppc-dev@ozlabs.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Reeve Yang wrote:
-> I applied kgdb patch for 2.6.13 to kernel 2.6.14 (since there is no
-> patch for 2.6.14), but gdb client cannot connec to it. I turn on all
-> necessary kernel hacking options. Our board is customized with
-> MPC834x, can someoen who used kgdb to debug kernel on MPC834x help me
-> out? Following are the message from linux boot and gdb client.
+On Thu, Dec 07, 2006 at 10:11:51AM +0000, Christoph Hellwig wrote:
+> On Wed, Dec 06, 2006 at 05:27:45PM -0600, Linas Vepstas wrote:
+> > 
+> > The current driver code performs 512 DMA mappings of a bunch of 
+> > 32-byte structures. This is silly, as they are all in contiguous 
+> > memory. Ths patch changes the code to DMA map the entie area
+> > with just one call.
+> 
+> This is still wrong.  The descriptor array must be in dma_alloc_coherent
+> memory, not a streaming mapping.  (I also think I pointed this out a while
+> ago when I made dma_alloc_coherent node-aware)
 
-You might have better luck posting to the kgdb mailing list, as this problem
-is not specific to your platform, nor to PPC:
+Sorry, I missed this the first time. I'm splitting this off now; will 
+resubmit shortly.
 
-  kgdb-bugreport@lists.sourceforge.net
-
--Geoff
+--linas
