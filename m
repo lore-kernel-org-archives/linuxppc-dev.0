@@ -1,21 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/14] Spidernet add net_ratelimit to suppress long output
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061213210825.GB1915@austin.ibm.com>
-References: <20061213210010.GR4329@austin.ibm.com>
-	<20061213210825.GB1915@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-fdv73rC2xthXo/Eyyjvj"
-Date: Thu, 14 Dec 2006 10:31:19 +1100
-Message-Id: <1166052679.6838.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@gmx.de>,
-	jgarzik@pobox.com, James K Lewis <jim@jklewis.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Subject: Re: Bug: early_pfn_in_nid() called when not early
+Date: Thu, 14 Dec 2006 00:37:51 +0100
+References: <200612131920.59270.arnd@arndb.de>
+	<20061213231717.GC10708@monkey.ibm.com>
+In-Reply-To: <20061213231717.GC10708@monkey.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612140037.53477.arnd@arndb.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Michael Kravetz <mkravetz@us.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 14 December 2006 00:17, Mike Kravetz wrote:
+> Thanks for the debug work! =A0Just curious if you really need
+> CONFIG_NODES_SPAN_OTHER_NODES defined for your platform? =A0Can you get
+> those types of memory layouts? =A0If not, an easy/immediate fix for you
+> might be to simply turn off the option.
 
---=-fdv73rC2xthXo/Eyyjvj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We want to be able to run the same kernel as pseries, e.g. on
+distributions that ship only one kernel. Cell should be able to
+live without CONFIG_NODES_SPAN_OTHER_NODES, but that does not solve
+the problem for us.
 
-On Wed, 2006-12-13 at 15:08 -0600, Linas Vepstas wrote:
-> This patch adds net_ratelimit to many of the printks in order to
-> limit extraneous warning messages (created in response to Bug 28554).
+> > --- linux-2.6.orig/mm/page_alloc.c
+> > +++ linux-2.6/mm/page_alloc.c
+> > @@ -1962,7 +1962,8 @@ void __meminit memmap_init_zone(unsigned
+> > =A0=A0=A0=A0=A0=A0for (pfn =3D start_pfn; pfn < end_pfn; pfn++) {
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!early_pfn_valid(pfn))
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0conti=
+nue;
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!early_pfn_in_nid(pfn, nid))
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!slab_is_available() &&
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =A0!early_pfn_in_nid(pfn, =
+nid))
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0conti=
+nue;
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0page =3D pfn_to_page(pfn);
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0set_page_links(page, zone, ni=
+d, pfn);
+>=20
+> I know you don't recommend this as a fix, but it has the interesting
+> quality of doing exactly what we want for powerpc. =A0When
+> slab_is_available() we are performing a 'memory add' operation
+> and there is no need to do the 'pfn_in_nid' check. =A0We know that
+> the range of added pages will all be on the same (passed) nid.
 
-Bug 28554 in which bug tracking system? I can't find it in LTC or
-kernel.org bugzilla.
+Right, that was at least my intention, though I wasn't sure
+if pseries can live without the check.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-fdv73rC2xthXo/Eyyjvj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFgI1GdSjSd0sB4dIRAtBdAJ95zoWGfyJ1BxzNqiHtpidDKuXPowCfcRPx
-HvyBrUoJ5EfmJIY9lGcoZZE=
-=ADeF
------END PGP SIGNATURE-----
-
---=-fdv73rC2xthXo/Eyyjvj--
+	Arnd <><
