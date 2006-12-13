@@ -1,16 +1,24 @@
-Return-Path: <yang.reeve@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0506.google.com [64.233.162.228])
-	by ozlabs.org (Postfix) with ESMTP id 6159867B52
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 11:11:06 +1100 (EST)
-Received: by nz-out-0102.google.com with SMTP id l1so5280nzf
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Dec 2006 16:11:04 -0800 (PST)
-Message-ID: <198592450612121611o7f7271cbnb1404c7f7f9fda71@mail.gmail.com>
-Date: Wed, 13 Dec 2006 00:11:03 +0000
-From: "Reeve Yang" <yang.reeve@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: kgdb on mpc834x
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6672867B89
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 11:20:49 +1100 (EST)
+In-Reply-To: <457F300F.7000203@freescale.com>
+References: <20061208190758.6cee088f.kim.phillips@freescale.com>	<1165648490.1103.117.camel@localhost.localdomain>	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>	<20061211155155.26868ca6.kim.phillips@freescale.com>	<A1A95A77-B86C-41CF-87DC-58CD63843CE3@kernel.crashing.org>	<20061211201055.21031c9b.kim.phillips@freescale.com>
+	<1165890570.11914.5.camel@localhost.localdomain>
+	<457F1F6E.4020502@freescale.com>
+	<E8320867-EDC5-42F9-81EE-E66B6D216ADA@kernel.crashing.org>
+	<457F300F.7000203@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7A0BC548-7BF7-48C3-B1FC-B18C7FF4C0F8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
+Date: Tue, 12 Dec 2006 18:20:44 -0600
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I applied kgdb patch for 2.6.13 to kernel 2.6.14 (since there is no
-patch for 2.6.14), but gdb client cannot connec to it. I turn on all
-necessary kernel hacking options. Our board is customized with
-MPC834x, can someoen who used kgdb to debug kernel on MPC834x help me
-out? Following are the message from linux boot and gdb client.
 
-## Booting image at ff300000 ...
+On Dec 12, 2006, at 4:41 PM, Scott Wood wrote:
 
-loaded at:     FF300000 FFB71124
-relocated to:  00800000 01071124
-board data at: 007FFF70 007FFFF8
-relocated to:  00805114 0080519C
-zimage at:     00805915 00926A5E
-initrd at:     00927000 0106E242
-avail ram:     01072000 01472000
+> Kumar Gala wrote:
+>> On Dec 12, 2006, at 3:30 PM, Scott Wood wrote:
+>>> They *may* not want to (and they certainly shouldn't be forced  
+>>> to),  but
+>>> some may not want to define a new ppc_md (or modify a probe  
+>>> function)
+>>> for every new board if all of the differences are encapsulated in  
+>>> the
+>>> device tree.  I thought one of the main goals of having a device   
+>>> tree is
+>>> that if it's done right, the kernel need not know about every single
+>>> model of board, just the different components that a device tree can
+>>> specify.
+>> That's true, and if that's the case you'd just set your "model"  
+>> to  match an existing supported ppc_md.
+>
+> Having an 831x explicitly claim to be an 834x is just a tad icky...
+>
+>>> If a board has truly board-specific logic that needs custom code  
+>>> in  the
+>>> kernel itself (rather than the bootloader), then it can go in as a
+>>> driver with a device tree node (this should be done with the  
+>>> BCSR  stuff
+>>> where needed).
+>> This is not always the case, there are times when you have board   
+>> specific modifications you make in the early kernel code.
+>
+> Sure -- I'm not proposing doing away with board-specific machine  
+> descriptions entirely, just reducing the circumstances where  
+> they're required.
 
-Linux/PPC load: mem=248M
-Uncompressing Linux...done.
-Now booting the kernel
-mpc834x_sys_init(): exit
-id mach(): done
-MMU:enter
-MMU:hw init
-MMU:mapin
-MMU:setio
-MMU:exit
-setup_arch: enter
-setup_arch: bootmem
+And I'm asking why we are arguing over 10-15 lines of code per board.
 
-(gdb) target remote /dev/ttyS0
-Remote debugging using /dev/ttyS0
-Ignoring packet error, continuing...
-Ignoring packet error, continuing...
-Ignoring packet error, continuing...
-Malformed response to offset query, timeout
+>> True, but I dont see what the desire is to create a 'generic'  
+>> 83xx  support.  Who gets to define what is considered 'generic'?
+>
+> "Generic" is any board that has needs that aren't expressed in the  
+> device tree.
+
+Which device tree specification?  The one today, the one six months  
+ago, the one six months from now?  The concept is ever changing and  
+doesn't provide much value.
+
+>> I'm all for refactoring code so my board code  is simpler, but at  
+>> the end of the day I know there are people that  are going to need  
+>> board specific code for their environments.
+>
+> And an 83xx-generic machine description does not stop them from  
+> doing so.  "Generic" does not mean "universal".  It means "there's  
+> nothing special about this board".  If you need board-specific code  
+> in the kernel, then don't label it generic.
+
+But what value does this have?  83xx, and the majority of freescale's  
+devices are not put into something as standard as a desktop computer.
+
+- k
