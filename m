@@ -1,16 +1,10 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id AB79667C67
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 21:05:06 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-Date: Wed, 13 Dec 2006 11:05:03 +0100
-Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D939BA6B6D@tmnt04.transmode.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "Li Yang-r58472" <LeoLi@freescale.com>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Wed, 13 Dec 2006 21:39:30 +1100
+Subject: [PATCH 0/9] Powerpc MSI Implementation (.. again)
+Message-Id: <1166006370.90082.476088563252.qpush@cradle>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,20 +14,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Li Yang-r58472 [mailto:LeoLi@freescale.com]=20
-> Sent: 13 December 2006 10:54
-> To: Joakim Tjernlund; linuxppc-dev@ozlabs.org
-> Subject: RE: [PATCH] Adapt spi_mpc83xx SPI driver for 832x
->=20
-> The data shifts for receive register are truly different.
-> Please also send such patch to SPI list:
-> spi-devel-general@lists.sourceforge.net
+MSI again, one (?) more time.
 
-Not only receive register, transmit is also changed.
+Not much left todo:
+ * Needs a good read to check everything makes sense
+ * We might want to save the irq type in the mpic ht backend
+ * RTAS code needs to be tested
 
-Will send an updated patch to spi-devel-general@lists.sourceforge.net
-instead of here.
-
-    Jocke
-[SNIP]
+cheers
