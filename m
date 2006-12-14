@@ -1,18 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17792.37821.279813.601921@cargo.ozlabs.ibm.com>
-Date: Thu, 14 Dec 2006 10:58:53 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Mike Kravetz <kravetz@us.ibm.com>
-Subject: Re: Bug: early_pfn_in_nid() called when not early
-In-Reply-To: <20061213231717.GC10708@monkey.ibm.com>
-References: <200612131920.59270.arnd@arndb.de>
-	<20061213231717.GC10708@monkey.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	hch@infradead.org, linuxppc-dev@ozlabs.org,
-	Michael Kravetz <mkravetz@us.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id EB10567C1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 11:10:01 +1100 (EST)
+Date: Wed, 13 Dec 2006 18:09:21 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 6/9] MPIC MSI allocator
+Message-ID: <20061213180921.487b1cea@pb15>
+In-Reply-To: <1166052344.11914.233.camel@localhost.localdomain>
+References: <1166006370.90082.476088563252.qpush@cradle>
+	<20061213104007.4B8F967DA9@ozlabs.org>
+	<20061213122353.7498a25e@pb15>
+	<1166052344.11914.233.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Mackerras <paulus@samba.org>, Paul
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mike Kravetz writes:
+On Thu, 14 Dec 2006 10:25:44 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> Thanks for the debug work!  Just curious if you really need
-> CONFIG_NODES_SPAN_OTHER_NODES defined for your platform?  Can you get
-> those types of memory layouts?  If not, an easy/immediate fix for you
-> might be to simply turn off the option.
 
-We really need CONFIG_NODES_SPAN_OTHER_NODES for pSeries.  Since we
-can build a single kernel binary that runs on both Cell and pSeries,
-the Cell code needs to be able to work with that option turned on.
+> This code in MPIC currently is only ever used on U3/U4 and so that code
+> reserves IRQs we know are used for U3/U4 internal IRQs and not available
+> for HT interrupts (or MSIs). The code, then, does a second pass also
+> exclusing all IRQs for all devices in the device-tree.
+> 
+> This is a "hack" that works until device-trees provide the right
+> property we have defined for mpic to indicate what range of irqs is to
+> be used for MSIs.
 
-Paul.
+So make the platform register the range of (possibly) usable MSI
+addresses instead of adding a nasty hack like that to the mpic driver.
+
+Adding numeric constants like that (completely without comments as to
+where they came from) in a function called
+mpic_msi_auto_reserve_hwirqs() is just too ugly.
+
+
+-Olof
