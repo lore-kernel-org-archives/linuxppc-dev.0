@@ -1,30 +1,24 @@
-Return-Path: <roger.larsson@norran.net>
-Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
-	by ozlabs.org (Postfix) with ESMTP id 4E66E67C78
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0942B67C2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Dec 2006 02:50:01 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.skekraft.net (Postfix) with ESMTP id 09F82A402B
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Dec 2006 16:49:59 +0100 (CET)
-Received: from mail.skekraft.net ([127.0.0.1])
-	by localhost (ns.skekraft.net [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 24510-02 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Dec 2006 16:49:58 +0100 (CET)
-Received: from icd.localnet (78.net216.skekraft.net [84.244.216.78])
-	by mail.skekraft.net (Postfix) with ESMTP id 05EB8A4037
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Dec 2006 16:49:57 +0100 (CET)
-From: Roger Larsson <roger.larsson@norran.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Slightly OT - job quote
-Date: Thu, 14 Dec 2006 16:49:57 +0100
-References: <45811A6E.1020906@dlasys.net>
-In-Reply-To: <45811A6E.1020906@dlasys.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200612141649.57569.roger.larsson@norran.net>
+	Fri, 15 Dec 2006 03:05:29 +1100 (EST)
+In-Reply-To: <950a36fb0612140801x39de08c2gd3ad5ce9ba04f900@mail.gmail.com>
+References: <950a36fb0612140241n15ca51e5xb8a9bb98888befb8@mail.gmail.com>
+	<8B63C317-4AC7-421C-8536-B68ED900127A@kernel.crashing.org>
+	<950a36fb0612140801x39de08c2gd3ad5ce9ba04f900@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <72D2A043-FCCB-4781-9764-1A398A611D0E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.19] enable watchdog device on mpc834x platforms
+Date: Thu, 14 Dec 2006 10:05:28 -0600
+To: "Pieter-Jan Busschaert" <pieterjan.busschaert@gmail.com>
+Cc: "linuxppc-embedded@ozlabs.org \(\(\(\(E-Mail\)\)\)\)"
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,21 +29,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 14 December 2006 10:33, David H. Lynch Jr. wrote:
 
->     I am basically looking for the normal cost for from scratch embedded
-> linux board bringup - on a new board, including bootloader, BSP, and
-> typical minimal driver set
->     network, serial, flash, PIC, ...
+On Dec 14, 2006, at 10:01 AM, Pieter-Jan Busschaert wrote:
 
-It depends on how you value your time...
+>> Two things about this patch:
+>> 1. We've actively avoid taking non-bug fix patches to arch/ppc as we
+>> try to move people over to arch/powerpc.
+>> 2. You can't hard code freq in the platform data like that.  It's
+>> expected to be the bus frequency the device is running at.
+>
+> The frequency is only used once in the driver to printk the
+> watchdog-timeout in seconds. It doesn't affect the functionallity in
+> any way. I looked at ways to get the cpu frequency dynamically in
+> there, but didn't find a simple way to do it.
 
-Is it a well supported processor that has been around for years,
-or is it a completely fresh architecture? (days to years...)
+It does, in that the drive reports it on a WDIOC_GETTIMEOUT to user  
+space.  (See how we use timeout_sec).
 
-The same for all other parts... you have to research the subject!
+> But, because of your first comment, I suppose this patch will never
+> enter the linux kernel, even if I get the frequency dynamically?
 
-First question to ask the board developers - is it based on any evaluation
-kit design? Second question - what is different?
+Most likely, but its still good to have the patches on the list for  
+people to pull if they need them.
 
-/RogerL
+- k
