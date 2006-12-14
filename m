@@ -1,19 +1,26 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <SRS0+8dd218c1a5062aad74f4+1208+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DF6A067D40
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 04:32:43 +1100 (EST)
-Date: Thu, 14 Dec 2006 18:32:35 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH 7/19] powerpc: hypervisor call numbers for Celleb
-Message-ID: <20061214173235.GA6048@lst.de>
-References: <200612140230.kBE2UT9R014367@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 6037967D4C
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 04:35:58 +1100 (EST)
+Date: Thu, 14 Dec 2006 17:35:34 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 1/14] Spidernet DMA coalescing
+Message-ID: <20061214173534.GA3452@infradead.org>
+References: <20061213210010.GR4329@austin.ibm.com>
+	<20061213210659.GA1915@austin.ibm.com>
+	<20061214110517.GA13377@infradead.org>
+	<20061214170737.GS4329@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200612140230.kBE2UT9R014367@toshiba.co.jp>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <20061214170737.GS4329@austin.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@gmx.de>,
+	jgarzik@pobox.com, James K Lewis <jim@jklewis.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +30,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 14, 2006 at 11:30:28AM +0900, Ishizaki Kou wrote:
+On Thu, Dec 14, 2006 at 11:07:37AM -0600, Linas Vepstas wrote:
+> Being unclear on the concept, should a send a new version of this patch,
+> or should I send a new patch that removes this?
 
-> +
-> +#ifdef	__ASSEMBLY__
-> +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((__v)<<60|(__x))
-> +#elif defined(__powerpc64__)
-> +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((unsigned long)(__v)<<60|(__x))
-> +#else
-> +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((unsigned long long)(__v)<<60|(__x))
-> +#endif
-
-__powerpc64__ is always set for ppc64 compiles.
-
-> +#define HV_allocate_memory (0)
-> +#define HV_construct_virtual_address_space (2)
-
-isn't HV_foo a little too generic?  Also no need for the braces around
-the actual hvall numbers.
+For just the memset issue an incremental patch would be fine.  But given
+the small mistake in the patch description a resend with the fixed
+description mighrt be in order here.
