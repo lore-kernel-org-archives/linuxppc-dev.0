@@ -2,18 +2,19 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EC43467C0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 01:31:56 +1100 (EST)
-Subject: [PATCH] snd-aoa: fix onyx resume
+	by ozlabs.org (Postfix) with ESMTP id 4A97767D47
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 01:32:04 +1100 (EST)
+Subject: load average ~1 on powermac
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Takashi Iwai <tiwai@suse.de>
-Content-Type: text/plain
-Date: Thu, 14 Dec 2006 15:27:48 +0100
-Message-Id: <1166106468.3161.6.camel@johannes.berg>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Z6szAB61Hi7cDhOQMUnz"
+Date: Thu, 14 Dec 2006 15:27:58 +0100
+Message-Id: <1166106478.3161.8.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ALSA development <alsa-devel@alsa-project.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: Olof Johansson <olof@lixom.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, Olaf Hering <olh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When the machine resumes the onyx codec might be in a weird state. Hence,
-simply fully reset it once (and keep the code to take it out of suspend in
-case the suspend of the codec chip survives a reset).
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+--=-Z6szAB61Hi7cDhOQMUnz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
----
-There's another problem with i2sbus suspend, namely that the i2sbus code
-doesn't really handle a suspend well at all, it needs to re-init the
-hardware during resume. I noticed because firmware on the quad powermac
-doesn't set the i2sbus to 44.1kHz but 42kHz or something like that so
-when I was playing a song across suspend/resume it ended up slower...
+Hi,
 
-I don't want to fix this until that i2sbus control rewrite/fix though
-because it'll most likely collide.
+After investigating a bit I finally found why the load average stays
+around 1 on powermacs... Try this:
 
-Takashi, please apply this fix. 
+  watch --interval 0.1 "ps xa|grep ' D'"
 
---- linux-2.6-git.orig/sound/aoa/codecs/snd-aoa-codec-onyx.c	2006-12-13 19:32:38.520763489 +0100
-+++ linux-2.6-git/sound/aoa/codecs/snd-aoa-codec-onyx.c	2006-12-13 19:34:58.597763489 +0100
-@@ -825,7 +825,16 @@ static int onyx_resume(struct codec_info
- 	int err = -ENXIO;
- 
- 	mutex_lock(&onyx->mutex);
--	/* take codec out of suspend */
-+
-+	/* reset codec */
-+	onyx->codec.gpio->methods->set_hw_reset(onyx->codec.gpio, 0);
-+	msleep(1);
-+	onyx->codec.gpio->methods->set_hw_reset(onyx->codec.gpio, 1);
-+	msleep(1);
-+	onyx->codec.gpio->methods->set_hw_reset(onyx->codec.gpio, 0);
-+	msleep(1);
-+
-+	/* take codec out of suspend (if it still is after reset) */
- 	if (onyx_read_register(onyx, ONYX_REG_CONTROL, &v))
- 		goto out_unlock;
- 	onyx_write_register(onyx, ONYX_REG_CONTROL, v & ~(ONYX_ADPSV | ONYX_DAPSV));
+it'll show [kwindfarm] most of the time, with it going away for a while
+sometimes.
+
+Now, I thought windfarm wasn't actually doing anything wrong, it's doing
+interruptible sleep. Not so!
+
+@@ -115,11 +113,12 @@ static int wf_thread_func(void *data)
+                }
+
+                delay =3D next - jiffies;
++               printk(KERN_DEBUG "delay =3D %lu\n", delay);
+                if (delay <=3D HZ)
+                        schedule_timeout_interruptible(delay);
+
+reveals that in fact it's only sleeping for about 300 milliseconds most
+of the time!
+
+Now doing sysrq t a lot of time reveals that it's spending the rest in
+wait_for_completion, called from two places.
+
+* windfarm_smu_controls.c: smu_set_fan
+* low_i2c.c: smu_i2c_xfer
+
+the latter is called twice for every windfarm tick and takes about 170
+milliseconds for each call, the first I haven't measured but it pretty
+much has to account for the rest of the second...
+
+I don't quite understand why the fan speed has to be set every tick but
+even just reading the i2c stuff is probably bad enough.
+
+I don't think we can solve this easily since all these things may be
+called from userspace processes so being interruptible is not
+appropriate unless we want to somehow handle that, but that probably
+won't be easy.
+
+johannes
+
+--=-Z6szAB61Hi7cDhOQMUnz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFgV9u/ETPhpq3jKURAvmyAJ0cNUs0XuWujuT23WHgcrMzgtNtvgCfb3TB
+4oJ/BUAiIoG/H+tvc1TsrQ4=
+=3zOo
+-----END PGP SIGNATURE-----
+
+--=-Z6szAB61Hi7cDhOQMUnz--
