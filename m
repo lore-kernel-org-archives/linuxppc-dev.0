@@ -1,20 +1,18 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id A42C667C08
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 19:24:48 +1100 (EST)
-Date: Thu, 14 Dec 2006 09:24:42 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id 54B5467C25
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 19:32:42 +1100 (EST)
+Date: Thu, 14 Dec 2006 09:32:40 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 2/15] powerpc, celleb: Basic supports for Celleb
-In-Reply-To: <1166081837.5253.822.camel@pmac.infradead.org>
-Message-ID: <Pine.LNX.4.62.0612140923040.30229@pademelon.sonytel.be>
-References: <200612140138.kBE1cb1O000668@toshiba.co.jp>
-	<1166074655.11914.313.camel@localhost.localdomain>
-	<1166081837.5253.822.camel@pmac.infradead.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH 8/19] powerpc: interfaces to the hypervisor of Celleb
+In-Reply-To: <200612140234.kBE2Y89L017576@toshiba.co.jp>
+Message-ID: <Pine.LNX.4.62.0612140930500.30229@pademelon.sonytel.be>
+References: <200612140234.kBE2Y89L017576@toshiba.co.jp>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: paulus@samba.org, arnd@arndb.de, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Dec 2006, David Woodhouse wrote:
-> On Thu, 2006-12-14 at 16:37 +1100, Benjamin Herrenschmidt wrote:
-> > > > I'm not sure if it's a good idea to claim CHRP compatibility
-> > > > here. Is that a workaround for a specific incompatibility? Normally,
-> > > > I'd say you should print "machine\t\t: BEAT %s\n" or
-> > > > "machine\t\t: Celleb %s\n", since you are definitely not running
-> > > > a CHRP compatible firmware.
-> > > 
-> > > This is placed only to "trick" Anaconda into installing Fedora Core Linux.
-> > > Fedora refuses to be installed into 'unknown' system.
-> > 
-> > David, can you do some serious LART'ing of whoever is responsible for
-> > this in anaconda ? Is there at least an option somebody can pass on the
-> > commmand line to make it work on unknown platforms ?
-> 
-> Define 'work'. I believe it ends up doing _different_ things according
-> to the machine type -- in particular the selection of the bootloader
-> setup. You want to treat all unknown machines as CHRP? Paul, can we do
-> that?
+On Thu, 14 Dec 2006, Ishizaki Kou wrote:
+> --- /dev/null	Wed Dec 13 21:32:01 2006
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall_macro.S	Wed Dec 13 18:37:14 2006
 
-Treating it like CHRP can give unexpected results.
+> +#define	__define_beat_callup_handler_NOOUTS(name, id)		\
+> +_GLOBAL(beat_##name)						\
+> +	HCALL_MEDIUM;						\
+> +	mflr	r0;						\
+> +	std	r0, 16(r1);					\
+> +	HCALL_INST_PRECALL;					\
+> +	LOAD_CONST64(r11,id);					\
+> +	HVSC;							\
+> +	HCALL_INST_POSTCALL;					\
+> +	ld	r0, 16(r1);					\
+> +	mtlr	r0;						\
+> +	blr
 
-What about printing a big fat warning that it doesn't recognize the machine
-type and thus cannot install a bootloader automatically, but continuing
-installation?
+`id' is always the name prefixed with `HV_'? In that case you can use
+`HV_##name', so you don't have to pass the number.
+
+> --- /dev/null	Wed Dec 13 21:32:02 2006
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S	Wed Dec 13 18:37:14 2006
+
+> +__define_beat_callup_handler_OUT2(4, allocate_memory, (0))
+                                                         ^^^
+I.e., these can go away.
 
 Gr{oetje,eeting}s,
 
