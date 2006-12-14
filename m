@@ -2,11 +2,11 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1EE6567C20
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 13:19:11 +1100 (EST)
-Date: Thu, 14 Dec 2006 11:19:08 +0900 (JST)
-Message-Id: <200612140219.kBE2J8NP005292@toshiba.co.jp>
-Subject: [PATCH 2/19] powerpc: TLB insertion cleanup
+	by ozlabs.org (Postfix) with ESMTP id 8E7D767C8A
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 13:21:19 +1100 (EST)
+Date: Thu, 14 Dec 2006 11:21:15 +0900 (JST)
+Message-Id: <200612140221.kBE2LGLj007107@toshiba.co.jp>
+Subject: [PATCH 3/19] powerpc: Do not use op_model_cell under LPAR
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,31 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch changes handling return value of ppc_md.hpte_insert() into
-the same way as __hash_page_*().
+op_model_cell supports native Cell processor. Under LPAR environment,
+it cannot work.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c
-diff -u linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c:1.1.1.1 linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c:1.2
---- linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c:1.1.1.1	Wed Dec  6 08:25:43 2006
-+++ linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c	Wed Dec  6 08:43:15 2006
-@@ -1009,7 +1009,6 @@
- 
- 		/* Primary is full, try the secondary */
- 		if (unlikely(slot == -1)) {
--			new_pte |= _PAGE_F_SECOND;
- 			hpte_group = ((~hash & htab_hash_mask) *
- 				      HPTES_PER_GROUP) & ~0x7UL; 
- 			slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags,
-@@ -1028,7 +1027,7 @@
- 		if (unlikely(slot == -2))
- 			panic("hash_huge_page: pte_insert failed\n");
- 
--		new_pte |= (slot << 12) & _PAGE_F_GIX;
-+		new_pte |= (slot << 12) & (_PAGE_F_SECOND | _PAGE_F_GIX);
- 	}
- 
- 	/*
+Index: linux-powerpc-git/arch/powerpc/oprofile/common.c
+diff -u linux-powerpc-git/arch/powerpc/oprofile/common.c:1.1.1.1 linux-powerpc-git/arch/powerpc/oprofile/common.c:1.2
+--- linux-powerpc-git/arch/powerpc/oprofile/common.c:1.1.1.1	Wed Dec  6 08:25:43 2006
++++ linux-powerpc-git/arch/powerpc/oprofile/common.c	Wed Dec  6 08:43:15 2006
+@@ -149,6 +149,8 @@
+ #ifdef CONFIG_PPC64
+ #ifdef CONFIG_PPC_CELL_NATIVE
+ 		case PPC_OPROFILE_CELL:
++			if (firmware_has_feature(FW_FEATURE_LPAR))
++				return -ENODEV;
+ 			model = &op_model_cell;
+ 			break;
+ #endif
