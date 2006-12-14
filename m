@@ -1,24 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D9A4367CAA
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 12:07:34 +1100 (EST)
+Date: Wed, 13 Dec 2006 19:06:59 -0600
+From: Olof Johansson <olof@lixom.net>
+To: michael@ellerman.id.au
 Subject: Re: [PATCH 6/9] MPIC MSI allocator
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1166058148.11914.255.camel@localhost.localdomain>
+Message-ID: <20061213190659.7922c15e@pb15>
+In-Reply-To: <1166057940.6838.25.camel@concordia.ozlabs.ibm.com>
 References: <1166006370.90082.476088563252.qpush@cradle>
-	<20061213104007.4B8F967DA9@ozlabs.org> <20061213122353.7498a25e@pb15>
+	<20061213104007.4B8F967DA9@ozlabs.org>
+	<20061213122353.7498a25e@pb15>
 	<1166052344.11914.233.camel@localhost.localdomain>
 	<20061213180921.487b1cea@pb15>
 	<1166056373.11914.246.camel@localhost.localdomain>
 	<1166057940.6838.25.camel@concordia.ozlabs.ibm.com>
-	<1166058148.11914.255.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-XUlViIyXyi+E1Pzf1pWe"
-Date: Thu, 14 Dec 2006 12:06:52 +1100
-Message-Id: <1166058412.6838.30.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,44 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 14 Dec 2006 11:59:00 +1100 Michael Ellerman <michael@ellerman.id.au> wrote:
 
---=-XUlViIyXyi+E1Pzf1pWe
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Nah I didn't make it U3/U4 specific, although I could. If we do that,
+> then I think the logic needs to be:
+> 
+> if get_property("msi_available")
+> 	mpic_msi_reserve_dt_irqs()
+> elif is_u3_or_u4()
+> 	mpic_msi_reserve_u3u4_irqs()
+> else
+> 	return error
+> 
+> Because if we don't have a firmware property, and we don't make an
+> educated guess at what's reserved, then there's a very good chance our
+> first MSI will get hwirq 0 and that it won't work.
 
-On Thu, 2006-12-14 at 12:02 +1100, Benjamin Herrenschmidt wrote:
-> > if get_property("msi_available")
-> > 	mpic_msi_reserve_dt_irqs()
->=20
-> available-msi is a better name now that I think of it, or better even:
-> "msi-ranges"
+Looks like a good solution to me.
 
-"msi-ranges" is ambiguous, are the ranges available or reserved?
+> As far as putting hacks in the MPIC driver .. have you read it
+> lately? ;)  But seriously, I think if there's anyway these magic numbers
+> should be, it is in this code, not the platform code.
 
-How about "msi-available-ranges" :D
+It used to be fairly OK, but the TSI merge really pushed it over the
+edge, obfuscation-wise. :(
 
-cheers
+But that's no excuse to make it worse than it has to be.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-XUlViIyXyi+E1Pzf1pWe
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFgKOsdSjSd0sB4dIRApHDAKC8uqRS+lGL4oGPg812IrBQOill9wCgtDc3
-6eusv9vWyshlD/clgOoU3/I=
-=NQu1
------END PGP SIGNATURE-----
-
---=-XUlViIyXyi+E1Pzf1pWe--
+-Olof
