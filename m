@@ -1,18 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 4652267C46
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 11:13:14 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'David Brownell'" <david-b@pacbell.net>,
-	<spi-devel-general@lists.sourceforge.net>
-Subject: RE: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-Date: Thu, 14 Dec 2006 01:13:12 +0100
-Message-ID: <037901c71f14$a47115b0$020120ac@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <200612131231.22905.david-b@pacbell.net>
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 12/14] Spidernet Avoid possible RX chain corruption
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061213212301.GL1915@austin.ibm.com>
+References: <20061213210010.GR4329@austin.ibm.com>
+	<20061213212301.GL1915@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-2Sw9NVTzfuC/sViISQcj"
+Date: Thu, 14 Dec 2006 11:22:43 +1100
+Message-Id: <1166055763.6838.5.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@gmx.de>,
+	jgarzik@pobox.com, James K Lewis <jim@jklewis.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,122 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Brownell [mailto:david-b@pacbell.net] 
-> Sent: den 13 december 2006 21:31
-> To: spi-devel-general@lists.sourceforge.net
-> Cc: Joakim Tjernlund; 'Kumar Gala'; 'linuxppc-dev Development'
-> Subject: Re: [spi-devel-general] [PATCH] Adapt spi_mpc83xx 
-> SPI driver for 832x
-> 
-> 
-> On Wednesday 13 December 2006 7:36 am, Joakim Tjernlund wrote:
-> 
-> > > One problem I have with this patch is the fact that it 
-> assumes the  
-> > > current driver for (mpc834x) and your mods to support 
-> mpc832x/QE are  
-> > > mutually exclusive.
-> > 
-> > I don't see that as a problem ATM. If that is added it 
-> should be optional.
-> 
-> If PPC supports multi-CPU/board kernels, PPC drivers should 
-> too.  I know that
-> some ARMs don't support them (PXA) while some do (OMAP); so 
-> PPC could go either
-> way.  (Overall it's a win, since it's easier to uncover build 
-> breakage if one
-> kernel can support lots of configurations and drivers.)
-> 
-> The problem I have with this patch is that it has too much 
-> #ifdeffery.  If
 
-Too much? There is only 2 of them.
+--=-2Sw9NVTzfuC/sViISQcj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> the PPC code expects that, it should be easy to put 
-> infrastructure in place
-> so that it can be eliminated.  That is, if the PPC 
-> powers-that-be allow it!
-> 
-> 
-> > > We need to handle the case of having driver support for 
-> both the QE  
-> > > and MPC834x style in the same kernel.
-> > 
-> > Adding that will double the number RX_BUF/TX_BUF functions 
-> from 6 to 12
-> 
-> Your patch already does this, just they're #ifdeffed so that 
-> only one of
-> the sets will build at a time.
+On Wed, 2006-12-13 at 15:23 -0600, Linas Vepstas wrote:
+> Delete possible source of chain corruption; the hardware
+> already knows the location of the tail, and writing it
+> again is likely to mess it up.
+>=20
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> Cc: James K Lewis <jklewis@us.ibm.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+>=20
+> ----
+>=20
+>  drivers/net/spider_net.c |    1 -
+>  1 file changed, 1 deletion(-)
+>=20
+> Index: linux-2.6.19-git7/drivers/net/spider_net.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.19-git7.orig/drivers/net/spider_net.c	2006-12-13 14:28:23.0=
+00000000 -0600
+> +++ linux-2.6.19-git7/drivers/net/spider_net.c	2006-12-13 14:28:25.000000=
+000 -0600
+> @@ -513,7 +513,6 @@ spider_net_alloc_rx_skbs(struct spider_n
+>  	/* This will allocate the rest of the rx buffers;
+>  	 * if not, it's business as usual later on. */
+>  	spider_net_refill_rx_chain(card);
+> -	spider_net_enable_rxchtails(card);
+>  	spider_net_enable_rxdmac(card);
+>  	return 0;
 
-Yes, that's my point
+Didn't you just add that line?
 
-> 
-> 
-> > (possibly this can be reduced by adding more logic to the 
-> tx_buf/rx_buf functions)
-> > not to mention what will happen when support for reversed 
-> bit order is added.
-> 
-> Sure enough, sounds ugly.  But cpu_is_xxx() macros, combined 
-> with GCC dead
-> code elimination will strip out functions that are unused, so 
-> that e.g.
-> 
-> 	if (cpu_is_mpc834x())
-> 		fn = mpc834x_spi_tx_buf_u16;
-> 	else if (cpu_is_mpc832x())
-> 		fn = mpc832x_spi_tx_buf_u16;
-> 
-> would only link one of them unless the kernel supports both SOCs.  And
-> without in-driver #ifdeffery.
+=46rom "[PATCH 10/14] Spidernet RX Chain tail":
 
-Hmm, I can't find any cpu_is_xxx macros/functions. I guess the
-infrastructure isn't there yet?
+> @@ -501,17 +501,18 @@ spider_net_alloc_rx_skbs(struct spider_n
+>=20
+> <snip comment change>
+> =20
+> -       /* this will allocate the rest of the rx buffers; if not, it's
+> -        * business as usual later on */
+> +       /* This will allocate the rest of the rx buffers;
+> +        * if not, it's business as usual later on. */
+>         spider_net_refill_rx_chain(card);
+> +       spider_net_enable_rxchtails(card);
+>         spider_net_enable_rxdmac(card);
+>         return 0;
 
-> 
->  
-> > I would argue that the kernel lacks the possibility to 
-> remove complexity
-> > I don't need. Example in this driver is that there is no 
-> way to remove
-> > support for 16 and 32 bit SPI character sizes. The same 
-> goes for a lot of
-> > the probing code in fsl-soc.c.
-> 
-> You could certainly add Kconfig options to help shift some complexity
-> from runtime to compile time.  But if you do that, remember that it's
-> not always a win in terms of the overall system.  Every configuration
-> needs to be tested for correctness, after all.
+cheers
 
-Well, so does the dynamic kernel too. I don't know if the 16/32 bit
-char size works, I don't have such HW.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-> 
-> 
-> > It would be nice if a board port could add a custom header file that
-> > gets included by all .c automatically. Then one could add knobs
-> > (read #defines) there to futher tune such things as SPI char size.
-> > That way one don't have add Kconfig entries for all those small
-> > tuning knobs.
-> 
-> Sounds error prone to me.  What's the point ... removing maybe 100
-> bytes of code in this one driver?  You could save more than that
-> just by switching over to platform_device_probe() instead of using
-> platform_device_register().  And that'd be without adding failure
-> modes like "oops, this board stack really _does_ use 12 bit words
-> for the ADCs".
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-One size reduction in another area doesn't justify bloat in
-another. People are switching to kzmalloc() to save space(not
-the only reason though).
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-The point is not only this driver. I add small tweaks here and
-there and it would be great if I could put function prototypes,
-my own #defines there too. This would help me not to clutter pristine
-kernel code too much, makes maintenace easier.
+--=-2Sw9NVTzfuC/sViISQcj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
- Jocke
- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFgJlSdSjSd0sB4dIRAhdSAKCT2YsyU53E9bjK/mrLEzL+INgQIgCgs7P7
+JNEAY5O+rwG0foI/AiJ06kY=
+=uefY
+-----END PGP SIGNATURE-----
+
+--=-2Sw9NVTzfuC/sViISQcj--
