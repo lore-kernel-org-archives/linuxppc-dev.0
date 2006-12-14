@@ -1,13 +1,13 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5555A67C5D
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 13:08:02 +1100 (EST)
-Date: Thu, 14 Dec 2006 11:07:54 +0900 (JST)
-Message-Id: <200612140207.kBE27ukj025775@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 275AE67C02
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 13:15:56 +1100 (EST)
+Date: Thu, 14 Dec 2006 11:15:50 +0900 (JST)
+Message-Id: <200612140215.kBE2Fp91002651@toshiba.co.jp>
+Subject: [PATCH 1/19] spufs: add SPU register lock
 To: paulus@samba.org
-Subject: [PATCH 0/19] Patches for Toshiba Cell reference set
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,37 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul-san,
+spu->register_lock should be held before accessing registers.
 
-This is a third version of the patch set for Toshiba Cell reference
-set. Comments were reflected on the whole and the order of the patches
-was changed.
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Ached-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
 
-The reference set consists of Cell, 512MB memory, SCC and some
-peripherals such as HDD, GbE, etc.  You can see brief explanation and
-picture of Cell reference set at following URLs.
-
-    http://www.toshiba.co.jp/about/press/2005_09/pr2001.htm
-    http://cell-industries.com/toshiba_announces.php
-
-SCC(Super Companion Chip) is Toshiba's southbridge chip for Cell. I
-can't explain precisely about differences between SCC and Spider, but
-we believe that they are almost same each other.
-
-In addition to SCC, we have FW and Hypervisor on our Cell reference
-set. The FW initializes HW and loads SW modules to memory. Linux is
-also loaded by FW.  Hypervisor is Toshiba original one and we call it
-"Beat". Our Linux runs on Beat, so the patches includes the hypervisor
-call such as pte access interfaces.
-
-The set of patches also includes drivers for IDE, GbE and PCI bus, but
-does not include PICe and AV devices in this time.
-USB driver is not included in this set. Instead, Ben-san posted it to
-linux-usb-devel last week and it's being reviewd now.
-
-This patch set is intended to be merged to 2.6.20.
-If you have any comment, please write to me.
-
-Thank you,
-Kou Ishizaki
-Toshiba
+Index: linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c
+diff -u linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.1.1.1 linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.2
+--- linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.1.1.1	Wed Dec  6 08:25:44 2006
++++ linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c	Thu Dec  7 16:24:53 2006
+@@ -170,9 +170,11 @@
+ spu_irq_class_0_bottom(struct spu *spu)
+ {
+ 	unsigned long stat, mask;
++	unsigned long flags;
+ 
+ 	spu->class_0_pending = 0;
+ 
++	spin_lock_irqsave(&spu->register_lock, flags);
+ 	mask = spu_int_mask_get(spu, 0);
+ 	stat = spu_int_stat_get(spu, 0);
+ 
+@@ -188,6 +190,7 @@
+ 		__spu_trap_error(spu);
+ 
+ 	spu_int_stat_clear(spu, 0, stat);
++	spin_unlock_irqrestore(&spu->register_lock, flags);
+ 
+ 	return (stat & 0x7) ? -EIO : 0;
+ }
