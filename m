@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B67E767DA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 13:41:56 +1100 (EST)
-Date: Thu, 14 Dec 2006 11:41:47 +0900 (JST)
-Message-Id: <200612140241.kBE2fmhx024549@toshiba.co.jp>
-Subject: [PATCH 12/19] powerpc: setup sio in SCC for Celleb
+	by ozlabs.org (Postfix) with ESMTP id 3BE8E67DDF
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 13:43:04 +1100 (EST)
+Date: Thu, 14 Dec 2006 11:43:00 +0900 (JST)
+Message-Id: <200612140243.kBE2h08e025441@toshiba.co.jp>
+Subject: [PATCH 13/19] powerpc: Supporting iommu for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,20 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch setup serial interfaces in SCC.
+This patch creates Celleb platform dependent files to support iommu.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c:1.2
---- /dev/null	Wed Dec 13 21:32:03 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c	Wed Dec 13 17:10:56 2006
-@@ -0,0 +1,113 @@
+Index: linux-powerpc-git/include/asm-powerpc/iommu.h
+diff -u linux-powerpc-git/include/asm-powerpc/iommu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/iommu.h:1.2
+--- linux-powerpc-git/include/asm-powerpc/iommu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
++++ linux-powerpc-git/include/asm-powerpc/iommu.h	Wed Dec  6 08:43:16 2006
+@@ -99,6 +99,7 @@
+ extern void iommu_init_early_pSeries(void);
+ extern void iommu_init_early_iSeries(void);
+ extern void iommu_init_early_dart(void);
++extern void celleb_init_iommu(void);
+ 
+ #ifdef CONFIG_PCI
+ extern void pci_iommu_init(void);
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.7
+--- /dev/null	Wed Dec 13 21:32:04 2006
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c	Wed Dec 13 17:20:55 2006
+@@ -0,0 +1,411 @@
 +/*
-+ * setup serial port in SCC
++ * Support for IOMMU on Celleb platform.
 + *
 + * (C) Copyright 2006 TOSHIBA CORPORATION
++ *
++ * This code is based on arch/powerpc/platforms/cell/iommu.c:
++ * Copyright (C) 2005 IBM Deutschland Entwicklung GmbH,
++ *			 Arnd Bergmann <arndb@de.ibm.com>
++ *
++ * and arch/powerpc/platforms/pseries/iommu.c:
++ * Copyright (C) 2001 Mike Corrigan & Dave Engebretsen, IBM Corporation
++ * Copyright (C) 2004 Olof Johansson <olof@lixom.net>, IBM Corporation
++ * Copyright (C) 2006 Olof Johansson <olof@lixom.net>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -51,96 +72,385 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c:1.2
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <linux/tty.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
-+#include <linux/console.h>
++#undef DEBUG
 +
-+#include <asm/io.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/string.h>
++#include <linux/init.h>
++#include <linux/bootmem.h>
++#include <linux/mm.h>
++#include <linux/dma-mapping.h>
++
++#include <asm/sections.h>
++#include <asm/iommu.h>
 +#include <asm/prom.h>
++#include <asm/pci-bridge.h>
++#include <asm/machdep.h>
++#include <asm/abs_addr.h>
++#include <asm/ppc-pci.h>
++#include <asm/lmb.h>
 +
-+/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
-+    mmio=0xfff000-0x1000,0xff2000-0x1000 */
-+static int txx9_serial_bitmap = 0;
++#include "beat.h"
 +
-+static struct {
-+	uint32_t offset;
-+	uint32_t index;
-+} txx9_spider_tab[3] = {
-+	{ 0x300, 0 },	/* 0xFFF300 */
-+	{ 0x400, 0 },	/* 0xFFF400 */
-+	{ 0x800, 1 }	/* 0xFF2800 */
++static void iommu_dev_setup_null(struct pci_dev *d)
++{
++}
++static void iommu_bus_setup_null(struct pci_bus *d)
++{
++}
++static void iopt_build_null(struct iommu_table *tbl, long index,
++	long npages, unsigned long uaddr, enum dma_data_direction direction)
++{
++}
++static void iopt_free_null(struct iommu_table *tbl, long index,
++	long npages)
++{
++}
++
++/* ToDo:
++ *  Current codes can not handle more than one NUMA domains.
++ */
++#define NR_IOMMUS	1
++
++
++struct celleb_iommu_dmap {
++	unsigned long real_addr;
++	unsigned long dma_addr;
++	unsigned long size;
 +};
 +
-+static int txx9_serial_init(void)
++struct celleb_iommu {
++	struct iommu_table tbl;    /* should be the first member */
++	unsigned long io_space_id;
++	unsigned long ioid;	   /* IOPTE parameter */
++	int	nid;
++	unsigned long io_address;  /* start DMA address */
++	unsigned long io_size;
++	unsigned long io_page_size;
++	unsigned long flags;       /* IOPTE parameter */
++	unsigned long dmap_size;   /* size of direct map ==
++	                                start address of the rest */
++	unsigned long dmap_regions;/* == number of actual lmb regions */
++	struct celleb_iommu_dmap *dmap;
++} iommus[NR_IOMMUS];
++
++static int celleb_nr_iommus = 0;
++
++
++/* initialize the iommu to support a simple linear mapping
++ * for each DMA window used by any device.
++ */
++static void celleb_do_map_iommu_direct(struct celleb_iommu *iommu)
 +{
-+	extern int early_serial_txx9_setup(struct uart_port *port);
-+	struct device_node *node;
-+	const uint64_t *irq_prop, *base_prop;
-+	int irq_len, base_addr_len;
-+	int i, maxi;
-+	struct uart_port req;
++	unsigned long io_address, real_address;
++	unsigned long old_address, old_ioid, old_flags;
++	int i;
 +
-+	node = of_find_node_by_path("/ioif1/sio");
-+	if (!node)
-+		return 0;
-+
-+	irq_prop = get_property(node, "interrupts", &irq_len);
-+	if (!irq_prop)
-+		goto out;
-+	irq_len /= sizeof(uint64_t);
-+
-+	base_prop = get_property(node, "toshiba,reg", &base_addr_len);
-+	if (!base_prop)
-+		goto out;
-+	base_addr_len /= sizeof(uint64_t) * 2;
-+
-+	maxi = sizeof(txx9_spider_tab)/sizeof(txx9_spider_tab[0]);
-+	if (maxi > irq_len)
-+		maxi = irq_len;
-+
-+	for(i = 0; i < maxi; i++) {
-+		if (!(txx9_serial_bitmap & (1<<i)))
-+			continue;
-+		if (base_addr_len <= txx9_spider_tab[i].index)
-+			continue;
-+
-+		memset(&req, 0, sizeof(req));
-+		req.line = i;
-+		req.iotype = UPIO_MEM;
-+		req.mapbase = base_prop[txx9_spider_tab[i].index * 2]
-+			+ txx9_spider_tab[i].offset;
-+#ifdef CONFIG_SERIAL_TXX9_CONSOLE
-+		req.membase = ioremap(req.mapbase, 0x24);
-+#endif
-+		req.irq = irq_create_mapping(NULL, irq_prop[i]);
-+		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
-+		req.uartclk = 83300000;
-+		early_serial_txx9_setup(&req);
++	iommu->dmap =
++	    kzalloc(sizeof(struct celleb_iommu_dmap) * lmb.memory.cnt,
++		    GFP_KERNEL);
++	if (!iommu->dmap) {
++		return;
 +	}
++	iommu->dmap_regions = lmb.memory.cnt;
 +
-+out:
-+	of_node_put(node);
-+	return 0;
++	iommu->dmap_size = 0;
++	io_address = iommu->io_address;
++	for (i = 0; i < iommu->dmap_regions; i++) {
++		iommu->dmap[i].real_addr = lmb.memory.region[i].base;
++		if (io_address >= iommu->io_address + iommu->io_size) {
++			/* no more DMA address, ignore this memory region */
++			iommu->dmap[i].dma_addr = DMA_ERROR_CODE;
++			iommu->dmap[i].size = 0;
++			continue;
++		}
++		if ( (lmb.memory.region[i].base &
++		       ((1UL << iommu->io_page_size) - 1))
++		    || (lmb.memory.region[i].size &
++		       ((1UL << iommu->io_page_size) - 1))) {
++			/* page size mismatch, ignore this memory region */
++			iommu->dmap[i].dma_addr = DMA_ERROR_CODE;
++			iommu->dmap[i].size = 0;
++			continue;
++		}
++		iommu->dmap[i].dma_addr = io_address;
++		iommu->dmap[i].size = lmb.memory.region[i].size;
++
++		for (real_address = iommu->dmap[i].real_addr;
++		     real_address <
++		     iommu->dmap[i].real_addr + iommu->dmap[i].size;
++		     real_address += 1UL << iommu->io_page_size,
++		     io_address += 1UL << iommu->io_page_size) {
++			if (beat_put_iopte
++			    (iommu->io_space_id, io_address, real_address,
++			     iommu->ioid, iommu->flags, &old_address,
++			     &old_ioid, &old_flags) != 0) {
++				break;
++			}
++		}
++		if (real_address - iommu->dmap[i].real_addr <
++		    iommu->dmap[i].size) {
++			iommu->dmap[i].size =
++			    real_address - iommu->dmap[i].real_addr;
++		}
++
++		iommu->dmap_size += iommu->dmap[i].size;
++	}
 +}
 +
-+static int txx9_serial_config(char *ptr)
++static void iommu_bus_setup_celleb(struct pci_bus *b)
 +{
-+	int	i;
++	struct device_node *dn = (struct device_node *) b->sysdata;
++	struct device_node *pdn;
++	struct pci_dn *pdn_pci = NULL;
++	const char *ctype, *ptype;
++	const unsigned long *dma_window = NULL;
++	struct celleb_iommu *iommu;
++	struct iommu_table **iommu_pos = NULL/*, **iommu_set_p */;
 +
-+	for (;;) {
-+		switch(get_option(&ptr, &i)) {
-+		default:
-+			return 0;
-+		case 2:
-+			txx9_serial_bitmap |= 1 << i;
++	if (celleb_nr_iommus >= NR_IOMMUS) {
++		pr_debug("too many iommus.\n");
++		return ;
++	}
++
++	ctype = get_property(dn, "device_type", NULL);
++	if (!ctype) {
++		pr_debug("bus type not defined.\n");
++		return ;
++	}
++	if (strncmp(ctype, "pci", 3) == 0)
++		iommu_pos = &(PCI_DN(dn)->iommu_table);
++
++	for (pdn = dn; pdn != NULL; pdn = pdn->parent) {
++		dma_window = get_property(pdn, "toshiba,dma-window", NULL);
++		if (dma_window != NULL)
 +			break;
-+		case 1:
-+			txx9_serial_bitmap |= 1 << i;
-+			return 0;
++	}
++	if (!dma_window) {
++		pr_debug("No toshiba,dma-window entry found !\n");
++		return;
++	}
++	ptype = get_property(pdn, "device_type", NULL);
++	if (!ptype) {
++		pr_debug("bus type not defined\n");
++		return ;
++	}
++	if (strncmp(ptype, "pci", 3) == 0)
++		pdn_pci = PCI_DN(pdn);
++
++
++	/* ToDo: Do not initialize iommu tables in bus_setup, as they belong to
++	 *  CBE-IOC. To do here is to get NUMA node ID of the bus and find
++	 * an iommu table.
++         *  As the current version of Celleb's device tree doesn't have
++	 * CBE-IOC entry, we do initialize the table here..
++	 */
++	iommu = &iommus[0]; /* ToDo: must be nid of the bus */
++	if (!iommu->io_size) {
++		iommu->io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
++		iommu->ioid = dma_window[0] & 0x7ffUL;
++		iommu->nid = 0;
++		iommu->io_address = dma_window[1];
++		iommu->io_size = dma_window[2];
++		iommu->io_page_size = dma_window[3];
++		iommu->flags = 0xf800000000000000UL;
++		/* Fixed setting: read/write permitted,
++		 * Memory coherency required, Strongest order
++		 */
++		celleb_do_map_iommu_direct(iommu);	/* TBD: always? */
++
++		iommu->tbl.it_busno = pdn_pci ? pdn_pci->bussubno : 0;
++		if (iommu->dmap) {
++			iommu->tbl.it_size =
++			   (iommu->io_size - iommu->dmap_size) >> PAGE_SHIFT;
++			iommu->tbl.it_offset =
++			   (iommu->io_address + iommu->dmap_size) >> PAGE_SHIFT;
++		} else {
++			iommu->tbl.it_size = iommu->io_size >> PAGE_SHIFT;
++			iommu->tbl.it_offset = iommu->io_address >> PAGE_SHIFT;
++		}
++		iommu->tbl.it_base = 0;
++		iommu->tbl.it_index = 0;
++		iommu->tbl.it_blocksize = 16;
++
++	}
++
++	if (iommu_pos)
++		*iommu_pos = &iommu->tbl;
++}
++
++static void iommu_dev_setup_celleb(struct pci_dev *dev)
++{
++	struct celleb_iommu *iommu_found = NULL;
++
++#if 0
++	for (i=0;i<celleb_nr_iommus;i++) {
++		if (dev->dev.archdata.numa_node == iommus[i].nid) {
++			iommu_found = &iommus[i];
++			break;
 +		}
 +	}
++#else
++	/* ToDo: find nid and.. */
++	if (iommus[0].io_size) iommu_found = &iommus[0];
++#endif
++	dev->dev.archdata.dma_ops = pci_dma_ops;
++	dev->dev.archdata.dma_data = iommu_found;
 +}
-+__setup("txx9_serial=", txx9_serial_config);
 +
-+console_initcall(txx9_serial_init);
++
++static dma_addr_t get_dma_address(struct device *hwdev, size_t size,
++				  uint64_t phys_addr)
++{
++	struct celleb_iommu *iommu;
++	int i;
++
++	iommu = hwdev->archdata.dma_data;
++	if (!iommu)
++		return DMA_ERROR_CODE;
++
++	/* first, try directly mapped address */
++	if (iommu->dmap) {
++		for (i = 0; i < iommu->dmap_regions; i++) {
++			if (phys_addr >= iommu->dmap[i].real_addr &&
++			    phys_addr + size <
++			    iommu->dmap[i].real_addr + iommu->dmap[i].size)
++				return (iommu->dmap[i].dma_addr +
++					phys_addr - iommu->dmap[i].real_addr);
++		}
++	}
++	/* TBD: if not found in direct mapping.. */
++	return DMA_ERROR_CODE;
++}
++
++
++static void put_dma_address(struct device *hwdev, size_t size,
++			    dma_addr_t dma_addr)
++{
++	struct celleb_iommu *iommu;
++
++	iommu = hwdev->archdata.dma_data;
++	if (!iommu)
++		return;
++
++	if (iommu->dmap)
++		/* nothing to do */
++		;
++	else
++		/* TBD: not supported yet */
++		;
++}
++
++
++static void *celleb_alloc_coherent(struct device *hwdev, size_t size,
++				   dma_addr_t * dma_handle, gfp_t flag)
++{
++	void *ret;
++
++	ret = (void *) __get_free_pages(flag, get_order(size));
++	if (ret != NULL) {
++		memset(ret, 0, size);
++		*dma_handle =
++		    get_dma_address(hwdev, size, virt_to_phys(ret));
++		if (*dma_handle == DMA_ERROR_CODE) {
++			free_pages((unsigned long) ret, get_order(size));
++			return NULL;
++		}
++	}
++	return ret;
++}
++
++static void celleb_free_coherent(struct device *hwdev, size_t size,
++				 void *vaddr, dma_addr_t dma_handle)
++{
++	put_dma_address(hwdev, size, dma_handle);
++	free_pages((unsigned long) vaddr, get_order(size));
++}
++
++static dma_addr_t celleb_map_single(struct device *hwdev, void *ptr,
++				    size_t size,
++				    enum dma_data_direction direction)
++{
++	return get_dma_address(hwdev, size, virt_to_abs(ptr));
++}
++
++static void celleb_unmap_single(struct device *hwdev, dma_addr_t dma_addr,
++				size_t size,
++				enum dma_data_direction direction)
++{
++	put_dma_address(hwdev, size, dma_addr);
++}
++
++static int celleb_map_sg(struct device *hwdev, struct scatterlist *sg,
++			 int nents, enum dma_data_direction direction)
++{
++	int i;
++
++	for (i = 0; i < nents; i++, sg++) {
++		sg->dma_address =
++		    get_dma_address(hwdev, sg->length,
++				    page_to_phys(sg->page) + sg->offset);
++		sg->dma_length = sg->length;
++		if (sg->dma_address == DMA_ERROR_CODE) {
++			sg->dma_length = 0;
++			break;
++		}
++	}
++
++	return i;
++}
++
++static void celleb_unmap_sg(struct device *hwdev, struct scatterlist *sg,
++			    int nents, enum dma_data_direction direction)
++{
++	int i;
++
++	for (i = 0; i < nents; i++, sg++) {
++		if (sg->dma_address == DMA_ERROR_CODE)
++			break;
++		put_dma_address(hwdev, sg->length, sg->dma_address);
++	}
++}
++
++static int celleb_dma_supported(struct device *dev, u64 mask)
++{
++	return (mask < 0x100000000UL);
++}
++
++
++static struct dma_mapping_ops celleb_dma_ops = {
++	.alloc_coherent = celleb_alloc_coherent,
++	.free_coherent = celleb_free_coherent,
++	.map_single = celleb_map_single,
++	.unmap_single = celleb_unmap_single,
++	.map_sg = celleb_map_sg,
++	.unmap_sg = celleb_unmap_sg,
++	.dma_supported = celleb_dma_supported,
++};
++
++
++void celleb_init_iommu(void)
++{
++	int setup_bus = 0;
++
++	if (!(of_chosen &&
++	      get_property(of_chosen, "linux,iommu-off", NULL)))
++		setup_bus = 1;
++
++	if (setup_bus) {
++		pr_debug("%s: IOMMU mapping activated\n", __FUNCTION__);
++		ppc_md.pci_dma_dev_setup = iommu_dev_setup_celleb;
++		ppc_md.pci_dma_bus_setup = iommu_bus_setup_celleb;
++	} else {
++		pr_debug("%s: IOMMU mapping activated, "
++			 "no device action necessary\n", __FUNCTION__);
++		/* Direct I/O, IOMMU off */
++		ppc_md.pci_dma_dev_setup = iommu_dev_setup_null;
++		ppc_md.pci_dma_bus_setup = iommu_bus_setup_null;
++	}
++	ppc_md.tce_build = iopt_build_null;
++	ppc_md.tce_free = iopt_free_null;
++
++	pci_dma_ops = &celleb_dma_ops;
++}
