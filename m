@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 41D4667BC8
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 16:34:14 +1100 (EST)
-Subject: Re: [PATCH 10/15] celleb: SPU support routines
+	by ozlabs.org (Postfix) with ESMTP id 1946E67BED
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 16:39:11 +1100 (EST)
+Subject: Re: [PATCH 2/15] powerpc, celleb: Basic supports for Celleb
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200612140148.kBE1m8Bp008592@toshiba.co.jp>
-References: <200612140148.kBE1m8Bp008592@toshiba.co.jp>
+In-Reply-To: <200612140138.kBE1cb1O000668@toshiba.co.jp>
+References: <200612140138.kBE1cb1O000668@toshiba.co.jp>
 Content-Type: text/plain
-Date: Thu, 14 Dec 2006 16:34:05 +1100
-Message-Id: <1166074445.11914.310.camel@localhost.localdomain>
+Date: Thu, 14 Dec 2006 16:37:35 +1100
+Message-Id: <1166074655.11914.313.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Woodhouse <dwmw2@infradead.org>, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +25,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> We think the integration of codes is preferable, but this is our first code
-> for public and we need time to modify them. So, this time we hope they are
-> merged into as it is. We'd like to discuss and modify our codes toward
-> integrated codes after this first merge.  
+> > I'm not sure if it's a good idea to claim CHRP compatibility
+> > here. Is that a workaround for a specific incompatibility? Normally,
+> > I'd say you should print "machine\t\t: BEAT %s\n" or
+> > "machine\t\t: Celleb %s\n", since you are definitely not running
+> > a CHRP compatible firmware.
+> 
+> This is placed only to "trick" Anaconda into installing Fedora Core Linux.
+> Fedora refuses to be installed into 'unknown' system.
 
-As much as I would have liked to integrate your code in 2.6.20, it seems
-that it won't be possible (as I told you privately earlier today). Linus
-is getting fairly strict about the 2 weeks window which closed... today.
+David, can you do some serious LART'ing of whoever is responsible for
+this in anaconda ? Is there at least an option somebody can pass on the
+commmand line to make it work on unknown platforms ?
 
-We'll merge the code in powerpc.git in the meantime, not in it's current
-form but after you have addresses some of the remaning comments. That
-way, it will be in -mm at least, and in the powerpc tree which means
-that from there, you won't have to rebase it every time we change
-something and it will get in first thing in 2.6.21 merge window.
+It's not the first time stupid userland assumptions are causing us
+problems and it won't be the last, but I'd be really annoyed to have to
+let that one through...
 
-That will also give us more time to address some of the remaining issues
-that I'm not too happy with, like some of the PCI bits.
-
-In general, code should be ready to merge -before- the merge window open
-or at worst during the first week, the second week being mostly to flush
-out bits that collided or needed rebasing etc...
-
-In a similar vein, while some of the PS3 code was actually merged, a lot
-of it wasn't yet (drivers etc...) are they are not ready, so it looks
-like 2.6.20 won't be the "big cell relase" but 2.6.21 will be instead.
-
-Cheers,
 Ben.
