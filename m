@@ -1,35 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AFC4867CCA
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 04:15:17 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBEHFD8B008838
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 12:15:13 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBEHFDNd222226
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 12:15:13 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBEHFCwf013732
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 12:15:13 -0500
-Date: Thu, 14 Dec 2006 11:15:11 -0600
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 12/14] Spidernet Avoid possible RX chain corruption
-Message-ID: <20061214171511.GT4329@austin.ibm.com>
-References: <20061213210010.GR4329@austin.ibm.com>
-	<20061213212301.GL1915@austin.ibm.com>
-	<1166055763.6838.5.camel@concordia.ozlabs.ibm.com>
-MIME-Version: 1.0
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DF6A067D40
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 04:32:43 +1100 (EST)
+Date: Thu, 14 Dec 2006 18:32:35 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH 7/19] powerpc: hypervisor call numbers for Celleb
+Message-ID: <20061214173235.GA6048@lst.de>
+References: <200612140230.kBE2UT9R014367@toshiba.co.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1166055763.6838.5.camel@concordia.ozlabs.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
-	netdev@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@gmx.de>,
-	jgarzik@pobox.com, James K Lewis <jim@jklewis.com>
+In-Reply-To: <200612140230.kBE2UT9R014367@toshiba.co.jp>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,23 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 14, 2006 at 11:22:43AM +1100, Michael Ellerman wrote:
-> >  	spider_net_refill_rx_chain(card);
-> > -	spider_net_enable_rxchtails(card);
-> >  	spider_net_enable_rxdmac(card);
-> >  	return 0;
-> 
-> Didn't you just add that line?
+On Thu, Dec 14, 2006 at 11:30:28AM +0900, Ishizaki Kou wrote:
 
-Dagnabbit. The earlier pach was moving around existing code.
-Or, more precisely, trying to maintain the general function
-of the old code even while moving things around.
+> +
+> +#ifdef	__ASSEMBLY__
+> +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((__v)<<60|(__x))
+> +#elif defined(__powerpc64__)
+> +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((unsigned long)(__v)<<60|(__x))
+> +#else
+> +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((unsigned long long)(__v)<<60|(__x))
+> +#endif
 
-Later on, when I started looking at what the danged function 
-actually did, and the context it was in, I realized that it 
-was a bad idea to call the thing.  So then I removed it. :-/
+__powerpc64__ is always set for ppc64 compiles.
 
-How should I handle this proceedurally? Resend the patch sequence? 
-Let it slide?
+> +#define HV_allocate_memory (0)
+> +#define HV_construct_virtual_address_space (2)
 
---linas
+isn't HV_foo a little too generic?  Also no need for the braces around
+the actual hvall numbers.
