@@ -1,36 +1,20 @@
-Return-Path: <mostrows@watson.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 09C0B67B77
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 15:35:46 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBE4ZhsA016306
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 23:35:43 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBE4Zhsn487286
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 21:35:43 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBE4ZhOs002030
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 21:35:43 -0700
-Received: from kdsk1.austin.ibm.com (kdsk1.austin.ibm.com [9.41.71.25])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	kBE4ZfS0001910
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Dec 2006 21:35:43 -0700
-Received: from localhost ([127.0.0.1])
-	by kdsk1.austin.ibm.com with esmtp (Exim 4.60)
-	(envelope-from <mostrows@watson.ibm.com>) id 1GuiJq-00049R-OV
-	for linuxppc-dev@ozlabs.org; Wed, 13 Dec 2006 22:35:42 -0600
-Subject: [PATCH] Avoid calling get_irq_server() with a real, not virtual irq.
-From: Michal Ostrowski <mostrows@watson.ibm.com>
-To: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A088767BC8
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 15:54:20 +1100 (EST)
+Subject: Re: [PATCH 11/19] powerpc: Supporting PCI bus and base of I/O for
+	Celleb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <200612140238.kBE2cFeU021258@toshiba.co.jp>
+References: <200612140238.kBE2cFeU021258@toshiba.co.jp>
 Content-Type: text/plain
-Date: Wed, 13 Dec 2006 22:35:41 -0600
-Message-Id: <1166070941.5438.53.camel@kdsk1.austin.ibm.com>
+Date: Thu, 14 Dec 2006 15:54:13 +1100
+Message-Id: <1166072053.11914.278.camel@localhost.localdomain>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,38 +24,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We can use default_server when masking an interrupt vector.
-get_irq_server() assumes a virtual irq, so badness may happen if we
-give it a real one.
+On Thu, 2006-12-14 at 11:38 +0900, Ishizaki Kou wrote:
+> This patch includes support for pci buses, base of Celleb specific
+> devices, and etc. It works on of_platform bus.
 
-Signed-off-by: Michal Ostrowski <mostrows@watson.ibm.com>
----
- arch/powerpc/platforms/pseries/xics.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+There is still a few serious issues unfortunately with that PCI code...
 
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index d071abe..7223595 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -224,7 +224,6 @@ static void xics_unmask_irq(unsigned int
- static void xics_mask_real_irq(unsigned int irq)
- {
-        int call_status;
--       unsigned int server;
+> +static int celleb_epci_subordinate_read_config(struct pci_controller *hose,
+> +					       int bus, unsigned int devfn,
+> +					       int where, int size, u32 *val)
+> +{
+> +	unsigned long addr;
+> +
+> +	if (!hose->cfg_data)
+> +		return PCIBIOS_DEVICE_NOT_FOUND;
+> +
+> +	if (where == PCI_INTERRUPT_LINE) {
+> +		struct celleb_epci_private *private = hose->private_data;
+> +		if (private == NULL)
+> +			return PCIBIOS_DEVICE_NOT_FOUND;
+> +		*val = irq_create_mapping(NULL, private->epci_ext_irq);
+> +		return PCIBIOS_SUCCESSFUL;
+> +	} else if (where == PCI_INTERRUPT_PIN) {
+> +		*val = 1;
+> +		return PCIBIOS_SUCCESSFUL;
+> +	}
+
+Why the above ? You have 3 copies of the code here that does the IRQ
+mapping inside of read_config, and I don't see this making any sense.
+
+The IRQ mapping should be in the device-tree, in the form of an
+interrupt-map property, or at -worse- as a fixup pass to setup
+pci_dev->irq in ppc_md, not some weird code in the config space. Nobody
+actually cares what is in PCI_INTERRUPT_LINE of a PCI device in fact.
  
-        if (irq == XICS_IPI)
-                return;
-@@ -236,9 +235,9 @@ static void xics_mask_real_irq(unsigned 
-                return;
-        }
- 
--       server = get_irq_server(irq);
-        /* Have to set XIVE to 0xff to be able to remove a slot */
--       call_status = rtas_call(ibm_set_xive, 3, 1, NULL, irq, server, 0xff);
-+       call_status = rtas_call(ibm_set_xive, 3, 1, NULL, irq, 
-+                               default_server, 0xff);
-        if (call_status != 0) {
-                printk(KERN_ERR "xics_disable_irq: irq=%u: ibm_set_xive(0xff)"
-                       " returned %d\n", irq, call_status);
--- 
-1.4.1.1
+> +	clear_and_disable_master_abort_interrupt(hose);
+> +
+> +	/* address for PCI configuration access */
+> +	addr = (unsigned long)hose->cfg_data +
+> +		(((bus & 0xff) << 16)
+> +		 | ((devfn & 0xff) << 8)
+> +		 | (where & 0xff)
+> +		 | 0x01000000);
+> +
+> +	switch (size) {
+> +	case 1:
+> +		*val = in_8((u8 *)addr);
+> +		break;
+> +	case 2:
+> +		*val = in_le16((u16 *)addr);
+> +		break;
+> +	case 4:
+> +		*val = in_le32((u32 *)addr);
+> +		break;
+> +	default:
+> +		return PCIBIOS_DEVICE_NOT_FOUND;
+> +	}
+> +
+> +	return celleb_epci_check_abort(hose, 0);
+> +}
+
+The above code is duplicated several times (+/- endian) and I don't see
+why. You definitely do not need special functions that are 90% duplicate
+to handle wether you are doing a type 0 or type 1 config access :-) Best
+is you look at how other platforms do it, it's mostly a single if in the
+first few lines of the function to calculate the cfg address.
+
+The host bridge case must stay separate due to different endian, though
+it should still shrink the size of the code significantly by moving the
+IRQ bits elsewhere.
+
+> +int __devinit celleb_setup_epci(struct device_node *node,
+> +				struct pci_controller *hose)
+> +{
+> +	const unsigned long *li, *li2;
+> +	unsigned int rlen;
+> +	struct celleb_epci_private *private;
+> +
+> +
+> +	pr_debug("PCI: celleb_setup_epci()\n");
+> +
+> +	li = get_property(node, "toshiba,reg", &rlen);
+
+Why that ? Why not use a normal "reg" property with proper ranges etc...
+in the device tree, and then here, use the standard
+of_address_to_resource() or similar ?
+
+We are getting critical short on time for the 2.6.20 merge window
+unfortunately. I hope we might still be able to get in, though I can't
+guarantee it at this point.
+
+Cheers,
+Ben.
