@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C1EE67BC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 15:55:21 +1100 (EST)
-Subject: Re: [PATCH 6/19] powerpc: avoid claiming some PCI bus
+	by ozlabs.org (Postfix) with ESMTP id 4E7CC67C11
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 15:58:43 +1100 (EST)
+Subject: Re: [PATCH 5/19] powerpc: add IRQ remapping hook
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200612140228.kBE2SvUQ013034@toshiba.co.jp>
-References: <200612140228.kBE2SvUQ013034@toshiba.co.jp>
+In-Reply-To: <200612140227.kBE2R3jR012071@toshiba.co.jp>
+References: <200612140227.kBE2R3jR012071@toshiba.co.jp>
 Content-Type: text/plain
-Date: Thu, 14 Dec 2006 15:55:15 +1100
-Message-Id: <1166072115.11914.280.camel@localhost.localdomain>
+Date: Thu, 14 Dec 2006 15:58:36 +1100
+Message-Id: <1166072316.11914.284.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,44 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-12-14 at 11:28 +0900, Ishizaki Kou wrote:
-> Celleb has multiple PCI buses. Devices on some of those PCI buses
-> require to assign resources by Linux.  This patch is for such buses
-> not to claim resources, because claimed resource does not become a
-> target for resource assign.
+On Thu, 2006-12-14 at 11:27 +0900, Ishizaki Kou wrote:
+> This patch adds irq remapping hook. On interrupt mechanism on Beat,
+> when an irq outlet who has an id which is formerly used is created,
+> remapping the irq is required.
 
-I don't fully understand what's going on here, and why you have this
-insert_resource() hacks in the platform PCI code as well...
+Today paulus asked me what that was for and I must admit that despite
+your earlier explanations, I was a bit at a loss justifying it.
 
-Care to explain ? Unfortunately, we haven't received the HW yet so I
-can't have a look by myself and propose alternate patches just yet...
+Can you explain us again the exact cicrumstances in which this is
+necessary ? It seems to us that if an interrupt outlet<->plug linkage is
+removed in the hypervisor itself, it should be also removed in linux
+using irq_dispose_mapping().
 
-Cheers,
-Ben.
+What are the cases where the HV might require a linkage to be
+re-established by that remap function that the kernel couldn't have done
+the cleanup itself beforehand ?
+
+Regards,
+Ben. 
 
 > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
 > 
-> Index: linux-powerpc-git/arch/powerpc/kernel/pci_64.c
-> diff -u linux-powerpc-git/arch/powerpc/kernel/pci_64.c:1.1.1.1 linux-powerpc-git/arch/powerpc/kernel/pci_64.c:1.3
-> --- linux-powerpc-git/arch/powerpc/kernel/pci_64.c:1.1.1.1	Wed Dec  6 08:25:43 2006
-> +++ linux-powerpc-git/arch/powerpc/kernel/pci_64.c	Tue Dec 12 15:37:56 2006
-> @@ -249,8 +249,13 @@
->  	if (firmware_has_feature(FW_FEATURE_ISERIES))
->  		return;
+> Index: linux-powerpc-git/include/asm-powerpc/irq.h
+> diff -u linux-powerpc-git/include/asm-powerpc/irq.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/irq.h:1.2
+> --- linux-powerpc-git/include/asm-powerpc/irq.h:1.1.1.1	Wed Dec  6 08:24:04 2006
+> +++ linux-powerpc-git/include/asm-powerpc/irq.h	Wed Dec  6 08:43:16 2006
+> @@ -89,6 +89,9 @@
+>  	/* Dispose of such a mapping */
+>  	void (*unmap)(struct irq_host *h, unsigned int virq);
 >  
-> -	list_for_each_entry(b, &pci_root_buses, node)
-> -		pcibios_claim_one_bus(b);
-> +	list_for_each_entry(b, &pci_root_buses, node) {
-> +		if (machine_is(celleb) &&
-> +		    ppc_md.pci_probe_mode(b) != PCI_PROBE_DEVTREE)
-> +			;
-> +		else
-> +			pcibios_claim_one_bus(b);
-> +	}
->  }
->  
->  static u32 get_int_prop(struct device_node *np, const char *name, u32 def)
+> +	/* Update of such a mapping  */
+> +	void (*remap)(struct irq_host *h, unsigned int virq, irq_hw_number_t hw);
+> +
+>  	/* Translate device-tree interrupt specifier from raw format coming
+>  	 * from the firmware to a irq_hw_number_t (interrupt line number) and
+>  	 * type (sense) that can be passed to set_irq_type(). In the absence
+> Index: linux-powerpc-git/arch/powerpc/kernel/irq.c
+> diff -u linux-powerpc-git/arch/powerpc/kernel/irq.c:1.1.1.1 linux-powerpc-git/arch/powerpc/kernel/irq.c:1.2
+> --- linux-powerpc-git/arch/powerpc/kernel/irq.c:1.1.1.1	Wed Dec  6 08:25:43 2006
+> +++ linux-powerpc-git/arch/powerpc/kernel/irq.c	Wed Dec  6 08:43:14 2006
+> @@ -604,6 +604,8 @@
+>  	 */
+>  	virq = irq_find_mapping(host, hwirq);
+>  	if (virq != IRQ_NONE) {
+> +		if (host->ops->remap)
+> +			host->ops->remap(host, virq, hwirq);
+>  		pr_debug("irq: -> existing mapping on virq %d\n", virq);
+>  		return virq;
+>  	}
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
