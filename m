@@ -1,17 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8270A67C62
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 07:13:31 +1100 (EST)
-Subject: [PATCH] powerpc: Workaround oldworld OF bug with IRQs & P2P bridges
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Fri, 15 Dec 2006 07:13:26 +1100
-Message-Id: <1166127206.31351.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <bwarren@qstreams.com>
+Received: from web314.biz.mail.mud.yahoo.com (web314.biz.mail.mud.yahoo.com
+	[68.142.199.14]) by ozlabs.org (Postfix) with SMTP id D0A9567C82
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 07:19:06 +1100 (EST)
+Date: Thu, 14 Dec 2006 12:12:24 -0800 (PST)
+From: Ben Warren <bwarren@qstreams.com>
+Subject: Re: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+To: Reeve Yang <yang.reeve@gmail.com>, joakim.tjernlund@transmode.se
+In-Reply-To: <198592450612141159u6ad69302m86f1678ca5e1e62b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <859707.81440.qm@web314.biz.mail.mud.yahoo.com>
+Cc: David Brownell <david-b@pacbell.net>,
+	spi-devel-general@lists.sourceforge.net,
+	linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On some oldworld PowerMacs, OF doesn't assign interrupts properly
-beyond P2P bridges. Fortunately, the fix is easy as all those machines
-just wire all IRQ lines together to one IRQ which is assigned to the
-bridge itself. We already have a special function for parsing Apple
-OldWorld interrupts which are special, so let's add to it the ability
-to walk up the PCI tree to find interrupts.
+Reeve,
 
-This fixes irqs on the lower slots of s900 clones among others.
+--- Reeve Yang <yang.reeve@gmail.com> wrote:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> Hello, I'm working on the same thing but our board
+> is using MPC8343E
+> processor. Should the same patch be applied? If so
+> could someone post
+> a complete and clean patch? Though our kernel is
+> 2.6.13, I back ported
+> spi_mpc83xx but it's not working (the fsl controller
+> cannot be
+> detected). I'm hoping this patch could help on that
+> ...
+> 
 
-I'll also send that to -stable once it's been in for a few weeks.
+I had the mpc83xx driver working on an MPC8349
+processor under 2.6.14 a while ago.  The driver's very
+small but requires a fair amount of board specific
+initialization code.  Are you sure you added the
+proper platform resources, etc?
 
-Index: linux-work/arch/powerpc/kernel/prom_parse.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/prom_parse.c	2006-12-14 09:27:22.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/prom_parse.c	2006-12-14 09:29:36.000000000 +1100
-@@ -920,9 +920,20 @@
- 
- 	/*
- 	 * Old machines just have a list of interrupt numbers
--	 * and no interrupt-controller nodes.
-+	 * and no interrupt-controller nodes. We also have dodgy
-+	 * cases where the APPL,interrupts property is completely
-+	 * missing behind pci-pci bridges and we have to get it
-+	 * from the parent (the bridge itself, as apple just wired
-+	 * everything together on these)
- 	 */
--	ints = get_property(device, "AAPL,interrupts", &intlen);
-+	while (device) {
-+		ints = get_property(device, "AAPL,interrupts", &intlen);
-+		if (ints != NULL)
-+			break;
-+		device = device->parent;
-+		if (device && strcmp(device->type, "pci") != 0)
-+			break;
-+	}
- 	if (ints == NULL)
- 		return -EINVAL;
- 	intlen /= sizeof(u32);
+regards,
+Ben
