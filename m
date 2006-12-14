@@ -1,24 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0942B67C2D
+Return-Path: <wmaxfield@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
+	by ozlabs.org (Postfix) with ESMTP id 4617E67E0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Dec 2006 03:05:29 +1100 (EST)
-In-Reply-To: <950a36fb0612140801x39de08c2gd3ad5ce9ba04f900@mail.gmail.com>
-References: <950a36fb0612140241n15ca51e5xb8a9bb98888befb8@mail.gmail.com>
-	<8B63C317-4AC7-421C-8536-B68ED900127A@kernel.crashing.org>
-	<950a36fb0612140801x39de08c2gd3ad5ce9ba04f900@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <72D2A043-FCCB-4781-9764-1A398A611D0E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.19] enable watchdog device on mpc834x platforms
-Date: Thu, 14 Dec 2006 10:05:28 -0600
-To: "Pieter-Jan Busschaert" <pieterjan.busschaert@gmail.com>
-Cc: "linuxppc-embedded@ozlabs.org \(\(\(\(E-Mail\)\)\)\)"
-	<linuxppc-embedded@ozlabs.org>
+	Fri, 15 Dec 2006 03:05:37 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so248762wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Dec 2006 08:05:33 -0800 (PST)
+Message-ID: <45a1b53e0612140805p589b5bdfpd4fb3347cdb60ded@mail.gmail.com>
+Date: Thu, 14 Dec 2006 10:05:31 -0600
+From: "Wade Maxfield" <wmaxfield@gmail.com>
+To: ppc <linuxppc-embedded@ozlabs.org>
+Subject: system ace programming xf60
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_171298_21818237.1166112331172"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,27 +24,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_171298_21818237.1166112331172
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Dec 14, 2006, at 10:01 AM, Pieter-Jan Busschaert wrote:
+Hi,
 
->> Two things about this patch:
->> 1. We've actively avoid taking non-bug fix patches to arch/ppc as we
->> try to move people over to arch/powerpc.
->> 2. You can't hard code freq in the platform data like that.  It's
->> expected to be the bus frequency the device is running at.
->
-> The frequency is only used once in the driver to printk the
-> watchdog-timeout in seconds. It doesn't affect the functionallity in
-> any way. I looked at ways to get the cpu frequency dynamically in
-> there, but didn't find a simple way to do it.
+  We are trying to generate a system ace file that will program an xf60
+using Xilinx scripts,
+(and even their impact GUI), using 8.1i, service pack 3 EDK.
 
-It does, in that the drive reports it on a WDIOC_GETTIMEOUT to user  
-space.  (See how we use timeout_sec).
+  Unfortunately, if we choose the ml410 board from Xilinx's genace.tclscript
+in their EDK/data/xmd directory, it errors with an invalid instruction
+register length.
+The irlength is listed as 14 in the xilinx script files.  I looked and
+googled and could
+not find the irlength listed for that xf60 part in any literature.
 
-> But, because of your first comment, I suppose this patch will never
-> enter the linux kernel, even if I get the frequency dynamically?
+  Also, if we try to include the zImage.elf file, the script errors out.
 
-Most likely, but its still good to have the patches on the list for  
-people to pull if they need them.
+  Conversely, if we choose an ml403 board (and switch the project to the
+xf12 chip),
+we can combine the zImage.elf file and generate a system.ace file that loads
+on an
+ml403 board.
 
-- k
+  We can take the download.bit file that refuses to load when combined into
+the system.ace,
+and load it over the jtag port.  It programs the xf60 just fine.
+
+  If we create an empty system.ace file,  the system ace chip on our board
+signals everything is ok,
+but of course, the xilinx chip is not programmed.  If we pull the compact
+flash out of the board,
+the system ace chip signals that is can't find the compact flash by flashing
+the error light.
+
+  Has anyone on this list had any experience with this that could lead us in
+a right direction?  We've
+tried about 10 different combinations so far with no luck.
+
+thanks,
+wade
+
+------=_Part_171298_21818237.1166112331172
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br><br>&nbsp; We are trying to generate a system ace file that will program an xf60 using Xilinx scripts, <br>(and even their impact GUI), using 8.1i, service pack 3 EDK.<br><br>&nbsp; Unfortunately, if we choose the ml410 board from Xilinx's 
+genace.tcl script <br>in their EDK/data/xmd directory, it errors with an invalid instruction register length.<br>The irlength is listed as 14 in the xilinx script files.&nbsp; I looked and googled and could<br>not find the irlength listed for that xf60 part in any literature.
+<br><br>&nbsp; Also, if we try to include the zImage.elf file, the script errors out.<br><br>&nbsp; Conversely, if we choose an ml403 board (and switch the project to the xf12 chip), <br>we can combine the zImage.elf file and generate a 
+system.ace file that loads on an<br>ml403 board.<br><br>&nbsp; We can take the download.bit file that refuses to load when combined into the system.ace, <br>and load it over the jtag port.&nbsp; It programs the xf60 just fine.<br><br>
+&nbsp; If we create an empty system.ace file,&nbsp; the system ace chip on our board signals everything is ok,<br>but of course, the xilinx chip is not programmed.&nbsp; If we pull the compact flash out of the board,<br>the system ace chip signals that is can't find the compact flash by flashing the error light.
+<br><br>&nbsp; Has anyone on this list had any experience with this that could lead us in a right direction?&nbsp; We've<br>tried about 10 different combinations so far with no luck.<br><br>thanks,<br>wade<br>
+
+------=_Part_171298_21818237.1166112331172--
