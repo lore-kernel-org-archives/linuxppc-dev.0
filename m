@@ -2,13 +2,13 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F1C6A67C41
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 12:48:17 +1100 (EST)
-Date: Thu, 14 Dec 2006 10:48:07 +0900 (JST)
-Message-Id: <200612140148.kBE1m8Bp008592@toshiba.co.jp>
-To: arnd@arndb.de
-Subject: Re: [PATCH 10/15] celleb: SPU support routines
-In-Reply-To: <200612121359.14660.arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id 4720A67CAC
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 12:52:25 +1100 (EST)
+Date: Thu, 14 Dec 2006 10:52:17 +0900 (JST)
+Message-Id: <200612140152.kBE1qIh7011979@toshiba.co.jp>
+To: geoffrey.levand@am.sony.com
+Subject: Re: [PATCH 2/15] powerpc, celleb: Basic supports for Celleb
+In-Reply-To: <457EE633.2070208@am.sony.com>
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -22,265 +22,225 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd-san,
 
-Thank you for your comment.
+Geoff-san,
 
-> On Tuesday 12 December 2006 04:49, Ishizaki Kou wrote:
-> 
-> > +static int __init find_spu_node_id(struct device_node *spe)
-> > +{
-> > +	const unsigned int *id;
-> > +	struct device_node *cpu;
-> > +	cpu = spe->parent->parent;
-> > +	id = get_property(cpu, "node-id", NULL);
-> > +	return id ? *id : 0;
+Thanks for your comments.
+Many of files in celleb/ directory are copy-and-modified from that of
+pseries/ directory, so you can found many similarities in our code.
+
+> Ishizaki Kou wrote:
+> > This patch adds base support for Celleb platform.
+> > +++ linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile	Mon Dec 11 18:11:35 2006
+> > @@ -0,0 +1,10 @@
+> > +obj-$(CONFIG_PPC_CELLEB)		+= interrupt.o iommu.o setup.o \
+> > +								          lpar.o beat.o pci.o \
+> > +												   scc_epci.o scc_uhc.o
+> > +
+
+> I think this can just be obj-y, since this makefile is only used when CONFIG_PPC_CELLEB=y
+
+> > +ifeq ($(CONFIG_SMP),y)
+> > +obj-$(CONFIG_PPC_CELLEB)		+= smp.o
+> > +endif
+
+> Can't this just be obj-$(CONFIG_SMP) += smp.o, again, since CONFIG_PPC_CELLEB=y here?
+
+> > +spu-priv1-$(CONFIG_PPC_CELLEB)	  += spu_priv1.o spu_manage.o
+> > +obj-$(CONFIG_SPU_BASE)				 += $(spu-priv1-y)
+
+> Again, can't this be obj-$(CONFIG_SPU_BASE) += spu_priv1.o spu_manage.o?
+
+These points will be corrected, thank you.
+
 > > +}
 > > +
-> > +static u64 __init find_spu_unit_number(struct device_node *spe)
+> > +#if 0
+> > +/* returns 0 if couldn't find or use /chosen/stdout as console */
+> > +void __init celleb_find_udbg_vterm(void)
+> ...
+
+
+> Why is this dead code in here?  If this is broken, it should go into
+> another patch to be submitted later.  If it is for debugging, this
+> should be reworked so that the usage is more clear.
+
+Simply it's forgotten to remove. These codes will be removed at next time.
+
+> > +static inline unsigned int beat_read_mask(unsigned hpte_group)
 > > +{
-> > +	const unsigned int *reg;
-> > +	reg = get_property(spe, "reg", NULL);
-> > +	return reg ? (u64)*reg : 0ul;
+> > +	unsigned long hpte_v0, hpte_v1, hpte_v2, hpte_v3, hpte_perms;
+> > +	unsigned long rmask = 0;
+> > +
+> > +	beat_read_htab_entries(0, hpte_group + 0,
+> > +				  &hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> > +				  if (!(hpte_v0 & HPTE_V_BOLTED))
+> > +				     rmask |= 0x8000;
+> > +				     if (!(hpte_v1 & HPTE_V_BOLTED))
+> > +					rmask |= 0x4000;
+> > +					if (!(hpte_v2 & HPTE_V_BOLTED))
+> > +					   rmask |= 0x2000;
+> > +					   if (!(hpte_v3 & HPTE_V_BOLTED))
+> > +					      rmask |= 0x1000;
+> > +					      beat_read_htab_entries(0, hpte_group + 4,
+> > +									&hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> > +									if (!(hpte_v0 & HPTE_V_BOLTED))
+> > +									   rmask |= 0x0800;
+> > +									   if (!(hpte_v1 & HPTE_V_BOLTED))
+> > +									      rmask |= 0x0400;
+> > +									      if (!(hpte_v2 & HPTE_V_BOLTED))
+> > +										 rmask |= 0x0200;
+> > +										 if (!(hpte_v3 & HPTE_V_BOLTED))
+> > +										    rmask |= 0x0100;
+> > +										    hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
+> > +										    beat_read_htab_entries(0, hpte_group + 0,
+> > +													      &hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> > +													      if (!(hpte_v0 & HPTE_V_BOLTED))
+> > +														 rmask |= 0x80;
+> > +														 if (!(hpte_v1 & HPTE_V_BOLTED))
+> > +														    rmask |= 0x40;
+> > +														    if (!(hpte_v2 & HPTE_V_BOLTED))
+> > +														       rmask |= 0x20;
+> > +														       if (!(hpte_v3 & HPTE_V_BOLTED))
+> > +															  rmask |= 0x10;
+> > +															  beat_read_htab_entries(0, hpte_group + 4,
+> > +																		    &hpte_v0, &hpte_v1, &hpte_v2, &hpte_v3, &hpte_perms);
+> > +																		    if (!(hpte_v0 & HPTE_V_BOLTED))
+> > +																		       rmask |= 0x08;
+> > +																		       if (!(hpte_v1 & HPTE_V_BOLTED))
+> > +																			  rmask |= 0x04;
+> > +																			  if (!(hpte_v2 & HPTE_V_BOLTED))
+> > +																			     rmask |= 0x02;
+> > +																			     if (!(hpte_v3 & HPTE_V_BOLTED))
+> > +																				rmask |= 0x01;
+> > +																				return rmask;
 > > +}
+
+
+> These pagetable routines need to go into a separate file, I think this
+> request was made the last time this patch was posted.
+
+New file will be created at next patch.
+ 
+> > Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+> > diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c:1.3
+> > --- /dev/null     Mon Dec 11 20:37:31 2006
+> > +++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c	Mon Dec 11 19:55:10 2006
+> > @@ -0,0 +1,314 @@
+> > +/*
+> > + * Celleb setup code
+> > + *
+> > + * (C) Copyright 2006 TOSHIBA CORPORATION
+> > + *
+> > + * This code is based on arch/powerpc/platforms/cell/setup.c:
+> > + *  Copyright (C) 1995  Linus Torvalds
+> > + *  Adapted from 'alpha' version by Gary Thomas
+> > + *  Modified by Cort Dougan (cort@cs.nmt.edu)
+> > + *  Modified by PPC64 Team, IBM Corp
+> > + *  Modified by Cell Team, IBM Deutschland Entwicklung GmbH
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; either version 2 of the License, or
+> > + * (at your option) any later version.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public License along
+> > + * with this program; if not, write to the Free Software Foundation, Inc.,
+> > + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+> > + */
 > > +
-> > +static int __init cell_spuprop_present(struct spu *spu, struct device_node *spe,
-> > +		const char *prop)
-> > +{
-> > +	static DEFINE_MUTEX(add_spumem_mutex);
+> > +#undef DEBUG
+
+
+> This should be removed so that DEBUG can be set via the build system.  I saw
+> this in a few other files also.
+
+We think that this CPP symbol "DEBUG" is not for product,
+just for debugging lower layer in the kernel.
+
+> > +static int celleb_pci_probe_mode(struct pci_bus *bus){
 > > +
-> > +	const struct address_prop {
-> > +	      unsigned long address;
-> > +		       unsigned int len;
-> > +		       } __attribute__((packed)) *p;
-> > +		       int proplen;
-> > +
-> > +	unsigned long start_pfn, nr_pages;
-> > +	struct pglist_data *pgdata;
-> > +	struct zone *zone;
-> > +	int ret;
-> > +
-> > +	p = get_property(spe, prop, &proplen);
-> > +	WARN_ON(proplen != sizeof (*p));
-> > +
-> > +	start_pfn = p->address >> PAGE_SHIFT;
-> > +	nr_pages = ((unsigned long)p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
-> > +
-> > +	pgdata = NODE_DATA(spu_get_pdata(spu)->nid);
-> > +	zone = pgdata->node_zones;
-> > +
-> > +	/* XXX rethink locking here */
-> > +	mutex_lock(&add_spumem_mutex);
-> > +	ret = __add_pages(zone, start_pfn, nr_pages);
-> > +	mutex_unlock(&add_spumem_mutex);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static void __iomem * __init map_spe_prop(struct spu *spu,
-> > +		 struct device_node *n, const char *name)
-> > +{
-> > +	const struct address_prop {
-> > +	      unsigned long address;
-> > +		       unsigned int len;
-> > +		       } __attribute__((packed)) *prop;
-> > +
-> > +	const void *p;
-> > +	int proplen;
-> > +	void __iomem *ret = NULL;
-> > +	int err = 0;
-> > +
-> > +	p = get_property(n, name, &proplen);
-> > +	if (proplen != sizeof (struct address_prop))
-> > +	   return NULL;
-> > +
-> > +	prop = p;
-> > +
-> > +	err = cell_spuprop_present(spu, n, name);
-> > +	if (err && (err != -EEXIST))
-> > +	   goto out;
-> > +
-> > +	ret = ioremap(prop->address, prop->len);
-> > +
-> > + out:
-> > + return ret;
-> > +}
-> > +
-> > +static void spu_unmap(struct spu *spu)
-> > +{
-> > +	iounmap(spu->priv2);
-> > +	iounmap(spu->problem);
-> > +	iounmap((__force u8 __iomem *)spu->local_store);
-> > +}
-> > +
-> > +static int __init spu_map_device(struct spu *spu, struct device_node *node)
-> > +{
-> > +	const char *prop;
-> > +	int ret;
-> > +
-> > +	ret = -ENODEV;
-> > +	spu->name = get_property(node, "name", NULL);
-> > +	if (!spu->name)
-> > +	   goto out;
-> > +
-> > +	prop = get_property(node, "local-store", NULL);
-> > +	if (!prop)
-> > +	   goto out;
-> > +	   spu->local_store_phys = *(unsigned long *)prop;
-> > +
-> > +	/* we use local store as ram, not io memory */
-> > +	spu->local_store = (void __force *)
-> > +			 map_spe_prop(spu, node, "local-store");
-> > +			 if (!spu->local_store)
-> > +			    goto out;
-> > +
-> > +	prop = get_property(node, "problem", NULL);
-> > +	if (!prop)
-> > +	   goto out_unmap;
-> > +	   spu->problem_phys = *(unsigned long *)prop;
-> > +
-> > +	spu->problem= map_spe_prop(spu, node, "problem");
-> > +	if (!spu->problem)
-> > +	   goto out_unmap;
-> > +
-> > +	spu->priv2= map_spe_prop(spu, node, "priv2");
-> > +	if (!spu->priv2)
-> > +	   goto out_unmap;
-> > +	   ret = 0;
-> > +	   goto out;
-> > +
-> > +out_unmap:
-> > +	spu_unmap(spu);
-> > +out:
-> > +	return ret;
-> > +}
-> > +
-> > +static int __init spu_map_interrupts(struct spu *spu, struct device_node *np)
-> > +{
-> > +	struct of_irq oirq;
-> > +	int ret;
-> > +	int i;
-> > +
-> > +	for (i=0; i < 3; i++) {
-> > +	    ret = of_irq_map_one(np, i, &oirq);
-> > +		if (ret) {
-> > +			 pr_debug("spu_new: failed to get irq %d\n", i);
-> > +						   goto err;
-> > +							}
-> > +								ret = -EINVAL;
-> > +								    pr_debug("  irq %d no 0x%x on %s\n", i, oirq.specifier[0],
-> > +										     oirq.controller->full_name);
-> > +											spu->irqs[i] = irq_create_of_mapping(oirq.controller,
-> > +														oirq.specifier, oirq.size);
-> > +																if (spu->irqs[i] == NO_IRQ) {
-> > +																		 pr_debug("spu_new: failed to map it !\n");
-> > +																					   goto err;
-> > +																						}
-> > +																						}
-> > +																						return 0;
-> > +
-> > +err:
-> > +	pr_debug("failed to map irq %x for spu %s\n", *oirq.specifier,
-> > +			 spu->name);
-> > +			 for (; i >= 0; i--) {
-> > +			     if (spu->irqs[i] != NO_IRQ)
-> > +					      irq_dispose_mapping(spu->irqs[i]);
-> > +					      }
-> > +					      return ret;
-> > +}
-> > +
-> > +static int __init of_enumerate_spus(int (*fn)(void *data))
-> > +{
-> > +	int ret;
 > > +	struct device_node *node;
+> > +	const char *name;
 > > +
-> > +	ret = -ENODEV;
-> > +	for (node = of_find_node_by_type(NULL, "spe");
-> > +		  node; node = of_find_node_by_type(node, "spe")) {
-> > +			ret = fn(node);
-> > +			    if (ret) {
-> > +				     printk(KERN_WARNING "%s: Error initializing %s\n",
-> > +								    __FUNCTION__, node->name);
-> > +											break;
-> > +												}
-> > +												}
-> > +												return ret;
+> > +	node = (struct device_node *)bus->sysdata;
+> > +	name = get_property(node, "name", NULL);
+> > +
+> > +	if (strcmp(name, "pci-pseudo") == 0)
+> > +	   return PCI_PROBE_DEVTREE;
+> > +
+> > +	return PCI_PROBE_NORMAL;
 > > +}
-> > +> > +static int __init beat_create_spu(struct spu *spu, void *data)
+> > +
+> > +static void celleb_kexec_cpu_down(int crash, int secondary)
 > > +{
-> > +	int ret;
-> > +	struct device_node *spe = (struct device_node *)data;
+> > +	extern void	beatic_deinit_IRQ(void);
 > > +
-> > +	spu->pdata = kzalloc(sizeof(struct spu_pdata),
-> > +		   GFP_KERNEL);
-> > +		   if (!spu->pdata) {
-> > +		      ret = -ENOMEM;
-> > +			  goto out;
-> > +			  }
-> > +
-> > +	spu->node = find_spu_node_id(spe);
-> > +	if (spu->node >= MAX_NUMNODES) {
-> > +	   printk(KERN_WARNING "SPE %s on node %d ignored,"
-> > +			              " node number too big\n", spe->full_name, spu->node);
-> > +					printk(KERN_WARNING "Check if CONFIG_NUMA is enabled.\n");
-> > +							    ret = -ENODEV;
-> > +								goto out_free;
-> > +								}
-> > +
-> > +	spu_get_pdata(spu)->nid = of_node_to_nid(spe);
-> > +	if (spu_get_pdata(spu)->nid == -1)
-> > +	   spu_get_pdata(spu)->nid = 0;
-> > +
-> > +	spu_get_pdata(spu)->unit_number = find_spu_unit_number(spe);
-> > +
-> > +	ret = spu_map_device(spu, spe);
-> > +	if (ret)
-> > +	   goto out_free;
-> > +
-> > +	ret = spu_map_interrupts(spu, spe);
-> > +	if (ret)
-> > +	   goto out_unmap;
-> > +
-> > +	pr_debug(KERN_DEBUG "Using SPE %s %p %p %p %d\n", spu->name,
-> > +			    spu->local_store, spu->problem, spu->priv2, spu->number);
-> > +			    goto out;
-> > +
-> > +out_unmap:
-> > +	spu_unmap(spu);
-> > +out_free:
-> > +	kfree(spu->pdata);
-> > +	spu->pdata = NULL;
-> > +out:
-> > +	return ret;
+> > +	beatic_deinit_IRQ();
 > > +}
 > > +
-> 
-> All this code is just the same as the one from 
-> platforms/cell/spu_priv1_mmio.c, right? I guess it should really be a separate
-> file then that is used by both platforms in that case, in particular since
-> I have a few bug fixes for it that may easily get out of sync. I should
-> have probably noticed that when Geoff moved this code around in the ps3
-> merge, but it looks like we need to move it again.
+> > +#ifdef CONFIG_SERIAL_TXX9
+> > +/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
+> > +    mmio=0xfff000-0x1000,0xff2000-0x1000 */
+> > +static int txx9_serial_bitmap = 0;
+> > +
+> > +static struct {
+> > +	    uint32_t offset;
+> > +	    uint32_t index;
+> > +} txx9_spider_tab[3] = {
+> > +  { 0x300, 0 },	  /* 0xFFF300 */
+> > +  { 0x400, 0 },	  /* 0xFFF400 */
+> > +  { 0x800, 1 }	  /* 0xFF2800 */
+> > +};
 
-Most of our SPU management routines are imported from
-platforms/cell/spu_priv1_mmio.c and some functions are modified for
-Beat.
+> Setup.c is not the proper place for these PCI and serial UART
+> device routines.
 
-There are two differences with Cell Blade.
+On PCI bus, it was moved to celleb/pci.c. On serial port, we created
+new file.
 
- - platform private data
-  Beat requires some private members and initailizing.
+> There is already a Linux driver for the txx9_serial, why did you create
+> another one here?  Why can't you re-use the existing txx9_serial driver,
+> or rework it to support this platform?
 
- - device-tree
-  Standard binding doesn't exist. Our DT is similar to 'old' style of
-  Cell Blade but not identical.
+Code stays in celleb/setup.c is not a driver, but a registerer.
+The SIO has no proper properties in our device-tree, so we have
+to hard-code to register the SIO block in SCC.
 
-We think the integration of codes is preferable, but this is our first code
-for public and we need time to modify them. So, this time we hope they are
-merged into as it is. We'd like to discuss and modify our codes toward
-integrated codes after this first merge.  
+> > Index: linux-powerpc-git/include/asm-powerpc/mmu.h
+> > diff -u linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/mmu.h:1.2
+> > --- linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
+> > +++ linux-powerpc-git/include/asm-powerpc/mmu.h		Wed Dec  6 08:43:16 2006
+> > @@ -247,6 +247,7 @@
+> >  extern void hpte_init_native(void);
+> >  extern void hpte_init_lpar(void);
+> >  extern void hpte_init_iSeries(void);
+> > +extern void hpte_init_beat(void);
+> >  
+> >  extern void stabs_alloc(void);
+> >  extern void slb_initialize(void);
+> > Index: linux-powerpc-git/include/asm-powerpc/smp.h
+> > diff -u linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/smp.h:1.2
+> > --- linux-powerpc-git/include/asm-powerpc/smp.h:1.1.1.1	Wed Dec  6 08:24:04 2006
+> > +++ linux-powerpc-git/include/asm-powerpc/smp.h		Wed Dec  6 08:43:16 2006
+> > @@ -75,6 +75,7 @@
+> >  void smp_init_iSeries(void);
+> >  void smp_init_pSeries(void);
+> >  void smp_init_cell(void);
+> > +void smp_init_celleb(void);
+> >  void smp_setup_cpu_maps(void);
 
+> Since these routines are defined and used all inside in arch/powerpc/platforms/celleb, these
+> declarations should go into a header file in that directory.
+
+Older Linux code uses hpte_init_* code in generic space,
+so we inserted these extern function declaration at shared header
+file. I think these declarations will be decay in long term.
 
 Best regards,
 Kou Ishizaki
-Toshiba
