@@ -1,21 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id F286767C0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 21:02:53 +1100 (EST)
-Subject: RE: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0612132349560.3439@gate.crashing.org>
-References: <037901c71f14$a47115b0$020120ac@Jocke>
-	<Pine.LNX.4.64.0612132349560.3439@gate.crashing.org>
-Content-Type: text/plain
-Date: Thu, 14 Dec 2006 11:02:47 +0100
-Message-Id: <1166090567.30422.73.camel@gentoo-jocke.transmode.se>
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA6EB67C02
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Dec 2006 22:03:12 +1100 (EST)
+Date: Thu, 14 Dec 2006 20:02:45 +0900 (JST)
+Message-Id: <200612141102.kBEB2kon010247@toshiba.co.jp>
+To: hch@infradead.org
+Subject: Re: [PATCH] drivers/net: spidernet driver on Celleb
+In-Reply-To: <20061212122450.GA30466@infradead.org>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
-Cc: 'David Brownell' <david-b@pacbell.net>,
-	spi-devel-general@lists.sourceforge.net,
-	'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, jim@jklewis.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,134 +22,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-13 at 23:54 -0600, Kumar Gala wrote:
-> What about something like the following were we pass in if we are in a 
-> quicc engine to the driver via the platform device.
-> 
-> Joakim, I haven't tested this so would like to know if this works for you 
-> on your 832x.  I was also wondering if there was a reason you wanted to 
-> use the QE SPI in CPU mode and not QE mode, lack of driver, something 
-> else?
+Christoph-san,
 
-Just lack of driver. The amont of data is small in my case so it does
-not matter much.
+Thanks for your comments.
 
-> 
-> Also, if this patch looks good to David, I'll clean it up and send it 
-> upstream.  I want to rename the driver and cleanup the Kconfig to make it 
-> a bit more generic to cover more than just mpc83xx. (The same driver 
-> should work on the MPC8568 so I was going to rename the driver 
-> spi_mpc8xxx.c).
-> 
-> - k
+>On Tue, Dec 12, 2006 at 02:25:50PM +0900, Ishizaki Kou wrote:
+>> 
+>> Following are the changes.
+>> -This patch enables auto-negotiation.
+>> -Loading firmware is done when spidernet_open() is called.
+>> -And this patch adds other several small changes for Celleb. 
+>
+>This should be split into three separate patches, sent as a patch
+>series.
 
-patch needs a litte work, the shift is diffrent for tx resp. rx so I 
-adjusted that and added a temp hack(still in patch below) to force qe_mode.
-The name qe_mode is misleading. This i a QE enabled CPU, but SPI is running in cpu mode. qe_mode implies that SPI is runing in native QUICC
-mode.
+We are now working to separeting the patch. We'll send later.
 
-Adjusted patch(lets hope I didn't mangle this one:):
+>> -/* outside loopback mode: ETOMOD signal dont matter, not connected */
+>> -#define SPIDER_NET_OPMODE_VALUE     0x00000063
+>> +/* ETOMOD signal is brought to PHY reset. bit2 must be 1 in Celleb */
+>> +#define SPIDER_NET_OPMODE_VALUE     0x00000067
+>
+>Is it okay to simple change this value for the ibm blades?
 
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index ff0b048..0c31878 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -47,6 +47,7 @@ struct mpc83xx_spi_reg {
- #define	SPMODE_ENABLE		(1 << 24)
- #define	SPMODE_LEN(x)		((x) << 20)
- #define	SPMODE_PM(x)		((x) << 16)
-+#define	SPMODE_OP		(1 << 14)
- 
- /*
-  * Default for SPI Mode:
-@@ -85,6 +86,11 @@ struct mpc83xx_spi {
- 	unsigned nsecs;		/* (clock cycle time)/2 */
- 
- 	u32 sysclk;
-+	u32 rx_shift;		/* amount to adjust RX data regs if in qe mode */
-+	u32 tx_shift;		/* amount to adjust TX data regs if in qe mode */
-+
-+	bool qe_mode;
-+
- 	void (*activate_cs) (u8 cs, u8 polarity);
- 	void (*deactivate_cs) (u8 cs, u8 polarity);
- };
-@@ -103,7 +109,7 @@ static inline u32 mpc83xx_spi_read_reg(_
- void mpc83xx_spi_rx_buf_##type(u32 data, struct mpc83xx_spi *mpc83xx_spi) \
- {									  \
- 	type * rx = mpc83xx_spi->rx;					  \
--	*rx++ = (type)data;						  \
-+	*rx++ = (type)(data >> mpc83xx_spi->rx_shift);			  \
- 	mpc83xx_spi->rx = rx;						  \
- }
- 
-@@ -112,7 +118,7 @@ u32 mpc83xx_spi_tx_buf_##type(struct mpc
- {								\
- 	u32 data;						\
- 	const type * tx = mpc83xx_spi->tx;			\
--	data = *tx++;						\
-+	data = *tx++ << mpc83xx_spi->tx_shift;			\
- 	mpc83xx_spi->tx = tx;					\
- 	return data;						\
- }
-@@ -195,12 +201,22 @@ int mpc83xx_spi_setup_transfer(struct sp
- 	    || ((bits_per_word > 16) && (bits_per_word != 32)))
- 		return -EINVAL;
- 
-+	mpc83xx_spi->rx_shift = 0;
-+	mpc83xx_spi->tx_shift = 0;
- 	if (bits_per_word <= 8) {
- 		mpc83xx_spi->get_rx = mpc83xx_spi_rx_buf_u8;
- 		mpc83xx_spi->get_tx = mpc83xx_spi_tx_buf_u8;
-+		if (mpc83xx_spi->qe_mode) {
-+			mpc83xx_spi->rx_shift = 16;
-+			mpc83xx_spi->tx_shift = 24;
-+		}
- 	} else if (bits_per_word <= 16) {
- 		mpc83xx_spi->get_rx = mpc83xx_spi_rx_buf_u16;
- 		mpc83xx_spi->get_tx = mpc83xx_spi_tx_buf_u16;
-+		if (mpc83xx_spi->qe_mode) {
-+			mpc83xx_spi->rx_shift = 16;
-+			mpc83xx_spi->tx_shift = 16;
-+		}
- 	} else if (bits_per_word <= 32) {
- 		mpc83xx_spi->get_rx = mpc83xx_spi_rx_buf_u32;
- 		mpc83xx_spi->get_tx = mpc83xx_spi_tx_buf_u32;
-@@ -369,8 +385,8 @@ static int __init mpc83xx_spi_probe(stru
- 		ret = -ENODEV;
- 		goto free_master;
- 	}
--
- 	mpc83xx_spi = spi_master_get_devdata(master);
-+	pdata->qe_mode = 1; // temp hack to force 832x mode
- 	mpc83xx_spi->bitbang.master = spi_master_get(master);
- 	mpc83xx_spi->bitbang.chipselect = mpc83xx_spi_chipselect;
- 	mpc83xx_spi->bitbang.setup_transfer = mpc83xx_spi_setup_transfer;
-@@ -378,9 +394,17 @@ static int __init mpc83xx_spi_probe(stru
- 	mpc83xx_spi->sysclk = pdata->sysclk;
- 	mpc83xx_spi->activate_cs = pdata->activate_cs;
- 	mpc83xx_spi->deactivate_cs = pdata->deactivate_cs;
-+	mpc83xx_spi->qe_mode = pdata->qe_mode;
- 	mpc83xx_spi->get_rx = mpc83xx_spi_rx_buf_u8;
- 	mpc83xx_spi->get_tx = mpc83xx_spi_tx_buf_u8;
- 
-+	mpc83xx_spi->rx_shift = 0;
-+	mpc83xx_spi->tx_shift = 0;
-+	if (mpc83xx_spi->qe_mode) {
-+		mpc83xx_spi->rx_shift = 16;
-+		mpc83xx_spi->tx_shift = 24;
-+	}
-+
- 	mpc83xx_spi->bitbang.master->setup = mpc83xx_spi_setup;
- 	init_completion(&mpc83xx_spi->done);
- 
-@@ -415,6 +439,9 @@ static int __init mpc83xx_spi_probe(stru
- 
- 	/* Enable SPI interface */
- 	regval = pdata->initial_spmode | SPMODE_INIT_VAL | SPMODE_ENABLE;
-+	if (pdata->qe_mode)
-+		regval |= SPMODE_OP;
-+
- 	mpc83xx_spi_write_reg(&mpc83xx_spi->base->mode, regval);
- 
- 	ret = spi_bitbang_start(&mpc83xx_spi->bitbang);
+Sorry, we didn't test on ibm blades, because we don't have one.
+We hope to develop together so that the driver works on both platform.
+
+>> +static int is1000 = 1;
+>
+>This should be in struct spider_net_card instead of a global flag.
+
+We'll move it in struct spider_net_card.
+
+>>      case SPIDER_NET_GTMFLLINT:
+>> -        if (netif_msg_intr(card) && net_ratelimit())
+>> -            pr_err("Spider TX RAM full\n");
+>> +        /* if (netif_msg_intr(card) && net_ratelimit())
+>> +            pr_err("Spider TX RAM full\n"); */
+>
+>Either this should be kept or removed entirely.  In the latter case you
+>need a good description why it's removed in the patch header.
+
+We'll remove it entirely.
+
+GTMFLLINT occures frequently when we use 100M HUB. We didn't find any
+bad influence by this interrupt so far, so we removed the output.
+
+>> +
+>> +    spider_net_write_reg(card, SPIDER_NET_GMACOPEMD,
+>> +                         spider_net_read_reg(card, SPIDER_NET_GMACOPEMD) | 0x4);
+>
+>Please make sure this doesn't overflow the 80 characters per line limit.
+
+We'll correct it. 
+
+>> +static int spider_net_init_firmware(struct spider_net_card *);
+>
+>Random forward declarations in the middle of the file aren't very nice.
+>If you really need them put them at the beggining of the file, but it would
+>be even better if you moved spider_net_init_firmware further up in the
+>file so we wouldn't need the forward-declaration at all.
+
+We'll move some functions.
+
+>> +    if (card->phy.def->phy_id)
+>> +        mod_timer(&card->aneg_timer, jiffies + SPIDER_NET_ANEG_TIMER);
+>> +    else
+>> +        pr_err("No phy is available\n");
+>
+>What is this idiom about?  Is not having a phy a fatal error in which case
+>we should abort here, or is it tolerable in which case pr_err is too much.
+
+Checking phy_id is not required here, so we'll change to call
+mod_timer() simply.
+
+>> +static void spider_net_init_card(struct spider_net_card *);
+>
+>Same comment above forward declarations as above.
+
+Thank you,
+Kou Ishizaki
+Toshiba
