@@ -1,22 +1,22 @@
-Return-Path: <vsampath@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
-	by ozlabs.org (Postfix) with ESMTP id 9948267C76
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
+	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E76CC67BB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Dec 2006 14:04:00 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id p76so235736pyb
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Dec 2006 19:03:58 -0800 (PST)
-Message-ID: <758a2bbf0612131903w63a11c60t6f13e68fd3d7e3df@mail.gmail.com>
-Date: Wed, 13 Dec 2006 19:03:58 -0800
-From: "Vijay Sampath" <vsampath@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: Problem porting linux 2.6 on IBM405EP based boards
-In-Reply-To: <458047D3.8060401@freescale.com>
+	Thu, 14 Dec 2006 20:35:27 +1100 (EST)
+Received: from l-dhlii.dlasys.net ([206.223.20.247]:4289)
+	by mx.dlasys.net with esmtpa (Exim 4.63 #1 (Debian))
+	id 1GunmH-0006DB-4t by authid <dhlii> with plain_server
+	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Dec 2006 05:25:25 -0500
+Message-ID: <45811A6E.1020906@dlasys.net>
+Date: Thu, 14 Dec 2006 04:33:34 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <758a2bbf0612130926w56d468dejf0e8e51c918d2175@mail.gmail.com>
-	<458047D3.8060401@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Slightly OT - job quote
+Content-Type: multipart/alternative;
+	boundary="------------040203010306010103020007"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,30 +27,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Oh. KGDB. Makes perfect sense. Cool will try to setup a serial
-debugger or try and enable printks or try and debug with emulator with
-no kgdb. Currently printks don't work (although ppc specific prints
-ppc_md.progress() appear on the console). What does it take to get
-printk to work early on? Regardless I have enough to proceed now.
+This is a multi-part message in MIME format.
+--------------040203010306010103020007
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Vijay
+    I appologize if this is too far outside the bounds for this list - 
+Even pointers to a better place would be appreciated.
 
-On 12/13/06, Scott Wood <scottwood@freescale.com> wrote:
-> Vijay Sampath wrote:
-> > After this, the code started executing start_kernel, but stopped
-> > shortly thereafter (snippet B). After this every time I press a key,
-> > the following line gets printed:
-> >
-> > $T0740:30300a00;01:c0621fb0;#45
-> >
-> > Its possible that I have something configured wrong, but
-> > any guidance on what that message could possibly mean would be
-> > appreciated.
->
-> That looks like output from a GDB stub.  You may want to try turning off
-> GDB support in your kernel in order to (probably) get an oops message
-> instead (you may need to do something special to hook printk up to the
-> early debug console).  Alternately, you could try attaching to it with GDB.
->
-> -Scott
->
+    I need to price some work. This is not work that is going to be
+done, but I need to get a range of what competitive costs would be, not
+what I would charge.
+    I only need rough estimates, but I need them from people with the
+actual experience to do the work.
+
+    I am basically looking for the normal cost for from scratch embedded
+linux board bringup - on a new board, including bootloader, BSP, and
+typical minimal driver set
+    network, serial, flash, PIC, ...
+   
+
+
+
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
+
+
+--------------040203010306010103020007
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<font face="Arial">&nbsp;&nbsp;&nbsp; I appologize if this is too far outside the
+bounds for this list -&nbsp; Even pointers to a better place would be
+appreciated.<br>
+<br>
+&nbsp;&nbsp;&nbsp; I need to price some work. This is not work that is going to be
+done, but I need to get a range of what competitive costs would be, not
+what I would charge.<br>
+&nbsp;&nbsp;&nbsp; I only need rough estimates, but I need them from people with the
+actual experience to do the work.<br>
+<br>
+&nbsp;&nbsp;&nbsp; I am basically looking for the normal cost for from scratch
+embedded linux board bringup - on a new board, including bootloader,
+BSP, and typical minimal driver set <br>
+&nbsp;&nbsp;&nbsp; network, serial, flash, PIC, ...<br>
+&nbsp;&nbsp;&nbsp; <br>
+<br>
+<br>
+<br>
+</font>
+<pre class="moz-signature" cols="72">-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
+</pre>
+</body>
+</html>
+
+--------------040203010306010103020007--
