@@ -1,19 +1,19 @@
-Return-Path: <akpm@osdl.org>
-Date: Fri, 15 Dec 2006 11:45:36 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [PATCH] Fix sparsemem on Cell
-Message-Id: <20061215114536.dc5c93af.akpm@osdl.org>
-In-Reply-To: <1166203440.8105.22.camel@localhost.localdomain>
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<4582D756.7090702@shadowen.org>
-	<1166203440.8105.22.camel@localhost.localdomain>
+Return-Path: <svallet@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 7AD5867BD5
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Dec 2006 06:58:16 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so905823ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 11:58:15 -0800 (PST)
+Date: Fri, 15 Dec 2006 20:58:12 +0100
+From: Simon Vallet <svallet@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: atomic_clear_mask() on PPC ?
+Message-ID: <20061215205812.623b68d2@mlejnas.priv.castalie.org>
+In-Reply-To: <37F182F3-71D2-4A8C-84B0-A036684B447B@watson.ibm.com>
+References: <6473fb3e0612150325w3c6f01b0rdd4953dc9cb6430e@mail.gmail.com>
+	<37F182F3-71D2-4A8C-84B0-A036684B447B@watson.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Keith Mannthey <kmannth@us.ibm.com>,
-	linux-kernel@vger.kernel.org, hch@infradead.org,
-	linux-mm@kvack.org, paulus@samba.org, mkravetz@us.ibm.com,
-	gone@us.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 15 Dec 2006 09:24:00 -0800
-Dave Hansen <haveblue@us.ibm.com> wrote:
+On Fri, 15 Dec 2006 09:08:19 -0500
+Jimi Xenidis <jimix@watson.ibm.com> wrote:
 
-> 
-> ...
->
-> I think the comments added say it pretty well, but I'll repeat it here.
-> 
-> This fix is pretty similar in concept to the one that Arnd posted
-> as a temporary workaround, but I've added a few comments explaining
-> what the actual assumptions are, and improved it a wee little bit.
-> 
-> The end goal here is to simply avoid calling the early_*() functions
-> when it is _not_ early.  Those functions stop working as soon as
-> free_initmem() is called.  system_state is set to SYSTEM_RUNNING
-> just after free_initmem() is called, so it seems appropriate to use
-> here.
+> powerpc 32-bit seems to have it:
+>    arch/powerpc/kernel/misc_32.S _GLOBAL 742 _GLOBAL(atomic_clear_mask)
 
-Would really prefer not to do this.  system_state is evil.  Its semantics
-are poorly-defined and if someone changes them a bit, or changes memory
-initialisation order, you get whacked.
+Hmmm... I guess the grep was a bit too quick : fact is I just 
+looked at include/ ;-)
 
-I think an mm-private flag with /*documented*/ semantics would be better. 
-It's only a byte.
+> Assuming its the "thing" you actually want, since atomic_t is always  
+> an int, the exact same code sequence will be fine under 64bit, I  
+> guess PPc64 never needed it?
 
-> +static int __meminit can_online_pfn_into_nid(unsigned long pfn, int nid)
+Well, I'll try with this -- thanks for the info.
 
-I spent some time trying to work out what "can_online_pfn_into_nid" can
-possibly mean and failed.  "We can bring a pfn online then turn it into a
-NID"?  Don't think so.  "We can bring this page online and allocate it to
-this node"?  Maybe.
-
-Perhaps if the function's role in the world was commented it would be clearer.
+Simon
