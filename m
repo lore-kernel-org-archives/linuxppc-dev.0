@@ -1,18 +1,18 @@
-Return-Path: <haveblue@us.ibm.com>
-Subject: Re: [PATCH] Fix sparsemem on Cell
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Michael Buesch <mb@bu3sch.de>
-In-Reply-To: <200612151822.23764.mb@bu3sch.de>
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<200612151822.23764.mb@bu3sch.de>
-Content-Type: text/plain
-Date: Fri, 15 Dec 2006 09:57:50 -0800
-Message-Id: <1166205470.8105.28.camel@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2A0A267BD5
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Dec 2006 04:59:57 +1100 (EST)
+Date: Fri, 15 Dec 2006 11:59:02 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
+Message-ID: <20061215115902.688f1a34@pb15>
+In-Reply-To: <B38E3DDE-A18F-4319-A968-B0C22C001391@kernel.crashing.org>
+References: <20061213190408.1d4ddd93.kim.phillips@freescale.com>
+	<B38E3DDE-A18F-4319-A968-B0C22C001391@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: akpm@osdl.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	hch@infradead.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	mkravetz@us.ibm.com, gone@us.ibm.com, cbe-oss-dev@ozlabs.org,
-	naveen.b.s@intel.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,41 +22,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-12-15 at 18:22 +0100, Michael Buesch wrote:
-> On Friday 15 December 2006 17:53, Dave Hansen wrote:
-> >  lxc-dave/init/main.c     |    4 ++++
-> >  lxc-dave/mm/page_alloc.c |   28 +++++++++++++++++++++++++---
-> >  2 files changed, 29 insertions(+), 3 deletions(-)
-> >
-> > diff -puN init/main.c~sparsemem-fix init/main.c
-> > --- lxc/init/main.c~sparsemem-fix	2006-12-15 08:49:53.000000000 -0800
-> > +++ lxc-dave/init/main.c	2006-12-15 08:49:53.000000000 -0800
-> > @@ -770,6 +770,10 @@ static int init(void * unused)
-> >  	free_initmem();
-> >  	unlock_kernel();
-> >  	mark_rodata_ro();
-> > +	/*
-> > +	 * Memory hotplug requires that this system_state transition
-> > +	 * happer after free_initmem().  (see memmap_init_zone())
+On Fri, 15 Dec 2006 10:09:09 -0600 Kumar Gala <galak@kernel.crashing.org> wrote:
+
+> > +#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> > +extern ulong ds1374_get_rtc_time(void);
+> > +extern int ds1374_set_rtc_time(ulong);
+> > +
+> > +static int __init mpc83xx_rtc_hookup(void)
+> > +{
+> > +	struct timespec tv;
+> > +
+> > +	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> > +	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> > +
+> > +	tv.tv_nsec = 0;
+> > +	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> > +	do_settimeofday(&tv);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +late_initcall(mpc83xx_rtc_hookup);
+> > +#endif  
 > 
-> s/happer/happens/
-> 
-> Other than that, can't this possibly race and crash here?
-> I mean, it's not a big race window, but it can happen, no?
+> This is sort of evil and we need to clean it up, but we have some  
+> time for 2.6.21.  Does the MPC832x MDS have the DS1374?
 
-That's a good point.  Nice eye.
+s/sort of/pure/
 
-There are three routes in here: boot-time init, an ACPI call, and a
-write to a sysfs file.  Bootmem is taken care of.  The write to a sysfs
-file can't happen yet because userspace isn't up.
+Something like this should work just as well. Seems to work fine on my
+system here (that has a DS1338, i.e. ds1307 driver).
 
-The only question would be about ACPI.  I _guess_ an ACPI event could
-come in at any time, and could hit this race window.  
+Let me know if it works on 83xx and I'll post it with a signed-off-line.
 
-One other thought I had was to add an argument to memmap_init_zone() to
-indicate that the memory being fed to it was contiguous and did not need
-the validation checks.
 
-Anybody have thoughts on that?
 
--- Dave
+-Olof
+
+
+
+
+Index: linux-2.6/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/Kconfig
++++ linux-2.6/arch/powerpc/Kconfig
+@@ -600,6 +600,12 @@ config PPC_TODC
+ 	---help---
+ 	  This adds support for many TODC/RTC chips.
+ 
++config PPC_GENRTC
++	bool "Generic RTC support"
++	help
++	  This adds support for using regular RTC registered with the RTC
++	  framework as the main clock on powerpc.
++
+ endmenu
+ 
+ source arch/powerpc/platforms/embedded6xx/Kconfig
+Index: linux-2.6/arch/powerpc/sysdev/Makefile
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/Makefile
++++ linux-2.6/arch/powerpc/sysdev/Makefile
+@@ -10,6 +10,7 @@ obj-$(CONFIG_40x)		+= dcr.o
+ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
++obj-$(CONFIG_PPC_GENRTC)	+= genrtc.o
+ obj-$(CONFIG_PPC_TODC)		+= todc.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+Index: linux-2.6/arch/powerpc/sysdev/genrtc.c
+===================================================================
+--- /dev/null
++++ linux-2.6/arch/powerpc/sysdev/genrtc.c
+@@ -0,0 +1,77 @@
++/*
++ * Copyright (C) Olof Johansson <olof@lixom.net>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#include <linux/time.h>
++#include <linux/device.h>
++#include <linux/rtc.h>
++
++#include <asm/machdep.h>
++#include <asm/time.h>
++
++static struct class_device *rtc_dev;
++
++static void genrtc_set_rtc_time_work(void *arg);
++
++static struct rtc_time delayed_tm;
++static struct workqueue_struct *rtc_workqueue;
++static DECLARE_WORK(rtc_work, genrtc_set_rtc_time_work, &delayed_tm);
++
++static void genrtc_set_rtc_time_work(void *arg)
++{
++	struct rtc_time *tm = arg;
++	rtc_set_time(rtc_dev, tm);
++}
++
++static int genrtc_set_rtc_time(struct rtc_time *tm)
++{
++	if (in_interrupt()) {
++		/* Can't access RTC with interrupts off, since some of
++		 * the drivers might sleep. Delay the setting with a
++		 * work queue.
++		 */
++		memcpy(&delayed_tm, tm, sizeof(struct rtc_time));
++		queue_work(rtc_workqueue, &rtc_work);
++		return 0;
++	} else
++		return rtc_set_time(rtc_dev, tm);
++}
++
++static void genrtc_get_rtc_time(struct rtc_time *tm)
++{
++	rtc_read_time(rtc_dev, tm);
++}
++
++static int __init genrtc_rtc_hookup(void)
++{
++	/* Don't init if the platform has already set up rtc functions. */
++	if (ppc_md.get_rtc_time || ppc_md.set_rtc_time)
++		return -1;
++
++	rtc_dev = rtc_class_open("rtc0");
++
++	if (!rtc_dev) {
++		printk("genrtc_rtc_hookup: Failed to open rtc0\n");
++		return -1;
++	}
++
++	ppc_md.get_rtc_time = genrtc_get_rtc_time;
++	ppc_md.set_rtc_time = genrtc_set_rtc_time;
++
++	return 0;
++}
++late_initcall(genrtc_rtc_hookup);
++
