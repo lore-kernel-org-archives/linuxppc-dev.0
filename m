@@ -1,34 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 46FB567BA1
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 13:59:27 +1100 (EST)
-In-Reply-To: <1166149729.31351.43.camel@localhost.localdomain>
-References: <1166006370.90082.476088563252.qpush@cradle>
-	<20061213104007.4B8F967DA9@ozlabs.org>
-	<20061213122353.7498a25e@pb15>
-	<1166052344.11914.233.camel@localhost.localdomain>
-	<20061213180921.487b1cea@pb15>
-	<1166056373.11914.246.camel@localhost.localdomain>
-	<1166057940.6838.25.camel@concordia.ozlabs.ibm.com>
-	<1166058148.11914.255.camel@localhost.localdomain>
-	<1166058412.6838.30.camel@concordia.ozlabs.ibm.com>
-	<C53BBACC-211E-4B01-9153-75634372B835@kernel.crashing.org>
-	<1166125466.31351.14.camel@localhost.localdomain>
-	<DBBE020D-0BFA-44EC-B1C9-D33F96CC924D@kernel.crashing.org>
-	<1166149729.31351.43.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C4505CE5-B961-43F1-803B-C20F43CAF408@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 6/9] MPIC MSI allocator
-Date: Fri, 15 Dec 2006 03:58:57 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Olof Johansson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 15 Dec 2006 15:15:38 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org
+Subject: Re: [LIBFDT] Fixup byteswapping code
+Message-ID: <20061215041538.GD880@localhost.localdomain>
+References: <11650491414017-git-send-email-grant.likely@secretlab.ca>
+	<20061204015329.GA4790@localhost.localdomain>
+	<528646bc0612032118i689e9c83gdfc841a3d7b91fcf@mail.gmail.com>
+	<20061204055217.GA32026@localhost.localdomain>
+	<528646bc0612032233y573dfbcdk29a969e19540242a@mail.gmail.com>
+	<20061204071629.GC32026@localhost.localdomain>
+	<528646bc0612040655j60a7e93emb151ddd55e6db984@mail.gmail.com>
+	<20061208060937.GB32700@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061208060937.GB32700@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,31 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> If we are going to be pedantic, it should be msi-available- 
->>> sources :-)
->>
->> But a) it's not really MSI-only, and b) they're not source
->> numbers, but delivery vector numbers (yeah, those are almost
->> the same on U3/U4, but hey).
->
-> Actually, they aren't vector numbers, those are what you program in  
-> the
-> MPIC itself to be emited. Thus they are source numbers according to  
-> the
-> last time I read the docs :-) Not that it matters anyway :-)
+On Fri, Dec 08, 2006 at 05:09:37PM +1100, David Gibson wrote:
+> On Mon, Dec 04, 2006 at 07:55:59AM -0700, Grant Likely wrote:
+> > On 12/4/06, David Gibson <david@gibson.dropbear.id.au> wrote:
+> > > I do have one idea for better error handling: I'd like to put in
+> > > something defined in the the libfdt_env.h (which is designed to be
+> > > replaced when libfdt is compiled in different environments) to report
+> > > an error.  That would be invoked every time a libfdt function exits
+> > > with an error - I would envisage it calling through to a user supplied
+> > > function pointer.
+> > >
+> > > In many practical situations, I think most libfdt errors would be the
+> > > result of something unrecoverable problem (such as a corrupted device
+> > > tree blob), the callback could just print an error (by whatever means
+> > > is appropritate for the environment) and bail out, avoiding the need
+> > > for checking return values.  At least for the "serious" errors
+> > > (BADMAGIC, BADSTRUCTURE and so forth).  NOTFOUND (and maybe TRUNCATED)
+> > > would need to be passed back as a return value still, since that can
+> > > certainly occur in a legitimate test.
+> > 
+> > Yeah, that's not a bad idea.  That way the complexity of making it
+> > thread safe is left with the execution environment, not with libfdt,
+> > and it still leaves the possibility of application code retrieving the
+> > error code if it is interested....  Still not ideal, but of the
+> > options presented, I like this one best.
+> 
+> Actually, I had some more thought about this.  There really aren't
+> that many functions returning pointers there's:
 
-Yeah, my bad.
+And I just pushed up a batch of patches which cleans up the errorr
+handling as suggested there.
 
-So how about:
-
-"available-interrupts" denotes the input numbers to an
-interrupt controller that the OS can freely assign.  This
-naming fits in well with the other interrupt property names,
-and the semantics are nicely generic.
-
-"msi-ranges", if present, denotes the ranges of input
-interrupt numbers that can be used for MSIs (does this
-fit what you need well, Olof?)
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
