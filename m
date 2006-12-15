@@ -1,6 +1,11 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 35E2967BA1
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 13:29:04 +1100 (EST)
 Subject: Re: [PATCH 6/9] MPIC MSI allocator
-From: Michael Ellerman <michael@ellerman.id.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 In-Reply-To: <DBBE020D-0BFA-44EC-B1C9-D33F96CC924D@kernel.crashing.org>
 References: <1166006370.90082.476088563252.qpush@cradle>
@@ -14,15 +19,12 @@ References: <1166006370.90082.476088563252.qpush@cradle>
 	<C53BBACC-211E-4B01-9153-75634372B835@kernel.crashing.org>
 	<1166125466.31351.14.camel@localhost.localdomain>
 	<DBBE020D-0BFA-44EC-B1C9-D33F96CC924D@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-5o+sdCEIvVfT/r9Xe+Yu"
-Date: Fri, 15 Dec 2006 12:51:40 +1100
-Message-Id: <1166147500.4892.18.camel@concordia.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 15 Dec 2006 13:28:49 +1100
+Message-Id: <1166149729.31351.43.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: Olof Johansson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz,
 	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,11 +33,6 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-
-
---=-5o+sdCEIvVfT/r9Xe+Yu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
 On Fri, 2006-12-15 at 02:47 +0100, Segher Boessenkool wrote:
 > >>> "msi-ranges" is ambiguous, are the ranges available or reserved?
@@ -46,39 +43,13 @@ On Fri, 2006-12-15 at 02:47 +0100, Segher Boessenkool wrote:
 > >> the hardware; so let's do "available-vectors"?
 > >
 > > If we are going to be pedantic, it should be msi-available-sources :-)
->=20
+> 
 > But a) it's not really MSI-only, and b) they're not source
 > numbers, but delivery vector numbers (yeah, those are almost
 > the same on U3/U4, but hey).
 
-OK I'm gonna lock you two in a padded room, and whoever comes out alive
-gets to name the property, OK? Then let me know what it is and I'll
-update the freakin code!
+Actually, they aren't vector numbers, those are what you program in the
+MPIC itself to be emited. Thus they are source numbers according to the
+last time I read the docs :-) Not that it matters anyway :-)
 
-:D
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-5o+sdCEIvVfT/r9Xe+Yu
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFgf+sdSjSd0sB4dIRAgnDAKCYy8P45FPPthHZUL8DDsE8yjf9hACfcMST
-T8uiUsXxqJHQ/gexS2CBgQg=
-=1JL6
------END PGP SIGNATURE-----
-
---=-5o+sdCEIvVfT/r9Xe+Yu--
+Ben.
