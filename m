@@ -1,15 +1,21 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from bay0-omc3-s38.bay0.hotmail.com (bay0-omc3-s38.bay0.hotmail.com
-	[65.54.246.238]) by ozlabs.org (Postfix) with ESMTP id 4481267BC5
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0EB1E67BCD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Dec 2006 02:33:23 +1100 (EST)
-Message-ID: <BAY114-F102E7A8BBB9E25B0CC42FCAD40@phx.gbl>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: LITE5200B Powerfail 
-Date: Fri, 15 Dec 2006 16:33:18 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+	Sat, 16 Dec 2006 02:56:42 +1100 (EST)
+In-Reply-To: <20061215121517.E49EC67BAD@ozlabs.org>
+References: <20061215121517.E49EC67BAD@ozlabs.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
+Message-Id: <290A16D8-C3CC-4ACB-ADD4-CAF1952EBB21@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: u-boot error on ppc440SPe yucca board.
+Date: Fri, 15 Dec 2006 09:56:29 -0600
+To: =?UTF-8?B?6rmA7JiB7ZmY?= <yhkim93@keti.re.kr>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,36 +26,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-I not pretty sure if this is the correct forum to ask for a solution but I 
-know that some of you have worked on a driver to make PSCs in this board 
-work in an I2S mode.
+On Dec 15, 2006, at 5:20 AM, =EA=B9=80=EC=98=81=ED=99=98 wrote:
 
-Have you ever have powerfail problems when writing the configuration 
-registers for this mode?
+> I have installed at a slot of yucca board PCIE with LSI-Logic Mega =20
+> RAID SAS adapter. But it was happened the following error. What is =20
+> problem?
+>
+> Yucca board continues to reboot u-boot code.
 
-I´ve delimited the problem:
-- GPIO Port Config register stores without problems the value "111" in bits 
-25:27 (PSC2 to work in CODEC2 functionality with MCLK).
-- When I write a "1" in PSC2->SICR register bit GenClk  to ensure that clock 
-and FrameSync are generated internally from MCLK the systems suffers a 
-powerfail and I suppose that´s consecuence or some kind of shortcircuit. 
-I´ve followed the same steps made by Bob Peterson in
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-September/020210.html
-to write the configuration in the proper registers but I still suffer the 
-powerfail when GenClk is activated or, if I activate that bit first, when 
-Port Config is written.
-I´m also trying to understand how things are done in Roman Fietze driver but 
-can´t find a difference. That makes me think that perhaps other registers 
-must be modificated before driver loading. Meanwhile, I keep waiting for 
-Grant Likely release, :-).
-Has this happened to someone before?
+you should ask about u-boot issues on the u-boot list.
 
-Thanks for your help.
-
-    Pedro.
-
-_________________________________________________________________
-Horóscopo, tarot, numerología... Escucha lo que te dicen los astros. 
-http://astrocentro.msn.es/
+- k=
