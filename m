@@ -1,12 +1,18 @@
 Return-Path: <haveblue@us.ibm.com>
-Subject: [PATCH] Fix sparsemem on Cell
-To: cbe-oss-dev@ozlabs.org
+Subject: Re: [PATCH] Fix sparsemem on Cell
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 15 Dec 2006 09:14:11 -0800
-Message-Id: <20061215171411.E3EE01AD@localhost.localdomain>
-Cc: akpm@osdl.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	hch@infradead.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	mkravetz@us.ibm.com, gone@us.ibm.com
+To: Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <4582D756.7090702@shadowen.org>
+References: <20061215165335.61D9F775@localhost.localdomain>
+	<4582D756.7090702@shadowen.org>
+Content-Type: text/plain
+Date: Fri, 15 Dec 2006 09:24:00 -0800
+Message-Id: <1166203440.8105.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: akpm@osdl.org, linux-mm@kvack.org, Keith Mannthey <kmannth@us.ibm.com>,
+	linux-kernel@vger.kernel.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, mkravetz@us.ibm.com,
+	gone@us.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,6 +21,92 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+On Fri, 2006-12-15 at 17:11 +0000, Andy Whitcroft wrote:
+> ie. that if hotplug is pushing this memory into a zone on a node it
+> really does know what its doing, and its putting it in the right place.
+>   Obviously that code needs to be 'overlap' aware but thats ok for this
+> interface.
+
+I'm not sure if this, especially if we're only doing one section at a
+time.
+
+> >  	system_state = SYSTEM_RUNNING;
+> >  	numa_default_policy();
+> >
+> > diff -puN mm/page_alloc.c~sparsemem-fix mm/page_alloc.c
+> > --- lxc/mm/page_alloc.c~sparsemem-fix	2006-12-15 08:49:53.000000000 -0800
+> > +++ lxc-dave/mm/page_alloc.c	2006-12-15 08:49:53.000000000 -0800
+> > @@ -2056,6 +2056,30 @@ static inline unsigned long wait_table_b
+> >
+> >  #define LONG_ALIGN(x) (((x)+(sizeof(long))-1)&~((sizeof(long))-1))
+> >
+> > +static int can_online_pfn_into_nid(unsigned long pfn, int nid)
+> > +{
+> 
+> __meminit ?
+
+Yup.  I'll get that.
+
+> > +	/*
+> > +	 * There are two things that make this work:
+> > +	 * 1. The early_pfn...() functions are __init and
+> > +	 *    use __initdata.  If the system is < SYSTEM_RUNNING,
+> > +	 *    those functions and their data will still exist.
+> > +	 * 2. We also assume that all actual memory hotplug
+> > +	 *    (as opposed to boot-time) calls to this are only
+> > +	 *    for contiguous memory regions.  With sparsemem,
+> > +	 *    this guaranteed is easy because all sections are
+> > +	 *    contiguous and we never online more than one
+> > +	 *    section at a time.  Boot-time memory can have holes
+> > +	 *    anywhere.
+> > +	 */
+> > +	if (system_state >= SYSTEM_RUNNING)
+> > +		return 1;
+> 
+> Is there any value in codifying the assumption here, as a safety net?
+> 
+> if (system_state >= SYSTEM_RUNNING)
+> #ifdef CONFIG_SPARSEMEM
+> 	return 1;
+> #else
+> 	return 0;
+> #endif
+
+Dunno.  The normal case is that it isn't even called without memory
+hotplug.  The only non-sparsemem memory hotplug is Keith's baby, and
+they lay out all of their mem_map at boot-time anyway, so I don't think
+this gets used.
+
+Keith, do you know whether you even do memmap_init_zone() at runtime,
+and if you ever have holes if/when you do?
+
+> > +	if (!early_pfn_valid(pfn))
+> > +		return 0;
+> > +	if (!early_pfn_in_nid(pfn, nid))
+> > +		return 0;
+> > +	return 1;
+> > +}
+> > +
+> >  /*
+> >   * Initially all pages are reserved - free ones are freed
+> >   * up by free_all_bootmem() once the early boot process is
+> > @@ -2069,9 +2093,7 @@ void __meminit memmap_init_zone(unsigned
+> >  	unsigned long pfn;
+> >
+> >  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+> > -		if (!early_pfn_valid(pfn))
+> > -			continue;
+> > -		if (!early_pfn_in_nid(pfn, nid))
+> > +		if (!can_online_pfn_into_nid(pfn))
+> 
+> We're not passing nid here?
+
+No, because my ppc64 cross compiler has magically broken.  :(
+
+Fixed patch appended.
+
+-- Dave
 
 
 I think the comments added say it pretty well, but I'll repeat it here.
@@ -63,19 +155,19 @@ diff -puN init/main.c~sparsemem-fix init/main.c
  	mark_rodata_ro();
 +	/*
 +	 * Memory hotplug requires that this system_state transition
-+	 * happer after free_initmem().  (see memmap_init_zone())
++	 * happen after free_initmem().  (see memmap_init_zone())
 +	 */
  	system_state = SYSTEM_RUNNING;
  	numa_default_policy();
  
 diff -puN mm/page_alloc.c~sparsemem-fix mm/page_alloc.c
 --- lxc/mm/page_alloc.c~sparsemem-fix	2006-12-15 08:49:53.000000000 -0800
-+++ lxc-dave/mm/page_alloc.c	2006-12-15 08:49:53.000000000 -0800
++++ lxc-dave/mm/page_alloc.c	2006-12-15 09:15:00.000000000 -0800
 @@ -2056,6 +2056,30 @@ static inline unsigned long wait_table_b
  
  #define LONG_ALIGN(x) (((x)+(sizeof(long))-1)&~((sizeof(long))-1))
  
-+static int can_online_pfn_into_nid(unsigned long pfn, int nid)
++static int __meminit can_online_pfn_into_nid(unsigned long pfn, int nid)
 +{
 +	/*
 +	 * There are two things that make this work:
@@ -109,7 +201,7 @@ diff -puN mm/page_alloc.c~sparsemem-fix mm/page_alloc.c
 -		if (!early_pfn_valid(pfn))
 -			continue;
 -		if (!early_pfn_in_nid(pfn, nid))
-+		if (!can_online_pfn_into_nid(pfn))
++		if (!can_online_pfn_into_nid(pfn, nid))
  			continue;
  		page = pfn_to_page(pfn);
  		set_page_links(page, zone, nid, pfn);
