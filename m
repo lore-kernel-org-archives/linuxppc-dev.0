@@ -1,27 +1,28 @@
 Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from imx9.toshiba.co.jp (imx9.toshiba.co.jp [202.33.96.51])
-	by ozlabs.org (Postfix) with ESMTP id C832167BD9
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 15:58:18 +1100 (EST)
-Received: from imx12.toshiba.co.jp (imx12 [61.202.160.132])
-	by imx9.toshiba.co.jp  with ESMTP id kBF4wFS3024782
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 13:58:15 +0900 (JST)
-Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
-	by imx12.toshiba.co.jp  with ESMTP id kBF4wAZh010066
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 13:58:10 +0900 (JST)
-Received: (from root@localhost) by wall11.toshiba.co.jp  id kBF4wAPV029499
-	for linuxppc-dev@ozlabs.org; Fri, 15 Dec 2006 13:58:10 +0900 (JST)
-Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id kBF4w8g1002878
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 13:58:09 +0900 (JST)
-Message-Id: <200612150458.kBF4w8KC028184@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 00FB867B6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 17:02:17 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id kBF62Ema027258
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 15:02:14 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id kBF62Etg017130
+	for linuxppc-dev@ozlabs.org; Fri, 15 Dec 2006 15:02:14 +0900 (JST)
+Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp1.toshiba.co.jp  with ESMTP id kBF62EsE016343
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Dec 2006 15:02:14 +0900 (JST)
+Message-Id: <200612150602.kBF62DU2025347@toshiba.co.jp>
 MIME-Version: 1.0
-Date: Fri, 15 Dec 2006 13:59:40 +0900
+Date: Fri, 15 Dec 2006 15:03:45 +0900
 From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: paulus@samba.org, benh@kernel.crashing.org
-Subject: Re: [PATCH 5/19] powerpc: add IRQ remapping hook
-In-Reply-To: <1166072316.11914.284.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: (Your message of "Thu, 14 Dec 2006 16:34:05 +1100")
+	<1166074445.11914.310.camel@localhost.localdomain>
+References: <200612140148.kBE1m8Bp008592@toshiba.co.jp>
+	<1166074445.11914.310.camel@localhost.localdomain>
+Subject: Re: [PATCH 10/15] celleb: SPU support routines
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,53 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul-san, Ben-san,
 
-> On Thu, 2006-12-14 at 11:27 +0900, Ishizaki Kou wrote:
-> > This patch adds irq remapping hook. On interrupt mechanism on Beat,
-> > when an irq outlet who has an id which is formerly used is created,
-> > remapping the irq is required.
-> 
-> Today paulus asked me what that was for and I must admit that despite
-> your earlier explanations, I was a bit at a loss justifying it.
-> 
-> Can you explain us again the exact cicrumstances in which this is
-> necessary ? It seems to us that if an interrupt outlet<->plug linkage is
-> removed in the hypervisor itself, it should be also removed in linux
-> using irq_dispose_mapping().
-> 
-> What are the cases where the HV might require a linkage to be
-> re-established by that remap function that the kernel couldn't have done
-> the cleanup itself beforehand ?
+>As much as I would have liked to integrate your code in 2.6.20, it seems
+>that it won't be possible (as I told you privately earlier today). Linus
+>is getting fairly strict about the 2 weeks window which closed... today.
+>
+>We'll merge the code in powerpc.git in the meantime, not in it's current
+>form but after you have addresses some of the remaning comments. That
+>way, it will be in -mm at least, and in the powerpc tree which means
+>that from there, you won't have to rebase it every time we change
+>something and it will get in first thing in 2.6.21 merge window.
+>
+>That will also give us more time to address some of the remaining issues
+>that I'm not too happy with, like some of the PCI bits.
 
-Okay, I'll try to explain.
+Then we will make efforts to merge our code in powerpc.git tree.
+Next time, we will send patches and fix some problems in our code
+as timely as possible.
 
-Beat has two IDs to handle interrupts and events. IRQ outlets represent
-interrupt sources, and IRQ plugs bind IRQ outlet to Guest OS.
-So you have to "bind" IRQ plugs and IRQ outlets to receive interrupts.
+>In general, code should be ready to merge -before- the merge window open
+>or at worst during the first week, the second week being mostly to flush
+>out bits that collided or needed rebasing etc...
+>
+>In a similar vein, while some of the PS3 code was actually merged, a lot
+>of it wasn't yet (drivers etc...) are they are not ready, so it looks
+>like 2.6.20 won't be the "big cell relase" but 2.6.21 will be instead.
 
-Because of our design, you can assign and deassign any IRQ outlet to
-a Guest OS even if the Guest OS uses the IRQ outlet without any notice
-to the Guest OS. If the IRQ outlet is deassigned, bound IRQ plugs will
-be also destroyed.
-
-So, following scenario will be occur:
-  1. Construct an IRQ outlet.
-  2. Map it into IRQ plug by calling irq_create_mapping()
-  3. Destruct the IRQ outlet.
-  4. Forget to call irq_displose_mapping() because GuestOS is not
-     notified.
-  5. Reconstruct an IRQ outlet.
-  6. If port number got at 1. and 5. are same, irq_create_mapping()
-     (withour remapping patch) will reject binding between VIRQ and
-     IRQ outlet, so IRQ plug is not constructed and connected to the
-     IRQ outlet.
-
-It can be occured with event receive port (sort of IRQ outlet).
-Because I have no confidence that the "event receive port" users call
-surely irq_dispose_mapping() whenever they destruct any event
-receive port, I think interrupt-handling subsystem should overcome
-this troublesome situation.
+We hope 2.6.21 will be the "big cell release", too.
+To realize that, we will do the best.
 
 Best regards,
 Akira Iguchi
