@@ -1,19 +1,23 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 16 Dec 2006 17:03:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Fix sparsemem on Cell
-Message-Id: <20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20061215114536.dc5c93af.akpm@osdl.org>
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<4582D756.7090702@shadowen.org>
-	<1166203440.8105.22.camel@localhost.localdomain>
-	<20061215114536.dc5c93af.akpm@osdl.org>
+Return-Path: <joerg.maier@shove-it.de>
+Received: from shove-it.de (shove-it.de [213.239.221.51])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9799E679FD
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Dec 2006 01:05:22 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by shove-it.de (Postfix) with ESMTP id 0D78BB5CE
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Dec 2006 14:53:02 +0100 (CET)
+Received: from shove-it.de ([127.0.0.1])
+	by localhost (shove-it.de [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 21622-06 for <linuxppc-dev@ozlabs.org>;
+	Sat, 16 Dec 2006 14:52:56 +0100 (CET)
+Date: Sat, 16 Dec 2006 14:52:56 +0100
+From: Joerg Maier <joerg.maier@shove-it.de>
+To: linuxppc-dev@ozlabs.org
+Subject: compile error on 2.6.20-rc1
+Message-ID: <20061216135256.GB7526@shove-it.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, kmannth@us.ibm.com, linux-kernel@vger.kernel.org,
-	hch@infradead.org, linux-mm@kvack.org, paulus@samba.org,
-	mkravetz@us.ibm.com, gone@us.ibm.com, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,103 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 15 Dec 2006 11:45:36 -0800
-Andrew Morton <akpm@osdl.org> wrote:
+Hi,
 
-> Perhaps if the function's role in the world was commented it would be clearer.
-> 
+i got the following compile error:
 
-How about patch like this ? (this one is not tested.)
-Already-exisiting-more-generic-flag is available ?
- 
--Kame
-==
- include/linux/memory_hotplug.h |    8 ++++++++
- mm/memory_hotplug.c            |   14 ++++++++++++++
- mm/page_alloc.c                |   11 +++++++----
- 3 files changed, 29 insertions(+), 4 deletions(-)
+$ gcc -m32 -Wp,-MD,drivers/usb/host/.ohci-hcd.o.d  -nostdinc -isystem /usr/lib/gcc/powerpc-linux-gnu/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Iarch/powerpc -Iarch/powerpc/include -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -O2 -msoft-float -pipe -Iarch/powerpc -ffixed-r2 -mmultiple -mno-altivec -funit-at-a-time -mstring -mcpu=powerpc -Wa,-maltivec -fomit-frame-pointer -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign   -DMODULE -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ohci_hcd)"  -D"KBUILD_MODNAME=KBUILD_STR(ohci_hcd)" -c -o drivers/usb/host/.tmp_ohci-hcd.o drivers/usb/host/ohci-hcd.c
+In file included from drivers/usb/host/ohci-hcd.c:945:
+drivers/usb/host/ohci-ppc-soc.c:225: error: redefinition of '__inittest'
+drivers/usb/host/ohci-pci.c:252: error: previous definition of '__inittest' was here
+drivers/usb/host/ohci-ppc-soc.c:225: error: redefinition of 'init_module'
+drivers/usb/host/ohci-pci.c:252: error: previous definition of 'init_module' was here
+drivers/usb/host/ohci-ppc-soc.c:226: error: redefinition of '__exittest'
+drivers/usb/host/ohci-pci.c:260: error: previous definition of '__exittest' was here
+drivers/usb/host/ohci-ppc-soc.c:226: error: redefinition of 'cleanup_module'
+drivers/usb/host/ohci-pci.c:260: error: previous definition of 'cleanup_module' was here
 
-Index: linux-2.6.20-rc1-mm1/include/linux/memory_hotplug.h
-===================================================================
---- linux-2.6.20-rc1-mm1.orig/include/linux/memory_hotplug.h	2006-11-30 06:57:37.000000000 +0900
-+++ linux-2.6.20-rc1-mm1/include/linux/memory_hotplug.h	2006-12-16 16:42:40.000000000 +0900
-@@ -133,6 +133,10 @@
- #endif /* CONFIG_NUMA */
- #endif /* CONFIG_HAVE_ARCH_NODEDATA_EXTENSION */
- 
-+extern int under_memory_hotadd(void);
-+
-+
-+
- #else /* ! CONFIG_MEMORY_HOTPLUG */
- /*
-  * Stub functions for when hotplug is off
-@@ -159,6 +163,10 @@
- 	dump_stack();
- 	return -ENOSYS;
- }
-+static inline int under_memory_hotadd()
-+{
-+	return 0;
-+}
- 
- #endif /* ! CONFIG_MEMORY_HOTPLUG */
- static inline int __remove_pages(struct zone *zone, unsigned long start_pfn,
-Index: linux-2.6.20-rc1-mm1/mm/memory_hotplug.c
-===================================================================
---- linux-2.6.20-rc1-mm1.orig/mm/memory_hotplug.c	2006-12-16 14:24:10.000000000 +0900
-+++ linux-2.6.20-rc1-mm1/mm/memory_hotplug.c	2006-12-16 16:51:08.000000000 +0900
-@@ -26,6 +26,17 @@
- 
- #include <asm/tlbflush.h>
- 
-+/*
-+ * Because memory hotplug shares some codes for initilization with boot,
-+ * we sometimes have to check what we are doing ?
-+ */
-+static atomic_t memory_hotadd_count;
-+
-+int under_memory_hotadd(void)
-+{
-+	return atomic_read(&memory_hotadd_count);
-+}
-+
- /* add this memory to iomem resource */
- static struct resource *register_memory_resource(u64 start, u64 size)
- {
-@@ -273,10 +284,13 @@
- 		if (ret)
- 			goto error;
- 	}
-+	atomic_inc(&memory_hotadd_count);
- 
- 	/* call arch's memory hotadd */
- 	ret = arch_add_memory(nid, start, size);
- 
-+	atomic_dec(&memory_hotadd_count);
-+
- 	if (ret < 0)
- 		goto error;
- 
-Index: linux-2.6.20-rc1-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.20-rc1-mm1.orig/mm/page_alloc.c	2006-12-16 14:24:38.000000000 +0900
-+++ linux-2.6.20-rc1-mm1/mm/page_alloc.c	2006-12-16 16:53:02.000000000 +0900
-@@ -2069,10 +2069,13 @@
- 	unsigned long pfn;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
--		if (!early_pfn_valid(pfn))
--			continue;
--		if (!early_pfn_in_nid(pfn, nid))
--			continue;
-+		if (!under_memory_hotadd()) {
-+			/* we are in boot */
-+			if (!early_pfn_valid(pfn))
-+				continue;
-+			if (!early_pfn_in_nid(pfn, nid))
-+				continue;
-+		}
- 		page = pfn_to_page(pfn);
- 		set_page_links(page, zone, nid, pfn);
- 		init_page_count(page);
+i found both CONFIG macros set in my config: CONFIG_USB_OHCI_HCD_PPC_SOC and CONFIG_PCI. they lead to an include for ohci-ppc-soc.c and ohci-pci.c. Both declare (after preprocessing)  the symbol __inittest.
+
+Is the use of these two config options an error?
+
+Hoping that this was not discussed before and i did not find it.
+
+Joerg
