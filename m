@@ -1,21 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 78D1467B9F
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Dec 2006 12:31:35 +1100 (EST)
-Date: Sat, 16 Dec 2006 12:31:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
-Message-Id: <20061216123123.ec948516.sfr@canb.auug.org.au>
-In-Reply-To: <20061215115902.688f1a34@pb15>
-References: <20061213190408.1d4ddd93.kim.phillips@freescale.com>
-	<B38E3DDE-A18F-4319-A968-B0C22C001391@kernel.crashing.org>
-	<20061215115902.688f1a34@pb15>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 16 Dec 2006 17:03:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Fix sparsemem on Cell
+Message-Id: <20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20061215114536.dc5c93af.akpm@osdl.org>
+References: <20061215165335.61D9F775@localhost.localdomain>
+	<4582D756.7090702@shadowen.org>
+	<1166203440.8105.22.camel@localhost.localdomain>
+	<20061215114536.dc5c93af.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__16_Dec_2006_12_31_23_+1100_5nn79vffuMRenEN4"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, kmannth@us.ibm.com, linux-kernel@vger.kernel.org,
+	hch@infradead.org, linux-mm@kvack.org, paulus@samba.org,
+	mkravetz@us.ibm.com, gone@us.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +23,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__16_Dec_2006_12_31_23_+1100_5nn79vffuMRenEN4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Fri, 15 Dec 2006 11:45:36 -0800
+Andrew Morton <akpm@osdl.org> wrote:
 
-Hi Olaf,
+> Perhaps if the function's role in the world was commented it would be clearer.
+> 
 
-On Fri, 15 Dec 2006 11:59:02 -0600 Olof Johansson <olof@lixom.net> wrote:
->
-> +static int __init genrtc_rtc_hookup(void)
-> +{
-> +	/* Don't init if the platform has already set up rtc functions. */
-> +	if (ppc_md.get_rtc_time || ppc_md.set_rtc_time)
-> +		return -1;
+How about patch like this ? (this one is not tested.)
+Already-exisiting-more-generic-flag is available ?
+ 
+-Kame
+==
+ include/linux/memory_hotplug.h |    8 ++++++++
+ mm/memory_hotplug.c            |   14 ++++++++++++++
+ mm/page_alloc.c                |   11 +++++++----
+ 3 files changed, 29 insertions(+), 4 deletions(-)
 
-If this is considered not an error, then please return -ENODEV so that if
-initcall_debug is set, the kernel won't consider this worth noting.
-
-> +	rtc_dev = rtc_class_open("rtc0");
-> +
-> +	if (!rtc_dev) {
-> +		printk("genrtc_rtc_hookup: Failed to open rtc0\n");
-
-KERN_ERR?
-
-> +		return -1;
-
-init routines should return 0/-<errno number> so that initcall_debug is
-useful.  Though what Evalue is appropriate here I don't know.
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__16_Dec_2006_12_31_23_+1100_5nn79vffuMRenEN4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFg0xtFdBgD/zoJvwRApjcAJ9HCBLuuGOV0hChBEKc1BDIttWwaQCgiJo1
-FVWQIShHJix/mkj9DVFk8yk=
-=Nikr
------END PGP SIGNATURE-----
-
---Signature=_Sat__16_Dec_2006_12_31_23_+1100_5nn79vffuMRenEN4--
+Index: linux-2.6.20-rc1-mm1/include/linux/memory_hotplug.h
+===================================================================
+--- linux-2.6.20-rc1-mm1.orig/include/linux/memory_hotplug.h	2006-11-30 06:57:37.000000000 +0900
++++ linux-2.6.20-rc1-mm1/include/linux/memory_hotplug.h	2006-12-16 16:42:40.000000000 +0900
+@@ -133,6 +133,10 @@
+ #endif /* CONFIG_NUMA */
+ #endif /* CONFIG_HAVE_ARCH_NODEDATA_EXTENSION */
+ 
++extern int under_memory_hotadd(void);
++
++
++
+ #else /* ! CONFIG_MEMORY_HOTPLUG */
+ /*
+  * Stub functions for when hotplug is off
+@@ -159,6 +163,10 @@
+ 	dump_stack();
+ 	return -ENOSYS;
+ }
++static inline int under_memory_hotadd()
++{
++	return 0;
++}
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ static inline int __remove_pages(struct zone *zone, unsigned long start_pfn,
+Index: linux-2.6.20-rc1-mm1/mm/memory_hotplug.c
+===================================================================
+--- linux-2.6.20-rc1-mm1.orig/mm/memory_hotplug.c	2006-12-16 14:24:10.000000000 +0900
++++ linux-2.6.20-rc1-mm1/mm/memory_hotplug.c	2006-12-16 16:51:08.000000000 +0900
+@@ -26,6 +26,17 @@
+ 
+ #include <asm/tlbflush.h>
+ 
++/*
++ * Because memory hotplug shares some codes for initilization with boot,
++ * we sometimes have to check what we are doing ?
++ */
++static atomic_t memory_hotadd_count;
++
++int under_memory_hotadd(void)
++{
++	return atomic_read(&memory_hotadd_count);
++}
++
+ /* add this memory to iomem resource */
+ static struct resource *register_memory_resource(u64 start, u64 size)
+ {
+@@ -273,10 +284,13 @@
+ 		if (ret)
+ 			goto error;
+ 	}
++	atomic_inc(&memory_hotadd_count);
+ 
+ 	/* call arch's memory hotadd */
+ 	ret = arch_add_memory(nid, start, size);
+ 
++	atomic_dec(&memory_hotadd_count);
++
+ 	if (ret < 0)
+ 		goto error;
+ 
+Index: linux-2.6.20-rc1-mm1/mm/page_alloc.c
+===================================================================
+--- linux-2.6.20-rc1-mm1.orig/mm/page_alloc.c	2006-12-16 14:24:38.000000000 +0900
++++ linux-2.6.20-rc1-mm1/mm/page_alloc.c	2006-12-16 16:53:02.000000000 +0900
+@@ -2069,10 +2069,13 @@
+ 	unsigned long pfn;
+ 
+ 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+-		if (!early_pfn_valid(pfn))
+-			continue;
+-		if (!early_pfn_in_nid(pfn, nid))
+-			continue;
++		if (!under_memory_hotadd()) {
++			/* we are in boot */
++			if (!early_pfn_valid(pfn))
++				continue;
++			if (!early_pfn_in_nid(pfn, nid))
++				continue;
++		}
+ 		page = pfn_to_page(pfn);
+ 		set_page_links(page, zone, nid, pfn);
+ 		init_page_count(page);
