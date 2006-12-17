@@ -1,17 +1,16 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 2D5E567C3E
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 10:05:01 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Timur Tabi'" <timur@freescale.com>
-Subject: RE: latest linux git doesn't compile ucc_geth_phy.c and ucc_geth.c
-Date: Mon, 18 Dec 2006 00:04:56 +0100
-Message-ID: <00b001c7222f$c4d63b50$1e67a8c0@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <45803CE3.4030600@freescale.com>
-Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: fix dmasound compile error for tas300x
+From: Michael Ellerman <michael@ellerman.id.au>
+To: marvin <marvin24@gmx.de>
+In-Reply-To: <200612171438.23435.marvin24@gmx.de>
+References: <200612171438.23435.marvin24@gmx.de>
+Content-Type: text/plain
+Date: Mon, 18 Dec 2006 10:58:45 +1100
+Message-Id: <1166399925.9607.4.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	linux-sound@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,64 +20,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Timur Tabi [mailto:timur@freescale.com] 
-> Sent: den 13 december 2006 18:48
-> To: joakim.tjernlund@transmode.se
-> Cc: linuxppc-dev
-> Subject: Re: latest linux git doesn't compile ucc_geth_phy.c 
-> and ucc_geth.c
+On Sun, 2006-12-17 at 14:38 +0100, marvin wrote:
+> hi,
 > 
-> Joakim Tjernlund wrote:
-> > drivers/net/ucc_geth.c:4083:45: macro "INIT_WORK" passed 3 
-> arguments,
-> > but takes just 2
-> > drivers/net/ucc_geth.c: In function `ucc_geth_open':
-> > drivers/net/ucc_geth.c:4083: error: `INIT_WORK' undeclared 
-> (first use in
-> > this function)
-> > drivers/net/ucc_geth.c:4083: error: (Each undeclared identifier is
-> > reported only once
-> > drivers/net/ucc_geth.c:4083: error: for each function it 
-> appears in.)
-> > drivers/net/ucc_geth.c: At top level:
-> > drivers/net/ucc_geth.c:3924: warning: 'ugeth_phy_change' 
-> defined but not
-> > used
-> > make[2]: *** [drivers/net/ucc_geth.o] Error 1
-> > 
-> > drivers/net/ucc_geth_phy.c:71: error: conflicting types for 
-> 'phy_read'
-> > include/linux/phy.h:355: error: previous declaration of 
-> 'phy_read' was
-> > here
-> > drivers/net/ucc_geth_phy.c:71: error: conflicting types for 
-> 'phy_read'
-> > include/linux/phy.h:355: error: previous declaration of 
-> 'phy_read' was
-> > here
-> > drivers/net/ucc_geth_phy.c:72: error: conflicting types for 
-> 'phy_write'
-> > include/linux/phy.h:356: error: previous declaration of 
-> 'phy_write' was
-> > here
-> > drivers/net/ucc_geth_phy.c:72: error: conflicting types for 
-> 'phy_write'
-> > include/linux/phy.h:356: error: previous declaration of 
-> 'phy_write' was
-> > here
-> 
-> I just posted two patches to linuxppc-dev that fix these 
-> problems.  The message 
-> are titled:
-> 
-> [PATCH] Update ucc_geth.c for new workqueue structure
-> [PATCH] Fix phy_read/write redefinition errors in ucc_geth_phy.c
-> 
-> I've tested these on an 8360EMDS, and Kumar has reviewed and 
-> signed off on the 
-> code, so I think they're good.  Please let me know if they're not.
+> I need the attached patch to compile the awacs/dmasound driver. There is still 
+> some warning, but I don't know how to fix it. Only build tested because I'm 
+> using alsa ...
 
-Has these been sent upstream yet? Didn't se them in linux tree as of now.
+Al Viro already posted a patch which has slightly more chance of
+working. I'm not sure who's supposed to merge it, it seems to have
+fallen through the cracks.
 
- Jocke
+http://lkml.org/lkml/2006/12/8/34
+
+cheers
+
+a987c6e8f3fd76d1b123fc0215777ea0b91f04a4
+diff --git a/sound/oss/dmasound/tas3001c.c b/sound/oss/dmasound/tas3001c.c
+index f227c9f..2f21a3c 100644
+--- a/sound/oss/dmasound/tas3001c.c
++++ b/sound/oss/dmasound/tas3001c.c
+@@ -50,6 +50,7 @@ struct tas3001c_data_t {
+ 	int output_id;
+ 	int speaker_id;
+ 	struct tas_drce_t drce_state;
++	struct work_struct change;
+ };
+ 
+ 
+@@ -667,14 +668,13 @@ tas3001c_update_device_parameters(struct
+ }
+ 
+ static void
+-tas3001c_device_change_handler(void *self)
++tas3001c_device_change_handler(struct work_struct *work)
+ {
+-	if (self)
+-		tas3001c_update_device_parameters(self);
++	struct tas3001c_data_t *self;
++	self = container_of(work, struct tas3001c_data_t, change);
++	tas3001c_update_device_parameters(self);
+ }
+ 
+-static struct work_struct device_change;
+-
+ static int
+ tas3001c_output_device_change(	struct tas3001c_data_t *self,
+ 				int device_id,
+@@ -685,7 +685,7 @@ tas3001c_output_device_change(	struct ta
+ 	self->output_id=output_id;
+ 	self->speaker_id=speaker_id;
+ 
+-	schedule_work(&device_change);
++	schedule_work(&self->change);
+ 	return 0;
+ }
+ 
+@@ -823,7 +823,7 @@ tas3001c_init(struct i2c_client *client)
+ 			tas3001c_write_biquad_shadow(self, i, j,
+ 				&tas3001c_eq_unity);
+ 
+-	INIT_WORK(&device_change, tas3001c_device_change_handler, self);
++	INIT_WORK(&self->change, tas3001c_device_change_handler);
+ 	return 0;
+ }
+ 
+diff --git a/sound/oss/dmasound/tas3004.c b/sound/oss/dmasound/tas3004.c
+index 82eaaca..af34fb3 100644
+--- a/sound/oss/dmasound/tas3004.c
++++ b/sound/oss/dmasound/tas3004.c
+@@ -48,6 +48,7 @@ struct tas3004_data_t {
+ 	int output_id;
+ 	int speaker_id;
+ 	struct tas_drce_t drce_state;
++	struct work_struct change;
+ };
+ 
+ #define MAKE_TIME(sec,usec) (((sec)<<12) + (50000+(usec/10)*(1<<12))/100000)
+@@ -914,15 +915,13 @@ tas3004_update_device_parameters(struct 
+ }
+ 
+ static void
+-tas3004_device_change_handler(void *self)
++tas3004_device_change_handler(struct work_struct *work)
+ {
+-	if (!self) return;
+-
+-	tas3004_update_device_parameters((struct tas3004_data_t *)self);
++	struct tas3004_data_t *self;
++	self = container_of(work, struct tas3004_data_t, change);
++	tas3004_update_device_parameters(self);
+ }
+ 
+-static struct work_struct device_change;
+-
+ static int
+ tas3004_output_device_change(	struct tas3004_data_t *self,
+ 				int device_id,
+@@ -933,7 +932,7 @@ tas3004_output_device_change(	struct tas
+ 	self->output_id=output_id;
+ 	self->speaker_id=speaker_id;
+ 
+-	schedule_work(&device_change);
++	schedule_work(&self->change);
+ 
+ 	return 0;
+ }
+@@ -1112,7 +1111,7 @@ tas3004_init(struct i2c_client *client)
+ 	tas3004_write_register(self, TAS3004_REG_MCR2, &mcr2, WRITE_SHADOW);
+ 	tas3004_write_register(self, TAS3004_REG_DRC, drce_init, WRITE_SHADOW);
+ 
+-	INIT_WORK(&device_change, tas3004_device_change_handler, self);
++	INIT_WORK(&self->change, tas3004_device_change_handler);
+ 	return 0;
+ }
+ 
