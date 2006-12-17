@@ -1,14 +1,24 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp-out13.alice.it (smtp-out13.alice.it [85.33.2.18])
-	by ozlabs.org (Postfix) with ESMTP id 52F1567C1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 00:53:14 +1100 (EST)
-Date: Sun, 17 Dec 2006 14:41:27 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: linuxppc-dev@ozlabs.org
-Subject: 2 CPUs, but only one is used
-Message-Id: <20061217144127.579f01f0.pochini@shiny.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <tnt@246tNt.com>
+Received: from outmx004.isp.belgacom.be (outmx004.isp.belgacom.be
+	[195.238.4.101])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4F01B67BDF
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 03:52:44 +1100 (EST)
+Received: from outmx004.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx004.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kBHGqcYR019156
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Dec 2006 17:52:39 +0100
+	(envelope-from <tnt@246tNt.com>)
+From: Sylvain Munaut <tnt@246tNt.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2/2] powerpc: Add support for uevent to of_platform
+Date: Sun, 17 Dec 2006 17:51:17 +0100
+Message-Id: <11663742803872-git-send-email-tnt@246tNt.com>
+In-Reply-To: <1166374279262-git-send-email-tnt@246tNt.com>
+References: <11663742771972-git-send-email-tnt@246tNt.com>
+	<1166374279262-git-send-email-tnt@246tNt.com>
+Cc: Sylvain Munaut <tnt@246tNt.com>, Linux PPC Devel <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +28,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
-then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
-put online without errors, but it stays idle+wait=100% and of course
-user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
+This adds a proper uevent handler to the of_platform bus. This
+allows autoloading of modules (or at least should ;).
+It's _heavily_ based on the macio counterpart.
 
-I saw that there are some cpu hotplug related changes in 2.6.19, but I have
-no access to a non-ppc dual cpu box to check if the problem also affects
-other architectures right now.
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+---
+ arch/powerpc/kernel/of_platform.c |   70 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 70 insertions(+), 0 deletions(-)
 
-
---
-Giuliano.
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+index 3002ea3..30ae365 100644
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -73,6 +73,75 @@ static int of_platform_bus_match(struct 
+ 	return of_match_device(matches, of_dev) != NULL;
+ }
+ 
++static int of_platform_uevent(struct device *dev, char **envp, int num_envp,
++                              char *buffer, int buffer_size)
++{
++	struct of_device *of;
++	const char *compat;
++	char *compat2;
++	char compat_buf[128];	/* need to be size of 'compatible' */
++
++	int i = 0;
++	int length = 0, cplen, sl, seen = 0;
++
++	if (!dev)
++		return -ENODEV;
++
++	of = to_of_device(dev);
++	if (!of)
++		return -ENODEV;
++
++	/* stuff we want to pass to /sbin/hotplug */
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "OF_NAME=%s", of->node->name))
++		return -ENOMEM;
++
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "OF_TYPE=%s", of->node->type))
++		return -ENOMEM;
++
++        /* Since the compatible field can contain pretty much anything
++         * it's not really legal to split it out with commas. We split it
++         * up using a number of environment variables instead. */
++
++	compat = get_property(of->node, "compatible", &cplen);
++	compat2 = compat_buf;
++	if (compat)
++		memcpy(compat2, compat, cplen);
++	while (compat && *compat && cplen > 0) {
++		if (add_uevent_var(envp, num_envp, &i,
++				   buffer, buffer_size, &length,
++				   "OF_COMPATIBLE_%d=%s", seen, compat))
++			return -ENOMEM;
++
++		sl = strlen (compat) + 1;
++		compat += sl;
++		compat2 += sl;
++		cplen -= sl;
++		seen++;
++		compat2[-1] = 'C'; 
++	}
++	compat2[seen?-1:0] = 0;
++
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "OF_COMPATIBLE_N=%d", seen))
++		return -ENOMEM;
++
++	if (add_uevent_var(envp, num_envp, &i,
++			   buffer, buffer_size, &length,
++			   "MODALIAS=of:N%sT%sC%s",
++			   of->node->name, of->node->type,
++			   compat_buf))
++		return -ENOMEM;
++
++	envp[i] = NULL;
++
++	return 0;
++}
++
+ static int of_platform_device_probe(struct device *dev)
+ {
+ 	int error = -ENODEV;
+@@ -132,6 +201,7 @@ static int of_platform_device_resume(str
+ struct bus_type of_platform_bus_type = {
+        .name	= "of_platform",
+        .match	= of_platform_bus_match,
++       .uevent	= of_platform_uevent,
+        .probe	= of_platform_device_probe,
+        .remove	= of_platform_device_remove,
+        .suspend	= of_platform_device_suspend,
+-- 
+1.4.2
