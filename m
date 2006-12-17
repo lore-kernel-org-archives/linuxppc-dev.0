@@ -1,24 +1,15 @@
-Return-Path: <SRS0+50eda9ba9906e490622b+1211+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E58467BDC
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 00:29:16 +1100 (EST)
-Subject: Re: V4L2: __ucmpdi2 undefined on ppc
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kyle McMartin <kyle@ubuntu.com>
-In-Reply-To: <20061214195842.GA14041@athena.road.mcmartin.ca>
-References: <Pine.SOC.4.61.0612131359430.10721@math.ut.ee>
-	<1166053317.909.19.camel@praia>
-	<20061214195842.GA14041@athena.road.mcmartin.ca>
-Content-Type: text/plain
-Date: Sun, 17 Dec 2006 13:29:05 +0000
-Message-Id: <1166362145.6714.53.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Meelis Roos <mroos@linux.ee>, paulus@samba.org,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>
+Return-Path: <marvin24@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 138FB67BED
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 00:38:32 +1100 (EST)
+From: marvin <marvin24@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: fix dmasound compile error for tas300x
+Date: Sun, 17 Dec 2006 14:38:22 +0100
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_PhUhFQKGBim765y"
+Message-Id: <200612171438.23435.marvin24@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,71 +19,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-12-14 at 14:58 -0500, Kyle McMartin wrote:
-> I posted a patch to Paul this week to fix this, 
+--Boundary-00=_PhUhFQKGBim765y
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hm, I didn't see it on linuxppc-dev.
 
-> Since ppc32 can't do a 64bit comparison on its own it seems, gcc
-> will generate a call to a helper function from libgcc. What other
-> arches do is link libgcc.a into libs-y, and export the symbol
-> they want from it.
+hi,
 
-You still get to 'accidentally' do 64-bit arithmetic in-kernel that way
-though. Might be better just to provide __ucmpdi2, just as we have for
-the other functions which are required from libgcc 
+I need the attached patch to compile the awacs/dmasound driver. There is still 
+some warning, but I don't know how to fix it. Only build tested because I'm 
+using alsa ...
 
-It'd be better just to fix the compiler though -- which is in fact what
-they've done: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=25724
-              http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21237
+Marc
 
-I've applied this as a temporary hack to the Fedora kernel until the
-compiler is updated there...
+--Boundary-00=_PhUhFQKGBim765y
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="fix_compile_tas300x.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="fix_compile_tas300x.diff"
 
---- linux-2.6.19.ppc/arch/powerpc/kernel/misc_32.S~	2006-11-29 21:57:37.000000000 +0000
-+++ linux-2.6.19.ppc/arch/powerpc/kernel/misc_32.S	2006-12-17 12:19:48.000000000 +0000
-@@ -728,6 +728,27 @@ _GLOBAL(__lshrdi3)
- 	or	r4,r4,r7	# LSW |= t2
- 	blr
+diff --git a/sound/oss/dmasound/tas3001c.c b/sound/oss/dmasound/tas3001c.c
+index f227c9f..75a110e 100644
+--- a/sound/oss/dmasound/tas3001c.c
++++ b/sound/oss/dmasound/tas3001c.c
+@@ -823,7 +823,7 @@ tas3001c_init(struct i2c_client *client)
+ 			tas3001c_write_biquad_shadow(self, i, j,
+ 				&tas3001c_eq_unity);
  
-+/*
-+ * __ucmpdi2: 64-bit comparison
-+ *
-+ * R3/R4 has 64 bit value A
-+ * R5/R6 has 64 bit value B
-+ * result in R3: 0 for A < B
-+ *		 1 for A == B
-+ *		 2 for A > B
-+ */
-+_GLOBAL(__ucmpdi2)
-+	cmplw	r7,r3,r5	# compare high words
-+	li	r3,0
-+	blt	r7,2f		# a < b ... return 0
-+	bgt	r7,1f		# a > b ... return 2
-+	cmplw	r6,r4,r6	# compare low words
-+	blt	r6,2f		# a < b ... return 0
-+	li	r3,1
-+	ble	r6,2f		# a = b ... return 1
-+1:	li	r3,2
-+2:	blr
-+
- _GLOBAL(abs)
- 	srawi	r4,r3,31
- 	xor	r3,r3,r4
---- linux-2.6.19.ppc/arch/powerpc/kernel/ppc_ksyms.c~	2006-12-15 17:19:56.000000000 +0000
-+++ linux-2.6.19.ppc/arch/powerpc/kernel/ppc_ksyms.c	2006-12-17 12:16:54.000000000 +0000
-@@ -161,9 +161,11 @@ EXPORT_SYMBOL(to_tm);
- long long __ashrdi3(long long, int);
- long long __ashldi3(long long, int);
- long long __lshrdi3(long long, int);
-+int __ucmpdi2(uint64_t, uint64_t);
- EXPORT_SYMBOL(__ashrdi3);
- EXPORT_SYMBOL(__ashldi3);
- EXPORT_SYMBOL(__lshrdi3);
-+EXPORT_SYMBOL(__ucmpdi2);
- #endif
+-	INIT_WORK(&device_change, tas3001c_device_change_handler, self);
++	INIT_WORK(&device_change, tas3001c_device_change_handler);
+ 	return 0;
+ }
  
- EXPORT_SYMBOL(memcpy);
+diff --git a/sound/oss/dmasound/tas3004.c b/sound/oss/dmasound/tas3004.c
+index 82eaaca..bf18d43 100644
+--- a/sound/oss/dmasound/tas3004.c
++++ b/sound/oss/dmasound/tas3004.c
+@@ -1112,7 +1112,7 @@ tas3004_init(struct i2c_client *client)
+ 	tas3004_write_register(self, TAS3004_REG_MCR2, &mcr2, WRITE_SHADOW);
+ 	tas3004_write_register(self, TAS3004_REG_DRC, drce_init, WRITE_SHADOW);
+ 
+-	INIT_WORK(&device_change, tas3004_device_change_handler, self);
++	INIT_WORK(&device_change, tas3004_device_change_handler);
+ 	return 0;
+ }
+ 
 
--- 
-dwmw2
+--Boundary-00=_PhUhFQKGBim765y--
