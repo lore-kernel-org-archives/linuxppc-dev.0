@@ -1,26 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx015.isp.belgacom.be (outmx015.isp.belgacom.be
-	[195.238.4.87])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E3B967C1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 18:18:25 +1100 (EST)
-Received: from outmx015.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx015.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kBI7IH3e014010
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 08:18:17 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45864068.1060606@246tNt.com>
-Date: Mon, 18 Dec 2006 08:16:56 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/3] uevents handler for macio & of_platform
-References: <11663742771972-git-send-email-tnt@246tNt.com>
-	<200612180004.44933.arnd@arndb.de>
-In-Reply-To: <200612180004.44933.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 39A7367C2B
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 21:41:33 +1100 (EST)
+In-Reply-To: <20061218161429.4ffeec4e.sfr@canb.auug.org.au>
+References: <20061218161429.4ffeec4e.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <AAD83AF0-5271-47AA-B278-E96A4E691F74@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [POWERPC] iSeries: supress lparmap.c warning
+Date: Mon, 18 Dec 2006 11:41:08 +0100
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,26 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Sunday 17 December 2006 17:51, Sylvain Munaut wrote:
->   
->> The of_platform one has been tested on Efika and enable module
->> autoloading by udev. The macio patch is not tested. However,
->> being based on the same code as the of_platform handler I would
->> excpect it to be fine.
->>     
+> lparmap.c: Assembler messages:
+> lparmap.c:43: Warning: ignoring changed section attributes for .text
 >
-> Would it be possible to have only a single copy of that code,
-> for all of_device probes? I guess the same code also will be
-> used on ibmebus and the ps3platform bus eventually.
->   
-Mmmh. Yes actually,
+> We do not need the .section ops in the generated .s file, so
+> just remove them.
 
-I could put that code in of_device.c and export it, then in each bus, you
-would only need a small stub to handle the conversion to of_device *
-and call the common code.
+Nasty stuff.
 
-I'll do that and resend.
+const struct LparMap __attribute__((__section__(".text"))) xLparMap = {
+
+This will declare the .text section as non-executable.  Whoops.
+
+Another way around this, which is perhaps a bit hacky but
+doesn't require your post-processing, is to use
+
+__section__(".text #")
+
+which will cut off the compiler-generated "a" (where the assembler
+wants "ax", which is the default)  :-)
 
 
-    Sylvain
+Segher
