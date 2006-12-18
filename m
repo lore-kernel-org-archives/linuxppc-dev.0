@@ -1,17 +1,35 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 0B72967CD0
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 02:00:08 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: OOPS, bug in geth.c ?
-Date: Mon, 18 Dec 2006 16:00:06 +0100
-Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D939BA72B5@tmnt04.transmode.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "Timur Tabi" <timur@freescale.com>,
-	<netdev@vger.kernel.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BC0F667EB3
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 02:46:41 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id kBIFkafq015614
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 15:46:36 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id kBIFka3x2625756
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 16:46:36 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kBIFkXPA019594
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 16:46:34 +0100
+Date: Mon, 18 Dec 2006 16:42:29 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: Christian Krafft <krafft@linux.ibm.com>
+Subject: Re: [patch 0/1] ipmi: update: add autosensing of ipmi devices on
+	powerpc using of device tree
+Message-ID: <20061218164229.6a8b0df7@localhost>
+In-Reply-To: <20061218163846.337fed65@localhost>
+References: <20061218163846.337fed65@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Arnd,
+	openipmi-developer@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,127 +39,172 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Someone just looped the ethernet in the lab and this=20
-happend in my 2.6.19-rc5 when booting. After 180 seconds the
-system tried to restart but that resulted in another OOPS and so on.
+This patch adds support for of_platform_driver to the ipmi_si module.
+When loading the module, the driver will be registered to of_platform.
+The driver will be probed for all devices with the type ipmi. It's supporti=
+ng
+devices with compatible settings ipmi-kcs, ipmi-smic and ipmi-bt.
+Only ipmi-kcs could be tested.
 
- Jocke
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 
-NETDEV WATCHDOG: eth0: transmit timed out
-Badness in free_irq at kernel/irq/manage.c:353
-Call Trace:
-[C038B860] [C000860C] show_stack+0x48/0x194 (unreliable)
-[C038B890] [C000E0D0] program_check_exception+0x344/0x594
-[C038B8D0] [C000F764] ret_from_except_full+0x0/0x4c
---- Exception: 700 at free_irq+0x20/0x110
-    LR =3D ucc_geth_stop+0x94/0x104
-[C038B990] [C0021514] tasklet_action+0x78/0xe4 (unreliable)
-[C038B9B0] [C011BE9C] ucc_geth_stop+0x94/0x104
-[C038B9D0] [C011D834] ucc_geth_timeout+0x5c/0x8c
-[C038B9E0] [C0163670] dev_watchdog+0xa0/0x108
-[C038BA00] [C002513C] run_timer_softirq+0xe8/0x1b8
-[C038BA40] [C0021184] __do_softirq+0x80/0xe4
-[C038BA70] [C00057D4] do_softirq+0x58/0x60
-[C038BA80] [C0021230] irq_exit+0x48/0x58
-[C038BA90] [C000572C] do_IRQ+0x84/0xd4
-[C038BAA0] [C000F7B0] ret_from_except+0x0/0x14
---- Exception: 501 at jffs2_scan_medium+0xae4/0xf90
-    LR =3D jffs2_scan_medium+0x190/0xf90
-[C038BBE0] [C00D6148] jffs2_do_mount_fs+0x1b4/0x6f8
-[C038BC10] [C00D80C4] jffs2_do_fill_super+0xc0/0x224
-[C038BC30] [C00D8870] jffs2_get_sb_mtd+0xe0/0x168
-[C038BC70] [C00D8AB0] jffs2_get_sb+0x140/0x1e8
-[C038BD00] [C005C7C4] vfs_kern_mount+0x5c/0xbc
-[C038BD20] [C005C860] do_kern_mount+0x3c/0x60
-[C038BD40] [C0073978] do_mount+0x39c/0x68c
-[C038BEC0] [C0074004] sys_mount+0x98/0xe8
-[C038BEF0] [C01F8880] do_mount_root+0x2c/0xc4
-[C038BF10] [C01F89DC] mount_block_root+0xc4/0x24c
-[C038BF60] [C01F8E90] prepare_namespace+0xec/0x1b4
-[C038BF80] [C0003B30] init+0x260/0x2f0
-[C038BFF0] [C000FF48] kernel_thread+0x44/0x60
-Badness in free_irq at kernel/irq/manage.c:353
-Call Trace:
-[C038B860] [C000860C] show_stack+0x48/0x194 (unreliable)
-[C038B890] [C000E0D0] program_check_exception+0x344/0x594
-[C038B8D0] [C000F764] ret_from_except_full+0x0/0x4c
---- Exception: 700 at free_irq+0x20/0x110
-    LR =3D ucc_geth_stop+0xb4/0x104
-[C038B990] [C003AFD0] free_irq+0xc0/0x110 (unreliable)
-[C038B9B0] [C011BEBC] ucc_geth_stop+0xb4/0x104
-[C038B9D0] [C011D834] ucc_geth_timeout+0x5c/0x8c
-[C038B9E0] [C0163670] dev_watchdog+0xa0/0x108
-[C038BA00] [C002513C] run_timer_softirq+0xe8/0x1b8
-[C038BA40] [C0021184] __do_softirq+0x80/0xe4
-[C038BA70] [C00057D4] do_softirq+0x58/0x60
-[C038BA80] [C0021230] irq_exit+0x48/0x58
-[C038BA90] [C000572C] do_IRQ+0x84/0xd4
-[C038BAA0] [C000F7B0] ret_from_except+0x0/0x14
---- Exception: 501 at jffs2_scan_medium+0xae4/0xf90
-    LR =3D jffs2_scan_medium+0x190/0xf90
-[C038BBE0] [C00D6148] jffs2_do_mount_fs+0x1b4/0x6f8
-[C038BC10] [C00D80C4] jffs2_do_fill_super+0xc0/0x224
-[C038BC30] [C00D8870] jffs2_get_sb_mtd+0xe0/0x168
-[C038BC70] [C00D8AB0] jffs2_get_sb+0x140/0x1e8
-[C038BD00] [C005C7C4] vfs_kern_mount+0x5c/0xbc
-[C038BD20] [C005C860] do_kern_mount+0x3c/0x60
-[C038BD40] [C0073978] do_mount+0x39c/0x68c
-[C038BEC0] [C0074004] sys_mount+0x98/0xe8
-[C038BEF0] [C01F8880] do_mount_root+0x2c/0xc4
-[C038BF10] [C01F89DC] mount_block_root+0xc4/0x24c
-[C038BF60] [C01F8E90] prepare_namespace+0xec/0x1b4
-[C038BF80] [C0003B30] init+0x260/0x2f0
-[C038BFF0] [C000FF48] kernel_thread+0x44/0x60
-kernel BUG in __get_vm_area_node at mm/vmalloc.c:171!
-Oops: Exception in kernel mode, sig: 5 [#1]
 
-NIP: C0050F1C LR: C0011198 CTR: 00000000
-REGS: c038b860 TRAP: 0700   Not tainted  (2.6.19-rc5)
-MSR: 00029032 <EE,ME,IR,DR>  CR: 24022044  XER: 00000000
-TASK =3D c07fbb40[1] 'swapper' THREAD: c038a000
-GPR00: 00000100 C038B910 C07FBB40 00001000 00000001 C9000000 FDEFB000
-FFFFFFFF
-GPR08: 000000D0 C038A000 00000030 00000000 C025B508 10078B2C 0FFFCA00
-007FFF94
-GPR16: 00000000 00000000 0000000A 0360000C 00000000 000001B0 03600000
-00000000
-GPR24: 0000C000 C0250000 00000001 FDEFB000 00000001 00000000 00001000
-C0266F80
-NIP [C0050F1C] __get_vm_area_node+0x2c/0x1c0
-LR [C0011198] __ioremap+0x144/0x184
-Call Trace:
-[C038B910] [C0263E84] 0xc0263e84 (unreliable)
-[C038B930] [C0011198] __ioremap+0x144/0x184
-[C038B960] [C0015A5C] ucc_fast_init+0x100/0x470
-[C038B980] [C011C168] ucc_geth_startup+0x25c/0x18c4
-[C038B9D0] [C011D83C] ucc_geth_timeout+0x64/0x8c
-[C038B9E0] [C0163670] dev_watchdog+0xa0/0x108
-[C038BA00] [C002513C] run_timer_softirq+0xe8/0x1b8
-[C038BA40] [C0021184] __do_softirq+0x80/0xe4
-[C038BA70] [C00057D4] do_softirq+0x58/0x60
-[C038BA80] [C0021230] irq_exit+0x48/0x58
-[C038BA90] [C000572C] do_IRQ+0x84/0xd4
-[C038BAA0] [C000F7B0] ret_from_except+0x0/0x14
---- Exception: 501 at jffs2_scan_medium+0xae4/0xf90
-    LR =3D jffs2_scan_medium+0x190/0xf90
-[C038BBE0] [C00D6148] jffs2_do_mount_fs+0x1b4/0x6f8
-[C038BC10] [C00D80C4] jffs2_do_fill_super+0xc0/0x224
-[C038BC30] [C00D8870] jffs2_get_sb_mtd+0xe0/0x168
-[C038BC70] [C00D8AB0] jffs2_get_sb+0x140/0x1e8
-[C038BD00] [C005C7C4] vfs_kern_mount+0x5c/0xbc
-[C038BD20] [C005C860] do_kern_mount+0x3c/0x60
-[C038BD40] [C0073978] do_mount+0x39c/0x68c
-[C038BEC0] [C0074004] sys_mount+0x98/0xe8
-[C038BEF0] [C01F8880] do_mount_root+0x2c/0xc4
-[C038BF10] [C01F89DC] mount_block_root+0xc4/0x24c
-[C038BF60] [C01F8E90] prepare_namespace+0xec/0x1b4
-[C038BF80] [C0003B30] init+0x260/0x2f0
-[C038BFF0] [C000FF48] kernel_thread+0x44/0x60
-Instruction dump:
-4bffff20 7c0802a6 9421ffe0 bf410008 54290024 7c7e1b78 7c9a2378 90010024
-7cdb3378 3b800001 8009000c 5400012e <0f000000> 70800001 41820020
-7c600034
- <0>Kernel panic - not syncing: Fatal exception in interrupt
- <0>Rebooting in 180 seconds..<2>kernel BUG in __get_vm_area_node at=20
-mm/vmalloc.c:171!
-Oops: Exception in kernel mode, sig: 5 [#2]
+Index: linux-2.6.19/drivers/char/ipmi/ipmi_si_intf.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.19.orig/drivers/char/ipmi/ipmi_si_intf.c
++++ linux-2.6.19/drivers/char/ipmi/ipmi_si_intf.c
+@@ -9,6 +9,7 @@
+  *         source@mvista.com
+  *
+  * Copyright 2002 MontaVista Software Inc.
++ * Copyright 2006 IBM Corp., Christian Krafft <krafft@de.ibm.com>
+  *
+  *  This program is free software; you can redistribute it and/or modify it
+  *  under the terms of the GNU General Public License as published by the
+@@ -64,6 +65,12 @@
+ #include <linux/string.h>
+ #include <linux/ctype.h>
+=20
++/* only exists on powerpc */
++#ifdef CONFIG_PPC_OF
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
++#endif
++
+ #define PFX "ipmi_si: "
+=20
+ /* Measure times between events in the driver. */
+@@ -1888,6 +1895,96 @@ static struct pci_driver ipmi_pci_driver
+ #endif /* CONFIG_PCI */
+=20
+=20
++#ifdef CONFIG_PPC_OF
++static int ipmi_of_probe(struct of_device *dev,
++			 const struct of_device_id *match)
++{
++	struct smi_info *info;
++	struct resource resource;
++	const int *regsize, *regspacing, *regshift;
++	struct device_node *np =3D dev->node;
++	int ret;
++
++	dev_info(&dev->dev, PFX "probing via device tree\n");
++
++	ret =3D of_address_to_resource(np, 0, &resource);
++	if (ret) {
++		dev_warn(&dev->dev, PFX "invalid address from OF\n");
++		return ret;
++	}
++
++	regsize =3D get_property(np, "reg-size", NULL);
++	regspacing =3D get_property(np, "reg-spacing", NULL);
++	regshift =3D get_property(np, "reg-shift", NULL);
++
++	info =3D kzalloc(sizeof(*info), GFP_KERNEL);
++
++	if (!info) {
++		dev_err(&dev->dev,
++			PFX "could not allocate memory for OF probe\n");
++		return -ENOMEM;
++	}
++
++	info->si_type		=3D (enum si_type) match->data;
++	info->addr_source	=3D "device-tree";
++	info->io_setup		=3D mem_setup;
++	info->irq_setup		=3D std_irq_setup;
++
++	info->io.addr_type	=3D IPMI_MEM_ADDR_SPACE;
++	info->io.addr_data	=3D resource.start;
++
++	if (!regsize)
++		info->io.regsize =3D DEFAULT_REGSPACING;
++	else
++		info->io.regsize =3D *regsize;
++
++	if (!regspacing)
++		info->io.regspacing =3D DEFAULT_REGSPACING;
++	else
++		info->io.regspacing =3D *regspacing;
++
++	if (!regshift)
++		info->io.regshift =3D 0;
++	else
++		info->io.regshift =3D *regshift;
++
++	info->irq		=3D irq_of_parse_and_map(dev->node, 0);
++	info->dev		=3D &dev->dev;
++
++	dev_dbg(&dev->dev, "addr 0x%lx regsize %ld spacing %ld irq %x\n",
++		info->io.addr_data, info->io.regsize, info->io.regspacing,
++		info->irq);
++
++	dev->dev.driver_data =3D (void*) info;
++
++	return try_smi_init(info);
++}
++
++static int ipmi_of_remove(struct of_device *dev)
++{
++	/* should call
++	 * cleanup_one_si(dev->dev.driver_data); */
++	return 0;
++}
++
++static struct of_device_id ipmi_match[] =3D
++{
++	{ .type =3D "ipmi", .compatible =3D "ipmi-kcs",  .data =3D (void*)SI_KCS =
+},
++	{ .type =3D "ipmi", .compatible =3D "ipmi-smic", .data =3D (void*)SI_SMIC=
+ },
++	{ .type =3D "ipmi", .compatible =3D "ipmi-bt",   .data =3D (void*)SI_BT },
++	{},
++};
++
++static struct of_platform_driver ipmi_of_platform_driver =3D
++{
++	.name		=3D "ipmi",
++	.match_table	=3D ipmi_match,
++	.probe		=3D ipmi_of_probe,
++	.remove		=3D __devexit_p(ipmi_of_remove),
++};
++#endif /* CONFIG_PPC_OF */
++
++
+ static int try_get_dev_id(struct smi_info *smi_info)
+ {
+ 	unsigned char         msg[2];
+@@ -2490,6 +2587,10 @@ static __devinit int init_ipmi_si(void)
+ 	pci_module_init(&ipmi_pci_driver);
+ #endif
+=20
++#ifdef CONFIG_PPC_OF
++	of_register_platform_driver(&ipmi_of_platform_driver);
++#endif
++
+ 	if (si_trydefaults) {
+ 		mutex_lock(&smi_infos_lock);
+ 		if (list_empty(&smi_infos)) {
+@@ -2587,6 +2688,10 @@ static __exit void cleanup_ipmi_si(void)
+ 	pci_unregister_driver(&ipmi_pci_driver);
+ #endif
+=20
++#ifdef CONFIG_PPC_OF
++	of_unregister_platform_driver(&ipmi_of_platform_driver);
++#endif
++
+ 	mutex_lock(&smi_infos_lock);
+ 	list_for_each_entry_safe(e, tmp_e, &smi_infos, link)
+ 		cleanup_one_si(e);
+
+
+
+--=20
+Mit freundlichen Gr=FCssen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,=20
+Linux Kernel Development
+IT Specialist
