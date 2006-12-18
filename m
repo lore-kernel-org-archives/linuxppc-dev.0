@@ -1,24 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id A39D267B93
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 09:23:17 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 0/1] ipmi: update: add autosensing of ipmi devices on
-	powerpc using of device tree
-Date: Mon, 18 Dec 2006 23:23:10 +0100
-References: <20061218163846.337fed65@localhost>
-	<20061218164229.6a8b0df7@localhost>
-	<A45F8443-A031-41AC-887C-669FABBE0F09@kernel.crashing.org>
-In-Reply-To: <A45F8443-A031-41AC-887C-669FABBE0F09@kernel.crashing.org>
-MIME-Version: 1.0
-Message-Id: <200612182323.11262.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net,
-	Christian Krafft <krafft@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
+	[195.238.5.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E025467B6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 09:48:07 +1100 (EST)
+Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx012.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kBIMm0t9006318
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 23:48:01 +0100
+	(envelope-from <tnt@246tNt.com>)
+From: Sylvain Munaut <tnt@246tNt.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2/4] macintosh: Use the new of_device common uevent handler
+Date: Mon, 18 Dec 2006 23:46:37 +0100
+Message-Id: <11664820003098-git-send-email-tnt@246tNt.com>
+In-Reply-To: <1166482000535-git-send-email-tnt@246tNt.com>
+References: <1166481999359-git-send-email-tnt@246tNt.com>
+	<1166482000535-git-send-email-tnt@246tNt.com>
+Cc: Sylvain Munaut <tnt@246tNt.com>, Arnd Bergmann <arnd@arndb.de>,
+	Linux PPC Devel <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,85 +29,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 18 December 2006 22:52, Segher Boessenkool wrote:
+The generation of the uevent is now common to all bus using
+of_device.
 
-> > +static int ipmi_of_probe(struct of_device *dev,
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 const =
-struct of_device_id *match)
->=20
-> Shouldn't this (and everything else) be some kind of __init?
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+---
+ drivers/macintosh/macio_asic.c |   81 ----------------------------------------
+ 1 files changed, 1 insertions(+), 80 deletions(-)
 
-It should be __devinit.
-
-> > +=A0=A0=A0=A0=A0regsize =3D get_property(np, "reg-size", NULL);
-> > +=A0=A0=A0=A0=A0regspacing =3D get_property(np, "reg-spacing", NULL);
-> > +=A0=A0=A0=A0=A0regshift =3D get_property(np, "reg-shift", NULL);
->=20
-> You should check whether you get exactly 4 bytes back or not.
->
-> > +=A0=A0=A0=A0=A0if (!regsize)
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0info->io.regsize =3D DEFAULT_RE=
-GSPACING;
-> > +=A0=A0=A0=A0=A0else
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0info->io.regsize =3D *regsize;
->=20
-> info->io_regsize =3D regsize ? *regsize : DEFAULT_REGSIZE;
->=20
-> [Please note that fixes a copy/paste bug, too].
-
-These two changes are contradictory. It's either
-
-    regsize =3D get_property(np, "reg-size", NULL);
-    info->io_regsize =3D regsize ? *regsize : DEFAULT_REGSIZE;
-
-or
-
-    regsize =3D get_property(np, "reg-size", &proplen);
-    info->io_regsize =3D (proplen =3D=3D 4) ? *regsize : DEFAULT_REGSIZE;
-
-> > +static int ipmi_of_remove(struct of_device *dev)
-> > +{
-> > +=A0=A0=A0=A0=A0/* should call
-> > +=A0=A0=A0=A0=A0 * cleanup_one_si(dev->dev.driver_data); */
->=20
-> So fix that :-)
-
-That should be a separate patch that fixes the same thing for
-pci ipmi devices as well. It needs to move code around for this
-(or introduce forward declarations), and the effect is no
-different, so it's really just a cleanup.
-
-> > +static struct of_device_id ipmi_match[] =3D
-> > +{
-> > +=A0=A0=A0=A0=A0{ .type =3D "ipmi", .compatible =3D "ipmi-kcs", =A0.dat=
-a =3D (void*)=20
-> > SI_KCS },
-> > +=A0=A0=A0=A0=A0{ .type =3D "ipmi", .compatible =3D "ipmi-smic", .data =
-=3D (void*)=20
-> > SI_SMIC },
-> > +=A0=A0=A0=A0=A0{ .type =3D "ipmi", .compatible =3D "ipmi-bt", =A0 .dat=
-a =3D (void*)SI_BT },
->=20
-> That cast-to-pointer is what gives you that warning when
-> casting back. =A0Is there no better solution?
-
-The one alternative might be something more complicated like:
-
-static const enum si_type __devinitdata of_ipmi_dev_info[] =3D {
-	[SI_KCS] SI_KCS,
-	[SI_SMIC] SI_SMIC,
-	[SI_BT] SI_BT,
-};
-
-static const struct of_device_id of_ipmi_match[] =3D {
-	{ .type =3D "ipmi", .compatible =3D "ipmi-kcs",  .data =3D &of_ipmi_dev_in=
-fo[SI_KCS] },
-	{ .type =3D "ipmi", .compatible =3D "ipmi-kcs",  .data =3D &of_ipmi_dev_in=
-fo[SI_SMIC] },
-	{ .type =3D "ipmi", .compatible =3D "ipmi-kcs",  .data =3D &of_ipmi_dev_in=
-fo[SI_BT] },
-};
-
-Not sure if that's worth it.
-
-	Arnd <><
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index d562160..767ad00 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -139,11 +139,6 @@ static int macio_uevent(struct device *d
+ {
+ 	struct macio_dev * macio_dev;
+ 	struct of_device * of;
+-	char *scratch;
+-	const char *compat, *compat2;
+-
+-	int i = 0;
+-	int length, cplen, cplen2, seen = 0;
+ 
+ 	if (!dev)
+ 		return -ENODEV;
+@@ -153,81 +148,7 @@ static int macio_uevent(struct device *d
+ 		return -ENODEV;
+ 
+ 	of = &macio_dev->ofdev;
+-
+-	/* stuff we want to pass to /sbin/hotplug */
+-	envp[i++] = scratch = buffer;
+-	length = scnprintf (scratch, buffer_size, "OF_NAME=%s", of->node->name);
+-	++length;
+-	buffer_size -= length;
+-	if ((buffer_size <= 0) || (i >= num_envp))
+-		return -ENOMEM;
+-	scratch += length;
+-
+-	envp[i++] = scratch;
+-	length = scnprintf (scratch, buffer_size, "OF_TYPE=%s", of->node->type);
+-	++length;
+-	buffer_size -= length;
+-	if ((buffer_size <= 0) || (i >= num_envp))
+-		return -ENOMEM;
+-	scratch += length;
+-
+-        /* Since the compatible field can contain pretty much anything
+-         * it's not really legal to split it out with commas. We split it
+-         * up using a number of environment variables instead. */
+-
+-	compat = get_property(of->node, "compatible", &cplen);
+-	compat2 = compat;
+-	cplen2= cplen;
+-	while (compat && cplen > 0) {
+-                envp[i++] = scratch;
+-		length = scnprintf (scratch, buffer_size,
+-		                     "OF_COMPATIBLE_%d=%s", seen, compat);
+-		++length;
+-		buffer_size -= length;
+-		if ((buffer_size <= 0) || (i >= num_envp))
+-			return -ENOMEM;
+-		scratch += length;
+-		length = strlen (compat) + 1;
+-		compat += length;
+-		cplen -= length;
+-		seen++;
+-	}
+-
+-	envp[i++] = scratch;
+-	length = scnprintf (scratch, buffer_size, "OF_COMPATIBLE_N=%d", seen);
+-	++length;
+-	buffer_size -= length;
+-	if ((buffer_size <= 0) || (i >= num_envp))
+-		return -ENOMEM;
+-	scratch += length;
+-
+-	envp[i++] = scratch;
+-	length = scnprintf (scratch, buffer_size, "MODALIAS=of:N%sT%s",
+-			of->node->name, of->node->type);
+-	/* overwrite '\0' */
+-	buffer_size -= length;
+-	if ((buffer_size <= 0) || (i >= num_envp))
+-		return -ENOMEM;
+-	scratch += length;
+-
+-	if (!compat2) {
+-		compat2 = "";
+-		cplen2 = 1;
+-	}
+-	while (cplen2 > 0) {
+-		length = snprintf (scratch, buffer_size, "C%s", compat2);
+-		buffer_size -= length;
+-		if (buffer_size <= 0)
+-			return -ENOMEM;
+-		scratch += length;
+-		length = strlen (compat2) + 1;
+-		compat2 += length;
+-		cplen2 -= length;
+-	}
+-
+-	envp[i] = NULL;
+-
+-	return 0;
++	return of_device_uevent(of, envp, num_envp, buffer, buffer_size);
+ }
+ 
+ extern struct device_attribute macio_dev_attrs[];
+-- 
+1.4.2
