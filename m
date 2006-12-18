@@ -1,21 +1,20 @@
-Return-Path: <haveblue@us.ibm.com>
-Subject: Re: [PATCH] Fix sparsemem on Cell
-From: Dave Hansen <haveblue@us.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<4582D756.7090702@shadowen.org>
-	<1166203440.8105.22.camel@localhost.localdomain>
-	<20061215114536.dc5c93af.akpm@osdl.org>
-	<20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F00E067C23
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 08:19:25 +1100 (EST)
+Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <B38E3DDE-A18F-4319-A968-B0C22C001391@kernel.crashing.org>
+References: <20061213190408.1d4ddd93.kim.phillips@freescale.com>
+	<B38E3DDE-A18F-4319-A968-B0C22C001391@kernel.crashing.org>
 Content-Type: text/plain
-Date: Mon, 18 Dec 2006 13:13:57 -0800
-Message-Id: <1166476437.8648.7.camel@localhost.localdomain>
+Date: Tue, 19 Dec 2006 08:19:14 +1100
+Message-Id: <1166476754.19254.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org, kmannth@us.ibm.com,
-	linux-kernel@vger.kernel.org, hch@infradead.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, mkravetz@us.ibm.com,
-	gone@us.ibm.com, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-12-16 at 17:03 +0900, KAMEZAWA Hiroyuki wrote:
->  /* add this memory to iomem resource */
->  static struct resource *register_memory_resource(u64 start, u64 size)
->  {
-> @@ -273,10 +284,13 @@
->  		if (ret)
->  			goto error;
->  	}
-> +	atomic_inc(&memory_hotadd_count);
->  
->  	/* call arch's memory hotadd */
->  	ret = arch_add_memory(nid, start, size);
->  
-> +	atomic_dec(&memory_hotadd_count);
 
-I'd be willing to be that this will work just fine.  But, I think we can
-do it without any static state at all, if we just pass a runtime-or-not
-flag down into the arch_add_memory() call chain.
+> > +#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> > +extern ulong ds1374_get_rtc_time(void);
+> > +extern int ds1374_set_rtc_time(ulong);
+> > +
+> > +static int __init mpc83xx_rtc_hookup(void)
+> > +{
+> > +	struct timespec tv;
+> > +
+> > +	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> > +	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> > +
+> > +	tv.tv_nsec = 0;
+> > +	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> > +	do_settimeofday(&tv);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +late_initcall(mpc83xx_rtc_hookup);
+> > +#endif
+> 
+> This is sort of evil and we need to clean it up, but we have some  
+> time for 2.6.21.  Does the MPC832x MDS have the DS1374?
 
-I'll code that up so we can compare to yours.  
+Also, always test if (machine_is(xxx)) in your initcalls since they'll
+be called regardless of what machine has been selected.
 
--- Dave
+Ben.
