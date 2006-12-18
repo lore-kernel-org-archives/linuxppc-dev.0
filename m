@@ -1,16 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: fix dmasound compile error for tas300x
-From: Michael Ellerman <michael@ellerman.id.au>
-To: marvin <marvin24@gmx.de>
-In-Reply-To: <200612171438.23435.marvin24@gmx.de>
-References: <200612171438.23435.marvin24@gmx.de>
-Content-Type: text/plain
-Date: Mon, 18 Dec 2006 10:58:45 +1100
-Message-Id: <1166399925.9607.4.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-sound@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+Date: Mon, 18 Dec 2006 15:37:36 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: mohan@in.ibm.com
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
+In-Reply-To: <20061208045537.GA14626@in.ibm.com>
+References: <20061208045537.GA14626@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,118 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2006-12-17 at 14:38 +0100, marvin wrote:
-> hi,
-> 
-> I need the attached patch to compile the awacs/dmasound driver. There is still 
-> some warning, but I don't know how to fix it. Only build tested because I'm 
-> using alsa ...
+Mohan Kumar M writes:
 
-Al Viro already posted a patch which has slightly more chance of
-working. I'm not sure who's supposed to merge it, it seems to have
-fallen through the cracks.
+> To overcome this problem, I have created the patch, which
+> checks for the condition if the machine is ppc970 based and maxcpus
+> kernel parameter is specified. If the condition is met, the default
+> distribution server is assigned to be current boot cpu instead of
+> assigning from the gserver#s property.
 
-http://lkml.org/lkml/2006/12/8/34
+It feels hacky to be basing this sort of thing on the PVR.  I would
+like to understand the real problem better.  Is it that we are
+sometimes setting default_distrib_server to point to a CPU which is
+not running?  If so, why and how?  Is this something that is specific
+to the firmware on IBM 970-based blade systems?  Is there in fact a
+firmware bug that this works around?  Why don't we see it on non-970
+based systems?
 
-cheers
-
-a987c6e8f3fd76d1b123fc0215777ea0b91f04a4
-diff --git a/sound/oss/dmasound/tas3001c.c b/sound/oss/dmasound/tas3001c.c
-index f227c9f..2f21a3c 100644
---- a/sound/oss/dmasound/tas3001c.c
-+++ b/sound/oss/dmasound/tas3001c.c
-@@ -50,6 +50,7 @@ struct tas3001c_data_t {
- 	int output_id;
- 	int speaker_id;
- 	struct tas_drce_t drce_state;
-+	struct work_struct change;
- };
- 
- 
-@@ -667,14 +668,13 @@ tas3001c_update_device_parameters(struct
- }
- 
- static void
--tas3001c_device_change_handler(void *self)
-+tas3001c_device_change_handler(struct work_struct *work)
- {
--	if (self)
--		tas3001c_update_device_parameters(self);
-+	struct tas3001c_data_t *self;
-+	self = container_of(work, struct tas3001c_data_t, change);
-+	tas3001c_update_device_parameters(self);
- }
- 
--static struct work_struct device_change;
--
- static int
- tas3001c_output_device_change(	struct tas3001c_data_t *self,
- 				int device_id,
-@@ -685,7 +685,7 @@ tas3001c_output_device_change(	struct ta
- 	self->output_id=output_id;
- 	self->speaker_id=speaker_id;
- 
--	schedule_work(&device_change);
-+	schedule_work(&self->change);
- 	return 0;
- }
- 
-@@ -823,7 +823,7 @@ tas3001c_init(struct i2c_client *client)
- 			tas3001c_write_biquad_shadow(self, i, j,
- 				&tas3001c_eq_unity);
- 
--	INIT_WORK(&device_change, tas3001c_device_change_handler, self);
-+	INIT_WORK(&self->change, tas3001c_device_change_handler);
- 	return 0;
- }
- 
-diff --git a/sound/oss/dmasound/tas3004.c b/sound/oss/dmasound/tas3004.c
-index 82eaaca..af34fb3 100644
---- a/sound/oss/dmasound/tas3004.c
-+++ b/sound/oss/dmasound/tas3004.c
-@@ -48,6 +48,7 @@ struct tas3004_data_t {
- 	int output_id;
- 	int speaker_id;
- 	struct tas_drce_t drce_state;
-+	struct work_struct change;
- };
- 
- #define MAKE_TIME(sec,usec) (((sec)<<12) + (50000+(usec/10)*(1<<12))/100000)
-@@ -914,15 +915,13 @@ tas3004_update_device_parameters(struct 
- }
- 
- static void
--tas3004_device_change_handler(void *self)
-+tas3004_device_change_handler(struct work_struct *work)
- {
--	if (!self) return;
--
--	tas3004_update_device_parameters((struct tas3004_data_t *)self);
-+	struct tas3004_data_t *self;
-+	self = container_of(work, struct tas3004_data_t, change);
-+	tas3004_update_device_parameters(self);
- }
- 
--static struct work_struct device_change;
--
- static int
- tas3004_output_device_change(	struct tas3004_data_t *self,
- 				int device_id,
-@@ -933,7 +932,7 @@ tas3004_output_device_change(	struct tas
- 	self->output_id=output_id;
- 	self->speaker_id=speaker_id;
- 
--	schedule_work(&device_change);
-+	schedule_work(&self->change);
- 
- 	return 0;
- }
-@@ -1112,7 +1111,7 @@ tas3004_init(struct i2c_client *client)
- 	tas3004_write_register(self, TAS3004_REG_MCR2, &mcr2, WRITE_SHADOW);
- 	tas3004_write_register(self, TAS3004_REG_DRC, drce_init, WRITE_SHADOW);
- 
--	INIT_WORK(&device_change, tas3004_device_change_handler, self);
-+	INIT_WORK(&self->change, tas3004_device_change_handler);
- 	return 0;
- }
- 
+Paul.
