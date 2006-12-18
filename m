@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3D7F67C2D
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 05:44:10 +1100 (EST)
-In-Reply-To: <4586BA3F.5030209@freescale.com>
-References: <00b001c7222f$c4d63b50$1e67a8c0@Jocke>
-	<4586BA3F.5030209@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <27EF3DDC-DD21-4EAA-A3F2-36FD21BA1696@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: latest linux git doesn't compile ucc_geth_phy.c and ucc_geth.c
-Date: Mon, 18 Dec 2006 12:44:19 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
+Return-Path: <haveblue@us.ibm.com>
+Subject: Re: [PATCH] Fix sparsemem on Cell
+From: Dave Hansen <haveblue@us.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20061215165335.61D9F775@localhost.localdomain>
+	<4582D756.7090702@shadowen.org>
+	<1166203440.8105.22.camel@localhost.localdomain>
+	<20061215114536.dc5c93af.akpm@osdl.org>
+	<20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Mon, 18 Dec 2006 13:13:57 -0800
+Message-Id: <1166476437.8648.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org, kmannth@us.ibm.com,
+	linux-kernel@vger.kernel.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, mkravetz@us.ibm.com,
+	gone@us.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2006-12-16 at 17:03 +0900, KAMEZAWA Hiroyuki wrote:
+>  /* add this memory to iomem resource */
+>  static struct resource *register_memory_resource(u64 start, u64 size)
+>  {
+> @@ -273,10 +284,13 @@
+>  		if (ret)
+>  			goto error;
+>  	}
+> +	atomic_inc(&memory_hotadd_count);
+>  
+>  	/* call arch's memory hotadd */
+>  	ret = arch_add_memory(nid, start, size);
+>  
+> +	atomic_dec(&memory_hotadd_count);
 
-On Dec 18, 2006, at 9:56 AM, Timur Tabi wrote:
+I'd be willing to be that this will work just fine.  But, I think we can
+do it without any static state at all, if we just pass a runtime-or-not
+flag down into the arch_add_memory() call chain.
 
-> Joakim Tjernlund wrote:
->
->>> I've tested these on an 8360EMDS, and Kumar has reviewed and
->>> signed off on the
->>> code, so I think they're good.  Please let me know if they're not.
->>
->> Has these been sent upstream yet? Didn't se them in linux tree as  
->> of now.
->
-> I posted the patches to the linuxppc-dev and netdev mailing lists.   
-> At this
-> point, these patches are at the whim of Paul M. and/or Jeff G. for  
-> merging.
-> Since the holidays are upon us, I'm not surprised that things are  
-> taking longer
-> than normal.
+I'll code that up so we can compare to yours.  
 
-There really at the whim of Jeff G. since they are completely driver  
-related.  I pinged Jeff G. to hopefully pick them up and push them  
-for 2.6.20.
-
-- k
+-- Dave
