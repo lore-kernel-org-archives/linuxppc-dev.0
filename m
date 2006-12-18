@@ -1,27 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
-	[195.238.5.70])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 63BFD67C52
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 09:48:13 +1100 (EST)
-Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx012.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kBIMm0XI006322
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 23:48:01 +0100
-	(envelope-from <tnt@246tNt.com>)
-From: Sylvain Munaut <tnt@246tNt.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/4] powerpc: Add uevent handler for ibmebus
-Date: Mon, 18 Dec 2006 23:46:39 +0100
-Message-Id: <11664820011861-git-send-email-tnt@246tNt.com>
-In-Reply-To: <11664820013460-git-send-email-tnt@246tNt.com>
-References: <1166481999359-git-send-email-tnt@246tNt.com>
-	<1166482000535-git-send-email-tnt@246tNt.com>
-	<11664820003098-git-send-email-tnt@246tNt.com>
-	<11664820013460-git-send-email-tnt@246tNt.com>
-Cc: Sylvain Munaut <tnt@246tNt.com>, Arnd Bergmann <arnd@arndb.de>,
-	Linux PPC Devel <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix sparsemem on Cell
+Date: Mon, 18 Dec 2006 23:54:45 +0100
+References: <20061215165335.61D9F775@localhost.localdomain>
+	<20061215114536.dc5c93af.akpm@osdl.org>
+	<20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200612182354.47685.arnd@arndb.de>
+Cc: Andrew Morton <akpm@osdl.org>, mkravetz@us.ibm.com,
+	linux-kernel@vger.kernel.org, hch@infradead.org,
+	linux-mm@kvack.org, paulus@samba.org, kmannth@us.ibm.com,
+	gone@us.ibm.com, cbe-oss-dev@ozlabs.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,46 +25,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adding this handler allow userspace to properly handle the module
-autoloading. The generation of the uevent itself is now common to
-all bus using of_device, so not much code here.
+On Saturday 16 December 2006 09:03, KAMEZAWA Hiroyuki wrote:
+> @@ -273,10 +284,13 @@
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (ret)
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0g=
+oto error;
+> =A0=A0=A0=A0=A0=A0=A0=A0}
+> +=A0=A0=A0=A0=A0=A0=A0atomic_inc(&memory_hotadd_count);
+> =A0
+> =A0=A0=A0=A0=A0=A0=A0=A0/* call arch's memory hotadd */
+> =A0=A0=A0=A0=A0=A0=A0=A0ret =3D arch_add_memory(nid, start, size);
+> =A0
+> +=A0=A0=A0=A0=A0=A0=A0atomic_dec(&memory_hotadd_count);
+> +
+> =A0=A0=A0=A0=A0=A0=A0=A0if (ret < 0)
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0goto error;
+> =A0
 
-Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
----
- arch/powerpc/kernel/ibmebus.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+This also doesn't fix the problem on cell, since the time when the bug
+happens, we're not calling through this function, or arch_add_memory,
+at all, but rather invoke __add_pages directly. As BenH already mentioned,
+we shouldn't do really call __add_pages at all.
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 82bd2f1..5a42100 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -361,9 +361,27 @@ static int ibmebus_bus_match(struct devi
+Let me attempt another fix that might address all cases. This is completely
+untested as of now, but also addresses Dave's latest comment.
+
+	Arnd <><
+
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 1a3d8a2..723d220 100644
+=2D-- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -543,7 +543,7 @@ virtual_memmap_init (u64 start, u64 end, void *arg)
+=20
+ 	if (map_start < map_end)
+ 		memmap_init_zone((unsigned long)(map_end - map_start),
+=2D				 args->nid, args->zone, page_to_pfn(map_start));
++				 args->nid, args->zone, page_to_pfn(map_start), 1);
  	return 0;
  }
- 
-+static int ibmebus_bus_uevent(struct device *dev,
-+		char **envp, int num_envp, char *buffer, int buffer_size)
-+{
-+	struct ibmebus_dev *ebus_dev;
-+	struct of_device *of;
-+
-+	if (!dev)
-+		return -ENODEV;
-+
-+	ebus_dev = to_ibmebus_dev(dev);
-+	if (!ebus_dev)
-+		return -ENODEV;
-+
-+	of = &ebus_dev->ofdev;
-+	return of_device_uevent(of, envp, num_envp, buffer, buffer_size);
-+}
-+
- struct bus_type ibmebus_bus_type = {
- 	.name = "ibmebus",
- 	.match = ibmebus_bus_match,
-+	.uevent = ibmebus_bus_uevent,
- };
- EXPORT_SYMBOL(ibmebus_bus_type);
- 
--- 
-1.4.2
+=20
+diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+index 7f2944d..1e52cd1 100644
+=2D-- a/arch/s390/mm/vmem.c
++++ b/arch/s390/mm/vmem.c
+@@ -61,7 +61,7 @@ void memmap_init(unsigned long size, int nid, unsigned lo=
+ng zone,
+=20
+ 		if (map_start < map_end)
+ 			memmap_init_zone((unsigned long)(map_end - map_start),
+=2D					 nid, zone, page_to_pfn(map_start));
++					 nid, zone, page_to_pfn(map_start), 1);
+ 	}
+ }
+=20
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index a17b147..6d85068 100644
+=2D-- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -978,7 +978,7 @@ extern int early_pfn_to_nid(unsigned long pfn);
+ #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
+ #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
+ extern void set_dma_reserve(unsigned long new_dma_reserve);
+=2Dextern void memmap_init_zone(unsigned long, int, unsigned long, unsigned=
+ long);
++extern void memmap_init_zone(unsigned long, int, unsigned long, unsigned l=
+ong, int);
+ extern void setup_per_zone_pages_min(void);
+ extern void mem_init(void);
+ extern void show_mem(void);
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 0c055a0..16c9930 100644
+=2D-- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -71,7 +71,7 @@ static int __add_zone(struct zone *zone, unsigned long ph=
+ys_start_pfn)
+ 		if (ret < 0)
+ 			return ret;
+ 	}
+=2D	memmap_init_zone(nr_pages, nid, zone_type, phys_start_pfn);
++	memmap_init_zone(nr_pages, nid, zone_type, phys_start_pfn, 0);
+ 	return 0;
+ }
+=20
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 8c1a116..60d1ac8 100644
+=2D-- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1953,17 +1953,19 @@ static inline unsigned long wait_table_bits(unsigne=
+d long size)
+  * done. Non-atomic initialization, single-pass.
+  */
+ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long=
+ zone,
+=2D		unsigned long start_pfn)
++		unsigned long start_pfn, int early)
+ {
+ 	struct page *page;
+ 	unsigned long end_pfn =3D start_pfn + size;
+ 	unsigned long pfn;
+=20
+ 	for (pfn =3D start_pfn; pfn < end_pfn; pfn++) {
+=2D		if (!early_pfn_valid(pfn))
+=2D			continue;
+=2D		if (!early_pfn_in_nid(pfn, nid))
+=2D			continue;
++		if (early) {
++			if (!early_pfn_valid(pfn))
++				continue;
++			if (!early_pfn_in_nid(pfn, nid))
++				continue;
++		}
+ 		page =3D pfn_to_page(pfn);
+ 		set_page_links(page, zone, nid, pfn);
+ 		init_page_count(page);
+@@ -1990,7 +1992,7 @@ void zone_init_free_lists(struct pglist_data *pgdat, =
+struct zone *zone,
+=20
+ #ifndef __HAVE_ARCH_MEMMAP_INIT
+ #define memmap_init(size, nid, zone, start_pfn) \
+=2D	memmap_init_zone((size), (nid), (zone), (start_pfn))
++	memmap_init_zone((size), (nid), (zone), (start_pfn), 1)
+ #endif
+=20
+ static int __cpuinit zone_batchsize(struct zone *zone)
