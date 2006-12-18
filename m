@@ -1,33 +1,17 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <saiful.khan@sify.com>
+Received: from sifyr3.maa.sify.net (sifyr3.maa.sify.net [202.144.76.26])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B40D767C97
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 21:57:22 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBIAvCYS032722
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 05:57:12 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBIAvCQG365192
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 03:57:12 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBIAvBmm011793
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 03:57:12 -0700
-Date: Mon, 18 Dec 2006 16:27:06 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Fix interrupt distribution in ppc970
-Message-ID: <20061218105706.GB3911@in.ibm.com>
-References: <20061208045537.GA14626@in.ibm.com>
-	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17798.6928.378248.28903@cargo.ozlabs.ibm.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, fastboot@lists.osdl.org
-Reply-To: mohan@in.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5FAA767C35
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 23:59:31 +1100 (EST)
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: porting ELDK linux for MBX board
+Message-ID: <1166446364.45868f1cabae9@mail.sify.com>
+Date: Mon, 18 Dec 2006 18:22:44 +0600 (IST)
+From: saiful.khan@sify.com
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="-MOQ1166446364faeb5e7d3db025a3e57869de7c0c57df"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,41 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 18, 2006 at 03:37:36PM +1100, Paul Mackerras wrote:
-> Mohan Kumar M writes:
-> 
-> > To overcome this problem, I have created the patch, which
-> > checks for the condition if the machine is ppc970 based and maxcpus
-> > kernel parameter is specified. If the condition is met, the default
-> > distribution server is assigned to be current boot cpu instead of
-> > assigning from the gserver#s property.
-> 
-> It feels hacky to be basing this sort of thing on the PVR.  I would
-> like to understand the real problem better.  Is it that we are
-> sometimes setting default_distrib_server to point to a CPU which is
-> not running?  If so, why and how?
+This message is in MIME format.
 
-At the time of kexec/kdump shutdown sequence all secondary processors
-are removed from the Global Interrupt Queue by calling the corresponding
-rtas-set-indicator call. So even though default_distrib_server is 0xff
-PIC should distribute the interrupts only to the processors available in
-GIQ (please correct me if I am wrong), but its not happening in our
-JS20 box. Our JS20 firmware version is FW04310120 dated 07/26/04.
+---MOQ1166446364faeb5e7d3db025a3e57869de7c0c57df
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 
-> Is this something that is specific
-> to the firmware on IBM 970-based blade systems?  Is there in fact a
-> firmware bug that this works around?
+Hi please suggest me how can i port linuxppc_2_4_devel into mbx board, i m new to this. so plese help me.
 
-Looks like a firmware bug, since I am not able to reproduce this problem
-on a JS21 box with the firmware version MB240_470 dated 03/23/2006. I am
-planning to upgrade JS20 with latest firmware and test with maxcpus=1
+Thank u
+---MOQ1166446364faeb5e7d3db025a3e57869de7c0c57df
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 
-> Why don't we see it on non-970
-> based systems?
+<pre>Hi please suggest me how can i port linuxppc_2_4_devel into mbx board, i<br>m new to this. so plese help me.
 
-I have seen secondary thread related interrupt distribution problems on
-POWER5 boxes and I fixed it sometime back. Since POWER4 does not have
-SMT there is no interrupt distribution problem.
+Thank u</pre>
 
-> 
-> Paul.
+<br><A HREF="http://ads.sify.com/RealMedia/ads/click_nx.ads/mail.sify.com/sentmail@Bottom" target=_new>
+<IMG SRC="http://ads.sify.com/RealMedia/ads/adstream_nx.ads/mail.sify.com/sentmail@Bottom"  width=300 height=40 border=0></a>
+<br>Watch latest movie trailers and behind the scenes footage of Bigg Boss and Zee Cine Stars and much more! <a href="http://www.sifymax.com/" target="_blank">www.sifymax.com</a></br>
+<br>See what's happening in your favourite City on Mumbai Live! <a href="http://www.mumbailive.in/" target="_blank">www.mumbailive.in</a></br>
+
+---MOQ1166446364faeb5e7d3db025a3e57869de7c0c57df--
