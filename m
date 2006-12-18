@@ -1,15 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8B19C67C78
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 16:14:39 +1100 (EST)
-Date: Mon, 18 Dec 2006 16:14:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] iSeries: supress lparmap.c warning
-Message-Id: <20061218161429.4ffeec4e.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17798.9347.907648.418957@cargo.ozlabs.ibm.com>
+Date: Mon, 18 Dec 2006 16:17:55 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
+In-Reply-To: <20061211155155.26868ca6.kim.phillips@freescale.com>
+References: <20061208190758.6cee088f.kim.phillips@freescale.com>
+	<1165648490.1103.117.camel@localhost.localdomain>
+	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>
+	<20061211155155.26868ca6.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,53 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-lparmap.c: Assembler messages:
-lparmap.c:43: Warning: ignoring changed section attributes for .text
+Kim Phillips writes:
 
-We do not need the .section ops in the generated .s file, so
-just remove them.
+> so the contents of 83xx/fsl.c would look like:
+> #ifdef CONFIG_MPC834x_SYS
+> define_machine(mpc834x_sys) {
+> 	.name 		= "MPC834x SYS",
+> 	.probe 		= mpc83xx_probe,
+> 	.setup_arch 	= mpc83xx_setup_arch,
+> 	.init_IRQ 	= mpc83xx_init_IRQ,
+> 	.get_irq 	= ipic_get_irq,
+> 	.restart 	= mpc83xx_restart,
+> 	.time_init 	= mpc83xx_time_init,
+> 	.calibrate_decr	= generic_calibrate_decr,
+> 	.progress 	= udbg_progress,
+> };
+> #else
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/Makefile  |    7 +++++--
- arch/powerpc/kernel/head_64.S |    2 +-
- 2 files changed, 6 insertions(+), 3 deletions(-)
+Why do you have this #else here?  Doesn't it just restrict you for no
+gain?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> #ifdef CONFIG_MPC834x_ITX
+> define_machine(mpc83xx) {
+> 	.name 		= "MPC834x ITX",
+> <rest is the same>
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index d2ded19..0f7cb0b 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -76,9 +76,12 @@ obj-y				+= iomap.o
- endif
- 
- ifeq ($(CONFIG_PPC_ISERIES),y)
--extra-y += lparmap.s
--$(obj)/head_64.o:	$(obj)/lparmap.s
-+extra-y += lparmap.s lparmap1.s
-+$(obj)/head_64.o:	$(obj)/lparmap1.s
- AFLAGS_head_64.o += -I$(obj)
-+
-+$(obj)/lparmap1.s:	$(obj)/lparmap.s
-+	@grep -v '\.section' $< >$@
- endif
- 
- else
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 71b1fe5..b34e173 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -1535,7 +1535,7 @@ fwnmi_data_area:
- 	 * both pSeries and iSeries */
- #ifdef CONFIG_PPC_ISERIES
-         . = LPARMAP_PHYS
--#include "lparmap.s"
-+#include "lparmap1.s"
- /*
-  * This ".text" is here for old compilers that generate a trailing
-  * .note section when compiling .c files to .s
--- 
-1.4.4.2
+Your probe function can set ppc_md.name to whatever it wants.  So you
+could have a define_machine(fsl_83xx_eval_board) whose probe function
+would pick up the actual board name from the device tree (e.g. the
+root node's model property), put that in ppc_md and return 1 (assuming
+of course that the device tree looks like one of your boards).
+
+Paul.
