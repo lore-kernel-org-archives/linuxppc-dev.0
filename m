@@ -1,17 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx015.isp.belgacom.be (outmx015.isp.belgacom.be
+	[195.238.4.87])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4E3B967C1A
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 18:18:25 +1100 (EST)
+Received: from outmx015.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx015.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id kBI7IH3e014010
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Dec 2006 08:18:17 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45864068.1060606@246tNt.com>
+Date: Mon, 18 Dec 2006 08:16:56 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17798.9347.907648.418957@cargo.ozlabs.ibm.com>
-Date: Mon, 18 Dec 2006 16:17:55 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH] powerpc: consolidate mpc83xx platform files
-In-Reply-To: <20061211155155.26868ca6.kim.phillips@freescale.com>
-References: <20061208190758.6cee088f.kim.phillips@freescale.com>
-	<1165648490.1103.117.camel@localhost.localdomain>
-	<91EF8E0D-06BC-47FD-89E6-6350430946F9@kernel.crashing.org>
-	<20061211155155.26868ca6.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/3] uevents handler for macio & of_platform
+References: <11663742771972-git-send-email-tnt@246tNt.com>
+	<200612180004.44933.arnd@arndb.de>
+In-Reply-To: <200612180004.44933.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips writes:
+Arnd Bergmann wrote:
+> On Sunday 17 December 2006 17:51, Sylvain Munaut wrote:
+>   
+>> The of_platform one has been tested on Efika and enable module
+>> autoloading by udev. The macio patch is not tested. However,
+>> being based on the same code as the of_platform handler I would
+>> excpect it to be fine.
+>>     
+>
+> Would it be possible to have only a single copy of that code,
+> for all of_device probes? I guess the same code also will be
+> used on ibmebus and the ps3platform bus eventually.
+>   
+Mmmh. Yes actually,
 
-> so the contents of 83xx/fsl.c would look like:
-> #ifdef CONFIG_MPC834x_SYS
-> define_machine(mpc834x_sys) {
-> 	.name 		= "MPC834x SYS",
-> 	.probe 		= mpc83xx_probe,
-> 	.setup_arch 	= mpc83xx_setup_arch,
-> 	.init_IRQ 	= mpc83xx_init_IRQ,
-> 	.get_irq 	= ipic_get_irq,
-> 	.restart 	= mpc83xx_restart,
-> 	.time_init 	= mpc83xx_time_init,
-> 	.calibrate_decr	= generic_calibrate_decr,
-> 	.progress 	= udbg_progress,
-> };
-> #else
+I could put that code in of_device.c and export it, then in each bus, you
+would only need a small stub to handle the conversion to of_device *
+and call the common code.
 
-Why do you have this #else here?  Doesn't it just restrict you for no
-gain?
+I'll do that and resend.
 
-> #ifdef CONFIG_MPC834x_ITX
-> define_machine(mpc83xx) {
-> 	.name 		= "MPC834x ITX",
-> <rest is the same>
 
-Your probe function can set ppc_md.name to whatever it wants.  So you
-could have a define_machine(fsl_83xx_eval_board) whose probe function
-would pick up the actual board name from the device tree (e.g. the
-root node's model property), put that in ppc_md and return 1 (assuming
-of course that the device tree looks like one of your boards).
-
-Paul.
+    Sylvain
