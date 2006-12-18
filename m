@@ -1,25 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D88667C01
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 08:52:22 +1100 (EST)
-In-Reply-To: <20061218164229.6a8b0df7@localhost>
-References: <20061218163846.337fed65@localhost>
-	<20061218164229.6a8b0df7@localhost>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A45F8443-A031-41AC-887C-669FABBE0F09@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 0/1] ipmi: update: add autosensing of ipmi devices on
-	powerpc using of device tree
-Date: Mon, 18 Dec 2006 22:52:07 +0100
-To: Christian Krafft <krafft@de.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Christian Krafft <krafft@linux.ibm.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	openipmi-developer@lists.sourceforge.net
+Return-Path: <SRS0+f9ebf918f71bd646f45d+1212+infradead.org+hch@pentafluge.srs.infradead.org>
+Date: Mon, 18 Dec 2006 22:15:34 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [PATCH] Fix sparsemem on Cell
+Message-ID: <20061218221534.GB25472@infradead.org>
+References: <20061215165335.61D9F775@localhost.localdomain>
+	<4582D756.7090702@shadowen.org>
+	<1166203440.8105.22.camel@localhost.localdomain>
+	<20061215114536.dc5c93af.akpm@osdl.org>
+	<20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+	<1166476437.8648.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1166476437.8648.7.camel@localhost.localdomain>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org, kmannth@us.ibm.com,
+	linux-kernel@vger.kernel.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, mkravetz@us.ibm.com,
+	gone@us.ibm.com, cbe-oss-dev@ozlabs.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,79 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The driver will be probed for all devices with the type ipmi. It's  
-> supporting
-> devices with compatible settings ipmi-kcs, ipmi-smic and ipmi-bt.
-> Only ipmi-kcs could be tested.
+On Mon, Dec 18, 2006 at 01:13:57PM -0800, Dave Hansen wrote:
+> On Sat, 2006-12-16 at 17:03 +0900, KAMEZAWA Hiroyuki wrote:
+> >  /* add this memory to iomem resource */
+> >  static struct resource *register_memory_resource(u64 start, u64 size)
+> >  {
+> > @@ -273,10 +284,13 @@
+> >  		if (ret)
+> >  			goto error;
+> >  	}
+> > +	atomic_inc(&memory_hotadd_count);
+> >  
+> >  	/* call arch's memory hotadd */
+> >  	ret = arch_add_memory(nid, start, size);
+> >  
+> > +	atomic_dec(&memory_hotadd_count);
+> 
+> I'd be willing to be that this will work just fine.  But, I think we can
+> do it without any static state at all, if we just pass a runtime-or-not
+> flag down into the arch_add_memory() call chain.
+> 
+> I'll code that up so we can compare to yours.  
 
-I'd only include that one then.  But the code is trivial,
-the risk is minimal, why not.
-
-
-> +/* only exists on powerpc */
-> +#ifdef CONFIG_PPC_OF
-> +#include <asm/of_device.h>
-> +#include <asm/of_platform.h>
-> +#endif
-
-Comment is inexact -- just kill it.
-
-> +static int ipmi_of_probe(struct of_device *dev,
-> +			 const struct of_device_id *match)
-
-Shouldn't this (and everything else) be some kind of __init?
-
-> +	regsize = get_property(np, "reg-size", NULL);
-> +	regspacing = get_property(np, "reg-spacing", NULL);
-> +	regshift = get_property(np, "reg-shift", NULL);
-
-You should check whether you get exactly 4 bytes back or not.
-
-> +	info->si_type		= (enum si_type) match->data;
-
-That lands you a compiler warning (cast from pointer to shorter
-integer) on 64-bit.
-
-> +	if (!regsize)
-> +		info->io.regsize = DEFAULT_REGSPACING;
-> +	else
-> +		info->io.regsize = *regsize;
-
-info->io_regsize = regsize ? *regsize : DEFAULT_REGSIZE;
-
-[Please note that fixes a copy/paste bug, too].
-
-> +	dev_dbg(&dev->dev, "addr 0x%lx regsize %ld spacing %ld irq %x\n",
-> +		info->io.addr_data, info->io.regsize, info->io.regspacing,
-> +		info->irq);
-
-Please all addresses/sizes/spacings in hexadecimal?  And
-you might want to output regshift, too.
-
-> +static int ipmi_of_remove(struct of_device *dev)
-> +{
-> +	/* should call
-> +	 * cleanup_one_si(dev->dev.driver_data); */
-
-So fix that :-)
-
-> +	return 0;
-> +}
-
-> +static struct of_device_id ipmi_match[] =
-> +{
-> +	{ .type = "ipmi", .compatible = "ipmi-kcs",  .data = (void*) 
-> SI_KCS },
-> +	{ .type = "ipmi", .compatible = "ipmi-smic", .data = (void*) 
-> SI_SMIC },
-> +	{ .type = "ipmi", .compatible = "ipmi-bt",   .data = (void*)SI_BT },
-
-That cast-to-pointer is what gives you that warning when
-casting back.  Is there no better solution?
-
-
-All pretty minor, but please fix.  Looks like you're almost
-there :-)
-
-
-Segher
+Yes, I stronly concur that passing an explicit flag is much much better
+than any hack involving global state.
