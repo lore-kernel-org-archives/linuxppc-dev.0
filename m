@@ -1,21 +1,21 @@
 Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 9E6AC67B77
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 10:03:45 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Fix sparsemem on Cell
-Date: Mon, 18 Dec 2006 23:54:45 +0100
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<20061215114536.dc5c93af.akpm@osdl.org>
-	<20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
+To: Sylvain Munaut <tnt@246tnt.com>
+Subject: Re: [PATCH 4/4] powerpc: Add uevent handler for ibmebus
+Date: Tue, 19 Dec 2006 00:03:38 +0100
+References: <1166481999359-git-send-email-tnt@246tNt.com>
+	<11664820013460-git-send-email-tnt@246tNt.com>
+	<11664820011861-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11664820011861-git-send-email-tnt@246tNt.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612182354.47685.arnd@arndb.de>
-Cc: Andrew Morton <akpm@osdl.org>, mkravetz@us.ibm.com,
-	linux-kernel@vger.kernel.org, hch@infradead.org,
-	linux-mm@kvack.org, paulus@samba.org, kmannth@us.ibm.com,
-	gone@us.ibm.com, cbe-oss-dev@ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+  charset="iso-8859-15"
+Message-Id: <200612190003.38713.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Linux PPC Devel <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,127 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 16 December 2006 09:03, KAMEZAWA Hiroyuki wrote:
-> @@ -273,10 +284,13 @@
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (ret)
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0g=
-oto error;
-> =A0=A0=A0=A0=A0=A0=A0=A0}
-> +=A0=A0=A0=A0=A0=A0=A0atomic_inc(&memory_hotadd_count);
-> =A0
-> =A0=A0=A0=A0=A0=A0=A0=A0/* call arch's memory hotadd */
-> =A0=A0=A0=A0=A0=A0=A0=A0ret =3D arch_add_memory(nid, start, size);
-> =A0
-> +=A0=A0=A0=A0=A0=A0=A0atomic_dec(&memory_hotadd_count);
-> +
-> =A0=A0=A0=A0=A0=A0=A0=A0if (ret < 0)
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0goto error;
-> =A0
-
-This also doesn't fix the problem on cell, since the time when the bug
-happens, we're not calling through this function, or arch_add_memory,
-at all, but rather invoke __add_pages directly. As BenH already mentioned,
-we shouldn't do really call __add_pages at all.
-
-Let me attempt another fix that might address all cases. This is completely
-untested as of now, but also addresses Dave's latest comment.
-
-	Arnd <><
-
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index 1a3d8a2..723d220 100644
-=2D-- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -543,7 +543,7 @@ virtual_memmap_init (u64 start, u64 end, void *arg)
-=20
- 	if (map_start < map_end)
- 		memmap_init_zone((unsigned long)(map_end - map_start),
-=2D				 args->nid, args->zone, page_to_pfn(map_start));
-+				 args->nid, args->zone, page_to_pfn(map_start), 1);
- 	return 0;
- }
-=20
-diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
-index 7f2944d..1e52cd1 100644
-=2D-- a/arch/s390/mm/vmem.c
-+++ b/arch/s390/mm/vmem.c
-@@ -61,7 +61,7 @@ void memmap_init(unsigned long size, int nid, unsigned lo=
-ng zone,
-=20
- 		if (map_start < map_end)
- 			memmap_init_zone((unsigned long)(map_end - map_start),
-=2D					 nid, zone, page_to_pfn(map_start));
-+					 nid, zone, page_to_pfn(map_start), 1);
- 	}
- }
-=20
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index a17b147..6d85068 100644
-=2D-- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -978,7 +978,7 @@ extern int early_pfn_to_nid(unsigned long pfn);
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
- extern void set_dma_reserve(unsigned long new_dma_reserve);
-=2Dextern void memmap_init_zone(unsigned long, int, unsigned long, unsigned=
- long);
-+extern void memmap_init_zone(unsigned long, int, unsigned long, unsigned l=
-ong, int);
- extern void setup_per_zone_pages_min(void);
- extern void mem_init(void);
- extern void show_mem(void);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 0c055a0..16c9930 100644
-=2D-- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -71,7 +71,7 @@ static int __add_zone(struct zone *zone, unsigned long ph=
-ys_start_pfn)
- 		if (ret < 0)
- 			return ret;
- 	}
-=2D	memmap_init_zone(nr_pages, nid, zone_type, phys_start_pfn);
-+	memmap_init_zone(nr_pages, nid, zone_type, phys_start_pfn, 0);
- 	return 0;
- }
-=20
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 8c1a116..60d1ac8 100644
-=2D-- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1953,17 +1953,19 @@ static inline unsigned long wait_table_bits(unsigne=
-d long size)
-  * done. Non-atomic initialization, single-pass.
-  */
- void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long=
- zone,
-=2D		unsigned long start_pfn)
-+		unsigned long start_pfn, int early)
- {
- 	struct page *page;
- 	unsigned long end_pfn =3D start_pfn + size;
- 	unsigned long pfn;
-=20
- 	for (pfn =3D start_pfn; pfn < end_pfn; pfn++) {
-=2D		if (!early_pfn_valid(pfn))
-=2D			continue;
-=2D		if (!early_pfn_in_nid(pfn, nid))
-=2D			continue;
-+		if (early) {
-+			if (!early_pfn_valid(pfn))
-+				continue;
-+			if (!early_pfn_in_nid(pfn, nid))
-+				continue;
-+		}
- 		page =3D pfn_to_page(pfn);
- 		set_page_links(page, zone, nid, pfn);
- 		init_page_count(page);
-@@ -1990,7 +1992,7 @@ void zone_init_free_lists(struct pglist_data *pgdat, =
-struct zone *zone,
-=20
- #ifndef __HAVE_ARCH_MEMMAP_INIT
- #define memmap_init(size, nid, zone, start_pfn) \
-=2D	memmap_init_zone((size), (nid), (zone), (start_pfn))
-+	memmap_init_zone((size), (nid), (zone), (start_pfn), 1)
- #endif
-=20
- static int __cpuinit zone_batchsize(struct zone *zone)
+T24gTW9uZGF5IDE4IERlY2VtYmVyIDIwMDYgMjM6NDYsIFN5bHZhaW4gTXVuYXV0IHdyb3RlOgo+
+ICugoKCgoKCgc3RydWN0IGlibWVidXNfZGV2ICplYnVzX2RldjsKPiAroKCgoKCgoHN0cnVjdCBv
+Zl9kZXZpY2UgKm9mOwo+ICsKPiAroKCgoKCgoGlmICghZGV2KQo+ICugoKCgoKCgoKCgoKCgoKBy
+ZXR1cm4gLUVOT0RFVjsKPiArCj4gK6CgoKCgoKBlYnVzX2RldiA9IHRvX2libWVidXNfZGV2KGRl
+dik7Cj4gK6CgoKCgoKBpZiAoIWVidXNfZGV2KQo+ICugoKCgoKCgoKCgoKCgoKByZXR1cm4gLUVO
+T0RFVjsKPiArCj4gK6CgoKCgoKBvZiA9ICZlYnVzX2Rldi0+b2ZkZXY7CgpUaGlzIGNhbiBiZSBz
+aG9ydGVuZWQgdG8gCgoJb2YgPSB0b19vZl9kZXZpY2UoZGV2KTsKCldpdGggdGhhdCBjb2RlIGlu
+IHBsYWNlLCB0aGlzIGZ1bmN0aW9uIGlzIGlkZW50aWNhbCB0byB0aG9zZQpmb3IgbWFjaW8gYW5k
+IG9mX3BsYXRmb3JtX2RldmljZSwgYW5kIHlvdSBjYW4gY29sbGFwc2UgdGhlbQphbGwgaW50byBv
+Zl9kZXZpY2VfdWV2ZW50LgoKCUFybmQgPD48Cg==
