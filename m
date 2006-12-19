@@ -1,25 +1,21 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id A3C4EDDECA
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 02:46:50 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1808817ugf
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 07:46:48 -0800 (PST)
-Message-ID: <528646bc0612190746g6a38f5d6kf73160a5814b57fb@mail.gmail.com>
-Date: Tue, 19 Dec 2006 08:46:48 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-In-Reply-To: <1166538553.25827.99.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
-	<1166522096.25827.76.camel@pmac.infradead.org>
-	<1166528379.19254.69.camel@localhost.localdomain>
-	<4587D338.7060906@246tNt.com>
-	<1166538553.25827.99.camel@pmac.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	bbrv@genesi-usa.com
+Return-Path: <SRS0+f7c478659b117b62100c+1213+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3FCBADE006
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 02:57:35 +1100 (EST)
+Subject: Re: [PATCH]  powerpc iseries link error in allmodconfig
+From: David Woodhouse <dwmw2@infradead.org>
+To: Judith Lebzelter <judith@osdl.org>
+In-Reply-To: <20061108173429.GB14991@shell0.pdx.osdl.net>
+References: <20061108173429.GB14991@shell0.pdx.osdl.net>
+Content-Type: text/plain
+Date: Tue, 19 Dec 2006 15:57:19 +0000
+Message-Id: <1166543839.25827.117.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +25,464 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/19/06, David Woodhouse <dwmw2@infradead.org> wrote:
-> On Tue, 2006-12-19 at 12:55 +0100, Sylvain Munaut wrote:
-> > Benjamin Herrenschmidt wrote:
-> > > Hrm... I told them to remove that from their device-tree ... dammit !
-> >
-> > Yes, I told them to do some other changes to their device-tree, but no
-> > luck so far.
->
-> OK, let's drop the patch and assume the device-tree will be fixed
-> shortly. In the meantime, users should be able to work around it by
-> hacking the device-tree from the OF prompt -- which we currently have to
-> do for other things in the Efika device-tree anyway.
+On Wed, 2006-11-08 at 09:34 -0800, Judith Lebzelter wrote:
+> Choose rpa_vscsi.c over iseries_vscsi.c when building both
+> pseries and iseries. 
 
-This will do for the time being; but I'm not expecting any changes to
-be made to the firmware  (however, Sven is making the attempt).  In
-the long term, I think we are going to have to live with either OF
-fixups; or preventing CHRP from matching the efika and adding other
-fixups in the Efika's probe function.  I like Sylvain's suggestion of
-moving CHRP and pseries down in the link order; but then again, I'm
-neither a CHRP or pseries user.  :)
+Would it not be better to make them both work instead?
 
-Cheers,
-g.
+Untested-but-otherwise-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+
+
+--- linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/rpa_vscsi.c~	2006-11-29 21:57:37.000000000 +0000
++++ linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/rpa_vscsi.c	2006-12-19 15:42:57.000000000 +0000
+@@ -42,14 +42,14 @@ static unsigned int partition_number = -
+  * Routines for managing the command/response queue
+  */
+ /**
+- * ibmvscsi_handle_event: - Interrupt handler for crq events
++ * rpavscsi_handle_event: - Interrupt handler for crq events
+  * @irq:	number of irq to handle, not used
+  * @dev_instance: ibmvscsi_host_data of host that received interrupt
+  *
+  * Disables interrupts and schedules srp_task
+  * Always returns IRQ_HANDLED
+  */
+-static irqreturn_t ibmvscsi_handle_event(int irq, void *dev_instance)
++static irqreturn_t rpavscsi_handle_event(int irq, void *dev_instance)
+ {
+ 	struct ibmvscsi_host_data *hostdata =
+ 	    (struct ibmvscsi_host_data *)dev_instance;
+@@ -66,9 +66,9 @@ static irqreturn_t ibmvscsi_handle_event
+  * Frees irq, deallocates a page for messages, unmaps dma, and unregisters
+  * the crq with the hypervisor.
+  */
+-void ibmvscsi_release_crq_queue(struct crq_queue *queue,
+-				struct ibmvscsi_host_data *hostdata,
+-				int max_requests)
++static void rpavscsi_release_crq_queue(struct crq_queue *queue,
++				       struct ibmvscsi_host_data *hostdata,
++				       int max_requests)
+ {
+ 	long rc;
+ 	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
+@@ -108,12 +108,13 @@ static struct viosrp_crq *crq_queue_next
+ }
+ 
+ /**
+- * ibmvscsi_send_crq: - Send a CRQ
++ * rpavscsi_send_crq: - Send a CRQ
+  * @hostdata:	the adapter
+  * @word1:	the first 64 bits of the data
+  * @word2:	the second 64 bits of the data
+  */
+-int ibmvscsi_send_crq(struct ibmvscsi_host_data *hostdata, u64 word1, u64 word2)
++static int rpavscsi_send_crq(struct ibmvscsi_host_data *hostdata,
++			     u64 word1, u64 word2)
+ {
+ 	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
+ 
+@@ -121,10 +122,10 @@ int ibmvscsi_send_crq(struct ibmvscsi_ho
+ }
+ 
+ /**
+- * ibmvscsi_task: - Process srps asynchronously
++ * rpavscsi_task: - Process srps asynchronously
+  * @data:	ibmvscsi_host_data of host
+  */
+-static void ibmvscsi_task(void *data)
++static void rpavscsi_task(void *data)
+ {
+ 	struct ibmvscsi_host_data *hostdata = (struct ibmvscsi_host_data *)data;
+ 	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
+@@ -189,6 +190,42 @@ static void set_adapter_info(struct ibmv
+ }
+ 
+ /**
++ * reset_crq_queue: - resets a crq after a failure
++ * @queue:	crq_queue to initialize and register
++ * @hostdata:	ibmvscsi_host_data of host
++ *
++ */
++static int rpavscsi_reset_crq_queue(struct crq_queue *queue,
++				    struct ibmvscsi_host_data *hostdata)
++{
++	int rc;
++	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
++
++	/* Close the CRQ */
++	do {
++		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
++	} while ((rc == H_BUSY) || (H_IS_LONG_BUSY(rc)));
++
++	/* Clean out the queue */
++	memset(queue->msgs, 0x00, PAGE_SIZE);
++	queue->cur = 0;
++
++	set_adapter_info(hostdata);
++
++	/* And re-open it again */
++	rc = plpar_hcall_norets(H_REG_CRQ,
++				vdev->unit_address,
++				queue->msg_token, PAGE_SIZE);
++	if (rc == 2) {
++		/* Adapter is good, but other end is not ready */
++		printk(KERN_WARNING "ibmvscsi: Partner adapter not ready\n");
++	} else if (rc != 0) {
++		printk(KERN_WARNING
++		       "ibmvscsi: couldn't register crq--rc 0x%x\n", rc);
++	}
++	return rc;
++}
++/**
+  * initialize_crq_queue: - Initializes and registers CRQ with hypervisor
+  * @queue:	crq_queue to initialize and register
+  * @hostdata:	ibmvscsi_host_data of host
+@@ -197,9 +234,9 @@ static void set_adapter_info(struct ibmv
+  * the crq with the hypervisor.
+  * Returns zero on success.
+  */
+-int ibmvscsi_init_crq_queue(struct crq_queue *queue,
+-			    struct ibmvscsi_host_data *hostdata,
+-			    int max_requests)
++static int rpavscsi_init_crq_queue(struct crq_queue *queue,
++				   struct ibmvscsi_host_data *hostdata,
++				   int max_requests)
+ {
+ 	int rc;
+ 	int retrc;
+@@ -226,7 +263,7 @@ int ibmvscsi_init_crq_queue(struct crq_q
+ 				queue->msg_token, PAGE_SIZE);
+ 	if (rc == H_RESOURCE)
+ 		/* maybe kexecing and resource is busy. try a reset */
+-		rc = ibmvscsi_reset_crq_queue(queue,
++		rc = rpavscsi_reset_crq_queue(queue,
+ 					      hostdata);
+ 
+ 	if (rc == 2) {
+@@ -239,7 +276,7 @@ int ibmvscsi_init_crq_queue(struct crq_q
+ 	}
+ 
+ 	if (request_irq(vdev->irq,
+-			ibmvscsi_handle_event,
++			rpavscsi_handle_event,
+ 			0, "ibmvscsi", (void *)hostdata) != 0) {
+ 		printk(KERN_ERR "ibmvscsi: couldn't register irq 0x%x\n",
+ 		       vdev->irq);
+@@ -256,7 +293,7 @@ int ibmvscsi_init_crq_queue(struct crq_q
+ 	queue->cur = 0;
+ 	spin_lock_init(&queue->lock);
+ 
+-	tasklet_init(&hostdata->srp_task, (void *)ibmvscsi_task,
++	tasklet_init(&hostdata->srp_task, (void *)rpavscsi_task,
+ 		     (unsigned long)hostdata);
+ 
+ 	return retrc;
+@@ -281,8 +318,8 @@ int ibmvscsi_init_crq_queue(struct crq_q
+  * @hostdata:	ibmvscsi_host_data of host
+  *
+  */
+-int ibmvscsi_reenable_crq_queue(struct crq_queue *queue,
+-				 struct ibmvscsi_host_data *hostdata)
++static int rpavscsi_reenable_crq_queue(struct crq_queue *queue,
++				       struct ibmvscsi_host_data *hostdata)
+ {
+ 	int rc;
+ 	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
+@@ -297,39 +334,10 @@ int ibmvscsi_reenable_crq_queue(struct c
+ 	return rc;
+ }
+ 
+-/**
+- * reset_crq_queue: - resets a crq after a failure
+- * @queue:	crq_queue to initialize and register
+- * @hostdata:	ibmvscsi_host_data of host
+- *
+- */
+-int ibmvscsi_reset_crq_queue(struct crq_queue *queue,
+-			      struct ibmvscsi_host_data *hostdata)
+-{
+-	int rc;
+-	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
+-
+-	/* Close the CRQ */
+-	do {
+-		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
+-	} while ((rc == H_BUSY) || (H_IS_LONG_BUSY(rc)));
+-
+-	/* Clean out the queue */
+-	memset(queue->msgs, 0x00, PAGE_SIZE);
+-	queue->cur = 0;
+-
+-	set_adapter_info(hostdata);
+-
+-	/* And re-open it again */
+-	rc = plpar_hcall_norets(H_REG_CRQ,
+-				vdev->unit_address,
+-				queue->msg_token, PAGE_SIZE);
+-	if (rc == 2) {
+-		/* Adapter is good, but other end is not ready */
+-		printk(KERN_WARNING "ibmvscsi: Partner adapter not ready\n");
+-	} else if (rc != 0) {
+-		printk(KERN_WARNING
+-		       "ibmvscsi: couldn't register crq--rc 0x%x\n", rc);
+-	}
+-	return rc;
+-}
++struct ibmvscsi_ops rpavscsi_ops = {
++	.init_crq_queue = rpavscsi_init_crq_queue,
++	.release_crq_queue = rpavscsi_release_crq_queue,
++	.reset_crq_queue = rpavscsi_reset_crq_queue,
++	.reenable_crq_queue = rpavscsi_reenable_crq_queue,
++	.send_crq = rpavscsi_send_crq,
++};
+--- linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/ibmvscsi.c~	2006-11-29 21:57:37.000000000 +0000
++++ linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/ibmvscsi.c	2006-12-19 15:53:59.000000000 +0000
+@@ -89,6 +89,8 @@ static int max_requests = 50;
+ 
+ #define IBMVSCSI_VERSION "1.5.8"
+ 
++static struct ibmvscsi_ops *ibmvscsi_ops;
++
+ MODULE_DESCRIPTION("IBM Virtual SCSI");
+ MODULE_AUTHOR("Dave Boutcher");
+ MODULE_LICENSE("GPL");
+@@ -567,7 +569,7 @@ static int ibmvscsi_send_srp_event(struc
+ 	list_add_tail(&evt_struct->list, &hostdata->sent);
+ 
+ 	if ((rc =
+-	     ibmvscsi_send_crq(hostdata, crq_as_u64[0], crq_as_u64[1])) != 0) {
++	     ibmvscsi_ops->send_crq(hostdata, crq_as_u64[0], crq_as_u64[1])) != 0) {
+ 		list_del(&evt_struct->list);
+ 
+ 		printk(KERN_ERR "ibmvscsi: send error %d\n",
+@@ -1183,8 +1185,8 @@ void ibmvscsi_handle_crq(struct viosrp_c
+ 		case 0x01:	/* Initialization message */
+ 			printk(KERN_INFO "ibmvscsi: partner initialized\n");
+ 			/* Send back a response */
+-			if (ibmvscsi_send_crq(hostdata,
+-					      0xC002000000000000LL, 0) == 0) {
++			if (ibmvscsi_ops->send_crq(hostdata,
++						   0xC002000000000000LL, 0) == 0) {
+ 				/* Now login */
+ 				send_srp_login(hostdata);
+ 			} else {
+@@ -1212,10 +1214,10 @@ void ibmvscsi_handle_crq(struct viosrp_c
+ 			printk(KERN_INFO
+ 			       "ibmvscsi: Re-enabling adapter!\n");
+ 			purge_requests(hostdata, DID_REQUEUE);
+-			if ((ibmvscsi_reenable_crq_queue(&hostdata->queue,
+-							hostdata)) ||
+-			    (ibmvscsi_send_crq(hostdata,
+-					       0xC001000000000000LL, 0))) {
++			if ((ibmvscsi_ops->reenable_crq_queue(&hostdata->queue,
++							      hostdata)) ||
++			    (ibmvscsi_ops->send_crq(hostdata,
++						    0xC001000000000000LL, 0))) {
+ 					atomic_set(&hostdata->request_limit,
+ 						   -1);
+ 					printk(KERN_ERR
+@@ -1228,10 +1230,10 @@ void ibmvscsi_handle_crq(struct viosrp_c
+ 			       crq->format);
+ 
+ 			purge_requests(hostdata, DID_ERROR);
+-			if ((ibmvscsi_reset_crq_queue(&hostdata->queue,
+-							hostdata)) ||
+-			    (ibmvscsi_send_crq(hostdata,
+-					       0xC001000000000000LL, 0))) {
++			if ((ibmvscsi_ops->reset_crq_queue(&hostdata->queue,
++							   hostdata)) ||
++			    (ibmvscsi_ops->send_crq(hostdata,
++						    0xC001000000000000LL, 0))) {
+ 					atomic_set(&hostdata->request_limit,
+ 						   -1);
+ 					printk(KERN_ERR
+@@ -1517,7 +1519,7 @@ static int ibmvscsi_probe(struct vio_dev
+ 	atomic_set(&hostdata->request_limit, -1);
+ 	hostdata->host->max_sectors = 32 * 8; /* default max I/O 32 pages */
+ 
+-	rc = ibmvscsi_init_crq_queue(&hostdata->queue, hostdata, max_requests);
++	rc = ibmvscsi_ops->init_crq_queue(&hostdata->queue, hostdata, max_requests);
+ 	if (rc != 0 && rc != H_RESOURCE) {
+ 		printk(KERN_ERR "ibmvscsi: couldn't initialize crq\n");
+ 		goto init_crq_failed;
+@@ -1538,7 +1540,7 @@ static int ibmvscsi_probe(struct vio_dev
+ 	 * to fail if the other end is not acive.  In that case we don't
+ 	 * want to scan
+ 	 */
+-	if (ibmvscsi_send_crq(hostdata, 0xC001000000000000LL, 0) == 0
++	if (ibmvscsi_ops->send_crq(hostdata, 0xC001000000000000LL, 0) == 0
+ 	    || rc == H_RESOURCE) {
+ 		/*
+ 		 * Wait around max init_timeout secs for the adapter to finish
+@@ -1564,7 +1566,7 @@ static int ibmvscsi_probe(struct vio_dev
+       add_host_failed:
+ 	release_event_pool(&hostdata->pool, hostdata);
+       init_pool_failed:
+-	ibmvscsi_release_crq_queue(&hostdata->queue, hostdata, max_requests);
++	ibmvscsi_ops->release_crq_queue(&hostdata->queue, hostdata, max_requests);
+       init_crq_failed:
+ 	scsi_host_put(host);
+       scsi_host_alloc_failed:
+@@ -1575,8 +1577,8 @@ static int ibmvscsi_remove(struct vio_de
+ {
+ 	struct ibmvscsi_host_data *hostdata = vdev->dev.driver_data;
+ 	release_event_pool(&hostdata->pool, hostdata);
+-	ibmvscsi_release_crq_queue(&hostdata->queue, hostdata,
+-				   max_requests);
++	ibmvscsi_ops->release_crq_queue(&hostdata->queue, hostdata,
++					max_requests);
+ 	
+ 	scsi_remove_host(hostdata->host);
+ 	scsi_host_put(hostdata->host);
+@@ -1606,6 +1608,11 @@ static struct vio_driver ibmvscsi_driver
+ 
+ int __init ibmvscsi_module_init(void)
+ {
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		ibmvscsi_ops = &iseriesvscsi_ops;
++	else
++		ibmvscsi_ops = &rpavscsi_ops;
++
+ 	return vio_register_driver(&ibmvscsi_driver);
+ }
+ 
+--- linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/ibmvscsi.h~	2006-11-29 21:57:37.000000000 +0000
++++ linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/ibmvscsi.h	2006-12-19 15:54:18.000000000 +0000
+@@ -94,21 +94,25 @@ struct ibmvscsi_host_data {
+ };
+ 
+ /* routines for managing a command/response queue */
+-int ibmvscsi_init_crq_queue(struct crq_queue *queue,
+-			    struct ibmvscsi_host_data *hostdata,
+-			    int max_requests);
+-void ibmvscsi_release_crq_queue(struct crq_queue *queue,
+-				struct ibmvscsi_host_data *hostdata,
+-				int max_requests);
+-int ibmvscsi_reset_crq_queue(struct crq_queue *queue,
+-			      struct ibmvscsi_host_data *hostdata);
+-
+-int ibmvscsi_reenable_crq_queue(struct crq_queue *queue,
+-				struct ibmvscsi_host_data *hostdata);
+-
+ void ibmvscsi_handle_crq(struct viosrp_crq *crq,
+ 			 struct ibmvscsi_host_data *hostdata);
+-int ibmvscsi_send_crq(struct ibmvscsi_host_data *hostdata,
+-		      u64 word1, u64 word2);
++
++struct ibmvscsi_ops {
++	int (*init_crq_queue)(struct crq_queue *queue,
++			      struct ibmvscsi_host_data *hostdata,
++			      int max_requests);
++	void (*release_crq_queue)(struct crq_queue *queue,
++				  struct ibmvscsi_host_data *hostdata,
++				  int max_requests);
++	int (*reset_crq_queue)(struct crq_queue *queue,
++			       struct ibmvscsi_host_data *hostdata);
++	int (*reenable_crq_queue)(struct crq_queue *queue,
++				  struct ibmvscsi_host_data *hostdata);
++	int (*send_crq)(struct ibmvscsi_host_data *hostdata,
++		       u64 word1, u64 word2);
++};
++
++extern struct ibmvscsi_ops iseriesvscsi_ops;
++extern struct ibmvscsi_ops rpavscsi_ops;
+ 
+ #endif				/* IBMVSCSI_H */
+--- linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/iseries_vscsi.c~	2006-11-29 21:57:37.000000000 +0000
++++ linux-2.6.19.ppc64/drivers/scsi/ibmvscsi/iseries_vscsi.c	2006-12-19 15:47:03.000000000 +0000
+@@ -53,7 +53,7 @@ struct srp_lp_event {
+ /** 
+  * standard interface for handling logical partition events.
+  */
+-static void ibmvscsi_handle_event(struct HvLpEvent *lpevt)
++static void iseriesvscsi_handle_event(struct HvLpEvent *lpevt)
+ {
+ 	struct srp_lp_event *evt = (struct srp_lp_event *)lpevt;
+ 
+@@ -74,9 +74,9 @@ static void ibmvscsi_handle_event(struct
+ /* ------------------------------------------------------------
+  * Routines for driver initialization
+  */
+-int ibmvscsi_init_crq_queue(struct crq_queue *queue,
+-			    struct ibmvscsi_host_data *hostdata,
+-			    int max_requests)
++static int iseriesvscsi_init_crq_queue(struct crq_queue *queue,
++				       struct ibmvscsi_host_data *hostdata,
++				       int max_requests)
+ {
+ 	int rc;
+ 
+@@ -88,7 +88,7 @@ int ibmvscsi_init_crq_queue(struct crq_q
+ 		goto viopath_open_failed;
+ 	}
+ 
+-	rc = vio_setHandler(viomajorsubtype_scsi, ibmvscsi_handle_event);
++	rc = vio_setHandler(viomajorsubtype_scsi, iseriesvscsi_handle_event);
+ 	if (rc < 0) {
+ 		printk("vio_setHandler failed with rc %d in open_event_path\n",
+ 		       rc);
+@@ -102,9 +102,9 @@ int ibmvscsi_init_crq_queue(struct crq_q
+ 	return -1;
+ }
+ 
+-void ibmvscsi_release_crq_queue(struct crq_queue *queue,
+-				struct ibmvscsi_host_data *hostdata,
+-				int max_requests)
++static void iseriesvscsi_release_crq_queue(struct crq_queue *queue,
++					   struct ibmvscsi_host_data *hostdata,
++					   int max_requests)
+ {
+ 	vio_clearHandler(viomajorsubtype_scsi);
+ 	viopath_close(viopath_hostLp, viomajorsubtype_scsi, max_requests);
+@@ -117,8 +117,8 @@ void ibmvscsi_release_crq_queue(struct c
+  *
+  * no-op for iSeries
+  */
+-int ibmvscsi_reset_crq_queue(struct crq_queue *queue,
+-			      struct ibmvscsi_host_data *hostdata)
++static int iseriesvscsi_reset_crq_queue(struct crq_queue *queue,
++					struct ibmvscsi_host_data *hostdata)
+ {
+ 	return 0;
+ }
+@@ -130,19 +130,20 @@ int ibmvscsi_reset_crq_queue(struct crq_
+  *
+  * no-op for iSeries
+  */
+-int ibmvscsi_reenable_crq_queue(struct crq_queue *queue,
+-				struct ibmvscsi_host_data *hostdata)
++static int iseriesvscsi_reenable_crq_queue(struct crq_queue *queue,
++					   struct ibmvscsi_host_data *hostdata)
+ {
+ 	return 0;
+ }
+ 
+ /**
+- * ibmvscsi_send_crq: - Send a CRQ
++ * iseriesvscsi_send_crq: - Send a CRQ
+  * @hostdata:	the adapter
+  * @word1:	the first 64 bits of the data
+  * @word2:	the second 64 bits of the data
+  */
+-int ibmvscsi_send_crq(struct ibmvscsi_host_data *hostdata, u64 word1, u64 word2)
++static int iseriesvscsi_send_crq(struct ibmvscsi_host_data *hostdata,
++				 u64 word1, u64 word2)
+ {
+ 	single_host_data = hostdata;
+ 	return HvCallEvent_signalLpEventFast(viopath_hostLp,
+@@ -156,3 +157,11 @@ int ibmvscsi_send_crq(struct ibmvscsi_ho
+ 					     VIOVERSION << 16, word1, word2, 0,
+ 					     0);
+ }
++
++struct ibmvscsi_ops iseriesvscsi_ops = {
++	.init_crq_queue = iseriesvscsi_init_crq_queue,
++	.release_crq_queue = iseriesvscsi_release_crq_queue,
++	.reset_crq_queue = iseriesvscsi_reset_crq_queue,
++	.reenable_crq_queue = iseriesvscsi_reenable_crq_queue,
++	.send_crq = iseriesvscsi_send_crq,
++};
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+dwmw2
