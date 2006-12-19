@@ -1,15 +1,25 @@
-Return-Path: <vitalywool@gmail.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 84658DDEC0
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 02:44:12 +1100 (EST)
-Date: Tue, 19 Dec 2006 18:44:25 +0300
-From: Vitaly Wool <vitalywool@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH][trivial][respin] update MTD OF documentation
-Message-Id: <20061219184425.d924c4c2.vitalywool@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, dwmw2@redhat.com
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id A3C4EDDECA
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 02:46:50 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1808817ugf
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 07:46:48 -0800 (PST)
+Message-ID: <528646bc0612190746g6a38f5d6kf73160a5814b57fb@mail.gmail.com>
+Date: Tue, 19 Dec 2006 08:46:48 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: [PATCH] Probe Efika platform before CHRP.
+In-Reply-To: <1166538553.25827.99.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+	<1166522096.25827.76.camel@pmac.infradead.org>
+	<1166528379.19254.69.camel@localhost.localdomain>
+	<4587D338.7060906@246tNt.com>
+	<1166538553.25827.99.camel@pmac.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	bbrv@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,57 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello folks,
+On 12/19/06, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Tue, 2006-12-19 at 12:55 +0100, Sylvain Munaut wrote:
+> > Benjamin Herrenschmidt wrote:
+> > > Hrm... I told them to remove that from their device-tree ... dammit !
+> >
+> > Yes, I told them to do some other changes to their device-tree, but no
+> > luck so far.
+>
+> OK, let's drop the patch and assume the device-tree will be fixed
+> shortly. In the meantime, users should be able to work around it by
+> hacking the device-tree from the OF prompt -- which we currently have to
+> do for other things in the Efika device-tree anyway.
 
-the patch below updates the Documentation/powerpc part of the MTD OF implementation with the new field probe-type. Its support has already been implemented in MTD part (drivers/mtd/maps/physmap_of.c).
+This will do for the time being; but I'm not expecting any changes to
+be made to the firmware  (however, Sven is making the attempt).  In
+the long term, I think we are going to have to live with either OF
+fixups; or preventing CHRP from matching the efika and adding other
+fixups in the Efika's probe function.  I like Sylvain's suggestion of
+moving CHRP and pseries down in the link order; but then again, I'm
+neither a CHRP or pseries user.  :)
 
- Documentation/powerpc/booting-without-of.txt |   19 +++++++++++--------
- 1 files changed, 11 insertions(+), 8 deletions(-)
+Cheers,
+g.
 
-Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b3bd366..3399427 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1703,29 +1703,32 @@ platforms are moved over to use the flat
-     Required properties:
- 
-      - device_type : has to be "rom"
--     - compatible : Should specify what this ROM device is compatible with
--       (i.e. "onenand"). Currently, this is most likely to be "direct-mapped"
--       (which corresponds to the MTD physmap mapping driver).
--     - regs : Offset and length of the register set (or memory mapping) for
-+     - compatible : Should specify what this flash device is compatible with.
-+       Currently, this is most likely to be "direct-mapped" (which
-+       corresponds to the MTD physmap mapping driver).
-+     - reg : Offset and length of the register set (or memory mapping) for
-        the device.
-+     - bank-width : Width of the flash data bus in bytes. Required
-+       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
- 
-     Recommended properties :
- 
--     - bank-width : Width of the flash data bus in bytes. Required
--       for the NOR flashes (compatible == "direct-mapped" and others) ONLY.
-      - partitions : Several pairs of 32-bit values where the first value is
-        partition's offset from the start of the device and the second one is
-        partition size in bytes with LSB used to signify a read only
--       partititon (so, the parition size should always be an even number).
-+       partition (so, the parition size should always be an even number).
-      - partition-names : The list of concatenated zero terminated strings
-        representing the partition names.
-+     - probe-type : The type of probe which should be done for the chip
-+       (JEDEC vs CFI actually). Valid ONLY for NOR flashes.
- 
-    Example:
- 
-  	flash@ff000000 {
-  		device_type = "rom";
-  		compatible = "direct-mapped";
-- 		regs = <ff000000 01000000>;
-+ 		probe-type = "CFI";
-+ 		reg = <ff000000 01000000>;
-  		bank-width = <4>;
-  		partitions = <00000000 00f80000
-  			      00f80000 00080001>;
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
