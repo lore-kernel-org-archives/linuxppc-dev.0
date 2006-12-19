@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 693AADDF53
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 10:40:36 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add a device_initcall to call
-	of_platform_bus_probe on all fsl SoCs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20061219172202.29ef9b1d.kim.phillips@freescale.com>
-References: <20061219153102.20ab3345.kim.phillips@freescale.com>
-	<1166569246.19254.86.camel@localhost.localdomain>
-	<20061219172202.29ef9b1d.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Wed, 20 Dec 2006 10:40:28 +1100
-Message-Id: <1166571629.19254.90.camel@localhost.localdomain>
+Return-Path: <pochini@shiny.it>
+Received: from smtp-out109.alice.it (smtp-out109.alice.it [85.37.17.109])
+	by ozlabs.org (Postfix) with ESMTP id C312DDDE42
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 10:47:34 +1100 (EST)
+Date: Wed, 20 Dec 2006 00:35:45 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: Giuliano Pochini <pochini@shiny.it>
+Subject: Re: 2 CPUs, but only one is used
+Message-Id: <20061220003545.7053b05c.pochini@shiny.it>
+In-Reply-To: <20061217144127.579f01f0.pochini@shiny.it>
+References: <20061217144127.579f01f0.pochini@shiny.it>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,23 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 17 Dec 2006 14:41:27 +0100
+Giuliano Pochini <pochini@shiny.it> wrote:
 
-> it's not characteristic of FSL _boards_ per se.  It's characteristic of FSL
-> powerpc SoC chips, and it resides in a file that will only be built for that
-> case.  This is a legitimate way to support multiple platforms in a single
-> image without incurring multiple device_initcall()s with the same parameter.
+> I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
+> then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
+> put online without errors, but it stays idle+wait=100% and of course
+> user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
+>
+> I saw that there are some cpu hotplug related changes in 2.6.19, but I have
+> no access to a non-ppc dual cpu box to check if the problem also affects
+> other architectures right now.
 
-> I didn't see an appropriate ppc_md. function to use; are you suggesting we add
-> one just for this?  wouldn't that be fsl specific also, but reside in common code?
+I tried to reproduce the problem on an intel box, but I couldn't. /sys
+contains only the cpu0 file if it boots with maxcpus=1.
 
-What cores do those chip use ? Any reason why one couldn't build a
-kernel that boots those chips -and- chrp,pmac,etc... in one image ?
 
-If that is the case, then your initcall will incorrectly be called on
-platforms that don't need it.
-
-I think what we need to do is to define a mecanism for board initcalls.
-
-Something like board_xxx_initcall(boardname, function);
-
-Ben.
+--
+Giuliano.
