@@ -3,20 +3,19 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3D255DE0E6
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 03:13:31 +1100 (EST)
-In-Reply-To: <20061219041254.GB6993@stusta.de>
-References: <20061124234935.GJ28363@stusta.de>
-	<20061219041254.GB6993@stusta.de>
+	by ozlabs.org (Postfix) with ESMTP id 2F995DE106
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 03:15:15 +1100 (EST)
+In-Reply-To: <17799.32212.110299.916299@cargo.ozlabs.ibm.com>
+References: <11660315492978-git-send-email-timur@freescale.com>
+	<17799.32212.110299.916299@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3B7827F6-D6CA-481F-B6DE-0F0B2AB4F632@kernel.crashing.org>
+Message-Id: <0298A286-221C-4570-A798-05AB9CE8ECD6@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [2.6 patch] powerpc: remove the broken Gemini support
-Date: Tue, 19 Dec 2006 10:13:29 -0600
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	Kumar Gala <galak@freescale.com>
+Subject: Re: [PATCH] Fix phy_read/write redefinition errors in ucc_geth_phy.c
+Date: Tue, 19 Dec 2006 10:15:17 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +26,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 18, 2006, at 10:12 PM, Adrian Bunk wrote:
+On Dec 18, 2006, at 11:51 PM, Paul Mackerras wrote:
 
-> On Sat, Nov 25, 2006 at 12:49:35AM +0100, Adrian Bunk wrote:
->> I just saw the commit message below.
->>
->> There seems to have been some although unmerged work on APUS  
->> support by
->> Roman, but I didn't find any recent work on bringing the GEMINI  
->> support
->> back into life.
->>
->> Is this a wrong impression, or would a patch to remove it be OK?
->> ...
+> timur@freescale.com writes:
 >
-> Zero feedback, patch to remove it below.
+>> The local versions of phy_read() and phy_write() in ucc_geth_phy.c  
+>> conflict
+>> with the prototypes in include/linux/phy.h, so this patch renames  
+>> them,
+>> moves them to the top of the file (while eliminating the redundant  
+>> prototype),
+>> and makes them static.
 >
-> cu
-> Adrian
+> You really need to send this patch to Jeff Garzik and the netdev
+> list.  If the driver won't compile in its current state in Linus' tree
+> because of the problem this fixes, make sure you make that point in
+> the patch commentary and explicitly ask Jeff to get the patch into
+> 2.6.20.
 
-I'm good with removing GEMINI since no one seems to have raised any  
-fuss about this and I brought the issue up over a year ago now.   
-However, I leave the final decision up to Paul.
-
-Also, where do we stand with APUS?
+I pretty much did this yesterday, so hopefully Jeff will pick up the  
+patches and push them to linus with his next set of fixes for 2.6.20.
 
 - k
