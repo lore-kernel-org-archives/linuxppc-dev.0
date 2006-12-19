@@ -1,21 +1,21 @@
-Return-Path: <haveblue@us.ibm.com>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 19 Dec 2006 09:16:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Dave Hansen <haveblue@us.ibm.com>
 Subject: Re: [PATCH] Fix sparsemem on Cell
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200612182354.47685.arnd@arndb.de>
+Message-Id: <20061219091625.43d45893.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1166483780.8648.26.camel@localhost.localdomain>
 References: <20061215165335.61D9F775@localhost.localdomain>
 	<20061215114536.dc5c93af.akpm@osdl.org>
 	<20061216170353.2dfa27b1.kamezawa.hiroyu@jp.fujitsu.com>
 	<200612182354.47685.arnd@arndb.de>
-Content-Type: text/plain
-Date: Mon, 18 Dec 2006 15:16:20 -0800
-Message-Id: <1166483780.8648.26.camel@localhost.localdomain>
+	<1166483780.8648.26.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, mkravetz@us.ibm.com, linux-mm@kvack.org,
+Content-Type: text/plain; charset=US-ASCII
+Cc: akpm@osdl.org, mkravetz@us.ibm.com, arnd@arndb.de, linux-mm@kvack.org,
 	linux-kernel@vger.kernel.org, hch@infradead.org,
 	linuxppc-dev@ozlabs.org, paulus@samba.org, kmannth@us.ibm.com,
-	gone@us.ibm.com, cbe-oss-dev@ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	gone@us.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-12-18 at 23:54 +0100, Arnd Bergmann wrote:
->  #ifndef __HAVE_ARCH_MEMMAP_INIT
->  #define memmap_init(size, nid, zone, start_pfn) \
-> -	memmap_init_zone((size), (nid), (zone), (start_pfn))
-> +	memmap_init_zone((size), (nid), (zone), (start_pfn), 1)
->  #endif
+On Mon, 18 Dec 2006 15:16:20 -0800
+Dave Hansen <haveblue@us.ibm.com> wrote:
 
-This is what I was thinking of.  Sometimes I find these kinds of calls a
-bit annoying:
+> enum context
+> {
+>         EARLY,
+>         HOTPLUG
+> };
+I like this :)
 
-	foo(0, 1, 1, 0, 99, 22)
-
-It only takes a minute to look up what all of the numbers do, but that
-is one minute too many. :)
-
-How about an enum, or a pair of #defines?
-
-enum context
-{
-        EARLY,
-        HOTPLUG
-};
-extern void memmap_init_zone(unsigned long, int, unsigned long, unsigned long,
-                                enum call_context);
-...
-
-So, the call I quoted above would become:
-
-	memmap_init_zone((size), (nid), (zone), (start_pfn), EARLY)
-
--- Dave
+Thanks,
+-Kame
