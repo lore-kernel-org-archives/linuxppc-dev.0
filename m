@@ -1,31 +1,20 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
-	[195.238.5.70])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9AC82DDF93
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 09:34:41 +1100 (EST)
-Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx012.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kBJMYRNq031504
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 23:34:31 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <458868A3.8090403@246tNt.com>
-Date: Tue, 19 Dec 2006 23:33:07 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>	
-	<1166522096.25827.76.camel@pmac.infradead.org>	
-	<1166528379.19254.69.camel@localhost.localdomain>	
-	<4587D338.7060906@246tNt.com>	
-	<1166538553.25827.99.camel@pmac.infradead.org>
-	<1166558300.19254.71.camel@localhost.localdomain>
-In-Reply-To: <1166558300.19254.71.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, bbrv@genesi-usa.com,
-	David Woodhouse <dwmw2@infradead.org>, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id 9CF5BDDF64
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 10:01:12 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add a device_initcall to call
+	of_platform_bus_probe on all fsl SoCs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20061219153102.20ab3345.kim.phillips@freescale.com>
+References: <20061219153102.20ab3345.kim.phillips@freescale.com>
+Content-Type: text/plain
+Date: Wed, 20 Dec 2006 10:00:46 +1100
+Message-Id: <1166569246.19254.86.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,27 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> OK, let's drop the patch and assume the device-tree will be fixed
->> shortly. 
->>     
->
-> No, keep the patch for now. I'm afraid they aren't willing to fix their
-> device-tree.
->   
-Ok,
-but please, put a comment near it would be nice if we remember why we
-put it there.
+On Tue, 2006-12-19 at 15:31 -0600, Kim Phillips wrote:
+> Utilize of_platform_bus_probe() in lieu of manually
+> calling of_platform_device_create for each ucc_geth device
+> (consequently, the QE is added to of_default_bus_ids).
+> 
+> This has been extended outside mpc83xx platform code,
+> since other fsl SoCs are going to need it (thanks Kumar).
+> 
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
+Big NACK
 
-Sylvain
->   
->> In the meantime, users should be able to work around it by
->> hacking the device-tree from the OF prompt -- which we currently have to
->> do for other things in the Efika device-tree anyway.
->>
->> I'm happy enough for Fedora to require the fixed firmware, certainly. 
->>
->>     
->
->   
+The effect of this patch is that of_platform_bus_probe() will be
+unconditionally called on anything if a paltform using fsl_soc.c is
+included in the build.
+
+I want that called by the platform code or by something called by the
+platform code for FSL boards, not totally unconditional like that.
+
+Ben.
+ 
+> ---
+>  arch/powerpc/kernel/of_platform.c |    1 +
+>  arch/powerpc/sysdev/fsl_soc.c     |    9 +++++++++
+>  2 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+> index 3002ea3..72da78b 100644
+> --- a/arch/powerpc/kernel/of_platform.c
+> +++ b/arch/powerpc/kernel/of_platform.c
+> @@ -50,6 +50,7 @@ static struct of_device_id of_default_bu
+>  	{ .type = "plb5", },
+>  	{ .type = "plb4", },
+>  	{ .type = "opb", },
+> +	{ .type = "qe", },
+>  	{},
+>  };
+>  
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index ad31e56..c41b851 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/fs_uart_pd.h>
+>  
+>  #include <asm/system.h>
+> +#include <asm/of_platform.h>
+>  #include <asm/atomic.h>
+>  #include <asm/io.h>
+>  #include <asm/irq.h>
+> @@ -63,6 +64,14 @@ phys_addr_t get_immrbase(void)
+>  
+>  EXPORT_SYMBOL(get_immrbase);
+>  
+> +static int __init fsl_publish_devices(void)
+> +{
+> +	of_platform_bus_probe(NULL, NULL, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(fsl_publish_devices);
+> +
+>  #ifdef CONFIG_CPM2
+>  
+>  static u32 brgfreq = -1;
