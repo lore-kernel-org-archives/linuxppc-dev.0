@@ -1,12 +1,31 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 20 Dec 2006 15:58:52 +1100
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] move ELF_ET_DYN_BASE
-Message-ID: <20061220045852.GA1810@krispykreme>
+Return-Path: <bjking1@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0AEDCDDEF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 09:08:29 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBJM8rLB022309
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 17:08:53 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBJM8Oc3276802
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 17:08:24 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBJM8Ot7027061
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 17:08:24 -0500
+Message-ID: <458862D5.6070409@us.ibm.com>
+Date: Tue, 19 Dec 2006 16:08:21 -0600
+From: Brian King <bjking1@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH] powerpc export rtas_set_slot_reset()
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+	<20061219190210.GE5506@austin.ibm.com>
+In-Reply-To: <20061219190210.GE5506@austin.ibm.com>
+Content-Type: multipart/mixed; boundary="------------010400040301090204070106"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,59 +35,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------010400040301090204070106
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I often test new versions of glibc by doing:
+Linas Vepstas wrote:
+> Hi Paul,
+> A patch that provides an export for a bug being worked on the
+> IPR evice driver.
 
-LD_LIBRARY_PATH=/XXX/lib /XXX/lib/ld.so.1 <binary>
+This is not the API that I tested with... Here is the patch I
+was using in my test. This is not ready to apply as we are
+still working issues with various hardware...
 
-One test case ended up SEGV'ing. Upon closer inspection ld.so was loaded
-at 0x8000000 (128MB) with the heap right after it. Since we normally
-link binaries at 0x10000000 (256MB) we only had about 128MB of space for
-the heap:
+Brian
 
-00100000-00103000 r-xp 00100000 00:00 0           [vdso]
-08000000-0801e000 r-xp 00000000 00:01 33079       /lib/ld-2.5.so
-0802d000-0802f000 rwxp 0001d000 00:01 33079       /lib/ld-2.5.so
-0802f000-08050000 rwxp 0802f000 00:00 0           [heap]
-0fe91000-0ffd9000 r-xp 00000000 00:01 33082       /lib/libc-2.5.so
-0ffd9000-0ffe8000 ---p 00148000 00:01 33082       /lib/libc-2.5.so
-0ffe8000-0ffea000 r--p 00147000 00:01 33082       /lib/libc-2.5.so
-0ffea000-0ffed000 rwxp 00149000 00:01 33082       /lib/libc-2.5.so
-10000000-10004000 r-xp 00000000 00:01 76          /bin/sleep
-10013000-10014000 rwxp 00003000 00:01 76          /bin/sleep
-ffb41000-ffb56000 rw-p ffb41000 00:00 0           [stack]
 
-One way to fix this is move ELF_ET_DYN_BASE from 0x08000000 to 0x20000000.
-This allows 128MB for the binary (hopefully enough for even the most
-crazy c++ apps), and with our current layout we will grow the heap up
-and the stack down, allowing potentially gigabytes of heap:
+-- 
+Brian King
+eServer Storage I/O
+IBM Linux Technology Center
 
-00100000-00103000 r-xp 00100000 00:00 0           [vdso]
-0fe8a000-0ffd3000 r-xp 00000000 00:01 3350        /lib/tls/libc-2.3.6.so
-0ffd3000-0ffe3000 ---p 00149000 00:01 3350        /lib/tls/libc-2.3.6.so
-0ffe3000-0ffea000 r--p 00149000 00:01 3350        /lib/tls/libc-2.3.6.so
-0ffea000-0ffee000 rwxp 00150000 00:01 3350        /lib/tls/libc-2.3.6.so
-10000000-10004000 r-xp 00000000 00:01 76          /bin/sleep
-10013000-10014000 rwxp 00003000 00:01 76          /bin/sleep
-20000000-20018000 r-xp 00000000 00:01 3478        /lib/ld-2.3.6.so
-20028000-20029000 r--p 00018000 00:01 3478        /lib/ld-2.3.6.so
-20029000-2002a000 rwxp 00019000 00:01 3478        /lib/ld-2.3.6.so
-2002a000-2004b000 rwxp 2002a000 00:00 0           [heap]
-ffd67000-ffd7c000 rw-p ffd67000 00:00 0           [stack]
+--------------010400040301090204070106
+Content-Type: text/x-patch;
+ name="powerpc_slot_reset_api.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="powerpc_slot_reset_api.patch"
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: kernel/include/asm-powerpc/elf.h
-===================================================================
---- kernel.orig/include/asm-powerpc/elf.h	2006-12-19 22:22:03.000000000 -0600
-+++ kernel/include/asm-powerpc/elf.h	2006-12-19 22:23:58.000000000 -0600
-@@ -175,7 +175,7 @@
-    the loader.  We need to make sure that it is out of the way of the program
-    that it will "exec", and that there is sufficient room for the brk.  */
- 
--#define ELF_ET_DYN_BASE         (0x08000000)
-+#define ELF_ET_DYN_BASE         (0x20000000)
- 
- /* Common routine for both 32-bit and 64-bit processes */
- static inline void ppc_elf_core_copy_regs(elf_gregset_t elf_regs,
+ClRoZSBmb2xsb3dpbmcgcGF0Y2ggYWRkcyBhIGdlbmVyaWMgQVBJIHRvIGFzc2VydCBhbmQg
+ZGVhc3NlcnQKUENJIHJlc2V0IHRvIGEgZGV2aWNlIG9uIGEgcFNlcmllcyBtYWNoaW5lLiBU
+aGlzIGlzIG5lZWRlZCB0bwpzb2x2ZSBhbiBpc3N1ZSB3aXRoIGEgbmV3IGlwciBQQ0ktRSBh
+ZGFwdGVyIHdoaWNoIGNhdXNlcyBFRUgKZXJyb3JzIHdoZW4gcnVubmluZyBCSVNULiBUaGUg
+b25seSB3YXkgdG8gcmVzZXQgdGhpcyBhZGFwdGVyCndpdGhvdXQgY2F1c2luZyBhbiBFRUgg
+ZXJyb3IgaXMgdG8gdXNlIFBDSSByZXNldC4KClNpZ25lZC1vZmYtYnk6IEJyaWFuIEtpbmcg
+PGJya2luZ0B1cy5pYm0uY29tPgotLS0KCiBsaW51eC0yLjYtYmpraW5nMS9hcmNoL3Bvd2Vy
+cGMvcGxhdGZvcm1zL3BzZXJpZXMvZWVoLmMgfCAgIDQyICsrKysrKysrKysrKysrKysrCiBs
+aW51eC0yLjYtYmpraW5nMS9pbmNsdWRlL2FzbS1wb3dlcnBjL3BwYy1wY2kuaCAgICAgICAg
+fCAgICAzICsKIDIgZmlsZXMgY2hhbmdlZCwgNDUgaW5zZXJ0aW9ucygrKQoKZGlmZiAtcHVO
+IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcHNlcmllcy9lZWguY35wb3dlcnBjX3Nsb3RfcmVz
+ZXRfYXBpIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcHNlcmllcy9lZWguYwotLS0gbGludXgt
+Mi42L2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcHNlcmllcy9lZWguY35wb3dlcnBjX3Nsb3Rf
+cmVzZXRfYXBpCTIwMDYtMTItMTggMTU6NTg6NTYuMDAwMDAwMDAwIC0wNjAwCisrKyBsaW51
+eC0yLjYtYmpraW5nMS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL3BzZXJpZXMvZWVoLmMJMjAw
+Ni0xMi0xOCAxNTo1ODo1Ny4wMDAwMDAwMDAgLTA2MDAKQEAgLTU5MSw2ICs1OTEsNDggQEAg
+c3RhdGljIHZvaWQgX19ydGFzX3NldF9zbG90X3Jlc2V0KHN0cnVjdAogCW1zbGVlcCAoUENJ
+X0JVU19TRVRUTEVfVElNRV9NU0VDKTsKIH0KIAorLyoqCisgKiBwY2lfc2V0X3Nsb3RfcmVz
+ZXQgLSBBc3NlcnQgUENJIHJlc2V0IHRvIHRoZSBQQ0kgc2xvdAorICogQGRldjoJcGNpIGRl
+dmljZSBzdHJ1Y3QKKyAqCisgKiBBZnRlciBhc3NlcnRpbmcgUENJIHJlc2V0LCB0aGUgY2Fs
+bGVyIHNob3VsZCB3YWl0IGZvcgorICogMTAwIG1pbGxpc2Vjb25kcyBvciBsb25nZXIuCisg
+KgorICogUmV0dXJuIHZhbHVlOgorICogCTAgaWYgc3VjY2VzcworICoqLworaW50IHBjaV9z
+ZXRfc2xvdF9yZXNldChzdHJ1Y3QgcGNpX2RldiAqZGV2KQoreworCXN0cnVjdCBkZXZpY2Vf
+bm9kZSAqZG4gPSBwY2lfZGV2aWNlX3RvX09GX25vZGUoZGV2KTsKKwlzdHJ1Y3QgcGNpX2Ru
+ICpwZG4gPSBQQ0lfRE4oZG4pOworCisJcnRhc19wY2lfc2xvdF9yZXNldChwZG4sIDEpOwor
+CXJldHVybiAwOworfQorRVhQT1JUX1NZTUJPTF9HUEwocGNpX3NldF9zbG90X3Jlc2V0KTsK
+KworLyoqCisgKiBwY2lfY2xlYXJfc2xvdF9yZXNldCAtIENsZWFyIFBDSSByZXNldCB0byB0
+aGUgUENJIHNsb3QKKyAqIEBkZXY6CXBjaSBkZXZpY2Ugc3RydWN0CisgKgorICogQWZ0ZXIg
+Y2xlYXJpbmcgUENJIHJlc2V0LCB0aGUgY2FsbGVyIHNob3VsZCB3YWl0IDEuOCBzZWNvbmRz
+CisgKiBvciBsb25nZXIgZm9yIHRoZSBidXMgdG8gc3RhYmlsaXplIGFuZCB0aGUgZGV2aWNl
+IHRvIGNvbWUKKyAqIHJlYWR5LgorICoKKyAqIFJldHVybiB2YWx1ZToKKyAqIAkwIGlmIHN1
+Y2Nlc3MKKyAqKi8KK2ludCBwY2lfY2xlYXJfc2xvdF9yZXNldChzdHJ1Y3QgcGNpX2RldiAq
+ZGV2KQoreworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqZG4gPSBwY2lfZGV2aWNlX3RvX09GX25v
+ZGUoZGV2KTsKKwlzdHJ1Y3QgcGNpX2RuICpwZG4gPSBQQ0lfRE4oZG4pOworCisJZWVoX2Ns
+ZWFyX3Nsb3QgKHBkbi0+bm9kZSwgRUVIX01PREVfSVNPTEFURUQpOworCXJ0YXNfcGNpX3Ns
+b3RfcmVzZXQgKHBkbiwgMCk7CisJcmV0dXJuIDA7Cit9CitFWFBPUlRfU1lNQk9MX0dQTChw
+Y2lfY2xlYXJfc2xvdF9yZXNldCk7CisKIGludCBydGFzX3NldF9zbG90X3Jlc2V0KHN0cnVj
+dCBwY2lfZG4gKnBkbikKIHsKIAlpbnQgaSwgcmM7CmRpZmYgLXB1TiBpbmNsdWRlL2FzbS1w
+b3dlcnBjL3BwYy1wY2kuaH5wb3dlcnBjX3Nsb3RfcmVzZXRfYXBpIGluY2x1ZGUvYXNtLXBv
+d2VycGMvcHBjLXBjaS5oCi0tLSBsaW51eC0yLjYvaW5jbHVkZS9hc20tcG93ZXJwYy9wcGMt
+cGNpLmh+cG93ZXJwY19zbG90X3Jlc2V0X2FwaQkyMDA2LTEyLTE4IDE1OjU4OjU2LjAwMDAw
+MDAwMCAtMDYwMAorKysgbGludXgtMi42LWJqa2luZzEvaW5jbHVkZS9hc20tcG93ZXJwYy9w
+cGMtcGNpLmgJMjAwNi0xMi0xOCAxNTo1ODo1Ny4wMDAwMDAwMDAgLTA2MDAKQEAgLTEyNCw2
+ICsxMjQsOSBAQCB2b2lkIGVlaF9jbGVhcl9zbG90IChzdHJ1Y3QgZGV2aWNlX25vZGUgCiAv
+KiBGaW5kIHRoZSBhc3NvY2lhdGVkICJQYXJ0aWF0aW9uYWJsZSBFbmRwb2ludCIgUEUgKi8K
+IHN0cnVjdCBkZXZpY2Vfbm9kZSAqIGZpbmRfZGV2aWNlX3BlKHN0cnVjdCBkZXZpY2Vfbm9k
+ZSAqZG4pOwogCitpbnQgcGNpX3NldF9zbG90X3Jlc2V0KHN0cnVjdCBwY2lfZGV2ICpkZXYp
+OworaW50IHBjaV9jbGVhcl9zbG90X3Jlc2V0KHN0cnVjdCBwY2lfZGV2ICpkZXYpOworCiAj
+ZW5kaWYKIAogI2VuZGlmIC8qIF9fS0VSTkVMX18gKi8KXwo=
+--------------010400040301090204070106--
