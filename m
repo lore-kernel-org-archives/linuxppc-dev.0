@@ -1,21 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2F995DE106
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 03:15:15 +1100 (EST)
-In-Reply-To: <17799.32212.110299.916299@cargo.ozlabs.ibm.com>
-References: <11660315492978-git-send-email-timur@freescale.com>
-	<17799.32212.110299.916299@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0298A286-221C-4570-A798-05AB9CE8ECD6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Fix phy_read/write redefinition errors in ucc_geth_phy.c
-Date: Tue, 19 Dec 2006 10:15:17 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, timur@freescale.com
+Return-Path: <zippel@linux-m68k.org>
+Received: from scrub.xs4all.nl (scrub.xs4all.nl [194.109.195.176])
+	by ozlabs.org (Postfix) with ESMTP id 2B5DADDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 04:33:12 +1100 (EST)
+Date: Tue, 19 Dec 2006 18:28:56 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [2.6 patch] powerpc: remove the broken Gemini support
+In-Reply-To: <3B7827F6-D6CA-481F-B6DE-0F0B2AB4F632@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0612191826260.1867@scrub.home>
+References: <20061124234935.GJ28363@stusta.de>
+	<20061219041254.GB6993@stusta.de>
+	<3B7827F6-D6CA-481F-B6DE-0F0B2AB4F632@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	Kumar Gala <galak@freescale.com>, Adrian Bunk <bunk@stusta.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Dec 18, 2006, at 11:51 PM, Paul Mackerras wrote:
+On Tue, 19 Dec 2006, Kumar Gala wrote:
 
-> timur@freescale.com writes:
->
->> The local versions of phy_read() and phy_write() in ucc_geth_phy.c  
->> conflict
->> with the prototypes in include/linux/phy.h, so this patch renames  
->> them,
->> moves them to the top of the file (while eliminating the redundant  
->> prototype),
->> and makes them static.
->
-> You really need to send this patch to Jeff Garzik and the netdev
-> list.  If the driver won't compile in its current state in Linus' tree
-> because of the problem this fixes, make sure you make that point in
-> the patch commentary and explicitly ask Jeff to get the patch into
-> 2.6.20.
+> Also, where do we stand with APUS?
 
-I pretty much did this yesterday, so hopefully Jeff will pick up the  
-patches and push them to linus with his next set of fixes for 2.6.20.
+Well, there are still patches umerged for over a year, they probably still 
+apply mostly.
 
-- k
+bye, Roman
