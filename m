@@ -1,18 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 5E783DDF35
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 10:22:07 +1100 (EST)
-Date: Tue, 19 Dec 2006 17:22:02 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 693AADDF53
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 10:40:36 +1100 (EST)
 Subject: Re: [PATCH] powerpc: Add a device_initcall to call
 	of_platform_bus_probe on all fsl SoCs
-Message-Id: <20061219172202.29ef9b1d.kim.phillips@freescale.com>
-In-Reply-To: <1166569246.19254.86.camel@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20061219172202.29ef9b1d.kim.phillips@freescale.com>
 References: <20061219153102.20ab3345.kim.phillips@freescale.com>
 	<1166569246.19254.86.camel@localhost.localdomain>
+	<20061219172202.29ef9b1d.kim.phillips@freescale.com>
+Content-Type: text/plain
+Date: Wed, 20 Dec 2006 10:40:28 +1100
+Message-Id: <1166571629.19254.90.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,34 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Dec 2006 10:00:46 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Tue, 2006-12-19 at 15:31 -0600, Kim Phillips wrote:
-> > Utilize of_platform_bus_probe() in lieu of manually
-> > calling of_platform_device_create for each ucc_geth device
-> > (consequently, the QE is added to of_default_bus_ids).
-> > 
-> > This has been extended outside mpc83xx platform code,
-> > since other fsl SoCs are going to need it (thanks Kumar).
-> > 
-> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> 
-> Big NACK
+> it's not characteristic of FSL _boards_ per se.  It's characteristic of FSL
+> powerpc SoC chips, and it resides in a file that will only be built for that
+> case.  This is a legitimate way to support multiple platforms in a single
+> image without incurring multiple device_initcall()s with the same parameter.
 
-[this implies a nack on the consolidate 83xx files patch]
- 
-> The effect of this patch is that of_platform_bus_probe() will be
-> unconditionally called on anything if a paltform using fsl_soc.c is
-> included in the build.
+> I didn't see an appropriate ppc_md. function to use; are you suggesting we add
+> one just for this?  wouldn't that be fsl specific also, but reside in common code?
 
-well, that's the whole point.  85xx will soon need this.
+What cores do those chip use ? Any reason why one couldn't build a
+kernel that boots those chips -and- chrp,pmac,etc... in one image ?
 
-> I want that called by the platform code or by something called by the
-> platform code for FSL boards, not totally unconditional like that.
+If that is the case, then your initcall will incorrectly be called on
+platforms that don't need it.
 
-it's not characteristic of FSL _boards_ per se.  It's characteristic of FSL powerpc SoC chips, and it resides in a file that will only be built for that case.  This is a legitimate way to support multiple platforms in a single image without incurring multiple device_initcall()s with the same parameter.  I didn't see an appropriate ppc_md. function to use; are you suggesting we add one just for this?  wouldn't that be fsl specific also, but reside in common code?
+I think what we need to do is to define a mecanism for board initcalls.
 
-> Ben.
->  
-Kim
+Something like board_xxx_initcall(boardname, function);
+
+Ben.
