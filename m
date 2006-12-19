@@ -1,15 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17799.31574.736052.865096@cargo.ozlabs.ibm.com>
-Date: Tue, 19 Dec 2006 16:40:38 +1100
+Message-ID: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+Date: Tue, 19 Dec 2006 17:23:52 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 3/3] powerpc: fix comment in kernel/irq.c
-In-Reply-To: <20061213123945.859071000@sipsolutions.net>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.859071000@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: Bug fixes for 2.6.20
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +15,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg writes:
-
-> kernel/irq.c contains a comment that speaks of -1 and -2 as interrupt
-> numbers, but this is actually dependent on configuration options now.
-> Replace by NO_IRQ and NO_IRQ_ENABLED.
-
-Hmmm, NO_IRQ has to be 0, if anything, per decree of the head penguin.
+If anyone has a patch that they need to have in 2.6.20 in order to fix
+a bug or make some existing code compile, please let me know.  I
+already have a patch from Michal Ostrowski, two patches from Ben
+H. and a set from Stephen Rothwell in my queue.  I don't know what's
+needed for any of the embedded boards, though.
 
 Paul.
