@@ -1,22 +1,23 @@
-Return-Path: <minyard@acm.org>
-Received: from mta11.adelphia.net (mta11.adelphia.net [68.168.78.205])
-	by ozlabs.org (Postfix) with ESMTP id E9828DDF73
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 05:06:26 +1100 (EST)
-Message-ID: <45882A20.7030802@acm.org>
-Date: Tue, 19 Dec 2006 12:06:24 -0600
-From: Corey Minyard <minyard@acm.org>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Openipmi-developer] [patch 0/1] ipmi: update: add autosensing
-	of ipmi devices on powerpc using of device tree
-References: <20061218163846.337fed65@localhost>	<20061218164229.6a8b0df7@localhost>	<A45F8443-A031-41AC-887C-669FABBE0F09@kernel.crashing.org>	<200612182323.11262.arnd@arndb.de>
-	<8AE62F56-5166-4701-AFF0-04D901EB6FD6@kernel.crashing.org>
-In-Reply-To: <8AE62F56-5166-4701-AFF0-04D901EB6FD6@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net,
-	Christian Krafft <krafft@linux.vnet.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E3A10DDE41
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 05:29:34 +1100 (EST)
+Subject: Re: [PATCH 3/3] powerpc: fix comment in kernel/irq.c
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17799.31574.736052.865096@cargo.ozlabs.ibm.com>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.859071000@sipsolutions.net>
+	<17799.31574.736052.865096@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-bi3zkOKh5v5mnIRghAXt"
+Date: Tue, 19 Dec 2006 19:29:34 +0100
+Message-Id: <1166552974.6916.0.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>>> +static int ipmi_of_remove(struct of_device *dev)
->>>> +{
->>>> +     /* should call
->>>> +      * cleanup_one_si(dev->dev.driver_data); */
->>>>         
->>> So fix that :-)
->>>       
->> That should be a separate patch that fixes the same thing for
->> pci ipmi devices as well. It needs to move code around for this
->> (or introduce forward declarations), and the effect is no
->> different, so it's really just a cleanup.
->>     
->
-> Oh, this is broken in the existing stuff as well?  Never mind then.
->   
-The forward declaration (and changes required for this to work) is in 
-Linus' current tree, but was not released in 2.6.19.  So a later patch 
-should be fine.
 
--Corey
+--=-bi3zkOKh5v5mnIRghAXt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2006-12-19 at 16:40 +1100, Paul Mackerras wrote:
+> Johannes Berg writes:
+>=20
+> > kernel/irq.c contains a comment that speaks of -1 and -2 as interrupt
+> > numbers, but this is actually dependent on configuration options now.
+> > Replace by NO_IRQ and NO_IRQ_ENABLED.
+>=20
+> Hmmm, NO_IRQ has to be 0, if anything, per decree of the head penguin.
+
+I thought so too but then I found that under some conditions it's
+actually defined to -1, so I was confused. Maybe that is wrong then?
+
+johannes
+
+--=-bi3zkOKh5v5mnIRghAXt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFiC+O/ETPhpq3jKURAs9yAKCD+uYC8w+RXhZM1go9zQhuNOHbPQCgm1Nd
+nelyB4QTARNQ4S4n42cGRTY=
+=BkxK
+-----END PGP SIGNATURE-----
+
+--=-bi3zkOKh5v5mnIRghAXt--
