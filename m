@@ -1,27 +1,37 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx004.isp.belgacom.be (outmx004.isp.belgacom.be
-	[195.238.4.101])
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09C7EDDE29
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 22:57:34 +1100 (EST)
-Received: from outmx004.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx004.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id kBJBuxR5018131
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 12:57:07 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <4587D338.7060906@246tNt.com>
-Date: Tue, 19 Dec 2006 12:55:36 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>	<1166522096.25827.76.camel@pmac.infradead.org>
-	<1166528379.19254.69.camel@localhost.localdomain>
-In-Reply-To: <1166528379.19254.69.camel@localhost.localdomain>
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6BB18DDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 00:16:59 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id kBJDGptr089298
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 13:16:51 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
+	ESMTP id kBJDGpql1372368
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 13:16:51 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id kBJDGoSE009444
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 13:16:50 GMT
+Date: Tue, 19 Dec 2006 14:12:45 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 0/1] ipmi: update: add autosensing of ipmi devices on
+	powerpc using of device tree
+Message-ID: <20061219141245.679caa11@localhost>
+In-Reply-To: <A45F8443-A031-41AC-887C-669FABBE0F09@kernel.crashing.org>
+References: <20061218163846.337fed65@localhost>
+	<20061218164229.6a8b0df7@localhost>
+	<A45F8443-A031-41AC-887C-669FABBE0F09@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Christian Krafft <krafft@linux.ibm.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	openipmi-developer@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,60 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2006-12-19 at 09:54 +0000, David Woodhouse wrote:
->   
->> The Efika matches chrp_probe() too, so put its own probe first to make
->> sure we get it right in a multiplatform build.
->>     
->
-> Hrm... I told them to remove that from their device-tree ... dammit !
->   
-Yes, I told them to do some other changes to their device-tree, but no
-luck so far.
-
-I think I'll end up with a bunch of device-tree fix in the efika probe
-function. (Either
-that, or force the user to have a nvramrc for the firmware that makes
-the appropriate
-changes, but that's kindof an hassle for the user)
-
-That won't solve the problem with chrp though.
-I've seen that pseries will also match chrp. And in the pseries probe
-function,
-the Cell blades are explicitely 'refused'.
-
-Maybe instead of putting 52xx first, it would be "better" to put chrp
-and pseries
-last as they seem more "generic". So that anything that match before
-that has
-priority.
+On Mon, 18 Dec 2006 22:52:07 +0100
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
 
-    Sylvain
+>=20
+> info->io_regsize =3D regsize ? *regsize : DEFAULT_REGSIZE;
+>=20
+> [Please note that fixes a copy/paste bug, too].
+
+There is no DEFAULT_REGSIZE, all the code is using DEFAULT_REGSPACING as th=
+e default size.
+It looks like the code assumes that the registers are located next to each =
+other.
+If thats not good, DEFAULT_REGSIZE should be introduced and used in all oth=
+er probe functions as well.
+That would be a seperate issue .
+
+>=20
+>=20
+> Segher
+>=20
 
 
->> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
->>
->> --- linux-2.6.19.ppc/arch/powerpc/platforms/Makefile~	2006-12-17 14:55:49.000000000 +0000
->> +++ linux-2.6.19.ppc/arch/powerpc/platforms/Makefile	2006-12-17 17:16:52.000000000 +0000
->> @@ -5,9 +5,9 @@ ifeq ($(CONFIG_PPC64),y)
->>  obj-$(CONFIG_PPC_PMAC)		+= powermac/
->>  endif
->>  endif
->> +obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
->>  obj-$(CONFIG_PPC_CHRP)		+= chrp/
->>  obj-$(CONFIG_4xx)		+= 4xx/
->> -obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
->>  obj-$(CONFIG_PPC_83xx)		+= 83xx/
->>  obj-$(CONFIG_PPC_85xx)		+= 85xx/
->>  obj-$(CONFIG_PPC_86xx)		+= 86xx/
->>
->>     
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->   
+--=20
+Mit freundlichen Gr=FCssen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,=20
+Linux Kernel Development
+IT Specialist
