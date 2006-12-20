@@ -1,16 +1,16 @@
-Return-Path: <cthomas@Soneticom.com>
-Received: from Soneticom.com (soneticom.com [209.114.210.150])
-	by ozlabs.org (Postfix) with ESMTP id 93E6EDDEBA
+Return-Path: <frannk_m1@yahoo.com>
+Received: from web32203.mail.mud.yahoo.com (web32203.mail.mud.yahoo.com
+	[68.142.207.134]) by ozlabs.org (Postfix) with SMTP id D7D3FDDEED
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Dec 2006 03:52:07 +1100 (EST)
+	Thu, 21 Dec 2006 04:03:48 +1100 (EST)
+Date: Wed, 20 Dec 2006 08:57:06 -0800 (PST)
+From: Frank <frannk_m1@yahoo.com>
+Subject: Re: Define Linux system memory
+To: Clint Thomas <cthomas@Soneticom.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C72457.2D9C8803"
-Subject: Define Linux system memory
-Date: Wed, 20 Dec 2006 11:52:04 -0500
-Message-ID: <3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local>
-From: "Clint Thomas" <cthomas@Soneticom.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <958023.73009.qm@web32203.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,50 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C72457.2D9C8803
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+--- Clint Thomas <cthomas@Soneticom.com> wrote:
 
-To anybody who has done this before or understands how to do this, I was
-wondering if you know how to "tell" the kernel how much memory there is
-in the system. An example would be if I have 512MB of RAM, but only want
-the system to know that there is about 500MB in RAM, so that 12MB does
-not exist to the OS/kernel. Would this require mucking about in U-boot?
-or can I just define this in the kernel source? Thanks
-=20
-Clinton Thomas
-=20
+> To anybody who has done this before or understands how to do
+> this, I was
+> wondering if you know how to "tell" the kernel how much memory
+> there is
+> in the system. An example would be if I have 512MB of RAM, but
+> only want
+> the system to know that there is about 500MB in RAM, so that
+> 12MB does
+> not exist to the OS/kernel. Would this require mucking about
+> in U-boot?
+> or can I just define this in the kernel source? Thanks
+>  
+> Clinton Thomas
+On the kernel command line passed by u-boot:
+mem=500M
 
-------_=_NextPart_001_01C72457.2D9C8803
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.5730.11" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D346164916-20122006><FONT face=3DArial size=3D2>To =
-anybody who has=20
-done this before or understands how to do this, I was wondering if you =
-know how=20
-to "<STRONG>tell</STRONG>" the kernel how much memory there is in the =
-system. An=20
-example would be if I have 512MB of RAM, but only want the system to =
-know that=20
-there is about 500MB in RAM, so that 12MB does not exist to the =
-OS/kernel. Would=20
-this require mucking about in U-boot? or can I just define this in the =
-kernel=20
-source? Thanks</FONT></SPAN></DIV>
-<DIV>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton =
-Thomas</FONT></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
-
-------_=_NextPart_001_01C72457.2D9C8803--
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
