@@ -1,14 +1,14 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1FBBDDDEE2
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 19:31:55 +1100 (EST)
-Date: Wed, 20 Dec 2006 17:31:32 +0900 (JST)
-Message-Id: <200612200831.kBK8VXNd004301@toshiba.co.jp>
-To: hch@lst.de
-Subject: Re: [PATCH 7/19] powerpc: hypervisor call numbers for Celleb
-In-Reply-To: <20061214173235.GA6048@lst.de> 
+	by ozlabs.org (Postfix) with ESMTP id 328CFDDEF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 20:05:09 +1100 (EST)
+Date: Wed, 20 Dec 2006 17:37:34 +0900 (JST)
+Message-Id: <200612200837.kBK8bYP7007932@toshiba.co.jp>
+To: linas@austin.ibm.com
+Subject: Re: [PATCH 6/15] hypervisor console driver for Celleb
+In-Reply-To: <20061214173636.GU4329@austin.ibm.com> 
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -22,37 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you for your comment.
+Linas-san,
 
-> On Thu, Dec 14, 2006 at 11:30:28AM +0900, Ishizaki Kou wrote:
+> On Thu, Dec 14, 2006 at 10:42:16AM +0900, Ishizaki Kou wrote:
+> > Linas-san,
+> > 
+> > Thanks for your comment.
+> > 
+> > > On Tue, Dec 12, 2006 at 12:31:29PM +0900, Ishizaki Kou wrote:
+> > > > +
+> > > > +static int hvc_beat_get_chars(uint32_t vtermno, char *buf, int cnt)
+> > > > +{
+> > > > +	unsigned long kb[2];
+> > > > +	unsigned long got;
+> > > > +
+> > > > +	if (beat_get_term_char(vtermno, &got, &kb[0], &kb[1]) == 0) {
+> > > > +	   memcpy(buf, kb, got);
+> > > > +		              return got;
+> > 
+> > > This seems to completely ignore "cnt". Thus, I presume that
+> > > beat_get_term_char might return more chars than there is room for in buf,
+> > > thus corrupting something, somewhere.
 
-> > +
-> > +#ifdef	__ASSEMBLY__
-> > +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((__v)<<60|(__x))
-> > +#elif defined(__powerpc64__)
-> > +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((unsigned long)(__v)<<60|(__x))
-> > +#else
-> > +#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((unsigned long long)(__v)<<60|(__x))
-> > +#endif
+> > This depends "beat_get_term_char" returns only one character at once
+> > (for now), and assumes cnt > 0. This assumption will reduce code for
+> > now.
 
-> __powerpc64__ is always set for ppc64 compiles.
+> But it will break in the future. If new firmware is released for beat,
+> that returns more than one char, then it will silently corrupt old kernels
+> on rare occasions, making the problem hard to find. What's more, the 
+> firmware people might forget to tell you about thier change, and
+> so you won't submit a matching update to the linux kernel. (Or you may
+> have a new job by then, or have lost interest/got bored, etc.)
+> Years later, someone will finally debug the problem, after a long and
+> difficult search, and they'll curse this code.  Better do it right, now.
 
-I understand that, but it is shared with our own source code which
-runs on 32bit mode.
+Okay, we will do.
 
-> > +#define HV_allocate_memory (0)
-> > +#define HV_construct_virtual_address_space (2)
+We have to remark 'this is NOT FOR PRODUCT,' since console I/O of Beat
+is HORRIBLY slow (putting characters to console waits till
+the characters actually putted to the serial port. No queue is available.)
 
-> isn't HV_foo a little too generic?  Also no need for the braces around
-> the actual hvall numbers.
 
-It is also shared with our own (proprietary) source code,
-so modifying the prefix impacts our software. We think its
-impact is small since no files outside of celleb/
-will include hvcall number definitions.
+> > > > +static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
+> > > > +{
+> > > > +	unsigned long kb[2];
+> > > > +
+> > > > +	memcpy(kb, buf, sizeof(kb));
+> > > > +	beat_put_term_char(vtermno, cnt, kb[0], kb[1]);
+> > > > +	return cnt;
+> > > > +}
+> > 
+> > > I can't imagine how this can possibly work. 
+> > > What if "cnt" is greater than 8?
+> > 
+> > This routine assumes that 0 <= cnt <= 16, that is already checked by
+> > caller. (Note that "unsigned long" is 8 bytes long at ppc64)
+> 
+> Actually, its N_OUTBUF which is currently defined to be 16. However,
+> that may someday change, in which case you'd have a bug, again.
 
-Wrapping numbers in braces is problem on our generator,
-so we will modify it.
+Okay, we understand your opinion, and will do so.
 
 Best regards,
-Ishizaki Kou.
+Kou Ishizaki.
