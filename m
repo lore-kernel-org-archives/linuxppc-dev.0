@@ -1,32 +1,12 @@
-Return-Path: <haren@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 80AE2DDDFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 15:15:14 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBK4FB1F028659
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 23:15:11 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBK4FBew504620
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 21:15:11 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBK4FB6b025074
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 21:15:11 -0700
-Message-ID: <4588B89E.3090900@us.ibm.com>
-Date: Tue, 19 Dec 2006 20:14:22 -0800
-From: Haren Myneni <haren@us.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Wed, 20 Dec 2006 15:58:52 +1100
+From: Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] move ELF_ET_DYN_BASE
+Message-ID: <20061220045852.GA1810@krispykreme>
 MIME-Version: 1.0
-To: Giuliano Pochini <pochini@shiny.it>
-Subject: Re: 2 CPUs, but only one is used
-References: <20061217144127.579f01f0.pochini@shiny.it>
-	<20061220003545.7053b05c.pochini@shiny.it>
-In-Reply-To: <20061220003545.7053b05c.pochini@shiny.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +16,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Giuliano Pochini wrote:
 
->On Sun, 17 Dec 2006 14:41:27 +0100
->Giuliano Pochini <pochini@shiny.it> wrote:
->
->  
->
->>I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
->>then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
->>put online without errors, but it stays idle+wait=100% and of course
->>user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
->>
->>I saw that there are some cpu hotplug related changes in 2.6.19, but I have
->>no access to a non-ppc dual cpu box to check if the problem also affects
->>other architectures right now.
->>    
->>
->
->I tried to reproduce the problem on an intel box, but I couldn't. /sys
->contains only the cpu0 file if it boots with maxcpus=1.
->  
->
-On powerpc, when maxcpus=1 is passed, it does not reflect that change in 
-cpu_possible_map. This possible bitmap is created based on device-tree. 
-Where as on i386, it does. I.e, cpu_possible_map contains only one cpu. 
-/sys entries will be created based on cpu_possible_map (I think). Hence, 
-you noticed only cpu0 entry on Intel box. 
+I often test new versions of glibc by doing:
 
-- Haren
+LD_LIBRARY_PATH=/XXX/lib /XXX/lib/ld.so.1 <binary>
 
->
->--
->Giuliano.
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-dev
->  
->
+One test case ended up SEGV'ing. Upon closer inspection ld.so was loaded
+at 0x8000000 (128MB) with the heap right after it. Since we normally
+link binaries at 0x10000000 (256MB) we only had about 128MB of space for
+the heap:
+
+00100000-00103000 r-xp 00100000 00:00 0           [vdso]
+08000000-0801e000 r-xp 00000000 00:01 33079       /lib/ld-2.5.so
+0802d000-0802f000 rwxp 0001d000 00:01 33079       /lib/ld-2.5.so
+0802f000-08050000 rwxp 0802f000 00:00 0           [heap]
+0fe91000-0ffd9000 r-xp 00000000 00:01 33082       /lib/libc-2.5.so
+0ffd9000-0ffe8000 ---p 00148000 00:01 33082       /lib/libc-2.5.so
+0ffe8000-0ffea000 r--p 00147000 00:01 33082       /lib/libc-2.5.so
+0ffea000-0ffed000 rwxp 00149000 00:01 33082       /lib/libc-2.5.so
+10000000-10004000 r-xp 00000000 00:01 76          /bin/sleep
+10013000-10014000 rwxp 00003000 00:01 76          /bin/sleep
+ffb41000-ffb56000 rw-p ffb41000 00:00 0           [stack]
+
+One way to fix this is move ELF_ET_DYN_BASE from 0x08000000 to 0x20000000.
+This allows 128MB for the binary (hopefully enough for even the most
+crazy c++ apps), and with our current layout we will grow the heap up
+and the stack down, allowing potentially gigabytes of heap:
+
+00100000-00103000 r-xp 00100000 00:00 0           [vdso]
+0fe8a000-0ffd3000 r-xp 00000000 00:01 3350        /lib/tls/libc-2.3.6.so
+0ffd3000-0ffe3000 ---p 00149000 00:01 3350        /lib/tls/libc-2.3.6.so
+0ffe3000-0ffea000 r--p 00149000 00:01 3350        /lib/tls/libc-2.3.6.so
+0ffea000-0ffee000 rwxp 00150000 00:01 3350        /lib/tls/libc-2.3.6.so
+10000000-10004000 r-xp 00000000 00:01 76          /bin/sleep
+10013000-10014000 rwxp 00003000 00:01 76          /bin/sleep
+20000000-20018000 r-xp 00000000 00:01 3478        /lib/ld-2.3.6.so
+20028000-20029000 r--p 00018000 00:01 3478        /lib/ld-2.3.6.so
+20029000-2002a000 rwxp 00019000 00:01 3478        /lib/ld-2.3.6.so
+2002a000-2004b000 rwxp 2002a000 00:00 0           [heap]
+ffd67000-ffd7c000 rw-p ffd67000 00:00 0           [stack]
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: kernel/include/asm-powerpc/elf.h
+===================================================================
+--- kernel.orig/include/asm-powerpc/elf.h	2006-12-19 22:22:03.000000000 -0600
++++ kernel/include/asm-powerpc/elf.h	2006-12-19 22:23:58.000000000 -0600
+@@ -175,7 +175,7 @@
+    the loader.  We need to make sure that it is out of the way of the program
+    that it will "exec", and that there is sufficient room for the brk.  */
+ 
+-#define ELF_ET_DYN_BASE         (0x08000000)
++#define ELF_ET_DYN_BASE         (0x20000000)
+ 
+ /* Common routine for both 32-bit and 64-bit processes */
+ static inline void ppc_elf_core_copy_regs(elf_gregset_t elf_regs,
