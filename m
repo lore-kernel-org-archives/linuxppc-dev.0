@@ -1,20 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <cjashfor@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 38BC4DDEE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 08:29:14 +1100 (EST)
-Subject: Re: Bad gcc-4.1.0 leads to Power4 crashes... and power5 too, actually
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20061220211931.GB16860@austin.ibm.com>
-References: <20061220004653.GL5506@austin.ibm.com>
-	<1166579210.4963.15.camel@otta> <20061220211931.GB16860@austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 21 Dec 2006 08:28:54 +1100
-Message-Id: <1166650134.6673.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2AB27DDEBD
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 09:04:03 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBKM4TsR002063
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 17:04:29 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBKM40wJ127584
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 17:04:00 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBKM40go004880
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 17:04:00 -0500
+Received: from [127.0.0.1] (rational-corey.beaverton.ibm.com [9.47.21.171])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	kBKM3xj3004806
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 17:03:59 -0500
+Message-ID: <4589B34E.6020901@us.ibm.com>
+Date: Wed, 20 Dec 2006 14:03:58 -0800
+From: Corey Ashford <cjashfor@us.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: New PowerPC-specific Eclipse CDT plugin for Eclipse needs a home
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: cjashfor@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-20 at 15:19 -0600, Linas Vepstas wrote:
-> On Tue, Dec 19, 2006 at 07:46:50PM -0600, Peter Bergner wrote:
-> > On Tue, 2006-12-19 at 18:46 -0600, Linas Vepstas wrote:
-> > > Per xchat, here's the update. I'm guessing I'm using a broken
-> > > compiler, as per chain of evidence below ...
-> > [snip]
-> > > However, I also note that the following scrolled by:
-> > > init/main.c:81:2: warning: #warning gcc-4.1.0 is known to miscompile the
-> > > kernel. A different compiler version is recommended.
-> > 
-> > It may be due to this GCC bug which Olaf ran into a while back:
-> > 
-> >   http://gcc.gnu.org/bugzilla/show_bug.cgi?id=24644
-> > 
-> > You can verify whether you have a broken compiler by compiling
-> > the minimal test case I posted in comment #15.  If you see r13
-> > being copied into another register and then used, then you have
-> > a broken compiler.
-> 
-> No, that's not it. I'd be surprised, as I was using the SuSE
-> SLES10 gcc-4.1.0-28.4.ppc.rpm compiler, which would have that fix.
-> 
-> I'm trying to figure out how to try a different compiler,
-> I'm hoping that 3.3 can still compile new kernels.
-> 
-> I'll try to stare at the dump a bit too, now.
+Kumar Gala wrote:
 
-I've been using 4.1.2 from debian/ubuntu happily lately.
+> On Dec 20, 2006, at 2:34 PM, Corey Ashford wrote:
+> 
+>> Hello,
+>>
+>> I'm new to this mailing list (and the penguinppc web site).  I've just
+>> finished up a first version of a PowerPC-specific plug-in for the
+>> Eclipse C/C++ Development Tooling plug-in.
+>>
+>> This plug-in adds most of the PowerPC specific GNU C/C++ compiler
+>> switches, as well as switches needed for the assembler and for linking
+>> (using gcc).
+>>
+>> At this point, eclipse.org will not host it as they do not have
+>> target-specific plug-ins yet.  They may eventually.
+>>
+>> In the meantime, I'm looking for a place to host this plug-in and  
+>> would
+>> be interested in getting some feedback on the content and quality  
+>> of it,
+>> because this is first cut.
+>>
+>> Thanks for your consideration,
+>>
+>> - Corey
+> 
+> When you say host what exactly are you looking for?  How about  
+> something like savannah.org or sourceforge.net?
+> 
+> - k
 
-Ben.
+Hi Kumar,
+
+I was thinking there might be some place on penguinppc, but those others 
+sound like a good idea too.  I will look into those.
+
+Thanks for the suggestions!
+
+- Corey
+
+-- 
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
