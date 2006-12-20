@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 105E9DDF5B
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 22:19:21 +1100 (EST)
-Subject: Re: Please pull powerpc.git 'merge' branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200612201215.48542.arnd@arndb.de>
-References: <17801.3873.941944.129198@cargo.ozlabs.ibm.com>
-	<1166611943.5144.5.camel@localhost.localdomain>
-	<200612201215.48542.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 20 Dec 2006 22:18:42 +1100
-Message-Id: <1166613522.5144.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id D25DFDDE2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 01:17:02 +1100 (EST)
+Date: Wed, 20 Dec 2006 08:16:55 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Giuliano Pochini <pochini@shiny.it>
+Subject: Re: 2 CPUs, but only one is used
+Message-ID: <20061220141655.GJ15713@localdomain>
+References: <20061217144127.579f01f0.pochini@shiny.it>
+	<20061220003545.7053b05c.pochini@shiny.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061220003545.7053b05c.pochini@shiny.it>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-20 at 12:15 +0100, Arnd Bergmann wrote:
-> On Wednesday 20 December 2006 11:52, Benjamin Herrenschmidt wrote:
-> > 
-> > > Jens Osterkamp (1):
-> > >       [POWERPC] cell: Enable spider workarounds on all PCI buses
-> > 
-> > That one isn't totally correct I think, but it can go in, it won't harm,
-> > it's just that the PCIe busses on the spider chip might need a slightly
-> > different workaround. I'll send a separate patch on top of this one to
-> > fix it.
+Giuliano Pochini wrote:
+> On Sun, 17 Dec 2006 14:41:27 +0100
+> Giuliano Pochini <pochini@shiny.it> wrote:
 > 
-> Thanks. I thought that a fix for the PCIe bus had already gone in.
-> Once you have done it, Jens' patch will be the the right one.
+> > I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
+> > then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
+> > put online without errors, but it stays idle+wait=100% and of course
+> > user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
+> >
+> > I saw that there are some cpu hotplug related changes in 2.6.19, but I have
+> > no access to a non-ppc dual cpu box to check if the problem also affects
+> > other architectures right now.
+> 
+> I tried to reproduce the problem on an intel box, but I couldn't. /sys
+> contains only the cpu0 file if it boots with maxcpus=1.
 
-Got distracted with getting the EMAC driver in shape for CAB, took me a
-tad longer than expected (maybe I wasn't very motivated :-)
-
-Ben.
+Can you try to git bisect to find the change which caused the
+regression?
