@@ -1,18 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 3DB92DDF42
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 11:10:20 +1100 (EST)
-Message-ID: <45887F65.1020603@freescale.com>
-Date: Tue, 19 Dec 2006 18:10:13 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 85631DDDEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 11:19:54 +1100 (EST)
 Subject: Re: [PATCH] powerpc: Add a device_initcall to
 	call	of_platform_bus_probe on all fsl SoCs
-References: <20061219153102.20ab3345.kim.phillips@freescale.com>	<1166569246.19254.86.camel@localhost.localdomain>	<20061219172202.29ef9b1d.kim.phillips@freescale.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <45887F65.1020603@freescale.com>
+References: <20061219153102.20ab3345.kim.phillips@freescale.com>
+	<1166569246.19254.86.camel@localhost.localdomain>
+	<20061219172202.29ef9b1d.kim.phillips@freescale.com>
 	<1166571629.19254.90.camel@localhost.localdomain>
-In-Reply-To: <1166571629.19254.90.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<45887F65.1020603@freescale.com>
+Content-Type: text/plain
+Date: Wed, 20 Dec 2006 11:19:46 +1100
+Message-Id: <1166573986.19254.99.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,26 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> What cores do those chip use ? Any reason why one couldn't build a
-> kernel that boots those chips -and- chrp,pmac,etc... in one image ?
+On Tue, 2006-12-19 at 18:10 -0600, Scott Wood wrote:
+> Benjamin Herrenschmidt wrote:
+> > What cores do those chip use ? Any reason why one couldn't build a
+> > kernel that boots those chips -and- chrp,pmac,etc... in one image ?
+> > 
+> > If that is the case, then your initcall will incorrectly be called on
+> > platforms that don't need it.
 > 
-> If that is the case, then your initcall will incorrectly be called on
-> platforms that don't need it.
+> It won't do anything, though, unless it finds a node that matches 
+> of_default_bus_ids.  Are there any platforms on which "soc" nodes (or 
+> others in the default list) shouldn't be probed?  If not, perhaps make a 
+> generic initcall to of_platform_bus_probe(), so that it won't be called 
+> multiple times by different SoC types that are in the same kernel?
 
-It won't do anything, though, unless it finds a node that matches 
-of_default_bus_ids.  Are there any platforms on which "soc" nodes (or 
-others in the default list) shouldn't be probed?  If not, perhaps make a 
-generic initcall to of_platform_bus_probe(), so that it won't be called 
-multiple times by different SoC types that are in the same kernel?
+There is none right now that shouldn't be probed but I haven't been too
+happy about having a default list in the first place (despite me writing
+that code :-)
 
-Otherwise, perhaps the SoCs could be given "fsl-soc" in their compatible 
-field, and have fsl_publish_devices() pass that as a match struct.
+> Otherwise, perhaps the SoCs could be given "fsl-soc" in their compatible 
+> field, and have fsl_publish_devices() pass that as a match struct.
 
-> I think what we need to do is to define a mecanism for board initcalls.
-> 
-> Something like board_xxx_initcall(boardname, function);
+Might be a better option.
 
-It's not really a board-level issue, though -- at most, it's SoC-level.
+I'd rather keep things well separate for now.
 
--Scott
+Ben.
