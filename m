@@ -1,21 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1BB2CDDEC8
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 12:23:06 +1100 (EST)
-Date: Wed, 20 Dec 2006 12:22:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH]  powerpc iseries link error in allmodconfig
-Message-Id: <20061220122249.d0c1f241.sfr@canb.auug.org.au>
-In-Reply-To: <1166543839.25827.117.camel@pmac.infradead.org>
-References: <20061108173429.GB14991@shell0.pdx.osdl.net>
-	<1166543839.25827.117.camel@pmac.infradead.org>
+Return-Path: <bergner@vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DC287DDE2F
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 12:47:01 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBK1kwhO015236
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 20:46:58 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBK1kw0Q438404
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 18:46:58 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBK1kvrZ014988
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2006 18:46:57 -0700
+Subject: Re: Bad gcc-4.1.0 leads to Power4 crashes... and power5 too, actually
+From: Peter Bergner <bergner@vnet.ibm.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20061220004653.GL5506@austin.ibm.com>
+References: <20061220004653.GL5506@austin.ibm.com>
+Content-Type: text/plain
+Date: Tue, 19 Dec 2006 19:46:50 -0600
+Message-Id: <1166579210.4963.15.camel@otta>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__20_Dec_2006_12_22_49_+1100_MiE+9lw1T9TujqJo"
-Cc: linuxppc-dev@ozlabs.org, Judith Lebzelter <judith@osdl.org>,
-	paulus@samba.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__20_Dec_2006_12_22_49_+1100_MiE+9lw1T9TujqJo
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Tue, 2006-12-19 at 18:46 -0600, Linas Vepstas wrote:
+> Per xchat, here's the update. I'm guessing I'm using a broken
+> compiler, as per chain of evidence below ...
+[snip]
+> However, I also note that the following scrolled by:
+> init/main.c:81:2: warning: #warning gcc-4.1.0 is known to miscompile the
+> kernel. A different compiler version is recommended.
 
-On Tue, 19 Dec 2006 15:57:19 +0000 David Woodhouse <dwmw2@infradead.org> wrote:
->
-> On Wed, 2006-11-08 at 09:34 -0800, Judith Lebzelter wrote:
-> > Choose rpa_vscsi.c over iseries_vscsi.c when building both
-> > pseries and iseries.
->
-> Would it not be better to make them both work instead?
+It may be due to this GCC bug which Olaf ran into a while back:
 
-The maintainer's take on this is the noone installs onto vscsi disks on
-legacy iSeries.
+  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=24644
 
-> Untested-but-otherwise-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+You can verify whether you have a broken compiler by compiling
+the minimal test case I posted in comment #15.  If you see r13
+being copied into another register and then used, then you have
+a broken compiler.
 
-And that will, unfortunately, never get into 2.6.20.  I suggest that we
-put the simpler patch into 2.6.20 and maybe revisit this afterwards if
-we think it is worth the effort.
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__20_Dec_2006_12_22_49_+1100_MiE+9lw1T9TujqJo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFiJBuFdBgD/zoJvwRAi12AJ0VkdEN0YmzdGjTxq3g2cIFRu7R4gCeL6HG
-Efdbn0yJycHdCE5oI6vY094=
-=ulBG
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_Dec_2006_12_22_49_+1100_MiE+9lw1T9TujqJo--
+Peter
