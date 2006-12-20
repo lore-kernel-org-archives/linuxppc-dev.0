@@ -1,18 +1,12 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 328CFDDEF6
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 20:05:09 +1100 (EST)
-Date: Wed, 20 Dec 2006 17:37:34 +0900 (JST)
-Message-Id: <200612200837.kBK8bYP7007932@toshiba.co.jp>
-To: linas@austin.ibm.com
-Subject: Re: [PATCH 6/15] hypervisor console driver for Celleb
-In-Reply-To: <20061214173636.GU4329@austin.ibm.com> 
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17801.3873.941944.129198@cargo.ozlabs.ibm.com>
+Date: Wed, 20 Dec 2006 21:23:29 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: Please pull powerpc.git 'merge' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,67 +16,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas-san,
+Linus,
 
-> On Thu, Dec 14, 2006 at 10:42:16AM +0900, Ishizaki Kou wrote:
-> > Linas-san,
-> > 
-> > Thanks for your comment.
-> > 
-> > > On Tue, Dec 12, 2006 at 12:31:29PM +0900, Ishizaki Kou wrote:
-> > > > +
-> > > > +static int hvc_beat_get_chars(uint32_t vtermno, char *buf, int cnt)
-> > > > +{
-> > > > +	unsigned long kb[2];
-> > > > +	unsigned long got;
-> > > > +
-> > > > +	if (beat_get_term_char(vtermno, &got, &kb[0], &kb[1]) == 0) {
-> > > > +	   memcpy(buf, kb, got);
-> > > > +		              return got;
-> > 
-> > > This seems to completely ignore "cnt". Thus, I presume that
-> > > beat_get_term_char might return more chars than there is room for in buf,
-> > > thus corrupting something, somewhere.
+Please do:
 
-> > This depends "beat_get_term_char" returns only one character at once
-> > (for now), and assumes cnt > 0. This assumption will reduce code for
-> > now.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-> But it will break in the future. If new firmware is released for beat,
-> that returns more than one char, then it will silently corrupt old kernels
-> on rare occasions, making the problem hard to find. What's more, the 
-> firmware people might forget to tell you about thier change, and
-> so you won't submit a matching update to the linux kernel. (Or you may
-> have a new job by then, or have lost interest/got bored, etc.)
-> Years later, someone will finally debug the problem, after a long and
-> difficult search, and they'll curse this code.  Better do it right, now.
+or, if the mirroring hasn't caught up:
 
-Okay, we will do.
+git pull \
+master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-We have to remark 'this is NOT FOR PRODUCT,' since console I/O of Beat
-is HORRIBLY slow (putting characters to console waits till
-the characters actually putted to the serial port. No queue is available.)
+to get some bug fixes for powerpc, plus a documentation update and a
+defconfig update, as listed below.
 
+Thanks,
+Paul.
 
-> > > > +static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
-> > > > +{
-> > > > +	unsigned long kb[2];
-> > > > +
-> > > > +	memcpy(kb, buf, sizeof(kb));
-> > > > +	beat_put_term_char(vtermno, cnt, kb[0], kb[1]);
-> > > > +	return cnt;
-> > > > +}
-> > 
-> > > I can't imagine how this can possibly work. 
-> > > What if "cnt" is greater than 8?
-> > 
-> > This routine assumes that 0 <= cnt <= 16, that is already checked by
-> > caller. (Note that "unsigned long" is 8 bytes long at ppc64)
-> 
-> Actually, its N_OUTBUF which is currently defined to be 16. However,
-> that may someday change, in which case you'd have a bug, again.
+ Documentation/powerpc/booting-without-of.txt |   19 +
+ arch/powerpc/boot/Makefile                   |    3 
+ arch/powerpc/configs/cell_defconfig          |  358 +++++++++++++++++++++++---
+ arch/powerpc/kernel/of_platform.c            |    1 
+ arch/powerpc/kernel/pci_64.c                 |    1 
+ arch/powerpc/kernel/prom_parse.c             |   15 +
+ arch/powerpc/kernel/signal_32.c              |   16 +
+ arch/powerpc/platforms/Makefile              |    2 
+ arch/powerpc/platforms/cell/io-workarounds.c |    2 
+ arch/powerpc/platforms/cell/spu_priv1_mmio.c |   95 ++++---
+ arch/powerpc/platforms/iseries/Kconfig       |    2 
+ drivers/block/viodasd.c                      |    6 
+ drivers/cdrom/viocd.c                        |    4 
+ drivers/char/viocons.c                       |    7 +
+ drivers/char/viotape.c                       |    5 
+ drivers/net/iseries_veth.c                   |    9 -
+ include/asm-powerpc/spu.h                    |    2 
+ 17 files changed, 441 insertions(+), 106 deletions(-)
 
-Okay, we understand your opinion, and will do so.
+Arnd Bergmann (4):
+      [POWERPC] cell: update cell_defconfig
+      [POWERPC] cell: add forward struct declarations to spu.h
+      [POWERPC] spufs: fix assignment of node numbers
+      [POWERPC] powerpc: add scanning of ebc bus to of_platform
 
-Best regards,
-Kou Ishizaki.
+Benjamin Herrenschmidt (3):
+      [POWERPC] cell: Fix spufs with "new style" device-tree
+      [POWERPC] Workaround oldworld OF bug with IRQs & P2P bridges
+      [POWERPC] Fix build of cell zImage.initrd
+
+David Woodhouse (1):
+      [POWERPC] Probe Efika platform before CHRP.
+
+Jens Osterkamp (1):
+      [POWERPC] cell: Enable spider workarounds on all PCI buses
+
+Linas Vepstas (1):
+      [POWERPC] Fix PCI device channel state initialization
+
+Paul Mackerras (1):
+      [POWERPC] Fix register save area alignment for swapcontext syscall
+
+Stephen Rothwell (6):
+      [POWERPC] iSeries: fix viodasd init
+      [POWERPC] iSeries: fix viotape init
+      [POWERPC] iSeries: fix iseries_veth init
+      [POWERPC] iSeries: fix viocd init
+      [POWERPC] iSeries: fix viocons init
+      [POWERPC] iSeries: fix CONFIG_VIOPATH dependency
+
+Vitaly Wool (1):
+      [POWERPC] Update MTD OF documentation
