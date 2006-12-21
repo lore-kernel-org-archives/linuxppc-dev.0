@@ -1,20 +1,17 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
-	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3ECBFDDE34
+Return-Path: <paravpandit@yahoo.com>
+Received: from web36606.mail.mud.yahoo.com (web36606.mail.mud.yahoo.com
+	[209.191.85.23]) by ozlabs.org (Postfix) with SMTP id 0A165DDEC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Dec 2006 17:01:58 +1100 (EST)
-Message-ID: <458A2289.4070401@dlasys.net>
-Date: Thu, 21 Dec 2006 00:58:33 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: Clint Thomas <cthomas@Soneticom.com>
+	Thu, 21 Dec 2006 18:05:32 +1100 (EST)
+Date: Wed, 20 Dec 2006 23:05:28 -0800 (PST)
+From: Parav Pandit <paravpandit@yahoo.com>
 Subject: Re: Define Linux system memory
-References: <3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local>
-In-Reply-To: <3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local>
-Content-Type: multipart/alternative;
-	boundary="------------010900000301060409060905"
+To: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	Clint Thomas <cthomas@Soneticom.com>
+In-Reply-To: <458A2289.4070401@dlasys.net>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-228382367-1166684728=:74305"
+Message-ID: <588266.74305.qm@web36606.mail.mud.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,108 +23,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010900000301060409060905
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+--0-228382367-1166684728=:74305
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Clint Thomas wrote:
-> To anybody who has done this before or understands how to do this, I
-> was wondering if you know how to "*tell*" the kernel how much memory
-> there is in the system. An example would be if I have 512MB of RAM,
-> but only want the system to know that there is about 500MB in RAM, so
-> that 12MB does not exist to the OS/kernel. Would this require mucking
-> about in U-boot? or can I just define this in the kernel source? Thanks
->  
->  Clinton Thomas
+Hi,
+   
+  This memory information is passed by the u-boot in bd_info structure (typedef to bd_t).
+  Its defined in include/asm-ppc/ppcboot.h file.
+  First two parameters specify the start address and length.
+   
+  Well, I'll at least try on my host x86 system. There is doesn't get from the grub.
+  It should work and I should be able to see in cat /proc/meminfo.
+  I'll try and let you know.
+   
+  Regards,
+  Parav Pandit
+  
 
-    Most bootloaders including u-boot pass a board information structure
-that includes a variety of information including the memory size.
-    Also I think top of memory is also typically passed to the Linux
-Kernel as a register parameter  by the boot loader.
+"David H. Lynch Jr." <dhlii@dlasys.net> wrote:
+  Clint Thomas wrote:       To anybody who has done this before or understands how to do this, I was wondering if you know how to "tell" the kernel how much memory there is in the system. An example would be if I have 512MB of RAM, but only want the system to know that there is about 500MB in RAM, so that 12MB does not exist to the OS/kernel. Would this require mucking about in U-boot? or can I just define this in the kernel source? Thanks
+   
+   Clinton Thomas
 
-
-
->  
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+    Most bootloaders including u-boot pass a board information structure that includes a variety of information including the memory size.
+    Also I think top of memory is also typically passed to the Linux Kernel as a register parameter  by the boot loader.
 
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+     
 
 
---------------010900000301060409060905
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+---------------------------------
+  _______________________________________________  Linuxppc-embedded mailing list  Linuxppc-embedded@ozlabs.org  https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Clint Thomas wrote:
-<blockquote
- cite="mid:3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local"
- type="cite">
-  <meta http-equiv="Content-Type" content="text/html; ">
-  <meta content="MSHTML 6.00.5730.11" name="GENERATOR">
-  <div><span class="346164916-20122006"><font face="Arial" size="2">To
-anybody who has done this before or understands how to do this, I was
-wondering if you know how to "<strong>tell</strong>" the kernel how
-much memory there is in the system. An example would be if I have 512MB
-of RAM, but only want the system to know that there is about 500MB in
-RAM, so that 12MB does not exist to the OS/kernel. Would this require
-mucking about in U-boot? or can I just define this in the kernel
-source? Thanks</font></span></div>
-  <div>&nbsp;</div>
-  <div align="left"><font face="Arial" size="2">&nbsp;Clinton Thomas</font></div>
-</blockquote>
-<br>
-&nbsp;&nbsp;&nbsp; Most bootloaders including u-boot pass a board information
-structure that includes a variety of information including the memory
-size.<br>
-&nbsp;&nbsp;&nbsp; Also I think top of memory is also typically passed to the Linux
-Kernel as a register parameter&nbsp; by the boot loader.<br>
-<br>
-<br>
-<br>
-<blockquote
- cite="mid:3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local"
- type="cite">
-  <div>&nbsp;</div>
-  <pre wrap="">
-<hr size="4" width="90%">
+
+
+--   Dave Lynch             DLA Systems  Software Development:               Embedded Linux  717.627.3770         dhlii@dlasys.net    http://www.dlasys.net  fax: 1.253.369.9244               Cell: 1.717.587.7774  Over 25 years' experience in platforms, languages, and technologies too numerous to list.    "Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."  Albert Einstein  
 _______________________________________________
 Linuxppc-embedded mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
-</blockquote>
-<br>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-</pre>
-</body>
-</html>
+ __________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
+ __________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
+--0-228382367-1166684728=:74305
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
---------------010900000301060409060905--
+<div>Hi,</div>  <div>&nbsp;</div>  <div>This memory information is passed by the u-boot in bd_info structure (typedef to bd_t).</div>  <div>Its defined in include/asm-ppc/ppcboot.h file.</div>  <div>First two parameters specify the start address and length.</div>  <div>&nbsp;</div>  <div>Well, I'll at least try on my host x86 system. There is doesn't get from the grub.</div>  <div>It should work and I should be able to see in cat /proc/meminfo.</div>  <div>I'll try and let you know.</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Parav Pandit</div>  <div><BR><BR><B><I>"David H. Lynch Jr." &lt;dhlii@dlasys.net&gt;</I></B> wrote:</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">Clint Thomas wrote:   <BLOCKQUOTE cite=mid:3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local type="cite">  <META content="MSHTML 6.00.5730.11" name=GENERATOR>  <DIV><SPAN class=346164916-20122006><FONT face=Arial size=2>To
+ anybody who has done this before or understands how to do this, I was wondering if you know how to "<STRONG>tell</STRONG>" the kernel how much memory there is in the system. An example would be if I have 512MB of RAM, but only want the system to know that there is about 500MB in RAM, so that 12MB does not exist to the OS/kernel. Would this require mucking about in U-boot? or can I just define this in the kernel source? Thanks</FONT></SPAN></DIV>  <DIV>&nbsp;</DIV>  <DIV align=left><FONT face=Arial size=2>&nbsp;Clinton Thomas</FONT></DIV></BLOCKQUOTE><BR>&nbsp;&nbsp;&nbsp; Most bootloaders including u-boot pass a board information structure that includes a variety of information including the memory size.<BR>&nbsp;&nbsp;&nbsp; Also I think top of memory is also typically passed to the Linux Kernel as a register parameter&nbsp; by the boot loader.<BR><BR><BR><BR>  <BLOCKQUOTE cite=mid:3C02138692C13C4BB675FE7EA2409529261209@bluefin.Soneticom.local type="cite"> 
+ <DIV>&nbsp;</DIV><PRE wrap=""><HR width="90%" SIZE=4>  _______________________________________________  Linuxppc-embedded mailing list  <A class=moz-txt-link-abbreviated href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</A>  <A class=moz-txt-link-freetext href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</A></PRE></BLOCKQUOTE><BR><BR><PRE class=moz-signature cols="72">--   Dave Lynch             DLA Systems  Software Development:               Embedded Linux  717.627.3770         <A class=moz-txt-link-abbreviated href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</A>    <A class=moz-txt-link-freetext href="http://www.dlasys.net/">http://www.dlasys.net</A>  fax: 1.253.369.9244               Cell: 1.717.587.7774  Over 25 years' experience in platforms, languages, and technologies too numerous to list.    "Any intelligent fool can make things bigger and more complex... It takes a touch of
+ genius - and a lot of courage to move in the opposite direction."  Albert Einstein  </PRE>_______________________________________________<BR>Linuxppc-embedded mailing list<BR>Linuxppc-embedded@ozlabs.org<BR>https://ozlabs.org/mailman/listinfo/linuxppc-embedded</BLOCKQUOTE><BR><p> __________________________________________________<br>Do You Yahoo!?<br>Tired of spam?  Yahoo! Mail has the best spam protection around <br>http://mail.yahoo.com <p>&#32;__________________________________________________<br>Do You Yahoo!?<br>Tired of spam?  Yahoo! Mail has the best spam protection around <br>http://mail.yahoo.com 
+--0-228382367-1166684728=:74305--
