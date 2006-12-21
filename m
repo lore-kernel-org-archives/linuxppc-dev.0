@@ -1,20 +1,29 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3FD59DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 14:20:55 +1100 (EST)
-Date: Thu, 21 Dec 2006 14:20:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: New PowerPC-specific Eclipse CDT plugin for Eclipse needs a home
-Message-Id: <20061221142029.b036ac1f.sfr@canb.auug.org.au>
-In-Reply-To: <8CC7AA7F-65D0-4C57-9913-92B2F9243D68@kernel.crashing.org>
-References: <45899E47.30704@us.ibm.com>
-	<8CC7AA7F-65D0-4C57-9913-92B2F9243D68@kernel.crashing.org>
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts20-srv.bellnexxia.net (tomts20.bellnexxia.net
+	[209.226.175.74]) by ozlabs.org (Postfix) with ESMTP id 4D2C7DDEED
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 14:29:32 +1100 (EST)
+Received: from krystal.dyndns.org ([67.68.205.181])
+	by tomts20-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20061221032929.RPQF24907.tomts20-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 22:29:29 -0500
+Date: Wed, 20 Dec 2006 22:29:28 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 7/9] atomic.h : powerpc
+Message-ID: <20061221032928.GB14930@Krystal>
+References: <20061221001204.GM28643@Krystal>
+	<1166670905.6673.33.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__21_Dec_2006_14_20_29_+1100_wjq_Q9NhB+38_bgl"
-Cc: linuxppc-dev@ozlabs.org, cjashfor@us.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1166670905.6673.33.camel@localhost.localdomain>
+Cc: Andrew Morton <akpm@osdl.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, "Martin J. Bligh" <mbligh@mbligh.org>,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Douglas Niehaus <niehaus@eecs.ku.edu>,
+	Ingo Molnar <mingo@redhat.com>, paulus@samba.org,
+	systemtap@sources.redhat.com, ltt-dev@shafik.org,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__21_Dec_2006_14_20_29_+1100_wjq_Q9NhB+38_bgl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
+> 
+> > +
+> > +/**
+> > + * atomic64_add_unless - add unless the number is a given value
+> > + * @v: pointer of type atomic64_t
+> > + * @a: the amount to add to v...
+> > + * @u: ...unless v is equal to u.
+> > + *
+> > + * Atomically adds @a to @v, so long as it was not @u.
+> > + * Returns non-zero if @v was not @u, and zero otherwise.
+> > + */
+> > +static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+> > +{
+> > +	long t;
+> > +
+> > +	__asm__ __volatile__ (
+> > +	LWSYNC_ON_SMP
+> > +"1:	ldarx	%0,0,%1		# atomic_add_unless\n\
+> > +	cmpd	0,%0,%3 \n\
+> > +	beq-	2f \n\
+> > +	add	%0,%2,%0 \n"
+> > +	PPC405_ERR77(0,%2)
+> > +"	stdcx.	%0,0,%1 \n\
+> > +	bne-	1b \n"
+> > +	ISYNC_ON_SMP
+> > +"	subf	%0,%2,%0 \n\
+> > +2:"
+> > +	: "=&r" (t)
+> > +	: "r" (&v->counter), "r" (a), "r" (u)
+> > +	: "cc", "memory");
+> > +
+> > +	return t != u;
+> > +}
+> > +
+> 
+> You shouldn't try to define those when building 32 bits code... Also,
+> the PPC405 errata, as it's name implies, is specific to 405 cores which
+> are all 32 bits.
+> 
+> Ben.
+> 
+> 
 
-On Wed, 20 Dec 2006 15:10:15 -0600 Kumar Gala <galak@kernel.crashing.org> wrote:
->
- > In the meantime, I'm looking for a place to host this plug-in and
-> > would
-> > be interested in getting some feedback on the content and quality
-> > of it,
-> > because this is first cut.
-> >
-> > Thanks for your consideration,
->
-> When you say host what exactly are you looking for?  How about
-> something like savannah.org or sourceforge.net?
+Hi Ben,
 
-Or may ozlabs.org (if we supply enough infrastructure).
+It is within a 
+#ifdef __powerpc64__
+...
+#endif /* __powerpc64__ */
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+so it should only build on 64 bits.
 
---Signature=_Thu__21_Dec_2006_14_20_29_+1100_wjq_Q9NhB+38_bgl
-Content-Type: application/pgp-signature
+You are right about the PPC405 errata, it seems unnecessary.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+The same is true for my asm-powerpc/local.h modification.
 
-iD8DBQFFif2IFdBgD/zoJvwRAqE4AJ47tGSFHAc2v6kePgEBLcXWIY1h3wCfRfa6
-nnDvBD2rpT8KOozyKgfQYwg=
-=XJNY
------END PGP SIGNATURE-----
+Thanks,
 
---Signature=_Thu__21_Dec_2006_14_20_29_+1100_wjq_Q9NhB+38_bgl--
+Mathieu
+
+-- 
+OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
+Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
