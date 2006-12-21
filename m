@@ -1,16 +1,20 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id B5E94DDEB6
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 23:57:18 +1100 (EST)
-Date: Thu, 21 Dec 2006 13:57:16 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] ps3_free_io_irq: inverted error check
-Message-ID: <Pine.LNX.4.62.0612211355150.20731@pademelon.sonytel.be>
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 85CC1DDE4A
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2006 00:48:45 +1100 (EST)
+Message-ID: <458A866D.2000504@genesi-usa.com>
+Date: Thu, 21 Dec 2006 13:04:45 +0000
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: cjashfor@us.ibm.com
+Subject: Re: New PowerPC-specific Eclipse CDT plugin for Eclipse needs a home
+References: <45899E47.30704@us.ibm.com>
+In-Reply-To: <45899E47.30704@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3_free_io_irq: Fix inverted error check after calling
-lv1_destruct_io_irq_outlet()
+We'll host it on PowerDeveloper.org if you want.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+What do you need? :)
 
----
- arch/powerpc/platforms/ps3/interrupt.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
---- ps3-linux-src.orig/arch/powerpc/platforms/ps3/interrupt.c
-+++ ps3-linux-src/arch/powerpc/platforms/ps3/interrupt.c
-@@ -71,7 +71,7 @@ int ps3_free_io_irq(unsigned int virq)
- 
- 	result = lv1_destruct_io_irq_outlet(virq_to_hw(virq));
- 
--	if (!result)
-+	if (result)
- 		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
- 			__func__, __LINE__, ps3_result(result));
- 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Corey Ashford wrote:
+> Hello,
+> 
+> I'm new to this mailing list (and the penguinppc web site).  I've just 
+> finished up a first version of a PowerPC-specific plug-in for the 
+> Eclipse C/C++ Development Tooling plug-in.
+> 
+> This plug-in adds most of the PowerPC specific GNU C/C++ compiler 
+> switches, as well as switches needed for the assembler and for linking 
+> (using gcc).
+> 
+> At this point, eclipse.org will not host it as they do not have 
+> target-specific plug-ins yet.  They may eventually.
+> 
+> In the meantime, I'm looking for a place to host this plug-in and would 
+> be interested in getting some feedback on the content and quality of it, 
+> because this is first cut.
+> 
+> Thanks for your consideration,
+> 
+> - Corey
+> 
