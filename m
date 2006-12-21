@@ -1,22 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 32E49DDEBF
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 11:11:34 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 0/1] updated version
-Date: Thu, 21 Dec 2006 01:11:27 +0100
-References: <20061218163846.337fed65@localhost> <45882913.2000609@acm.org>
-	<20061220154517.6341fce6@localhost>
-In-Reply-To: <20061220154517.6341fce6@localhost>
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 21 Dec 2006 11:36:59 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: Mutex debug lock failure [was Re: Bad gcc-4.1.0 leads to Power4
+	crashes... and power5 too, actually
+Message-ID: <20061221003658.GB3048@krispykreme>
+References: <20061220004653.GL5506@austin.ibm.com>
+	<1166579210.4963.15.camel@otta>
+	<20061220211931.GB16860@austin.ibm.com>
+	<1166650134.6673.9.camel@localhost.localdomain>
+	<20061220230342.GC16860@austin.ibm.com>
+	<1166656195.6673.23.camel@localhost.localdomain>
+	<20061220234647.GD16860@austin.ibm.com>
 MIME-Version: 1.0
-Message-Id: <200612210111.28186.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net,
-	Christian Krafft <krafft@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061220234647.GD16860@austin.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 20 December 2006 15:45, Christian Krafft wrote:
-> I'm about to send an updated version,
-> 
-> I added 
-> length check for the properties,
-> DEFAULT_REGSIZE,
-> simplified the comparison,
-> 
-> I did not fix the compiler warning.
-> 
 
-You should really fix the warning before sending the patch, ideally
-you also check that you don't introduce new warnings found by 'sparse'.
+On Wed, Dec 20, 2006 at 05:46:47PM -0600, Linas Vepstas wrote:
 
-Is the warning just about the cast from void* to enum? If so, you
-need to replace that with a cast to unsigned long, like
+> System assert at:  file: rtas_io_config.c  -- line: 195
+> rio_hub_num: 10
+> drawer_num: 6
+> phb_num: 3
+> buid: 7
 
-enum { A, B, } e;
-void *p;
+Looks like a firmware assert. Did you pass in something dodgy to a
+config read/write op? Maybe a bad buid?
 
-p = (void *)(unsigned long)A;
-e = (unsigned long)p;
-
-	Arnd <><
+Anton
