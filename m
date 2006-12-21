@@ -1,14 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 22 Dec 2006 09:23:03 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [powerpc] Fix bogus BUG_ON() in in hugetlb_get_unmapped_area()
-Message-ID: <20061221222303.GA6418@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org,
-	William Lee Irwin <wli@holomorphy.com>, linuxppc-dev@ozlabs.org
+Return-Path: <pochini@shiny.it>
+Received: from smtp-out12.alice.it (smtp-out12.alice.it [85.37.17.107])
+	by ozlabs.org (Postfix) with ESMTP id B7083DDEC6
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2006 09:33:25 +1100 (EST)
+Date: Thu, 21 Dec 2006 23:33:44 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: 2 CPUs, but only one is used
+Message-Id: <20061221233344.2a0139c5.pochini@shiny.it>
+In-Reply-To: <20061220141655.GJ15713@localdomain>
+References: <20061217144127.579f01f0.pochini@shiny.it>
+	<20061220003545.7053b05c.pochini@shiny.it>
+	<20061220141655.GJ15713@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,57 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew, Paulus, please apply
+On Wed, 20 Dec 2006 08:16:55 -0600
+Nathan Lynch <ntl@pobox.com> wrote:
 
-The powerpc specific version of hugetlb_get_unmapped_area() makes some
-unwarranted assumptions about what checks have been made to its
-parameters by its callers.  This will lead to a BUG_ON() if a 32-bit
-process attempts to make a hugepage mapping which extends above
-TASK_SIZE (4GB).
+> Giuliano Pochini wrote:
+> > On Sun, 17 Dec 2006 14:41:27 +0100
+> > Giuliano Pochini <pochini@shiny.it> wrote:
+> > 
+> > > I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
+> > > then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
+> > > put online without errors, but it stays idle+wait=100% and of course
+> > > user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
+> > >
+> > > I saw that there are some cpu hotplug related changes in 2.6.19, but I have
+> > > no access to a non-ppc dual cpu box to check if the problem also affects
+> > > other architectures right now.
+> > 
+> > I tried to reproduce the problem on an intel box, but I couldn't. /sys
+> > contains only the cpu0 file if it boots with maxcpus=1.
+> 
+> Can you try to git bisect to find the change which caused the
+> regression?
 
-I'm not sure if these assumptions came about because they were valid
-with earlier versions of the get_unmapped_area() path, or if it was
-always broken.  Nonetheless this patch fixes the logic, and removes
-the crash.
+*sigh* There are too much changes in the scheduler of 2.6.19 and in the ppc
+code. I'm trying to find the problem in another way.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2006-12-21 14:54:15.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2006-12-21 14:57:35.000000000 +1100
-@@ -744,7 +744,8 @@ static int htlb_check_hinted_area(unsign
- 	struct vm_area_struct *vma;
- 
- 	vma = find_vma(current->mm, addr);
--	if (!vma || ((addr + len) <= vma->vm_start))
-+	if (TASK_SIZE - len >= addr &&
-+	    (!vma || ((addr + len) <= vma->vm_start)))
- 		return 0;
- 
- 	return -ENOMEM;
-@@ -815,6 +816,8 @@ unsigned long hugetlb_get_unmapped_area(
- 		return -EINVAL;
- 	if (len & ~HPAGE_MASK)
- 		return -EINVAL;
-+	if (len > TASK_SIZE)
-+		return -ENOMEM;
- 
- 	if (!cpu_has_feature(CPU_FTR_16M_PAGE))
- 		return -EINVAL;
-@@ -823,9 +826,6 @@ unsigned long hugetlb_get_unmapped_area(
- 	BUG_ON((addr + len)  < addr);
- 
- 	if (test_thread_flag(TIF_32BIT)) {
--		/* Paranoia, caller should have dealt with this */
--		BUG_ON((addr + len) > 0x100000000UL);
--
- 		curareas = current->mm->context.low_htlb_areas;
- 
- 		/* First see if we can use the hint address */
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--
+Giuliano.
