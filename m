@@ -1,20 +1,18 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 85CC1DDE4A
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2006 00:48:45 +1100 (EST)
-Message-ID: <458A866D.2000504@genesi-usa.com>
-Date: Thu, 21 Dec 2006 13:04:45 +0000
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: cjashfor@us.ibm.com
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
+	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 3E1C1DDEDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2006 01:37:27 +1100 (EST)
 Subject: Re: New PowerPC-specific Eclipse CDT plugin for Eclipse needs a home
-References: <45899E47.30704@us.ibm.com>
+From: Ben Warren <bwarren@qstreams.com>
+To: cjashfor@us.ibm.com
 In-Reply-To: <45899E47.30704@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+References: <45899E47.30704@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 21 Dec 2006 09:30:35 -0500
+Message-Id: <1166711435.4793.109.camel@saruman.qstreams.net>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We'll host it on PowerDeveloper.org if you want.
+Google's new hosting program is supposed to be pretty good.  They use a
+variant of Subversion for revision control:
 
-What do you need? :)
+http://code.google.com/hosting/
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
-Corey Ashford wrote:
+On Wed, 2006-12-20 at 12:34 -0800, Corey Ashford wrote:
 > Hello,
 > 
 > I'm new to this mailing list (and the penguinppc web site).  I've just 
