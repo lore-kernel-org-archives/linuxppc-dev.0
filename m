@@ -1,22 +1,22 @@
 Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts22-srv.bellnexxia.net (tomts22-srv.bellnexxia.net
-	[209.226.175.184]) by ozlabs.org (Postfix) with ESMTP id 50CB4DDEC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 11:37:35 +1100 (EST)
+Received: from tomts49-srv.bellnexxia.net (tomts49.bellnexxia.net
+	[209.226.175.193]) by ozlabs.org (Postfix) with ESMTP id 378BFDDEBE
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Dec 2006 11:59:13 +1100 (EST)
 Received: from krystal.dyndns.org ([67.68.205.181])
 	by tomts22-srv.bellnexxia.net
 	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20061221003732.OIZX8030.tomts22-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 19:37:32 -0500
-Date: Wed, 20 Dec 2006 19:27:05 -0500
+	<20061221000142.OAVH8030.tomts22-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Dec 2006 19:01:42 -0500
+Date: Wed, 20 Dec 2006 19:01:40 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-	Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-	Christoph Hellwig <hch@infradead.org>, paulus@samba.org
-Subject: [PATCH 7/10] local_t : powerpc
-Message-ID: <20061221002705.GW28643@Krystal>
+To: linux-kernel@vger.kernel.org, paulus@samba.org,
+	Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@redhat.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>, Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH 4/4] Linux Kernel Markers : powerpc optimisation
+Message-ID: <20061221000140.GE28643@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061221001545.GP28643@Krystal>
+In-Reply-To: <20061220235216.GA28643@Krystal>
 Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linuxppc-dev@ozlabs.org,
 	Douglas Niehaus <niehaus@eecs.ku.edu>, ltt-dev@shafik.org,
 	systemtap@sources.redhat.com, Thomas Gleixner <tglx@linutronix.de>
@@ -29,545 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PowerPC local_t extension.
+This is the powerpc Linux Kernel Markers optimised version.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -226,6 +226,29 @@ __xchg_u32(volatile void *p, unsigned lo
- 	return prev;
- }
- 
+--- /dev/null
++++ b/include/asm-powerpc/marker.h
+@@ -0,0 +1,58 @@
 +/*
-+ * Atomic exchange
++ * marker.h
 + *
-+ * Changes the memory location '*ptr' to be val and returns
-+ * the previous value stored there.
++ * Code markup for dynamic and static tracing. PowerPC architecture
++ * optimisations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
 + */
-+static __inline__ unsigned long
-+__xchg_u32_local(volatile void *p, unsigned long val)
-+{
-+	unsigned long prev;
 +
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%2 \n"
-+	PPC405_ERR77(0,%2)
-+"	stwcx.	%3,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
-+	: "r" (p), "r" (val)
-+	: "cc", "memory");
++#include <asm/asm-compat.h>
 +
-+	return prev;
-+}
++struct __mark_marker_c {
++	const char *name;
++	marker_probe_func **call;
++	const char *format;
++} __attribute__((packed));
 +
- #ifdef CONFIG_PPC64
- static __inline__ unsigned long
- __xchg_u64(volatile void *p, unsigned long val)
-@@ -245,6 +268,23 @@ __xchg_u64(volatile void *p, unsigned lo
- 
- 	return prev;
- }
++struct __mark_marker {
++	struct __mark_marker_c *cmark;
++	volatile short *enable;
++} __attribute__((packed));
 +
-+static __inline__ unsigned long
-+__xchg_u64_local(volatile void *p, unsigned long val)
-+{
-+	unsigned long prev;
++#ifdef CONFIG_MARKERS
 +
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%2 \n"
-+	PPC405_ERR77(0,%2)
-+"	stdcx.	%3,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
-+	: "r" (p), "r" (val)
-+	: "cc", "memory");
++#define MARK(name, format, args...) \
++	do { \
++		static marker_probe_func *__mark_call_##name = \
++					__mark_empty_function; \
++		static const struct __mark_marker_c __mark_c_##name \
++			__attribute__((section(".markers.c"))) = \
++			{ #name, &__mark_call_##name, format } ; \
++		char condition; \
++		asm volatile(	".section .markers, \"a\";\n\t" \
++					PPC_LONG "%1, 0f;\n\t" \
++					".previous;\n\t" \
++					".align 4\n\t" \
++					"0:\n\t" \
++					"li %0,0;\n\t" \
++				: "=r" (condition) \
++				: "i" (&__mark_c_##name)); \
++		__mark_check_format(format, ## args); \
++		if (unlikely(condition)) { \
++			preempt_disable(); \
++			(*__mark_call_##name)(format, ## args); \
++			preempt_enable_no_resched(); \
++		} \
++	} while (0)
 +
-+	return prev;
-+}
- #endif
- 
- /*
-@@ -268,12 +308,33 @@ #endif
- 	return x;
- }
- 
-+static __inline__ unsigned long
-+__xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __xchg_u32_local(ptr, x);
-+#ifdef CONFIG_PPC64
-+	case 8:
-+		return __xchg_u64_local(ptr, x);
++
++/* Offset of the immediate value from the start of the addi instruction (result
++ * of the li mnemonic), in bytes. */
++#define MARK_ENABLE_IMMEDIATE_OFFSET 2
++#define MARK_POLYMORPHIC
++
 +#endif
-+	}
-+	__xchg_called_with_bad_pointer();
-+	return x;
-+}
- #define xchg(ptr,x)							     \
-   ({									     \
-      __typeof__(*(ptr)) _x_ = (x);					     \
-      (__typeof__(*(ptr))) __xchg((ptr), (unsigned long)_x_, sizeof(*(ptr))); \
-   })
- 
-+#define xchg_local(ptr,x)						     \
-+  ({									     \
-+     __typeof__(*(ptr)) _x_ = (x);					     \
-+     (__typeof__(*(ptr))) __xchg_local((ptr),				     \
-+     		(unsigned long)_x_, sizeof(*(ptr))); 			     \
-+  })
-+
- #define tas(ptr) (xchg((ptr),1))
- 
- /*
-@@ -305,6 +366,28 @@ __cmpxchg_u32(volatile unsigned int *p, 
- 	return prev;
- }
- 
-+static __inline__ unsigned long
-+__cmpxchg_u32_local(volatile unsigned int *p, unsigned long old,
-+			unsigned long new)
-+{
-+	unsigned int prev;
-+
-+	__asm__ __volatile__ (
-+"1:	lwarx	%0,0,%2		# __cmpxchg_u32\n\
-+	cmpw	0,%0,%3\n\
-+	bne-	2f\n"
-+	PPC405_ERR77(0,%2)
-+"	stwcx.	%4,0,%2\n\
-+	bne-	1b"
-+	"\n\
-+2:"
-+	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (old), "r" (new)
-+	: "cc", "memory");
-+
-+	return prev;
-+}
-+
- #ifdef CONFIG_PPC64
- static __inline__ unsigned long
- __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
-@@ -327,6 +410,27 @@ __cmpxchg_u64(volatile unsigned long *p,
- 
- 	return prev;
- }
-+
-+static __inline__ unsigned long
-+__cmpxchg_u64_local(volatile unsigned long *p, unsigned long old,
-+			unsigned long new)
-+{
-+	unsigned long prev;
-+
-+	__asm__ __volatile__ (
-+"1:	ldarx	%0,0,%2		# __cmpxchg_u64\n\
-+	cmpd	0,%0,%3\n\
-+	bne-	2f\n\
-+	stdcx.	%4,0,%2\n\
-+	bne-	1b"
-+	"\n\
-+2:"
-+	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (old), "r" (new)
-+	: "cc", "memory");
-+
-+	return prev;
-+}
- #endif
- 
- /* This function doesn't exist, so you'll get a linker error
-@@ -349,6 +453,22 @@ #endif
- 	return old;
- }
- 
-+static __inline__ unsigned long
-+__cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
-+	  unsigned int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_u32_local(ptr, old, new);
-+#ifdef CONFIG_PPC64
-+	case 8:
-+		return __cmpxchg_u64_local(ptr, old, new);
-+#endif
-+	}
-+	__cmpxchg_called_with_bad_pointer();
-+	return old;
-+}
-+
- #define cmpxchg(ptr,o,n)						 \
-   ({									 \
-      __typeof__(*(ptr)) _o_ = (o);					 \
-@@ -357,6 +477,15 @@ #define cmpxchg(ptr,o,n)						 \
- 				    (unsigned long)_n_, sizeof(*(ptr))); \
-   })
- 
-+
-+#define cmpxchg_local(ptr,o,n)						 \
-+  ({									 \
-+     __typeof__(*(ptr)) _o_ = (o);					 \
-+     __typeof__(*(ptr)) _n_ = (n);					 \
-+     (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	 \
-+				    (unsigned long)_n_, sizeof(*(ptr))); \
-+  })
-+
- #ifdef CONFIG_PPC64
- /*
-  * We handle most unaligned accesses in hardware. On the other hand 
---- a/include/asm-powerpc/local.h
-+++ b/include/asm-powerpc/local.h
-@@ -1 +1,345 @@
--#include <asm-generic/local.h>
-+#ifndef _ARCH_POWERPC_LOCAL_H
-+#define _ARCH_POWERPC_LOCAL_H
-+
-+#include <linux/percpu.h>
-+#include <asm/atomic.h>
-+
-+typedef struct
-+{
-+	atomic_long_t a;
-+} local_t;
-+
-+#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
-+
-+#define local_read(l)	atomic_long_read(&(l)->a)
-+#define local_set(l,i)	atomic_long_set(&(l)->a, (i))
-+
-+#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
-+#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
-+#define local_inc(l)	atomic_long_inc(&(l)->a)
-+#define local_dec(l)	atomic_long_dec(&(l)->a)
-+
-+#ifndef __powerpc64__
-+
-+static __inline__ int local_add_return(int a, local_t *l)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%2		# local_add_return\n\
-+	add	%0,%1,%0\n"
-+	PPC405_ERR77(0,%2)
-+"	stwcx.	%0,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
-+
-+static __inline__ int local_sub_return(int a, local_t *l)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%2		# local_sub_return\n\
-+	subf	%0,%1,%0\n"
-+	PPC405_ERR77(0,%2)
-+"	stwcx.	%0,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+static __inline__ int local_inc_return(local_t *l)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%1		# local_inc_return\n\
-+	addic	%0,%0,1\n"
-+	PPC405_ERR77(0,%1)
-+"	stwcx.	%0,0,%1 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+/*
-+ * local_inc_and_test - increment and test
-+ * @l: pointer of type local_t
-+ *
-+ * Atomically increments @l by 1
-+ * and returns true if the result is zero, or false for all
-+ * other cases.
-+ */
-+#define local_inc_and_test(l) (local_inc_return(l) == 0)
-+
-+static __inline__ int local_dec_return(local_t *l)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%1		# local_dec_return\n\
-+	addic	%0,%0,-1\n"
-+	PPC405_ERR77(0,%1)
-+"	stwcx.	%0,0,%1\n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+#define local_cmpxchg(l, o, n) \
-+	((long)cmpxchg(&((l)->a.counter), (o), (n)))
-+#define local_xchg(l, new) (xchg(&((l)->a.counter), new))
-+
-+/**
-+ * local_add_unless - add unless the number is a given value
-+ * @l: pointer of type local_t
-+ * @a: the amount to add to v...
-+ * @u: ...unless v is equal to u.
-+ *
-+ * Atomically adds @a to @l, so long as it was not @u.
-+ * Returns non-zero if @l was not @u, and zero otherwise.
-+ */
-+static __inline__ int local_add_unless(local_t *l, int a, int u)
-+{
-+	int t;
-+
-+	__asm__ __volatile__ (
-+"1:	lwarx	%0,0,%1		# local_add_unless\n\
-+	cmpw	0,%0,%3 \n\
-+	beq-	2f \n\
-+	add	%0,%2,%0 \n"
-+	PPC405_ERR77(0,%2)
-+"	stwcx.	%0,0,%1 \n\
-+	bne-	1b \n"
-+"	subf	%0,%2,%0 \n\
-+2:"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter)), "r" (a), "r" (u)
-+	: "cc", "memory");
-+
-+	return t != u;
-+}
-+
-+#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-+
-+#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
-+#define local_dec_and_test(l)		(local_dec_return((l)) == 0)
-+
-+/*
-+ * Atomically test *l and decrement if it is greater than 0.
-+ * The function returns the old value of *l minus 1.
-+ */
-+static __inline__ int local_dec_if_positive(local_t *l)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%1		# local_dec_if_positive\n\
-+	addic.	%0,%0,-1\n\
-+	blt-	2f\n"
-+	PPC405_ERR77(0,%1)
-+"	stwcx.	%0,0,%1\n\
-+	bne-	1b"
-+	"\n\
-+2:"	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+#else /* __powerpc64__ */
-+
-+static __inline__ long local_add_return(long a, local_t *l)
-+{
-+	long t;
-+
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%2		# local_add_return\n\
-+	add	%0,%1,%0\n\
-+	stdcx.	%0,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
-+
-+static __inline__ long local_sub_return(long a, local_t *l)
-+{
-+	long t;
-+
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%2		# local_sub_return\n\
-+	subf	%0,%1,%0\n\
-+	stdcx.	%0,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+static __inline__ long local_inc_return(local_t *l)
-+{
-+	long t;
-+
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%1		# local_inc_return\n\
-+	addic	%0,%0,1\n\
-+	stdcx.	%0,0,%1 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+/*
-+ * local_inc_and_test - increment and test
-+ * @l: pointer of type local_t
-+ *
-+ * Atomically increments @l by 1
-+ * and returns true if the result is zero, or false for all
-+ * other cases.
-+ */
-+#define local_inc_and_test(l) (local_inc_return(l) == 0)
-+
-+static __inline__ long local_dec_return(local_t *l)
-+{
-+	long t;
-+
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%1		# local_dec_return\n\
-+	addic	%0,%0,-1\n\
-+	stdcx.	%0,0,%1\n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
-+#define local_dec_and_test(l)	(local_dec_return((l)) == 0)
-+
-+/*
-+ * Atomically test *l and decrement if it is greater than 0.
-+ * The function returns the old value of *l minus 1.
-+ */
-+static __inline__ long local_dec_if_positive(local_t *l)
-+{
-+	long t;
-+
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%1		# local_dec_if_positive\n\
-+	addic.	%0,%0,-1\n\
-+	blt-	2f\n\
-+	stdcx.	%0,0,%1\n\
-+	bne-	1b"
-+	"\n\
-+2:"	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+#define local_cmpxchg(l, o, n) \
-+	((__typeof__((l)->a.counter))cmpxchg_local(&((l)->a.counter), (o), (n)))
-+#define local_xchg(l, new) (xchg_local(&((l)->a.counter), new))
-+
-+/**
-+ * local_add_unless - add unless the number is a given value
-+ * @l: pointer of type local_t
-+ * @a: the amount to add to l...
-+ * @u: ...unless l is equal to u.
-+ *
-+ * Atomically adds @a to @l, so long as it was not @u.
-+ * Returns non-zero if @l was not @u, and zero otherwise.
-+ */
-+static __inline__ int local_add_unless(local_t *l, long a, long u)
-+{
-+	long t;
-+
-+	__asm__ __volatile__ (
-+"1:	ldarx	%0,0,%1		# local_add_unless\n\
-+	cmpd	0,%0,%3 \n\
-+	beq-	2f \n\
-+	add	%0,%2,%0 \n"
-+	PPC405_ERR77(0,%2)
-+"	stdcx.	%0,0,%1 \n\
-+	bne-	1b \n"
-+"	subf	%0,%2,%0 \n\
-+2:"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter)), "r" (a), "r" (u)
-+	: "cc", "memory");
-+
-+	return t != u;
-+}
-+
-+#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-+
-+#endif /* !__powerpc64__ */
-+
-+/* Use these for per-cpu local_t variables: on some archs they are
-+ * much more efficient than these naive implementations.  Note they take
-+ * a variable, not an address.
-+ *
-+ * This could be done better if we moved the per cpu data directly
-+ * after GS.
-+ */
-+
-+#define __local_inc(l)		((l)->a.counter++)
-+#define __local_dec(l)		((l)->a.counter++)
-+#define __local_add(i,l)	((l)->a.counter+=(i))
-+#define __local_sub(i,l)	((l)->a.counter-=(i))
-+
-+/* Need to disable preemption for the cpu local counters otherwise we could
-+   still access a variable of a previous CPU in a non atomic way. */
-+#define cpu_local_wrap_v(l)	 	\
-+	({ local_t res__;		\
-+	   preempt_disable(); 		\
-+	   res__ = (l);			\
-+	   preempt_enable();		\
-+	   res__; })
-+#define cpu_local_wrap(l)		\
-+	({ preempt_disable();		\
-+	   l;				\
-+	   preempt_enable(); })		\
-+
-+#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
-+#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
-+#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
-+#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
-+#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
-+#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
-+
-+#define __cpu_local_inc(l)	cpu_local_inc(l)
-+#define __cpu_local_dec(l)	cpu_local_dec(l)
-+#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
-+#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
-+
-+#endif /* _ARCH_POWERPC_LOCAL_H */
 
 OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
 Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
