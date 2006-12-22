@@ -1,14 +1,26 @@
-Return-Path: <paravpandit@yahoo.com>
-Received: from web36605.mail.mud.yahoo.com (web36605.mail.mud.yahoo.com
-	[209.191.85.22]) by ozlabs.org (Postfix) with SMTP id 5798EDDEC9
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2006 16:19:15 +1100 (EST)
-Message-ID: <20061222051235.87343.qmail@web36605.mail.mud.yahoo.com>
-Date: Thu, 21 Dec 2006 21:12:35 -0800 (PST)
-From: Parav Pandit <paravpandit@yahoo.com>
-Subject: pause frame generation by eTSEC
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2082200252-1166764355=:85973"
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1FF93DDE2F
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Dec 2006 05:51:30 +1100 (EST)
+In-Reply-To: <20061222011706.GA27396@localhost.localdomain>
+References: <20061221222303.GA6418@localhost.localdomain>
+	<E5477CAE-3FE8-4441-9225-570DD0679765@kernel.crashing.org>
+	<20061222011706.GA27396@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <EE6A12AA-3BE6-43DE-AEB2-7477CDAD21DC@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [powerpc] Fix bogus BUG_ON() in in hugetlb_get_unmapped_area()
+Date: Fri, 22 Dec 2006 19:51:09 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Andrew Morton <akpm@osdl.org>, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org,
+	William Lee Irwin <wli@holomorphy.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,25 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-2082200252-1166764355=:85973
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+>>> +	if (len > TASK_SIZE)
+>>> +		return -ENOMEM;
+>>
+>> Shouldn't that be addr+len instead?  The check looks incomplete
+>> otherwise.  And you meant ">=" I guess?
+>
+> No.  Have a look at the other hugetlb_get_unmapped_area()
+> implementations.  Because this is in the get_unmapped_area() path,
+> 'addr' is just a hint,
 
-Hi,
-   
-  Do I need to configure something in gianfar.c driver for MPC8548 chipset, to perform flow control using pause frames?
-   
-  Regards,
-  Parav Pandit
-   
+Ah I missed this vital piece of information, thanks for the
+explanation.  Care putting in a code comment pointing this out?
 
- __________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
---0-2082200252-1166764355=:85973
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+> so checking addr+len would give bogus
+> failures.  This test is, I believe, essentially an optimization - if
+> it fails, we're never going to find a suitable addr, so we might as
+> well give up now.
 
-<div>Hi,</div>  <div>&nbsp;</div>  <div>Do I need to configure something in gianfar.c driver for MPC8548 chipset, to perform flow control using pause frames?</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Parav Pandit</div>  <div>&nbsp;</div><p>&#32;__________________________________________________<br>Do You Yahoo!?<br>Tired of spam?  Yahoo! Mail has the best spam protection around <br>http://mail.yahoo.com 
---0-2082200252-1166764355=:85973--
+Yes, it all makes sense now.
+
+>>> -		/* Paranoia, caller should have dealt with this */
+>>> -		BUG_ON((addr + len) > 0x100000000UL);
+>>> -
+>>
+>> Any real reason to remove the paranoia check?  If it's trivially
+>> always satisfied, the compiler will get rid of it for you :-)
+>
+> Yes - this is the very bug on which was causing crashes - the "caller
+> should have dealt with this" comment is wrong.  The test has been
+> moved into htlb_check_hinted_area() and now simply fails (and so falls
+> back to searching for a suitable address), rather than BUG()ing.
+
+Yep.
+
+Cheers,
+
+
+Segher
