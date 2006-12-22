@@ -1,19 +1,18 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from pop-siberian.atl.sa.earthlink.net
-	(pop-siberian.atl.sa.earthlink.net [207.69.195.71])
-	by ozlabs.org (Postfix) with ESMTP id 70DB0DDED5
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2006 12:21:03 +1100 (EST)
-Subject: Re: New PowerPC-specific Eclipse CDT plugin for Eclipse needs a home
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1166653397.6673.21.camel@localhost.localdomain>
-References: <4589B34E.6020901@us.ibm.com>
-	<1166653397.6673.21.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 21 Dec 2006 19:20:55 -0600
-Message-Id: <1166750455.17238.6.camel@diesel>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cjashfor@us.ibm.com
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 22 Dec 2006 12:17:06 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [powerpc] Fix bogus BUG_ON() in in hugetlb_get_unmapped_area()
+Message-ID: <20061222011706.GA27396@localhost.localdomain>
+References: <20061221222303.GA6418@localhost.localdomain>
+	<E5477CAE-3FE8-4441-9225-570DD0679765@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E5477CAE-3FE8-4441-9225-570DD0679765@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org,
+	William Lee Irwin <wli@holomorphy.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-12-21 at 09:23 +1100, Benjamin Herrenschmidt wrote:
-> > Hi Kumar,
-> > 
-> > I was thinking there might be some place on penguinppc, but those others 
-> > sound like a good idea too.  I will look into those.
-> > 
-> > Thanks for the suggestions!
+On Fri, Dec 22, 2006 at 01:31:26AM +0100, Segher Boessenkool wrote:
+> > +	if (len > TASK_SIZE)
+> > +		return -ENOMEM;
 > 
-> It's definitely worth linking it from penguinppc ! Though for hosting, a
-> place that provides a revision control system is probably better.
+> Shouldn't that be addr+len instead?  The check looks incomplete
+> otherwise.  And you meant ">=" I guess?
 
-Agreed. Despite what you might think from recent glibc developments,
-penguinppc.org does not offer project hosting and I don't believe it
-should: I already don't have time to keep up with the simple content it
-offers (volunteers welcome). There are plenty of free OSS hosting sites
-out there...
+No.  Have a look at the other hugetlb_get_unmapped_area()
+implementations.  Because this is in the get_unmapped_area() path,
+'addr' is just a hint, so checking addr+len would give bogus
+failures.  This test is, I believe, essentially an optimization - if
+it fails, we're never going to find a suitable addr, so we might as
+well give up now.
 
--Hollis
+> > -		/* Paranoia, caller should have dealt with this */
+> > -		BUG_ON((addr + len) > 0x100000000UL);
+> > -
+> 
+> Any real reason to remove the paranoia check?  If it's trivially
+> always satisfied, the compiler will get rid of it for you :-)
+
+Yes - this is the very bug on which was causing crashes - the "caller
+should have dealt with this" comment is wrong.  The test has been
+moved into htlb_check_hinted_area() and now simply fails (and so falls
+back to searching for a suitable address), rather than BUG()ing.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
