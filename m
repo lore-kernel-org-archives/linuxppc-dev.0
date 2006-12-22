@@ -1,18 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 22 Dec 2006 12:17:06 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [powerpc] Fix bogus BUG_ON() in in hugetlb_get_unmapped_area()
-Message-ID: <20061222011706.GA27396@localhost.localdomain>
-References: <20061221222303.GA6418@localhost.localdomain>
-	<E5477CAE-3FE8-4441-9225-570DD0679765@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E5477CAE-3FE8-4441-9225-570DD0679765@kernel.crashing.org>
-Cc: Andrew Morton <akpm@osdl.org>, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org,
-	William Lee Irwin <wli@holomorphy.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] EMAC "powerpc" port
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1166595738.19254.140.camel@localhost.localdomain>
+References: <1166595738.19254.140.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 22 Dec 2006 15:13:37 +1100
+Message-Id: <1166760817.6673.90.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 22, 2006 at 01:31:26AM +0100, Segher Boessenkool wrote:
-> > +	if (len > TASK_SIZE)
-> > +		return -ENOMEM;
-> 
-> Shouldn't that be addr+len instead?  The check looks incomplete
-> otherwise.  And you meant ">=" I guess?
+On Wed, 2006-12-20 at 17:22 +1100, Benjamin Herrenschmidt wrote:
 
-No.  Have a look at the other hugetlb_get_unmapped_area()
-implementations.  Because this is in the get_unmapped_area() path,
-'addr' is just a hint, so checking addr+len would give bogus
-failures.  This test is, I believe, essentially an optimization - if
-it fails, we're never going to find a suitable addr, so we might as
-well give up now.
+>  - Locking. Cell is SMP, 46x is SMP, so we need SMP (and I've heard some
+> of the -rt folks having problem in that area too). I haven't triple
+> checked what I've done, it's rather simplistic, so feel free to propose
+> something better, and I still have a race with the multicast stuff that
+> I need to fix, but the base idea is that "hard" work and PHY polling are
+> all done at task level so we can use mutexes for most things (zmii,
+> rgmii, mdio accesses, etc...) and no big latencies.
 
-> > -		/* Paranoia, caller should have dealt with this */
-> > -		BUG_ON((addr + len) > 0x100000000UL);
-> > -
-> 
-> Any real reason to remove the paranoia check?  If it's trivially
-> always satisfied, the compiler will get rid of it for you :-)
+I've fixed the race with the multicast stuff and updated the patch, it's
+now:
 
-Yes - this is the very bug on which was causing crashes - the "caller
-should have dealt with this" comment is wrong.  The test has been
-moved into htlb_check_hinted_area() and now simply fails (and so falls
-back to searching for a suitable address), rather than BUG()ing.
+http://gate.crashing.org/~benh/powerpc-emac-new-20061222.diff
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Note that porting to the generic PHY layer might be a problem due to the
+locking done by it (it basically calls back the MDIO access routines
+with locks held or from timer interrupts while I'm using mutexes to
+handle arbitration at the MDIO and ZMII/RGMII level). I'm not trying to
+change the generic PHY layer but that might take some time.
+
+I've tested it a bit more, running all sorts of data overnight through
+an SSH link (good to detect data corruption) and it held firm without
+apparent race or memory leak, but it could certainly be tortured more.
+I'll do that once I've added support for dma unmapping, so I can test it
+with the cell iommu active, as using an iommu is a very good way to
+catch problems like runaway DMA etc...
+
+Ben.
