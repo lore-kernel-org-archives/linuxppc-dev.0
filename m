@@ -1,26 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1FF93DDE2F
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Dec 2006 05:51:30 +1100 (EST)
-In-Reply-To: <20061222011706.GA27396@localhost.localdomain>
-References: <20061221222303.GA6418@localhost.localdomain>
-	<E5477CAE-3FE8-4441-9225-570DD0679765@kernel.crashing.org>
-	<20061222011706.GA27396@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <EE6A12AA-3BE6-43DE-AEB2-7477CDAD21DC@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [powerpc] Fix bogus BUG_ON() in in hugetlb_get_unmapped_area()
-Date: Fri, 22 Dec 2006 19:51:09 +0100
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Andrew Morton <akpm@osdl.org>, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org,
-	William Lee Irwin <wli@holomorphy.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp110.sbc.mail.mud.yahoo.com (smtp110.sbc.mail.mud.yahoo.com
+	[68.142.198.209]) by ozlabs.org (Postfix) with SMTP id 7502ADDEC1
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Dec 2006 11:57:15 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
+Date: Fri, 22 Dec 2006 16:57:11 -0800
+References: <037901c71f14$a47115b0$020120ac@Jocke>
+In-Reply-To: <037901c71f14$a47115b0$020120ac@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200612221657.12007.david-b@pacbell.net>
+Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +	if (len > TASK_SIZE)
->>> +		return -ENOMEM;
->>
->> Shouldn't that be addr+len instead?  The check looks incomplete
->> otherwise.  And you meant ">=" I guess?
+On Wednesday 13 December 2006 4:13 pm, Joakim Tjernlund wrote:
 >
-> No.  Have a look at the other hugetlb_get_unmapped_area()
-> implementations.  Because this is in the get_unmapped_area() path,
-> 'addr' is just a hint,
+> > The problem I have with this patch is that it has too much 
+> > #ifdeffery.  If
+> 
+> Too much? There is only 2 of them.
 
-Ah I missed this vital piece of information, thanks for the
-explanation.  Care putting in a code comment pointing this out?
-
-> so checking addr+len would give bogus
-> failures.  This test is, I believe, essentially an optimization - if
-> it fails, we're never going to find a suitable addr, so we might as
-> well give up now.
-
-Yes, it all makes sense now.
-
->>> -		/* Paranoia, caller should have dealt with this */
->>> -		BUG_ON((addr + len) > 0x100000000UL);
->>> -
->>
->> Any real reason to remove the paranoia check?  If it's trivially
->> always satisfied, the compiler will get rid of it for you :-)
->
-> Yes - this is the very bug on which was causing crashes - the "caller
-> should have dealt with this" comment is wrong.  The test has been
-> moved into htlb_check_hinted_area() and now simply fails (and so falls
-> back to searching for a suitable address), rather than BUG()ing.
-
-Yep.
-
-Cheers,
+But it's the wrong kind of  #ifdeffery, and that's avoidable.
 
 
-Segher
+> > > (possibly this can be reduced by adding more logic to the 
+> > > tx_buf/rx_buf functions)
+> > > not to mention what will happen when support for reversed 
+> > > bit order is added.
+> > 
+> > Sure enough, sounds ugly.  But cpu_is_xxx() macros, combined 
+> > with GCC dead
+> > code elimination will strip out functions that are unused, so 
+> > that e.g.
+> > 
+> > 	if (cpu_is_mpc834x())
+> > 		fn = mpc834x_spi_tx_buf_u16;
+> > 	else if (cpu_is_mpc832x())
+> > 		fn = mpc832x_spi_tx_buf_u16;
+> > 
+> > would only link one of them unless the kernel supports both SOCs.  And
+> > without in-driver #ifdeffery.
+> 
+> Hmm, I can't find any cpu_is_xxx macros/functions. I guess the
+> infrastructure isn't there yet?
+
+So it would seem.    At least for PPC.  I noticed the patch from
+Kumar Gala, which takes an alternate approach based on parameters
+passed through platform_data ... that works too, in terms of
+code being cleaner.
+
+- Dave
