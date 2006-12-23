@@ -1,32 +1,15 @@
-Return-Path: <cjashfor@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1FB39DDED2
+Return-Path: <paravpandit@yahoo.com>
+Received: from web36602.mail.mud.yahoo.com (web36602.mail.mud.yahoo.com
+	[209.191.85.19]) by ozlabs.org (Postfix) with SMTP id 4FA22DDEC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Dec 2006 12:55:42 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBN1tbCd000523
-	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:37 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kBN1tbLU178862
-	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:37 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kBN1tbXG023523
-	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:37 -0500
-Received: from [127.0.0.1] (sig-9-65-130-99.mts.ibm.com [9.65.130.99])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	kBN1tafm023516
-	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:36 -0500
-Message-ID: <458C8C97.7040602@us.ibm.com>
-Date: Fri, 22 Dec 2006 17:55:35 -0800
-From: Corey Ashford <cjashfor@us.ibm.com>
-MIME-Version: 1.0
+	Sat, 23 Dec 2006 18:50:50 +1100 (EST)
+Date: Fri, 22 Dec 2006 23:50:48 -0800 (PST)
+From: Parav Pandit <paravpandit@yahoo.com>
+Subject: ethernet pause frame generation by eTSEC?
 To: linuxppc-embedded@ozlabs.org
-Subject: Eclipse CDT GNU PowerPC plug-in now available on Sourceforge
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1404278564-1166860248=:16924"
+Message-ID: <975576.16924.qm@web36602.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,29 +20,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+--0-1404278564-1166860248=:16924
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-I've placed the first release of the Eclipse CDT GNU PowerPC plug-in here:
+Hi,
+   
+  Do I need to configure something in gianfar.c driver for MPC8548 chipset, to perform flow control using pause frames?
+   
+  Regards,
+  Parav Pandit
 
-http://sourceforge.net/projects/cdt-gnu-ppc
+ __________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
+--0-1404278564-1166860248=:16924
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-This plug-in provides PowerPC-specific tool settings for the GNU C/C++ 
-compiler and assembler, as well as link options (also supplied to gcc).
-
-If you are an Eclipse CDT user for PowerPC, I'd like to urge you to try 
-it out and see what you think.
-
-If you have any feedback on this plug-in, please provide it through 
-sourceforge's Tracker.
-
-Regards,
-
-- Corey
-
--- 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+<DIV>Hi,</DIV>  <DIV>&nbsp;</DIV>  <DIV>Do I need to configure something in gianfar.c driver for MPC8548 chipset, to perform flow control using pause frames?</DIV>  <DIV>&nbsp;</DIV>  <DIV>Regards,</DIV>  <DIV>Parav Pandit</DIV><p>&#32;__________________________________________________<br>Do You Yahoo!?<br>Tired of spam?  Yahoo! Mail has the best spam protection around <br>http://mail.yahoo.com 
+--0-1404278564-1166860248=:16924--
