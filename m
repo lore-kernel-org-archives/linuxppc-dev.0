@@ -1,23 +1,32 @@
-Return-Path: <beattie@beattie-home.net>
-Received: from mail.beattie-home.net (gw.beattie-home.net [66.93.38.225])
+Return-Path: <cjashfor@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4AFFDDEB9
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1FB39DDED2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Dec 2006 11:06:34 +1100 (EST)
-Received: from localhost.localdomain (caliban.beattie-home.net [66.93.38.182])
-	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(No client certificate requested)
-	by mail.beattie-home.net (Postfix) with ESMTP id C9E87E346AD
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Dec 2006 15:54:03 -0800 (PST)
-Subject: MPC8249 PCI Bus 2
-From: Brian Beattie <beattie@beattie-home.net>
+	Sat, 23 Dec 2006 12:55:42 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBN1tbCd000523
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:37 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBN1tbLU178862
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:37 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBN1tbXG023523
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:37 -0500
+Received: from [127.0.0.1] (sig-9-65-130-99.mts.ibm.com [9.65.130.99])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	kBN1tafm023516
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Dec 2006 20:55:36 -0500
+Message-ID: <458C8C97.7040602@us.ibm.com>
+Date: Fri, 22 Dec 2006 17:55:35 -0800
+From: Corey Ashford <cjashfor@us.ibm.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 22 Dec 2006 15:47:00 -0800
-Message-Id: <1166831220.5602.14.camel@localhost.localdomain>
-Mime-Version: 1.0
+Subject: Eclipse CDT GNU PowerPC plug-in now available on Sourceforge
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,26 +37,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm working on bringing up a board and having some trouble with the
-second PCI Bus and was wondering if anybody had any idea.
+Hello,
 
-The kernel is 2.6.19.1 patched to set the Local Access Window because
-out u-boot does not do that yet.  I have an Intel 82541 GigE chip
-hanging off PCI Bus 1 that seems to be working fine.
+I've placed the first release of the Eclipse CDT GNU PowerPC plug-in here:
 
-On Bus 2 I have a mini-pci connector:
+http://sourceforge.net/projects/cdt-gnu-ppc
 
-Trying an el-cheapo i82551 based 10/100 NIC it hangs after about 5 pings
-on an quiet segment and before I can send anything on a noisy segment
-with both the eepro100 and e100 drivers.
+This plug-in provides PowerPC-specific tool settings for the GNU C/C++ 
+compiler and assembler, as well as link options (also supplied to gcc).
 
-Trying a prism II based wireless nic, it fails in the device probe
-trying to read a status register because the result is all ones (as if
-nothing is there).
+If you are an Eclipse CDT user for PowerPC, I'd like to urge you to try 
+it out and see what you think.
 
-Near as I can tell I am getting interrupts.
+If you have any feedback on this plug-in, please provide it through 
+sourceforge's Tracker.
+
+Regards,
+
+- Corey
 
 -- 
-Brian Beattie   LFS12947 | "Honor isn't about making the right choices.
-beattie@beattie-home.net | It's about dealing with the consequences."
-www.beattie-home.net     | -- Midori Koto
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
