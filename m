@@ -1,16 +1,21 @@
-Return-Path: <shashidhara.doddamane@dyansys.com>
-Received: from promail1.rediffmailpro.com (promail1.rediffmailpro.com
-	[203.199.83.167]) by ozlabs.org (Postfix) with SMTP id 9EB4ADDEB6
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Dec 2006 18:13:05 +1100 (EST)
-From: Shashidhara DN <shashidhara.doddamane@dyansys.com>
-To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	joakim.tjernlund@transmode.se, yang.reeve@gmail.com
-Subject: Query on SPI_ driver for i.MX31 ADS Freescale Board
-Date: Sat, 23 Dec 2006 12:35:38 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200612231235.38451.shashidhara.doddamane@dyansys.com>
+Return-Path: <SRS0+0d0f3b7e3e91f4b0ee1c+1217+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 05C73DDEC9
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Dec 2006 08:32:23 +1100 (EST)
+Subject: Re: New PowerPC-specific Eclipse CDT plugin for Eclipse needs a home
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1166653397.6673.21.camel@localhost.localdomain>
+References: <4589B34E.6020901@us.ibm.com>
+	<1166653397.6673.21.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 23 Dec 2006 21:32:11 +0000
+Message-Id: <1166909531.22068.176.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cjashfor@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+On Thu, 2006-12-21 at 09:23 +1100, Benjamin Herrenschmidt wrote:
+> > Hi Kumar,
+> > 
+> > I was thinking there might be some place on penguinppc, but those others 
+> > sound like a good idea too.  I will look into those.
+> > 
+> > Thanks for the suggestions!
+> 
+> It's definitely worth linking it from penguinppc ! Though for hosting, a
+> place that provides a revision control system is probably better. 
 
-I would like to introduce myself to u =A0I am shshidhara D N Started =A0 wo=
-rking=20
-on Linux device drivers. so I am working on i.MX31 ADS freescale Board.
+You're welcome to an account on git.infradead.org for hosting
+PPC-related projects.
 
-OS is Linux and I am working on SPI driver ..
-
-I am trying =A0to =A0loop back SPI 2 =A0 =A0 & SPI3 =A0..For that how to pr=
-oceede from=20
-scratch to end..
-
-I have to do it through the API's =A0l(ike ioctls commands) .Please can u g=
-uide=20
-regarding this.. Hoping for reply
-
-
-
-Best Regards
-Shashidhara D N
+-- 
+dwmw2
