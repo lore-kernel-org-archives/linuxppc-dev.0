@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 548BCDDEDD
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 00:05:39 +1100 (EST)
-Date: Sun, 24 Dec 2006 14:05:31 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: benh@kernel.crashing.org
-Subject: [PATCH] More SMU commands
-Message-ID: <20061224130531.GA28635@hansmi.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@killerfox.forkbomb.ch
+Return-Path: <pochini@shiny.it>
+Received: from smtp-out13.alice.it (unknown [85.33.2.18])
+	by ozlabs.org (Postfix) with ESMTP id 6A018DDE47
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 03:26:32 +1100 (EST)
+Date: Sun, 24 Dec 2006 17:58:52 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: 2 CPUs, but only one is used
+Message-Id: <20061224175852.1b52740a.pochini@shiny.it>
+In-Reply-To: <20061220141655.GJ15713@localdomain>
+References: <20061217144127.579f01f0.pochini@shiny.it>
+	<20061220003545.7053b05c.pochini@shiny.it>
+	<20061220141655.GJ15713@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,121 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch updates smu.h with several new commands and parameter
-descriptions for existing ones.
+On Wed, 20 Dec 2006 08:16:55 -0600
+Nathan Lynch <ntl@pobox.com> wrote:
 
-Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+> > > I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
+> > > then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
+> > > put online without errors, but it stays idle+wait=100% and of course
+> > > user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
+> > >
+> > > I saw that there are some cpu hotplug related changes in 2.6.19, but I have
+> > > no access to a non-ppc dual cpu box to check if the problem also affects
+> > > other architectures right now.
+> > 
+> > I tried to reproduce the problem on an intel box, but I couldn't. /sys
+> > contains only the cpu0 file if it boots with maxcpus=1.
+> 
+> Can you try to git bisect to find the change which caused the
+> regression?
+> 
 
----
-diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/include/asm-powerpc/smu.h linux-2.6.19.1/include/asm-powerpc/smu.h
---- linux-2.6.19.1.orig/include/asm-powerpc/smu.h	2006-12-24 12:19:07.000000000 +0100
-+++ linux-2.6.19.1/include/asm-powerpc/smu.h	2006-12-24 13:53:46.000000000 +0100
-@@ -173,7 +173,7 @@
-  * Power supply control
-  *
-  * The "sub" command is an ASCII string in the data, the
-- * data lenght is that of the string.
-+ * data length is that of the string.
-  *
-  * The VSLEW command can be used to get or set the voltage slewing.
-  *  - lenght 5 (only "VSLEW") : it returns "DONE" and 3 bytes of
-@@ -206,16 +206,52 @@
-  * This command seem to be a grab bag of various things
-  */
- #define SMU_CMD_MISC_df_COMMAND			0xdf
--#define   SMU_CMD_MISC_df_SET_DISPLAY_LIT	0x02 /* i: 1 byte */
-+
-+/*
-+ * Sets "system ready" status
-+ *
-+ * Parameters:
-+ *   1: status [0x00, 0x01 or 0x02]
-+ */
-+#define   SMU_CMD_MISC_df_SET_DISPLAY_LIT	0x02
-+
-+/*
-+ * Sets mode of power switch
-+ *
-+ * Parameters:
-+ *   1: enable power switch? [0x00 or 0x01]
-+ *   2: enable nmi? [0x00 or 0x01]
-+ */
- #define   SMU_CMD_MISC_df_NMI_OPTION		0x04
- 
- /*
-  * Version info commands
-  *
-- * I haven't quite tried to figure out how these work
-+ * Parameters:
-+ *   1 (optional): version type
-+ *
-+ * Returns:
-+ *   Version value
-  */
- #define SMU_CMD_VERSION_COMMAND			0xea
-+#define   SMU_VERSION_RUNNING			0x00
-+#define   SMU_VERSION_BASE			0x01
-+#define   SMU_VERSION_UPDATE			0x02
-+
-+/*
-+ * Switches
-+ *
-+ * These are switches whose status seems to be known to the SMU.
-+ *
-+ * Parameters:
-+ *   none
-+ */
-+#define SMU_CMD_SWITCHES			0xdc
- 
-+/* Switches bits */
-+#define SMU_SWITCH_CASE_CLOSED			0x01
-+#define SMU_SWITCH_AC_POWER			0x04
-+#define SMU_SWITCH_POWER_SWITCH			0x08
- 
- /*
-  * Misc commands
-@@ -246,6 +282,44 @@
- #define	  SMU_CMD_MISC_ee_LEDS_CTRL		0x04 /* i: 00 (00,01) [00] */
- #define   SMU_CMD_MISC_ee_GET_DATA		0x05 /* i: 00 , o: ?? */
- 
-+/*
-+ * Misc commands 2
-+ *
-+ * Parameters:
-+ *   1: subcommand
-+ */
-+#define SMU_CMD_MISC_8f_COMMAND			0x8f
-+
-+/*
-+ * File server mode
-+ *
-+ * Parameters:
-+ *   2: to enable, set to 0x01, otherwise 0xff
-+ *   3: always 0xff
-+ */
-+#define   SMU_CMD_MISC_8f_FILESERVER_MODE	0x02
-+
-+/*
-+ * Retrieves last shutdown cause
-+ *
-+ * Parameters:
-+ *   none
-+ *
-+ * Returns:
-+ *   Last shutdown cause
-+ */
-+#define   SMU_CMD_MISC_8f_LAST_SHUTDOWN_CAUSE	0x07
-+
-+/*
-+ * Sets or gets server ID
-+ *
-+ * Parameters:
-+ *   2 (optional): Set server ID to this value
-+ *
-+ * Returns:
-+ *   Current server ID
-+ */
-+#define   SMU_CMD_MISC_8f_SERVER_ID		0x08
- 
- 
- /*
+I finally have some time to spend on this issue.
+
+At the end of kernel/cpu.c::cpu_up() both cpus are set as present, possible
+and online. The problem is that in kernel/sched.c::find_idlest_group()
+p->cpus_allowed is always 1 (it should be 3). I tried to put a dump_stack()
+or a printk(mask) in set_cpu_mask() but it crashes badly when mask is not 3,
+ie. anything different from khelper or kthread, so I couldn't know what sets
+the wrong cpumask.
+
+
+--
+Giuliano.
