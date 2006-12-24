@@ -1,19 +1,32 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp-out13.alice.it (unknown [85.33.2.18])
-	by ozlabs.org (Postfix) with ESMTP id 6A018DDE47
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 03:26:32 +1100 (EST)
-Date: Sun, 24 Dec 2006 17:58:52 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: 2 CPUs, but only one is used
-Message-Id: <20061224175852.1b52740a.pochini@shiny.it>
-In-Reply-To: <20061220141655.GJ15713@localdomain>
-References: <20061217144127.579f01f0.pochini@shiny.it>
-	<20061220003545.7053b05c.pochini@shiny.it>
-	<20061220141655.GJ15713@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 07BD6DDEDA
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 03:57:07 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id kBOGusvu026070
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Dec 2006 11:56:54 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kBOGusRC552866
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Dec 2006 09:56:54 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kBOGurSX011322
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Dec 2006 09:56:53 -0700
+Message-ID: <458EB149.9010706@austin.ibm.com>
+Date: Sun, 24 Dec 2006 10:56:41 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
+References: <45707469.9060604@austin.ibm.com>	<4575E76C.7030300@austin.ibm.com>
+	<17785.415.574041.518517@cargo.ozlabs.ibm.com>
+In-Reply-To: <17785.415.574041.518517@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Dec 2006 08:16:55 -0600
-Nathan Lynch <ntl@pobox.com> wrote:
+Okay,
 
-> > > I have a dual G4 MDD mac running linux 2.6.19. When I boot with maxcpus=1 and
-> > > then I issue "echo 1 >/sys/devices/system/cpu/cpu1/online" the second CPU is
-> > > put online without errors, but it stays idle+wait=100% and of course
-> > > user+system+nice=0%. It works fine without maxcpus=1. No problems with 2.6.18.
-> > >
-> > > I saw that there are some cpu hotplug related changes in 2.6.19, but I have
-> > > no access to a non-ppc dual cpu box to check if the problem also affects
-> > > other architectures right now.
-> > 
-> > I tried to reproduce the problem on an intel box, but I couldn't. /sys
-> > contains only the cpu0 file if it boots with maxcpus=1.
-> 
-> Can you try to git bisect to find the change which caused the
-> regression?
-> 
+Will post the new patch in a few hours.
 
-I finally have some time to spend on this issue.
+was out sick and on vacation so didnt get a chance to do the needful.
 
-At the end of kernel/cpu.c::cpu_up() both cpus are set as present, possible
-and online. The problem is that in kernel/sched.c::find_idlest_group()
-p->cpus_allowed is always 1 (it should be 3). I tried to put a dump_stack()
-or a printk(mask) in set_cpu_mask() but it crashes badly when mask is not 3,
-ie. anything different from khelper or kthread, so I couldn't know what sets
-the wrong cpumask.
+-M
 
 
---
-Giuliano.
+
+Paul Mackerras wrote:
+> Manish Ahuja writes:
+>
+>   
+>> During power outages, the ups notifies the system for a shutdown. In the 
+>> current setup, it isn't possible to power on when power is restored. 
+>> This patch fixes the issue by calling the right ibm,power-off-ups token 
+>> during such events. It also adds a proc interface so that rc.powerfail 
+>> can parse the epow events and modify the power-off behavior accordingly 
+>> to enable the right token to be called.
+>>     
+>
+> With this patch, the kernel won't build if CONFIG_PPC_RTAS=y and
+> CONFIG_RTAS_PROC=n.  Please move the definition of rtas_poweron_auto
+> from rtas-proc.c to rtas.c so that this (admittedly somewhat strange)
+> config will build.
+>
+> Thanks,
+> Paul.
+>   
