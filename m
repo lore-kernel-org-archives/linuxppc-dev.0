@@ -1,22 +1,18 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id ABD0CDDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 09:54:55 +1100 (EST)
-Date: Mon, 25 Dec 2006 23:54:58 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Mark Glines <mark@glines.org>
-Subject: Re: [PATCH]  powerpc: linkstation uses uimage style zImages
-In-Reply-To: <459046FE.9030008@glines.org>
-Message-ID: <Pine.LNX.4.60.0612252349040.3424@poirot.grange>
+Return-Path: <mark@glines.org>
+Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
+	by ozlabs.org (Postfix) with ESMTP id 88074DDEEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 07:15:29 +1100 (EST)
+Message-ID: <45902A6F.4000100@glines.org>
+Date: Mon, 25 Dec 2006 11:45:51 -0800
+From: Mark Glines <mark@glines.org>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Linux 2.6.20-rc2: forgot how to make a zImage on powerpc?
 References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
 	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
-	<45902A6F.4000100@glines.org>
-	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
-	<459046FE.9030008@glines.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark
-
-Thanks for the patch. Are you actually going to test this kernel on a real 
-hardware or just testing builds? If it is going to be a real life test, 
-I'd be interested to know what exactly hardware, U-boot version, dts, and 
-what results.
-
-BTW, ack-ing your patch would be a bit easier if you sent it inline.
-
-On Mon, 25 Dec 2006, Mark Glines wrote:
-
-> Once I tracked down and installed a "mkimage" command (dependency needed by
-> the WRAP line), my "make zImage" succeeded.  So, I hope you guys apply this.
-
+Mark Glines wrote:
+> Hmm.  I'm trying to build 2.6.20-rc2 on a little powerpc box with 
+> arch/powerpc/configs/linkstation_defconfig, and I get:
 ...
+>   MODPOST vmlinux
+> ln: accessing `arch/powerpc/boot/zImage': No such file or directory
+> make[1]: *** [arch/powerpc/boot/zImage] Error 1
+> make: *** [zImage] Error 2
+> 
+> So, uh, are we forgetting to go into the right subdirectory to make the 
+> actual zImage, or what?  If I'm just doing something wrong, I'd love to 
+> know what it is.
+> 
+> I'll follow up here on lkml if I diagnose this further.  Thanks,
 
-> Signed-off-by: Mark Glines <mark@glines.org>
-Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-> --- linux-2.6.20-rc2/arch/powerpc/platforms/embedded6xx/Kconfig.orig	2006-12-24 19:13:49.000000000 -0800
-> +++ linux-2.6.20-rc2/arch/powerpc/platforms/embedded6xx/Kconfig	2006-12-24 19:14:02.000000000 -0800
-> @@ -79,6 +79,7 @@
->  	select MPIC
->  	select FSL_SOC
->  	select PPC_UDBG_16550 if SERIAL_8250
-> +	select DEFAULT_UIMAGE
->  	help
->  	  Select LINKSTATION if configuring for one of PPC- (MPC8241)
->  	  based NAS systems from Buffalo Technology. So far only
+Followup:  Yeah, it looks like it just doesn't know which format of 
+zImage to produce for linkstation.
+
+I'm not sure what image should be used by default.  I guess it depends 
+on the bootloader.  Maybe default to uImage, as uBoot seems to be fairly 
+common on these devices?
+
+Mark
