@@ -1,21 +1,18 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp-out03.alice.it (smtp-out03.alice.it [85.37.17.99])
-	by ozlabs.org (Postfix) with ESMTP id 3255BDDE9E
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 21:53:09 +1100 (EST)
-Date: Mon, 25 Dec 2006 11:53:53 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: 2 CPUs, but only one is used
-Message-Id: <20061225115353.29d29872.pochini@shiny.it>
-In-Reply-To: <20061225055251.GR15713@localdomain>
-References: <20061217144127.579f01f0.pochini@shiny.it>
-	<20061220003545.7053b05c.pochini@shiny.it>
-	<20061220141655.GJ15713@localdomain>
-	<20061224175852.1b52740a.pochini@shiny.it>
-	<20061225055251.GR15713@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 5511EDDE37
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 07:07:09 +1100 (EST)
+Received: from lyakh (helo=localhost)
+	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
+	id 1Gyw6J-0001J0-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 21:07:11 +0100
+Date: Mon, 25 Dec 2006 21:07:11 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Chenging 2 bits in MSR in ppc6xx_idle() with 1 command?
+Message-ID: <Pine.LNX.4.60.0612252053410.3424@poirot.grange>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 24 Dec 2006 23:52:51 -0600
-Nathan Lynch <ntl@pobox.com> wrote:
+Hi
 
-> > At the end of kernel/cpu.c::cpu_up() both cpus are set as present, possible
-> > and online. The problem is that in kernel/sched.c::find_idlest_group()
-> > p->cpus_allowed is always 1 (it should be 3). I tried to put a dump_stack()
-> > or a printk(mask) in set_cpu_mask() but it crashes badly when mask is not 3,
-> > ie. anything different from khelper or kthread, so I couldn't know what sets
-> > the wrong cpumask.
-> 
-> Does this fix it?
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b515e3c..3c8b1c5 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6875,7 +6875,7 @@ void __init sched_init_smp(void)
->  
->  	lock_cpu_hotplug();
->  	arch_init_sched_domains(&cpu_online_map);
-> -	cpus_andnot(non_isolated_cpus, cpu_online_map, cpu_isolated_map);
-> +	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
->  	if (cpus_empty(non_isolated_cpus))
->  		cpu_set(smp_processor_id(), non_isolated_cpus);
->  	unlock_cpu_hotplug();
+Here's a code fragment from ppc6xx_idle(), which should send the CPU into 
+a powersaving mode (DOZE or NAP) and re-enable interrupts after a 
+local_irq_disable():
 
-Yes, it does. I also tested if tasks are migrated to/off cpu1 when I
-enable/disable it and when I boot with or without maxcpus=1. It seems to
-work correctly in all cases. Thank you.
+	mfmsr	r7
+	ori	r7,r7,MSR_EE
+	oris	r7,r7,MSR_POW@h
+1:	sync
+	mtmsr	r7
+	isync
+	b	1b
 
+Whereas MPC8245's user manual says, that when setting the MSR_POW bit in 
+the MSR one may not set any other bit in it with the same instruction. 
+Does this mean that the above does not actually work on those (and 
+similar) CPUs or does it work because of the loop?
 
---
-Giuliano.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
