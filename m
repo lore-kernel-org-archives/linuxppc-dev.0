@@ -1,18 +1,20 @@
 Return-Path: <g.liakhovetski@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 5511EDDE37
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 07:07:09 +1100 (EST)
-Received: from lyakh (helo=localhost)
-	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
-	id 1Gyw6J-0001J0-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Dec 2006 21:07:11 +0100
-Date: Mon, 25 Dec 2006 21:07:11 +0100 (CET)
+	by ozlabs.org (Postfix) with SMTP id 5BDF5DDEEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 07:31:21 +1100 (EST)
+Date: Mon, 25 Dec 2006 21:31:23 +0100 (CET)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Chenging 2 bits in MSR in ppc6xx_idle() with 1 command?
-Message-ID: <Pine.LNX.4.60.0612252053410.3424@poirot.grange>
+To: Mark Glines <mark@glines.org>
+Subject: Re: Linux 2.6.20-rc2: forgot how to make a zImage on powerpc?
+In-Reply-To: <45902A6F.4000100@glines.org>
+Message-ID: <Pine.LNX.4.60.0612252128530.3424@poirot.grange>
+References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
+	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
+	<45902A6F.4000100@glines.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+On Mon, 25 Dec 2006, Mark Glines wrote:
 
-Here's a code fragment from ppc6xx_idle(), which should send the CPU into 
-a powersaving mode (DOZE or NAP) and re-enable interrupts after a 
-local_irq_disable():
+> Mark Glines wrote:
+> > Hmm.  I'm trying to build 2.6.20-rc2 on a little powerpc box with
+> > arch/powerpc/configs/linkstation_defconfig, and I get:
+> ...
+> >   MODPOST vmlinux
+> > ln: accessing `arch/powerpc/boot/zImage': No such file or directory
+> > make[1]: *** [arch/powerpc/boot/zImage] Error 1
+> > make: *** [zImage] Error 2
+> > 
+> > So, uh, are we forgetting to go into the right subdirectory to make the
+> > actual zImage, or what?  If I'm just doing something wrong, I'd love to know
+> > what it is.
+> > 
+> > I'll follow up here on lkml if I diagnose this further.  Thanks,
+> 
+> 
+> Followup:  Yeah, it looks like it just doesn't know which format of zImage to
+> produce for linkstation.
+> 
+> I'm not sure what image should be used by default.  I guess it depends on the
+> bootloader.  Maybe default to uImage, as uBoot seems to be fairly common on
+> these devices?
 
-	mfmsr	r7
-	ori	r7,r7,MSR_EE
-	oris	r7,r7,MSR_POW@h
-1:	sync
-	mtmsr	r7
-	isync
-	b	1b
-
-Whereas MPC8245's user manual says, that when setting the MSR_POW bit in 
-the MSR one may not set any other bit in it with the same instruction. 
-Does this mean that the above does not actually work on those (and 
-similar) CPUs or does it work because of the loop?
+Yes, uImage is the format used on linkstation. Is there a way to cleanly 
+specify this in the kernel sources apart from a comment in Kconfig?
 
 Thanks
 Guennadi
