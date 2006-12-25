@@ -1,20 +1,19 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 5BDF5DDEEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 07:31:21 +1100 (EST)
-Date: Mon, 25 Dec 2006 21:31:23 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Mark Glines <mark@glines.org>
-Subject: Re: Linux 2.6.20-rc2: forgot how to make a zImage on powerpc?
-In-Reply-To: <45902A6F.4000100@glines.org>
-Message-ID: <Pine.LNX.4.60.0612252128530.3424@poirot.grange>
-References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
-	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
-	<45902A6F.4000100@glines.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7FF45DDE22
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Dec 2006 08:26:04 +1100 (EST)
+Subject: Re: [PATCH] SMU LED driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+In-Reply-To: <20061224112351.GA27260@hansmi.ch>
+References: <20061224112351.GA27260@hansmi.ch>
+Content-Type: text/plain
+Date: Tue, 26 Dec 2006 08:25:52 +1100
+Message-Id: <1167081952.3522.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +23,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 25 Dec 2006, Mark Glines wrote:
+On Sun, 2006-12-24 at 12:23 +0100, Michael Hanselmann wrote:
+> This patch adds a driver for the front LED in recent PowerMacs which
+> have an SMU.
 
-> Mark Glines wrote:
-> > Hmm.  I'm trying to build 2.6.20-rc2 on a little powerpc box with
-> > arch/powerpc/configs/linkstation_defconfig, and I get:
-> ...
-> >   MODPOST vmlinux
-> > ln: accessing `arch/powerpc/boot/zImage': No such file or directory
-> > make[1]: *** [arch/powerpc/boot/zImage] Error 1
-> > make: *** [zImage] Error 2
-> > 
-> > So, uh, are we forgetting to go into the right subdirectory to make the
-> > actual zImage, or what?  If I'm just doing something wrong, I'd love to know
-> > what it is.
-> > 
-> > I'll follow up here on lkml if I diagnose this further.  Thanks,
-> 
-> 
-> Followup:  Yeah, it looks like it just doesn't know which format of zImage to
-> produce for linkstation.
-> 
-> I'm not sure what image should be used by default.  I guess it depends on the
-> bootloader.  Maybe default to uImage, as uBoot seems to be fairly common on
-> these devices?
+As for the PMU driver, I'm pretty unhappy that it sycnhronously waits
+for the completion. The original code I wrote was fully asynchronous.
 
-Yes, uImage is the format used on linkstation. Is there a way to cleanly 
-specify this in the kernel sources apart from a comment in Kconfig?
+Ben.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+> 
+> ---
+> diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/drivers/macintosh/Kconfig linux-2.6.19.1/drivers/macintosh/Kconfig
+> --- linux-2.6.19.1.orig/drivers/macintosh/Kconfig	2006-12-24 12:19:05.000000000 +0100
+> +++ linux-2.6.19.1/drivers/macintosh/Kconfig	2006-12-24 12:19:41.000000000 +0100
+> @@ -107,6 +107,15 @@ config PMAC_SMU
+>  	  on the "SMU" system control chip which replaces the old PMU.
+>  	  If you don't know, say Y.
+>  
+> +config PMAC_SMU_LED
+> +	tristate "Support for the PowerMac front LED"
+> +	depends on PMAC_SMU
+> +	select NEW_LEDS
+> +	select LEDS_CLASS
+> +	help
+> +	  Support the front LED on PowerMacs as a generic LED that can be
+> +	  triggered by any of the supported triggers.
+> +
+>  config PMAC_APM_EMU
+>  	tristate "APM emulation"
+>  	depends on PPC_PMAC && PPC32 && PM && ADB_PMU
+> diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/drivers/macintosh/Makefile linux-2.6.19.1/drivers/macintosh/Makefile
+> --- linux-2.6.19.1.orig/drivers/macintosh/Makefile	2006-12-24 12:19:05.000000000 +0100
+> +++ linux-2.6.19.1/drivers/macintosh/Makefile	2006-12-24 12:19:24.000000000 +0100
+> @@ -17,6 +17,7 @@ obj-$(CONFIG_PMAC_BACKLIGHT)	+= via-pmu-
+>  obj-$(CONFIG_ADB_CUDA)		+= via-cuda.o
+>  obj-$(CONFIG_PMAC_APM_EMU)	+= apm_emu.o
+>  obj-$(CONFIG_PMAC_SMU)		+= smu.o
+> +obj-$(CONFIG_PMAC_SMU_LED)	+= smu-led.o
+>  
+>  obj-$(CONFIG_ADB)		+= adb.o
+>  obj-$(CONFIG_ADB_MACII)		+= via-macii.o
+> diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/drivers/macintosh/smu-led.c linux-2.6.19.1/drivers/macintosh/smu-led.c
+> --- linux-2.6.19.1.orig/drivers/macintosh/smu-led.c	1970-01-01 01:00:00.000000000 +0100
+> +++ linux-2.6.19.1/drivers/macintosh/smu-led.c	2006-12-24 12:19:24.000000000 +0100
+> @@ -0,0 +1,91 @@
+> +/*
+> + * smu LED class device
+> + *
+> + * Copyright 2006 Michael Hanselmann <linux-kernel@hansmi.ch>
+> + *
+> + * This code is based upon via-pmu-led, written by Johannes Berg, and a sample
+> + * program written by Benjamin Herrenschmidt.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+> + * NON INFRINGEMENT.  See the GNU General Public License for more
+> + * details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+> + */
+> +
+> +#include <linux/types.h>
+> +#include <linux/kernel.h>
+> +#include <linux/device.h>
+> +#include <linux/leds.h>
+> +#include <asm/smu.h>
+> +
+> +static void smu_led_set(struct led_classdev *led_cdev,
+> +		enum led_brightness brightness)
+> +{
+> +	struct smu_simple_cmd cmd;
+> +	DECLARE_COMPLETION_ONSTACK(comp);
+> +	unsigned int value;
+> +	int rc;
+> +
+> +	switch (brightness) {
+> +	case LED_OFF:
+> +		value = 0;
+> +		break;
+> +
+> +	case LED_FULL:
+> +		value = 1;
+> +		break;
+> +
+> +	default:
+> +		return;
+> +	}
+> +
+> +	rc = smu_queue_simple(&cmd, SMU_CMD_MISC_ee_COMMAND, 3,
+> +		smu_done_complete, &comp,
+> +		SMU_CMD_MISC_ee_LEDS_CTRL, 0x00, value);
+> +	if (rc) {
+> +		printk(KERN_ERR "smu-led: "
+> +			"Queueing failed, error %d\n", rc);
+> +		return;
+> +	}
+> +
+> +	wait_for_completion(&comp);
+> +
+> +	if (cmd.cmd.status != 0) {
+> +		printk(KERN_ERR "smu-led: Setting LED value failed\n");
+> +		return;
+> +	}
+> +}
+> +
+> +static struct led_classdev smu_led = {
+> +	.name = "smu-front-led",
+> +	.brightness_set = smu_led_set,
+> +};
+> +
+> +static int __init smu_led_init(void)
+> +{
+> +	if (!smu_present())
+> +		return -ENODEV;
+> +
+> +	return led_classdev_register(NULL, &smu_led);
+> +}
+> +
+> +static void __exit smu_led_exit(void)
+> +{
+> +}
+> +
+> +module_init(smu_led_init);
+> +module_exit(smu_led_exit);
+> +
+> +MODULE_AUTHOR("Michael Hanselmann <linux-kernel@hansmi.ch>");
+> +MODULE_DESCRIPTION("Front LED support for SMU based PowerMacs");
+> +MODULE_LICENSE("GPL");
