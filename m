@@ -1,24 +1,23 @@
-Return-Path: <mark@glines.org>
-Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
-	by ozlabs.org (Postfix) with ESMTP id 681B7DDEA3
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 07:14:38 +1100 (EST)
-Message-ID: <45918294.3080303@glines.org>
-Date: Tue, 26 Dec 2006 12:14:12 -0800
-From: Mark Glines <mark@glines.org>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB76EDDEE1
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 08:09:32 +1100 (EST)
+Message-ID: <45918F77.1010806@pobox.com>
+Date: Tue, 26 Dec 2006 16:09:11 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: kurobox kernel
-References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
-	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
-	<45902A6F.4000100@glines.org>
-	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
-	<459046FE.9030008@glines.org>
-	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
-	<45905997.5080403@glines.org>
-	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0612260019430.3424@poirot.grange>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 1/14] Spidernet DMA coalescing
+References: <20061213210010.GR4329@austin.ibm.com>
+	<20061213210659.GA1915@austin.ibm.com>
+In-Reply-To: <20061213210659.GA1915@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd@arndb.de>,
+	netdev@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+	linuxppc-dev@ozlabs.org, Jens Osterkamp <Jens.Osterkamp@gmx.de>,
+	James K Lewis <jim@jklewis.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Guennadi Liakhovetski wrote:
-> On Mon, 25 Dec 2006, Mark Glines wrote:
+Linas Vepstas wrote:
+> The current driver code performs 512 DMA mappings of a bunch of 
+> 32-byte ring descriptor structures. This is silly, as they are 
+> all in contiguous memory. This patch changes the code to 
+> dma_map_coherent() each rx/tx ring as a whole.
 > 
->> Guennadi Liakhovetski wrote:
->>
->> Yes, I do very much intend to test it on real hardware.  I have a couple of
->> Kurobox HGs which desperately need a 21st century kernel.  I still need to
-> 
-> Ah, what a pity:-) I mean, it is good, but it's exactly the same hardware 
-> I developed this port for and tested on. So, it should be easy. If you 
-> have any problems with your setup, look in linkstation / kurobox mailing 
-> list archives, I posted some instructions there for setting up a suitable 
-> u-boot version. Or just ask me. Or I could even just send you binaries to 
-> start with. Do you have JTag?...
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> Cc: James K Lewis <jklewis@us.ibm.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
 
-No, I haven't made any hardware mods yet.
-
-Thanks for the offer.  Kernel binaries might actually help, just to make 
-sure the hardware and bootloader are working properly.
-
-The instructions on 
-http://www.linuxnotincluded.pwp.blueyonder.co.uk/linkstation/u-bootinstall.html 
-were a little broken in a few places, but still very helpful.  I've got 
-U-boot 1.1.4 up and running.  It's just booting the old 2.4.17_mvl21 
-from flash right now... 2.6.20-rc2 fails to boot.
-
-I have ordered some serial port voltage converters, which I hope to use 
-to get some diagnostics from the 2.6.20-rc2 kernel.  I don't hear any 
-disk activity, and I wasn't able to get netconsole working, so I think 
-it is dying fairly early in the boot process.  (At least, before PCI and 
-network are up.)
-
-Mark
+applied 1-13 of 14 to netdev-2.6.git#upstream
