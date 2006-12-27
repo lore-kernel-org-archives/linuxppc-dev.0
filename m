@@ -1,19 +1,30 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id C6FA6DDEE4
+Return-Path: <urwithsudheer@gmail.com>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id 7EE95DDEEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Dec 2006 07:53:51 +1100 (EST)
-Message-ID: <45918BCE.1010209@ru.mvista.com>
-Date: Tue, 26 Dec 2006 23:53:34 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Thu, 28 Dec 2006 01:18:47 +1100 (EST)
+Received: from [192.168.0.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 1B31C8780D3
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Dec 2006 06:18:45 -0800 (PST)
+Received: from gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
+	1.3.4.5154-maint13 $Rev: 5154 $) id r6cr061845-00-2
+	for linuxppc-embedded@ozlabs.org; Wed, 27 Dec 2006 06:18:45 -0800
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id D2C898780C2
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Dec 2006 06:18:44 -0800 (PST)
+Message-ID: <459280BD.40103@gmail.com>
+Date: Wed, 27 Dec 2006 19:48:37 +0530
+From: sudheer <urwithsudheer@gmail.com>
 MIME-Version: 1.0
-To: u-boot-users@lists.sourceforge.net
-Subject: Re: [U-Boot-Users] U-Boot allocating PCI I/O space from 0 (Was:
-	pata_sl82c105 can not	reserve IO region)
-References: <20061130165202.GA23205@aepfle.de>		<20061130171049.7b80a40c@localhost.localdomain>		<20061130184748.GA24071@aepfle.de>	<20061201183355.GA9701@aepfle.de>		<45707CF8.3090106@ru.mvista.com>		<1165010029.22108.10.camel@localhost.localdomain>		<20061201221525.7a741062@localhost.localdomain>	<1165011583.22108.17.camel@localhost.localdomain>	<45718F55.4080903@ru.mvista.com>
-	<4571AAE1.1020609@ru.mvista.com>
-In-Reply-To: <4571AAE1.1020609@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: sudheer <urwithsudheer@gmail.com>
+Subject: Re: regarding kgdb in ppc
+References: <12c9fc1a0611280820h748cd520pd5546e2803dbab82@mail.gmail.com>		<12c9fc1a0611292033p1c0ae010iadcf6afdd4a549ce@mail.gmail.com>		<d16b1c80611300036x36ec0009r2eb20ebbc6966a97@mail.gmail.com>		<12c9fc1a0611300924r406e95acie5c2053c1433ab33@mail.gmail.com>		<d16b1c80611301101n5f9ea44died47d2ff1bac4221@mail.gmail.com>		<12c9fc1a0611302029h36f29943s119f8ad70b95f2c4@mail.gmail.com>		<12c9fc1a0612010331p2c33c048j1af6006deda14abb@mail.gmail.com>		<d16b1c80612010540k7600f0e1n92fadd3d539d75bf@mail.gmail.com>	<12c9fc1a0612040805p64f23a7bj42fd27891294dfc2@mail.gmail.com>
+	<458E384A.108@gmail.com>
+In-Reply-To: <458E384A.108@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,63 +36,94 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
 
->>    Well, I'm having a very related issue with the U-Boot on MPC85xx: recently 
->>I've noticed that it started allocating PCI I/O space from 0 (while the older 
->>versions started from 0x1000). The IDE core can't tolerate this, giving me 
->>such messages on bootup:
+Hello All
+> I am able to debug the kernel on x86 systems. Thanks for all the support.
+>
+> Now I am working with  kgdb on mpc8540 board.
+> target kernel version - linux-2.6.13
+> KGDB version - linux-2.6.13-kgdb-2.3
+>
+> I am getting the following error:
+>
+> root@localhost sudheer]# /opt/eldk-3.1.1/usr/bin/ppc_85xx-gdb vmlinux
+> GNU gdb Red Hat Linux (6.3.0.0-1.21_1rh)
+> ...
+> This GDB was configured as "--host=i386-redhat-linux 
+> --target=ppc-linux"...
+> (gdb) set remotebaud 115200
+> (gdb) target remote /dev/ttyS0
+> Remote debugging using /dev/ttyS0
+> Ignoring packet error, continuing...
+>
+> On the target side, i could see that the target kernel kgdb waiting 
+> for host communication.
+>
+> On the target board with  kernel version - linux-2.6.13 , I could boot 
+> it only after applying the patches:
+> 1. Gain_Phy_update
+> 2.patch-2.6.14-rc5
+> 3.Phy_Platform_Update
+> The patch-2.6.14-rc5  when applied , deleted the file  
+> arch/ppc/platforms/pcore.c and
+> pcore.h but the kernel boots well.
+>
+> In the KGDB version - linux-2.6.13-kgdb-2.3
+> The ppc-lite.patch tries to modify the pcore.c which is not available.
+>
+> I am not sure wether this affects the serial communication establishment.
+>
+> Please help me to solve this.
+I am using the document kgdb_docu_full_2.4.pdf from  
+http://kgdb.linsyssoft.com/docu.htm.
+I have two issues before i look for serial communication establishment 
+b'n host and target.
 
->>PDC20269: inconsistent baseregs (BIOS) for port 0, skipping
+1.
+In the document it is said that one serial port is enough on the the 
+host and test machine. But in the below steps mentioned, the document 
+uses 2 serial ports. I have only one serial port on either side, one on 
+host and other on target board.
 
-    This is due to U-Boot assigning the PCI resources fram address 0 (which is 
-BTW illegal according to PCI 2.1).  I have a patch for drivers/pci_auto.c 
-which I'm going to post tomorrow...
+Can someone please clarify this.
 
->>when I have Promise Ultra133TX2 card inserted into PCI alone. I've looked thru 
->>the U-Boot sources and commit history but failed to locate the change that led 
->>to this...
+Details are below:
+In the document it is mentioned under the section "Prepare the kernel ",
 
->     It's actually much worse than just that. When I also plug in some other 
-> PCI card so Ultra133TX2 doesn't get the zero addresses anymore, I'm getting this:
+step 3 :
+[*] Simple selection of KGDB serial port
+(115200) Debug serial port baud rate
+(0) Serial port number for KGDB
 
-> eepro100.c: $Revision: 1.36 $ 2000/11/17 Modified by Andrey V. Savochkin
-> <saw@saw.sw.com.sg> and others
-> eth3: Invalid EEPROM checksum 0xfffe, check settings before activating this
-> device!
-> eth3: OEM i82557/i82558 10/100 Ethernet, 00:00:00:00:FF:FF, IRQ 52.
-> [...]
-> PDC20269: 100% native mode on irq 51
->      ide2: BM-DMA at 0x0060-0x0067, BIOS settings: hde:pio, hdf:pio
-> PDC20269: simplex device: DMA disabled
-> ide3: PDC20269 Bus-Master DMA disabled (BIOS)
+step:6
+kernel /boot/vmlinuz-2.6.13-kgdb ro root=/dev/hda1 kgdbwait 
+kgdb8250=1,115200
 
->     I've just verified that both these cards are working OK in x86 box
-> As for the simplex message, I've encountered this some months ago and it was 
-> caused by invalid programming of the MPC85xx bridge PCI/X outbound translation 
-> address register for the I/O space
+In section: "Connecting to Debug Kernel"
+step :1
+$ stty ispeed 115200 ospeed 115200 < /dev/ttyS1
 
-    No, the programming was valid. I've finally found the ultimate reason of 
-breakage -- it lies in board/*/init.S files.  The patch tomorrow...
+step:4
+Connect to the test machine using gdb command "target"
+(gdb) target remote /dev/ttyS0
 
-> or at least by the non-zero value of the 
-> bus I/O address in the "ranges" property of the bridge device node in the 
-> device tree...
+2. And the other issue is:
 
-    It was the real reason -- the arch/powerpc/ kernel just ignores ranges 
-with non-zero I/O port address.
+When i select ttyS0 for kgdb , test kernel hangs before kgdb starts.
+- - - - - - - - -
+.
+.
+TCP: Hash tables configured (established 16384 bind 16384)
+TCP reno registered
+TCP bic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+- - - - - - - - -
+when is select ttyS1 for kgdb, test kernel boots upto kgdb and then 
+kgdb  waits for remote connection.
 
-> I'm somewhat confused now since I know that the relevant U-Boot
-> code has been fixed but it looks like that made it only worse -- I was using 
-> the custom patched version of U-Boot before which missed that fix:
 
-> http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=commitdiff;h=97074ed9655309b64231bc2cee69fe85399f8055
+Please help me in solving this.
 
-    It was actually the following patch that broke PCI:
-
-http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=commit;h=52c7a68b8d587ebcf5a6b051b58b3d3ffa377ddc
-
-    There were other places relying on CFG_PCI1_IO_BASE and those weren't 
-changed... sigh. :-/
-
-WBR, Sergei
+Thanks
+Sudheer
