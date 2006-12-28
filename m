@@ -1,27 +1,28 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 4615ADDF15
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 09:31:49 +1100 (EST)
-Date: Thu, 28 Dec 2006 23:31:50 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Subject: 2.6.20-rc2: known regressions with patches available
-Message-ID: <20061228223150.GJ20714@stusta.de>
-References: <Pine.LNX.4.64.0612232043030.3671@woody.osdl.org>
+Return-Path: <mark@glines.org>
+Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
+	by ozlabs.org (Postfix) with ESMTP id 635D3DDEEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 10:28:39 +1100 (EST)
+Message-ID: <45945324.20805@glines.org>
+Date: Thu, 28 Dec 2006 15:28:36 -0800
+From: Mark Glines <mark@glines.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0612232043030.3671@woody.osdl.org>
-Cc: Laurent Riffard <laurent.riffard@free.fr>, petero2@telia.com,
-	Paul Moore <paul.moore@hp.com>, linuxppc-dev@ozlabs.org,
-	"Adam J. Richter" <adam@yggdrasil.com>,
-	Ben Collins <ben.collins@ubuntu.com>, jmorris@namei.org,
-	Avi Kivity <avi@qumranet.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	kvm-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-	Yu Luming <luming.yu@gmail.com>, Martin Pitt <martin.pitt@ubuntu.com>,
-	Michael Bommarito <mjbommar@umich.edu>,
-	Larry Finger <Larry.Finger@lwfinger.net>, sds@tycho.nsa.gov,
-	Parag Warudkar <paragw@paragw.zapto.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: kurobox kernel
+References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
+	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
+	<45902A6F.4000100@glines.org>
+	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
+	<459046FE.9030008@glines.org>
+	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
+	<45905997.5080403@glines.org>
+	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
+	<45918294.3080303@glines.org>
+	<Pine.LNX.4.60.0612262159180.3245@poirot.grange>
+	<45942EBF.5060201@glines.org>
+	<Pine.LNX.4.60.0612282206430.3942@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0612282206430.3942@poirot.grange>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,62 +32,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This email lists some known regressions in 2.6.20-rc2 compared to 2.6.19
-with patches available
+Guennadi Liakhovetski wrote:
+>> So, uh... is the *.dts file in 2.6.20-rc2 bad, or am I compiling it wrongly?
+>> (And is this normally done by hand, or as part of the kernel build process?)
+> 
+> That's ok. You DO have the "-f" which does produce an output. The error is 
+> because the "chosen" is not there, but this is how we need it for U-boot. 
+> 
+> It's done by hand.
+> 
+> So, you've done everything right! Congrats:-)
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+Great.  Any chance you can send me your kernel config?  My IDE support 
+isn't working, and I'd like to figure out why.
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+Usually I get:
 
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+linkstation: disarming the AVR watchdog:
+Root-NFS: No NFS server available, giving up.
+VFS: Unable to mount root fs via NFS, trying floppy.
+VFS: Cannot open root device "hda1" or unknown-block(2,0)
+Please append a correct "root=" boot option
+Kernel panic - not syncing: VFS: Unable to mount root fs on 
+unknown-block(2,0)
+  <0>Rebooting in 180 seconds..
 
-Subject    : selinux networking: sleeping function called from invalid context
-References : http://lkml.org/lkml/2006/12/24/78
-Submitter  : "Adam J. Richter" <adam@yggdrasil.com>
-Caused-By  : Paul Moore <paul.moore@hp.com>
-Handled-By : Parag Warudkar <paragw@paragw.zapto.org>
-Patch      : http://lkml.org/lkml/2006/12/24/89
-Status     : patch available
+But once, just once, when booting from a RAM build of uBoot, I got:
 
+hda: WDC WD3200JB-00KFA0, ATA DISK drive
+ide0 at 0xc9006e80-0xc9006e87,0xc9006e8a on irq 20
+hda: max request size: 64KiB
+hda: 625142448 sectors (320072 MB) w/8192KiB Cache, CHS=38913/255/63, 
+UDMA(100)
+hda: cache flushes supported
+  hda:<4>hda: dma_timer_expiry: dma status == 0x20
+hda: DMA timeout retry
+hda: timeout waiting for DMA
+hda: status error: status=0x7f { DriveReady DeviceFault SeekComplete 
+DataRequest CorrectedError Index Error }
+hda: status error: error=0x7f { DriveStatusError UncorrectableError 
+SectorIdNotFound TrackZeroNotFound AddrMarkNotFound }, 
+LBAsect=140185576636287, high=8355711, low=8355711, sector=0
+ide: failed opcode was: unknown
+hda: drive not ready for command
+ide0: reset: success
+hda: lost interrupt
+hda: lost interrupt
 
-Subject    : KVM Oops
-References : http://lkml.org/lkml/2006/12/27/171
-Submitter  : Parag Warudkar <kernel-stuff@comcast.net>
-Handled-By : Avi Kivity <avi@qumranet.com>
-Status     : patch available
+Thank goodness for netconsole.  I think it's especially interesting that 
+it thinks IDE0 is on irq 20, when the old 2.4.17 kernel says:
 
+hda: WDC WD3200JB-00KFA0, ATA DISK drive
+ide0 at 0xbffef8-0xbffeff,0xbffef6 on irq 17
 
-Subject    : drivers/macintosh/via-pmu-backlight.c compilation broken
-References : http://lkml.org/lkml/2006/12/24/49
-Submitter  : Andreas Schwab <schwab@suse.de>
-Caused-By  : Yu Luming <luming.yu@gmail.com>
-             commit 519ab5f2be65b72cf12ae99c89752bbe79b44df6
-Handled-By : Andreas Schwab <schwab@suse.de>
-Patch      : http://lkml.org/lkml/2006/12/24/49
-Status     : patch available
+Hmm... 2.6.20, irq20.  2.4.17, irq17.  Interesting coincidence.  Anyway, 
+it is either detected wrongly, or specified wrongly.  But your kernel 
+config would help me to make sure I'm at least using the right driver. :)
 
+Think it might be something I could work around by fiddling with the 
+interrupt-map in that kuroboxHG.dts file?  The IDE IRQ seems wrong, even 
+if the network port obviously works (though I bet netconsole transmits 
+even if the IRQ is wrong).  Are they allocated dynamically on this 
+architecture, or should I expect the IRQ numbers to be the same between 
+2.4 and 2.6?
 
-Subject    : NULL dereference in ieee80211softmac_get_network_by_bssid_locked
-             ieee80211softmac_wx.c typo: mutex_lock -> mutex_unlock
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7657
-             http://lkml.org/lkml/2006/12/16/141
-             http://lkml.org/lkml/2006/12/24/43
-Submitter  : Michael Bommarito <mjbommar@umich.edu>
-             Ben Collins <ben.collins@ubuntu.com>
-             Martin Pitt <martin.pitt@ubuntu.com>
-Handled-By : Michael Bommarito <mjbommar@umich.edu>
-             Larry Finger <Larry.Finger@lwfinger.net
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7657
-Status     : patches available
+Thanks,
 
-
-Subject    : BUG at drivers/scsi/scsi_lib.c:1118 by "pktsetup dvd /dev/sr0"
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7667
-Submitter  : Laurent Riffard <laurent.riffard@free.fr>
-Caused-By  : Christoph Hellwig <hch@lst.de>
-             commit 3b00315799d78f76531b71435fbc2643cd71ae4c
-Handled-By : Christoph Hellwig <hch@lst.de>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7667
-Status     : patch available
+Mark
