@@ -1,12 +1,25 @@
-Return-Path: <tmorrison@empirix.com>
+Return-Path: <mark@glines.org>
+Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
+	by ozlabs.org (Postfix) with ESMTP id 60B53DDF12
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 07:53:35 +1100 (EST)
+Message-ID: <45942EBF.5060201@glines.org>
+Date: Thu, 28 Dec 2006 12:53:19 -0800
+From: Mark Glines <mark@glines.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: MPC8548 PCI Express Support
-Date: Thu, 28 Dec 2006 15:04:20 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90105CF46AB@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: kurobox kernel
+References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
+	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
+	<45902A6F.4000100@glines.org>
+	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
+	<459046FE.9030008@glines.org>
+	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
+	<45905997.5080403@glines.org>
+	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
+	<45918294.3080303@glines.org>
+	<Pine.LNX.4.60.0612262159180.3245@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0612262159180.3245@poirot.grange>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,30 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Guennadi Liakhovetski wrote:
+> Look here: http://www.kurobox.com/revolution/downloads/contest/patchREADME 
+> for a somewhat rough README and here 
+> http://www.kurobox.com/revolution/downloads/contest/patches.zip are the 
+> patches (sorry about the zip - that was revolution's format of choice...)
 
-I am a newbie to this list. I have tried to search the=20
-list's archives to see if this has been discussed=20
-for ideas, and I do not see anything related to this.
+Thanks a bunch.  A RAM build of uBoot boots the old kernel fine, so I'll 
+replace my older uBoot with it.  The only trouble I had was stripping 
+carriage returns out of the patches in that zipfile; after that, 
+everything went pretty smoothly.
 
-I am working on a MPC8548 platform, which has a=20
-PLX 8532 PCI-Express chip on it.=20
+I noticed uBoot is looking for a *.dtb file, as well as the kernel 
+image.  The patchREADME refers to a "dtc" tool, but the URL it gives 
+(http://ozlabs.org/~dgibson/dtc/dtc.tar.gz) does not exist.  So I 
+googled and found git://ozlabs.org/srv/projects/dtc/dtc.git, and tried 
+to compile kuroboxHG.dts, with the command line specified within that file:
 
-I am using a 2.6.18.x linux kernel (x=3D6 at the moment)
+$ dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts
+DTC: dts->dtb  on file "kuroboxHG.dts"
+ERROR: Missing /chosen node
+Input tree has errors
 
-I saw there are patches for linux kernel for 2.6.11.x=20
-(via freescale), but I am hoping you guys know of something
-a little 'newer' than that (so I can patch a 2.6.18.6 kernel)
+So, uh... is the *.dts file in 2.6.20-rc2 bad, or am I compiling it 
+wrongly?  (And is this normally done by hand, or as part of the kernel 
+build process?)
 
-Also,l PLX supplies a linux driver, but it is module driven.=20
-I could put the module and associated 'loader' into the InitRD image=20
-(and load it up), but it would be 'neater' to have the support
-built-in to the kernel. Would you guys have any suggestions=20
-and/or experience with this?
+Thanks,
 
-Any/all suggestions and experiences shared are more than welcomed.=20
-
-All the best~!
-
-Tom Morrison
-tmorrison@empirix.com=20
+mark
