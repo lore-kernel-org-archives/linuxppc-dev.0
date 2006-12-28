@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 61281DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 08:15:25 +1100 (EST)
-Subject: Re: Chenging 2 bits in MSR in ppc6xx_idle() with 1 command?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.60.0612272135470.13342@poirot.grange>
-References: <Pine.LNX.4.60.0612252053410.3424@poirot.grange>
-	<1167176934.3522.15.camel@localhost.localdomain>
-	<Pine.LNX.4.60.0612272135470.13342@poirot.grange>
-Content-Type: text/plain
-Date: Thu, 28 Dec 2006 08:15:16 +1100
-Message-Id: <1167254116.23340.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tjernlund@tjernlund.se>
+Received: from csmtp1.b-one.net (csmtp.b-one.net [195.47.247.21])
+	by ozlabs.org (Postfix) with ESMTP id BECA0DDEF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 12:07:22 +1100 (EST)
+Received: from Jocke (84-217-7-200.tn.glocalnet.net [84.217.7.200])
+	by csmtp1.b-one.net (Postfix) with ESMTP id 0ADD51911ED99
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 01:45:26 +0100 (CET)
+From: "Tjernlund" <tjernlund@tjernlund.se>
+To: "'linuxppc-dev'" <linuxppc-dev@ozlabs.org>
+Subject: mpc83xx_restart() buggy
+Date: Thu, 28 Dec 2006 01:45:24 +0100
+Message-ID: <006401c72a19$7680a5c0$1e67a8c0@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+mpc83xx_restart() uses ioremap(), which doesn't like
+beeing called while in IRQ context. 
 
-> Hm, wouldn't it just work? In ppc6xx_idle() the _TLF_NAPPING bit is set. 
-> If as a result of mtmsr only the EE bit is set and we get an interrupt, we 
-> end up in transfer_to_handler(), check the flag, it is set, so we branch 
-> to power_save_6xx_restore(). There we clear NAP/DOZE and just jump to 
-> transfer_to_handler_cont(). Why did you say we'd miss the check for 
-> need_resched (on IRC)? How is this case difference from if we really did 
-> go to NAP / DOZE?
-> 
-> Are there other places in the kernel where we rely on setting MSR:POW and 
-> some other bit atomically?
+Calling mpc83xx_restart() in IRQ context yields OOPS
+which calls mpc83xx_restart() again and the loop never
+termintes.
 
-Indeed, the napping "recovery" code might save us here... funny, as it
-wasn't implemented to handle that case at all...
-
-Ben.
+ Jocke 
