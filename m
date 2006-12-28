@@ -1,19 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF238DDF05
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 15:45:41 +1100 (EST)
-Subject: Re: [PATCH] Do not write virq back to PCI config space (revised
-	patch).
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michal Ostrowski <mostrows@watson.ibm.com>
-In-Reply-To: <E1GzmfD-00076j-G2@arlx188.austin.ibm.com>
-References: <E1GzmfD-00076j-G2@arlx188.austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 28 Dec 2006 15:45:35 +1100
-Message-Id: <1167281135.23340.60.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <tmorrison@empirix.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: MPC8548 PCI Express Support
+Date: Thu, 28 Dec 2006 15:04:20 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90105CF46AB@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-embedded@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,49 +17,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-27 at 22:14 -0600, Michal Ostrowski wrote:
-> (Revised version, includes changes for 32 and 64 bit platforms.)
-> 
-> - Drivers will not rely on the PCI config space value, as they've
->   already been conditioned to rely on the irq field in "struct pci_dev".
-> 
-> - The virq value may not be < 256 as it has been remapped.
-> 
-> - The PCI config space should reflect the hardware configuration, which
->   is not being changed.  We are only creating a virtual irq mapping that
->   exists in the kernel only. One would never expect the PCI hardware to
->   generate the "virq" interrupt.
-> 
-> Signed-off-by: Michal Ostrowski <mostrows@watson.ibm.com>
+Hi,
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I am a newbie to this list. I have tried to search the=20
+list's archives to see if this has been discussed=20
+for ideas, and I do not see anything related to this.
 
-> ---
->  arch/powerpc/kernel/pci_32.c |    1 -
->  arch/powerpc/kernel/pci_64.c |    1 -
->  2 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-> index 0d9ff72..0df9126 100644
-> --- a/arch/powerpc/kernel/pci_32.c
-> +++ b/arch/powerpc/kernel/pci_32.c
-> @@ -1459,7 +1459,6 @@ int pci_read_irq_line(struct pci_dev *pci_dev)
->  		return -1;
->  	}
->  	pci_dev->irq = virq;
-> -	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
->  
->  	return 0;
->  }
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 9bae8a5..81a73fb 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -1305,7 +1305,6 @@ int pci_read_irq_line(struct pci_dev *pci_dev)
->  	DBG(" -> mapped to linux irq %d\n", virq);
->  
->  	pci_dev->irq = virq;
-> -	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
->  
->  	return 0;
->  }
+I am working on a MPC8548 platform, which has a=20
+PLX 8532 PCI-Express chip on it.=20
+
+I am using a 2.6.18.x linux kernel (x=3D6 at the moment)
+
+I saw there are patches for linux kernel for 2.6.11.x=20
+(via freescale), but I am hoping you guys know of something
+a little 'newer' than that (so I can patch a 2.6.18.6 kernel)
+
+Also,l PLX supplies a linux driver, but it is module driven.=20
+I could put the module and associated 'loader' into the InitRD image=20
+(and load it up), but it would be 'neater' to have the support
+built-in to the kernel. Would you guys have any suggestions=20
+and/or experience with this?
+
+Any/all suggestions and experiences shared are more than welcomed.=20
+
+All the best~!
+
+Tom Morrison
+tmorrison@empirix.com=20
