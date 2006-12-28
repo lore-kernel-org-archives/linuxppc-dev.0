@@ -1,38 +1,20 @@
-Return-Path: <mostrows@watson.ibm.com>
-Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23EB2DDEFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 15:10:10 +1100 (EST)
-Received: from sp1n293en1.watson.ibm.com (sp1n293en1.watson.ibm.com
-	[129.34.20.41])
-	by igw2.watson.ibm.com (8.12.11.20060308/8.13.1/8.13.1-2005-04-25 igw)
-	with ESMTP id kBS4BFvm017377
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 23:11:15 -0500
-Received: from sp1n293en1.watson.ibm.com (localhost [127.0.0.1])
-	by sp1n293en1.watson.ibm.com (AIX5.2/8.11.6p2/8.11.7/01-14-2004_2) with
-	ESMTP id kBS4A1R461432
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 23:10:01 -0500
-Received: from mgsmtp00.watson.ibm.com (mgsmtp00.watson.ibm.com [9.2.40.58])
-	by sp1n293en1.watson.ibm.com (AIX5.2/8.11.6p2/8.11.7/01-14-2004_1) with
-	ESMTP id kBS4A09239146
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 23:10:00 -0500
-Received: from kitch0.watson.ibm.com (kitch0.watson.ibm.com [9.2.224.107])
-	by mgsmtp00.watson.ibm.com (8.12.11/8.12.11/2005/09/01) with ESMTP id
-	kBS43wg7008825
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 23:03:58 -0500
-Received: from arlx188.austin.ibm.com (arlx188.austin.ibm.com [9.3.61.188])
-	by kitch0.watson.ibm.com (AIX5.3/8.11.6p2/8.11.0/03-06-2002) with ESMTP
-	id kBS49wA557122
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Dec 2006 23:09:58 -0500
-Received: from mostrows by arlx188.austin.ibm.com with local (Exim 4.50)
-	id 1GzmfD-00076j-G2
-	for linuxppc-dev@ozlabs.org; Wed, 27 Dec 2006 22:14:43 -0600
-Subject: [PATCH] Do not write virq back to PCI config space (revised patch).
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <E1GzmfD-00076j-G2@arlx188.austin.ibm.com>
-From: Michal Ostrowski <mostrows@watson.ibm.com>
-Date: Wed, 27 Dec 2006 22:14:43 -0600
+	by ozlabs.org (Postfix) with ESMTP id CF238DDF05
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 15:45:41 +1100 (EST)
+Subject: Re: [PATCH] Do not write virq back to PCI config space (revised
+	patch).
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michal Ostrowski <mostrows@watson.ibm.com>
+In-Reply-To: <E1GzmfD-00076j-G2@arlx188.austin.ibm.com>
+References: <E1GzmfD-00076j-G2@arlx188.austin.ibm.com>
+Content-Type: text/plain
+Date: Thu, 28 Dec 2006 15:45:35 +1100
+Message-Id: <1167281135.23340.60.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,48 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2006-12-27 at 22:14 -0600, Michal Ostrowski wrote:
+> (Revised version, includes changes for 32 and 64 bit platforms.)
+> 
+> - Drivers will not rely on the PCI config space value, as they've
+>   already been conditioned to rely on the irq field in "struct pci_dev".
+> 
+> - The virq value may not be < 256 as it has been remapped.
+> 
+> - The PCI config space should reflect the hardware configuration, which
+>   is not being changed.  We are only creating a virtual irq mapping that
+>   exists in the kernel only. One would never expect the PCI hardware to
+>   generate the "virq" interrupt.
+> 
+> Signed-off-by: Michal Ostrowski <mostrows@watson.ibm.com>
 
-(Revised version, includes changes for 32 and 64 bit platforms.)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-- Drivers will not rely on the PCI config space value, as they've
-  already been conditioned to rely on the irq field in "struct pci_dev".
-
-- The virq value may not be < 256 as it has been remapped.
-
-- The PCI config space should reflect the hardware configuration, which
-  is not being changed.  We are only creating a virtual irq mapping that
-  exists in the kernel only. One would never expect the PCI hardware to
-  generate the "virq" interrupt.
-
-Signed-off-by: Michal Ostrowski <mostrows@watson.ibm.com>
----
- arch/powerpc/kernel/pci_32.c |    1 -
- arch/powerpc/kernel/pci_64.c |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 0d9ff72..0df9126 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -1459,7 +1459,6 @@ int pci_read_irq_line(struct pci_dev *pci_dev)
- 		return -1;
- 	}
- 	pci_dev->irq = virq;
--	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 9bae8a5..81a73fb 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -1305,7 +1305,6 @@ int pci_read_irq_line(struct pci_dev *pci_dev)
- 	DBG(" -> mapped to linux irq %d\n", virq);
- 
- 	pci_dev->irq = virq;
--	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
- 
- 	return 0;
- }
--- 
-1.4.4.2
+> ---
+>  arch/powerpc/kernel/pci_32.c |    1 -
+>  arch/powerpc/kernel/pci_64.c |    1 -
+>  2 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+> index 0d9ff72..0df9126 100644
+> --- a/arch/powerpc/kernel/pci_32.c
+> +++ b/arch/powerpc/kernel/pci_32.c
+> @@ -1459,7 +1459,6 @@ int pci_read_irq_line(struct pci_dev *pci_dev)
+>  		return -1;
+>  	}
+>  	pci_dev->irq = virq;
+> -	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
+>  
+>  	return 0;
+>  }
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 9bae8a5..81a73fb 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -1305,7 +1305,6 @@ int pci_read_irq_line(struct pci_dev *pci_dev)
+>  	DBG(" -> mapped to linux irq %d\n", virq);
+>  
+>  	pci_dev->irq = virq;
+> -	pci_write_config_byte(pci_dev, PCI_INTERRUPT_LINE, virq);
+>  
+>  	return 0;
+>  }
