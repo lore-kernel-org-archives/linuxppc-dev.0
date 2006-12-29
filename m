@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 57C7FDDE06
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 08:53:03 +1100 (EST)
-Subject: Re: 2.6.20-rc2: kernel BUG at include/asm/dma-mapping.h:110!
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <je7iwa1l8a.fsf@sykes.suse.de>
-References: <je7iwa1l8a.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Sat, 30 Dec 2006 08:52:51 +1100
-Message-Id: <1167429171.23340.125.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTP id CF6D2DDE04
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 09:45:14 +1100 (EST)
+In-Reply-To: <006401c72a19$7680a5c0$1e67a8c0@Jocke>
+References: <006401c72a19$7680a5c0$1e67a8c0@Jocke>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <48D9A818-DDBF-4DF1-9F79-AE93EC476511@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: mpc83xx_restart() buggy
+Date: Fri, 29 Dec 2006 16:45:30 -0600
+To: Tjernlund <tjernlund@tjernlund.se>
+Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +25,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Bisecting has identified this commit:
-> 
-> commit 9b7d9c096dd4e4baacc21b2588662bbb56f36c4e
-> Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Date:   Wed Nov 22 21:44:34 2006 +0100
-> 
->     ieee1394: sbp2: convert from PCI DMA to generic DMA
->     
->     API conversion without change in functionality
->     
->     Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> 
-> 
-> I'm only seeing this on ppc64, ppc32 seems to be working fine.
+On Dec 27, 2006, at 6:45 PM, Tjernlund wrote:
 
-The patch looks totally bogus to me. It's passing a random struct device
-from the hbsp host data structure to the dma_map_* routines. which they
-can't do anything about.
+> mpc83xx_restart() uses ioremap(), which doesn't like
+> beeing called while in IRQ context.
+>
+> Calling mpc83xx_restart() in IRQ context yields OOPS
+> which calls mpc83xx_restart() again and the loop never
+> termintes.
 
-The dma_map_* routines only know about some bus types. That's always
-been the case (that's why you also can't pass a usb device's struct
-device to them for example). Mostly, PCI, possibly others depending on
-the platform.
+This is interesting, I know I've seen restart work properly w/o an  
+oops.  How are you causing the restart?
 
-So if you are to pass a struct device pointer to dma_map_*, use the one
-inside the pci_dev of the host. Or have the host driver provide you with
-the struct device pointer (which is the one from the pci_dev * for PCI
-implementations, and others give you what they are on, assuming the
-platform can do dma-* on that device).
-
-Ben.
+- k
