@@ -1,16 +1,14 @@
-Return-Path: <yang.reeve@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.229])
-	by ozlabs.org (Postfix) with ESMTP id 81FF1DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 11:46:02 +1100 (EST)
-Received: by nz-out-0506.google.com with SMTP id l1so2242451nzf
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 16:46:01 -0800 (PST)
-Message-ID: <198592450612281646y7de55a9ep3d0361f90abb0f94@mail.gmail.com>
-Date: Fri, 29 Dec 2006 00:46:00 +0000
-From: "Reeve Yang" <yang.reeve@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: spi_mpc83xx driver question
+Return-Path: <Wei.Zhang@freescale.com>
+Message-ID: <45947BA7.7000704@freescale.com>
+Date: Fri, 29 Dec 2006 10:21:27 +0800
+From: Zhang Wei <wei.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Subject: Re: MPC8548 PCI Express Support
+References: <BD261180E6D35F4D9D32F3E44FD3D90105CF46AB@EMPBEDEX.empirix.com>
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90105CF46AB@EMPBEDEX.empirix.com>
+Content-Type: text/plain; charset=GB18030; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,45 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi there,
+Yes, the MPC8548 patch for 2.6.18 is under development, please wait for 
+a while.
 
-I'm developing mmc driver based on spi_mpc83xx driver. Our mmc card is
-connect through SPI to mpc8343E. Now the SPI controller is up, but
-protocol driver has problem. I have following piece of code:
-
-static struct spi_driver spimmc_driver = {
-    .driver = {
-        .name = "spimmc",
-        .bus  = &spi_bus_type,
-        .owner = THIS_MODULE,
-    },
-    .probe = spimmc_probe,
-    .remove = __devexit_p(spimmc_remove),
-    .suspend = spimmc_suspend,
-    .resume = spimmc_resume,
-};
-
-static int __init spimmc_init (void)
-{
-    return spi_register_driver(&spimmc_driver);
-}
-module_init(spimmc_init);
-
-Looking at sysfs, the spimmc driver is there, but ".probe" has never
-been called. My question is, how this "probe" callback get called
-during init? What could be the reason for that guy not being called?
-
-If I call spimmc_probe driectly from spi_mpc83xx.c (for experiment),
-kernel failure happened during boot:
-
-[   26.484876] Badness in kref_get at lib/kref.c:32
-[   26.489627] Call trace: [c0004fb0]  [c0005200]  [c00048d0]
-[c00e3ad0]  [c010a780]  [c010af94]  [c013beec]  [c013b064]  [c013df68]
- [c0256474]  [c010bea
-[   26.508407] Oops: kernel access of bad area, sig: 11 [#1]
-
-I really need help from someone to explain it....
-
-Thanks.
-
-- Reeve
+Morrison, Tom wrote:
+> Hi,
+>
+> I am a newbie to this list. I have tried to search the 
+> list's archives to see if this has been discussed 
+> for ideas, and I do not see anything related to this.
+>
+> I am working on a MPC8548 platform, which has a 
+> PLX 8532 PCI-Express chip on it. 
+>
+> I am using a 2.6.18.x linux kernel (x=6 at the moment)
+>
+> I saw there are patches for linux kernel for 2.6.11.x 
+> (via freescale), but I am hoping you guys know of something
+> a little 'newer' than that (so I can patch a 2.6.18.6 kernel)
+>
+> Also,l PLX supplies a linux driver, but it is module driven. 
+> I could put the module and associated 'loader' into the InitRD image 
+> (and load it up), but it would be 'neater' to have the support
+> built-in to the kernel. Would you guys have any suggestions 
+> and/or experience with this?
+>
+> Any/all suggestions and experiences shared are more than welcomed. 
+>
+> All the best~!
+>
+> Tom Morrison
+> tmorrison@empirix.com 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>   
