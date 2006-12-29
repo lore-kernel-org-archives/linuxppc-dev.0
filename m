@@ -1,14 +1,30 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Message-ID: <45947BA7.7000704@freescale.com>
-Date: Fri, 29 Dec 2006 10:21:27 +0800
-From: Zhang Wei <wei.zhang@freescale.com>
+Return-Path: <mark@glines.org>
+Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
+	by ozlabs.org (Postfix) with ESMTP id 86F9BDDECB
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 13:52:15 +1100 (EST)
+Message-ID: <459482D8.6010706@glines.org>
+Date: Thu, 28 Dec 2006 18:52:08 -0800
+From: Mark Glines <mark@glines.org>
 MIME-Version: 1.0
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Subject: Re: MPC8548 PCI Express Support
-References: <BD261180E6D35F4D9D32F3E44FD3D90105CF46AB@EMPBEDEX.empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90105CF46AB@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=GB18030; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: kurobox kernel
+References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
+	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
+	<45902A6F.4000100@glines.org>
+	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
+	<459046FE.9030008@glines.org>
+	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
+	<45905997.5080403@glines.org>
+	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
+	<45918294.3080303@glines.org>
+	<Pine.LNX.4.60.0612262159180.3245@poirot.grange>
+	<45942EBF.5060201@glines.org>
+	<Pine.LNX.4.60.0612282206430.3942@poirot.grange>
+	<45945324.20805@glines.org>
+	<Pine.LNX.4.60.0612290127180.3942@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0612290127180.3942@poirot.grange>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,39 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yes, the MPC8548 patch for 2.6.18 is under development, please wait for 
-a while.
+Guennadi Liakhovetski wrote:
+> My config is in the kernel - arch/powerpc/configs/linkstation_defconfig.
 
-Morrison, Tom wrote:
-> Hi,
->
-> I am a newbie to this list. I have tried to search the 
-> list's archives to see if this has been discussed 
-> for ideas, and I do not see anything related to this.
->
-> I am working on a MPC8548 platform, which has a 
-> PLX 8532 PCI-Express chip on it. 
->
-> I am using a 2.6.18.x linux kernel (x=6 at the moment)
->
-> I saw there are patches for linux kernel for 2.6.11.x 
-> (via freescale), but I am hoping you guys know of something
-> a little 'newer' than that (so I can patch a 2.6.18.6 kernel)
->
-> Also,l PLX supplies a linux driver, but it is module driven. 
-> I could put the module and associated 'loader' into the InitRD image 
-> (and load it up), but it would be 'neater' to have the support
-> built-in to the kernel. Would you guys have any suggestions 
-> and/or experience with this?
->
-> Any/all suggestions and experiences shared are more than welcomed. 
->
-> All the best~!
->
-> Tom Morrison
-> tmorrison@empirix.com 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->   
+Note that it's already pretty far out of date, if you do a "make 
+oldconfig" on it... I guess linux is a pretty fast-moving target. :)
+
+
+> And I don't use IDE, I use PATA, and it works good, I also had problems 
+> with IDE, although, not as bad as you describe. Also, you, certainly, need 
+> root=/dev/sda1, not hda1, change it in your U-boot environment. As for 
+
+Hmm.  I have both PATA and IDE enabled... that's probably why its 
+breaking so badly.  Thanks for the tip, I'll give it a try tomorrow morning.
+
+Mark
