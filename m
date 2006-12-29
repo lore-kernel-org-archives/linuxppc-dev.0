@@ -1,29 +1,20 @@
-Return-Path: <mark@glines.org>
-Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
-	by ozlabs.org (Postfix) with ESMTP id 86F9BDDECB
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 13:52:15 +1100 (EST)
-Message-ID: <459482D8.6010706@glines.org>
-Date: Thu, 28 Dec 2006 18:52:08 -0800
-From: Mark Glines <mark@glines.org>
-MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: kurobox kernel
-References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
-	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
-	<45902A6F.4000100@glines.org>
-	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
-	<459046FE.9030008@glines.org>
-	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
-	<45905997.5080403@glines.org>
-	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
-	<45918294.3080303@glines.org>
-	<Pine.LNX.4.60.0612262159180.3245@poirot.grange>
-	<45942EBF.5060201@glines.org>
-	<Pine.LNX.4.60.0612282206430.3942@poirot.grange>
-	<45945324.20805@glines.org>
-	<Pine.LNX.4.60.0612290127180.3942@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0612290127180.3942@poirot.grange>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <pochini@shiny.it>
+Received: from smtp-out12.alice.it (smtp-out12.alice.it [85.37.17.107])
+	by ozlabs.org (Postfix) with ESMTP id 330E2DDDEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 03:52:08 +1100 (EST)
+Date: Fri, 29 Dec 2006 17:51:59 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: 2 CPUs, but only one is used
+Message-Id: <20061229175159.4c7cb7bb.pochini@shiny.it>
+In-Reply-To: <20061225055251.GR15713@localdomain>
+References: <20061217144127.579f01f0.pochini@shiny.it>
+	<20061220003545.7053b05c.pochini@shiny.it>
+	<20061220141655.GJ15713@localdomain>
+	<20061224175852.1b52740a.pochini@shiny.it>
+	<20061225055251.GR15713@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,18 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Guennadi Liakhovetski wrote:
-> My config is in the kernel - arch/powerpc/configs/linkstation_defconfig.
+[I resend this msg because I didn't receive it back from the lppc ml]
 
-Note that it's already pretty far out of date, if you do a "make 
-oldconfig" on it... I guess linux is a pretty fast-moving target. :)
+On Sun, 24 Dec 2006 23:52:51 -0600
+Nathan Lynch <ntl@pobox.com> wrote:
+
+> > At the end of kernel/cpu.c::cpu_up() both cpus are set as present, possible
+> > and online. The problem is that in kernel/sched.c::find_idlest_group()
+> > p->cpus_allowed is always 1 (it should be 3). I tried to put a dump_stack()
+> > or a printk(mask) in set_cpu_mask() but it crashes badly when mask is not 3,
+> > ie. anything different from khelper or kthread, so I couldn't know what sets
+> > the wrong cpumask.
+> 
+> Does this fix it?
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index b515e3c..3c8b1c5 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -6875,7 +6875,7 @@ void __init sched_init_smp(void)
+>  
+>  	lock_cpu_hotplug();
+>  	arch_init_sched_domains(&cpu_online_map);
+> -	cpus_andnot(non_isolated_cpus, cpu_online_map, cpu_isolated_map);
+> +	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
+>  	if (cpus_empty(non_isolated_cpus))
+>  		cpu_set(smp_processor_id(), non_isolated_cpus);
+>  	unlock_cpu_hotplug();
+
+Yes, it does. I also tested if tasks are migrated to/off cpu1 when I
+enable/disable it and when I boot with or without maxcpus=1. It seems to
+work correctly in all cases. Thank you.
 
 
-> And I don't use IDE, I use PATA, and it works good, I also had problems 
-> with IDE, although, not as bad as you describe. Also, you, certainly, need 
-> root=/dev/sda1, not hda1, change it in your U-boot environment. As for 
-
-Hmm.  I have both PATA and IDE enabled... that's probably why its 
-breaking so badly.  Thanks for the tip, I'll give it a try tomorrow morning.
-
-Mark
+--
+Giuliano.
