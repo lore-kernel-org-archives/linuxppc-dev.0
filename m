@@ -1,29 +1,16 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id EB7FFDDDEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 11:31:29 +1100 (EST)
-Date: Fri, 29 Dec 2006 01:31:38 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Mark Glines <mark@glines.org>
-Subject: Re: kurobox kernel
-In-Reply-To: <45945324.20805@glines.org>
-Message-ID: <Pine.LNX.4.60.0612290127180.3942@poirot.grange>
-References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
-	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
-	<45902A6F.4000100@glines.org>
-	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
-	<459046FE.9030008@glines.org>
-	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
-	<45905997.5080403@glines.org>
-	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
-	<45918294.3080303@glines.org>
-	<Pine.LNX.4.60.0612262159180.3245@poirot.grange>
-	<45942EBF.5060201@glines.org>
-	<Pine.LNX.4.60.0612282206430.3942@poirot.grange>
-	<45945324.20805@glines.org>
+Return-Path: <yang.reeve@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.229])
+	by ozlabs.org (Postfix) with ESMTP id 81FF1DDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Dec 2006 11:46:02 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so2242451nzf
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Dec 2006 16:46:01 -0800 (PST)
+Message-ID: <198592450612281646y7de55a9ep3d0361f90abb0f94@mail.gmail.com>
+Date: Fri, 29 Dec 2006 00:46:00 +0000
+From: "Reeve Yang" <yang.reeve@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: spi_mpc83xx driver question
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,40 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 28 Dec 2006, Mark Glines wrote:
+Hi there,
 
-> Guennadi Liakhovetski wrote:
-> >> So, uh... is the *.dts file in 2.6.20-rc2 bad, or am I compiling it wrongly?
-> >> (And is this normally done by hand, or as part of the kernel build process?)
-> > 
-> > That's ok. You DO have the "-f" which does produce an output. The error is 
-> > because the "chosen" is not there, but this is how we need it for U-boot. 
-> > 
-> > It's done by hand.
-> > 
-> > So, you've done everything right! Congrats:-)
-> 
-> Great.  Any chance you can send me your kernel config?  My IDE support 
-> isn't working, and I'd like to figure out why.
+I'm developing mmc driver based on spi_mpc83xx driver. Our mmc card is
+connect through SPI to mpc8343E. Now the SPI controller is up, but
+protocol driver has problem. I have following piece of code:
 
-My config is in the kernel - arch/powerpc/configs/linkstation_defconfig.
-And I don't use IDE, I use PATA, and it works good, I also had problems 
-with IDE, although, not as bad as you describe. Also, you, certainly, need 
-root=/dev/sda1, not hda1, change it in your U-boot environment. As for 
-interrupt numbers - they are correct, and they are (pretty) arbitrary, 
-allocated dynamically. I have:
+static struct spi_driver spimmc_driver = {
+    .driver = {
+        .name = "spimmc",
+        .bus  = &spi_bus_type,
+        .owner = THIS_MODULE,
+    },
+    .probe = spimmc_probe,
+    .remove = __devexit_p(spimmc_remove),
+    .suspend = spimmc_suspend,
+    .resume = spimmc_resume,
+};
 
-lyakh@KURO-BOX:~$ cat /proc/interrupts
-           CPU0
- 16:          0   EPIC      Level     serial
- 17:        230   EPIC      Edge      serial
- 18:       1747   EPIC      Level     i2c-mpc
- 19:     142193   EPIC      Level     eth0
- 20:       1764   EPIC      Level     libata
- 21:    1309856   EPIC      Level     ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd:usb3
-BAD:         15
+static int __init spimmc_init (void)
+{
+    return spi_register_driver(&spimmc_driver);
+}
+module_init(spimmc_init);
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Looking at sysfs, the spimmc driver is there, but ".probe" has never
+been called. My question is, how this "probe" callback get called
+during init? What could be the reason for that guy not being called?
+
+If I call spimmc_probe driectly from spi_mpc83xx.c (for experiment),
+kernel failure happened during boot:
+
+[   26.484876] Badness in kref_get at lib/kref.c:32
+[   26.489627] Call trace: [c0004fb0]  [c0005200]  [c00048d0]
+[c00e3ad0]  [c010a780]  [c010af94]  [c013beec]  [c013b064]  [c013df68]
+ [c0256474]  [c010bea
+[   26.508407] Oops: kernel access of bad area, sig: 11 [#1]
+
+I really need help from someone to explain it....
+
+Thanks.
+
+- Reeve
