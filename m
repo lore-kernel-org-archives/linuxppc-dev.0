@@ -1,20 +1,29 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp-out12.alice.it (smtp-out12.alice.it [85.37.17.107])
-	by ozlabs.org (Postfix) with ESMTP id 330E2DDDEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 03:52:08 +1100 (EST)
-Date: Fri, 29 Dec 2006 17:51:59 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: 2 CPUs, but only one is used
-Message-Id: <20061229175159.4c7cb7bb.pochini@shiny.it>
-In-Reply-To: <20061225055251.GR15713@localdomain>
-References: <20061217144127.579f01f0.pochini@shiny.it>
-	<20061220003545.7053b05c.pochini@shiny.it>
-	<20061220141655.GJ15713@localdomain>
-	<20061224175852.1b52740a.pochini@shiny.it>
-	<20061225055251.GR15713@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <mark@glines.org>
+Received: from squawk.glines.org (squawk.glines.org [72.36.206.66])
+	by ozlabs.org (Postfix) with ESMTP id EAFAEDDE08
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 04:59:18 +1100 (EST)
+Message-ID: <45955760.6020306@glines.org>
+Date: Fri, 29 Dec 2006 09:58:56 -0800
+From: Mark Glines <mark@glines.org>
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: kurobox kernel
+References: <fa.ne7N9dqjDz5qS4D/fowPKdPc4ZY@ifi.uio.no>
+	<fa.pM17YEcICUlveSt/vbSKGv6sFWk@ifi.uio.no>
+	<45902A6F.4000100@glines.org>
+	<Pine.LNX.4.60.0612252128530.3424@poirot.grange>
+	<459046FE.9030008@glines.org>
+	<Pine.LNX.4.60.0612252349040.3424@poirot.grange>
+	<45905997.5080403@glines.org>
+	<Pine.LNX.4.60.0612260019430.3424@poirot.grange>
+	<45918294.3080303@glines.org>
+	<Pine.LNX.4.60.0612262159180.3245@poirot.grange>
+	<45942EBF.5060201@glines.org>
+	<Pine.LNX.4.60.0612282206430.3942@poirot.grange>
+	<45945324.20805@glines.org>
+	<Pine.LNX.4.60.0612290127180.3942@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0612290127180.3942@poirot.grange>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,38 +34,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[I resend this msg because I didn't receive it back from the lppc ml]
-
-On Sun, 24 Dec 2006 23:52:51 -0600
-Nathan Lynch <ntl@pobox.com> wrote:
-
-> > At the end of kernel/cpu.c::cpu_up() both cpus are set as present, possible
-> > and online. The problem is that in kernel/sched.c::find_idlest_group()
-> > p->cpus_allowed is always 1 (it should be 3). I tried to put a dump_stack()
-> > or a printk(mask) in set_cpu_mask() but it crashes badly when mask is not 3,
-> > ie. anything different from khelper or kthread, so I couldn't know what sets
-> > the wrong cpumask.
+Guennadi Liakhovetski wrote:
+> My config is in the kernel - arch/powerpc/configs/linkstation_defconfig.
+> And I don't use IDE, I use PATA, and it works good, I also had problems 
+> with IDE, although, not as bad as you describe. Also, you, certainly, need 
+> root=/dev/sda1, not hda1, change it in your U-boot environment. As for 
+> interrupt numbers - they are correct, and they are (pretty) arbitrary, 
+> allocated dynamically. I have:
 > 
-> Does this fix it?
+> lyakh@KURO-BOX:~$ cat /proc/interrupts
+>            CPU0
+>  16:          0   EPIC      Level     serial
+>  17:        230   EPIC      Edge      serial
+>  18:       1747   EPIC      Level     i2c-mpc
+>  19:     142193   EPIC      Level     eth0
+>  20:       1764   EPIC      Level     libata
+>  21:    1309856   EPIC      Level     ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd:usb3
+> BAD:         15
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b515e3c..3c8b1c5 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6875,7 +6875,7 @@ void __init sched_init_smp(void)
->  
->  	lock_cpu_hotplug();
->  	arch_init_sched_domains(&cpu_online_map);
-> -	cpus_andnot(non_isolated_cpus, cpu_online_map, cpu_isolated_map);
-> +	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
->  	if (cpus_empty(non_isolated_cpus))
->  		cpu_set(smp_processor_id(), non_isolated_cpus);
->  	unlock_cpu_hotplug();
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
 
-Yes, it does. I also tested if tasks are migrated to/off cpu1 when I
-enable/disable it and when I boot with or without maxcpus=1. It seems to
-work correctly in all cases. Thank you.
+Thanks, disabling IDE worked.  It took a couple tries due to a Makefile 
+issue (or misunderstanding on my part)... see below.  Now I get to 
+figure out why my Gentoo userspace won't boot, which I think is beyond 
+the scope of this list :)
+
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+linkstation: disarming the AVR watchdog:
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem) readonly.
+Freeing unused kernel memory: 140k init
+Synchronizing SCSI cache for disk sda:
+Restarting system.
 
 
---
-Giuliano.
+One issue I ran into is that "make zImage" does not rebuild an existing 
+image, but "make uImage" does... I think the Makefile is missing a 
+dependency.  I'll send a patch if I debug this further.  I know the 
+"zImage" rule is just there for convenience, but apparently zImage is a 
+deeply ingrained habit for me.
+
+paranoid@kuro-2 /usr/src/linux $ make zImage
+   CHK     include/linux/version.h
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CHK     include/linux/utsrelease.h
+   CC      init/main.o
+   CC      init/version.o
+   LD      init/built-in.o
+   CC      fs/proc/proc_misc.o
+   LD      fs/proc/proc.o
+   LD      fs/proc/built-in.o
+   LD      fs/built-in.o
+   GEN     .version
+   LD      .tmp_vmlinux1
+   KSYM    .tmp_kallsyms1.S
+   AS      .tmp_kallsyms1.o
+   LD      .tmp_vmlinux2
+   KSYM    .tmp_kallsyms2.S
+   AS      .tmp_kallsyms2.o
+   LD      vmlinux
+   SYSMAP  System.map
+   SYSMAP  .tmp_System.map
+   MODPOST vmlinux
+make[1]: `arch/powerpc/boot/zImage' is up to date.
+paranoid@kuro-2 /usr/src/linux $ make uImage
+   CHK     include/linux/version.h
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CHK     include/linux/utsrelease.h
+   CC      init/main.o
+   CC      init/version.o
+   LD      init/built-in.o
+   CC      fs/proc/proc_misc.o
+   LD      fs/proc/proc.o
+   LD      fs/proc/built-in.o
+   LD      fs/built-in.o
+   GEN     .version
+   LD      .tmp_vmlinux1
+   KSYM    .tmp_kallsyms1.S
+   AS      .tmp_kallsyms1.o
+   LD      .tmp_vmlinux2
+   KSYM    .tmp_kallsyms2.S
+   AS      .tmp_kallsyms2.o
+   LD      vmlinux
+   SYSMAP  System.map
+   SYSMAP  .tmp_System.map
+   MODPOST vmlinux
+   WRAP    arch/powerpc/boot/uImage
+Image Name:   Linux-2.6.20-rc2-kuroboxHG
+Created:      Fri Dec 29 09:43:09 2006
+Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+Data Size:    1624545 Bytes = 1586.47 kB = 1.55 MB
+Load Address: 0x00000000
+Entry Point:  0x00000000
+
+Mark
