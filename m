@@ -1,18 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 28899DDDFB
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 21:49:22 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Scott Wood'" <scottwood@freescale.com>,
-	"'Kumar Gala'" <galak@kernel.crashing.org>
-Subject: RE: mpc83xx_restart() buggy
-Date: Sat, 30 Dec 2006 11:49:14 +0100
-Message-ID: <012101c72c00$256bc370$1e67a8c0@Jocke>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ABF36DDDFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Dec 2006 23:41:25 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2.6.20-rc2: kernel BUG at include/asm/dma-mapping.h:110!
+References: <je7iwa1l8a.fsf@sykes.suse.de>
+	<1167429171.23340.125.camel@localhost.localdomain>
+	<tkrat.f159c58fec599d72@s5r6.in-berlin.de>
+Date: Sat, 30 Dec 2006 13:41:16 +0100
+In-Reply-To: <tkrat.f159c58fec599d72@s5r6.in-berlin.de> (Stefan Richter's
+	message of "Fri, 29 Dec 2006 23:47:04 +0100 (CET)")
+Message-ID: <jehcvdo8sz.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <45959EFC.4040404@freescale.com>
-Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux1394-devel@lists.sourceforge.net,
+	Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: 
-> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
-> abs.org] On Behalf Of Scott Wood
-> Sent: den 30 december 2006 00:04
-> To: Kumar Gala
-> Cc: Tjernlund; 'linuxppc-dev'
-> Subject: Re: mpc83xx_restart() buggy
-> 
-> Kumar Gala wrote:
-> > On Dec 27, 2006, at 6:45 PM, Tjernlund wrote:
-> >>mpc83xx_restart() uses ioremap(), which doesn't like
-> >>beeing called while in IRQ context.
-> >>
-> >>Calling mpc83xx_restart() in IRQ context yields OOPS
-> >>which calls mpc83xx_restart() again and the loop never
-> >>termintes.
-> > 
-> > This is interesting, I know I've seen restart work properly w/o an  
-> > oops.  How are you causing the restart?
-> 
-> sysrq-b triggers it, as probably does crashing from an 
-> interrupt handler 
-> with panic_timeout nonzero.  You'll need CONFIG_DEBUG_SPINLOCK_SLEEP 
-> turned on, of course.
+Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
-For me it was http://ozlabs.org/pipermail/linuxppc-dev/2006-December/029414.html
+> The parent device of my bogus fw-host device should do the trick. Alas I
+> can't test on ppc64 or with anything else than ohci1394 driven
+> controllers...
 
-ucc_geth_timeout() is buggy and so is ucc_geth_start_xmit(), needs to 
-return NETDEV_TX_BUSY or NETDEV_TX_OK.
+Successfully tested on ppc64.
 
- Jocke
+Thanks, Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
