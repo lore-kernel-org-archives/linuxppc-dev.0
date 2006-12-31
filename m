@@ -1,95 +1,137 @@
-Return-Path: <vsampath@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id 58204DDDF8
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 31 Dec 2006 12:53:04 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id p76so3420307pyb
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Dec 2006 17:53:02 -0800 (PST)
-Message-ID: <758a2bbf0612301753q27727b01w92681214a6296434@mail.gmail.com>
-Date: Sat, 30 Dec 2006 17:53:02 -0800
-From: "Vijay Sampath" <vsampath@gmail.com>
-To: sudheer <urwithsudheer@gmail.com>
-Subject: Re: regarding kgdb in ppc
-In-Reply-To: <45964D27.6020708@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <12c9fc1a0611280820h748cd520pd5546e2803dbab82@mail.gmail.com>
-	<d16b1c80611301101n5f9ea44died47d2ff1bac4221@mail.gmail.com>
-	<12c9fc1a0611302029h36f29943s119f8ad70b95f2c4@mail.gmail.com>
-	<12c9fc1a0612010331p2c33c048j1af6006deda14abb@mail.gmail.com>
-	<d16b1c80612010540k7600f0e1n92fadd3d539d75bf@mail.gmail.com>
-	<12c9fc1a0612040805p64f23a7bj42fd27891294dfc2@mail.gmail.com>
-	<458E384A.108@gmail.com>
-	<198592450612281634l3e71834i5915139a73e8f5d1@mail.gmail.com>
-	<758a2bbf0612281702u3a4f383bi14e418410bd4f912@mail.gmail.com>
-	<45964D27.6020708@gmail.com>
-Cc: kernelnewbies@nl.linux.org, linuxppc-embedded@ozlabs.org
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <SRS0+12e7f6f5bd17923d3fc9+1225+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 74351DDDF5
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Jan 2007 02:15:58 +1100 (EST)
+Subject: [PATCH] Fix manual assembly WARN_ON() in enter_rtas().
+From: David Woodhouse <dwmw2@infradead.org>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Sun, 31 Dec 2006 15:15:49 +0000
+Message-Id: <1167578149.22068.325.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Jeremy Fitzhardinge <jeremy@goop.org>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry no idea. The configuration and options for kgdb are different in
-my architecture. In make menuconfig, under "Kernel Hacking', I enable
-kgdb and choose its serial port (ttyS0 or ttyS1). After this if I just
-pass a string with "kgdb" in it in the commandline, it halts early on.
-Looks like kgdb function is different in your architecture. You will
-have to read the code that implements your kgdb setup. Clearly it is
-not happy with the arguments you are passing it, as evident in the
-output.
+When we switched over to the generic BUG mechanism we forgot to change
+the assembly code which open-codes a WARN_ON() in enter_rtas(), so the
+bug table got corrupted.
 
-BTW I am using Linux kernel version 2.6.16 on a IBM405EP board. kgdb
-breakpoint is setup in setup_arch() in arch/ppc/kernel/setup.c. Note I
-also enabled CONFIG_WANT_EARLY_SERIAL in the processor configuration.
-Not sure if this is important.
+This patch provides an EMIT_BUG_ENTRY macro for use in assembly code,
+and uses it in entry_64.S. Tested with CONFIG_DEBUG_BUGVERBOSE on ppc64
+but not without -- I tried to turn it off but it wouldn't go away; I
+suspect Aunt Tillie probably needed it.
 
-Vijay
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-On 12/30/06, sudheer <urwithsudheer@gmail.com> wrote:
-> Vijay, Thanks  for the reply.
-> But before trying these options i want to clear one more issue.
-> While booting the kgdb kernel the kernel claims "kgdb initialisation
-> failure." I have observed it very lately.
->
-> Memory CAM mapping: CAM0=256Mb, CAM1=0Mb, CAM2=0Mb residual: 0Mb
-> Linux version 2.6.15.5 (root@Sudheer) (gcc version 3.4.4) #2 Fri Dec 29 17:58:40 IST
-> 2006
-> KGDB cannot initialize I/O yet.
-> Invalid syntax for option kgdb8250=
-> Malformed early option 'kgdb8250'
-> Built 1 zonelists
-> Kernel command line: console=ttyS0,115200 root=/dev/ram rw kgdbwait kgdb8250=0,115200
-> OpenPIC Version 1.2 (1 CPUs and 60 IRQ sources) at fcfbb000
-> PID hash table entries: 2048 (order: 11, 32768 bytes)
-> Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
->
->
->
->
-> I have changed the kgdb8250 arg to 1,0, but the result is same.
-> And ......
-> I have checked the serial cable NULL Mode connecting  x86 systems
-> serially- with Cat and echo and this is fine.
-> When i try with Unpatched kernel on target and host(x86) - cat <
-> /dev/ttyS0 doesnt wait  and returns to prompt.
-> I tried with 2.6.13 and 2.6.15.5 with resepective kgdb patches, but the
-> result is same (kgdb Initialization failure). I am not sure where  am
-> doing the mistake.
-> Please guide me in right way and also please let me know if any  more
-> details are required.
-> Happy New Year in Advance.
->
-> Thanks
-> Sudheer
->
->
->
->
->
->
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index e965215..030d300 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -303,5 +303,8 @@ int main(void)
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+ 	DEFINE(CLOCK_REALTIME_RES, TICK_NSEC);
+ 
++#ifdef CONFIG_BUG
++	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
++#endif
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 1a3d4de..942bb58 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -28,6 +28,7 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/cputable.h>
+ #include <asm/firmware.h>
++#include <asm/bug.h>
+ 
+ /*
+  * System calls.
+@@ -634,19 +635,15 @@ _GLOBAL(enter_rtas)
+ 	li	r0,0
+ 	mtcr	r0
+ 
++#ifdef CONFIG_BUG	
+ 	/* There is no way it is acceptable to get here with interrupts enabled,
+ 	 * check it with the asm equivalent of WARN_ON
+ 	 */
+ 	lbz	r0,PACASOFTIRQEN(r13)
+ 1:	tdnei	r0,0
+-.section __bug_table,"a"
+-	.llong	1b,__LINE__ + 0x1000000, 1f, 2f
+-.previous
+-.section .rodata,"a"
+-1:	.asciz	__FILE__
+-2:	.asciz "enter_rtas"
+-.previous
+-
++	EMIT_BUG_ENTRY 1b,BUGFLAG_WARNING
++#endif
++	
+ 	/* Hard-disable interrupts */
+ 	mfmsr	r6
+ 	rldicl	r7,r6,48,1
+diff --git a/include/asm-powerpc/bug.h b/include/asm-powerpc/bug.h
+index 7095688..1bb1129 100644
+--- a/include/asm-powerpc/bug.h
++++ b/include/asm-powerpc/bug.h
+@@ -11,10 +11,33 @@
+ #define BUG_OPCODE .long 0x00b00b00  /* For asm */
+ #define BUG_ILLEGAL_INSTR "0x00b00b00" /* For BUG macro */
+ 
+-#ifndef __ASSEMBLY__
+-
+ #ifdef CONFIG_BUG
+ 
++#ifdef __ASSEMBLY__
++/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
++   sizeof(struct bug_entry), respectively */
++#ifdef CONFIG_DEBUG_BUGVERBOSE
++.macro EMIT_BUG_ENTRY addr,flags
++	 .section __bug_table,"a"
++5001:	 PPC_LONG \addr, 5002f
++	 .short __LINE__, \flags
++	 .org 5001b+BUG_ENTRY_SIZE
++	 .previous
++	 .section .rodata,"a"
++5002:	 .asciz __FILE__
++	 .previous
++.endm
++#else
++.macro EMIT_BUG_ENTRY addr,flags
++	 .section __bug_table,"a"
++5001:	 PPC_LONG \addr
++	 .short \flags
++	 .org 5001b+BUG_ENTRY_SIZE
++	 .previous
++.endm
++#endif /* verbose */
++
++#else /* !__ASSEMBLY__ */
+ /* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+    sizeof(struct bug_entry), respectively */
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+@@ -91,8 +114,8 @@
+ #define HAVE_ARCH_BUG
+ #define HAVE_ARCH_BUG_ON
+ #define HAVE_ARCH_WARN_ON
+-#endif /* CONFIG_BUG */
+ #endif /* __ASSEMBLY __ */
++#endif /* CONFIG_BUG */
+ 
+ #include <asm-generic/bug.h>
+ 
+
+-- 
+dwmw2
