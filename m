@@ -3,18 +3,16 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9FDF7DDDEE
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 05:45:42 +1100 (EST)
-Subject: Re: [PATCH] Fix manual assembly WARN_ON() in enter_rtas().
+	by ozlabs.org (Postfix) with ESMTP id 0DBDCDDDEA
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 06:31:25 +1100 (EST)
+Subject: [PATCH] Fix Maple PATA IRQ assignment.
 From: David Woodhouse <dwmw2@infradead.org>
-To: paulus@samba.org
-In-Reply-To: <1167578149.22068.325.camel@pmac.infradead.org>
-References: <1167578149.22068.325.camel@pmac.infradead.org>
+To: alan@lxorguk.ukuu.org.uk, jgarzik@pobox.com
 Content-Type: text/plain
-Date: Mon, 01 Jan 2007 18:45:34 +0000
-Message-Id: <1167677134.22068.339.camel@pmac.infradead.org>
+Date: Mon, 01 Jan 2007 19:31:15 +0000
+Message-Id: <1167679875.22068.350.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,118 +22,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2006-12-31 at 15:15 +0000, David Woodhouse wrote:
-> When we switched over to the generic BUG mechanism we forgot to change
-> the assembly code which open-codes a WARN_ON() in enter_rtas(), so the
-> bug table got corrupted.
-> 
-> This patch provides an EMIT_BUG_ENTRY macro for use in assembly code,
-> and uses it in entry_64.S. Tested with CONFIG_DEBUG_BUGVERBOSE on ppc64
-> but not without -- I tried to turn it off but it wouldn't go away; I
-> suspect Aunt Tillie probably needed it.
+On the Maple board, the AMD8111 IDE is in legacy mode... except that it
+appears on IRQ 20 instead of IRQ 15. For drivers/ide this was handled by
+the architecture's "pci_get_legacy_ide_irq()" function, but in libata we
+just hard-code the numbers 14 and 15.
 
-This version gets __FILE__ and __LINE__ right in the assembly version --
-rather than saying include/asm-powerpc/bug.h line 21 every time which is
-a little suboptimal.
+This patch provides asm-powerpc/libata-portmap.h which maps the IRQ as
+appropriate, having added a pci_dev argument to the
+ATA_{PRIM,SECOND}ARY_IRQ macros.
+
+There's probably a better way to do this -- especially if we observe
+that the _only_ case in which this seemingly-generic
+"pci_get_legacy_ide_irq()" function returns anything other than 14 and
+15 for primary and secondary respectively is the case of the AMD8111 on
+the Maple board -- couldn't we handle that with a special case in the
+pata_amd driver, or perhaps with a PCI quirk for Maple to switch it into
+native mode during early boot and assign resources properly?
 
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e965215..030d300 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -303,5 +303,8 @@ int main(void)
- 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
- 	DEFINE(CLOCK_REALTIME_RES, TICK_NSEC);
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0673dbe..1857707 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -484,6 +484,7 @@ config PPC_MAPLE
+ 	select PPC_970_NAP
+ 	select PPC_NATIVE
+ 	select PPC_RTAS
++	select ATA_NONSTANDARD if ATA
+ 	default n
+ 	help
+           This option enables support for the Maple 970FX Evaluation Board.
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 7645f2b..bf44f6d 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -879,7 +879,7 @@ static struct ata_probe_ent *ata_pci_init_legacy_port(struct pci_dev *pdev,
+ 	probe_ent->n_ports = 2;
  
-+#ifdef CONFIG_BUG
-+	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
-+#endif
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 1a3d4de..2551c08 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -28,6 +28,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/cputable.h>
- #include <asm/firmware.h>
-+#include <asm/bug.h>
+ 	if (port_mask & ATA_PORT_PRIMARY) {
+-		probe_ent->irq = ATA_PRIMARY_IRQ;
++		probe_ent->irq = ATA_PRIMARY_IRQ(pdev);
+ 		probe_ent->port[0].cmd_addr = ATA_PRIMARY_CMD;
+ 		probe_ent->port[0].altstatus_addr =
+ 		probe_ent->port[0].ctl_addr = ATA_PRIMARY_CTL;
+@@ -894,9 +894,9 @@ static struct ata_probe_ent *ata_pci_init_legacy_port(struct pci_dev *pdev,
  
- /*
-  * System calls.
-@@ -634,19 +635,15 @@ _GLOBAL(enter_rtas)
- 	li	r0,0
- 	mtcr	r0
+ 	if (port_mask & ATA_PORT_SECONDARY) {
+ 		if (probe_ent->irq)
+-			probe_ent->irq2 = ATA_SECONDARY_IRQ;
++			probe_ent->irq2 = ATA_SECONDARY_IRQ(pdev);
+ 		else
+-			probe_ent->irq = ATA_SECONDARY_IRQ;
++			probe_ent->irq = ATA_SECONDARY_IRQ(pdev);
+ 		probe_ent->port[1].cmd_addr = ATA_SECONDARY_CMD;
+ 		probe_ent->port[1].altstatus_addr =
+ 		probe_ent->port[1].ctl_addr = ATA_SECONDARY_CTL;
+diff --git a/include/asm-generic/libata-portmap.h b/include/asm-generic/libata-portmap.h
+index 9202fd0..ec742ca 100644
+--- a/include/asm-generic/libata-portmap.h
++++ b/include/asm-generic/libata-portmap.h
+@@ -1,12 +1,12 @@
+ #ifndef __ASM_GENERIC_LIBATA_PORTMAP_H
+ #define __ASM_GENERIC_LIBATA_PORTMAP_H
  
-+#ifdef CONFIG_BUG	
- 	/* There is no way it is acceptable to get here with interrupts enabled,
- 	 * check it with the asm equivalent of WARN_ON
- 	 */
- 	lbz	r0,PACASOFTIRQEN(r13)
- 1:	tdnei	r0,0
--.section __bug_table,"a"
--	.llong	1b,__LINE__ + 0x1000000, 1f, 2f
--.previous
--.section .rodata,"a"
--1:	.asciz	__FILE__
--2:	.asciz "enter_rtas"
--.previous
--
-+	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
-+#endif
-+	
- 	/* Hard-disable interrupts */
- 	mfmsr	r6
- 	rldicl	r7,r6,48,1
-diff --git a/include/asm-powerpc/bug.h b/include/asm-powerpc/bug.h
-index 7095688..f6fa394 100644
---- a/include/asm-powerpc/bug.h
-+++ b/include/asm-powerpc/bug.h
-@@ -11,10 +11,31 @@
- #define BUG_OPCODE .long 0x00b00b00  /* For asm */
- #define BUG_ILLEGAL_INSTR "0x00b00b00" /* For BUG macro */
+ #define ATA_PRIMARY_CMD		0x1F0
+ #define ATA_PRIMARY_CTL		0x3F6
+-#define ATA_PRIMARY_IRQ		14
++#define ATA_PRIMARY_IRQ(dev)	14
  
--#ifndef __ASSEMBLY__
--
- #ifdef CONFIG_BUG
+ #define ATA_SECONDARY_CMD	0x170
+ #define ATA_SECONDARY_CTL	0x376
+-#define ATA_SECONDARY_IRQ	15
++#define ATA_SECONDARY_IRQ(dev)	15
  
-+#ifdef __ASSEMBLY__
-+#ifdef CONFIG_DEBUG_BUGVERBOSE
-+.macro EMIT_BUG_ENTRY addr,file,line,flags
-+	 .section __bug_table,"a"
-+5001:	 PPC_LONG \addr, 5002f
-+	 .short \line, \flags
-+	 .org 5001b+BUG_ENTRY_SIZE
-+	 .previous
-+	 .section .rodata,"a"
-+5002:	 .asciz "\file"
-+	 .previous
-+.endm
-+#else
-+ .macro EMIT_BUG_ENTRY addr,file,line,flags
-+	 .section __bug_table,"a"
-+5001:	 PPC_LONG \addr
-+	 .short \flags
-+	 .org 5001b+BUG_ENTRY_SIZE
-+	 .previous
-+.endm
-+#endif /* verbose */
+ #endif
+--- /dev/null	2006-12-19 10:44:19.206057770 +0000
++++ b/include/asm-powerpc/libata-portmap.h	2006-12-31 00:32:04.000000000 +0000
+@@ -0,0 +1,12 @@
++#ifndef __ASM_POWERPC_LIBATA_PORTMAP_H
++#define __ASM_POWERPC_LIBATA_PORTMAP_H
 +
-+#else /* !__ASSEMBLY__ */
- /* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-    sizeof(struct bug_entry), respectively */
- #ifdef CONFIG_DEBUG_BUGVERBOSE
-@@ -91,8 +112,8 @@
- #define HAVE_ARCH_BUG
- #define HAVE_ARCH_BUG_ON
- #define HAVE_ARCH_WARN_ON
--#endif /* CONFIG_BUG */
- #endif /* __ASSEMBLY __ */
-+#endif /* CONFIG_BUG */
++#define ATA_PRIMARY_CMD	0x1F0
++#define ATA_PRIMARY_CTL	0x3F6
++#define ATA_PRIMARY_IRQ(dev)	pci_get_legacy_ide_irq(dev, 0)
++
++#define ATA_SECONDARY_CMD	0x170
++#define ATA_SECONDARY_CTL	0x376
++#define ATA_SECONDARY_IRQ(dev)	pci_get_legacy_ide_irq(dev, 1)
++
++#endif
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 03f6338..6a38c9b 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -19,6 +19,10 @@ config ATA
  
- #include <asm-generic/bug.h>
+ if ATA
  
++config ATA_NONSTANDARD
++       bool
++       default n
++
+ config SATA_AHCI
+ 	tristate "AHCI SATA support"
+ 	depends on PCI
+
 
 -- 
 dwmw2
