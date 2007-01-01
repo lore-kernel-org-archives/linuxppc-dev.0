@@ -2,20 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 75D68DDF91
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 08:24:43 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 65871DDEC4
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 08:36:13 +1100 (EST)
 Subject: Re: [PATCH] Fix Maple PATA IRQ assignment.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1167683166.22068.378.camel@pmac.infradead.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <32106685eb2ecb2fb4adcf6e51f71482@kernel.crashing.org>
 References: <1167679875.22068.350.camel@pmac.infradead.org>
 	<1167682254.23340.131.camel@localhost.localdomain>
-	<1167683166.22068.378.camel@pmac.infradead.org>
+	<32106685eb2ecb2fb4adcf6e51f71482@kernel.crashing.org>
 Content-Type: text/plain
-Date: Tue, 02 Jan 2007 08:23:14 +1100
-Message-Id: <1167686594.23340.139.camel@localhost.localdomain>
+Date: Tue, 02 Jan 2007 08:33:50 +1100
+Message-Id: <1167687230.23340.147.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	alan@lxorguk.ukuu.org.uk, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-01-01 at 20:26 +0000, David Woodhouse wrote:
-> On Tue, 2007-01-02 at 07:10 +1100, Benjamin Herrenschmidt wrote:
-> > 
+On Mon, 2007-01-01 at 21:44 +0100, Segher Boessenkool wrote:
 > > I'm not sure you can switch it to native mode in sw... worth double
 > > checking though. All boards based on 8111 on powerpc have this problem,
-> > I think. What of the js20 and js21 with IBM firmware ? Or does it have
+> > I think. What of the js20 and js21 with IBM firmware ?
+> 
+> At least with SLOF, we use native mode.
+> 
+> > Or does it have
 > > the ide strapped to native mode ?
 > 
-> No idea, but it doesn't implement ppc_md.pci_get_legacy_ide_irq(). Only
-> Maple does -- maybe the others actually manage to route it to IRQ 14 and
-> 15?
+> It's not a strapping, it's a purely software thing -- see the PCIIDE
+> specification.
 
-Not with the new IRQ numbering scheme in which only a 8259 can get
-those. Thus it must be native.
+I know the PCI IDE spec, but there are a number of chips out there that
+cannot be changed without a strap. In this case, it's easy to test
+though we'll need fixups in the device-tree to indicate the change in
+routing, or a quirk.
 
-> Perhaps we could do that on Maple too -- after all, IRQ numbers in Linux
-> are just a fiction which don't have to match the hardware documentation
-> in any way.
+The thing is, there -is- a cascaded 8259 in there, and that's where the
+IRQ14 and IRQ15 end up in legacy mode (edge sensitive even) iirc, unless
+they are aslo routed to the APIC directly, but in anyway it's hidden by
+the firmware.
 
-I suppose I could add a function to hard-code a mapping but that would
-have a few issues with the way I do virtual IRQs... I really assume that
-1 to 15 are reserved for 8259. But we can hack it... I'd rather not
-though and keep a hook for IDE etc...
+So we can have a quirk in the Maple code to reconfigure that all in
+native mode. That will mean a bit more IRQ sharing since both IDE
+channels will suddenly share PIRQA though... along with whatever else
+uses that pin. Maybe not the best solution...
 
-There's another problem which is PCI IDE cards with the chip in legacy
-mode... I've seen all sort of HW horrors in the area (like routing them
-to INT#A and INT#B on a single function, sic....) or there's also the
-case of the VIA chipset in pegasos which claims to be native mode but
-routes IDE IRQs to 14 and 15 and not PIRQ...
+Or keep the hook and use it in libata. It makes sense I think in
+general. I reckon other platforms might have good use of being able to
+"remap" those IRQs 14 and 15 from IDE controllers in legacy mode. I've
+seen plenty of cases where  they are kept in that mode just to keep the
+IRQs non-shared.
+
+> Lots of controllers get the interrupt thing wrong though -- but
+> AMD8111 isn't one of those.
 
 Ben.
