@@ -1,61 +1,116 @@
-Return-Path: <parabelboi@bopserverein.de>
-Date: Wed, 31 Jan 2007 12:25:33 +1100
-From: Christian Krafft <parabelboi@bopserverein.de>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for
-	profiling Cell BE SPUs -- update
-Message-ID: <20070131122533.5ef22907@localhost>
-In-Reply-To: <1170199869.5235.38.camel@dyn9047021078.beaverton.ibm.com>
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
-	<200701300839.05144.arnd@arndb.de> <45BFBB78.7060907@us.ibm.com>
-	<1170199869.5235.38.camel@dyn9047021078.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <onetarget@sina.com>
+Received: from r3-90.sinamail.sina.com.cn (r3-90.sinamail.sina.com.cn
+	[202.108.3.90]) by ozlabs.org (Postfix) with SMTP id 4977DDDDF3
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  1 Jan 2007 15:32:22 +1100 (EST)
+Message-ID: <20070101042534.18403.qmail@mail3-90.sinamail.sina.com.cn>
+To: linuxppc-embedded@ozlabs.org
+Subject: Start syslogd hangs in LinuxPPC-2.4.25
+Date: Mon, 01 Jan 2007 12:25:34 +0800 
+From: onetarget@sina.com
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=-sina_alt_6a6528418d008173b6de27d1d6a547c9"
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 30 Jan 2007 15:31:09 -0800
-Carl Love <cel@us.ibm.com> wrote:
+--=-sina_alt_6a6528418d008173b6de27d1d6a547c9
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-> An LFSR sequence is similar to a pseudo random number sequence. For a 24
-> bit LFSR sequence each number between 0 and 2^24 will occur once in the
-> sequence but not in a normal counting order.  The hardware uses the LFSR
-> sequence to count to since it is much simpler to implement in hardware
-> then a normal counter.  Unfortunately, the only way we know how to
-> figure out what the LFSR value that corresponds to the number in the
-> sequence that is N before the last value (0xFFFFFF) is to calculate the
-> previous value N times.  It is like trying to ask what is the pseudo
-> random number that is N before this pseudo random number?
+DURlYXIgYWxsICAgIEkgYW0gbm93IHVzaW5nIEVMREstMjAwNS0xIGZyb20gZGVueCwgdGhlIHBv
+d2VycGMgY3B1IGlzIE1QQzgyNzAgKFRRTTgyNjAgaW4gcGxhdGZvcm0gc2VsZWN0aW9uKSwgdGhl
+IGxpYmMgaXMgbGliYy0yLjMuMS5zbywgdGhlIGtlcm5lbCBmcm9tIEVMREsgaXMgMi40LjI1LiAg
+ICBJIGFsc28gdXNlIHN5c2xvZ2QgZnJvbSBvdXIgcHJldmlvdXMgcHJvZHVjdC4gICAgTm93IEkg
+bWV0IGEgcHJvYmxlbSB3aGVuIHN0YXJ0IHN5c2xvZ2QgZnJvbSBiYXNoLCBvbiBvdGhlciBwbGF0
+Zm9ybXMsIHN1Y2ggYXMgQVJNL1g4Ni9NaXBzLCB0aGUgc3lzbG9nZCBjYW4gZm9yayBhIGNoaWxk
+IHByb2Nlc3MsIGFuZCB0aGVuIHRoZSBwYXJlbnQgc3lzbG9nZCB3aWxsIGJlIGtpbGxlZCBieSBj
+aGlsZCBzeXNsb2dkIHF1aWNrbHksIHNvIGxlYXZpbmcgdGhlIGNoaWxkIHN5c2xvZ2QgcnVubmlu
+ZyBpbiBiYWNrZ3JvdW5kLiAgICBCdXQsIG9uIG15IFBvd2VyUEMgdGFyZ2V0LCB0aGUgcGFyZW50
+IHN5c2xvZ2Qgd2lsbCBoYW5nIGZvciAzMFNlYywgYW5kIHRoZW4gZXhpdCB3aXRoIGFsYXJtIGNs
+b2NrIHRpbWVvdXQoMzBTZWMpLiBJIHVzZWQgc3RyYWNlIHRvIGNoZWNrIHdoYXQgaGFwcGVuZWQg
+aW4gc3lzbG9nZCwgYW5kIEkgZm91bmQgdGhhdCBpdCB3aWxsIHVzZSBzZWxlY3Qgc3l0ZW0gY2Fs
+bCBhbmQgcmVhZCAvcHJvYy9rbXNnLiAgICBUbyBjb21wYXJlLCBvbiBvdGhlciB0YXJnZXRzLCB0
+aGVyZSBpcyByZWFkKDYsLi4uLi4sbm5ubik9LTEgW0VBR0FJTl0oNiBpcyB0aGUgZmlsZSBpZCBv
+ZiAvcHJvYy9rbXNnKSwgdGhlbiBjaGlsZCBzeXNsb2dkIHdpbGwga2lsbCBwYXJlbnQgc3lzbG9n
+ZC4gQnV0IG9uIFBvd2VyUEMgdGFyZ2V0LCBpdCBpcyByZWFkKDYsLi4uLi4uLG5ubm4pPT9bRVJF
+U1RBUlRTWVNdLCBzbyBJIHRoaW5rIHRoZSBsaWJjIHdpbGwgY2FsbCBzeXN0ZW0gY2FsbCByZWFk
+IG1hbnkgbWFueSB0aW1lcy4gICAgVGhlbiwgSSBjaGVjayB0aGUgY2hpbGQgc3lzbG9nZCB3aXRo
+IC9wcm9jL3RoZXBpZC9zdGF0dXMsIEkgZm91bmQgdGhlIHNpZ3BuZCBpcyAwMDAwMDAwMDAsIHRo
+YXQgaXMgdGhlcmUgaXMgbm8gc2lnbmFsIHBlbmRpbmcgb24gY2hpbGQgc3lzbG9nZC4gICAgQnV0
+LCBpbiAva2VybmVsL3ByaW5rLmMsIEkgYWRkZWQgcHJpbmsoImFhYWFhYWFhYWFcbiIpIGFmdGVy
+IHdhaXRfZXZlbnRfaW50ZXJydXB0aWJsZSgpIHdoZW4gaXQgcmV0dXJucyBlcnJvciwgYW5kIHdp
+dGggZG1lc2csIEkgZGlkIGdldCBhYWFhYWFhYWFhIG91dHB1dC4gICAgU28sIHRvIHN1bW1hcml6
+ZSwgb24gb3RoZXIgaGFyZHdhcmUgcGxhdGZvcm1zLCB3aHkgdGhlcmUgaXMgRUFHQUlOLCB3aGls
+ZSBvbiBQUEMgdGFyZ2V0LCBpdCBpcyBFUkVTVEFSVFNZUyBpbnN0ZWFkLiAgICBJIGhvcGUgSSBo
+YXZlIGRlc2NyaWJlZCBteSBxdWVzdGlvbiBjbGVhcmx5LiBUaGFuayB5b3UgZm9yIHlvdXIgaGVs
+cCBhbmQgYmVzdCByZWdhcmRzLCAgICAgICAgVy50YXJnZXQgICAgMS1KYW4tMjAwNwoKLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLQq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCBodHRwOi8vYWQ0LnNp
+bmEuY29tLmNuL3NpbmEvbGltZW5nMy9tYWlsX3podWl5dS8yMDA2L21haWxfemh1aXl1XzIwMDYx
+MjI1Lmh0bWwgKQoKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PQrXorLh0MLAyzJHw+K30dPKz+SjqCBodHRwOi8vbWFpbC5z
+aW5hLmNvbS5jbi9jaG9vc2VNb2RlLmh0bWwgo6k=
 
-That should be no problem.=20
-You can just revers your algorithm and let it run x times instead of 0xFFFF=
-FF-x.
 
->=20
-> I will add a short comment to the code that will summarize the above
-> paragraph.
-> [snip]
->=20
-> _______________________________________________
-> cbe-oss-dev mailing list
-> cbe-oss-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+--=-sina_alt_6a6528418d008173b6de27d1d6a547c9
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
+dC1zaXplOjEycHgnPkRlYXIgYWxsPGJyPiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIG5vdyB1c2lu
+ZyBFTERLLTIwMDUtMSBmcm9tIGRlbngsIHRoZSBwb3dlcnBjIGNwdSBpcyBNUEM4MjcwIChUUU04
+MjYwIGluIHBsYXRmb3JtIHNlbGVjdGlvbiksIHRoZSBsaWJjIGlzIGxpYmMtMi4zLjEuc28sIHRo
+ZSBrZXJuZWwgZnJvbSBFTERLIGlzIDIuNC4yNS48YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEkgYWxz
+byB1c2Ugc3lzbG9nZCBmcm9tIG91ciBwcmV2aW91cyBwcm9kdWN0Ljxicj4mbmJzcDsmbmJzcDsm
+bmJzcDsgTm93IEkgbWV0IGEgcHJvYmxlbSB3aGVuIHN0YXJ0IHN5c2xvZ2QgZnJvbSBiYXNoLCBv
+biBvdGhlciBwbGF0Zm9ybXMsIHN1Y2ggYXMgQVJNL1g4Ni9NaXBzLCB0aGUgc3lzbG9nZCBjYW4g
+Zm9yayBhIGNoaWxkIHByb2Nlc3MsIGFuZCB0aGVuIHRoZSBwYXJlbnQgc3lzbG9nZCB3aWxsIGJl
+IGtpbGxlZCBieSBjaGlsZCBzeXNsb2dkIHF1aWNrbHksIHNvIGxlYXZpbmcgdGhlIGNoaWxkIHN5
+c2xvZ2QgcnVubmluZyBpbiBiYWNrZ3JvdW5kLjxicj4mbmJzcDsmbmJzcDsmbmJzcDsgQnV0LCBv
+biBteSBQb3dlclBDIHRhcmdldCwgdGhlIHBhcmVudCBzeXNsb2dkIHdpbGwgaGFuZyBmb3IgMzBT
+ZWMsIGFuZCB0aGVuIGV4aXQgd2l0aCBhbGFybSBjbG9jayB0aW1lb3V0KDMwU2VjKS4gSSB1c2Vk
+IHN0cmFjZSB0byBjaGVjayB3aGF0IGhhcHBlbmVkIGluIHN5c2xvZ2QsIGFuZCBJIGZvdW5kIHRo
+YXQgaXQgd2lsbCB1c2Ugc2VsZWN0IHN5dGVtIGNhbGwgYW5kIHJlYWQgL3Byb2Mva21zZy48YnI+
+Jm5ic3A7Jm5ic3A7Jm5ic3A7IFRvIGNvbXBhcmUsIG9uIG90aGVyIHRhcmdldHMsIHRoZXJlIGlz
+IHJlYWQoNiwuLi4uLixubm5uKT0tMSBbRUFHQUlOXSg2IGlzIHRoZSBmaWxlIGlkIG9mIC9wcm9j
+L2ttc2cpLCB0aGVuIGNoaWxkIHN5c2xvZ2Qgd2lsbCBraWxsIHBhcmVudCBzeXNsb2dkLiBCdXQg
+b24gUG93ZXJQQyB0YXJnZXQsIGl0IGlzIHJlYWQoNiwuLi4uLi4sbm5ubik9P1tFUkVTVEFSVFNZ
+U10sIHNvIEkgdGhpbmsgdGhlIGxpYmMgd2lsbCBjYWxsIHN5c3RlbSBjYWxsIHJlYWQgbWFueSBt
+YW55IHRpbWVzLjxicj4mbmJzcDsmbmJzcDsmbmJzcDsgVGhlbiwgSSBjaGVjayB0aGUgY2hpbGQg
+c3lzbG9nZCB3aXRoIC9wcm9jL3RoZXBpZC9zdGF0dXMsIEkgZm91bmQgdGhlIHNpZ3BuZCBpcyAw
+MDAwMDAwMDAsIHRoYXQgaXMgdGhlcmUgaXMgbm8gc2lnbmFsIHBlbmRpbmcgb24gY2hpbGQgc3lz
+bG9nZC48YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEJ1dCwgaW4gL2tlcm5lbC9wcmluay5jLCBJIGFk
+ZGVkIHByaW5rKCJhYWFhYWFhYWFhXG4iKSBhZnRlciB3YWl0X2V2ZW50X2ludGVycnVwdGlibGUo
+KSB3aGVuIGl0IHJldHVybnMgZXJyb3IsIGFuZCB3aXRoIGRtZXNnLCBJIGRpZCBnZXQgYWFhYWFh
+YWFhYSBvdXRwdXQuPGJyPiZuYnNwOyZuYnNwOyZuYnNwOyBTbywgdG8gc3VtbWFyaXplLCBvbiBv
+dGhlciBoYXJkd2FyZSBwbGF0Zm9ybXMsIHdoeSB0aGVyZSBpcyBFQUdBSU4sIHdoaWxlIG9uIFBQ
+QyB0YXJnZXQsIGl0IGlzIEVSRVNUQVJUU1lTIGluc3RlYWQuPGJyPiZuYnNwOyZuYnNwOyZuYnNw
+OyBJIGhvcGUgSSBoYXZlIGRlc2NyaWJlZCBteSBxdWVzdGlvbiBjbGVhcmx5LiBUaGFuayB5b3Ug
+Zm9yIHlvdXIgaGVscCBhbmQgYmVzdCByZWdhcmRzLDxicj48YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7
+ICZuYnNwOyZuYnNwOyAgVy50YXJnZXQ8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IDEtSmFuLTIwMDc8
+YnI+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+PC9mb250PjxiciAvPgo8
+YnIgLz4KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLTxiciAvPgq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6
+xKOhKCA8YSBocmVmPWh0dHA6Ly9hZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1
+aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAwNjEyMjUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9h
+ZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVf
+MjAwNjEyMjUuaHRtbDwvYT4gKTxiciAvPgo8YnIgLz4KPT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PTxiciAvPgrXorLh0MLA
+yzJHw+K30dPKz+SjqCA8YSBocmVmPWh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUu
+aHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRt
+bDwvYT4go6k=
 
 
---=20
-Mit freundlichen Gr=FCssen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,=20
-Linux Kernel Development
-IT Specialist
+--=-sina_alt_6a6528418d008173b6de27d1d6a547c9--
