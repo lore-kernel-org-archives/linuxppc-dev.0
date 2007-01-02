@@ -1,19 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwm@enoyolf.org>
+Received: from bebe.enoyolf.org (falcon30.maxeymade.com [24.173.215.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0D576DDE46
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 00:55:16 +1100 (EST)
-In-Reply-To: <200701021238.36297.m.kozlowski@tuxland.pl>
-References: <200701021238.36297.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1220f3e52f791ff8871ca9328b027a5a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] ppc: vio of_node_put cleanup
-Date: Tue, 2 Jan 2007 14:55:40 +0100
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+	(Client CN "bebe.enoyolf.org",
+	Issuer "CA Cert Signing Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 647D9DDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 02:46:35 +1100 (EST)
+In-reply-to: <20070102114212.GA4019@in.ibm.com> 
+References: <20061208045537.GA14626@in.ibm.com>
+	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+	<20061218105706.GB3911@in.ibm.com>
+	<20070102114212.GA4019@in.ibm.com>
+To: Mohan Kumar M <mohan@in.ibm.com>
+Subject: Re: [Fastboot] [PATCH] Fix interrupt distribution in ppc970 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 02 Jan 2007 09:07:53 -0600
+Message-ID: <31482.1167750473@bebe.enoyolf.org>
+From: Doug Maxey <dwm@enoyolf.org>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->  static void __devinit vio_dev_release(struct device *dev)
->  {
-> -	if (dev->archdata.of_node) {
-> -		/* XXX should free TCE table */
-> -		of_node_put(dev->archdata.of_node);
-> -	}
-> +	/* XXX should free TCE table */
-> +	of_node_put(dev->archdata.of_node);
->  	kfree(to_vio_dev(dev));
->  }
 
-The comment used to be inside the "if" block, is this
-change correct?
+On Tue, 02 Jan 2007 17:12:12 +0530, Mohan Kumar M wrote:
+> Even after updating the JS20 box with the latest firmware FW06470160
+> dated 11/21/06, we are facing the same problems with "maxcpus=1" kernel
+> parameter.
 
-[And, do we want all these changes anyway?  I don't care
-either way, both sides have their pros and their cons --
-just asking :-) ]
-
-
-Segher
+The codebases for the firmware diverged between JS20 and JS21 back in '04.
+So it is more than just possible there is a firmware feature in play.
