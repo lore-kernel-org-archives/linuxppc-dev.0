@@ -1,16 +1,17 @@
 Return-Path: <m.kozlowski@tuxland.pl>
 Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 28FE1DDF2C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 23:05:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5A54EDDE49
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 23:49:35 +1100 (EST)
 From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: paulus@samba.org
-Subject: [PATCH] ppc: qe_lib of_node_get cleanup
-Date: Tue, 2 Jan 2007 13:07:16 +0100
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] sound: aoa of_node_put and kfree cleanup
+Date: Tue, 2 Jan 2007 13:50:57 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
-Message-Id: <200701021307.16467.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <200701021350.57816.m.kozlowski@tuxland.pl>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +23,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello,
 
-	No need for ?: as of_node_get() can handle NULL argument.
+	This patch removes redundant argument checks for of_node_put() and kfree().
 
 Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- arch/powerpc/sysdev/qe_lib/qe_ic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/aoa/fabrics/snd-aoa-fabric-layout.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff -upr linux-2.6.20-rc2-mm1-a/arch/powerpc/sysdev/qe_lib/qe_ic.c linux-2.6.20-rc2-mm1-b/arch/powerpc/sysdev/qe_lib/qe_ic.c
---- linux-2.6.20-rc2-mm1-a/arch/powerpc/sysdev/qe_lib/qe_ic.c	2006-12-24 05:00:32.000000000 +0100
-+++ linux-2.6.20-rc2-mm1-b/arch/powerpc/sysdev/qe_lib/qe_ic.c	2007-01-02 02:02:29.000000000 +0100
-@@ -352,7 +352,7 @@ void __init qe_ic_init(struct device_nod
- 		return;
+diff -upr linux-2.6.20-rc2-mm1-a/sound/aoa/fabrics/snd-aoa-fabric-layout.c linux-2.6.20-rc2-mm1-b/sound/aoa/fabrics/snd-aoa-fabric-layout.c
+--- linux-2.6.20-rc2-mm1-a/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2006-12-28 12:57:54.000000000 +0100
++++ linux-2.6.20-rc2-mm1-b/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2007-01-02 01:50:26.000000000 +0100
+@@ -1034,9 +1034,9 @@ static int aoa_fabric_layout_probe(struc
+ 	list_del(&ldev->list);
+ 	layouts_list_items--;
+  outnodev:
+- 	if (sound) of_node_put(sound);
++ 	of_node_put(sound);
+  	layout_device = NULL;
+- 	if (ldev) kfree(ldev);
++ 	kfree(ldev);
+ 	return -ENODEV;
+ }
  
- 	memset(qe_ic, 0, sizeof(struct qe_ic));
--	qe_ic->of_node = node ? of_node_get(node) : NULL;
-+	qe_ic->of_node = of_node_get(node);
- 
- 	qe_ic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR,
- 					NR_QE_IC_INTS, &qe_ic_host_ops, 0);
 
 
 -- 
