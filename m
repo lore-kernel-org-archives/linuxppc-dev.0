@@ -1,21 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+905eaaf59fb8ecc93e68+1227+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E057EDDEC3
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 07:49:02 +1100 (EST)
-In-Reply-To: <20070102190944.70c19799@mlejnas.priv.castalie.org>
-References: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
-	<535725c5c6010b6283b0ed0826dd469d@kernel.crashing.org>
-	<20070102190944.70c19799@mlejnas.priv.castalie.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0e6a409d0ffedd23495d2aed672632dd@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: R_PPC_ADDR16_HI relocs in PPC modules ?
-Date: Tue, 2 Jan 2007 21:48:31 +0100
-To: Simon Vallet <linux-ppc@castalie.org>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id C4DC1DDEB6
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 08:29:55 +1100 (EST)
+Subject: Re: [PATCH] Probe Efika platform before CHRP.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1166558300.19254.71.camel@localhost.localdomain>
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+	<1166522096.25827.76.camel@pmac.infradead.org>
+	<1166528379.19254.69.camel@localhost.localdomain>
+	<4587D338.7060906@246tNt.com>
+	<1166538553.25827.99.camel@pmac.infradead.org>
+	<1166558300.19254.71.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 02 Jan 2007 21:29:48 +0000
+Message-Id: <1167773388.22068.443.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>,
+	Paul Mackerras <paulus@samba.org>, bbrv@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Sure. As an example, here is some output of otool -rV and the 
-> corresponding
-> disassembled text section part
->
-> Relocation information (__TEXT,__text) 61126 entries
-> address  pcrel length extern type    scattered symbolnum/value
-> 00000654 False long   False  LO16    False     1 (__TEXT,__text)
->          False long   False  PAIR    False     half = 0x0000
-> 00000650 False long   False  HI16    False     1 (__TEXT,__text)
->          False long   False  PAIR    False     half = 0x83fc
->
-> 00000650        lis     r12,hi16(_msw_report_event)
-> 00000654        ori     r12,r12,lo16(_msw_report_event)
+On Wed, 2006-12-20 at 06:58 +1100, Benjamin Herrenschmidt wrote:
+> > OK, let's drop the patch and assume the device-tree will be fixed
+> > shortly. 
+> 
+> No, keep the patch for now. I'm afraid they aren't willing to fix their
+> device-tree.
 
-Ah.  lis and ori.  HI16 is just fine there -- but note that
-that doesn't use an add insn.  You're patching the function
-"apply_relocate_add()", so I guess some more work is needed?
+They need to fix their firmware anyway, because it's screwed in other
+ways too -- they have an off-by-one error in their handling of partition
+numbers, so when yaboot tries to read a partition table it actually gets
+the first sector of the first partition, and it all goes downhill from
+there. That one was even _fixed_ in the Pegasos firmware last year, but
+it's come back in Efika -- and we _can't_ work around it in the kernel.
 
+For Fedora, we're just going to wait for the fixed firmware; we can't
+sensibly support it as-is.
 
-Segher
+-- 
+dwmw2
