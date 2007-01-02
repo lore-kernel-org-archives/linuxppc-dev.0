@@ -1,14 +1,24 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id AB308DDF54
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:45:45 +1100 (EST)
-From: grant.likely@secretlab.ca
-To: tnt@246tnt.com,
-	paulus@samba.org,
-	linuxppc-dev@ozlabs.org
-Subject: [POWERPC] Fix mpc52xx serial driver to work for arch/ppc again
-Date: Tue,  2 Jan 2007 15:45:37 -0700
-Message-Id: <11677779373025-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 94071DDF7B
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:51:19 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1685526ugf
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Jan 2007 14:51:18 -0800 (PST)
+Message-ID: <528646bc0701021451m4902ed5eu9e7346eb0d5563c8@mail.gmail.com>
+Date: Tue, 2 Jan 2007 15:51:18 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Sylvain Munaut" <tnt@246tnt.com>
+Subject: Re: [PATCH 4/4] powerpc: Restore 'proper' link order in platform
+In-Reply-To: <11677769992439-git-send-email-tnt@246tNt.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1167776995690-git-send-email-tnt@246tNt.com>
+	<116777699771-git-send-email-tnt@246tNt.com>
+	<11677769982640-git-send-email-tnt@246tNt.com>
+	<11677769981995-git-send-email-tnt@246tNt.com>
+	<11677769992439-git-send-email-tnt@246tNt.com>
+Cc: Linux PPC DEV <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,33 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On 1/2/07, Sylvain Munaut <tnt@246tnt.com> wrote:
+> The 52xx was put before CHRP to allow EFIKA to be recognized
+> properly. Now the efika tree is fixed up in prom_init so
+> no need for this ugly hack. So we restore the 'normal'
+> order.
+>
+> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 
-The mpc52xx_uart_of_enumerate() function was added when adding 52xx
-support to arch/powerpc, but it must not be called for arch/ppc.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
-Please include for .20; without this patch you cannot build an arch/ppc
-kernel for the lite52xx.
-
- drivers/serial/mpc52xx_uart.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index 9d11a75..3c4b6c2 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -789,7 +789,9 @@ static struct console mpc52xx_console = 
- static int __init
- mpc52xx_console_init(void)
- {
-+#if defined(CONFIG_PPC_MERGE)
- 	mpc52xx_uart_of_enumerate();
-+#endif
- 	register_console(&mpc52xx_console);
- 	return 0;
- }
--- 
-1.4.3.rc2.g0503
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
