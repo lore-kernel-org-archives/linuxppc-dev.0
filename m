@@ -1,13 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id CE4BFDDF4D
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:45:33 +1100 (EST)
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id AB308DDF54
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:45:45 +1100 (EST)
 From: grant.likely@secretlab.ca
-To: vwool@ru.mvista.com, tnt@246tnt.com, paulus@samba.org,
+To: tnt@246tnt.com,
+	paulus@samba.org,
 	linuxppc-dev@ozlabs.org
-Subject: [POWERPC] don't include powerpc/sysdev/rom.o for arch/ppc builds
-Date: Tue,  2 Jan 2007 15:45:29 -0700
-Message-Id: <11677779291409-git-send-email-grant.likely@secretlab.ca>
+Subject: [POWERPC] Fix mpc52xx serial driver to work for arch/ppc again
+Date: Tue,  2 Jan 2007 15:45:37 -0700
+Message-Id: <11677779373025-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,36 +20,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-sysdev/rom.c is for arch/powerpc only.  Don't compile it when building
-an arch/ppc kernel.
+The mpc52xx_uart_of_enumerate() function was added when adding 52xx
+support to arch/powerpc, but it must not be called for arch/ppc.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
-Please include for .20; without this patch you cannot use MTD on an arch/ppc
-kernel for the mpc52xx.
+Please include for .20; without this patch you cannot build an arch/ppc
+kernel for the lite52xx.
 
- arch/powerpc/sysdev/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/serial/mpc52xx_uart.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 04d4917..2621a7e 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -12,7 +12,6 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
--obj-$(CONFIG_MTD)		+= rom.o
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
-@@ -21,5 +20,6 @@ endif
- 
- # Temporary hack until we have migrated to asm-powerpc
- ifeq ($(ARCH),powerpc)
-+obj-$(CONFIG_MTD)		+= rom.o
- obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
- endif
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 9d11a75..3c4b6c2 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -789,7 +789,9 @@ static struct console mpc52xx_console = 
+ static int __init
+ mpc52xx_console_init(void)
+ {
++#if defined(CONFIG_PPC_MERGE)
+ 	mpc52xx_uart_of_enumerate();
++#endif
+ 	register_console(&mpc52xx_console);
+ 	return 0;
+ }
 -- 
 1.4.3.rc2.g0503
