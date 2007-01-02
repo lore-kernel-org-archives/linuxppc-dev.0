@@ -1,17 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 17FC0DDE26
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 16:13:48 +1100 (EST)
-Date: Tue, 2 Jan 2007 16:13:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <m.kozlowski@tuxland.pl>
+Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
+	by ozlabs.org (Postfix) with ESMTP id 16AC1DDE20
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jan 2007 22:30:31 +1100 (EST)
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 To: paulus@samba.org
-Subject: [PATCH 2/2] [POWERPC] add legacy iSeries to ppc64_defconfig
-Message-Id: <20070102161350.7e4259bb.sfr@canb.auug.org.au>
-In-Reply-To: <20070102161109.8196128d.sfr@canb.auug.org.au>
-References: <20070102161109.8196128d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] ppc: prom of_node_(get|put) cleanup
+Date: Tue, 2 Jan 2007 12:31:47 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Message-Id: <200701021231.48419.m.kozlowski@tuxland.pl>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +20,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/configs/ppc64_defconfig |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
+	This patch removes redundant argument checks for of_node_get() and of_node_put().
 
-This has been booted on iSeries, pSeries and pmac.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+
+ arch/powerpc/kernel/prom.c |   18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
+
+diff -upr linux-2.6.20-rc2-mm1-a/arch/powerpc/kernel/prom.c linux-2.6.20-rc2-mm1-b/arch/powerpc/kernel/prom.c
+--- linux-2.6.20-rc2-mm1-a/arch/powerpc/kernel/prom.c	2006-12-24 05:00:32.000000000 +0100
++++ linux-2.6.20-rc2-mm1-b/arch/powerpc/kernel/prom.c	2007-01-02 02:05:47.000000000 +0100
+@@ -1221,8 +1221,7 @@ struct device_node *of_find_node_by_name
+ 		if (np->name != NULL && strcasecmp(np->name, name) == 0
+ 		    && of_node_get(np))
+ 			break;
+-	if (from)
+-		of_node_put(from);
++	of_node_put(from);
+ 	read_unlock(&devtree_lock);
+ 	return np;
+ }
+@@ -1250,8 +1249,7 @@ struct device_node *of_find_node_by_type
+ 		if (np->type != 0 && strcasecmp(np->type, type) == 0
+ 		    && of_node_get(np))
+ 			break;
+-	if (from)
+-		of_node_put(from);
++	of_node_put(from);
+ 	read_unlock(&devtree_lock);
+ 	return np;
+ }
+@@ -1285,8 +1283,7 @@ struct device_node *of_find_compatible_n
+ 		if (device_is_compatible(np, compatible) && of_node_get(np))
+ 			break;
+ 	}
+-	if (from)
+-		of_node_put(from);
++	of_node_put(from);
+ 	read_unlock(&devtree_lock);
+ 	return np;
+ }
+@@ -1329,8 +1326,7 @@ struct device_node *of_find_node_by_phan
+ 	for (np = allnodes; np != 0; np = np->allnext)
+ 		if (np->linux_phandle == handle)
+ 			break;
+-	if (np)
+-		of_node_get(np);
++	of_node_get(np);
+ 	read_unlock(&devtree_lock);
+ 	return np;
+ }
+@@ -1353,8 +1349,7 @@ struct device_node *of_find_all_nodes(st
+ 	for (; np != 0; np = np->allnext)
+ 		if (of_node_get(np))
+ 			break;
+-	if (prev)
+-		of_node_put(prev);
++	of_node_put(prev);
+ 	read_unlock(&devtree_lock);
+ 	return np;
+ }
+@@ -1399,8 +1394,7 @@ struct device_node *of_get_next_child(co
+ 	for (; next != 0; next = next->sibling)
+ 		if (of_node_get(next))
+ 			break;
+-	if (prev)
+-		of_node_put(prev);
++	of_node_put(prev);
+ 	read_unlock(&devtree_lock);
+ 	return next;
+ }
+
+
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Regards,
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 35811cc..340376a 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.20-rc3
--# Tue Jan  2 15:20:02 2007
-+# Tue Jan  2 15:32:44 2007
- #
- CONFIG_PPC64=y
- CONFIG_64BIT=y
-@@ -133,7 +133,7 @@ CONFIG_PPC_MULTIPLATFORM=y
- # CONFIG_EMBEDDED6xx is not set
- # CONFIG_APUS is not set
- CONFIG_PPC_PSERIES=y
--# CONFIG_PPC_ISERIES is not set
-+CONFIG_PPC_ISERIES=y
- # CONFIG_PPC_MPC52xx is not set
- CONFIG_PPC_PMAC=y
- CONFIG_PPC_PMAC64=y
-@@ -834,6 +834,7 @@ CONFIG_IBMOL=y
- # Wan interfaces
- #
- # CONFIG_WAN is not set
-+CONFIG_ISERIES_VETH=m
- # CONFIG_FDDI is not set
- # CONFIG_HIPPI is not set
- CONFIG_PPP=m
-@@ -946,6 +947,7 @@ CONFIG_LEGACY_PTYS=y
- CONFIG_LEGACY_PTY_COUNT=256
- CONFIG_HVC_DRIVER=y
- CONFIG_HVC_CONSOLE=y
-+CONFIG_HVC_ISERIES=y
- CONFIG_HVC_RTAS=y
- CONFIG_HVCS=m
- 
-@@ -1652,6 +1654,15 @@ CONFIG_NLS_UTF8=m
- # CONFIG_DLM is not set
- 
- #
-+# iSeries device drivers
-+#
-+# CONFIG_VIOCONS is not set
-+CONFIG_VIODASD=y
-+CONFIG_VIOCD=m
-+CONFIG_VIOTAPE=m
-+CONFIG_VIOPATH=y
-+
-+#
- # Library routines
- #
- CONFIG_BITREVERSE=y
--- 
-1.4.4.3
+	Mariusz Kozlowski
