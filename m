@@ -1,21 +1,14 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx017.isp.belgacom.be (outmx017.isp.belgacom.be
-	[195.238.4.116])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 472E6DDF24
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:43:43 +1100 (EST)
-Received: from outmx017.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx017.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l02MhcDC027947
-	for <linuxppc-dev@ozlabs.org>; Tue, 2 Jan 2007 23:43:38 +0100
-	(envelope-from <tnt@246tNt.com>)
-From: Sylvain Munaut <tnt@246tNt.com>
-To: Linux PPC DEV <linuxppc-dev@ozlabs.org>
-Subject: [PATCH/DON'T MERGE] powerpc: Add device tree fixups for the EFIKA
-Date: Tue,  2 Jan 2007 23:41:41 +0100
-Message-Id: <11677777011884-git-send-email-tnt@246tNt.com>
-Cc: Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 03EA9DDF44
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:45:01 +1100 (EST)
+From: grant.likely@secretlab.ca
+To: tnt@246tnt.com,
+	paulus@samba.org,
+	linuxppc-dev@ozlabs.org
+Subject: [POWERPC] Fix mpc52xx fdt to use correct device_type for sound devices
+Date: Tue,  2 Jan 2007 15:44:44 -0700
+Message-Id: <11677778841167-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,131 +18,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We make the efika device tree compliant with the defined bindings
-(at least compliant enough). This is mostly done by mangling
-the device_type and compatible properties, but also adding
-some missing bits.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/kernel/prom_init.c |   76 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 76 insertions(+), 0 deletions(-)
 
+While technically this is not a bug fix as it doesn't touch any C code;
+However, it does affect the documented interface for mpc52xx device trees.
+Sound devices should be using 'sound' for the device_type field; not the
+type of sound interface.  I'd like to fix this issue before 2.6.20 to avoid
+any confusion between .20 and .21
 
-Hi everyone,
+Cheers,
+g.
 
-This patch allows the efika to boot out of the box, by patching the device
-tree. At this time, the consensus seems to be this patch won't me pushed
-upstream because the correct fix would be for bplan to fix the device tree
-in the firmware.
+ .../powerpc/mpc52xx-device-tree-bindings.txt       |    4 ++--
+ arch/powerpc/boot/dts/lite5200.dts                 |    4 ++--
+ arch/powerpc/boot/dts/lite5200b.dts                |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-The list of "patched" entries here is not the complete list of firmware
-problems (for e.g., David Woodhouse spotted other problems regarding parition
-access IIRC, and some compatible properties have a double \0\0 at the end
-instead of a simple one. The firmware also fails to init the port config
-for PSC2 to AC97 mode ...).
-
-So please, bplan fix this. Come to #mklinux or contact us by mail, I'm
-sure we'll be happy to help you spot the problems that need fixing.
-
-If you're an EFIKA user, ask bplan to fix their firmware, maybe they'll end
-up hearing us.
-
-
- Sylvain
-
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 520ef42..5291d62 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -2117,11 +2117,87 @@ #else
- #define fixup_device_tree_pmac()
- #endif
+diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+index d077d76..7fb3b8a 100644
+--- a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
++++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+@@ -157,8 +157,8 @@ rtc@<addr>	rtc		*-rtc		Real time clock
+ mscan@<addr>	mscan		*-mscan		CAN bus controller
+ pci@<addr>	pci		*-pci		PCI bridge
+ serial@<addr>	serial		*-psc-uart	PSC in serial mode
+-i2s@<addr>	i2s		*-psc-i2s	PSC in i2s mode
+-ac97@<addr>	ac97		*-psc-ac97	PSC in ac97 mode
++i2s@<addr>	sound		*-psc-i2s	PSC in i2s mode
++ac97@<addr>	sound		*-psc-ac97	PSC in ac97 mode
+ spi@<addr>	spi		*-psc-spi	PSC in spi mode
+ irda@<addr>	irda		*-psc-irda	PSC in IrDA mode
+ spi@<addr>	spi		*-spi		MPC52xx spi device
+diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
+index 8bc0d25..a8efb59 100644
+--- a/arch/powerpc/boot/dts/lite5200.dts
++++ b/arch/powerpc/boot/dts/lite5200.dts
+@@ -238,7 +238,7 @@
  
-+#ifdef CONFIG_PPC_EFIKA
-+/* The current fw of the Efika has a device tree needs quite a few
-+ * fixups to be compliant with the mpc52xx bindings. It's currently
-+ * unknown if it will ever be compliant (come on bPlan ...) so we do fixups.
-+ * NOTE that we (barely) tolerate it because the EFIKA was out before
-+ * the bindings were finished, for any new boards -> RTFM ! */
-+
-+struct subst_entry {
-+	char *path;
-+	char *property;
-+	void *value;
-+	int value_len;
-+};
-+
-+static void __init fixup_device_tree_efika(void)
-+{
-+	/* Substitution table */
-+	#define prop_cstr(x) x, sizeof(x)
-+	int prop_sound_irq[3] = { 2, 2, 0 };
-+	struct subst_entry efika_subst_table[] = {
-+		{ "/",			"device_type",	prop_cstr("efika") },
-+		{ "/builtin",		"compatible",	prop_cstr("soc") },
-+		{ "/builtin/ata",	"compatible",	prop_cstr("mpc5200b-ata\0mpc52xx-ata"), },
-+		{ "/builtin/bestcomm",	"compatible",	prop_cstr("mpc5200b-bestcomm\0mpc52xx-bestcomm") },
-+		{ "/builtin/ethernet",	"compatible",	prop_cstr("mpc5200b-fec\0mpc52xx-fec") },
-+		{ "/builtin/pic",	"compatible",	prop_cstr("mpc5200b-pic\0mpc52xx-pic") },
-+		{ "/builtin/serial",	"compatible",	prop_cstr("mpc5200b-psc-uart\0mpc52xx-psc-uart") },
-+		{ "/builtin/sound",	"compatible",	prop_cstr("mpc5200b-psc-ac97\0mpc52xx-psc-ac97") },
-+		{ "/builtin/sound",	"interrupts",	prop_sound_irq, sizeof(prop_sound_irq) },
-+		{ "/builtin/sram",	"compatible",	prop_cstr("mpc5200b-sram\0mpc52xx-sram") },
-+		{ "/builtin/sram",	"device_type",	prop_cstr("sram") },
-+		{}
-+	};
-+	#undef prop_cstr
-+
-+	/* Vars */
-+	u32 node;
-+	char prop[64];
-+	int rv, i;
-+
-+	/* Check if we're really running on a EFIKA */
-+	node = call_prom("finddevice", 1, 1, ADDR("/"));
-+	if (!PHANDLE_VALID(node))
-+		return;
-+
-+	rv = prom_getprop(node, "model", prop, sizeof(prop));
-+	if (rv == PROM_ERROR)
-+		return;
-+	if (strcmp(prop, "EFIKA5K2"))
-+		return;
-+
-+	prom_printf("Applying EFIKA device tree fixups\n");
-+
-+	/* Process substitution table */
-+	for (i=0; efika_subst_table[i].path; i++) {
-+		struct subst_entry *se = &efika_subst_table[i];
-+
-+		node = call_prom("finddevice", 1, 1, ADDR(se->path));
-+		if (!PHANDLE_VALID(node)) {
-+			prom_printf("fixup_device_tree_efika: ",
-+				"skipped entry %x - not found\n", i);
-+			continue;
-+		}
-+
-+		rv = prom_setprop(node, se->path, se->property,
-+					se->value, se->value_len );
-+		if (rv == PROM_ERROR)
-+			prom_printf("fixup_device_tree_efika: ",
-+				"skipped entry %x - setprop error\n", i);
-+	}
-+}
-+#else
-+#define fixup_device_tree_efika()
-+#endif
-+
- static void __init fixup_device_tree(void)
- {
- 	fixup_device_tree_maple();
- 	fixup_device_tree_chrp();
- 	fixup_device_tree_pmac();
-+	fixup_device_tree_efika();
- }
+ 		// PSC3 in CODEC mode example
+ 		i2s@2400 {		// PSC3
+-			device_type = "i2s";
++			device_type = "sound";
+ 			compatible = "mpc5200-psc-i2s\0mpc52xx-psc-i2s";
+ 			reg = <2400 100>;
+ 			interrupts = <2 3 0>;
+@@ -265,7 +265,7 @@
  
- static void __init prom_find_boot_cpu(void)
+ 		// PSC6 in AC97 mode example
+ 		ac97@2c00 {		// PSC6
+-			device_type = "ac97";
++			device_type = "sound";
+ 			compatible = "mpc5200-psc-ac97\0mpc52xx-psc-ac97";
+ 			reg = <2c00 100>;
+ 			interrupts = <2 4 0>;
+diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+index 81cb764..1aabee4 100644
+--- a/arch/powerpc/boot/dts/lite5200b.dts
++++ b/arch/powerpc/boot/dts/lite5200b.dts
+@@ -243,7 +243,7 @@
+ 
+ 		// PSC3 in CODEC mode example
+ 		i2s@2400 {		// PSC3
+-			device_type = "i2s";
++			device_type = "sound";
+ 			compatible = "mpc5200b-psc-i2s\0mpc52xx-psc-i2s";
+ 			reg = <2400 100>;
+ 			interrupts = <2 3 0>;
+@@ -270,7 +270,7 @@
+ 
+ 		// PSC6 in AC97 mode example
+ 		ac97@2c00 {		// PSC6
+-			device_type = "ac97";
++			device_type = "sound";
+ 			compatible = "mpc5200b-psc-ac97\0mpc52xx-psc-ac97";
+ 			reg = <2c00 100>;
+ 			interrupts = <2 4 0>;
 -- 
-1.4.2
+1.4.3.rc2.g0503
