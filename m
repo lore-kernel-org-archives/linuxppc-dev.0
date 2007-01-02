@@ -1,17 +1,19 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id D6E7ADDEA2
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 06:18:42 +1100 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linuxppc-dev@ozlabs.org,
- paulus@samba.org
-Subject: [PATCH] ppc: pic pmacpic_find_viaint cleanup
-Date: Tue, 2 Jan 2007 20:20:03 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200701022020.04174.m.kozlowski@tuxland.pl>
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 78752DDE45
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 07:42:30 +1100 (EST)
+Subject: Re: R_PPC_ADDR16_HI relocs in PPC modules ?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Simon Vallet <linux-ppc@castalie.org>
+In-Reply-To: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
+References: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
+Content-Type: text/plain
+Date: Wed, 03 Jan 2007 07:41:26 +1100
+Message-Id: <1167770486.6165.70.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, 2007-01-02 at 17:25 +0100, Simon Vallet wrote:
+> Hi,
+> 
+> I'm currently trying to port a binary-only driver to Linux/PPC using a
+> MacOS X driver as a starting point. "Translating" this driver to ELF32
+> gives an object that links into a .ko without too much problems.
+> 
+> However, trying to insmod the resulting object gives the following
+> error message:
+> 
+> unknown ADD relocation: 5
 
-	Litte rework to supress this warning:
+We only add relocation to the kernel loader as we need them... since
+this relocation has never been generated so far for in kernel modules it
+wasn't added...
 
-arch/powerpc/platforms/powermac/pic.c: In function 'pmacpic_find_viaint':
-arch/powerpc/platforms/powermac/pic.c:625: warning: label 'not_found' defined but not used
+BTW. What is this evil^H^H^H^Hbinary driver you are talking about ?
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-
- arch/powerpc/platforms/powermac/pic.c |   13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
-
---- linux-2.6.20-rc2-mm1-a/arch/powerpc/platforms/powermac/pic.c	2006-12-24 05:00:32.000000000 +0100
-+++ linux-2.6.20-rc2-mm1-b/arch/powerpc/platforms/powermac/pic.c	2007-01-02 16:49:05.000000000 +0100
-@@ -609,21 +609,18 @@ unsigned long sleep_save_mask[2];
-  */
- static int pmacpic_find_viaint(void)
- {
--	int viaint = -1;
--
- #ifdef CONFIG_ADB_PMU
- 	struct device_node *np;
- 
- 	if (pmu_get_model() != PMU_OHARE_BASED)
--		goto not_found;
-+		return -1;
- 	np = of_find_node_by_name(NULL, "via-pmu");
- 	if (np == NULL)
--		goto not_found;
--	viaint = irq_of_parse_and_map(np, 0);;
-+		return -1;
-+	return irq_of_parse_and_map(np, 0);
-+#else
-+	return -1;
- #endif /* CONFIG_ADB_PMU */
--
--not_found:
--	return viaint;
- }
- 
- static int pmacpic_suspend(struct sys_device *sysdev, pm_message_t state)
-
-
--- 
-Regards,
-
-	Mariusz Kozlowski
+Ben.
