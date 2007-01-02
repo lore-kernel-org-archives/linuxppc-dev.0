@@ -3,22 +3,22 @@ Received: from outmx020.isp.belgacom.be (outmx020.isp.belgacom.be
 	[195.238.4.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C3D83DDF57
+	by ozlabs.org (Postfix) with ESMTP id E1D95DDF5B
 	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 09:32:08 +1100 (EST)
 Received: from outmx020.isp.belgacom.be (localhost [127.0.0.1])
 	by outmx020.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l02MVwVc002702
-	for <linuxppc-dev@ozlabs.org>; Tue, 2 Jan 2007 23:31:58 +0100
+	with ESMTP id l02MVuGx002695
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Jan 2007 23:31:57 +0100
 	(envelope-from <tnt@246tNt.com>)
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/4] powerpc: 52xx,
-	Don't use device_initcall to probe of_platform_bus
-Date: Tue,  2 Jan 2007 23:29:53 +0100
-Message-Id: <11677769982640-git-send-email-tnt@246tNt.com>
-In-Reply-To: <116777699771-git-send-email-tnt@246tNt.com>
+Subject: [PATCH 3/4] powerpc: Use common 52xx of_platform probe code for EFIKA
+Date: Tue,  2 Jan 2007 23:29:54 +0100
+Message-Id: <11677769981995-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11677769982640-git-send-email-tnt@246tNt.com>
 References: <1167776995690-git-send-email-tnt@246tNt.com>
 	<116777699771-git-send-email-tnt@246tNt.com>
+	<11677769982640-git-send-email-tnt@246tNt.com>
 Cc: Linux PPC DEV <linuxppc-dev@ozlabs.org>, Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,65 +29,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Using device_initcall makes it happen for every platform that
-compiles this file in. This is really bad, for obvious reasons.
+Now that the device tree has the good properties, we can
+remove all the efika_init code by a single call to common code.
 
-Instead, we use the .init field of the machine description. If
-the platform needs the hook to do something specific it can provides
-its own function and call mpc52xx_declare_of_platform_devices from
-there. If not, the mpc52xx_declare_of_platform_devices function can
-directly be used as the init hook.
+While we're modifying that file, a few whitespaces/alignement/typo
+fixes are made (nothing significant).
 
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- arch/powerpc/platforms/52xx/lite5200.c       |    1 +
- arch/powerpc/platforms/52xx/mpc52xx_common.c |    7 ++++---
- include/asm-powerpc/mpc52xx.h                |    1 +
- 3 files changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/52xx/efika-setup.c |   64 ++++++++---------------------
+ 1 files changed, 18 insertions(+), 46 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index eaff71e..0f21bab 100644
---- a/arch/powerpc/platforms/52xx/lite5200.c
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -153,6 +153,7 @@ define_machine(lite52xx) {
- 	.name 		= "lite52xx",
- 	.probe 		= lite52xx_probe,
- 	.setup_arch 	= lite52xx_setup_arch,
-+	.init		= mpc52xx_declare_of_platform_devices,
- 	.init_IRQ 	= mpc52xx_init_irq,
- 	.get_irq 	= mpc52xx_get_irq,
- 	.show_cpuinfo	= lite52xx_show_cpuinfo,
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-index 8331ff4..cc40889 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -116,11 +116,12 @@ unmap_regs:
- 	if (xlb) iounmap(xlb);
+diff --git a/arch/powerpc/platforms/52xx/efika-setup.c b/arch/powerpc/platforms/52xx/efika-setup.c
+index 110c980..d61ce84 100644
+--- a/arch/powerpc/platforms/52xx/efika-setup.c
++++ b/arch/powerpc/platforms/52xx/efika-setup.c
+@@ -2,7 +2,7 @@
+  *
+  * Efika 5K2 platform setup
+  * Some code really inspired from the lite5200b platform.
+- * 
++ *
+  * Copyright (C) 2006 bplan GmbH
+  *
+  * This file is licensed under the terms of the GNU General Public License
+@@ -81,35 +81,7 @@ #endif
+ 	efika_pcisetup();
+ 
+ 	if (ppc_md.progress)
+-		ppc_md.progress("Linux/PPC " UTS_RELEASE " runnung on Efika ;-)\n", 0x0);
+-}
+-
+-static void __init efika_init(void)
+-{
+-	struct device_node *np;
+-	struct device_node *cnp = NULL;
+-	const u32 *base;
+-
+-	/* Find every child of the SOC node and add it to of_platform */
+-	np = of_find_node_by_name(NULL, "builtin");
+-	if (np) {
+-		char name[BUS_ID_SIZE];
+-		while ((cnp = of_get_next_child(np, cnp))) {
+-			strcpy(name, cnp->name);
+-
+-			base = get_property(cnp, "reg", NULL);
+-			if (base == NULL)
+-				continue;
+-
+-			snprintf(name+strlen(name), BUS_ID_SIZE, "@%x", *base);
+-			of_platform_device_create(cnp, name, NULL);
+-
+-			printk(KERN_INFO EFIKA_PLATFORM_NAME" : Added %s (type '%s' at '%s') to the known devices\n", name, cnp->type, cnp->full_name);
+-		}
+-	}
+-
+-	if (ppc_md.progress)
+-		ppc_md.progress("  Have fun with your Efika!    ", 0x7777);
++		ppc_md.progress("Linux/PPC " UTS_RELEASE " running on Efika ;-)\n", 0x0);
  }
  
--static int __init
-+void __init
- mpc52xx_declare_of_platform_devices(void)
+ static int __init efika_probe(void)
+@@ -131,20 +103,20 @@ static int __init efika_probe(void)
+ 
+ define_machine(efika)
  {
- 	/* Find every child of the SOC node and add it to of_platform */
--	return of_platform_bus_probe(NULL, NULL, NULL);
-+	if (of_platform_bus_probe(NULL, NULL, NULL))
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while probing of_platform bus\n");
- }
- 
--device_initcall(mpc52xx_declare_of_platform_devices);
-diff --git a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
-index 4a28a85..4560d72 100644
---- a/include/asm-powerpc/mpc52xx.h
-+++ b/include/asm-powerpc/mpc52xx.h
-@@ -244,6 +244,7 @@ #ifndef __ASSEMBLY__
- extern void __iomem * mpc52xx_find_and_map(const char *);
- extern unsigned int mpc52xx_find_ipb_freq(struct device_node *node);
- extern void mpc52xx_setup_cpu(void);
-+extern void mpc52xx_declare_of_platform_devices(void);
- 
- extern void mpc52xx_init_irq(void);
- extern unsigned int mpc52xx_get_irq(void);
+-	.name = EFIKA_PLATFORM_NAME,
+-	.probe = efika_probe,
+-	.setup_arch = efika_setup_arch,
+-	.init = efika_init,
+-	.show_cpuinfo = efika_show_cpuinfo,
+-	.init_IRQ = mpc52xx_init_irq,
+-	.get_irq = mpc52xx_get_irq,
+-	.restart = rtas_restart,
+-	.power_off = rtas_power_off,
+-	.halt = rtas_halt,
+-	.set_rtc_time = rtas_set_rtc_time,
+-	.get_rtc_time = rtas_get_rtc_time,
+-	.progress = rtas_progress,
+-	.get_boot_time = rtas_get_boot_time,
+-	.calibrate_decr = generic_calibrate_decr,
+-	.phys_mem_access_prot = pci_phys_mem_access_prot,
++	.name			= EFIKA_PLATFORM_NAME,
++	.probe			= efika_probe,
++	.setup_arch		= efika_setup_arch,
++	.init			= mpc52xx_declare_of_platform_devices,
++	.show_cpuinfo		= efika_show_cpuinfo,
++	.init_IRQ		= mpc52xx_init_irq,
++	.get_irq		= mpc52xx_get_irq,
++	.restart		= rtas_restart,
++	.power_off		= rtas_power_off,
++	.halt			= rtas_halt,
++	.set_rtc_time		= rtas_set_rtc_time,
++	.get_rtc_time		= rtas_get_rtc_time,
++	.progress		= rtas_progress,
++	.get_boot_time		= rtas_get_boot_time,
++	.calibrate_decr		= generic_calibrate_decr,
++	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ };
 -- 
 1.4.2
