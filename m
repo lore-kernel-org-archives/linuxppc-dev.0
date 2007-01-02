@@ -1,26 +1,17 @@
-Return-Path: <SRS0+905eaaf59fb8ecc93e68+1227+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4DC1DDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 08:29:55 +1100 (EST)
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1166558300.19254.71.camel@localhost.localdomain>
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
-	<1166522096.25827.76.camel@pmac.infradead.org>
-	<1166528379.19254.69.camel@localhost.localdomain>
-	<4587D338.7060906@246tNt.com>
-	<1166538553.25827.99.camel@pmac.infradead.org>
-	<1166558300.19254.71.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 02 Jan 2007 21:29:48 +0000
-Message-Id: <1167773388.22068.443.camel@pmac.infradead.org>
+Return-Path: <amodra@bigpond.net.au>
+Received: from omta04sl.mx.bigpond.com (omta04sl.mx.bigpond.com
+	[144.140.93.156]) by ozlabs.org (Postfix) with ESMTP id DB00FDDEC0
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 08:31:52 +1100 (EST)
+Date: Wed, 3 Jan 2007 08:01:51 +1030
+From: Alan Modra <amodra@bigpond.net.au>
+To: Simon Vallet <linux-ppc@castalie.org>
+Subject: Re: R_PPC_ADDR16_HI relocs in PPC modules ?
+Message-ID: <20070102213151.GA24185@bubble.grove.modra.org>
+References: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>,
-	Paul Mackerras <paulus@samba.org>, bbrv@genesi-usa.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,22 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-20 at 06:58 +1100, Benjamin Herrenschmidt wrote:
-> > OK, let's drop the patch and assume the device-tree will be fixed
-> > shortly. 
-> 
-> No, keep the patch for now. I'm afraid they aren't willing to fix their
-> device-tree.
+On Tue, Jan 02, 2007 at 05:25:54PM +0100, Simon Vallet wrote:
+> Is there a reason for this ?
 
-They need to fix their firmware anyway, because it's screwed in other
-ways too -- they have an off-by-one error in their handling of partition
-numbers, so when yaboot tries to read a partition table it actually gets
-the first sector of the first partition, and it all goes downhill from
-there. That one was even _fixed_ in the Pegasos firmware last year, but
-it's come back in Efika -- and we _can't_ work around it in the kernel.
+I guess no one has needed the reloc before.  gcc tends to use
+"li, addis" pairs to load 32-bit constants.  Your code must be using
+"lis, ori".
 
-For Fedora, we're just going to wait for the fixed firmware; we can't
-sensibly support it as-is.
+> If there are no reasons, then how about the following patch ?
+
+Looks good to me.
+
+> --- arch/powerpc/kernel/module_32.c.orig	2007-01-02 17:07:21.000000000 +0100
+> +++ arch/powerpc/kernel/module_32.c	2007-01-02 17:11:55.000000000 +0100
+> @@ -222,6 +222,11 @@ int apply_relocate_add(Elf32_Shdr *sechd
+>  			*(uint16_t *)location = value;
+>  			break;
+>  		
+> +		case R_PPC_ADDR16_HI:
+> +			/* Higher half of the symbol */
+> +			*(uint16_t *)location = (value >> 16);
+> +			break;
+> +
+>  		case R_PPC_ADDR16_HA:
+>  			/* Sign-adjusted lower 16 bits: PPC ELF ABI says:
+>  			   (((x >> 16) + ((x & 0x8000) ? 1 : 0))) & 0xFFFF.
 
 -- 
-dwmw2
+Alan Modra
+IBM OzLabs - Linux Technology Centre
