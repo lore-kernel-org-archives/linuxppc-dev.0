@@ -1,16 +1,15 @@
-Return-Path: <onetarget@sina.com>
-Received: from r3-90.sinamail.sina.com.cn (r3-90.sinamail.sina.com.cn
-	[202.108.3.90]) by ozlabs.org (Postfix) with SMTP id 4977DDDDF3
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33009.mail.mud.yahoo.com (web33009.mail.mud.yahoo.com
+	[209.191.69.124]) by ozlabs.org (Postfix) with SMTP id F398EDDE34
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Jan 2007 15:32:22 +1100 (EST)
-Message-ID: <20070101042534.18403.qmail@mail3-90.sinamail.sina.com.cn>
+	Wed,  3 Jan 2007 00:33:31 +1100 (EST)
+Date: Wed, 3 Jan 2007 00:33:29 +1100 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: ELDK4.0 net-snmp can not work with trapsink
 To: linuxppc-embedded@ozlabs.org
-Subject: Start syslogd hangs in LinuxPPC-2.4.25
-Date: Mon, 01 Jan 2007 12:25:34 +0800 
-From: onetarget@sina.com
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=-sina_alt_6a6528418d008173b6de27d1d6a547c9"
+Content-Type: multipart/alternative; boundary="0-1456742139-1167744809=:55876"
+Message-ID: <732221.55876.qm@web33009.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,96 +20,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-sina_alt_6a6528418d008173b6de27d1d6a547c9
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+--0-1456742139-1167744809=:55876
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-DURlYXIgYWxsICAgIEkgYW0gbm93IHVzaW5nIEVMREstMjAwNS0xIGZyb20gZGVueCwgdGhlIHBv
-d2VycGMgY3B1IGlzIE1QQzgyNzAgKFRRTTgyNjAgaW4gcGxhdGZvcm0gc2VsZWN0aW9uKSwgdGhl
-IGxpYmMgaXMgbGliYy0yLjMuMS5zbywgdGhlIGtlcm5lbCBmcm9tIEVMREsgaXMgMi40LjI1LiAg
-ICBJIGFsc28gdXNlIHN5c2xvZ2QgZnJvbSBvdXIgcHJldmlvdXMgcHJvZHVjdC4gICAgTm93IEkg
-bWV0IGEgcHJvYmxlbSB3aGVuIHN0YXJ0IHN5c2xvZ2QgZnJvbSBiYXNoLCBvbiBvdGhlciBwbGF0
-Zm9ybXMsIHN1Y2ggYXMgQVJNL1g4Ni9NaXBzLCB0aGUgc3lzbG9nZCBjYW4gZm9yayBhIGNoaWxk
-IHByb2Nlc3MsIGFuZCB0aGVuIHRoZSBwYXJlbnQgc3lzbG9nZCB3aWxsIGJlIGtpbGxlZCBieSBj
-aGlsZCBzeXNsb2dkIHF1aWNrbHksIHNvIGxlYXZpbmcgdGhlIGNoaWxkIHN5c2xvZ2QgcnVubmlu
-ZyBpbiBiYWNrZ3JvdW5kLiAgICBCdXQsIG9uIG15IFBvd2VyUEMgdGFyZ2V0LCB0aGUgcGFyZW50
-IHN5c2xvZ2Qgd2lsbCBoYW5nIGZvciAzMFNlYywgYW5kIHRoZW4gZXhpdCB3aXRoIGFsYXJtIGNs
-b2NrIHRpbWVvdXQoMzBTZWMpLiBJIHVzZWQgc3RyYWNlIHRvIGNoZWNrIHdoYXQgaGFwcGVuZWQg
-aW4gc3lzbG9nZCwgYW5kIEkgZm91bmQgdGhhdCBpdCB3aWxsIHVzZSBzZWxlY3Qgc3l0ZW0gY2Fs
-bCBhbmQgcmVhZCAvcHJvYy9rbXNnLiAgICBUbyBjb21wYXJlLCBvbiBvdGhlciB0YXJnZXRzLCB0
-aGVyZSBpcyByZWFkKDYsLi4uLi4sbm5ubik9LTEgW0VBR0FJTl0oNiBpcyB0aGUgZmlsZSBpZCBv
-ZiAvcHJvYy9rbXNnKSwgdGhlbiBjaGlsZCBzeXNsb2dkIHdpbGwga2lsbCBwYXJlbnQgc3lzbG9n
-ZC4gQnV0IG9uIFBvd2VyUEMgdGFyZ2V0LCBpdCBpcyByZWFkKDYsLi4uLi4uLG5ubm4pPT9bRVJF
-U1RBUlRTWVNdLCBzbyBJIHRoaW5rIHRoZSBsaWJjIHdpbGwgY2FsbCBzeXN0ZW0gY2FsbCByZWFk
-IG1hbnkgbWFueSB0aW1lcy4gICAgVGhlbiwgSSBjaGVjayB0aGUgY2hpbGQgc3lzbG9nZCB3aXRo
-IC9wcm9jL3RoZXBpZC9zdGF0dXMsIEkgZm91bmQgdGhlIHNpZ3BuZCBpcyAwMDAwMDAwMDAsIHRo
-YXQgaXMgdGhlcmUgaXMgbm8gc2lnbmFsIHBlbmRpbmcgb24gY2hpbGQgc3lzbG9nZC4gICAgQnV0
-LCBpbiAva2VybmVsL3ByaW5rLmMsIEkgYWRkZWQgcHJpbmsoImFhYWFhYWFhYWFcbiIpIGFmdGVy
-IHdhaXRfZXZlbnRfaW50ZXJydXB0aWJsZSgpIHdoZW4gaXQgcmV0dXJucyBlcnJvciwgYW5kIHdp
-dGggZG1lc2csIEkgZGlkIGdldCBhYWFhYWFhYWFhIG91dHB1dC4gICAgU28sIHRvIHN1bW1hcml6
-ZSwgb24gb3RoZXIgaGFyZHdhcmUgcGxhdGZvcm1zLCB3aHkgdGhlcmUgaXMgRUFHQUlOLCB3aGls
-ZSBvbiBQUEMgdGFyZ2V0LCBpdCBpcyBFUkVTVEFSVFNZUyBpbnN0ZWFkLiAgICBJIGhvcGUgSSBo
-YXZlIGRlc2NyaWJlZCBteSBxdWVzdGlvbiBjbGVhcmx5LiBUaGFuayB5b3UgZm9yIHlvdXIgaGVs
-cCBhbmQgYmVzdCByZWdhcmRzLCAgICAgICAgVy50YXJnZXQgICAgMS1KYW4tMjAwNwoKLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCBodHRwOi8vYWQ0LnNp
-bmEuY29tLmNuL3NpbmEvbGltZW5nMy9tYWlsX3podWl5dS8yMDA2L21haWxfemh1aXl1XzIwMDYx
-MjI1Lmh0bWwgKQoKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PQrXorLh0MLAyzJHw+K30dPKz+SjqCBodHRwOi8vbWFpbC5z
-aW5hLmNvbS5jbi9jaG9vc2VNb2RlLmh0bWwgo6k=
+Hi all
+I use net-snmp package in ELDK4.0 with board TQM8xxL .
+I config it 
+    ./configure \
+        --host=$RPM_ARCH-linux                          \
+        --enable-static --enable-shared                 \
+        --with-cflags="$RPM_OPT_FLAGS -lcrypto"         \
+        --with-ldflags="$LDFLAGS"                       \
+        --with-sys-location="Unknown"                   \
+        --with-logfile="/var/log/snmpd.log"             \
+        --with-persistent-directory="/var/net-snmp"     \
+        --with-endianness=$endianess                    \
+        --with-default-snmp-version="2"                 \
 
+        --with-mib-modules="host agentx smux "\
 
---=-sina_alt_6a6528418d008173b6de27d1d6a547c9
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+%if %{tcp_wrappers}
+        --with-libwrap=%{_libdir}                       \
+%endif
+        --sysconfdir=%{_sysconfdir}                     \
+        --enable-ucd-snmp-compatibility                 \
+        --with-openssl                                  \
+        --with-pic                                      \
+        --with-sys-contact="root@localhost"
 
-PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
-dC1zaXplOjEycHgnPkRlYXIgYWxsPGJyPiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIG5vdyB1c2lu
-ZyBFTERLLTIwMDUtMSBmcm9tIGRlbngsIHRoZSBwb3dlcnBjIGNwdSBpcyBNUEM4MjcwIChUUU04
-MjYwIGluIHBsYXRmb3JtIHNlbGVjdGlvbiksIHRoZSBsaWJjIGlzIGxpYmMtMi4zLjEuc28sIHRo
-ZSBrZXJuZWwgZnJvbSBFTERLIGlzIDIuNC4yNS48YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEkgYWxz
-byB1c2Ugc3lzbG9nZCBmcm9tIG91ciBwcmV2aW91cyBwcm9kdWN0Ljxicj4mbmJzcDsmbmJzcDsm
-bmJzcDsgTm93IEkgbWV0IGEgcHJvYmxlbSB3aGVuIHN0YXJ0IHN5c2xvZ2QgZnJvbSBiYXNoLCBv
-biBvdGhlciBwbGF0Zm9ybXMsIHN1Y2ggYXMgQVJNL1g4Ni9NaXBzLCB0aGUgc3lzbG9nZCBjYW4g
-Zm9yayBhIGNoaWxkIHByb2Nlc3MsIGFuZCB0aGVuIHRoZSBwYXJlbnQgc3lzbG9nZCB3aWxsIGJl
-IGtpbGxlZCBieSBjaGlsZCBzeXNsb2dkIHF1aWNrbHksIHNvIGxlYXZpbmcgdGhlIGNoaWxkIHN5
-c2xvZ2QgcnVubmluZyBpbiBiYWNrZ3JvdW5kLjxicj4mbmJzcDsmbmJzcDsmbmJzcDsgQnV0LCBv
-biBteSBQb3dlclBDIHRhcmdldCwgdGhlIHBhcmVudCBzeXNsb2dkIHdpbGwgaGFuZyBmb3IgMzBT
-ZWMsIGFuZCB0aGVuIGV4aXQgd2l0aCBhbGFybSBjbG9jayB0aW1lb3V0KDMwU2VjKS4gSSB1c2Vk
-IHN0cmFjZSB0byBjaGVjayB3aGF0IGhhcHBlbmVkIGluIHN5c2xvZ2QsIGFuZCBJIGZvdW5kIHRo
-YXQgaXQgd2lsbCB1c2Ugc2VsZWN0IHN5dGVtIGNhbGwgYW5kIHJlYWQgL3Byb2Mva21zZy48YnI+
-Jm5ic3A7Jm5ic3A7Jm5ic3A7IFRvIGNvbXBhcmUsIG9uIG90aGVyIHRhcmdldHMsIHRoZXJlIGlz
-IHJlYWQoNiwuLi4uLixubm5uKT0tMSBbRUFHQUlOXSg2IGlzIHRoZSBmaWxlIGlkIG9mIC9wcm9j
-L2ttc2cpLCB0aGVuIGNoaWxkIHN5c2xvZ2Qgd2lsbCBraWxsIHBhcmVudCBzeXNsb2dkLiBCdXQg
-b24gUG93ZXJQQyB0YXJnZXQsIGl0IGlzIHJlYWQoNiwuLi4uLi4sbm5ubik9P1tFUkVTVEFSVFNZ
-U10sIHNvIEkgdGhpbmsgdGhlIGxpYmMgd2lsbCBjYWxsIHN5c3RlbSBjYWxsIHJlYWQgbWFueSBt
-YW55IHRpbWVzLjxicj4mbmJzcDsmbmJzcDsmbmJzcDsgVGhlbiwgSSBjaGVjayB0aGUgY2hpbGQg
-c3lzbG9nZCB3aXRoIC9wcm9jL3RoZXBpZC9zdGF0dXMsIEkgZm91bmQgdGhlIHNpZ3BuZCBpcyAw
-MDAwMDAwMDAsIHRoYXQgaXMgdGhlcmUgaXMgbm8gc2lnbmFsIHBlbmRpbmcgb24gY2hpbGQgc3lz
-bG9nZC48YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEJ1dCwgaW4gL2tlcm5lbC9wcmluay5jLCBJIGFk
-ZGVkIHByaW5rKCJhYWFhYWFhYWFhXG4iKSBhZnRlciB3YWl0X2V2ZW50X2ludGVycnVwdGlibGUo
-KSB3aGVuIGl0IHJldHVybnMgZXJyb3IsIGFuZCB3aXRoIGRtZXNnLCBJIGRpZCBnZXQgYWFhYWFh
-YWFhYSBvdXRwdXQuPGJyPiZuYnNwOyZuYnNwOyZuYnNwOyBTbywgdG8gc3VtbWFyaXplLCBvbiBv
-dGhlciBoYXJkd2FyZSBwbGF0Zm9ybXMsIHdoeSB0aGVyZSBpcyBFQUdBSU4sIHdoaWxlIG9uIFBQ
-QyB0YXJnZXQsIGl0IGlzIEVSRVNUQVJUU1lTIGluc3RlYWQuPGJyPiZuYnNwOyZuYnNwOyZuYnNw
-OyBJIGhvcGUgSSBoYXZlIGRlc2NyaWJlZCBteSBxdWVzdGlvbiBjbGVhcmx5LiBUaGFuayB5b3Ug
-Zm9yIHlvdXIgaGVscCBhbmQgYmVzdCByZWdhcmRzLDxicj48YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7
-ICZuYnNwOyZuYnNwOyAgVy50YXJnZXQ8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IDEtSmFuLTIwMDc8
-YnI+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+PC9mb250PjxiciAvPgo8
-YnIgLz4KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLTxiciAvPgq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6
-xKOhKCA8YSBocmVmPWh0dHA6Ly9hZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1
-aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAwNjEyMjUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9h
-ZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVf
-MjAwNjEyMjUuaHRtbDwvYT4gKTxiciAvPgo8YnIgLz4KPT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PTxiciAvPgrXorLh0MLA
-yzJHw+K30dPKz+SjqCA8YSBocmVmPWh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUu
-aHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRt
-bDwvYT4go6k=
+If I run snmpd with basic config file in /etc/snmp/snmpd.conf it run ok
+But when I want to use trapsink , I add these line to /etc/snmp/snmpd.conf 
+////////////////////////////////////
+        #   arguments: 1 | 2   (1 = yes, 2 = no)
+authtrapenable 1
+# trapcommunity: Default trap sink community to use
+#   arguments: community-string
+trapcommunity abc
+# trapsink: A SNMPv1 trap receiver
+#   arguments: host [community] [portnum]
+trapsink 192.168.1.7
+# informsink: A SNMPv2c inform (acknowledged trap) receiver
+#   arguments: host [community] [portnum]
+informsink 192.168.1.15
+# trap2sink: A SNMPv2c trap receiver
+#   arguments: host [community] [portnum]
+trap2sink 192.168.1.7
+///////////////////////////////////
+    and run snmpd with debug I receive 
+.......
+......
+snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf
+trace: netsnmp_send_traps(): agent_trap.c, 616:
+trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:
+trap: 
+trace: snmp_call_callbacks(): callback.c, 209:
+callback: START calling callbacks for maj=1 min=6
+trace: snmp_call_callbacks(): callback.c, 223:
+callback: calling a callback for maj=1 min=6
+trace: send_notifications(): notification/snmpNotifyTable.c, 95:
+send_notifications: starting: pdu=8086740, vars=0
+Segmentation fault
+
+What error I had and How can I fix it?
+
+Thanks for all
 
 
---=-sina_alt_6a6528418d008173b6de27d1d6a547c9--
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-1456742139-1167744809=:55876
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hi all<br>I use net-snmp package in ELDK4.0 with board TQM8xxL .<br>I config it <br>&nbsp;&nbsp;&nbsp; ./configure \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --host=$RPM_ARCH-linux&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --enable-static --enable-shared&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-cflags="$RPM_OPT_FLAGS -lcrypto"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-ldflags="$LDFLAGS"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ --with-sys-location="Unknown"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-logfile="/var/log/snmpd.log"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-persistent-directory="/var/net-snmp"&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-endianness=$endianess&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-default-snmp-version="2"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-mib-modules="host agentx smux "\<br><br>%if %{tcp_wrappers}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ --with-libwrap=%{_libdir}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>%endif<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --sysconfdir=%{_sysconfdir}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --enable-ucd-snmp-compatibility&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-openssl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ --with-pic&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --with-sys-contact="root@localhost"<br><br>If I run snmpd with basic config file in /etc/snmp/snmpd.conf it run ok<br>But when I want to use trapsink , I add these line to /etc/snmp/snmpd.conf <br>////////////////////////////////////<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;  #&nbsp;&nbsp; arguments: 1 | 2&nbsp;&nbsp; (1 = yes, 2 = no)<br>authtrapenable 1<br># trapcommunity: Default trap sink community to use<br>#&nbsp;&nbsp; arguments: community-string<br>trapcommunity abc<br># trapsink: A SNMPv1 trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trapsink 192.168.1.7<br># informsink: A SNMPv2c inform (acknowledged trap) receiver<br>#&nbsp;&nbsp; arguments: host [community]
+ [portnum]<br>informsink 192.168.1.15<br># trap2sink: A SNMPv2c trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trap2sink 192.168.1.7<br>///////////////////////////////////<br>&nbsp;&nbsp;&nbsp; and run snmpd with debug I receive <br>.......<br>......<br>snmp_clean_persistent:&nbsp; removing old config file: /var/net-snmp/snmpd.0.conf<br>trace: netsnmp_send_traps(): agent_trap.c, 616:<br>trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:<br>trap: <br>trace: snmp_call_callbacks(): callback.c, 209:<br>callback: START calling callbacks for maj=1 min=6<br>trace: snmp_call_callbacks(): callback.c, 223:<br>callback: calling a callback for maj=1 min=6<br>trace: send_notifications(): notification/snmpNotifyTable.c, 95:<br>send_notifications: starting: pdu=8086740, vars=0<br>Segmentation fault<br><br>What error I had and How can I fix it?<br><br>Thanks for all<br><br><p>&#32;Send instant messages to your
+ online friends http://au.messenger.yahoo.com 
+--0-1456742139-1167744809=:55876--
