@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id F02FADDEBF
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33010.mail.mud.yahoo.com (web33010.mail.mud.yahoo.com
+	[209.191.69.125]) by ozlabs.org (Postfix) with SMTP id B3C2CDDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Jan 2007 06:43:13 +1100 (EST)
-To: tran vanle <vantranbk@yahoo.com.au>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: ELDK4.0 net-snmp can not work with trapsink 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 03 Jan 2007 00:33:29 +1100."
-	<732221.55876.qm@web33009.mail.mud.yahoo.com>
-Date: Tue, 02 Jan 2007 20:43:10 +0100
-Sender: wd@denx.de
-Message-Id: <20070102194310.C2FFE353AF2@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  3 Jan 2007 12:50:54 +1100 (EST)
+Message-ID: <20070103015052.70958.qmail@web33010.mail.mud.yahoo.com>
+Date: Wed, 3 Jan 2007 12:50:52 +1100 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: Re: ELDK4.0 net-snmp can not work with trapsink
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-450663375-1167789052=:66742"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +20,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <732221.55876.qm@web33009.mail.mud.yahoo.com> you wrote:
-> 
-> I use net-snmp package in ELDK4.0 with board TQM8xxL .
+--0-450663375-1167789052=:66742
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Don't do that. ELDK 4.0 is based on and more or less requires  a  2.6
-kernel tree. And the TQM8xxL boards are NOT supported in 2.6 yet.
+Hi  Wolfgang Denk
 
-> I config it 
+In board TQM 8xxL I use kernel 2.6.11.7 with tosati patch , so it run ok. May net-snmp require kernel 2.4 to run trapsink?
 
-And why don't you use the net-snmp package that comes  included  with
-the  ELDK,  or  follow  the  documented  method  to build ELDK target
-packages?
+About net-snmp : Of course I use net-snmp package include in ELDK4.0 package .
+this configure I read in net-snmp.spec after I run 
+ppc_8xx-rpm -iv net-snmp....rpm. 
+I just rebuild net-snmp package in ELDK4.0, not edit any thing.So I don't know why it has this error
 
-Best regards,
+Thanks for all
 
-Wolfgang Denk
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-450663375-1167789052=:66742
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Disc space - the final frontier!
+Hi&nbsp; <tt><tt>Wolfgang Denk<br><br>In board TQM 8xxL I use kernel 2.6.11.7 with tosati patch , so it run ok. May net-snmp require kernel 2.4 to run trapsink?<br><br>About net-snmp : Of course I use net-snmp package include in ELDK4.0 package .<br>this configure I read in net-snmp.spec after I run <br>ppc_8xx-rpm -iv net-snmp....rpm. <br>I just rebuild net-snmp package in ELDK4.0, not edit any thing.So I don't know why it has this error<br><br>Thanks for all<br></tt></tt><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-450663375-1167789052=:66742--
