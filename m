@@ -2,22 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7390DDDED4
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 07:37:49 +1100 (EST)
-Subject: Re: R_PPC_ADDR16_HI relocs in PPC modules ?
+	by ozlabs.org (Postfix) with ESMTP id C20E0DDEF8
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 07:50:57 +1100 (EST)
+Subject: Re: [PATCH] maple: improve CPC9x5 host bridge detection
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Simon Vallet <linux-ppc@castalie.org>
-In-Reply-To: <20070103113238.0d99b015.linux-ppc@castalie.org>
-References: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
-	<1167770486.6165.70.camel@localhost.localdomain>
-	<20070103080151.214ebb62@mlejnas.priv.castalie.org>
-	<1167818293.6165.143.camel@localhost.localdomain>
-	<20070103113238.0d99b015.linux-ppc@castalie.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20070103185628.GE6279@localdomain>
+References: <20070103185628.GE6279@localdomain>
 Content-Type: text/plain
-Date: Thu, 04 Jan 2007 07:36:43 +1100
-Message-Id: <1167856603.6165.145.camel@localhost.localdomain>
+Date: Thu, 04 Jan 2007 07:50:46 +1100
+Message-Id: <1167857446.6165.155.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-01-03 at 11:32 +0100, Simon Vallet wrote:
-> On Wed, 03 Jan 2007 20:58:12 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, 2007-01-03 at 12:56 -0600, Nathan Lynch wrote:
+> Identify CPC9x5 PCI Express, AGP, and HT host bridges using
+> device_type and compatible properties, which is a more flexible method
+> than using the name property (which can differ between firmwares and
+> models).
 > 
-> > Doh ! I've been in "contact" with that driver in a previous life... it's
-> > a whole bunch of horrid C++ with windows wrappers all over... or did
-> > they improve it ? It's still an ST chip ?
-> 
-> Well -- obviously I can't tell much about the source ;-), but it
-> certainly looks like C++ to me. The last version of the driver is some
-> years old, actually, so it probably hasn't changed much since you were
-> "in contact" with it -- and yes, as far as I know the card still uses an
-> ST chipset.
-> 
-> Since you're somewhat familiar with this driver, do you
-> think the ELF translation approach is a viable one ?
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-No idea.
+Do that work on js20/js21 with SLOF ?
 
 Ben.
+
+> ---
+>  arch/powerpc/platforms/maple/pci.c |   15 +++++++++------
+>  1 files changed, 9 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+> index 3f6a69f..011f0f1 100644
+> --- a/arch/powerpc/platforms/maple/pci.c
+> +++ b/arch/powerpc/platforms/maple/pci.c
+> @@ -560,13 +560,16 @@ void __init maple_pci_init(void)
+>  		return;
+>  	}
+>  	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;) {
+> -		if (np->name == NULL)
+> +		if (!np->type)
+>  			continue;
+> -		if (!strcmp(np->name, "pci") || !strcmp(np->name, "pcie")) {
+> -			if (add_bridge(np) == 0)
+> -				of_node_get(np);
+> -		}
+> -		if (strcmp(np->name, "ht") == 0) {
+> +		if (strcmp(np->type, "pci") && strcmp(np->type, "ht"))
+> +			continue;
+> +		if ((device_is_compatible(np, "u4-pcie") ||
+> +		     device_is_compatible(np, "u3-agp")) &&
+> +		    add_bridge(np) == 0)
+> +			of_node_get(np);
+> +
+> +		if (device_is_compatible(np, "u3-ht")) {
+>  			of_node_get(np);
+>  			ht = np;
+>  		}
