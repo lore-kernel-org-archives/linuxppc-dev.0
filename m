@@ -1,22 +1,14 @@
-Return-Path: <linux-ppc@castalie.org>
-Received: from tloen.castalie.org (tloen.castalie.org [213.41.240.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9DEA1DDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2007 21:32:50 +1100 (EST)
-Date: Wed, 3 Jan 2007 11:32:38 +0100
-From: Simon Vallet <linux-ppc@castalie.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: R_PPC_ADDR16_HI relocs in PPC modules ?
-Message-Id: <20070103113238.0d99b015.linux-ppc@castalie.org>
-In-Reply-To: <1167818293.6165.143.camel@localhost.localdomain>
-References: <20070102172554.7a94cd37@mlejnas.priv.castalie.org>
-	<1167770486.6165.70.camel@localhost.localdomain>
-	<20070103080151.214ebb62@mlejnas.priv.castalie.org>
-	<1167818293.6165.143.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id EBC1BDDECC
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 04:51:33 +1100 (EST)
+Date: Wed, 3 Jan 2007 18:33:56 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] disable PReP and EFIKA during make oldconfig
+Message-ID: <20070103173356.GA26130@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 03 Jan 2007 20:58:12 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> Doh ! I've been in "contact" with that driver in a previous life... it's
-> a whole bunch of horrid C++ with windows wrappers all over... or did
-> they improve it ? It's still an ST chip ?
+New boards should not be enabled per default.
+Disable EFIKA and PReP per default.
+Anyone who really needes the new code can enable it during make oldconfig.
 
-Well -- obviously I can't tell much about the source ;-), but it
-certainly looks like C++ to me. The last version of the driver is some
-years old, actually, so it probably hasn't changed much since you were
-"in contact" with it -- and yes, as far as I know the card still uses an
-ST chipset.
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-Since you're somewhat familiar with this driver, do you
-think the ELF translation approach is a viable one ?
+---
+ arch/powerpc/Kconfig |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Simon
+Index: linux-2.6/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/Kconfig
++++ linux-2.6/arch/powerpc/Kconfig
+@@ -436,7 +436,7 @@ config PPC_EFIKA
+ 	select RTAS_PROC
+ 	select PPC_MPC52xx
+ 	select PPC_NATIVE
+-	default y
++	default n
+ 
+ config PPC_LITE5200
+ 	bool "Freescale Lite5200 Eval Board"
+@@ -471,7 +471,7 @@ config PPC_PREP
+ 	select PPC_INDIRECT_PCI
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
+-	default y
++	default n
+ 
+ config PPC_MAPLE
+ 	depends on PPC_MULTIPLATFORM && PPC64
