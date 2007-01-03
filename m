@@ -1,14 +1,20 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id EBC1BDDECC
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 04:51:33 +1100 (EST)
-Date: Wed, 3 Jan 2007 18:33:56 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] disable PReP and EFIKA during make oldconfig
-Message-ID: <20070103173356.GA26130@aepfle.de>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 632B9DDEC4
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 05:52:07 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1891859ugf
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Jan 2007 10:52:05 -0800 (PST)
+Message-ID: <528646bc0701031052k7893c84cxcb3d5b1262a585e6@mail.gmail.com>
+Date: Wed, 3 Jan 2007 11:52:05 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: [PATCH] disable PReP and EFIKA during make oldconfig
+In-Reply-To: <20070103173356.GA26130@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070103173356.GA26130@aepfle.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,36 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 1/3/07, Olaf Hering <olaf@aepfle.de> wrote:
+>
+> New boards should not be enabled per default.
+> Disable EFIKA and PReP per default.
+> Anyone who really needes the new code can enable it during make oldconfig.
+>
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-New boards should not be enabled per default.
-Disable EFIKA and PReP per default.
-Anyone who really needes the new code can enable it during make oldconfig.
+In fact, I think this sort of stuff should also go in a sub menu.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+Cheers,
+g.
 
----
- arch/powerpc/Kconfig |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/Kconfig
-+++ linux-2.6/arch/powerpc/Kconfig
-@@ -436,7 +436,7 @@ config PPC_EFIKA
- 	select RTAS_PROC
- 	select PPC_MPC52xx
- 	select PPC_NATIVE
--	default y
-+	default n
- 
- config PPC_LITE5200
- 	bool "Freescale Lite5200 Eval Board"
-@@ -471,7 +471,7 @@ config PPC_PREP
- 	select PPC_INDIRECT_PCI
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
--	default y
-+	default n
- 
- config PPC_MAPLE
- 	depends on PPC_MULTIPLATFORM && PPC64
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
