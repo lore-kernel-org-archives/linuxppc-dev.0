@@ -1,19 +1,18 @@
-Return-Path: <mcr@sandelman.ottawa.on.ca>
-Received: from cod.sandelman.ca (cod.sandelman.ca [192.139.46.42])
-	by ozlabs.org (Postfix) with ESMTP id 47CE7DDEC0
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 0E05CDDED4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Jan 2007 04:16:54 +1100 (EST)
-From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
-To: n.balaji@gdatech.co.in
-Subject: Re: Asynchronous Crypto suppor for MPC8360E's Security Engine 
-In-Reply-To: Message from n.balaji@gdatech.co.in of "Wed,
-	03 Jan 2007 16:38:02 +0530."
-	<5380.202.144.30.226.1167822482.squirrel@mail.gdatech.co.in>
-References: <5380.202.144.30.226.1167822482.squirrel@mail.gdatech.co.in> 
-Date: Wed, 03 Jan 2007 11:43:37 -0500
-Message-ID: <9722.1167842617@sandelman.ottawa.on.ca>
-Sender: mcr@sandelman.ottawa.on.ca
-Cc: linuxppc-embedded@ozlabs.org, ilugc@ae.iitm.ac.in
+	Thu,  4 Jan 2007 07:01:15 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Stupid Telnet Question
+Date: Wed, 3 Jan 2007 11:49:05 -0800
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871078F811B@VCAEXCH01.hq.corp.viasat.com>
+In-Reply-To: <000001c72f64$b727ea70$2018010a@inphasetech.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Erik Habbinga" <erikhabbinga@inphase-tech.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,41 +23,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> -----Original Message-----
+> From: Erik Habbinga [mailto:erikhabbinga@inphase-tech.com]=20
+> Sent: Wednesday, January 03, 2007 10:27 AM
+> To: Martin, Tim
+> Subject: Re: Stupid Telnet Question
+>=20
+> Tim,
+>    Did you ever figure out how to get telnet to work with=20
+> ELDK 4.0?  I've run into the same problem.  I've heard it=20
+> will be fixed in ELDK 4.1,  but that's not out yet.
+>=20
+> Thanks!
+> Erik
+>=20
 
+Erik,
 
->>>>> "n" == n balaji <n.balaji@gdatech.co.in> writes:
-    n> Hi, I am working on MPC8360E Security Engine. I have ported the
-    n> Openswan 2.4.5(IPSec --KLIPS) with OCF to MPC8360E's Security
-    n> Engine (Talitos).  Encryption and Decryption is working. But when
+I did eventually solve it - but don't remember exactly what I did.
 
-  You don't say if you ported OCF from sf.net, or from the OCF git tree
-on http://hifn.xelerance.com/
+Here's my xinetd telnet configuration file (/etc/xinet.d/telnet):
+------------
+# description: The telnet server serves telnet sessions; it uses \
+#	unencrypted username/password pairs for authentication.
+service telnet
+{
+	flags		=3D REUSE
+	socket_type	=3D stream       =20
+	wait		=3D no
+	user		=3D root
+	server		=3D /usr/sbin/in.telnetd
+        server_args     =3D -L /bin/login
+	log_on_failure	+=3D USERID
+	disable		=3D no
+}
+------------
 
-  The latter is based upon 2.6.18 kernel, so perhaps not.
+And here's my bootup script (/etc/rc.sh):
+------------
+#!/bin/sh
 
-  There have been numerous improvements in the past 4 months to OCF, but
-we are still not seeing multiple packets being submitted to the hardware
-driver layer from OCF. As such, the hardware's pipeline is not being
-kept full.
+/sbin/ifconfig lo 127.0.0.1
 
-- -- 
-]            Bear: "Me, I'm just the shape of a bear."          |  firewalls  [
-]   Michael Richardson,    Xelerance Corporation, Ottawa, ON    |net architect[
-] mcr@xelerance.com      http://www.sandelman.ottawa.on.ca/mcr/ |device driver[
-] panic("Just another Debian GNU/Linux using, kernel hacking, security guy"); [
+>/etc/mtab
 
+/bin/mount -n -t tmpfs tmpfs -o size=3D1M /tmp
+mkdir /tmp/var
+mkdir /tmp/var/log
+mkdir /tmp/var/run
+mkdir /tmp/dev
+/etc/rc.makedev
+/sbin/syslogd
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-Comment: Finger me for keys
+# mount /proc so "reboot" works
+/bin/mount -n -t proc proc /proc
 
-iQEVAwUBRZvdOICLcPvd0N1lAQI4RwgAkW6qZVOmEXLGMM1g6h3TgzCfhKPb+0/I
-vlH2OHIlmC46wRQvpeH0VKGTWU3s/4j1076lgVRhK1NHVILjMKeaRLa6EQn7+sI3
-Hvc1afEI3wIw0dLNNSgAPkDC95rrcW12OpPe7jGmZdvuR+ATlx2AX4pQ7xS1Rzol
-0nPHta4ickgC6ZuAGicUVzgrU2lVfB1aHmcjDAKm0GWyzGB6rpp3/5daJXSZBOgS
-gHOvGswTPYCLCq88pmpXS4ihU8DZNEV97lEJ4/J9V4V0D/0WvyKGo584mBOi7OJK
-wUPaOjq/IZlJWz4XVeM2NNeNmn5ttlyNYdHX3HkG109U3+go5hatXQ==
-=8CC2
------END PGP SIGNATURE-----
+/usr/sbin/xinetd -stayalive -reuse -pidfile /tmp/xinetd.pid
+------------
+
+/etc/rc.makedev is just the ELDK 4.0 makedev script, slightly taylored
+to my particular board.
