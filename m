@@ -1,22 +1,22 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 95CFFDDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 19:42:06 +1100 (EST)
-Date: Thu, 4 Jan 2007 09:40:49 +0100
-From: Olaf Hering <olh@suse.de>
-To: Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] relax check for AIX in msdos partition table
-Message-ID: <20070104084049.GA19959@suse.de>
-References: <20061206211630.GB27857@krispykreme>
-	<20061206222213.GA17446@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20061206222213.GA17446@localhost.localdomain>
-Cc: linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0785ADDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 21:43:20 +1100 (EST)
+Date: Thu, 4 Jan 2007 10:53:45 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] add delay around sl82c105_reset_engine calls
+Message-ID: <20070104105345.046e7aec@localhost.localdomain>
+In-Reply-To: <20070104064254.GA31986@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204124026.GB28159@aepfle.de>
+	<20061204130254.424c7979@localhost.localdomain>
+	<20070104064254.GA31986@aepfle.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,87 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 07, David Gibson wrote:
+On Thu, 4 Jan 2007 07:42:54 +0100
+Olaf Hering <olaf@aepfle.de> wrote:
 
-> On Thu, Dec 07, 2006 at 08:16:30AM +1100, Anton Blanchard wrote:
-
-> > The patch to identify AIX disks and ignore them has caused at least one
-> > machine to fail to find the root partition on 2.6.19. The patch is:
-> > 
-> > http://lkml.org/lkml/2006/7/31/117
-> > 
-> > The problem is some disk formatters do not blow away the first 4 bytes
-> > of the disk. If the disk we are installing to used to have AIX on it,
-> > then the first 4 bytes will still have IBMA in EBCDIC.
-> > 
-> > The install in question was debian etch. Im not sure what the best fix
-> > is, perhaps the AIX detection code could check more than the first 4
-> > bytes.
+> On Mon, Dec 04, Alan wrote:
 > 
-> Yeah, I had this problem on paulus' old PReP machine - I had to
-> manually zap the AIX magic number to get it to see the perfectly good
-> partitions.
+> > On Mon, 4 Dec 2006 13:40:26 +0100 (MET)
+> > Olaf Hering <olaf@aepfle.de> wrote:
+> > 
+> > > 
+> > > 
+> > > the hald media changed polling does really confuse things.
+> > > noone knows why the delays are needed, but they give us access to
+> > > the CD.
+> > 
+> > Can you tell me what happens if you completely pull the reset out of the
+> > dma_end function. Do you still need delays then.
+> 
+> An udelay(50) will give reliable access to the drive, but there is still
+> one (or more) EH reset. The drive works without EH resets with udelay(100).
+> 
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-What pre-historic fdisk was used to create the partition table? At least
-the current version of fdisk does not let me manipulate the existing
-partition table before I remove the AIX marker. The patch below should
-fix it. Partition table entries 2,3,4 from an AIX 4.3 install have type 0x41.
+Acked-by: Alan Cox <alan@redhat.com>
 
-Also, the whole partition info for primary partitions is in this block:
-
-  dd if=/dev/sdb count=$(( 4 * 16 )) bs=1 skip=$(( 0x1be ))
-
-All other data do not matter, beside the 0x55aa marker at the end of the
-first block.
-
-Signed-off-by: Olaf Hering <olh@suse.de>
-
----
- fs/partitions/msdos.c |   12 +++++++++++-
- include/linux/genhd.h |    2 ++
- 2 files changed, 13 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/fs/partitions/msdos.c
-===================================================================
---- linux-2.6.orig/fs/partitions/msdos.c
-+++ linux-2.6/fs/partitions/msdos.c
-@@ -63,15 +63,25 @@ msdos_magic_present(unsigned char *p)
- #define AIX_LABEL_MAGIC4	0xC1
- static int aix_magic_present(unsigned char *p, struct block_device *bdev)
- {
-+	struct partition *pt = (struct partition *) (p + 0x1be);
- 	Sector sect;
- 	unsigned char *d;
--	int ret = 0;
-+	int slot, ret = 0;
- 
- 	if (p[0] != AIX_LABEL_MAGIC1 &&
- 		p[1] != AIX_LABEL_MAGIC2 &&
- 		p[2] != AIX_LABEL_MAGIC3 &&
- 		p[3] != AIX_LABEL_MAGIC4)
- 		return 0;
-+	/* Assume the partition table is valid if Linux partitions exists */
-+	for (slot = 1; slot <= 4; slot++, pt++) {
-+		if (pt->sys_ind == LINUX_SWAP_PARTITION ||
-+			pt->sys_ind == LINUX_RAID_PARTITION ||
-+			pt->sys_ind == LINUX_DATA_PARTITION ||
-+			pt->sys_ind == LINUX_LVM_PARTITION ||
-+			is_extended_partition(pt))
-+			return 0;
-+	}
- 	d = read_dev_sector(bdev, 7, &sect);
- 	if (d) {
- 		if (d[0] == '_' && d[1] == 'L' && d[2] == 'V' && d[3] == 'M')
-Index: linux-2.6/include/linux/genhd.h
-===================================================================
---- linux-2.6.orig/include/linux/genhd.h
-+++ linux-2.6/include/linux/genhd.h
-@@ -21,6 +21,8 @@ enum {
- 	WIN98_EXTENDED_PARTITION = 0x0f,
- 
- 	LINUX_SWAP_PARTITION = 0x82,
-+	LINUX_DATA_PARTITION = 0x83,
-+	LINUX_LVM_PARTITION = 0x8e,
- 	LINUX_RAID_PARTITION = 0xfd,	/* autodetect RAID partition */
- 
- 	SOLARIS_X86_PARTITION =	LINUX_SWAP_PARTITION,
+This wants revisiting some day to understand the interaction better but
+for now it gets us up and running properly.
