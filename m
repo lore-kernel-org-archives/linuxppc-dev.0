@@ -1,13 +1,13 @@
 Return-Path: <dgalari@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.225])
-	by ozlabs.org (Postfix) with ESMTP id B4F0ADDE10
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.234])
+	by ozlabs.org (Postfix) with ESMTP id C0DD6DDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Jan 2007 22:31:15 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so5963035wxd
+	Thu,  4 Jan 2007 22:24:07 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so5961655wxd
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 04 Jan 2007 03:31:13 -0800 (PST)
-Message-ID: <3184691b0701040331m5bc79cc3vb749f868e252426b@mail.gmail.com>
-Date: Thu, 4 Jan 2007 12:31:13 +0100
+	Thu, 04 Jan 2007 03:24:05 -0800 (PST)
+Message-ID: <3184691b0701040324x1f91151fh64d5adcb4e31869f@mail.gmail.com>
+Date: Thu, 4 Jan 2007 12:24:05 +0100
 From: "David Gamez Alari" <dgalari@gmail.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: boot problem in a LITE5200B
@@ -30,19 +30,19 @@ In my screen the LITE5200B board post:
 
 => bootm 0x300000 0x700000
 ## Booting image at 00300000 ...
-  Image Name:   Linux-2.6.16-mpc52xx-gd59bdc6d-d
-  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-  Data Size:    668948 Bytes = 653.3 kB
-  Load Address: 00000000
-  Entry Point:  00000000
-  Uncompressing Kernel Image ... OK
+   Image Name:   Linux-2.6.16-mpc52xx-gd59bdc6d-d
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    668948 Bytes = 653.3 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Uncompressing Kernel Image ... OK
 ## Loading RAMDisk Image at 00700000 ...
-  Image Name:   RAM disk
-  Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-  Data Size:    3510520 Bytes =  3.3 MB
-  Load Address: 00000000
-  Entry Point:  00000000
-  Loading Ramdisk to 0fbf6000, end 0ff4f0f8 ... OK
+   Image Name:   RAM disk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    3510520 Bytes =  3.3 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Loading Ramdisk to 0fbf6000, end 0ff4f0f8 ... OK
 id mach(): done
 MMU:enter
 MMU:hw init
