@@ -1,19 +1,14 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 5ECE4DDEDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 08:11:24 +1100 (EST)
-Date: Wed, 3 Jan 2007 15:11:17 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] maple: improve CPC9x5 host bridge detection
-Message-ID: <20070103211117.GF6279@localdomain>
-References: <20070103185628.GE6279@localdomain>
-	<1167857446.6165.155.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1167857446.6165.155.camel@localhost.localdomain>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] determine last ext3 LBA to fix wild LBA reads - v2
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Doug Maxey <dwm@enoyolf.org>
+In-Reply-To: <32361.1167808666@bebe.enoyolf.org>
+References: <32361.1167808666@bebe.enoyolf.org>
+Content-Type: text/plain
+Date: Thu, 04 Jan 2007 12:09:16 +1100
+Message-Id: <1167872956.6165.172.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: yaboot-devel@ozlabs.org, Linux PowerPC List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2007-01-03 at 12:56 -0600, Nathan Lynch wrote:
-> > Identify CPC9x5 PCI Express, AGP, and HT host bridges using
-> > device_type and compatible properties, which is a more flexible method
-> > than using the name property (which can differ between firmwares and
-> > models).
-> > 
-> > Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> 
-> Do that work on js20/js21 with SLOF ?
 
-Not sure, I'll see whether I can test one of those.
+>  static errcode_t linux_set_blksize (io_channel channel, int blksize)
+>  {
+> +     DEBUG_F("bs set to 0x%x\n", blksize);
+>       channel->block_size = bs = blksize;
+>       if (block_buffer) {
+>  	  free(block_buffer);
+> @@ -600,6 +612,11 @@ static errcode_t linux_read_blk (io_channel channel, unsigned long block, int co
+>      
+>       tempb = (((unsigned long long) block) *
+>  	      ((unsigned long long)bs)) + (unsigned long long)doff;
+> +     if (tempb > dend) {
+> +	  DEBUG_F("\nSeek error on block %lx, tempb=%Lx\n", block, tempb >> 9);
+> +	  return EXT2_ET_LLSEEK_FAILED;
+> +     }
+> +
+
+In the case where we don't pass a "part", dend is 0 no ? We should check
+this case and not apply the test...
+
+Ben.
