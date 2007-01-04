@@ -1,20 +1,16 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 15951DDE02
+Return-Path: <onetarget@sina.com>
+Received: from r3-90.sinamail.sina.com.cn (r3-90.sinamail.sina.com.cn
+	[202.108.3.90]) by ozlabs.org (Postfix) with SMTP id 9A35BDDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Jan 2007 15:09:01 +1100 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1H2JWu-0004D4-9A
-	for linuxppc-embedded@ozlabs.org; Wed, 03 Jan 2007 19:44:36 -0800
-Message-ID: <8153471.post@talk.nabble.com>
-Date: Wed, 3 Jan 2007 19:44:36 -0800 (PST)
-From: Nethra <nethra_gmit@yahoo.co.in>
+	Thu,  4 Jan 2007 20:05:20 +1100 (EST)
+Message-ID: <20070104090512.28330.qmail@mail3-90.sinamail.sina.com.cn>
 To: linuxppc-embedded@ozlabs.org
-Subject: support of kernel for ep8248e
+Subject: libraries in ELDK
+Date: Thu, 04 Jan 2007 17:05:12 +0800 
+From: onetarget@sina.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="=-sina_alt_9693bf34a5e9b0d7be3942435c25de7e"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +21,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--=-sina_alt_9693bf34a5e9b0d7be3942435c25de7e
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-hi,
+DUhpIGFsbA0gICAgSSBhbSB1c2luZyBFTERLLTIwMDUtMDcwNiwgYW5kIEkgY2FuIG5vdCBnZXQg
+c3ltYm9scw13aGVuIHBwY184Mnh4LW9iamR1bXAgLWQgbGliYy0yLjMuMS5zbywgc28gSSBhbSAg
+bm90IHN1cmUgaWYgdGhlDWZ1bmN0aW9uIGdldGFkZHJpbmZvKCkgaXMgaW4gdGhlIGxpYmM/DSAg
+ICBBbmQgSSB3b25kZXIgaWYgdGhlcmUgaXMgc29tZSBncmVhdCBkaWZmZXJlbmNlIGJldHdlZW4g
+bGlibnNzX2ZpbGVzLTIuMy4xLnNvIGFuZCBHTElCQz8NICAgIFRoYW5rIHlvdSBhbmQgcmVnYXJk
+cywNICAgIFcudGFyZ2V0DSAgICBKYW4tNC0yMDA3DQoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQq73cbVyczTw8yoyr27
++mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCBodHRwOi8vYWQ0LnNpbmEuY29tLmNuL3NpbmEvbGlt
+ZW5nMy9tYWlsX3podWl5dS8yMDA2L21haWxfemh1aXl1XzIwMDYxMjI1Lmh0bWwgKQoKPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PQrXorLh0MLAyzJHw+K30dPKz+SjqCBodHRwOi8vbWFpbC5zaW5hLmNvbS5jbi9jaG9vc2VN
+b2RlLmh0bWwgo6k=
 
-  does kernel 2.6.10 support for EP8248E (single board),if not what patch
-has to be attached to make it work for this board.
 
-thanks in advance,
-nethra
--- 
-View this message in context: http://www.nabble.com/support-of-kernel-for-ep8248e-tf2917524.html#a8153471
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+--=-sina_alt_9693bf34a5e9b0d7be3942435c25de7e
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
+dC1zaXplOjEycHgnPkhpIGFsbDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIHVzaW5nIEVM
+REstMjAwNS0wNzA2LCBhbmQgSSBjYW4gbm90IGdldCBzeW1ib2xzDQp3aGVuIHBwY184Mnh4LW9i
+amR1bXAgLWQgbGliYy0yLjMuMS5zbywgc28gSSBhbSZuYnNwOyBub3Qgc3VyZSBpZiB0aGUNCmZ1
+bmN0aW9uIGdldGFkZHJpbmZvKCkgaXMgaW4gdGhlIGxpYmM/PGJyPg0KJm5ic3A7Jm5ic3A7Jm5i
+c3A7IEFuZCBJIHdvbmRlciBpZiB0aGVyZSBpcyBzb21lIGdyZWF0IGRpZmZlcmVuY2UgYmV0d2Vl
+biBsaWJuc3NfZmlsZXMtMi4zLjEuc28gYW5kIEdMSUJDPzxicj4NCiZuYnNwOyZuYnNwOyZuYnNw
+OyBUaGFuayB5b3UgYW5kIHJlZ2FyZHMsPGJyPg0KPGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IFcu
+dGFyZ2V0PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IEphbi00LTIwMDc8YnI+DQo8c3R5bGU+cHtt
+YXJnaW46MH1pbWd7Ym9yZGVyOjB9PC9zdHlsZT48L2ZvbnQ+PGJyIC8+CjxiciAvPgotLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tPGJyIC8+CrvdxtXJzNPDzKjKvbv6ZGM1NzUwLLjf0NTE3KOstc25prrEo6EoIDxhIGhyZWY9
+aHR0cDovL2FkNC5zaW5hLmNvbS5jbi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNi9tYWls
+X3podWl5dV8yMDA2MTIyNS5odG1sIHRhcmdldD1fYmxhbms+aHR0cDovL2FkNC5zaW5hLmNvbS5j
+bi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIyNS5odG1s
+PC9hPiApPGJyIC8+CjxiciAvPgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PGJyIC8+CteisuHQwsDLMkfD4rfR08rP5KOo
+IDxhIGhyZWY9aHR0cDovL21haWwuc2luYS5jb20uY24vY2hvb3NlTW9kZS5odG1sIHRhcmdldD1f
+Ymxhbms+aHR0cDovL21haWwuc2luYS5jb20uY24vY2hvb3NlTW9kZS5odG1sPC9hPiCjqQ==
+
+
+--=-sina_alt_9693bf34a5e9b0d7be3942435c25de7e--
