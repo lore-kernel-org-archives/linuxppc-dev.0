@@ -1,12 +1,15 @@
-Return-Path: <dwm@enoyolf.org>
-To: Paul Nasrat <pnasrat@redhat.com>
-Subject: [PATCH 1/1] determine last ext3 LBA to fix wild LBA reads - v3
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2B2AADDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 17:01:51 +1100 (EST)
+Date: Thu, 4 Jan 2007 17:01:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] iSeries: fix mf proc initialisation
+Message-Id: <20070104170151.1d653291.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 03 Jan 2007 22:57:32 -0600
-Message-ID: <1121.1167886652@bebe.enoyolf.org>
-From: Doug Maxey <dwm@enoyolf.org>
-Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>, yaboot-devel@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,158 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This proc file should only be created if we are running on legacy iSeries.
 
-The issue seen in the current code is linux_read_blk() is
-(apparently) looking at the alternate offsets for all possible
-superblocks.  As yaboot scans each partition for all fs types, until
-it finds the appropriate signature, when searching the ext fs, libext2
-appears to calculate some blocks to read that may be 10x the size of
-the actual disk.
-
-Normally, this is does not cause a problem, other than a message from
-OFW (maybe) "Request exceeds device size".
-
-However, on a Netapp serving an iSCSI target disk, a read or seek
-beyond the end of the lun causes an underflow, which takes 30 seconds
-or so for the target to recover.  The net effect is to add 5+ minutes
-to what is already a slow boot while the OFW does polling transfers.
-
-This version incorporates the suggestions from benh to
-1) not use a cross-module global,
-2) track the part sizes by passing to add_new_partition() and use
-   those in the ext2_open() to compute the new dend var.
-
-- dend is then used in linux_read_blk() to mark the end of the valid
-  seek or read range.
-
-- removed the local def of swab32() in parititions.c and included
-  "byteorder.h" to use the common macros.
-
-Signed-off-by: Doug Maxey <dwm@austin.ibm.com>
-Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-Third version, this time include the test to see if dend was set.
+ arch/powerpc/platforms/iseries/mf.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-++doug
----
- second/fs_ext2.c   |   27 ++++++++++++++++++++++++---
- second/partition.c |   20 +++-----------------
- 2 files changed, 27 insertions(+), 20 deletions(-)
+Paulus, this is a bug fix and prevents an OOPS when using a combined
+kernel on anything other than iSeries hardware - tested on iSeries and
+pSeries.  The following patches are similar.
 
-diff --git a/second/fs_ext2.c b/second/fs_ext2.c
-index bffebb4..6a1ee7b 100644
---- a/second/fs_ext2.c
-+++ b/second/fs_ext2.c
-@@ -93,6 +93,7 @@ static io_manager linux_io_manager = &struct_linux_manager;
- static int opened = 0;		/* We can't open twice ! */
- static unsigned int bs;		/* Blocksize */
- static unsigned long long doff;	/* Byte offset where partition starts */
-+static unsigned long long dend;	/* Byte offset where partition ends */
- static ino_t root,cwd;
- static ext2_filsys fs = 0;
- static struct boot_file_t* cur_file;
-@@ -149,13 +150,23 @@ ext2_open(	struct boot_file_t*	file,
-       * compatible with older versions of OF
-       */
-      bs = 1024;
--     doff = 0;
--     if (part)
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/platforms/iseries/mf.c b/arch/powerpc/platforms/iseries/mf.c
+index cff15ae..1ad0e4a 100644
+--- a/arch/powerpc/platforms/iseries/mf.c
++++ b/arch/powerpc/platforms/iseries/mf.c
+@@ -38,6 +38,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/paca.h>
+ #include <asm/abs_addr.h>
++#include <asm/firmware.h>
+ #include <asm/iseries/vio.h>
+ #include <asm/iseries/mf.h>
+ #include <asm/iseries/hv_lp_config.h>
+@@ -1235,6 +1236,9 @@ static int __init mf_proc_init(void)
+ 	char name[2];
+ 	int i;
+ 
++	if (!firmware_has_feature(FW_FEATURE_ISERIES))
++		return 0;
 +
-+     /*
-+      * On the other hand, we do care about the actual size of the
-+      * partition, reads or seeks past the end may cause undefined
-+      * behavior on some devices.  A netapp that tries to seek and
-+      * read past the end of the lun takes ~30 secs to recover per
-+      * attempt.
-+      */
-+     doff = dend = 0;
-+     if (part) {
- 	  doff = (unsigned long long)(part->part_start) * part->blocksize;
-+	  dend = doff + (unsigned long long)part->part_size * part->blocksize;
-+     }
-      cur_file = file;
- 
- 
--     DEBUG_F("partition offset: %Lu\n", doff);
-+     DEBUG_F("partition offset: %Lx, end: %Lx\n", doff, dend);
- 
-      /* Open the OF device for the entire disk */
-      strncpy(buffer, dev_name, 1020);
-@@ -582,6 +593,7 @@ static errcode_t linux_close (io_channel channel)
- 
- static errcode_t linux_set_blksize (io_channel channel, int blksize)
- {
-+     DEBUG_F("bs set to 0x%x\n", blksize);
-      channel->block_size = bs = blksize;
-      if (block_buffer) {
- 	  free(block_buffer);
-@@ -600,6 +612,15 @@ static errcode_t linux_read_blk (io_channel channel, unsigned long block, int co
-     
-      tempb = (((unsigned long long) block) *
- 	      ((unsigned long long)bs)) + (unsigned long long)doff;
-+     /*
-+      * Only test tempb exceeding dend if dend is set to allow things
-+      * like boot: hd:0,\xxxx
-+      */
-+     if (dend && tempb > dend) {
-+	  DEBUG_F("\nSeek error on block %lx, tempb=%Lx\n", block, tempb >> 9);
-+	  return EXT2_ET_LLSEEK_FAILED;
-+     }
-+
-      size = (count < 0) ? -count : count * bs;
-      prom_lseek(cur_file->of_device, tempb);
-      if (prom_read(cur_file->of_device, data, size) != size) {
-diff --git a/second/partition.c b/second/partition.c
-index 53c7bd0..5839105 100644
---- a/second/partition.c
-+++ b/second/partition.c
-@@ -40,6 +40,7 @@
- #include "linux/iso_fs.h"
- #include "debug.h"
- #include "errors.h"
-+#include "byteorder.h"
- 
- /* We currently don't check the partition type, some users
-  * are putting crap there and still expect it to work...
-@@ -58,9 +59,6 @@ static const char *valid_mac_partition_types[] = {
- #endif
-     
- 
--/* Local functions */
--static unsigned long swab32(unsigned long value);
--
- #define MAX_BLOCK_SIZE	2048
- static unsigned char block_buffer[MAX_BLOCK_SIZE];
- 
-@@ -177,8 +175,8 @@ partition_fdisk_lookup( const char *dev_name, prom_handle disk,
- 				   partition,
- 				   "Linux", /* type */
- 				   '\0', /* name */
--				   swab32(*(unsigned int *)(part->start4)),
--				   swab32(*(unsigned int *)(part->size4)),
-+				   le32_to_cpu(*(unsigned int *)part->start4),
-+				   le32_to_cpu(*(unsigned int *)part->size4),
- 				   512 /*blksize*/,
- 				   part->sys_ind /* partition type */ );
- 	  }
-@@ -432,18 +430,6 @@ partitions_free(struct partition_t* list)
- 	  list = next;
-      }
- }
--unsigned long
--swab32(unsigned long value)
--{
--     __u32 result;
--
--     __asm__("rlwimi %0,%1,24,16,23\n\t"
--	     "rlwimi %0,%1,8,8,15\n\t"
--	     "rlwimi %0,%1,24,0,7"
--	     : "=r" (result)
--	     : "r" (value), "0" (value >> 24));
--     return result;
--}
- 
- 
- /* 
+ 	mf_proc_root = proc_mkdir("iSeries/mf", NULL);
+ 	if (!mf_proc_root)
+ 		return 1;
 -- 
 1.4.4.3
