@@ -1,18 +1,20 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 0E05CDDED4
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 15951DDE02
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Jan 2007 07:01:15 +1100 (EST)
+	Thu,  4 Jan 2007 15:09:01 +1100 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1H2JWu-0004D4-9A
+	for linuxppc-embedded@ozlabs.org; Wed, 03 Jan 2007 19:44:36 -0800
+Message-ID: <8153471.post@talk.nabble.com>
+Date: Wed, 3 Jan 2007 19:44:36 -0800 (PST)
+From: Nethra <nethra_gmit@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
+Subject: support of kernel for ep8248e
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Stupid Telnet Question
-Date: Wed, 3 Jan 2007 11:49:05 -0800
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871078F811B@VCAEXCH01.hq.corp.viasat.com>
-In-Reply-To: <000001c72f64$b727ea70$2018010a@inphasetech.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: "Erik Habbinga" <erikhabbinga@inphase-tech.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,63 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Erik Habbinga [mailto:erikhabbinga@inphase-tech.com]=20
-> Sent: Wednesday, January 03, 2007 10:27 AM
-> To: Martin, Tim
-> Subject: Re: Stupid Telnet Question
->=20
-> Tim,
->    Did you ever figure out how to get telnet to work with=20
-> ELDK 4.0?  I've run into the same problem.  I've heard it=20
-> will be fixed in ELDK 4.1,  but that's not out yet.
->=20
-> Thanks!
-> Erik
->=20
 
-Erik,
+hi,
 
-I did eventually solve it - but don't remember exactly what I did.
+  does kernel 2.6.10 support for EP8248E (single board),if not what patch
+has to be attached to make it work for this board.
 
-Here's my xinetd telnet configuration file (/etc/xinet.d/telnet):
-------------
-# description: The telnet server serves telnet sessions; it uses \
-#	unencrypted username/password pairs for authentication.
-service telnet
-{
-	flags		=3D REUSE
-	socket_type	=3D stream       =20
-	wait		=3D no
-	user		=3D root
-	server		=3D /usr/sbin/in.telnetd
-        server_args     =3D -L /bin/login
-	log_on_failure	+=3D USERID
-	disable		=3D no
-}
-------------
-
-And here's my bootup script (/etc/rc.sh):
-------------
-#!/bin/sh
-
-/sbin/ifconfig lo 127.0.0.1
-
->/etc/mtab
-
-/bin/mount -n -t tmpfs tmpfs -o size=3D1M /tmp
-mkdir /tmp/var
-mkdir /tmp/var/log
-mkdir /tmp/var/run
-mkdir /tmp/dev
-/etc/rc.makedev
-/sbin/syslogd
-
-# mount /proc so "reboot" works
-/bin/mount -n -t proc proc /proc
-
-/usr/sbin/xinetd -stayalive -reuse -pidfile /tmp/xinetd.pid
-------------
-
-/etc/rc.makedev is just the ELDK 4.0 makedev script, slightly taylored
-to my particular board.
+thanks in advance,
+nethra
+-- 
+View this message in context: http://www.nabble.com/support-of-kernel-for-ep8248e-tf2917524.html#a8153471
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
