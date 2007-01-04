@@ -1,15 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D99CDDDE39
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 17:06:17 +1100 (EST)
-Date: Thu, 4 Jan 2007 17:06:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] iSeries: fix setup initcall
-Message-Id: <20070104170621.28a267c3.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id C16F3DDE3D
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jan 2007 17:42:49 +1100 (EST)
+Date: Thu, 4 Jan 2007 07:42:54 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] add delay around sl82c105_reset_engine calls
+Message-ID: <20070104064254.GA31986@aepfle.de>
+References: <20061130165202.GA23205@aepfle.de>
+	<20061204124026.GB28159@aepfle.de>
+	<20061204130254.424c7979@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20061204130254.424c7979@localhost.localdomain>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Clearing the progress indicator should only be done if we are running
-on legacy iSeries.
+On Mon, Dec 04, Alan wrote:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> On Mon, 4 Dec 2006 13:40:26 +0100 (MET)
+> Olaf Hering <olaf@aepfle.de> wrote:
+> 
+> > 
+> > 
+> > the hald media changed polling does really confuse things.
+> > noone knows why the delays are needed, but they give us access to
+> > the CD.
+> 
+> Can you tell me what happens if you completely pull the reset out of the
+> dma_end function. Do you still need delays then.
+
+An udelay(50) will give reliable access to the drive, but there is still
+one (or more) EH reset. The drive works without EH resets with udelay(100).
+
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
 ---
- arch/powerpc/platforms/iseries/setup.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/ata/pata_sl82c105.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
-index bdf2afb..cce7e30 100644
---- a/arch/powerpc/platforms/iseries/setup.c
-+++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -527,7 +527,8 @@ static void __init iSeries_fixup_klimit(void)
- static int __init iSeries_src_init(void)
+--- a/drivers/ata/pata_sl82c105.c
++++ b/drivers/ata/pata_sl82c105.c
+@@ -187,7 +187,9 @@ static void sl82c105_bmdma_start(struct 
  {
-         /* clear the progress line */
--        ppc_md.progress(" ", 0xffff);
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		ppc_md.progress(" ", 0xffff);
-         return 0;
- }
+ 	struct ata_port *ap = qc->ap;
  
--- 
-1.4.4.3
++	udelay(100);
+ 	sl82c105_reset_engine(ap);
++	udelay(100);
+ 
+ 	/* Set the clocks for DMA */
+ 	sl82c105_configure_dmamode(ap, qc->dev);
+@@ -216,6 +218,7 @@ static void sl82c105_bmdma_stop(struct a
+ 
+ 	ata_bmdma_stop(qc);
+ 	sl82c105_reset_engine(ap);
++	udelay(100);
+ 
+ 	/* This will redo the initial setup of the DMA device to matching
+ 	   PIO timings */
