@@ -1,23 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 03E40DDE3D
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Jan 2007 09:37:04 +1100 (EST)
-Subject: Re: [RFC: 2.6 patch] remove the broken VIDEO_PLANB driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mich Lanners <mlan@cpu.lu>
-In-Reply-To: <tkrat.5fdfdb1db356c580@cpu.lu>
-References: <20070104185323.GF20714@stusta.de>
-	<1167946479.5273.18.camel@localhost.localdomain>
-	<tkrat.5fdfdb1db356c580@cpu.lu>
-Content-Type: text/plain
-Date: Fri, 05 Jan 2007 09:35:26 +1100
-Message-Id: <1167950126.5273.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, v4l-dvb-maintainer@linuxtv.org,
-	mchehab@infradead.org, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>
+Return-Path: <jchapman@katalix.com>
+Message-ID: <459D76EF.4050101@katalix.com>
+Date: Thu, 04 Jan 2007 21:51:43 +0000
+From: James Chapman <jchapman@katalix.com>
+MIME-Version: 1.0
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: Anyone care about the Marvell GT64260 bridge anymore?
+References: <20070104203244.GA11315@mag.az.mvista.com>
+In-Reply-To: <20070104203244.GA11315@mag.az.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: waite@skycomputers.com, linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	timm@artesyncp.com, rabeeh@galileo.co.il, allinux@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,11 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Mark A. Greer wrote:
 
-> If you need explanations about the code or the hardware, don't hesitate
-> to ask. Not sure what I still remember, but I still have my old paper
-> notes.
+> My first question is whether anyone still cares about the Discovery I
+> (gt64260).  So, does anyone care?
 
-Heh, ok. No idea when I'll have time to look tho.
+No preference.
 
-Ben.
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
