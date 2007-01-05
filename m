@@ -1,26 +1,19 @@
-Return-Path: <Kiran.Poola@aricent.com>
-Received: from tapal.aricent.com (tapal.aricent.com [203.145.155.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B9F2DDDFB
+Return-Path: <wmaxfield@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id C5BCCDDE06
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Jan 2007 19:57:10 +1100 (EST)
-Received: from tapal.aricent.com (localhost [127.0.0.1])
-	by tapal.aricent.com (8.13.8/8.13.8) with ESMTP id l058mevQ031919
-	for <linuxppc-embedded@ozlabs.org>; Fri, 5 Jan 2007 14:18:40 +0530
-Received: from chemail01.che.flextronics.com (chemail01.che.flextronics.com
-	[10.203.112.151])by tapal.aricent.com (8.13.8/8.13.8) with ESMTP id
-	l058mdeT031909for <linuxppc-embedded@ozlabs.org>;
-	Fri, 5 Jan 2007 14:18:39 +0530
-To: linuxppc-embedded@ozlabs.org
-Subject: problem in booting linux from u-boot in ML405
+	Sat,  6 Jan 2007 02:20:29 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so2364060ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 05 Jan 2007 07:20:28 -0800 (PST)
+Message-ID: <45a1b53e0701050720w3e8118aan2edb280ec61c7d5f@mail.gmail.com>
+Date: Fri, 5 Jan 2007 09:20:28 -0600
+From: "Wade Maxfield" <wmaxfield@gmail.com>
+To: ppc <linuxppc-embedded@ozlabs.org>
+Subject: System Ace booting (or not) question
 MIME-Version: 1.0
-Message-ID: <OFE6BC4BE1.B10867EC-ON6525725A.002B55DC-6525725A.003075F5@flextronicssoftware.com>
-From: Kiran Poola <Kiran.Poola@aricent.com>
-Date: Fri, 5 Jan 2007 14:15:56 +0530
 Content-Type: multipart/alternative;
-	boundary="=_alternative 003075F06525725A_="
-Cc: Anurag Tripathi <Anurag.Tripathi@aricent.com>
+	boundary="----=_Part_29682_25051723.1168010428515"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,449 +24,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 003075F06525725A_=
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+------=_Part_29682_25051723.1168010428515
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi=20all,=0D=0A=0D=0AI=20am=20using=20montavista=20linux=20professional=
-=20edition=204.0.1.=20=0D=0A=0D=0AInitially=20I=20tried=20booting=20the=
-=20linux=20elf=20image=20by=20downloading=20it=20into=20RAM=20=0D=0Ausing=
-=20the=20USB=20JTAG.=0D=0ALinux=20is=20comingup=20properly=20and=20I=20am=
-=20able=20to=20see=20the=20login=20prompt.=0D=0A=0D=0ANow=20I=20am=20tryi=
-ng=20to=20boot=20linux=20from=20the=20u-boot.=20=20I=20will=20download=20=
-the=20u-boot=20=0D=0Aimage=20into=20the=20RAM=20and=20run=20it.=0D=0AFrom=
-=20u-boot=20prompt=20I=20=20downloaded=20the=20kernel=20image=20and=20run=
-=20it.=20Boot=20=0D=0Amessages=20are=20given=20below.=20I=20enabled=20deb=
-ug=20messages=20in=20u-boot.=0D=0AAfter=20analysing=20the=20kernel=20boot=
-ing=20by=20setting=20hardware=20breakpoints=20in=20xmd=20=0D=0Awe=20came=
-=20to=20know=20that=20it=20is=20hanging=20in=20the=20funciton=20mmu_mapin=
-_ram()=0D=0Afunction.=20Help=20me=20in=20chasing=20this...=20Thanks=20in=
-=20advance=0D=0A=0D=0A=0D=0AU-Boot=201.1.6=20(Jan=20=203=202007=20-=2011:=
-38:51)=0D=0A=0D=0A=0D=0A###=20No=20HW=20ID=20-=20assuming=20ML405=0D=0ADR=
-AM:=20=2064=20MB=0D=0ATop=20of=20RAM=20usable=20for=20U-Boot=20at:=200400=
-0000=0D=0AReserving=20191k=20for=20U-Boot=20at:=2003fd0000=0D=0AReserving=
-=20384k=20for=20malloc()=20at:=2003f70000=0D=0AReserving=20120=20Bytes=20=
-for=20Board=20Info=20at:=2003f6ff88=0D=0AReserving=2048=20Bytes=20for=20G=
-lobal=20Data=20at:=2003f6ff58=0D=0AStack=20Pointer=20at:=2003f6ff38=0D=0A=
-New=20Stack=20Pointer=20is:=2003f6ff38=0D=0ANow=20running=20in=20RAM=20-=
-=20U-Boot=20at:=2003fd0000=0D=0AFLASH:=20flash=20detect=20cfi=0D=0Afwc=20=
-addr=2028000000=20cmd=200=2000000000=2032bit=20x=208=20bit=0D=0Afwc=20add=
-r=2028000154=20cmd=2098=2098989898=2032bit=20x=208=20bit=0D=0Ais=3D=20cmd=
-=2051(Q)=20addr=2028000040=20is=3D=2000510051=2051515151=0D=0Afwc=20addr=
-=2028000000=20cmd=200=2000000000=2032bit=20x=2016=20bit=0D=0Afwc=20addr=
-=2028000154=20cmd=2098=2000980098=2032bit=20x=2016=20bit=0D=0Ais=3D=20cmd=
-=2051(Q)=20addr=2028000040=20is=3D=2000510051=2000510051=0D=0Ais=3D=20cmd=
-=2052(R)=20addr=2028000044=20is=3D=2000520052=2000520052=0D=0Ais=3D=20cmd=
-=2059(Y)=20addr=2028000048=20is=3D=2000590059=2000590059=0D=0Aushort=20ad=
-dr=20is=20at=20280000a0=20info->portwi8dth=20=3D=204=0D=0Aaddr[0=20=3D=20=
-0x0=0D=0Aaddr[1]=20=3D=200x2=0D=0Aaddr[2]=20=3D=200x0=0D=0Aaddr[3]=20=3D=
-=200x2=0D=0Aaddr[4]=20=3D=200x0=0D=0Aaddr[5]=20=3D=200x0=0D=0Aaddr[6]=20=
-=3D=200x0=0D=0Aaddr[7]=20=3D=200x0=0D=0Aretval=20=3D=200x2=0D=0Adevice=20=
-interface=20is=202=0D=0Afound=20port=204=20chip=202=20port=2032=20bits=20=
-chip=2016=20bits=0D=0Aushort=20addr=20is=20at=202800004c=20info->portwidt=
-h=20=3D=204=0D=0Aaddr[0]=20=3D=200x0=0D=0Aaddr[1]=20=3D=200x1=0D=0Aaddr[2=
-]=20=3D=200x0=0D=0Aaddr[3]=20=3D=200x1=0D=0Aaddr[4]=20=3D=200x0=0D=0Aaddr=
-[5]=20=3D=200x0=0D=0Aaddr[6]=20=3D=200x0=0D=0Aaddr[7]=20=3D=200x0=0D=0Are=
-tval=20=3D=200x1=0D=0A28000040=20:=2000=2051=2000=2051=2000=2052=2000=205=
-2=2000=2059=2000=2059=2000=2001=2000=2001=20=0D=0A.Q.sQ.R.R.Y.Y....=0D=0A=
-8000050=20:=2000=2000=2000=2000=2000=2031=2000=2031=2000=2000=2000=2000=
-=2000=2000=2000=2000=20.....1.1........=0D=0A28000060=20:=2000=2000=2000=
-=2000=2000=2000=2000=2000=2000=2000=2000=2000=2000=2027=2000=2027=20=0D=
-=0A.............'.'=0D=0A28000070=20:=2000=2036=2000=2036=2000=2000=2000=
-=2000=2000=2000=2000=2000=2000=2007=2000=2007=20=0D=0A.6.6............=0D=
-=0A28000080=20:=2000=2007=2000=2007=2000=200a=2000=200a=2000=2000=2000=20=
-00=2000=2004=2000=2004=20=0D=0A................=0D=0A28000090=20:=2000=20=
-04=2000=2004=2000=2004=2000=2004=2000=2000=2000=2000=2000=2016=2000=2016=
-=20=0D=0A................=0D=0A280000a0=20:=2000=2002=2000=2002=2000=2000=
-=2000=2000=2000=2005=2000=2005=2000=2000=2000=2000=20=0D=0A..............=
-..=0D=0A280000b0=20:=2000=2001=2000=2001=2000=201f=2000=201f=2000=2000=20=
-00=2000=2000=2000=2000=2000=20=0D=0A................=0D=0A280000c0=20:=20=
-00=2002=2000=2002=2000=2050=2000=2050=2000=2052=2000=2052=2000=2049=2000=
-=2049=20=0D=0A.....P.P.R.R.I.I=0D=0A280000d0=20:=2000=2031=2000=2031=2000=
-=2031=2000=2031=2000=20c6=2000=20c6=2000=2000=2000=2000=20=0D=0A.1.1.1.1.=
-.......=0D=0A280000e0=20:=2000=2000=2000=2000=2000=2000=2000=2000=2000=20=
-01=2000=2001=2000=2001=2000=2001=20=0D=0A................=0D=0A280000f0=
-=20:=2000=2000=2000=2000=2000=2033=2000=2033=2000=2000=2000=2000=2000=200=
-1=2000=2001=20=0D=0A.....3.3........=0D=0A28000100=20:=2000=2000=2000=200=
-0=2000=2000=2000=2000=2000=2000=2000=2000=2000=2000=2000=2000=20=0D=0A...=
-.............=0D=0A28000110=20:=2000=2003=2000=2003=2000=2000=2000=2000=
-=2000=202c=2000=202c=2000=20ff=2000=20ff=20=0D=0A.........,.,....=0D=0A28=
-000120=20:=2000=20ff=2000=20ff=2000=20ff=2000=20ff=2000=20ff=2000=20ff=20=
-00=20ff=2000=20ff=20=0D=0A................=0D=0A28000130=20:=2000=20ff=20=
-00=20ff=2000=20ff=2000=20ff=2000=20ff=2000=20ff=2000=20ff=2000=20ff=20=0D=
-=0A................=0D=0Aushort=20addr=20is=20at=2028000054=20info->portw=
-idth=20=3D=204=0D=0Aaddr[0]=20=3D=200x0=0D=0Aaddr[1]=20=3D=200x31=0D=0Aad=
-dr[2]=20=3D=200x0=0D=0Aaddr[3]=20=3D=200x31=0D=0Aaddr[4]=20=3D=200x0=0D=
-=0Aaddr[5]=20=3D=200x0=0D=0Aaddr[6]=20=3D=200x0=0D=0Aaddr[7]=20=3D=200x0=
-=0D=0Aretval=20=3D=200x31=0D=0Amanufacturer=20is=20=201=0D=0Asize_ratio=
-=20rt=2032=20bits=20chip=2016=20bits=0D=0Afound=201=20erase=20regions=0D=
-=0Along=20addr=20is=20at=20280000b4=20info->portwidth=20=3D=204=0D=0Aaddr=
-[0]=20=3D=200x0=0D=0Aaddr[1]=20=3D=200x1f=0D=0Aaddr[2]=20=3D=200x0=0D=0Aa=
-ddr[3]=20=3D=200x1f=0D=0Aaddr[4]=20=3D=200x0=0D=0Aaddr[5]=20=3D=200x0=0D=
-=0Aaddr[6]=20=3D=200x0=0D=0Aaddr[7]=20=3D=200x0=0D=0Aaddr[8]=20=3D=200x0=
-=0D=0Aaddr[9]=20=3D=200x0=0D=0Aaddr[a]=20=3D=200x0=0D=0Aaddr[b]=20=3D=200=
-x0=0D=0Aaddr[c]=20=3D=200x0=0D=0Aaddr[d]=20=3D=200x2=0D=0Aaddr[e]=20=3D=
-=200x0=0D=0Aaddr[f]=20=3D=200x2=0D=0Aerase_region_count=20=3D=2032=20eras=
-e_region_size=20=3D=20131072=0D=0Aushort=20addr=20is=20at=20280000a8=20in=
-fo->portwidth=20=3D=204=0D=0Aaddr[0]=20=3D=200x0=0D=0Aaddr[1]=20=3D=200x5=
-=0D=0Aaddr[2]=20=3D=200x0=0D=0Aaddr[3]=20=3D=200x5=0D=0Aaddr[4]=20=3D=200=
-x0=0D=0Aaddr[5]=20=3D=200x0=0D=0Aaddr[6]=20=3D=200x0=0D=0Aaddr[7]=20=3D=
-=200x0=0D=0Aretval=20=3D=200x5=0D=0Afwc=20addr=2028000000=20cmd=20ff=2000=
-ff00ff=20=2032bit=20x=2016=20bit=0D=0Aflash_protect=20ON:=20from=200x2804=
-0000=20to=200x2807FFFF=0D=0Afwc=20addr=2028040000=20cmd=2050=2000500050=
-=2032bit=20x=2016=20bit=0D=0Afwc=20addr=2028040000=20cmd=2060=2000600060=
-=2032bit=20x=2016=20bit=0D=0Afwc=20addr=2028040000=20cmd=201=2000010001=
-=2032bit=20x=2016=20bit=0D=0Aflash_is_busy:=200=0D=0Ais=3D=20cmd=2080(?)=
-=20addr=2028040000=20is=3D=2000800080=2000800080=0D=0Afwc=20addr=20280400=
-00=20cmd=20ff=2000ff00ff=2032bit=20x=2016=20bit=0D=0Aprotect=20on=201=0D=
-=0A=208=20MB=0D=0AIn:=20=20=20=20serial=0D=0AOut:=20=20=20serial=0D=0AErr=
-:=20=20=20serial=0D=0AU-Boot=20relocated=20to=2003fd0000=0D=0ANet:=20=20=
-=20emac#0=0D=0A=3D>=20tftpboot=0D=0ATrying=20emac#0=0D=0AUsing=20emac#0=
-=20device=0D=0ATFTP=20from=20server=20169.254.52.2;=20our=20IP=20address=
-=20is=20169.254.52.1=0D=0AFilename=20'ub.uImage'.=0D=0ALoad=20address:=20=
-0x400000=0D=0ALoading:=20=0D=0A*=08######################################=
-###########################=0D=0A=20=20=20=20=20=20=20=20=20#############=
-####################################################=0D=0A=20=20=20=20=20=
-=20=20=20=20#############################################################=
-####=0D=0A=20=20=20=20=20=20=20=20=20####################################=
-#############################=0D=0A=20=20=20=20=20=20=20=20=20###########=
-######################################################=0D=0A=20=20=20=20=
-=20=20=20=20=20##########################################################=
-#######=0D=0A=20=20=20=20=20=20=20=20=20#################################=
-################################=0D=0A=20=20=20=20=20=20=20=20=20########=
-#########################################################=0D=0A=20=20=20=
-=20=20=20=20=20=20#######################################################=
-#######=0D=0Adone=0D=0ABytes=20transferred=20=3D=202976584=20(2d6b48=20he=
-x)=0D=0A=3D>=20bootm=0D=0A##=20Booting=20image=20at=2000400000=20...=0D=
-=0A=20=20=20Image=20Name:=20=20=20Flex=20Linux=202.6=0D=0A=20=20=20Image=
-=20Type:=20=20=20PowerPC=20Linux=20Multi-File=20Image=20(gzip=20compresse=
-d)=0D=0A=20=20=20Data=20Size:=20=20=20=202976520=20Bytes=20=3D=20=202.8=
-=20MB=0D=0A=20=20=20Load=20Address:=2000000000=0D=0A=20=20=20Entry=20Poin=
-t:n=20=2000000000=0D=0A=20=20=20ntents:=0D=0A=20=20=20Image=200:=20=20=20=
-608099=20Bytes=20=3D=20593.8=20kB=0D=0A=20=20=20Image=201:=20=202368408=
-=20Bytes=20=3D=20=202.3=20MB=0D=0A=20=20=20Verifying=20Checksum=20...=20O=
-K=0D=0A=20=20=20Uncompressing=20Multi-File=20Image=20...=20OK=0D=0A##=20C=
-urrent=20stack=20ends=20at=200x03F6FA20=20=3D>=20set=20upper=20limit=20to=
-=200x00800000=0D=0A##=20cmdline=20at=200x007FFF00=20...=200x007FFF2C=0D=
-=0Abd=20address=20=20=3D=200x03F6FF88=0D=0Amemstart=20=20=20=20=3D=200x00=
-000000=0D=0AmemsKize=20=20=20=20=20=3D=200x040lashstart=20=20=3D=200x2800=
-0000=0D=0Aflashsize=20=20=20=3D=200x00800000=0D=0Aflashoffset=20=3D=200x0=
-0000000=0D=0Asramstart=20=20=20=3D=200x00000000=0D=0Asramsize=20=20=20=20=
-=3D=200x00000000=0D=0Abootflags=20=20=20=3D=200xA0001003=0D=0Aprocfreq=20=
-=20=20=20=3D=20=20=20=20300=20MHz=0D=0Aplb_busfreq=20=3D=20=20=20=20100=
-=20MHz=0D=0Apci_busfreq=20=3D=20=20=20=20=20=200=20MHz=0D=0Aethaddr=20=20=
-=20=20=20=3D=209E:84:54:BB:FD:55=0D=0AIP=20addr=20=20=20=20=20=3D=20169.2=
-54.52.1=0D=0Abaudrate=20=20=20=20=3D=20115200=20bps=0D=0A##=20initrd=20at=
-=200x004947B0=20...=200x006D6B47=20(len=3D2368408=3D0x242398)=0D=0A=20=20=
-=20Loading=20Ramdisk=20to=2003d2c000,=20end=2003f6e398=20...=20OK=0D=0A##=
-=20Transferring=20control=20to=20Linux=20(at=20address=2000000000)=20...=
-=0D=0Akbd=20:=20007ffe80=20initrd_start=20:=2003d2c000=20initrd_end=20:=
-=2003f6e398=20cmd_start=20:=20=0D=0A007fff00=20cmd_end=20:=20007fff2c=20g=
-d->bd=20:=2003f6ff88=0D=0A=0D=0A=0D=0AThanks=20and=20Regards,=0D=0AKiran=
-=20Poola.=0D=0A=0D=0A=0D=0A=0D=0A***********************=20=20Aricent-Unc=
-lassified=20=20=20***********************=0D=0A"DISCLAIMER:=20This=20mess=
-age=20is=20proprietary=20to=20Aricent=20and=20is=20intended=20solely=20fo=
-r=20the=20use=20of=20=0Athe=20individual=20to=20whom=20it=20is=20addresse=
-d.=20It=20may=20contain=20privileged=20or=20confidential=20information=20=
-and=20should=20not=20be=20=0Acirculated=20or=20used=20for=20any=20purpose=
-=20other=20than=20for=20what=20it=20is=20intended.=20If=20you=20have=20re=
-ceived=20this=20message=20in=20error,=20=0Aplease=20notify=20the=20origin=
-ator=20immediately.=20If=20you=20are=20not=20the=20intended=20recipient,=
-=20you=20are=20notified=20that=20you=20are=20strictly=0Aprohibited=20from=
-=20using,=20copying,=20altering,=20or=20disclosing=20the=20contents=20of=
-=20this=20message.=20Aricent=20accepts=20no=20responsibility=20for=20=0Al=
-oss=20or=20damage=20arising=20from=20the=20use=20of=20the=20information=
-=20transmitted=20by=20this=20email=20including=20damage=20from=20virus."=
-=0A
---=_alternative 003075F06525725A_=
-Content-Type: text/html;
-	charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+  I'm very new to System Ace, and this is probably a stupid question.
 
-=0D=0A<br><font=20size=3D2=20face=3D"sans-serif">Hi=20all,</font>=0D=0A<b=
-r>=0D=0A<br><font=20size=3D2=20face=3D"sans-serif">I=20am=20using=20monta=
-vista=20linux=20professional=0D=0Aedition=204.0.1.=20</font>=0D=0A<br>=0D=
-=0A<br><font=20size=3D2=20face=3D"sans-serif">Initially=20I=20tried=20boo=
-ting=20the=20linux=0D=0Aelf=20image=20by=20downloading=20it=20into=20RAM=
-=20using=20the=20USB=20JTAG.</font>=0D=0A<br><font=20size=3D2=20face=3D"s=
-ans-serif">Linux=20is=20comingup=20properly=20and=20I=20am=0D=0Aable=20to=
-=20see=20the=20login=20prompt.</font>=0D=0A<br>=0D=0A<br><font=20size=3D2=
-=20face=3D"sans-serif">Now=20I=20am=20trying=20to=20boot=20linux=20from=
-=20the=0D=0Au-boot.=20&nbsp;I=20will=20download=20the=20u-boot=20image=20=
-into=20the=20RAM=20and=20run=20it.</font>=0D=0A<br><font=20size=3D2=20fac=
-e=3D"sans-serif">From=20u-boot=20prompt=20I=20&nbsp;downloaded=0D=0Athe=
-=20kernel=20image=20and=20run=20it.=20Boot=20messages=20are=20given=20bel=
-ow.=20I=20enabled=20debug=0D=0Amessages=20in=20u-boot.</font>=0D=0A<br><f=
-ont=20size=3D2=20face=3D"sans-serif">After=20analysing=20the=20kernel=20b=
-ooting=20by=0D=0Asetting=20hardware=20breakpoints=20in=20xmd=20we=20came=
-=20to=20know=20that=20it=20is=20hanging=0D=0Ain=20the=20funciton=20mmu_ma=
-pin_ram()</font>=0D=0A<br><font=20size=3D2=20face=3D"sans-serif">function=
-.=20Help=20me=20in=20chasing=20this...=0D=0AThanks=20in=20advance</font>=
-=0D=0A<br>=0D=0A<br>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">U=
--Boot=201.1.6=20(Jan=20&nbsp;3=202007=20-=2011:38:51)</font>=0D=0A<br>=0D=
-=0A<br>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">###=20No=20HW=
-=20ID=20-=20assuming=20ML405</font>=0D=0A<br><font=20size=3D2=20face=3D"C=
-ourier=20New">DRAM:=20&nbsp;64=20MB</font>=0D=0A<br><font=20size=3D2=20fa=
-ce=3D"Courier=20New">Top=20of=20RAM=20usable=20for=20U-Boot=20at:=2004000=
-000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Reserving=
-=20191k=20for=20U-Boot=20at:=2003fd0000</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">Reserving=20384k=20for=20malloc()=20at:=2003f70=
-000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Reserving=
-=20120=20Bytes=20for=20Board=20Info=0D=0Aat:=2003f6ff88</font>=0D=0A<br><=
-font=20size=3D2=20face=3D"Courier=20New">Reserving=2048=20Bytes=20for=20G=
-lobal=20Data=0D=0Aat:=2003f6ff58</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">Stack=20Pointer=20at:=2003f6ff38</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">New=20Stack=20Pointer=20is:=2003f6ff=
-38</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Now=20runnin=
-g=20in=20RAM=20-=20U-Boot=20at:=2003fd0000</font>=0D=0A<br><font=20size=
-=3D2=20face=3D"Courier=20New">FLASH:=20flash=20detect=20cfi</font>=0D=0A<=
-br><font=20size=3D2=20face=3D"Courier=20New">fwc=20addr=2028000000=20cmd=
-=200=2000000000=2032bit=0D=0Ax=208=20bit</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">fwc=20addr=2028000154=20cmd=2098=2098989898=203=
-2bit=0D=0Ax=208=20bit</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">is=3D=20cmd=2051(Q)=20addr=2028000040=20is=3D=2000510051=0D=0A515=
-15151</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">fwc=20add=
-r=2028000000=20cmd=200=2000000000=2032bit=0D=0Ax=2016=20bit</font>=0D=0A<=
-br><font=20size=3D2=20face=3D"Courier=20New">fwc=20addr=2028000154=20cmd=
-=2098=2000980098=2032bit=0D=0Ax=2016=20bit</font>=0D=0A<br><font=20size=
-=3D2=20face=3D"Courier=20New">is=3D=20cmd=2051(Q)=20addr=2028000040=20is=
-=3D=2000510051=0D=0A00510051</font>=0D=0A<br><font=20size=3D2=20face=3D"C=
-ourier=20New">is=3D=20cmd=2052(R)=20addr=2028000044=20is=3D=2000520052=0D=
-=0A00520052</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">is=
-=3D=20cmd=2059(Y)=20addr=2028000048=20is=3D=2000590059=0D=0A00590059</fon=
-t>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">ushort=20addr=20is=
-=20at=20280000a0=20info-&gt;portwi8dth=0D=0A=3D=204</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">addr[0=20=3D=200x0</font>=0D=0A<br><=
-font=20size=3D2=20face=3D"Courier=20New">addr[1]=20=3D=200x2</font>=0D=0A=
-<br><font=20size=3D2=20face=3D"Courier=20New">addr[2]=20=3D=200x0</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[3]=20=3D=200x2</=
-font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[4]=20=3D=20=
-0x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[5]=20=
-=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[=
-6]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">=
-addr[7]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20=
-New">retval=20=3D=200x2</font>=0D=0A<br><font=20size=3D2=20face=3D"Courie=
-r=20New">device=20interface=20is=202</font>=0D=0A<br><font=20size=3D2=20f=
-ace=3D"Courier=20New">found=20port=204=20chip=202=20port=2032=20bits=20ch=
-ip=0D=0A16=20bits</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20Ne=
-w">ushort=20addr=20is=20at=202800004c=20info-&gt;portwidth=0D=0A=3D=204</=
-font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[0]=20=3D=20=
-0x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[1]=20=
-=3D=200x1</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[=
-2]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">=
-addr[3]=20=3D=200x1</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20=
-New">addr[4]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Couri=
-er=20New">addr[5]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"=
-Courier=20New">addr[6]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20fac=
-e=3D"Courier=20New">addr[7]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">retval=20=3D=200x1</font>=0D=0A<br><font=20size=
-=3D2=20face=3D"Courier=20New">28000040=20:=2000=2051=2000=2051=2000=2052=
-=2000=2052=0D=0A00=2059=2000=2059=2000=2001=2000=2001=20&nbsp;.Q.sQ.R.R.Y=
-.Y....</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">8000050=
-=20:=2000=2000=2000=2000=2000=2031=2000=2031=2000=0D=0A00=2000=2000=2000=
-=2000=2000=2000=20&nbsp;.....1.1........</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">28000060=20:=2000=2000=2000=2000=2000=2000=2000=
-=2000=0D=0A00=2000=2000=2000=2000=2027=2000=2027=20&nbsp;.............'.'=
-</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">28000070=20:=
-=2000=2036=2000=2036=2000=2000=2000=2000=0D=0A00=2000=2000=2000=2000=2007=
-=2000=2007=20&nbsp;.6.6............</font>=0D=0A<br><font=20size=3D2=20fa=
-ce=3D"Courier=20New">28000080=20:=2000=2007=2000=2007=2000=200a=2000=200a=
-=0D=0A00=2000=2000=2000=2000=2004=2000=2004=20&nbsp;................</fon=
-t>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">28000090=20:=2000=
-=2004=2000=2004=2000=2004=2000=2004=0D=0A00=2000=2000=2000=2000=2016=2000=
-=2016=20&nbsp;................</font>=0D=0A<br><font=20size=3D2=20face=3D=
-"Courier=20New">280000a0=20:=2000=2002=2000=2002=2000=2000=2000=2000=0D=
-=0A00=2005=2000=2005=2000=2000=2000=2000=20&nbsp;................</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">280000b0=20:=2000=200=
-1=2000=2001=2000=201f=2000=201f=0D=0A00=2000=2000=2000=2000=2000=2000=200=
-0=20&nbsp;................</font>=0D=0A<br><font=20size=3D2=20face=3D"Cou=
-rier=20New">280000c0=20:=2000=2002=2000=2002=2000=2050=2000=2050=0D=0A00=
-=2052=2000=2052=2000=2049=2000=2049=20&nbsp;.....P.P.R.R.I.I</font>=0D=0A=
-<br><font=20size=3D2=20face=3D"Courier=20New">280000d0=20:=2000=2031=2000=
-=2031=2000=2031=2000=2031=0D=0A00=20c6=2000=20c6=2000=2000=2000=2000=20&n=
-bsp;.1.1.1.1........</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">280000e0=20:=2000=2000=2000=2000=2000=2000=2000=2000=0D=0A00=2001=
-=2000=2001=2000=2001=2000=2001=20&nbsp;................</font>=0D=0A<br><=
-font=20size=3D2=20face=3D"Courier=20New">280000f0=20:=2000=2000=2000=2000=
-=2000=2033=2000=2033=0D=0A00=2000=2000=2000=2000=2001=2000=2001=20&nbsp;.=
-....3.3........</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New"=
->28000100=20:=2000=2000=2000=2000=2000=2000=2000=2000=0D=0A00=2000=2000=
-=2000=2000=2000=2000=2000=20&nbsp;................</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">28000110=20:=2000=2003=2000=2003=200=
-0=2000=2000=2000=0D=0A00=202c=2000=202c=2000=20ff=2000=20ff=20&nbsp;.....=
-....,.,....</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">280=
-00120=20:=2000=20ff=2000=20ff=2000=20ff=2000=20ff=0D=0A00=20ff=2000=20ff=
-=2000=20ff=2000=20ff=20&nbsp;................</font>=0D=0A<br><font=20siz=
-e=3D2=20face=3D"Courier=20New">28000130=20:=2000=20ff=2000=20ff=2000=20ff=
-=2000=20ff=0D=0A00=20ff=2000=20ff=2000=20ff=2000=20ff=20&nbsp;...........=
-.....</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">ushort=20=
-addr=20is=20at=2028000054=20info-&gt;portwidth=0D=0A=3D=204</font>=0D=0A<=
-br><font=20size=3D2=20face=3D"Courier=20New">addr[0]=20=3D=200x0</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[1]=20=3D=200x31<=
-/font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[2]=20=3D=
-=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[3]=
-=20=3D=200x31</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">a=
-ddr[4]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20N=
-ew">addr[5]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courie=
-r=20New">addr[6]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"C=
-ourier=20New">addr[7]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">retval=20=3D=200x31</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">manufacturer=20is=20&nbsp;1</font>=0D=0A<br><fo=
-nt=20size=3D2=20face=3D"Courier=20New">size_ratio=20rt=2032=20bits=20chip=
-=2016=20bits</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">fo=
-und=201=20erase=20regions</font>=0D=0A<br><font=20size=3D2=20face=3D"Cour=
-ier=20New">long=20addr=20is=20at=20280000b4=20info-&gt;portwidth=0D=0A=3D=
-=204</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[0]=20=
-=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[=
-1]=20=3D=200x1f</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New"=
->addr[2]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">addr[3]=20=3D=200x1f</font>=0D=0A<br><font=20size=3D2=20face=3D"C=
-ourier=20New">addr[4]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">addr[5]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">addr[6]=20=3D=200x0</font>=0D=0A<br><font=20siz=
-e=3D2=20face=3D"Courier=20New">addr[7]=20=3D=200x0</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">addr[8]=20=3D=200x0</font>=0D=0A<br>=
-<font=20size=3D2=20face=3D"Courier=20New">addr[9]=20=3D=200x0</font>=0D=
-=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[a]=20=3D=200x0</fon=
-t>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[b]=20=3D=200x0=
-</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[c]=20=3D=
-=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[d]=
-=20=3D=200x2</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">ad=
-dr[e]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20Ne=
-w">addr[f]=20=3D=200x2</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">erase_region_count=20=3D=2032=20erase_region_size=0D=0A=3D=201310=
-72</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">ushort=20add=
-r=20is=20at=20280000a8=20info-&gt;portwidth=0D=0A=3D=204</font>=0D=0A<br>=
-<font=20size=3D2=20face=3D"Courier=20New">addr[0]=20=3D=200x0</font>=0D=
-=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[1]=20=3D=200x5</fon=
-t>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[2]=20=3D=200x0=
-</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[3]=20=3D=
-=200x5</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">addr[4]=
-=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">ad=
-dr[5]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20Ne=
-w">addr[6]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">addr[7]=20=3D=200x0</font>=0D=0A<br><font=20size=3D2=20face=3D"Co=
-urier=20New">retval=20=3D=200x5</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">fwc=20addr=2028000000=20cmd=20ff=2000ff00ff=20&nbsp;32=
-bit=0D=0Ax=2016=20bit</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">flash_protect=20ON:=20from=200x28040000=20to=0D=0A0x2807FFFF</fon=
-t>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">fwc=20addr=20280400=
-00=20cmd=2050=2000500050=2032bit=0D=0Ax=2016=20bit</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">fwc=20addr=2028040000=20cmd=2060=200=
-0600060=2032bit=0D=0Ax=2016=20bit</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">fwc=20addr=2028040000=20cmd=201=2000010001=2032bit=0D=
-=0Ax=2016=20bit</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New"=
->flash_is_busy:=200</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20=
-New">is=3D=20cmd=2080(&#8364;)=20addr=2028040000=20is=3D=2000800080=0D=0A=
-00800080</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">fwc=20=
-addr=2028040000=20cmd=20ff=2000ff00ff=2032bit=0D=0Ax=2016=20bit</font>=0D=
-=0A<br><font=20size=3D2=20face=3D"Courier=20New">protect=20on=201</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;8=20MB</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">In:=20&nbsp;=20&nbsp;=
-serial</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Out:=20&=
-nbsp;=20serial</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">=
-Err:=20&nbsp;=20serial</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">U-Boot=20relocated=20to=2003fd0000</font>=0D=0A<br><font=20size=
-=3D2=20face=3D"Courier=20New">Net:=20&nbsp;=20emac#0</font>=0D=0A<br><fon=
-t=20size=3D2=20face=3D"Courier=20New">=3D&gt;=20tftpboot</font>=0D=0A<br>=
-<font=20size=3D2=20face=3D"Courier=20New">Trying=20emac#0</font>=0D=0A<br=
-><font=20size=3D2=20face=3D"Courier=20New">Using=20emac#0=20device</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">TFTP=20from=20server=
-=20169.254.52.2;=20our=0D=0AIP=20address=20is=20169.254.52.1</font>=0D=0A=
-<br><font=20size=3D2=20face=3D"Courier=20New">Filename=20'ub.uImage'.</fo=
-nt>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Load=20address:=20=
-0x400000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Loadin=
-g:=20*=08################################################################=
-#</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbs=
-p;=20&nbsp;=20&nbsp;=20&nbsp;############################################=
-#####################</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;#######################=
-##########################################</font>=0D=0A<br><font=20size=
-=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;#=
-################################################################</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;=20&nb=
-sp;=20&nbsp;=20&nbsp;####################################################=
-#############</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&=
-nbsp;=20&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;################################=
-#################################</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;############=
-#####################################################</font>=0D=0A<br><fo=
-nt=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;=20&nbsp;=20&nbsp;=
-=20&nbsp;################################################################=
-#</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbs=
-p;=20&nbsp;=20&nbsp;=20&nbsp;############################################=
-##################</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20N=
-ew">done</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">Bytes=
-=20transferred=20=3D=202976584=20(2d6b48=0D=0Ahex)</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">=3D&gt;=20bootm</font>=0D=0A<br><fon=
-t=20size=3D2=20face=3D"Courier=20New">##=20Booting=20image=20at=200040000=
-0=20...</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=
-=20&nbsp;Image=20Name:=20&nbsp;=20Flex=0D=0ALinux=202.6</font>=0D=0A<br><=
-font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;Image=20Type:=20&=
-nbsp;=20PowerPC=0D=0ALinux=20Multi-File=20Image=20(gzip=20compressed)</fo=
-nt>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;Dat=
-a=20Size:=20&nbsp;=20&nbsp;2976520=0D=0ABytes=20=3D=20&nbsp;2.8=20MB</fon=
-t>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;Load=
-=20Address:=2000000000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=
-=20New">&nbsp;=20&nbsp;Entry=20Point:n=20&nbsp;00000000</font>=0D=0A<br><=
-font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;ntents:</font>=0D=
-=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;Image=200=
-:=20&nbsp;=20608099=0D=0ABytes=20=3D=20593.8=20kB</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nbsp;Image=201:=20&nbsp;23=
-68408=0D=0ABytes=20=3D=20&nbsp;2.3=20MB</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">&nbsp;=20&nbsp;Verifying=20Checksum=20...=0D=0A=
-OK</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">&nbsp;=20&nb=
-sp;Uncompressing=20Multi-File=0D=0AImage=20...=20OK</font>=0D=0A<br><font=
-=20size=3D2=20face=3D"Courier=20New">##=20Current=20stack=20ends=20at=200=
-x03F6FA20=0D=0A=3D&gt;=20set=20upper=20limit=20to=200x00800000</font>=0D=
-=0A<br><font=20size=3D2=20face=3D"Courier=20New">##=20cmdline=20at=200x00=
-7FFF00=20...=200x007FFF2C</font>=0D=0A<br><font=20size=3D2=20face=3D"Cour=
-ier=20New">bd=20address=20&nbsp;=3D=200x03F6FF88</font>=0D=0A<br><font=20=
-size=3D2=20face=3D"Courier=20New">memstart=20&nbsp;=20&nbsp;=3D=200x00000=
-000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">memsKize=20=
-&nbsp;=20&nbsp;=20=3D=200x040lashstart=0D=0A&nbsp;=3D=200x28000000</font>=
-=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">flashsize=20&nbsp;=20=
-=3D=200x00800000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New=
-">flashoffset=20=3D=200x00000000</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">sramstart=20&nbsp;=20=3D=200x00000000</font>=0D=0A<br>=
-<font=20size=3D2=20face=3D"Courier=20New">sramsize=20&nbsp;=20&nbsp;=3D=
-=200x00000000</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">b=
-ootflags=20&nbsp;=20=3D=200xA0001003</font>=0D=0A<br><font=20size=3D2=20f=
-ace=3D"Courier=20New">procfreq=20&nbsp;=20&nbsp;=3D=20&nbsp;=20&nbsp;300=
-=0D=0AMHz</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">plb_b=
-usfreq=20=3D=20&nbsp;=20&nbsp;100=20MHz</font>=0D=0A<br><font=20size=3D2=
-=20face=3D"Courier=20New">pci_busfreq=20=3D=20&nbsp;=20&nbsp;=20&nbsp;0=
-=0D=0AMHz</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">ethad=
-dr=20&nbsp;=20&nbsp;=20=3D=209E:84:54:BB:FD:55</font>=0D=0A<br><font=20si=
-ze=3D2=20face=3D"Courier=20New">IP=20addr=20&nbsp;=20&nbsp;=20=3D=20169.2=
-54.52.1</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20New">baudrat=
-e=20&nbsp;=20&nbsp;=3D=20115200=20bps</font>=0D=0A<br><font=20size=3D2=20=
-face=3D"Courier=20New">##=20initrd=20at=200x004947B0=20...=200x006D6B47=
-=0D=0A(len=3D2368408=3D0x242398)</font>=0D=0A<br><font=20size=3D2=20face=
-=3D"Courier=20New">&nbsp;=20&nbsp;Loading=20Ramdisk=20to=2003d2c000,=0D=
-=0Aend=2003f6e398=20...=20OK</font>=0D=0A<br><font=20size=3D2=20face=3D"C=
-ourier=20New">##=20Transferring=20control=20to=20Linux=20(at=0D=0Aaddress=
-=2000000000)=20...</font>=0D=0A<br><font=20size=3D2=20face=3D"Courier=20N=
-ew">kbd=20:=20007ffe80=20initrd_start=20:=2003d2c000=0D=0Ainitrd_end=20:=
-=2003f6e398=20cmd_start=20:=20007fff00=20cmd_end=20:=20007fff2c=20gd-&gt;=
-bd=0D=0A:=2003f6ff88</font>=0D=0A<br>=0D=0A<br><font=20size=3D2=20face=3D=
-"sans-serif"><br>=0D=0AThanks=20and=20Regards,<br>=0D=0AKiran=20Poola.<br=
->=0D=0A<br>=0D=0A<br>=0D=0A<br>=0D=0A***********************=20&nbsp;Aric=
-ent-Unclassified=20&nbsp;=20***********************</font>=0D=0A<table><t=
-r><td=20bgcolor=3D#ffffff><font=20color=3D#000000><pre>"DISCLAIMER:=20Thi=
-s=20message=20is=20proprietary=20to=20Aricent=20and=20is=20intended=20sol=
-ely=20for=20the=20use=20of=20=0Athe=20individual=20to=20whom=20it=20is=20=
-addressed.=20It=20may=20contain=20privileged=20or=20confidential=20inform=
-ation=20and=20should=20not=20be=20=0Acirculated=20or=20used=20for=20any=
-=20purpose=20other=20than=20for=20what=20it=20is=20intended.=20If=20you=
-=20have=20received=20this=20message=20in=20error,=20=0Aplease=20notify=20=
-the=20originator=20immediately.=20If=20you=20are=20not=20the=20intended=
-=20recipient,=20you=20are=20notified=20that=20you=20are=20strictly=0Aproh=
-ibited=20from=20using,=20copying,=20altering,=20or=20disclosing=20the=20c=
-ontents=20of=20this=20message.=20Aricent=20accepts=20no=20responsibility=
-=20for=20=0Aloss=20or=20damage=20arising=20from=20the=20use=20of=20the=20=
-information=20transmitted=20by=20this=20email=20including=20damage=20from=
-=20virus."=0A</pre></font></td></tr></table>
---=_alternative 003075F06525725A_=--
+  We were able, with the Monta Vista Linux to get a system.ace with a
+zImage.elf linux file to boot on an ml403 board.  The system ace chip seemed
+to copy the zImage.elf into DDR ram, and the system booted.  No block ram
+used.
+
+   We created a board with an xf60 and a system ace chip on it and created a
+system.ace file.  The xilinx loads, but the zImage.elf does not copy into
+ddr ram.  We ran the testfatfs code and read from and wrote to the compact
+flash on the system ace chip, verifying the files through a compact flash
+adaptor on a pc.
+
+   We created a memory test using the ppc and were able (after some wiring
+changes and other headaches) to prove the ddr ram works.  There is enough of
+it to support linux (64 meg), and testing all 64 million locations with
+various fixed and incrementing patterns proves it works.
+
+   However, we could not get the external ram to load up with the linux
+zImage.elf file. When this failed, we created a system.ace file with two
+elf's in it, one for linux, one for a memory read/write tester in block ram.
+
+
+  It appears the system ace chip loads the info into block ram just fine,
+and our memory test executes.  However, our ddr ram has nothing in it.  We
+reversed the order of the elf files, and that still did not help.
+
+  Do we need a helper CPLD on this board to accomplish what the ML403
+accomplishes?  Or do we need to do a boot loader in code?  If we need to do
+a boot loader, how come the Monta Vista linux doesn't need one on the ml403
+board?  I've been googling and scouring the Xilinx site, but I've achieved
+nothing but a few less hairs on my head.
+
+  I've already asked Monta Vista this question, and they quoted verbatim the
+page from the xilinx manual, which is a generic answer to the specific
+question.  Even if the xilinx manual is the answer, we aren't seeing the
+results the manual implies we will see.
+
+  Can someone give me a clue?
+
+thanks,
+wade
+
+------=_Part_29682_25051723.1168010428515
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<br>&nbsp; I&#39;m very new to System Ace, and this is probably a stupid question.<br><br>&nbsp; We were able, with the Monta Vista Linux to get a system.ace with a zImage.elf linux file to boot on an ml403 board.&nbsp; The system ace chip seemed to copy the 
+zImage.elf into DDR ram, and the system booted.&nbsp; No block ram used.<br><br>&nbsp;&nbsp; We created a board with an xf60 and a system ace chip on it and created a system.ace file.&nbsp; The xilinx loads, but the zImage.elf does not copy into ddr ram.&nbsp; We ran the testfatfs code and read from and wrote to the compact flash on the system ace chip, verifying the files through a compact flash adaptor on a pc.
+<br><br>&nbsp;&nbsp; We created a memory test using the ppc and were able (after some wiring changes and other headaches) to prove the ddr ram works.&nbsp; There is enough of it to support linux (64 meg), and testing all 64 million locations with various fixed and incrementing patterns proves it works.
+<br><br>&nbsp;&nbsp; However, we could not get the external ram to load up with the linux zImage.elf file. When this failed, we created a system.ace file with two elf&#39;s in it, one for linux, one for a memory read/write tester in block ram. 
+<br><br>&nbsp; It appears the system ace chip loads the info into block ram just fine, and our memory test executes.&nbsp; However, our ddr ram has nothing in it.&nbsp; We reversed the order of the elf files, and that still did not help.
+<br><br>&nbsp; Do we need a helper CPLD on this board to accomplish what the ML403 accomplishes?&nbsp; Or do we need to do a boot loader in code?&nbsp; If we need to do a boot loader, how come the Monta Vista linux doesn&#39;t need one on the ml403 board?&nbsp; I&#39;ve been googling and scouring the Xilinx site, but I&#39;ve achieved nothing but a few less hairs on my head.
+<br><br>&nbsp; I&#39;ve already asked Monta Vista this question, and they quoted verbatim the page from the xilinx manual, which is a generic answer to the specific question.&nbsp; Even if the xilinx manual is the answer, we aren&#39;t seeing the results the manual implies we will see.
+<br><br>&nbsp; Can someone give me a clue?<br><br>thanks,<br>wade<br><br>
+
+------=_Part_29682_25051723.1168010428515--
