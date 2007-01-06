@@ -1,17 +1,19 @@
-Return-Path: <SRS0+fef3928c67572704aad8+1231+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 32292DDE02
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jan 2007 10:12:57 +1100 (EST)
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id DF7F4DDE01
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jan 2007 10:37:39 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so2602791ugf
+	for <linuxppc-dev@ozlabs.org>; Sat, 06 Jan 2007 15:37:38 -0800 (PST)
+Message-ID: <528646bc0701061537r52983228r60e1c0167c1757c8@mail.gmail.com>
+Date: Sat, 6 Jan 2007 16:37:38 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "David Woodhouse" <dwmw2@infradead.org>
 Subject: Re: [PATCH] Probe Efika platform before CHRP.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
+In-Reply-To: <1168125190.24110.67.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
-	<1166528379.19254.69.camel@localhost.localdomain>
-	<4587D338.7060906@246tNt.com>
 	<1166538553.25827.99.camel@pmac.infradead.org>
 	<1166558300.19254.71.camel@localhost.localdomain>
 	<1167773388.22068.443.camel@pmac.infradead.org>
@@ -20,10 +22,7 @@ References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
 	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>
 	<45A01416.6080401@genesi-usa.com>
 	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 07 Jan 2007 07:13:09 +0800
-Message-Id: <1168125190.24110.67.camel@shinybook.infradead.org>
-Mime-Version: 1.0
+	<1168125190.24110.67.camel@shinybook.infradead.org>
 Cc: bbrv@genesi-usa.com, Paul Mackerras <paulus@samba.org>,
 	Linux PPC DEV <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,42 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-01-06 at 15:23 -0700, Grant Likely wrote:
-> 2. Dwmw2 says that reading the HD has an off-by-one showstopper bug
-> which prevents Linux from reading the partition table (and that it is
-> the same bug that was on the pegasos, but is now fixed).
+On 1/6/07, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Sat, 2007-01-06 at 15:23 -0700, Grant Likely wrote:
+> > ... he cannot support the Efika in Fedora until this issue is resolved.
+>
+> "Cannot" is a strong word when you're talking about software -- and is
+> almost always untrue. I think what I said was "can't sensibly", which
+> makes a lot more sense.
 
-It's an off-by-one in partition table numbering. When we ask for
-"hd:0" (the whole disk) we get "hd:1", and so on. It screws yaboot's
-partition table scan, because when it asks for the first sector of the
-disk it's given the first sector of the first partition.
+Heh, sorry.  I should know better.  :)
 
-Something very similar to this already got fixed on Pegasos after I
-reported it -- and I didn't think it was _particularly_ far-fetched for
-me to expect the Efika firmware to be adapted to the "definitions, whims
-and determinations" of the CHRP specification too.
-
-> I have not confirmed this issues as I don't have a working HD on my
-> Efika.  However, dwmw2 has stated that he cannot support the Efika in
-> Fedora until this issue is resolved. 
-
-"Cannot" is a strong word when you're talking about software -- and is
-almost always untrue. I think what I said was "can't sensibly", which
-makes a lot more sense.
-
-I've got a locally-hacked yaboot which works around it enough to boot my
-system, but I'm not going to get far if I suggest that we ship a
-different copy of the boot loader just for Efika "because it's speshul".
-Especially when the bug was known so long ago.
-
-I think the workaround on Pegasos was to use Amiga partitions, and to
-hack (perhaps even unintentionally) the Amiga partition code in yaboot
-to compensate for the brokenness. So the Amiga partition code probably
-won't work on CHRP-compatible machines, while the rest of the partition
-code won't work on Efika/oldPegasos. I baulked at the idea of continuing
-this hack by using Amiga partitions on Efika too, and preferred to put
-the thing back on the shelf and wait for it to be fixed -- especially as
-I'm away for the rest of the month anyway.
+g.
 
 -- 
-dwmw2
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
