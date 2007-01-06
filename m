@@ -1,22 +1,24 @@
-Return-Path: <haveblue@us.ibm.com>
-Subject: [PATCH] Fix sparsemem on Cell (take 3)
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <200612190959.47344.arnd@arndb.de>
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<200612182354.47685.arnd@arndb.de>
-	<1166483780.8648.26.camel@localhost.localdomain>
-	<200612190959.47344.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 05 Jan 2007 17:10:03 -0800
-Message-Id: <1168045803.8945.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, mkravetz@us.ibm.com,
-	Arnd Bergmann <arnd@arndb.de>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, hch@infradead.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Keith Mannthey <kmannth@us.ibm.com>, gone@us.ibm.com,
-	cbe-oss-dev@ozlabs.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B6D16DDDF6
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Jan 2007 13:42:56 +1100 (EST)
+Date: Sat, 6 Jan 2007 03:42:42 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] More SMU commands
+Message-ID: <20070106024242.GA18395@hansmi.ch>
+References: <20061224130531.GA28635@hansmi.ch>
+	<1167082402.3522.8.camel@localhost.localdomain>
+	<20070105001014.GA28410@hansmi.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="CE+1k2dSO48ffgeK"
+In-Reply-To: <20070105001014.GA28410@hansmi.ch>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@killerfox.forkbomb.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,151 +28,245 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I dropped this on the floor over Christmas.  This has had a few smoke
-tests on ppc64 and i386 and is ready for -mm.  Against 2.6.20-rc2-mm1.
 
-The following patch fixes an oops experienced on the Cell architecture
-when init-time functions, early_*(), are called at runtime.  It alters
-the call paths to make sure that the callers explicitly say whether the
-call is being made on behalf of a hotplug even, or happening at
-boot-time. 
+--CE+1k2dSO48ffgeK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+On Fri, Jan 05, 2007 at 01:10:14AM +0100, Michael Hanselmann wrote:
+> New patch below. Is this one better?
+
+Unfortuntely, there was a naming conflict. Here's a better patch with
+even more comments.
+
+Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
 
 ---
-
- lxc-dave/arch/s390/mm/vmem.c    |    3 ++-
- lxc-dave/include/linux/mm.h     |    7 ++++++-
- lxc-dave/include/linux/mmzone.h |    3 ++-
- lxc-dave/mm/memory_hotplug.c    |    6 ++++--
- lxc-dave/mm/page_alloc.c        |   25 +++++++++++++++++--------
- 5 files changed, 31 insertions(+), 13 deletions(-)
-
-diff -puN mm/page_alloc.c~sparsemem-enum1 mm/page_alloc.c
---- lxc/mm/page_alloc.c~sparsemem-enum1	2006-12-19 09:38:34.000000000 -0800
-+++ lxc-dave/mm/page_alloc.c	2006-12-19 11:18:24.000000000 -0800
-@@ -2062,17 +2062,24 @@ static inline unsigned long wait_table_b
-  * done. Non-atomic initialization, single-pass.
+--- linux-2.6.19.1.orig/include/asm-powerpc/smu.h	2006-12-24 12:19:07.00000=
+0000 +0100
++++ linux-2.6.19.1/include/asm-powerpc/smu.h	2007-01-06 03:32:23.000000000 =
++0100
+@@ -173,7 +173,7 @@
+  * Power supply control
+  *
+  * The "sub" command is an ASCII string in the data, the
+- * data lenght is that of the string.
++ * data length is that of the string.
+  *
+  * The VSLEW command can be used to get or set the voltage slewing.
+  *  - lenght 5 (only "VSLEW") : it returns "DONE" and 3 bytes of
+@@ -201,20 +201,90 @@
   */
- void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
--		unsigned long start_pfn)
-+		unsigned long start_pfn, enum memmap_context context)
- {
- 	struct page *page;
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
--		if (!early_pfn_valid(pfn))
--			continue;
--		if (!early_pfn_in_nid(pfn, nid))
--			continue;
-+		/*
-+		 * There can be holes in boot-time mem_map[]s
-+		 * handed to this function.  They do not
-+		 * exist on hotplugged memory.
-+		 */
-+		if (context == MEMMAP_EARLY) {
-+			if (!early_pfn_valid(pfn))
-+				continue;
-+			if (!early_pfn_in_nid(pfn, nid))
-+				continue;
-+		}
- 		page = pfn_to_page(pfn);
- 		set_page_links(page, zone, nid, pfn);
- 		init_page_count(page);
-@@ -2102,7 +2109,7 @@ void zone_init_free_lists(struct pglist_
- 
- #ifndef __HAVE_ARCH_MEMMAP_INIT
- #define memmap_init(size, nid, zone, start_pfn) \
--	memmap_init_zone((size), (nid), (zone), (start_pfn))
-+	memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
- #endif
- 
- static int __cpuinit zone_batchsize(struct zone *zone)
-@@ -2348,7 +2355,8 @@ static __meminit void zone_pcp_init(stru
- 
- __meminit int init_currently_empty_zone(struct zone *zone,
- 					unsigned long zone_start_pfn,
--					unsigned long size)
-+					unsigned long size,
-+					enum memmap_context context)
- {
- 	struct pglist_data *pgdat = zone->zone_pgdat;
- 	int ret;
-@@ -2792,7 +2800,8 @@ static void __meminit free_area_init_cor
- 		if (!size)
- 			continue;
- 
--		ret = init_currently_empty_zone(zone, zone_start_pfn, size);
-+		ret = init_currently_empty_zone(zone, zone_start_pfn,
-+						size, MEMMAP_EARLY);
- 		BUG_ON(ret);
- 		zone_start_pfn += size;
- 	}
-diff -puN include/linux/mm.h~sparsemem-enum1 include/linux/mm.h
---- lxc/include/linux/mm.h~sparsemem-enum1	2006-12-19 09:38:45.000000000 -0800
-+++ lxc-dave/include/linux/mm.h	2006-12-19 09:50:47.000000000 -0800
-@@ -979,7 +979,12 @@ extern int early_pfn_to_nid(unsigned lon
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
- extern void set_dma_reserve(unsigned long new_dma_reserve);
--extern void memmap_init_zone(unsigned long, int, unsigned long, unsigned long);
-+enum memmap_context {
-+	MEMMAP_EARLY,
-+	MEMMAP_HOTPLUG,
-+};
-+extern void memmap_init_zone(unsigned long, int, unsigned long,
-+				unsigned long, enum memmap_context);
- extern void setup_per_zone_pages_min(void);
- extern void mem_init(void);
- extern void show_mem(void);
-diff -puN mm/memory_hotplug.c~sparsemem-enum1 mm/memory_hotplug.c
---- lxc/mm/memory_hotplug.c~sparsemem-enum1	2006-12-19 09:39:19.000000000 -0800
-+++ lxc-dave/mm/memory_hotplug.c	2006-12-19 09:50:24.000000000 -0800
-@@ -67,11 +67,13 @@ static int __add_zone(struct zone *zone,
- 	zone_type = zone - pgdat->node_zones;
- 	if (!populated_zone(zone)) {
- 		int ret = 0;
--		ret = init_currently_empty_zone(zone, phys_start_pfn, nr_pages);
-+		ret = init_currently_empty_zone(zone, phys_start_pfn,
-+						nr_pages, MEMMAP_HOTPLUG);
- 		if (ret < 0)
- 			return ret;
- 	}
--	memmap_init_zone(nr_pages, nid, zone_type, phys_start_pfn);
-+	memmap_init_zone(nr_pages, nid, zone_type,
-+			 phys_start_pfn, MEMMAP_HOTPLUG);
- 	return 0;
- }
- 
-diff -puN arch/s390/mm/vmem.c~sparsemem-enum1 arch/s390/mm/vmem.c
---- lxc/arch/s390/mm/vmem.c~sparsemem-enum1	2006-12-19 09:42:26.000000000 -0800
-+++ lxc-dave/arch/s390/mm/vmem.c	2006-12-19 11:17:49.000000000 -0800
-@@ -61,7 +61,8 @@ void memmap_init(unsigned long size, int
- 
- 		if (map_start < map_end)
- 			memmap_init_zone((unsigned long)(map_end - map_start),
--					 nid, zone, page_to_pfn(map_start));
-+					 nid, zone, page_to_pfn(map_start),
-+					 context);
- 	}
- }
- 
-diff -puN include/linux/mmzone.h~sparsemem-enum1 include/linux/mmzone.h
---- lxc/include/linux/mmzone.h~sparsemem-enum1	2006-12-19 09:48:58.000000000 -0800
-+++ lxc-dave/include/linux/mmzone.h	2006-12-19 09:53:42.000000000 -0800
-@@ -474,7 +474,8 @@ int zone_watermark_ok(struct zone *z, in
- 		int classzone_idx, int alloc_flags);
- 
- extern int init_currently_empty_zone(struct zone *zone, unsigned long start_pfn,
--				     unsigned long size);
-+				     unsigned long size,
-+				     enum memmap_context context);
- 
- #ifdef CONFIG_HAVE_MEMORY_PRESENT
- void memory_present(int nid, unsigned long start, unsigned long end);
-_
+ #define SMU_CMD_READ_ADC			0xd8
+=20
++
+ /* Misc commands
+  *
+  * This command seem to be a grab bag of various things
++ *
++ * Parameters:
++ *   1: subcommand
+  */
+ #define SMU_CMD_MISC_df_COMMAND			0xdf
+-#define   SMU_CMD_MISC_df_SET_DISPLAY_LIT	0x02 /* i: 1 byte */
++
++/*
++ * Sets "system ready" status
++ *
++ * I did not yet understand how it exactly works or what it does.
++ *
++ * Guessing from OF code, 0x02 activates the display backlight. Apple uses=
+/used
++ * the same codebase for all OF versions. On PowerBooks, this command would
++ * enable the backlight. For the G5s, it only activates the front LED. How=
+ever,
++ * don't take this for granted.
++ *
++ * Parameters:
++ *   2: status [0x00, 0x01 or 0x02]
++ */
++#define   SMU_CMD_MISC_df_SET_DISPLAY_LIT	0x02
++
++/*
++ * Sets mode of power switch.
++ *
++ * What this actually does is not yet known. Maybe it enables some interru=
+pt.
++ *
++ * Parameters:
++ *   2: enable power switch? [0x00 or 0x01]
++ *   3 (optional): enable nmi? [0x00 or 0x01]
++ *
++ * Returns:
++ *   If parameter 2 is 0x00 and parameter 3 is not specified, returns weth=
+er
++ *   NMI is enabled. Otherwise unknown.
++ */
+ #define   SMU_CMD_MISC_df_NMI_OPTION		0x04
+=20
++/* Sets LED dimm offset.
++ *
++ * The front LED dimms itself during sleep. Its brightness (or, well, the =
+PWM
++ * frequency) depends on current time. Therefore, the SMU needs to know the
++ * timezone.
++ *
++ * Parameters:
++ *   2-8: unknown (BCD coding)
++ */
++#define   SMU_CMD_MISC_df_DIMM_OFFSET		0x99
++
++
+ /*
+  * Version info commands
+  *
+- * I haven't quite tried to figure out how these work
++ * Parameters:
++ *   1 (optional): Specifies version part to retrieve
++ *
++ * Returns:
++ *   Version value
+  */
+ #define SMU_CMD_VERSION_COMMAND			0xea
++#define   SMU_VERSION_RUNNING			0x00
++#define   SMU_VERSION_BASE			0x01
++#define   SMU_VERSION_UPDATE			0x02
++
++
++/*
++ * Switches
++ *
++ * These are switches whose status seems to be known to the SMU.
++ *
++ * Parameters:
++ *   none
++ *
++ * Result:
++ *   Switch bits (ORed, see below)
++ */
++#define SMU_CMD_SWITCHES			0xdc
++
++/* Switches bits */
++#define SMU_SWITCH_CASE_CLOSED			0x01
++#define SMU_SWITCH_AC_POWER			0x04
++#define SMU_SWITCH_POWER_SWITCH			0x08
+=20
+=20
+ /*
+@@ -243,10 +313,99 @@
+  */
+ #define SMU_CMD_MISC_ee_COMMAND			0xee
+ #define   SMU_CMD_MISC_ee_GET_DATABLOCK_REC	0x02
+-#define	  SMU_CMD_MISC_ee_LEDS_CTRL		0x04 /* i: 00 (00,01) [00] */
++
++/* Retrieves currently used watts.
++ *
++ * Parameters:
++ *   1: 0x03 (Meaning unknown)
++ */
++#define   SMU_CMD_MISC_ee_GET_WATTS		0x03
++
++#define   SMU_CMD_MISC_ee_LEDS_CTRL		0x04 /* i: 00 (00,01) [00] */
+ #define   SMU_CMD_MISC_ee_GET_DATA		0x05 /* i: 00 , o: ?? */
+=20
+=20
++/*
++ * Power related commands
++ *
++ * Parameters:
++ *   1: subcommand
++ */
++#define SMU_CMD_POWER_EVENTS_COMMAND		0x8f
++
++/*
++ * Enables file server mode
++ *
++ * Meaning or use is unknown. Maybe this allows the machine to power up af=
+ter
++ * AC loss.
++ *
++ * Parameters:
++ *   2: always 0x00, meaning unknown
++ *   3: always 0x02, meaning unknown
++ *
++ * Returns:
++ *   2 bytes
++ */
++#define   SMU_CMD_POWER_EVENTS_SET_FILESERVER_MODE	0x01
++
++/*
++ * Disables file server mode
++ *
++ * Parameters:
++ *   2: always 0xff, meaning unknown
++ *   3: always 0xff, meaning unknown
++ *
++ * Returns:
++ *   2 bytes
++ */
++#define   SMU_CMD_POWER_EVENTS_CLR_FILESERVER_MODE	0x02
++
++/*
++ * Unknown meaning. Used during sleep preparation.
++ *
++ * Parameters:
++ *   2: unknown
++ *   3: unknown
++ *
++ * Returns:
++ *   2 bytes
++ */
++#define   SMU_CMD_POWER_EVENTS_UNKNOWN_04		0x04
++
++/*
++ * Unknown meaning. Used during sleep preparation.
++ *
++ * Parameters:
++ *   2: 0xff, meaning unknown
++ *   3: 0xff, meaning unknown
++ *
++ * Returns:
++ *   2 bytes
++ */
++#define   SMU_CMD_POWER_EVENTS_UNKNOWN_05		0x05
++
++/*
++ * Get last shutdown cause
++ *
++ * Parameters:
++ *   none
++ *
++ * Returns:
++ *   1 byte (signed char): Last shutdown cause. Exact meaning unknown.
++ */
++#define   SMU_CMD_POWER_EVENTS_LAST_SHUTDOWN_CAUSE	0x07
++
++/*
++ * Sets or gets server ID. Meaning or use is unknown.
++ *
++ * Parameters:
++ *   2 (optional): Set server ID (1 byte)
++ *
++ * Returns:
++ *   1 byte (server ID?)
++ */
++#define   SMU_CMD_POWER_EVENTS_SERVER_ID		0x08
++
+=20
+ /*
+  * - Kernel side interface -
 
+--CE+1k2dSO48ffgeK
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
--- Dave
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFnwyi6J0saEpRu+oRAlCoAKCQd1gjc3lufM798BD3YV2kpVMBXgCcCPwN
+yXlujlHmywpfotIsD0OaGbA=
+=FSyZ
+-----END PGP SIGNATURE-----
+
+--CE+1k2dSO48ffgeK--
