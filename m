@@ -1,33 +1,21 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 201ACDDE25
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 09:39:07 +1100 (EST)
-Message-ID: <45A17685.2080204@genesi-usa.com>
-Date: Sun, 07 Jan 2007 22:39:01 +0000
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 29A64DDDFB
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 10:05:51 +1100 (EST)
+In-Reply-To: <45A175B3.4010506@246tNt.com>
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>		<1166528379.19254.69.camel@localhost.localdomain>		<4587D338.7060906@246tNt.com>		<1166538553.25827.99.camel@pmac.infradead.org>		<1166558300.19254.71.camel@localhost.localdomain>		<1167773388.22068.443.camel@pmac.infradead.org>		<1167773863.6165.82.camel@localhost.localdomain>		<1167775493.3660.23.camel@shinybook.infradead.org>		<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>		<45A01416.6080401@genesi-usa.com>	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>	<45A1535C.1080007@genesi-usa.com>	<f0c5df8b1d2bcc1abcd04894e0210cc1@kernel.crashing.org>
+	<45A16FF1.5000401@genesi-usa.com> <45A175B3.4010506@246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7f6fe6af734258ea560295a5d2d31884@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] Probe Efika platform before CHRP.
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>	
-	<1166528379.19254.69.camel@localhost.localdomain>	
-	<4587D338.7060906@246tNt.com>	
-	<1166538553.25827.99.camel@pmac.infradead.org>	
-	<1166558300.19254.71.camel@localhost.localdomain>	
-	<1167773388.22068.443.camel@pmac.infradead.org>	
-	<1167773863.6165.82.camel@localhost.localdomain>	
-	<1167775493.3660.23.camel@shinybook.infradead.org>	
-	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>	
-	<45A01416.6080401@genesi-usa.com>
-	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
-	<45A1535C.1080007@genesi-usa.com>
-	<f0c5df8b1d2bcc1abcd04894e0210cc1@kernel.crashing.org>
-In-Reply-To: <f0c5df8b1d2bcc1abcd04894e0210cc1@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: David Woodhouse <dwmw2@infradead.org>, bbrv@genesi-usa.com,
-	Paul Mackerras <paulus@samba.org>, Linux PPC DEV <linuxppc-dev@ozlabs.org>
+Date: Mon, 8 Jan 2007 00:04:58 +0100
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: bbrv@genesi-usa.com, Linux PPC DEV <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,39 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> The very fact of matching device to driver by their
+> "name/type/compatible" list
+> is just the way it's done/specified in OF. Unless I'm deeply mistaken
 
-Segher Boessenkool wrote:
->> (especially a C-based one, OpenBIOS
->> is 90% Forth which is a terrible lock-in)
+No, you're perfectly right.
 
-^^^^^^^
+> So back to ethernet since you seem to like it ;) If fsl produce a new
+> chip (let's call
+> it mpc5321) , either it has _exactly_ the same interface (not a single
+> difference),
+> they you could call it mpc52xx in your device tree.
 
-> Only 7 days into the new year, and already we get some great
-> entries for best-joke-of-2007!  Too bad they're factually
-> incorrect.
+No, it should be "compatible" = "mpc5321\0mpc52xx", since even
+if it *supposedly* works identically, there always could be bugs.
+The actual device version is a huge thing to leave out of the
+device tree no matter what.
 
-I'll correct that then, FirmWorks (as used on OLPC) is 90% Forth, and
-I think there is a shortage of Forth coders compared to driver-writing
-low-level firmware coders who can do C or C++ or any other language
-for that matter, I think it makes it commercially unusable if you want
-any kind of turnaround on device support.
+Linux would find it via "mpc52xx", if it has no reason to treat
+mpc5321 specially, sure.  The device tree should still express
+that information though; it shows information about the hardware
+to whoever wants to use it (e.g., Linux), it does not *directly*
+tell Linux how to handle the hardware.  This is a good thing.
 
-OpenBIOS is maybe 30% Forth supplementing a fairly C-based implementation
-but it is still too much Forth. It also relies on a boot loading stage
-previous to it (no abstraction!) like UBoot or a PC BIOS to start with,
-so commercially without some work, it's fairly useless.
+> If it's different, (even slighty, like it handles frame >2048 for
+> example), then
+> just give it a new name and add it as supported by the same driver. If
+> that's the
+> 5321 entry that matched, then allow frames >2048.
 
-Either way, without talking about CodeGen's source release (not
-commercially usable, and debatably not GPL-compatible either) we're
-the only company doing Open Firmware for PowerPC devices, with the
-turnaround time we have (talk to Marvell if you like) and offering
-the kind of feature support (x86 emulator) we plant on top on request
-(Linux BSP including working 3D drivers just to prove the firmware
-works and the emulator is setting up any card they desire correctly).
+Yeah.
 
-Maybe IBM's PAPR firmware will be great when it arrives sometime in
-2008, and put us out of business, but until then I stand by that :D
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Segher
