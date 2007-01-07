@@ -3,10 +3,10 @@ Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
 	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 54DFDDDDF4
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 09:11:05 +1100 (EST)
-Message-ID: <45A16FF1.5000401@genesi-usa.com>
-Date: Sun, 07 Jan 2007 22:10:57 +0000
+	by ozlabs.org (Postfix) with ESMTP id 6FD9FDDE04
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 09:33:02 +1100 (EST)
+Message-ID: <45A17518.5010808@genesi-usa.com>
+Date: Sun, 07 Jan 2007 22:32:56 +0000
 From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
 To: Segher Boessenkool <segher@kernel.crashing.org>
@@ -39,62 +39,6 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 
-Why is it so funny? I'd love to be enlightened rather than just plain
-insulted about it.
-
-I don't think any of that can be taken into account by simply giving things
-*names* and then having a 3-week discussion and committee hearing about how
-someone gave it a DIFFERENT name. It is even more strange to me, that nobody
-HAS a standard name for the devices on the MPC5200B, yet we are arguing
-about what would look nicer in the Linux source code?
-
-Small example:
-
-mpc5200b-fec, mpc5200-fec, mpc52xx-fec doesn't tell you anything, and
-then with the 5500 or 5120 or something, you then have worked out you
-named your original devices wrong, and now need to make it compatible
-with those? Do you switch features on and off based on a string comparison?
-What if a certain chip revision has a bug you need to work around (there
-are plenty in the original MPC5200!), is that meant to be encoded in the
-"compatible" property too, somehow? Or would you check the SVR too? If
-you would check that, why not use this as the basis of the support for
-that driver? For a PCI device, you are given basically a 32-bit UID for
-each device, which is attached to a unique domain, host, bus, device
-and function number. You manage well here without giving it names.
-
-An Intel processor might return a string for CPUID - mine says it's a
-"Intel(R) Pentium(R) M 1.70GHz". That string is absolutely useless in
-determining it's compatibility. It's just a name. It may as well say
-"Fight Famine In Rwanda" for all the good it does.
-
-I think there are better ways and better places to encode certain
-properties of the system as a whole (as the system is a lot more than
-just that single chip) than having a bunch of strings in a property
-which claim that it is compatible with something else, strictly defined
-naming conventions and so on across chip ranges. Although we are talking
-here mostly about two boards with the same chip basically - Lite5200
-and Efika, there may be more boards with similar hardware supported,
-extra hardware supported, new chips which look very much like the 5200
-but have slightly different or bugfixed operation (and here is my point)
-which I do not think you can encode in names and compatibile names.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
 Segher Boessenkool wrote:
 >> (especially a C-based one, OpenBIOS
 >> is 90% Forth which is a terrible lock-in)
-> 
->> Isn't the e300 PVR and e300 SVR, or any other device identifier on the
->> chip, a much better differentiator for drivers, than a named 
->> compatibility
->> flag?
-> 
-> Only 7 days into the new year, and already we get some great
-> entries for best-joke-of-2007!  Too bad they're factually
-> incorrect.
-> 
-> 
-> Segher
-> 
