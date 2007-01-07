@@ -1,41 +1,32 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <bbrv@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 72A40DDDFA
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jan 2007 19:58:39 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id l078wYHW029843
-	for <linuxppc-dev@ozlabs.org>; Sun, 7 Jan 2007 03:58:34 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	l078wYQb462746
-	for <linuxppc-dev@ozlabs.org>; Sun, 7 Jan 2007 01:58:34 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l078wXNN013949
-	for <linuxppc-dev@ozlabs.org>; Sun, 7 Jan 2007 01:58:34 -0700
-Subject: Re: [PATCH] Fix sparsemem on Cell (take 3)
-From: Dave Hansen <haveblue@us.ibm.com>
-To: John Rose <johnrose@austin.ibm.com>
-In-Reply-To: <1168059162.23226.1.camel@sinatra.austin.ibm.com>
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<200612182354.47685.arnd@arndb.de>
-	<1166483780.8648.26.camel@localhost.localdomain>
-	<200612190959.47344.arnd@arndb.de>
-	<1168045803.8945.14.camel@localhost.localdomain>
-	<1168059162.23226.1.camel@sinatra.austin.ibm.com>
-Content-Type: text/plain
-Date: Sun, 07 Jan 2007 00:58:27 -0800
-Message-Id: <1168160307.6740.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, mkravetz@us.ibm.com,
-	Arnd Bergmann <arnd@arndb.de>, linux-mm@kvack.org,
-	lkml <linux-kernel@vger.kernel.org>, hch@infradead.org,
-	External List <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, kmannth@us.ibm.com, gone@us.ibm.com,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2BBA7DDDF7
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jan 2007 20:37:52 +1100 (EST)
+In-Reply-To: <45A0610E.60307@246tNt.com>
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>	
+	<1166528379.19254.69.camel@localhost.localdomain>	
+	<4587D338.7060906@246tNt.com>	
+	<1166538553.25827.99.camel@pmac.infradead.org>	
+	<1166558300.19254.71.camel@localhost.localdomain>	
+	<1167773388.22068.443.camel@pmac.infradead.org>	
+	<1167773863.6165.82.camel@localhost.localdomain>	
+	<1167775493.3660.23.camel@shinybook.infradead.org>	
+	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>	
+	<45A01416.6080401@genesi-usa.com>
+	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
+	<45A0610E.60307@246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <44901FD6-0F07-453A-934A-FF95EA1B8906@genesi-usa.com>
+From: Raquel Velasco and Bill Buck <bbrv@genesi-usa.com>
+Subject: Re: [PATCH] Probe Efika platform before CHRP.
+Date: Sun, 7 Jan 2007 03:11:25 -0600
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Paul Mackerras <paulus@samba.org>,
+	Linux PPC DEV <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,189 +36,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-05 at 22:52 -0600, John Rose wrote:
-> > I dropped this on the floor over Christmas.  This has had a few smoke
-> > tests on ppc64 and i386 and is ready for -mm.  Against 2.6.20-rc2-mm1.
-> 
-> Could this break ia64, given that it uses memmap_init_zone()?
+Hi Syvain, Ben, and the others here on this list...
 
-You are right, I think it does.
+In the next 45-60 days we will offer new firmware for the EFIKA (and  
+the Pegasos/ODW).  We will define a new hardware specification  
+outside of CHRP.  In the meanwhile and afterwards, feel free to  
+proceed as you determine best.  We appreciate the support we have  
+received in the past and the effort made more recently on the EFIKA.
 
-Here's an updated patch to replace the earlier one.  I had to move the
-enum definition over to a different header because ia64 evidently has a
-different include order.
+The long term objective for Genesi is to provide a low cost, low  
+power, highly reliable computing platform that can be flexibly  
+applied to many uses.  We hope to be selling the EFIKA at $99 by  
+April (and sooner if possible).  The 5200B is to be followed by  
+another SoC with integrated graphic support at the same price (for  
+the SoC).  The new firmware will be inexorably linked to this new SoC  
+in form and function.  The EFIKA is a development platform that  
+targets the system we will offer with the new SoC.  We expect to be  
+shipping the next version of the EFIKA before the end of 2007.  The  
+first diagram shown in the link that follows (the second image is  
+what we hope for after that):
 
----
+http://bbrv.blogspot.com/2006/10/wanting-what-you-have.html
 
-The following patch fixes an oops experienced on the Cell architecture
-when init-time functions, early_*(), are called at runtime.  It alters
-the call paths to make sure that the callers explicitly say whether the
-call is being made on behalf of a hotplug even, or happening at
-boot-time. 
+Thanks again.  Happy New Year. :)
 
-It has been compile tested on ia64, s390, i386 and x86_64.
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-
----
-
- lxc-dave/arch/ia64/mm/init.c    |    5 +++--
- lxc-dave/arch/s390/mm/vmem.c    |    3 ++-
- lxc-dave/include/linux/mm.h     |    3 ++-
- lxc-dave/include/linux/mmzone.h |    8 ++++++--
- lxc-dave/mm/memory_hotplug.c    |    6 ++++--
- lxc-dave/mm/page_alloc.c        |   25 +++++++++++++++++--------
- 6 files changed, 34 insertions(+), 16 deletions(-)
-
-diff -puN arch/s390/mm/vmem.c~Re-_PATCH_Fix_sparsemem_on_Cell arch/s390/mm/vmem.c
---- lxc/arch/s390/mm/vmem.c~Re-_PATCH_Fix_sparsemem_on_Cell	2007-01-05 15:38:23.000000000 -0800
-+++ lxc-dave/arch/s390/mm/vmem.c	2007-01-07 00:47:02.000000000 -0800
-@@ -61,7 +61,8 @@ void memmap_init(unsigned long size, int
- 
- 		if (map_start < map_end)
- 			memmap_init_zone((unsigned long)(map_end - map_start),
--					 nid, zone, page_to_pfn(map_start));
-+					 nid, zone, page_to_pfn(map_start),
-+					 MEMMAP_EARLY);
- 	}
- }
- 
-diff -puN include/linux/mm.h~Re-_PATCH_Fix_sparsemem_on_Cell include/linux/mm.h
---- lxc/include/linux/mm.h~Re-_PATCH_Fix_sparsemem_on_Cell	2007-01-05 15:38:23.000000000 -0800
-+++ lxc-dave/include/linux/mm.h	2007-01-06 23:57:59.000000000 -0800
-@@ -979,7 +979,8 @@ extern int early_pfn_to_nid(unsigned lon
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
- extern void set_dma_reserve(unsigned long new_dma_reserve);
--extern void memmap_init_zone(unsigned long, int, unsigned long, unsigned long);
-+extern void memmap_init_zone(unsigned long, int, unsigned long,
-+				unsigned long, enum memmap_context);
- extern void setup_per_zone_pages_min(void);
- extern void mem_init(void);
- extern void show_mem(void);
-diff -puN include/linux/mmzone.h~Re-_PATCH_Fix_sparsemem_on_Cell include/linux/mmzone.h
---- lxc/include/linux/mmzone.h~Re-_PATCH_Fix_sparsemem_on_Cell	2007-01-05 15:38:23.000000000 -0800
-+++ lxc-dave/include/linux/mmzone.h	2007-01-06 23:58:15.000000000 -0800
-@@ -471,9 +471,13 @@ void build_all_zonelists(void);
- void wakeup_kswapd(struct zone *zone, int order);
- int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
- 		int classzone_idx, int alloc_flags);
--
-+enum memmap_context {
-+	MEMMAP_EARLY,
-+	MEMMAP_HOTPLUG,
-+};
- extern int init_currently_empty_zone(struct zone *zone, unsigned long start_pfn,
--				     unsigned long size);
-+				     unsigned long size,
-+				     enum memmap_context context);
- 
- #ifdef CONFIG_HAVE_MEMORY_PRESENT
- void memory_present(int nid, unsigned long start, unsigned long end);
-diff -puN mm/memory_hotplug.c~Re-_PATCH_Fix_sparsemem_on_Cell mm/memory_hotplug.c
---- lxc/mm/memory_hotplug.c~Re-_PATCH_Fix_sparsemem_on_Cell	2007-01-05 15:38:23.000000000 -0800
-+++ lxc-dave/mm/memory_hotplug.c	2007-01-05 15:38:23.000000000 -0800
-@@ -67,11 +67,13 @@ static int __add_zone(struct zone *zone,
- 	zone_type = zone - pgdat->node_zones;
- 	if (!populated_zone(zone)) {
- 		int ret = 0;
--		ret = init_currently_empty_zone(zone, phys_start_pfn, nr_pages);
-+		ret = init_currently_empty_zone(zone, phys_start_pfn,
-+						nr_pages, MEMMAP_HOTPLUG);
- 		if (ret < 0)
- 			return ret;
- 	}
--	memmap_init_zone(nr_pages, nid, zone_type, phys_start_pfn);
-+	memmap_init_zone(nr_pages, nid, zone_type,
-+			 phys_start_pfn, MEMMAP_HOTPLUG);
- 	return 0;
- }
- 
-diff -puN mm/page_alloc.c~Re-_PATCH_Fix_sparsemem_on_Cell mm/page_alloc.c
---- lxc/mm/page_alloc.c~Re-_PATCH_Fix_sparsemem_on_Cell	2007-01-05 15:38:23.000000000 -0800
-+++ lxc-dave/mm/page_alloc.c	2007-01-07 00:35:27.000000000 -0800
-@@ -2062,17 +2062,24 @@ static inline unsigned long wait_table_b
-  * done. Non-atomic initialization, single-pass.
-  */
- void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
--		unsigned long start_pfn)
-+		unsigned long start_pfn, enum memmap_context context)
- {
- 	struct page *page;
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
--		if (!early_pfn_valid(pfn))
--			continue;
--		if (!early_pfn_in_nid(pfn, nid))
--			continue;
-+		/*
-+		 * There can be holes in boot-time mem_map[]s
-+		 * handed to this function.  They do not
-+		 * exist on hotplugged memory.
-+		 */
-+		if (context == MEMMAP_EARLY) {
-+			if (!early_pfn_valid(pfn))
-+				continue;
-+			if (!early_pfn_in_nid(pfn, nid))
-+				continue;
-+		}
- 		page = pfn_to_page(pfn);
- 		set_page_links(page, zone, nid, pfn);
- 		init_page_count(page);
-@@ -2102,7 +2109,7 @@ void zone_init_free_lists(struct pglist_
- 
- #ifndef __HAVE_ARCH_MEMMAP_INIT
- #define memmap_init(size, nid, zone, start_pfn) \
--	memmap_init_zone((size), (nid), (zone), (start_pfn))
-+	memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
- #endif
- 
- static int __cpuinit zone_batchsize(struct zone *zone)
-@@ -2348,7 +2355,8 @@ static __meminit void zone_pcp_init(stru
- 
- __meminit int init_currently_empty_zone(struct zone *zone,
- 					unsigned long zone_start_pfn,
--					unsigned long size)
-+					unsigned long size,
-+					enum memmap_context context)
- {
- 	struct pglist_data *pgdat = zone->zone_pgdat;
- 	int ret;
-@@ -2792,7 +2800,8 @@ static void __meminit free_area_init_cor
- 		if (!size)
- 			continue;
- 
--		ret = init_currently_empty_zone(zone, zone_start_pfn, size);
-+		ret = init_currently_empty_zone(zone, zone_start_pfn,
-+						size, MEMMAP_EARLY);
- 		BUG_ON(ret);
- 		zone_start_pfn += size;
- 	}
-diff -puN arch/ia64/mm/init.c~Re-_PATCH_Fix_sparsemem_on_Cell arch/ia64/mm/init.c
---- lxc/arch/ia64/mm/init.c~Re-_PATCH_Fix_sparsemem_on_Cell	2007-01-06 23:58:55.000000000 -0800
-+++ lxc-dave/arch/ia64/mm/init.c	2007-01-07 00:08:01.000000000 -0800
-@@ -541,7 +541,8 @@ virtual_memmap_init (u64 start, u64 end,
- 
- 	if (map_start < map_end)
- 		memmap_init_zone((unsigned long)(map_end - map_start),
--				 args->nid, args->zone, page_to_pfn(map_start));
-+				 args->nid, args->zone, page_to_pfn(map_start),
-+				 MEMMAP_EARLY);
- 	return 0;
- }
- 
-@@ -550,7 +551,7 @@ memmap_init (unsigned long size, int nid
- 	     unsigned long start_pfn)
- {
- 	if (!vmem_map)
--		memmap_init_zone(size, nid, zone, start_pfn);
-+		memmap_init_zone(size, nid, zone, start_pfn, MEMMAP_EARLY);
- 	else {
- 		struct page *start;
- 		struct memmap_init_callback_data args;
-_
+Best regards,
+R&B
 
 
--- Dave
+On Jan 6, 2007, at 8:55 PM, Sylvain Munaut wrote:
+
+>
+>>> What if NetBSD, FreeBSD, QNX and WindRiver disagree with you guys?
+> Note that the "compatible" modification we ask could simply be to add
+> the one
+> we require at the start of your compatible list, so linux will work  
+> and
+> the os using
+> the efika original will work as well.
+>
+>>> Specifically for the "sound" and "ac97" discrepency, the "sound"  
+>>> device
+>>> type has some special implications for Open Firmware firmwares. It's
+>>> set to ac97 as it is NOT an OF or CHRP standard "sound" node and  
+>>> should
+>>> NOT be found as such in my personal opinion.
+> This "sound" <> "ac97" thing is not fixed in the patch I posted  
+> recently nor
+> in the nvramrc I sent to gentoo before that. The only visible thing  
+> was a
+> a small comment buried in a very experimental driver.
+> As soon as nicolas told me "sound" was the standard, I said OK so  
+> be it.
+>
+> But for example the "memory" type you give to the SRAM node is imho
+> wrong. Because memory seems to be the standard type for "real" memory,
+> the one that's gonna be used for the system ...
+>
+>> There are two issues here:
+> I'd say you can even split a little more :
+>
+>  * Compatible / Type of nodes :
+>    We need a naming schema that's coherent across nodes and will  
+> allow to
+>    support coherently different boards. Your naming scheme just  
+> doesn't
+>    provide that. The one proposed by Grant does. Now it's possible  
+> you can
+>    find even better and we're open to suggestion.
+>
+>  * Missing bits :
+>   - The interrupts property of the ac97 node are just not there. This
+> interrupt
+>      exist, it's hw and you can't just decide the driver can do  
+> without
+> it ...
+>
+>  * Bugs : I see three,
+>   -  The one dwmv2 mentionned
+>   -  I noticed the compatible properties had double \0 at the end  
+> instead
+>      of single ones.
+>   -  Incorrect init of the PSC2 for AC97 and in the tree since the  
+> "gpio"
+>      node is not present, the address for port config is not found  
+> in the
+>      device tree. The current work around is a ugly hardcoded stuff in
+>      the driver itself that will never be merged upstream.
+>
+>
+> Regards,
+>
+>      Sylvain
+>
+>
+> PS: In the end, a long nvramrc will do the trick ... so I don't care
+> much for me,
+> I'll always know what I need to put in it.
+>
