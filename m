@@ -1,18 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [BUG] flash failure with CONFIG_RTAS_FLASH=m
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070104180406.6843ead3@localhost.localdomain>
-References: <20070104234951.GJ6279@localdomain>
-	<20070104180406.6843ead3@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-AUWs/Vk8NznN8YMctLTh"
-Date: Mon, 08 Jan 2007 12:09:04 +1100
-Message-Id: <1168218544.30064.3.camel@concordia.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9D23BDDE20
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 12:12:24 +1100 (EST)
+Subject: Re: [PATCH] More SMU commands
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+In-Reply-To: <20070106024242.GA18395@hansmi.ch>
+References: <20061224130531.GA28635@hansmi.ch>
+	<1167082402.3522.8.camel@localhost.localdomain>
+	<20070105001014.GA28410@hansmi.ch> <20070106024242.GA18395@hansmi.ch>
+Content-Type: text/plain
+Date: Mon, 08 Jan 2007 12:12:10 +1100
+Message-Id: <1168218731.22458.109.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@killerfox.forkbomb.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +27,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-AUWs/Vk8NznN8YMctLTh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> +#define SMU_CMD_POWER_EVENTS_COMMAND		0x8f
+> +
+> +/*
+> + * Enables file server mode
+> + *
+> + * Meaning or use is unknown. Maybe this allows the machine to power up after
+> + * AC loss.
 
-On Thu, 2007-01-04 at 18:04 -0600, Olof Johansson wrote:
-> On Thu, 4 Jan 2007 17:49:51 -0600 Nathan Lynch <ntl@pobox.com> wrote:
->=20
-> > The problem doesn't happen if CONFIG_RTAS_FLASH=3Dy.
-> >=20
-> > What's the best way to fix this?  Should rtas_firmware_flash_list be
-> > defined in some non-modular code and exported?
->=20
-> Makes sense to me.
->=20
-> You could allocate it dynamically really early (i.e. lmb_alloc) since
-> that's the only allocator that we can give limits to where in the
-> address range it can allocate. It seems to be overkill in this case
-> though, it's just a page worth of data.
+Meaning and use are known :-) This defines events related to powering or
+waking the machine up :-)
 
-There's the ZONE stuff, but it doesn't help us because our ZONE_DMA =3D=3D
-all of ram - we'd need to add another ZONE below that, which is generic
-code :/
+> + * Parameters:
+> + *   2: always 0x00, meaning unknown
+> + *   3: always 0x02, meaning unknown
 
-cheers
+Paremeters depend on the subcommand.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+> + * Returns:
+> + *   2 bytes
+> + */
+> +#define   SMU_CMD_POWER_EVENTS_SET_FILESERVER_MODE	0x01
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Look at the corresponding PMU commands.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+/* PMU PMU_POWER_EVENTS commands */
+enum {
+        PMU_PWR_GET_POWERUP_EVENTS      = 0x00,
+        PMU_PWR_SET_POWERUP_EVENTS      = 0x01,
+        PMU_PWR_CLR_POWERUP_EVENTS      = 0x02,
+        PMU_PWR_GET_WAKEUP_EVENTS       = 0x03,
+        PMU_PWR_SET_WAKEUP_EVENTS       = 0x04,
+        PMU_PWR_CLR_WAKEUP_EVENTS       = 0x05,
+};
 
---=-AUWs/Vk8NznN8YMctLTh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+(There might be others above 5 but that's the one I know about, they are
+the same on the SMU).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
+The "POWERUP" events define events that can powerup the machine when
+shut down. The "WAKEUP" events define events that can wake up the
+machine when sleeping.
 
-iD8DBQBFoZmvdSjSd0sB4dIRApH9AJ9HI0sUQphwCYyp6RpY4VkqiReV9ACeJJ2Q
-0S9bWPQoNcN9HRrKK5OlTAM=
-=L6pg
------END PGP SIGNATURE-----
+Both sets of commands are made of 3 base commands: GET, SET abd CLR. The
+events are a 16 bits bit mask though from my experience, only the first
+8 bits is ever used. GET reads the current mask afaik (though it might
+not always work, I had issues in the past). SET enabled some events, CLR
+disables some events.
 
---=-AUWs/Vk8NznN8YMctLTh--
+The bit values for the events themselves aren't completly known, but
+they seem to follow the same convention as the PMU, which is 
+
+/* Power events wakeup bits */
+enum {
+        PMU_PWR_WAKEUP_KEY              = 0x01, /* Wake on key press */
+        PMU_PWR_WAKEUP_AC_INSERT        = 0x02, /* Wake on AC adapter plug */
+        PMU_PWR_WAKEUP_AC_CHANGE        = 0x04,
+        PMU_PWR_WAKEUP_LID_OPEN         = 0x08,
+        PMU_PWR_WAKEUP_RING             = 0x10,
+};
+
+So for example, a CLR with 0xff 0xff will clear all events. Then, a SET with
+0x02 0x00 will enable "AC INSERT" event.
+
+The way to enable file server mode is to enable POWERUP on the AC_INSERT
+event.
+
+Ben.
