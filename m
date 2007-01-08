@@ -1,32 +1,22 @@
-Return-Path: <tpepper@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 17966DDDFE
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 17:31:16 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so2756541ugf
-	for <linuxppc-dev@ozlabs.org>; Sun, 07 Jan 2007 22:31:14 -0800 (PST)
-Message-ID: <eada2a070701072231h6501fe9pcda8da51b1ecfb41@mail.gmail.com>
-Date: Sun, 7 Jan 2007 22:31:14 -0800
-From: "Tim Pepper" <lnxninja@us.ibm.com>
-Sender: tpepper@gmail.com
-To: "Dave Hansen" <haveblue@us.ibm.com>
-Subject: Re: [PATCH] Fix sparsemem on Cell (take 3)
-In-Reply-To: <1168160307.6740.9.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_59152_16376959.1168237874232"
-References: <20061215165335.61D9F775@localhost.localdomain>
-	<200612182354.47685.arnd@arndb.de>
-	<1166483780.8648.26.camel@localhost.localdomain>
-	<200612190959.47344.arnd@arndb.de>
-	<1168045803.8945.14.camel@localhost.localdomain>
-	<1168059162.23226.1.camel@sinatra.austin.ibm.com>
-	<1168160307.6740.9.camel@localhost.localdomain>
-Cc: Andrew Morton <akpm@osdl.org>, mkravetz@us.ibm.com,
-	Arnd Bergmann <arnd@arndb.de>, linux-mm@kvack.org,
-	lkml <linux-kernel@vger.kernel.org>, hch@infradead.org,
-	External List <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, kmannth@us.ibm.com, gone@us.ibm.com,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 21AF7DDE05
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 17:38:10 +1100 (EST)
+In-Reply-To: <1168236558.22458.187.camel@localhost.localdomain>
+References: <OF7EF2F643.75F7008B-ON8625725D.00157658-8625725D.00167CB4@au1.ibm.com>
+	<1168236558.22458.187.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8ee3d13b73a511a785ac4744c268943e@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: EMAC OF binding....
+Date: Mon, 8 Jan 2007 07:38:20 +0100
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Christian Rund <Christian.Rund@de.ibm.com>,
+	Hartmut Penner <HPENNER@de.ibm.com>, Murali N Iyer <mniyer@us.ibm.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_59152_16376959.1168237874232
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+>  - compatible        : compatible list, contains 2 entries, first is 
+> "emac-CHIP" where
+>                        CHIP is the host ASIC (440gx, 405gp, axon) and 
+> second is either
+>                        "emac" or "emac4".
+>                        For axon, thus, we have: "emac-axon","emac4"
 
-On 1/7/07, Dave Hansen <haveblue@us.ibm.com> wrote:
->
-> On Fri, 2007-01-05 at 22:52 -0600, John Rose wrote:
->
-> > Could this break ia64, given that it uses memmap_init_zone()?
->
-> You are right, I think it does.
->
-> Here's an updated patch to replace the earlier one.  I had to move the
-> enum definition over to a different header because ia64 evidently has a
-> different include order.
+"ibm,emac-axon" etc. please.
+
+>  - local-mac-address : 6 bytes, MAC address
+
+Don't forget "mac-address", if the device is opened
+in OF; and "max-frame-size" please.
+
+>  - cell-index        : 1 cell, hardware index of the EMAC cell on a 
+> given ASIC (typically
+>                        0x00000000 and 0x00000001 for EMAC-0 and EMAC-1 
+> on each Axon chip)
+
+Can you find a better name?  What is this used for, anyway?
+
+>  - max-mtu           : 1 cell, maximum MTU supported in bytes
+
+See "max-frame-size", MTU is on a higher level than device
+level and as such shouldn't be here; the OF networking layer
+can set something like this if it wants.
+
+>  - mal-burst-size    : 1 cell, MAL burst size (used to calculate 
+> thresholds)
+
+In bytes?
 
 
-Boot tested OK on ia64 with this latest version of the patch.
-
-Tim
-
-------=_Part_59152_16376959.1168237874232
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On 1/7/07, <b class="gmail_sendername">Dave Hansen</b> &lt;<a href="mailto:haveblue@us.ibm.com">haveblue@us.ibm.com</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-On Fri, 2007-01-05 at 22:52 -0600, John Rose wrote:<br><br>&gt; Could this break ia64, given that it uses memmap_init_zone()?<br><br>You are right, I think it does.<br><br>Here&#39;s an updated patch to replace the earlier one.&nbsp;&nbsp;I had to move the
-<br>enum definition over to a different header because ia64 evidently has a<br>different include order.</blockquote><div><br>Boot tested OK on ia64 with this latest version of the patch.<br><br>Tim<br></div><br></div>
-
-------=_Part_59152_16376959.1168237874232--
+Segher
