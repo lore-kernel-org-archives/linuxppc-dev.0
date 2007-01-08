@@ -1,27 +1,35 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx018.isp.belgacom.be (outmx018.isp.belgacom.be
-	[195.238.4.117])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0488DDE3A
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 10:40:32 +1100 (EST)
-Received: from outmx018.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx018.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l07NeOAI006879
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jan 2007 00:40:25 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45A18467.8070302@246tNt.com>
-Date: Mon, 08 Jan 2007 00:38:15 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
+	by ozlabs.org (Postfix) with ESMTP id 30131DDDFA
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 11:39:35 +1100 (EST)
 Subject: Re: [PATCH] Probe Efika platform before CHRP.
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>		<1166528379.19254.69.camel@localhost.localdomain>		<4587D338.7060906@246tNt.com>		<1166538553.25827.99.camel@pmac.infradead.org>		<1166558300.19254.71.camel@localhost.localdomain>		<1167773388.22068.443.camel@pmac.infradead.org>		<1167773863.6165.82.camel@localhost.localdomain>		<1167775493.3660.23.camel@shinybook.infradead.org>		<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>		<45A01416.6080401@genesi-usa.com>	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>	<45A1535C.1080007@genesi-usa.com>	<f0c5df8b1d2bcc1abcd04894e0210cc1@kernel.crashing.org>	<45A16FF1.5000401@genesi-usa.com>
-	<45A175B3.4010506@246tNt.com> <45A17D1A.4050201@genesi-usa.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
 In-Reply-To: <45A17D1A.4050201@genesi-usa.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC DEV <linuxppc-dev@ozlabs.org>, bbrv@genesi-usa.com,
-	Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+	<1166528379.19254.69.camel@localhost.localdomain>
+	<4587D338.7060906@246tNt.com>
+	<1166538553.25827.99.camel@pmac.infradead.org>
+	<1166558300.19254.71.camel@localhost.localdomain>
+	<1167773388.22068.443.camel@pmac.infradead.org>
+	<1167773863.6165.82.camel@localhost.localdomain>
+	<1167775493.3660.23.camel@shinybook.infradead.org>
+	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>
+	<45A01416.6080401@genesi-usa.com>
+	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
+	<45A1535C.1080007@genesi-usa.com>
+	<f0c5df8b1d2bcc1abcd04894e0210cc1@kernel.crashing.org>
+	<45A16FF1.5000401@genesi-usa.com> <45A175B3.4010506@246tNt.com>
+	<45A17D1A.4050201@genesi-usa.com>
+Content-Type: text/plain
+Date: Mon, 08 Jan 2007 11:37:58 +1100
+Message-Id: <1168216678.22458.95.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Sylvain Munaut <tnt@246tNt.com>, bbrv@genesi-usa.com,
+	Linux PPC DEV <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,53 +39,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey wrote:
-> So, giving it some other name is no problem at all. Just add the name
-> into the
-> list. You can never get rid of the list, and adding entries.. well..
-> it may
-> look clumsy, but it is not wrong! Especially if you're the first to
-> name it.
-> Linux should, I am saying, match against what the firmware provides, not
-> vice-versa. I don't think it's logical for firmware vendors to keep
-> changing
-> names or maintain these huge lists... 
-For devices themselves (like serial, fec, ...), if there was only issues
-there,
-I must admit I'd consider just adding the other "compatible" property (look
-at the current mpc52xx_uart.c driver, it has an entry only for the efika).
-BUT :
- - I'd really prefer to have it with the standard name, we're early
-enough to
-   change it and I love consistency ;)
- - The "other" name must _not_ conflict with the official one (and here
-   that's not the case, mpc5200-ata would trigger activation of 5200 errata
-   correction for ATA ... )
- - You will anyway release an update so _why_ not change that, I haven't
-   heard so far a single good reason why not ...
- - For more "system" parts (like bestcomm/sram/pic), there it's a lot more
-   annoying and I just want the received dt to exactly fit.
 
-Since some changes couldn't be handled by just adding en entry to the
-of_match
-table (chrp type, missing irqs, sram type, ...) , I needed fixups anyway
-so I
-implemented all the fixups I'd like to see and deal with it in a single
-place,
-so at the end I have things exactly like for other 52xx boards ...
+> device_type = "ethernet", well, then it's ethernet. Which kind? Well, it's the
+> kind that can only be available on that particular combination of hardware. If
+> it is an MPC5200B chip or an MPC5200 chip, you can determine exactly which one
+> it is. If it is an MPC8349E or an MPC82xx or something, it may be different,
+> but in general you can determine the exact device you have much easier (one
+> register comparison..) than running through a null-terminated string list,
+> doing comparisons against another list, and you get a wealth of information
+> out of that single 32-bit register value of the SVR that you would not from
+> a simple name. This is where it differs from PCI devices which you can have
+> 10 of them in the same box and need to work out which one came from where, and
+> what esoteric combination the user will use. The device tree is simply there
+> to inform you what is present and what is configured (especially in the case
+> when a unit can be configured as multiple devices and may be dangerous to
+> reconfigure) and on an SoC or even a northbridge or southbridge which
+> implements "non PCI" devices, you have plenty of options for determining
+> exactly what is in them (/builtin/ethernet@1 on Pegasos is the Marvell
+> controller, even though we use a chip with 2 ethernet controllers in it,
+> only one works - there is no PHY card for the other. However rather
+> scarily the option of 1 or 2 ethernet ports in Linux is defined by a
+> kernel config flag... so much for the device tree..)
 
-> just because of a philosophical difference
-> on 2 lines of code in Linux? Especially when the other OS guys have
-> not made
-> any fuss..
-But did the other OS support other 52xx board ? (question, I really
-don't know)
+I don't know where to begin to explain how wrong I think you are ...
 
-If it only needed another "compatible" entry in the driver list of a
-couple of
-driver, and that there was no way the fw could ever change, I think we would
-have (reluctantly ;) done it, but the problem is both deeper and the vendor
-(you ;) have the clear opportunity to fix it better.
+To simplify, let's say that a device should be represented by a device
+node that is pretty much self contained. There should be no need to go
+look at anything else (processor node, SVR register, whatever). You
+should be able to uniquely identify every device in the system based on
+a few properties, and OpenFirmware provides precisely a mecanism to do
+so.
 
+This mecanism, is the "compatible" property.
 
-    Sylvain
+If you look closely at the OF PCI binding (since PCI is one of your
+examples), you'll notice that while pciDDDD,VVVV (device,vendor) is at
+the beginning of the compatible list, pciCCCC (class) follows.
+
+Again, same logic as explained earlier: you define your device from the
+more specific to the more generic.
+
+In many cases, a device programming interface is generic (for example,
+the UHCI, OHCI and EHCI USB host controller drivers, on PCI, match based
+on the class, not the vendor/device IDs. They only use the later for
+identifying a handful a chips that need erratas/quirks, they do NOT have
+and do not need a complete list of all the vendor/device ID combinations
+for those types of controllers).
+
+That sort of class level matching is also widely used for USB devices.
+
+Thus, the driver -choses- at what level it wants to detect supported
+devices, based on that, -and- can still explicitely look at the more
+"precise" indentification when it needs to single out a given
+revision/version of a piece of hardware.
+
+So this mecanism is great and isn't actually that clumsy at all. What
+might eventually be clumsy is purely the naming choice when the vendor
+doesn't provide something nice/unique enough for a given part. For
+example, in order to properly identify the 52xx "fec" ethernet part,
+since we don't have a nice/unique codename for it, we use mpc52xx-fec.
+it's good enough and it's our convention.
+
+For PCI devices, the compatible property is defined to be a fairly long
+list, which can contain vid/did pairs (and multiple ones as one device
+cna be made HW compatible with another one) but goes down to class based
+matching which is more useful for well defined programming interfaces.
+
+Strings are perfect, much better than numbers, as long as we properly
+define the content of the string.
+
+Ben.
