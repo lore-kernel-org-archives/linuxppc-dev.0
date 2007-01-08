@@ -1,40 +1,25 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx004.isp.belgacom.be (outmx004.isp.belgacom.be
-	[195.238.4.101])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD783DDE21
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 05:01:29 +1100 (EST)
-Received: from outmx004.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx004.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l08I1GfC005907
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jan 2007 19:01:16 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45A2866B.5050400@246tNt.com>
-Date: Mon, 08 Jan 2007 18:59:07 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>	
-	<1166528379.19254.69.camel@localhost.localdomain>	
-	<4587D338.7060906@246tNt.com>	
-	<1166538553.25827.99.camel@pmac.infradead.org>	
-	<1166558300.19254.71.camel@localhost.localdomain>	
-	<1167773388.22068.443.camel@pmac.infradead.org>	
-	<1167773863.6165.82.camel@localhost.localdomain>	
-	<1167775493.3660.23.camel@shinybook.infradead.org>	
-	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>	
-	<45A01416.6080401@genesi-usa.com>	
-	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>	
-	<45A1535C.1080007@genesi-usa.com>
-	<1168222654.14763.92.camel@shinybook.infradead.org>
-	<45A20C66.8060506@genesi-usa.com> <45A23E8E.7010209@246tNt.com>
-	<45A27E50.6040102@genesi-usa.com>
-In-Reply-To: <45A27E50.6040102@genesi-usa.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux PPC DEV <linuxppc-dev@ozlabs.org>, bbrv@genesi-usa.com,
-	David Woodhouse <dwmw2@infradead.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-231-monday.dmz.nerim.net
+	[195.5.254.231]) by ozlabs.org (Postfix) with ESMTP id 3B802DDE01
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 06:30:57 +1100 (EST)
+Received: from kraid.nerim.net (smtp-101-monday.nerim.net [62.4.16.101])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id D4A1427129
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 20:11:23 +0100 (CET)
+Date: Mon, 8 Jan 2007 20:11:30 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Sylvain Munaut <tnt@246tNt.com>, Greg KH <gregkh@suse.de>
+Subject: Re: Linux 2.6.20-rc4
+Message-Id: <20070108201130.46755bb9.khali@linux-fr.org>
+In-Reply-To: <45A25C17.5070606@246tNt.com>
+References: <Pine.LNX.4.64.0701062216210.3661@woody.osdl.org>
+	<200701081550.27748.m.kozlowski@tuxland.pl>
+	<45A25C17.5070606@246tNt.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linus Torvalds <torvalds@osdl.org>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org, Linux
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,29 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey wrote:
-> I mean we don't have the new firmware out and there is two months
-> of Linux usage to go before it will be.. at least.. granted we will
-> be having this discussion of what will need to be changed or not
-> at that time, yet again, because of some other changes we make.
-Or maybe you could tell us now what you're planning to
-change/add ...
+Hi Sylvain,
 
-If not, that will be exactly the same thing, if for whatever
-reason we need more infos in the device tree and that's not
-currently specified, we'll define some binding for what's
-missing that will end up being incompatible with what you did
-during 2 month in secret and in the mean time the whole driver/support
-code will have been written based on what has been discussed in
-public ...
+On Mon, 08 Jan 2007 15:58:31 +0100, Sylvain Munaut wrote:
+> Mariusz Kozlowski wrote:
+> > Hello,
+> >
+> > Doesn't build on iMac G3 machine. Relevant info attached.
+> >
+> > In file included from drivers/usb/host/ohci-hcd.c:893:
+> > drivers/usb/host/ohci-ppc-soc.c:225: error: redefinition of '__inittest'
+> > drivers/usb/host/ohci-pci.c:252: error: previous definition of '__inittest' was here
+> > drivers/usb/host/ohci-ppc-soc.c:225: error: redefinition of 'init_module'
+> > drivers/usb/host/ohci-pci.c:252: error: previous definition of 'init_module' was here
+> > drivers/usb/host/ohci-ppc-soc.c:226: error: redefinition of '__exittest'
+> > drivers/usb/host/ohci-pci.c:260: error: previous definition of '__exittest' was here
+> > drivers/usb/host/ohci-ppc-soc.c:226: error: redefinition of 'cleanup_module'
+> > drivers/usb/host/ohci-pci.c:260: error: previous definition of 'cleanup_module' was here
+> > make[3]: *** [drivers/usb/host/ohci-hcd.o] Blad 1
+> > make[2]: *** [drivers/usb/host] Blad 2
+> > make[1]: *** [drivers/usb] Blad 2
+> > make: *** [drivers] Blad 2
+>
+> Don't build ohci as module for now.
+> A fix for that is already in gregkh usb tree for 2.6.21
 
+We shouldn't have to wait for 2.6.21 to fix a known compilation
+breakage. Greg, can you please push the fix to Linus quickly?
 
-> This will definitely change in the next firmware from the discussion I've
-> had with Gerald.
-
-Could you be a little more precise about what you're planning
-on 'fixing' from the list I posted ? (like point 1, 2 but not 3.
-Or 1a, 1b 2a & 2b ...) ...
-
-
-    Sylvain
+Thanks,
+-- 
+Jean Delvare
