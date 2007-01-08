@@ -1,22 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+df5a3e86c510a22e5b24+1233+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9D23BDDE20
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 12:12:24 +1100 (EST)
-Subject: Re: [PATCH] More SMU commands
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20070106024242.GA18395@hansmi.ch>
-References: <20061224130531.GA28635@hansmi.ch>
-	<1167082402.3522.8.camel@localhost.localdomain>
-	<20070105001014.GA28410@hansmi.ch> <20070106024242.GA18395@hansmi.ch>
+	by ozlabs.org (Postfix) with ESMTP id 9BE15DDDFB
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jan 2007 13:17:43 +1100 (EST)
+Subject: Re: [PATCH] Probe Efika platform before CHRP.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <45A1535C.1080007@genesi-usa.com>
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+	<1166528379.19254.69.camel@localhost.localdomain>
+	<4587D338.7060906@246tNt.com>
+	<1166538553.25827.99.camel@pmac.infradead.org>
+	<1166558300.19254.71.camel@localhost.localdomain>
+	<1167773388.22068.443.camel@pmac.infradead.org>
+	<1167773863.6165.82.camel@localhost.localdomain>
+	<1167775493.3660.23.camel@shinybook.infradead.org>
+	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>
+	<45A01416.6080401@genesi-usa.com>
+	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
+	<45A1535C.1080007@genesi-usa.com>
 Content-Type: text/plain
-Date: Mon, 08 Jan 2007 12:12:10 +1100
-Message-Id: <1168218731.22458.109.camel@localhost.localdomain>
+Date: Mon, 08 Jan 2007 10:17:33 +0800
+Message-Id: <1168222654.14763.92.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@killerfox.forkbomb.ch
+Cc: Linux PPC DEV <linuxppc-dev@ozlabs.org>, bbrv@genesi-usa.com,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,70 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2007-01-07 at 20:09 +0000, Matt Sealey wrote:
+> I would expect that it is so much easier, even if it does not strike
+> you as too "clean", to forget about naming compatibility nodes here,
+> and concentrate on the real showstoppers. I would consider the AC97
+> PSC not being set up, the IrDA PSC not being set up, the disk
+> numbering and any problems we're having with USB devices (argh) to
+> be real showstoppers. 
 
-> +#define SMU_CMD_POWER_EVENTS_COMMAND		0x8f
-> +
-> +/*
-> + * Enables file server mode
-> + *
-> + * Meaning or use is unknown. Maybe this allows the machine to power up after
-> + * AC loss.
+I'm inclined to agree. What I said was "since they have showstopper bugs
+to fix, we might as well let them fix the less important device-tree
+stuff at the same time."
 
-Meaning and use are known :-) This defines events related to powering or
-waking the machine up :-)
+Please can we have a firmware with the important stuff fixed, and
+preferably the simple and uncontentious device-tree fixes too; like
+perhaps no longer pretending to be CHRP?
 
-> + * Parameters:
-> + *   2: always 0x00, meaning unknown
-> + *   3: always 0x02, meaning unknown
+The other device-tree stuff you're arguing about is less important,
+because it isn't _that_ hard to fix it up in prom_init() -- although it
+would have been nice if the debate had happened when people were trying
+to put the spec together in the first place, rather than only now.
 
-Paremeters depend on the subcommand.
-
-> + * Returns:
-> + *   2 bytes
-> + */
-> +#define   SMU_CMD_POWER_EVENTS_SET_FILESERVER_MODE	0x01
-
-Look at the corresponding PMU commands.
-
-/* PMU PMU_POWER_EVENTS commands */
-enum {
-        PMU_PWR_GET_POWERUP_EVENTS      = 0x00,
-        PMU_PWR_SET_POWERUP_EVENTS      = 0x01,
-        PMU_PWR_CLR_POWERUP_EVENTS      = 0x02,
-        PMU_PWR_GET_WAKEUP_EVENTS       = 0x03,
-        PMU_PWR_SET_WAKEUP_EVENTS       = 0x04,
-        PMU_PWR_CLR_WAKEUP_EVENTS       = 0x05,
-};
-
-(There might be others above 5 but that's the one I know about, they are
-the same on the SMU).
-
-The "POWERUP" events define events that can powerup the machine when
-shut down. The "WAKEUP" events define events that can wake up the
-machine when sleeping.
-
-Both sets of commands are made of 3 base commands: GET, SET abd CLR. The
-events are a 16 bits bit mask though from my experience, only the first
-8 bits is ever used. GET reads the current mask afaik (though it might
-not always work, I had issues in the past). SET enabled some events, CLR
-disables some events.
-
-The bit values for the events themselves aren't completly known, but
-they seem to follow the same convention as the PMU, which is 
-
-/* Power events wakeup bits */
-enum {
-        PMU_PWR_WAKEUP_KEY              = 0x01, /* Wake on key press */
-        PMU_PWR_WAKEUP_AC_INSERT        = 0x02, /* Wake on AC adapter plug */
-        PMU_PWR_WAKEUP_AC_CHANGE        = 0x04,
-        PMU_PWR_WAKEUP_LID_OPEN         = 0x08,
-        PMU_PWR_WAKEUP_RING             = 0x10,
-};
-
-So for example, a CLR with 0xff 0xff will clear all events. Then, a SET with
-0x02 0x00 will enable "AC INSERT" event.
-
-The way to enable file server mode is to enable POWERUP on the AC_INSERT
-event.
-
-Ben.
+-- 
+dwmw2
