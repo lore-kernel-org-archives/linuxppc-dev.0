@@ -1,22 +1,12 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 1A4F6DDE3F
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 02:03:27 +1100 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Sylvain Munaut <tnt@246tnt.com>
-Subject: Re: Linux 2.6.20-rc4
-Date: Mon, 8 Jan 2007 16:03:40 +0100
-References: <Pine.LNX.4.64.0701062216210.3661@woody.osdl.org>
-	<200701081550.27748.m.kozlowski@tuxland.pl>
-	<45A25C17.5070606@246tNt.com>
-In-Reply-To: <45A25C17.5070606@246tNt.com>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 9 Jan 2007 02:37:16 +1100
+From: Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix corruption in hcall9
+Message-ID: <20070108153716.GB7508@krispykreme>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701081603.40971.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	Greg KH <gregkh@suse.de>, paulus@samba.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +16,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-> Don't build ohci as module for now.
-> A fix for that is already in gregkh usb tree for 2.6.21
+It looks to me like we are corrupting r12 in the hcall9 function.
+Although we have r0 free we cant use offsets against it, so save
+away r12 in there instead.
 
-Ok. Thanks.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
--- 
-Regards,
-
-	Mariusz Kozlowski
+diff -ru linux-2.6.20-rc3-orig/arch/powerpc/platforms/pseries/hvCall.S linux-2.6.20-rc3/arch/powerpc/platforms/pseries/hvCall.S
+--- linux-2.6.20-rc3-orig/arch/powerpc/platforms/pseries/hvCall.S	2006-11-29 15:57:37.000000000 -0600
++++ linux-2.6.20-rc3/arch/powerpc/platforms/pseries/hvCall.S	2007-01-08 07:34:45.000000000 -0600
+@@ -145,6 +145,7 @@
+ 
+ 	HVSC				/* invoke the hypervisor */
+ 
++	mr	r0,r12
+ 	ld	r12,STK_PARM(r4)(r1)
+ 	std	r4,  0(r12)
+ 	std	r5,  8(r12)
+@@ -154,7 +155,7 @@
+ 	std	r9, 40(r12)
+ 	std	r10,48(r12)
+ 	std	r11,56(r12)
+-	std	r12,64(r12)
++	std	r0, 64(r12)
+ 
+ 	HCALL_INST_POSTCALL
+ 
