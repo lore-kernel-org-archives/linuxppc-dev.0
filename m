@@ -1,16 +1,17 @@
-Return-Path: <onetarget@sina.com>
-Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
-	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id C1FB5DDDED
+Return-Path: <cclo@astri.org>
+Received: from mail2.astri.org (mail2.astri.org [203.198.202.21])
+	by ozlabs.org (Postfix) with ESMTP id A0C24DDDED
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Jan 2007 13:13:07 +1100 (EST)
-Message-ID: <20070108020624.52998.qmail@mail3-101.sinamail.sina.com.cn>
-To: linuxppc-embedded@ozlabs.org
-Subject: how to build cross-compiling toolchains for PowerPC?
-Date: Mon, 08 Jan 2007 10:06:24 +0800 
-From: onetarget@sina.com
+	Mon,  8 Jan 2007 13:46:47 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=-sina_alt_399a51ae6de8dd79ee76a9c07d12fdf7"
+Content-Type: text/plain;
+	charset=gb2312
+Subject: RE: how to build cross-compiling toolchains for PowerPC?
+Date: Mon, 8 Jan 2007 10:18:18 +0800
+Message-ID: <A7B1E4DD46AA7046A4398F745240F29402737E3C@ASPROEXG.astri.local>
+From: "Chun Chung LO" <cclo@astri.org>
+To: <onetarget@sina.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,51 +22,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-sina_alt_399a51ae6de8dd79ee76a9c07d12fdf7
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
 
-DURlYXIgYWxsDSAgICBJIHdhbnQgdG8gYnVpbGQgYSBjb21wbGV0ZSBjcm9zcy1jb21waWxpbmcN
-dG9vbGNoYWlucyBmb3IgUG93ZXJQQywgdGhlIGtlcm5lbCBJIHdhbnQgdG8gYnVpbGQgaXMgbGlu
-dXgtMi40LjI1LCB0aGUNaG9zdCBpcyBGQzQncyBQQywgYW5kIEkgYWxzbyB3YW50IHRvIHVzZSBn
-bGliYy0yLjMuNiwgc28gd2l0aCBhbGwNYWJvdmUsIHdoaWNoIGdjYywgZ2xpYmMsYmludXRpbHMg
-c2hvdWxkIEkgdXNlPyBBbmQgd2hhdCBpcyB0aGUgc3RlcA1zaG91bGQgSSBkbz8NICAgIFRoYW5r
-IHlvdSBhbGwgYW5kIGJlc3QgcmVnYXJkcywNICAgIFcuVGFyZ2V0DSAgICBKYW4tOC0yMDA3DQoK
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCBodHRwOi8v
-YWQ0LnNpbmEuY29tLmNuL3NpbmEvbGltZW5nMy9tYWlsX3podWl5dS8yMDA2L21haWxfemh1aXl1
-XzIwMDYxMjI1Lmh0bWwgKQoKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQrXorLh0MLAyzJHw+K30dPKz+SjqCBodHRwOi8v
-bWFpbC5zaW5hLmNvbS5jbi9jaG9vc2VNb2RlLmh0bWwgo6k=
+Hi,
+
+You may consider using ELDK (Embedded Linux Development Kit).
+
+Website: http://www.denx.de/wiki/DULG/ELDK
+
+Thanks.
+
+Best regards,
+Lo Chun Chung (Chung)
+ECE-DHT@ASTRI.=0D
 
 
---=-sina_alt_399a51ae6de8dd79ee76a9c07d12fdf7
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
-
-PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
-dC1zaXplOjEycHgnPkRlYXIgYWxsPGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IEkgd2FudCB0byBi
-dWlsZCBhIGNvbXBsZXRlIGNyb3NzLWNvbXBpbGluZw0KdG9vbGNoYWlucyBmb3IgUG93ZXJQQywg
-dGhlIGtlcm5lbCBJIHdhbnQgdG8gYnVpbGQgaXMgbGludXgtMi40LjI1LCB0aGUNCmhvc3QgaXMg
-RkM0J3MgUEMsIGFuZCBJIGFsc28gd2FudCB0byB1c2UgZ2xpYmMtMi4zLjYsIHNvIHdpdGggYWxs
-DQphYm92ZSwgd2hpY2ggZ2NjLCBnbGliYyxiaW51dGlscyBzaG91bGQgSSB1c2U/IEFuZCB3aGF0
-IGlzIHRoZSBzdGVwDQpzaG91bGQgSSBkbz88YnI+DQombmJzcDsmbmJzcDsmbmJzcDsgVGhhbmsg
-eW91IGFsbCBhbmQgYmVzdCByZWdhcmRzLDxicj4NCjxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBX
-LlRhcmdldDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBKYW4tOC0yMDA3PGJyPg0KPHN0eWxlPnB7
-bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+PC9mb250PjxiciAvPgo8YnIgLz4KLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLTxiciAvPgq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCA8YSBocmVm
-PWh0dHA6Ly9hZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFp
-bF96aHVpeXVfMjAwNjEyMjUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9hZDQuc2luYS5jb20u
-Y24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAwNjEyMjUuaHRt
-bDwvYT4gKTxiciAvPgo8YnIgLz4KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PTxiciAvPgrXorLh0MLAyzJHw+K30dPKz+Sj
-qCA8YSBocmVmPWh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbCB0YXJnZXQ9
-X2JsYW5rPmh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbDwvYT4go6k=
+-----Original Message-----
+From: linuxppc-embedded-bounces+cclo=3Dastri.org@ozlabs.org=
+ [mailto:linuxppc-embedded-bounces+cclo=3Dastri.org@ozlabs.org] On Behalf=
+ Of onetarget@sina.com
+Sent: Monday, 08 January, 2007 10:06 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: how to build cross-compiling toolchains for PowerPC?
+Importance: High
 
 
---=-sina_alt_399a51ae6de8dd79ee76a9c07d12fdf7--
+Dear all
+    I want to build a complete cross-compiling toolchains for PowerPC, the=
+ kernel I want to build is linux-2.4.25, the host is FC4's PC, and I also=
+ want to use glibc-2.3.6, so with all above, which gcc, glibc,binutils=
+ should I use? And what is the step should I do?
+    Thank you all and best regards,
+
+    W.Target
+    Jan-8-2007
+
+
+-------------------------------------------------------------------
+=BB=DD=C6=D5=C9=CC=D3=C3=CC=A8=CA=BD=BB=FAdc5750,=B8=DF=D0=D4=C4=DC=A3=AC=
+=B5=CD=B9=A6=BA=C4=A3=A1(=
+ http://ad4.sina.com.cn/sina/limeng3/mail_zhuiyu/2006/mail_zhuiyu_20061225.=
+html )
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=D7=A2=B2=E1=D0=C2=C0=CB2G=C3=E2=B7=D1=D3=CA=CF=E4=A3=A8=
+ http://mail.sina.com.cn/chooseMode.html =A3=A9
+
+This message (including any attachments) is for the named addressee(s)'s=
+ use only. It may contain
+sensitive, confidential, private proprietary or legally privileged=
+ information intended for a
+specific individual and purpose, and is protected by law. If you are not=
+ the intended recipient,
+please immediately delete it and all copies of it from your system, destroy=
+ any hard copies of it
+and notify the sender. Any use, disclosure, copying, or distribution of=
+ this message and/or any
+attachments is strictly prohibited.
