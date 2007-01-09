@@ -3,19 +3,27 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD0B5DDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 18:03:09 +1100 (EST)
-Subject: Re: 2.6.20-rc4 Kernel Oops on Maple
+	by ozlabs.org (Postfix) with ESMTP id 2EDB0DDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 18:04:33 +1100 (EST)
+Subject: Re: Linux 2.6.20-rc4
 From: David Woodhouse <dwmw2@infradead.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20070108210417.GA8122@localdomain>
-References: <1168289034.2610.214.camel@darkside.terraplex.com>
-	<20070108210417.GA8122@localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1168308323.22458.254.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0701062216210.3661@woody.osdl.org>
+	<200701081550.27748.m.kozlowski@tuxland.pl>
+	<45A25C17.5070606@246tNt.com>
+	<1168303139.22458.246.camel@localhost.localdomain>
+	<20070109005624.GA598@suse.de>
+	<1168308323.22458.254.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 09 Jan 2007 15:03:15 +0800
-Message-Id: <1168326195.14763.312.camel@shinybook.infradead.org>
+Date: Tue, 09 Jan 2007 15:04:33 +0800
+Message-Id: <1168326274.14763.313.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Sylvain Munaut <tnt@246tNt.com>, Greg KH <gregkh@suse.de>,
+	Linus Torvalds <torvalds@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-01-08 at 15:04 -0600, Nathan Lynch wrote:
-> Owen Stampflee wrote:
-> > I'm seeing both a sig 5 and a sig 11 in two backtraces during boot on a
-> > Maple-based board... both vanilla 2.6.17.13 and 2.6.18.1 work fine on
-> > this board.
-> > 
-> > Anyone have any ideas on what got broken?
+On Tue, 2007-01-09 at 13:05 +1100, Benjamin Herrenschmidt wrote:
+> Sylvain fixes are. My endian patches are for ps3 and toshiba celleb,
+> none of which is fully merged in 2.6.20 so they are fine to wait. It's
+> mostly a matter of being a PITA to rebase Sylvain stuff to apply before
+> mine and rebase mine on top of his I suppose :-) 
 
-> http://patchwork.ozlabs.org/linuxppc/patch?id=8840
+Er, doesn't Efika need the same endian patches?
 
-... which triggers a WARN_ON() which is _supposed_ to be otherwise
-harmless. Unfortunately due to another bug in BUG() handling, the
-warning actually kills the machine instead of just bitching a bit:
-http://patchwork.ozlabs.org/linuxppc/patch?id=8811
- 
 -- 
 dwmw2
