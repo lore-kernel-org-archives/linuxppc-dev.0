@@ -1,15 +1,18 @@
-Return-Path: <vantranbk@yahoo.com.au>
-Received: from web33012.mail.mud.yahoo.com (web33012.mail.mud.yahoo.com
-	[209.191.69.127]) by ozlabs.org (Postfix) with SMTP id 2FF2ADDE2A
+Return-Path: <martineschen@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 7061FDDDEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Jan 2007 23:45:41 +1100 (EST)
-Date: Tue, 9 Jan 2007 23:45:39 +1100 (EST)
-From: tran vanle <vantranbk@yahoo.com.au>
-Subject: net-snmp package in ELDK 4.0 can not work with trapsink(TQM8xxL board)
+	Wed, 10 Jan 2007 05:01:29 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so3204105ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 09 Jan 2007 10:01:27 -0800 (PST)
+Message-ID: <3acfce80701091001u27cac269q2fa227daf543a7d4@mail.gmail.com>
+Date: Tue, 9 Jan 2007 16:01:26 -0200
+From: "Daniel Martineschen" <martineschen@gmail.com>
 To: linuxppc-embedded@ozlabs.org
+Subject: MPC5200 + boa webserver + CGI + broken pipe
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2145413447-1168346739=:46269"
-Message-ID: <353408.46269.qm@web33012.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,75 +23,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-2145413447-1168346739=:46269
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hi all,
+I'm working in a MPC5200-based board with Denx Linux, kernel 2.4.25,
+ELDK 3.1.1. The board uses the boa webserver to handle CGI scripts,
+which communicate to a proprietary application and read data from a
+database. The problem is that sometimes (actually, very often) these
+CGI scripts end up causing a "pipe write: Broken pipe" message from
+boa when the requested page is reloaded too fast on the web browser or
+the user clicks "too fast" on links of the page. ("too fast" would be
+to click a link 5 or 6 times within a second)
 
-Hi all
-I use board TQM8xxL , kernel 2.6.11.7 with Marcelo Tosatti  and Ramdisk in ELDK 4.0.
-I only rebuild net-snmp-5.2.1.2-1_1.src.rpm package (rebuild , not edit any thing)
-If I run snmpd with basic configuration
-//smnpd.conf
-####################
-syslocation TQM8xxL  
-sysservices 79
-syscontact VCS
-####################
-It run OK
+The "broken pipe" message is as follows:
 
-But when I want to use trapsink like (edit snmpd.conf):
-//snmpd.conf
-####################################
-syslocation TQM8xxL  
- sysservices 79
- syscontact VCS
-# authtrapenable: Should we send traps when authentication failures occur
-#   arguments: 1 | 2   (1 = yes, 2 = no)
-authtrapenable 1
-# trapcommunity: Default trap sink community to use
-#   arguments: community-string
-trapcommunity abc
-# trapsink: A SNMPv1 trap receiver
-#   arguments: host [community] [portnum]
-trapsink 192.168.1.7
-# informsink: A SNMPv2c inform (acknowledged trap) receiver
-#   arguments: host [community] [portnum]
-informsink 192.168.1.15
-# trap2sink: A SNMPv2c trap receiver
-#   arguments: host [community] [portnum]
-trap2sink 192.168.1.7
+10.0.0.3 - - [09/Jan/2007:12:50:09 +0000] request "GET
+/.../index.cgi?run=command HTTP/1.1"  "/.../index.cgi"): pipe write:
+Broken pipe
 
-####################################
-I run snmpd with debug , I receive
+After that, no page can be loaded.
+Additionally, the system breaks (but it doesn't happen all the time)
+and reports following message (repeated 3 or 4 times before total
+freeze):
 
-.......
-......
-snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf
-trace: netsnmp_send_traps(): agent_trap.c, 616:
-trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:
-trap: 
-trace: snmp_call_callbacks(): callback.c, 209:
-callback: START calling callbacks for maj=1 min=6
-trace: snmp_call_callbacks(): callback.c, 223:
-callback: calling a callback for maj=1 min=6
-trace: send_notifications(): notification/snmpNotifyTable.c, 95:
-send_notifications: starting: pdu=8086740, vars=0
-Segmentation fault
+Machine check in kernel mode.
+Caused by (from SRR1=41030): Transfer error ack signal
+Oops: machine check, sig: 7
+NIP: C00089B8 XER: 00000000 LR: C00089E8 SP: C0841DE0 REGS: c0841d30
+TRAP: 0200    Not tainted
+MSR: 00041030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c0840000[737] 'application' Last syscall: 162
+last math c08e4000 last altivec 00000000
+GPR00: 402FF520 C0841DE0 C0840000 C0131D20 00001032 00000001 FFFFD49C 00000001
+GPR08: FFFFD49C 00000000 C01600EF C0841CF0 C0180000 101820C8 00000000 3D126FC0
+GPR16: 00000000 000002AC 10180000 10180000 00001032 00841E60 00000000 C0005CC8
+GPR24: C0005EC8 C0130000 C0130000 92492493 0D000000 00000002 402FF520 00000000
+Call backtrace:
+C00089E8 C000856C C0005E48 C0005CC8 C0006E24 C0005A7C
 
+I've googled and found some emails regarding this problem, but I
+couldn't figure out what caused this crash. Some said that this
+problem occurs when boa receives a SIGPIPE, and because boa simply
+ignores this signal.
+These crashes are too frequent and even if the board uses root
+filesystem via NFS this problem appears. Then, when I try to re-run
+the proprietary application and refresh the page from browser, the
+system freezes with either a "Bus error" signal or a SIGSEG.
 
-What error I had and How can I fix it?
-Is net-snmp-5.2.1.2-1_1 package in ELDK 4.0 do not support trapsink?
-Does anyone have a patch?
-Thanks for all
+Does anyone have any idea about this problem? I don't know if I
+described the problem properly, but it seems that the source is the
+boa webserver. I don't have much time to test other webservers, so if
+someone has a clue to solve (even partially) this, please let me
+know... If the solution is to change the webserver (maybe because boa
+is really not reliable)
 
+thanks in advance
+Daniel
 
-
- Send instant messages to your online friends http://au.messenger.yahoo.com 
---0-2145413447-1168346739=:46269
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Hi all<br>I use board TQM8xxL , kernel 2.6.11.7 with Marcelo Tosatti&nbsp; and Ramdisk in ELDK 4.0.<br>I only rebuild net-snmp-5.2.1.2-1_1.src.rpm package (rebuild , not edit any thing)<br>If I run snmpd with basic configuration<br>//smnpd.conf<br>####################<br>syslocation TQM8xxL  <br>sysservices 79<br>syscontact VCS<br>####################<br>It run OK<br><br>But when I want to use trapsink like (edit snmpd.conf):<br>//snmpd.conf<br>####################################<br>syslocation TQM8xxL  <br> sysservices 79<br> syscontact VCS<br># authtrapenable: Should we send traps when authentication failures occur<br>#&nbsp;&nbsp; arguments: 1 | 2&nbsp;&nbsp; (1 = yes, 2 = no)<br>authtrapenable 1<br># trapcommunity: Default trap sink community to use<br>#&nbsp;&nbsp; arguments: community-string<br>trapcommunity abc<br># trapsink: A SNMPv1 trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trapsink 192.168.1.7<br># informsink: A SNMPv2c inform
- (acknowledged trap) receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>informsink 192.168.1.15<br># trap2sink: A SNMPv2c trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trap2sink 192.168.1.7<br><br>####################################<br>I run snmpd with debug , I receive<br><pre>.......<br>......<br>snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf<br>trace: netsnmp_send_traps(): agent_trap.c, 616:<br>trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:<br>trap: <br>trace: snmp_call_callbacks(): callback.c, 209:<br>callback: START calling callbacks for maj=1 min=6<br>trace: snmp_call_callbacks(): callback.c, 223:<br>callback: calling a callback for maj=1 min=6<br>trace: send_notifications(): notification/snmpNotifyTable.c, 95:<br>send_notifications: starting: pdu=8086740, vars=0<br>Segmentation fault<br><br><br>What error I had and How can I fix it?<br>Is
- net-snmp-5.2.1.2-1_1 package in ELDK 4.0 do not support trapsink?<br>Does anyone have a patch?<br>Thanks for all</pre><br><br><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
---0-2145413447-1168346739=:46269--
+-- 
+---
+Daniel Martineschen
