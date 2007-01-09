@@ -1,29 +1,17 @@
-Return-Path: <SRS0+9bc0dae761e93ec26ee7+1234+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7CBA0DDE40
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 18:28:04 +1100 (EST)
-Subject: Re: Linux 2.6.20-rc4
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <45A340E4.5030702@246tNt.com>
-References: <Pine.LNX.4.64.0701062216210.3661@woody.osdl.org>
-	<200701081550.27748.m.kozlowski@tuxland.pl>
-	<45A25C17.5070606@246tNt.com>
-	<1168303139.22458.246.camel@localhost.localdomain>
-	<20070109005624.GA598@suse.de>
-	<1168308323.22458.254.camel@localhost.localdomain>
-	<45A340E4.5030702@246tNt.com>
-Content-Type: text/plain
-Date: Tue, 09 Jan 2007 15:28:21 +0800
-Message-Id: <1168327701.14763.324.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: Greg KH <gregkh@suse.de>, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	paulus@samba.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 85F9DDDDED
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 19:13:30 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: mpc83xx_restart() buggy
+Date: Tue, 9 Jan 2007 09:13:20 +0100
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D939BF3178@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Scott Wood" <scottwood@freescale.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,14 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-01-09 at 08:14 +0100, Sylvain Munaut wrote:
-> But maybe the question we should ask is why would it build
-> drivers/usb/host/ohci-ppc-soc.c for an iMac G3 ... Because that problem
-> (ohci multiple glue in module) is there since a long time, just never
-> spotted before.
+> -----Original Message-----
+> From:=20
+> linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@ozl
+> abs.org] On Behalf Of Scott Wood
+> Sent: 30 December 2006 00:04
+> To: Kumar Gala
+> Cc: Tjernlund; 'linuxppc-dev'
+> Subject: Re: mpc83xx_restart() buggy
+>=20
+> Kumar Gala wrote:
+> > On Dec 27, 2006, at 6:45 PM, Tjernlund wrote:
+> >>mpc83xx_restart() uses ioremap(), which doesn't like
+> >>beeing called while in IRQ context.
+> >>
+> >>Calling mpc83xx_restart() in IRQ context yields OOPS
+> >>which calls mpc83xx_restart() again and the loop never
+> >>termintes.
+> >=20
+> > This is interesting, I know I've seen restart work properly w/o an =20
+> > oops.  How are you causing the restart?
+>=20
+> sysrq-b triggers it, as probably does crashing from an=20
+> interrupt handler=20
+> with panic_timeout nonzero.  You'll need CONFIG_DEBUG_SPINLOCK_SLEEP=20
+> turned on, of course.
+>=20
+> -Scott
 
-Are you suggesting that distributions must choose to support OHCI from
-_either_ PCI or OF but not both?
+Any chance for a fix soon?
 
--- 
-dwmw2
+ Jocke
