@@ -1,14 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B9DA4DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 10:05:43 +1100 (EST)
-In-Reply-To: <1168382543.22458.318.camel@localhost.localdomain>
-References: <OF7EF2F643.75F7008B-ON8625725D.00157658-8625725D.00167CB4@au1.ibm.com>
-	<1168236558.22458.187.camel@localhost.localdomain>
-	<8ee3d13b73a511a785ac4744c268943e@kernel.crashing.org>
-	<1168288352.22458.198.camel@localhost.localdomain>
+	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C0647DDE02
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 10:44:01 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp05.au.ibm.com (8.13.8/8.13.6) with ESMTP id l0ABjcnL5058752
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 10:45:39 -0100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by sd0208e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l09NlHwD191448
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 10:47:22 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l09NhmNq022024
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 10:43:49 +1100
+Date: Wed, 10 Jan 2007 09:41:07 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: EMAC OF binding....
+Message-ID: <20070109224107.GA14563@localhost.localdomain>
+References: <1168288352.22458.198.camel@localhost.localdomain>
 	<5f992368c65d3d53003b0e9f2955ae79@kernel.crashing.org>
 	<1168296460.22458.232.camel@localhost.localdomain>
 	<27d6554d600437ed39853784c0cf96fd@kernel.crashing.org>
@@ -18,16 +30,12 @@ References: <OF7EF2F643.75F7008B-ON8625725D.00157658-8625725D.00167CB4@au1.ibm.c
 	<e4d627ebdd8e678a0441bc0649714de8@kernel.crashing.org>
 	<1168380289.22458.313.camel@localhost.localdomain>
 	<c191ad29e827e1e26464cde281f88ef5@kernel.crashing.org>
-	<1168382543.22458.318.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7f47f2d575370ac73003b97fe9c5372b@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: EMAC OF binding....
-Date: Wed, 10 Jan 2007 00:05:42 +0100
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c191ad29e827e1e26464cde281f88ef5@kernel.crashing.org>
 Cc: Christian Rund <Christian.Rund@de.ibm.com>,
-	Hartmut Penner <HPENNER@de.ibm.com>, Murali N Iyer <mniyer@us.ibm.com>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Murali N Iyer <mniyer@us.ibm.com>, Hartmut Penner <HPENNER@de.ibm.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,29 +46,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I will not describe every single weird clock control or other magic 
-> DCRs
-> in the device-tree. That is simply over-bloat.
+On Tue, Jan 09, 2007 at 11:17:07PM +0100, Segher Boessenkool wrote:
+> > I don't see the need of having some weird "soc" node that doesn't quite
+> > mean anything (especially on axon) that has phandles to every sub 
+> > device
+> > in there :-)
+> 
+> Well simply, if I understood you correctly, you have some
+> register where some bits control emac #0 and some control
+> emac #1.  This register can't belong to either of those
+> devices because it can't belong to both, so it has to
+> belong to some "control" / "power management" / whatever
+> device.
 
-Sure, I know what you mean.
+I believe there are also some cases where you need to put the index
+value itself into a field of some global control register.
 
-> We don't describe the U3
-> clock control or PM registers on js2x's for example,
-
-"reg" = f8000000 01000000
-
-yes we do.  Not the individual regs sure, but we don't
-do that for anything else either.
-
-> nor do we describe
-> the various individual registers controlling the HT link...
-
-I never said you should describe the individual regs.
-I'm saying the regs should be described somewhere, and
-they can't be in the enet devices, so they'll have to
-be elsewhere.
-
-Oh well, I'm sure you'll figure it out,
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
