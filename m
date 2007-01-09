@@ -1,22 +1,15 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from mx2.sarenet.es (correo2.sarenet.es [194.30.0.12])
-	by ozlabs.org (Postfix) with ESMTP id 65DD4DDE20
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33012.mail.mud.yahoo.com (web33012.mail.mud.yahoo.com
+	[209.191.69.127]) by ozlabs.org (Postfix) with SMTP id 2FF2ADDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Jan 2007 19:17:03 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by mx2.sarenet.es (Postfix) with ESMTP id 9F91436C58
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Jan 2007 08:58:32 +0100 (CET)
-Message-ID: <45A34B2A.1010004@fagorautomation.es>
-Date: Tue, 09 Jan 2007 08:58:34 +0100
-From: Igor Luri <iluri@fagorautomation.es>
-MIME-Version: 1.0
+	Tue,  9 Jan 2007 23:45:41 +1100 (EST)
+Date: Tue, 9 Jan 2007 23:45:39 +1100 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: net-snmp package in ELDK 4.0 can not work with trapsink(TQM8xxL board)
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: how to build cross-compiling toolchains for PowerPC?
-References: <20070108020624.52998.qmail@mail3-101.sinamail.sina.com.cn>
-	<20070108211306.GC17617@nimrod.unx.ca>
-In-Reply-To: <20070108211306.GC17617@nimrod.unx.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2145413447-1168346739=:46269"
+Message-ID: <353408.46269.qm@web33012.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,52 +20,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We use uclibc instead glibc, it is smaller.
+--0-2145413447-1168346739=:46269
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-We use buildroot to build the cross-toolchain
+Hi all
+I use board TQM8xxL , kernel 2.6.11.7 with Marcelo Tosatti  and Ramdisk in ELDK 4.0.
+I only rebuild net-snmp-5.2.1.2-1_1.src.rpm package (rebuild , not edit any thing)
+If I run snmpd with basic configuration
+//smnpd.conf
+####################
+syslocation TQM8xxL  
+sysservices 79
+syscontact VCS
+####################
+It run OK
 
-http://buildroot.uclibc.org/
+But when I want to use trapsink like (edit snmpd.conf):
+//snmpd.conf
+####################################
+syslocation TQM8xxL  
+ sysservices 79
+ syscontact VCS
+# authtrapenable: Should we send traps when authentication failures occur
+#   arguments: 1 | 2   (1 = yes, 2 = no)
+authtrapenable 1
+# trapcommunity: Default trap sink community to use
+#   arguments: community-string
+trapcommunity abc
+# trapsink: A SNMPv1 trap receiver
+#   arguments: host [community] [portnum]
+trapsink 192.168.1.7
+# informsink: A SNMPv2c inform (acknowledged trap) receiver
+#   arguments: host [community] [portnum]
+informsink 192.168.1.15
+# trap2sink: A SNMPv2c trap receiver
+#   arguments: host [community] [portnum]
+trap2sink 192.168.1.7
 
-and the following versions of binutils, gcc etc.:
+####################################
+I run snmpd with debug , I receive
 
-Denx linux kernel 2.4.25
-u-boot 1.1.6
-binutils 2.14.90.0.8
-gcc 3.3.6
-linux-libc-headers 2.4.29
-uClibc 0.9.27
-gdb 6.3
+.......
+......
+snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf
+trace: netsnmp_send_traps(): agent_trap.c, 616:
+trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:
+trap: 
+trace: snmp_call_callbacks(): callback.c, 209:
+callback: START calling callbacks for maj=1 min=6
+trace: snmp_call_callbacks(): callback.c, 223:
+callback: calling a callback for maj=1 min=6
+trace: send_notifications(): notification/snmpNotifyTable.c, 95:
+send_notifications: starting: pdu=8086740, vars=0
+Segmentation fault
 
 
-I hope this helps.
+What error I had and How can I fix it?
+Is net-snmp-5.2.1.2-1_1 package in ELDK 4.0 do not support trapsink?
+Does anyone have a patch?
+Thanks for all
 
-Kelsey Dawes wrote:
 
->On Mon, Jan 08, 2007 at 10:06:24AM +0800, onetarget@sina.com wrote:
->  
->
->Dear all
->    I want to build a complete cross-compiling
->toolchains for PowerPC, the kernel I want to build is linux-2.4.25, the
->host is FC4's PC, and I also want to use glibc-2.3.6, so with all
->above, which gcc, glibc,binutils should I use? And what is the step
->should I do?
->    Thank you all and best regards,
->    W.Target
->    Jan-8-2007
->  
->
->
->Haven't played with any of your specific requirements as noted  above; however in the past, I've had good luck using Dan Kegel's crosstool software
->
->www.kegel.com/crosstool
->
->It does require a bit of trial and error to get right.
->
->Kelsey 
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->  
->
+
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-2145413447-1168346739=:46269
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hi all<br>I use board TQM8xxL , kernel 2.6.11.7 with Marcelo Tosatti&nbsp; and Ramdisk in ELDK 4.0.<br>I only rebuild net-snmp-5.2.1.2-1_1.src.rpm package (rebuild , not edit any thing)<br>If I run snmpd with basic configuration<br>//smnpd.conf<br>####################<br>syslocation TQM8xxL  <br>sysservices 79<br>syscontact VCS<br>####################<br>It run OK<br><br>But when I want to use trapsink like (edit snmpd.conf):<br>//snmpd.conf<br>####################################<br>syslocation TQM8xxL  <br> sysservices 79<br> syscontact VCS<br># authtrapenable: Should we send traps when authentication failures occur<br>#&nbsp;&nbsp; arguments: 1 | 2&nbsp;&nbsp; (1 = yes, 2 = no)<br>authtrapenable 1<br># trapcommunity: Default trap sink community to use<br>#&nbsp;&nbsp; arguments: community-string<br>trapcommunity abc<br># trapsink: A SNMPv1 trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trapsink 192.168.1.7<br># informsink: A SNMPv2c inform
+ (acknowledged trap) receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>informsink 192.168.1.15<br># trap2sink: A SNMPv2c trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trap2sink 192.168.1.7<br><br>####################################<br>I run snmpd with debug , I receive<br><pre>.......<br>......<br>snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf<br>trace: netsnmp_send_traps(): agent_trap.c, 616:<br>trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:<br>trap: <br>trace: snmp_call_callbacks(): callback.c, 209:<br>callback: START calling callbacks for maj=1 min=6<br>trace: snmp_call_callbacks(): callback.c, 223:<br>callback: calling a callback for maj=1 min=6<br>trace: send_notifications(): notification/snmpNotifyTable.c, 95:<br>send_notifications: starting: pdu=8086740, vars=0<br>Segmentation fault<br><br><br>What error I had and How can I fix it?<br>Is
+ net-snmp-5.2.1.2-1_1 package in ELDK 4.0 do not support trapsink?<br>Does anyone have a patch?<br>Thanks for all</pre><br><br><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-2145413447-1168346739=:46269--
