@@ -1,16 +1,26 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45A2E615.5020900@us.ibm.com>
-Date: Mon, 08 Jan 2007 18:47:17 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 972D8DDEC9
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 11:57:07 +1100 (EST)
+Date: Mon, 8 Jan 2007 16:56:24 -0800
+From: Greg KH <gregkh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Linux 2.6.20-rc4
+Message-ID: <20070109005624.GA598@suse.de>
+References: <Pine.LNX.4.64.0701062216210.3661@woody.osdl.org>
+	<200701081550.27748.m.kozlowski@tuxland.pl>
+	<45A25C17.5070606@246tNt.com>
+	<1168303139.22458.246.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [PATCH -- RFC]Add notification for active Cell
-	SPU tasks	-- update #2
-References: <457989EF.10805@us.ibm.com>
-In-Reply-To: <457989EF.10805@us.ibm.com>
-Content-Type: multipart/mixed; boundary="------------020205000904010505030806"
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1168303139.22458.246.camel@localhost.localdomain>
+Cc: Sylvain Munaut <tnt@246tNt.com>, Linus Torvalds <torvalds@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,191 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020205000904010505030806
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Jan 09, 2007 at 11:38:59AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-01-08 at 15:58 +0100, Sylvain Munaut wrote:
+> > Don't build ohci as module for now.
+> > A fix for that is already in gregkh usb tree for 2.6.21
+> 
+> Do you mean that as-is, powerpc defconfigs cannot build USB as a module
+> in 2.6.20 ? That is unacceptable as a regression. We need a fix in
+> 2.6.20.
+> 
+> Greg, what is the status there ?
 
-The attached patch adds notification of already-active SPU tasks to 
-SPUFS.  However, there's a bug that I'm having trouble finding.  The 
-first execution of this code path works fine, but subsequent runs do not 
-work properly.  On subsequent runs, I can see that not all of the 
-already-active tasks are getting awakened, so my OProfile driver is not 
-able to collect samples for those SPU contexts that were not awakened.  
-If anyone can see the error in my logic or if you have any other 
-comments on this patch, I would appreciate it.
+Hm, for some reason I thought your patches were not needed until 2.6.21.
+Should I forward them on to Linus now for 2.6.20?  Are they required for
+ppc to build?
 
-Thanks.
+thanks,
 
-Maynard
-
---------------020205000904010505030806
-Content-Type: text/x-diff;
- name="spu-notifier.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spu-notifier.patch"
-
-Subject: Enable SPU switch notification to detect currently active SPU tasks.
-
-From: Maynard Johnson <maynardj@us.ibm.com>
-
-This patch adds to the capability of spu_switch_event_register to notify the
-caller of currently active SPU tasks.  It also exports spu_switch_event_register
-and spu_switch_event_unregister.
-
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-
-
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-08 18:37:19.209355672 -0600
-@@ -46,6 +46,10 @@
- 
- #define SPU_MIN_TIMESLICE 	(100 * HZ / 1000)
- 
-+int notify_profiler;
-+
-+struct list_head active_spu_ctx_cache[MAX_NUMNODES];
-+
- #define SPU_BITMAP_SIZE (((MAX_PRIO+BITS_PER_LONG)/BITS_PER_LONG)+1)
- struct spu_prio_array {
- 	unsigned long bitmap[SPU_BITMAP_SIZE];
-@@ -81,19 +85,62 @@
- static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
- {
- 	blocking_notifier_call_chain(&spu_switch_notifier,
--			    ctx ? ctx->object_id : 0, spu);
-+				     ctx ? ctx->object_id : 0, spu);
-+}
-+
-+static void notify_spus_active(void)
-+{
-+	int node;
-+	/* Obtain and cache the active spu_contexts. */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+		list_for_each_entry(spu, &spu_prio->active_list[node],
-+				    list) {
-+			struct spu_context *ctx = spu->ctx;
-+			/* Make sure the context doesn't go away before we use it. */
-+			get_spu_context(ctx);
-+			list_add(&ctx->active_cache_list,
-+				 &active_spu_ctx_cache[node]);
-+		}
-+		mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+	/* Now wake up the PPE tasks associated with the active spu contexts 
-+	 * we found above. 
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu_context *ctx, *tmp;
-+		list_for_each_entry_safe(ctx, tmp,
-+					 &active_spu_ctx_cache[node],
-+					 active_cache_list) {
-+			notify_profiler = 1;
-+			wake_up_all(&ctx->stop_wq);
-+			list_del(&ctx->active_cache_list);
-+			put_spu_context(ctx);
-+			set_current_state(TASK_RUNNING);
-+			schedule();
-+		}
-+	}
- }
- 
--int spu_switch_event_register(struct notifier_block * n)
-+int spu_switch_event_register(struct notifier_block *n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
- 
--int spu_switch_event_unregister(struct notifier_block * n)
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
-+
-+int spu_switch_event_unregister(struct notifier_block *n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
- 
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
-+
- 
- static inline void bind_context(struct spu *spu, struct spu_context *ctx)
- {
-@@ -250,6 +297,14 @@
- 	return spu_get_idle(ctx, flags);
- }
- 
-+void spu_notify_already_active(struct spu_context *ctx)
-+{
-+	struct spu *spu = ctx->spu;
-+	if (!spu)
-+		return;
-+	spu_switch_notify(spu, ctx);
-+}
-+
- /* The three externally callable interfaces
-  * for the scheduler begin here.
-  *
-@@ -345,6 +400,7 @@
- 	for (i = 0; i < MAX_NUMNODES; i++) {
- 		mutex_init(&spu_prio->active_mutex[i]);
- 		INIT_LIST_HEAD(&spu_prio->active_list[i]);
-+		INIT_LIST_HEAD(&active_spu_ctx_cache[i]);
- 	}
- 	return 0;
- }
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-08 18:18:40.093354608 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-08 18:31:03.610345792 -0600
-@@ -183,6 +183,7 @@
- void spu_yield(struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
-+void spu_notify_already_active(struct spu_context *ctx);
- 
- extern char *isolated_loader;
- 
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/run.c	2007-01-08 18:33:51.979311680 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.c	2007-01-08 18:34:09.260344944 -0600
-@@ -10,6 +10,8 @@
- 
- #include "spufs.h"
- 
-+extern int notify_profiler;
-+
- /* interrupt-level stop callback function. */
- void spufs_stop_callback(struct spu *spu)
- {
-@@ -45,7 +47,7 @@
- 	u64 pte_fault;
- 
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
-+	if (ctx->state != SPU_STATE_RUNNABLE || notify_profiler)
- 		return 1;
- 	spu = ctx->spu;
- 	pte_fault = spu->dsisr &
-@@ -319,6 +321,10 @@
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(notify_profiler)) {
-+			spu_notify_already_active(ctx);
-+			notify_profiler = 0;
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
-
---------------020205000904010505030806--
+greg k-h
